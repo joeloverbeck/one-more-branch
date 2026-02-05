@@ -1,8 +1,28 @@
 # DATMOD-004: Page Interface and Utilities
 
+## Status
+
+Completed (2026-02-05)
+
 ## Summary
 
 Implement the Page interface and utilities for creating pages, checking exploration status, and managing parent-child relationships.
+
+## Reassessed Assumptions (2026-02-05)
+
+- `src/models/page.ts` does not exist yet and must be created in this ticket.
+- `test/unit/models/page.test.ts` does not exist yet and must be created in this ticket.
+- Dependencies from prior tickets already exist in `src/models/id.ts`, `src/models/choice.ts`, and `src/models/state.ts`.
+- Existing model files use extensionless relative imports (for example `./id`); this ticket should match that style.
+- Existing unit tests import model modules through the `@/` alias; new tests should follow that convention.
+- `specs/02-data-models.md` defines the in-scope `Page`/`CreatePageData` shapes and the four page utility functions.
+
+## Updated Scope
+
+- Implement only `src/models/page.ts` with `Page`, `CreatePageData`, and the four page utility functions in this ticket.
+- Add focused tests in `test/unit/models/page.test.ts` covering listed acceptance criteria and key edge cases for parent/choice invariants.
+- Do not create story/validation/index model modules in this ticket.
+- Preserve function signatures and error messages documented in this ticket.
 
 ## Files to Touch
 
@@ -10,7 +30,7 @@ Implement the Page interface and utilities for creating pages, checking explorat
 - `src/models/page.ts`
 
 ### Modify
-- None (depends on DATMOD-001, DATMOD-002, DATMOD-003)
+- `archive/tickets/DATMOD-004-page-interface-and-utilities.md` (status/assumptions/scope/outcome updates)
 
 ## Out of Scope
 
@@ -81,25 +101,25 @@ interface CreatePageData {
 Create `test/unit/models/page.test.ts` with:
 
 **createPage tests:**
-- [ ] Creates valid page 1 with no parent (parentPageId=null, parentChoiceIndex=null)
-- [ ] Creates page with parent and correctly accumulates state
-- [ ] Creates ending page with no choices
-- [ ] Throws `'Ending pages must have no choices'` if isEnding=true and choices.length > 0
-- [ ] Throws `'Non-ending pages must have at least 2 choices'` if isEnding=false and choices.length < 2
-- [ ] Throws `'Page 1 cannot have a parent'` if id=1 and parentPageId is not null
-- [ ] Throws `'Pages after page 1 must have a parent'` if id > 1 and parentPageId is null
+- [x] Creates valid page 1 with no parent (parentPageId=null, parentChoiceIndex=null)
+- [x] Creates page with parent and correctly accumulates state
+- [x] Creates ending page with no choices
+- [x] Throws `'Ending pages must have no choices'` if isEnding=true and choices.length > 0
+- [x] Throws `'Non-ending pages must have at least 2 choices'` if isEnding=false and choices.length < 2
+- [x] Throws `'Page 1 cannot have a parent'` if id=1 and parentPageId is not null
+- [x] Throws `'Pages after page 1 must have a parent'` if id > 1 and parentPageId is null
 
 **isPage tests:**
-- [ ] Returns true for valid Page object
-- [ ] Returns false for null, undefined, objects missing required fields
+- [x] Returns true for valid Page object
+- [x] Returns false for null, undefined, objects missing required fields
 
 **isPageFullyExplored tests:**
-- [ ] Returns true when all choices have nextPageId set
-- [ ] Returns false when any choice has nextPageId=null
+- [x] Returns true when all choices have nextPageId set
+- [x] Returns false when any choice has nextPageId=null
 
 **getUnexploredChoiceIndices tests:**
-- [ ] Returns indices of choices with nextPageId=null
-- [ ] Returns empty array when all choices explored
+- [x] Returns indices of choices with nextPageId=null
+- [x] Returns empty array when all choices explored
 
 ### Invariants That Must Remain True
 
@@ -118,3 +138,14 @@ Create `test/unit/models/page.test.ts` with:
 
 - ~120 lines in `src/models/page.ts`
 - ~150 lines in `test/unit/models/page.test.ts`
+
+## Outcome
+
+Originally planned:
+- Create `src/models/page.ts` and `test/unit/models/page.test.ts` with the listed page interfaces/utilities and acceptance tests.
+
+Actually changed:
+- Added `src/models/page.ts` implementing `Page`, `CreatePageData`, `createPage`, `isPage`, `isPageFullyExplored`, and `getUnexploredChoiceIndices`.
+- Added `test/unit/models/page.test.ts` covering all acceptance criteria.
+- Added one extra invariant test ensuring `createPage` uses an empty parent state when `parentAccumulatedState` is omitted.
+- No changes were made to `id.ts`, `choice.ts`, `state.ts`, public APIs, or dependencies.
