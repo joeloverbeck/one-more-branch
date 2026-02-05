@@ -1,5 +1,10 @@
 # PERLAY-005: Storage Facade and Module Exports
 
+## Status
+
+- [ ] In progress
+- [x] Completed
+
 ## Summary
 
 Create the Storage facade class that provides a unified interface to all persistence operations, and the index.ts barrel file for module exports.
@@ -11,7 +16,7 @@ Create the Storage facade class that provides a unified interface to all persist
 
 ## Files to Touch
 
-- None (new files only)
+- `test/unit/persistence/storage.test.ts` (new)
 
 ## Dependencies (Must Be Completed First)
 
@@ -23,9 +28,30 @@ Create the Storage facade class that provides a unified interface to all persist
 ## Out of Scope
 
 - **DO NOT** modify any files in `src/models/`
-- **DO NOT** modify any other persistence files
+- **DO NOT** refactor internals of existing persistence repository/utility modules
 - **DO NOT** add new functionality beyond what repositories provide
 - **DO NOT** add caching or optimization logic
+
+## Assumption Reassessment
+
+### Confirmed
+
+- `src/persistence/storage.ts` and `src/persistence/index.ts` are currently missing and must be created.
+- Dependencies from PERLAY-001 through PERLAY-004 are already implemented and available.
+- `specs/03-persistence-layer.md` expects a persistence facade plus barrel exports.
+
+### Corrected
+
+- The repository already has comprehensive unit tests for the existing persistence modules; this ticket should add focused tests for the new facade/barrel rather than only structure checks.
+- Existing source style uses extensionless relative imports (for example `../models`, `./story-repository`), so `.js` suffixed imports in this ticket should not be followed.
+- "New files only" is inaccurate for test scope because adding `test/unit/persistence/storage.test.ts` is required to validate behavior.
+
+## Revised Scope
+
+1. Add `src/persistence/storage.ts` as a pure delegation facade over existing repository functions with synchronous `init()`.
+2. Add `src/persistence/index.ts` barrel exports for storage facade, persistence helpers, and repository functions.
+3. Add `test/unit/persistence/storage.test.ts` covering singleton consistency, `init()`, delegation behavior, and barrel export completeness.
+4. Preserve current public APIs in existing persistence modules (no breaking changes).
 
 ## Implementation Details
 
@@ -153,21 +179,32 @@ Create `test/unit/persistence/storage.test.ts`:
 
 ## Test Setup Requirements
 
-- Minimal unit tests (just verify structure)
+- Focused unit tests for facade/barrel behavior and delegation wiring
 - Integration testing handled by PERLAY-006
 
 ## Imports Required
 
 For `storage.ts`:
 ```typescript
-import { Story, StoryId, Page, PageId, StoryMetadata } from '../models/index.js';
-import { saveStory, updateStory, loadStory, storyExists, deleteStory, listStories, getPageCount } from './story-repository.js';
-import { savePage, updatePage, loadPage, pageExists, loadAllPages, getMaxPageId, updateChoiceLink, findEndingPages, computeAccumulatedState } from './page-repository.js';
-import { ensureStoriesDir } from './file-utils.js';
+import { Story, StoryId, Page, PageId, StoryMetadata } from '../models';
+import { saveStory, updateStory, loadStory, storyExists, deleteStory, listStories, getPageCount } from './story-repository';
+import { savePage, updatePage, loadPage, pageExists, loadAllPages, getMaxPageId, updateChoiceLink, findEndingPages, computeAccumulatedState } from './page-repository';
+import { ensureStoriesDir } from './file-utils';
 ```
 
 ## Estimated Scope
 
 - ~100 lines of implementation code (storage.ts)
 - ~40 lines of implementation code (index.ts)
-- ~60 lines of test code
+- ~120 lines of test code
+
+## Outcome
+
+- **Planned**: Add storage facade + persistence barrel + focused unit tests for delegation/exports.
+- **Actual**:
+  - Added `src/persistence/storage.ts` with synchronous `init()` and pure delegation across all story/page operations.
+  - Added `src/persistence/index.ts` barrel exports for storage, file utils, lock helpers, and repository functions.
+  - Added `test/unit/persistence/storage.test.ts` covering singleton consistency, init behavior, full delegation, and export completeness.
+- **Scope differences vs original**:
+  - Updated ticket assumptions to reflect existing repository test coverage and existing extensionless import style.
+  - Kept existing repository/module public APIs unchanged (no breaking changes).
