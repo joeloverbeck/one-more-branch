@@ -1,5 +1,10 @@
 # PERLAY-004: Page Repository Module
 
+## Status
+
+- [ ] In progress
+- [x] Completed
+
 ## Summary
 
 Implement CRUD operations for Page entities, including choice link updates and accumulated state computation.
@@ -10,13 +15,30 @@ Implement CRUD operations for Page entities, including choice link updates and a
 
 ## Files to Touch
 
-- None (new module)
+- `test/unit/persistence/page-repository.test.ts` (new)
+- Optional export wiring only if needed by tests (no API-breaking changes)
 
 ## Dependencies (Must Be Completed First)
 
 - **PERLAY-001**: file-utils.ts
 - **PERLAY-002**: lock-manager.ts
-- **PERLAY-003**: story-repository.ts (for integration tests)
+- **PERLAY-003**: story-repository.ts (for creating test stories in unit tests)
+
+## Assumption Reassessment
+
+### Confirmed
+
+- `specs/03-persistence-layer.md` defines per-page files as `stories/{storyId}/page_{id}.json`.
+- `file-utils.ts` and `lock-manager.ts` already provide the primitives required by this ticket.
+- `PERLAY-003` is already implemented and can be used to create/remove story directories for page repository tests.
+
+### Corrected
+
+- This repository currently has **no** `src/persistence/page-repository.ts`; this ticket should create it.
+- There is currently **no** persistence facade (`storage.ts`) or persistence barrel (`src/persistence/index.ts`) in `src/persistence/`; those are out of scope.
+- Integration, e2e, performance, and memory persistence tests are not present yet in this branch; this ticket should be satisfied with focused unit tests under `test/unit/persistence/`.
+- Current repository style imports from `../models` and `./file-utils` (without `.js` extension); implementation should follow existing conventions.
+- To preserve a persistence invariant parallel to story loading, page loading should validate that file content ID matches requested page ID.
 
 ## Out of Scope
 
@@ -25,6 +47,7 @@ Implement CRUD operations for Page entities, including choice link updates and a
 - **DO NOT** modify `src/persistence/lock-manager.ts`
 - **DO NOT** modify `src/persistence/story-repository.ts`
 - **DO NOT** create the Storage facade class
+- **DO NOT** create `src/persistence/storage.ts` or `src/persistence/index.ts`
 - **DO NOT** implement page deletion (pages are immutable once created)
 
 ## Implementation Details
@@ -70,6 +93,7 @@ interface PageFileData {
 3. **`loadPage(storyId: StoryId, pageId: PageId): Promise<Page | null>`**
    - No lock needed
    - Return `null` if not found
+   - Throw if `page_{requestedId}.json` contains a different internal `id`
 
 4. **`pageExists(storyId: StoryId, pageId: PageId): Promise<boolean>`**
    - Check if page file exists
@@ -90,12 +114,13 @@ interface PageFileData {
 
 8. **`findEndingPages(storyId: StoryId): Promise<PageId[]>`**
    - Load all pages
-   - Return IDs where `isEnding === true`
+   - Return IDs where `isEnding === true` (deterministic order preferred)
 
 9. **`computeAccumulatedState(storyId: StoryId, pageId: PageId): Promise<AccumulatedState>`**
    - Load all pages
    - Traverse from root to target page
    - Accumulate stateChanges along path
+   - Throw if target page does not exist or ancestry is broken
 
 ### Key Behaviors
 
@@ -147,6 +172,9 @@ Create `test/unit/persistence/page-repository.test.ts`:
    - Child page accumulates parent's changes
    - Multi-level ancestry accumulated correctly
 
+9. **ID consistency edge case (extra coverage)**
+   - `loadPage` throws when persisted page ID does not match requested page ID
+
 ### Invariants That Must Remain True
 
 1. **Atomic writes** - Page file either fully written or unchanged
@@ -158,9 +186,9 @@ Create `test/unit/persistence/page-repository.test.ts`:
 
 ## Test Setup Requirements
 
-- Create test story in `beforeAll`
-- Clean up test story in `afterAll`
-- Use story created by PERLAY-003's `saveStory` function
+- Create test stories with PERLAY-003's `saveStory` helper
+- Clean up only stories created by this test file (prefer per-test cleanup for isolation)
+- Do not delete unrelated story directories
 
 ## Imports Required
 
@@ -170,7 +198,7 @@ import {
   PageId,
   StoryId,
   AccumulatedState,
-} from '../models/index.js';
+} from '../models';
 import {
   getStoryDir,
   getPageFilePath,
@@ -178,11 +206,19 @@ import {
   writeJsonFile,
   listFiles,
   fileExists,
-} from './file-utils.js';
-import { withLock } from './lock-manager.js';
+} from './file-utils';
+import { withLock } from './lock-manager';
 ```
 
 ## Estimated Scope
 
 - ~200 lines of implementation code
 - ~200 lines of test code
+
+## Outcome
+
+- **Planned**: Add `src/persistence/page-repository.ts` with page CRUD/link/state helpers and unit tests for the module.
+- **Actual**: Added `src/persistence/page-repository.ts` and `test/unit/persistence/page-repository.test.ts` with 11 unit tests covering save/load/update/exists/list/max-id/link-updates/ending-page-discovery/accumulated-state behavior.
+- **Scope differences vs original**:
+  - Added explicit ID consistency enforcement in `loadPage` and a dedicated unit test for mismatched persisted page IDs.
+  - Kept scope limited to the new module and new unit test file; no changes to model APIs or existing persistence utility/story repository modules.
