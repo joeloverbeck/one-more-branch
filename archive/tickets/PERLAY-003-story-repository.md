@@ -1,5 +1,10 @@
 # PERLAY-003: Story Repository Module
 
+## Status
+
+- [ ] In progress
+- [x] Completed
+
 ## Summary
 
 Implement CRUD operations for Story entities, including serialization/deserialization between TypeScript types and JSON file format.
@@ -10,12 +15,29 @@ Implement CRUD operations for Story entities, including serialization/deserializ
 
 ## Files to Touch
 
-- None (new module)
+- `test/unit/persistence/story-repository.test.ts` (new)
+- Optional export wiring only if needed by tests (no API-breaking changes)
 
 ## Dependencies (Must Be Completed First)
 
 - **PERLAY-001**: file-utils.ts (path helpers, JSON read/write, directory operations)
 - **PERLAY-002**: lock-manager.ts (withLock for write serialization)
+
+## Assumption Reassessment
+
+### Confirmed
+
+- `specs/03-persistence-layer.md` expects stories to be stored under `stories/{storyId}/story.json`.
+- `file-utils.ts` and `lock-manager.ts` already provide the primitives this ticket needs.
+- Story list metadata includes `id`, `characterConcept`, `tone`, `createdAt`, `pageCount`, and `hasEnding`.
+
+### Corrected
+
+- This repository currently has **no** `src/persistence/story-repository.ts`; this ticket should create it.
+- The existing test baseline is unit-level for persistence utilities; this ticket should be satisfied by focused unit tests under `test/unit/persistence/`.
+- `src/persistence/index.ts`, `page-repository.ts`, and `storage.ts` do not exist yet and are out of scope.
+- Story IDs are UUID-branded values; deserialization must use `parseStoryId` to retain branded type safety.
+- To preserve an explicit persistence invariant, loading should validate that the ID inside `story.json` matches the directory/story ID being loaded.
 
 ## Out of Scope
 
@@ -25,6 +47,7 @@ Implement CRUD operations for Story entities, including serialization/deserializ
 - **DO NOT** create page repository (separate ticket)
 - **DO NOT** create the Storage facade class
 - **DO NOT** implement page counting with ending detection (hasEnding is always false for now)
+- **DO NOT** change public model interfaces in `src/models/`
 
 ## Implementation Details
 
@@ -69,6 +92,7 @@ interface StoryFileData {
 3. **`loadStory(storyId: StoryId): Promise<Story | null>`**
    - No lock needed (reads are safe)
    - Return `null` if not found
+   - Throw if `story.json` contains an `id` that does not match `storyId`
 
 4. **`storyExists(storyId: StoryId): Promise<boolean>`**
    - Check if story directory exists
@@ -93,9 +117,7 @@ interface StoryFileData {
 Create `test/unit/persistence/story-repository.test.ts`:
 
 1. **Serialization**
-   - `storyToFileData` converts dates to ISO strings
-   - `fileDataToStory` parses ISO strings to dates
-   - Round-trip preserves all data
+   - Save/load round-trip preserves all story fields, including timestamp precision and branded ID behavior
 
 2. **saveStory/loadStory**
    - Saved story can be loaded
@@ -118,6 +140,10 @@ Create `test/unit/persistence/story-repository.test.ts`:
    - Returns all saved stories
    - Includes pageCount
    - Sorted by createdAt descending
+   - `hasEnding` is always `false` for this ticket
+
+7. **ID consistency edge case (extra coverage)**
+   - `loadStory` throws when persisted `story.json.id` does not match the requested `storyId`
 
 ### Invariants That Must Remain True
 
@@ -130,9 +156,9 @@ Create `test/unit/persistence/story-repository.test.ts`:
 
 ## Test Setup Requirements
 
-- Tests should use `TEST:` prefix in characterConcept for cleanup
-- `afterEach` hook should delete all `TEST:` stories
-- Tests must not affect other stories
+- Tests should use `TEST:` prefix in characterConcept where stories are created via models
+- Tests must clean up only test-created directories/stories in `afterEach`
+- Tests must not mutate or remove unrelated runtime stories
 
 ## Imports Required
 
@@ -158,3 +184,11 @@ import { withLock } from './lock-manager.js';
 
 - ~150 lines of implementation code
 - ~150 lines of test code
+
+## Outcome
+
+- **Planned**: Create `story-repository.ts` with story CRUD/list/count behavior and unit coverage.
+- **Actual**: Added `src/persistence/story-repository.ts` and `test/unit/persistence/story-repository.test.ts` covering save/load/update/exists/delete/list/count flows.
+- **Scope differences vs original**:
+  - Added explicit ID consistency enforcement in `loadStory` (throws when `story.json.id` mismatches the requested story directory ID) and corresponding extra test coverage.
+  - Kept work limited to the new module and its unit tests; no model or utility module API changes were made.
