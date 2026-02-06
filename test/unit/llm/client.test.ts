@@ -42,6 +42,7 @@ const continuationContext = {
     'You stand at the iron grate while lantern light trembles across black water and old carvings.',
   selectedChoice: 'Pry open the grate and descend into the vault',
   accumulatedState: ['You stole a key from the sexton.'],
+  accumulatedInventory: [],
 };
 
 const validStructuredPayload = {
@@ -50,6 +51,8 @@ const validStructuredPayload = {
   choices: ['Advance toward the chanting', 'Retreat and seal the grate'],
   stateChanges: ['Entered the drowned vault'],
   newCanonFacts: ['A chanting cult gathers beneath the cathedral'],
+  inventoryAdded: [],
+  inventoryRemoved: [],
   isEnding: false,
   storyArc: 'Map the drowned vault before the cult reaches it.',
 };
@@ -270,6 +273,7 @@ describe('llm client', () => {
     await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
       code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
       retryable: false,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       message: expect.stringContaining('does not support structured outputs'),
     });
   });
@@ -390,6 +394,7 @@ describe('llm client', () => {
     await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
       code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
       retryable: false,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       message: expect.stringContaining('does not support structured outputs'),
     });
   });
@@ -432,6 +437,7 @@ describe('llm client', () => {
     await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
       code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
       retryable: false,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       message: expect.stringContaining('does not support structured outputs'),
     });
   });

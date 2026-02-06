@@ -41,6 +41,8 @@ describe('llm client integration (mocked fetch)', () => {
       choices: ['Consult the brass star map', 'Climb to the highest platform'],
       stateChanges: ['Entered the abandoned observatory'],
       newCanonFacts: ['The observatory responds to bloodline magic'],
+      inventoryAdded: [],
+      inventoryRemoved: [],
       isEnding: false,
       storyArc: 'Restore the observatory before dawn breaks forever.',
     };
@@ -70,6 +72,8 @@ describe('llm client integration (mocked fetch)', () => {
       choices: ['Follow the chanting deeper', 'Return before the tide rises'],
       stateChanges: ['Opened the vault grate'],
       newCanonFacts: ['The lower vault floods with each moonrise'],
+      inventoryAdded: [],
+      inventoryRemoved: [],
       isEnding: false,
     };
 
@@ -87,6 +91,7 @@ describe('llm client integration (mocked fetch)', () => {
           'You stand at the iron grate while lantern light trembles across black water and old carvings.',
         selectedChoice: 'Pry open the grate and descend into the vault',
         accumulatedState: ['You stole a key from the sexton.'],
+        accumulatedInventory: [],
       },
       { apiKey: 'test-key' },
     );
@@ -102,6 +107,8 @@ describe('llm client integration (mocked fetch)', () => {
       choices: ['Consult the brass star map', 'consult the brass star map'],
       stateChanges: ['Entered the abandoned observatory'],
       newCanonFacts: ['The observatory responds to bloodline magic'],
+      inventoryAdded: [],
+      inventoryRemoved: [],
       isEnding: false,
       storyArc: 'Restore the observatory before dawn breaks forever.',
     };

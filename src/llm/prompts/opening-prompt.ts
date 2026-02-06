@@ -26,8 +26,9 @@ REQUIREMENTS (follow ALL):
 3. Present an initial situation with immediate tension or intrigue that draws the player in
 4. Provide 3 meaningful choices leading to genuinely DIFFERENT story directions (add a 4th only when the situation truly warrants another distinct path)
 5. Determine the overarching goal or conflict for this story (the story arc)
+6. Establish starting inventory based on the character concept (use inventoryAdded for items they would logically possess)
 
-REMINDER: Each choice must be something this specific character would genuinely consider.`;
+REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession.`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildSystemPrompt(options) },

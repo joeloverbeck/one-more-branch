@@ -252,6 +252,7 @@ describe('buildContinuationPrompt', () => {
     previousNarrative: 'Rain batters the windows while the neon sign flickers overhead.',
     selectedChoice: 'Confront the informant at gunpoint',
     accumulatedState: [] as const,
+    accumulatedInventory: [] as const,
   };
 
   it('should include selected choice in user message', () => {

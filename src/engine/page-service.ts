@@ -2,6 +2,7 @@ import { generateContinuationPage, generateOpeningPage } from '../llm';
 import { createChoice, createPage, generatePageId, Page, Story, parsePageId, updateStoryArc } from '../models';
 import { storage } from '../persistence';
 import { updateStoryWithAllCanon } from './canon-manager';
+import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
 import { getParentAccumulatedState } from './state-manager';
 import { EngineError } from './types';
 
@@ -23,6 +24,7 @@ export async function generateFirstPage(
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
     stateChanges: result.stateChanges,
+    inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     isEnding: result.isEnding,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -54,6 +56,7 @@ export async function generateNextPage(
 
   const maxPageId = await storage.getMaxPageId(story.id);
   const parentAccumulatedState = getParentAccumulatedState(parentPage);
+  const parentAccumulatedInventory = getParentAccumulatedInventory(parentPage);
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -65,6 +68,7 @@ export async function generateNextPage(
       previousNarrative: parentPage.narrativeText,
       selectedChoice: choice.text,
       accumulatedState: parentAccumulatedState.changes,
+      accumulatedInventory: parentAccumulatedInventory,
     },
     { apiKey },
   );
@@ -74,10 +78,12 @@ export async function generateNextPage(
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
     stateChanges: result.stateChanges,
+    inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     isEnding: result.isEnding,
     parentPageId: parentPage.id,
     parentChoiceIndex: choiceIndex,
     parentAccumulatedState,
+    parentAccumulatedInventory,
   });
 
   let updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);

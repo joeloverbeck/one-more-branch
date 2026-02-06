@@ -21,10 +21,15 @@ export {
   CharacterCanon,
   GlobalCharacterCanon,
   AccumulatedState,
+  InventoryItem,
+  Inventory,
+  InventoryChanges,
   createEmptyAccumulatedState,
   accumulateState,
   addCanonFact,
   mergeCanonFacts,
+  createEmptyInventoryChanges,
+  applyInventoryChanges,
 } from './state';
 
 export {

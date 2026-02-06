@@ -58,6 +58,8 @@ describe('page-service', () => {
         stateChanges: ['Reached the capital at dusk'],
         newCanonFacts: ['The city enforces nightly curfew'],
         newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
         isEnding: false,
         storyArc: 'Deliver the decoded treaty to the resistance safely.',
         rawResponse: 'raw',
@@ -128,6 +130,8 @@ describe('page-service', () => {
         stateChanges: ['Gained rooftop position'],
         newCanonFacts: ['Clocktower guards rotate every ten minutes'],
         newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -229,6 +233,8 @@ describe('page-service', () => {
         stateChanges: ['Located resistance contact point'],
         newCanonFacts: ['Resistance uses songs as ciphers'],
         newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -264,6 +270,8 @@ describe('page-service', () => {
         stateChanges: ['Lost time while hiding'],
         newCanonFacts: [],
         newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });

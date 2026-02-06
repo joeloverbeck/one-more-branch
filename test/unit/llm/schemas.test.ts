@@ -28,6 +28,8 @@ describe('STORY_GENERATION_SCHEMA', () => {
       'stateChanges',
       'newCanonFacts',
       'newCharacterCanonFacts',
+      'inventoryAdded',
+      'inventoryRemoved',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);

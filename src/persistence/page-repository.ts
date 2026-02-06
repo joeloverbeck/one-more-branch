@@ -1,4 +1,12 @@
-import { AccumulatedState, Page, PageId, StoryId, parsePageId } from '../models';
+import {
+  AccumulatedState,
+  Inventory,
+  InventoryChanges,
+  Page,
+  PageId,
+  StoryId,
+  parsePageId,
+} from '../models';
 import {
   fileExists,
   getPageFilePath,
@@ -20,6 +28,12 @@ interface PageFileData {
   accumulatedState: {
     changes: string[];
   };
+  // Inventory fields (optional for migration from older pages)
+  inventoryChanges?: {
+    added: string[];
+    removed: string[];
+  };
+  accumulatedInventory?: string[];
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;
@@ -37,6 +51,11 @@ function pageToFileData(page: Page): PageFileData {
     accumulatedState: {
       changes: [...page.accumulatedState.changes],
     },
+    inventoryChanges: {
+      added: [...page.inventoryChanges.added],
+      removed: [...page.inventoryChanges.removed],
+    },
+    accumulatedInventory: [...page.accumulatedInventory],
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -44,6 +63,18 @@ function pageToFileData(page: Page): PageFileData {
 }
 
 function fileDataToPage(data: PageFileData): Page {
+  // Migration: handle existing pages without inventory fields
+  const inventoryChanges: InventoryChanges = data.inventoryChanges
+    ? {
+        added: [...data.inventoryChanges.added],
+        removed: [...data.inventoryChanges.removed],
+      }
+    : { added: [], removed: [] };
+
+  const accumulatedInventory: Inventory = data.accumulatedInventory
+    ? [...data.accumulatedInventory]
+    : [];
+
   return {
     id: parsePageId(data.id),
     narrativeText: data.narrativeText,
@@ -55,6 +86,8 @@ function fileDataToPage(data: PageFileData): Page {
     accumulatedState: {
       changes: [...data.accumulatedState.changes],
     },
+    inventoryChanges,
+    accumulatedInventory,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

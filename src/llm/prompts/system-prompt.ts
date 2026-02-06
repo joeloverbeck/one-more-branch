@@ -23,9 +23,27 @@ CONTINUITY RULES:
 - Any new permanent facts introduced MUST appear in newCanonFacts or newCharacterCanonFacts.
 
 STATE CHANGE FORMAT:
-- Use second person ("You") for events affecting the player character (e.g., "You discovered...", "You were wounded...").
+- Use second person ("You") for events affecting the player character (e.g., "You were wounded...", "You befriended...").
 - Identify other characters by their full name when available (e.g., "Captain Mira was wounded", not "The captain was wounded").
 - Keep state changes concise but specific.
+- State changes are for CONDITIONS and EVENTS only - NOT for items (use inventory fields for physical objects).
+
+INVENTORY MANAGEMENT:
+- Use inventoryAdded for items the protagonist GAINS (be specific: "Rusty iron key", "50 gold coins", not just "key" or "money").
+- Use inventoryRemoved for items LOST, USED UP, BROKEN, or DISCARDED (use EXACT text from existing inventory).
+- Reference inventory items naturally in the narrative when relevant.
+- Items in inventory can enable or unlock certain choices.
+- Duplicates are allowed (e.g., multiple "Health Potion" entries).
+
+FIELD SEPARATION (CRITICAL):
+- INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
+- STATE CHANGES (stateChanges): Conditions, events, relationships, emotional states - NOT items
+- WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
+- CHARACTER FACTS (newCharacterCanonFacts): Persistent character information - NOT items
+
+When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
+✅ Use inventoryAdded/inventoryRemoved
+❌ Do NOT put item gains/losses in stateChanges, newCanonFacts, or newCharacterCanonFacts
 
 When writing endings (character death, victory, conclusion):
 - Make the ending feel earned and meaningful.

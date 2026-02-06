@@ -37,6 +37,19 @@ export {
   formatCharacterCanonForPrompt,
 } from './character-canon-manager';
 
+export {
+  normalizeItemName,
+  addInventoryItem,
+  removeInventoryItem,
+  applyInventoryChanges,
+  formatInventoryForPrompt,
+  createInventoryChanges,
+  hasInventoryItem,
+  countInventoryItem,
+  getParentAccumulatedInventory,
+  createEmptyInventoryChanges,
+} from './inventory-manager';
+
 export { EngineError } from './types';
 export type {
   StartStoryResult,

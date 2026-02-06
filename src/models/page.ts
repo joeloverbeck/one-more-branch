@@ -1,6 +1,14 @@
 import { Choice, isChoice } from './choice';
 import { PageId } from './id';
-import { AccumulatedState, StateChanges, createEmptyAccumulatedState } from './state';
+import {
+  AccumulatedState,
+  Inventory,
+  InventoryChanges,
+  StateChanges,
+  applyInventoryChanges,
+  createEmptyAccumulatedState,
+  createEmptyInventoryChanges,
+} from './state';
 
 export interface Page {
   readonly id: PageId;
@@ -8,6 +16,8 @@ export interface Page {
   readonly choices: Choice[];
   readonly stateChanges: StateChanges;
   readonly accumulatedState: AccumulatedState;
+  readonly inventoryChanges: InventoryChanges;
+  readonly accumulatedInventory: Inventory;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -18,10 +28,12 @@ export interface CreatePageData {
   narrativeText: string;
   choices: Choice[];
   stateChanges: StateChanges;
+  inventoryChanges?: InventoryChanges;
   isEnding: boolean;
   parentPageId: PageId | null;
   parentChoiceIndex: number | null;
   parentAccumulatedState?: AccumulatedState;
+  parentAccumulatedInventory?: Inventory;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -42,6 +54,8 @@ export function createPage(data: CreatePageData): Page {
   }
 
   const parentState = data.parentAccumulatedState ?? createEmptyAccumulatedState();
+  const parentInventory = data.parentAccumulatedInventory ?? [];
+  const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
 
   return {
     id: data.id,
@@ -51,6 +65,8 @@ export function createPage(data: CreatePageData): Page {
     accumulatedState: {
       changes: [...parentState.changes, ...data.stateChanges],
     },
+    inventoryChanges,
+    accumulatedInventory: applyInventoryChanges(parentInventory, inventoryChanges),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,

@@ -24,13 +24,13 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Events that happened in this scene only. Use second person for player actions (e.g., "You discovered...", "You were wounded..."). Identify other characters by name (e.g., "Captain Mira was wounded").',
+            'Events and CONDITIONS that happened in this scene only. Use for status changes, relationships, emotional states - NOT for items gained or lost (use inventoryAdded/inventoryRemoved for physical objects). Use second person for player actions (e.g., "You were wounded...", "You befriended..."). Identify other characters by name.',
         },
         newCanonFacts: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'NEW permanent WORLD facts introduced IN THIS SCENE ONLY. INVARIANT: Include only facts that appear for the first time in this narrative. Examples: place names, historical events, institutional rules. Do NOT include character-specific facts here—use newCharacterCanonFacts for those.',
+            'NEW permanent WORLD facts introduced IN THIS SCENE ONLY. For world-building facts like place names, historical events, institutional rules. Do NOT include: character-specific facts (use newCharacterCanonFacts), or items the protagonist possesses (use inventoryAdded/inventoryRemoved).',
         },
         newCharacterCanonFacts: {
           type: 'array',
@@ -44,7 +44,19 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
             additionalProperties: false,
           },
           description:
-            'NEW character-specific facts introduced IN THIS SCENE ONLY. INVARIANT: Include only facts that appear for the first time. Each entry has characterName and facts array. Example: [{"characterName": "Dr. Cohen", "facts": ["Dr. Cohen is the head psychiatrist"]}]. For facts involving multiple characters, add an entry for EACH character.',
+            'NEW character-specific facts introduced IN THIS SCENE ONLY. For persistent character traits, relationships, backgrounds. Do NOT include: items the protagonist possesses (use inventoryAdded/inventoryRemoved) or general world facts (use newCanonFacts).',
+        },
+        inventoryAdded: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Items the protagonist GAINED in this scene. Be specific (e.g., "Rusty iron key", "50 gold coins", "Leather satchel"). Empty array if nothing gained.',
+        },
+        inventoryRemoved: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Items the protagonist LOST, USED UP, or DISCARDED in this scene. Use the EXACT text of the existing inventory item. Empty array if nothing lost.',
         },
         isEnding: {
           type: 'boolean',
@@ -55,7 +67,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description: 'Main goal/conflict for the story opening page.',
         },
       },
-      required: ['narrative', 'choices', 'stateChanges', 'newCanonFacts', 'newCharacterCanonFacts', 'isEnding'],
+      required: ['narrative', 'choices', 'stateChanges', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'isEnding'],
       additionalProperties: false,
     },
   },
@@ -99,6 +111,8 @@ export const GenerationResultSchema = z
     newCharacterCanonFacts: CharacterCanonFactsArraySchema.optional()
       .default([])
       .transform(transformCharacterCanonFactsToRecord),
+    inventoryAdded: z.array(z.string()).optional().default([]),
+    inventoryRemoved: z.array(z.string()).optional().default([]),
     isEnding: z.boolean(),
     storyArc: z.string().optional().default(''),
   })
@@ -161,6 +175,8 @@ export function validateGenerationResponse(
     stateChanges: validated.stateChanges.map(change => change.trim()).filter(change => change),
     newCanonFacts: validated.newCanonFacts.map(fact => fact.trim()).filter(fact => fact),
     newCharacterCanonFacts,
+    inventoryAdded: validated.inventoryAdded.map(item => item.trim()).filter(item => item),
+    inventoryRemoved: validated.inventoryRemoved.map(item => item.trim()).filter(item => item),
     isEnding: validated.isEnding,
     storyArc: storyArc ? storyArc : undefined,
     rawResponse,

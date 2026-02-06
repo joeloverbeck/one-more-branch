@@ -44,6 +44,14 @@ ${context.accumulatedState.map(change => `- ${change}`).join('\n')}
 `
       : '';
 
+  const inventorySection =
+    context.accumulatedInventory.length > 0
+      ? `YOUR INVENTORY:
+${context.accumulatedInventory.map(item => `- ${item}`).join('\n')}
+
+`
+      : '';
+
   const userPrompt = `Continue the interactive story based on the player's choice.
 
 CHARACTER CONCEPT:
@@ -51,7 +59,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${storyArcSection}${canonSection}${characterCanonSection}${stateSection}PREVIOUS SCENE:
+${storyArcSection}${canonSection}${characterCanonSection}${stateSection}${inventorySection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
 
 PLAYER'S CHOICE: "${context.selectedChoice}"

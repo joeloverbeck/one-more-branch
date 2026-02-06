@@ -4,6 +4,8 @@ export interface GenerationResult {
   stateChanges: string[];
   newCanonFacts: string[];
   newCharacterCanonFacts: Record<string, string[]>;
+  inventoryAdded: string[];
+  inventoryRemoved: string[];
   isEnding: boolean;
   storyArc?: string;
   rawResponse: string;
@@ -36,6 +38,7 @@ export interface ContinuationContext {
   previousNarrative: string;
   selectedChoice: string;
   accumulatedState: readonly string[];
+  accumulatedInventory: readonly string[];
 }
 
 export interface OpeningContext {
