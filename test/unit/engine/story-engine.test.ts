@@ -66,7 +66,7 @@ function buildPage(overrides?: Partial<ReturnType<typeof createPage>>): ReturnTy
     id: PAGE_1,
     narrativeText: 'Rain needles the harbor while the bell tower glows blue.',
     choices: [createChoice('Inspect the bell tower'), createChoice('Question the harbormaster')],
-    stateChanges: ['Arrived in town under curfew'],
+    stateChanges: { added: ['Arrived in town under curfew'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,

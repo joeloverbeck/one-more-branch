@@ -32,7 +32,7 @@ function buildRootPage(overrides?: Partial<Page>): Page {
     id: parsePageId(1),
     narrativeText: 'Root narrative',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
-    stateChanges: ['root-change'],
+    stateChanges: { added: ['root-change'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -49,7 +49,7 @@ function buildChildPage(overrides?: Partial<Page>): Page {
     id: parsePageId(2),
     narrativeText: 'Child narrative',
     choices: [createChoice('Choice C'), createChoice('Choice D')],
-    stateChanges: ['child-change'],
+    stateChanges: { added: ['child-change'], removed: [] },
     isEnding: false,
     parentPageId: parsePageId(1),
     parentChoiceIndex: 0,
@@ -74,7 +74,7 @@ describe('page-repository', () => {
     await saveStory(story);
 
     const page = buildRootPage({
-      stateChanges: ['root-change', 'extra-change'],
+      stateChanges: { added: ['root-change', 'extra-change'], removed: [] },
       accumulatedState: { changes: ['root-change', 'extra-change'] },
     });
 
@@ -203,7 +203,7 @@ describe('page-repository', () => {
       id: parsePageId(3),
       narrativeText: 'Ending',
       choices: [],
-      stateChanges: ['ending-change'],
+      stateChanges: { added: ['ending-change'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 1,
@@ -226,7 +226,7 @@ describe('page-repository', () => {
       id: mismatchedPageId,
       narrativeText: 'Mismatch',
       choices: [],
-      stateChanges: [],
+      stateChanges: { added: [], removed: [] },
       accumulatedState: { changes: [] },
       isEnding: true,
       parentPageId: null,
@@ -249,7 +249,7 @@ describe('page-repository', () => {
     const updatedPage = buildRootPage({
       narrativeText: 'Updated narrative',
       choices: [createChoice('Updated choice A'), createChoice('Updated choice B')],
-      stateChanges: ['updated-change'],
+      stateChanges: { added: ['updated-change'], removed: [] },
       accumulatedState: { changes: ['updated-change'] },
     });
     await updatePage(story.id, updatedPage);
@@ -260,6 +260,6 @@ describe('page-repository', () => {
       'Updated choice A',
       'Updated choice B',
     ]);
-    expect(loaded?.stateChanges).toEqual(['updated-change']);
+    expect(loaded?.stateChanges).toEqual({ added: ['updated-change'], removed: [] });
   });
 });

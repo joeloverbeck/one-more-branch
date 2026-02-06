@@ -1,4 +1,11 @@
-import { AccumulatedState, Page, PageId, StoryId } from '../models';
+import {
+  AccumulatedState,
+  Page,
+  PageId,
+  StoryId,
+  applyStateChanges,
+  createEmptyAccumulatedState,
+} from '../models';
 import { loadAllPages } from './page-repository';
 
 export async function computeAccumulatedState(
@@ -37,7 +44,11 @@ export async function computeAccumulatedState(
     }
   }
 
-  return {
-    changes: path.flatMap((pathPage) => pathPage.stateChanges),
-  };
+  // Apply state changes from each page in order
+  let accumulated = createEmptyAccumulatedState();
+  for (const pathPage of path) {
+    accumulated = applyStateChanges(accumulated, pathPage.stateChanges);
+  }
+
+  return accumulated;
 }

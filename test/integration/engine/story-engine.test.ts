@@ -17,7 +17,8 @@ const openingResult = {
   narrative:
     'You step into Lanternport as the harbor lights ignite in impossible colors and every captain in the bay turns to watch your arrival in uneasy silence.',
   choices: ['Investigate the ember trail', 'Question the ferryman'],
-  stateChanges: ['Arrived in Lanternport under crimson fog'],
+  stateChangesAdded: ['Arrived in Lanternport under crimson fog'],
+  stateChangesRemoved: [],
   newCanonFacts: ['Lanternport fog glows crimson at sunset'],
   newCharacterCanonFacts: {},
   inventoryAdded: [],
@@ -33,7 +34,8 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
       narrative:
         'You follow embers down alleys of wet stone, where shuttered windows open just enough for whispered warnings and the ash forms a map beneath your boots.',
       choices: ['Enter the ash-marked chapel', 'Return to the docks with proof'],
-      stateChanges: ['Tracked embers to the chapel district'],
+      stateChangesAdded: ['Tracked embers to the chapel district'],
+      stateChangesRemoved: [],
       newCanonFacts: ['Ash in Lanternport drifts against the wind'],
       newCharacterCanonFacts: {},
       inventoryAdded: [],
@@ -48,7 +50,8 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
     narrative:
       'The ferryman speaks in a voice like scraped iron and admits he has rowed passengers to a pier that does not exist on any map, then offers you passage.',
     choices: ['Accept passage to the hidden pier', 'Detain the ferryman for answers'],
-    stateChanges: ['Learned of an unmapped hidden pier'],
+    stateChangesAdded: ['Learned of an unmapped hidden pier'],
+    stateChangesRemoved: [],
     newCanonFacts: ['A hidden pier appears only during red fog'],
     newCharacterCanonFacts: {},
     inventoryAdded: [],

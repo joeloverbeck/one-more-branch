@@ -3,7 +3,7 @@ import { createChoice, createPage, generatePageId, Page, Story, parsePageId, upd
 import { storage } from '../persistence';
 import { updateStoryWithAllCanon } from './canon-manager';
 import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
-import { getParentAccumulatedState } from './state-manager';
+import { createStateChanges, getParentAccumulatedState } from './state-manager';
 import { EngineError } from './types';
 
 export async function generateFirstPage(
@@ -23,7 +23,7 @@ export async function generateFirstPage(
     id: parsePageId(1),
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
-    stateChanges: result.stateChanges,
+    stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     isEnding: result.isEnding,
     parentPageId: null,
@@ -77,7 +77,7 @@ export async function generateNextPage(
     id: generatePageId(maxPageId),
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
-    stateChanges: result.stateChanges,
+    stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     isEnding: result.isEnding,
     parentPageId: parentPage.id,

@@ -17,7 +17,8 @@ const openingResult = {
   narrative:
     'At first bell you cross the bridge into Brightwater and the river mirrors an unfamiliar constellation that shifts whenever you speak your own name.',
   choices: ['Follow the mirrored stars', 'Consult the archivist'],
-  stateChanges: ['Entered Brightwater before sunrise'],
+  stateChangesAdded: ['Entered Brightwater before sunrise'],
+  stateChangesRemoved: [],
   newCanonFacts: ['Brightwater river reflects impossible constellations'],
   newCharacterCanonFacts: {},
   inventoryAdded: [],
@@ -31,7 +32,8 @@ const continuationResult = {
   narrative:
     'You pursue the mirrored stars along the embankment until engraved mile markers begin counting backward and a hidden gate rises from the riverbank.',
   choices: ['Open the hidden gate', 'Mark the location and retreat'],
-  stateChanges: ['Found the hidden riverside gate'],
+  stateChangesAdded: ['Found the hidden riverside gate'],
+  stateChangesRemoved: [],
   newCanonFacts: ['Brightwater has a hidden gate beneath the embankment'],
   newCharacterCanonFacts: {},
   inventoryAdded: [],

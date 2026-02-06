@@ -1,5 +1,9 @@
 export type StateChange = string;
-export type StateChanges = readonly StateChange[];
+
+export interface StateChanges {
+  readonly added: readonly StateChange[];
+  readonly removed: readonly StateChange[];
+}
 
 export type CanonFact = string;
 export type GlobalCanon = readonly CanonFact[];
@@ -18,7 +22,7 @@ export interface InventoryChanges {
 }
 
 export interface AccumulatedState {
-  readonly changes: StateChanges;
+  readonly changes: readonly StateChange[];
 }
 
 export function createEmptyAccumulatedState(): AccumulatedState {
@@ -27,13 +31,66 @@ export function createEmptyAccumulatedState(): AccumulatedState {
   };
 }
 
+export function createEmptyStateChanges(): StateChanges {
+  return {
+    added: [],
+    removed: [],
+  };
+}
+
+/**
+ * Normalizes a state change string for comparison (lowercase, trimmed).
+ */
+function normalizeStateChange(state: string): string {
+  return state.trim().toLowerCase();
+}
+
+/**
+ * Applies state changes (additions and removals) to the current accumulated state.
+ * Removals are processed first using case-insensitive matching.
+ * Unmatched removals are logged as warnings but don't cause errors.
+ */
+export function applyStateChanges(
+  current: AccumulatedState,
+  changes: StateChanges
+): AccumulatedState {
+  const result = [...current.changes];
+
+  // Process removals first (case-insensitive match)
+  for (const toRemove of changes.removed) {
+    const normalizedRemove = normalizeStateChange(toRemove);
+    const index = result.findIndex(
+      state => normalizeStateChange(state) === normalizedRemove
+    );
+    if (index !== -1) {
+      result.splice(index, 1);
+    } else if (toRemove.trim()) {
+      // Log warning for unmatched non-empty removals
+      console.warn(
+        `State removal did not match any existing state: "${toRemove}"`
+      );
+    }
+  }
+
+  // Add new state changes (filter empty strings)
+  for (const toAdd of changes.added) {
+    const trimmed = toAdd.trim();
+    if (trimmed) {
+      result.push(trimmed);
+    }
+  }
+
+  return { changes: result };
+}
+
+/**
+ * @deprecated Use applyStateChanges() instead for add/remove pattern
+ */
 export function accumulateState(
   parentState: AccumulatedState,
   newChanges: StateChanges
 ): AccumulatedState {
-  return {
-    changes: [...parentState.changes, ...newChanges],
-  };
+  return applyStateChanges(parentState, newChanges);
 }
 
 export function addCanonFact(canon: GlobalCanon, fact: CanonFact): GlobalCanon {

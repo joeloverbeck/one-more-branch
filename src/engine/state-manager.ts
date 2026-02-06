@@ -1,4 +1,12 @@
-import { AccumulatedState, Page, PageId, createEmptyAccumulatedState } from '../models';
+import {
+  AccumulatedState,
+  Page,
+  PageId,
+  StateChanges,
+  applyStateChanges,
+  createEmptyAccumulatedState,
+  createEmptyStateChanges,
+} from '../models';
 
 export function computeAccumulatedState(
   targetPageId: PageId,
@@ -19,25 +27,44 @@ export function computeAccumulatedState(
     current = getPage(current.parentPageId);
   }
 
-  const changes: string[] = [];
+  // Apply state changes from each page in order
+  let accumulated = createEmptyAccumulatedState();
   for (const page of path) {
-    changes.push(...page.stateChanges);
+    accumulated = applyStateChanges(accumulated, page.stateChanges);
   }
 
-  return { changes };
+  return accumulated;
 }
+
+/**
+ * Creates StateChanges object from arrays of added/removed state entries.
+ */
+export function createStateChanges(
+  added: readonly string[],
+  removed: readonly string[]
+): StateChanges {
+  return {
+    added: added.map(change => change.trim()).filter(change => change),
+    removed: removed.map(change => change.trim()).filter(change => change),
+  };
+}
+
+// Re-export for convenience
+export { createEmptyStateChanges };
 
 export function getParentAccumulatedState(parentPage: Page): AccumulatedState {
   return parentPage.accumulatedState;
 }
 
+/**
+ * Merges state changes into parent state using the add/remove pattern.
+ * This is a convenience wrapper around applyStateChanges.
+ */
 export function mergeStateChanges(
   parentState: AccumulatedState,
-  newChanges: readonly string[]
+  newChanges: StateChanges
 ): AccumulatedState {
-  return {
-    changes: [...parentState.changes, ...newChanges],
-  };
+  return applyStateChanges(parentState, newChanges);
 }
 
 export function formatStateForDisplay(state: AccumulatedState): string {

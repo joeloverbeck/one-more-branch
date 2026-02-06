@@ -89,7 +89,8 @@ describe('buildFewShotMessages', () => {
       interface ContinuationExample {
         narrative: string;
         choices: string[];
-        stateChanges: string[];
+        stateChangesAdded: string[];
+        stateChangesRemoved: string[];
         newCanonFacts: string[];
         isEnding: boolean;
       }
@@ -98,7 +99,8 @@ describe('buildFewShotMessages', () => {
 
       expect(parsed.narrative).toBeDefined();
       expect(parsed.choices).toBeInstanceOf(Array);
-      expect(parsed.stateChanges).toBeInstanceOf(Array);
+      expect(parsed.stateChangesAdded).toBeInstanceOf(Array);
+      expect(parsed.stateChangesRemoved).toBeInstanceOf(Array);
       expect(parsed.newCanonFacts).toBeInstanceOf(Array);
       expect(parsed.isEnding).toBe(false);
     });
@@ -125,13 +127,13 @@ describe('buildFewShotMessages', () => {
       const assistantContent = messages[1]?.content ?? '';
 
       interface ExampleResponse {
-        stateChanges: string[];
+        stateChangesAdded: string[];
       }
 
       const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
 
-      expect(parsed.stateChanges.length).toBeGreaterThan(0);
-      for (const stateChange of parsed.stateChanges) {
+      expect(parsed.stateChangesAdded.length).toBeGreaterThan(0);
+      for (const stateChange of parsed.stateChangesAdded) {
         expect(stateChange).toMatch(/^You /);
       }
     });
@@ -141,13 +143,13 @@ describe('buildFewShotMessages', () => {
       const assistantContent = messages[1]?.content ?? '';
 
       interface ExampleResponse {
-        stateChanges: string[];
+        stateChangesAdded: string[];
       }
 
       const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
 
-      expect(parsed.stateChanges.length).toBeGreaterThan(0);
-      for (const stateChange of parsed.stateChanges) {
+      expect(parsed.stateChangesAdded.length).toBeGreaterThan(0);
+      for (const stateChange of parsed.stateChangesAdded) {
         expect(stateChange).toMatch(/^You /);
       }
     });
@@ -157,13 +159,13 @@ describe('buildFewShotMessages', () => {
       const endingAssistantContent = messages[3]?.content ?? '';
 
       interface ExampleResponse {
-        stateChanges: string[];
+        stateChangesAdded: string[];
       }
 
       const parsed: ExampleResponse = JSON.parse(endingAssistantContent) as ExampleResponse;
 
-      expect(parsed.stateChanges.length).toBeGreaterThan(0);
-      for (const stateChange of parsed.stateChanges) {
+      expect(parsed.stateChangesAdded.length).toBeGreaterThan(0);
+      for (const stateChange of parsed.stateChangesAdded) {
         expect(stateChange).toMatch(/^You /);
       }
     });

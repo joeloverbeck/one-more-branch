@@ -23,7 +23,7 @@ function buildRootPage(overrides?: Partial<Page>): Page {
     id: parsePageId(1),
     narrativeText: 'Root narrative',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
-    stateChanges: ['root-change'],
+    stateChanges: { added: ['root-change'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -40,7 +40,7 @@ function buildChildPage(overrides?: Partial<Page>): Page {
     id: parsePageId(2),
     narrativeText: 'Child narrative',
     choices: [createChoice('Choice C'), createChoice('Choice D')],
-    stateChanges: ['child-change'],
+    stateChanges: { added: ['child-change'], removed: [] },
     isEnding: false,
     parentPageId: parsePageId(1),
     parentChoiceIndex: 0,
@@ -65,14 +65,14 @@ describe('page-state-service', () => {
     await saveStory(story);
 
     const root = buildRootPage({
-      stateChanges: ['root-a'],
+      stateChanges: { added: ['root-a'], removed: [] },
       accumulatedState: { changes: ['root-a'] },
     });
     const child = buildChildPage({
       id: parsePageId(2),
       parentPageId: root.id,
       parentChoiceIndex: 0,
-      stateChanges: ['child-b'],
+      stateChanges: { added: ['child-b'], removed: [] },
       accumulatedState: { changes: ['root-a', 'child-b'] },
       parentAccumulatedState: root.accumulatedState,
     });
@@ -80,7 +80,7 @@ describe('page-state-service', () => {
       id: parsePageId(3),
       narrativeText: 'Grandchild',
       choices: [],
-      stateChanges: ['grandchild-c'],
+      stateChanges: { added: ['grandchild-c'], removed: [] },
       isEnding: true,
       parentPageId: child.id,
       parentChoiceIndex: 1,
@@ -122,7 +122,7 @@ describe('page-state-service', () => {
       id: parsePageId(5),
       narrativeText: 'Orphan page',
       choices: [],
-      stateChanges: ['orphan'],
+      stateChanges: { added: ['orphan'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(99), // Non-existent parent
       parentChoiceIndex: 0,

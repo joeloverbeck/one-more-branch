@@ -127,7 +127,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'You find yourself in a dark forest...',
       choices: ['Enter the cave', 'Follow the path', 'Climb a tree'],
-      stateChanges: ['Entered the forest'],
+      stateChangesAdded: ['Entered the forest'],
+      stateChangesRemoved: [],
       newCanonFacts: ['The forest is ancient'],
       newCharacterCanonFacts: {},
       inventoryAdded: [],
@@ -166,7 +167,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'Initial narrative...',
       choices: ['Choice A', 'Choice B'],
-      stateChanges: [],
+      stateChangesAdded: [],
+      stateChangesRemoved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: {},
       inventoryAdded: [],
@@ -194,7 +196,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGenerateContinuationPage.mockResolvedValueOnce({
       narrative: 'You chose wisely...',
       choices: ['Continue', 'Inspect surroundings'],
-      stateChanges: ['Made a choice'],
+      stateChangesAdded: ['Made a choice'],
+      stateChangesRemoved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: {},
       inventoryAdded: [],
@@ -238,7 +241,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'Start...',
       choices: ['Go', 'Wait'],
-      stateChanges: [],
+      stateChangesAdded: [],
+      stateChangesRemoved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: {},
       inventoryAdded: [],
@@ -266,7 +270,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGenerateContinuationPage.mockResolvedValueOnce({
       narrative: 'Page 2 content...',
       choices: ['Next', 'Turn back'],
-      stateChanges: [],
+      stateChangesAdded: [],
+      stateChangesRemoved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: {},
       inventoryAdded: [],

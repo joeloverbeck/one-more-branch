@@ -3,6 +3,7 @@ import {
   InventoryChanges,
   Page,
   PageId,
+  StateChanges,
   StoryId,
   parsePageId,
 } from '../models';
@@ -23,7 +24,10 @@ interface PageFileData {
     text: string;
     nextPageId: number | null;
   }>;
-  stateChanges: string[];
+  stateChanges: {
+    added: string[];
+    removed: string[];
+  };
   accumulatedState: {
     changes: string[];
   };
@@ -46,7 +50,10 @@ function pageToFileData(page: Page): PageFileData {
       text: choice.text,
       nextPageId: choice.nextPageId,
     })),
-    stateChanges: [...page.stateChanges],
+    stateChanges: {
+      added: [...page.stateChanges.added],
+      removed: [...page.stateChanges.removed],
+    },
     accumulatedState: {
       changes: [...page.accumulatedState.changes],
     },
@@ -62,6 +69,12 @@ function pageToFileData(page: Page): PageFileData {
 }
 
 function fileDataToPage(data: PageFileData): Page {
+  // Handle state changes (new format with added/removed)
+  const stateChanges: StateChanges = {
+    added: [...data.stateChanges.added],
+    removed: [...data.stateChanges.removed],
+  };
+
   // Migration: handle existing pages without inventory fields
   const inventoryChanges: InventoryChanges = data.inventoryChanges
     ? {
@@ -81,7 +94,7 @@ function fileDataToPage(data: PageFileData): Page {
       text: choice.text,
       nextPageId: choice.nextPageId === null ? null : parsePageId(choice.nextPageId),
     })),
-    stateChanges: [...data.stateChanges],
+    stateChanges,
     accumulatedState: {
       changes: [...data.accumulatedState.changes],
     },

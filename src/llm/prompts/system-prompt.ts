@@ -22,11 +22,22 @@ CONTINUITY RULES:
 - Do NOT retcon names, roles, species, or relationships already established.
 - Any new permanent facts introduced MUST appear in newCanonFacts or newCharacterCanonFacts.
 
-STATE CHANGE FORMAT:
-- Use second person ("You") for events affecting the player character (e.g., "You were wounded...", "You befriended...").
-- Identify other characters by their full name when available (e.g., "Captain Mira was wounded", not "The captain was wounded").
+STATE MANAGEMENT (ADD/REMOVE PATTERN):
+- stateChangesAdded: NEW conditions, events, or status changes that happened THIS SCENE.
+- stateChangesRemoved: Existing states that are now RESOLVED, CONTRADICTED, or NO LONGER RELEVANT.
+- Use second person ("You") for player events (e.g., "You were wounded...", "You befriended...").
+- Identify NPCs by full name when available (e.g., "Captain Mira was wounded").
 - Keep state changes concise but specific.
-- State changes are for CONDITIONS and EVENTS only - NOT for items (use inventory fields for physical objects).
+- State changes are for CONDITIONS and EVENTS only - NOT for items (use inventory fields).
+
+STATE REMOVAL RULES:
+- When a condition is RESOLVED (healing removes injury), REMOVE the old state and ADD the new state.
+- When a condition is CONTRADICTED (allegiance changes), REMOVE the old state and ADD the new state.
+- When a condition NO LONGER APPLIES (temporary effects expire), REMOVE the state.
+- Use EXACT or very close text matching the existing state entry for removals.
+- Example: If CURRENT STATE shows "You are wounded from the battle", and player heals:
+  - stateChangesRemoved: ["You are wounded from the battle"]
+  - stateChangesAdded: ["You have been healed and feel restored"]
 
 INVENTORY MANAGEMENT:
 - Use inventoryAdded for items the protagonist GAINS (be specific: "Rusty iron key", "50 gold coins", not just "key" or "money").
@@ -37,7 +48,7 @@ INVENTORY MANAGEMENT:
 
 FIELD SEPARATION (CRITICAL):
 - INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
-- STATE CHANGES (stateChanges): Conditions, events, relationships, emotional states - NOT items
+- STATE CHANGES (stateChangesAdded/stateChangesRemoved): Conditions, events, relationships, emotional states - NOT items
 - WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
 - CHARACTER FACTS (newCharacterCanonFacts): Persistent character information - NOT items
 

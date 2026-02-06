@@ -59,7 +59,7 @@ describe('storage facade', () => {
     id: parsePageId(1),
     narrativeText: 'page',
     choices: [createChoice('c1'), createChoice('c2')],
-    stateChanges: ['s1'],
+    stateChanges: { added: ['s1'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,

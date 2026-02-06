@@ -49,7 +49,8 @@ const validStructuredPayload = {
   narrative:
     'You descend into the vault with water up to your knees and the lantern shaking in your grip while distant chanting rises from the stone arches above you.',
   choices: ['Advance toward the chanting', 'Retreat and seal the grate'],
-  stateChanges: ['Entered the drowned vault'],
+  stateChangesAdded: ['Entered the drowned vault'],
+  stateChangesRemoved: [],
   newCanonFacts: ['A chanting cult gathers beneath the cathedral'],
   inventoryAdded: [],
   inventoryRemoved: [],
@@ -331,7 +332,8 @@ describe('llm client', () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: ['Only one choice'],
-      stateChanges: [],
+      stateChangesAdded: [],
+      stateChangesRemoved: [],
       newCanonFacts: [],
       isEnding: false,
     };
@@ -458,7 +460,8 @@ describe('llm client', () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: ['Only one choice'],
-      stateChanges: [],
+      stateChangesAdded: [],
+      stateChangesRemoved: [],
       newCanonFacts: [],
       isEnding: false,
     };

@@ -48,7 +48,8 @@ describe('LLM types', () => {
       const result: GenerationResult = {
         narrative: 'You arrive at a crossroads.',
         choices: ['Take the left path', 'Take the right path'],
-        stateChanges: ['learned-map'],
+        stateChangesAdded: ['learned-map'],
+        stateChangesRemoved: [],
         newCanonFacts: ['The forest has two exits.'],
         isEnding: false,
         rawResponse: '{"narrative":"You arrive at a crossroads."}',

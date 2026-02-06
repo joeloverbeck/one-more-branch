@@ -40,7 +40,8 @@ describe('llm barrel exports', () => {
     const result: GenerationResult = {
       narrative: 'The bridge shakes as thunder rolls over the ravine.',
       choices: ['Cross quickly', 'Retreat to camp'],
-      stateChanges: ['Reached the old bridge'],
+      stateChangesAdded: ['Reached the old bridge'],
+      stateChangesRemoved: [],
       newCanonFacts: ['The ravine bridge is unstable'],
       isEnding: false,
       rawResponse: '{"narrative":"..."}',

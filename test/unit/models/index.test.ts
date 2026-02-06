@@ -21,7 +21,7 @@ describe('models barrel exports', () => {
       id: pageId,
       narrativeText: 'A'.repeat(60),
       choices: [models.createChoice('Option A'), models.createChoice('Option B')],
-      stateChanges: [],
+      stateChanges: { added: [], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,

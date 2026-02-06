@@ -31,7 +31,7 @@ function buildRootPage(overrides?: Partial<Page>): Page {
     id: parsePageId(1),
     narrativeText: 'Root page',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
-    stateChanges: ['root-change'],
+    stateChanges: { added: ['root-change'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -62,12 +62,12 @@ describe('page-state-service integration', () => {
     createdStoryIds.add(story.id);
     await saveStory(story);
 
-    const page1 = buildRootPage({ stateChanges: ['p1'] });
+    const page1 = buildRootPage({ stateChanges: { added: ['p1'], removed: [] } });
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'P2',
       choices: [createChoice('A'), createChoice('B')],
-      stateChanges: ['p2'],
+      stateChanges: { added: ['p2'], removed: [] },
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 1,
@@ -77,7 +77,7 @@ describe('page-state-service integration', () => {
       id: parsePageId(3),
       narrativeText: 'P3 ending',
       choices: [],
-      stateChanges: ['p3'],
+      stateChanges: { added: ['p3'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 0,
@@ -98,7 +98,7 @@ describe('page-state-service integration', () => {
     createdStoryIds.add(story.id);
     await saveStory(story);
 
-    const page1 = buildRootPage({ stateChanges: ['root-event-1', 'root-event-2'] });
+    const page1 = buildRootPage({ stateChanges: { added: ['root-event-1', 'root-event-2'], removed: [] } });
     await savePage(story.id, page1);
 
     await expect(computeAccumulatedState(story.id, parsePageId(1))).resolves.toEqual({

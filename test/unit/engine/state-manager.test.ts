@@ -19,7 +19,7 @@ describe('State manager', () => {
         id: page1Id,
         narrativeText: 'Root',
         choices: [],
-        stateChanges: ['Event A'],
+        stateChanges: { added: ['Event A'], removed: [] },
         isEnding: true,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -29,7 +29,7 @@ describe('State manager', () => {
         id: page2Id,
         narrativeText: 'Branch A',
         choices: [],
-        stateChanges: ['Event B'],
+        stateChanges: { added: ['Event B'], removed: [] },
         isEnding: true,
         parentPageId: page1Id,
         parentChoiceIndex: 0,
@@ -40,7 +40,7 @@ describe('State manager', () => {
         id: page3Id,
         narrativeText: 'Branch A deeper',
         choices: [],
-        stateChanges: ['Event C'],
+        stateChanges: { added: ['Event C'], removed: [] },
         isEnding: true,
         parentPageId: page2Id,
         parentChoiceIndex: 0,
@@ -51,7 +51,7 @@ describe('State manager', () => {
         id: page4Id,
         narrativeText: 'Branch B',
         choices: [],
-        stateChanges: ['Sibling Event'],
+        stateChanges: { added: ['Sibling Event'], removed: [] },
         isEnding: true,
         parentPageId: page1Id,
         parentChoiceIndex: 1,
@@ -77,7 +77,7 @@ describe('State manager', () => {
         id: page1Id,
         narrativeText: 'Root',
         choices: [],
-        stateChanges: [],
+        stateChanges: { added: [], removed: [] },
         isEnding: true,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -94,7 +94,7 @@ describe('State manager', () => {
         id: page1Id,
         narrativeText: 'Root',
         choices: [],
-        stateChanges: ['Root Event'],
+        stateChanges: { added: ['Root Event'], removed: [] },
         isEnding: true,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -117,7 +117,7 @@ describe('State manager', () => {
         id: parsePageId(1),
         narrativeText: 'Parent',
         choices: [],
-        stateChanges: ['Parent Event'],
+        stateChanges: { added: ['Parent Event'], removed: [] },
         isEnding: true,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -130,26 +130,26 @@ describe('State manager', () => {
   describe('mergeStateChanges', () => {
     it('combines parent state with new changes', () => {
       const parent = { changes: ['Event A', 'Event B'] };
-      const result = mergeStateChanges(parent, ['Event C']);
+      const result = mergeStateChanges(parent, { added: ['Event C'], removed: [] });
 
       expect(result.changes).toEqual(['Event A', 'Event B', 'Event C']);
     });
 
     it('returns a new object and does not mutate parent', () => {
       const parent = { changes: ['Event A'] as const };
-      const result = mergeStateChanges(parent, ['Event B']);
+      const result = mergeStateChanges(parent, { added: ['Event B'], removed: [] });
 
       expect(result).not.toBe(parent);
       expect(parent).toEqual({ changes: ['Event A'] });
     });
 
     it('handles empty new changes', () => {
-      const result = mergeStateChanges({ changes: ['Event A'] }, []);
+      const result = mergeStateChanges({ changes: ['Event A'] }, { added: [], removed: [] });
       expect(result.changes).toEqual(['Event A']);
     });
 
     it('handles empty parent state', () => {
-      const result = mergeStateChanges({ changes: [] }, ['Event A']);
+      const result = mergeStateChanges({ changes: [] }, { added: ['Event A'], removed: [] });
       expect(result.changes).toEqual(['Event A']);
     });
   });

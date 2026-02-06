@@ -70,7 +70,7 @@ describe('engine barrel export', () => {
       id: parsePageId(1),
       narrativeText: 'Night rain fractures every lantern into twins.',
       choices: [],
-      stateChanges: [],
+      stateChanges: { added: [], removed: [] },
       isEnding: true,
       parentPageId: null,
       parentChoiceIndex: null,

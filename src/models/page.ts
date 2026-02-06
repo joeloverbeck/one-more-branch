@@ -6,8 +6,10 @@ import {
   InventoryChanges,
   StateChanges,
   applyInventoryChanges,
+  applyStateChanges,
   createEmptyAccumulatedState,
   createEmptyInventoryChanges,
+  createEmptyStateChanges,
 } from './state';
 
 export interface Page {
@@ -27,7 +29,7 @@ export interface CreatePageData {
   id: PageId;
   narrativeText: string;
   choices: Choice[];
-  stateChanges: StateChanges;
+  stateChanges?: StateChanges;
   inventoryChanges?: InventoryChanges;
   isEnding: boolean;
   parentPageId: PageId | null;
@@ -55,22 +57,34 @@ export function createPage(data: CreatePageData): Page {
 
   const parentState = data.parentAccumulatedState ?? createEmptyAccumulatedState();
   const parentInventory = data.parentAccumulatedInventory ?? [];
+  const stateChanges = data.stateChanges ?? createEmptyStateChanges();
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
 
   return {
     id: data.id,
     narrativeText: data.narrativeText.trim(),
     choices: data.choices,
-    stateChanges: data.stateChanges,
-    accumulatedState: {
-      changes: [...parentState.changes, ...data.stateChanges],
-    },
+    stateChanges,
+    accumulatedState: applyStateChanges(parentState, stateChanges),
     inventoryChanges,
     accumulatedInventory: applyInventoryChanges(parentInventory, inventoryChanges),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,
   };
+}
+
+function isStateChanges(value: unknown): value is StateChanges {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return (
+    Array.isArray(obj['added']) &&
+    obj['added'].every((item: unknown) => typeof item === 'string') &&
+    Array.isArray(obj['removed']) &&
+    obj['removed'].every((item: unknown) => typeof item === 'string')
+  );
 }
 
 export function isPage(value: unknown): value is Page {
@@ -87,7 +101,7 @@ export function isPage(value: unknown): value is Page {
     typeof obj['narrativeText'] === 'string' &&
     Array.isArray(obj['choices']) &&
     obj['choices'].every(isChoice) &&
-    Array.isArray(obj['stateChanges']) &&
+    isStateChanges(obj['stateChanges']) &&
     typeof obj['isEnding'] === 'boolean'
   );
 }

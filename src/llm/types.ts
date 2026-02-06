@@ -1,7 +1,8 @@
 export interface GenerationResult {
   narrative: string;
   choices: string[];
-  stateChanges: string[];
+  stateChangesAdded: string[];
+  stateChangesRemoved: string[];
   newCanonFacts: string[];
   newCharacterCanonFacts: Record<string, string[]>;
   inventoryAdded: string[];
