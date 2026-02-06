@@ -1,8 +1,20 @@
 # STOENG-009: End-to-End Tests
 
+## Status
+
+Completed (2026-02-06)
+
 ## Summary
 
 Implement E2E tests that simulate complete user journeys through multi-page story playthroughs. These tests verify the engine handles extended gameplay correctly.
+
+## Reassessed Assumptions (2026-02-06)
+
+- `test/e2e/engine/` does not exist yet and must be created.
+- Engine APIs to use are `startStory`, `makeChoice`, `getPage`, `getStoryStats`, `restartStory`, and `deleteStory`.
+- A live model can end a story early, so requiring `pageCount >= 4` and `exploredBranches >= 3` in every run is too strict.
+- Determinism in this codebase is guaranteed for replaying an already-linked choice path, not for predicting live model outputs before generation.
+- `OPENROUTER_TEST_KEY` gating is required for live E2E generation tests.
 
 ## Files to Create/Modify
 
@@ -10,7 +22,13 @@ Implement E2E tests that simulate complete user journeys through multi-page stor
 - `test/e2e/engine/full-playthrough.test.ts`
 
 ### Modify
-- None
+- `tickets/STOENG-009-e2e-tests.md`
+
+## Updated Scope
+
+- Add live E2E engine tests in `test/e2e/engine/full-playthrough.test.ts`.
+- Validate full-playthrough invariants that remain true even when a run hits an early ending.
+- Keep changes test-only unless a concrete source bug is found.
 
 ## Out of Scope
 
@@ -28,10 +46,11 @@ Test complete multi-page story journeys:
 1. **Complete 3+ page journey**
    - Start story with rich character concept
    - Make choice 0 repeatedly for determinism
-   - Traverse at least 3 pages
+   - Attempt up to 3 continuation steps
    - Stop if hitting an ending
-   - Verify stats show correct page count and explored branches
+   - Verify stats align with actual pages visited/generated
    - Verify replay returns to identical page 1
+   - Verify re-selecting the same already-linked choice returns the same next page
 
 2. **Log journey for debugging**
    - Log story ID at start
@@ -86,17 +105,18 @@ for (let i = 0; i < 3; i++) {
 1. **Full playthrough test**
    - `should complete a multi-page story journey` (300s timeout)
    - Creates story with detailed character concept
-   - Traverses 3+ pages successfully
-   - Stats show pageCount >= 4
-   - Stats show exploredBranches >= 3
+   - Attempts up to 3 continuation steps unless an ending is reached
+   - If no ending reached in-loop: at least 4 pages exist
+   - If ending reached early: ending page has zero choices
+   - Stats reflect generated path size and explored links
    - Replay returns identical page 1 content
 
 ### Invariants That Must Remain True
 
-1. **State accumulation**: Each page has more accumulated state than parent
-2. **Choice consistency**: Always making choice 0 produces deterministic path
+1. **State accumulation**: Child accumulated state preserves parent history (prefix)
+2. **Choice consistency**: Replaying the same already-linked choice returns identical next page
 3. **Ending handling**: If ending reached, page has no choices
-4. **Stats accuracy**: pageCount matches actual pages created
+4. **Stats accuracy**: pageCount matches actual pages created in the story
 5. **Replay fidelity**: Restarted story has identical page 1
 
 ## Estimated Size
@@ -116,3 +136,15 @@ for (let i = 0; i < 3; i++) {
 - Uses afterAll instead of afterEach to keep story for manual inspection if needed
 - Console logging for debugging test runs
 - Character concepts prefixed with "E2E TEST:" for identification
+
+## Outcome
+
+Originally planned:
+- Add one E2E full-playthrough test with fixed thresholds (`pageCount >= 4`, `exploredBranches >= 3`).
+
+Actually changed:
+- Corrected ticket assumptions to match existing API and live-generation behavior.
+- Added `test/e2e/engine/full-playthrough.test.ts` with:
+  - A full-playthrough test that attempts 3 continuation steps, handles early endings, validates stats/state/restart invariants, and validates replay on already-linked choices.
+  - An additional deterministic replay test for an already-linked root choice.
+- No `src/` code changes were required.

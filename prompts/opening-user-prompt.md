@@ -23,13 +23,14 @@ WORLDBUILDING:
 {{/if}}
 TONE/GENRE: {{TONE}}
 
-Write an engaging opening that:
-1. Introduces the protagonist in a compelling scene.
-2. Establishes the world and atmosphere matching the tone.
-3. Presents an initial situation or hook that draws the player in.
-4. Provides 2-4 meaningful choices for what the protagonist might do.
+REQUIREMENTS (follow ALL):
+1. Introduce the protagonist in a compelling scene that reveals their personality through action
+2. Establish the world and atmosphere matching the specified tone
+3. Present an initial situation with immediate tension or intrigue that draws the player in
+4. Provide 2-4 meaningful choices leading to genuinely DIFFERENT story directions
+5. Determine the overarching goal or conflict for this story (the story arc)
 
-Also determine the overarching goal or conflict for this story (the story arc).
+REMINDER: Each choice must be something this specific character would genuinely consider.
 
 ---
 
@@ -52,11 +53,12 @@ A magical academy floating in the clouds where students learn elemental magic
 
 TONE/GENRE: whimsical fantasy with dark undertones
 
-Write an engaging opening that:
-1. Introduces the protagonist in a compelling scene.
-2. Establishes the world and atmosphere matching the tone.
-3. Presents an initial situation or hook that draws the player in.
-4. Provides 2-4 meaningful choices for what the protagonist might do.
+REQUIREMENTS (follow ALL):
+1. Introduce the protagonist in a compelling scene that reveals their personality through action
+2. Establish the world and atmosphere matching the specified tone
+3. Present an initial situation with immediate tension or intrigue that draws the player in
+4. Provide 2-4 meaningful choices leading to genuinely DIFFERENT story directions
+5. Determine the overarching goal or conflict for this story (the story arc)
 
-Also determine the overarching goal or conflict for this story (the story arc).
+REMINDER: Each choice must be something this specific character would genuinely consider.
 ```

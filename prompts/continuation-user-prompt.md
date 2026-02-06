@@ -48,11 +48,14 @@ PREVIOUS SCENE:
 
 PLAYER'S CHOICE: "{{SELECTED_CHOICE}}"
 
-Continue the story:
-1. Show the direct consequences of the player's choice.
-2. Advance the narrative naturally from this decision.
-3. Maintain consistency with all established facts and the current state.
-4. Present 2-4 new meaningful choices (unless this leads to an ending).
+REQUIREMENTS (follow ALL):
+1. Show the direct, immediate consequences of the player's choice - the story must react
+2. Advance the narrative naturally - time passes, situations evolve, new elements emerge
+3. Maintain STRICT consistency with all established facts and the current state
+4. Present 2-4 new meaningful choices unless this naturally leads to an ending
+5. Ensure choices are divergent - each must lead to a genuinely different story path
+
+REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true).
 
 ---
 
@@ -100,9 +103,12 @@ You stand before the locked door to the restricted section. The corridor is diml
 
 PLAYER'S CHOICE: "Try to pick the lock with a hairpin"
 
-Continue the story:
-1. Show the direct consequences of the player's choice.
-2. Advance the narrative naturally from this decision.
-3. Maintain consistency with all established facts and the current state.
-4. Present 2-4 new meaningful choices (unless this leads to an ending).
+REQUIREMENTS (follow ALL):
+1. Show the direct, immediate consequences of the player's choice - the story must react
+2. Advance the narrative naturally - time passes, situations evolve, new elements emerge
+3. Maintain STRICT consistency with all established facts and the current state
+4. Present 2-4 new meaningful choices unless this naturally leads to an ending
+5. Ensure choices are divergent - each must lead to a genuinely different story path
+
+REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true).
 ```

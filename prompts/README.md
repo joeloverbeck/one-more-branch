@@ -7,7 +7,7 @@ The prompts are extracted from the codebase to facilitate external research and 
 
 | File | Purpose |
 |------|---------|
-| `system-prompt.md` | Base system prompt establishing the storyteller role |
+| `system-prompt.md` | Base system prompt establishing the storyteller role (with optional enhancements) |
 | `content-policy.md` | NC-21 content guidelines included in every prompt |
 | `opening-user-prompt.md` | User prompt template for generating story openings |
 | `continuation-user-prompt.md` | User prompt template for continuing the story |
@@ -24,6 +24,25 @@ Complete assembled examples showing exactly what gets sent to the API:
 | `examples/continuation-complete.md` | Full continuation request with context |
 | `examples/ending-complete.md` | Example ending responses (death/victory) |
 | `examples/fallback-mode-complete.md` | Request format when structured output unavailable |
+
+## Prompt Options (PromptOptions)
+
+The prompt system supports configurable enhancements via `PromptOptions`:
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `fewShotMode` | `'none'` \| `'minimal'` \| `'standard'` | `'minimal'` | Include example exchanges before the actual prompt |
+| `enableChainOfThought` | `boolean` | `true` | Add `<thinking>` reasoning instructions to system prompt |
+| `choiceGuidance` | `'basic'` \| `'strict'` | `'strict'` | Level of choice quality constraints in system prompt |
+
+**Default Configuration** (all enhancements enabled for maximum story quality):
+```typescript
+const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
+  fewShotMode: 'minimal',      // +800-1200 tokens
+  enableChainOfThought: true,  // Better narrative coherence
+  choiceGuidance: 'strict',    // +400 tokens, better choices
+};
+```
 
 ## Placeholder Reference
 
@@ -44,18 +63,41 @@ Dynamic values in prompts use `{{PLACEHOLDER}}` syntax:
 
 ### For Story Openings (Structured Output Mode)
 ```
-System: [system-prompt.md]
+System: [system-prompt.md + optional strict choice guidelines + optional CoT instructions]
+User (example): [few-shot example user message]      # if fewShotMode !== 'none'
+Assistant (example): [few-shot example response]     # if fewShotMode !== 'none'
 User:   [opening-user-prompt.md with placeholders filled]
 ```
 
 ### For Story Continuations (Structured Output Mode)
 ```
-System: [system-prompt.md]
+System: [system-prompt.md + optional strict choice guidelines + optional CoT instructions]
+User (example): [continuation example user message]  # if fewShotMode !== 'none'
+Assistant (example): [continuation example response] # if fewShotMode !== 'none'
+User (example): [ending example user message]        # if fewShotMode === 'standard'
+Assistant (example): [ending example response]       # if fewShotMode === 'standard'
 User:   [continuation-user-prompt.md with placeholders filled]
 ```
 
 ### For Fallback Text Mode
 When the model doesn't support structured outputs, append `fallback-output-format.md` to the system prompt.
+
+## Few-Shot Examples
+
+When `fewShotMode` is enabled, example user/assistant message pairs are injected before the actual prompt. This provides the LLM with concrete examples of expected input/output format.
+
+- **`'minimal'`**: 1 example pair matching context type (opening OR continuation)
+- **`'standard'`**: For continuations, includes both a regular continuation example AND an ending example
+
+Examples are embedded directly in `src/llm/examples.ts` based on the templates in `examples/`.
+
+## Chain-of-Thought Mode
+
+When `enableChainOfThought` is true (default), the system prompt includes instructions for the LLM to:
+1. Think through the approach in `<thinking>` tags
+2. Output the final JSON in `<output>` tags
+
+The response parser automatically extracts content from `<output>` tags.
 
 ## Notes for Prompt Research
 
@@ -67,4 +109,4 @@ When the model doesn't support structured outputs, append `fallback-output-forma
 
 4. **Second Person**: All narrative should use "you" perspective.
 
-5. **Choice Requirements**: Non-ending pages need 2-5 unique, meaningful choices.
+5. **Choice Requirements**: Non-ending pages need 2-5 unique, meaningful choices. With `choiceGuidance: 'strict'`, explicit constraints are added to ensure divergent, consequential choices.

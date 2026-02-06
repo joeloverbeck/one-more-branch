@@ -27,7 +27,7 @@
 ## Testing Guidelines
 - Jest + `ts-jest` with `test/**/*.test.ts` as the matcher.
 - Coverage thresholds: 70% global for branches/functions/lines/statements.
-- Integration tests require `OPENROUTER_TEST_KEY` in the environment.
+- Current integration and E2E suites run with mocked LLM/fetch flows and do not require `OPENROUTER_TEST_KEY`.
 - Run targeted suites: `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`.
 
 ## Commit & Pull Request Guidelines

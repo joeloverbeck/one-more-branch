@@ -1,7 +1,7 @@
 # Implementation Order & Status Tracker
 
 > **Last Updated**: 2026-02-06
-> **Overall Progress**: 4/6 specs implemented
+> **Overall Progress**: 5/6 specs implemented
 
 ## Priority Order
 
@@ -13,7 +13,7 @@ Specs must be implemented in this order due to dependencies:
 | 2 | 02-data-models | ✅ Completed | 01 | All types implemented with validation |
 | 3 | 03-persistence-layer | ✅ Completed | 01, 02 | File-based storage with locking |
 | 4 | 04-llm-integration | ✅ Completed | 01, 02 | OpenRouter client with structured outputs |
-| 5 | 05-story-engine | ⬜ Pending | 02, 03, 04 | Core logic - most complex |
+| 5 | 05-story-engine | ✅ Completed | 02, 03, 04 | Core logic implemented and validated |
 | 6 | 06-user-interface | ⬜ Pending | 03, 05 | Final integration layer |
 
 ## Status Legend
@@ -32,7 +32,7 @@ Specs must be implemented in this order due to dependencies:
     │        │
     │        ├──► 03-persistence-layer ✅ ──┐
     │        │                              │
-    │        └──► 04-llm-integration ✅ ─────┼──► 05-story-engine
+    │        └──► 04-llm-integration ✅ ─────┼──► 05-story-engine ✅
     │                                       │         │
     └───────────────────────────────────────┘         │
                                                       ▼
@@ -66,10 +66,10 @@ Specs must be implemented in this order due to dependencies:
 - **Notes**: OpenRouter client with structured outputs, Zod validation, fallback text parser, retry logic. Integration coverage uses mocked fetch harness.
 
 ### Spec 05: Story Engine
-- **Started**: -
-- **Completed**: -
-- **Tests Passing**: -
-- **Notes**: -
+- **Started**: 2026-02-06
+- **Completed**: 2026-02-06
+- **Tests Passing**: 80/80 engine tests (unit + integration + E2E)
+- **Notes**: Story engine modules and deterministic replay behavior implemented. Engine test suites run with mocked LLM generation for repeatable verification.
 
 ### Spec 06: User Interface
 - **Started**: -
