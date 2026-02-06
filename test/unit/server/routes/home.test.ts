@@ -54,7 +54,7 @@ describe('homeRoutes GET /', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    void getHomeHandler()({} as Request, { status, render } as unknown as Response);
     await flushPromises();
 
     expect(status).not.toHaveBeenCalled();
@@ -86,7 +86,7 @@ describe('homeRoutes GET /', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    void getHomeHandler()({} as Request, { status, render } as unknown as Response);
     await flushPromises();
 
     expect(status).not.toHaveBeenCalled();
@@ -105,7 +105,7 @@ describe('homeRoutes GET /', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    void getHomeHandler()({} as Request, { status, render } as unknown as Response);
     await flushPromises();
 
     expect(status).toHaveBeenCalledWith(500);

@@ -137,7 +137,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     const { res, status, render, redirect } = createMockResponse();
 
-    createStoryHandler(
+    void createStoryHandler(
       {
         body: {
           characterConcept: `${TEST_PREFIX} create-story`,
@@ -173,7 +173,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     });
 
     const createRes = createMockResponse();
-    createStoryHandler(
+    void createStoryHandler(
       {
         body: {
           characterConcept: `${TEST_PREFIX} make-choice`,
@@ -199,7 +199,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     });
 
     const choiceRes = createMockResponse();
-    chooseHandler(
+    void chooseHandler(
       {
         params: { storyId },
         body: {
@@ -241,7 +241,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     });
 
     const createRes = createMockResponse();
-    createStoryHandler(
+    void createStoryHandler(
       {
         body: {
           characterConcept: `${TEST_PREFIX} replay`,
@@ -267,7 +267,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     });
 
     const firstChoiceRes = createMockResponse();
-    chooseHandler(
+    void chooseHandler(
       {
         params: { storyId },
         body: {
@@ -281,7 +281,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     await waitForMock(firstChoiceRes.json);
 
     const replayChoiceRes = createMockResponse();
-    chooseHandler(
+    void chooseHandler(
       {
         params: { storyId },
         body: {

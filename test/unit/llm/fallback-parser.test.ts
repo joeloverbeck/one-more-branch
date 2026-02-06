@@ -1,10 +1,81 @@
 import {
   buildFallbackSystemPromptAddition,
+  createResponsePreview,
   parseTextResponse,
 } from '../../../src/llm/fallback-parser';
 import { LLMError } from '../../../src/llm/types';
 
 describe('parseTextResponse', () => {
+  it('should parse valid JSON response when LLM returns JSON instead of text format', () => {
+    const jsonResponse = JSON.stringify({
+      narrative: 'You step into the dark cave. The air is cold and damp. A faint light glimmers in the distance.',
+      choices: [
+        'Move toward the light',
+        'Feel along the wall for another path',
+        'Call out to see if anyone responds',
+      ],
+      stateChanges: ['Entered the mysterious cave'],
+      canonFacts: ['The cave system extends beneath the mountain'],
+      characterCanonFacts: {},
+      isEnding: false,
+      storyArc: 'Explore the ancient cave system',
+    });
+
+    const result = parseTextResponse(jsonResponse);
+
+    expect(result.narrative).toContain('dark cave');
+    expect(result.choices).toEqual([
+      'Move toward the light',
+      'Feel along the wall for another path',
+      'Call out to see if anyone responds',
+    ]);
+    expect(result.stateChanges).toEqual(['Entered the mysterious cave']);
+    expect(result.canonFacts).toEqual(['The cave system extends beneath the mountain']);
+    expect(result.isEnding).toBe(false);
+    expect(result.storyArc).toBe('Explore the ancient cave system');
+  });
+
+  it('should parse pretty-printed JSON response', () => {
+    const jsonResponse = `{
+  "narrative": "The tavern reeks of cheap wine. You scan the crowd while performing.",
+  "choices": [
+    "Approach the hooded figure",
+    "Talk to the drunk nobleman"
+  ],
+  "stateChanges": ["You performed at the tavern"],
+  "canonFacts": ["The city has multiple tiers"],
+  "characterCanonFacts": {
+    "Lord Greave": ["A nobleman prone to drinking"]
+  },
+  "isEnding": false,
+  "storyArc": "Find the cursed blade"
+}`;
+
+    const result = parseTextResponse(jsonResponse);
+
+    expect(result.narrative).toContain('tavern');
+    expect(result.choices).toHaveLength(2);
+    expect(result.characterCanonFacts).toEqual({
+      'Lord Greave': ['A nobleman prone to drinking'],
+    });
+  });
+
+  it('should parse JSON response with isEnding true and no choices', () => {
+    const jsonResponse = JSON.stringify({
+      narrative: 'The dragon fire engulfs you. Your adventure ends here.',
+      choices: [],
+      stateChanges: ['Hero died'],
+      canonFacts: [],
+      characterCanonFacts: {},
+      isEnding: true,
+    });
+
+    const result = parseTextResponse(jsonResponse);
+
+    expect(result.isEnding).toBe(true);
+    expect(result.choices).toEqual([]);
+  });
+
   it('should parse well-formatted response with all sections', () => {
     const response = `
 NARRATIVE:
@@ -107,6 +178,67 @@ STATE_CHANGES:
       const llmError = error as LLMError;
       expect(llmError.code).toBe('MISSING_CHOICES');
       expect(llmError.retryable).toBe(true);
+    }
+  });
+
+  it('should include raw response preview in error message for missing choices', () => {
+    const response = `
+NARRATIVE:
+The story continues without any choices presented to the player.
+
+STATE_CHANGES:
+- Something happened
+`;
+
+    try {
+      parseTextResponse(response);
+      fail('Expected parseTextResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      expect(llmError.message).toContain('Response preview:');
+      expect(llmError.message).toContain('NARRATIVE:');
+    }
+  });
+
+  it('should include rawResponse in error context for missing choices', () => {
+    const response = `
+NARRATIVE:
+The story continues without any choices presented to the player.
+
+STATE_CHANGES:
+- Something happened
+`;
+
+    try {
+      parseTextResponse(response);
+      fail('Expected parseTextResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      expect(llmError.context).toBeDefined();
+      expect(llmError.context?.rawResponse).toContain('NARRATIVE:');
+    }
+  });
+
+  it('should truncate long responses in error message', () => {
+    const longNarrative = 'A'.repeat(600);
+    const response = `
+NARRATIVE:
+${longNarrative}
+
+STATE_CHANGES:
+- Something happened
+`;
+
+    try {
+      parseTextResponse(response);
+      fail('Expected parseTextResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      expect(llmError.message).toContain('...');
+      expect(llmError.message.length).toBeLessThan(700);
     }
   });
 
@@ -342,6 +474,51 @@ CHARACTER_CANON_FACTS:
         'Bobby inherited gold from his grandfather',
       ],
     });
+  });
+});
+
+describe('createResponsePreview', () => {
+  it('should return response unchanged when shorter than maxLength', () => {
+    const response = 'Short response';
+    const result = createResponsePreview(response, 500);
+
+    expect(result).toBe('Short response');
+  });
+
+  it('should truncate response with ellipsis when longer than maxLength', () => {
+    const response = 'A'.repeat(600);
+    const result = createResponsePreview(response, 500);
+
+    expect(result.length).toBe(500);
+    expect(result.endsWith('...')).toBe(true);
+  });
+
+  it('should use default maxLength of 500', () => {
+    const response = 'A'.repeat(600);
+    const result = createResponsePreview(response);
+
+    expect(result.length).toBe(500);
+    expect(result.endsWith('...')).toBe(true);
+  });
+
+  it('should return "[no response]" for empty string', () => {
+    const result = createResponsePreview('');
+
+    expect(result).toBe('[no response]');
+  });
+
+  it('should return "[no response]" for undefined input', () => {
+    const result = createResponsePreview(undefined as unknown as string);
+
+    expect(result).toBe('[no response]');
+  });
+
+  it('should return response exactly at maxLength without ellipsis', () => {
+    const response = 'A'.repeat(500);
+    const result = createResponsePreview(response, 500);
+
+    expect(result).toBe(response);
+    expect(result.endsWith('...')).toBe(false);
   });
 });
 

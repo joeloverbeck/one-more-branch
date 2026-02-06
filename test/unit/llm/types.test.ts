@@ -28,6 +28,28 @@ describe('LLM types', () => {
       expect(error.name).toBe('LLMError');
       expect(error).toBeInstanceOf(Error);
     });
+
+    it('should accept optional context parameter', () => {
+      const context = { rawResponse: 'some LLM response', tokenCount: 500 };
+      const error = new LLMError('parsing failed', 'PARSE_ERROR', true, context);
+
+      expect(error.context).toEqual(context);
+    });
+
+    it('should default context to undefined when not provided', () => {
+      const error = new LLMError('parsing failed', 'PARSE_ERROR', true);
+
+      expect(error.context).toBeUndefined();
+    });
+
+    it('should maintain backward compatibility with 3-arg constructor', () => {
+      const error = new LLMError('test error', 'TEST_CODE', false);
+
+      expect(error.message).toBe('test error');
+      expect(error.code).toBe('TEST_CODE');
+      expect(error.retryable).toBe(false);
+      expect(error.context).toBeUndefined();
+    });
   });
 
   describe('type compatibility (compile-time)', () => {

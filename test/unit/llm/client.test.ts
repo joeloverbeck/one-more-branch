@@ -95,6 +95,7 @@ describe('llm client', () => {
     fetchMock.mockReset();
     mockLogPrompt.mockReset();
     mockLogger.warn.mockReset();
+    mockLogger.error.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
     jest.useFakeTimers();
   });
@@ -412,7 +413,7 @@ describe('llm client', () => {
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
-  it('should use logger.warn for fallback notification', async () => {
+  it('should use logger.warn for fallback notification with error details', async () => {
     fetchMock
       .mockResolvedValueOnce(createErrorResponse(400, 'response_format is not supported'))
       .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
@@ -421,6 +422,163 @@ describe('llm client', () => {
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       'Model lacks structured output support, using text parsing fallback',
+      expect.objectContaining({
+        errorMessage: 'response_format is not supported',
+        model: 'anthropic/claude-sonnet-4.5',
+      }),
+    );
+  });
+
+  it('should fall back to text mode for model does not support error', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        createErrorResponse(
+          400,
+          JSON.stringify({
+            error: { message: 'model does not support response_format' },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
+
+    const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Model lacks structured output support, using text parsing fallback',
+      expect.objectContaining({
+        errorMessage: expect.stringContaining('model does not support'),
+      }),
+    );
+    expect(result.choices).toHaveLength(2);
+  });
+
+  it('should NOT fall back for generic validation errors (model supports structured output)', async () => {
+    // This error indicates the model DOES support structured output but validation failed
+    // It should NOT trigger fallback, but should retry and eventually fail
+    fetchMock.mockResolvedValue(
+      createErrorResponse(
+        400,
+        JSON.stringify({
+          error: { message: 'Strict mode validation failed for additionalProperties' },
+        }),
+      ),
+    );
+
+    const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    // Attach rejection handler early
+    const expectation = expect(promise).rejects.toMatchObject({
+      code: 'HTTP_400',
+    });
+
+    // Advance through retry delays (3 attempts total)
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expectation;
+
+    // Should not have called warn about fallback
+    expect(mockLogger.warn).not.toHaveBeenCalledWith(
+      'Model lacks structured output support, using text parsing fallback',
+      expect.anything(),
+    );
+  });
+
+  it('should fall back to text mode for provider does not support error', async () => {
+    fetchMock
+      .mockResolvedValueOnce(createErrorResponse(400, 'provider does not support json_schema'))
+      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
+
+    const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Model lacks structured output support, using text parsing fallback',
+      expect.objectContaining({
+        errorMessage: 'provider does not support json_schema',
+      }),
+    );
+    expect(result.choices).toHaveLength(2);
+  });
+
+  it('should log API error details before throwing', async () => {
+    fetchMock.mockResolvedValue(createErrorResponse(401, 'Invalid API key provided'));
+
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
+      code: 'HTTP_401',
+    });
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'OpenRouter API error [401]: Invalid API key provided',
+    );
+  });
+
+  it('should log raw response when text parsing fails', async () => {
+    const malformedTextResponse = `
+NARRATIVE:
+Some narrative text without any choices at all.
+
+STATE_CHANGES:
+- Something happened
+`;
+
+    fetchMock.mockResolvedValue(responseWithStructuredContent(malformedTextResponse));
+
+    const promise = generateOpeningPage(openingContext, {
+      apiKey: 'test-key',
+      forceTextParsing: true,
+    });
+
+    // Attach rejection handler early
+    const expectation = expect(promise).rejects.toMatchObject({
+      code: 'MISSING_CHOICES',
+    });
+
+    // Advance through retry delays
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expectation;
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'LLM response parsing failed',
+      expect.objectContaining({
+        code: 'MISSING_CHOICES',
+        rawResponse: expect.stringContaining('NARRATIVE:'),
+      }),
+    );
+  });
+
+  it('should log raw response when structured validation fails', async () => {
+    const invalidStructuredPayload = {
+      narrative: validStructuredPayload.narrative,
+      choices: ['Only one choice'],
+      stateChanges: [],
+      canonFacts: [],
+      isEnding: false,
+    };
+
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload)),
+    );
+
+    const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    // Attach rejection handler early
+    const expectation = expect(promise).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+    });
+
+    // Advance through retry delays
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expectation;
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'LLM structured response validation failed',
+      expect.objectContaining({
+        rawResponse: expect.stringContaining('Only one choice'),
+      }),
     );
   });
 });

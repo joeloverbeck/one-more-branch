@@ -1,13 +1,65 @@
+import { validateGenerationResponse } from './schemas.js';
 import type { GenerationResult } from './types';
 import { LLMError } from './types';
 
 const SECTION_HEADER_REGEX = /\n[A-Z_]+:\s*\n?/;
 
 /**
+ * Creates a truncated preview of a response for error messages.
+ */
+export function createResponsePreview(response: string, maxLength = 500): string {
+  if (!response) {
+    return '[no response]';
+  }
+  if (response.length <= maxLength) {
+    return response;
+  }
+  return response.slice(0, maxLength - 3) + '...';
+}
+
+/**
+ * Attempts to parse the response as JSON and validate it.
+ * Returns null if the response is not valid JSON or doesn't have the expected structure.
+ */
+function tryParseAsJson(response: string): GenerationResult | null {
+  // Quick check: must start with { to be JSON object
+  if (!response.startsWith('{')) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(response) as unknown;
+
+    // Check if it has the expected structure
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      !('narrative' in parsed) ||
+      !('choices' in parsed)
+    ) {
+      return null;
+    }
+
+    // Use the same validation as structured output
+    return validateGenerationResponse(parsed, response);
+  } catch {
+    // Not valid JSON or validation failed
+    return null;
+  }
+}
+
+/**
  * Fallback parser for models that do not support structured outputs.
+ * Also handles cases where the model returns JSON despite being asked for text format.
  */
 export function parseTextResponse(rawResponse: string): GenerationResult {
   const response = rawResponse.trim();
+
+  // First, try to parse as JSON (some models return JSON even in text mode)
+  const jsonResult = tryParseAsJson(response);
+  if (jsonResult) {
+    return jsonResult;
+  }
 
   const isEnding = /THE\s*END/i.test(response) && !/CHOICES:/i.test(response);
   const narrative = extractSection(response, 'NARRATIVE', isEnding ? 'THE END' : 'CHOICES');
@@ -18,10 +70,12 @@ export function parseTextResponse(rawResponse: string): GenerationResult {
   const storyArc = extractSection(response, 'STORY_ARC', null);
 
   if (!isEnding && choices.length < 2) {
+    const preview = createResponsePreview(response, 500);
     throw new LLMError(
-      'Response missing required choices for non-ending page',
+      `Response missing required choices for non-ending page. Response preview: ${preview}`,
       'MISSING_CHOICES',
       true,
+      { rawResponse: response },
     );
   }
 

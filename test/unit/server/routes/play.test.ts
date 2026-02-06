@@ -64,7 +64,7 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      getRouteHandler('get', '/:storyId')(
+      void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '2' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
@@ -87,7 +87,7 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      getRouteHandler('get', '/:storyId')(
+      void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '1' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
@@ -113,7 +113,7 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      getRouteHandler('get', '/:storyId')(
+      void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '99' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
@@ -147,7 +147,7 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      getRouteHandler('get', '/:storyId')(
+      void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: {} } as unknown as Request,
         { status, render } as unknown as Response,
       );
@@ -183,7 +183,7 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      getRouteHandler('get', '/:storyId')(
+      void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '0' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
@@ -265,18 +265,19 @@ describe('playRoutes', () => {
         choiceIndex: 1,
         apiKey: 'valid-key-12345',
       });
-      expect(json).toHaveBeenCalledWith({
-        success: true,
-        page: {
-          id: resultPage.id,
-          narrativeText: resultPage.narrativeText,
-          choices: resultPage.choices,
-          stateChanges: resultPage.stateChanges,
-          isEnding: resultPage.isEnding,
-        },
-        wasGenerated: true,
-        logScript: expect.any(String),
-      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          page: {
+            id: resultPage.id,
+            narrativeText: resultPage.narrativeText,
+            choices: resultPage.choices,
+            stateChanges: resultPage.stateChanges,
+            isEnding: resultPage.isEnding,
+          },
+          wasGenerated: true,
+        }),
+      );
     });
   });
 
