@@ -145,6 +145,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     void createStoryHandler(
       {
         body: {
+          title: `${TEST_PREFIX} Title`,
           characterConcept: `${TEST_PREFIX} create-story`,
           tone: 'fantasy',
           apiKey: 'mock-api-key-12345',
@@ -186,6 +187,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     void createStoryHandler(
       {
         body: {
+          title: `${TEST_PREFIX} Title`,
           characterConcept: `${TEST_PREFIX} make-choice`,
           apiKey: 'mock-api-key-12345',
         },
@@ -264,6 +266,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     void createStoryHandler(
       {
         body: {
+          title: `${TEST_PREFIX} Title`,
           characterConcept: `${TEST_PREFIX} replay`,
           apiKey: 'mock-api-key-12345',
         },

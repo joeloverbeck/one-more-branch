@@ -45,6 +45,7 @@ const mockedGenerateFirstPage = generateFirstPage as jest.MockedFunction<typeof 
 function buildStory(overrides?: Partial<Story>): Story {
   return {
     ...createStory({
+      title: 'The Forbidden Roads',
       characterConcept: 'A cartographer tracing forbidden roads through the north.',
       worldbuilding: 'A region where maps are treated as dangerous artifacts.',
       tone: 'grim mystery',
@@ -59,9 +60,23 @@ describe('story-service', () => {
   });
 
   describe('startNewStory', () => {
+    it('throws VALIDATION_FAILED for empty title', async () => {
+      await expect(
+        startNewStory({
+          title: '   ',
+          characterConcept: 'A valid character concept for this test case.',
+          apiKey: 'test-key',
+        }),
+      ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
+
+      expect(mockedStorage.saveStory).not.toHaveBeenCalled();
+      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+    });
+
     it('throws VALIDATION_FAILED for short characterConcept', async () => {
       await expect(
         startNewStory({
+          title: 'Test Title',
           characterConcept: 'too short',
           apiKey: 'test-key',
         }),
@@ -74,6 +89,7 @@ describe('story-service', () => {
     it('throws VALIDATION_FAILED for missing apiKey', async () => {
       await expect(
         startNewStory({
+          title: 'Test Title',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: '   ',
         }),
@@ -104,6 +120,7 @@ describe('story-service', () => {
       mockedStorage.updateStory.mockResolvedValue(undefined);
 
       const result = await startNewStory({
+        title: '  Mountain Passes  ',
         characterConcept: '  A courier charting hidden mountain passes.  ',
         worldbuilding: 'High valleys controlled by signal towers',
         tone: 'tense exploration',
@@ -111,6 +128,7 @@ describe('story-service', () => {
       });
 
       expect(createStorySpy).toHaveBeenCalledWith({
+        title: 'Mountain Passes',
         characterConcept: 'A courier charting hidden mountain passes.',
         worldbuilding: 'High valleys controlled by signal towers',
         tone: 'tense exploration',
@@ -133,6 +151,7 @@ describe('story-service', () => {
 
       await expect(
         startNewStory({
+          title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
         }),
@@ -153,6 +172,7 @@ describe('story-service', () => {
 
       await expect(
         startNewStory({
+          title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
         }),
@@ -201,6 +221,7 @@ describe('story-service', () => {
       const story = buildStory();
       const metadata: StoryMetadata = {
         id: story.id,
+        title: story.title,
         characterConcept: story.characterConcept,
         tone: story.tone,
         createdAt: story.createdAt,

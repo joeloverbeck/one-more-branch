@@ -17,6 +17,7 @@ export interface PlaySession {
 }
 
 export interface StartStoryOptions {
+  readonly title: string;
   readonly characterConcept: string;
   readonly worldbuilding?: string;
   readonly tone?: string;

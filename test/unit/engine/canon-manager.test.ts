@@ -13,7 +13,7 @@ describe('Canon manager', () => {
     it('adds new facts to story and updates updatedAt', () => {
       const baselineUpdatedAt = new Date(1_000);
       const story = {
-        ...createStory({ characterConcept: 'A seasoned ranger patrolling the north.' }),
+        ...createStory({ title: 'Test Story', characterConcept: 'A seasoned ranger patrolling the north.' }),
         updatedAt: baselineUpdatedAt,
       };
 
@@ -25,7 +25,7 @@ describe('Canon manager', () => {
     });
 
     it('returns same story object when no new facts are provided', () => {
-      const story = createStory({ characterConcept: 'A traveling artificer with a hidden map.' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A traveling artificer with a hidden map.' });
 
       const updated = updateStoryWithNewCanon(story, []);
 
@@ -34,7 +34,7 @@ describe('Canon manager', () => {
 
     it('returns same story object when new facts are only duplicates', () => {
       const story = {
-        ...createStory({ characterConcept: 'A hopeful knight serving a stormbound kingdom.' }),
+        ...createStory({ title: 'Test Story', characterConcept: 'A hopeful knight serving a stormbound kingdom.' }),
         globalCanon: ['The dragon is alive'],
       };
 
@@ -46,7 +46,7 @@ describe('Canon manager', () => {
 
     it('deduplicates facts and keeps new unique entries', () => {
       const story = {
-        ...createStory({ characterConcept: 'A scout crossing the ember dunes at dusk.' }),
+        ...createStory({ title: 'Test Story', characterConcept: 'A scout crossing the ember dunes at dusk.' }),
         globalCanon: ['The citadel stands'],
       };
 
@@ -150,7 +150,7 @@ describe('Canon manager', () => {
     it('adds character facts to story and updates updatedAt', () => {
       const baselineUpdatedAt = new Date(1_000);
       const story = {
-        ...createStory({ characterConcept: 'A seasoned ranger patrolling the north.' }),
+        ...createStory({ title: 'Test Story', characterConcept: 'A seasoned ranger patrolling the north.' }),
         updatedAt: baselineUpdatedAt,
       };
 
@@ -168,7 +168,7 @@ describe('Canon manager', () => {
     });
 
     it('returns same story object when no new facts are provided', () => {
-      const story = createStory({ characterConcept: 'A traveling artificer with a hidden map.' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A traveling artificer with a hidden map.' });
 
       const updated = updateStoryWithNewCharacterCanon(story, {});
 
@@ -177,7 +177,7 @@ describe('Canon manager', () => {
 
     it('merges with existing character canon', () => {
       const story = {
-        ...createStory({ characterConcept: 'A hopeful knight serving a stormbound kingdom.' }),
+        ...createStory({ title: 'Test Story', characterConcept: 'A hopeful knight serving a stormbound kingdom.' }),
         globalCharacterCanon: { 'bobby western': ['Bobby is in Italy'] },
       };
 
@@ -193,7 +193,7 @@ describe('Canon manager', () => {
 
   describe('updateStoryWithAllCanon', () => {
     it('updates both world canon and character canon', () => {
-      const story = createStory({ characterConcept: 'A scout crossing the ember dunes at dusk.' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A scout crossing the ember dunes at dusk.' });
 
       const updated = updateStoryWithAllCanon(
         story,
@@ -208,7 +208,7 @@ describe('Canon manager', () => {
     });
 
     it('returns same story when both are empty', () => {
-      const story = createStory({ characterConcept: 'A wandering scholar.' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A wandering scholar.' });
 
       const updated = updateStoryWithAllCanon(story, [], {});
 
@@ -216,7 +216,7 @@ describe('Canon manager', () => {
     });
 
     it('updates only world canon when character canon is empty', () => {
-      const story = createStory({ characterConcept: 'A wandering scholar.' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A wandering scholar.' });
 
       const updated = updateStoryWithAllCanon(story, ['New world fact'], {});
 
@@ -225,7 +225,7 @@ describe('Canon manager', () => {
     });
 
     it('updates only character canon when world canon is empty', () => {
-      const story = createStory({ characterConcept: 'A wandering scholar.' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A wandering scholar.' });
 
       const updated = updateStoryWithAllCanon(story, [], {
         'The Kid': ['The Kid is an eidolon'],

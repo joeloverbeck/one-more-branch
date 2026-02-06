@@ -4,6 +4,11 @@ import { generateFirstPage } from './page-service';
 import { EngineError, StartStoryOptions, StartStoryResult } from './types';
 
 export async function startNewStory(options: StartStoryOptions): Promise<StartStoryResult> {
+  const title = options.title.trim();
+  if (title.length === 0) {
+    throw new EngineError('Title is required', 'VALIDATION_FAILED');
+  }
+
   const characterConcept = options.characterConcept.trim();
   if (characterConcept.length < 10) {
     throw new EngineError('Character concept must be at least 10 characters', 'VALIDATION_FAILED');
@@ -14,6 +19,7 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
   }
 
   const story = createStory({
+    title,
     characterConcept,
     worldbuilding: options.worldbuilding,
     tone: options.tone,

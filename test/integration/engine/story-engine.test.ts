@@ -106,6 +106,7 @@ describe('story-engine integration', () => {
 
   it('should create new story with first page', async () => {
     const result = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} create-first-page`,
       worldbuilding: 'A city where harbor lights can remember names.',
       tone: 'mystery adventure',
@@ -124,6 +125,7 @@ describe('story-engine integration', () => {
 
   it('should make choice and generate new page', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} make-choice`,
       worldbuilding: 'A coast where fog preserves memories as sparks.',
       tone: 'tense mystery',
@@ -147,6 +149,7 @@ describe('story-engine integration', () => {
 
   it('should load existing page without regeneration', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} replay-choice`,
       worldbuilding: 'A harbor where fire leaves written clues in the air.',
       tone: 'investigative fantasy',
@@ -177,6 +180,7 @@ describe('story-engine integration', () => {
 
   it('should maintain branch isolation', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} branch-isolation`,
       worldbuilding: 'An old port where every alley leads to a different rumor.',
       tone: 'suspenseful',

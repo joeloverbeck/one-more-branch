@@ -42,6 +42,7 @@ describe('playRoutes', () => {
   describe('GET /:storyId', () => {
     it('renders pages/play with story, page, and pageId for valid inputs', async () => {
       const story = createStory({
+        title: 'Epic Adventure',
         characterConcept: 'A very long character concept that should be truncated for page title checks',
         worldbuilding: 'World',
         tone: 'Epic',
@@ -74,7 +75,7 @@ describe('playRoutes', () => {
       expect(loadStorySpy).toHaveBeenCalledWith(storyId);
       expect(getPageSpy).toHaveBeenCalledWith(storyId, 2);
       expect(render).toHaveBeenCalledWith('pages/play', {
-        title: `${story.characterConcept.slice(0, 50)} - One More Branch`,
+        title: `${story.title} - One More Branch`,
         story: { ...story, id: storyId },
         page,
         pageId: 2,
@@ -104,6 +105,7 @@ describe('playRoutes', () => {
 
     it('returns 404 when page is not found', async () => {
       const story = createStory({
+        title: 'Noir Mystery',
         characterConcept: 'A capable rogue',
         worldbuilding: 'World',
         tone: 'Noir',
@@ -129,6 +131,7 @@ describe('playRoutes', () => {
 
     it('defaults to page 1 when page query is missing', async () => {
       const story = createStory({
+        title: 'Explorer Quest',
         characterConcept: 'An explorer',
         worldbuilding: '',
         tone: 'Adventure',
@@ -165,6 +168,7 @@ describe('playRoutes', () => {
 
     it('defaults to page 1 when page query is non-positive', async () => {
       const story = createStory({
+        title: 'Starship Command',
         characterConcept: 'A pilot',
         worldbuilding: '',
         tone: 'Sci-fi',

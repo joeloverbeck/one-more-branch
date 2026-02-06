@@ -47,6 +47,7 @@ describe('Data Integrity E2E', () => {
 
   it('completes story creation workflow with correct page linking', async () => {
     const story = createStory({
+      title: 'E2E TEST: Workflow Story',
       characterConcept: 'E2E TEST: Full workflow character',
       worldbuilding: 'Workflow world',
       tone: 'workflow tone',
@@ -105,6 +106,7 @@ describe('Data Integrity E2E', () => {
 
   it('maintains branching integrity with distinct accumulated states', async () => {
     const story = createStory({
+      title: 'E2E TEST: Branching Story',
       characterConcept: 'E2E TEST: Branching integrity character',
       worldbuilding: 'Branching world',
       tone: 'branching tone',
@@ -184,6 +186,7 @@ describe('Data Integrity E2E', () => {
 
   it('reloads cleanly from disk with a new storage instance', async () => {
     const story = createStory({
+      title: 'E2E TEST: Reload Story',
       characterConcept: 'E2E TEST: Reload persistence character',
       worldbuilding: 'Reload world',
       tone: 'reload tone',
@@ -230,6 +233,7 @@ describe('Data Integrity E2E', () => {
 
   it('deletes stories with cascading cleanup of page files and story directory', async () => {
     const story = createStory({
+      title: 'E2E TEST: Delete Story',
       characterConcept: 'E2E TEST: Delete cascade character',
       worldbuilding: 'Delete world',
       tone: 'delete tone',

@@ -33,6 +33,7 @@ function formatLLMError(error: LLMError): string {
 }
 
 type StoryFormBody = {
+  title?: string;
   characterConcept?: string;
   worldbuilding?: string;
   tone?: string;
@@ -58,17 +59,26 @@ storyRoutes.get('/new', (_req: Request, res: Response) => {
 });
 
 storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) => {
-  const { characterConcept, worldbuilding, tone, apiKey } = req.body as StoryFormBody;
+  const { title, characterConcept, worldbuilding, tone, apiKey } = req.body as StoryFormBody;
+  const trimmedTitle = title?.trim();
   const trimmedCharacterConcept = characterConcept?.trim();
   const trimmedWorldbuilding = worldbuilding?.trim();
   const trimmedTone = tone?.trim();
   const trimmedApiKey = apiKey?.trim();
 
+  if (!trimmedTitle || trimmedTitle.length === 0) {
+    return res.status(400).render('pages/new-story', {
+      title: 'New Adventure - One More Branch',
+      error: 'Story title is required',
+      values: { title, characterConcept, worldbuilding, tone },
+    });
+  }
+
   if (!trimmedCharacterConcept || trimmedCharacterConcept.length < 10) {
     return res.status(400).render('pages/new-story', {
       title: 'New Adventure - One More Branch',
       error: 'Character concept must be at least 10 characters',
-      values: { characterConcept, worldbuilding, tone },
+      values: { title, characterConcept, worldbuilding, tone },
     });
   }
 
@@ -76,12 +86,13 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
     return res.status(400).render('pages/new-story', {
       title: 'New Adventure - One More Branch',
       error: 'OpenRouter API key is required',
-      values: { characterConcept, worldbuilding, tone },
+      values: { title, characterConcept, worldbuilding, tone },
     });
   }
 
   try {
     const result = await storyEngine.startStory({
+      title: trimmedTitle,
       characterConcept: trimmedCharacterConcept,
       worldbuilding: trimmedWorldbuilding,
       tone: trimmedTone,
@@ -103,17 +114,25 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
     return res.status(500).render('pages/new-story', {
       title: 'New Adventure - One More Branch',
       error: errorMessage,
-      values: { characterConcept, worldbuilding, tone },
+      values: { title, characterConcept, worldbuilding, tone },
     });
   }
 }));
 
 storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Response) => {
-  const { characterConcept, worldbuilding, tone, apiKey } = req.body as StoryFormBody;
+  const { title, characterConcept, worldbuilding, tone, apiKey } = req.body as StoryFormBody;
+  const trimmedTitle = title?.trim();
   const trimmedCharacterConcept = characterConcept?.trim();
   const trimmedWorldbuilding = worldbuilding?.trim();
   const trimmedTone = tone?.trim();
   const trimmedApiKey = apiKey?.trim();
+
+  if (!trimmedTitle || trimmedTitle.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Story title is required',
+    });
+  }
 
   if (!trimmedCharacterConcept || trimmedCharacterConcept.length < 10) {
     return res.status(400).json({
@@ -131,6 +150,7 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
 
   try {
     const result = await storyEngine.startStory({
+      title: trimmedTitle,
       characterConcept: trimmedCharacterConcept,
       worldbuilding: trimmedWorldbuilding,
       tone: trimmedTone,

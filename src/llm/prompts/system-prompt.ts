@@ -8,6 +8,7 @@ ${CONTENT_POLICY}
 STORYTELLING GUIDELINES:
 - Write vivid, evocative prose that brings the world to life.
 - Use second person perspective ("you").
+- Format narrative with blank lines between paragraphs for readability.
 - Show character through action, not exposition—let behavior reveal personality.
 - Keep scenes focused and forward-moving; avoid sprawling recaps.
 - Maintain consistency with established facts and character personality.

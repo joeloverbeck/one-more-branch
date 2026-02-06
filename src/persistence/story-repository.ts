@@ -16,6 +16,7 @@ import { withLock } from './lock-manager';
 
 interface StoryFileData {
   id: string;
+  title: string;
   characterConcept: string;
   worldbuilding: string;
   tone: string;
@@ -34,6 +35,7 @@ function storyToFileData(story: Story): StoryFileData {
 
   return {
     id: story.id,
+    title: story.title,
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
@@ -56,6 +58,7 @@ function fileDataToStory(data: StoryFileData): Story {
 
   return {
     id: parseStoryId(data.id),
+    title: data.title,
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
@@ -129,6 +132,7 @@ export async function listStories(): Promise<StoryMetadata[]> {
 
     stories.push({
       id: story.id,
+      title: story.title,
       characterConcept: story.characterConcept,
       tone: story.tone,
       createdAt: story.createdAt,

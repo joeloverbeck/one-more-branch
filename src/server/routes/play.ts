@@ -51,7 +51,7 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
     }
 
     return res.render('pages/play', {
-      title: `${story.characterConcept.slice(0, 50)} - One More Branch`,
+      title: `${story.title} - One More Branch`,
       story,
       page,
       pageId,

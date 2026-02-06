@@ -29,6 +29,7 @@ const MISMATCH_FILE_ID = parseStoryId('00000000-0000-4000-8000-000000000003');
 
 function buildTestStory(overrides?: Partial<Story>): Story {
   const baseStory = createStory({
+    title: `${TEST_PREFIX} title`,
     characterConcept: `${TEST_PREFIX} character`,
     worldbuilding: 'Test worldbuilding',
     tone: 'Test tone',
@@ -191,6 +192,7 @@ describe('story-repository', () => {
 
     await writeJsonFile(getStoryFilePath(MISMATCH_REQUEST_ID), {
       id: MISMATCH_FILE_ID,
+      title: `${TEST_PREFIX} mismatch title`,
       characterConcept: `${TEST_PREFIX} mismatch`,
       worldbuilding: 'Mismatch world',
       tone: 'Mismatch tone',

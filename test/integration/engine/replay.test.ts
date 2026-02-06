@@ -83,6 +83,7 @@ describe('story replay integration', () => {
 
   it('should restart story from page 1', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} restart`,
       worldbuilding: 'A canal city built around old astronomical locks.',
       tone: 'reflective mystery',
@@ -105,6 +106,7 @@ describe('story replay integration', () => {
 
   it('should persist story across engine instances', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} persist-across-instance`,
       worldbuilding: 'A river city where maps rewrite themselves at dawn.',
       tone: 'investigative',
@@ -134,6 +136,7 @@ describe('story replay integration', () => {
 
   it('should include created stories in listStories', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
       characterConcept: `${TEST_PREFIX} list-stories`,
       worldbuilding: 'A market city where barges carry sealed prophecies.',
       tone: 'adventure',

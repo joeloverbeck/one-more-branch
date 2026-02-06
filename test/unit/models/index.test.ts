@@ -14,6 +14,7 @@ describe('models barrel exports', () => {
 
   it('supports creating and validating model objects via barrel imports', () => {
     const story = models.createStory({
+      title: 'Test Story',
       characterConcept: 'A brave knight seeking glory and adventure',
     });
     const pageId = models.generatePageId(0);

@@ -51,6 +51,7 @@ import * as storyRepository from '@/persistence/story-repository';
 
 describe('storage facade', () => {
   const story = createStory({
+    title: 'TEST: PERLAY-005 title',
     characterConcept: 'TEST: PERLAY-005 story',
     worldbuilding: 'world',
     tone: 'tone',

@@ -45,6 +45,7 @@ describe('Concurrent Write Performance', () => {
 
   it('handles concurrent page saves in the same story without corruption', async () => {
     const story = createStory({
+      title: 'PERF TEST: Concurrent Pages',
       characterConcept: 'PERF TEST: Concurrent same-story page writes',
       worldbuilding: 'Performance world',
       tone: 'performance tone',
@@ -97,6 +98,7 @@ describe('Concurrent Write Performance', () => {
   it('handles concurrent story saves for different stories without interference', async () => {
     const stories = Array.from({ length: 10 }, (_, index) =>
       createStory({
+        title: `PERF TEST: Concurrent Story ${index + 1}`,
         characterConcept: `PERF TEST: Concurrent story ${index + 1}`,
         worldbuilding: `world-${index + 1}`,
         tone: `tone-${index + 1}`,
@@ -119,6 +121,7 @@ describe('Concurrent Write Performance', () => {
 
   it('allows concurrent reads while writes are in progress and converges to full visibility', async () => {
     const story = createStory({
+      title: 'PERF TEST: Read/Write Concurrency',
       characterConcept: 'PERF TEST: Read/write concurrency',
       worldbuilding: 'Concurrency world',
       tone: 'concurrency tone',
@@ -179,6 +182,7 @@ describe('Concurrent Write Performance', () => {
 
   it('handles lock contention on repeated writes without deadlocks and keeps serialized consistency', async () => {
     const story = createStory({
+      title: 'PERF TEST: Lock Contention',
       characterConcept: 'PERF TEST: Lock contention',
       worldbuilding: 'Lock world',
       tone: 'lock tone',

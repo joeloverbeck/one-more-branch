@@ -5,6 +5,7 @@ export type StoryTone = string;
 
 export interface Story {
   readonly id: StoryId;
+  readonly title: string;
   readonly characterConcept: string;
   readonly worldbuilding: string;
   readonly tone: StoryTone;
@@ -16,6 +17,7 @@ export interface Story {
 }
 
 export interface CreateStoryData {
+  title: string;
   characterConcept: string;
   worldbuilding?: string;
   tone?: string;
@@ -23,6 +25,7 @@ export interface CreateStoryData {
 
 export interface StoryMetadata {
   readonly id: StoryId;
+  readonly title: string;
   readonly characterConcept: string;
   readonly tone: StoryTone;
   readonly createdAt: Date;
@@ -31,6 +34,11 @@ export interface StoryMetadata {
 }
 
 export function createStory(data: CreateStoryData): Story {
+  const title = data.title.trim();
+  if (title.length === 0) {
+    throw new Error('Title is required');
+  }
+
   const characterConcept = data.characterConcept.trim();
   if (characterConcept.length === 0) {
     throw new Error('Character concept is required');
@@ -40,6 +48,7 @@ export function createStory(data: CreateStoryData): Story {
 
   return {
     id: generateStoryId(),
+    title,
     characterConcept,
     worldbuilding: data.worldbuilding?.trim() ?? '',
     tone: data.tone?.trim() ?? 'fantasy adventure',
@@ -76,11 +85,14 @@ export function isStory(value: unknown): value is Story {
   }
 
   const obj = value as Record<string, unknown>;
+  const title = obj['title'];
   const characterConcept = obj['characterConcept'];
   const storyArc = obj['storyArc'];
 
   return (
     isStoryId(obj['id']) &&
+    typeof title === 'string' &&
+    title.trim().length > 0 &&
     typeof characterConcept === 'string' &&
     characterConcept.trim().length > 0 &&
     typeof obj['worldbuilding'] === 'string' &&

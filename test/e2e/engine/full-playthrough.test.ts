@@ -195,6 +195,7 @@ describe('story engine e2e full playthrough', () => {
 
   it('should complete a multi-page story journey', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Multi-Page Journey`,
       characterConcept: `${TEST_PREFIX}: A disciplined scout mapping unstable time fractures in an occupied city while trying to keep a sibling hidden from patrols.`,
       worldbuilding:
         'The city is divided into districts that rewind, stall, or accelerate each midnight depending on beacon towers.',
@@ -260,6 +261,7 @@ describe('story engine e2e full playthrough', () => {
 
   it('should replay an already-linked root choice deterministically', async () => {
     const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Replay Test`,
       characterConcept: `${TEST_PREFIX}: A courier smuggling testimony through a flood-locked republic while political factions alter street-level reality.`,
       worldbuilding: 'Canals rise and fall based on civic votes cast at dawn sirens.',
       tone: 'political intrigue with survival pressure',

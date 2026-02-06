@@ -13,6 +13,7 @@ describe('Validation', () => {
   describe('validateStory', () => {
     it('returns valid=true for story with characterConcept >= 10 chars', () => {
       const story = createStory({
+        title: 'Test Story',
         characterConcept: 'A brave knight seeking glory and adventure',
       });
 
@@ -22,7 +23,7 @@ describe('Validation', () => {
     });
 
     it("returns valid=false with short-length error for < 10 chars", () => {
-      const story = { ...createStory({ characterConcept: 'Valid enough' }), characterConcept: 'short' };
+      const story = { ...createStory({ title: 'Test Story', characterConcept: 'Valid enough' }), characterConcept: 'short' };
 
       const result = validateStory(story);
       expect(result.valid).toBe(false);
@@ -31,7 +32,7 @@ describe('Validation', () => {
 
     it("returns valid=false with long-length error for > 5000 chars", () => {
       const story = {
-        ...createStory({ characterConcept: 'Valid enough' }),
+        ...createStory({ title: 'Test Story', characterConcept: 'Valid enough' }),
         characterConcept: 'a'.repeat(5001),
       };
 
@@ -256,7 +257,7 @@ describe('Validation', () => {
 
   describe('validateStoryIntegrity', () => {
     it('returns valid=true for story with page 1 and valid references', () => {
-      const story = createStory({ characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
       const page1 = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),
@@ -286,7 +287,7 @@ describe('Validation', () => {
     });
 
     it("returns valid=false with 'Story must have page 1' when pages map is empty", () => {
-      const story = createStory({ characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
       const pages = new Map<PageId, ReturnType<typeof createPage>>();
 
       const result = validateStoryIntegrity(story, pages);
@@ -295,7 +296,7 @@ describe('Validation', () => {
     });
 
     it('returns valid=false when parent references non-existent page', () => {
-      const story = createStory({ characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
       const page1 = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),
@@ -325,7 +326,7 @@ describe('Validation', () => {
     });
 
     it('returns valid=false when choice references non-existent page', () => {
-      const story = createStory({ characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
       const page1 = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),

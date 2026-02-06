@@ -55,6 +55,7 @@ const PAGE_2 = parsePageId(2);
 
 function buildStory(): ReturnType<typeof createStory> {
   return createStory({
+    title: 'Test Story',
     characterConcept: 'A detective cataloging impossible crimes in a lighthouse town',
     worldbuilding: 'The sea rewinds every midnight',
     tone: 'mysterious noir',

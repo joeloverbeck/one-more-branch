@@ -57,7 +57,7 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create')(
         {
-          body: { characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
+          body: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
         } as Request,
         { status, render } as unknown as Response,
       );
@@ -67,7 +67,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
-        values: { characterConcept: '', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic' },
       });
     });
 
@@ -79,6 +79,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: '   too short   ',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -93,7 +94,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
-        values: { characterConcept: '   too short   ', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: '   too short   ', worldbuilding: 'World', tone: 'Epic' },
       });
     });
 
@@ -104,7 +105,7 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create')(
         {
-          body: { characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+          body: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
         } as Request,
         { status, render } as unknown as Response,
       );
@@ -114,7 +115,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
-        values: { characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
       });
     });
 
@@ -126,6 +127,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -140,7 +142,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
-        values: { characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
       });
 
       const renderCalls = render.mock.calls as unknown[][];
@@ -157,6 +159,7 @@ describe('storyRoutes', () => {
       const redirect = jest.fn();
       const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
       const story = createStory({
+        title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
         worldbuilding: 'Trimmed World',
         tone: 'Trimmed Tone',
@@ -178,6 +181,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: '  Trimmed Title  ',
             characterConcept: '  Trimmed Concept  ',
             worldbuilding: '  Trimmed World  ',
             tone: '  Trimmed Tone  ',
@@ -190,6 +194,7 @@ describe('storyRoutes', () => {
       expect(status).not.toHaveBeenCalled();
       expect(render).not.toHaveBeenCalled();
       expect(startStorySpy).toHaveBeenCalledWith({
+        title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
         worldbuilding: 'Trimmed World',
         tone: 'Trimmed Tone',
@@ -209,6 +214,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -224,6 +230,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'generation failed',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -245,6 +252,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -259,6 +267,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'Invalid API key. Please check your OpenRouter API key.',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -279,6 +288,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -293,6 +303,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'Insufficient credits. Please add credits to your OpenRouter account.',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -313,6 +324,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -327,6 +339,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'Rate limit exceeded. Please wait a moment and try again.',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -348,6 +361,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -362,6 +376,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'API request error: Invalid request: missing required field',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -384,6 +399,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -398,6 +414,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'Story generation failed due to a configuration error. Please try again or report this issue.',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -420,6 +437,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -434,6 +452,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'Story generation failed due to a configuration error. Please try again or report this issue.',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -454,6 +473,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -468,6 +488,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter service is temporarily unavailable. Please try again later.',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -485,6 +506,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -499,6 +521,7 @@ describe('storyRoutes', () => {
         title: 'New Adventure - One More Branch',
         error: 'Some parsing error',
         values: {
+          title: 'Test Title',
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
@@ -515,7 +538,7 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create-ajax')(
         {
-          body: { characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
+          body: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
         } as Request,
         { status, json } as unknown as Response,
       );
@@ -536,6 +559,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: '   too short   ',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -560,7 +584,7 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create-ajax')(
         {
-          body: { characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+          body: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
         } as Request,
         { status, json } as unknown as Response,
       );
@@ -581,6 +605,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -605,6 +630,7 @@ describe('storyRoutes', () => {
       const json = jest.fn();
       const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
       const story = createStory({
+        title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
         worldbuilding: 'Trimmed World',
         tone: 'Trimmed Tone',
@@ -626,6 +652,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: '  Trimmed Title  ',
             characterConcept: '  Trimmed Concept  ',
             worldbuilding: '  Trimmed World  ',
             tone: '  Trimmed Tone  ',
@@ -637,6 +664,7 @@ describe('storyRoutes', () => {
 
       expect(status).not.toHaveBeenCalled();
       expect(startStorySpy).toHaveBeenCalledWith({
+        title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
         worldbuilding: 'Trimmed World',
         tone: 'Trimmed Tone',
@@ -658,6 +686,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -687,6 +716,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -715,6 +745,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -743,6 +774,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -771,6 +803,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
@@ -796,6 +829,7 @@ describe('storyRoutes', () => {
       await getRouteHandler('post', '/create-ajax')(
         {
           body: {
+            title: 'Test Title',
             characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',

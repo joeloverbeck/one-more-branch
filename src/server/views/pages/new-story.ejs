@@ -21,6 +21,20 @@
 
       <form action="/stories/create" method="POST" class="story-form">
         <div class="form-group">
+          <label for="title">Story Title *</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            required
+            minlength="1"
+            maxlength="100"
+            placeholder="Give your adventure a memorable title"
+            value="<%= values.title || '' %>"
+          >
+        </div>
+
+        <div class="form-group">
           <label for="characterConcept">Character Concept *</label>
           <textarea
             id="characterConcept"

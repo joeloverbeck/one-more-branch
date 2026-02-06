@@ -16,6 +16,7 @@ const TEST_PREFIX = 'TEST: PERLAY-004';
 
 function buildTestStory(overrides?: Partial<Story>): Story {
   const baseStory = createStory({
+    title: `${TEST_PREFIX} title`,
     characterConcept: `${TEST_PREFIX} character`,
     worldbuilding: 'Test world',
     tone: 'Test tone',

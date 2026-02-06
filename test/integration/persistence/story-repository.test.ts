@@ -21,6 +21,7 @@ const TEST_PREFIX = 'TEST: PERLAY-006 story integration';
 
 function buildStory(overrides?: Partial<Story>): Story {
   const base = createStory({
+    title: `${TEST_PREFIX} title`,
     characterConcept: `${TEST_PREFIX} base`,
     worldbuilding: 'Integration world',
     tone: 'Integration tone',

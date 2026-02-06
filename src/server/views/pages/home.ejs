@@ -23,7 +23,7 @@
         <% stories.forEach(story => { %>
         <article class="story-card">
           <div class="story-card-content">
-            <h3 class="story-title"><%= story.characterConcept.slice(0, 100) %><%= story.characterConcept.length > 100 ? '...' : '' %></h3>
+            <h3 class="story-title"><%= story.title %></h3>
             <p class="story-tone"><%= story.tone %></p>
             <div class="story-stats">
               <span><%= story.pageCount %> pages</span>

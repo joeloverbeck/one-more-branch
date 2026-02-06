@@ -65,7 +65,7 @@ describe('engine barrel export', () => {
   });
 
   it('supports type exports for engine public contracts', () => {
-    const story = createStory({ characterConcept: 'A courier in a city of mirrored alleys' });
+    const story = createStory({ title: 'Test Story', characterConcept: 'A courier in a city of mirrored alleys' });
     const page = createPage({
       id: parsePageId(1),
       narrativeText: 'Night rain fractures every lantern into twins.',

@@ -35,6 +35,7 @@ const mockedStorage = storage as {
 function buildStory(overrides?: Partial<Story>): Story {
   return {
     ...createStory({
+      title: 'Test Story',
       characterConcept: 'A courier smuggling letters through occupied cities',
       worldbuilding: 'A fractured empire with watchtowers on every road',
       tone: 'tense espionage',
