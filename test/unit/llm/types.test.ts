@@ -49,7 +49,7 @@ describe('LLM types', () => {
         narrative: 'You arrive at a crossroads.',
         choices: ['Take the left path', 'Take the right path'],
         stateChanges: ['learned-map'],
-        canonFacts: ['The forest has two exits.'],
+        newCanonFacts: ['The forest has two exits.'],
         isEnding: false,
         rawResponse: '{"narrative":"You arrive at a crossroads."}',
       };

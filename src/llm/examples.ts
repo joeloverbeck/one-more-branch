@@ -35,7 +35,7 @@ const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
       'You discovered a mysterious journal about the forbidden library',
       'You drew unwanted attention from Professor Grimwald',
     ],
-    canonFacts: [
+    newCanonFacts: [
       'Celestria Academy floats among the clouds on enchanted foundations',
       'Professor Grimwald teaches Advanced Transmutation',
       "Elena is Lyra's roommate",
@@ -107,7 +107,7 @@ const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
       'You located the statue of Archmagus Caelan',
       'You detected an approaching faculty member',
     ],
-    canonFacts: [
+    newCanonFacts: [
       'The east wing houses portraits of ancient magisters',
       "Archmagus Caelan's statue has a staff with runes",
     ],
@@ -166,7 +166,7 @@ const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
       "You earned Professor Grimwald's respect",
       "You were inducted into the Academy's secret order of librarians",
     ],
-    canonFacts: [
+    newCanonFacts: [
       'The Codex of Unmaking can be bound by those who know the ritual',
       "A secret order of librarians protects the forbidden library's true contents",
     ],

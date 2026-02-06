@@ -136,6 +136,49 @@ describe('buildOpeningPrompt', () => {
     expect(system).toContain('FORBIDDEN CHOICE PATTERNS');
   });
 
+  it('should include DIVERGENCE ENFORCEMENT in strict choice guidelines', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { choiceGuidance: 'strict' },
+    );
+
+    const system = getSystemMessage(messages);
+    expect(system).toContain('DIVERGENCE ENFORCEMENT');
+    expect(system).toContain('Location');
+    expect(system).toContain('NPC relationship');
+    expect(system).toContain('Time pressure');
+  });
+
+  it('should include CONTINUITY RULES in system message', () => {
+    const messages = buildOpeningPrompt({
+      characterConcept: 'Character',
+      worldbuilding: '',
+      tone: 'dark fantasy',
+    });
+
+    const system = getSystemMessage(messages);
+    expect(system).toContain('CONTINUITY RULES');
+    expect(system).toContain('Do NOT contradict');
+    expect(system).toContain('Do NOT retcon');
+    expect(system).toContain('newCanonFacts');
+  });
+
+  it('should include enhanced storytelling guidelines', () => {
+    const messages = buildOpeningPrompt({
+      characterConcept: 'Character',
+      worldbuilding: '',
+      tone: 'dark fantasy',
+    });
+
+    const system = getSystemMessage(messages);
+    expect(system).toContain('Show character through action');
+    expect(system).toContain('avoid sprawling recaps');
+  });
+
   it('should NOT include strict choice guidelines when choiceGuidance: basic', () => {
     const messages = buildOpeningPrompt(
       {
@@ -327,6 +370,15 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('3.');
     expect(user).toContain('4.');
     expect(user).toContain('5.');
+    expect(user).toContain('6.');
+  });
+
+  it('should include no-recap instruction in continuation requirements', () => {
+    const messages = buildContinuationPrompt(baseContext);
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('do NOT recap');
+    expect(user).toContain('Start exactly where the previous scene ended');
   });
 
   it('should not truncate text under maxLength', () => {

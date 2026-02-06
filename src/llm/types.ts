@@ -2,8 +2,8 @@ export interface GenerationResult {
   narrative: string;
   choices: string[];
   stateChanges: string[];
-  canonFacts: string[];
-  characterCanonFacts: Record<string, string[]>;
+  newCanonFacts: string[];
+  newCharacterCanonFacts: Record<string, string[]>;
   isEnding: boolean;
   storyArc?: string;
   rawResponse: string;

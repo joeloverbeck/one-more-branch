@@ -18,7 +18,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of typically 3 meaningful choices (add a 4th only when truly warranted). Use an empty array only for a story ending.',
+            'Array of 2-4 meaningful choices. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
         },
         stateChanges: {
           type: 'array',
@@ -26,13 +26,13 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description:
             'Events that happened in this scene only. Use second person for player actions (e.g., "You discovered...", "You were wounded..."). Identify other characters by name (e.g., "Captain Mira was wounded").',
         },
-        canonFacts: {
+        newCanonFacts: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'New permanent WORLD facts that apply globally. Examples: place names, historical events, institutional rules. Do NOT include character-specific facts here—use characterCanonFacts for those.',
+            'NEW permanent WORLD facts introduced IN THIS SCENE ONLY. INVARIANT: Include only facts that appear for the first time in this narrative. Examples: place names, historical events, institutional rules. Do NOT include character-specific facts here—use newCharacterCanonFacts for those.',
         },
-        characterCanonFacts: {
+        newCharacterCanonFacts: {
           type: 'array',
           items: {
             type: 'object',
@@ -44,7 +44,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
             additionalProperties: false,
           },
           description:
-            'Array of character canon facts. Each entry has characterName and facts array. Example: [{"characterName": "Dr. Cohen", "facts": ["Dr. Cohen is the head psychiatrist"]}]. For facts involving multiple characters, add an entry for EACH character.',
+            'NEW character-specific facts introduced IN THIS SCENE ONLY. INVARIANT: Include only facts that appear for the first time. Each entry has characterName and facts array. Example: [{"characterName": "Dr. Cohen", "facts": ["Dr. Cohen is the head psychiatrist"]}]. For facts involving multiple characters, add an entry for EACH character.',
         },
         isEnding: {
           type: 'boolean',
@@ -55,7 +55,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description: 'Main goal/conflict for the story opening page.',
         },
       },
-      required: ['narrative', 'choices', 'stateChanges', 'canonFacts', 'characterCanonFacts', 'isEnding'],
+      required: ['narrative', 'choices', 'stateChanges', 'newCanonFacts', 'newCharacterCanonFacts', 'isEnding'],
       additionalProperties: false,
     },
   },
@@ -94,9 +94,9 @@ export const GenerationResultSchema = z
         .max(300, 'Choice must be at most 300 characters'),
     ),
     stateChanges: z.array(z.string()),
-    canonFacts: z.array(z.string()),
+    newCanonFacts: z.array(z.string()),
     // Accept array format from LLM (per JSON schema), transform to Record for internal use
-    characterCanonFacts: CharacterCanonFactsArraySchema.optional()
+    newCharacterCanonFacts: CharacterCanonFactsArraySchema.optional()
       .default([])
       .transform(transformCharacterCanonFactsToRecord),
     isEnding: z.boolean(),
@@ -146,12 +146,12 @@ export function validateGenerationResponse(
   const validated = GenerationResultSchema.parse(rawJson);
   const storyArc = validated.storyArc.trim();
 
-  // Process characterCanonFacts: trim all values
-  const characterCanonFacts: Record<string, string[]> = {};
-  for (const [name, facts] of Object.entries(validated.characterCanonFacts)) {
+  // Process newCharacterCanonFacts: trim all values
+  const newCharacterCanonFacts: Record<string, string[]> = {};
+  for (const [name, facts] of Object.entries(validated.newCharacterCanonFacts)) {
     const trimmedFacts = facts.map(fact => fact.trim()).filter(fact => fact);
     if (trimmedFacts.length > 0) {
-      characterCanonFacts[name.trim()] = trimmedFacts;
+      newCharacterCanonFacts[name.trim()] = trimmedFacts;
     }
   }
 
@@ -159,8 +159,8 @@ export function validateGenerationResponse(
     narrative: validated.narrative.trim(),
     choices: validated.choices.map(choice => choice.trim()),
     stateChanges: validated.stateChanges.map(change => change.trim()).filter(change => change),
-    canonFacts: validated.canonFacts.map(fact => fact.trim()).filter(fact => fact),
-    characterCanonFacts,
+    newCanonFacts: validated.newCanonFacts.map(fact => fact.trim()).filter(fact => fact),
+    newCharacterCanonFacts,
     isEnding: validated.isEnding,
     storyArc: storyArc ? storyArc : undefined,
     rawResponse,

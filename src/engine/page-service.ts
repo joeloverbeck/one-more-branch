@@ -28,7 +28,7 @@ export async function generateFirstPage(
     parentChoiceIndex: null,
   });
 
-  let updatedStory = updateStoryWithAllCanon(story, result.canonFacts, result.characterCanonFacts);
+  let updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
 
   const nextStoryArc = result.storyArc?.trim();
   if (nextStoryArc && nextStoryArc !== updatedStory.storyArc) {
@@ -80,7 +80,7 @@ export async function generateNextPage(
     parentAccumulatedState,
   });
 
-  let updatedStory = updateStoryWithAllCanon(story, result.canonFacts, result.characterCanonFacts);
+  let updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
 
   const nextStoryArc = result.storyArc?.trim();
   if (nextStoryArc && nextStoryArc !== updatedStory.storyArc) {

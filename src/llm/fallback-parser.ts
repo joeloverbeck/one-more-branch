@@ -65,8 +65,12 @@ export function parseTextResponse(rawResponse: string): GenerationResult {
   const narrative = extractSection(response, 'NARRATIVE', isEnding ? 'THE END' : 'CHOICES');
   const choices = isEnding ? [] : extractChoices(response);
   const stateChanges = extractListSection(response, 'STATE_CHANGES');
-  const canonFacts = extractListSection(response, 'CANON_FACTS');
-  const characterCanonFacts = extractCharacterCanonFacts(response);
+  // Support both old (CANON_FACTS) and new (NEW_CANON_FACTS) section headers
+  let newCanonFacts = extractListSection(response, 'NEW_CANON_FACTS');
+  if (newCanonFacts.length === 0) {
+    newCanonFacts = extractListSection(response, 'CANON_FACTS');
+  }
+  const newCharacterCanonFacts = extractNewCharacterCanonFacts(response);
   const storyArc = extractSection(response, 'STORY_ARC', null);
 
   if (!isEnding && choices.length < 2) {
@@ -83,8 +87,8 @@ export function parseTextResponse(rawResponse: string): GenerationResult {
     narrative,
     choices,
     stateChanges,
-    canonFacts,
-    characterCanonFacts,
+    newCanonFacts,
+    newCharacterCanonFacts,
     isEnding,
     storyArc: storyArc || undefined,
     rawResponse: response,
@@ -202,8 +206,9 @@ function extractListSection(text: string, marker: string): string[] {
 
 /**
  * Extracts character canon facts from the response.
+ * Supports both old (CHARACTER_CANON_FACTS) and new (NEW_CHARACTER_CANON_FACTS) headers.
  * Expects format:
- * CHARACTER_CANON_FACTS:
+ * NEW_CHARACTER_CANON_FACTS:
  * [Character Name]
  * - Fact about character
  * - Another fact
@@ -211,8 +216,12 @@ function extractListSection(text: string, marker: string): string[] {
  * [Another Character]
  * - Their fact
  */
-function extractCharacterCanonFacts(text: string): Record<string, string[]> {
-  const section = extractSection(text, 'CHARACTER_CANON_FACTS', null);
+function extractNewCharacterCanonFacts(text: string): Record<string, string[]> {
+  // Try new header first, fall back to old header
+  let section = extractSection(text, 'NEW_CHARACTER_CANON_FACTS', null);
+  if (!section) {
+    section = extractSection(text, 'CHARACTER_CANON_FACTS', null);
+  }
   if (!section) {
     return {};
   }
@@ -274,17 +283,17 @@ STATE_CHANGES:
 - [Any item gained or lost]
 - [Any relationship change]
 
-CANON_FACTS:
-- [Any new WORLD facts introduced (places, events, rules)]
+NEW_CANON_FACTS:
+- [Any NEW WORLD facts introduced IN THIS SCENE (places, events, rules)]
 - [Do NOT include character-specific facts here]
 
-CHARACTER_CANON_FACTS:
+NEW_CHARACTER_CANON_FACTS:
 [Character Name]
-- [Permanent fact about this character]
-- [Another fact about this character]
+- [NEW permanent fact about this character introduced in this scene]
+- [Another NEW fact about this character]
 
 [Another Character]
-- [Their permanent fact]
+- [Their NEW permanent fact]
 
 If this is an ENDING (character death, story conclusion, etc.), omit the CHOICES section and instead write:
 

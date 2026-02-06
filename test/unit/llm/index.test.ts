@@ -43,7 +43,7 @@ describe('llm barrel exports', () => {
       narrative: 'The bridge shakes as thunder rolls over the ravine.',
       choices: ['Cross quickly', 'Retreat to camp'],
       stateChanges: ['Reached the old bridge'],
-      canonFacts: ['The ravine bridge is unstable'],
+      newCanonFacts: ['The ravine bridge is unstable'],
       isEnding: false,
       rawResponse: '{"narrative":"..."}',
     };

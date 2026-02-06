@@ -9,12 +9,19 @@ ${CONTENT_POLICY}
 STORYTELLING GUIDELINES:
 - Write vivid, evocative prose that brings the world to life.
 - Use second person perspective ("you").
+- Show character through action, not exposition—let behavior reveal personality.
+- Keep scenes focused and forward-moving; avoid sprawling recaps.
 - Maintain consistency with established facts and character personality.
 - Present meaningful choices that have genuine consequences.
 - Honor player agency while maintaining narrative coherence.
 - Build tension and dramatic stakes naturally.
 - React believably to player choices.
 - Each choice should represent a genuinely different path.
+
+CONTINUITY RULES:
+- Do NOT contradict Established World Facts or Current State.
+- Do NOT retcon names, roles, species, or relationships already established.
+- Any new permanent facts introduced MUST appear in newCanonFacts or newCharacterCanonFacts.
 
 STATE CHANGE FORMAT:
 - Use second person ("You") for events affecting the player character (e.g., "You discovered...", "You were wounded...").
@@ -43,7 +50,12 @@ FORBIDDEN CHOICE PATTERNS:
 - Choices so similar they effectively lead to the same path
 - Meta-choices like "See what happens" or "Continue exploring"
 
-If fewer than 2 genuinely divergent choices exist naturally, consider making this an ENDING.`;
+DIVERGENCE ENFORCEMENT:
+Each choice MUST change at least ONE of the following:
+(1) Location, (2) Immediate goal, (3) NPC relationship or stance,
+(4) Time pressure or urgency, (5) Control of a key item,
+(6) Heat/attention level, (7) Injury or condition.
+If you cannot produce 2-3 choices that each change a different element, consider making this an ENDING.`;
 
 const COT_SYSTEM_ADDITION = `
 
@@ -174,11 +186,12 @@ ${truncateText(context.previousNarrative, 2000)}
 PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow ALL):
-1. Show the direct, immediate consequences of the player's choice - the story must react
-2. Advance the narrative naturally - time passes, situations evolve, new elements emerge
-3. Maintain STRICT consistency with all established facts and the current state
-4. Present 3 new meaningful choices unless this naturally leads to an ending (add a 4th only when the situation truly warrants another distinct path)
-5. Ensure choices are divergent - each must lead to a genuinely different story path
+1. Start exactly where the previous scene ended—do NOT recap or summarize what happened
+2. Show the direct, immediate consequences of the player's choice - the story must react
+3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
+4. Maintain STRICT consistency with all established facts and the current state
+5. Present 3 new meaningful choices unless this naturally leads to an ending (add a 4th only when the situation truly warrants another distinct path)
+6. Ensure choices are divergent - each must lead to a genuinely different story path
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true).`;
 

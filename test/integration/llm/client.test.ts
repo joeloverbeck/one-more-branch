@@ -40,7 +40,7 @@ describe('llm client integration (mocked fetch)', () => {
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
       choices: ['Consult the brass star map', 'Climb to the highest platform'],
       stateChanges: ['Entered the abandoned observatory'],
-      canonFacts: ['The observatory responds to bloodline magic'],
+      newCanonFacts: ['The observatory responds to bloodline magic'],
       isEnding: false,
       storyArc: 'Restore the observatory before dawn breaks forever.',
     };
@@ -69,7 +69,7 @@ describe('llm client integration (mocked fetch)', () => {
         'You pry open the grate and descend into the flooded corridor where the iron bars scrape behind you and the vault air tastes of rust and incense.',
       choices: ['Follow the chanting deeper', 'Return before the tide rises'],
       stateChanges: ['Opened the vault grate'],
-      canonFacts: ['The lower vault floods with each moonrise'],
+      newCanonFacts: ['The lower vault floods with each moonrise'],
       isEnding: false,
     };
 
@@ -133,7 +133,7 @@ CANON_FACTS:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
       choices: ['Consult the brass star map', 'consult the brass star map'],
       stateChanges: ['Entered the abandoned observatory'],
-      canonFacts: ['The observatory responds to bloodline magic'],
+      newCanonFacts: ['The observatory responds to bloodline magic'],
       isEnding: false,
       storyArc: 'Restore the observatory before dawn breaks forever.',
     };

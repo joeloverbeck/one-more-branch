@@ -90,7 +90,7 @@ describe('buildFewShotMessages', () => {
         narrative: string;
         choices: string[];
         stateChanges: string[];
-        canonFacts: string[];
+        newCanonFacts: string[];
         isEnding: boolean;
       }
 
@@ -99,7 +99,7 @@ describe('buildFewShotMessages', () => {
       expect(parsed.narrative).toBeDefined();
       expect(parsed.choices).toBeInstanceOf(Array);
       expect(parsed.stateChanges).toBeInstanceOf(Array);
-      expect(parsed.canonFacts).toBeInstanceOf(Array);
+      expect(parsed.newCanonFacts).toBeInstanceOf(Array);
       expect(parsed.isEnding).toBe(false);
     });
 

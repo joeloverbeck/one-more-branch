@@ -26,8 +26,8 @@ describe('STORY_GENERATION_SCHEMA', () => {
       'narrative',
       'choices',
       'stateChanges',
-      'canonFacts',
-      'characterCanonFacts',
+      'newCanonFacts',
+      'newCharacterCanonFacts',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);
@@ -41,7 +41,7 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: ['Entered the ruined keep'],
-        canonFacts: ['The keep is haunted by old wardens'],
+        newCanonFacts: ['The keep is haunted by old wardens'],
         isEnding: false,
       });
 
@@ -54,7 +54,7 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: [],
         stateChanges: ['Accepted the crown and ended the civil war'],
-        canonFacts: ['The war is over'],
+        newCanonFacts: ['The war is over'],
         isEnding: true,
       });
 
@@ -67,7 +67,7 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Take the oath', 'Leave the hall'],
         stateChanges: [],
-        canonFacts: ['The throne has no heir'],
+        newCanonFacts: ['The throne has no heir'],
         isEnding: false,
         storyArc: 'Unify the fractured kingdoms before winter.',
       });
@@ -80,14 +80,14 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: ['Met Dr. Cohen'],
-        canonFacts: ['The year is 1972'],
-        characterCanonFacts: [
+        newCanonFacts: ['The year is 1972'],
+        newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'] },
         ],
         isEnding: false,
       });
 
-      expect(result.characterCanonFacts).toEqual({
+      expect(result.newCharacterCanonFacts).toEqual({
         'Dr. Cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
       });
     });
@@ -97,15 +97,15 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: [],
-        canonFacts: [],
-        characterCanonFacts: [
+        newCanonFacts: [],
+        newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
           { characterName: 'Dr. Cohen', facts: ['He wears glasses'] },
         ],
         isEnding: false,
       });
 
-      expect(result.characterCanonFacts).toEqual({
+      expect(result.newCharacterCanonFacts).toEqual({
         'Dr. Cohen': ['He is a psychiatrist', 'He wears glasses'],
       });
     });
@@ -115,15 +115,15 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: [],
-        canonFacts: [],
-        characterCanonFacts: [
+        newCanonFacts: [],
+        newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
           { characterName: 'Nurse Mills', facts: ['She is the head nurse'] },
         ],
         isEnding: false,
       });
 
-      expect(result.characterCanonFacts).toEqual({
+      expect(result.newCharacterCanonFacts).toEqual({
         'Dr. Cohen': ['He is a psychiatrist'],
         'Nurse Mills': ['She is the head nurse'],
       });
@@ -134,11 +134,11 @@ describe('GenerationResultSchema', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: [],
-        canonFacts: [],
+        newCanonFacts: [],
         isEnding: false,
       });
 
-      expect(result.characterCanonFacts).toEqual({});
+      expect(result.newCharacterCanonFacts).toEqual({});
     });
   });
 
@@ -149,7 +149,7 @@ describe('GenerationResultSchema', () => {
           narrative: VALID_NARRATIVE,
           choices: [],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -161,7 +161,7 @@ describe('GenerationResultSchema', () => {
           narrative: VALID_NARRATIVE,
           choices: ['Continue to the next chamber'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: true,
         }),
       ).toThrow(ZodError);
@@ -173,7 +173,7 @@ describe('GenerationResultSchema', () => {
           narrative: VALID_NARRATIVE,
           choices: ['Retreat to camp'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -194,7 +194,7 @@ describe('GenerationResultSchema', () => {
             'Choice six path',
           ],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -206,7 +206,7 @@ describe('GenerationResultSchema', () => {
           narrative: VALID_NARRATIVE,
           choices: ['Open the gate', 'open the gate', 'Hide in the shadows'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow('Choices must be unique');
@@ -218,7 +218,7 @@ describe('GenerationResultSchema', () => {
           narrative: VALID_NARRATIVE,
           choices: ['Go', 'Stay put'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -230,7 +230,7 @@ describe('GenerationResultSchema', () => {
           narrative: VALID_NARRATIVE,
           choices: ['A'.repeat(301), 'Hold your position'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -244,7 +244,7 @@ describe('GenerationResultSchema', () => {
           narrative: 'Too short.',
           choices: ['Secure the relic', 'Burn the relic'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -256,7 +256,7 @@ describe('GenerationResultSchema', () => {
           narrative: 'A'.repeat(15001),
           choices: ['Secure the relic', 'Burn the relic'],
           stateChanges: [],
-          canonFacts: [],
+          newCanonFacts: [],
           isEnding: false,
         }),
       ).toThrow(ZodError);
@@ -271,7 +271,7 @@ describe('validateGenerationResponse', () => {
         narrative: `  ${VALID_NARRATIVE}  `,
         choices: ['  Open the iron door  ', '  Climb the collapsed tower  '],
         stateChanges: ['  Entered the ruined keep  '],
-        canonFacts: ['  The keep is haunted by old wardens  '],
+        newCanonFacts: ['  The keep is haunted by old wardens  '],
         isEnding: false,
         storyArc: '  Survive long enough to claim the throne.  ',
       },
@@ -281,25 +281,25 @@ describe('validateGenerationResponse', () => {
     expect(result.narrative).toBe(VALID_NARRATIVE);
     expect(result.choices).toEqual(['Open the iron door', 'Climb the collapsed tower']);
     expect(result.stateChanges).toEqual(['Entered the ruined keep']);
-    expect(result.canonFacts).toEqual(['The keep is haunted by old wardens']);
+    expect(result.newCanonFacts).toEqual(['The keep is haunted by old wardens']);
     expect(result.storyArc).toBe('Survive long enough to claim the throne.');
     expect(result.rawResponse).toBe('raw json response');
   });
 
-  it('should filter out empty strings from stateChanges and canonFacts', () => {
+  it('should filter out empty strings from stateChanges and newCanonFacts', () => {
     const result = validateGenerationResponse(
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: ['  ', '', 'Found a hidden sigil'],
-        canonFacts: ['\n', 'The moon well is beneath the keep'],
+        newCanonFacts: ['\n', 'The moon well is beneath the keep'],
         isEnding: false,
       },
       'raw json response',
     );
 
     expect(result.stateChanges).toEqual(['Found a hidden sigil']);
-    expect(result.canonFacts).toEqual(['The moon well is beneath the keep']);
+    expect(result.newCanonFacts).toEqual(['The moon well is beneath the keep']);
   });
 
   it('should handle missing optional storyArc', () => {
@@ -308,7 +308,7 @@ describe('validateGenerationResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: [],
-        canonFacts: [],
+        newCanonFacts: [],
         isEnding: false,
       },
       'raw json response',
@@ -323,8 +323,8 @@ describe('validateGenerationResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: [],
-        canonFacts: [],
-        characterCanonFacts: [
+        newCanonFacts: [],
+        newCharacterCanonFacts: [
           { characterName: '  Dr. Cohen  ', facts: ['  Dr. Cohen is a psychiatrist  ', '  ', ''] },
           { characterName: 'Empty Character', facts: ['   ', ''] },
         ],
@@ -333,7 +333,7 @@ describe('validateGenerationResponse', () => {
       'raw json response',
     );
 
-    expect(result.characterCanonFacts).toEqual({
+    expect(result.newCharacterCanonFacts).toEqual({
       'Dr. Cohen': ['Dr. Cohen is a psychiatrist'],
     });
   });
@@ -344,13 +344,13 @@ describe('validateGenerationResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: [],
-        canonFacts: [],
+        newCanonFacts: [],
         isEnding: false,
       },
       'raw json response',
     );
 
-    expect(result.characterCanonFacts).toEqual({});
+    expect(result.newCharacterCanonFacts).toEqual({});
   });
 
   it('should handle multiple characters in characterCanonFacts', () => {
@@ -359,8 +359,8 @@ describe('validateGenerationResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: [],
-        canonFacts: [],
-        characterCanonFacts: [
+        newCanonFacts: [],
+        newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
           { characterName: 'Nurse Mills', facts: ['She is the head nurse'] },
         ],
@@ -369,7 +369,7 @@ describe('validateGenerationResponse', () => {
       'raw json response',
     );
 
-    expect(result.characterCanonFacts).toEqual({
+    expect(result.newCharacterCanonFacts).toEqual({
       'Dr. Cohen': ['He is a psychiatrist'],
       'Nurse Mills': ['She is the head nurse'],
     });
@@ -381,14 +381,14 @@ describe('validateGenerationResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: [],
-        canonFacts: [],
-        characterCanonFacts: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: [],
         isEnding: false,
       },
       'raw json response',
     );
 
-    expect(result.characterCanonFacts).toEqual({});
+    expect(result.newCharacterCanonFacts).toEqual({});
   });
 });
 

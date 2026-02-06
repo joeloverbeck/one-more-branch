@@ -15,8 +15,8 @@ describe('parseTextResponse', () => {
         'Call out to see if anyone responds',
       ],
       stateChanges: ['Entered the mysterious cave'],
-      canonFacts: ['The cave system extends beneath the mountain'],
-      characterCanonFacts: [],
+      newCanonFacts: ['The cave system extends beneath the mountain'],
+      newCharacterCanonFacts: [],
       isEnding: false,
       storyArc: 'Explore the ancient cave system',
     });
@@ -30,7 +30,7 @@ describe('parseTextResponse', () => {
       'Call out to see if anyone responds',
     ]);
     expect(result.stateChanges).toEqual(['Entered the mysterious cave']);
-    expect(result.canonFacts).toEqual(['The cave system extends beneath the mountain']);
+    expect(result.newCanonFacts).toEqual(['The cave system extends beneath the mountain']);
     expect(result.isEnding).toBe(false);
     expect(result.storyArc).toBe('Explore the ancient cave system');
   });
@@ -43,8 +43,8 @@ describe('parseTextResponse', () => {
     "Talk to the drunk nobleman"
   ],
   "stateChanges": ["You performed at the tavern"],
-  "canonFacts": ["The city has multiple tiers"],
-  "characterCanonFacts": [
+  "newCanonFacts": ["The city has multiple tiers"],
+  "newCharacterCanonFacts": [
     {"characterName": "Lord Greave", "facts": ["A nobleman prone to drinking"]}
   ],
   "isEnding": false,
@@ -55,7 +55,7 @@ describe('parseTextResponse', () => {
 
     expect(result.narrative).toContain('tavern');
     expect(result.choices).toHaveLength(2);
-    expect(result.characterCanonFacts).toEqual({
+    expect(result.newCharacterCanonFacts).toEqual({
       'Lord Greave': ['A nobleman prone to drinking'],
     });
   });
@@ -65,8 +65,8 @@ describe('parseTextResponse', () => {
       narrative: 'The dragon fire engulfs you. Your adventure ends here.',
       choices: [],
       stateChanges: ['Hero died'],
-      canonFacts: [],
-      characterCanonFacts: [],
+      newCanonFacts: [],
+      newCharacterCanonFacts: [],
       isEnding: true,
     });
 
@@ -103,7 +103,7 @@ CANON_FACTS:
       'Call out to see if anyone responds',
     ]);
     expect(result.stateChanges).toEqual(['Entered the mysterious cave', 'Feeling of unease']);
-    expect(result.canonFacts).toEqual(['The cave system extends beneath the mountain']);
+    expect(result.newCanonFacts).toEqual(['The cave system extends beneath the mountain']);
     expect(result.isEnding).toBe(false);
   });
 
@@ -259,7 +259,7 @@ CANON_FACTS:
     const result = parseTextResponse(response);
 
     expect(result.stateChanges).toEqual([]);
-    expect(result.canonFacts).toEqual([]);
+    expect(result.newCanonFacts).toEqual([]);
   });
 
   it('should parse numbered choices (1. format)', () => {
@@ -358,7 +358,7 @@ CANON_FACTS:
     const result = parseTextResponse(response);
 
     expect(result.choices).toEqual(['Squeeze through', 'Turn back']);
-    expect(result.canonFacts).toEqual(['The corridor was carved by giant worms']);
+    expect(result.newCanonFacts).toEqual(['The corridor was carved by giant worms']);
   });
 
   it('should extract narrative without explicit NARRATIVE marker', () => {
@@ -402,7 +402,7 @@ CHARACTER_CANON_FACTS:
 
     const result = parseTextResponse(response);
 
-    expect(result.characterCanonFacts).toEqual({
+    expect(result.newCharacterCanonFacts).toEqual({
       'Dr. Cohen': [
         'Dr. Cohen is a psychiatrist at Stella Maris',
         'He wears wire-rimmed glasses',
@@ -423,7 +423,7 @@ CHOICES:
 
     const result = parseTextResponse(response);
 
-    expect(result.characterCanonFacts).toEqual({});
+    expect(result.newCharacterCanonFacts).toEqual({});
   });
 
   it('should handle CHARACTER_CANON_FACTS with single character', () => {
@@ -443,7 +443,7 @@ CHARACTER_CANON_FACTS:
 
     const result = parseTextResponse(response);
 
-    expect(result.characterCanonFacts).toEqual({
+    expect(result.newCharacterCanonFacts).toEqual({
       'The Kid': [
         'The Kid is an eidolon who appears to Alicia',
         'The Kid speaks with unnerving clarity',
@@ -468,7 +468,7 @@ CHARACTER_CANON_FACTS:
 
     const result = parseTextResponse(response);
 
-    expect(result.characterCanonFacts).toEqual({
+    expect(result.newCharacterCanonFacts).toEqual({
       'Bobby Western': [
         'Bobby is in a coma in Italy',
         'Bobby inherited gold from his grandfather',
@@ -537,8 +537,8 @@ describe('buildFallbackSystemPromptAddition', () => {
     expect(prompt).toContain('STATE_CHANGES:');
   });
 
-  it('should include CANON_FACTS section instruction', () => {
-    expect(prompt).toContain('CANON_FACTS:');
+  it('should include NEW_CANON_FACTS section instruction', () => {
+    expect(prompt).toContain('NEW_CANON_FACTS:');
   });
 
   it('should include THE END instruction for endings', () => {
@@ -549,8 +549,8 @@ describe('buildFallbackSystemPromptAddition', () => {
     expect(prompt).toContain('STORY_ARC:');
   });
 
-  it('should include CHARACTER_CANON_FACTS section instruction', () => {
-    expect(prompt).toContain('CHARACTER_CANON_FACTS:');
+  it('should include NEW_CHARACTER_CANON_FACTS section instruction', () => {
+    expect(prompt).toContain('NEW_CHARACTER_CANON_FACTS:');
   });
 
   it('should include character name bracket format example', () => {
