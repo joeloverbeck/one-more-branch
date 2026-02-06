@@ -16,6 +16,28 @@ type RouterLayer = {
   name?: string;
 };
 
+function findGetRootHandler(layers: RouterLayer[]): ((req: Request, res: Response) => unknown) | null {
+  for (const layer of layers) {
+    const route = layer.handle?.stack?.find(
+      (stackLayer) => stackLayer.route?.path === '/' && stackLayer.route?.methods?.get,
+    );
+    const handler = route?.route?.stack?.[0]?.handle;
+    if (handler) {
+      return handler;
+    }
+
+    const nestedStack = layer.handle?.stack as unknown as RouterLayer[] | undefined;
+    if (nestedStack && nestedStack.length > 0) {
+      const nested = findGetRootHandler(nestedStack);
+      if (nested) {
+        return nested;
+      }
+    }
+  }
+
+  return null;
+}
+
 describe('server app setup', () => {
   afterEach(() => {
     jest.restoreAllMocks();
@@ -93,28 +115,30 @@ describe('server app setup', () => {
     expect(errorHandlerIndex).toBeGreaterThan(routerIndex);
   });
 
-  it('responds to GET / with 200 status from placeholder route', () => {
+  it('registers GET / and delegates to home route handler', async () => {
     jest.spyOn(storyEngine, 'init').mockImplementation(() => {
       // no-op to avoid persistence side effects in unit test
     });
+    jest.spyOn(storyEngine, 'listStories').mockResolvedValue([]);
 
     const app = createApp();
     const stack = (app as unknown as { _router: { stack: RouterLayer[] } })._router.stack;
-    const routerLayer = stack.find((layer) => layer.name === 'router');
-    const routeLayer = routerLayer?.handle?.stack?.find(
-      (layer) => layer.route?.path === '/' && layer.route?.methods?.get,
-    );
+    const homeHandler = findGetRootHandler(stack);
 
     const status = jest.fn().mockReturnThis();
-    const send = jest.fn();
+    const render = jest.fn();
 
-    routeLayer?.route?.stack?.[0]?.handle({} as Request, {
+    await homeHandler?.({} as Request, {
       status,
-      send,
+      render,
     } as unknown as Response);
 
-    expect(status).toHaveBeenCalledWith(200);
-    expect(send).toHaveBeenCalledWith('One More Branch - Coming Soon');
+    expect(homeHandler).toBeDefined();
+    expect(status).not.toHaveBeenCalled();
+    expect(render).toHaveBeenCalledWith('pages/home', {
+      title: 'One More Branch',
+      stories: [],
+    });
   });
 
   it('calls storyEngine.init() during app creation', () => {

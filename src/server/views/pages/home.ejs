@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container">
+    <section class="hero">
+      <h1>One More Branch</h1>
+      <p class="tagline">Your choices shape the story</p>
+      <a href="/stories/new" class="btn btn-primary btn-large">Start New Adventure</a>
+    </section>
+
+    <% if (stories.length > 0) { %>
+    <section class="stories-section">
+      <h2>Continue an Adventure</h2>
+      <div class="stories-grid">
+        <% stories.forEach(story => { %>
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3 class="story-title"><%= story.characterConcept.slice(0, 100) %><%= story.characterConcept.length > 100 ? '...' : '' %></h3>
+            <p class="story-tone"><%= story.tone %></p>
+            <div class="story-stats">
+              <span><%= story.pageCount %> pages</span>
+              <span><%= story.exploredBranches %>/<%= story.totalBranches %> branches</span>
+              <% if (story.hasEnding) { %>
+              <span class="has-ending">Has endings</span>
+              <% } %>
+            </div>
+            <p class="story-date">Created: <%= new Date(story.createdAt).toLocaleDateString() %></p>
+          </div>
+          <div class="story-card-actions">
+            <a href="/play/<%= story.id %>?page=1" class="btn btn-secondary">Play</a>
+            <form action="/stories/<%= story.id %>/delete" method="POST" class="inline-form">
+              <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Delete this story? This cannot be undone.')">Delete</button>
+            </form>
+          </div>
+        </article>
+        <% }) %>
+      </div>
+    </section>
+    <% } else { %>
+    <section class="empty-state">
+      <p>No adventures yet. Start your first story!</p>
+    </section>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

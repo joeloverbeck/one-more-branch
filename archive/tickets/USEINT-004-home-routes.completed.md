@@ -1,8 +1,32 @@
 # USEINT-004: Home Page Routes and View
 
+## Status
+
+Completed (2026-02-06)
+
 ## Summary
 
 Implement the home page route that displays a list of existing stories and a button to start a new adventure.
+
+## Reassessed Assumptions (2026-02-06)
+
+- `src/server/routes/home.ts` does not exist yet.
+- `src/server/views/pages/home.ejs` does not exist yet.
+- `src/server/routes/index.ts` currently serves a placeholder `GET /` response (`One More Branch - Coming Soon`) and does not mount route modules.
+- Existing view templates use plain EJS includes; no layout helper (`layout(...)`) is configured in runtime.
+- `test/unit/server/routes/` does not exist yet, so this ticket must create that folder and `home.test.ts`.
+- Engine import style in current server code uses local barrel imports (e.g. `../../engine`) rather than `.js` suffix imports in TypeScript source.
+
+## Updated Scope
+
+- Create `src/server/routes/home.ts` with `GET /` that:
+  - calls `storyEngine.listStories()`
+  - enriches each story with `storyEngine.getStoryStats(story.id)`
+  - renders `pages/home` with title and merged story data
+  - renders `pages/error` with HTTP 500 on failure
+- Replace placeholder root route wiring in `src/server/routes/index.ts` by mounting `homeRoutes`.
+- Create `src/server/views/pages/home.ejs` as a plain EJS page compatible with current runtime (no `layout(...)` helper).
+- Add focused unit tests in `test/unit/server/routes/home.test.ts` using mocked/spied `storyEngine` methods.
 
 ## Files to Create
 
@@ -12,6 +36,7 @@ Implement the home page route that displays a list of existing stories and a but
 ## Files to Modify
 
 - `src/server/routes/index.ts` - Mount home routes
+- `test/unit/server/index.test.ts` - Replace placeholder-route assertion with mounted home route assertion
 
 ## Out of Scope
 
@@ -30,7 +55,7 @@ Implement the home page route that displays a list of existing stories and a but
 
 ```typescript
 import { Router, Request, Response } from 'express';
-import { storyEngine } from '../../engine/index.js';
+import { storyEngine } from '../../engine';
 
 export const homeRoutes = Router();
 
@@ -69,7 +94,16 @@ homeRoutes.get('/', async (req: Request, res: Response) => {
 ### `src/server/views/pages/home.ejs`
 
 ```html
-<% layout('layouts/main') -%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
 
 <section class="hero">
   <h1>One More Branch</h1>
@@ -110,13 +144,18 @@ homeRoutes.get('/', async (req: Request, res: Response) => {
   <p>No adventures yet. Start your first story!</p>
 </section>
 <% } %>
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
 ```
 
 ### Update `src/server/routes/index.ts`
 
 ```typescript
 import { Router } from 'express';
-import { homeRoutes } from './home.js';
+import { homeRoutes } from './home';
 
 export const router = Router();
 
@@ -137,19 +176,15 @@ Create `test/unit/server/routes/home.test.ts`:
 6. GET / fetches stats for each story via getStoryStats()
 7. GET / returns 500 and renders error page when engine throws
 8. Stories array includes pageCount, exploredBranches, totalBranches, hasEnding
+9. GET / does not call `getStoryStats` when `listStories` returns an empty array
 
-**Tests must mock `storyEngine`** - no actual persistence or LLM calls.
+**Tests must mock/spy `storyEngine`** - no actual persistence or LLM calls.
 
 ### Test Implementation Notes
 
 ```typescript
-jest.mock('../../engine/index.js', () => ({
-  storyEngine: {
-    init: jest.fn(),
-    listStories: jest.fn(),
-    getStoryStats: jest.fn(),
-  },
-}));
+jest.spyOn(storyEngine, 'listStories').mockResolvedValue([...]);
+jest.spyOn(storyEngine, 'getStoryStats').mockResolvedValue(...);
 ```
 
 ### Verification Commands
@@ -176,3 +211,14 @@ npm run test:unit -- --testPathPattern=test/unit/server/routes/home.test.ts
 ## Estimated Size
 
 ~180 LOC (source + tests)
+
+## Outcome
+
+Originally planned:
+- Add home route/view and mount it from server routes.
+
+Actually changed:
+- Implemented `homeRoutes` with story listing + per-story stats enrichment + error fallback rendering.
+- Added plain-EJS `pages/home` template (no layout helper dependency) with story cards, empty state, and delete confirmation.
+- Replaced placeholder root response with mounted `homeRoutes` in route index.
+- Added focused home route unit tests and updated the existing app-setup test that previously asserted the removed placeholder response.
