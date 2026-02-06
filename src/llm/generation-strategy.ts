@@ -2,7 +2,7 @@ import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
 import { extractOutputFromCoT } from './cot-parser.js';
 import { buildFallbackSystemPromptAddition, parseTextResponse } from './fallback-parser.js';
-import { OPENROUTER_API_URL, readErrorMessage, readJsonResponse } from './http-client.js';
+import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
 import {
   isStructuredOutputNotSupported,
   STORY_GENERATION_SCHEMA,
@@ -43,10 +43,15 @@ async function callOpenRouterStructured(
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response);
-    logger.error(`OpenRouter API error [${response.status}]: ${errorMessage}`);
+    const errorDetails = await readErrorDetails(response);
+    logger.error(`OpenRouter API error [${response.status}]: ${errorDetails.message}`);
     const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorMessage, `HTTP_${response.status}`, retryable);
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
   }
 
   const data = await readJsonResponse(response);
@@ -131,10 +136,15 @@ async function callOpenRouterText(
   });
 
   if (!response.ok) {
-    const errorMessage = await readErrorMessage(response);
-    logger.error(`OpenRouter API error (text fallback) [${response.status}]: ${errorMessage}`);
+    const errorDetails = await readErrorDetails(response);
+    logger.error(`OpenRouter API error (text fallback) [${response.status}]: ${errorDetails.message}`);
     const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorMessage, `HTTP_${response.status}`, retryable);
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
   }
 
   const data = await readJsonResponse(response);

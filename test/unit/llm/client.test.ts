@@ -443,12 +443,18 @@ describe('llm client', () => {
 
     const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Model lacks structured output support, using text parsing fallback',
-      expect.objectContaining({
-        errorMessage: expect.stringContaining('model does not support'),
-      }),
+    const warnCalls = mockLogger.warn.mock.calls as Array<[unknown, unknown?]>;
+    const fallbackWarnCall = warnCalls.find(
+      ([message]) => message === 'Model lacks structured output support, using text parsing fallback',
     );
+    expect(fallbackWarnCall).toBeDefined();
+    const fallbackWarnMetadata =
+      fallbackWarnCall &&
+      typeof fallbackWarnCall[1] === 'object' &&
+      fallbackWarnCall[1] !== null
+        ? (fallbackWarnCall[1] as { errorMessage?: string })
+        : undefined;
+    expect(fallbackWarnMetadata?.errorMessage).toContain('model does not support');
     expect(result.choices).toHaveLength(2);
   });
 
@@ -539,13 +545,17 @@ STATE_CHANGES:
 
     await expectation;
 
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      'LLM response parsing failed',
-      expect.objectContaining({
-        code: 'MISSING_CHOICES',
-        rawResponse: expect.stringContaining('NARRATIVE:'),
-      }),
+    const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
+    const parseErrorCall = errorCalls.find(
+      ([message]) => message === 'LLM response parsing failed',
     );
+    expect(parseErrorCall).toBeDefined();
+    const parseErrorMetadata =
+      parseErrorCall && typeof parseErrorCall[1] === 'object' && parseErrorCall[1] !== null
+        ? (parseErrorCall[1] as { code?: string; rawResponse?: string })
+        : undefined;
+    expect(parseErrorMetadata?.code).toBe('MISSING_CHOICES');
+    expect(parseErrorMetadata?.rawResponse).toContain('NARRATIVE:');
   });
 
   it('should log raw response when structured validation fails', async () => {
@@ -574,12 +584,18 @@ STATE_CHANGES:
 
     await expectation;
 
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      'LLM structured response validation failed',
-      expect.objectContaining({
-        rawResponse: expect.stringContaining('Only one choice'),
-      }),
+    const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
+    const validationErrorCall = errorCalls.find(
+      ([message]) => message === 'LLM structured response validation failed',
     );
+    expect(validationErrorCall).toBeDefined();
+    const validationErrorMetadata =
+      validationErrorCall &&
+      typeof validationErrorCall[1] === 'object' &&
+      validationErrorCall[1] !== null
+        ? (validationErrorCall[1] as { rawResponse?: string })
+        : undefined;
+    expect(validationErrorMetadata?.rawResponse).toContain('Only one choice');
   });
 });
 

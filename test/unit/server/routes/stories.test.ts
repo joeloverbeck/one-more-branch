@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { storyEngine } from '@/engine';
+import { LLMError } from '@/llm/types';
 import { createChoice, createPage, createStory, parseStoryId } from '@/models';
 import { storyRoutes } from '@/server/routes/stories';
 
@@ -222,6 +223,209 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'generation failed',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays user-friendly message for HTTP 401 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError('Invalid API key provided', 'HTTP_401', false, {
+        httpStatus: 401,
+        model: 'anthropic/claude-sonnet-4.5',
+        rawErrorBody: '{"error":{"message":"Invalid API key"}}',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'invalid-key',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'Invalid API key. Please check your OpenRouter API key.',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays user-friendly message for HTTP 402 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError('Payment required', 'HTTP_402', false, {
+        httpStatus: 402,
+        model: 'anthropic/claude-sonnet-4.5',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'Insufficient credits. Please add credits to your OpenRouter account.',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays user-friendly message for HTTP 429 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError('Rate limit exceeded', 'HTTP_429', true, {
+        httpStatus: 429,
+        model: 'anthropic/claude-sonnet-4.5',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'Rate limit exceeded. Please wait a moment and try again.',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays API error details for HTTP 400 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError('Invalid request: missing required field', 'HTTP_400', false, {
+        httpStatus: 400,
+        model: 'anthropic/claude-sonnet-4.5',
+        rawErrorBody: '{"error":{"message":"Invalid request: missing required field"}}',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'API request error: Invalid request: missing required field',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays user-friendly message for HTTP 5xx LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError('Internal server error', 'HTTP_503', true, {
+        httpStatus: 503,
+        model: 'anthropic/claude-sonnet-4.5',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'OpenRouter service is temporarily unavailable. Please try again later.',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays raw message for LLMError without httpStatus context', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError('Some parsing error', 'PARSE_ERROR', false);
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'Some parsing error',
         values: {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',

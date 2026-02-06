@@ -1,6 +1,28 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
+import { LLMError } from '../../llm/types';
 import { StoryId } from '../../models';
+
+function formatLLMError(error: LLMError): string {
+  const httpStatus = error.context?.['httpStatus'] as number | undefined;
+
+  if (httpStatus === 401) {
+    return 'Invalid API key. Please check your OpenRouter API key.';
+  }
+  if (httpStatus === 402) {
+    return 'Insufficient credits. Please add credits to your OpenRouter account.';
+  }
+  if (httpStatus === 429) {
+    return 'Rate limit exceeded. Please wait a moment and try again.';
+  }
+  if (httpStatus === 400) {
+    return `API request error: ${error.message}`;
+  }
+  if (httpStatus && httpStatus >= 500) {
+    return 'OpenRouter service is temporarily unavailable. Please try again later.';
+  }
+  return error.message;
+}
 
 type StoryFormBody = {
   characterConcept?: string;
@@ -62,9 +84,17 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error creating story:', error);
+
+    let errorMessage = 'Failed to create story';
+    if (error instanceof LLMError) {
+      errorMessage = formatLLMError(error);
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
     return res.status(500).render('pages/new-story', {
       title: 'New Adventure - One More Branch',
-      error: error instanceof Error ? error.message : 'Failed to create story',
+      error: errorMessage,
       values: { characterConcept, worldbuilding, tone },
     });
   }
