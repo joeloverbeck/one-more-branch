@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container">
+    <div class="play-container" data-story-id="<%= story.id %>" data-page-id="<%= page.id %>">
+      <div class="story-header">
+        <h2><%= story.characterConcept.slice(0, 60) %><%= story.characterConcept.length > 60 ? '...' : '' %></h2>
+        <span class="page-indicator">Page <%= page.id %></span>
+      </div>
+
+      <article class="narrative" id="narrative">
+        <div class="narrative-text">
+          <%- page.narrativeText.replace(/\n/g, '<br>') %>
+        </div>
+      </article>
+
+      <% if (page.stateChanges && page.stateChanges.length > 0) { %>
+      <aside class="state-changes" id="state-changes">
+        <h4>What happened:</h4>
+        <ul>
+          <% page.stateChanges.forEach(change => { %>
+          <li><%= change %></li>
+          <% }) %>
+        </ul>
+      </aside>
+      <% } %>
+
+      <% if (page.isEnding) { %>
+      <div class="ending-banner">
+        <h3>THE END</h3>
+        <div class="ending-actions">
+          <a href="/play/<%= story.id %>/restart" class="btn btn-primary">Play Again</a>
+          <a href="/" class="btn btn-secondary">Back to Stories</a>
+        </div>
+      </div>
+      <% } else { %>
+      <section class="choices-section" id="choices-section">
+        <h3>What do you do?</h3>
+        <div class="choices" id="choices">
+          <% page.choices.forEach((choice, index) => { %>
+          <button
+            class="choice-btn"
+            data-choice-index="<%= index %>"
+            <%= choice.nextPageId ? 'data-explored="true"' : '' %>
+          >
+            <%= choice.text %>
+            <% if (choice.nextPageId) { %>
+            <span class="explored-marker" title="Previously explored">↩</span>
+            <% } %>
+          </button>
+          <% }) %>
+        </div>
+      </section>
+      <% } %>
+
+      <div class="loading-overlay" id="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Crafting your story...</p>
+      </div>
+
+      <div class="modal" id="api-key-modal" style="display: none;">
+        <div class="modal-content">
+          <h3>Enter OpenRouter API Key</h3>
+          <p>Your API key is needed to generate new story content.</p>
+          <input type="password" id="modal-api-key" placeholder="sk-or-..." autocomplete="off">
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="save-api-key">Continue</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
