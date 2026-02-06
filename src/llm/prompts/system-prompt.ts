@@ -60,7 +60,23 @@ FIELD SEPARATION (CRITICAL):
 - HEALTH (healthAdded/healthRemoved): Physical wounds, injuries, poison, illness, exhaustion - NOT emotional states
 - STATE CHANGES (stateChangesAdded/stateChangesRemoved): Emotional states, relationships, abilities, events - NOT items or physical health
 - WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
-- CHARACTER FACTS (newCharacterCanonFacts): Persistent character information - NOT items
+- CHARACTER CANON (newCharacterCanonFacts): PERMANENT character traits, backgrounds, abilities - WHO they are
+- CHARACTER STATE (characterStateChangesAdded/characterStateChangesRemoved): SITUATIONAL NPC events - WHAT happened in THIS branch
+
+CHARACTER CANON vs CHARACTER STATE (CRITICAL DISTINCTION):
+Use CHARACTER CANON (newCharacterCanonFacts) for PERMANENT traits that define WHO they are:
+- Inherent abilities: "Transforms between midnight and dawn"
+- Physical traits: "Eyes turn black during transformation"
+- Background: "Runs a timber warehouse business"
+- Relationships to the world: "Sister of the Duke"
+
+Use CHARACTER STATE (characterStateChangesAdded) for SITUATIONAL events that happened in THIS playthrough:
+- Actions taken: "Gave protagonist a sketched map"
+- Agreements made: "Proposed a 70-30 split"
+- Knowledge gained: "Knows about the three murders"
+- Branch-specific status: "Currently waiting at the docks"
+
+Rule: If it would be true in ANY playthrough, it's CANON. If it only happened because of choices made, it's STATE.
 
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
 ✅ Use inventoryAdded/inventoryRemoved

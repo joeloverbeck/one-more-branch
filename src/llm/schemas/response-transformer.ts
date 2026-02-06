@@ -17,6 +17,18 @@ export function validateGenerationResponse(
     }
   }
 
+  // Process characterStateChangesAdded: trim all values
+  const characterStateChangesAdded = validated.characterStateChangesAdded.map(entry => ({
+    characterName: entry.characterName.trim(),
+    states: entry.states.map(s => s.trim()).filter(s => s),
+  })).filter(entry => entry.characterName && entry.states.length > 0);
+
+  // Process characterStateChangesRemoved: trim all values
+  const characterStateChangesRemoved = validated.characterStateChangesRemoved.map(entry => ({
+    characterName: entry.characterName.trim(),
+    states: entry.states.map(s => s.trim()).filter(s => s),
+  })).filter(entry => entry.characterName && entry.states.length > 0);
+
   return {
     narrative: validated.narrative.trim(),
     choices: validated.choices.map(choice => choice.trim()),
@@ -28,6 +40,8 @@ export function validateGenerationResponse(
     inventoryRemoved: validated.inventoryRemoved.map(item => item.trim()).filter(item => item),
     healthAdded: validated.healthAdded.map(entry => entry.trim()).filter(entry => entry),
     healthRemoved: validated.healthRemoved.map(entry => entry.trim()).filter(entry => entry),
+    characterStateChangesAdded,
+    characterStateChangesRemoved,
     isEnding: validated.isEnding,
     storyArc: storyArc ? storyArc : undefined,
     rawResponse,

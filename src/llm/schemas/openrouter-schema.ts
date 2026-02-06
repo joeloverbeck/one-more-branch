@@ -75,6 +75,34 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description:
             'Health conditions that are RESOLVED or HEALED in this scene. Use the EXACT text from existing health entries. Empty array if nothing healed.',
         },
+        characterStateChangesAdded: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              characterName: { type: 'string' },
+              states: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['characterName', 'states'],
+            additionalProperties: false,
+          },
+          description:
+            'NEW situational states for NPCs introduced IN THIS SCENE. Use for actions taken, agreements made, knowledge gained - things that happened, not permanent traits. Example: [{characterName: "Greaves", states: ["Gave protagonist a sketched map", "Proposed a 70-30 split"]}]. Empty array if no NPC state changes.',
+        },
+        characterStateChangesRemoved: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              characterName: { type: 'string' },
+              states: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['characterName', 'states'],
+            additionalProperties: false,
+          },
+          description:
+            'NPC states to REMOVE because they are RESOLVED or NO LONGER RELEVANT. Use EXACT text from existing NPC state entries. Empty array if nothing to remove.',
+        },
         isEnding: {
           type: 'boolean',
           description: 'True only when the story concludes and choices is empty.',
@@ -84,7 +112,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description: 'Main goal/conflict for the story opening page.',
         },
       },
-      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'isEnding'],
+      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'isEnding'],
       additionalProperties: false,
     },
   },

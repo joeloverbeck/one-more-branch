@@ -24,6 +24,8 @@ describe('STORY_GENERATION_SCHEMA', () => {
       'inventoryRemoved',
       'healthAdded',
       'healthRemoved',
+      'characterStateChangesAdded',
+      'characterStateChangesRemoved',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);

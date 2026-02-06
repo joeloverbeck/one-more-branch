@@ -1,4 +1,6 @@
 import {
+  AccumulatedCharacterState,
+  CharacterStateChanges,
   Health,
   HealthChanges,
   Inventory,
@@ -45,12 +47,32 @@ interface PageFileData {
     removed: string[];
   };
   accumulatedHealth?: string[];
+  // Character state fields (optional for migration from older pages)
+  characterStateChanges?: Array<{
+    characterName: string;
+    added: string[];
+    removed: string[];
+  }>;
+  accumulatedCharacterState?: Record<string, string[]>;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;
 }
 
 function pageToFileData(page: Page): PageFileData {
+  // Convert CharacterStateChanges to file format
+  const characterStateChanges = page.characterStateChanges.map((change) => ({
+    characterName: change.characterName,
+    added: [...change.added],
+    removed: [...change.removed],
+  }));
+
+  // Convert AccumulatedCharacterState to file format
+  const accumulatedCharacterState: Record<string, string[]> = {};
+  for (const [name, state] of Object.entries(page.accumulatedCharacterState)) {
+    accumulatedCharacterState[name] = [...state];
+  }
+
   return {
     id: page.id,
     narrativeText: page.narrativeText,
@@ -75,6 +97,8 @@ function pageToFileData(page: Page): PageFileData {
       removed: [...page.healthChanges.removed],
     },
     accumulatedHealth: [...page.accumulatedHealth],
+    characterStateChanges,
+    accumulatedCharacterState,
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -112,6 +136,21 @@ function fileDataToPage(data: PageFileData): Page {
     ? [...data.accumulatedHealth]
     : [];
 
+  // Migration: handle existing pages without character state fields
+  const characterStateChanges: CharacterStateChanges = data.characterStateChanges
+    ? data.characterStateChanges.map((change) => ({
+        characterName: change.characterName,
+        added: [...change.added],
+        removed: [...change.removed],
+      }))
+    : [];
+
+  const accumulatedCharacterState: AccumulatedCharacterState = data.accumulatedCharacterState
+    ? Object.fromEntries(
+        Object.entries(data.accumulatedCharacterState).map(([name, state]) => [name, [...state]])
+      )
+    : {};
+
   return {
     id: parsePageId(data.id),
     narrativeText: data.narrativeText,
@@ -127,6 +166,8 @@ function fileDataToPage(data: PageFileData): Page {
     accumulatedInventory,
     healthChanges,
     accumulatedHealth,
+    characterStateChanges,
+    accumulatedCharacterState,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

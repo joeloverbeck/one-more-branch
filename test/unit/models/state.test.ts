@@ -1,9 +1,12 @@
 import {
   accumulateState,
   addCanonFact,
+  applyCharacterStateChanges,
   applyHealthChanges,
   applyStateChanges,
+  createEmptyAccumulatedCharacterState,
   createEmptyAccumulatedState,
+  createEmptyCharacterStateChanges,
   createEmptyHealthChanges,
   createEmptyStateChanges,
   mergeCanonFacts,
@@ -351,6 +354,191 @@ describe('State utilities', () => {
         expect(original).toEqual(['Condition A', 'Condition B']);
         expect(result).toEqual(['Condition B', 'Condition C']);
         expect(result).not.toBe(original);
+      });
+    });
+  });
+
+  describe('createEmptyCharacterStateChanges', () => {
+    it('returns an empty array', () => {
+      expect(createEmptyCharacterStateChanges()).toEqual([]);
+    });
+  });
+
+  describe('createEmptyAccumulatedCharacterState', () => {
+    it('returns an empty object', () => {
+      expect(createEmptyAccumulatedCharacterState()).toEqual({});
+    });
+  });
+
+  describe('applyCharacterStateChanges', () => {
+    describe('adding character state entries', () => {
+      it('adds new character state to empty accumulated state', () => {
+        const result = applyCharacterStateChanges(
+          {},
+          [{ characterName: 'greaves', added: ['Gave protagonist a map'], removed: [] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Gave protagonist a map'],
+        });
+      });
+
+      it('appends new states to existing character state', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['Gave protagonist a map'] },
+          [{ characterName: 'greaves', added: ['Proposed 70-30 split'], removed: [] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Gave protagonist a map', 'Proposed 70-30 split'],
+        });
+      });
+
+      it('handles multiple characters in single operation', () => {
+        const result = applyCharacterStateChanges(
+          {},
+          [
+            { characterName: 'greaves', added: ['Gave protagonist a map'], removed: [] },
+            { characterName: 'elena', added: ['Agreed to help'], removed: [] },
+          ]
+        );
+        expect(result).toEqual({
+          greaves: ['Gave protagonist a map'],
+          elena: ['Agreed to help'],
+        });
+      });
+
+      it('normalizes character names (lowercase, trimmed)', () => {
+        const result = applyCharacterStateChanges(
+          {},
+          [{ characterName: '  GREAVES  ', added: ['Gave protagonist a map'], removed: [] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Gave protagonist a map'],
+        });
+      });
+
+      it('trims whitespace from added state entries', () => {
+        const result = applyCharacterStateChanges(
+          {},
+          [{ characterName: 'greaves', added: ['  Trimmed entry  ', ''], removed: [] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Trimmed entry'],
+        });
+      });
+
+      it('filters out empty string additions', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['Existing'] },
+          [{ characterName: 'greaves', added: ['', '  ', 'Valid'], removed: [] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Existing', 'Valid'],
+        });
+      });
+    });
+
+    describe('removing character state entries', () => {
+      it('removes existing state entry with exact match', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['Gave protagonist a map', 'Proposed 70-30 split'] },
+          [{ characterName: 'greaves', added: [], removed: ['Gave protagonist a map'] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Proposed 70-30 split'],
+        });
+      });
+
+      it('removes state entry with case-insensitive match', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['GAVE PROTAGONIST A MAP'] },
+          [{ characterName: 'greaves', added: [], removed: ['gave protagonist a map'] }]
+        );
+        // Empty characters are removed from the result
+        expect(result).toEqual({});
+      });
+
+      it('removes state entry with whitespace-trimmed match', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['Gave protagonist a map'] },
+          [{ characterName: 'greaves', added: [], removed: ['  Gave protagonist a map  '] }]
+        );
+        // Empty characters are removed from the result
+        expect(result).toEqual({});
+      });
+
+      it('ignores removal when state does not exist', () => {
+        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const result = applyCharacterStateChanges(
+          { greaves: ['Existing state'] },
+          [{ characterName: 'greaves', added: [], removed: ['Non-existent state'] }]
+        );
+        expect(result).toEqual({ greaves: ['Existing state'] });
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Character state removal did not match any existing entry for "greaves": "Non-existent state"'
+        );
+        consoleSpy.mockRestore();
+      });
+
+      it('ignores removal when character does not exist', () => {
+        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const result = applyCharacterStateChanges(
+          { greaves: ['Existing state'] },
+          [{ characterName: 'unknown', added: [], removed: ['Some state'] }]
+        );
+        expect(result).toEqual({ greaves: ['Existing state'] });
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Character state removal did not match any existing entry for "unknown": "Some state"'
+        );
+        consoleSpy.mockRestore();
+      });
+    });
+
+    describe('combined add and remove operations', () => {
+      it('processes removals before additions', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['Waiting at the docks'] },
+          [{ characterName: 'greaves', added: ['Left the docks'], removed: ['Waiting at the docks'] }]
+        );
+        expect(result).toEqual({
+          greaves: ['Left the docks'],
+        });
+      });
+
+      it('handles multiple additions and removals in single operation', () => {
+        const result = applyCharacterStateChanges(
+          { greaves: ['State A', 'State B', 'State C'] },
+          [{ characterName: 'greaves', added: ['State D', 'State E'], removed: ['State A', 'State B'] }]
+        );
+        expect(result).toEqual({
+          greaves: ['State C', 'State D', 'State E'],
+        });
+      });
+    });
+
+    describe('immutability', () => {
+      it('does not mutate the original accumulated state', () => {
+        const original = { greaves: ['State A', 'State B'] };
+        const result = applyCharacterStateChanges(
+          original,
+          [{ characterName: 'greaves', added: ['State C'], removed: ['State A'] }]
+        );
+
+        expect(original).toEqual({ greaves: ['State A', 'State B'] });
+        expect(result).toEqual({ greaves: ['State B', 'State C'] });
+        expect(result).not.toBe(original);
+      });
+
+      it('does not mutate the original character state array', () => {
+        const originalArray = ['State A', 'State B'];
+        const original = { greaves: originalArray };
+        const result = applyCharacterStateChanges(
+          original,
+          [{ characterName: 'greaves', added: ['State C'], removed: [] }]
+        );
+
+        expect(originalArray).toEqual(['State A', 'State B']);
+        expect(result.greaves).toEqual(['State A', 'State B', 'State C']);
+        expect(result.greaves).not.toBe(originalArray);
       });
     });
   });

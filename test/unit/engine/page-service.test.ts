@@ -64,6 +64,8 @@ describe('page-service', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         isEnding: false,
         storyArc: 'Deliver the decoded treaty to the resistance safely.',
         rawResponse: 'raw',
@@ -139,6 +141,8 @@ describe('page-service', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -245,6 +249,8 @@ describe('page-service', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -285,6 +291,8 @@ describe('page-service', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });

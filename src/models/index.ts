@@ -27,6 +27,11 @@ export {
   HealthEntry,
   Health,
   HealthChanges,
+  CharacterStateEntry,
+  CharacterState,
+  SingleCharacterStateChanges,
+  CharacterStateChanges,
+  AccumulatedCharacterState,
   createEmptyAccumulatedState,
   createEmptyStateChanges,
   accumulateState,
@@ -37,6 +42,9 @@ export {
   applyInventoryChanges,
   createEmptyHealthChanges,
   applyHealthChanges,
+  createEmptyCharacterStateChanges,
+  createEmptyAccumulatedCharacterState,
+  applyCharacterStateChanges,
 } from './state';
 
 export {

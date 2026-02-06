@@ -9,6 +9,8 @@ export interface GenerationResult {
   inventoryRemoved: string[];
   healthAdded: string[];
   healthRemoved: string[];
+  characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
+  characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
   isEnding: boolean;
   storyArc?: string;
   rawResponse: string;
@@ -43,6 +45,7 @@ export interface ContinuationContext {
   accumulatedState: readonly string[];
   accumulatedInventory: readonly string[];
   accumulatedHealth: readonly string[];
+  accumulatedCharacterState: Readonly<Record<string, readonly string[]>>;
 }
 
 export interface OpeningContext {

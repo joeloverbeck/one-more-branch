@@ -30,6 +30,19 @@ export interface HealthChanges {
   readonly removed: Health;
 }
 
+// Character State types (branch-isolated, unlike GlobalCharacterCanon which is permanent)
+export type CharacterStateEntry = string;
+export type CharacterState = readonly CharacterStateEntry[];
+
+export interface SingleCharacterStateChanges {
+  readonly characterName: string;
+  readonly added: readonly CharacterStateEntry[];
+  readonly removed: readonly CharacterStateEntry[];
+}
+
+export type CharacterStateChanges = readonly SingleCharacterStateChanges[];
+export type AccumulatedCharacterState = Readonly<Record<string, CharacterState>>;
+
 export interface AccumulatedState {
   readonly changes: readonly StateChange[];
 }
@@ -175,6 +188,82 @@ export function applyHealthChanges(current: Health, changes: HealthChanges): Hea
     const trimmed = entryToAdd.trim();
     if (trimmed) {
       result.push(trimmed);
+    }
+  }
+
+  return result;
+}
+
+// Character State functions
+export function createEmptyCharacterStateChanges(): CharacterStateChanges {
+  return [];
+}
+
+export function createEmptyAccumulatedCharacterState(): AccumulatedCharacterState {
+  return {};
+}
+
+/**
+ * Normalizes a character name for consistent keying.
+ * - Converts to lowercase
+ * - Removes extra punctuation (periods, commas)
+ * - Collapses multiple spaces to single space
+ * - Trims whitespace
+ */
+function normalizeCharacterNameForState(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[.,;:!?'"]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Applies character state changes to the accumulated character state.
+ * Follows the same add/remove pattern as other state management functions.
+ * Removals are processed first using case-insensitive matching.
+ */
+export function applyCharacterStateChanges(
+  current: AccumulatedCharacterState,
+  changes: CharacterStateChanges
+): AccumulatedCharacterState {
+  const result: Record<string, string[]> = {};
+
+  // Copy existing state
+  for (const [name, state] of Object.entries(current)) {
+    result[name] = [...state];
+  }
+
+  // Apply each character's changes
+  for (const charChange of changes) {
+    const normalizedName = normalizeCharacterNameForState(charChange.characterName);
+    const existing = result[normalizedName] ?? [];
+
+    // Process removals first (case-insensitive match)
+    for (const toRemove of charChange.removed) {
+      const normalizedRemove = toRemove.trim().toLowerCase();
+      if (!normalizedRemove) continue; // Skip empty strings silently
+      const index = existing.findIndex(entry => entry.trim().toLowerCase() === normalizedRemove);
+      if (index !== -1) {
+        existing.splice(index, 1);
+      } else {
+        console.warn(`Character state removal did not match any existing entry for "${charChange.characterName}": "${toRemove}"`);
+      }
+    }
+
+    // Then add new entries
+    for (const toAdd of charChange.added) {
+      const trimmed = toAdd.trim();
+      if (trimmed) {
+        existing.push(trimmed);
+      }
+    }
+
+    // Only keep the character in result if they have state entries
+    if (existing.length > 0) {
+      result[normalizedName] = existing;
+    } else {
+      delete result[normalizedName];
     }
   }
 

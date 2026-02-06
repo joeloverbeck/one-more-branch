@@ -99,6 +99,7 @@ describe('llm client integration (mocked fetch)', () => {
         accumulatedState: ['You stole a key from the sexton.'],
         accumulatedInventory: [],
         accumulatedHealth: [],
+        accumulatedCharacterState: {},
       },
       { apiKey: 'test-key' },
     );

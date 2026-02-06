@@ -44,6 +44,7 @@ const continuationContext = {
   accumulatedState: ['You stole a key from the sexton.'],
   accumulatedInventory: [],
   accumulatedHealth: [],
+  accumulatedCharacterState: {},
 };
 
 const validStructuredPayload = {
@@ -53,10 +54,13 @@ const validStructuredPayload = {
   stateChangesAdded: ['Entered the drowned vault'],
   stateChangesRemoved: [],
   newCanonFacts: ['A chanting cult gathers beneath the cathedral'],
+  newCharacterCanonFacts: [],
   inventoryAdded: [],
   inventoryRemoved: [],
   healthAdded: [],
   healthRemoved: [],
+  characterStateChangesAdded: [],
+  characterStateChangesRemoved: [],
   isEnding: false,
   storyArc: 'Map the drowned vault before the cult reaches it.',
 };

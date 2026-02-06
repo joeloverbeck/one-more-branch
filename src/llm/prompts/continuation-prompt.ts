@@ -29,9 +29,19 @@ ${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
   const characterCanonEntries = Object.entries(context.globalCharacterCanon);
   const characterCanonSection =
     characterCanonEntries.length > 0
-      ? `CHARACTER INFORMATION:
+      ? `CHARACTER INFORMATION (permanent traits):
 ${characterCanonEntries
   .map(([name, facts]) => `[${name}]\n${facts.map(fact => `- ${fact}`).join('\n')}`)
+  .join('\n\n')}
+
+`
+      : '';
+  const characterStateEntries = Object.entries(context.accumulatedCharacterState);
+  const characterStateSection =
+    characterStateEntries.length > 0
+      ? `NPC CURRENT STATE (branch-specific events):
+${characterStateEntries
+  .map(([name, states]) => `[${name}]\n${states.map(state => `- ${state}`).join('\n')}`)
   .join('\n\n')}
 
 `
@@ -70,7 +80,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${storyArcSection}${canonSection}${characterCanonSection}${stateSection}${inventorySection}${healthSection}PREVIOUS SCENE:
+${storyArcSection}${canonSection}${characterCanonSection}${characterStateSection}${stateSection}${inventorySection}${healthSection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
 
 PLAYER'S CHOICE: "${context.selectedChoice}"

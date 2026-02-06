@@ -62,6 +62,17 @@ export {
   createEmptyHealthChanges,
 } from './health-manager';
 
+export {
+  normalizeCharacterNameForState,
+  createCharacterStateChanges,
+  applyCharacterStateChanges,
+  formatCharacterStateForPrompt,
+  getCharacterState,
+  hasCharacterState,
+  getParentAccumulatedCharacterState,
+  createEmptyAccumulatedCharacterState,
+} from './character-state-manager';
+
 export { EngineError } from './types';
 export type {
   StartStoryResult,

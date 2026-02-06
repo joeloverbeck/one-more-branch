@@ -2,6 +2,7 @@ import { generateContinuationPage, generateOpeningPage } from '../llm';
 import { createChoice, createPage, generatePageId, Page, Story, parsePageId, updateStoryArc } from '../models';
 import { storage } from '../persistence';
 import { updateStoryWithAllCanon } from './canon-manager';
+import { createCharacterStateChanges, getParentAccumulatedCharacterState } from './character-state-manager';
 import { createHealthChanges, getParentAccumulatedHealth } from './health-manager';
 import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
 import { createStateChanges, getParentAccumulatedState } from './state-manager';
@@ -27,6 +28,10 @@ export async function generateFirstPage(
     stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
+    characterStateChanges: createCharacterStateChanges(
+      result.characterStateChangesAdded,
+      result.characterStateChangesRemoved,
+    ),
     isEnding: result.isEnding,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -60,6 +65,7 @@ export async function generateNextPage(
   const parentAccumulatedState = getParentAccumulatedState(parentPage);
   const parentAccumulatedInventory = getParentAccumulatedInventory(parentPage);
   const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
+  const parentAccumulatedCharacterState = getParentAccumulatedCharacterState(parentPage);
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -73,6 +79,7 @@ export async function generateNextPage(
       accumulatedState: parentAccumulatedState.changes,
       accumulatedInventory: parentAccumulatedInventory,
       accumulatedHealth: parentAccumulatedHealth,
+      accumulatedCharacterState: parentAccumulatedCharacterState,
     },
     { apiKey },
   );
@@ -84,12 +91,17 @@ export async function generateNextPage(
     stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
+    characterStateChanges: createCharacterStateChanges(
+      result.characterStateChangesAdded,
+      result.characterStateChangesRemoved,
+    ),
     isEnding: result.isEnding,
     parentPageId: parentPage.id,
     parentChoiceIndex: choiceIndex,
     parentAccumulatedState,
     parentAccumulatedInventory,
     parentAccumulatedHealth,
+    parentAccumulatedCharacterState,
   });
 
   let updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);

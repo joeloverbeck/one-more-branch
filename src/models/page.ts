@@ -1,16 +1,21 @@
 import { Choice, isChoice } from './choice';
 import { PageId } from './id';
 import {
+  AccumulatedCharacterState,
   AccumulatedState,
+  CharacterStateChanges,
   Health,
   HealthChanges,
   Inventory,
   InventoryChanges,
   StateChanges,
+  applyCharacterStateChanges,
   applyHealthChanges,
   applyInventoryChanges,
   applyStateChanges,
+  createEmptyAccumulatedCharacterState,
   createEmptyAccumulatedState,
+  createEmptyCharacterStateChanges,
   createEmptyHealthChanges,
   createEmptyInventoryChanges,
   createEmptyStateChanges,
@@ -26,6 +31,8 @@ export interface Page {
   readonly accumulatedInventory: Inventory;
   readonly healthChanges: HealthChanges;
   readonly accumulatedHealth: Health;
+  readonly characterStateChanges: CharacterStateChanges;
+  readonly accumulatedCharacterState: AccumulatedCharacterState;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -38,12 +45,14 @@ export interface CreatePageData {
   stateChanges?: StateChanges;
   inventoryChanges?: InventoryChanges;
   healthChanges?: HealthChanges;
+  characterStateChanges?: CharacterStateChanges;
   isEnding: boolean;
   parentPageId: PageId | null;
   parentChoiceIndex: number | null;
   parentAccumulatedState?: AccumulatedState;
   parentAccumulatedInventory?: Inventory;
   parentAccumulatedHealth?: Health;
+  parentAccumulatedCharacterState?: AccumulatedCharacterState;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -66,9 +75,11 @@ export function createPage(data: CreatePageData): Page {
   const parentState = data.parentAccumulatedState ?? createEmptyAccumulatedState();
   const parentInventory = data.parentAccumulatedInventory ?? [];
   const parentHealth = data.parentAccumulatedHealth ?? [];
+  const parentCharacterState = data.parentAccumulatedCharacterState ?? createEmptyAccumulatedCharacterState();
   const stateChanges = data.stateChanges ?? createEmptyStateChanges();
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
   const healthChanges = data.healthChanges ?? createEmptyHealthChanges();
+  const characterStateChanges = data.characterStateChanges ?? createEmptyCharacterStateChanges();
 
   return {
     id: data.id,
@@ -80,6 +91,8 @@ export function createPage(data: CreatePageData): Page {
     accumulatedInventory: applyInventoryChanges(parentInventory, inventoryChanges),
     healthChanges,
     accumulatedHealth: applyHealthChanges(parentHealth, healthChanges),
+    characterStateChanges,
+    accumulatedCharacterState: applyCharacterStateChanges(parentCharacterState, characterStateChanges),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,

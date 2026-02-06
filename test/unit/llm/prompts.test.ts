@@ -254,6 +254,7 @@ describe('buildContinuationPrompt', () => {
     accumulatedState: [] as const,
     accumulatedInventory: [] as const,
     accumulatedHealth: [] as const,
+    accumulatedCharacterState: {} as const,
   };
 
   it('should include selected choice in user message', () => {
@@ -294,12 +295,40 @@ describe('buildContinuationPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    expect(user).toContain('CHARACTER INFORMATION:');
+    expect(user).toContain('CHARACTER INFORMATION (permanent traits):');
     expect(user).toContain('[dr cohen]');
     expect(user).toContain('Dr. Cohen is a psychiatrist');
     expect(user).toContain('He wears wire-rimmed glasses');
     expect(user).toContain('[bobby western]');
     expect(user).toContain('Bobby is in a coma in Italy');
+  });
+
+  it('should include NPC current state when present', () => {
+    const messages = buildContinuationPrompt({
+      ...baseContext,
+      accumulatedCharacterState: {
+        greaves: ['Gave protagonist a sketched map', 'Proposed a 70-30 split'],
+        elena: ['Agreed to meet at the docks'],
+      },
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('NPC CURRENT STATE (branch-specific events):');
+    expect(user).toContain('[greaves]');
+    expect(user).toContain('- Gave protagonist a sketched map');
+    expect(user).toContain('- Proposed a 70-30 split');
+    expect(user).toContain('[elena]');
+    expect(user).toContain('- Agreed to meet at the docks');
+  });
+
+  it('should not include NPC current state section when empty', () => {
+    const messages = buildContinuationPrompt({
+      ...baseContext,
+      accumulatedCharacterState: {},
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).not.toContain('NPC CURRENT STATE');
   });
 
   it('should include story arc when present', () => {

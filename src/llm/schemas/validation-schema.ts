@@ -20,6 +20,14 @@ function transformCharacterCanonFactsToRecord(
   return result;
 }
 
+// Schema for character state changes (add/remove pattern for branch-isolated state)
+const CharacterStateChangesArraySchema = z.array(
+  z.object({
+    characterName: z.string(),
+    states: z.array(z.string()),
+  }),
+);
+
 export const GenerationResultSchema = z
   .object({
     narrative: z
@@ -50,6 +58,8 @@ export const GenerationResultSchema = z
     inventoryRemoved: z.array(z.string()).optional().default([]),
     healthAdded: z.array(z.string()).optional().default([]),
     healthRemoved: z.array(z.string()).optional().default([]),
+    characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
+    characterStateChangesRemoved: CharacterStateChangesArraySchema.optional().default([]),
     isEnding: z.boolean(),
     storyArc: z.string().optional().default(''),
   })
