@@ -275,6 +275,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            title: formData.get('title'),
             characterConcept: formData.get('characterConcept'),
             worldbuilding: formData.get('worldbuilding'),
             tone: formData.get('tone'),

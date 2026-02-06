@@ -4,7 +4,7 @@ import {
   getParentAccumulatedCharacterState,
   normalizeCharacterNameForState,
 } from '../../../src/engine/character-state-manager';
-import type { AccumulatedCharacterState, CharacterStateChanges } from '../../../src/models/state';
+import type { AccumulatedCharacterState } from '../../../src/models/state';
 
 describe('character-state-manager', () => {
   describe('normalizeCharacterNameForState', () => {

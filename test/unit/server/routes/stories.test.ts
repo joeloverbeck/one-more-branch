@@ -531,6 +531,57 @@ describe('storyRoutes', () => {
   });
 
   describe('POST /create-ajax validation', () => {
+    it('returns 400 JSON for missing title', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Story title is required',
+      });
+    });
+
+    it('returns 400 JSON for empty title', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: '   ',
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Story title is required',
+      });
+    });
+
     it('returns 400 JSON for empty character concept', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
