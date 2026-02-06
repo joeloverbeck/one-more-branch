@@ -1,8 +1,25 @@
 # STOENG-002: State Manager
 
+## Status
+
+Completed (2026-02-06)
+
 ## Summary
 
 Implement the state accumulation logic for computing and managing accumulated state across story branches. This module handles traversing the page tree to compute cumulative state changes.
+
+## Reassessed Assumptions (2026-02-06)
+
+- `src/engine/state-manager.ts` does not exist yet and must be created in this ticket.
+- `test/unit/engine/` already exists and currently contains `types.test.ts`; this ticket should add `state-manager.test.ts` there.
+- The codebase currently uses extensionless TypeScript imports (for example `../models`), so this ticket should follow that convention instead of `.js` suffixed imports shown in `specs/05-story-engine.md` examples.
+- `computeAccumulatedState` receives `getPage` returning `Page | undefined`; the ticket needs explicit behavior for missing pages. Scope is updated so missing target page returns an empty accumulated state and missing ancestors stop traversal without crossing to unrelated branches.
+
+## Updated Scope
+
+- Create `src/engine/state-manager.ts` with pure helper functions for state accumulation and formatting.
+- Add `test/unit/engine/state-manager.test.ts` covering happy-path behavior plus missing-page/branch-isolation edge cases.
+- Keep changes limited to this new module, its tests, and this ticket document.
 
 ## Files to Create/Modify
 
@@ -10,7 +27,7 @@ Implement the state accumulation logic for computing and managing accumulated st
 - `src/engine/state-manager.ts`
 
 ### Modify
-- None
+- `tickets/STOENG-002-state-manager.md` (assumptions/scope/status updates)
 
 ## Out of Scope
 
@@ -37,6 +54,7 @@ export function computeAccumulatedState(
 - Build path from target page back to page 1 (root)
 - Traverse path forward, accumulating `stateChanges` arrays
 - Return `{ changes: [...all accumulated changes] }`
+- If target page is missing, return empty accumulated state
 
 ### getParentAccumulatedState
 
@@ -92,6 +110,8 @@ Create `test/unit/engine/state-manager.test.ts`:
    - Accumulates state through 3-page chain correctly
    - Returns empty changes for page 1 with no state changes
    - Handles page with no parent (root) correctly
+   - Returns empty changes when target page is missing
+   - Does not include sibling-branch state changes
 
 2. **mergeStateChanges**
    - Combines parent state with new changes
@@ -124,3 +144,15 @@ Create `test/unit/engine/state-manager.test.ts`:
 
 - STOENG-001: Engine Types
 - Spec 02: Data Models (Page, PageId, AccumulatedState, createEmptyAccumulatedState)
+
+## Outcome
+
+Originally planned:
+- Create `src/engine/state-manager.ts` with accumulation/merge/format/recent-state helpers.
+- Add `test/unit/engine/state-manager.test.ts` covering core behaviors.
+
+Actually changed:
+- Added `src/engine/state-manager.ts` with `computeAccumulatedState`, `getParentAccumulatedState`, `mergeStateChanges`, `formatStateForDisplay`, and `getRecentChanges`.
+- Implemented explicit missing-target behavior in `computeAccumulatedState` by returning `createEmptyAccumulatedState()`.
+- Added `test/unit/engine/state-manager.test.ts` covering all listed acceptance criteria plus branch-isolation and missing-target edge cases.
+- Verified with `npm run test:unit -- --testPathPattern=test/unit/engine/state-manager.test.ts --coverage=false` and `npm run typecheck`.
