@@ -1,0 +1,182 @@
+import type { GenerationResult } from './types';
+import { LLMError } from './types';
+
+const SECTION_HEADER_REGEX = /\n[A-Z_]+:\s*\n?/;
+
+/**
+ * Fallback parser for models that do not support structured outputs.
+ */
+export function parseTextResponse(rawResponse: string): GenerationResult {
+  const response = rawResponse.trim();
+
+  const isEnding = /THE\s*END/i.test(response) && !/CHOICES:/i.test(response);
+  const narrative = extractSection(response, 'NARRATIVE', isEnding ? 'THE END' : 'CHOICES');
+  const choices = isEnding ? [] : extractChoices(response);
+  const stateChanges = extractListSection(response, 'STATE_CHANGES');
+  const canonFacts = extractListSection(response, 'CANON_FACTS');
+  const storyArc = extractSection(response, 'STORY_ARC', null);
+
+  if (!isEnding && choices.length < 2) {
+    throw new LLMError(
+      'Response missing required choices for non-ending page',
+      'MISSING_CHOICES',
+      true,
+    );
+  }
+
+  return {
+    narrative,
+    choices,
+    stateChanges,
+    canonFacts,
+    isEnding,
+    storyArc: storyArc || undefined,
+    rawResponse: response,
+  };
+}
+
+function extractSection(text: string, startMarker: string, endMarker: string | null): string {
+  const startRegex = new RegExp(`(?:^|\\n)${startMarker}:?\\s*\\n?`, 'i');
+  const startMatch = startRegex.exec(text);
+
+  if (!startMatch) {
+    if (startMarker === 'NARRATIVE') {
+      const boundary = text.search(/(?:^|\n)(CHOICES:|STATE_CHANGES:|CANON_FACTS:|STORY_ARC:|THE\s*END)/i);
+      if (boundary > 0) {
+        return text.slice(0, boundary).trim();
+      }
+      return text.trim();
+    }
+
+    return '';
+  }
+
+  const startIndex = (startMatch.index ?? 0) + startMatch[0].length;
+
+  if (endMarker === null) {
+    const nextSectionIndex = text.slice(startIndex).search(SECTION_HEADER_REGEX);
+    if (nextSectionIndex > -1) {
+      return text.slice(startIndex, startIndex + nextSectionIndex).trim();
+    }
+
+    return text.slice(startIndex).trim();
+  }
+
+  const endRegex = new RegExp(`(?:^|\\n)${endMarker}:?\\s*\\n?`, 'i');
+  const endMatch = endRegex.exec(text.slice(startIndex));
+  if (endMatch) {
+    return text.slice(startIndex, startIndex + (endMatch.index ?? 0)).trim();
+  }
+
+  const nextSectionIndex = text.slice(startIndex).search(/\n(?:[A-Z_]+:|THE\s*END)/i);
+  if (nextSectionIndex > -1) {
+    return text.slice(startIndex, startIndex + nextSectionIndex).trim();
+  }
+
+  return text.slice(startIndex).trim();
+}
+
+function extractChoices(text: string): string[] {
+  const section = extractSection(text, 'CHOICES', 'STATE_CHANGES');
+
+  if (section) {
+    return parseChoiceLines(section, true);
+  }
+
+  return parseChoiceLines(text, false);
+}
+
+function parseChoiceLines(text: string, includePlainLines: boolean): string[] {
+  const choices: string[] = [];
+
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const numbered = trimmed.match(/^\d+[.)]\s*(.+)$/);
+    if (numbered?.[1]) {
+      const choice = numbered[1].trim();
+      if (choice) {
+        choices.push(choice);
+      }
+      continue;
+    }
+
+    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bullet?.[1]) {
+      const choice = bullet[1].trim();
+      if (choice) {
+        choices.push(choice);
+      }
+      continue;
+    }
+
+    if (includePlainLines && !/^[A-Z_]+:?$/.test(trimmed)) {
+      choices.push(trimmed);
+    }
+  }
+
+  return choices;
+}
+
+function extractListSection(text: string, marker: string): string[] {
+  const section = extractSection(text, marker, null);
+  if (!section) {
+    return [];
+  }
+
+  const values: string[] = [];
+
+  for (const line of section.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || /^[A-Z_]+:?$/.test(trimmed)) {
+      continue;
+    }
+
+    const withoutBullet = trimmed.replace(/^[-*]\s*/, '').trim();
+    if (withoutBullet) {
+      values.push(withoutBullet);
+    }
+  }
+
+  return values;
+}
+
+/**
+ * Appended to the system prompt when text parsing fallback is used.
+ */
+export function buildFallbackSystemPromptAddition(): string {
+  return `
+
+OUTPUT FORMAT:
+Always structure your response as follows:
+
+NARRATIVE:
+[Your narrative text here - describe the scene, action, dialogue, and outcomes]
+
+CHOICES:
+1. [First meaningful choice]
+2. [Second meaningful choice]
+3. [Third meaningful choice]
+
+STATE_CHANGES:
+- [Any significant event that occurred]
+- [Any item gained or lost]
+- [Any relationship change]
+
+CANON_FACTS:
+- [Any new world facts introduced]
+- [Any new characters introduced]
+
+If this is an ENDING (character death, story conclusion, etc.), omit the CHOICES section and instead write:
+
+THE END
+[Brief epilogue or closing statement]
+
+For the opening/first page, also include:
+
+STORY_ARC:
+[The main goal or conflict driving this adventure]`;
+}

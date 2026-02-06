@@ -4,6 +4,16 @@
 
 Create the fallback text parser for models that don't support structured outputs. This parses text responses with markers like `NARRATIVE:`, `CHOICES:`, etc.
 
+## Assumption Reassessment (2026-02-06)
+
+- The current repo already defines `GenerationResult` and `LLMError` in `src/llm/types.ts`.
+- `src/llm/fallback-parser.ts` does not exist yet.
+- Per `specs/04-llm-integration.md`, public API for this module should be:
+  - `parseTextResponse(rawResponse: string): GenerationResult`
+  - `buildFallbackSystemPromptAddition(): string`
+- Helper parser functions are implementation details and should remain non-exported.
+- Therefore, helper behavior must be validated through public-function tests instead of direct helper unit tests.
+
 ## Dependencies
 
 - **LLMINT-001**: Requires `GenerationResult`, `LLMError` types
@@ -22,6 +32,7 @@ Create the fallback text parser for models that don't support structured outputs
 - **DO NOT** modify `src/llm/types.ts`, `src/llm/schemas.ts`, `src/llm/prompts.ts`
 - **DO NOT** create `src/llm/client.ts` (that's LLMINT-005)
 - **DO NOT** use Zod validation here (this is raw text parsing only)
+- **DO NOT** export helper parser functions solely for test access
 
 ## Implementation Details
 
@@ -41,7 +52,7 @@ function parseTextResponse(rawResponse: string): GenerationResult
 7. Validate: non-endings must have ≥2 choices (throw `LLMError` if not)
 8. Return `GenerationResult`
 
-### Helper Functions
+### Helper Functions (private)
 
 **extractSection(text, startMarker, endMarker): string**
 - Find section between markers
@@ -78,33 +89,28 @@ Returns OUTPUT FORMAT instructions to append to system prompt when using text mo
 
 Create `test/unit/llm/fallback-parser.test.ts`:
 
-**parseTextResponse tests:**
+**parseTextResponse behavior tests:**
 1. `it('should parse well-formatted response with all sections')`
 2. `it('should parse ending response with THE END marker')`
 3. `it('should parse response with story arc')`
 4. `it('should handle response without section markers')`
 5. `it('should throw LLMError for missing choices on non-ending')`
 6. `it('should handle empty state changes and canon facts')`
-
-**Choice extraction tests:**
-7. `it('should extract numbered choices (1. format)')`
-8. `it('should extract numbered choices (1) format)')`
-9. `it('should extract bullet choices (- format)')`
-10. `it('should extract bullet choices (* format)')`
-11. `it('should handle mixed formatting')`
-
-**Section extraction tests:**
-12. `it('should extract section between markers')`
-13. `it('should handle missing end marker')`
-14. `it('should extract narrative without explicit NARRATIVE marker')`
+7. `it('should parse numbered choices (1. format)')`
+8. `it('should parse numbered choices (1) format)')`
+9. `it('should parse bullet choices (- format)')`
+10. `it('should parse bullet choices (* format)')`
+11. `it('should handle mixed formatting in choices')`
+12. `it('should handle missing section end markers')`
+13. `it('should extract narrative without explicit NARRATIVE marker')`
 
 **buildFallbackSystemPromptAddition tests:**
-15. `it('should include NARRATIVE section instruction')`
-16. `it('should include CHOICES section instruction')`
-17. `it('should include STATE_CHANGES section instruction')`
-18. `it('should include CANON_FACTS section instruction')`
-19. `it('should include THE END instruction for endings')`
-20. `it('should include STORY_ARC instruction')`
+14. `it('should include NARRATIVE section instruction')`
+15. `it('should include CHOICES section instruction')`
+16. `it('should include STATE_CHANGES section instruction')`
+17. `it('should include CANON_FACTS section instruction')`
+18. `it('should include THE END instruction for endings')`
+19. `it('should include STORY_ARC instruction')`
 
 ### Invariants That Must Remain True
 
@@ -112,6 +118,7 @@ Create `test/unit/llm/fallback-parser.test.ts`:
 2. **Ending detection**: Presence of `THE END` without `CHOICES:` → `isEnding: true`
 3. **Error retryable**: `LLMError` thrown for missing choices has `retryable: true`
 4. **Graceful degradation**: Parser handles various formatting styles
+5. **Public API**: Only parser entrypoints are exported; helpers remain private
 
 ### Build Requirements
 
@@ -123,3 +130,17 @@ Create `test/unit/llm/fallback-parser.test.ts`:
 ## Estimated Size
 
 ~200 lines of TypeScript + ~200 lines of tests
+
+## Status
+
+Completed on 2026-02-06.
+
+## Outcome
+
+Originally planned:
+- Add fallback parser and helper-focused tests from the ticket checklist.
+
+Actually changed:
+- Added `src/llm/fallback-parser.ts` with only public entrypoints (`parseTextResponse`, `buildFallbackSystemPromptAddition`) and private helpers.
+- Added behavior-level tests in `test/unit/llm/fallback-parser.test.ts` to cover helper behavior through public APIs.
+- Preserved existing LLM public APIs and did not modify `src/llm/types.ts`, `src/llm/schemas.ts`, or `src/llm/prompts.ts`.
