@@ -5,6 +5,7 @@ export type {
   ContinuationContext,
   ChatMessage,
   JsonSchema,
+  PromptOptions,
 } from './types.js';
 
 export { LLMError } from './types.js';
@@ -12,6 +13,14 @@ export { LLMError } from './types.js';
 export { CONTENT_POLICY } from './content-policy.js';
 
 export { buildOpeningPrompt, buildContinuationPrompt } from './prompts.js';
+
+export { buildFewShotMessages } from './examples.js';
+
+export {
+  extractOutputFromCoT,
+  extractThinkingSection,
+  hasCoTFormatting,
+} from './cot-parser.js';
 
 export {
   STORY_GENERATION_SCHEMA,

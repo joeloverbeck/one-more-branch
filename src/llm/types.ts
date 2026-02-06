@@ -8,12 +8,22 @@ export interface GenerationResult {
   rawResponse: string;
 }
 
+export interface PromptOptions {
+  /** 'none' | 'minimal' (1 example) | 'standard' (2-3 examples) */
+  fewShotMode?: 'none' | 'minimal' | 'standard';
+  /** Enable <thinking>...</thinking> reasoning phase */
+  enableChainOfThought?: boolean;
+  /** 'basic' (current) | 'strict' (explicit constraints) */
+  choiceGuidance?: 'basic' | 'strict';
+}
+
 export interface GenerationOptions {
   apiKey: string;
   model?: string;
   temperature?: number;
   maxTokens?: number;
   forceTextParsing?: boolean;
+  promptOptions?: PromptOptions;
 }
 
 export interface ContinuationContext {

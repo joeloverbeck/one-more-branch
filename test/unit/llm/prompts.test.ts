@@ -6,7 +6,9 @@ function getSystemMessage(messages: { role: string; content: string }[]): string
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'user')?.content ?? '';
+  // Get the last user message (after any few-shot examples)
+  const userMessages = messages.filter(message => message.role === 'user');
+  return userMessages[userMessages.length - 1]?.content ?? '';
 }
 
 describe('buildOpeningPrompt', () => {
@@ -75,7 +77,7 @@ describe('buildOpeningPrompt', () => {
     expect(getUserMessage(messages)).toContain('TONE/GENRE: neo-noir thriller');
   });
 
-  it('should return exactly 2 messages (system, user)', () => {
+  it('should return exactly 2 messages (system, user) with no options', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',
       worldbuilding: '',
@@ -85,6 +87,114 @@ describe('buildOpeningPrompt', () => {
     expect(messages).toHaveLength(2);
     expect(messages[0]?.role).toBe('system');
     expect(messages[1]?.role).toBe('user');
+  });
+
+  it('should return exactly 2 messages with fewShotMode: none', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { fewShotMode: 'none' },
+    );
+
+    expect(messages).toHaveLength(2);
+  });
+
+  it('should return 4 messages with fewShotMode: minimal (system + example pair + user)', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { fewShotMode: 'minimal' },
+    );
+
+    expect(messages).toHaveLength(4);
+    expect(messages[0]?.role).toBe('system');
+    expect(messages[1]?.role).toBe('user'); // example user
+    expect(messages[2]?.role).toBe('assistant'); // example assistant
+    expect(messages[3]?.role).toBe('user'); // actual prompt
+  });
+
+  it('should include strict choice guidelines when choiceGuidance: strict', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { choiceGuidance: 'strict' },
+    );
+
+    const system = getSystemMessage(messages);
+    expect(system).toContain('CHOICE REQUIREMENTS (CRITICAL)');
+    expect(system).toContain('IN-CHARACTER');
+    expect(system).toContain('DIVERGENT');
+    expect(system).toContain('FORBIDDEN CHOICE PATTERNS');
+  });
+
+  it('should NOT include strict choice guidelines when choiceGuidance: basic', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { choiceGuidance: 'basic' },
+    );
+
+    const system = getSystemMessage(messages);
+    expect(system).not.toContain('CHOICE REQUIREMENTS (CRITICAL)');
+  });
+
+  it('should include CoT instructions when enableChainOfThought: true', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { enableChainOfThought: true },
+    );
+
+    const system = getSystemMessage(messages);
+    expect(system).toContain('REASONING PROCESS');
+    expect(system).toContain('<thinking>');
+    expect(system).toContain('<output>');
+  });
+
+  it('should NOT include CoT instructions when enableChainOfThought: false', () => {
+    const messages = buildOpeningPrompt(
+      {
+        characterConcept: 'Character',
+        worldbuilding: '',
+        tone: 'dark fantasy',
+      },
+      { enableChainOfThought: false },
+    );
+
+    const system = getSystemMessage(messages);
+    expect(system).not.toContain('REASONING PROCESS');
+    expect(system).not.toContain('<thinking>');
+  });
+
+  it('should include numbered REQUIREMENTS in user message', () => {
+    const messages = buildOpeningPrompt({
+      characterConcept: 'Character',
+      worldbuilding: '',
+      tone: 'dark fantasy',
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('REQUIREMENTS (follow ALL)');
+    expect(user).toContain('1.');
+    expect(user).toContain('2.');
+    expect(user).toContain('3.');
+    expect(user).toContain('4.');
+    expect(user).toContain('5.');
   });
 });
 
@@ -158,12 +268,46 @@ describe('buildContinuationPrompt', () => {
     expect(system).not.toContain('CHOICES:');
   });
 
-  it('should return exactly 2 messages (system, user)', () => {
+  it('should return exactly 2 messages (system, user) with no options', () => {
     const messages = buildContinuationPrompt(baseContext);
 
     expect(messages).toHaveLength(2);
     expect(messages[0]?.role).toBe('system');
     expect(messages[1]?.role).toBe('user');
+  });
+
+  it('should return 4 messages with fewShotMode: minimal', () => {
+    const messages = buildContinuationPrompt(baseContext, { fewShotMode: 'minimal' });
+
+    expect(messages).toHaveLength(4);
+    expect(messages[0]?.role).toBe('system');
+    expect(messages[1]?.role).toBe('user'); // example user
+    expect(messages[2]?.role).toBe('assistant'); // example assistant
+    expect(messages[3]?.role).toBe('user'); // actual prompt
+  });
+
+  it('should return 6 messages with fewShotMode: standard (includes ending example)', () => {
+    const messages = buildContinuationPrompt(baseContext, { fewShotMode: 'standard' });
+
+    expect(messages).toHaveLength(6);
+    expect(messages[0]?.role).toBe('system');
+    expect(messages[1]?.role).toBe('user'); // continuation example user
+    expect(messages[2]?.role).toBe('assistant'); // continuation example assistant
+    expect(messages[3]?.role).toBe('user'); // ending example user
+    expect(messages[4]?.role).toBe('assistant'); // ending example assistant
+    expect(messages[5]?.role).toBe('user'); // actual prompt
+  });
+
+  it('should include numbered REQUIREMENTS in user message', () => {
+    const messages = buildContinuationPrompt(baseContext);
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('REQUIREMENTS (follow ALL)');
+    expect(user).toContain('1.');
+    expect(user).toContain('2.');
+    expect(user).toContain('3.');
+    expect(user).toContain('4.');
+    expect(user).toContain('5.');
   });
 
   it('should not truncate text under maxLength', () => {

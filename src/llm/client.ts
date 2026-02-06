@@ -1,3 +1,4 @@
+import { extractOutputFromCoT } from './cot-parser.js';
 import { buildFallbackSystemPromptAddition, parseTextResponse } from './fallback-parser.js';
 import { buildContinuationPrompt, buildOpeningPrompt } from './prompts.js';
 import {
@@ -13,7 +14,18 @@ import {
   type GenerationResult,
   type OpenRouterResponse,
   type OpeningContext,
+  type PromptOptions,
 } from './types.js';
+
+/**
+ * Default prompt options - all enhancements enabled for maximum story quality.
+ * Users pay for their own API keys, so these defaults prioritize quality over token savings.
+ */
+const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
+  fewShotMode: 'minimal',
+  enableChainOfThought: true,
+  choiceGuidance: 'strict',
+};
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const DEFAULT_MODEL = 'anthropic/claude-sonnet-4.5';
@@ -25,6 +37,7 @@ async function callOpenRouterStructured(
   const model = options.model ?? DEFAULT_MODEL;
   const temperature = options.temperature ?? 0.8;
   const maxTokens = options.maxTokens ?? 8192;
+  const enableCoT = options.promptOptions?.enableChainOfThought ?? true;
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -50,10 +63,15 @@ async function callOpenRouterStructured(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
+  let content = data.choices[0]?.message?.content;
 
   if (!content) {
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  // Extract output from CoT format if CoT was enabled
+  if (enableCoT) {
+    content = extractOutputFromCoT(content);
   }
 
   let parsed: unknown;
@@ -102,6 +120,7 @@ async function callOpenRouterText(
   const model = options.model ?? DEFAULT_MODEL;
   const temperature = options.temperature ?? 0.8;
   const maxTokens = options.maxTokens ?? 8192;
+  const enableCoT = options.promptOptions?.enableChainOfThought ?? true;
 
   const fallbackMessages = withFallbackInstructions(messages);
 
@@ -128,10 +147,15 @@ async function callOpenRouterText(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
+  let content = data.choices[0]?.message?.content;
 
   if (!content) {
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  // Extract output from CoT format if CoT was enabled
+  if (enableCoT) {
+    content = extractOutputFromCoT(content);
   }
 
   return parseTextResponse(content);
@@ -217,20 +241,35 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 }
 
+/**
+ * Merges user-provided prompt options with defaults.
+ * All enhancements are enabled by default for maximum story quality.
+ */
+function resolvePromptOptions(options: GenerationOptions): PromptOptions {
+  return {
+    ...DEFAULT_PROMPT_OPTIONS,
+    ...options.promptOptions,
+  };
+}
+
 export async function generateOpeningPage(
   context: OpeningContext,
   options: GenerationOptions,
 ): Promise<GenerationResult> {
-  const messages = buildOpeningPrompt(context);
-  return withRetry(() => generateWithFallback(messages, options));
+  const promptOptions = resolvePromptOptions(options);
+  const messages = buildOpeningPrompt(context, promptOptions);
+  const resolvedOptions = { ...options, promptOptions };
+  return withRetry(() => generateWithFallback(messages, resolvedOptions));
 }
 
 export async function generateContinuationPage(
   context: ContinuationContext,
   options: GenerationOptions,
 ): Promise<GenerationResult> {
-  const messages = buildContinuationPrompt(context);
-  return withRetry(() => generateWithFallback(messages, options));
+  const promptOptions = resolvePromptOptions(options);
+  const messages = buildContinuationPrompt(context, promptOptions);
+  const resolvedOptions = { ...options, promptOptions };
+  return withRetry(() => generateWithFallback(messages, resolvedOptions));
 }
 
 export async function validateApiKey(apiKey: string): Promise<boolean> {
