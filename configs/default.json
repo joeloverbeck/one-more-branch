@@ -1,0 +1,26 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "storage": {
+    "storiesDir": "stories"
+  },
+  "llm": {
+    "defaultModel": "anthropic/claude-sonnet-4.5",
+    "temperature": 0.8,
+    "maxTokens": 8192,
+    "retry": {
+      "maxRetries": 3,
+      "baseDelayMs": 1000
+    },
+    "promptOptions": {
+      "fewShotMode": "minimal",
+      "enableChainOfThought": true,
+      "choiceGuidance": "strict"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "promptPreviewLength": 100
+  }
+}

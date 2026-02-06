@@ -1,6 +1,8 @@
 import express, { Express } from 'express';
 import path from 'path';
+import { getConfig } from '../config/index.js';
 import { storyEngine } from '../engine';
+import { errorHandler } from './middleware/error-handler';
 import { router } from './routes';
 
 export function createApp(): Express {
@@ -16,15 +18,17 @@ export function createApp(): Express {
   app.use(express.static(path.join(__dirname, '../../public')));
 
   app.use('/', router);
+  app.use(errorHandler);
 
   return app;
 }
 
-export function startServer(port: number = 3000): void {
+export function startServer(port?: number): void {
   const app = createApp();
+  const serverPort = port ?? getConfig().server.port;
 
-  app.listen(port, () => {
+  app.listen(serverPort, () => {
     // eslint-disable-next-line no-console
-    console.log(`One More Branch running at http://localhost:${port}`);
+    console.log(`One More Branch running at http://localhost:${serverPort}`);
   });
 }

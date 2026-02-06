@@ -16,10 +16,15 @@ describe('Concurrent Write Performance', () => {
 
     jest.resetModules();
     let persistence!: typeof import('@/persistence');
+    let configModule!: typeof import('@/config/index');
     jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      configModule = require('@/config/index') as typeof import('@/config/index');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       persistence = require('@/persistence') as typeof import('@/persistence');
     });
+    // Load config before using persistence
+    configModule.loadConfig();
     storage = new persistence.Storage();
     storage.init();
   });

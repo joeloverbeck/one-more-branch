@@ -79,6 +79,20 @@ describe('server app setup', () => {
     expect(stack.some((layer) => layer.name === 'urlencodedParser')).toBe(true);
   });
 
+  it('registers the error handler after the router', () => {
+    jest.spyOn(storyEngine, 'init').mockImplementation(() => {
+      // no-op to avoid persistence side effects in unit test
+    });
+
+    const app = createApp();
+    const stack = (app as unknown as { _router: { stack: Array<{ name: string }> } })._router.stack;
+    const routerIndex = stack.findIndex((layer) => layer.name === 'router');
+    const errorHandlerIndex = stack.findIndex((layer) => layer.name === 'errorHandler');
+
+    expect(routerIndex).toBeGreaterThan(-1);
+    expect(errorHandlerIndex).toBeGreaterThan(routerIndex);
+  });
+
   it('responds to GET / with 200 status from placeholder route', () => {
     jest.spyOn(storyEngine, 'init').mockImplementation(() => {
       // no-op to avoid persistence side effects in unit test

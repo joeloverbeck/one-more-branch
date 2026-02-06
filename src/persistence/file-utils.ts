@@ -1,17 +1,24 @@
 import { existsSync, mkdirSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { getConfig } from '../config/index.js';
 
-export const STORIES_DIR = path.join(process.cwd(), 'stories');
+/**
+ * Returns the stories directory path from configuration.
+ */
+export function getStoriesDir(): string {
+  return path.join(process.cwd(), getConfig().storage.storiesDir);
+}
 
 export function ensureStoriesDir(): void {
-  if (!existsSync(STORIES_DIR)) {
-    mkdirSync(STORIES_DIR, { recursive: true });
+  const storiesDir = getStoriesDir();
+  if (!existsSync(storiesDir)) {
+    mkdirSync(storiesDir, { recursive: true });
   }
 }
 
 export function getStoryDir(storyId: string): string {
-  return path.join(STORIES_DIR, storyId);
+  return path.join(getStoriesDir(), storyId);
 }
 
 export function getStoryFilePath(storyId: string): string {

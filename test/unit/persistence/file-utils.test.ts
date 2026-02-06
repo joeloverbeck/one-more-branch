@@ -8,12 +8,12 @@ import {
   ensureStoriesDir,
   fileExists,
   getPageFilePath,
+  getStoriesDir,
   getStoryDir,
   getStoryFilePath,
   listDirectories,
   listFiles,
   readJsonFile,
-  STORIES_DIR,
   writeJsonFile,
 } from '@/persistence/file-utils';
 
@@ -31,14 +31,15 @@ describe('file-utils', () => {
   });
 
   it('builds deterministic story and page paths', () => {
-    expect(getStoryDir('abc-123')).toBe(path.join(STORIES_DIR, 'abc-123'));
-    expect(getStoryFilePath('abc-123')).toBe(path.join(STORIES_DIR, 'abc-123', 'story.json'));
-    expect(getPageFilePath('abc-123', 5)).toBe(path.join(STORIES_DIR, 'abc-123', 'page_5.json'));
+    const storiesDir = getStoriesDir();
+    expect(getStoryDir('abc-123')).toBe(path.join(storiesDir, 'abc-123'));
+    expect(getStoryFilePath('abc-123')).toBe(path.join(storiesDir, 'abc-123', 'story.json'));
+    expect(getPageFilePath('abc-123', 5)).toBe(path.join(storiesDir, 'abc-123', 'page_5.json'));
   });
 
   it('ensures the stories directory exists', async () => {
     ensureStoriesDir();
-    await expect(directoryExists(STORIES_DIR)).resolves.toBe(true);
+    await expect(directoryExists(getStoriesDir())).resolves.toBe(true);
   });
 
   it('writes files atomically and leaves no temp files on success', async () => {

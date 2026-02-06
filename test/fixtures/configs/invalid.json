@@ -1,0 +1,9 @@
+{
+  "server": {
+    "port": 70000
+  },
+  "llm": {
+    "temperature": 5.0,
+    "maxTokens": -100
+  }
+}

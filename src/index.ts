@@ -1,10 +1,13 @@
 /**
  * One More Branch - Interactive Branching Storytelling Application
- * Entry point - will be expanded in Spec 06
+ * Entry point
  */
 
-// eslint-disable-next-line no-console
-console.log('One More Branch - Starting...');
+import { loadConfig } from './config/index.js';
+import { startServer } from './server/index.js';
 
-// Placeholder - actual server setup in Spec 06
-export {};
+// Load configuration first - fail fast if invalid
+loadConfig();
+
+// Start the server
+startServer();

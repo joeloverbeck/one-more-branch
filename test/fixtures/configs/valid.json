@@ -1,0 +1,26 @@
+{
+  "server": {
+    "port": 4000
+  },
+  "storage": {
+    "storiesDir": "custom-stories"
+  },
+  "llm": {
+    "defaultModel": "openai/gpt-4",
+    "temperature": 0.5,
+    "maxTokens": 4096,
+    "retry": {
+      "maxRetries": 5,
+      "baseDelayMs": 2000
+    },
+    "promptOptions": {
+      "fewShotMode": "standard",
+      "enableChainOfThought": false,
+      "choiceGuidance": "basic"
+    }
+  },
+  "logging": {
+    "level": "debug",
+    "promptPreviewLength": 200
+  }
+}

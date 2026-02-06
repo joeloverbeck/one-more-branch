@@ -1,3 +1,4 @@
+import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
 import { extractOutputFromCoT } from './cot-parser.js';
 import { buildFallbackSystemPromptAddition, parseTextResponse } from './fallback-parser.js';
@@ -18,27 +19,29 @@ import {
   type PromptOptions,
 } from './types.js';
 
-/**
- * Default prompt options - all enhancements enabled for maximum story quality.
- * Users pay for their own API keys, so these defaults prioritize quality over token savings.
- */
-const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
-  fewShotMode: 'minimal',
-  enableChainOfThought: true,
-  choiceGuidance: 'strict',
-};
-
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'anthropic/claude-sonnet-4.5';
+
+/**
+ * Returns default prompt options from configuration.
+ */
+function getDefaultPromptOptions(): PromptOptions {
+  const { promptOptions } = getConfig().llm;
+  return {
+    fewShotMode: promptOptions.fewShotMode,
+    enableChainOfThought: promptOptions.enableChainOfThought,
+    choiceGuidance: promptOptions.choiceGuidance,
+  };
+}
 
 async function callOpenRouterStructured(
   messages: ChatMessage[],
   options: GenerationOptions,
 ): Promise<GenerationResult> {
-  const model = options.model ?? DEFAULT_MODEL;
-  const temperature = options.temperature ?? 0.8;
-  const maxTokens = options.maxTokens ?? 8192;
-  const enableCoT = options.promptOptions?.enableChainOfThought ?? true;
+  const config = getConfig().llm;
+  const model = options.model ?? config.defaultModel;
+  const temperature = options.temperature ?? config.temperature;
+  const maxTokens = options.maxTokens ?? config.maxTokens;
+  const enableCoT = options.promptOptions?.enableChainOfThought ?? config.promptOptions.enableChainOfThought;
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -118,10 +121,11 @@ async function callOpenRouterText(
   messages: ChatMessage[],
   options: GenerationOptions,
 ): Promise<GenerationResult> {
-  const model = options.model ?? DEFAULT_MODEL;
-  const temperature = options.temperature ?? 0.8;
-  const maxTokens = options.maxTokens ?? 8192;
-  const enableCoT = options.promptOptions?.enableChainOfThought ?? true;
+  const config = getConfig().llm;
+  const model = options.model ?? config.defaultModel;
+  const temperature = options.temperature ?? config.temperature;
+  const maxTokens = options.maxTokens ?? config.maxTokens;
+  const enableCoT = options.promptOptions?.enableChainOfThought ?? config.promptOptions.enableChainOfThought;
 
   const fallbackMessages = withFallbackInstructions(messages);
 
@@ -184,12 +188,15 @@ async function generateWithFallback(
 
 async function withRetry<T>(
   fn: () => Promise<T>,
-  maxRetries = 3,
-  baseDelay = 1000,
+  maxRetries?: number,
+  baseDelay?: number,
 ): Promise<T> {
+  const config = getConfig().llm.retry;
+  const retries = maxRetries ?? config.maxRetries;
+  const baseDelayMs = baseDelay ?? config.baseDelayMs;
   let lastError: unknown;
 
-  for (let attempt = 0; attempt < maxRetries; attempt += 1) {
+  for (let attempt = 0; attempt < retries; attempt += 1) {
     try {
       return await fn();
     } catch (error) {
@@ -199,9 +206,9 @@ async function withRetry<T>(
         throw error;
       }
 
-      if (attempt < maxRetries - 1) {
-        const delay = baseDelay * 2 ** attempt;
-        await new Promise(resolve => setTimeout(resolve, delay));
+      if (attempt < retries - 1) {
+        const waitTime = baseDelayMs * 2 ** attempt;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
   }
@@ -243,12 +250,12 @@ async function readErrorMessage(response: Response): Promise<string> {
 }
 
 /**
- * Merges user-provided prompt options with defaults.
+ * Merges user-provided prompt options with defaults from configuration.
  * All enhancements are enabled by default for maximum story quality.
  */
 function resolvePromptOptions(options: GenerationOptions): PromptOptions {
   return {
-    ...DEFAULT_PROMPT_OPTIONS,
+    ...getDefaultPromptOptions(),
     ...options.promptOptions,
   };
 }

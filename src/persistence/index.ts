@@ -1,8 +1,8 @@
 export { Storage, storage } from './storage';
 
 export {
-  STORIES_DIR,
   ensureStoriesDir,
+  getStoriesDir,
   getStoryDir,
   getStoryFilePath,
   getPageFilePath,

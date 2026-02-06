@@ -1,10 +1,10 @@
 import { Story, StoryId, StoryMetadata, parseStoryId } from '../models';
 import {
-  STORIES_DIR,
   deleteDirectory,
   directoryExists,
   ensureDirectory,
   ensureStoriesDir,
+  getStoriesDir,
   getStoryDir,
   getStoryFilePath,
   listDirectories,
@@ -99,7 +99,7 @@ export async function deleteStory(storyId: StoryId): Promise<void> {
 export async function listStories(): Promise<StoryMetadata[]> {
   ensureStoriesDir();
 
-  const storyIds = await listDirectories(STORIES_DIR);
+  const storyIds = await listDirectories(getStoriesDir());
   const stories: StoryMetadata[] = [];
 
   for (const storyId of storyIds) {
