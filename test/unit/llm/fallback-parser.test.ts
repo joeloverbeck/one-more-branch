@@ -16,7 +16,7 @@ describe('parseTextResponse', () => {
       ],
       stateChanges: ['Entered the mysterious cave'],
       canonFacts: ['The cave system extends beneath the mountain'],
-      characterCanonFacts: {},
+      characterCanonFacts: [],
       isEnding: false,
       storyArc: 'Explore the ancient cave system',
     });
@@ -44,9 +44,9 @@ describe('parseTextResponse', () => {
   ],
   "stateChanges": ["You performed at the tavern"],
   "canonFacts": ["The city has multiple tiers"],
-  "characterCanonFacts": {
-    "Lord Greave": ["A nobleman prone to drinking"]
-  },
+  "characterCanonFacts": [
+    {"characterName": "Lord Greave", "facts": ["A nobleman prone to drinking"]}
+  ],
   "isEnding": false,
   "storyArc": "Find the cursed blade"
 }`;
@@ -66,7 +66,7 @@ describe('parseTextResponse', () => {
       choices: [],
       stateChanges: ['Hero died'],
       canonFacts: [],
-      characterCanonFacts: {},
+      characterCanonFacts: [],
       isEnding: true,
     });
 

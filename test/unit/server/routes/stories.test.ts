@@ -369,6 +369,78 @@ describe('storyRoutes', () => {
       });
     });
 
+    it('displays user-friendly message for HTTP 400 schema validation errors (additionalProperties)', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError(
+        "output_format.schema: For 'object' type, 'additionalProperties: object' is not supported",
+        'HTTP_400',
+        false,
+        { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' },
+      );
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'Story generation failed due to a configuration error. Please try again or report this issue.',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
+    it('displays user-friendly message for HTTP 400 schema validation errors (output_format)', async () => {
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+      const llmError = new LLMError(
+        'output_format.json_schema: Invalid schema definition',
+        'HTTP_400',
+        false,
+        { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' },
+      );
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, render, redirect } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(render).toHaveBeenCalledWith('pages/new-story', {
+        title: 'New Adventure - One More Branch',
+        error: 'Story generation failed due to a configuration error. Please try again or report this issue.',
+        values: {
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+        },
+      });
+    });
+
     it('displays user-friendly message for HTTP 5xx LLMError', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();

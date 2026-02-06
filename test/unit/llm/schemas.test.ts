@@ -81,14 +81,51 @@ describe('GenerationResultSchema', () => {
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: ['Met Dr. Cohen'],
         canonFacts: ['The year is 1972'],
-        characterCanonFacts: {
-          'Dr. Cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
-        },
+        characterCanonFacts: [
+          { characterName: 'Dr. Cohen', facts: ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'] },
+        ],
         isEnding: false,
       });
 
       expect(result.characterCanonFacts).toEqual({
         'Dr. Cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
+      });
+    });
+
+    it('should merge facts for same character in array format', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Speak to the doctor', 'Wait in silence'],
+        stateChanges: [],
+        canonFacts: [],
+        characterCanonFacts: [
+          { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
+          { characterName: 'Dr. Cohen', facts: ['He wears glasses'] },
+        ],
+        isEnding: false,
+      });
+
+      expect(result.characterCanonFacts).toEqual({
+        'Dr. Cohen': ['He is a psychiatrist', 'He wears glasses'],
+      });
+    });
+
+    it('should handle multiple characters in array format', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Speak to the doctor', 'Wait in silence'],
+        stateChanges: [],
+        canonFacts: [],
+        characterCanonFacts: [
+          { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
+          { characterName: 'Nurse Mills', facts: ['She is the head nurse'] },
+        ],
+        isEnding: false,
+      });
+
+      expect(result.characterCanonFacts).toEqual({
+        'Dr. Cohen': ['He is a psychiatrist'],
+        'Nurse Mills': ['She is the head nurse'],
       });
     });
 
@@ -287,10 +324,10 @@ describe('validateGenerationResponse', () => {
         choices: ['Speak to the doctor', 'Wait in silence'],
         stateChanges: [],
         canonFacts: [],
-        characterCanonFacts: {
-          '  Dr. Cohen  ': ['  Dr. Cohen is a psychiatrist  ', '  ', ''],
-          'Empty Character': ['   ', ''],
-        },
+        characterCanonFacts: [
+          { characterName: '  Dr. Cohen  ', facts: ['  Dr. Cohen is a psychiatrist  ', '  ', ''] },
+          { characterName: 'Empty Character', facts: ['   ', ''] },
+        ],
         isEnding: false,
       },
       'raw json response',
@@ -308,6 +345,44 @@ describe('validateGenerationResponse', () => {
         choices: ['Open the iron door', 'Climb the collapsed tower'],
         stateChanges: [],
         canonFacts: [],
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.characterCanonFacts).toEqual({});
+  });
+
+  it('should handle multiple characters in characterCanonFacts', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Speak to the doctor', 'Wait in silence'],
+        stateChanges: [],
+        canonFacts: [],
+        characterCanonFacts: [
+          { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
+          { characterName: 'Nurse Mills', facts: ['She is the head nurse'] },
+        ],
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.characterCanonFacts).toEqual({
+      'Dr. Cohen': ['He is a psychiatrist'],
+      'Nurse Mills': ['She is the head nurse'],
+    });
+  });
+
+  it('should handle empty array format characterCanonFacts', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        stateChanges: [],
+        canonFacts: [],
+        characterCanonFacts: [],
         isEnding: false,
       },
       'raw json response',

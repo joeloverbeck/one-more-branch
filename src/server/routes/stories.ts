@@ -16,6 +16,14 @@ function formatLLMError(error: LLMError): string {
     return 'Rate limit exceeded. Please wait a moment and try again.';
   }
   if (httpStatus === 400) {
+    // Check for schema validation errors that indicate internal configuration issues
+    if (
+      error.message.includes('additionalProperties') ||
+      error.message.includes('schema') ||
+      error.message.includes('output_format')
+    ) {
+      return 'Story generation failed due to a configuration error. Please try again or report this issue.';
+    }
     return `API request error: ${error.message}`;
   }
   if (httpStatus && httpStatus >= 500) {

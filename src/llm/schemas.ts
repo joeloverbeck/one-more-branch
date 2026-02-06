@@ -33,13 +33,18 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
             'New permanent WORLD facts that apply globally. Examples: place names, historical events, institutional rules. Do NOT include character-specific facts here—use characterCanonFacts for those.',
         },
         characterCanonFacts: {
-          type: 'object',
-          additionalProperties: {
-            type: 'array',
-            items: { type: 'string' },
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              characterName: { type: 'string' },
+              facts: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['characterName', 'facts'],
+            additionalProperties: false,
           },
           description:
-            'New permanent CHARACTER facts keyed by character name. Include fixed information unlikely to change: roles, relationships, defining traits. Example: {"Dr. Cohen": ["Dr. Cohen is the head psychiatrist"]}. For facts involving multiple characters, add an entry to EACH character.',
+            'Array of character canon facts. Each entry has characterName and facts array. Example: [{"characterName": "Dr. Cohen", "facts": ["Dr. Cohen is the head psychiatrist"]}]. For facts involving multiple characters, add an entry for EACH character.',
         },
         isEnding: {
           type: 'boolean',
@@ -56,6 +61,26 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
   },
 };
 
+// Schema for the array format that OpenRouter returns
+const CharacterCanonFactsArraySchema = z.array(
+  z.object({
+    characterName: z.string(),
+    facts: z.array(z.string()),
+  }),
+);
+
+// Transform array format to Record format for internal use
+function transformCharacterCanonFactsToRecord(
+  input: z.infer<typeof CharacterCanonFactsArraySchema>,
+): Record<string, string[]> {
+  const result: Record<string, string[]> = {};
+  for (const entry of input) {
+    const existing = result[entry.characterName] ?? [];
+    result[entry.characterName] = [...existing, ...entry.facts];
+  }
+  return result;
+}
+
 export const GenerationResultSchema = z
   .object({
     narrative: z
@@ -70,7 +95,10 @@ export const GenerationResultSchema = z
     ),
     stateChanges: z.array(z.string()),
     canonFacts: z.array(z.string()),
-    characterCanonFacts: z.record(z.string(), z.array(z.string())).optional().default({}),
+    // Accept array format from LLM (per JSON schema), transform to Record for internal use
+    characterCanonFacts: CharacterCanonFactsArraySchema.optional()
+      .default([])
+      .transform(transformCharacterCanonFactsToRecord),
     isEnding: z.boolean(),
     storyArc: z.string().optional().default(''),
   })
