@@ -108,6 +108,57 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
   }
 }));
 
+storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Response) => {
+  const { characterConcept, worldbuilding, tone, apiKey } = req.body as StoryFormBody;
+  const trimmedCharacterConcept = characterConcept?.trim();
+  const trimmedWorldbuilding = worldbuilding?.trim();
+  const trimmedTone = tone?.trim();
+  const trimmedApiKey = apiKey?.trim();
+
+  if (!trimmedCharacterConcept || trimmedCharacterConcept.length < 10) {
+    return res.status(400).json({
+      success: false,
+      error: 'Character concept must be at least 10 characters',
+    });
+  }
+
+  if (!trimmedApiKey || trimmedApiKey.length < 10) {
+    return res.status(400).json({
+      success: false,
+      error: 'OpenRouter API key is required',
+    });
+  }
+
+  try {
+    const result = await storyEngine.startStory({
+      characterConcept: trimmedCharacterConcept,
+      worldbuilding: trimmedWorldbuilding,
+      tone: trimmedTone,
+      apiKey: trimmedApiKey,
+    });
+
+    return res.json({
+      success: true,
+      storyId: result.story.id,
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Error creating story:', error);
+
+    let errorMessage = 'Failed to create story';
+    if (error instanceof LLMError) {
+      errorMessage = formatLLMError(error);
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: errorMessage,
+    });
+  }
+}));
+
 storyRoutes.post('/:storyId/delete', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
 

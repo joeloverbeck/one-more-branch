@@ -507,6 +507,312 @@ describe('storyRoutes', () => {
     });
   });
 
+  describe('POST /create-ajax validation', () => {
+    it('returns 400 JSON for empty character concept', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: { characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Character concept must be at least 10 characters',
+      });
+    });
+
+    it('returns 400 JSON for short character concept after trim', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: '   too short   ',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Character concept must be at least 10 characters',
+      });
+    });
+
+    it('returns 400 JSON for missing API key', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: { characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'OpenRouter API key is required',
+      });
+    });
+
+    it('returns 400 JSON for short API key after trim', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: '    short    ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'OpenRouter API key is required',
+      });
+    });
+  });
+
+  describe('POST /create-ajax success', () => {
+    it('calls startStory with trimmed values and returns JSON with storyId', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
+      const story = createStory({
+        characterConcept: 'Trimmed Concept',
+        worldbuilding: 'Trimmed World',
+        tone: 'Trimmed Tone',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'Page text',
+        choices: [createChoice('Go left'), createChoice('Go right')],
+        stateChanges: [],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+        story: { ...story, id: storyId },
+        page,
+      });
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: '  Trimmed Concept  ',
+            worldbuilding: '  Trimmed World  ',
+            tone: '  Trimmed Tone  ',
+            apiKey: '  valid-key-12345  ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).not.toHaveBeenCalled();
+      expect(startStorySpy).toHaveBeenCalledWith({
+        characterConcept: 'Trimmed Concept',
+        worldbuilding: 'Trimmed World',
+        tone: 'Trimmed Tone',
+        apiKey: 'valid-key-12345',
+      });
+      expect(json).toHaveBeenCalledWith({
+        success: true,
+        storyId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+    });
+  });
+
+  describe('POST /create-ajax error', () => {
+    it('returns 500 JSON with error message from Error instance', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(new Error('generation failed'));
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'generation failed',
+      });
+    });
+
+    it('returns 500 JSON with user-friendly message for HTTP 401 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const llmError = new LLMError('Invalid API key provided', 'HTTP_401', false, {
+        httpStatus: 401,
+        model: 'anthropic/claude-sonnet-4.5',
+        rawErrorBody: '{"error":{"message":"Invalid API key"}}',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'invalid-key',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Invalid API key. Please check your OpenRouter API key.',
+      });
+    });
+
+    it('returns 500 JSON with user-friendly message for HTTP 402 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const llmError = new LLMError('Payment required', 'HTTP_402', false, {
+        httpStatus: 402,
+        model: 'anthropic/claude-sonnet-4.5',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Insufficient credits. Please add credits to your OpenRouter account.',
+      });
+    });
+
+    it('returns 500 JSON with user-friendly message for HTTP 429 LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const llmError = new LLMError('Rate limit exceeded', 'HTTP_429', true, {
+        httpStatus: 429,
+        model: 'anthropic/claude-sonnet-4.5',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Rate limit exceeded. Please wait a moment and try again.',
+      });
+    });
+
+    it('returns 500 JSON with user-friendly message for HTTP 5xx LLMError', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const llmError = new LLMError('Internal server error', 'HTTP_503', true, {
+        httpStatus: 503,
+        model: 'anthropic/claude-sonnet-4.5',
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'OpenRouter service is temporarily unavailable. Please try again later.',
+      });
+    });
+
+    it('returns 500 JSON with raw message for LLMError without httpStatus context', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const llmError = new LLMError('Some parsing error', 'PARSE_ERROR', false);
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Some parsing error',
+      });
+    });
+  });
+
   describe('POST /:storyId/delete', () => {
     it('calls deleteStory and redirects to / on success', async () => {
       const status = jest.fn().mockReturnThis();

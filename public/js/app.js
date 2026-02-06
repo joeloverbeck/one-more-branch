@@ -235,7 +235,72 @@
     });
   }
 
+  function showFormError(message) {
+    let errorDiv = document.querySelector('.alert-error');
+    if (!errorDiv) {
+      errorDiv = document.createElement('div');
+      errorDiv.className = 'alert alert-error';
+      const form = document.querySelector('.story-form');
+      if (form && form.parentNode) {
+        form.parentNode.insertBefore(errorDiv, form);
+      }
+    }
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+  }
+
+  function initNewStoryPage() {
+    const form = document.querySelector('.story-form');
+    const loading = document.getElementById('loading');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const errorDiv = document.querySelector('.alert-error');
+
+    if (!form || !loading || !submitBtn) {
+      return;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+
+      submitBtn.disabled = true;
+      loading.style.display = 'flex';
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch('/stories/create-ajax', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characterConcept: formData.get('characterConcept'),
+            worldbuilding: formData.get('worldbuilding'),
+            tone: formData.get('tone'),
+            apiKey: formData.get('apiKey'),
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to create story');
+        }
+
+        setApiKey(formData.get('apiKey'));
+
+        window.location.href = '/play/' + data.storyId + '?page=1&newStory=true';
+      } catch (error) {
+        showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+        submitBtn.disabled = false;
+        loading.style.display = 'none';
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initPlayPage();
+    initNewStoryPage();
   });
 })();
