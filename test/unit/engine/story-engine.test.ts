@@ -53,7 +53,7 @@ const STORY_ID = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
 const PAGE_1 = parsePageId(1);
 const PAGE_2 = parsePageId(2);
 
-function buildStory() {
+function buildStory(): ReturnType<typeof createStory> {
   return createStory({
     characterConcept: 'A detective cataloging impossible crimes in a lighthouse town',
     worldbuilding: 'The sea rewinds every midnight',
@@ -61,7 +61,7 @@ function buildStory() {
   });
 }
 
-function buildPage(overrides?: Partial<ReturnType<typeof createPage>>) {
+function buildPage(overrides?: Partial<ReturnType<typeof createPage>>): ReturnType<typeof createPage> {
   return createPage({
     id: PAGE_1,
     narrativeText: 'Rain needles the harbor while the bell tower glows blue.',

@@ -10,10 +10,10 @@ const mockLogger = {
 };
 
 jest.mock('../../../src/logging/index.js', () => ({
-  get logger() {
+  get logger(): typeof mockLogger {
     return mockLogger;
   },
-  get logPrompt() {
+  get logPrompt(): typeof mockLogPrompt {
     return mockLogPrompt;
   },
 }));

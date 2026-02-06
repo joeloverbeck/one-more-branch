@@ -29,7 +29,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildContinuationResult(selectedChoice: string, stepIndex: number) {
+function buildContinuationResult(selectedChoice: string, stepIndex: number): typeof openingResult {
   if (selectedChoice.includes('beacon tower')) {
     return {
       narrative:
@@ -93,7 +93,7 @@ const replayOpeningResult = {
   rawResponse: 'replay-opening',
 };
 
-function buildReplayContinuationResult() {
+function buildReplayContinuationResult(): ReturnType<typeof buildContinuationResult> {
   return {
     narrative:
       'You slip beneath the murky water, the documents sealed in waterproof wrapping. The agents never notice your passage.',
@@ -125,19 +125,19 @@ describe('story engine e2e full playthrough', () => {
     jest.clearAllMocks();
     continuationCallCount = 0;
 
-    mockedGenerateOpeningPage.mockImplementation(async (context) => {
+    mockedGenerateOpeningPage.mockImplementation((context) => {
       if (context.characterConcept.includes('courier smuggling')) {
-        return replayOpeningResult;
+        return Promise.resolve(replayOpeningResult);
       }
-      return openingResult;
+      return Promise.resolve(openingResult);
     });
 
-    mockedGenerateContinuationPage.mockImplementation(async (context) => {
+    mockedGenerateContinuationPage.mockImplementation((context) => {
       continuationCallCount += 1;
       if (context.characterConcept.includes('courier smuggling')) {
-        return buildReplayContinuationResult();
+        return Promise.resolve(buildReplayContinuationResult());
       }
-      return buildContinuationResult(context.selectedChoice, continuationCallCount);
+      return Promise.resolve(buildContinuationResult(context.selectedChoice, continuationCallCount));
     });
   });
 

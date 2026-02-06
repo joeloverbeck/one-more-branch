@@ -24,7 +24,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildContinuationResult(selectedChoice: string) {
+function buildContinuationResult(selectedChoice: string): typeof openingResult {
   if (selectedChoice === 'Investigate the ember trail') {
     return {
       narrative:
@@ -58,8 +58,8 @@ describe('story-engine integration', () => {
     storyEngine.init();
 
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
-    mockedGenerateContinuationPage.mockImplementation(async (context) =>
-      buildContinuationResult(context.selectedChoice),
+    mockedGenerateContinuationPage.mockImplementation((context) =>
+      Promise.resolve(buildContinuationResult(context.selectedChoice)),
     );
   });
 
