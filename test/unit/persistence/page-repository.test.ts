@@ -1,7 +1,6 @@
 import { Page, Story, StoryId, createChoice, createPage, createStory, parsePageId } from '@/models';
 import { getPageFilePath, writeJsonFile } from '@/persistence/file-utils';
 import {
-  computeAccumulatedState,
   findEndingPages,
   getMaxPageId,
   loadAllPages,
@@ -213,49 +212,6 @@ describe('page-repository', () => {
     await savePage(story.id, endingPage);
 
     await expect(findEndingPages(story.id)).resolves.toEqual([parsePageId(3)]);
-  });
-
-  it('computeAccumulatedState accumulates root and ancestor state changes', async () => {
-    const story = buildTestStory();
-    createdStoryIds.add(story.id);
-    await saveStory(story);
-
-    const root = buildRootPage({
-      stateChanges: ['root-a'],
-      accumulatedState: { changes: ['root-a'] },
-    });
-    const child = buildChildPage({
-      id: parsePageId(2),
-      parentPageId: root.id,
-      parentChoiceIndex: 0,
-      stateChanges: ['child-b'],
-      accumulatedState: { changes: ['root-a', 'child-b'] },
-      parentAccumulatedState: root.accumulatedState,
-    });
-    const grandchild = createPage({
-      id: parsePageId(3),
-      narrativeText: 'Grandchild',
-      choices: [],
-      stateChanges: ['grandchild-c'],
-      isEnding: true,
-      parentPageId: child.id,
-      parentChoiceIndex: 1,
-      parentAccumulatedState: child.accumulatedState,
-    });
-
-    await savePage(story.id, root);
-    await savePage(story.id, child);
-    await savePage(story.id, grandchild);
-
-    await expect(computeAccumulatedState(story.id, root.id)).resolves.toEqual({
-      changes: ['root-a'],
-    });
-    await expect(computeAccumulatedState(story.id, child.id)).resolves.toEqual({
-      changes: ['root-a', 'child-b'],
-    });
-    await expect(computeAccumulatedState(story.id, grandchild.id)).resolves.toEqual({
-      changes: ['root-a', 'child-b', 'grandchild-c'],
-    });
   });
 
   it('loadPage throws when persisted page id does not match requested id', async () => {

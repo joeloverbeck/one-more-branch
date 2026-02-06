@@ -10,7 +10,6 @@ import {
   updateStory,
 } from './story-repository';
 import {
-  computeAccumulatedState,
   findEndingPages,
   getMaxPageId,
   loadAllPages,
@@ -20,6 +19,7 @@ import {
   updateChoiceLink,
   updatePage,
 } from './page-repository';
+import { computeAccumulatedState } from './page-state-service';
 
 export class Storage {
   init(): void {

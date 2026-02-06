@@ -36,12 +36,16 @@ jest.mock('@/persistence/page-repository', () => ({
   getMaxPageId: jest.fn(),
   updateChoiceLink: jest.fn(),
   findEndingPages: jest.fn(),
+}));
+
+jest.mock('@/persistence/page-state-service', () => ({
   computeAccumulatedState: jest.fn(),
 }));
 
 import * as persistence from '@/persistence';
 import { ensureStoriesDir } from '@/persistence/file-utils';
 import * as pageRepository from '@/persistence/page-repository';
+import * as pageStateService from '@/persistence/page-state-service';
 import { Storage, storage } from '@/persistence/storage';
 import * as storyRepository from '@/persistence/story-repository';
 
@@ -138,8 +142,8 @@ describe('storage facade', () => {
       pageRepository.findEndingPages as jest.MockedFunction<typeof pageRepository.findEndingPages>
     ).mockResolvedValue([nextPageId]);
     (
-      pageRepository.computeAccumulatedState as jest.MockedFunction<
-        typeof pageRepository.computeAccumulatedState
+      pageStateService.computeAccumulatedState as jest.MockedFunction<
+        typeof pageStateService.computeAccumulatedState
       >
     ).mockResolvedValue({ changes: ['a', 'b'] });
 
@@ -163,7 +167,7 @@ describe('storage facade', () => {
     expect(pageRepository.getMaxPageId).toHaveBeenCalledWith(storyId);
     expect(pageRepository.updateChoiceLink).toHaveBeenCalledWith(storyId, pageId, 0, nextPageId);
     expect(pageRepository.findEndingPages).toHaveBeenCalledWith(storyId);
-    expect(pageRepository.computeAccumulatedState).toHaveBeenCalledWith(storyId, pageId);
+    expect(pageStateService.computeAccumulatedState).toHaveBeenCalledWith(storyId, pageId);
   });
 });
 
@@ -190,6 +194,6 @@ describe('persistence index exports', () => {
     expect(persistence.getMaxPageId).toBe(pageRepository.getMaxPageId);
     expect(persistence.updateChoiceLink).toBe(pageRepository.updateChoiceLink);
     expect(persistence.findEndingPages).toBe(pageRepository.findEndingPages);
-    expect(persistence.computeAccumulatedState).toBe(pageRepository.computeAccumulatedState);
+    expect(persistence.computeAccumulatedState).toBe(pageStateService.computeAccumulatedState);
   });
 });

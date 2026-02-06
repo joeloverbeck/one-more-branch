@@ -8,7 +8,6 @@ import {
   parsePageId,
 } from '@/models';
 import {
-  computeAccumulatedState,
   findEndingPages,
   getMaxPageId,
   loadAllPages,
@@ -146,42 +145,6 @@ describe('page-repository integration', () => {
     const reloaded = await loadPage(story.id, parsePageId(1));
     expect(reloaded?.choices[0]?.nextPageId).toBe(parsePageId(2));
     expect(reloaded?.choices[1]?.nextPageId).toBeNull();
-  });
-
-  it('computeAccumulatedState for a chain includes all ancestor state changes', async () => {
-    const story = buildStory({ characterConcept: `${TEST_PREFIX} accumulated` });
-    createdStoryIds.add(story.id);
-    await saveStory(story);
-
-    const page1 = buildRootPage({ stateChanges: ['p1'] });
-    const page2 = createPage({
-      id: parsePageId(2),
-      narrativeText: 'P2',
-      choices: [createChoice('A'), createChoice('B')],
-      stateChanges: ['p2'],
-      isEnding: false,
-      parentPageId: parsePageId(1),
-      parentChoiceIndex: 1,
-      parentAccumulatedState: page1.accumulatedState,
-    });
-    const page3 = createPage({
-      id: parsePageId(3),
-      narrativeText: 'P3 ending',
-      choices: [],
-      stateChanges: ['p3'],
-      isEnding: true,
-      parentPageId: parsePageId(2),
-      parentChoiceIndex: 0,
-      parentAccumulatedState: page2.accumulatedState,
-    });
-
-    await savePage(story.id, page1);
-    await savePage(story.id, page2);
-    await savePage(story.id, page3);
-
-    await expect(computeAccumulatedState(story.id, parsePageId(3))).resolves.toEqual({
-      changes: ['p1', 'p2', 'p3'],
-    });
   });
 
   it('findEndingPages returns only ending page ids', async () => {

@@ -21,7 +21,6 @@ export {
 } from './story-repository';
 
 export {
-  computeAccumulatedState,
   findEndingPages,
   getMaxPageId,
   loadAllPages,
@@ -31,3 +30,5 @@ export {
   updateChoiceLink,
   updatePage,
 } from './page-repository';
+
+export { computeAccumulatedState } from './page-state-service';
