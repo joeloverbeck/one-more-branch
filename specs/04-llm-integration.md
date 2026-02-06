@@ -2,20 +2,39 @@
 
 ## Overview
 
-Implement the OpenRouter API client for generating story content, including prompt construction, response parsing, and error handling.
+Implement the OpenRouter API client for generating story content using **structured outputs** for guaranteed response format, Zod validation for type safety, and proper error handling.
 
 ## Goals
 
-1. Create an OpenRouter API client with proper error handling
-2. Build prompt templates for story generation (opening and continuation)
-3. Implement robust response parsing for narrative and choices
-4. Handle the NC-21 content policy requirement
-5. Support retry logic for transient failures
+1. Create an OpenRouter API client with structured output support
+2. Define JSON schemas that guarantee response format
+3. Implement Zod validation for runtime type safety
+4. Build clean prompt templates focused on storytelling (no format instructions needed)
+5. Handle the NC-21 content policy requirement
+6. Support retry logic for transient failures
+7. Include fallback text parsing for models without structured output support
 
 ## Dependencies
 
-- **Spec 01**: Project Foundation (TypeScript environment)
-- **Spec 02**: Data Models (Story, Page, Choice types for prompts/parsing)
+- **Spec 01**: Project Foundation (TypeScript environment, Zod installed)
+- **Spec 02**: Data Models (Story, Page, Choice types for validation)
+
+## Key Design Decision: Structured Outputs
+
+OpenRouter supports `response_format` with `json_schema` parameter:
+- Guarantees JSON matching the provided schema when `strict: true`
+- Claude Sonnet 4.5 (default model) supports structured outputs
+- Eliminates ~220 lines of brittle regex parsing code
+- Schema descriptions guide LLM output (no OUTPUT FORMAT section needed in prompts)
+
+### Architecture Comparison
+
+| Old Approach | New Approach |
+|--------------|--------------|
+| Text markers: `NARRATIVE:`, `CHOICES:` | JSON schema with descriptions |
+| `parser.ts` with regex (~220 lines) | Removed entirely |
+| `attemptChoiceSalvage()` fallbacks | Not needed - schema enforces structure |
+| Brittle format parsing | ~80 lines of Zod validation |
 
 ## Implementation Details
 
@@ -31,11 +50,12 @@ The application uses OpenRouter (openrouter.ai) as the sole LLM provider. The AP
 ```
 src/llm/
 ├── index.ts              # Re-exports
-├── client.ts             # OpenRouter API client
-├── prompts.ts            # Prompt templates
-├── parser.ts             # Response parsing
+├── client.ts             # OpenRouter API client with structured outputs
+├── prompts.ts            # Clean prompt templates (no format instructions)
+├── schemas.ts            # JSON schemas + Zod validators
 ├── types.ts              # LLM-specific types
-└── content-policy.ts     # NC-21 content policy
+├── content-policy.ts     # NC-21 content policy
+└── fallback-parser.ts    # Fallback for models without structured output
 ```
 
 ## Files to Create
@@ -66,7 +86,7 @@ export interface GenerationResult {
   /**
    * New canon facts introduced
    */
-  newCanonFacts: string[];
+  canonFacts: string[];
 
   /**
    * Whether this page is an ending
@@ -104,9 +124,15 @@ export interface GenerationOptions {
   temperature?: number;
 
   /**
-   * Maximum tokens to generate (default: 4096)
+   * Maximum tokens to generate (default: 8192)
    */
   maxTokens?: number;
+
+  /**
+   * Force text parsing even if structured output available
+   * Useful for testing fallback behavior
+   */
+  forceTextParsing?: boolean;
 }
 
 /**
@@ -183,6 +209,18 @@ export interface ChatMessage {
 }
 
 /**
+ * JSON schema for OpenRouter response_format
+ */
+export interface JsonSchema {
+  type: 'json_schema';
+  json_schema: {
+    name: string;
+    strict: boolean;
+    schema: object;
+  };
+}
+
+/**
  * OpenRouter API response
  */
 export interface OpenRouterResponse {
@@ -198,6 +236,10 @@ export interface OpenRouterResponse {
     completion_tokens: number;
     total_tokens: number;
   };
+  error?: {
+    message: string;
+    code: string;
+  };
 }
 
 /**
@@ -212,6 +254,146 @@ export class LLMError extends Error {
     super(message);
     this.name = 'LLMError';
   }
+}
+```
+
+### `src/llm/schemas.ts`
+
+```typescript
+import { z } from 'zod';
+import type { JsonSchema, GenerationResult } from './types.js';
+
+/**
+ * JSON Schema for story generation - sent to OpenRouter
+ * Descriptions guide the LLM on what to generate
+ */
+export const STORY_GENERATION_SCHEMA: JsonSchema = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'story_generation',
+    strict: true,
+    schema: {
+      type: 'object',
+      properties: {
+        narrative: {
+          type: 'string',
+          description:
+            'Vivid prose describing the scene, action, dialogue, and outcomes. Minimum 100 words. Write in second person (you walk, you see). Show consequences of player choices.',
+        },
+        choices: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Array of 2-5 meaningful, distinct choices for the player. Each choice should lead to genuinely different paths with real consequences. Empty array ONLY if this is a story ending (death, victory, conclusion). Never offer trivial variations.',
+        },
+        stateChanges: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Events that occurred in THIS scene only: items gained/lost, wounds, relationship changes, achievements. Do not repeat state from previous scenes.',
+        },
+        canonFacts: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'New permanent world facts introduced: character names, location names, world rules, historical events. Only include facts that should persist across all branches.',
+        },
+        isEnding: {
+          type: 'boolean',
+          description:
+            'True if the story concludes here (character death, victory, resolution). When true, choices array must be empty.',
+        },
+        storyArc: {
+          type: 'string',
+          description:
+            'The main goal or conflict driving this adventure. Only include for the opening/first page of a story. Omit or set to empty string for continuation pages.',
+        },
+      },
+      required: ['narrative', 'choices', 'stateChanges', 'canonFacts', 'isEnding'],
+      additionalProperties: false,
+    },
+  },
+};
+
+/**
+ * Zod schema for runtime validation of LLM response
+ */
+export const GenerationResultSchema = z
+  .object({
+    narrative: z
+      .string()
+      .min(50, 'Narrative must be at least 50 characters')
+      .max(15000, 'Narrative must be at most 15000 characters'),
+    choices: z.array(
+      z
+        .string()
+        .min(3, 'Choice must be at least 3 characters')
+        .max(300, 'Choice must be at most 300 characters')
+    ),
+    stateChanges: z.array(z.string()),
+    canonFacts: z.array(z.string()),
+    isEnding: z.boolean(),
+    storyArc: z.string().optional().default(''),
+  })
+  // Ending consistency: isEnding === true ⟺ choices.length === 0
+  .refine(
+    data => (data.isEnding ? data.choices.length === 0 : data.choices.length >= 2),
+    {
+      message: 'Non-ending pages must have at least 2 choices; endings must have 0 choices',
+    }
+  )
+  // Maximum 5 choices
+  .refine(data => (!data.isEnding ? data.choices.length <= 5 : true), {
+    message: 'Maximum 5 choices allowed',
+  })
+  // No duplicate choices (case-insensitive)
+  .refine(
+    data => {
+      const lowerChoices = data.choices.map(c => c.toLowerCase().trim());
+      return new Set(lowerChoices).size === lowerChoices.length;
+    },
+    { message: 'Duplicate choices detected' }
+  );
+
+/**
+ * Type inferred from Zod schema
+ */
+export type ValidatedGenerationResult = z.infer<typeof GenerationResultSchema>;
+
+/**
+ * Parse and validate LLM response using Zod
+ */
+export function validateGenerationResponse(
+  rawJson: unknown,
+  rawResponse: string
+): GenerationResult {
+  const validated = GenerationResultSchema.parse(rawJson);
+
+  return {
+    narrative: validated.narrative.trim(),
+    choices: validated.choices.map(c => c.trim()),
+    stateChanges: validated.stateChanges.map(s => s.trim()).filter(s => s.length > 0),
+    canonFacts: validated.canonFacts.map(f => f.trim()).filter(f => f.length > 0),
+    isEnding: validated.isEnding,
+    storyArc: validated.storyArc?.trim() || undefined,
+    rawResponse,
+  };
+}
+
+/**
+ * Check if error indicates structured output is not supported
+ */
+export function isStructuredOutputNotSupported(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('response_format') ||
+      message.includes('json_schema') ||
+      message.includes('structured') ||
+      message.includes('not supported')
+    );
+  }
+  return false;
 }
 ```
 
@@ -244,10 +426,11 @@ Your primary directive is authentic character portrayal and storytelling within 
 
 ```typescript
 import { CONTENT_POLICY } from './content-policy.js';
-import { OpeningContext, ContinuationContext, ChatMessage } from './types.js';
+import type { OpeningContext, ContinuationContext, ChatMessage } from './types.js';
 
 /**
  * System prompt establishing the storyteller role
+ * Note: No OUTPUT FORMAT section - structured outputs handle that
  */
 const SYSTEM_PROMPT = `You are an expert interactive fiction storyteller and Dungeon Master. Your role is to craft immersive, engaging narratives that respond to player choices while maintaining consistency with established world facts and character traits.
 
@@ -255,63 +438,45 @@ ${CONTENT_POLICY}
 
 STORYTELLING GUIDELINES:
 - Write vivid, evocative prose that brings the world to life
+- Use second person perspective (you walk, you see, you feel)
 - Maintain consistency with established facts and character personality
 - Present meaningful choices that have genuine consequences
 - Honor player agency while maintaining narrative coherence
 - Build tension and dramatic stakes naturally
 - React believably to player choices - show consequences
+- Each choice should represent a genuinely different path
+- Never offer trivial variations like "eat apple" vs "eat orange"
 
-OUTPUT FORMAT:
-Always structure your response as follows:
-
-NARRATIVE:
-[Your narrative text here - describe the scene, action, dialogue, and outcomes]
-
-CHOICES:
-1. [First meaningful choice]
-2. [Second meaningful choice]
-3. [Third meaningful choice]
-
-STATE_CHANGES:
-- [Any significant event that occurred, e.g., "Character was wounded in the arm"]
-- [Any item gained or lost, e.g., "Acquired the Moonstone Pendant"]
-- [Any relationship change, e.g., "Lord Blackwood now considers you an enemy"]
-
-CANON_FACTS:
-- [Any new world facts introduced, e.g., "The Kingdom of Valdris lies to the north"]
-- [Any new characters introduced, e.g., "Captain Mira leads the city guard"]
-
-If this is an ENDING (character death, story conclusion, etc.), omit the CHOICES section and instead write:
-
-THE END
-[Brief epilogue or closing statement]
-
-Remember: Choices must be distinct and meaningful. Never offer trivial variations like "eat apple" vs "eat orange". Each choice should represent a genuinely different path with potential consequences.`;
+When writing endings (character death, victory, conclusion):
+- Make the ending feel earned and meaningful
+- Provide closure appropriate to the story
+- Leave no choices - the story concludes here`;
 
 /**
  * Build the prompt for generating the opening page
  */
 export function buildOpeningPrompt(context: OpeningContext): ChatMessage[] {
+  const worldSection = context.worldbuilding
+    ? `WORLDBUILDING:
+${context.worldbuilding}
+
+`
+    : '';
+
   const userPrompt = `Create the opening scene for a new interactive story.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${context.worldbuilding ? `WORLDBUILDING:
-${context.worldbuilding}
-
-` : ''}TONE/GENRE: ${context.tone}
+${worldSection}TONE/GENRE: ${context.tone}
 
 Write an engaging opening that:
 1. Introduces the protagonist in a compelling scene
 2. Establishes the world and atmosphere matching the tone
 3. Presents an initial situation or hook that draws the player in
-4. Ends with 2-4 meaningful choices for what the protagonist might do
+4. Provides 2-4 meaningful choices for what the protagonist might do
 
-Also determine what the overarching goal or conflict should be for this story and include it after the CANON_FACTS section as:
-
-STORY_ARC:
-[The main goal or conflict driving this adventure]`;
+Also determine the overarching goal or conflict for this story (the story arc).`;
 
   return [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -323,26 +488,32 @@ STORY_ARC:
  * Build the prompt for generating a continuation page
  */
 export function buildContinuationPrompt(context: ContinuationContext): ChatMessage[] {
-  // Build state summary
-  const stateSection = context.accumulatedState.length > 0
-    ? `CURRENT STATE:
+  const stateSection =
+    context.accumulatedState.length > 0
+      ? `CURRENT STATE:
 ${context.accumulatedState.map(s => `- ${s}`).join('\n')}
 
 `
-    : '';
+      : '';
 
-  // Build canon section
-  const canonSection = context.globalCanon.length > 0
-    ? `ESTABLISHED WORLD FACTS:
+  const canonSection =
+    context.globalCanon.length > 0
+      ? `ESTABLISHED WORLD FACTS:
 ${context.globalCanon.map(f => `- ${f}`).join('\n')}
+
+`
+      : '';
+
+  const arcSection = context.storyArc
+    ? `STORY ARC:
+${context.storyArc}
 
 `
     : '';
 
-  // Build story arc section
-  const arcSection = context.storyArc
-    ? `STORY ARC:
-${context.storyArc}
+  const worldSection = context.worldbuilding
+    ? `WORLDBUILDING:
+${context.worldbuilding}
 
 `
     : '';
@@ -352,10 +523,7 @@ ${context.storyArc}
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${context.worldbuilding ? `WORLDBUILDING:
-${context.worldbuilding}
-
-` : ''}TONE/GENRE: ${context.tone}
+${worldSection}TONE/GENRE: ${context.tone}
 
 ${arcSection}${canonSection}${stateSection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
@@ -372,7 +540,7 @@ Important:
 - The narrative should clearly reflect the choice that was made
 - Only include NEW state changes that occur in THIS scene
 - Do not repeat state changes from previous scenes
-- If the choice logically leads to a story ending (death, victory, etc.), end appropriately`;
+- If the choice logically leads to a story ending (death, victory, etc.), set isEnding to true and leave choices empty`;
 
   return [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -403,15 +571,17 @@ function truncateText(text: string, maxLength: number): string {
 }
 ```
 
-### `src/llm/parser.ts`
+### `src/llm/fallback-parser.ts`
 
 ```typescript
-import { GenerationResult, LLMError } from './types.js';
+import type { GenerationResult } from './types.js';
+import { LLMError } from './types.js';
 
 /**
- * Parse the LLM response into structured data
+ * Fallback parser for models that don't support structured outputs
+ * Uses text markers to extract response sections
  */
-export function parseResponse(rawResponse: string): GenerationResult {
+export function parseTextResponse(rawResponse: string): GenerationResult {
   const response = rawResponse.trim();
 
   // Check if this is an ending
@@ -427,27 +597,13 @@ export function parseResponse(rawResponse: string): GenerationResult {
   const stateChanges = extractListSection(response, 'STATE_CHANGES');
 
   // Extract canon facts
-  const newCanonFacts = extractListSection(response, 'CANON_FACTS');
+  const canonFacts = extractListSection(response, 'CANON_FACTS');
 
   // Extract story arc (only present in first page)
   const storyArc = extractSection(response, 'STORY_ARC', null);
 
   // Validate non-ending pages have choices
   if (!isEnding && choices.length < 2) {
-    // Try to salvage choices from the narrative
-    const salvagedChoices = attemptChoiceSalvage(response);
-    if (salvagedChoices.length >= 2) {
-      return {
-        narrative,
-        choices: salvagedChoices,
-        stateChanges,
-        newCanonFacts,
-        isEnding: false,
-        storyArc: storyArc || undefined,
-        rawResponse: response,
-      };
-    }
-
     throw new LLMError(
       'Response missing required choices for non-ending page',
       'MISSING_CHOICES',
@@ -459,7 +615,7 @@ export function parseResponse(rawResponse: string): GenerationResult {
     narrative,
     choices,
     stateChanges,
-    newCanonFacts,
+    canonFacts,
     isEnding,
     storyArc: storyArc || undefined,
     rawResponse: response,
@@ -601,107 +757,78 @@ function extractListSection(text: string, marker: string): string[] {
 }
 
 /**
- * Attempt to salvage choices from poorly formatted response
+ * Build fallback system prompt with text format instructions
  */
-function attemptChoiceSalvage(text: string): string[] {
-  const choices: string[] = [];
+export function buildFallbackSystemPromptAddition(): string {
+  return `
 
-  // Look for patterns like "You could..." or "Option:" or questions
-  const patterns = [
-    /(?:you could|you can|you might|option:?)\s*(.+?)(?:\.|$)/gi,
-    /(?:will you|do you|should you)\s*(.+?\?)/gi,
-  ];
+OUTPUT FORMAT:
+Always structure your response as follows:
 
-  for (const pattern of patterns) {
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-      const choice = match[1]?.trim();
-      if (choice && choice.length > 5 && choice.length < 200) {
-        choices.push(choice);
-      }
-    }
-  }
+NARRATIVE:
+[Your narrative text here - describe the scene, action, dialogue, and outcomes]
 
-  // Deduplicate
-  return [...new Set(choices)].slice(0, 4);
-}
+CHOICES:
+1. [First meaningful choice]
+2. [Second meaningful choice]
+3. [Third meaningful choice]
 
-/**
- * Validate that parsed result meets quality standards
- */
-export function validateResult(result: GenerationResult): string[] {
-  const errors: string[] = [];
+STATE_CHANGES:
+- [Any significant event that occurred, e.g., "Character was wounded in the arm"]
+- [Any item gained or lost, e.g., "Acquired the Moonstone Pendant"]
+- [Any relationship change, e.g., "Lord Blackwood now considers you an enemy"]
 
-  // Narrative quality
-  if (result.narrative.length < 50) {
-    errors.push('Narrative is too short (minimum 50 characters)');
-  }
+CANON_FACTS:
+- [Any new world facts introduced, e.g., "The Kingdom of Valdris lies to the north"]
+- [Any new characters introduced, e.g., "Captain Mira leads the city guard"]
 
-  if (result.narrative.length > 10000) {
-    errors.push('Narrative is too long (maximum 10000 characters)');
-  }
+If this is an ENDING (character death, story conclusion, etc.), omit the CHOICES section and instead write:
 
-  // Choice quality (for non-endings)
-  if (!result.isEnding) {
-    if (result.choices.length < 2) {
-      errors.push('Non-ending pages must have at least 2 choices');
-    }
+THE END
+[Brief epilogue or closing statement]
 
-    if (result.choices.length > 5) {
-      errors.push('Too many choices (maximum 5)');
-    }
+For the opening/first page, also include:
 
-    // Check for duplicate choices
-    const lowerChoices = result.choices.map(c => c.toLowerCase());
-    if (new Set(lowerChoices).size !== lowerChoices.length) {
-      errors.push('Duplicate choices detected');
-    }
-
-    // Check choice length
-    for (const choice of result.choices) {
-      if (choice.length < 3) {
-        errors.push(`Choice too short: "${choice}"`);
-      }
-      if (choice.length > 200) {
-        errors.push(`Choice too long: "${choice.slice(0, 50)}..."`);
-      }
-    }
-  }
-
-  return errors;
+STORY_ARC:
+[The main goal or conflict driving this adventure]`;
 }
 ```
 
 ### `src/llm/client.ts`
 
 ```typescript
-import {
+import type {
   ChatMessage,
   OpenRouterResponse,
   GenerationResult,
   GenerationOptions,
   OpeningContext,
   ContinuationContext,
-  LLMError,
 } from './types.js';
+import { LLMError } from './types.js';
 import { buildOpeningPrompt, buildContinuationPrompt } from './prompts.js';
-import { parseResponse, validateResult } from './parser.js';
+import {
+  STORY_GENERATION_SCHEMA,
+  validateGenerationResponse,
+  isStructuredOutputNotSupported,
+} from './schemas.js';
+import { parseTextResponse, buildFallbackSystemPromptAddition } from './fallback-parser.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Default model - Claude Sonnet for good quality/speed balance
+// Default model - Claude Sonnet for good quality/speed balance and structured output support
 const DEFAULT_MODEL = 'anthropic/claude-sonnet-4.5';
 
 /**
- * Call the OpenRouter API
+ * Call the OpenRouter API with structured output
  */
-async function callOpenRouter(
+async function callOpenRouterStructured(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<string> {
+): Promise<GenerationResult> {
   const model = options.model ?? DEFAULT_MODEL;
   const temperature = options.temperature ?? 0.8;
-  const maxTokens = options.maxTokens ?? 4096;
+  const maxTokens = options.maxTokens ?? 8192;
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -716,6 +843,7 @@ async function callOpenRouter(
       messages,
       temperature,
       max_tokens: maxTokens,
+      response_format: STORY_GENERATION_SCHEMA,
     }),
   });
 
@@ -737,25 +865,118 @@ async function callOpenRouter(
       response.status === 429 || // Rate limit
       response.status >= 500; // Server error
 
-    throw new LLMError(
-      errorMessage,
-      `HTTP_${response.status}`,
-      retryable
-    );
+    throw new LLMError(errorMessage, `HTTP_${response.status}`, retryable);
   }
 
   const data = (await response.json()) as OpenRouterResponse;
 
   const content = data.choices[0]?.message?.content;
   if (!content) {
-    throw new LLMError(
-      'Empty response from OpenRouter',
-      'EMPTY_RESPONSE',
-      true
-    );
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
   }
 
-  return content;
+  // Parse JSON and validate with Zod
+  try {
+    const rawJson = JSON.parse(content);
+    return validateGenerationResponse(rawJson, content);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new LLMError(
+        `Invalid JSON in response: ${error.message}`,
+        'JSON_PARSE_ERROR',
+        true
+      );
+    }
+    throw error;
+  }
+}
+
+/**
+ * Call the OpenRouter API with text parsing fallback
+ */
+async function callOpenRouterText(
+  messages: ChatMessage[],
+  options: GenerationOptions
+): Promise<GenerationResult> {
+  const model = options.model ?? DEFAULT_MODEL;
+  const temperature = options.temperature ?? 0.8;
+  const maxTokens = options.maxTokens ?? 8192;
+
+  // Add format instructions to system message for fallback
+  const messagesWithFormat = messages.map(msg => {
+    if (msg.role === 'system') {
+      return {
+        ...msg,
+        content: msg.content + buildFallbackSystemPromptAddition(),
+      };
+    }
+    return msg;
+  });
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${options.apiKey}`,
+      'HTTP-Referer': 'https://one-more-branch.local',
+      'X-Title': 'One More Branch',
+    },
+    body: JSON.stringify({
+      model,
+      messages: messagesWithFormat,
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorMessage = `OpenRouter API error: ${response.status}`;
+
+    try {
+      const errorJson = JSON.parse(errorText) as { error?: { message?: string } };
+      if (errorJson.error?.message) {
+        errorMessage = errorJson.error.message;
+      }
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new LLMError(errorMessage, `HTTP_${response.status}`, retryable);
+  }
+
+  const data = (await response.json()) as OpenRouterResponse;
+
+  const content = data.choices[0]?.message?.content;
+  if (!content) {
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  return parseTextResponse(content);
+}
+
+/**
+ * Generate content with automatic fallback to text parsing
+ */
+async function generateWithFallback(
+  messages: ChatMessage[],
+  options: GenerationOptions
+): Promise<GenerationResult> {
+  // If forced to use text parsing, skip structured output attempt
+  if (options.forceTextParsing) {
+    return callOpenRouterText(messages, options);
+  }
+
+  try {
+    return await callOpenRouterStructured(messages, options);
+  } catch (error) {
+    if (isStructuredOutputNotSupported(error)) {
+      console.warn('Model lacks structured output support, using text parsing fallback');
+      return callOpenRouterText(messages, options);
+    }
+    throw error;
+  }
 }
 
 /**
@@ -796,22 +1017,7 @@ export async function generateOpeningPage(
   options: GenerationOptions
 ): Promise<GenerationResult> {
   const messages = buildOpeningPrompt(context);
-
-  const rawResponse = await withRetry(() => callOpenRouter(messages, options));
-
-  const result = parseResponse(rawResponse);
-
-  // Validate result quality
-  const errors = validateResult(result);
-  if (errors.length > 0) {
-    throw new LLMError(
-      `Generation quality issues: ${errors.join('; ')}`,
-      'QUALITY_FAILURE',
-      true
-    );
-  }
-
-  return result;
+  return withRetry(() => generateWithFallback(messages, options));
 }
 
 /**
@@ -822,22 +1028,7 @@ export async function generateContinuationPage(
   options: GenerationOptions
 ): Promise<GenerationResult> {
   const messages = buildContinuationPrompt(context);
-
-  const rawResponse = await withRetry(() => callOpenRouter(messages, options));
-
-  const result = parseResponse(rawResponse);
-
-  // Validate result quality
-  const errors = validateResult(result);
-  if (errors.length > 0) {
-    throw new LLMError(
-      `Generation quality issues: ${errors.join('; ')}`,
-      'QUALITY_FAILURE',
-      true
-    );
-  }
-
-  return result;
+  return withRetry(() => generateWithFallback(messages, options));
 }
 
 /**
@@ -871,14 +1062,16 @@ export async function validateApiKey(apiKey: string): Promise<boolean> {
 ### `src/llm/index.ts`
 
 ```typescript
-export {
+export type {
   GenerationResult,
   GenerationOptions,
   OpeningContext,
   ContinuationContext,
   ChatMessage,
-  LLMError,
+  JsonSchema,
 } from './types.js';
+
+export { LLMError } from './types.js';
 
 export { CONTENT_POLICY } from './content-policy.js';
 
@@ -888,9 +1081,15 @@ export {
 } from './prompts.js';
 
 export {
-  parseResponse,
-  validateResult,
-} from './parser.js';
+  STORY_GENERATION_SCHEMA,
+  GenerationResultSchema,
+  validateGenerationResponse,
+  isStructuredOutputNotSupported,
+} from './schemas.js';
+
+export {
+  parseTextResponse,
+} from './fallback-parser.js';
 
 export {
   generateOpeningPage,
@@ -903,177 +1102,220 @@ export {
 
 1. **API Key Security**: API key is never logged, persisted to disk, or exposed in responses
 2. **Content Policy**: Every prompt includes the NC-21 content policy
-3. **Retry Safety**: Only transient errors (429, 5xx) trigger retries
-4. **Choice Minimum**: Non-ending pages always have at least 2 choices
-5. **Response Structure**: All responses follow the NARRATIVE/CHOICES/STATE_CHANGES format
-6. **Context Integrity**: Prompts always include relevant character, world, and state context
-7. **Truncation Safety**: Long context is truncated at sentence boundaries
+3. **Retry Safety**: Only transient errors (429, 5xx, parse errors) trigger retries
+4. **Choice Minimum**: Non-ending pages always have at least 2 choices (Zod enforced)
+5. **Ending Consistency**: `isEnding === true` ⟺ `choices.length === 0` (Zod enforced)
+6. **Response Guarantee**: Structured outputs guarantee schema compliance; Zod validates at runtime
+7. **Context Integrity**: Prompts always include relevant character, world, and state context
+8. **Truncation Safety**: Long context is truncated at sentence boundaries
+9. **Fallback Support**: Text parsing fallback for models without structured output support
 
 ## Test Cases
 
 ### Unit Tests
 
-**File**: `test/unit/llm/parser.test.ts`
+**File**: `test/unit/llm/schemas.test.ts`
 
 ```typescript
-import { parseResponse, validateResult } from '@/llm/parser';
+import { GenerationResultSchema, validateGenerationResponse } from '@/llm/schemas';
+import { ZodError } from 'zod';
 
-describe('Response Parser', () => {
-  describe('parseResponse', () => {
-    it('should parse well-formatted response', () => {
-      const response = `
-NARRATIVE:
-You step into the dark cave. The air is cold and damp. A faint light glimmers in the distance.
+describe('Generation Result Schema', () => {
+  describe('basic validation', () => {
+    it('should validate a well-formed non-ending response', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['Go left', 'Go right', 'Stay here'],
+        stateChanges: ['Entered the cave'],
+        canonFacts: ['The cave is dark'],
+        isEnding: false,
+      };
 
-CHOICES:
-1. Move toward the light
-2. Feel along the wall for another path
-3. Call out to see if anyone responds
+      const result = GenerationResultSchema.parse(input);
 
-STATE_CHANGES:
-- Entered the mysterious cave
-- Feeling of unease
-
-CANON_FACTS:
-- The cave system extends beneath the mountain
-`;
-
-      const result = parseResponse(response);
-
-      expect(result.narrative).toContain('dark cave');
+      expect(result.narrative).toHaveLength(100);
       expect(result.choices).toHaveLength(3);
-      expect(result.choices[0]).toBe('Move toward the light');
-      expect(result.stateChanges).toContain('Entered the mysterious cave');
-      expect(result.newCanonFacts).toContain('The cave system extends beneath the mountain');
       expect(result.isEnding).toBe(false);
     });
 
-    it('should parse ending response', () => {
-      const response = `
-NARRATIVE:
-The dragon's fire engulfs you. In your final moments, you see a vision of your village at peace.
+    it('should validate a well-formed ending response', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: [],
+        stateChanges: ['Hero died'],
+        canonFacts: [],
+        isEnding: true,
+      };
 
-THE END
-Your adventure concludes here. Though you fell, your sacrifice was not in vain.
-
-STATE_CHANGES:
-- Hero died fighting the dragon
-`;
-
-      const result = parseResponse(response);
+      const result = GenerationResultSchema.parse(input);
 
       expect(result.isEnding).toBe(true);
       expect(result.choices).toHaveLength(0);
-      expect(result.stateChanges).toContain('Hero died fighting the dragon');
     });
 
-    it('should parse response with story arc', () => {
-      const response = `
-NARRATIVE:
-You awaken in a strange land...
+    it('should validate opening page with story arc', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['Start quest', 'Refuse quest'],
+        stateChanges: [],
+        canonFacts: ['The kingdom of Valdris'],
+        isEnding: false,
+        storyArc: 'Defeat the dragon and save the kingdom',
+      };
 
-CHOICES:
-1. Explore
-2. Wait
+      const result = GenerationResultSchema.parse(input);
 
-STATE_CHANGES:
-- Arrived in new world
-
-CANON_FACTS:
-- The realm of Valdris
-
-STORY_ARC:
-Discover the truth behind your mysterious arrival and find a way home
-`;
-
-      const result = parseResponse(response);
-
-      expect(result.storyArc).toBe('Discover the truth behind your mysterious arrival and find a way home');
-    });
-
-    it('should handle response without section markers', () => {
-      const response = `
-You walk into the tavern. The bartender nods at you.
-
-1. Order a drink
-2. Ask about rumors
-3. Leave
-`;
-
-      const result = parseResponse(response);
-
-      expect(result.narrative).toContain('tavern');
-      expect(result.choices.length).toBeGreaterThanOrEqual(2);
-    });
-
-    it('should throw for missing choices on non-ending', () => {
-      const response = `
-NARRATIVE:
-The story continues without choices...
-
-STATE_CHANGES:
-- Something happened
-`;
-
-      expect(() => parseResponse(response)).toThrow('MISSING_CHOICES');
+      expect(result.storyArc).toBe('Defeat the dragon and save the kingdom');
     });
   });
 
-  describe('validateResult', () => {
-    it('should pass for valid result', () => {
-      const result = {
-        narrative: 'A'.repeat(100),
-        choices: ['Choice A', 'Choice B'],
-        stateChanges: [],
-        newCanonFacts: [],
-        isEnding: false,
-        rawResponse: '',
-      };
-
-      const errors = validateResult(result);
-      expect(errors).toHaveLength(0);
-    });
-
-    it('should fail for short narrative', () => {
-      const result = {
-        narrative: 'Too short',
-        choices: ['A', 'B'],
-        stateChanges: [],
-        newCanonFacts: [],
-        isEnding: false,
-        rawResponse: '',
-      };
-
-      const errors = validateResult(result);
-      expect(errors).toContain('Narrative is too short (minimum 50 characters)');
-    });
-
-    it('should fail for duplicate choices', () => {
-      const result = {
-        narrative: 'A'.repeat(100),
-        choices: ['Go north', 'Go North'],
-        stateChanges: [],
-        newCanonFacts: [],
-        isEnding: false,
-        rawResponse: '',
-      };
-
-      const errors = validateResult(result);
-      expect(errors).toContain('Duplicate choices detected');
-    });
-
-    it('should pass for ending without choices', () => {
-      const result = {
+  describe('ending consistency invariant', () => {
+    it('should reject non-ending with zero choices', () => {
+      const input = {
         narrative: 'A'.repeat(100),
         choices: [],
         stateChanges: [],
-        newCanonFacts: [],
-        isEnding: true,
-        rawResponse: '',
+        canonFacts: [],
+        isEnding: false,
       };
 
-      const errors = validateResult(result);
-      expect(errors).toHaveLength(0);
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+
+    it('should reject ending with choices', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['Continue somehow'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: true,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+
+    it('should reject non-ending with only one choice', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['Only option'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+  });
+
+  describe('choice constraints', () => {
+    it('should reject more than 5 choices', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['A', 'B', 'C', 'D', 'E', 'F'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+
+    it('should reject duplicate choices (case-insensitive)', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['Go north', 'Go North', 'Go south'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow('Duplicate choices');
+    });
+
+    it('should reject very short choices', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['Go', 'X'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+
+    it('should reject very long choices', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['A'.repeat(400), 'Valid choice'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+  });
+
+  describe('narrative constraints', () => {
+    it('should reject very short narrative', () => {
+      const input = {
+        narrative: 'Too short',
+        choices: ['A', 'B'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+
+    it('should reject very long narrative', () => {
+      const input = {
+        narrative: 'A'.repeat(20000),
+        choices: ['A', 'B'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      expect(() => GenerationResultSchema.parse(input)).toThrow(ZodError);
+    });
+  });
+
+  describe('validateGenerationResponse', () => {
+    it('should return GenerationResult with trimmed values', () => {
+      const input = {
+        narrative: '  Narrative with spaces  ',
+        choices: ['  Choice A  ', '  Choice B  '],
+        stateChanges: ['  State change  ', ''],
+        canonFacts: ['  Canon fact  ', '  '],
+        isEnding: false,
+        storyArc: '  Story arc  ',
+      };
+
+      const result = validateGenerationResponse(input, 'raw');
+
+      expect(result.narrative).toBe('Narrative with spaces');
+      expect(result.choices).toEqual(['Choice A', 'Choice B']);
+      expect(result.stateChanges).toEqual(['State change']);
+      expect(result.canonFacts).toEqual(['Canon fact']);
+      expect(result.storyArc).toBe('Story arc');
+      expect(result.rawResponse).toBe('raw');
+    });
+
+    it('should handle missing optional storyArc', () => {
+      const input = {
+        narrative: 'A'.repeat(100),
+        choices: ['A', 'B'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      };
+
+      const result = validateGenerationResponse(input, 'raw');
+
+      expect(result.storyArc).toBeUndefined();
     });
   });
 });
@@ -1120,7 +1362,19 @@ describe('Prompt Builder', () => {
       expect(userMessage?.content).toContain('floating islands');
     });
 
-    it('should request story arc', () => {
+    it('should NOT include OUTPUT FORMAT instructions (structured output handles this)', () => {
+      const messages = buildOpeningPrompt({
+        characterConcept: 'Hero',
+        worldbuilding: '',
+        tone: 'fantasy',
+      });
+
+      const systemMessage = messages.find(m => m.role === 'system');
+      expect(systemMessage?.content).not.toContain('OUTPUT FORMAT:');
+      expect(systemMessage?.content).not.toContain('NARRATIVE:');
+    });
+
+    it('should request story arc determination', () => {
       const messages = buildOpeningPrompt({
         characterConcept: 'Hero',
         worldbuilding: '',
@@ -1128,7 +1382,7 @@ describe('Prompt Builder', () => {
       });
 
       const userMessage = messages.find(m => m.role === 'user');
-      expect(userMessage?.content).toContain('STORY_ARC');
+      expect(userMessage?.content).toContain('story arc');
     });
   });
 
@@ -1202,6 +1456,114 @@ describe('Prompt Builder', () => {
 });
 ```
 
+**File**: `test/unit/llm/fallback-parser.test.ts`
+
+```typescript
+import { parseTextResponse } from '@/llm/fallback-parser';
+
+describe('Fallback Text Parser', () => {
+  describe('parseTextResponse', () => {
+    it('should parse well-formatted response', () => {
+      const response = `
+NARRATIVE:
+You step into the dark cave. The air is cold and damp. A faint light glimmers in the distance.
+
+CHOICES:
+1. Move toward the light
+2. Feel along the wall for another path
+3. Call out to see if anyone responds
+
+STATE_CHANGES:
+- Entered the mysterious cave
+- Feeling of unease
+
+CANON_FACTS:
+- The cave system extends beneath the mountain
+`;
+
+      const result = parseTextResponse(response);
+
+      expect(result.narrative).toContain('dark cave');
+      expect(result.choices).toHaveLength(3);
+      expect(result.choices[0]).toBe('Move toward the light');
+      expect(result.stateChanges).toContain('Entered the mysterious cave');
+      expect(result.canonFacts).toContain('The cave system extends beneath the mountain');
+      expect(result.isEnding).toBe(false);
+    });
+
+    it('should parse ending response', () => {
+      const response = `
+NARRATIVE:
+The dragon's fire engulfs you. In your final moments, you see a vision of your village at peace.
+
+THE END
+Your adventure concludes here. Though you fell, your sacrifice was not in vain.
+
+STATE_CHANGES:
+- Hero died fighting the dragon
+`;
+
+      const result = parseTextResponse(response);
+
+      expect(result.isEnding).toBe(true);
+      expect(result.choices).toHaveLength(0);
+      expect(result.stateChanges).toContain('Hero died fighting the dragon');
+    });
+
+    it('should parse response with story arc', () => {
+      const response = `
+NARRATIVE:
+You awaken in a strange land with no memory of how you arrived here.
+
+CHOICES:
+1. Explore the surroundings
+2. Wait and observe
+
+STATE_CHANGES:
+- Arrived in new world
+
+CANON_FACTS:
+- The realm of Valdris
+
+STORY_ARC:
+Discover the truth behind your mysterious arrival and find a way home
+`;
+
+      const result = parseTextResponse(response);
+
+      expect(result.storyArc).toBe('Discover the truth behind your mysterious arrival and find a way home');
+    });
+
+    it('should handle response without section markers', () => {
+      const response = `
+You walk into the tavern. The bartender nods at you warmly as you approach.
+
+1. Order a drink
+2. Ask about rumors in town
+3. Find a quiet corner to rest
+`;
+
+      const result = parseTextResponse(response);
+
+      expect(result.narrative).toContain('tavern');
+      expect(result.choices.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should throw for missing choices on non-ending', () => {
+      const response = `
+NARRATIVE:
+The story continues without any choices presented to the player.
+
+STATE_CHANGES:
+- Something happened
+`;
+
+      expect(() => parseTextResponse(response)).toThrow('MISSING_CHOICES');
+    });
+  });
+});
+```
+
 ### Integration Tests
 
 **File**: `test/integration/llm/client.test.ts`
@@ -1218,7 +1580,7 @@ const API_KEY = process.env.OPENROUTER_TEST_KEY;
 const describeWithKey = API_KEY ? describe : describe.skip;
 
 describeWithKey('LLM Client Integration', () => {
-  it('should generate opening page', async () => {
+  it('should generate opening page with structured output', async () => {
     const result = await generateOpeningPage(
       {
         characterConcept: 'A curious wizard apprentice named Lyra who seeks forbidden knowledge',
@@ -1230,11 +1592,13 @@ describeWithKey('LLM Client Integration', () => {
 
     expect(result.narrative.length).toBeGreaterThan(100);
     expect(result.choices.length).toBeGreaterThanOrEqual(2);
+    expect(result.choices.length).toBeLessThanOrEqual(5);
     expect(result.isEnding).toBe(false);
     expect(result.storyArc).toBeDefined();
+    expect(result.storyArc!.length).toBeGreaterThan(10);
   }, 60000);
 
-  it('should generate continuation page', async () => {
+  it('should generate continuation page with structured output', async () => {
     const result = await generateContinuationPage(
       {
         characterConcept: 'A curious wizard apprentice',
@@ -1254,8 +1618,46 @@ describeWithKey('LLM Client Integration', () => {
     expect(
       result.narrative.toLowerCase().includes('lock') ||
       result.narrative.toLowerCase().includes('door') ||
-      result.narrative.toLowerCase().includes('pick')
+      result.narrative.toLowerCase().includes('pick') ||
+      result.narrative.toLowerCase().includes('hairpin')
     ).toBe(true);
+  }, 60000);
+
+  it('should work with text parsing fallback when forced', async () => {
+    const result = await generateOpeningPage(
+      {
+        characterConcept: 'A wandering bard',
+        worldbuilding: 'Medieval fantasy world',
+        tone: 'lighthearted adventure',
+      },
+      { apiKey: API_KEY!, forceTextParsing: true }
+    );
+
+    expect(result.narrative.length).toBeGreaterThan(100);
+    expect(result.choices.length).toBeGreaterThanOrEqual(2);
+    expect(result.isEnding).toBe(false);
+  }, 60000);
+
+  it('should enforce choice constraints via Zod validation', async () => {
+    // The structured output + Zod validation should ensure:
+    // - At least 2 choices for non-endings
+    // - No more than 5 choices
+    // - No duplicate choices
+    const result = await generateOpeningPage(
+      {
+        characterConcept: 'A merchant in a busy marketplace',
+        worldbuilding: '',
+        tone: 'medieval slice of life',
+      },
+      { apiKey: API_KEY! }
+    );
+
+    expect(result.choices.length).toBeGreaterThanOrEqual(2);
+    expect(result.choices.length).toBeLessThanOrEqual(5);
+
+    // Check no duplicates
+    const lowerChoices = result.choices.map(c => c.toLowerCase());
+    expect(new Set(lowerChoices).size).toBe(lowerChoices.length);
   }, 60000);
 });
 
@@ -1269,24 +1671,31 @@ describe('API Key Validation', () => {
 
 ## Acceptance Criteria
 
-- [ ] OpenRouter client makes successful API calls
+- [ ] OpenRouter client makes successful API calls with structured output
+- [ ] JSON schema correctly defines all required fields
+- [ ] Zod validation enforces all invariants:
+  - [ ] `isEnding === true` ⟺ `choices.length === 0`
+  - [ ] Non-ending pages have 2-5 choices
+  - [ ] No duplicate choices (case-insensitive)
+  - [ ] Narrative length 50-15000 characters
+  - [ ] Choice length 3-300 characters
 - [ ] Prompts include all required context (character, world, state)
 - [ ] Content policy is included in every prompt
-- [ ] Response parser extracts narrative, choices, state changes, and canon
-- [ ] Parser handles various response formats gracefully
-- [ ] Endings are correctly detected (no choices + THE END marker)
+- [ ] Prompts do NOT include OUTPUT FORMAT section (structured output handles it)
+- [ ] Fallback text parser works for models without structured output support
 - [ ] Retry logic handles transient failures
 - [ ] API key validation works
-- [ ] Quality validation catches malformed responses
 - [ ] All unit tests pass
 - [ ] Integration tests pass (with API key)
 
 ## Implementation Notes
 
-1. API key is passed per-request, not stored in environment
-2. Default model is Claude Sonnet for quality/speed balance
-3. Temperature 0.8 provides good creativity while maintaining coherence
-4. Prompts use structured output format to simplify parsing
-5. Parser has fallbacks for various formatting styles
-6. Retry uses exponential backoff (1s, 2s, 4s)
-7. Integration tests require OPENROUTER_TEST_KEY env var
+1. **Structured Output First**: Always try structured output before falling back to text parsing
+2. **Schema as Documentation**: JSON schema descriptions guide the LLM on what to generate
+3. **Zod at Runtime**: Even with structured output, validate with Zod for type safety
+4. **API Key Per-Request**: Not stored in environment, passed per-call
+5. **Default Model**: Claude Sonnet 4.5 for quality/speed and structured output support
+6. **Temperature 0.8**: Good creativity while maintaining coherence
+7. **Max Tokens 8192**: Increased from 4096 to prevent truncation with structured output
+8. **Retry Backoff**: Exponential (1s, 2s, 4s) for transient errors
+9. **Integration Tests**: Require OPENROUTER_TEST_KEY env var
