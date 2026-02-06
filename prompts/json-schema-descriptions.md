@@ -61,15 +61,22 @@ This file documents those descriptions for research purposes.
 ### `stateChanges` (array of strings, required)
 
 **Description**:
-> Events that happened in this scene only.
+> Events that happened in this scene only. Use second person for player actions (e.g., "You discovered...", "You were wounded..."). Identify other characters by name (e.g., "Captain Mira was wounded").
 
 **Purpose**: Track what changed during THIS scene. Used for branch-isolated state.
 
+**Format Guidelines**:
+- Use second person ("You") for events affecting the player character
+- Identify other characters by their full name when available
+- Keep state changes concise but specific
+
 **Examples**:
-- "Hero was wounded in the arm"
-- "Acquired the Moonstone Pendant"
-- "Lost 50 gold coins to the thief"
-- "Made an enemy of Lord Blackwood"
+- "You were wounded in the arm"
+- "You acquired the Moonstone Pendant"
+- "You lost 50 gold coins to the thief"
+- "You made an enemy of Lord Blackwood"
+- "Captain Mira was wounded in the ambush"
+- "Elena discovered the secret passage"
 
 **Important**: Do NOT repeat state from previous scenes. Only new changes.
 

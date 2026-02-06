@@ -141,9 +141,9 @@ REMINDER: If the player's choice naturally leads to a story conclusion, make it 
     "Use an illusion to make yourself appear invisible and observe"
   ],
   "stateChanges": [
-    "Entered the restricted east wing",
-    "Located the statue of Archmagus Caelan",
-    "Detected approaching faculty member"
+    "You entered the restricted east wing",
+    "You located the statue of Archmagus Caelan",
+    "You detected an approaching faculty member"
   ],
   "canonFacts": [
     "The east wing houses portraits of ancient magisters",

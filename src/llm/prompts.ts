@@ -16,6 +16,11 @@ STORYTELLING GUIDELINES:
 - React believably to player choices.
 - Each choice should represent a genuinely different path.
 
+STATE CHANGE FORMAT:
+- Use second person ("You") for events affecting the player character (e.g., "You discovered...", "You were wounded...").
+- Identify other characters by their full name when available (e.g., "Captain Mira was wounded", not "The captain was wounded").
+- Keep state changes concise but specific.
+
 When writing endings (character death, victory, conclusion):
 - Make the ending feel earned and meaningful.
 - Provide closure appropriate to the story.

@@ -265,6 +265,7 @@ describe('playRoutes', () => {
           isEnding: resultPage.isEnding,
         },
         wasGenerated: true,
+        logScript: expect.any(String),
       });
     });
   });

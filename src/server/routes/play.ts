@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
-import { storyEngine } from '../../engine';
-import { PageId, StoryId } from '../../models';
+import { storyEngine } from '../../engine/index.js';
+import { generateBrowserLogScript, logger } from '../../logging/index.js';
+import { PageId, StoryId } from '../../models/index.js';
 
 type ChoiceBody = {
   pageId?: number;
@@ -76,6 +77,11 @@ playRoutes.post('/:storyId/choice', async (req: Request, res: Response) => {
       apiKey,
     });
 
+    // Extract logs for browser console and clear to prevent accumulation
+    const logEntries = logger.getEntries();
+    const logScript = generateBrowserLogScript(logEntries);
+    logger.clear();
+
     return res.json({
       success: true,
       page: {
@@ -86,6 +92,7 @@ playRoutes.post('/:storyId/choice', async (req: Request, res: Response) => {
         isEnding: result.page.isEnding,
       },
       wasGenerated: result.wasGenerated,
+      logScript,
     });
   } catch (error) {
     // eslint-disable-next-line no-console

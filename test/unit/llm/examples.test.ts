@@ -118,4 +118,54 @@ describe('buildFewShotMessages', () => {
       expect(parsed.choices).toHaveLength(0);
     });
   });
+
+  describe('state change format', () => {
+    it('should use second person "You" in opening example state changes', () => {
+      const messages = buildFewShotMessages('opening', 'minimal');
+      const assistantContent = messages[1]?.content ?? '';
+
+      interface ExampleResponse {
+        stateChanges: string[];
+      }
+
+      const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
+
+      expect(parsed.stateChanges.length).toBeGreaterThan(0);
+      for (const stateChange of parsed.stateChanges) {
+        expect(stateChange).toMatch(/^You /);
+      }
+    });
+
+    it('should use second person "You" in continuation example state changes', () => {
+      const messages = buildFewShotMessages('continuation', 'minimal');
+      const assistantContent = messages[1]?.content ?? '';
+
+      interface ExampleResponse {
+        stateChanges: string[];
+      }
+
+      const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
+
+      expect(parsed.stateChanges.length).toBeGreaterThan(0);
+      for (const stateChange of parsed.stateChanges) {
+        expect(stateChange).toMatch(/^You /);
+      }
+    });
+
+    it('should use second person "You" in ending example state changes', () => {
+      const messages = buildFewShotMessages('continuation', 'standard');
+      const endingAssistantContent = messages[3]?.content ?? '';
+
+      interface ExampleResponse {
+        stateChanges: string[];
+      }
+
+      const parsed: ExampleResponse = JSON.parse(endingAssistantContent) as ExampleResponse;
+
+      expect(parsed.stateChanges.length).toBeGreaterThan(0);
+      for (const stateChange of parsed.stateChanges) {
+        expect(stateChange).toMatch(/^You /);
+      }
+    });
+  });
 });

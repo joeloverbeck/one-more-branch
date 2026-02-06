@@ -23,7 +23,8 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
         stateChanges: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Events that happened in this scene only.',
+          description:
+            'Events that happened in this scene only. Use second person for player actions (e.g., "You discovered...", "You were wounded..."). Identify other characters by name (e.g., "Captain Mira was wounded").',
         },
         canonFacts: {
           type: 'array',

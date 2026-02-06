@@ -156,8 +156,8 @@ REMINDER: Each choice must be something this specific character would genuinely 
     "Excuse yourself claiming sudden illness and slip away to investigate"
   ],
   "stateChanges": [
-    "Discovered a mysterious journal about the forbidden library",
-    "Drew unwanted attention from Professor Grimwald"
+    "You discovered a mysterious journal about the forbidden library",
+    "You drew unwanted attention from Professor Grimwald"
   ],
   "canonFacts": [
     "Celestria Academy floats among the clouds on enchanted foundations",
