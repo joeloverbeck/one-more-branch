@@ -14,6 +14,17 @@ The prompts are extracted from the codebase to facilitate external research and 
 | `fallback-output-format.md` | Format instructions appended when structured output is unavailable |
 | `json-schema-descriptions.md` | Schema field descriptions that guide LLM output structure |
 
+## Examples Folder
+
+Complete assembled examples showing exactly what gets sent to the API:
+
+| File | Description |
+|------|-------------|
+| `examples/opening-complete.md` | Full opening request with all components |
+| `examples/continuation-complete.md` | Full continuation request with context |
+| `examples/ending-complete.md` | Example ending responses (death/victory) |
+| `examples/fallback-mode-complete.md` | Request format when structured output unavailable |
+
 ## Placeholder Reference
 
 Dynamic values in prompts use `{{PLACEHOLDER}}` syntax:
