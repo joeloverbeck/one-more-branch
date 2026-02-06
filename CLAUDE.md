@@ -143,3 +143,54 @@ Completed specs are archived in `archive/specs/`.
 ## Content Policy
 
 All prompts include NC-21 mature content guidelines permitting explicit content, violence, and controversial themes without self-censorship, as this is an adults-only application.
+
+## Testing Patterns
+
+### Fire-and-Forget Route Handlers
+
+Express routes use `wrapAsyncRoute()` which fire-and-forgets async handlers via `void handler(req, res)`. This means:
+
+- **`await handler(req, res)` does NOT wait** - the wrapper detaches the promise
+- **Unit tests**: Use `flushPromises()` helper with `setImmediate` after calling the handler
+- **Integration tests**: Use `waitForMock()` polling helper that waits until response mocks are called
+
+```typescript
+// Unit test pattern
+function flushPromises(): Promise<void> {
+  return new Promise(resolve => setImmediate(resolve));
+}
+
+handler(req, res);  // Don't await - it won't work
+await flushPromises();
+expect(render).toHaveBeenCalled();
+
+// Integration test pattern (for complex async chains)
+async function waitForMock(mock: jest.Mock, timeout = 1000): Promise<void> {
+  const start = Date.now();
+  while (mock.mock.calls.length === 0) {
+    if (Date.now() - start > timeout) throw new Error('Timeout');
+    await new Promise(resolve => setImmediate(resolve));
+  }
+}
+
+handler(req, res);
+await waitForMock(redirectMock);
+```
+
+### Mock Object Completeness
+
+When `GenerationResult` or other LLM interfaces change, all test mocks must include every required field:
+
+```typescript
+// Required fields for GenerationResult mocks
+mockedGenerateOpeningPage.mockResolvedValueOnce({
+  narrative: '...',
+  choices: ['...'],
+  stateChanges: [],
+  canonFacts: [],
+  characterCanonFacts: {},  // Required - don't forget!
+  isEnding: false,
+  storyArc: '...',
+  rawResponse: '...',
+});
+```

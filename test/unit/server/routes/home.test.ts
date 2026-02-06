@@ -23,6 +23,11 @@ function getHomeHandler(): (req: Request, res: Response) => Promise<void> | void
   return handler;
 }
 
+// Helper to wait for async route handler to complete
+function flushPromises(): Promise<void> {
+  return new Promise((resolve) => setImmediate(resolve));
+}
+
 describe('homeRoutes GET /', () => {
   afterEach(() => {
     jest.restoreAllMocks();
@@ -49,7 +54,8 @@ describe('homeRoutes GET /', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    await getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    await flushPromises();
 
     expect(status).not.toHaveBeenCalled();
     expect(listStoriesSpy).toHaveBeenCalledTimes(1);
@@ -80,7 +86,8 @@ describe('homeRoutes GET /', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    await getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    await flushPromises();
 
     expect(status).not.toHaveBeenCalled();
     expect(listStoriesSpy).toHaveBeenCalledTimes(1);
@@ -98,7 +105,8 @@ describe('homeRoutes GET /', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    await getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    getHomeHandler()({} as Request, { status, render } as unknown as Response);
+    await flushPromises();
 
     expect(status).toHaveBeenCalledWith(500);
     expect(getStoryStatsSpy).not.toHaveBeenCalled();

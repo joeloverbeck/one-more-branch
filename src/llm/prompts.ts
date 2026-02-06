@@ -143,6 +143,16 @@ ${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
 
 `
       : '';
+  const characterCanonEntries = Object.entries(context.globalCharacterCanon);
+  const characterCanonSection =
+    characterCanonEntries.length > 0
+      ? `CHARACTER INFORMATION:
+${characterCanonEntries
+  .map(([name, facts]) => `[${name}]\n${facts.map(fact => `- ${fact}`).join('\n')}`)
+  .join('\n\n')}
+
+`
+      : '';
   const stateSection =
     context.accumulatedState.length > 0
       ? `CURRENT STATE:
@@ -158,7 +168,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${storyArcSection}${canonSection}${stateSection}PREVIOUS SCENE:
+${storyArcSection}${canonSection}${characterCanonSection}${stateSection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
 
 PLAYER'S CHOICE: "${context.selectedChoice}"

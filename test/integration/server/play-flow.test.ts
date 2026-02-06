@@ -74,6 +74,22 @@ function parseStoryIdFromRedirect(redirectCallArg: unknown): StoryId {
   return storyId as StoryId;
 }
 
+function getMockCallArg(mockFn: jest.Mock, callIndex: number, argIndex: number): unknown {
+  const calls = mockFn.mock.calls as unknown[][];
+  return calls[callIndex]?.[argIndex];
+}
+
+// Helper to wait for a mock function to be called with polling
+async function waitForMock(mock: jest.Mock, timeout = 1000): Promise<void> {
+  const start = Date.now();
+  while (mock.mock.calls.length === 0) {
+    if (Date.now() - start > timeout) {
+      throw new Error('Timed out waiting for mock to be called');
+    }
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+}
+
 describe('Play Flow Integration (Mocked LLM)', () => {
   const createdStoryIds = new Set<StoryId>();
   const createStoryHandler = getRouteHandler(storyRoutes, 'post', '/create');
@@ -113,6 +129,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       choices: ['Enter the cave', 'Follow the path', 'Climb a tree'],
       stateChanges: ['Entered the forest'],
       canonFacts: ['The forest is ancient'],
+      characterCanonFacts: {},
       isEnding: false,
       storyArc: 'Find your way out',
       rawResponse: 'opening',
@@ -120,7 +137,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     const { res, status, render, redirect } = createMockResponse();
 
-    await createStoryHandler(
+    createStoryHandler(
       {
         body: {
           characterConcept: `${TEST_PREFIX} create-story`,
@@ -130,12 +147,13 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       } as Request,
       res,
     );
+    await waitForMock(redirect);
 
     expect(status).not.toHaveBeenCalled();
     expect(render).not.toHaveBeenCalled();
     expect(redirect).toHaveBeenCalledTimes(1);
 
-    const storyId = parseStoryIdFromRedirect(redirect.mock.calls[0]?.[0]);
+    const storyId = parseStoryIdFromRedirect(getMockCallArg(redirect, 0, 0));
     createdStoryIds.add(storyId);
 
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
@@ -148,13 +166,14 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       choices: ['Choice A', 'Choice B'],
       stateChanges: [],
       canonFacts: [],
+      characterCanonFacts: {},
       isEnding: false,
       storyArc: 'Arc',
       rawResponse: 'opening',
     });
 
     const createRes = createMockResponse();
-    await createStoryHandler(
+    createStoryHandler(
       {
         body: {
           characterConcept: `${TEST_PREFIX} make-choice`,
@@ -163,8 +182,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       } as Request,
       createRes.res,
     );
+    await waitForMock(createRes.redirect);
 
-    const storyId = parseStoryIdFromRedirect(createRes.redirect.mock.calls[0]?.[0]);
+    const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
 
     mockedGenerateContinuationPage.mockResolvedValueOnce({
@@ -172,13 +192,14 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       choices: ['Continue', 'Inspect surroundings'],
       stateChanges: ['Made a choice'],
       canonFacts: [],
+      characterCanonFacts: {},
       isEnding: false,
       storyArc: 'Arc',
       rawResponse: 'continuation',
     });
 
     const choiceRes = createMockResponse();
-    await chooseHandler(
+    chooseHandler(
       {
         params: { storyId },
         body: {
@@ -189,18 +210,20 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       } as unknown as Request,
       choiceRes.res,
     );
+    await waitForMock(choiceRes.json);
 
     expect(choiceRes.status).not.toHaveBeenCalled();
-    expect(choiceRes.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        wasGenerated: true,
-        page: expect.objectContaining({
-          id: 2,
-          narrativeText: 'You chose wisely...',
-        }),
-      }),
-    );
+    const choicePayload = getMockCallArg(choiceRes.json, 0, 0) as
+      | {
+          success?: boolean;
+          wasGenerated?: boolean;
+          page?: { id?: number; narrativeText?: string };
+        }
+      | undefined;
+    expect(choicePayload?.success).toBe(true);
+    expect(choicePayload?.wasGenerated).toBe(true);
+    expect(choicePayload?.page?.id).toBe(2);
+    expect(choicePayload?.page?.narrativeText).toBe('You chose wisely...');
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
     expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(1);
   });
@@ -211,13 +234,14 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       choices: ['Go', 'Wait'],
       stateChanges: [],
       canonFacts: [],
+      characterCanonFacts: {},
       isEnding: false,
       storyArc: 'Arc',
       rawResponse: 'opening',
     });
 
     const createRes = createMockResponse();
-    await createStoryHandler(
+    createStoryHandler(
       {
         body: {
           characterConcept: `${TEST_PREFIX} replay`,
@@ -226,8 +250,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       } as Request,
       createRes.res,
     );
+    await waitForMock(createRes.redirect);
 
-    const storyId = parseStoryIdFromRedirect(createRes.redirect.mock.calls[0]?.[0]);
+    const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
 
     mockedGenerateContinuationPage.mockResolvedValueOnce({
@@ -235,13 +260,14 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       choices: ['Next', 'Turn back'],
       stateChanges: [],
       canonFacts: [],
+      characterCanonFacts: {},
       isEnding: false,
       storyArc: 'Arc',
       rawResponse: 'continuation',
     });
 
     const firstChoiceRes = createMockResponse();
-    await chooseHandler(
+    chooseHandler(
       {
         params: { storyId },
         body: {
@@ -252,9 +278,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       } as unknown as Request,
       firstChoiceRes.res,
     );
+    await waitForMock(firstChoiceRes.json);
 
     const replayChoiceRes = createMockResponse();
-    await chooseHandler(
+    chooseHandler(
       {
         params: { storyId },
         body: {
@@ -265,6 +292,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       } as unknown as Request,
       replayChoiceRes.res,
     );
+    await waitForMock(replayChoiceRes.json);
 
     expect(firstChoiceRes.json).toHaveBeenCalledWith(
       expect.objectContaining({

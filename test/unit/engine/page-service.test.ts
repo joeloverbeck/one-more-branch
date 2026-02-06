@@ -57,6 +57,7 @@ describe('page-service', () => {
         choices: ['Hide in the print shop', 'Bribe a gate sergeant'],
         stateChanges: ['Reached the capital at dusk'],
         canonFacts: ['The city enforces nightly curfew'],
+        characterCanonFacts: {},
         isEnding: false,
         storyArc: 'Deliver the decoded treaty to the resistance safely.',
         rawResponse: 'raw',
@@ -126,6 +127,7 @@ describe('page-service', () => {
         choices: ['Leap to the clocktower', 'Drop into the market canopy'],
         stateChanges: ['Gained rooftop position'],
         canonFacts: ['Clocktower guards rotate every ten minutes'],
+        characterCanonFacts: {},
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -226,6 +228,7 @@ describe('page-service', () => {
         choices: ['Signal the contact', 'Circle back to the docks'],
         stateChanges: ['Located resistance contact point'],
         canonFacts: ['Resistance uses songs as ciphers'],
+        characterCanonFacts: {},
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -260,6 +263,7 @@ describe('page-service', () => {
         choices: ['Move now', 'Wait longer'],
         stateChanges: ['Lost time while hiding'],
         canonFacts: [],
+        characterCanonFacts: {},
         isEnding: false,
         rawResponse: 'raw',
       });

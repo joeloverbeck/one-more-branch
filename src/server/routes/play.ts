@@ -9,8 +9,17 @@ type ChoiceBody = {
   apiKey?: string;
 };
 
+function wrapAsyncRoute(
+  handler: (req: Request, res: Response) => Promise<unknown>,
+): (req: Request, res: Response) => void {
+  return (req: Request, res: Response) => {
+    void handler(req, res);
+  };
+}
+
 function parseRequestedPageId(pageQuery: unknown): number {
-  const parsed = Number.parseInt(String(pageQuery ?? ''), 10);
+  const pageInput = typeof pageQuery === 'string' || typeof pageQuery === 'number' ? String(pageQuery) : '';
+  const parsed = Number.parseInt(pageInput, 10);
   if (!Number.isInteger(parsed) || parsed < 1) {
     return 1;
   }
@@ -20,7 +29,7 @@ function parseRequestedPageId(pageQuery: unknown): number {
 
 export const playRoutes = Router();
 
-playRoutes.get('/:storyId', async (req: Request, res: Response) => {
+playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
   const pageId = parseRequestedPageId(req.query['page']);
 
@@ -55,9 +64,9 @@ playRoutes.get('/:storyId', async (req: Request, res: Response) => {
       message: 'Failed to load story',
     });
   }
-});
+}));
 
-playRoutes.post('/:storyId/choice', async (req: Request, res: Response) => {
+playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
   const { pageId, choiceIndex, apiKey } = req.body as ChoiceBody;
 
@@ -101,9 +110,9 @@ playRoutes.post('/:storyId/choice', async (req: Request, res: Response) => {
       error: error instanceof Error ? error.message : 'Failed to process choice',
     });
   }
-});
+}));
 
-playRoutes.get('/:storyId/restart', async (req: Request, res: Response) => {
+playRoutes.get('/:storyId/restart', (req: Request, res: Response) => {
   const { storyId } = req.params;
-  return res.redirect(`/play/${storyId}?page=1`);
+  res.redirect(`/play/${storyId}?page=1`);
 });

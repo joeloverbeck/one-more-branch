@@ -3,6 +3,7 @@ export interface GenerationResult {
   choices: string[];
   stateChanges: string[];
   canonFacts: string[];
+  characterCanonFacts: Record<string, string[]>;
   isEnding: boolean;
   storyArc?: string;
   rawResponse: string;
@@ -31,6 +32,7 @@ export interface ContinuationContext {
   worldbuilding: string;
   tone: string;
   globalCanon: readonly string[];
+  globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc: string | null;
   previousNarrative: string;
   selectedChoice: string;

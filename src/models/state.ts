@@ -4,6 +4,10 @@ export type StateChanges = readonly StateChange[];
 export type CanonFact = string;
 export type GlobalCanon = readonly CanonFact[];
 
+export type CharacterCanonFact = string;
+export type CharacterCanon = readonly CharacterCanonFact[];
+export type GlobalCharacterCanon = Readonly<Record<string, CharacterCanon>>;
+
 export interface AccumulatedState {
   readonly changes: StateChanges;
 }

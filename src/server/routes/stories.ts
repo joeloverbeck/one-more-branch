@@ -11,6 +11,14 @@ type StoryFormBody = {
 
 export const storyRoutes = Router();
 
+function wrapAsyncRoute(
+  handler: (req: Request, res: Response) => Promise<unknown>,
+): (req: Request, res: Response) => void {
+  return (req: Request, res: Response) => {
+    void handler(req, res);
+  };
+}
+
 storyRoutes.get('/new', (_req: Request, res: Response) => {
   res.render('pages/new-story', {
     title: 'New Adventure - One More Branch',
@@ -19,7 +27,7 @@ storyRoutes.get('/new', (_req: Request, res: Response) => {
   });
 });
 
-storyRoutes.post('/create', async (req: Request, res: Response) => {
+storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { characterConcept, worldbuilding, tone, apiKey } = req.body as StoryFormBody;
   const trimmedCharacterConcept = characterConcept?.trim();
   const trimmedWorldbuilding = worldbuilding?.trim();
@@ -60,9 +68,9 @@ storyRoutes.post('/create', async (req: Request, res: Response) => {
       values: { characterConcept, worldbuilding, tone },
     });
   }
-});
+}));
 
-storyRoutes.post('/:storyId/delete', async (req: Request, res: Response) => {
+storyRoutes.post('/:storyId/delete', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
 
   try {
@@ -73,4 +81,4 @@ storyRoutes.post('/:storyId/delete', async (req: Request, res: Response) => {
     console.error('Error deleting story:', error);
     return res.redirect('/');
   }
-});
+}));

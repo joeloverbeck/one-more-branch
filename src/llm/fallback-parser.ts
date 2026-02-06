@@ -14,6 +14,7 @@ export function parseTextResponse(rawResponse: string): GenerationResult {
   const choices = isEnding ? [] : extractChoices(response);
   const stateChanges = extractListSection(response, 'STATE_CHANGES');
   const canonFacts = extractListSection(response, 'CANON_FACTS');
+  const characterCanonFacts = extractCharacterCanonFacts(response);
   const storyArc = extractSection(response, 'STORY_ARC', null);
 
   if (!isEnding && choices.length < 2) {
@@ -29,6 +30,7 @@ export function parseTextResponse(rawResponse: string): GenerationResult {
     choices,
     stateChanges,
     canonFacts,
+    characterCanonFacts,
     isEnding,
     storyArc: storyArc || undefined,
     rawResponse: response,
@@ -145,6 +147,58 @@ function extractListSection(text: string, marker: string): string[] {
 }
 
 /**
+ * Extracts character canon facts from the response.
+ * Expects format:
+ * CHARACTER_CANON_FACTS:
+ * [Character Name]
+ * - Fact about character
+ * - Another fact
+ *
+ * [Another Character]
+ * - Their fact
+ */
+function extractCharacterCanonFacts(text: string): Record<string, string[]> {
+  const section = extractSection(text, 'CHARACTER_CANON_FACTS', null);
+  if (!section) {
+    return {};
+  }
+
+  const result: Record<string, string[]> = {};
+  let currentCharacter: string | null = null;
+
+  for (const line of section.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || /^[A-Z_]+:?$/.test(trimmed)) {
+      continue;
+    }
+
+    // Check if this is a character name header [Character Name]
+    const characterMatch = trimmed.match(/^\[([^\]]+)\]$/);
+    if (characterMatch?.[1]) {
+      const name = characterMatch[1].trim();
+      if (name) {
+        currentCharacter = name;
+        result[currentCharacter] = result[currentCharacter] ?? [];
+      }
+      continue;
+    }
+
+    // If we have a current character, add facts to them
+    if (currentCharacter) {
+      const facts = result[currentCharacter];
+      if (facts) {
+        const withoutBullet = trimmed.replace(/^[-*]\s*/, '').trim();
+        if (withoutBullet) {
+          facts.push(withoutBullet);
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Appended to the system prompt when text parsing fallback is used.
  */
 export function buildFallbackSystemPromptAddition(): string {
@@ -167,8 +221,16 @@ STATE_CHANGES:
 - [Any relationship change]
 
 CANON_FACTS:
-- [Any new world facts introduced]
-- [Any new characters introduced]
+- [Any new WORLD facts introduced (places, events, rules)]
+- [Do NOT include character-specific facts here]
+
+CHARACTER_CANON_FACTS:
+[Character Name]
+- [Permanent fact about this character]
+- [Another fact about this character]
+
+[Another Character]
+- [Their permanent fact]
 
 If this is an ENDING (character death, story conclusion, etc.), omit the CHOICES section and instead write:
 

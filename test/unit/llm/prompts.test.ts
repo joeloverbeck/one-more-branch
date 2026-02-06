@@ -204,6 +204,7 @@ describe('buildContinuationPrompt', () => {
     worldbuilding: '',
     tone: 'noir',
     globalCanon: [] as const,
+    globalCharacterCanon: {} as const,
     storyArc: null,
     previousNarrative: 'Rain batters the windows while the neon sign flickers overhead.',
     selectedChoice: 'Confront the informant at gunpoint',
@@ -236,6 +237,24 @@ describe('buildContinuationPrompt', () => {
     const user = getUserMessage(messages);
     expect(user).toContain('ESTABLISHED WORLD FACTS:');
     expect(user).toContain('Mayor Calder');
+  });
+
+  it('should include character canon when present', () => {
+    const messages = buildContinuationPrompt({
+      ...baseContext,
+      globalCharacterCanon: {
+        'dr cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
+        'bobby western': ['Bobby is in a coma in Italy'],
+      },
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('CHARACTER INFORMATION:');
+    expect(user).toContain('[dr cohen]');
+    expect(user).toContain('Dr. Cohen is a psychiatrist');
+    expect(user).toContain('He wears wire-rimmed glasses');
+    expect(user).toContain('[bobby western]');
+    expect(user).toContain('Bobby is in a coma in Italy');
   });
 
   it('should include story arc when present', () => {

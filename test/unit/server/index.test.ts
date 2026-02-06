@@ -38,6 +38,11 @@ function findGetRootHandler(layers: RouterLayer[]): ((req: Request, res: Respons
   return null;
 }
 
+// Helper to wait for async route handler to complete
+function flushPromises(): Promise<void> {
+  return new Promise((resolve) => setImmediate(resolve));
+}
+
 describe('server app setup', () => {
   afterEach(() => {
     jest.restoreAllMocks();
@@ -128,10 +133,11 @@ describe('server app setup', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    await homeHandler?.({} as Request, {
+    homeHandler?.({} as Request, {
       status,
       render,
     } as unknown as Response);
+    await flushPromises();
 
     expect(homeHandler).toBeDefined();
     expect(status).not.toHaveBeenCalled();

@@ -30,6 +30,14 @@
 - Current integration and E2E suites run with mocked LLM/fetch flows and do not require `OPENROUTER_TEST_KEY`.
 - Run targeted suites: `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`.
 
+### Async Route Handler Testing
+Routes use `wrapAsyncRoute()` which fire-and-forgets via `void handler(req, res)`. **Do not use `await` on handlers** - it won't wait. Instead:
+- **Unit tests**: Call handler, then `await flushPromises()` (uses `setImmediate`)
+- **Integration tests**: Call handler, then `await waitForMock(responseMock)` (polling pattern)
+
+### Interface Changes and Mock Updates
+When modifying interfaces like `GenerationResult`, search all test files for mocks that need the new fields. Missing required fields cause runtime errors like `TypeError: Cannot convert undefined or null to object`.
+
 ## Commit & Pull Request Guidelines
 - Current history uses short, capitalized, imperative messages (e.g., "Implement ...").
 - Keep commits focused on a single change set.

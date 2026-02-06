@@ -243,6 +243,106 @@ CHOICES:
     expect(result.narrative).toContain('moonlit ruins');
     expect(result.choices).toHaveLength(2);
   });
+
+  it('should parse CHARACTER_CANON_FACTS section', () => {
+    const response = `
+NARRATIVE:
+You meet Dr. Cohen in the hallway. He adjusts his glasses and greets you warmly.
+
+CHOICES:
+1. Ask about the patient
+2. Request a private consultation
+
+STATE_CHANGES:
+- Met Dr. Cohen
+
+CANON_FACTS:
+- The year is 1972
+
+CHARACTER_CANON_FACTS:
+[Dr. Cohen]
+- Dr. Cohen is a psychiatrist at Stella Maris
+- He wears wire-rimmed glasses
+
+[Margaret]
+- Margaret is the intake nurse
+`;
+
+    const result = parseTextResponse(response);
+
+    expect(result.characterCanonFacts).toEqual({
+      'Dr. Cohen': [
+        'Dr. Cohen is a psychiatrist at Stella Maris',
+        'He wears wire-rimmed glasses',
+      ],
+      'Margaret': ['Margaret is the intake nurse'],
+    });
+  });
+
+  it('should return empty object when CHARACTER_CANON_FACTS section is missing', () => {
+    const response = `
+NARRATIVE:
+A simple scene with no character facts.
+
+CHOICES:
+1. Continue
+2. Wait
+`;
+
+    const result = parseTextResponse(response);
+
+    expect(result.characterCanonFacts).toEqual({});
+  });
+
+  it('should handle CHARACTER_CANON_FACTS with single character', () => {
+    const response = `
+NARRATIVE:
+You encounter The Kid again.
+
+CHOICES:
+1. Speak to The Kid
+2. Ignore the apparition
+
+CHARACTER_CANON_FACTS:
+[The Kid]
+- The Kid is an eidolon who appears to Alicia
+- The Kid speaks with unnerving clarity
+`;
+
+    const result = parseTextResponse(response);
+
+    expect(result.characterCanonFacts).toEqual({
+      'The Kid': [
+        'The Kid is an eidolon who appears to Alicia',
+        'The Kid speaks with unnerving clarity',
+      ],
+    });
+  });
+
+  it('should handle CHARACTER_CANON_FACTS with bullet points', () => {
+    const response = `
+NARRATIVE:
+The scene unfolds.
+
+CHOICES:
+1. Act
+2. Wait
+
+CHARACTER_CANON_FACTS:
+[Bobby Western]
+* Bobby is in a coma in Italy
+* Bobby inherited gold from his grandfather
+`;
+
+    const result = parseTextResponse(response);
+
+    expect(result.characterCanonFacts).toEqual({
+      'Bobby Western': [
+        'Bobby is in a coma in Italy',
+        'Bobby inherited gold from his grandfather',
+      ],
+    });
+  });
 });
 
 describe('buildFallbackSystemPromptAddition', () => {
@@ -270,5 +370,13 @@ describe('buildFallbackSystemPromptAddition', () => {
 
   it('should include STORY_ARC instruction', () => {
     expect(prompt).toContain('STORY_ARC:');
+  });
+
+  it('should include CHARACTER_CANON_FACTS section instruction', () => {
+    expect(prompt).toContain('CHARACTER_CANON_FACTS:');
+  });
+
+  it('should include character name bracket format example', () => {
+    expect(prompt).toContain('[Character Name]');
   });
 });

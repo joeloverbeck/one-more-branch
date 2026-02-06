@@ -27,6 +27,11 @@ function getRouteHandler(
   return handler;
 }
 
+// Helper to wait for async route handler to complete
+function flushPromises(): Promise<void> {
+  return new Promise(resolve => setImmediate(resolve));
+}
+
 describe('playRoutes', () => {
   const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
 
@@ -59,10 +64,11 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      await getRouteHandler('get', '/:storyId')(
+      getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '2' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
+      await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
       expect(loadStorySpy).toHaveBeenCalledWith(storyId);
@@ -81,10 +87,11 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      await getRouteHandler('get', '/:storyId')(
+      getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '1' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
+      await flushPromises();
 
       expect(loadStorySpy).toHaveBeenCalledWith(storyId);
       expect(getPageSpy).not.toHaveBeenCalled();
@@ -106,10 +113,11 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      await getRouteHandler('get', '/:storyId')(
+      getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '99' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
+      await flushPromises();
 
       expect(getPageSpy).toHaveBeenCalledWith(storyId, 99);
       expect(status).toHaveBeenCalledWith(404);
@@ -139,10 +147,11 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      await getRouteHandler('get', '/:storyId')(
+      getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: {} } as unknown as Request,
         { status, render } as unknown as Response,
       );
+      await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
       expect(getPageSpy).toHaveBeenCalledWith(storyId, 1);
@@ -174,10 +183,11 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      await getRouteHandler('get', '/:storyId')(
+      getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '0' } } as unknown as Request,
         { status, render } as unknown as Response,
       );
+      await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
       expect(getPageSpy).toHaveBeenCalledWith(storyId, 1);

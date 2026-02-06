@@ -1,5 +1,5 @@
 import { StoryId, generateStoryId, isStoryId } from './id';
-import { GlobalCanon } from './state';
+import { GlobalCanon, GlobalCharacterCanon } from './state';
 
 export type StoryTone = string;
 
@@ -9,6 +9,7 @@ export interface Story {
   readonly worldbuilding: string;
   readonly tone: StoryTone;
   globalCanon: GlobalCanon;
+  globalCharacterCanon: GlobalCharacterCanon;
   storyArc: string | null;
   readonly createdAt: Date;
   updatedAt: Date;
@@ -43,10 +44,30 @@ export function createStory(data: CreateStoryData): Story {
     worldbuilding: data.worldbuilding?.trim() ?? '',
     tone: data.tone?.trim() ?? 'fantasy adventure',
     globalCanon: [],
+    globalCharacterCanon: {},
     storyArc: null,
     createdAt: now,
     updatedAt: now,
   };
+}
+
+function isGlobalCharacterCanon(value: unknown): value is GlobalCharacterCanon {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+  for (const key of Object.keys(obj)) {
+    if (!Array.isArray(obj[key])) {
+      return false;
+    }
+    const arr = obj[key] as unknown[];
+    if (!arr.every(item => typeof item === 'string')) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 export function isStory(value: unknown): value is Story {
@@ -65,6 +86,7 @@ export function isStory(value: unknown): value is Story {
     typeof obj['worldbuilding'] === 'string' &&
     typeof obj['tone'] === 'string' &&
     Array.isArray(obj['globalCanon']) &&
+    isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
     (typeof storyArc === 'string' || storyArc === null) &&
     obj['createdAt'] instanceof Date &&
     obj['updatedAt'] instanceof Date

@@ -16,7 +16,7 @@ describe('entry point bootstrap', () => {
     }));
 
     jest.isolateModules(() => {
-      require('../../src/index');
+      jest.requireActual('../../src/index');
     });
 
     expect(loadConfig).not.toHaveBeenCalled();
@@ -36,7 +36,7 @@ describe('entry point bootstrap', () => {
 
     let bootstrap: (() => void) | undefined;
     jest.isolateModules(() => {
-      ({ bootstrap } = require('../../src/index') as { bootstrap: () => void });
+      ({ bootstrap } = jest.requireActual<{ bootstrap: () => void }>('../../src/index'));
     });
 
     expect(typeof bootstrap).toBe('function');
@@ -59,7 +59,7 @@ describe('entry point bootstrap', () => {
     }));
 
     jest.isolateModules(() => {
-      const { bootstrap } = require('../../src/index') as { bootstrap: () => void };
+      const { bootstrap } = jest.requireActual<{ bootstrap: () => void }>('../../src/index');
       bootstrap();
     });
 

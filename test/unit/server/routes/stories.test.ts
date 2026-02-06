@@ -141,7 +141,11 @@ describe('storyRoutes', () => {
         error: 'OpenRouter API key is required',
         values: { characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
       });
-      expect(render.mock.calls[0]?.[1]).not.toHaveProperty('values.apiKey');
+
+      const renderCalls = render.mock.calls as unknown[][];
+      const firstRenderPayload = renderCalls[0]?.[1] as { values?: Record<string, unknown> } | undefined;
+      expect(firstRenderPayload?.values).toBeDefined();
+      expect(firstRenderPayload?.values?.apiKey).toBeUndefined();
     });
   });
 

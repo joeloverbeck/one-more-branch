@@ -1,4 +1,5 @@
 import { GlobalCanon, Story, mergeCanonFacts } from '../models';
+import { mergeCharacterCanonFacts } from './character-canon-manager';
 
 const NEGATION_PATTERNS = ['is not', 'does not', 'never', 'no longer', 'was destroyed', 'died'];
 
@@ -58,6 +59,48 @@ export function updateStoryWithNewCanon(story: Story, newFacts: readonly string[
     globalCanon: updatedCanon,
     updatedAt: new Date(),
   };
+}
+
+/**
+ * Updates story with new character canon facts from LLM response.
+ * Character canon facts are keyed by character name and contain permanent facts about each character.
+ */
+export function updateStoryWithNewCharacterCanon(
+  story: Story,
+  newCharacterFacts: Record<string, readonly string[]>,
+): Story {
+  if (Object.keys(newCharacterFacts).length === 0) {
+    return story;
+  }
+
+  const updatedCharacterCanon = mergeCharacterCanonFacts(
+    story.globalCharacterCanon,
+    newCharacterFacts,
+  );
+
+  if (updatedCharacterCanon === story.globalCharacterCanon) {
+    return story;
+  }
+
+  return {
+    ...story,
+    globalCharacterCanon: updatedCharacterCanon,
+    updatedAt: new Date(),
+  };
+}
+
+/**
+ * Updates story with both world canon and character canon facts from LLM response.
+ * This is the primary function to use when processing generation results.
+ */
+export function updateStoryWithAllCanon(
+  story: Story,
+  worldFacts: readonly string[],
+  characterFacts: Record<string, readonly string[]>,
+): Story {
+  let updatedStory = updateStoryWithNewCanon(story, worldFacts);
+  updatedStory = updateStoryWithNewCharacterCanon(updatedStory, characterFacts);
+  return updatedStory;
 }
 
 export function formatCanonForPrompt(canon: GlobalCanon): string {

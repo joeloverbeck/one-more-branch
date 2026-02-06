@@ -27,6 +27,7 @@ describe('STORY_GENERATION_SCHEMA', () => {
       'choices',
       'stateChanges',
       'canonFacts',
+      'characterCanonFacts',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);
@@ -72,6 +73,35 @@ describe('GenerationResultSchema', () => {
       });
 
       expect(result.storyArc).toBe('Unify the fractured kingdoms before winter.');
+    });
+
+    it('should validate response with character canon facts', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Speak to the doctor', 'Wait in silence'],
+        stateChanges: ['Met Dr. Cohen'],
+        canonFacts: ['The year is 1972'],
+        characterCanonFacts: {
+          'Dr. Cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
+        },
+        isEnding: false,
+      });
+
+      expect(result.characterCanonFacts).toEqual({
+        'Dr. Cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
+      });
+    });
+
+    it('should default characterCanonFacts to empty object when not provided', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.characterCanonFacts).toEqual({});
     });
   });
 
@@ -248,6 +278,42 @@ describe('validateGenerationResponse', () => {
     );
 
     expect(result.storyArc).toBeUndefined();
+  });
+
+  it('should trim and filter characterCanonFacts', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Speak to the doctor', 'Wait in silence'],
+        stateChanges: [],
+        canonFacts: [],
+        characterCanonFacts: {
+          '  Dr. Cohen  ': ['  Dr. Cohen is a psychiatrist  ', '  ', ''],
+          'Empty Character': ['   ', ''],
+        },
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.characterCanonFacts).toEqual({
+      'Dr. Cohen': ['Dr. Cohen is a psychiatrist'],
+    });
+  });
+
+  it('should default characterCanonFacts to empty object when not provided', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        stateChanges: [],
+        canonFacts: [],
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.characterCanonFacts).toEqual({});
   });
 });
 

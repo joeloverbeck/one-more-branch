@@ -22,10 +22,20 @@ export {
 
 export {
   updateStoryWithNewCanon,
+  updateStoryWithNewCharacterCanon,
+  updateStoryWithAllCanon,
   formatCanonForPrompt,
   mightContradictCanon,
   validateNewFacts,
 } from './canon-manager';
+
+export {
+  normalizeCharacterName,
+  addCharacterFact,
+  mergeCharacterCanonFacts,
+  getCharacterFacts,
+  formatCharacterCanonForPrompt,
+} from './character-canon-manager';
 
 export { EngineError } from './types';
 export type {

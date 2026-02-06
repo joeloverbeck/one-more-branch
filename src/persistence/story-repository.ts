@@ -20,18 +20,25 @@ interface StoryFileData {
   worldbuilding: string;
   tone: string;
   globalCanon: string[];
+  globalCharacterCanon: Record<string, string[]>;
   storyArc: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 function storyToFileData(story: Story): StoryFileData {
+  const globalCharacterCanon: Record<string, string[]> = {};
+  for (const [name, facts] of Object.entries(story.globalCharacterCanon)) {
+    globalCharacterCanon[name] = [...facts];
+  }
+
   return {
     id: story.id,
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
     globalCanon: [...story.globalCanon],
+    globalCharacterCanon,
     storyArc: story.storyArc,
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
@@ -39,12 +46,21 @@ function storyToFileData(story: Story): StoryFileData {
 }
 
 function fileDataToStory(data: StoryFileData): Story {
+  // Migration: handle existing stories without globalCharacterCanon
+  const globalCharacterCanon: Record<string, readonly string[]> = {};
+  if (data.globalCharacterCanon) {
+    for (const [name, facts] of Object.entries(data.globalCharacterCanon)) {
+      globalCharacterCanon[name] = [...facts];
+    }
+  }
+
   return {
     id: parseStoryId(data.id),
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
     globalCanon: [...data.globalCanon],
+    globalCharacterCanon,
     storyArc: data.storyArc,
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),

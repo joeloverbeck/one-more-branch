@@ -1,7 +1,7 @@
 import { generateContinuationPage, generateOpeningPage } from '../llm';
 import { createChoice, createPage, generatePageId, Page, Story, parsePageId, updateStoryArc } from '../models';
 import { storage } from '../persistence';
-import { updateStoryWithNewCanon } from './canon-manager';
+import { updateStoryWithAllCanon } from './canon-manager';
 import { getParentAccumulatedState } from './state-manager';
 import { EngineError } from './types';
 
@@ -28,7 +28,7 @@ export async function generateFirstPage(
     parentChoiceIndex: null,
   });
 
-  let updatedStory = updateStoryWithNewCanon(story, result.canonFacts);
+  let updatedStory = updateStoryWithAllCanon(story, result.canonFacts, result.characterCanonFacts);
 
   const nextStoryArc = result.storyArc?.trim();
   if (nextStoryArc && nextStoryArc !== updatedStory.storyArc) {
@@ -60,6 +60,7 @@ export async function generateNextPage(
       worldbuilding: story.worldbuilding,
       tone: story.tone,
       globalCanon: story.globalCanon,
+      globalCharacterCanon: story.globalCharacterCanon,
       storyArc: story.storyArc,
       previousNarrative: parentPage.narrativeText,
       selectedChoice: choice.text,
@@ -79,7 +80,7 @@ export async function generateNextPage(
     parentAccumulatedState,
   });
 
-  let updatedStory = updateStoryWithNewCanon(story, result.canonFacts);
+  let updatedStory = updateStoryWithAllCanon(story, result.canonFacts, result.characterCanonFacts);
 
   const nextStoryArc = result.storyArc?.trim();
   if (nextStoryArc && nextStoryArc !== updatedStory.storyArc) {

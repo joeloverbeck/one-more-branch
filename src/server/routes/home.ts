@@ -3,7 +3,15 @@ import { storyEngine } from '../../engine';
 
 export const homeRoutes = Router();
 
-homeRoutes.get('/', async (_req: Request, res: Response) => {
+function wrapAsyncRoute(
+  handler: (req: Request, res: Response) => Promise<unknown>,
+): (req: Request, res: Response) => void {
+  return (req: Request, res: Response) => {
+    void handler(req, res);
+  };
+}
+
+homeRoutes.get('/', wrapAsyncRoute(async (_req: Request, res: Response) => {
   try {
     const stories = await storyEngine.listStories();
     const storiesWithStats = await Promise.all(
@@ -28,4 +36,4 @@ homeRoutes.get('/', async (_req: Request, res: Response) => {
       message: 'Failed to load stories',
     });
   }
-});
+}));

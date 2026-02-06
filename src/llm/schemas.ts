@@ -29,7 +29,17 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
         canonFacts: {
           type: 'array',
           items: { type: 'string' },
-          description: 'New permanent world facts that should persist.',
+          description:
+            'New permanent WORLD facts that apply globally. Examples: place names, historical events, institutional rules. Do NOT include character-specific facts here—use characterCanonFacts for those.',
+        },
+        characterCanonFacts: {
+          type: 'object',
+          additionalProperties: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          description:
+            'New permanent CHARACTER facts keyed by character name. Include fixed information unlikely to change: roles, relationships, defining traits. Example: {"Dr. Cohen": ["Dr. Cohen is the head psychiatrist"]}. For facts involving multiple characters, add an entry to EACH character.',
         },
         isEnding: {
           type: 'boolean',
@@ -40,7 +50,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description: 'Main goal/conflict for the story opening page.',
         },
       },
-      required: ['narrative', 'choices', 'stateChanges', 'canonFacts', 'isEnding'],
+      required: ['narrative', 'choices', 'stateChanges', 'canonFacts', 'characterCanonFacts', 'isEnding'],
       additionalProperties: false,
     },
   },
@@ -60,6 +70,7 @@ export const GenerationResultSchema = z
     ),
     stateChanges: z.array(z.string()),
     canonFacts: z.array(z.string()),
+    characterCanonFacts: z.record(z.string(), z.array(z.string())).optional().default({}),
     isEnding: z.boolean(),
     storyArc: z.string().optional().default(''),
   })
@@ -107,11 +118,21 @@ export function validateGenerationResponse(
   const validated = GenerationResultSchema.parse(rawJson);
   const storyArc = validated.storyArc.trim();
 
+  // Process characterCanonFacts: trim all values
+  const characterCanonFacts: Record<string, string[]> = {};
+  for (const [name, facts] of Object.entries(validated.characterCanonFacts)) {
+    const trimmedFacts = facts.map(fact => fact.trim()).filter(fact => fact);
+    if (trimmedFacts.length > 0) {
+      characterCanonFacts[name.trim()] = trimmedFacts;
+    }
+  }
+
   return {
     narrative: validated.narrative.trim(),
     choices: validated.choices.map(choice => choice.trim()),
     stateChanges: validated.stateChanges.map(change => change.trim()).filter(change => change),
     canonFacts: validated.canonFacts.map(fact => fact.trim()).filter(fact => fact),
+    characterCanonFacts,
     isEnding: validated.isEnding,
     storyArc: storyArc ? storyArc : undefined,
     rawResponse,
