@@ -1,5 +1,10 @@
 # PERLAY-006: Integration Tests
 
+## Status
+
+- [ ] In progress
+- [x] Completed
+
 ## Summary
 
 Create integration tests that verify the persistence layer works correctly when components interact together.
@@ -11,7 +16,7 @@ Create integration tests that verify the persistence layer works correctly when 
 
 ## Files to Touch
 
-- None
+- `tickets/PERLAY-006-integration-tests.md` (assumption/scope correction)
 
 ## Dependencies (Must Be Completed First)
 
@@ -23,6 +28,27 @@ Create integration tests that verify the persistence layer works correctly when 
 - **DO NOT** create E2E tests (separate ticket)
 - **DO NOT** create performance tests (separate ticket)
 - **DO NOT** test failure scenarios that require mocking (keep pure integration)
+
+## Assumption Reassessment
+
+### Confirmed
+
+- Persistence modules from **PERLAY-001** through **PERLAY-005** exist under `src/persistence/`.
+- There are currently no integration tests in `test/integration/persistence/`.
+- `specs/03-persistence-layer.md` expects integration coverage for story/page workflows.
+
+### Corrected
+
+- The repository already contains strong persistence **unit** coverage (`test/unit/persistence/*.test.ts`), including many edge and failure-path checks.
+- The integration ticket should focus on cross-module workflows (story + page repositories together) and filesystem behavior, not re-implement full unit-level assertions.
+- `story-repository` `listStories()` metadata includes `hasEnding: false` currently; integration tests should not assume ending detection in story metadata.
+
+## Revised Scope
+
+1. Add `test/integration/persistence/story-repository.test.ts` with the 5 workflow cases listed in this ticket.
+2. Add `test/integration/persistence/page-repository.test.ts` with the 5 workflow cases listed in this ticket.
+3. Keep persistence public APIs unchanged.
+4. Allow source edits only if integration tests reveal a real spec mismatch that blocks acceptance criteria.
 
 ## Implementation Details
 
@@ -162,7 +188,7 @@ describe('Story Repository Integration', () => {
 ## Test Data Conventions
 
 - All test stories use `characterConcept` starting with `TEST:`
-- All test stories cleaned up in `afterEach`
+- All test-created stories are cleaned up in `afterEach`
 - Tests must not depend on order of execution
 - Tests must not depend on other stories existing
 
@@ -170,3 +196,13 @@ describe('Story Repository Integration', () => {
 
 - ~200 lines test code (story-repository.test.ts)
 - ~200 lines test code (page-repository.test.ts)
+
+## Outcome
+
+- **Planned**: Add two persistence integration test suites covering 10 workflow scenarios without changing persistence APIs.
+- **Actual**:
+  - Added `test/integration/persistence/story-repository.test.ts` (5 tests) for story lifecycle, metadata ordering, page count behavior, and concurrent story saves.
+  - Added `test/integration/persistence/page-repository.test.ts` (5 tests) for page round-trip persistence, multi-page loading, linking, accumulated state, and ending-page discovery.
+  - Updated this ticket's assumptions/scope to align with existing unit test coverage and current repository behavior.
+- **Scope differences vs original**:
+  - No source code changes were required; existing persistence implementation already satisfied acceptance criteria once integration coverage was added.
