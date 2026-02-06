@@ -51,7 +51,7 @@ REASONING PROCESS:
 Before generating your response, think through your approach inside <thinking> tags:
 1. Consider character motivations and current emotional state
 2. Plan how this scene advances toward the story arc
-3. Brainstorm 3-5 potential choices, then select the best 2-4
+3. Brainstorm 3-4 potential choices, then select the best 3 (add a 4th only if the situation truly warrants another distinct, meaningful path)
 4. Verify each choice is in-character, consequential, and divergent
 
 Format your response as:
@@ -101,7 +101,7 @@ REQUIREMENTS (follow ALL):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in
-4. Provide 2-4 meaningful choices leading to genuinely DIFFERENT story directions
+4. Provide 3 meaningful choices leading to genuinely DIFFERENT story directions (add a 4th only when the situation truly warrants another distinct path)
 5. Determine the overarching goal or conflict for this story (the story arc)
 
 REMINDER: Each choice must be something this specific character would genuinely consider.`;
@@ -177,7 +177,7 @@ REQUIREMENTS (follow ALL):
 1. Show the direct, immediate consequences of the player's choice - the story must react
 2. Advance the narrative naturally - time passes, situations evolve, new elements emerge
 3. Maintain STRICT consistency with all established facts and the current state
-4. Present 2-4 new meaningful choices unless this naturally leads to an ending
+4. Present 3 new meaningful choices unless this naturally leads to an ending (add a 4th only when the situation truly warrants another distinct path)
 5. Ensure choices are divergent - each must lead to a genuinely different story path
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true).`;

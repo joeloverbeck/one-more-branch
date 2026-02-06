@@ -18,7 +18,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of 2-5 meaningful choices. Use an empty array only for a story ending.',
+            'Array of typically 3 meaningful choices (add a 4th only when truly warranted). Use an empty array only for a story ending.',
         },
         stateChanges: {
           type: 'array',

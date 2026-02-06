@@ -18,7 +18,7 @@ Write an engaging opening that:
 1. Introduces the protagonist in a compelling scene.
 2. Establishes the world and atmosphere matching the tone.
 3. Presents an initial situation or hook that draws the player in.
-4. Provides 2-4 meaningful choices for what the protagonist might do.
+4. Provides 3 meaningful choices for what the protagonist might do (4 only when truly warranted).
 
 Also determine the overarching goal or conflict for this story (the story arc).`;
 
@@ -28,7 +28,6 @@ const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
       'The morning bell echoes through the floating spires of Celestria Academy, its chime carrying on winds that should not exist this high above the world. You are Lyra, a third-year apprentice with a reputation for asking questions better left unasked.\n\nYou sit in the back row of Professor Grimwald\'s Advanced Transmutation lecture, but your attention keeps drifting to the leather-bound journal hidden in your lap. Three weeks ago, you found it wedged behind a loose stone in the library—and since then, sleep has become a stranger. The journal speaks of a place beneath the academy, a library older than the institution itself, filled with knowledge the founders deemed too dangerous for students.\n\nGrimwald\'s droning voice fades as you trace the strange symbol on the journal\'s cover. A shiver runs down your spine. The book feels warm against your fingers, almost alive.\n\n"Miss Lyra!" Grimwald\'s voice cracks like thunder. "Perhaps you\'d like to share with the class what\'s so fascinating?"\n\nEvery head turns. Your roommate Elena shoots you a worried glance from two rows ahead.',
     choices: [
       'Hide the journal and apologize, claiming you were taking notes',
-      'Show Grimwald the journal and ask if he knows anything about the forbidden library',
       'Use a minor illusion spell to make the journal appear to be your textbook',
       'Excuse yourself claiming sudden illness and slip away to investigate',
     ],
@@ -92,7 +91,7 @@ Continue the story:
 1. Show the direct consequences of the player's choice.
 2. Advance the narrative naturally from this decision.
 3. Maintain consistency with all established facts and the current state.
-4. Present 2-4 new meaningful choices (unless this leads to an ending).`;
+4. Present 3 new meaningful choices (4 only when truly warranted), unless this leads to an ending.`;
 
 const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
   {
@@ -101,7 +100,6 @@ const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
     choices: [
       "Quickly press the third rune and hope the passage opens before you're discovered",
       'Hide behind the statue and wait to see who the faculty member is',
-      "Step out and pretend you're lost, claiming you took a wrong turn",
       'Use an illusion to make yourself appear invisible and observe',
     ],
     stateChanges: [
@@ -156,7 +154,7 @@ Continue the story:
 1. Show the direct consequences of the player's choice.
 2. Advance the narrative naturally from this decision.
 3. Maintain consistency with all established facts and the current state.
-4. Present 2-4 new meaningful choices (unless this leads to an ending).`;
+4. Present 3 new meaningful choices (4 only when truly warranted), unless this leads to an ending.`;
 
 const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
   {
