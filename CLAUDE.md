@@ -120,17 +120,17 @@ stories/
 - **Choice Minimum**: Non-ending pages have 2-5 choices
 - **API Key Security**: Never persisted to disk, only in browser session storage
 
-## Implementation Order
+## Implementation Status
 
-Specs must be implemented in dependency order:
+All core specs have been implemented:
 1. `01-project-foundation` - TypeScript/Jest setup ✅
 2. `02-data-models` - Story, Page, Choice types ✅
 3. `03-persistence-layer` - File storage with locking ✅
 4. `04-llm-integration` - OpenRouter client and prompts ✅
 5. `05-story-engine` - Core orchestration logic ✅
-6. `06-user-interface` - Express server and EJS views
+6. `06-user-interface` - Express server and EJS views ✅
 
-See `specs/00-implementation-order.md` for detailed status tracking.
+Completed specs are archived in `archive/specs/`.
 
 ## LLM Integration Notes
 

@@ -1,7 +1,7 @@
 # Implementation Order & Status Tracker
 
 > **Last Updated**: 2026-02-06
-> **Overall Progress**: 5/6 specs implemented
+> **Overall Progress**: 6/6 specs implemented
 
 ## Priority Order
 
@@ -14,7 +14,7 @@ Specs must be implemented in this order due to dependencies:
 | 3 | 03-persistence-layer | ✅ Completed | 01, 02 | File-based storage with locking |
 | 4 | 04-llm-integration | ✅ Completed | 01, 02 | OpenRouter client with structured outputs |
 | 5 | 05-story-engine | ✅ Completed | 02, 03, 04 | Core logic implemented and validated |
-| 6 | 06-user-interface | ⬜ Pending | 03, 05 | Final integration layer |
+| 6 | 06-user-interface | ✅ Completed | 03, 05 | Express/EJS UI with server routes and client interactivity |
 
 ## Status Legend
 
@@ -36,7 +36,7 @@ Specs must be implemented in this order due to dependencies:
     │                                       │         │
     └───────────────────────────────────────┘         │
                                                       ▼
-                                             06-user-interface
+                                             06-user-interface ✅
 ```
 
 ## Implementation Log
@@ -72,18 +72,18 @@ Specs must be implemented in this order due to dependencies:
 - **Notes**: Story engine modules and deterministic replay behavior implemented. Engine test suites run with mocked LLM generation for repeatable verification.
 
 ### Spec 06: User Interface
-- **Started**: -
-- **Completed**: -
-- **Tests Passing**: -
-- **Notes**: -
+- **Started**: 2026-02-06
+- **Completed**: 2026-02-06
+- **Tests Passing**: 47/47 server unit tests, 3/3 server integration tests
+- **Notes**: Express.js server with EJS views and routes for home/story/play flows. Client-side choice submission and API-key-in-session behavior verified. Integration play-flow tests run with mocked LLM generation.
 
 ## Test Coverage Summary
 
 | Category | Total | Passing | Failing | Skipped |
 |----------|-------|---------|---------|---------|
-| Unit | 217 | 217 | 0 | 0 |
-| Integration | 14 | 14 | 0 | 0 |
-| E2E | 4 | 4 | 0 | 0 |
+| Unit | 431 | 431 | 0 | 0 |
+| Integration | 24 | 24 | 0 | 0 |
+| E2E | 6 | 6 | 0 | 0 |
 | Performance | 4 | 4 | 0 | 0 |
 | Memory | 0 | 0 | 0 | 0 |
 
@@ -92,13 +92,13 @@ Specs must be implemented in this order due to dependencies:
 - [x] Project builds without errors (`npm run build`)
 - [x] All unit tests pass (`npm run test:unit`)
 - [x] All integration tests pass (`npm run test:integration`)
-- [ ] Can create a new story via UI
-- [ ] Can make choices and generate new pages
-- [ ] Can replay existing branches without regeneration
-- [ ] Can reach an ending and restart
-- [ ] State changes persist correctly per branch
-- [ ] Global canon shared across branches
-- [ ] OpenRouter key stays in memory only
+- [x] Can create a new story via UI
+- [x] Can make choices and generate new pages
+- [x] Can replay existing branches without regeneration
+- [x] Can reach an ending and restart
+- [x] State changes persist correctly per branch
+- [x] Global canon shared across branches
+- [x] OpenRouter key stays in memory only
 
 ---
 

@@ -20,7 +20,7 @@
     }
   },
   "logging": {
-    "level": "info",
+    "level": "debug",
     "promptPreviewLength": 100
   }
 }

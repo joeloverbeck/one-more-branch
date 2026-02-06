@@ -70,11 +70,13 @@
         <div class="modal-content">
           <h3>Enter OpenRouter API Key</h3>
           <p>Your API key is needed to generate new story content.</p>
-          <input type="password" id="modal-api-key" placeholder="sk-or-..." autocomplete="off">
-          <div class="modal-actions">
-            <button class="btn btn-primary" id="save-api-key">Continue</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
-          </div>
+          <form id="api-key-form" class="api-key-form">
+            <input type="password" id="modal-api-key" placeholder="sk-or-..." autocomplete="off">
+            <div class="modal-actions">
+              <button class="btn btn-primary" id="save-api-key" type="submit">Continue</button>
+              <a href="/" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
         </div>
       </div>
     </div>

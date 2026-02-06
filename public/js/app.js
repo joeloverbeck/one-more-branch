@@ -55,34 +55,31 @@
           return;
         }
 
-        const saveButton = document.getElementById('save-api-key');
+        const form = document.getElementById('api-key-form');
         const input = document.getElementById('modal-api-key');
 
-        if (!saveButton || !input) {
+        if (!(form instanceof HTMLFormElement) || !input) {
           reject(new Error('API key prompt is unavailable.'));
           return;
         }
 
         apiKeyModal.style.display = 'flex';
 
-        const handleSave = () => {
+        const handleSubmit = (event) => {
+          event.preventDefault();
           const newKey = input.value.trim();
           if (newKey.length < 10) {
             alert('Please enter a valid API key');
             return;
           }
 
+          form.removeEventListener('submit', handleSubmit);
           setApiKey(newKey);
           apiKeyModal.style.display = 'none';
           resolve(newKey);
         };
 
-        saveButton.onclick = handleSave;
-        input.onkeypress = (event) => {
-          if (event.key === 'Enter') {
-            handleSave();
-          }
-        };
+        form.addEventListener('submit', handleSubmit);
       });
     }
 

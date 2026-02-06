@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+import fs from 'fs';
 import path from 'path';
 import { getConfig } from '../config/index.js';
 import { storyEngine } from '../engine';
@@ -7,6 +8,9 @@ import { router } from './routes';
 
 export function createApp(): Express {
   const app = express();
+  const distPublicPath = path.join(__dirname, '../public');
+  const rootPublicPath = path.join(__dirname, '../../public');
+  const staticPublicPath = fs.existsSync(distPublicPath) ? distPublicPath : rootPublicPath;
 
   storyEngine.init();
 
@@ -15,7 +19,7 @@ export function createApp(): Express {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.static(path.join(__dirname, '../../public')));
+  app.use(express.static(staticPublicPath));
 
   app.use('/', router);
   app.use(errorHandler);
