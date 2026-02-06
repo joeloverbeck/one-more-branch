@@ -95,38 +95,6 @@ describe('llm client integration (mocked fetch)', () => {
     expect(result.narrative.toLowerCase()).toContain('vault');
   });
 
-  it('should work with text parsing fallback when forced', async () => {
-    const textPayload = `
-NARRATIVE:
-You drop into the vault and your lantern throws long shadows across old carvings while water climbs the steps behind you.
-
-CHOICES:
-1. Follow the chanting deeper
-2. Return before the tide rises
-
-STATE_CHANGES:
-- Entered the flooded vault
-
-CANON_FACTS:
-- The vault resonates with ritual chanting
-`;
-
-    fetchMock.mockResolvedValue(openRouterBodyFromContent(textPayload));
-
-    const result = await generateOpeningPage(
-      {
-        characterConcept: 'A haunted cartographer',
-        worldbuilding: 'A city built atop buried catacombs',
-        tone: 'gothic mystery',
-      },
-      { apiKey: 'test-key', forceTextParsing: true },
-    );
-
-    expect(result.narrative.length).toBeGreaterThan(100);
-    expect(result.choices.length).toBeGreaterThanOrEqual(2);
-    expect(result.isEnding).toBe(false);
-  });
-
   it('should enforce choice constraints via Zod validation', async () => {
     const invalidStructured = {
       narrative:

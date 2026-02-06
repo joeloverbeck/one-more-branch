@@ -29,6 +29,4 @@ export {
   isStructuredOutputNotSupported,
 } from './schemas.js';
 
-export { parseTextResponse } from './fallback-parser.js';
-
 export { generateOpeningPage, generateContinuationPage, validateApiKey } from './client.js';

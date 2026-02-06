@@ -8,7 +8,6 @@ import {
   generateContinuationPage,
   generateOpeningPage,
   isStructuredOutputNotSupported,
-  parseTextResponse,
   validateApiKey,
   validateGenerationResponse,
 } from '../../../src/llm/index';
@@ -32,7 +31,6 @@ describe('llm barrel exports', () => {
     expect(typeof isStructuredOutputNotSupported).toBe('function');
     expect(typeof buildOpeningPrompt).toBe('function');
     expect(typeof buildContinuationPrompt).toBe('function');
-    expect(typeof parseTextResponse).toBe('function');
     expect(typeof generateOpeningPage).toBe('function');
     expect(typeof generateContinuationPage).toBe('function');
     expect(typeof validateApiKey).toBe('function');
@@ -74,7 +72,8 @@ describe('llm barrel exports', () => {
     expect(schema.type).toBe('json_schema');
   });
 
-  it('should not export internal fallback helper via barrel', () => {
+  it('should not export removed fallback helpers via barrel', () => {
     expect('buildFallbackSystemPromptAddition' in llm).toBe(false);
+    expect('parseTextResponse' in llm).toBe(false);
   });
 });

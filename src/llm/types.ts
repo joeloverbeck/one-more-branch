@@ -23,7 +23,6 @@ export interface GenerationOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
-  forceTextParsing?: boolean;
   promptOptions?: PromptOptions;
 }
 

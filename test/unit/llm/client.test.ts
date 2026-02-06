@@ -54,21 +54,6 @@ const validStructuredPayload = {
   storyArc: 'Map the drowned vault before the cult reaches it.',
 };
 
-const validTextPayload = `
-NARRATIVE:
-You descend into the vault with water up to your knees and the lantern shaking in your grip while distant chanting rises from the stone arches above you.
-
-CHOICES:
-1. Advance toward the chanting
-2. Retreat and seal the grate
-
-STATE_CHANGES:
-- Entered the drowned vault
-
-CANON_FACTS:
-- A chanting cult gathers beneath the cathedral
-`;
-
 function createJsonResponse(status: number, body: unknown): Response {
   return {
     ok: status >= 200 && status < 300,
@@ -279,35 +264,14 @@ describe('llm client', () => {
     await expectation;
   });
 
-  it('should fall back to text mode when structured output not supported', async () => {
-    fetchMock
-      .mockResolvedValueOnce(createErrorResponse(400, 'response_format is not supported'))
-      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
+  it('should throw clear error when structured output not supported', async () => {
+    fetchMock.mockResolvedValue(createErrorResponse(400, 'response_format is not supported'));
 
-    const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
-
-    const firstBody = getRequestBody(0);
-    const secondBody = getRequestBody(1);
-
-    expect(firstBody.response_format).toBeDefined();
-    expect(secondBody.response_format).toBeUndefined();
-    expect(result.choices).toHaveLength(2);
-  });
-
-  it('should use text mode directly when forceTextParsing=true', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(validTextPayload));
-
-    await generateOpeningPage(openingContext, {
-      apiKey: 'test-key',
-      forceTextParsing: true,
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
+      code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
+      retryable: false,
+      message: expect.stringContaining('does not support structured outputs'),
     });
-
-    const body = getRequestBody();
-    const messages = body.messages as Array<{ role: string; content: string }>;
-
-    expect(body.response_format).toBeUndefined();
-    expect(messages[0]?.role).toBe('system');
-    expect(messages[0]?.content).toContain('OUTPUT FORMAT:');
   });
 
   it('should retry up to maxRetries times for retryable errors', async () => {
@@ -413,49 +377,21 @@ describe('llm client', () => {
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
-  it('should use logger.warn for fallback notification with error details', async () => {
-    fetchMock
-      .mockResolvedValueOnce(createErrorResponse(400, 'response_format is not supported'))
-      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
-
-    await generateOpeningPage(openingContext, { apiKey: 'test-key' });
-
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Model lacks structured output support, using text parsing fallback',
-      expect.objectContaining({
-        errorMessage: 'response_format is not supported',
-        model: 'anthropic/claude-sonnet-4.5',
-      }),
+  it('should throw clear error for model does not support response_format', async () => {
+    fetchMock.mockResolvedValue(
+      createErrorResponse(
+        400,
+        JSON.stringify({
+          error: { message: 'model does not support response_format' },
+        }),
+      ),
     );
-  });
 
-  it('should fall back to text mode for model does not support error', async () => {
-    fetchMock
-      .mockResolvedValueOnce(
-        createErrorResponse(
-          400,
-          JSON.stringify({
-            error: { message: 'model does not support response_format' },
-          }),
-        ),
-      )
-      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
-
-    const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
-
-    const warnCalls = mockLogger.warn.mock.calls as Array<[unknown, unknown?]>;
-    const fallbackWarnCall = warnCalls.find(
-      ([message]) => message === 'Model lacks structured output support, using text parsing fallback',
-    );
-    expect(fallbackWarnCall).toBeDefined();
-    const fallbackWarnMetadata =
-      fallbackWarnCall &&
-      typeof fallbackWarnCall[1] === 'object' &&
-      fallbackWarnCall[1] !== null
-        ? (fallbackWarnCall[1] as { errorMessage?: string })
-        : undefined;
-    expect(fallbackWarnMetadata?.errorMessage).toContain('model does not support');
-    expect(result.choices).toHaveLength(2);
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
+      code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
+      retryable: false,
+      message: expect.stringContaining('does not support structured outputs'),
+    });
   });
 
   it('should NOT fall back for generic validation errors (model supports structured output)', async () => {
@@ -490,20 +426,14 @@ describe('llm client', () => {
     );
   });
 
-  it('should fall back to text mode for provider does not support error', async () => {
-    fetchMock
-      .mockResolvedValueOnce(createErrorResponse(400, 'provider does not support json_schema'))
-      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
+  it('should throw clear error for provider does not support json_schema', async () => {
+    fetchMock.mockResolvedValue(createErrorResponse(400, 'provider does not support json_schema'));
 
-    const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
-
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Model lacks structured output support, using text parsing fallback',
-      expect.objectContaining({
-        errorMessage: 'provider does not support json_schema',
-      }),
-    );
-    expect(result.choices).toHaveLength(2);
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
+      code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
+      retryable: false,
+      message: expect.stringContaining('does not support structured outputs'),
+    });
   });
 
   it('should log API error details before throwing', async () => {
@@ -516,46 +446,6 @@ describe('llm client', () => {
     expect(mockLogger.error).toHaveBeenCalledWith(
       'OpenRouter API error [401]: Invalid API key provided',
     );
-  });
-
-  it('should log raw response when text parsing fails', async () => {
-    const malformedTextResponse = `
-NARRATIVE:
-Some narrative text without any choices at all.
-
-STATE_CHANGES:
-- Something happened
-`;
-
-    fetchMock.mockResolvedValue(responseWithStructuredContent(malformedTextResponse));
-
-    const promise = generateOpeningPage(openingContext, {
-      apiKey: 'test-key',
-      forceTextParsing: true,
-    });
-
-    // Attach rejection handler early
-    const expectation = expect(promise).rejects.toMatchObject({
-      code: 'MISSING_CHOICES',
-    });
-
-    // Advance through retry delays
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-
-    await expectation;
-
-    const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
-    const parseErrorCall = errorCalls.find(
-      ([message]) => message === 'LLM response parsing failed',
-    );
-    expect(parseErrorCall).toBeDefined();
-    const parseErrorMetadata =
-      parseErrorCall && typeof parseErrorCall[1] === 'object' && parseErrorCall[1] !== null
-        ? (parseErrorCall[1] as { code?: string; rawResponse?: string })
-        : undefined;
-    expect(parseErrorMetadata?.code).toBe('MISSING_CHOICES');
-    expect(parseErrorMetadata?.rawResponse).toContain('NARRATIVE:');
   });
 
   it('should log raw response when structured validation fails', async () => {
