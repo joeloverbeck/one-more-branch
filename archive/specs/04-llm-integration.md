@@ -1,5 +1,7 @@
 # Spec 04: LLM Integration
 
+> **Completed**: 2026-02-06
+
 ## Overview
 
 Implement the OpenRouter API client for generating story content using **structured outputs** for guaranteed response format, Zod validation for type safety, and proper error handling.

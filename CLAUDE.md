@@ -126,7 +126,7 @@ Specs must be implemented in dependency order:
 1. `01-project-foundation` - TypeScript/Jest setup ✅
 2. `02-data-models` - Story, Page, Choice types ✅
 3. `03-persistence-layer` - File storage with locking ✅
-4. `04-llm-integration` - OpenRouter client and prompts
+4. `04-llm-integration` - OpenRouter client and prompts ✅
 5. `05-story-engine` - Core orchestration logic
 6. `06-user-interface` - Express server and EJS views
 
