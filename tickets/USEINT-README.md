@@ -95,24 +95,10 @@ public/
 
 ```
 test/unit/server/
-├── index.test.ts              # Express app unit tests
-├── middleware/
-│   └── error-handler.test.ts  # Error handler tests
-├── routes/
-│   ├── home.test.ts           # Home route tests
-│   ├── stories.test.ts        # Story route tests
-│   ├── play.test.ts           # Play route tests
-│   └── routes.test.ts         # Combined route tests
-├── views/
-│   ├── layout.test.ts         # Layout template tests
-│   ├── partials.test.ts       # Partials template tests
-│   └── error.test.ts          # Error page tests
-└── public/
-    ├── css.test.ts            # CSS file tests
-    └── app.test.ts            # Client JS tests
+├── routes.test.ts        # Route handler unit tests (mocked engine)
 
 test/integration/server/
-└── play-flow.test.ts          # Integration tests (mocked LLM)
+└── play-flow.test.ts     # Integration tests (mocked LLM)
 ```
 
 ## Testing Notes
@@ -136,11 +122,3 @@ npm run test:integration -- --testPathPattern=server
 npm run test:unit -- --testPathPattern=routes
 npm run test:integration -- --testPathPattern=play-flow
 ```
-
-## Key Invariants
-
-1. **API Key Security**: API key only exists in browser session storage, never persisted server-side
-2. **No Undo**: UI provides no mechanism to go back to previous choices
-3. **Deterministic Display**: Same page always shows same content
-4. **LLM Mocking**: All tests mock LLM calls to avoid API costs
-5. **Error Graceful**: All errors show user-friendly messages

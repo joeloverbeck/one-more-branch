@@ -1,3 +1,23 @@
+// Mock the logging module - must be before imports due to hoisting
+const mockLogPrompt = jest.fn();
+const mockLogger = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  getEntries: jest.fn().mockReturnValue([]),
+  clear: jest.fn(),
+};
+
+jest.mock('../../../src/logging/index.js', () => ({
+  get logger() {
+    return mockLogger;
+  },
+  get logPrompt() {
+    return mockLogPrompt;
+  },
+}));
+
 import {
   generateContinuationPage,
   generateOpeningPage,
@@ -72,6 +92,8 @@ describe('llm client', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
+    mockLogPrompt.mockReset();
+    mockLogger.warn.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
     jest.useFakeTimers();
   });
@@ -361,6 +383,44 @@ describe('llm client', () => {
     await jest.advanceTimersByTimeAsync(2000);
 
     await expectation;
+  });
+
+  it('should log opening prompts before API call', async () => {
+    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+
+    await generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(
+      mockLogger,
+      'opening',
+      expect.any(Array),
+    );
+    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+  });
+
+  it('should log continuation prompts before API call', async () => {
+    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+
+    await generateContinuationPage(continuationContext, { apiKey: 'test-key' });
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(
+      mockLogger,
+      'continuation',
+      expect.any(Array),
+    );
+    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+  });
+
+  it('should use logger.warn for fallback notification', async () => {
+    fetchMock
+      .mockResolvedValueOnce(createErrorResponse(400, 'response_format is not supported'))
+      .mockResolvedValueOnce(responseWithStructuredContent(validTextPayload));
+
+    await generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Model lacks structured output support, using text parsing fallback',
+    );
   });
 });
 

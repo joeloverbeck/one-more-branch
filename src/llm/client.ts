@@ -1,3 +1,4 @@
+import { logger, logPrompt } from '../logging/index.js';
 import { extractOutputFromCoT } from './cot-parser.js';
 import { buildFallbackSystemPromptAddition, parseTextResponse } from './fallback-parser.js';
 import { buildContinuationPrompt, buildOpeningPrompt } from './prompts.js';
@@ -173,7 +174,7 @@ async function generateWithFallback(
     return await callOpenRouterStructured(messages, options);
   } catch (error) {
     if (isStructuredOutputNotSupported(error)) {
-      console.warn('Model lacks structured output support, using text parsing fallback');
+      logger.warn('Model lacks structured output support, using text parsing fallback');
       return callOpenRouterText(messages, options);
     }
 
@@ -258,6 +259,9 @@ export async function generateOpeningPage(
 ): Promise<GenerationResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildOpeningPrompt(context, promptOptions);
+
+  logPrompt(logger, 'opening', messages);
+
   const resolvedOptions = { ...options, promptOptions };
   return withRetry(() => generateWithFallback(messages, resolvedOptions));
 }
@@ -268,6 +272,9 @@ export async function generateContinuationPage(
 ): Promise<GenerationResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildContinuationPrompt(context, promptOptions);
+
+  logPrompt(logger, 'continuation', messages);
+
   const resolvedOptions = { ...options, promptOptions };
   return withRetry(() => generateWithFallback(messages, resolvedOptions));
 }
