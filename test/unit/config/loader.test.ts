@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { getConfig, loadConfig, resetConfig } from '@/config/index';
 
@@ -38,13 +39,9 @@ describe('config loader', () => {
     });
 
     it('uses CONFIG_PATH env var when set', () => {
-      const fixturesDir = path.join(process.cwd(), 'test', 'fixtures', 'configs');
+      const fixturesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'omb-config-'));
       process.env['CONFIG_PATH'] = fixturesDir;
-
-      // Create a temporary default.json in fixtures
       const defaultPath = path.join(fixturesDir, 'default.json');
-      const originalExists = fs.existsSync(defaultPath);
-      const originalContent = originalExists ? fs.readFileSync(defaultPath, 'utf-8') : null;
 
       try {
         fs.writeFileSync(defaultPath, JSON.stringify({ server: { port: 9999 } }));
@@ -52,22 +49,15 @@ describe('config loader', () => {
         const config = loadConfig();
         expect(config.server.port).toBe(9999);
       } finally {
-        if (originalContent !== null) {
-          fs.writeFileSync(defaultPath, originalContent);
-        } else if (fs.existsSync(defaultPath)) {
-          fs.unlinkSync(defaultPath);
-        }
+        fs.rmSync(fixturesDir, { recursive: true, force: true });
       }
     });
 
     it('applies Zod defaults when config file is empty or missing sections', () => {
-      const fixturesDir = path.join(process.cwd(), 'test', 'fixtures', 'configs');
+      const fixturesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'omb-config-'));
       process.env['CONFIG_PATH'] = fixturesDir;
 
       const defaultPath = path.join(fixturesDir, 'default.json');
-      const originalContent = fs.existsSync(defaultPath)
-        ? fs.readFileSync(defaultPath, 'utf-8')
-        : null;
 
       try {
         // Write minimal config with only server.port
@@ -83,22 +73,15 @@ describe('config loader', () => {
         expect(config.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
         expect(config.logging.level).toBe('info');
       } finally {
-        if (originalContent !== null) {
-          fs.writeFileSync(defaultPath, originalContent);
-        } else if (fs.existsSync(defaultPath)) {
-          fs.unlinkSync(defaultPath);
-        }
+        fs.rmSync(fixturesDir, { recursive: true, force: true });
       }
     });
 
     it('throws on invalid configuration values', () => {
-      const fixturesDir = path.join(process.cwd(), 'test', 'fixtures', 'configs');
+      const fixturesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'omb-config-'));
       process.env['CONFIG_PATH'] = fixturesDir;
 
       const defaultPath = path.join(fixturesDir, 'default.json');
-      const originalContent = fs.existsSync(defaultPath)
-        ? fs.readFileSync(defaultPath, 'utf-8')
-        : null;
 
       try {
         // Write invalid config
@@ -109,49 +92,31 @@ describe('config loader', () => {
 
         expect(() => loadConfig()).toThrow('Invalid configuration');
       } finally {
-        if (originalContent !== null) {
-          fs.writeFileSync(defaultPath, originalContent);
-        } else if (fs.existsSync(defaultPath)) {
-          fs.unlinkSync(defaultPath);
-        }
+        fs.rmSync(fixturesDir, { recursive: true, force: true });
       }
     });
 
     it('throws on malformed JSON', () => {
-      const fixturesDir = path.join(process.cwd(), 'test', 'fixtures', 'configs');
+      const fixturesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'omb-config-'));
       process.env['CONFIG_PATH'] = fixturesDir;
 
       const defaultPath = path.join(fixturesDir, 'default.json');
-      const originalContent = fs.existsSync(defaultPath)
-        ? fs.readFileSync(defaultPath, 'utf-8')
-        : null;
 
       try {
         fs.writeFileSync(defaultPath, '{ invalid json }');
 
         expect(() => loadConfig()).toThrow('Failed to parse config file');
       } finally {
-        if (originalContent !== null) {
-          fs.writeFileSync(defaultPath, originalContent);
-        } else if (fs.existsSync(defaultPath)) {
-          fs.unlinkSync(defaultPath);
-        }
+        fs.rmSync(fixturesDir, { recursive: true, force: true });
       }
     });
 
     it('deep merges local.json overrides', () => {
-      const fixturesDir = path.join(process.cwd(), 'test', 'fixtures', 'configs');
+      const fixturesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'omb-config-'));
       process.env['CONFIG_PATH'] = fixturesDir;
 
       const defaultPath = path.join(fixturesDir, 'default.json');
       const localPath = path.join(fixturesDir, 'local.json');
-
-      const origDefault = fs.existsSync(defaultPath)
-        ? fs.readFileSync(defaultPath, 'utf-8')
-        : null;
-      const origLocal = fs.existsSync(localPath)
-        ? fs.readFileSync(localPath, 'utf-8')
-        : null;
 
       try {
         // Write base config
@@ -187,16 +152,7 @@ describe('config loader', () => {
         expect(config.llm.temperature).toBe(0.8);
         expect(config.llm.retry.baseDelayMs).toBe(1000);
       } finally {
-        if (origDefault !== null) {
-          fs.writeFileSync(defaultPath, origDefault);
-        } else if (fs.existsSync(defaultPath)) {
-          fs.unlinkSync(defaultPath);
-        }
-        if (origLocal !== null) {
-          fs.writeFileSync(localPath, origLocal);
-        } else if (fs.existsSync(localPath)) {
-          fs.unlinkSync(localPath);
-        }
+        fs.rmSync(fixturesDir, { recursive: true, force: true });
       }
     });
   });
