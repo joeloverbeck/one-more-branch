@@ -21,6 +21,15 @@ export interface InventoryChanges {
   readonly removed: Inventory;
 }
 
+// Health types
+export type HealthEntry = string;
+export type Health = readonly HealthEntry[];
+
+export interface HealthChanges {
+  readonly added: Health;
+  readonly removed: Health;
+}
+
 export interface AccumulatedState {
   readonly changes: readonly StateChange[];
 }
@@ -130,6 +139,40 @@ export function applyInventoryChanges(current: Inventory, changes: InventoryChan
   // Then, add new items
   for (const itemToAdd of changes.added) {
     const trimmed = itemToAdd.trim();
+    if (trimmed) {
+      result.push(trimmed);
+    }
+  }
+
+  return result;
+}
+
+// Health functions
+export function createEmptyHealthChanges(): HealthChanges {
+  return {
+    added: [],
+    removed: [],
+  };
+}
+
+export function applyHealthChanges(current: Health, changes: HealthChanges): Health {
+  // First, process removals (case-insensitive match)
+  const result = [...current];
+  for (const entryToRemove of changes.removed) {
+    const normalizedRemove = entryToRemove.trim().toLowerCase();
+    if (!normalizedRemove) continue; // Skip empty strings silently
+    const index = result.findIndex(entry => entry.trim().toLowerCase() === normalizedRemove);
+    if (index !== -1) {
+      result.splice(index, 1);
+    } else {
+      // Log warning for unmatched non-empty removals
+      console.warn(`Health removal did not match any existing entry: "${entryToRemove}"`);
+    }
+  }
+
+  // Then, add new entries
+  for (const entryToAdd of changes.added) {
+    const trimmed = entryToAdd.trim();
     if (trimmed) {
       result.push(trimmed);
     }

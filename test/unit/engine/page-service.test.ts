@@ -61,6 +61,8 @@ describe('page-service', () => {
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
         storyArc: 'Deliver the decoded treaty to the resistance safely.',
         rawResponse: 'raw',
@@ -134,6 +136,8 @@ describe('page-service', () => {
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -238,6 +242,8 @@ describe('page-service', () => {
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -276,6 +282,8 @@ describe('page-service', () => {
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
       });

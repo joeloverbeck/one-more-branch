@@ -59,6 +59,8 @@ describe('schema pipeline integration', () => {
       expect(schemaProps.required).toContain('newCharacterCanonFacts');
       expect(schemaProps.required).toContain('inventoryAdded');
       expect(schemaProps.required).toContain('inventoryRemoved');
+      expect(schemaProps.required).toContain('healthAdded');
+      expect(schemaProps.required).toContain('healthRemoved');
       expect(schemaProps.required).toContain('isEnding');
 
       // Validate a response through the full pipeline
@@ -71,6 +73,8 @@ describe('schema pipeline integration', () => {
         newCharacterCanonFacts: [],
         inventoryAdded: ['Rusty key'],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
         storyArc: 'Survive the plague city and find the cure.',
       };
@@ -83,6 +87,8 @@ describe('schema pipeline integration', () => {
       expect(result.newCanonFacts).toEqual(['The keep was abandoned after the plague']);
       expect(result.inventoryAdded).toEqual(['Rusty key']);
       expect(result.inventoryRemoved).toEqual([]);
+      expect(result.healthAdded).toEqual([]);
+      expect(result.healthRemoved).toEqual([]);
       expect(result.isEnding).toBe(false);
       expect(result.storyArc).toBe('Survive the plague city and find the cure.');
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
@@ -101,6 +107,8 @@ describe('schema pipeline integration', () => {
         ],
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       };
 
@@ -126,6 +134,8 @@ describe('schema pipeline integration', () => {
         ],
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       };
 
@@ -146,6 +156,8 @@ describe('schema pipeline integration', () => {
         newCharacterCanonFacts: [],
         inventoryAdded: ['Ancient map', 'Gold coins (50)'],
         inventoryRemoved: ['Lockpick'],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       };
 
@@ -170,6 +182,8 @@ describe('schema pipeline integration', () => {
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: true,
       };
 
@@ -189,6 +203,8 @@ describe('schema pipeline integration', () => {
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: true,
       };
 
@@ -205,6 +221,8 @@ describe('schema pipeline integration', () => {
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       };
 
@@ -270,6 +288,8 @@ describe('schema pipeline integration', () => {
         ],
         inventoryAdded: ['  Ancient key  '],
         inventoryRemoved: ['  Old map  '],
+        healthAdded: ['  Minor wound on left arm  '],
+        healthRemoved: ['  Headache  '],
         isEnding: false,
         storyArc: '  Find the truth  ',
       };
@@ -285,6 +305,8 @@ describe('schema pipeline integration', () => {
       });
       expect(result.inventoryAdded).toEqual(['Ancient key']);
       expect(result.inventoryRemoved).toEqual(['Old map']);
+      expect(result.healthAdded).toEqual(['Minor wound on left arm']);
+      expect(result.healthRemoved).toEqual(['Headache']);
       expect(result.storyArc).toBe('Find the truth');
     });
 
@@ -301,6 +323,8 @@ describe('schema pipeline integration', () => {
         ],
         inventoryAdded: ['Key', '', '  '],
         inventoryRemoved: ['', 'Old map'],
+        healthAdded: ['Bruised ribs', '', '  '],
+        healthRemoved: ['', 'Fatigue'],
         isEnding: false,
       };
 
@@ -313,6 +337,8 @@ describe('schema pipeline integration', () => {
       });
       expect(result.inventoryAdded).toEqual(['Key']);
       expect(result.inventoryRemoved).toEqual(['Old map']);
+      expect(result.healthAdded).toEqual(['Bruised ribs']);
+      expect(result.healthRemoved).toEqual(['Fatigue']);
     });
   });
 

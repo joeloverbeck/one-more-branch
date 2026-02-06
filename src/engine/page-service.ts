@@ -2,6 +2,7 @@ import { generateContinuationPage, generateOpeningPage } from '../llm';
 import { createChoice, createPage, generatePageId, Page, Story, parsePageId, updateStoryArc } from '../models';
 import { storage } from '../persistence';
 import { updateStoryWithAllCanon } from './canon-manager';
+import { createHealthChanges, getParentAccumulatedHealth } from './health-manager';
 import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
 import { createStateChanges, getParentAccumulatedState } from './state-manager';
 import { EngineError } from './types';
@@ -25,6 +26,7 @@ export async function generateFirstPage(
     choices: result.choices.map(choiceText => createChoice(choiceText)),
     stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
+    healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     isEnding: result.isEnding,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -57,6 +59,7 @@ export async function generateNextPage(
   const maxPageId = await storage.getMaxPageId(story.id);
   const parentAccumulatedState = getParentAccumulatedState(parentPage);
   const parentAccumulatedInventory = getParentAccumulatedInventory(parentPage);
+  const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -69,6 +72,7 @@ export async function generateNextPage(
       selectedChoice: choice.text,
       accumulatedState: parentAccumulatedState.changes,
       accumulatedInventory: parentAccumulatedInventory,
+      accumulatedHealth: parentAccumulatedHealth,
     },
     { apiKey },
   );
@@ -79,11 +83,13 @@ export async function generateNextPage(
     choices: result.choices.map(choiceText => createChoice(choiceText)),
     stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
+    healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     isEnding: result.isEnding,
     parentPageId: parentPage.id,
     parentChoiceIndex: choiceIndex,
     parentAccumulatedState,
     parentAccumulatedInventory,
+    parentAccumulatedHealth,
   });
 
   let updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);

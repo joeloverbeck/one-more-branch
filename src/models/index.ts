@@ -24,6 +24,9 @@ export {
   InventoryItem,
   Inventory,
   InventoryChanges,
+  HealthEntry,
+  Health,
+  HealthChanges,
   createEmptyAccumulatedState,
   createEmptyStateChanges,
   accumulateState,
@@ -32,6 +35,8 @@ export {
   mergeCanonFacts,
   createEmptyInventoryChanges,
   applyInventoryChanges,
+  createEmptyHealthChanges,
+  applyHealthChanges,
 } from './state';
 
 export {

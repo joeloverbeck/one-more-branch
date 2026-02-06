@@ -27,8 +27,9 @@ REQUIREMENTS (follow ALL):
 4. Provide 3 meaningful choices leading to genuinely DIFFERENT story directions (add a 4th only when the situation truly warrants another distinct path)
 5. Determine the overarching goal or conflict for this story (the story arc)
 6. Establish starting inventory based on the character concept (use inventoryAdded for items they would logically possess)
+7. If the character concept implies any starting physical conditions (old injuries, chronic ailments, exhaustion), use healthAdded to establish them
 
-REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession.`;
+REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession. Starting health conditions should only be added if the character concept explicitly mentions them.`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildSystemPrompt(options) },

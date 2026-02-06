@@ -253,6 +253,7 @@ describe('buildContinuationPrompt', () => {
     selectedChoice: 'Confront the informant at gunpoint',
     accumulatedState: [] as const,
     accumulatedInventory: [] as const,
+    accumulatedHealth: [] as const,
   };
 
   it('should include selected choice in user message', () => {

@@ -48,6 +48,8 @@ export const GenerationResultSchema = z
       .transform(transformCharacterCanonFactsToRecord),
     inventoryAdded: z.array(z.string()).optional().default([]),
     inventoryRemoved: z.array(z.string()).optional().default([]),
+    healthAdded: z.array(z.string()).optional().default([]),
+    healthRemoved: z.array(z.string()).optional().default([]),
     isEnding: z.boolean(),
     storyArc: z.string().optional().default(''),
   })

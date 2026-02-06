@@ -43,6 +43,7 @@ const continuationContext = {
   selectedChoice: 'Pry open the grate and descend into the vault',
   accumulatedState: ['You stole a key from the sexton.'],
   accumulatedInventory: [],
+  accumulatedHealth: [],
 };
 
 const validStructuredPayload = {
@@ -54,6 +55,8 @@ const validStructuredPayload = {
   newCanonFacts: ['A chanting cult gathers beneath the cathedral'],
   inventoryAdded: [],
   inventoryRemoved: [],
+  healthAdded: [],
+  healthRemoved: [],
   isEnding: false,
   storyArc: 'Map the drowned vault before the cult reaches it.',
 };

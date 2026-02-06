@@ -26,6 +26,8 @@ export function validateGenerationResponse(
     newCharacterCanonFacts,
     inventoryAdded: validated.inventoryAdded.map(item => item.trim()).filter(item => item),
     inventoryRemoved: validated.inventoryRemoved.map(item => item.trim()).filter(item => item),
+    healthAdded: validated.healthAdded.map(entry => entry.trim()).filter(entry => entry),
+    healthRemoved: validated.healthRemoved.map(entry => entry.trim()).filter(entry => entry),
     isEnding: validated.isEnding,
     storyArc: storyArc ? storyArc : undefined,
     rawResponse,

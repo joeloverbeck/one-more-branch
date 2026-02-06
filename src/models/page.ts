@@ -2,12 +2,16 @@ import { Choice, isChoice } from './choice';
 import { PageId } from './id';
 import {
   AccumulatedState,
+  Health,
+  HealthChanges,
   Inventory,
   InventoryChanges,
   StateChanges,
+  applyHealthChanges,
   applyInventoryChanges,
   applyStateChanges,
   createEmptyAccumulatedState,
+  createEmptyHealthChanges,
   createEmptyInventoryChanges,
   createEmptyStateChanges,
 } from './state';
@@ -20,6 +24,8 @@ export interface Page {
   readonly accumulatedState: AccumulatedState;
   readonly inventoryChanges: InventoryChanges;
   readonly accumulatedInventory: Inventory;
+  readonly healthChanges: HealthChanges;
+  readonly accumulatedHealth: Health;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -31,11 +37,13 @@ export interface CreatePageData {
   choices: Choice[];
   stateChanges?: StateChanges;
   inventoryChanges?: InventoryChanges;
+  healthChanges?: HealthChanges;
   isEnding: boolean;
   parentPageId: PageId | null;
   parentChoiceIndex: number | null;
   parentAccumulatedState?: AccumulatedState;
   parentAccumulatedInventory?: Inventory;
+  parentAccumulatedHealth?: Health;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -57,8 +65,10 @@ export function createPage(data: CreatePageData): Page {
 
   const parentState = data.parentAccumulatedState ?? createEmptyAccumulatedState();
   const parentInventory = data.parentAccumulatedInventory ?? [];
+  const parentHealth = data.parentAccumulatedHealth ?? [];
   const stateChanges = data.stateChanges ?? createEmptyStateChanges();
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
+  const healthChanges = data.healthChanges ?? createEmptyHealthChanges();
 
   return {
     id: data.id,
@@ -68,6 +78,8 @@ export function createPage(data: CreatePageData): Page {
     accumulatedState: applyStateChanges(parentState, stateChanges),
     inventoryChanges,
     accumulatedInventory: applyInventoryChanges(parentInventory, inventoryChanges),
+    healthChanges,
+    accumulatedHealth: applyHealthChanges(parentHealth, healthChanges),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,

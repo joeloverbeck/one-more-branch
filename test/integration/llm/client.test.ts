@@ -44,6 +44,8 @@ describe('llm client integration (mocked fetch)', () => {
       newCanonFacts: ['The observatory responds to bloodline magic'],
       inventoryAdded: [],
       inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
       isEnding: false,
       storyArc: 'Restore the observatory before dawn breaks forever.',
     };
@@ -76,6 +78,8 @@ describe('llm client integration (mocked fetch)', () => {
       newCanonFacts: ['The lower vault floods with each moonrise'],
       inventoryAdded: [],
       inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
       isEnding: false,
     };
 
@@ -94,6 +98,7 @@ describe('llm client integration (mocked fetch)', () => {
         selectedChoice: 'Pry open the grate and descend into the vault',
         accumulatedState: ['You stole a key from the sexton.'],
         accumulatedInventory: [],
+        accumulatedHealth: [],
       },
       { apiKey: 'test-key' },
     );
@@ -112,6 +117,8 @@ describe('llm client integration (mocked fetch)', () => {
       newCanonFacts: ['The observatory responds to bloodline magic'],
       inventoryAdded: [],
       inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
       isEnding: false,
       storyArc: 'Restore the observatory before dawn breaks forever.',
     };

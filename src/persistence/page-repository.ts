@@ -1,4 +1,6 @@
 import {
+  Health,
+  HealthChanges,
   Inventory,
   InventoryChanges,
   Page,
@@ -37,6 +39,12 @@ interface PageFileData {
     removed: string[];
   };
   accumulatedInventory?: string[];
+  // Health fields (optional for migration from older pages)
+  healthChanges?: {
+    added: string[];
+    removed: string[];
+  };
+  accumulatedHealth?: string[];
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;
@@ -62,6 +70,11 @@ function pageToFileData(page: Page): PageFileData {
       removed: [...page.inventoryChanges.removed],
     },
     accumulatedInventory: [...page.accumulatedInventory],
+    healthChanges: {
+      added: [...page.healthChanges.added],
+      removed: [...page.healthChanges.removed],
+    },
+    accumulatedHealth: [...page.accumulatedHealth],
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -87,6 +100,18 @@ function fileDataToPage(data: PageFileData): Page {
     ? [...data.accumulatedInventory]
     : [];
 
+  // Migration: handle existing pages without health fields
+  const healthChanges: HealthChanges = data.healthChanges
+    ? {
+        added: [...data.healthChanges.added],
+        removed: [...data.healthChanges.removed],
+      }
+    : { added: [], removed: [] };
+
+  const accumulatedHealth: Health = data.accumulatedHealth
+    ? [...data.accumulatedHealth]
+    : [];
+
   return {
     id: parsePageId(data.id),
     narrativeText: data.narrativeText,
@@ -100,6 +125,8 @@ function fileDataToPage(data: PageFileData): Page {
     },
     inventoryChanges,
     accumulatedInventory,
+    healthChanges,
+    accumulatedHealth,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

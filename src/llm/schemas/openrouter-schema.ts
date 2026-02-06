@@ -63,6 +63,18 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description:
             'Items the protagonist LOST, USED UP, or DISCARDED in this scene. Use the EXACT text of the existing inventory item. Empty array if nothing lost.',
         },
+        healthAdded: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Physical conditions, wounds, or ailments the protagonist GAINED in this scene. E.g., "Your head throbs painfully", "Poison spreads through your right leg", "You feel exhausted". NOT emotional states (use stateChanges for those). Empty array if no new conditions.',
+        },
+        healthRemoved: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Health conditions that are RESOLVED or HEALED in this scene. Use the EXACT text from existing health entries. Empty array if nothing healed.',
+        },
         isEnding: {
           type: 'boolean',
           description: 'True only when the story concludes and choices is empty.',
@@ -72,7 +84,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description: 'Main goal/conflict for the story opening page.',
         },
       },
-      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'isEnding'],
+      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'isEnding'],
       additionalProperties: false,
     },
   },

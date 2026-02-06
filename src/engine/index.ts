@@ -50,6 +50,18 @@ export {
   createEmptyInventoryChanges,
 } from './inventory-manager';
 
+export {
+  normalizeHealthEntry,
+  addHealthEntry,
+  removeHealthEntry,
+  applyHealthChanges,
+  formatHealthForPrompt,
+  createHealthChanges,
+  hasHealthCondition,
+  getParentAccumulatedHealth,
+  createEmptyHealthChanges,
+} from './health-manager';
+
 export { EngineError } from './types';
 export type {
   StartStoryResult,

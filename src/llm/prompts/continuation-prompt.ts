@@ -52,6 +52,17 @@ ${context.accumulatedInventory.map(item => `- ${item}`).join('\n')}
 `
       : '';
 
+  const healthSection =
+    context.accumulatedHealth.length > 0
+      ? `YOUR HEALTH:
+${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
+
+`
+      : `YOUR HEALTH:
+- You feel fine.
+
+`;
+
   const userPrompt = `Continue the interactive story based on the player's choice.
 
 CHARACTER CONCEPT:
@@ -59,7 +70,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${storyArcSection}${canonSection}${characterCanonSection}${stateSection}${inventorySection}PREVIOUS SCENE:
+${storyArcSection}${canonSection}${characterCanonSection}${stateSection}${inventorySection}${healthSection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
 
 PLAYER'S CHOICE: "${context.selectedChoice}"

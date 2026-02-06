@@ -12,6 +12,8 @@ describe('validateGenerationResponse', () => {
         stateChangesAdded: ['  Entered the ruined keep  '],
         stateChangesRemoved: [],
         newCanonFacts: ['  The keep is haunted by old wardens  '],
+        healthAdded: ['  Minor wound on left arm  '],
+        healthRemoved: ['  Headache  '],
         isEnding: false,
         storyArc: '  Survive long enough to claim the throne.  ',
       },
@@ -23,6 +25,8 @@ describe('validateGenerationResponse', () => {
     expect(result.stateChangesAdded).toEqual(['Entered the ruined keep']);
     expect(result.stateChangesRemoved).toEqual([]);
     expect(result.newCanonFacts).toEqual(['The keep is haunted by old wardens']);
+    expect(result.healthAdded).toEqual(['Minor wound on left arm']);
+    expect(result.healthRemoved).toEqual(['Headache']);
     expect(result.storyArc).toBe('Survive long enough to claim the throne.');
     expect(result.rawResponse).toBe('raw json response');
   });
@@ -35,6 +39,8 @@ describe('validateGenerationResponse', () => {
         stateChangesAdded: ['  ', '', 'Found a hidden sigil'],
         stateChangesRemoved: [],
         newCanonFacts: ['\n', 'The moon well is beneath the keep'],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -52,6 +58,8 @@ describe('validateGenerationResponse', () => {
         stateChangesAdded: [],
         stateChangesRemoved: [],
         newCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -72,6 +80,8 @@ describe('validateGenerationResponse', () => {
           { characterName: '  Dr. Cohen  ', facts: ['  Dr. Cohen is a psychiatrist  ', '  ', ''] },
           { characterName: 'Empty Character', facts: ['   ', ''] },
         ],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -90,6 +100,8 @@ describe('validateGenerationResponse', () => {
         stateChangesAdded: [],
         stateChangesRemoved: [],
         newCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -110,6 +122,8 @@ describe('validateGenerationResponse', () => {
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
           { characterName: 'Nurse Mills', facts: ['She is the head nurse'] },
         ],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -130,6 +144,8 @@ describe('validateGenerationResponse', () => {
         stateChangesRemoved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -148,6 +164,8 @@ describe('validateGenerationResponse', () => {
         newCanonFacts: [],
         inventoryAdded: ['  Rusty key  ', '', '  '],
         inventoryRemoved: ['  Old map  ', '\n'],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       'raw json response',
@@ -166,11 +184,32 @@ describe('validateGenerationResponse', () => {
         stateChangesAdded: [],
         stateChangesRemoved: [],
         newCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
         isEnding: false,
       },
       rawResponse,
     );
 
     expect(result.rawResponse).toBe(rawResponse);
+  });
+
+  it('should trim and filter health fields', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        healthAdded: ['  Bruised ribs  ', '', '  '],
+        healthRemoved: ['  Fatigue  ', '\n'],
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.healthAdded).toEqual(['Bruised ribs']);
+    expect(result.healthRemoved).toEqual(['Fatigue']);
   });
 });

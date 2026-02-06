@@ -46,15 +46,28 @@ INVENTORY MANAGEMENT:
 - Items in inventory can enable or unlock certain choices.
 - Duplicates are allowed (e.g., multiple "Health Potion" entries).
 
+HEALTH MANAGEMENT:
+- Use healthAdded for PHYSICAL conditions the protagonist ACQUIRES (wounds, poison, injuries, illness, exhaustion).
+- Use healthRemoved for conditions that are HEALED or RESOLVED (use EXACT text from existing health entries).
+- Reference health conditions naturally in the narrative when relevant.
+- Physical conditions should affect available choices when appropriate (e.g., injured leg limits running).
+- Health is for PHYSICAL conditions only - emotional states go in stateChanges.
+- Examples of health conditions: "Your head throbs painfully", "Poison spreads through your arm", "You feel exhausted", "A deep gash mars your shoulder".
+
 FIELD SEPARATION (CRITICAL):
 - INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
-- STATE CHANGES (stateChangesAdded/stateChangesRemoved): Conditions, events, relationships, emotional states - NOT items
+- HEALTH (healthAdded/healthRemoved): Physical wounds, injuries, poison, illness, exhaustion - NOT emotional states
+- STATE CHANGES (stateChangesAdded/stateChangesRemoved): Emotional states, relationships, abilities, events - NOT items or physical health
 - WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
 - CHARACTER FACTS (newCharacterCanonFacts): Persistent character information - NOT items
 
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
 ✅ Use inventoryAdded/inventoryRemoved
 ❌ Do NOT put item gains/losses in stateChanges, newCanonFacts, or newCharacterCanonFacts
+
+When the protagonist is wounded, poisoned, exhausted, or healed:
+✅ Use healthAdded/healthRemoved
+❌ Do NOT put physical conditions in stateChanges (reserve those for emotional states, relationships, events)
 
 When writing endings (character death, victory, conclusion):
 - Make the ending feel earned and meaningful.
