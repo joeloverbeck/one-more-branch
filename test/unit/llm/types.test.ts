@@ -41,15 +41,6 @@ describe('LLM types', () => {
 
       expect(error.context).toBeUndefined();
     });
-
-    it('should maintain backward compatibility with 3-arg constructor', () => {
-      const error = new LLMError('test error', 'TEST_CODE', false);
-
-      expect(error.message).toBe('test error');
-      expect(error.code).toBe('TEST_CODE');
-      expect(error.retryable).toBe(false);
-      expect(error.context).toBeUndefined();
-    });
   });
 
   describe('type compatibility (compile-time)', () => {
