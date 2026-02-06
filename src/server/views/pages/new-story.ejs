@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container">
+    <section class="form-section">
+      <h1>Begin a New Adventure</h1>
+
+      <% if (error) { %>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
+      <% } %>
+
+      <form action="/stories/create" method="POST" class="story-form">
+        <div class="form-group">
+          <label for="characterConcept">Character Concept *</label>
+          <textarea
+            id="characterConcept"
+            name="characterConcept"
+            rows="4"
+            required
+            minlength="10"
+            placeholder="Describe your protagonist: their name, personality, background, abilities, and motivations."
+          ><%= values.characterConcept || '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="worldbuilding">Worldbuilding (Optional)</label>
+          <textarea
+            id="worldbuilding"
+            name="worldbuilding"
+            rows="3"
+            placeholder="Describe important places, factions, or history."
+          ><%= values.worldbuilding || '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="tone">Tone/Genre (Optional)</label>
+          <input
+            type="text"
+            id="tone"
+            name="tone"
+            placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
+            value="<%= values.tone || '' %>"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="apiKey">OpenRouter API Key *</label>
+          <input
+            type="password"
+            id="apiKey"
+            name="apiKey"
+            required
+            placeholder="sk-or-..."
+            autocomplete="off"
+          >
+          <p class="form-help">
+            Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+            Your key is never stored on the server.
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-large">Begin Adventure</button>
+          <a href="/" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
