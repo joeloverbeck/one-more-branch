@@ -6,10 +6,16 @@ import {
   parsePageId,
 } from '@/models';
 
-jest.mock('@/persistence/file-utils', () => ({
-  ...jest.requireActual('@/persistence/file-utils'),
-  ensureStoriesDir: jest.fn(),
-}));
+jest.mock('@/persistence/file-utils', (): { ensureStoriesDir: jest.Mock } => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const actual = jest.requireActual('@/persistence/file-utils');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    ...actual,
+    ensureStoriesDir: jest.fn(),
+  };
+});
 
 jest.mock('@/persistence/story-repository', () => ({
   saveStory: jest.fn(),

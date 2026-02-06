@@ -39,7 +39,7 @@ describe('lock-manager', () => {
   it('withLock returns the function result and releases afterward', async () => {
     const key = testKey('with-lock-return');
 
-    const result = await withLock(key, async () => {
+    const result = await withLock(key, () => {
       expect(lockManager.isLocked(key)).toBe(true);
       return 'ok';
     });
@@ -53,7 +53,7 @@ describe('lock-manager', () => {
     const key = testKey('with-lock-throws');
 
     await expect(
-      withLock(key, async () => {
+      withLock(key, () => {
         throw new Error('boom');
       }),
     ).rejects.toThrow('boom');
@@ -74,7 +74,7 @@ describe('lock-manager', () => {
       order.push('first:end');
     });
 
-    const second = withLock(key, async () => {
+    const second = withLock(key, () => {
       order.push('second:start');
       secondStarted.resolve();
       order.push('second:end');

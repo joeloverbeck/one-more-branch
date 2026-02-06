@@ -18,6 +18,7 @@ describe('Data Integrity E2E', () => {
     jest.resetModules();
     let persistence!: typeof import('@/persistence');
     jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       persistence = require('@/persistence') as typeof import('@/persistence');
     });
     StorageClass = persistence.Storage;

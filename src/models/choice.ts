@@ -12,7 +12,7 @@ export function createChoice(text: string, nextPageId: PageId | null = null): Ch
   }
 
   if (nextPageId !== null && !isPageId(nextPageId)) {
-    throw new Error(`Invalid Page ID: ${nextPageId}. Must be a positive integer.`);
+    throw new Error(`Invalid Page ID: ${String(nextPageId)}. Must be a positive integer.`);
   }
 
   return {

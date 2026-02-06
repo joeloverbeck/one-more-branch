@@ -17,6 +17,7 @@ describe('Concurrent Write Performance', () => {
     jest.resetModules();
     let persistence!: typeof import('@/persistence');
     jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       persistence = require('@/persistence') as typeof import('@/persistence');
     });
     storage = new persistence.Storage();
@@ -150,7 +151,7 @@ describe('Concurrent Write Performance', () => {
     });
 
     const readErrors: Error[] = [];
-    const readerPromise = (async () => {
+    const readerPromise = (async (): Promise<void> => {
       for (let pass = 0; pass < 25; pass += 1) {
         for (let pageNumber = 1; pageNumber <= 11; pageNumber += 1) {
           try {
