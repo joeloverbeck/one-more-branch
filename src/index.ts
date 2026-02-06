@@ -6,8 +6,14 @@
 import { loadConfig } from './config/index.js';
 import { startServer } from './server/index.js';
 
-// Load configuration first - fail fast if invalid
-loadConfig();
+export function bootstrap(): void {
+  // Load configuration first - fail fast if invalid
+  loadConfig();
 
-// Start the server
-startServer();
+  // Start the server
+  startServer();
+}
+
+if (require.main === module) {
+  bootstrap();
+}
