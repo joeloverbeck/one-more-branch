@@ -2,6 +2,7 @@ import { createChoice } from '@/models/choice';
 import { PageId } from '@/models/id';
 import { createPage, getUnexploredChoiceIndices, isPage, isPageFullyExplored } from '@/models/page';
 import { createEmptyAccumulatedStructureState } from '@/models/story-arc';
+import { parseStructureVersionId } from '@/models/structure-version';
 
 describe('Page', () => {
   describe('createPage', () => {
@@ -160,6 +161,34 @@ describe('Page', () => {
 
       expect(page.accumulatedStructureState).toBe(parentAccumulatedStructureState);
     });
+
+    it('defaults structureVersionId to null when not provided', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Root page',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      expect(page.structureVersionId).toBeNull();
+    });
+
+    it('sets structureVersionId when provided', () => {
+      const structureVersionId = parseStructureVersionId('sv-1707321600000-a1b2');
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Root page',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        structureVersionId,
+      });
+
+      expect(page.structureVersionId).toBe(structureVersionId);
+    });
   });
 
   describe('isPage', () => {
@@ -217,6 +246,55 @@ describe('Page', () => {
           currentBeatIndex: 0,
           beatProgressions: [],
         },
+      };
+
+      expect(isPage(invalidPage)).toBe(false);
+    });
+
+    it('returns false when structureVersionId is missing', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        choices: [createChoice('A'), createChoice('B')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const invalidPage = { ...page } as Record<string, unknown>;
+      delete invalidPage.structureVersionId;
+
+      expect(isPage(invalidPage)).toBe(false);
+    });
+
+    it('returns true for valid structureVersionId', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        choices: [createChoice('A'), createChoice('B')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        structureVersionId: parseStructureVersionId('sv-1707321600000-a1b2'),
+      });
+
+      expect(isPage(page)).toBe(true);
+    });
+
+    it('returns false for invalid structureVersionId format', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        choices: [createChoice('A'), createChoice('B')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const invalidPage = {
+        ...page,
+        structureVersionId: 'sv-invalid',
       };
 
       expect(isPage(invalidPage)).toBe(false);

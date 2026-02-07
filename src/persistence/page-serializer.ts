@@ -9,6 +9,7 @@ import {
   Page,
   PageId,
   StateChanges,
+  parseStructureVersionId,
   parsePageId,
 } from '../models';
 
@@ -58,6 +59,7 @@ export interface PageFileData {
   }>;
   accumulatedCharacterState?: Record<string, string[]>;
   accumulatedStructureState: AccumulatedStructureStateFileData;
+  structureVersionId?: string | null;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;
@@ -132,6 +134,7 @@ export function serializePage(page: Page): PageFileData {
     characterStateChanges,
     accumulatedCharacterState,
     accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
+    structureVersionId: page.structureVersionId,
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -189,6 +192,10 @@ export function deserializePage(data: PageFileData): Page {
   const accumulatedStructureState: AccumulatedStructureState = fileDataToStructureState(
     data.accumulatedStructureState
   );
+  const structureVersionId =
+    data.structureVersionId === undefined || data.structureVersionId === null
+      ? null
+      : parseStructureVersionId(data.structureVersionId);
 
   return {
     id: parsePageId(data.id),
@@ -208,6 +215,7 @@ export function deserializePage(data: PageFileData): Page {
     characterStateChanges,
     accumulatedCharacterState,
     accumulatedStructureState,
+    structureVersionId,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

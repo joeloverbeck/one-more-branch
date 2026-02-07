@@ -1,5 +1,6 @@
 import { Choice, isChoice } from './choice';
 import { PageId } from './id';
+import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import {
   AccumulatedCharacterState,
@@ -35,6 +36,7 @@ export interface Page {
   readonly characterStateChanges: CharacterStateChanges;
   readonly accumulatedCharacterState: AccumulatedCharacterState;
   readonly accumulatedStructureState: AccumulatedStructureState;
+  readonly structureVersionId: StructureVersionId | null;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -56,6 +58,7 @@ export interface CreatePageData {
   parentAccumulatedHealth?: Health;
   parentAccumulatedCharacterState?: AccumulatedCharacterState;
   parentAccumulatedStructureState?: AccumulatedStructureState;
+  structureVersionId?: StructureVersionId | null;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -99,6 +102,7 @@ export function createPage(data: CreatePageData): Page {
     characterStateChanges,
     accumulatedCharacterState: applyCharacterStateChanges(parentCharacterState, characterStateChanges),
     accumulatedStructureState: parentStructureState,
+    structureVersionId: data.structureVersionId ?? null,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,
@@ -141,6 +145,9 @@ export function isPage(value: unknown): value is Page {
   }
 
   const obj = value as Record<string, unknown>;
+  const structureVersionId = obj['structureVersionId'];
+  const structureVersionIdValid =
+    structureVersionId === null || isStructureVersionId(structureVersionId);
 
   return (
     typeof obj['id'] === 'number' &&
@@ -151,6 +158,7 @@ export function isPage(value: unknown): value is Page {
     obj['choices'].every(isChoice) &&
     isStateChanges(obj['stateChanges']) &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
+    structureVersionIdValid &&
     typeof obj['isEnding'] === 'boolean'
   );
 }

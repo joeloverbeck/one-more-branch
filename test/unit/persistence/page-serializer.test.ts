@@ -28,6 +28,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
       currentBeatIndex: 0,
       beatProgressions: [],
     },
+    structureVersionId: null,
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -83,6 +84,7 @@ describe('page-serializer', () => {
           { beatId: '1.2', status: 'active' },
         ],
       });
+      expect(fileData.structureVersionId).toBeNull();
       expect(fileData.isEnding).toBe(false);
       expect(fileData.parentPageId).toBeNull();
       expect(fileData.parentChoiceIndex).toBeNull();
@@ -209,6 +211,7 @@ describe('page-serializer', () => {
           { beatId: '1.2', status: 'active' },
         ],
       });
+      expect(page.structureVersionId).toBeNull();
       expect(page.isEnding).toBe(false);
       expect(page.parentPageId).toBeNull();
       expect(page.parentChoiceIndex).toBeNull();
@@ -324,6 +327,25 @@ describe('page-serializer', () => {
           'Invalid page data: missing accumulatedStructureState for page 1'
         );
       });
+
+      it('defaults structureVersionId to null when missing', () => {
+        const fileData = buildTestFileData();
+        delete fileData.structureVersionId;
+
+        const page = deserializePage(fileData);
+
+        expect(page.structureVersionId).toBeNull();
+      });
+
+      it('parses structureVersionId when provided', () => {
+        const fileData = buildTestFileData({
+          structureVersionId: 'sv-1707321600000-a1b2',
+        });
+
+        const page = deserializePage(fileData);
+
+        expect(page.structureVersionId).toBe('sv-1707321600000-a1b2');
+      });
     });
   });
 
@@ -390,6 +412,7 @@ describe('page-serializer', () => {
           currentBeatIndex: 0,
           beatProgressions: [],
         },
+        structureVersionId: null,
         isEnding: true,
         parentPageId: parsePageId(9),
         parentChoiceIndex: 0,
