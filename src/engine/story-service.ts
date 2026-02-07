@@ -11,7 +11,7 @@ import {
 } from '../models';
 import { storage } from '../persistence';
 import { generateFirstPage } from './page-service';
-import { createStoryStructure } from './structure-manager';
+import { createStoryStructure } from './structure-factory';
 import { EngineError, StartStoryOptions, StartStoryResult } from './types';
 
 export async function startNewStory(options: StartStoryOptions): Promise<StartStoryResult> {

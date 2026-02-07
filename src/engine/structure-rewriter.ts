@@ -6,7 +6,8 @@ import { buildStructureRewritePrompt } from '../llm/prompts/structure-rewrite-pr
 import { STRUCTURE_GENERATION_SCHEMA } from '../llm/schemas/structure-schema';
 import { ChatMessage, CompletedBeat, LLMError, StructureRewriteContext, StructureRewriteResult } from '../llm/types';
 import { StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
-import { createStoryStructure, StructureGenerationResult } from './structure-manager';
+import { createStoryStructure } from './structure-factory';
+import type { StructureGenerationResult } from './structure-types';
 
 export interface StructureRewriter {
   rewriteStructure(context: StructureRewriteContext, apiKey: string): Promise<StructureRewriteResult>;

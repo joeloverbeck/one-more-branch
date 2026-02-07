@@ -1,14 +1,12 @@
+import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
-  advanceStructureState,
-  applyStructureProgression,
   buildRewriteContext,
-  createInitialStructureState,
-  createStoryStructure,
   extractCompletedBeats,
   getPreservedBeatIds,
-  StructureGenerationResult,
   validatePreservedBeats,
-} from '../../../src/engine/structure-manager';
+} from '../../../src/engine/structure-rewrite-support';
+import { createInitialStructureState } from '../../../src/engine/structure-state';
+import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
 import { createBeatDeviation } from '../../../src/models/story-arc';
@@ -44,178 +42,7 @@ function createStructure(): StoryStructure {
   return createStoryStructure(createGenerationResult());
 }
 
-describe('structure-manager', () => {
-  describe('createStoryStructure', () => {
-    it('creates structure from generation result with hierarchical beat IDs', () => {
-      const result = createStoryStructure(createGenerationResult());
-
-      expect(result.overallTheme).toBe('Restore the broken kingdom');
-      expect(result.acts[0]?.id).toBe('1');
-      expect(result.acts[1]?.id).toBe('2');
-      expect(result.acts[0]?.beats[0]?.id).toBe('1.1');
-      expect(result.acts[0]?.beats[1]?.id).toBe('1.2');
-      expect(result.acts[1]?.beats[0]?.id).toBe('2.1');
-      expect(result.acts[0]?.name).toBe('Act One');
-      expect(result.acts[0]?.beats[0]?.description).toBe('A warning arrives');
-    });
-
-    it('sets generatedAt to current date', () => {
-      const before = Date.now();
-      const result = createStoryStructure(createGenerationResult());
-      const after = Date.now();
-
-      expect(result.generatedAt).toBeInstanceOf(Date);
-      expect(result.generatedAt.getTime()).toBeGreaterThanOrEqual(before);
-      expect(result.generatedAt.getTime()).toBeLessThanOrEqual(after);
-    });
-  });
-
-  describe('createInitialStructureState', () => {
-    it('creates first beat as active and all remaining beats as pending', () => {
-      const structure = createStructure();
-      const state = createInitialStructureState(structure);
-
-      expect(state.currentActIndex).toBe(0);
-      expect(state.currentBeatIndex).toBe(0);
-      expect(state.beatProgressions).toHaveLength(3);
-      expect(state.beatProgressions[0]).toEqual({ beatId: '1.1', status: 'active' });
-      expect(state.beatProgressions[1]).toEqual({ beatId: '1.2', status: 'pending' });
-      expect(state.beatProgressions[2]).toEqual({ beatId: '2.1', status: 'pending' });
-    });
-  });
-
-  describe('advanceStructureState', () => {
-    it('advances to the next beat in the same act', () => {
-      const structure = createStructure();
-      const state = createInitialStructureState(structure);
-
-      const result = advanceStructureState(structure, state, 'The hero agrees to leave.');
-
-      expect(result.actAdvanced).toBe(false);
-      expect(result.beatAdvanced).toBe(true);
-      expect(result.isComplete).toBe(false);
-      expect(result.updatedState.currentActIndex).toBe(0);
-      expect(result.updatedState.currentBeatIndex).toBe(1);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.1',
-        status: 'concluded',
-        resolution: 'The hero agrees to leave.',
-      });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.2',
-        status: 'active',
-      });
-    });
-
-    it('advances to the next act when the last beat of current act concludes', () => {
-      const structure = createStructure();
-      const currentState: AccumulatedStructureState = {
-        currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'He heard the warning.' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '2.1', status: 'pending' },
-        ],
-      };
-
-      const result = advanceStructureState(structure, currentState, 'The hero leaves home.');
-
-      expect(result.actAdvanced).toBe(true);
-      expect(result.beatAdvanced).toBe(true);
-      expect(result.isComplete).toBe(false);
-      expect(result.updatedState.currentActIndex).toBe(1);
-      expect(result.updatedState.currentBeatIndex).toBe(0);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.2',
-        status: 'concluded',
-        resolution: 'The hero leaves home.',
-      });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '2.1',
-        status: 'active',
-      });
-    });
-
-    it('marks the story complete when the last beat of the last act concludes', () => {
-      const structure = createStructure();
-      const currentState: AccumulatedStructureState = {
-        currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'He heard the warning.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'He left home.' },
-          { beatId: '2.1', status: 'active' },
-        ],
-      };
-
-      const result = advanceStructureState(structure, currentState, 'The hero recovers and rallies.');
-
-      expect(result.isComplete).toBe(true);
-      expect(result.actAdvanced).toBe(false);
-      expect(result.beatAdvanced).toBe(false);
-      expect(result.updatedState.currentActIndex).toBe(1);
-      expect(result.updatedState.currentBeatIndex).toBe(0);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '2.1',
-        status: 'concluded',
-        resolution: 'The hero recovers and rallies.',
-      });
-    });
-
-    it('returns a new state and does not mutate the input state', () => {
-      const structure = createStructure();
-      const currentState = createInitialStructureState(structure);
-      const before = JSON.parse(JSON.stringify(currentState)) as AccumulatedStructureState;
-
-      const result = advanceStructureState(structure, currentState, 'A decision is made.');
-
-      expect(result.updatedState).not.toBe(currentState);
-      expect(result.updatedState.beatProgressions).not.toBe(currentState.beatProgressions);
-      expect(currentState).toEqual(before);
-    });
-  });
-
-  describe('applyStructureProgression', () => {
-    it('returns parent state unchanged when beatConcluded is false', () => {
-      const structure = createStructure();
-      const parentState = createInitialStructureState(structure);
-
-      const result = applyStructureProgression(structure, parentState, false, '');
-
-      expect(result).toBe(parentState);
-    });
-
-    it('advances state with resolution when beatConcluded is true', () => {
-      const structure = createStructure();
-      const parentState = createInitialStructureState(structure);
-
-      const result = applyStructureProgression(
-        structure,
-        parentState,
-        true,
-        'The warning is accepted.',
-      );
-
-      expect(result.currentActIndex).toBe(0);
-      expect(result.currentBeatIndex).toBe(1);
-      expect(result.beatProgressions).toContainEqual({
-        beatId: '1.1',
-        status: 'concluded',
-        resolution: 'The warning is accepted.',
-      });
-    });
-
-    it('throws when beatConcluded is true and beatResolution is blank', () => {
-      const structure = createStructure();
-      const parentState = createInitialStructureState(structure);
-
-      expect(() => applyStructureProgression(structure, parentState, true, '   ')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution',
-      );
-    });
-  });
-
+describe('structure-rewrite-support', () => {
   describe('extractCompletedBeats', () => {
     it('returns empty array when no beats are concluded', () => {
       const structure = createStructure();

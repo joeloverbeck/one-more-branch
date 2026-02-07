@@ -12,17 +12,25 @@ export {
 
 export { generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
 
+// Structure types
+export type { StructureProgressionResult, StructureGenerationResult } from './structure-types';
+
+// Beat utilities
+export { parseBeatIndices, getBeatOrThrow, upsertBeatProgression } from './beat-utils';
+
+// Structure factory
+export { createStoryStructure } from './structure-factory';
+
+// Structure state machine
+export { createInitialStructureState, advanceStructureState, applyStructureProgression } from './structure-state';
+
+// Structure rewrite support
 export {
-  createStoryStructure,
-  createInitialStructureState,
-  advanceStructureState,
-  applyStructureProgression,
   extractCompletedBeats,
   buildRewriteContext,
   getPreservedBeatIds,
   validatePreservedBeats,
-} from './structure-manager';
-export type { StructureProgressionResult, StructureGenerationResult } from './structure-manager';
+} from './structure-rewrite-support';
 export {
   createStructureRewriter,
   mergePreservedWithRegenerated,

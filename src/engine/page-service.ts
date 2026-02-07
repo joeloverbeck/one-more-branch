@@ -19,7 +19,8 @@ import { createCharacterStateChanges, getParentAccumulatedCharacterState } from 
 import { createHealthChanges, getParentAccumulatedHealth } from './health-manager';
 import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
 import { createStateChanges, getParentAccumulatedState } from './state-manager';
-import { applyStructureProgression, buildRewriteContext, createInitialStructureState } from './structure-manager';
+import { buildRewriteContext } from './structure-rewrite-support';
+import { applyStructureProgression, createInitialStructureState } from './structure-state';
 import { createStructureRewriter } from './structure-rewriter';
 import { EngineError } from './types';
 

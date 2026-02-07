@@ -15,7 +15,7 @@ import {
   Story,
   StoryStructure,
 } from '@/models';
-import { buildRewriteContext, extractCompletedBeats } from '@/engine/structure-manager';
+import { buildRewriteContext, extractCompletedBeats } from '@/engine/structure-rewrite-support';
 import { mergePreservedWithRegenerated } from '@/engine/structure-rewriter';
 
 function createLargeStructure(): StoryStructure {

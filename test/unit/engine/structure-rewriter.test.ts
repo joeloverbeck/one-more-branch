@@ -23,7 +23,7 @@ import {
   StructureRewriteGenerator,
 } from '../../../src/engine/structure-rewriter';
 import type { StructureRewriteContext } from '../../../src/llm/types';
-import type { StructureGenerationResult } from '../../../src/engine/structure-manager';
+import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
 function createRewriteContext(overrides?: Partial<StructureRewriteContext>): StructureRewriteContext {

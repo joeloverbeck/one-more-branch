@@ -11,7 +11,7 @@ import {
   StructureVersionId,
   VersionedStoryStructure,
 } from '../../../src/models';
-import { createInitialStructureState } from '../../../src/engine/structure-manager';
+import { createInitialStructureState } from '../../../src/engine/structure-state';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
