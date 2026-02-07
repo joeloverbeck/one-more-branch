@@ -1,15 +1,19 @@
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage } from '@/llm';
+import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateContinuationPage: jest.fn(),
+  generateStoryStructure: jest.fn(),
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateContinuationPage = generateContinuationPage as jest.MockedFunction<
   typeof generateContinuationPage
+>;
+const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
+  typeof generateStoryStructure
 >;
 
 const TEST_PREFIX = 'E2E TEST STOENG-009';
@@ -169,6 +173,43 @@ function expectAccumulatedStatePrefix(parent: Page, child: Page): void {
   );
 }
 
+const mockedStructureResult = {
+  overallTheme: 'Expose regime manipulations while protecting vulnerable allies.',
+  acts: [
+    {
+      name: 'Act I',
+      objective: 'Reveal the initial threat.',
+      stakes: 'Failure leaves the protagonist blind to the core danger.',
+      entryCondition: 'A disruptive event forces action.',
+      beats: [
+        { description: 'Discover the first anomaly.', objective: 'Confirm the threat is real.' },
+        { description: 'Gather immediate allies.', objective: 'Avoid isolation.' },
+      ],
+    },
+    {
+      name: 'Act II',
+      objective: 'Escalate conflict and gather leverage.',
+      stakes: 'Failure gives control to the antagonist force.',
+      entryCondition: 'The threat’s network is partially mapped.',
+      beats: [
+        { description: 'Attempt a risky infiltration.', objective: 'Extract actionable proof.' },
+        { description: 'Survive retaliation.', objective: 'Preserve capability to continue.' },
+      ],
+    },
+    {
+      name: 'Act III',
+      objective: 'Force final resolution.',
+      stakes: 'Failure permanently cements the hostile status quo.',
+      entryCondition: 'Public confrontation becomes unavoidable.',
+      beats: [
+        { description: 'Commit to final strategy.', objective: 'Align allies and resources.' },
+        { description: 'Deliver decisive action.', objective: 'Resolve primary conflict.' },
+      ],
+    },
+  ],
+  rawResponse: 'mock-structure',
+};
+
 describe('story engine e2e full playthrough', () => {
   const createdStoryIds = new Set<StoryId>();
   let continuationCallCount = 0;
@@ -187,6 +228,7 @@ describe('story engine e2e full playthrough', () => {
       }
       return Promise.resolve(openingResult);
     });
+    mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
 
     mockedGenerateContinuationPage.mockImplementation((context) => {
       continuationCallCount += 1;

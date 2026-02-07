@@ -1,17 +1,57 @@
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage } from '@/llm';
+import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateContinuationPage: jest.fn(),
+  generateStoryStructure: jest.fn(),
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateContinuationPage =
   generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
+  typeof generateStoryStructure
+>;
 
 const TEST_PREFIX = 'TEST STOENG-008 engine integration';
+const mockedStructureResult = {
+  overallTheme: 'Uncover the harbor conspiracy before dawn.',
+  acts: [
+    {
+      name: 'Act I',
+      objective: 'Establish the threat.',
+      stakes: 'Failure leaves the hero blind to danger.',
+      entryCondition: 'A disturbing event forces involvement.',
+      beats: [
+        { description: 'Find first clue', objective: 'Confirm the mystery is real.' },
+        { description: 'Secure local help', objective: 'Gain support to continue.' },
+      ],
+    },
+    {
+      name: 'Act II',
+      objective: 'Escalate conflict.',
+      stakes: 'Failure strengthens the antagonist.',
+      entryCondition: 'The first clues reveal a wider network.',
+      beats: [
+        { description: 'Infiltrate hostile zone', objective: 'Collect decisive evidence.' },
+        { description: 'Survive counterattack', objective: 'Keep momentum.' },
+      ],
+    },
+    {
+      name: 'Act III',
+      objective: 'Resolve final confrontation.',
+      stakes: 'Failure causes irreversible loss.',
+      entryCondition: 'Evidence is strong enough to act publicly.',
+      beats: [
+        { description: 'Commit final plan', objective: 'Coordinate allies.' },
+        { description: 'Execute resolution', objective: 'End central threat.' },
+      ],
+    },
+  ],
+  rawResponse: 'structure',
+};
 
 const openingResult = {
   narrative:
@@ -81,6 +121,7 @@ describe('story-engine integration', () => {
     jest.clearAllMocks();
     storyEngine.init();
 
+    mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateContinuationPage.mockImplementation((context) =>
       Promise.resolve(buildContinuationResult(context.selectedChoice)),

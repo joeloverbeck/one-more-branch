@@ -16,6 +16,9 @@ export { buildOpeningPrompt, buildContinuationPrompt } from './prompts.js';
 
 export { buildFewShotMessages } from './examples.js';
 
+export { generateStoryStructure } from './structure-generator.js';
+export type { StructureGenerationResult } from './structure-generator.js';
+
 export {
   extractOutputFromCoT,
   extractThinkingSection,

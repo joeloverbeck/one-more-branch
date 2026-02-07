@@ -1,17 +1,57 @@
 import { StoryEngine, storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage } from '@/llm';
+import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateContinuationPage: jest.fn(),
+  generateStoryStructure: jest.fn(),
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateContinuationPage =
   generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
+  typeof generateStoryStructure
+>;
 
 const TEST_PREFIX = 'TEST STOENG-008 replay integration';
+const mockedStructureResult = {
+  overallTheme: 'Decode Brightwater’s reflected constellation.',
+  acts: [
+    {
+      name: 'Act I',
+      objective: 'Spot the anomaly.',
+      stakes: 'Failure hides the true pattern.',
+      entryCondition: 'The constellation appears at dawn.',
+      beats: [
+        { description: 'Track mirrored stars', objective: 'Map first pattern.' },
+        { description: 'Verify source', objective: 'Confirm where distortions begin.' },
+      ],
+    },
+    {
+      name: 'Act II',
+      objective: 'Escalate investigation.',
+      stakes: 'Failure loses time before festival ends.',
+      entryCondition: 'The first pattern reveals hidden routes.',
+      beats: [
+        { description: 'Test hidden route', objective: 'Access restricted area.' },
+        { description: 'Protect evidence', objective: 'Avoid losing collected proof.' },
+      ],
+    },
+    {
+      name: 'Act III',
+      objective: 'Conclude the mystery.',
+      stakes: 'Failure leaves Brightwater unstable.',
+      entryCondition: 'All key clues align.',
+      beats: [
+        { description: 'Choose final interpretation', objective: 'Commit to a theory.' },
+        { description: 'Resolve the anomaly', objective: 'Stabilize the city.' },
+      ],
+    },
+  ],
+  rawResponse: 'structure',
+};
 
 const openingResult = {
   narrative:
@@ -58,6 +98,7 @@ describe('story replay integration', () => {
     jest.clearAllMocks();
     storyEngine.init();
 
+    mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateContinuationPage.mockResolvedValue(continuationResult);
   });

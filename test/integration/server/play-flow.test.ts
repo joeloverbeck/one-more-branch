@@ -1,6 +1,6 @@
 import type { Request, Response, Router } from 'express';
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage } from '@/llm';
+import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
 import type { StoryId } from '@/models';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
@@ -8,13 +8,53 @@ import { storyRoutes } from '@/server/routes/stories';
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateContinuationPage: jest.fn(),
+  generateStoryStructure: jest.fn(),
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateContinuationPage =
   generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
+  typeof generateStoryStructure
+>;
 
 const TEST_PREFIX = 'TEST USEINT-010 server integration';
+const mockedStructureResult = {
+  overallTheme: 'Survive and reveal hidden truths in a shifting world.',
+  acts: [
+    {
+      name: 'Act I',
+      objective: 'Establish immediate danger.',
+      stakes: 'Failure traps the protagonist early.',
+      entryCondition: 'A disruptive event forces movement.',
+      beats: [
+        { description: 'Assess first threat', objective: 'Avoid immediate collapse.' },
+        { description: 'Choose initial direction', objective: 'Set investigation path.' },
+      ],
+    },
+    {
+      name: 'Act II',
+      objective: 'Deepen conflict and gather leverage.',
+      stakes: 'Failure empowers hostile forces.',
+      entryCondition: 'The first choices expose broader conflict.',
+      beats: [
+        { description: 'Take a risky action', objective: 'Gain critical information.' },
+        { description: 'Absorb consequences', objective: 'Preserve forward progress.' },
+      ],
+    },
+    {
+      name: 'Act III',
+      objective: 'Reach final resolution.',
+      stakes: 'Failure leaves permanent damage.',
+      entryCondition: 'Enough information exists for decisive action.',
+      beats: [
+        { description: 'Commit final approach', objective: 'Align resources.' },
+        { description: 'Deliver final move', objective: 'Resolve central conflict.' },
+      ],
+    },
+  ],
+  rawResponse: 'structure',
+};
 
 type RouteLayer = {
   route?: {
@@ -98,6 +138,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     storyEngine.init();
+    mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
   });
 
   afterEach(async () => {

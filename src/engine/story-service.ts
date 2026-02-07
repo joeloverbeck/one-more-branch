@@ -1,6 +1,17 @@
-import { createStory, Page, PageId, parsePageId, Story, StoryId, StoryMetadata } from '../models';
+import { generateStoryStructure } from '../llm';
+import {
+  createStory,
+  Page,
+  PageId,
+  parsePageId,
+  Story,
+  StoryId,
+  StoryMetadata,
+  updateStoryStructure,
+} from '../models';
 import { storage } from '../persistence';
 import { generateFirstPage } from './page-service';
+import { createStoryStructure } from './structure-manager';
 import { EngineError, StartStoryOptions, StartStoryResult } from './types';
 
 export async function startNewStory(options: StartStoryOptions): Promise<StartStoryResult> {
@@ -28,11 +39,23 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
   try {
     await storage.saveStory(story);
 
-    const { page, updatedStory } = await generateFirstPage(story, options.apiKey);
+    const structureResult = await generateStoryStructure(
+      {
+        characterConcept: story.characterConcept,
+        worldbuilding: story.worldbuilding,
+        tone: story.tone,
+      },
+      options.apiKey,
+    );
+    const structure = createStoryStructure(structureResult);
+    const storyWithStructure = updateStoryStructure(story, structure);
+    await storage.updateStory(storyWithStructure);
+
+    const { page, updatedStory } = await generateFirstPage(storyWithStructure, options.apiKey);
 
     await storage.savePage(story.id, page);
 
-    if (updatedStory !== story) {
+    if (updatedStory !== storyWithStructure) {
       await storage.updateStory(updatedStory);
     }
 
