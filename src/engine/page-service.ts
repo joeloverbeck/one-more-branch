@@ -7,6 +7,7 @@ import {
   createRewrittenVersionedStructure,
   generatePageId,
   getLatestStructureVersion,
+  getStructureVersion,
   isDeviation,
   Page,
   Story,
@@ -36,6 +37,7 @@ export async function generateFirstPage(
     { apiKey },
   );
 
+  const initialStructureVersion = getLatestStructureVersion(story);
   const initialStructureState = story.structure
     ? createInitialStructureState(story.structure)
     : createEmptyAccumulatedStructureState();
@@ -55,6 +57,7 @@ export async function generateFirstPage(
     parentPageId: null,
     parentChoiceIndex: null,
     parentAccumulatedStructureState: initialStructureState,
+    structureVersionId: initialStructureVersion?.id ?? null,
   });
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
@@ -82,7 +85,10 @@ export async function generateNextPage(
   const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
   const parentAccumulatedCharacterState = getParentAccumulatedCharacterState(parentPage);
   const parentStructureState = parentPage.accumulatedStructureState;
-  const currentStructureVersion = getLatestStructureVersion(story);
+  // Use parent page's structure version for branch isolation, fall back to latest if not specified
+  const currentStructureVersion = parentPage.structureVersionId
+    ? getStructureVersion(story, parentPage.structureVersionId) ?? getLatestStructureVersion(story)
+    : getLatestStructureVersion(story);
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -90,7 +96,7 @@ export async function generateNextPage(
       tone: story.tone,
       globalCanon: story.globalCanon,
       globalCharacterCanon: story.globalCharacterCanon,
-      structure: story.structure ?? undefined,
+      structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
       accumulatedStructureState: parentStructureState,
       previousNarrative: parentPage.narrativeText,
       selectedChoice: choice.text,

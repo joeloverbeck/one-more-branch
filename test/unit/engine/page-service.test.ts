@@ -8,6 +8,8 @@ import {
   createStory,
   parsePageId,
   Story,
+  StructureVersionId,
+  VersionedStoryStructure,
 } from '../../../src/models';
 import { createInitialStructureState } from '../../../src/engine/structure-manager';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
@@ -177,6 +179,62 @@ describe('page-service', () => {
         beatProgressions: [],
       });
       expect(updatedStory.structure).toBeNull();
+    });
+
+    it('assigns structureVersionId to first page when story has structure versions', async () => {
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialVersion],
+      });
+
+      mockedGenerateOpeningPage.mockResolvedValue({
+        narrative: 'You slip through the checkpoint as dusk falls.',
+        choices: ['Head to the safe house', 'Scout the perimeter'],
+        stateChangesAdded: ['Entered the city'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateFirstPage(story, 'test-key');
+
+      // First page should have the initial structure version ID for branch isolation
+      expect(page.structureVersionId).toBe(initialVersion.id);
+    });
+
+    it('leaves structureVersionId null when story has no structure versions', async () => {
+      const story = buildStory(); // No structure, no versions
+
+      mockedGenerateOpeningPage.mockResolvedValue({
+        narrative: 'You begin your journey.',
+        choices: ['Go north', 'Go south'],
+        stateChangesAdded: ['Started'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateFirstPage(story, 'test-key');
+
+      expect(page.structureVersionId).toBeNull();
     });
   });
 
@@ -601,6 +659,139 @@ describe('page-service', () => {
       );
       expect(updatedStory.structureVersions?.[1]?.createdAtPageId).toBe(page.id);
       expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
+    });
+
+    it('uses parent page structureVersionId for branch isolation instead of latest version', async () => {
+      // Setup: Create v1 structure and parent page using v1
+      const structureV1 = buildStructure();
+      const versionV1 = createInitialVersionedStructure(structureV1);
+      const parentStructureState = createInitialStructureState(structureV1);
+
+      // Create a rewritten structure v2 (simulating another branch caused a rewrite)
+      const structureV2: StoryStructure = {
+        overallTheme: 'Rewritten theme from another branch.',
+        generatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'Different Path',
+            objective: 'Different objective',
+            stakes: 'Different stakes',
+            entryCondition: 'Different entry',
+            beats: [
+              { id: '1.1', description: 'Different beat 1', objective: 'Different obj 1' },
+              { id: '1.2', description: 'Different beat 2', objective: 'Different obj 2' },
+            ],
+          },
+        ],
+      };
+      const versionV2: VersionedStoryStructure = {
+        id: 'sv-9999999999999-v2v2' as StructureVersionId,
+        structure: structureV2,
+        previousVersionId: versionV1.id,
+        createdAtPageId: parsePageId(99),
+        rewriteReason: 'Another branch caused this rewrite',
+        preservedBeatIds: [],
+        createdAt: new Date('2026-01-02T00:00:00.000Z'),
+      };
+
+      // Story has BOTH versions (v1 is original, v2 was created by another branch)
+      // story.structure points to v2 (the "latest")
+      const story = buildStory({
+        structure: structureV2, // Latest structure is v2
+        structureVersions: [versionV1, versionV2], // Both versions exist
+      });
+
+      // Parent page was created with v1 (before the rewrite in another branch)
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You stand at a crossroads in the archive.',
+        choices: [createChoice('Take the left passage'), createChoice('Take the right passage')],
+        stateChanges: { added: ['Reached crossroads'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: versionV1.id, // Parent was created with v1!
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(100);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You proceed down the left passage.',
+        choices: ['Continue forward', 'Turn back'],
+        stateChangesAdded: ['Entered left passage'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      // CRITICAL: The new page should use v1 (parent's version), NOT v2 (latest)
+      expect(page.structureVersionId).toBe(versionV1.id);
+
+      // The LLM should have been called with v1's structure, not v2's
+      expect(mockedGenerateContinuationPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          structure: structureV1, // Should be v1, not v2!
+        }),
+        { apiKey: 'test-key' },
+      );
+    });
+
+    it('falls back to latest version when parent page has null structureVersionId', async () => {
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+
+      const story = buildStory({
+        structure,
+        structureVersions: [initialVersion],
+      });
+
+      // Parent page has null structureVersionId (created before versioning was added)
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Legacy page without version tracking.',
+        choices: [createChoice('Proceed'), createChoice('Stay back')],
+        stateChanges: { added: ['Started'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: null, // No version ID
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You move forward.',
+        choices: ['Continue', 'Turn back'],
+        stateChangesAdded: ['Advanced'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      // Should fall back to latest version when parent has no version ID
+      expect(page.structureVersionId).toBe(initialVersion.id);
     });
 
     it('does not trigger rewrite when story has no structure versions', async () => {
