@@ -263,15 +263,16 @@ describe('page-repository', () => {
     );
   });
 
-  it('loadPage throws when persisted page data is missing accumulatedStructureState', async () => {
+  it('loadPage throws when persisted page data is missing required fields', async () => {
     const story = buildTestStory();
     createdStoryIds.add(story.id);
     await saveStory(story);
 
     const pageId = parsePageId(6);
+    // Write incomplete page data (missing inventoryChanges, healthChanges, etc.)
     await writeJsonFile(getPageFilePath(story.id, pageId), {
       id: pageId,
-      narrativeText: 'Missing structure state',
+      narrativeText: 'Missing required fields',
       choices: [],
       stateChanges: { added: [], removed: [] },
       accumulatedState: { changes: [] },
@@ -280,9 +281,8 @@ describe('page-repository', () => {
       parentChoiceIndex: null,
     });
 
-    await expect(loadPage(story.id, pageId)).rejects.toThrow(
-      `Invalid page data: missing accumulatedStructureState for page ${pageId}`,
-    );
+    // Should throw because required fields (inventoryChanges, etc.) are missing
+    await expect(loadPage(story.id, pageId)).rejects.toThrow();
   });
 
   it('updatePage overwrites an existing page', async () => {

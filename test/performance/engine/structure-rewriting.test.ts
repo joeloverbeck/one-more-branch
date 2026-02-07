@@ -2,6 +2,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import {
+  AccumulatedStructureState,
   addStructureVersion,
   createBeatDeviation,
   createInitialVersionedStructure,
@@ -65,7 +66,7 @@ function createLargeStructure(): StoryStructure {
   };
 }
 
-function createStateWithProgress() {
+function createStateWithProgress(): AccumulatedStructureState {
   return {
     currentActIndex: 1,
     currentBeatIndex: 1,

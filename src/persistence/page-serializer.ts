@@ -39,25 +39,22 @@ export interface PageFileData {
   accumulatedState: {
     changes: string[];
   };
-  // Inventory fields (optional for migration from older pages)
-  inventoryChanges?: {
+  inventoryChanges: {
     added: string[];
     removed: string[];
   };
-  accumulatedInventory?: string[];
-  // Health fields (optional for migration from older pages)
-  healthChanges?: {
+  accumulatedInventory: string[];
+  healthChanges: {
     added: string[];
     removed: string[];
   };
-  accumulatedHealth?: string[];
-  // Character state fields (optional for migration from older pages)
-  characterStateChanges?: Array<{
+  accumulatedHealth: string[];
+  characterStateChanges: Array<{
     characterName: string;
     added: string[];
     removed: string[];
   }>;
-  accumulatedCharacterState?: Record<string, string[]>;
+  accumulatedCharacterState: Record<string, string[]>;
   accumulatedStructureState: AccumulatedStructureStateFileData;
   structureVersionId?: string | null;
   isEnding: boolean;
@@ -142,52 +139,34 @@ export function serializePage(page: Page): PageFileData {
 }
 
 export function deserializePage(data: PageFileData): Page {
-  // Handle state changes (new format with added/removed)
   const stateChanges: StateChanges = {
     added: [...data.stateChanges.added],
     removed: [...data.stateChanges.removed],
   };
 
-  // Migration: handle existing pages without inventory fields
-  const inventoryChanges: InventoryChanges = data.inventoryChanges
-    ? {
-        added: [...data.inventoryChanges.added],
-        removed: [...data.inventoryChanges.removed],
-      }
-    : { added: [], removed: [] };
+  const inventoryChanges: InventoryChanges = {
+    added: [...data.inventoryChanges.added],
+    removed: [...data.inventoryChanges.removed],
+  };
 
-  const accumulatedInventory: Inventory = data.accumulatedInventory
-    ? [...data.accumulatedInventory]
-    : [];
+  const accumulatedInventory: Inventory = [...data.accumulatedInventory];
 
-  // Migration: handle existing pages without health fields
-  const healthChanges: HealthChanges = data.healthChanges
-    ? {
-        added: [...data.healthChanges.added],
-        removed: [...data.healthChanges.removed],
-      }
-    : { added: [], removed: [] };
+  const healthChanges: HealthChanges = {
+    added: [...data.healthChanges.added],
+    removed: [...data.healthChanges.removed],
+  };
 
-  const accumulatedHealth: Health = data.accumulatedHealth ? [...data.accumulatedHealth] : [];
+  const accumulatedHealth: Health = [...data.accumulatedHealth];
 
-  // Migration: handle existing pages without character state fields
-  const characterStateChanges: CharacterStateChanges = data.characterStateChanges
-    ? data.characterStateChanges.map((change) => ({
-        characterName: change.characterName,
-        added: [...change.added],
-        removed: [...change.removed],
-      }))
-    : [];
+  const characterStateChanges: CharacterStateChanges = data.characterStateChanges.map((change) => ({
+    characterName: change.characterName,
+    added: [...change.added],
+    removed: [...change.removed],
+  }));
 
-  const accumulatedCharacterState: AccumulatedCharacterState = data.accumulatedCharacterState
-    ? Object.fromEntries(
-        Object.entries(data.accumulatedCharacterState).map(([name, state]) => [name, [...state]])
-      )
-    : {};
-
-  if (!data.accumulatedStructureState) {
-    throw new Error(`Invalid page data: missing accumulatedStructureState for page ${data.id}`);
-  }
+  const accumulatedCharacterState: AccumulatedCharacterState = Object.fromEntries(
+    Object.entries(data.accumulatedCharacterState).map(([name, state]) => [name, [...state]])
+  );
 
   const accumulatedStructureState: AccumulatedStructureState = fileDataToStructureState(
     data.accumulatedStructureState

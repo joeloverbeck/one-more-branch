@@ -263,69 +263,61 @@ describe('page-serializer', () => {
       ]);
     });
 
-    describe('migration scenarios', () => {
-      it('defaults inventoryChanges to empty when missing', () => {
+    describe('strict field validation', () => {
+      it('throws when inventoryChanges is missing', () => {
         const fileData = buildTestFileData();
-        delete fileData.inventoryChanges;
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
+        delete invalidFileData.inventoryChanges;
 
-        const page = deserializePage(fileData);
-
-        expect(page.inventoryChanges).toEqual({ added: [], removed: [] });
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
-      it('defaults accumulatedInventory to empty when missing', () => {
+      it('throws when accumulatedInventory is missing', () => {
         const fileData = buildTestFileData();
-        delete fileData.accumulatedInventory;
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
+        delete invalidFileData.accumulatedInventory;
 
-        const page = deserializePage(fileData);
-
-        expect(page.accumulatedInventory).toEqual([]);
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
-      it('defaults healthChanges to empty when missing', () => {
+      it('throws when healthChanges is missing', () => {
         const fileData = buildTestFileData();
-        delete fileData.healthChanges;
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
+        delete invalidFileData.healthChanges;
 
-        const page = deserializePage(fileData);
-
-        expect(page.healthChanges).toEqual({ added: [], removed: [] });
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
-      it('defaults accumulatedHealth to empty when missing', () => {
+      it('throws when accumulatedHealth is missing', () => {
         const fileData = buildTestFileData();
-        delete fileData.accumulatedHealth;
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
+        delete invalidFileData.accumulatedHealth;
 
-        const page = deserializePage(fileData);
-
-        expect(page.accumulatedHealth).toEqual([]);
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
-      it('defaults characterStateChanges to empty when missing', () => {
+      it('throws when characterStateChanges is missing', () => {
         const fileData = buildTestFileData();
-        delete fileData.characterStateChanges;
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
+        delete invalidFileData.characterStateChanges;
 
-        const page = deserializePage(fileData);
-
-        expect(page.characterStateChanges).toEqual([]);
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
-      it('defaults accumulatedCharacterState to empty when missing', () => {
+      it('throws when accumulatedCharacterState is missing', () => {
         const fileData = buildTestFileData();
-        delete fileData.accumulatedCharacterState;
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
+        delete invalidFileData.accumulatedCharacterState;
 
-        const page = deserializePage(fileData);
-
-        expect(page.accumulatedCharacterState).toEqual({});
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
-      it('throws error when accumulatedStructureState is missing', () => {
+      it('throws when accumulatedStructureState is missing', () => {
         const fileData = buildTestFileData();
-        const invalidFileData: Partial<typeof fileData> = { ...fileData };
+        const invalidFileData = { ...fileData } as Record<string, unknown>;
         delete invalidFileData.accumulatedStructureState;
 
-        expect(() => deserializePage(invalidFileData as typeof fileData)).toThrow(
-          'Invalid page data: missing accumulatedStructureState for page 1'
-        );
+        expect(() => deserializePage(invalidFileData as PageFileData)).toThrow();
       });
 
       it('defaults structureVersionId to null when missing', () => {
