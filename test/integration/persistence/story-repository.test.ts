@@ -2,6 +2,8 @@ import {
   Story,
   StoryId,
   StoryStructure,
+  createInitialVersionedStructure,
+  createRewrittenVersionedStructure,
   createChoice,
   createPage,
   createStory,
@@ -118,6 +120,87 @@ describe('story-repository integration', () => {
 
     expect(loaded).not.toBeNull();
     expect(loaded?.structure).toBeNull();
+  });
+
+  it('save/load preserves structure version lineage fields', async () => {
+    const initialStructure: StoryStructure = {
+      acts: [
+        {
+          id: '1',
+          name: 'Act I',
+          objective: 'Open with conflict',
+          stakes: 'Trust collapses',
+          entryCondition: 'Crisis begins',
+          beats: [
+            { id: '1.1', description: 'Initial disruption', objective: 'Establish risk' },
+            { id: '1.2', description: 'Forced response', objective: 'Commit to action' },
+          ],
+        },
+        {
+          id: '2',
+          name: 'Act II',
+          objective: 'Escalate pressure',
+          stakes: 'Allies fracture',
+          entryCondition: 'The threat adapts',
+          beats: [
+            { id: '2.1', description: 'Countermove', objective: 'Regain initiative' },
+            { id: '2.2', description: 'Setback', objective: 'Survive consequences' },
+          ],
+        },
+        {
+          id: '3',
+          name: 'Act III',
+          objective: 'Resolve the conflict',
+          stakes: 'Future order is decided',
+          entryCondition: 'A final opening appears',
+          beats: [
+            { id: '3.1', description: 'Final gambit', objective: 'Expose truth' },
+            { id: '3.2', description: 'Aftermath', objective: 'Stabilize outcomes' },
+          ],
+        },
+      ],
+      overallTheme: 'Integrity under pressure',
+      generatedAt: new Date('2025-02-03T00:00:00.000Z'),
+    };
+
+    const rewrittenStructure: StoryStructure = {
+      ...initialStructure,
+      acts: initialStructure.acts.map((act) => ({
+        ...act,
+        beats: act.beats.map((beat) => ({ ...beat })),
+      })),
+      overallTheme: 'Integrity under pressure',
+      generatedAt: new Date('2025-02-03T01:00:00.000Z'),
+    };
+
+    const initialVersion = createInitialVersionedStructure(initialStructure);
+    const rewrittenVersion = createRewrittenVersionedStructure(
+      initialVersion,
+      rewrittenStructure,
+      ['1.1'],
+      'Deviation invalidated infiltration path.',
+      parsePageId(3),
+    );
+
+    const story = buildStory({
+      characterConcept: `${TEST_PREFIX} structure lineage`,
+      structure: rewrittenStructure,
+      structureVersions: [initialVersion, rewrittenVersion],
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.structureVersions).toHaveLength(2);
+    expect(loaded?.structureVersions?.[0]?.previousVersionId).toBeNull();
+    expect(loaded?.structureVersions?.[1]?.previousVersionId).toBe(initialVersion.id);
+    expect(loaded?.structureVersions?.[1]?.createdAtPageId).toBe(3);
+    expect(loaded?.structureVersions?.[1]?.rewriteReason).toBe(
+      'Deviation invalidated infiltration path.',
+    );
+    expect(loaded?.structureVersions?.[1]?.preservedBeatIds).toEqual(['1.1']);
   });
 
   it('story lifecycle create save update load delete transitions correctly', async () => {

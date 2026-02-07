@@ -1,6 +1,6 @@
 import { storyEngine } from '@/engine';
 import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
-import { parsePageId, StoryId } from '@/models';
+import { createBeatDeviation, createNoDeviation, parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -70,6 +70,7 @@ const openingResult = {
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
+  deviation: createNoDeviation(),
   rawResponse: 'opening',
 };
 
@@ -92,6 +93,7 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
       isEnding: false,
       beatConcluded: true,
       beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
+      deviation: createNoDeviation(),
       rawResponse: 'continuation-ember',
     };
   }
@@ -113,8 +115,79 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
     isEnding: false,
     beatConcluded: false,
     beatResolution: '',
+    deviation: createNoDeviation(),
     rawResponse: 'continuation-ferryman',
   };
+}
+
+function createRewriteFetchResponse(): Response {
+  const rewrittenStructure = {
+    overallTheme: 'Adapt without losing your moral center.',
+    acts: [
+      {
+        name: 'Act I Reframed',
+        objective: 'Recover footing after a public betrayal.',
+        stakes: 'Failure leaves the hero isolated.',
+        entryCondition: 'The old alliances are broken.',
+        beats: [
+          {
+            description: 'Rebuild trust with one key ally',
+            objective: 'Secure a credible witness.',
+          },
+          {
+            description: 'Expose the first lie in the new regime',
+            objective: 'Open a path to a counter-move.',
+          },
+        ],
+      },
+      {
+        name: 'Act II Reframed',
+        objective: 'Pressure the regime through targeted wins.',
+        stakes: 'Failure cements authoritarian control.',
+        entryCondition: 'New network is operational.',
+        beats: [
+          {
+            description: 'Disrupt supply chains feeding the regime',
+            objective: 'Force visible concessions.',
+          },
+          {
+            description: 'Survive coordinated retaliation',
+            objective: 'Keep allies united under pressure.',
+          },
+        ],
+      },
+      {
+        name: 'Act III Reframed',
+        objective: 'Resolve the conflict and define the new order.',
+        stakes: 'Failure normalizes permanent repression.',
+        entryCondition: 'Public sentiment has shifted.',
+        beats: [
+          {
+            description: 'Force a public reckoning',
+            objective: 'Reveal proof to the city.',
+          },
+          {
+            description: 'Conclude with accountable power',
+            objective: 'Prevent a return to old corruption.',
+          },
+        ],
+      },
+    ],
+  };
+
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify(rewrittenStructure),
+          },
+        },
+      ],
+    }),
+  } as Response;
 }
 
 describe('story-engine integration', () => {
@@ -123,6 +196,8 @@ describe('story-engine integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     storyEngine.init();
+
+    global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
@@ -141,6 +216,8 @@ describe('story-engine integration', () => {
     }
 
     createdStoryIds.clear();
+
+    jest.restoreAllMocks();
 
     const stories = await storyEngine.listStories();
     for (const story of stories) {
@@ -336,5 +413,67 @@ describe('story-engine integration', () => {
       status: 'active',
     });
     expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(2);
+  });
+
+  it('should create a rewritten structure version and attach it to generated page when deviation is detected', async () => {
+    mockedGenerateContinuationPage
+      .mockResolvedValueOnce({
+        ...buildContinuationResult('Investigate the ember trail'),
+        beatConcluded: true,
+        beatResolution: 'The harbor cartel link is proven beyond doubt.',
+      })
+      .mockResolvedValueOnce({
+        ...buildContinuationResult('Enter the ash-marked chapel'),
+        beatConcluded: false,
+        beatResolution: '',
+        deviation: createBeatDeviation(
+          'The protagonist publicly defects, invalidating infiltration beats.',
+          ['2.1', '2.2', '3.1', '3.2'],
+          'The city now sees the protagonist as aligned with the regime on paper.',
+        ),
+      });
+
+    const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
+      characterConcept: `${TEST_PREFIX} rewrite-flow`,
+      worldbuilding: 'A storm-lit port where alliances flip overnight.',
+      tone: 'political mystery',
+      apiKey: 'test-api-key',
+    });
+    createdStoryIds.add(start.story.id);
+
+    const page2 = await storyEngine.makeChoice({
+      storyId: start.story.id,
+      pageId: parsePageId(1),
+      choiceIndex: 0,
+      apiKey: 'test-api-key',
+    });
+
+    const page3 = await storyEngine.makeChoice({
+      storyId: start.story.id,
+      pageId: page2.page.id,
+      choiceIndex: 0,
+      apiKey: 'test-api-key',
+    });
+
+    const reloadedStory = await storyEngine.loadStory(start.story.id);
+
+    expect(reloadedStory).not.toBeNull();
+    expect(reloadedStory?.structureVersions).toHaveLength(2);
+
+    const initialVersion = reloadedStory?.structureVersions?.[0];
+    const rewrittenVersion = reloadedStory?.structureVersions?.[1];
+
+    expect(initialVersion).toBeDefined();
+    expect(rewrittenVersion).toBeDefined();
+    expect(rewrittenVersion?.previousVersionId).toBe(initialVersion?.id);
+    expect(rewrittenVersion?.createdAtPageId).toBe(page3.page.id);
+    expect(rewrittenVersion?.rewriteReason).toBe(
+      'The protagonist publicly defects, invalidating infiltration beats.',
+    );
+
+    expect(page2.page.structureVersionId).toBe(initialVersion?.id ?? null);
+    expect(page3.page.structureVersionId).toBe(rewrittenVersion?.id ?? null);
+    expect(page3.page.structureVersionId).not.toBe(page2.page.structureVersionId);
   });
 });
