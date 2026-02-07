@@ -13,12 +13,65 @@ ${context.worldbuilding}
 
 `
     : '';
-  const storyArcSection = context.storyArc
-    ? `STORY ARC:
-${context.storyArc}
+  const structureSection =
+    context.structure && context.accumulatedStructureState
+      ? (() => {
+          const structure = context.structure;
+          const state = context.accumulatedStructureState;
+          const currentAct = structure.acts[state.currentActIndex];
 
-`
-    : '';
+          if (!currentAct) {
+            return '';
+          }
+
+          const beatLines = currentAct.beats
+            .map(beat => {
+              const progression = state.beatProgressions.find(item => item.beatId === beat.id);
+              if (progression?.status === 'concluded') {
+                const resolution =
+                  progression.resolution && progression.resolution.trim().length > 0
+                    ? progression.resolution
+                    : 'No resolution recorded.';
+                return `  [x] CONCLUDED: ${beat.description}
+    Resolution: ${resolution}`;
+              }
+              if (progression?.status === 'active') {
+                return `  [>] ACTIVE: ${beat.description}
+    Objective: ${beat.objective}`;
+              }
+              return `  [ ] PENDING: ${beat.description}`;
+            })
+            .join('\n');
+
+          const remainingActs = structure.acts
+            .slice(state.currentActIndex + 1)
+            .map((act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`)
+            .join('\n');
+
+          return `=== STORY STRUCTURE ===
+Overall Theme: ${structure.overallTheme}
+
+CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of 3)
+Objective: ${currentAct.objective}
+Stakes: ${currentAct.stakes}
+
+BEATS IN THIS ACT:
+${beatLines}
+
+REMAINING ACTS:
+${remainingActs || '  - None'}
+
+=== BEAT EVALUATION ===
+After writing the narrative, evaluate:
+1. Has the current beat's objective been achieved in this scene?
+2. If yes, set beatConcluded: true and describe how it was resolved.
+3. If no, set beatConcluded: false and leave beatResolution empty.
+
+Do not force beat completion - only conclude if naturally achieved.
+
+`;
+        })()
+      : '';
   const canonSection =
     context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
@@ -80,7 +133,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${storyArcSection}${canonSection}${characterCanonSection}${characterStateSection}${stateSection}${inventorySection}${healthSection}PREVIOUS SCENE:
+${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${stateSection}${inventorySection}${healthSection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
 
 PLAYER'S CHOICE: "${context.selectedChoice}"

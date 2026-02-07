@@ -1,11 +1,17 @@
 # STRSTOARCSYS-006: Update Continuation Prompt
 
+## Status
+Completed (2026-02-07).
+
 ## Summary
-Major update to the continuation prompt to display full structure state and request beat completion evaluation. Remove `storyArc` handling and add detailed structure visualization.
+Update the continuation prompt to display full structure state and request beat completion evaluation when structure context is available.
+
+Current codebase note: `storyArc` is still referenced by engine/persistence paths outside this ticket, so this ticket preserves `ContinuationContext.storyArc` for compatibility and only removes prompt text that surfaces it.
 
 ## Files to Touch
 - `src/llm/prompts/continuation-prompt.ts`
-- `src/llm/types.ts` (update ContinuationContext)
+- `src/llm/types.ts` (add structure fields to ContinuationContext)
+- `test/unit/llm/prompts.test.ts` (continuation prompt tests live here)
 
 ## Out of Scope
 - DO NOT modify `opening-prompt.ts` (that's STRSTOARCSYS-005)
@@ -37,13 +43,14 @@ export interface ContinuationContext {
   accumulatedCharacterState: Readonly<Record<string, readonly string[]>>;
 }
 
-// AFTER
+// AFTER (compatibility-preserving in this ticket)
 export interface ContinuationContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
+  storyArc: string | null; // retained for cross-ticket compatibility
   structure?: StoryStructure;                      // NEW
   accumulatedStructureState?: AccumulatedStructureState;  // NEW
   previousNarrative: string;
@@ -89,8 +96,8 @@ Do not force beat completion - only conclude if naturally achieved.
 
 ### Remove storyArc Handling
 
-- Remove any code that reads/displays `context.storyArc`
-- Remove any text in the prompt about "Story Arc: ..."
+- Remove continuation prompt text that reads/displays `context.storyArc`
+- Keep the `ContinuationContext.storyArc` field itself for now
 
 ### Beat Status Visualization
 
@@ -109,7 +116,7 @@ Add clear instructions about new output fields:
 
 ### Tests That Must Pass
 
-Update `test/unit/llm/prompts/continuation-prompt.test.ts`:
+Update `test/unit/llm/prompts.test.ts` under `describe('buildContinuationPrompt', ...)`:
 
 1. `buildContinuationPrompt` without structure (backwards compat)
    - Works when `structure` and `accumulatedStructureState` not provided
@@ -134,22 +141,32 @@ Update `test/unit/llm/prompts/continuation-prompt.test.ts`:
 
 5. Removed functionality
    - No `storyArc` section in prompt
-   - No reference to `context.storyArc`
 
 ### Invariants That Must Remain True
 - Prompt still includes all existing context (canon, state, inventory, etc.)
 - Prompt still includes content policy
 - Prompt still follows ChatMessage[] format
-- TypeScript strict mode passes
-- Existing functionality not related to storyArc still works
+- Existing continuation functionality not related to structure still works
 
 ## Dependencies
 - STRSTOARCSYS-001 (needs StoryStructure and AccumulatedStructureState types)
 
 ## Breaking Changes
-- `ContinuationContext.storyArc` removed
-- Prompt no longer displays story arc string
-- Tests expecting `storyArc` handling will fail
+None in this ticket (compatibility-preserving scope).
 
 ## Estimated Scope
 ~120 lines of code changes + ~150 lines of test updates
+
+## Outcome
+- Implemented:
+  - Added optional `structure` and `accumulatedStructureState` fields to `ContinuationContext`.
+  - Updated `buildContinuationPrompt()` to render a detailed structure section and beat evaluation instructions when structure context is present.
+  - Removed continuation prompt rendering of `storyArc` text.
+  - Updated continuation prompt coverage in `test/unit/llm/prompts.test.ts`, including:
+    - structure-enabled rendering assertions,
+    - backwards-compatible no-structure behavior,
+    - explicit no-story-arc rendering assertion,
+    - edge-case invalid act index behavior.
+- Adjusted from original plan:
+  - Kept `ContinuationContext.storyArc` in the type for current cross-ticket compatibility; no public API break in this ticket.
+  - Updated test target from the non-existent `test/unit/llm/prompts/continuation-prompt.test.ts` to the existing `test/unit/llm/prompts.test.ts`.

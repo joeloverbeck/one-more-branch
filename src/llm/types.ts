@@ -1,4 +1,4 @@
-import type { StoryStructure } from '../models/story-arc.js';
+import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 
 export interface GenerationResult {
   narrative: string;
@@ -42,6 +42,8 @@ export interface ContinuationContext {
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc: string | null;
+  structure?: StoryStructure;
+  accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
   selectedChoice: string;
   accumulatedState: readonly string[];

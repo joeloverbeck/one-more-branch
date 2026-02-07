@@ -1,5 +1,5 @@
 import { CONTENT_POLICY } from '../../../src/llm/content-policy';
-import type { StoryStructure } from '../../../src/models/story-arc';
+import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import { buildContinuationPrompt, buildOpeningPrompt } from '../../../src/llm/prompts';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
@@ -324,6 +324,75 @@ describe('buildOpeningPrompt', () => {
 });
 
 describe('buildContinuationPrompt', () => {
+  const structure: StoryStructure = {
+    overallTheme: 'Stop the city purge before dawn.',
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    acts: [
+      {
+        id: '1',
+        name: 'The Crackdown',
+        objective: 'Escape the first sweep',
+        stakes: 'Capture means public execution.',
+        entryCondition: 'Emergency law is declared.',
+        beats: [
+          {
+            id: '1.1',
+            description: 'Reach a safehouse before patrols seal the district',
+            objective: 'Get inside the safehouse',
+          },
+          {
+            id: '1.2',
+            description: 'Secure evidence from an informant',
+            objective: 'Protect the evidence from raiders',
+          },
+          {
+            id: '1.3',
+            description: 'Choose who to trust for extraction',
+            objective: 'Commit to an ally',
+          },
+        ],
+      },
+      {
+        id: '2',
+        name: 'The Hunt',
+        objective: 'Cross hostile territory with the evidence',
+        stakes: 'If lost, the purge becomes permanent.',
+        entryCondition: 'You leave the capital perimeter.',
+        beats: [
+          { id: '2.1', description: 'Break through checkpoints', objective: 'Find a route north' },
+          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive' },
+        ],
+      },
+      {
+        id: '3',
+        name: 'The Broadcast',
+        objective: 'Expose the planners to the public',
+        stakes: 'Silence guarantees totalitarian rule.',
+        entryCondition: 'You gain access to the relay tower.',
+        beats: [
+          { id: '3.1', description: 'Reach the relay core', objective: 'Seize control room access' },
+          { id: '3.2', description: 'Deliver the proof', objective: 'Transmit unedited evidence' },
+        ],
+      },
+    ],
+  };
+  const structureState: AccumulatedStructureState = {
+    currentActIndex: 0,
+    currentBeatIndex: 1,
+    beatProgressions: [
+      {
+        beatId: '1.1',
+        status: 'concluded',
+        resolution: 'You slipped through a drainage tunnel into the safehouse.',
+      },
+      { beatId: '1.2', status: 'active' },
+      { beatId: '1.3', status: 'pending' },
+      { beatId: '2.1', status: 'pending' },
+      { beatId: '2.2', status: 'pending' },
+      { beatId: '3.1', status: 'pending' },
+      { beatId: '3.2', status: 'pending' },
+    ],
+  };
   const baseContext = {
     characterConcept: 'A disgraced detective',
     worldbuilding: '',
@@ -413,14 +482,68 @@ describe('buildContinuationPrompt', () => {
     expect(user).not.toContain('NPC CURRENT STATE');
   });
 
-  it('should include story arc when present', () => {
+  it('should not include story arc section when storyArc is present', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
       storyArc: 'Expose the conspiracy behind your partner’s murder.',
     });
 
-    expect(getUserMessage(messages)).toContain('STORY ARC:');
-    expect(getUserMessage(messages)).toContain('Expose the conspiracy');
+    expect(getUserMessage(messages)).not.toContain('STORY ARC:');
+    expect(getUserMessage(messages)).not.toContain('Expose the conspiracy');
+  });
+
+  it('should include structure section and beat evaluation instructions when structure state is provided', () => {
+    const messages = buildContinuationPrompt({
+      ...baseContext,
+      structure,
+      accumulatedStructureState: structureState,
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('=== STORY STRUCTURE ===');
+    expect(user).toContain('Overall Theme: Stop the city purge before dawn.');
+    expect(user).toContain('CURRENT ACT: The Crackdown (Act 1 of 3)');
+    expect(user).toContain('Objective: Escape the first sweep');
+    expect(user).toContain('Stakes: Capture means public execution.');
+    expect(user).toContain(
+      '[x] CONCLUDED: Reach a safehouse before patrols seal the district',
+    );
+    expect(user).toContain('Resolution: You slipped through a drainage tunnel into the safehouse.');
+    expect(user).toContain('[>] ACTIVE: Secure evidence from an informant');
+    expect(user).toContain('Objective: Protect the evidence from raiders');
+    expect(user).toContain('[ ] PENDING: Choose who to trust for extraction');
+    expect(user).toContain('REMAINING ACTS:');
+    expect(user).toContain('Act 2: The Hunt - Cross hostile territory with the evidence');
+    expect(user).toContain('Act 3: The Broadcast - Expose the planners to the public');
+    expect(user).toContain('=== BEAT EVALUATION ===');
+    expect(user).toContain("Has the current beat's objective been achieved in this scene?");
+    expect(user).toContain('set beatConcluded: true');
+    expect(user).toContain('leave beatResolution empty');
+    expect(user).toContain('Do not force beat completion');
+  });
+
+  it('should omit structure section when structure context is absent', () => {
+    const messages = buildContinuationPrompt(baseContext);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('=== STORY STRUCTURE ===');
+    expect(user).not.toContain('=== BEAT EVALUATION ===');
+  });
+
+  it('should omit structure section when structure state points to an invalid act index', () => {
+    const messages = buildContinuationPrompt({
+      ...baseContext,
+      structure,
+      accumulatedStructureState: {
+        ...structureState,
+        currentActIndex: 9,
+      },
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).not.toContain('=== STORY STRUCTURE ===');
+    expect(user).not.toContain('=== BEAT EVALUATION ===');
+    expect(user).toContain('PREVIOUS SCENE:');
   });
 
   it('should include previous narrative', () => {
