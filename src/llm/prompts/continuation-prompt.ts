@@ -207,6 +207,8 @@ PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow ALL):
 1. Start exactly where the previous scene ended—do NOT recap or summarize what happened
+   - Do NOT repeat or rephrase the last sentence of the previous scene
+   - Begin with an action, dialogue, or reaction within the next 1-2 beats
 2. Show the direct, immediate consequences of the player's choice - the story must react
 3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
 4. Maintain STRICT consistency with all established facts and the current state

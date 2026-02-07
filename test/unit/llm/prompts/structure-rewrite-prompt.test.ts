@@ -8,7 +8,9 @@ function getSystemMessage(messages: { role: string; content: string }[]): string
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'user')?.content ?? '';
+  // Get the last user message (in case few-shot examples are included)
+  const userMessages = messages.filter(message => message.role === 'user');
+  return userMessages[userMessages.length - 1]?.content ?? '';
 }
 
 describe('buildStructureRewritePrompt', () => {
@@ -88,18 +90,12 @@ describe('buildStructureRewritePrompt', () => {
     );
 
     expect(user).toContain('remaining beats in Act 1, plus all of Acts 2 and 3');
-    expect(user).toContain('ACT_1:');
-    expect(user).toContain('ACT_2:');
-    expect(user).toContain('ACT_3:');
   });
 
   it('uses Act 2 scope when deviation occurs in Act 2', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     expect(user).toContain('remaining beats in Act 2, plus all of Act 3');
-    expect(user).toContain('ACT_2:');
-    expect(user).toContain('ACT_3:');
-    expect(user).not.toContain('ACT_1:');
   });
 
   it('uses Act 3-only scope when deviation occurs in Act 3', () => {
@@ -111,25 +107,24 @@ describe('buildStructureRewritePrompt', () => {
     );
 
     expect(user).toContain('remaining beats in Act 3');
-    expect(user).toContain('ACT_3:');
-    expect(user).not.toContain('ACT_1:');
-    expect(user).not.toContain('ACT_2:');
   });
 
-  it('includes required output sections and core act fields', () => {
+  it('includes JSON-compatible output shape description', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
-    expect(user).toContain('REGENERATED_ACTS:');
-    expect(user).toContain('THEME_EVOLUTION:');
-    expect(user).toContain('NAME:');
-    expect(user).toContain('OBJECTIVE:');
-    expect(user).toContain('STAKES:');
-    expect(user).toContain('ENTRY_CONDITION:');
-    expect(user).toContain('BEATS:');
-    expect(user).toContain('2-4 beats per act total');
+    // Now uses JSON output shape matching the schema
+    expect(user).toContain('OUTPUT SHAPE');
+    expect(user).toContain('overallTheme: string');
+    expect(user).toContain('acts: exactly 3 items');
+    expect(user).toContain('name: evocative act title');
+    expect(user).toContain('objective: main goal for the act');
+    expect(user).toContain('stakes: consequence of failure');
+    expect(user).toContain('entryCondition:');
+    expect(user).toContain('beats: 2-4 items');
+    expect(user).toContain('description: what should happen in this beat');
   });
 
-  it('marks preserved beats in the current act as do-not-regenerate instructions', () => {
+  it('instructs to preserve completed beats in the output', () => {
     const user = getUserMessage(
       buildStructureRewritePrompt({
         ...baseContext,
@@ -137,8 +132,23 @@ describe('buildStructureRewritePrompt', () => {
       }),
     );
 
-    expect(user).toContain('[PRESERVED BEATS - DO NOT REGENERATE]');
-    expect(user).toContain('[NEW BEATS - GENERATE THESE]');
+    expect(user).toContain('Preserve completed beats exactly');
+    expect(user).toContain('include them in the output');
+  });
+
+  it('includes few-shot example when fewShotMode is enabled', () => {
+    const messages = buildStructureRewritePrompt(baseContext, { fewShotMode: 'minimal' });
+
+    // Should have 4 messages: system, few-shot user, few-shot assistant, actual user
+    expect(messages).toHaveLength(4);
+    expect(messages[1]?.role).toBe('user');
+    expect(messages[2]?.role).toBe('assistant');
+    expect(messages[3]?.role).toBe('user');
+
+    // Few-shot assistant response should be valid JSON
+    const fewShotAssistant = messages[2]?.content ?? '';
+    expect(fewShotAssistant).toContain('"overallTheme"');
+    expect(fewShotAssistant).toContain('"acts"');
   });
 });
 
