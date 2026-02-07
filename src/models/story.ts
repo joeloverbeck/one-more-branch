@@ -1,4 +1,5 @@
 import { StoryId, generateStoryId, isStoryId } from './id';
+import { StoryStructure } from './story-arc';
 import { GlobalCanon, GlobalCharacterCanon } from './state';
 
 export type StoryTone = string;
@@ -11,7 +12,7 @@ export interface Story {
   readonly tone: StoryTone;
   globalCanon: GlobalCanon;
   globalCharacterCanon: GlobalCharacterCanon;
-  storyArc: string | null;
+  structure: StoryStructure | null;
   readonly createdAt: Date;
   updatedAt: Date;
 }
@@ -54,10 +55,23 @@ export function createStory(data: CreateStoryData): Story {
     tone: data.tone?.trim() ?? 'fantasy adventure',
     globalCanon: [],
     globalCharacterCanon: {},
-    storyArc: null,
+    structure: null,
     createdAt: now,
     updatedAt: now,
   };
+}
+
+export function isStoryStructure(value: unknown): value is StoryStructure {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const structure = value as Record<string, unknown>;
+  return (
+    Array.isArray(structure['acts']) &&
+    typeof structure['overallTheme'] === 'string' &&
+    structure['generatedAt'] instanceof Date
+  );
 }
 
 function isGlobalCharacterCanon(value: unknown): value is GlobalCharacterCanon {
@@ -87,7 +101,7 @@ export function isStory(value: unknown): value is Story {
   const obj = value as Record<string, unknown>;
   const title = obj['title'];
   const characterConcept = obj['characterConcept'];
-  const storyArc = obj['storyArc'];
+  const structure = obj['structure'];
 
   return (
     isStoryId(obj['id']) &&
@@ -99,7 +113,7 @@ export function isStory(value: unknown): value is Story {
     typeof obj['tone'] === 'string' &&
     Array.isArray(obj['globalCanon']) &&
     isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
-    (typeof storyArc === 'string' || storyArc === null) &&
+    (structure === null || isStoryStructure(structure)) &&
     obj['createdAt'] instanceof Date &&
     obj['updatedAt'] instanceof Date
   );
@@ -113,10 +127,10 @@ export function updateStoryCanon(story: Story, newCanon: GlobalCanon): Story {
   };
 }
 
-export function updateStoryArc(story: Story, arc: string): Story {
+export function updateStoryStructure(story: Story, structure: StoryStructure): Story {
   return {
     ...story,
-    storyArc: arc.trim(),
+    structure,
     updatedAt: new Date(),
   };
 }

@@ -1,5 +1,6 @@
 import { createChoice as createChoiceDirect } from '@/models/choice';
 import { createPage as createPageDirect } from '@/models/page';
+import { createEmptyAccumulatedStructureState as createEmptyAccumulatedStructureStateDirect } from '@/models/story-arc';
 import { createStory as createStoryDirect } from '@/models/story';
 import { validateStory as validateStoryDirect } from '@/models/validation';
 import * as models from '@/models';
@@ -10,6 +11,9 @@ describe('models barrel exports', () => {
     expect(models.createPage).toBe(createPageDirect);
     expect(models.createStory).toBe(createStoryDirect);
     expect(models.validateStory).toBe(validateStoryDirect);
+    expect(models.createEmptyAccumulatedStructureState).toBe(
+      createEmptyAccumulatedStructureStateDirect,
+    );
   });
 
   it('supports creating and validating model objects via barrel imports', () => {

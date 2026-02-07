@@ -1,5 +1,63 @@
 import { isStoryId } from '@/models/id';
-import { createStory, isStory, updateStoryArc, updateStoryCanon } from '@/models/story';
+import { StoryStructure } from '@/models/story-arc';
+import {
+  createStory,
+  isStory,
+  isStoryStructure,
+  updateStoryCanon,
+  updateStoryStructure,
+} from '@/models/story';
+
+function createTestStructure(): StoryStructure {
+  return {
+    acts: [
+      {
+        id: '1',
+        name: 'Act 1',
+        objective: 'Find the clue',
+        stakes: 'Lose the trail forever',
+        entryCondition: 'Hero accepts the quest',
+        beats: [
+          {
+            id: '1.1',
+            description: 'The hero learns about the threat',
+            objective: 'Understand the danger',
+          },
+        ],
+      },
+      {
+        id: '2',
+        name: 'Act 2',
+        objective: 'Confront the enemy',
+        stakes: 'Allies are at risk',
+        entryCondition: 'Trail leads to enemy base',
+        beats: [
+          {
+            id: '2.1',
+            description: 'The hero infiltrates the fortress',
+            objective: 'Reach the inner chamber',
+          },
+        ],
+      },
+      {
+        id: '3',
+        name: 'Act 3',
+        objective: 'Resolve the conflict',
+        stakes: 'The world falls into chaos',
+        entryCondition: 'Enemy launches final ritual',
+        beats: [
+          {
+            id: '3.1',
+            description: 'Final confrontation begins',
+            objective: 'Stop the ritual',
+          },
+        ],
+      },
+    ],
+    overallTheme: 'Hope against overwhelming odds',
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
+}
 
 describe('Story', () => {
   describe('createStory', () => {
@@ -12,7 +70,7 @@ describe('Story', () => {
       expect(story.worldbuilding).toBe('');
       expect(story.tone).toBe('fantasy adventure');
       expect(story.globalCanon).toEqual([]);
-      expect(story.storyArc).toBeNull();
+      expect(story.structure).toBeNull();
     });
 
     it('creates story with all fields provided', () => {
@@ -100,6 +158,32 @@ describe('Story', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
       expect(isStory({ ...story, characterConcept: '   ' })).toBe(false);
     });
+
+    it('returns true for story with valid structure object', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      expect(isStory({ ...story, structure: createTestStructure() })).toBe(true);
+    });
+
+    it('returns false when structure has invalid shape', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      expect(
+        isStory({
+          ...story,
+          structure: { acts: [], overallTheme: 'A', generatedAt: 'not a date' },
+        }),
+      ).toBe(false);
+    });
+
+    it('returns false when only legacy storyArc exists and structure is missing', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const { structure: _structure, ...storyWithoutStructure } = story;
+      const legacyStory = {
+        ...storyWithoutStructure,
+        storyArc: 'Legacy arc',
+      } as unknown;
+
+      expect(isStory(legacyStory)).toBe(false);
+    });
   });
 
   describe('updateStoryCanon', () => {
@@ -126,27 +210,52 @@ describe('Story', () => {
     });
   });
 
-  describe('updateStoryArc', () => {
-    it('updates storyArc to trimmed value', () => {
+  describe('updateStoryStructure', () => {
+    it('updates structure to provided value', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
-      const updated = updateStoryArc(story, '  Defeat the dragon king  ');
+      const structure = createTestStructure();
+      const updated = updateStoryStructure(story, structure);
 
-      expect(updated.storyArc).toBe('Defeat the dragon king');
+      expect(updated.structure).toBe(structure);
     });
 
     it('updates updatedAt timestamp', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
-      const updated = updateStoryArc(story, 'Defeat the dragon king');
+      const updated = updateStoryStructure(story, createTestStructure());
 
       expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(story.updatedAt.getTime());
     });
 
     it('does not mutate original story', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
-      const updated = updateStoryArc(story, 'Arc');
+      const updated = updateStoryStructure(story, createTestStructure());
 
-      expect(story.storyArc).toBeNull();
+      expect(story.structure).toBeNull();
       expect(updated).not.toBe(story);
+    });
+  });
+
+  describe('isStoryStructure', () => {
+    it('returns true for a valid structure', () => {
+      expect(isStoryStructure(createTestStructure())).toBe(true);
+    });
+
+    it('returns false for null', () => {
+      expect(isStoryStructure(null)).toBe(false);
+    });
+
+    it('returns false when required fields are missing', () => {
+      expect(isStoryStructure({ acts: [] })).toBe(false);
+    });
+
+    it('returns false when required fields have wrong types', () => {
+      expect(
+        isStoryStructure({
+          acts: {},
+          overallTheme: 42,
+          generatedAt: '2026-01-01',
+        }),
+      ).toBe(false);
     });
   });
 });

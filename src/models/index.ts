@@ -48,6 +48,21 @@ export {
 } from './state';
 
 export {
+  BeatStatus,
+  StoryBeat,
+  StoryAct,
+  StoryStructure,
+  BeatProgression,
+  AccumulatedStructureState,
+  createEmptyAccumulatedStructureState,
+  getCurrentAct,
+  getCurrentBeat,
+  getBeatProgression,
+  isLastBeatOfAct,
+  isLastAct,
+} from './story-arc';
+
+export {
   Page,
   CreatePageData,
   createPage,
@@ -63,8 +78,9 @@ export {
   CreateStoryData,
   createStory,
   isStory,
+  isStoryStructure,
   updateStoryCanon,
-  updateStoryArc,
+  updateStoryStructure,
 } from './story';
 
 export {
