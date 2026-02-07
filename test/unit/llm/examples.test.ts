@@ -39,8 +39,14 @@ describe('buildFewShotMessages', () => {
       interface OpeningExample {
         narrative: string;
         choices: string[];
+        healthAdded: string[];
+        healthRemoved: string[];
+        characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
+        characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
         isEnding: boolean;
-        storyArc: string;
+        beatConcluded: boolean;
+        beatResolution: string;
+        storyArc?: string;
       }
 
       const parsed: OpeningExample = JSON.parse(assistantContent) as OpeningExample;
@@ -48,8 +54,14 @@ describe('buildFewShotMessages', () => {
       expect(parsed.narrative).toBeDefined();
       expect(parsed.choices).toBeInstanceOf(Array);
       expect(parsed.choices.length).toBeGreaterThanOrEqual(2);
+      expect(parsed.healthAdded).toBeInstanceOf(Array);
+      expect(parsed.healthRemoved).toBeInstanceOf(Array);
+      expect(parsed.characterStateChangesAdded).toBeInstanceOf(Array);
+      expect(parsed.characterStateChangesRemoved).toBeInstanceOf(Array);
       expect(parsed.isEnding).toBe(false);
-      expect(parsed.storyArc).toBeDefined();
+      expect(parsed.beatConcluded).toBe(false);
+      expect(parsed.beatResolution).toBe('');
+      expect(parsed.storyArc).toBeUndefined();
     });
   });
 
@@ -92,7 +104,14 @@ describe('buildFewShotMessages', () => {
         stateChangesAdded: string[];
         stateChangesRemoved: string[];
         newCanonFacts: string[];
+        healthAdded: string[];
+        healthRemoved: string[];
+        characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
+        characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
         isEnding: boolean;
+        beatConcluded: boolean;
+        beatResolution: string;
+        storyArc?: string;
       }
 
       const parsed: ContinuationExample = JSON.parse(assistantContent) as ContinuationExample;
@@ -102,7 +121,14 @@ describe('buildFewShotMessages', () => {
       expect(parsed.stateChangesAdded).toBeInstanceOf(Array);
       expect(parsed.stateChangesRemoved).toBeInstanceOf(Array);
       expect(parsed.newCanonFacts).toBeInstanceOf(Array);
+      expect(parsed.healthAdded).toBeInstanceOf(Array);
+      expect(parsed.healthRemoved).toBeInstanceOf(Array);
+      expect(parsed.characterStateChangesAdded).toBeInstanceOf(Array);
+      expect(parsed.characterStateChangesRemoved).toBeInstanceOf(Array);
       expect(parsed.isEnding).toBe(false);
+      expect(parsed.beatConcluded).toBe(false);
+      expect(parsed.beatResolution).toBe('');
+      expect(parsed.storyArc).toBeUndefined();
     });
 
     it('should include ending example in standard mode with isEnding: true', () => {
@@ -112,16 +138,31 @@ describe('buildFewShotMessages', () => {
       interface EndingExample {
         choices: string[];
         isEnding: boolean;
+        beatConcluded: boolean;
+        beatResolution: string;
       }
 
       const parsed: EndingExample = JSON.parse(endingAssistantContent) as EndingExample;
 
       expect(parsed.isEnding).toBe(true);
       expect(parsed.choices).toHaveLength(0);
+      expect(parsed.beatConcluded).toBe(true);
+      expect(parsed.beatResolution.length).toBeGreaterThan(0);
     });
   });
 
   describe('state change format', () => {
+    it('should not include legacy storyArc field in any assistant example', () => {
+      const opening = buildFewShotMessages('opening', 'standard');
+      const continuation = buildFewShotMessages('continuation', 'standard');
+      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
+
+      for (const message of assistantMessages) {
+        const parsed = JSON.parse(message.content) as Record<string, unknown>;
+        expect(parsed['storyArc']).toBeUndefined();
+      }
+    });
+
     it('should use second person "You" in opening example state changes', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '';

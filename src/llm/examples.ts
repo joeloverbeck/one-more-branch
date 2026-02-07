@@ -18,9 +18,7 @@ Write an engaging opening that:
 1. Introduces the protagonist in a compelling scene.
 2. Establishes the world and atmosphere matching the tone.
 3. Presents an initial situation or hook that draws the player in.
-4. Provides 3 meaningful choices for what the protagonist might do (4 only when truly warranted).
-
-Also determine the overarching goal or conflict for this story (the story arc).`;
+4. Provides 3 meaningful choices for what the protagonist might do (4 only when truly warranted).`;
 
 const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
   {
@@ -45,9 +43,13 @@ const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
     newCharacterCanonFacts: [],
     inventoryAdded: [],
     inventoryRemoved: [],
+    healthAdded: [],
+    healthRemoved: [],
+    characterStateChangesAdded: [],
+    characterStateChangesRemoved: [],
     isEnding: false,
-    storyArc:
-      'Uncover the secrets of the forbidden library beneath Celestria Academy and discover why its knowledge was sealed away',
+    beatConcluded: false,
+    beatResolution: '',
   },
   null,
   2,
@@ -67,8 +69,10 @@ A magical academy floating in the clouds where students learn elemental magic
 
 TONE/GENRE: whimsical fantasy with dark undertones
 
-STORY ARC:
-Uncover the secrets of the forbidden library beneath Celestria Academy
+=== STORY STRUCTURE ===
+Overall Theme: Uncover the forbidden library's secrets and decide who can be trusted with them.
+Current Act: The Exile
+Current Beat Objective: Escape immediate pursuit and find temporary shelter
 
 ESTABLISHED WORLD FACTS:
 - Celestria Academy floats among the clouds on enchanted foundations
@@ -119,7 +123,13 @@ const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
     newCharacterCanonFacts: [],
     inventoryAdded: [],
     inventoryRemoved: [],
+    healthAdded: [],
+    healthRemoved: [],
+    characterStateChangesAdded: [],
+    characterStateChangesRemoved: [],
     isEnding: false,
+    beatConcluded: false,
+    beatResolution: '',
   },
   null,
   2,
@@ -139,8 +149,10 @@ A magical academy floating in the clouds where students learn elemental magic
 
 TONE/GENRE: whimsical fantasy with dark undertones
 
-STORY ARC:
-Uncover the secrets of the forbidden library beneath Celestria Academy
+=== STORY STRUCTURE ===
+Overall Theme: Uncover the forbidden library's secrets and decide who can be trusted with them.
+Current Act: The Broken Seal
+Current Beat Objective: End the conspiracy while preserving a future worth protecting
 
 ESTABLISHED WORLD FACTS:
 - Celestria Academy floats among the clouds on enchanted foundations
@@ -183,7 +195,14 @@ const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
     newCharacterCanonFacts: [],
     inventoryAdded: [],
     inventoryRemoved: [],
+    healthAdded: [],
+    healthRemoved: [],
+    characterStateChangesAdded: [],
+    characterStateChangesRemoved: [],
     isEnding: true,
+    beatConcluded: true,
+    beatResolution:
+      "You bound the Codex of Unmaking and secured Professor Grimwald's alliance to protect the library.",
   },
   null,
   2,
