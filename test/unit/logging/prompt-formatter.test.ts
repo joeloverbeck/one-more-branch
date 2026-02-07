@@ -155,6 +155,26 @@ describe('logPrompt', () => {
       expect(mockLogger.infoCalls[0]?.message).toContain('continuation');
       expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('continuation');
     });
+
+    it('should handle structure prompt type', () => {
+      const mockLogger = createMockLogger();
+      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
+
+      logPrompt(mockLogger, 'structure', messages);
+
+      expect(mockLogger.infoCalls[0]?.message).toContain('structure');
+      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('structure');
+    });
+
+    it('should handle structure-rewrite prompt type', () => {
+      const mockLogger = createMockLogger();
+      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
+
+      logPrompt(mockLogger, 'structure-rewrite', messages);
+
+      expect(mockLogger.infoCalls[0]?.message).toContain('structure-rewrite');
+      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('structure-rewrite');
+    });
   });
 
   describe('empty messages', () => {

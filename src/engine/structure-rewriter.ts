@@ -1,4 +1,5 @@
 import { getConfig } from '../config';
+import { logger, logPrompt } from '../logging';
 import { extractOutputFromCoT } from '../llm/cot-parser';
 import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from '../llm/http-client';
 import { buildStructureRewritePrompt } from '../llm/prompts/structure-rewrite-prompt';
@@ -22,6 +23,7 @@ export function createStructureRewriter(
   return {
     async rewriteStructure(context: StructureRewriteContext, apiKey: string): Promise<StructureRewriteResult> {
       const messages = buildStructureRewritePrompt(context);
+      logPrompt(logger, 'structure-rewrite', messages);
       const regenerated = await generator(messages, apiKey);
       const regeneratedStructure = createStoryStructure(regenerated);
       const structure = mergePreservedWithRegenerated(

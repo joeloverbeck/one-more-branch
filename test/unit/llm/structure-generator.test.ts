@@ -1,3 +1,22 @@
+const mockLogPrompt = jest.fn();
+const mockLogger = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  getEntries: jest.fn().mockReturnValue([]),
+  clear: jest.fn(),
+};
+
+jest.mock('../../../src/logging/index.js', () => ({
+  get logger(): typeof mockLogger {
+    return mockLogger;
+  },
+  get logPrompt(): typeof mockLogPrompt {
+    return mockLogPrompt;
+  },
+}));
+
 import { getConfig } from '../../../src/config/index';
 import { STRUCTURE_GENERATION_SCHEMA } from '../../../src/llm/schemas/structure-schema';
 import { generateStoryStructure } from '../../../src/llm/structure-generator';
@@ -92,6 +111,7 @@ describe('structure-generator', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     fetchMock.mockReset();
+    mockLogPrompt.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
 
@@ -145,6 +165,8 @@ describe('structure-generator', () => {
     expect(messages[messages.length - 1]?.content).toContain(context.characterConcept);
     expect(messages[messages.length - 1]?.content).toContain(context.worldbuilding);
     expect(messages[messages.length - 1]?.content).toContain(context.tone);
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'structure', expect.any(Array));
+    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
   it('passes custom model, temperature, and max tokens when provided', async () => {

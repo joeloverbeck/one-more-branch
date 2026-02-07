@@ -1,4 +1,5 @@
 import { getConfig } from '../config/index.js';
+import { logger, logPrompt } from '../logging/index.js';
 import { extractOutputFromCoT } from './cot-parser.js';
 import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
@@ -129,6 +130,7 @@ export async function generateStoryStructure(
   const maxTokens = options?.maxTokens ?? 2000;
 
   const messages = buildStructurePrompt(context, promptOptions);
+  logPrompt(logger, 'structure', messages);
 
   return withRetry(async () => {
     const response = await fetch(OPENROUTER_API_URL, {
