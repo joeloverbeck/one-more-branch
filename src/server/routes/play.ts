@@ -83,6 +83,10 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
       apiKey,
     });
 
+    // Load story to compute actDisplayInfo for the new page
+    const story = await storyEngine.loadStory(storyId as StoryId);
+    const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
+
     // Extract logs for browser console and clear to prevent accumulation
     const logEntries = logger.getEntries();
     const logScript = generateBrowserLogScript(logEntries);
@@ -97,6 +101,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
         stateChanges: result.page.stateChanges,
         isEnding: result.page.isEnding,
       },
+      actDisplayInfo,
       wasGenerated: result.wasGenerated,
       deviationInfo: result.deviationInfo,
       logScript,

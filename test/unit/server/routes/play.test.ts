@@ -354,6 +354,12 @@ describe('playRoutes', () => {
 
   describe('POST /:storyId/choice success', () => {
     it('calls makeChoice with expected params and returns page payload', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
       const resultPage = createPage({
         id: 3,
         narrativeText: 'A new branch unfolds.',
@@ -363,6 +369,7 @@ describe('playRoutes', () => {
         parentPageId: 2,
         parentChoiceIndex: 1,
       });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
         page: resultPage,
         wasGenerated: true,
@@ -370,13 +377,14 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
 
-      await getRouteHandler('post', '/:storyId/choice')(
+      void getRouteHandler('post', '/:storyId/choice')(
         {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
         { status, json } as unknown as Response,
       );
+      await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
       expect(makeChoiceSpy).toHaveBeenCalledWith({
@@ -401,6 +409,12 @@ describe('playRoutes', () => {
     });
 
     it('includes deviationInfo in response when deviation occurred', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
       const resultPage = createPage({
         id: 3,
         narrativeText: 'The story path shifted.',
@@ -415,6 +429,7 @@ describe('playRoutes', () => {
         reason: 'Player action invalidated planned story beats.',
         beatsInvalidated: 2,
       };
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
         page: resultPage,
         wasGenerated: true,
@@ -423,13 +438,14 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
 
-      await getRouteHandler('post', '/:storyId/choice')(
+      void getRouteHandler('post', '/:storyId/choice')(
         {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
         } as Request,
         { status, json } as unknown as Response,
       );
+      await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith(
@@ -445,6 +461,12 @@ describe('playRoutes', () => {
     });
 
     it('includes undefined deviationInfo when no deviation occurred', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
       const resultPage = createPage({
         id: 3,
         narrativeText: 'Story continues normally.',
@@ -454,6 +476,7 @@ describe('playRoutes', () => {
         parentPageId: 2,
         parentChoiceIndex: 0,
       });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
         page: resultPage,
         wasGenerated: true,
@@ -462,18 +485,149 @@ describe('playRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
 
-      await getRouteHandler('post', '/:storyId/choice')(
+      void getRouteHandler('post', '/:storyId/choice')(
         {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
         } as Request,
         { status, json } as unknown as Response,
       );
+      await flushPromises();
 
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
           deviationInfo: undefined,
+        }),
+      );
+    });
+
+    it('includes actDisplayInfo in response when page has structure state', async () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'Act One',
+            objective: 'Begin the journey',
+            stakes: 'High',
+            entryCondition: 'Always',
+            beats: [],
+          },
+          {
+            id: 'act-2',
+            name: 'Act Two',
+            objective: 'Face challenges',
+            stakes: 'Higher',
+            entryCondition: 'After act one',
+            beats: [],
+          },
+        ],
+      };
+      const versionId = createStructureVersionId('version-1');
+      const versionedStructure: VersionedStoryStructure = {
+        id: versionId,
+        createdAt: new Date().toISOString(),
+        createdAtPageId: 1,
+        parentVersionId: null,
+        rewriteReason: null,
+        structure,
+      };
+      const story = createStory({
+        title: 'Structured Story',
+        characterConcept: 'A hero',
+        worldbuilding: 'Fantasy world',
+        tone: 'Epic',
+      });
+      const storyWithVersions = {
+        ...story,
+        id: storyId,
+        structureVersions: [versionedStructure],
+      };
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'You entered Act Two.',
+        choices: [createChoice('Continue'), createChoice('Retreat')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 0,
+        structureVersionId: versionId,
+        parentAccumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 1,
+        },
+      });
+
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue(storyWithVersions);
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          actDisplayInfo: {
+            actNumber: 2,
+            actName: 'Act Two',
+            displayString: 'Act 2: Act Two',
+          },
+        }),
+      );
+    });
+
+    it('includes null actDisplayInfo when page has no structure state', async () => {
+      const story = createStory({
+        title: 'Simple Story',
+        characterConcept: 'A hero',
+        worldbuilding: 'World',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A simple continuation.',
+        choices: [createChoice('Continue'), createChoice('Wait')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 0,
+      });
+
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          actDisplayInfo: null,
         }),
       );
     });

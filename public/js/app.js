@@ -230,6 +230,26 @@
           pageIndicator.textContent = `Page ${currentPageId}`;
         }
 
+        // Update act indicator based on response
+        const actIndicator = document.querySelector('.act-indicator');
+        if (data.actDisplayInfo) {
+          if (actIndicator) {
+            actIndicator.textContent = data.actDisplayInfo.displayString;
+          } else {
+            // Create act indicator if it doesn't exist yet
+            const storyTitleSection = document.querySelector('.story-title-section');
+            if (storyTitleSection) {
+              const newIndicator = document.createElement('span');
+              newIndicator.className = 'act-indicator';
+              newIndicator.textContent = data.actDisplayInfo.displayString;
+              storyTitleSection.appendChild(newIndicator);
+            }
+          }
+        } else if (actIndicator) {
+          // Remove act indicator if no act info
+          actIndicator.remove();
+        }
+
         if (data.page.isEnding) {
           choicesSection.innerHTML = `
             <div class="ending-banner">
