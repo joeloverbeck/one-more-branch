@@ -19,6 +19,11 @@ export {
   applyStructureProgression,
 } from './structure-manager';
 export type { StructureProgressionResult, StructureGenerationResult } from './structure-manager';
+export {
+  createStructureRewriter,
+  mergePreservedWithRegenerated,
+} from './structure-rewriter';
+export type { StructureRewriter, StructureRewriteGenerator } from './structure-rewriter';
 
 export {
   computeAccumulatedState,

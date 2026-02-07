@@ -15,6 +15,8 @@ import {
   createInitialStructureState,
   advanceStructureState,
   applyStructureProgression,
+  createStructureRewriter,
+  mergePreservedWithRegenerated,
   computeAccumulatedState,
   getParentAccumulatedState,
   mergeStateChanges,
@@ -57,6 +59,8 @@ describe('engine barrel export', () => {
     expect(createInitialStructureState).toBeDefined();
     expect(advanceStructureState).toBeDefined();
     expect(applyStructureProgression).toBeDefined();
+    expect(createStructureRewriter).toBeDefined();
+    expect(mergePreservedWithRegenerated).toBeDefined();
 
     expect(computeAccumulatedState).toBeDefined();
     expect(getParentAccumulatedState).toBeDefined();
