@@ -147,11 +147,11 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
         },
         beatConcluded: {
           type: 'boolean',
-          description: 'True if current beat objective was fulfilled in this scene.',
+          description: 'True if the active beat objective was achieved OR if the narrative has progressed beyond the beat scope into later beat territory. Evaluate cumulative progress, not just this single page.',
         },
         beatResolution: {
           type: 'string',
-          description: 'If beatConcluded is true, briefly describe how the beat was resolved.',
+          description: 'If beatConcluded is true, briefly describe how the beat was resolved. Required when beatConcluded is true.',
         },
         deviationDetected: {
           type: 'boolean',

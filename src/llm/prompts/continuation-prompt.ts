@@ -109,6 +109,27 @@ ${context.worldbuilding}
                   .join('\n')}`
               : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
+          // Build accumulated state summary for beat evaluation context
+          const accumulatedStateSummary =
+            context.accumulatedState.length > 0
+              ? `ACCUMULATED STORY PROGRESS (for beat evaluation):
+Key events that have occurred so far:
+${context.accumulatedState.slice(-10).map(change => `- ${change}`).join('\n')}
+(Consider these when evaluating beat completion - have we moved past the active beat's scope?)
+
+`
+              : '';
+
+          // Build beat comparison hint for progression check
+          const hasPendingBeats =
+            state.currentBeatIndex < currentAct.beats.length - 1 ||
+            state.currentActIndex < structure.acts.length - 1;
+          const beatComparisonHint = hasPendingBeats
+            ? `
+PROGRESSION CHECK: If the current narrative situation more closely matches a PENDING beat's description than the ACTIVE beat's description, the ACTIVE beat should be marked concluded.
+`
+            : '';
+
           return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
 
@@ -122,16 +143,26 @@ ${beatLines}
 REMAINING ACTS:
 ${remainingActs || '  - None'}
 
-=== BEAT EVALUATION ===
-After writing the narrative, evaluate:
-1. Has the current beat's objective been achieved in this scene?
-2. If yes, set beatConcluded: true and describe how it was resolved.
-3. If no, set beatConcluded: false and leave beatResolution empty.
+${accumulatedStateSummary}=== BEAT EVALUATION ===
+After writing the narrative, evaluate whether the ACTIVE beat should be concluded.
 
-Do not force beat completion - only conclude if naturally achieved.
+CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:
+1. The beat's objective has been substantively achieved (even if not perfectly)
+2. The narrative has moved beyond this beat's scope into territory that matches a PENDING beat
+3. Key events from later beats have already occurred (compare against PENDING beats below)
+4. The accumulated state shows the beat's goal has been reached
+
+DO NOT CONCLUDE only if:
+- This scene is still squarely within the active beat's scope AND
+- The objective hasn't been meaningfully advanced
+
+CRITICAL: Evaluate CUMULATIVE progress across all scenes, not just this single page.
+Look at the ACCUMULATED STORY PROGRESS above - if those events have moved past the active beat's description, it should be concluded.
+
+If concluding, provide beatResolution: a brief summary of how the beat was resolved.
 
 ${remainingBeatsSection}
-
+${beatComparisonHint}
 ${DEVIATION_DETECTION_SECTION}
 
 `;

@@ -510,10 +510,10 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('Act 2: The Hunt - Cross hostile territory with the evidence');
     expect(user).toContain('Act 3: The Broadcast - Expose the planners to the public');
     expect(user).toContain('=== BEAT EVALUATION ===');
-    expect(user).toContain("Has the current beat's objective been achieved in this scene?");
-    expect(user).toContain('set beatConcluded: true');
-    expect(user).toContain('leave beatResolution empty');
-    expect(user).toContain('Do not force beat completion');
+    expect(user).toContain('evaluate whether the ACTIVE beat should be concluded');
+    expect(user).toContain('CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:');
+    expect(user).toContain('CRITICAL: Evaluate CUMULATIVE progress across all scenes');
+    expect(user).toContain('If concluding, provide beatResolution:');
     expect(user).toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
     expect(user).toContain('  - 1.2: Secure evidence from an informant');
     expect(user).toContain('  - 3.2: Deliver the proof');
