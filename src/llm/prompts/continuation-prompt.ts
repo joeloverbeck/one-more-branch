@@ -15,7 +15,7 @@ ${context.worldbuilding}
     : '';
   const structureSection =
     context.structure && context.accumulatedStructureState
-      ? (() => {
+      ? ((): string => {
           const structure = context.structure;
           const state = context.accumulatedStructureState;
           const currentAct = structure.acts[state.currentActIndex];

@@ -177,6 +177,7 @@ describe('Story', () => {
     it('returns false when only legacy storyArc exists and structure is missing', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
       const { structure: _structure, ...storyWithoutStructure } = story;
+      expect(_structure).toBeNull();
       const legacyStory = {
         ...storyWithoutStructure,
         storyArc: 'Legacy arc',

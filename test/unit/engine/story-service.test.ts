@@ -62,7 +62,7 @@ function buildStory(overrides?: Partial<Story>): Story {
   };
 }
 
-function buildStructureGenerationResult() {
+function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateStoryStructure>> {
   return {
     overallTheme: 'Expose the city tribunal and reclaim your name.',
     acts: [
@@ -192,10 +192,11 @@ describe('story-service', () => {
         'test-key',
       );
       expect(mockedStorage.updateStory).toHaveBeenCalled();
-      const structuredStory = mockedGenerateFirstPage.mock.calls[0]?.[0];
+      const firstPageCall = mockedGenerateFirstPage.mock.calls[0];
+      expect(firstPageCall?.[1]).toBe('test-key');
+      const structuredStory = firstPageCall?.[0];
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
-      expect(mockedGenerateFirstPage).toHaveBeenCalledWith(expect.objectContaining({ structure: expect.any(Object) }), 'test-key');
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
       expect(result).toEqual({ story: updatedStory, page });
