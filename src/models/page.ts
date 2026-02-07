@@ -20,7 +20,7 @@ import {
   createEmptyHealthChanges,
   createEmptyInventoryChanges,
   createEmptyStateChanges,
-} from './state';
+} from './state/index.js';
 
 export interface Page {
   readonly id: PageId;

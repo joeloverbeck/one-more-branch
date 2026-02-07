@@ -45,7 +45,9 @@ export {
   createEmptyCharacterStateChanges,
   createEmptyAccumulatedCharacterState,
   applyCharacterStateChanges,
-} from './state';
+} from './state/index.js';
+
+export { normalizeCharacterName } from './normalize.js';
 
 export {
   BeatStatus,

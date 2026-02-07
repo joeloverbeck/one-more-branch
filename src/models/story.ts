@@ -1,6 +1,6 @@
 import { StoryId, generateStoryId, isStoryId } from './id';
 import { StoryStructure } from './story-arc';
-import { GlobalCanon, GlobalCharacterCanon } from './state';
+import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
 
 export type StoryTone = string;
 

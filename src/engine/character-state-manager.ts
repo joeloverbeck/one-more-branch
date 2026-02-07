@@ -4,22 +4,13 @@ import {
   SingleCharacterStateChanges,
   applyCharacterStateChanges as applyChanges,
   createEmptyAccumulatedCharacterState,
+  normalizeCharacterName,
 } from '../models';
 
 /**
- * Normalizes a character name for consistent keying.
- * - Converts to lowercase
- * - Removes extra punctuation (periods, commas)
- * - Collapses multiple spaces to single space
- * - Trims whitespace
+ * Re-export normalizeCharacterName as normalizeCharacterNameForState for backward compatibility.
  */
-export function normalizeCharacterNameForState(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[.,;:!?'"]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+export const normalizeCharacterNameForState = normalizeCharacterName;
 
 /**
  * Creates CharacterStateChanges from the LLM response format.
