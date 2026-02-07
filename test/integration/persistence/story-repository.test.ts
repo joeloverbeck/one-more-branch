@@ -1,6 +1,7 @@
 import {
   Story,
   StoryId,
+  StoryStructure,
   createChoice,
   createPage,
   createStory,
@@ -18,6 +19,26 @@ import {
 import { savePage } from '@/persistence/page-repository';
 
 const TEST_PREFIX = 'TEST: PERLAY-006 story integration';
+
+function buildStructure(): StoryStructure {
+  return {
+    acts: [
+      {
+        id: '1',
+        name: 'Act I',
+        objective: 'Investigate the signal',
+        stakes: 'City falls to chaos',
+        entryCondition: 'Signal is detected',
+        beats: [
+          { id: '1.1', description: 'Trace source', objective: 'Find the tower' },
+          { id: '1.2', description: 'Enter tower', objective: 'Reach control room' },
+        ],
+      },
+    ],
+    overallTheme: 'Trust and sacrifice',
+    generatedAt: new Date('2025-02-01T00:00:00.000Z'),
+  };
+}
 
 function buildStory(overrides?: Partial<Story>): Story {
   const base = createStory({
@@ -60,6 +81,7 @@ describe('story-repository integration', () => {
       worldbuilding: 'Round trip world',
       tone: 'Round trip tone',
       globalCanon: ['fact-a', 'fact-b'],
+      structure: buildStructure(),
     });
     createdStoryIds.add(story.id);
 
@@ -68,6 +90,20 @@ describe('story-repository integration', () => {
 
     expect(loaded).not.toBeNull();
     expect(loaded).toEqual(story);
+  });
+
+  it('save/load preserves null structure', async () => {
+    const story = buildStory({
+      characterConcept: `${TEST_PREFIX} null structure`,
+      structure: null,
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.structure).toBeNull();
   });
 
   it('story lifecycle create save update load delete transitions correctly', async () => {

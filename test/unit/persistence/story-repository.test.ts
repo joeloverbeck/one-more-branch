@@ -2,6 +2,7 @@ import * as fsPromises from 'fs/promises';
 import {
   Story,
   StoryId,
+  StoryStructure,
   createStory,
   parseStoryId,
 } from '@/models';
@@ -26,6 +27,26 @@ const TEST_PREFIX = 'TEST: PERLAY-003';
 const MISSING_STORY_ID = parseStoryId('00000000-0000-4000-8000-000000000001');
 const MISMATCH_REQUEST_ID = parseStoryId('00000000-0000-4000-8000-000000000002');
 const MISMATCH_FILE_ID = parseStoryId('00000000-0000-4000-8000-000000000003');
+
+function buildTestStructure(): StoryStructure {
+  return {
+    acts: [
+      {
+        id: '1',
+        name: 'Act I',
+        objective: 'Start the journey',
+        stakes: 'Lose your home',
+        entryCondition: 'A call to action appears',
+        beats: [
+          { id: '1.1', description: 'Meet the guide', objective: 'Find an ally' },
+          { id: '1.2', description: 'Cross the threshold', objective: 'Leave safety' },
+        ],
+      },
+    ],
+    overallTheme: 'Hope against fear',
+    generatedAt: new Date('2025-01-01T00:00:00.000Z'),
+  };
+}
 
 function buildTestStory(overrides?: Partial<Story>): Story {
   const baseStory = createStory({
@@ -76,6 +97,23 @@ describe('story-repository', () => {
     expect(loaded?.structure).toBeNull();
     expect(loaded?.createdAt.toISOString()).toBe(createdAt.toISOString());
     expect(loaded?.updatedAt.toISOString()).toBe(updatedAt.toISOString());
+  });
+
+  it('saveStory/loadStory preserves structure fields and omits legacy storyArc', async () => {
+    const story = buildTestStory({
+      structure: buildTestStructure(),
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+
+    const loaded = await loadStory(story.id);
+    expect(loaded?.structure).toEqual(story.structure);
+
+    const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
+    const parsed = JSON.parse(persisted) as Record<string, unknown>;
+    expect(parsed['structure']).toBeDefined();
+    expect(parsed['storyArc']).toBeUndefined();
   });
 
   it('loadStory returns null when story does not exist', async () => {

@@ -1,4 +1,4 @@
-import { Story, StoryId, StoryMetadata, parseStoryId } from '../models';
+import { Story, StoryId, StoryMetadata, StoryStructure, parseStoryId } from '../models';
 import {
   deleteDirectory,
   directoryExists,
@@ -22,8 +22,64 @@ interface StoryFileData {
   tone: string;
   globalCanon: string[];
   globalCharacterCanon: Record<string, string[]>;
+  structure: StoryStructureFileData | null;
   createdAt: string;
   updatedAt: string;
+}
+
+interface StoryStructureFileData {
+  acts: Array<{
+    id: string;
+    name: string;
+    objective: string;
+    stakes: string;
+    entryCondition: string;
+    beats: Array<{
+      id: string;
+      description: string;
+      objective: string;
+    }>;
+  }>;
+  overallTheme: string;
+  generatedAt: string;
+}
+
+function structureToFileData(structure: StoryStructure): StoryStructureFileData {
+  return {
+    acts: structure.acts.map(act => ({
+      id: act.id,
+      name: act.name,
+      objective: act.objective,
+      stakes: act.stakes,
+      entryCondition: act.entryCondition,
+      beats: act.beats.map(beat => ({
+        id: beat.id,
+        description: beat.description,
+        objective: beat.objective,
+      })),
+    })),
+    overallTheme: structure.overallTheme,
+    generatedAt: structure.generatedAt.toISOString(),
+  };
+}
+
+function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
+  return {
+    acts: data.acts.map(act => ({
+      id: act.id,
+      name: act.name,
+      objective: act.objective,
+      stakes: act.stakes,
+      entryCondition: act.entryCondition,
+      beats: act.beats.map(beat => ({
+        id: beat.id,
+        description: beat.description,
+        objective: beat.objective,
+      })),
+    })),
+    overallTheme: data.overallTheme,
+    generatedAt: new Date(data.generatedAt),
+  };
 }
 
 function storyToFileData(story: Story): StoryFileData {
@@ -40,6 +96,7 @@ function storyToFileData(story: Story): StoryFileData {
     tone: story.tone,
     globalCanon: [...story.globalCanon],
     globalCharacterCanon,
+    structure: story.structure ? structureToFileData(story.structure) : null,
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
   };
@@ -62,7 +119,7 @@ function fileDataToStory(data: StoryFileData): Story {
     tone: data.tone,
     globalCanon: [...data.globalCanon],
     globalCharacterCanon,
-    structure: null,
+    structure: data.structure ? fileDataToStructure(data.structure) : null,
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
   };
