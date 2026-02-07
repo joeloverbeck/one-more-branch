@@ -1,8 +1,10 @@
 import { generateContinuationPage, generateOpeningPage } from '../../../src/llm';
 import { createChoice, createPage, createStory, parsePageId, Story } from '../../../src/models';
+import { createInitialStructureState } from '../../../src/engine/structure-manager';
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
 import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
+import type { StoryStructure } from '../../../src/models/story-arc';
 
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -44,13 +46,85 @@ function buildStory(overrides?: Partial<Story>): Story {
   };
 }
 
+function buildStructure(): StoryStructure {
+  return {
+    overallTheme: 'Outmaneuver the imperial intelligence network.',
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    acts: [
+      {
+        id: '1',
+        name: 'Infiltration',
+        objective: 'Get inside the censors bureau',
+        stakes: 'All courier cells are exposed if you fail',
+        entryCondition: 'Curfew patrols intensify',
+        beats: [
+          {
+            id: '1.1',
+            description: 'Secure a forged transit seal',
+            objective: 'Gain access credentials',
+          },
+          {
+            id: '1.2',
+            description: 'Enter the records archive',
+            objective: 'Reach the target ledgers',
+          },
+        ],
+      },
+    ],
+  };
+}
+
 describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('generateFirstPage', () => {
-    it('creates root page and updates story canon from LLM output', async () => {
+    it('passes structure to opening context and uses initial structure state when present', async () => {
+      const structure = buildStructure();
+      const story = buildStory({ structure });
+
+      mockedGenerateOpeningPage.mockResolvedValue({
+        narrative: 'You arrive under curfew bells as paper ash drifts across the square.',
+        choices: ['Hide in the print shop', 'Bribe a gate sergeant'],
+        stateChangesAdded: ['Reached the capital at dusk'],
+        stateChangesRemoved: [],
+        newCanonFacts: ['The city enforces nightly curfew'],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page, updatedStory } = await generateFirstPage(story, 'test-key');
+
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
+        {
+          characterConcept: story.characterConcept,
+          worldbuilding: story.worldbuilding,
+          tone: story.tone,
+          structure,
+        },
+        { apiKey: 'test-key' },
+      );
+      expect(page.id).toBe(1);
+      expect(page.parentPageId).toBeNull();
+      expect(page.parentChoiceIndex).toBeNull();
+      expect(page.accumulatedStructureState).toEqual(createInitialStructureState(structure));
+      expect(page.choices.map(choice => choice.text)).toEqual([
+        'Hide in the print shop',
+        'Bribe a gate sergeant',
+      ]);
+      expect(updatedStory.globalCanon).toContain('The city enforces nightly curfew');
+      expect(updatedStory.structure).toEqual(structure);
+    });
+
+    it('uses empty structure state and omits structure context when story has no structure', async () => {
       const story = buildStory();
 
       mockedGenerateOpeningPage.mockResolvedValue({
@@ -77,17 +151,15 @@ describe('page-service', () => {
           characterConcept: story.characterConcept,
           worldbuilding: story.worldbuilding,
           tone: story.tone,
+          structure: undefined,
         },
         { apiKey: 'test-key' },
       );
-      expect(page.id).toBe(1);
-      expect(page.parentPageId).toBeNull();
-      expect(page.parentChoiceIndex).toBeNull();
-      expect(page.choices.map(choice => choice.text)).toEqual([
-        'Hide in the print shop',
-        'Bribe a gate sergeant',
-      ]);
-      expect(updatedStory.globalCanon).toContain('The city enforces nightly curfew');
+      expect(page.accumulatedStructureState).toEqual({
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [],
+      });
       expect(updatedStory.structure).toBeNull();
     });
   });
@@ -113,8 +185,11 @@ describe('page-service', () => {
     });
 
     it('creates child page with proper parent linkage and sequential id', async () => {
+      const structure = buildStructure();
+      const parentStructureState = createInitialStructureState(structure);
       const story = buildStory({
         globalCanon: ['The watch captain is corrupt'],
+        structure,
       });
       const parentPage = createPage({
         id: parsePageId(2),
@@ -125,6 +200,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: ['Reached the capital at dusk'] },
+        parentAccumulatedStructureState: parentStructureState,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(7);
@@ -150,6 +226,8 @@ describe('page-service', () => {
       expect(mockedStorage.getMaxPageId).toHaveBeenCalledWith(story.id);
       expect(mockedGenerateContinuationPage).toHaveBeenCalledWith(
         expect.objectContaining({
+          structure,
+          accumulatedStructureState: parentStructureState,
           previousNarrative: parentPage.narrativeText,
           selectedChoice: parentPage.choices[0]?.text,
           accumulatedState: parentPage.accumulatedState.changes,
@@ -164,6 +242,154 @@ describe('page-service', () => {
         'Gained rooftop position',
       ]);
       expect(updatedStory.globalCanon).toContain('Clocktower guards rotate every ten minutes');
+    });
+
+    it('advances structure state when continuation result concludes the current beat', async () => {
+      const structure = buildStructure();
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You secure forged papers in a shuttered print cellar.',
+        choices: [createChoice('Approach the archive checkpoint'), createChoice('Scout the sewer hatch')],
+        stateChanges: { added: ['Acquired forged transit seal'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'The checkpoint captain stamps your seal and waves you through.',
+        choices: ['Enter the archive corridor', 'Detour to the guard locker'],
+        stateChangesAdded: ['Entered censors bureau'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        beatConcluded: true,
+        beatResolution: 'The forged transit seal got you through the checkpoint.',
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.accumulatedStructureState.currentActIndex).toBe(0);
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'concluded',
+        resolution: 'The forged transit seal got you through the checkpoint.',
+      });
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.2',
+        status: 'active',
+      });
+    });
+
+    it('keeps structure state unchanged when continuation result does not conclude the beat', async () => {
+      const structure = buildStructure();
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You wait beside the archive gate until patrols shift.',
+        choices: [createChoice('Slip in behind a clerk'), createChoice('Retreat before dawn')],
+        stateChanges: { added: ['Observed patrol rotation'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You stay hidden and gather more intel from passing clerks.',
+        choices: ['Keep watching', 'Create a distraction'],
+        stateChangesAdded: ['Mapped sentry cadence'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
+    });
+
+    it('keeps structure progression isolated per branch', async () => {
+      const structure = buildStructure();
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'At the bureau wall, you choose speed or caution.',
+        choices: [createChoice('Force a checkpoint pass'), createChoice('Gather more evidence first')],
+        stateChanges: { added: ['Reached bureau perimeter'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(10);
+      mockedGenerateContinuationPage
+        .mockResolvedValueOnce({
+          narrative: 'A forged seal gets you inside.',
+          choices: ['Head for ledger room', 'Plant false records'],
+          stateChangesAdded: ['Breached checkpoint'],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          newCharacterCanonFacts: {},
+          inventoryAdded: [],
+          inventoryRemoved: [],
+          healthAdded: [],
+          healthRemoved: [],
+          characterStateChangesAdded: [],
+          characterStateChangesRemoved: [],
+          isEnding: false,
+          rawResponse: 'raw',
+          beatConcluded: true,
+          beatResolution: 'Checkpoint breached with forged credentials.',
+        } as Awaited<ReturnType<typeof generateContinuationPage>>)
+        .mockResolvedValueOnce({
+          narrative: 'You hold position and log patrol timing.',
+          choices: ['Create diversion', 'Withdraw'],
+          stateChangesAdded: ['Expanded patrol map'],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          newCharacterCanonFacts: {},
+          inventoryAdded: [],
+          inventoryRemoved: [],
+          healthAdded: [],
+          healthRemoved: [],
+          characterStateChangesAdded: [],
+          characterStateChangesRemoved: [],
+          isEnding: false,
+          rawResponse: 'raw',
+        });
+
+      const branchOne = await generateNextPage(story, parentPage, 0, 'test-key');
+      const branchTwo = await generateNextPage(story, parentPage, 1, 'test-key');
+
+      expect(branchOne.page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(branchTwo.page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
+      expect(parentPage.accumulatedStructureState.currentBeatIndex).toBe(0);
     });
   });
 

@@ -1,11 +1,20 @@
 import { generateContinuationPage, generateOpeningPage } from '../llm';
-import { createChoice, createPage, generatePageId, Page, Story, parsePageId } from '../models';
+import {
+  createChoice,
+  createEmptyAccumulatedStructureState,
+  createPage,
+  generatePageId,
+  Page,
+  Story,
+  parsePageId,
+} from '../models';
 import { storage } from '../persistence';
 import { updateStoryWithAllCanon } from './canon-manager';
 import { createCharacterStateChanges, getParentAccumulatedCharacterState } from './character-state-manager';
 import { createHealthChanges, getParentAccumulatedHealth } from './health-manager';
 import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
 import { createStateChanges, getParentAccumulatedState } from './state-manager';
+import { applyStructureProgression, createInitialStructureState } from './structure-manager';
 import { EngineError } from './types';
 
 export async function generateFirstPage(
@@ -17,9 +26,14 @@ export async function generateFirstPage(
       characterConcept: story.characterConcept,
       worldbuilding: story.worldbuilding,
       tone: story.tone,
+      structure: story.structure ?? undefined,
     },
     { apiKey },
   );
+
+  const initialStructureState = story.structure
+    ? createInitialStructureState(story.structure)
+    : createEmptyAccumulatedStructureState();
 
   const page = createPage({
     id: parsePageId(1),
@@ -35,6 +49,7 @@ export async function generateFirstPage(
     isEnding: result.isEnding,
     parentPageId: null,
     parentChoiceIndex: null,
+    parentAccumulatedStructureState: initialStructureState,
   });
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
@@ -61,6 +76,7 @@ export async function generateNextPage(
   const parentAccumulatedInventory = getParentAccumulatedInventory(parentPage);
   const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
   const parentAccumulatedCharacterState = getParentAccumulatedCharacterState(parentPage);
+  const parentStructureState = parentPage.accumulatedStructureState;
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -68,7 +84,8 @@ export async function generateNextPage(
       tone: story.tone,
       globalCanon: story.globalCanon,
       globalCharacterCanon: story.globalCharacterCanon,
-      storyArc: null,
+      structure: story.structure ?? undefined,
+      accumulatedStructureState: parentStructureState,
       previousNarrative: parentPage.narrativeText,
       selectedChoice: choice.text,
       accumulatedState: parentAccumulatedState.changes,
@@ -78,6 +95,23 @@ export async function generateNextPage(
     },
     { apiKey },
   );
+
+  const beatConcluded =
+    'beatConcluded' in result && typeof result.beatConcluded === 'boolean'
+      ? result.beatConcluded
+      : false;
+  const beatResolution =
+    'beatResolution' in result && typeof result.beatResolution === 'string'
+      ? result.beatResolution
+      : '';
+  const newStructureState = story.structure
+    ? applyStructureProgression(
+        story.structure,
+        parentStructureState,
+        beatConcluded,
+        beatResolution,
+      )
+    : parentStructureState;
 
   const page = createPage({
     id: generatePageId(maxPageId),
@@ -97,6 +131,7 @@ export async function generateNextPage(
     parentAccumulatedInventory,
     parentAccumulatedHealth,
     parentAccumulatedCharacterState,
+    parentAccumulatedStructureState: newStructureState,
   });
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);

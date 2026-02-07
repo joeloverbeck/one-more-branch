@@ -41,7 +41,7 @@ export interface ContinuationContext {
   tone: string;
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
-  storyArc: string | null;
+  storyArc?: string | null;
   structure?: StoryStructure;
   accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
