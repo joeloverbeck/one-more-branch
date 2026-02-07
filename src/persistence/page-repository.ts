@@ -10,7 +10,6 @@ import {
   PageId,
   StateChanges,
   StoryId,
-  createEmptyAccumulatedStructureState,
   parsePageId,
 } from '../models';
 import {
@@ -22,6 +21,18 @@ import {
   writeJsonFile,
 } from './file-utils';
 import { withLock } from './lock-manager';
+
+interface BeatProgressionFileData {
+  beatId: string;
+  status: 'pending' | 'active' | 'concluded';
+  resolution?: string;
+}
+
+interface AccumulatedStructureStateFileData {
+  currentActIndex: number;
+  currentBeatIndex: number;
+  beatProgressions: BeatProgressionFileData[];
+}
 
 interface PageFileData {
   id: number;
@@ -56,19 +67,38 @@ interface PageFileData {
     removed: string[];
   }>;
   accumulatedCharacterState?: Record<string, string[]>;
-  // Structure state fields (optional for migration from older pages)
-  accumulatedStructureState?: {
-    currentActIndex: number;
-    currentBeatIndex: number;
-    beatProgressions: Array<{
-      beatId: string;
-      status: 'pending' | 'active' | 'concluded';
-      resolution?: string;
-    }>;
-  };
+  accumulatedStructureState: AccumulatedStructureStateFileData;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;
+}
+
+function structureStateToFileData(
+  state: AccumulatedStructureState
+): AccumulatedStructureStateFileData {
+  return {
+    currentActIndex: state.currentActIndex,
+    currentBeatIndex: state.currentBeatIndex,
+    beatProgressions: state.beatProgressions.map((beatProgression) => ({
+      beatId: beatProgression.beatId,
+      status: beatProgression.status,
+      resolution: beatProgression.resolution,
+    })),
+  };
+}
+
+function fileDataToStructureState(
+  data: AccumulatedStructureStateFileData
+): AccumulatedStructureState {
+  return {
+    currentActIndex: data.currentActIndex,
+    currentBeatIndex: data.currentBeatIndex,
+    beatProgressions: data.beatProgressions.map((beatProgression) => ({
+      beatId: beatProgression.beatId,
+      status: beatProgression.status,
+      resolution: beatProgression.resolution,
+    })),
+  };
 }
 
 function pageToFileData(page: Page): PageFileData {
@@ -111,15 +141,7 @@ function pageToFileData(page: Page): PageFileData {
     accumulatedHealth: [...page.accumulatedHealth],
     characterStateChanges,
     accumulatedCharacterState,
-    accumulatedStructureState: {
-      currentActIndex: page.accumulatedStructureState.currentActIndex,
-      currentBeatIndex: page.accumulatedStructureState.currentBeatIndex,
-      beatProgressions: page.accumulatedStructureState.beatProgressions.map((beatProgression) => ({
-        beatId: beatProgression.beatId,
-        status: beatProgression.status,
-        resolution: beatProgression.resolution,
-      })),
-    },
+    accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -171,17 +193,13 @@ function fileDataToPage(data: PageFileData): Page {
         Object.entries(data.accumulatedCharacterState).map(([name, state]) => [name, [...state]])
       )
     : {};
-  const accumulatedStructureState: AccumulatedStructureState = data.accumulatedStructureState
-    ? {
-        currentActIndex: data.accumulatedStructureState.currentActIndex,
-        currentBeatIndex: data.accumulatedStructureState.currentBeatIndex,
-        beatProgressions: data.accumulatedStructureState.beatProgressions.map((beatProgression) => ({
-          beatId: beatProgression.beatId,
-          status: beatProgression.status,
-          resolution: beatProgression.resolution,
-        })),
-      }
-    : createEmptyAccumulatedStructureState();
+  if (!data.accumulatedStructureState) {
+    throw new Error(`Invalid page data: missing accumulatedStructureState for page ${data.id}`);
+  }
+
+  const accumulatedStructureState: AccumulatedStructureState = fileDataToStructureState(
+    data.accumulatedStructureState
+  );
 
   return {
     id: parsePageId(data.id),

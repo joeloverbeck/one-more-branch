@@ -81,6 +81,29 @@ describe('page-repository integration', () => {
     expect(loaded).toEqual(root);
   });
 
+  it('save/load preserves accumulatedStructureState progression details', async () => {
+    const story = buildStory({ characterConcept: `${TEST_PREFIX} structure state` });
+    createdStoryIds.add(story.id);
+    await saveStory(story);
+
+    const root = buildRootPage({
+      accumulatedStructureState: {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Found the hidden key' },
+          { beatId: '1.2', status: 'active' },
+          { beatId: '1.3', status: 'pending' },
+        ],
+      },
+    });
+
+    await savePage(story.id, root);
+
+    const loaded = await loadPage(story.id, root.id);
+    expect(loaded?.accumulatedStructureState).toEqual(root.accumulatedStructureState);
+  });
+
   it('multiple pages in a story are all loadable and report the max id', async () => {
     const story = buildStory({ characterConcept: `${TEST_PREFIX} multiple pages` });
     createdStoryIds.add(story.id);

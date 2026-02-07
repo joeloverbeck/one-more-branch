@@ -1,3 +1,4 @@
+import * as fsPromises from 'fs/promises';
 import { Page, Story, StoryId, createChoice, createPage, createStory, parsePageId } from '@/models';
 import { getPageFilePath, writeJsonFile } from '@/persistence/file-utils';
 import {
@@ -74,10 +75,21 @@ describe('page-repository', () => {
     createdStoryIds.add(story.id);
     await saveStory(story);
 
-    const page = buildRootPage({
+    const basePage = buildRootPage({
       stateChanges: { added: ['root-change', 'extra-change'], removed: [] },
       accumulatedState: { changes: ['root-change', 'extra-change'] },
     });
+    const page: Page = {
+      ...basePage,
+      accumulatedStructureState: {
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      },
+    };
 
     await savePage(story.id, page);
     const loaded = await loadPage(story.id, page.id);
@@ -88,9 +100,21 @@ describe('page-repository', () => {
     expect(loaded?.choices).toEqual(page.choices);
     expect(loaded?.stateChanges).toEqual(page.stateChanges);
     expect(loaded?.accumulatedState).toEqual(page.accumulatedState);
+    expect(loaded?.accumulatedStructureState).toEqual(page.accumulatedStructureState);
     expect(loaded?.isEnding).toBe(page.isEnding);
     expect(loaded?.parentPageId).toBe(page.parentPageId);
     expect(loaded?.parentChoiceIndex).toBe(page.parentChoiceIndex);
+
+    const persistedJson = await fsPromises.readFile(getPageFilePath(story.id, page.id), 'utf-8');
+    const parsed = JSON.parse(persistedJson) as Record<string, unknown>;
+    expect(parsed['accumulatedStructureState']).toEqual({
+      currentActIndex: 1,
+      currentBeatIndex: 0,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
+        { beatId: '1.2', status: 'active' },
+      ],
+    });
 
     const persisted = await loadPage(story.id, page.id);
     expect(persisted).toEqual(page);
@@ -236,6 +260,28 @@ describe('page-repository', () => {
 
     await expect(loadPage(story.id, expectedPageId)).rejects.toThrow(
       `Page ID mismatch: expected ${expectedPageId}, found ${mismatchedPageId}`,
+    );
+  });
+
+  it('loadPage throws when persisted page data is missing accumulatedStructureState', async () => {
+    const story = buildTestStory();
+    createdStoryIds.add(story.id);
+    await saveStory(story);
+
+    const pageId = parsePageId(6);
+    await writeJsonFile(getPageFilePath(story.id, pageId), {
+      id: pageId,
+      narrativeText: 'Missing structure state',
+      choices: [],
+      stateChanges: { added: [], removed: [] },
+      accumulatedState: { changes: [] },
+      isEnding: true,
+      parentPageId: null,
+      parentChoiceIndex: null,
+    });
+
+    await expect(loadPage(story.id, pageId)).rejects.toThrow(
+      `Invalid page data: missing accumulatedStructureState for page ${pageId}`,
     );
   });
 
