@@ -514,6 +514,11 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('set beatConcluded: true');
     expect(user).toContain('leave beatResolution empty');
     expect(user).toContain('Do not force beat completion');
+    expect(user).toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
+    expect(user).toContain('  - 1.2: Secure evidence from an informant');
+    expect(user).toContain('  - 3.2: Deliver the proof');
+    expect(user).toContain('=== BEAT DEVIATION EVALUATION ===');
+    expect(user).toContain('deviationDetected: true');
   });
 
   it('should omit structure section when structure context is absent', () => {
@@ -522,6 +527,22 @@ describe('buildContinuationPrompt', () => {
 
     expect(user).not.toContain('=== STORY STRUCTURE ===');
     expect(user).not.toContain('=== BEAT EVALUATION ===');
+    expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
+  });
+
+  it('should exclude concluded beats from remaining beats deviation list', () => {
+    const messages = buildContinuationPrompt({
+      ...baseContext,
+      structure,
+      accumulatedStructureState: structureState,
+    });
+
+    const user = getUserMessage(messages);
+    const remainingSection = user.split('REMAINING BEATS TO EVALUATE FOR DEVIATION:\n')[1]?.split('\n\n=== BEAT DEVIATION EVALUATION ===')[0] ?? '';
+
+    expect(remainingSection).not.toContain('1.1: Reach a safehouse before patrols seal the district');
+    expect(remainingSection).toContain('1.2: Secure evidence from an informant');
+    expect(remainingSection).toContain('2.1: Break through checkpoints');
   });
 
   it('should omit structure section when structure state points to an invalid act index', () => {

@@ -1,7 +1,45 @@
 import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, ContinuationContext, PromptOptions } from '../types.js';
+import type { AccumulatedStructureState, StoryStructure } from '../../models/story-arc.js';
 import { buildSystemPrompt } from './system-prompt.js';
 import { truncateText } from './utils.js';
+
+const DEVIATION_DETECTION_SECTION = `=== BEAT DEVIATION EVALUATION ===
+After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.
+
+A deviation occurs when future beats are now impossible or nonsensical because:
+- Story direction fundamentally changed
+- Core assumptions of upcoming beats are invalid
+- Required story elements/goals no longer exist
+
+Evaluate ONLY beats that are not concluded. Never re-evaluate concluded beats.
+
+If deviation is detected, mark:
+- deviationDetected: true
+- deviationReason: concise reason
+- invalidatedBeatIds: invalid beat IDs only
+- narrativeSummary: 1-2 sentence current-state summary for rewrite context
+
+If no deviation is detected, mark deviationDetected: false.
+Be conservative. Minor variations are acceptable; only mark true deviation for genuine invalidation.
+`;
+
+function getRemainingBeats(
+  structure: StoryStructure,
+  state: AccumulatedStructureState,
+): Array<{ id: string; description: string }> {
+  const concludedBeatIds = new Set(
+    state.beatProgressions
+      .filter(progression => progression.status === 'concluded')
+      .map(progression => progression.beatId),
+  );
+
+  return structure.acts.flatMap(act =>
+    act.beats
+      .filter(beat => !concludedBeatIds.has(beat.id))
+      .map(beat => ({ id: beat.id, description: beat.description })),
+  );
+}
 
 export function buildContinuationPrompt(
   context: ContinuationContext,
@@ -47,6 +85,13 @@ ${context.worldbuilding}
             .slice(state.currentActIndex + 1)
             .map((act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`)
             .join('\n');
+          const remainingBeats = getRemainingBeats(structure, state);
+          const remainingBeatsSection =
+            remainingBeats.length > 0
+              ? `REMAINING BEATS TO EVALUATE FOR DEVIATION:\n${remainingBeats
+                  .map(beat => `  - ${beat.id}: ${beat.description}`)
+                  .join('\n')}`
+              : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
           return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
@@ -68,6 +113,10 @@ After writing the narrative, evaluate:
 3. If no, set beatConcluded: false and leave beatResolution empty.
 
 Do not force beat completion - only conclude if naturally achieved.
+
+${remainingBeatsSection}
+
+${DEVIATION_DETECTION_SECTION}
 
 `;
         })()

@@ -1,4 +1,4 @@
-import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
+import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 
 export interface GenerationResult {
   narrative: string;
@@ -17,6 +17,37 @@ export interface GenerationResult {
   beatConcluded: boolean;
   beatResolution: string;
   rawResponse: string;
+}
+
+export interface ContinuationGenerationResult extends GenerationResult {
+  readonly deviation: DeviationResult;
+}
+
+export interface CompletedBeat {
+  readonly actIndex: number;
+  readonly beatIndex: number;
+  readonly beatId: string;
+  readonly description: string;
+  readonly objective: string;
+  readonly resolution: string;
+}
+
+export interface StructureRewriteContext {
+  readonly characterConcept: string;
+  readonly worldbuilding: string;
+  readonly tone: string;
+  readonly completedBeats: readonly CompletedBeat[];
+  readonly narrativeSummary: string;
+  readonly currentActIndex: number;
+  readonly currentBeatIndex: number;
+  readonly deviationReason: string;
+  readonly originalTheme: string;
+}
+
+export interface StructureRewriteResult {
+  readonly structure: StoryStructure;
+  readonly preservedBeatIds: readonly string[];
+  readonly rawResponse: string;
 }
 
 export interface PromptOptions {

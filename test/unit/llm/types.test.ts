@@ -1,10 +1,15 @@
 import type {
+  CompletedBeat,
   ContinuationContext,
+  ContinuationGenerationResult,
   GenerationOptions,
   GenerationResult,
   OpeningContext,
+  StructureRewriteContext,
+  StructureRewriteResult,
 } from '../../../src/llm/types';
 import { LLMError } from '../../../src/llm/types';
+import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
 
 describe('LLM types', () => {
   describe('LLMError', () => {
@@ -51,7 +56,16 @@ describe('LLM types', () => {
         stateChangesAdded: ['learned-map'],
         stateChangesRemoved: [],
         newCanonFacts: ['The forest has two exits.'],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         isEnding: false,
+        beatConcluded: false,
+        beatResolution: '',
         rawResponse: '{"narrative":"You arrive at a crossroads."}',
       };
 
@@ -95,6 +109,134 @@ describe('LLM types', () => {
 
       expect(context.globalCanon[0]).toContain('siege');
       expect(context.accumulatedState[0]).toBe('wounded-shoulder');
+    });
+  });
+
+  describe('ContinuationGenerationResult', () => {
+    function buildBaseGenerationResult(): GenerationResult {
+      return {
+        narrative: 'The lantern flickers as footsteps approach.',
+        choices: ['Hide behind the crates', 'Call out to the footsteps'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        beatConcluded: false,
+        beatResolution: '',
+        rawResponse: '{"narrative":"..."}',
+      };
+    }
+
+    it('should extend GenerationResult with deviation field (NoDeviation)', () => {
+      const result: ContinuationGenerationResult = {
+        ...buildBaseGenerationResult(),
+        deviation: createNoDeviation(),
+      };
+
+      expect(result.deviation.detected).toBe(false);
+    });
+
+    it('should extend GenerationResult with deviation field (BeatDeviation)', () => {
+      const result: ContinuationGenerationResult = {
+        ...buildBaseGenerationResult(),
+        deviation: createBeatDeviation('Future beats no longer fit', ['2.2', '2.3'], 'Allies joined enemy'),
+      };
+
+      expect(result.deviation.detected).toBe(true);
+      if (result.deviation.detected) {
+        expect(result.deviation.invalidatedBeatIds).toEqual(['2.2', '2.3']);
+      }
+    });
+  });
+
+  describe('Structure rewrite types', () => {
+    const structure: StoryStructure = {
+      acts: [
+        {
+          id: '1',
+          name: 'Act I',
+          objective: 'Start',
+          stakes: 'Failure means immediate danger',
+          entryCondition: 'Story begins',
+          beats: [
+            { id: '1.1', description: 'Inciting incident', objective: 'Respond to threat' },
+            { id: '1.2', description: 'Decision point', objective: 'Choose direction' },
+          ],
+        },
+        {
+          id: '2',
+          name: 'Act II',
+          objective: 'Escalate',
+          stakes: 'Failure means loss of allies',
+          entryCondition: 'Protagonist commits',
+          beats: [
+            { id: '2.1', description: 'Complication', objective: 'Adapt plan' },
+            { id: '2.2', description: 'Setback', objective: 'Recover momentum' },
+          ],
+        },
+        {
+          id: '3',
+          name: 'Act III',
+          objective: 'Resolve',
+          stakes: 'Failure means catastrophe',
+          entryCondition: 'Final confrontation begins',
+          beats: [
+            { id: '3.1', description: 'Climax', objective: 'Confront antagonist' },
+            { id: '3.2', description: 'Aftermath', objective: 'Secure outcome' },
+          ],
+        },
+      ],
+      overallTheme: 'Hope under pressure',
+      generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+
+    it('should allow creating CompletedBeat with all required fields', () => {
+      const completedBeat: CompletedBeat = {
+        actIndex: 0,
+        beatIndex: 1,
+        beatId: '1.2',
+        description: 'Decision point',
+        objective: 'Choose direction',
+        resolution: 'Chose to trust the rebel faction',
+      };
+
+      expect(completedBeat.beatId).toBe('1.2');
+      expect(completedBeat.resolution).toContain('rebel');
+    });
+
+    it('should allow creating StructureRewriteContext including empty completedBeats', () => {
+      const context: StructureRewriteContext = {
+        characterConcept: 'A field medic turned reluctant leader',
+        worldbuilding: 'A flooded city-state in collapse',
+        tone: 'Tense and hopeful',
+        completedBeats: [],
+        narrativeSummary: 'The protagonist now controls a key evacuation route.',
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        deviationReason: 'Player allied with former rivals',
+        originalTheme: 'Duty versus survival',
+      };
+
+      expect(context.completedBeats).toEqual([]);
+      expect(context.currentActIndex).toBe(1);
+    });
+
+    it('should allow creating StructureRewriteResult with structure and preservedBeatIds', () => {
+      const result: StructureRewriteResult = {
+        structure,
+        preservedBeatIds: ['1.1', '1.2'],
+        rawResponse: 'REGENERATED_ACTS:\n...',
+      };
+
+      expect(result.structure.acts).toHaveLength(3);
+      expect(result.preservedBeatIds).toEqual(['1.1', '1.2']);
     });
   });
 });
