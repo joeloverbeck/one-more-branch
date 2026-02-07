@@ -70,6 +70,7 @@ describe('StructureVersion', () => {
       expect(isStructureVersionId(valid)).toBe(true);
       expect(isStructureVersionId('sv-1707321600000-a1b')).toBe(false);
       expect(isStructureVersionId('sv-time-a1b2')).toBe(false);
+      expect(isStructureVersionId('')).toBe(false);
       expect(isStructureVersionId(123)).toBe(false);
     });
 
@@ -77,13 +78,16 @@ describe('StructureVersion', () => {
       const valid = 'sv-1707321600000-a1b2';
       expect(parseStructureVersionId(valid)).toBe(valid);
       expect(() => parseStructureVersionId('invalid')).toThrow('Invalid StructureVersionId format');
+      expect(() => parseStructureVersionId('')).toThrow('Invalid StructureVersionId format');
     });
   });
 
   describe('createInitialVersionedStructure', () => {
     it('creates an initial version with null lineage fields', () => {
       const structure = createTestStructure();
+      const before = Date.now();
       const version = createInitialVersionedStructure(structure);
+      const after = Date.now();
 
       expect(isStructureVersionId(version.id)).toBe(true);
       expect(version.structure).toBe(structure);
@@ -92,6 +96,8 @@ describe('StructureVersion', () => {
       expect(version.rewriteReason).toBeNull();
       expect(version.preservedBeatIds).toEqual([]);
       expect(version.createdAt).toBeInstanceOf(Date);
+      expect(version.createdAt.getTime()).toBeGreaterThanOrEqual(before);
+      expect(version.createdAt.getTime()).toBeLessThanOrEqual(after);
     });
   });
 
@@ -101,6 +107,7 @@ describe('StructureVersion', () => {
       const pageId = parsePageId(7);
       const preservedBeatIds = ['1.1', '1.2'];
       const newStructure = createTestStructure();
+      const before = Date.now();
       const version = createRewrittenVersionedStructure(
         previousVersion,
         newStructure,
@@ -108,6 +115,7 @@ describe('StructureVersion', () => {
         'Player joined the enemy',
         pageId,
       );
+      const after = Date.now();
 
       expect(isStructureVersionId(version.id)).toBe(true);
       expect(version.id).not.toBe(previousVersion.id);
@@ -117,6 +125,8 @@ describe('StructureVersion', () => {
       expect(version.rewriteReason).toBe('Player joined the enemy');
       expect(version.preservedBeatIds).toEqual(['1.1', '1.2']);
       expect(version.createdAt).toBeInstanceOf(Date);
+      expect(version.createdAt.getTime()).toBeGreaterThanOrEqual(before);
+      expect(version.createdAt.getTime()).toBeLessThanOrEqual(after);
     });
 
     it('copies preservedBeatIds to avoid external mutation', () => {
@@ -141,6 +151,19 @@ describe('StructureVersion', () => {
       expect(isVersionedStoryStructure(version)).toBe(true);
     });
 
+    it('returns false when required id is missing', () => {
+      expect(
+        isVersionedStoryStructure({
+          structure: createTestStructure(),
+          previousVersionId: null,
+          createdAtPageId: null,
+          rewriteReason: null,
+          preservedBeatIds: [],
+          createdAt: new Date(),
+        }),
+      ).toBe(false);
+    });
+
     it('returns false for invalid shapes', () => {
       expect(isVersionedStoryStructure(null)).toBe(false);
       expect(isVersionedStoryStructure({})).toBe(false);
@@ -152,6 +175,28 @@ describe('StructureVersion', () => {
           createdAtPageId: null,
           rewriteReason: null,
           preservedBeatIds: [],
+          createdAt: new Date(),
+        }),
+      ).toBe(false);
+      expect(
+        isVersionedStoryStructure({
+          id: 'sv-1707321600000-a1b2',
+          structure: createTestStructure(),
+          previousVersionId: null,
+          createdAtPageId: null,
+          rewriteReason: 123,
+          preservedBeatIds: [],
+          createdAt: new Date(),
+        }),
+      ).toBe(false);
+      expect(
+        isVersionedStoryStructure({
+          id: 'sv-1707321600000-a1b2',
+          structure: createTestStructure(),
+          previousVersionId: null,
+          createdAtPageId: null,
+          rewriteReason: null,
+          preservedBeatIds: ['1.1', 2],
           createdAt: new Date(),
         }),
       ).toBe(false);
