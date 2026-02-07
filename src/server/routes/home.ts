@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
+import { logger } from '../../logging/index.js';
 
 export const homeRoutes = Router();
 
@@ -29,8 +30,8 @@ homeRoutes.get('/', wrapAsyncRoute(async (_req: Request, res: Response) => {
       stories: storiesWithStats,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error loading home page:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error loading home page:', { error: err.message, stack: err.stack });
     res.status(500).render('pages/error', {
       title: 'Error',
       message: 'Failed to load stories',

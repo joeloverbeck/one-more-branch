@@ -1,3 +1,5 @@
+import { logger } from '../../../src/logging/index';
+import { setModelLogger } from '../../../src/models/model-logger';
 import {
   accumulateState,
   addCanonFact,
@@ -13,6 +15,16 @@ import {
 } from '../../../src/models/state';
 
 describe('State utilities', () => {
+  beforeAll(() => {
+    // Wire up logger for model layer warnings
+    setModelLogger(logger);
+  });
+
+  afterAll(() => {
+    // Clean up
+    setModelLogger(null);
+  });
+
   describe('createEmptyAccumulatedState', () => {
     it('returns an empty changes collection', () => {
       expect(createEmptyAccumulatedState()).toEqual({ changes: [] });
@@ -94,27 +106,28 @@ describe('State utilities', () => {
       });
 
       it('ignores removal when state does not exist', () => {
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        logger.clear();
         const result = applyStateChanges(
           { changes: ['Existing state'] },
           { added: [], removed: ['Non-existent state'] }
         );
         expect(result.changes).toEqual(['Existing state']);
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'State removal did not match any existing state: "Non-existent state"'
-        );
-        consoleSpy.mockRestore();
+        const entries = logger.getEntries();
+        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Non-existent state'));
+        expect(warnEntry).toBeDefined();
+        expect(warnEntry?.message).toContain('State removal did not match any existing state');
       });
 
       it('does not warn for empty string removals', () => {
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        logger.clear();
         const result = applyStateChanges(
           { changes: ['Existing'] },
           { added: [], removed: ['', '  '] }
         );
         expect(result.changes).toEqual(['Existing']);
-        expect(consoleSpy).not.toHaveBeenCalled();
-        consoleSpy.mockRestore();
+        const entries = logger.getEntries();
+        const warnEntries = entries.filter(e => e.level === 'warn');
+        expect(warnEntries.length).toBe(0);
       });
     });
 
@@ -312,16 +325,16 @@ describe('State utilities', () => {
       });
 
       it('ignores removal when entry does not exist', () => {
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        logger.clear();
         const result = applyHealthChanges(
           ['Existing condition'],
           { added: [], removed: ['Non-existent condition'] }
         );
         expect(result).toEqual(['Existing condition']);
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Health removal did not match any existing entry: "Non-existent condition"'
-        );
-        consoleSpy.mockRestore();
+        const entries = logger.getEntries();
+        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Non-existent condition'));
+        expect(warnEntry).toBeDefined();
+        expect(warnEntry?.message).toContain('Health removal did not match any existing entry');
       });
     });
 
@@ -467,29 +480,29 @@ describe('State utilities', () => {
       });
 
       it('ignores removal when state does not exist', () => {
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        logger.clear();
         const result = applyCharacterStateChanges(
           { greaves: ['Existing state'] },
           [{ characterName: 'greaves', added: [], removed: ['Non-existent state'] }]
         );
         expect(result).toEqual({ greaves: ['Existing state'] });
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Character state removal did not match any existing entry for "greaves": "Non-existent state"'
-        );
-        consoleSpy.mockRestore();
+        const entries = logger.getEntries();
+        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Non-existent state'));
+        expect(warnEntry).toBeDefined();
+        expect(warnEntry?.message).toContain('Character state removal did not match any existing entry for "greaves"');
       });
 
       it('ignores removal when character does not exist', () => {
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        logger.clear();
         const result = applyCharacterStateChanges(
           { greaves: ['Existing state'] },
           [{ characterName: 'unknown', added: [], removed: ['Some state'] }]
         );
         expect(result).toEqual({ greaves: ['Existing state'] });
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Character state removal did not match any existing entry for "unknown": "Some state"'
-        );
-        consoleSpy.mockRestore();
+        const entries = logger.getEntries();
+        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Some state'));
+        expect(warnEntry).toBeDefined();
+        expect(warnEntry?.message).toContain('Character state removal did not match any existing entry for "unknown"');
       });
     });
 

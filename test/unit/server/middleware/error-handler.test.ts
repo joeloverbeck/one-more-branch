@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { logger } from '../../../../src/logging/index';
 import { errorHandler } from '../../../../src/server/middleware/error-handler';
 
 type MockResponse = {
@@ -7,15 +8,16 @@ type MockResponse = {
 };
 
 describe('errorHandler middleware', () => {
+  beforeEach(() => {
+    logger.clear();
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   it('logs the error and renders a generic 500 error page', () => {
     const error = new Error('database password is hunter2');
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-      // no-op in tests
-    });
     const res = {
       status: jest.fn(),
       render: jest.fn(),
@@ -31,7 +33,12 @@ describe('errorHandler middleware', () => {
       jest.fn() as unknown as NextFunction,
     );
 
-    expect(errorSpy).toHaveBeenCalledWith('Unhandled error:', error);
+    // Verify error was logged via logger
+    const entries = logger.getEntries();
+    const errorEntry = entries.find(e => e.level === 'error' && e.message.includes('Unhandled error'));
+    expect(errorEntry).toBeDefined();
+    expect(errorEntry?.context?.['error']).toBe('database password is hunter2');
+
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.render).toHaveBeenCalledWith('pages/error', {
       title: 'Error - One More Branch',

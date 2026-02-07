@@ -1,3 +1,4 @@
+import { ConsoleLogger } from './console-logger.js';
 import { LOG_LEVEL_PRIORITY, type LogEntry, type LogLevel, type Logger } from './types.js';
 
 /**
@@ -63,6 +64,7 @@ export class PromptLogger implements Logger {
 
 /**
  * Singleton logger instance for application-wide use.
+ * Wraps PromptLogger with console output (auto-disabled in test environment).
  * Use dependency injection in tests by mocking this export.
  */
-export const logger = new PromptLogger();
+export const logger = new ConsoleLogger(new PromptLogger());

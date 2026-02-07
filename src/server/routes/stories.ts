@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
 import { LLMError } from '../../llm/types';
+import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
 
 function formatLLMError(error: LLMError): string {
@@ -101,8 +102,8 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
 
     return res.redirect(`/play/${result.story.id}?page=1&newStory=true`);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error creating story:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error creating story:', { error: err.message, stack: err.stack });
 
     let errorMessage = 'Failed to create story';
     if (error instanceof LLMError) {
@@ -162,8 +163,8 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
       storyId: result.story.id,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error creating story:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error creating story:', { error: err.message, stack: err.stack });
 
     let errorMessage = 'Failed to create story';
     if (error instanceof LLMError) {
@@ -186,8 +187,8 @@ storyRoutes.post('/:storyId/delete', wrapAsyncRoute(async (req: Request, res: Re
     await storyEngine.deleteStory(storyId as StoryId);
     return res.redirect('/');
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error deleting story:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error deleting story:', { error: err.message, stack: err.stack });
     return res.redirect('/');
   }
 }));

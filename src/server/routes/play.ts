@@ -57,8 +57,8 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
       pageId,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error loading play page:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error loading play page:', { error: err.message, stack: err.stack });
     return res.status(500).render('pages/error', {
       title: 'Error',
       message: 'Failed to load story',
@@ -104,10 +104,10 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
       logScript,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error making choice:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error making choice:', { error: err.message, stack: err.stack });
     return res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to process choice',
+      error: err.message,
     });
   }
 }));

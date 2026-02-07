@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { getConfig } from '../config/index.js';
 import { storyEngine } from '../engine';
+import { logger } from '../logging/index.js';
+import { setModelLogger } from '../models/index.js';
 import { errorHandler } from './middleware/error-handler';
 import { router } from './routes';
 
@@ -28,11 +30,13 @@ export function createApp(): Express {
 }
 
 export function startServer(port?: number): void {
+  // Wire up model layer logging
+  setModelLogger(logger);
+
   const app = createApp();
   const serverPort = port ?? getConfig().server.port;
 
   app.listen(serverPort, () => {
-    // eslint-disable-next-line no-console
-    console.log(`One More Branch running at http://localhost:${serverPort}`);
+    logger.info(`One More Branch running at http://localhost:${serverPort}`);
   });
 }

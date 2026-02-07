@@ -1,3 +1,5 @@
+import { modelWarn } from './model-logger.js';
+
 export type StateChange = string;
 
 export interface StateChanges {
@@ -88,9 +90,7 @@ export function applyStateChanges(
       result.splice(index, 1);
     } else if (toRemove.trim()) {
       // Log warning for unmatched non-empty removals
-      console.warn(
-        `State removal did not match any existing state: "${toRemove}"`
-      );
+      modelWarn(`State removal did not match any existing state: "${toRemove}"`);
     }
   }
 
@@ -179,7 +179,7 @@ export function applyHealthChanges(current: Health, changes: HealthChanges): Hea
       result.splice(index, 1);
     } else {
       // Log warning for unmatched non-empty removals
-      console.warn(`Health removal did not match any existing entry: "${entryToRemove}"`);
+      modelWarn(`Health removal did not match any existing entry: "${entryToRemove}"`);
     }
   }
 
@@ -247,7 +247,7 @@ export function applyCharacterStateChanges(
       if (index !== -1) {
         existing.splice(index, 1);
       } else {
-        console.warn(`Character state removal did not match any existing entry for "${charChange.characterName}": "${toRemove}"`);
+        modelWarn(`Character state removal did not match any existing entry for "${charChange.characterName}": "${toRemove}"`);
       }
     }
 

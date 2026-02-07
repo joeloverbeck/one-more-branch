@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { logger } from '../../logging/index.js';
 
 export function errorHandler(
   err: Error,
@@ -6,7 +7,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error:', { error: err.message, stack: err.stack });
 
   res.status(500).render('pages/error', {
     title: 'Error - One More Branch',

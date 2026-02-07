@@ -90,3 +90,5 @@ export {
   validateNoCycle,
   validateStoryIntegrity,
 } from './validation';
+
+export { setModelLogger, getModelLogger, modelWarn } from './model-logger';
