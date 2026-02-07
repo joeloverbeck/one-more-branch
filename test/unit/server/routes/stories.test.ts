@@ -496,7 +496,7 @@ describe('storyRoutes', () => {
       });
     });
 
-    it('displays raw message for LLMError without httpStatus context', async () => {
+    it('displays formatted message for LLMError without httpStatus context', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
       const redirect = jest.fn();
@@ -519,7 +519,7 @@ describe('storyRoutes', () => {
       expect(status).toHaveBeenCalledWith(500);
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
-        error: 'Some parsing error',
+        error: 'API error: Some parsing error',
         values: {
           title: 'Test Title',
           characterConcept: 'A long enough character concept',
@@ -778,10 +778,14 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(500);
-      expect(json).toHaveBeenCalledWith({
-        success: false,
-        error: 'Invalid API key. Please check your OpenRouter API key.',
-      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Invalid API key. Please check your OpenRouter API key.',
+          code: 'HTTP_401',
+          retryable: false,
+        }),
+      );
     });
 
     it('returns 500 JSON with user-friendly message for HTTP 402 LLMError', async () => {
@@ -807,10 +811,14 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(500);
-      expect(json).toHaveBeenCalledWith({
-        success: false,
-        error: 'Insufficient credits. Please add credits to your OpenRouter account.',
-      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Insufficient credits. Please add credits to your OpenRouter account.',
+          code: 'HTTP_402',
+          retryable: false,
+        }),
+      );
     });
 
     it('returns 500 JSON with user-friendly message for HTTP 429 LLMError', async () => {
@@ -836,10 +844,14 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(500);
-      expect(json).toHaveBeenCalledWith({
-        success: false,
-        error: 'Rate limit exceeded. Please wait a moment and try again.',
-      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'Rate limit exceeded. Please wait a moment and try again.',
+          code: 'HTTP_429',
+          retryable: true,
+        }),
+      );
     });
 
     it('returns 500 JSON with user-friendly message for HTTP 5xx LLMError', async () => {
@@ -865,13 +877,17 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(500);
-      expect(json).toHaveBeenCalledWith({
-        success: false,
-        error: 'OpenRouter service is temporarily unavailable. Please try again later.',
-      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'OpenRouter service is temporarily unavailable. Please try again later.',
+          code: 'HTTP_503',
+          retryable: true,
+        }),
+      );
     });
 
-    it('returns 500 JSON with raw message for LLMError without httpStatus context', async () => {
+    it('returns 500 JSON with formatted message for LLMError without httpStatus context', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const llmError = new LLMError('Some parsing error', 'PARSE_ERROR', false);
@@ -891,10 +907,14 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(500);
-      expect(json).toHaveBeenCalledWith({
-        success: false,
-        error: 'Some parsing error',
-      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'API error: Some parsing error',
+          code: 'PARSE_ERROR',
+          retryable: false,
+        }),
+      );
     });
   });
 

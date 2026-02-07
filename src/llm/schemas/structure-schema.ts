@@ -13,8 +13,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
         overallTheme: { type: 'string' },
         acts: {
           type: 'array',
-          minItems: 3,
-          maxItems: 3,
+          description: 'Exactly 3 acts following setup, confrontation, and resolution.',
           items: {
             type: 'object',
             additionalProperties: false,
@@ -26,8 +25,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               entryCondition: { type: 'string' },
               beats: {
                 type: 'array',
-                minItems: 2,
-                maxItems: 4,
+                description: '2-4 beats per act that function as flexible milestones.',
                 items: {
                   type: 'object',
                   additionalProperties: false,

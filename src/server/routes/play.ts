@@ -1,7 +1,79 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine/index.js';
+import { LLMError } from '../../llm/types.js';
 import { generateBrowserLogScript, logger } from '../../logging/index.js';
 import { PageId, StoryId } from '../../models/index.js';
+
+function formatLLMError(error: LLMError): string {
+  const httpStatus = error.context?.['httpStatus'] as number | undefined;
+  const parsedError = error.context?.['parsedError'] as { message?: string; code?: string } | undefined;
+  const rawErrorBody = error.context?.['rawErrorBody'] as string | undefined;
+
+  const providerMessage = parsedError?.message ?? '';
+
+  if (httpStatus === 401) {
+    return 'Invalid API key. Please check your OpenRouter API key.';
+  }
+  if (httpStatus === 402) {
+    return 'Insufficient credits. Please add credits to your OpenRouter account.';
+  }
+  if (httpStatus === 429) {
+    return 'Rate limit exceeded. Please wait a moment and try again.';
+  }
+  if (httpStatus === 400) {
+    if (
+      error.message.includes('additionalProperties') ||
+      error.message.includes('schema') ||
+      error.message.includes('output_format')
+    ) {
+      return 'Story generation failed due to a configuration error. Please try again or report this issue.';
+    }
+    if (providerMessage && providerMessage !== error.message) {
+      return `API request error: ${providerMessage}`;
+    }
+    return `API request error: ${error.message}`;
+  }
+  if (httpStatus === 403) {
+    return `Access denied: ${providerMessage || error.message}`;
+  }
+  if (httpStatus === 404) {
+    return `Model not found: ${providerMessage || error.message}`;
+  }
+  if (httpStatus && httpStatus >= 500) {
+    return 'OpenRouter service is temporarily unavailable. Please try again later.';
+  }
+
+  if (httpStatus === undefined) {
+    if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+      return 'Request timed out. The AI service may be overloaded. Please try again.';
+    }
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+      return 'Could not connect to AI service. Please check your internet connection.';
+    }
+    if (providerMessage) {
+      return `AI service error: ${providerMessage}`;
+    }
+  }
+
+  if (rawErrorBody && rawErrorBody.length < 200 && rawErrorBody.length > 0) {
+    try {
+      const parsed = JSON.parse(rawErrorBody) as { error?: { message?: string } };
+      if (typeof parsed.error?.message === 'string') {
+        return `API error: ${parsed.error.message}`;
+      }
+    } catch {
+      if (!rawErrorBody.includes('<html') && !rawErrorBody.includes('<!DOCTYPE')) {
+        return `API error: ${rawErrorBody}`;
+      }
+    }
+  }
+
+  if (providerMessage) {
+    return `Provider error: ${providerMessage}`;
+  }
+
+  return `API error: ${error.message}`;
+}
 
 type ChoiceBody = {
   pageId?: number;
@@ -105,10 +177,56 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     });
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger.error('Error making choice:', { error: err.message, stack: err.stack });
-    return res.status(500).json({
-      error: err.message,
-    });
+
+    // Log full LLMError context for debugging
+    if (error instanceof LLMError) {
+      logger.error('LLM error making choice:', {
+        message: error.message,
+        code: error.code,
+        retryable: error.retryable,
+        httpStatus: error.context?.['httpStatus'],
+        model: error.context?.['model'],
+        parsedError: error.context?.['parsedError'],
+        rawErrorBody: error.context?.['rawErrorBody'],
+      });
+    } else {
+      logger.error('Error making choice:', { error: err.message, stack: err.stack });
+    }
+
+    let errorMessage = err.message;
+    if (error instanceof LLMError) {
+      errorMessage = formatLLMError(error);
+    }
+
+    // Build enhanced error response
+    const errorResponse: {
+      error: string;
+      code?: string;
+      retryable?: boolean;
+      debug?: {
+        httpStatus?: number;
+        model?: string;
+        rawError?: string;
+      };
+    } = {
+      error: errorMessage,
+    };
+
+    if (error instanceof LLMError) {
+      errorResponse.code = error.code;
+      errorResponse.retryable = error.retryable;
+
+      // Include debug info only in development
+      if (process.env['NODE_ENV'] !== 'production') {
+        errorResponse.debug = {
+          httpStatus: error.context?.['httpStatus'] as number | undefined,
+          model: error.context?.['model'] as string | undefined,
+          rawError: error.context?.['rawErrorBody'] as string | undefined,
+        };
+      }
+    }
+
+    return res.status(500).json(errorResponse);
   }
 }));
 

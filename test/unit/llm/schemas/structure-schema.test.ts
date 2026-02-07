@@ -7,21 +7,26 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     expect(STRUCTURE_GENERATION_SCHEMA.json_schema.strict).toBe(true);
   });
 
-  it('should require exactly 3 acts and 2-4 beats per act', () => {
+  it('should not use minItems > 1 or maxItems (unsupported by Anthropic)', () => {
+    const schemaStr = JSON.stringify(STRUCTURE_GENERATION_SCHEMA);
+    // Anthropic only supports minItems: 0 or 1
+    expect(schemaStr).not.toMatch(/"minItems":\s*[2-9]/);
+    expect(schemaStr).not.toMatch(/"maxItems"/);
+  });
+
+  it('should document array constraints in descriptions (runtime validated)', () => {
     const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
       properties: {
         acts: {
-          minItems: number;
-          maxItems: number;
-          items: { properties: { beats: { minItems: number; maxItems: number } } };
+          description: string;
+          items: { properties: { beats: { description: string } } };
         };
       };
     };
 
-    expect(schema.properties.acts.minItems).toBe(3);
-    expect(schema.properties.acts.maxItems).toBe(3);
-    expect(schema.properties.acts.items.properties.beats.minItems).toBe(2);
-    expect(schema.properties.acts.items.properties.beats.maxItems).toBe(4);
+    // Constraints documented in descriptions, enforced at runtime
+    expect(schema.properties.acts.description).toContain('3 acts');
+    expect(schema.properties.acts.items.properties.beats.description).toContain('2-4');
   });
 
   it('should require all act and beat fields', () => {

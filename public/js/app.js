@@ -167,6 +167,13 @@
         const data = await response.json();
 
         if (!response.ok) {
+          // Log enhanced error details if available
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          if (data.debug) {
+            console.error('Debug info:', data.debug);
+          }
           throw new Error(data.error || 'Failed to process choice');
         }
 
@@ -223,6 +230,10 @@
         narrative.scrollIntoView({ behavior: 'smooth' });
       } catch (error) {
         console.error('Error:', error);
+        // Log additional debug info if available
+        if (error && typeof error === 'object' && 'debug' in error) {
+          console.error('Debug info:', error.debug);
+        }
         alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
         setChoicesDisabled(false);
       } finally {
@@ -286,6 +297,13 @@
         const data = await response.json();
 
         if (!response.ok || !data.success) {
+          // Log enhanced error details if available
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          if (data.debug) {
+            console.error('Debug info:', data.debug);
+          }
           throw new Error(data.error || 'Failed to create story');
         }
 
@@ -293,6 +311,7 @@
 
         window.location.href = '/play/' + data.storyId + '?page=1&newStory=true';
       } catch (error) {
+        console.error('Story creation error:', error);
         showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
         submitBtn.disabled = false;
         loading.style.display = 'none';
