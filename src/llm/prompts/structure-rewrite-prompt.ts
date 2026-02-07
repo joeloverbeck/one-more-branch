@@ -1,5 +1,5 @@
 import type { ChatMessage, PromptOptions, StructureRewriteContext } from '../types.js';
-import { buildSystemPrompt } from './system-prompt.js';
+import { buildStructureSystemPrompt } from './system-prompt.js';
 
 function getActsToRegenerate(currentActIndex: number): string {
   if (currentActIndex === 0) {
@@ -112,7 +112,7 @@ ${formatActInstructions(context)}
 THEME_EVOLUTION: [Brief note on how the theme may evolve, or "Unchanged"]`;
 
   return [
-    { role: 'system', content: buildSystemPrompt(options) },
+    { role: 'system', content: buildStructureSystemPrompt(options) },
     { role: 'user', content: userPrompt },
   ];
 }

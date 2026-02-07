@@ -1,5 +1,5 @@
 import type { ChatMessage, PromptOptions } from '../types.js';
-import { buildSystemPrompt } from './system-prompt.js';
+import { buildStructureSystemPrompt } from './system-prompt.js';
 
 export interface StructureContext {
   characterConcept: string;
@@ -108,7 +108,7 @@ OUTPUT SHAPE:
       - description: what should happen in this beat
       - objective: specific protagonist goal for the beat`;
 
-  const messages: ChatMessage[] = [{ role: 'system', content: buildSystemPrompt(options) }];
+  const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt(options) }];
 
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(

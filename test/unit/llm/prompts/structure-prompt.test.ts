@@ -1,5 +1,6 @@
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildStructurePrompt } from '../../../../src/llm/prompts/structure-prompt';
+import { buildSystemPrompt } from '../../../../src/llm/prompts/system-prompt';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find(message => message.role === 'system')?.content ?? '';
@@ -69,5 +70,53 @@ describe('buildStructurePrompt', () => {
 
     expect(systemMessage).toContain('NC-21');
     expect(systemMessage).toContain(CONTENT_POLICY);
+  });
+});
+
+describe('buildStructurePrompt - minimal system prompt', () => {
+  const baseContext = {
+    characterConcept: 'A retired smuggler forced back into one final run',
+    worldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
+    tone: 'stormy maritime thriller',
+  };
+
+  it('does NOT include state management instructions', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const systemMessage = getSystemMessage(messages);
+
+    expect(systemMessage).not.toContain('stateChangesAdded');
+    expect(systemMessage).not.toContain('stateChangesRemoved');
+    expect(systemMessage).not.toContain('inventoryAdded');
+    expect(systemMessage).not.toContain('inventoryRemoved');
+    expect(systemMessage).not.toContain('healthAdded');
+    expect(systemMessage).not.toContain('healthRemoved');
+    expect(systemMessage).not.toContain('characterStateChangesAdded');
+  });
+
+  it('does NOT include choice requirements', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const systemMessage = getSystemMessage(messages);
+
+    expect(systemMessage).not.toContain('CHOICE REQUIREMENTS');
+    expect(systemMessage).not.toContain('DIVERGENCE ENFORCEMENT');
+    expect(systemMessage).not.toContain('FORBIDDEN CHOICE PATTERNS');
+  });
+
+  it('is significantly shorter than the full system prompt', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const structureSystemPrompt = getSystemMessage(messages);
+    const fullSystemPrompt = buildSystemPrompt();
+
+    // Structure prompt should be at most 40% the size of full prompt
+    expect(structureSystemPrompt.length).toBeLessThan(fullSystemPrompt.length * 0.4);
+  });
+
+  it('includes structure-specific guidelines', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const systemMessage = getSystemMessage(messages);
+
+    expect(systemMessage).toContain('three-act');
+    expect(systemMessage).toContain('beats');
+    expect(systemMessage).toContain('stakes');
   });
 });

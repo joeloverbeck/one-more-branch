@@ -1,5 +1,6 @@
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildStructureRewritePrompt } from '../../../../src/llm/prompts/structure-rewrite-prompt';
+import { buildSystemPrompt } from '../../../../src/llm/prompts/system-prompt';
 import type { StructureRewriteContext } from '../../../../src/llm/types';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
@@ -138,5 +139,58 @@ describe('buildStructureRewritePrompt', () => {
 
     expect(user).toContain('[PRESERVED BEATS - DO NOT REGENERATE]');
     expect(user).toContain('[NEW BEATS - GENERATE THESE]');
+  });
+});
+
+describe('buildStructureRewritePrompt - minimal system prompt', () => {
+  const baseContext: StructureRewriteContext = {
+    characterConcept: 'A former royal scout with a forged identity',
+    worldbuilding: 'A flooded republic where cities travel on chained barges.',
+    tone: 'tactical political thriller',
+    completedBeats: [],
+    narrativeSummary: 'The protagonist has publicly aligned with a rival flotilla.',
+    currentActIndex: 1,
+    currentBeatIndex: 0,
+    deviationReason: 'The prior allies now treat the protagonist as a traitor.',
+    originalTheme: 'Duty versus chosen loyalty',
+  };
+
+  it('does NOT include state management instructions', () => {
+    const messages = buildStructureRewritePrompt(baseContext);
+    const systemMessage = getSystemMessage(messages);
+
+    expect(systemMessage).not.toContain('stateChangesAdded');
+    expect(systemMessage).not.toContain('stateChangesRemoved');
+    expect(systemMessage).not.toContain('inventoryAdded');
+    expect(systemMessage).not.toContain('inventoryRemoved');
+    expect(systemMessage).not.toContain('healthAdded');
+    expect(systemMessage).not.toContain('healthRemoved');
+  });
+
+  it('does NOT include choice requirements', () => {
+    const messages = buildStructureRewritePrompt(baseContext);
+    const systemMessage = getSystemMessage(messages);
+
+    expect(systemMessage).not.toContain('CHOICE REQUIREMENTS');
+    expect(systemMessage).not.toContain('DIVERGENCE ENFORCEMENT');
+    expect(systemMessage).not.toContain('FORBIDDEN CHOICE PATTERNS');
+  });
+
+  it('is significantly shorter than the full system prompt', () => {
+    const messages = buildStructureRewritePrompt(baseContext);
+    const structureSystemPrompt = getSystemMessage(messages);
+    const fullSystemPrompt = buildSystemPrompt();
+
+    // Structure prompt should be at most 40% the size of full prompt
+    expect(structureSystemPrompt.length).toBeLessThan(fullSystemPrompt.length * 0.4);
+  });
+
+  it('includes structure-specific guidelines', () => {
+    const messages = buildStructureRewritePrompt(baseContext);
+    const systemMessage = getSystemMessage(messages);
+
+    expect(systemMessage).toContain('three-act');
+    expect(systemMessage).toContain('beats');
+    expect(systemMessage).toContain('stakes');
   });
 });
