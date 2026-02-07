@@ -67,8 +67,6 @@ npm run test:watch
 npm run test:coverage
 ```
 
-Integration tests require `OPENROUTER_TEST_KEY` environment variable.
-
 ## Project Architecture
 
 ```

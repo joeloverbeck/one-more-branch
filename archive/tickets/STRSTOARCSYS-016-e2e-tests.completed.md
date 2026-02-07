@@ -1,38 +1,51 @@
 # STRSTOARCSYS-016: E2E Tests
 
+## Status
+Completed (2026-02-07)
+
 ## Summary
 Create end-to-end tests that validate the complete structured story arc system from user perspective: creating a story, generating pages, and seeing beat progression work correctly.
 
+## Assumptions Reassessed
+
+The original ticket assumed live OpenRouter-backed E2E coverage using `OPENROUTER_TEST_KEY`. That does not match the current repo testing strategy:
+
+- Existing E2E tests mock `@/llm` and run offline/deterministically.
+- We explicitly do not call OpenRouter in tests to avoid cost and flakiness.
+- Current E2E layout groups engine tests under `test/e2e/engine/`.
+- Spec reference for dependency ordering is in `tickets/STRSTOARCSYS-000-index.md` and `specs/structured-story-arc-system.md`.
+
+This ticket is therefore updated to require mocked LLM responses and deterministic assertions only.
+
 ## Files to Touch
-- `test/e2e/structured-story-flow.test.ts` (NEW)
+- `test/e2e/engine/structured-story-flow.test.ts` (NEW)
 
 ## Out of Scope
 - DO NOT modify source code
 - DO NOT create unit or integration tests (other tickets)
-- DO NOT test error edge cases (focus on happy path)
+- DO NOT call OpenRouter or any live LLM provider
 
 ## Implementation Details
 
-### Create `test/e2e/structured-story-flow.test.ts`
+### Create `test/e2e/engine/structured-story-flow.test.ts`
 
 ```typescript
-import { startNewStory, getPage, loadStory } from '../../src/engine';
-import { getOrGeneratePage } from '../../src/engine/page-service';
+import { storyEngine } from '@/engine';
+import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
 
 describe('Structured Story E2E', () => {
-  // Requires OPENROUTER_TEST_KEY environment variable
-  const apiKey = process.env.OPENROUTER_TEST_KEY;
+  const apiKey = 'mock-api-key';
 
-  beforeAll(() => {
-    if (!apiKey) {
-      console.warn('Skipping E2E tests: OPENROUTER_TEST_KEY not set');
-    }
-  });
+  jest.mock('@/llm', () => ({
+    generateOpeningPage: jest.fn(),
+    generateContinuationPage: jest.fn(),
+    generateStoryStructure: jest.fn(),
+  }));
 
   describe('complete story creation flow', () => {
     it('creates story with structure and first page', async () => {
       // 1. Start new story
-      const { story, page } = await startNewStory({
+      const { story, page } = await storyEngine.startStory({
         title: 'E2E Test Story',
         characterConcept: 'A wandering scholar searching for forbidden knowledge',
         worldbuilding: 'A world where books are banned and libraries are hidden',
@@ -67,7 +80,7 @@ describe('Structured Story E2E', () => {
 
     it('continuation page inherits structure state', async () => {
       // 1. Create story
-      const { story, page: firstPage } = await startNewStory({
+      const { story, page: firstPage } = await storyEngine.startStory({
         title: 'E2E Continuation Test',
         characterConcept: 'A detective investigating supernatural crimes',
         worldbuilding: 'A noir city where ghosts are real',
@@ -76,12 +89,12 @@ describe('Structured Story E2E', () => {
       });
 
       // 2. Generate continuation page
-      const { page: secondPage } = await getOrGeneratePage(
-        story,
-        firstPage,
-        0, // First choice
+      const { page: secondPage } = await storyEngine.makeChoice({
+        storyId: story.id,
+        pageId: firstPage.id,
+        choiceIndex: 0,
         apiKey,
-      );
+      });
 
       // 3. Verify structure state is present
       expect(secondPage.accumulatedStructureState).toBeDefined();
@@ -99,7 +112,7 @@ describe('Structured Story E2E', () => {
       // This test may need multiple pages to see beat advancement
       // depending on LLM responses
 
-      const { story, page: page1 } = await startNewStory({
+      const { story, page: page1 } = await storyEngine.startStory({
         title: 'E2E Beat Advancement',
         characterConcept: 'A thief planning the heist of the century',
         worldbuilding: 'A steampunk city of clockwork and gears',
@@ -109,18 +122,17 @@ describe('Structured Story E2E', () => {
 
       // Generate several pages and track structure progression
       let currentPage = page1;
-      let currentStory = story;
       let seenBeatConcluded = false;
 
       for (let i = 0; i < 5 && !seenBeatConcluded; i++) {
         if (currentPage.choices.length === 0) break; // Ending
 
-        const { page, story: updatedStory } = await getOrGeneratePage(
-          currentStory,
-          currentPage,
-          0,
+        const { page } = await storyEngine.makeChoice({
+          storyId: story.id,
+          pageId: currentPage.id,
+          choiceIndex: 0,
           apiKey,
-        );
+        });
 
         // Check if beat advanced
         if (page.accumulatedStructureState.currentBeatIndex >
@@ -138,7 +150,6 @@ describe('Structured Story E2E', () => {
         }
 
         currentPage = page;
-        currentStory = updatedStory;
       }
 
       // Note: We may not always see beat advancement in 5 pages
@@ -148,7 +159,7 @@ describe('Structured Story E2E', () => {
 
   describe('branch isolation', () => {
     it('different choices create independent structure progressions', async () => {
-      const { story, page: page1 } = await startNewStory({
+      const { story, page: page1 } = await storyEngine.startStory({
         title: 'E2E Branch Isolation',
         characterConcept: 'A diplomat navigating political intrigue',
         worldbuilding: 'A court of scheming nobles',
@@ -162,8 +173,18 @@ describe('Structured Story E2E', () => {
       }
 
       // Generate pages from two different choices
-      const { page: branchA } = await getOrGeneratePage(story, page1, 0, apiKey);
-      const { page: branchB } = await getOrGeneratePage(story, page1, 1, apiKey);
+      const { page: branchA } = await storyEngine.makeChoice({
+        storyId: story.id,
+        pageId: page1.id,
+        choiceIndex: 0,
+        apiKey,
+      });
+      const { page: branchB } = await storyEngine.makeChoice({
+        storyId: story.id,
+        pageId: page1.id,
+        choiceIndex: 1,
+        apiKey,
+      });
 
       // Both should have valid structure states
       expect(branchA.accumulatedStructureState).toBeDefined();
@@ -177,7 +198,7 @@ describe('Structured Story E2E', () => {
 
   describe('persistence verification', () => {
     it('structure persists through save/load cycle', async () => {
-      const { story, page } = await startNewStory({
+      const { story, page } = await storyEngine.startStory({
         title: 'E2E Persistence Test',
         characterConcept: 'A sailor lost at sea',
         worldbuilding: 'An ocean of mythical creatures',
@@ -186,7 +207,7 @@ describe('Structured Story E2E', () => {
       });
 
       // Load story fresh
-      const loadedStory = await loadStory(story.id);
+      const loadedStory = await storyEngine.loadStory(story.id);
 
       expect(loadedStory).not.toBeNull();
       expect(loadedStory!.structure).not.toBeNull();
@@ -194,7 +215,7 @@ describe('Structured Story E2E', () => {
       expect(loadedStory!.structure!.overallTheme).toBe(story.structure!.overallTheme);
 
       // Load page fresh
-      const loadedPage = await getPage(story.id, page.id);
+      const loadedPage = await storyEngine.getPage(story.id, page.id);
 
       expect(loadedPage).not.toBeNull();
       expect(loadedPage!.accumulatedStructureState).toEqual(page.accumulatedStructureState);
@@ -206,15 +227,13 @@ describe('Structured Story E2E', () => {
 ### Test Configuration
 
 E2E tests require:
-- `OPENROUTER_TEST_KEY` environment variable
-- Longer timeouts (API calls)
-- Cleanup of test stories after run
+- Mocked `@/llm` calls for structure/opening/continuation generation
+- Cleanup of created stories after run
+- No network calls
 
 ```typescript
-// jest.config.js or test setup
-{
-  testTimeout: 60000, // 60 seconds for API calls
-}
+// jest setup already configures timeout for integration/e2e.
+// No API-specific timeout increase is required.
 ```
 
 ### Cleanup
@@ -254,8 +273,8 @@ afterAll(async () => {
    - Structure state survives save/load cycle
 
 ### Environment Requirements
-- `OPENROUTER_TEST_KEY` must be set
-- Tests skip gracefully if key not available
+- No OpenRouter credentials are required
+- Tests must run deterministically with mocked LLM responses
 - Tests clean up created stories
 
 ### Invariants Validated
@@ -267,6 +286,18 @@ afterAll(async () => {
 ## Dependencies
 - All implementation tickets (STRSTOARCSYS-001 through 014)
 - STRSTOARCSYS-015 (integration tests should pass first)
+- STRSTOARCSYS-017 (test mocks strategy alignment)
 
 ## Estimated Scope
 ~200 lines of test code
+
+## Outcome
+### What changed vs originally planned
+- Planned: create a new E2E test that may call OpenRouter with `OPENROUTER_TEST_KEY`.
+- Actual: created deterministic mocked-LLM E2E coverage in `test/e2e/engine/structured-story-flow.test.ts`, aligned with existing repository test strategy and no network calls.
+- Added assertions for:
+  - 3-act structure creation and initial active beat on first page.
+  - non-advancing continuation when `beatConcluded` is false.
+  - beat and act advancement with non-empty beat resolutions across sequential pages.
+  - branch-isolated structure progression plus save/load persistence of branch states.
+- Source runtime code was unchanged; only tests and this ticket were updated.
