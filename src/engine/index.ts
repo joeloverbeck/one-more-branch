@@ -12,6 +12,29 @@ export {
 
 export { generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
 
+// Page building
+export {
+  buildFirstPage,
+  buildContinuationPage,
+  createEmptyStructureContext,
+} from './page-builder';
+export type { FirstPageBuildContext, ContinuationPageBuildContext } from './page-builder';
+
+// Structure version validation
+export {
+  validateFirstPageStructureVersion,
+  validateContinuationStructureVersion,
+  resolveActiveStructureVersion,
+} from './structure-version-validator';
+
+// Parent state collection
+export { collectParentState } from './parent-state-collector';
+export type { CollectedParentState } from './parent-state-collector';
+
+// Deviation handling
+export { isActualDeviation, handleDeviation } from './deviation-handler';
+export type { DeviationContext, DeviationHandlingResult } from './deviation-handler';
+
 // Structure types
 export type { StructureProgressionResult, StructureGenerationResult } from './structure-types';
 

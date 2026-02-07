@@ -1,42 +1,30 @@
 import { generateContinuationPage, generateOpeningPage } from '../llm';
 import {
-  addStructureVersion,
-  createChoice,
   createEmptyAccumulatedStructureState,
-  createPage,
-  createRewrittenVersionedStructure,
   generatePageId,
   getLatestStructureVersion,
-  getStructureVersion,
   isDeviation,
   Page,
   Story,
-  parsePageId,
 } from '../models';
 import { storage } from '../persistence';
 import { updateStoryWithAllCanon } from './canon-manager';
-import { createCharacterStateChanges, getParentAccumulatedCharacterState } from './character-state-manager';
-import { createHealthChanges, getParentAccumulatedHealth } from './health-manager';
-import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
-import { createStateChanges, getParentAccumulatedState } from './state-manager';
-import { buildRewriteContext } from './structure-rewrite-support';
+import { handleDeviation, isActualDeviation } from './deviation-handler';
+import { buildContinuationPage, buildFirstPage } from './page-builder';
+import { collectParentState } from './parent-state-collector';
 import { applyStructureProgression, createInitialStructureState } from './structure-state';
-import { createStructureRewriter } from './structure-rewriter';
+import {
+  resolveActiveStructureVersion,
+  validateContinuationStructureVersion,
+  validateFirstPageStructureVersion,
+} from './structure-version-validator';
 import { DeviationInfo, EngineError } from './types';
 
 export async function generateFirstPage(
   story: Story,
   apiKey: string,
 ): Promise<{ page: Page; updatedStory: Story }> {
-  const initialStructureVersion = getLatestStructureVersion(story);
-
-  // Enforce strict versioning: if story has structure, it must have structure versions
-  if (story.structure && !initialStructureVersion) {
-    throw new EngineError(
-      'Story has structure but no structure versions. This is an invalid state.',
-      'INVALID_STRUCTURE_VERSION',
-    );
-  }
+  validateFirstPageStructureVersion(story);
 
   const result = await generateOpeningPage(
     {
@@ -52,22 +40,10 @@ export async function generateFirstPage(
     ? createInitialStructureState(story.structure)
     : createEmptyAccumulatedStructureState();
 
-  const page = createPage({
-    id: parsePageId(1),
-    narrativeText: result.narrative,
-    choices: result.choices.map(choiceText => createChoice(choiceText)),
-    stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
-    inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
-    healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
-    characterStateChanges: createCharacterStateChanges(
-      result.characterStateChangesAdded,
-      result.characterStateChangesRemoved,
-    ),
-    isEnding: result.isEnding,
-    parentPageId: null,
-    parentChoiceIndex: null,
-    parentAccumulatedStructureState: initialStructureState,
-    structureVersionId: initialStructureVersion?.id ?? null,
+  const latestVersion = getLatestStructureVersion(story);
+  const page = buildFirstPage(result, {
+    structureState: initialStructureState,
+    structureVersionId: latestVersion?.id ?? null,
   });
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
@@ -89,35 +65,12 @@ export async function generateNextPage(
     );
   }
 
-  // Enforce strict versioning for structured stories (validate before any I/O)
-  if (story.structure) {
-    const latestVersion = getLatestStructureVersion(story);
-    if (!latestVersion) {
-      throw new EngineError(
-        'Story has structure but no structure versions. This is an invalid state.',
-        'INVALID_STRUCTURE_VERSION',
-      );
-    }
-    if (!parentPage.structureVersionId) {
-      throw new EngineError(
-        `Parent page ${parentPage.id} has null structureVersionId but story has structure. ` +
-          'All pages in structured stories must have a valid structureVersionId.',
-        'INVALID_STRUCTURE_VERSION',
-      );
-    }
-  }
+  validateContinuationStructureVersion(story, parentPage);
 
   const maxPageId = await storage.getMaxPageId(story.id);
-  const parentAccumulatedState = getParentAccumulatedState(parentPage);
-  const parentAccumulatedInventory = getParentAccumulatedInventory(parentPage);
-  const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
-  const parentAccumulatedCharacterState = getParentAccumulatedCharacterState(parentPage);
-  const parentStructureState = parentPage.accumulatedStructureState;
+  const parentState = collectParentState(parentPage);
+  const currentStructureVersion = resolveActiveStructureVersion(story, parentPage);
 
-  // Use parent page's structure version for branch isolation
-  const currentStructureVersion = parentPage.structureVersionId
-    ? getStructureVersion(story, parentPage.structureVersionId) ?? getLatestStructureVersion(story)
-    : null;
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -126,13 +79,14 @@ export async function generateNextPage(
       globalCanon: story.globalCanon,
       globalCharacterCanon: story.globalCharacterCanon,
       structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
-      accumulatedStructureState: parentStructureState,
+      accumulatedStructureState: parentState.structureState,
       previousNarrative: parentPage.narrativeText,
       selectedChoice: choice.text,
-      accumulatedState: parentAccumulatedState.changes,
-      accumulatedInventory: parentAccumulatedInventory,
-      accumulatedHealth: parentAccumulatedHealth,
-      accumulatedCharacterState: parentAccumulatedCharacterState,
+      accumulatedState: parentState.accumulatedState.changes,
+      accumulatedInventory: parentState.accumulatedInventory,
+      accumulatedHealth: parentState.accumulatedHealth,
+      accumulatedCharacterState: parentState.accumulatedCharacterState,
+      parentProtagonistAffect: parentPage.protagonistAffect,
     },
     { apiKey },
   );
@@ -140,43 +94,28 @@ export async function generateNextPage(
   const newPageId = generatePageId(maxPageId);
 
   // Handle deviation if detected - triggers structure rewrite
-  let storyForRewrite = story;
+  let storyForPage = story;
   let activeStructureVersion = currentStructureVersion;
   let deviationInfo: DeviationInfo | undefined;
 
+  // Check for deviation - isActualDeviation confirms conditions, isDeviation narrows the type
   if (
-    story.structure &&
-    currentStructureVersion &&
-    'deviation' in result &&
+    isActualDeviation(result, story, currentStructureVersion) &&
     isDeviation(result.deviation)
   ) {
-    const rewriteContext = buildRewriteContext(
-      story,
-      currentStructureVersion,
-      parentStructureState,
-      result.deviation,
+    const devResult = await handleDeviation(
+      {
+        story,
+        currentVersion: currentStructureVersion!,
+        parentStructureState: parentState.structureState,
+        deviation: result.deviation,
+        newPageId,
+      },
+      apiKey,
     );
-
-    const rewriter = createStructureRewriter();
-    const rewriteResult = await rewriter.rewriteStructure(rewriteContext, apiKey);
-
-    const newVersion = createRewrittenVersionedStructure(
-      currentStructureVersion,
-      rewriteResult.structure,
-      rewriteResult.preservedBeatIds,
-      result.deviation.reason,
-      newPageId,
-    );
-
-    storyForRewrite = addStructureVersion(story, newVersion);
-    activeStructureVersion = newVersion;
-
-    // Capture deviation info for UI feedback
-    deviationInfo = {
-      detected: true,
-      reason: result.deviation.reason,
-      beatsInvalidated: result.deviation.invalidatedBeatIds.length,
-    };
+    storyForPage = devResult.updatedStory;
+    activeStructureVersion = devResult.activeVersion;
+    deviationInfo = devResult.deviationInfo;
   }
 
   const beatConcluded =
@@ -193,36 +132,26 @@ export async function generateNextPage(
   const newStructureState = activeStructure
     ? applyStructureProgression(
         activeStructure,
-        parentStructureState,
+        parentState.structureState,
         beatConcluded,
         beatResolution,
       )
-    : parentStructureState;
+    : parentState.structureState;
 
-  const page = createPage({
-    id: newPageId,
-    narrativeText: result.narrative,
-    choices: result.choices.map(choiceText => createChoice(choiceText)),
-    stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
-    inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
-    healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
-    characterStateChanges: createCharacterStateChanges(
-      result.characterStateChangesAdded,
-      result.characterStateChangesRemoved,
-    ),
-    isEnding: result.isEnding,
+  const page = buildContinuationPage(result, {
+    pageId: newPageId,
     parentPageId: parentPage.id,
     parentChoiceIndex: choiceIndex,
-    parentAccumulatedState,
-    parentAccumulatedInventory,
-    parentAccumulatedHealth,
-    parentAccumulatedCharacterState,
-    parentAccumulatedStructureState: newStructureState,
+    parentAccumulatedState: parentState.accumulatedState,
+    parentAccumulatedInventory: parentState.accumulatedInventory,
+    parentAccumulatedHealth: parentState.accumulatedHealth,
+    parentAccumulatedCharacterState: parentState.accumulatedCharacterState,
+    structureState: newStructureState,
     structureVersionId: activeStructureVersion?.id ?? null,
   });
 
   const updatedStory = updateStoryWithAllCanon(
-    storyForRewrite,
+    storyForPage,
     result.newCanonFacts,
     result.newCharacterCanonFacts,
   );
