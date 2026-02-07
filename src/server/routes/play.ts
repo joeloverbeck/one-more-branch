@@ -98,6 +98,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
         isEnding: result.page.isEnding,
       },
       wasGenerated: result.wasGenerated,
+      deviationInfo: result.deviationInfo,
       logScript,
     });
   } catch (error) {

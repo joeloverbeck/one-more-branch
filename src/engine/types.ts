@@ -5,9 +5,16 @@ export interface StartStoryResult {
   readonly page: Page;
 }
 
+export interface DeviationInfo {
+  readonly detected: boolean;
+  readonly reason: string;
+  readonly beatsInvalidated: number;
+}
+
 export interface MakeChoiceResult {
   readonly page: Page;
   readonly wasGenerated: boolean;
+  readonly deviationInfo?: DeviationInfo;
 }
 
 export interface PlaySession {

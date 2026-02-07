@@ -327,7 +327,7 @@ main {
 }
 
 .act-indicator {
-  font-size: 0.875rem;
+  font-size: 1.0rem;
   color: var(--color-text-muted);
   font-style: italic;
 }
@@ -365,6 +365,55 @@ main {
 .state-changes ul {
   margin: 0;
   padding-left: 1.2rem;
+}
+
+.deviation-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(233, 178, 69, 0.5);
+  border-left: 4px solid #e9b245;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(233, 178, 69, 0.08), rgba(233, 178, 69, 0.03));
+  animation: deviation-fade-in 0.4s ease-out;
+}
+
+.deviation-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.deviation-content {
+  flex: 1;
+}
+
+.deviation-content h4 {
+  margin: 0 0 0.3rem;
+  color: #e9b245;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.deviation-content p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@keyframes deviation-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .choices-section {

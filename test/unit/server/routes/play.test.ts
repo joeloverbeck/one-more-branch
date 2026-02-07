@@ -399,6 +399,84 @@ describe('playRoutes', () => {
         }),
       );
     });
+
+    it('includes deviationInfo in response when deviation occurred', async () => {
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'The story path shifted.',
+        choices: [createChoice('New path A'), createChoice('New path B')],
+        stateChanges: { added: ['Story deviated'], removed: [] },
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 0,
+      });
+      const deviationInfo = {
+        detected: true,
+        reason: 'Player action invalidated planned story beats.',
+        beatsInvalidated: 2,
+      };
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+        deviationInfo,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      await getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          deviationInfo: {
+            detected: true,
+            reason: 'Player action invalidated planned story beats.',
+            beatsInvalidated: 2,
+          },
+        }),
+      );
+    });
+
+    it('includes undefined deviationInfo when no deviation occurred', async () => {
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'Story continues normally.',
+        choices: [createChoice('Continue'), createChoice('Wait')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 0,
+      });
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+        deviationInfo: undefined,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      await getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          deviationInfo: undefined,
+        }),
+      );
+    });
   });
 
   describe('POST /:storyId/choice error', () => {

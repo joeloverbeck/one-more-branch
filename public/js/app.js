@@ -130,6 +130,36 @@
       }
     }
 
+    function renderDeviationBanner(deviationInfo) {
+      const existingBanner = document.getElementById('deviation-banner');
+      if (existingBanner) {
+        existingBanner.remove();
+      }
+
+      if (!deviationInfo || !deviationInfo.detected) {
+        return;
+      }
+
+      const beatsText = deviationInfo.beatsInvalidated
+        ? ` (${deviationInfo.beatsInvalidated} story beat${deviationInfo.beatsInvalidated > 1 ? 's' : ''} replanned)`
+        : '';
+
+      const banner = document.createElement('aside');
+      banner.className = 'deviation-banner';
+      banner.id = 'deviation-banner';
+      banner.innerHTML = `
+        <div class="deviation-icon">&#x1F504;</div>
+        <div class="deviation-content">
+          <h4>Story Path Shifted</h4>
+          <p>${escapeHtml(deviationInfo.reason)}${beatsText}</p>
+        </div>
+      `;
+
+      if (choicesSection) {
+        choicesSection.parentNode.insertBefore(banner, choicesSection);
+      }
+    }
+
     choices.addEventListener('click', async (event) => {
       const clickedElement = event.target;
       if (!(clickedElement instanceof HTMLElement)) {
@@ -188,6 +218,7 @@
 
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
         renderStateChanges(data.page.stateChanges);
+        renderDeviationBanner(data.deviationInfo);
 
         // Execute log script to display LLM prompts in browser console
         if (data.logScript) {

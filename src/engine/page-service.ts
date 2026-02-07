@@ -22,7 +22,7 @@ import { createStateChanges, getParentAccumulatedState } from './state-manager';
 import { buildRewriteContext } from './structure-rewrite-support';
 import { applyStructureProgression, createInitialStructureState } from './structure-state';
 import { createStructureRewriter } from './structure-rewriter';
-import { EngineError } from './types';
+import { DeviationInfo, EngineError } from './types';
 
 export async function generateFirstPage(
   story: Story,
@@ -80,7 +80,7 @@ export async function generateNextPage(
   parentPage: Page,
   choiceIndex: number,
   apiKey: string,
-): Promise<{ page: Page; updatedStory: Story }> {
+): Promise<{ page: Page; updatedStory: Story; deviationInfo?: DeviationInfo }> {
   const choice = parentPage.choices[choiceIndex];
   if (!choice) {
     throw new EngineError(
@@ -142,6 +142,7 @@ export async function generateNextPage(
   // Handle deviation if detected - triggers structure rewrite
   let storyForRewrite = story;
   let activeStructureVersion = currentStructureVersion;
+  let deviationInfo: DeviationInfo | undefined;
 
   if (
     story.structure &&
@@ -169,6 +170,13 @@ export async function generateNextPage(
 
     storyForRewrite = addStructureVersion(story, newVersion);
     activeStructureVersion = newVersion;
+
+    // Capture deviation info for UI feedback
+    deviationInfo = {
+      detected: true,
+      reason: result.deviation.reason,
+      beatsInvalidated: result.deviation.invalidatedBeatIds.length,
+    };
   }
 
   const beatConcluded =
@@ -219,7 +227,7 @@ export async function generateNextPage(
     result.newCharacterCanonFacts,
   );
 
-  return { page, updatedStory };
+  return { page, updatedStory, deviationInfo };
 }
 
 export async function getOrGeneratePage(
@@ -227,7 +235,7 @@ export async function getOrGeneratePage(
   parentPage: Page,
   choiceIndex: number,
   apiKey: string,
-): Promise<{ page: Page; story: Story; wasGenerated: boolean }> {
+): Promise<{ page: Page; story: Story; wasGenerated: boolean; deviationInfo?: DeviationInfo }> {
   const choice = parentPage.choices[choiceIndex];
   if (!choice) {
     throw new EngineError(
@@ -248,7 +256,7 @@ export async function getOrGeneratePage(
     return { page, story, wasGenerated: false };
   }
 
-  const { page, updatedStory } = await generateNextPage(story, parentPage, choiceIndex, apiKey);
+  const { page, updatedStory, deviationInfo } = await generateNextPage(story, parentPage, choiceIndex, apiKey);
 
   await storage.savePage(story.id, page);
   await storage.updateChoiceLink(story.id, parentPage.id, choiceIndex, page.id);
@@ -261,5 +269,6 @@ export async function getOrGeneratePage(
     page,
     story: updatedStory,
     wasGenerated: true,
+    deviationInfo,
   };
 }

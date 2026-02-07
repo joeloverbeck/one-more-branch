@@ -46,14 +46,14 @@ export class StoryEngine {
       );
     }
 
-    const { page, wasGenerated } = await getOrGeneratePage(
+    const { page, wasGenerated, deviationInfo } = await getOrGeneratePage(
       story,
       currentPage,
       options.choiceIndex,
       options.apiKey,
     );
 
-    return { page, wasGenerated };
+    return { page, wasGenerated, deviationInfo };
   }
 
   async loadStory(storyId: StoryId): Promise<Story | null> {

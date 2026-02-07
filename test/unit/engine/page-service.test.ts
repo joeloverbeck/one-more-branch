@@ -853,6 +853,131 @@ describe('page-service', () => {
       // Story without structure has no structureVersions
       expect(updatedStory.structureVersions).toHaveLength(0);
     });
+
+    it('returns deviationInfo when deviation is detected', async () => {
+      const structure = buildStructure();
+      const initialStructureVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialStructureVersion],
+      });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You consider a dramatic change of course.',
+        choices: [createChoice('Betray allies'), createChoice('Stay loyal')],
+        stateChanges: { added: ['At crossroads'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialStructureVersion.id,
+      });
+
+      const rewrittenStructure: StoryStructure = {
+        overallTheme: 'New path theme.',
+        generatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'New Path',
+            objective: 'Follow new direction',
+            stakes: 'Everything',
+            entryCondition: 'After betrayal',
+            beats: [
+              { id: '1.1', description: 'Accept new role', objective: 'Establish new identity' },
+            ],
+          },
+        ],
+      };
+
+      const mockRewriter = {
+        rewriteStructure: jest.fn().mockResolvedValue({
+          structure: rewrittenStructure,
+          preservedBeatIds: [],
+          rawResponse: 'rewritten',
+        }),
+      };
+      mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You betray your allies.',
+        choices: ['Embrace new life', 'Second thoughts'],
+        stateChangesAdded: ['Betrayed allies'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        beatConcluded: false,
+        beatResolution: '',
+        deviation: createBeatDeviation(
+          'Player chose to betray allies, invalidating trust-based beats.',
+          ['1.1', '1.2'],
+          'Alliance shattered after betrayal.',
+        ),
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const { deviationInfo } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(deviationInfo).toBeDefined();
+      expect(deviationInfo?.detected).toBe(true);
+      expect(deviationInfo?.reason).toBe('Player chose to betray allies, invalidating trust-based beats.');
+      expect(deviationInfo?.beatsInvalidated).toBe(2);
+    });
+
+    it('returns undefined deviationInfo when no deviation detected', async () => {
+      const structure = buildStructure();
+      const initialStructureVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialStructureVersion],
+      });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You proceed normally.',
+        choices: [createChoice('Continue'), createChoice('Wait')],
+        stateChanges: { added: ['Proceeding'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialStructureVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You continue on your path.',
+        choices: ['Keep going', 'Rest'],
+        stateChangesAdded: ['Moved forward'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        beatConcluded: false,
+        beatResolution: '',
+        deviation: createNoDeviation(),
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const { deviationInfo } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(deviationInfo).toBeUndefined();
+    });
   });
 
   describe('getOrGeneratePage', () => {
@@ -1007,6 +1132,112 @@ describe('page-service', () => {
       );
       expect(mockedStorage.loadPage).not.toHaveBeenCalled();
       expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
+    });
+
+    it('returns undefined deviationInfo when loading cached page', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Root',
+        choices: [createChoice('A', parsePageId(2)), createChoice('B')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const existingPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'Cached page',
+        choices: [],
+        stateChanges: { added: [], removed: [] },
+        isEnding: true,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedState: parentPage.accumulatedState,
+      });
+
+      mockedStorage.loadPage.mockResolvedValue(existingPage);
+
+      const result = await getOrGeneratePage(story, parentPage, 0, 'test-key');
+
+      expect(result.wasGenerated).toBe(false);
+      expect(result.deviationInfo).toBeUndefined();
+    });
+
+    it('passes through deviationInfo when generating new page with deviation', async () => {
+      const structure = buildStructure();
+      const initialStructureVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialStructureVersion],
+      });
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Root',
+        choices: [createChoice('Deviate'), createChoice('Normal')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialStructureVersion.id,
+      });
+
+      const rewrittenStructure: StoryStructure = {
+        overallTheme: 'Rewritten after deviation.',
+        generatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'Deviated Path',
+            objective: 'New direction',
+            stakes: 'High',
+            entryCondition: 'After deviation',
+            beats: [{ id: '1.1', description: 'New beat', objective: 'New objective' }],
+          },
+        ],
+      };
+
+      const mockRewriter = {
+        rewriteStructure: jest.fn().mockResolvedValue({
+          structure: rewrittenStructure,
+          preservedBeatIds: [],
+          rawResponse: 'rewritten',
+        }),
+      };
+      mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
+
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You deviate from the plan.',
+        choices: ['New choice 1', 'New choice 2'],
+        stateChangesAdded: ['Deviated'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        deviation: createBeatDeviation(
+          'Story deviated from planned beats.',
+          ['1.1'],
+          'Player chose unexpected path.',
+        ),
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const result = await getOrGeneratePage(story, parentPage, 0, 'test-key');
+
+      expect(result.wasGenerated).toBe(true);
+      expect(result.deviationInfo).toBeDefined();
+      expect(result.deviationInfo?.detected).toBe(true);
+      expect(result.deviationInfo?.reason).toBe('Story deviated from planned beats.');
+      expect(result.deviationInfo?.beatsInvalidated).toBe(1);
     });
   });
 });
