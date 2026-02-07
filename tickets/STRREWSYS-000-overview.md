@@ -27,7 +27,6 @@ The system needs to detect such deviations and regenerate remaining structure.
 | STRREWSYS-007 | Add Deviation Detection to Continuation Prompt | None | Medium |
 | STRREWSYS-008 | Parse Deviation Detection from LLM Response | 005, 006, 007 | Medium |
 | STRREWSYS-009 | Persist Structure Versions in Story Repository | 001, 003, 004 | Medium |
-| STRREWSYS-010 | Migrate Existing Stories and Pages | 001, 003, 004, 009 | Low |
 | STRREWSYS-011 | Handle Deviation Detection in Page Service | 005, 006, 008, 012, 013 | High |
 | STRREWSYS-012 | Update Structure Manager for Deviation Support | 005, 006 | Medium |
 | STRREWSYS-013 | Implement Structure Rewriter Core | 006, 012, 014 | High |
@@ -55,17 +54,16 @@ The system needs to detect such deviations and regenerate remaining structure.
 
 ### Phase 4: Persistence (Requires Phase 2)
 10. **STRREWSYS-009** - Persist structure versions
-11. **STRREWSYS-010** - Migration logic
 
 ### Phase 5: Core Logic (Requires Phases 2-4)
-12. **STRREWSYS-012** - Structure manager helpers
-13. **STRREWSYS-013** - Structure rewriter core (after 012, 014)
-14. **STRREWSYS-011** - Page service integration (after 008, 012, 013)
+11. **STRREWSYS-012** - Structure manager helpers
+12. **STRREWSYS-013** - Structure rewriter core (after 012, 014)
+13. **STRREWSYS-011** - Page service integration (after 008, 012, 013)
 
 ### Phase 6: Testing (Requires Phase 5)
-15. **STRREWSYS-015** - Integration tests
-16. **STRREWSYS-016** - E2E tests
-17. **STRREWSYS-017** - Performance tests
+14. **STRREWSYS-015** - Integration tests
+15. **STRREWSYS-016** - E2E tests
+16. **STRREWSYS-017** - Performance tests
 
 ## Key Invariants
 
@@ -82,12 +80,11 @@ These invariants MUST be maintained throughout all tickets:
 
 ## Files Changed Summary
 
-### New Files (6)
+### New Files (5)
 - `src/models/structure-version.ts`
 - `src/llm/deviation-detector.ts`
 - `src/llm/prompts/structure-rewrite-prompt.ts`
 - `src/engine/structure-rewriter.ts`
-- `src/persistence/migration.ts`
 - Test files (7+)
 
 ### Modified Files (12)
@@ -112,9 +109,8 @@ These invariants MUST be maintained throughout all tickets:
 2. All integration tests pass
 3. All E2E tests pass
 4. All performance thresholds met
-5. Existing stories continue to work (backward compatible)
+5. Existing stories are not migrated; system prioritizes clean architecture over backward compatibility
 6. New stories with deviation handle rewrites correctly
-7. No data loss during migration
 
 ## Non-Goals (Future Considerations)
 
