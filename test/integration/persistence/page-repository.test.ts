@@ -215,4 +215,62 @@ describe('page-repository integration', () => {
 
     await expect(findEndingPages(story.id)).resolves.toEqual([parsePageId(3), parsePageId(4)]);
   });
+
+  it('persists branch-divergent accumulatedStructureState across sibling pages', async () => {
+    const story = buildStory({ characterConcept: `${TEST_PREFIX} divergent structure branches` });
+    createdStoryIds.add(story.id);
+    await saveStory(story);
+
+    const root = buildRootPage();
+    const branchA = createPage({
+      id: parsePageId(2),
+      narrativeText: 'Branch A advances the first beat.',
+      choices: [createChoice('Continue A'), createChoice('Fallback A')],
+      stateChanges: { added: ['A advanced'], removed: [] },
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 0,
+      parentAccumulatedState: root.accumulatedState,
+      parentAccumulatedStructureState: {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'A resolved the opener.' },
+          { beatId: '1.2', status: 'active' },
+          { beatId: '1.3', status: 'pending' },
+        ],
+      },
+    });
+    const branchB = createPage({
+      id: parsePageId(3),
+      narrativeText: 'Branch B keeps the opener active.',
+      choices: [createChoice('Continue B'), createChoice('Fallback B')],
+      stateChanges: { added: ['B observed'], removed: [] },
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 1,
+      parentAccumulatedState: root.accumulatedState,
+      parentAccumulatedStructureState: {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'active' },
+          { beatId: '1.2', status: 'pending' },
+          { beatId: '1.3', status: 'pending' },
+        ],
+      },
+    });
+
+    await savePage(story.id, root);
+    await savePage(story.id, branchA);
+    await savePage(story.id, branchB);
+
+    const loadedBranchA = await loadPage(story.id, branchA.id);
+    const loadedBranchB = await loadPage(story.id, branchB.id);
+
+    expect(loadedBranchA?.accumulatedStructureState).toEqual(branchA.accumulatedStructureState);
+    expect(loadedBranchB?.accumulatedStructureState).toEqual(branchB.accumulatedStructureState);
+    expect(loadedBranchA?.accumulatedStructureState.currentBeatIndex).toBe(1);
+    expect(loadedBranchB?.accumulatedStructureState.currentBeatIndex).toBe(0);
+  });
 });

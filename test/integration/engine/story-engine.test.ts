@@ -68,7 +68,8 @@ const openingResult = {
   healthAdded: [],
   healthRemoved: [],
   isEnding: false,
-  storyArc: 'Find the source of the harbor fire before dawn.',
+  beatConcluded: false,
+  beatResolution: '',
   rawResponse: 'opening',
 };
 
@@ -89,7 +90,8 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Find the source of the harbor fire before dawn.',
+      beatConcluded: true,
+      beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
       rawResponse: 'continuation-ember',
     };
   }
@@ -109,7 +111,8 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
     healthAdded: [],
     healthRemoved: [],
     isEnding: false,
-    storyArc: 'Find the source of the harbor fire before dawn.',
+    beatConcluded: false,
+    beatResolution: '',
     rawResponse: 'continuation-ferryman',
   };
 }
@@ -163,10 +166,18 @@ describe('story-engine integration', () => {
     createdStoryIds.add(result.story.id);
 
     expect(result.story.characterConcept).toContain('create-first-page');
+    expect(result.story.structure?.acts).toHaveLength(3);
+    expect(result.story.structure?.acts[0]?.beats[0]?.id).toBe('1.1');
     expect(result.page.id).toBe(1);
     expect(result.page.narrativeText.length).toBeGreaterThan(50);
     expect(result.page.choices.length).toBeGreaterThanOrEqual(2);
     expect(result.page.isEnding).toBe(false);
+    expect(result.page.accumulatedStructureState.currentActIndex).toBe(0);
+    expect(result.page.accumulatedStructureState.currentBeatIndex).toBe(0);
+    expect(result.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '1.1',
+      status: 'active',
+    });
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
   });
 
@@ -191,7 +202,65 @@ describe('story-engine integration', () => {
     expect(result.wasGenerated).toBe(true);
     expect(result.page.parentPageId).toBe(1);
     expect(result.page.parentChoiceIndex).toBe(0);
+    expect(result.page.accumulatedStructureState.currentActIndex).toBe(0);
+    expect(result.page.accumulatedStructureState.currentBeatIndex).toBe(1);
+    expect(result.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '1.1',
+      status: 'concluded',
+      resolution: 'The first clue clearly ties the fires to the harbor cartel.',
+    });
+    expect(result.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '1.2',
+      status: 'active',
+    });
     expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should advance to the next act when the final beat in the current act is concluded', async () => {
+    mockedGenerateContinuationPage
+      .mockResolvedValueOnce({
+        ...buildContinuationResult('Investigate the ember trail'),
+      })
+      .mockResolvedValueOnce({
+        ...buildContinuationResult('Enter the ash-marked chapel'),
+        beatConcluded: true,
+        beatResolution: 'Local allies joined and the setup arc closed.',
+      });
+
+    const start = await storyEngine.startStory({
+      title: `${TEST_PREFIX} Title`,
+      characterConcept: `${TEST_PREFIX} act-advance`,
+      worldbuilding: 'A harbor where each district hides a different faction ledger.',
+      tone: 'investigative suspense',
+      apiKey: 'test-api-key',
+    });
+    createdStoryIds.add(start.story.id);
+
+    const page2 = await storyEngine.makeChoice({
+      storyId: start.story.id,
+      pageId: parsePageId(1),
+      choiceIndex: 0,
+      apiKey: 'test-api-key',
+    });
+
+    const page3 = await storyEngine.makeChoice({
+      storyId: start.story.id,
+      pageId: page2.page.id,
+      choiceIndex: 0,
+      apiKey: 'test-api-key',
+    });
+
+    expect(page3.page.accumulatedStructureState.currentActIndex).toBe(1);
+    expect(page3.page.accumulatedStructureState.currentBeatIndex).toBe(0);
+    expect(page3.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '1.2',
+      status: 'concluded',
+      resolution: 'Local allies joined and the setup arc closed.',
+    });
+    expect(page3.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '2.1',
+      status: 'active',
+    });
   });
 
   it('should load existing page without regeneration', async () => {
@@ -255,6 +324,17 @@ describe('story-engine integration', () => {
     expect(branchB.page.parentPageId).toBe(1);
     expect(branchA.page.parentChoiceIndex).toBe(0);
     expect(branchB.page.parentChoiceIndex).toBe(1);
+    expect(branchA.page.accumulatedStructureState.currentBeatIndex).toBe(1);
+    expect(branchB.page.accumulatedStructureState.currentBeatIndex).toBe(0);
+    expect(branchA.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '1.1',
+      status: 'concluded',
+      resolution: 'The first clue clearly ties the fires to the harbor cartel.',
+    });
+    expect(branchB.page.accumulatedStructureState.beatProgressions).toContainEqual({
+      beatId: '1.1',
+      status: 'active',
+    });
     expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(2);
   });
 });
