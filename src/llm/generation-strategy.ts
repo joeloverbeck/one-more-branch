@@ -6,7 +6,7 @@ import {
   isStructuredOutputNotSupported,
   STORY_GENERATION_SCHEMA,
   validateGenerationResponse,
-} from './schemas.js';
+} from './schemas/index.js';
 import {
   LLMError,
   type ChatMessage,

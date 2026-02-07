@@ -179,7 +179,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Find your way out',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: 'opening',
     });
 
@@ -224,7 +225,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Arc',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: 'opening',
     });
 
@@ -258,7 +260,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Arc',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: 'continuation',
     });
 
@@ -307,7 +310,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Arc',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: 'opening',
     });
 
@@ -341,7 +345,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Arc',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: 'continuation',
     });
 

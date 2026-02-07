@@ -37,7 +37,8 @@ const openingResult = {
   healthAdded: [],
   healthRemoved: [],
   isEnding: false,
-  storyArc: 'Map the time fractures while keeping your sibling safe from patrols.',
+  beatConcluded: false,
+  beatResolution: '',
   rawResponse: 'opening',
 };
 
@@ -58,7 +59,8 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Map the time fractures while keeping your sibling safe from patrols.',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: `continuation-beacon-${stepIndex}`,
     };
   }
@@ -79,7 +81,8 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Map the time fractures while keeping your sibling safe from patrols.',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: `continuation-checkpoint-${stepIndex}`,
     };
   }
@@ -100,7 +103,8 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Map the time fractures while keeping your sibling safe from patrols.',
+      beatConcluded: false,
+      beatResolution: '',
       rawResponse: `continuation-stalled-${stepIndex}`,
     };
   }
@@ -121,7 +125,8 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
     healthAdded: [],
     healthRemoved: [],
     isEnding: false,
-    storyArc: 'Map the time fractures while keeping your sibling safe from patrols.',
+    beatConcluded: false,
+    beatResolution: '',
     rawResponse: `continuation-default-${stepIndex}`,
   };
 }
@@ -141,7 +146,8 @@ const replayOpeningResult = {
   healthAdded: [],
   healthRemoved: [],
   isEnding: false,
-  storyArc: 'Deliver the testimony before the factions discover you.',
+  beatConcluded: false,
+  beatResolution: '',
   rawResponse: 'replay-opening',
 };
 
@@ -161,7 +167,8 @@ function buildReplayContinuationResult(): ReturnType<typeof buildContinuationRes
     healthAdded: [],
     healthRemoved: [],
     isEnding: false,
-    storyArc: 'Deliver the testimony before the factions discover you.',
+    beatConcluded: false,
+    beatResolution: '',
     rawResponse: 'replay-continuation',
   };
 }

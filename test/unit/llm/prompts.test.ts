@@ -399,7 +399,6 @@ describe('buildContinuationPrompt', () => {
     tone: 'noir',
     globalCanon: [] as const,
     globalCharacterCanon: {} as const,
-    storyArc: null,
     previousNarrative: 'Rain batters the windows while the neon sign flickers overhead.',
     selectedChoice: 'Confront the informant at gunpoint',
     accumulatedState: [] as const,
@@ -482,14 +481,9 @@ describe('buildContinuationPrompt', () => {
     expect(user).not.toContain('NPC CURRENT STATE');
   });
 
-  it('should not include story arc section when storyArc is present', () => {
-    const messages = buildContinuationPrompt({
-      ...baseContext,
-      storyArc: 'Expose the conspiracy behind your partner’s murder.',
-    });
-
+  it('should not include legacy story arc section in continuation prompt', () => {
+    const messages = buildContinuationPrompt(baseContext);
     expect(getUserMessage(messages)).not.toContain('STORY ARC:');
-    expect(getUserMessage(messages)).not.toContain('Expose the conspiracy');
   });
 
   it('should include structure section and beat evaluation instructions when structure state is provided', () => {

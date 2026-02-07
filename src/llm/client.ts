@@ -2,7 +2,7 @@ import { logger, logPrompt } from '../logging/index.js';
 import { generateWithFallback } from './generation-strategy.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
-import { buildContinuationPrompt, buildOpeningPrompt } from './prompts.js';
+import { buildContinuationPrompt, buildOpeningPrompt } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import {
   type ContinuationContext,

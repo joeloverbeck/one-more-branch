@@ -57,10 +57,13 @@ describe('llm barrel exports', () => {
       worldbuilding: 'Mountain passes split the frontier.',
       tone: 'tense adventure',
       globalCanon: ['The bridge tolls in gale-force winds'],
-      storyArc: 'Deliver the warning before the pass collapses',
+      globalCharacterCanon: {},
       previousNarrative: 'You stand before the swaying bridge as lightning forks overhead.',
       selectedChoice: 'Step onto the bridge and run',
       accumulatedState: ['Recovered the signal flare'],
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
     };
     const message: ChatMessage = { role: 'user', content: 'Continue the story' };
     const schema: JsonSchema = STORY_GENERATION_SCHEMA;

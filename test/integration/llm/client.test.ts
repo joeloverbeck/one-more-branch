@@ -96,7 +96,6 @@ describe('llm client integration (mocked fetch)', () => {
         tone: 'gothic mystery',
         globalCanon: ['The lower vault floods at midnight'],
         globalCharacterCanon: {},
-        storyArc: 'Map the drowned vault before the cult reaches it.',
         previousNarrative:
           'You stand at the iron grate while lantern light trembles across black water and old carvings.',
         selectedChoice: 'Pry open the grate and descend into the vault',

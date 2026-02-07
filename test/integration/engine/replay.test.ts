@@ -68,7 +68,8 @@ const openingResult = {
   healthAdded: [],
   healthRemoved: [],
   isEnding: false,
-  storyArc: 'Decode the mirrored constellation before the festival ends.',
+  beatConcluded: false,
+  beatResolution: '',
   rawResponse: 'opening',
 };
 
@@ -87,7 +88,8 @@ const continuationResult = {
   healthAdded: [],
   healthRemoved: [],
   isEnding: false,
-  storyArc: 'Decode the mirrored constellation before the festival ends.',
+  beatConcluded: false,
+  beatResolution: '',
   rawResponse: 'continuation',
 };
 

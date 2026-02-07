@@ -12,7 +12,7 @@ export { LLMError } from './types.js';
 
 export { CONTENT_POLICY } from './content-policy.js';
 
-export { buildOpeningPrompt, buildContinuationPrompt } from './prompts.js';
+export { buildOpeningPrompt, buildContinuationPrompt } from './prompts/index.js';
 
 export { buildFewShotMessages } from './examples.js';
 
@@ -30,6 +30,6 @@ export {
   GenerationResultSchema,
   validateGenerationResponse,
   isStructuredOutputNotSupported,
-} from './schemas.js';
+} from './schemas/index.js';
 
 export { generateOpeningPage, generateContinuationPage, validateApiKey } from './client.js';

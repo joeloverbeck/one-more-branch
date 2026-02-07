@@ -84,10 +84,13 @@ describe('LLM types', () => {
         worldbuilding: 'A storm-battered frontier kingdom',
         tone: 'grim but hopeful',
         globalCanon: ['The kingdom is under siege.'],
-        storyArc: 'Recover the shattered crown',
+        globalCharacterCanon: {},
         previousNarrative: 'You survived the ambush at dusk.',
         selectedChoice: 'Track the raiders into the marsh',
         accumulatedState: ['wounded-shoulder'],
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
       };
 
       expect(context.globalCanon[0]).toContain('siege');
