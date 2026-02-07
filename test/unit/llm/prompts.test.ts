@@ -1,4 +1,5 @@
 import { CONTENT_POLICY } from '../../../src/llm/content-policy';
+import type { StoryStructure } from '../../../src/models/story-arc';
 import { buildContinuationPrompt, buildOpeningPrompt } from '../../../src/llm/prompts';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
@@ -12,6 +13,54 @@ function getUserMessage(messages: { role: string; content: string }[]): string {
 }
 
 describe('buildOpeningPrompt', () => {
+  const testStructure: StoryStructure = {
+    overallTheme: 'Survive the uprising and expose its true architect',
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    acts: [
+      {
+        id: '1',
+        name: 'The Spark',
+        objective: 'Escape the city after the first riot',
+        stakes: 'Capture means execution as a traitor',
+        entryCondition: 'The first district falls',
+        beats: [
+          {
+            id: '1.1',
+            description: 'The protagonist is caught between guards and rebels',
+            objective: 'Reach a safe route out of the square',
+          },
+          {
+            id: '1.2',
+            description: 'A former ally offers help with conditions',
+            objective: 'Choose whether to trust the ally',
+          },
+        ],
+      },
+      {
+        id: '2',
+        name: 'The Pursuit',
+        objective: 'Outmaneuver both factions',
+        stakes: 'Losing evidence lets the conflict spiral',
+        entryCondition: 'The protagonist leaves the capital',
+        beats: [
+          { id: '2.1', description: 'First chase beat', objective: 'Evade pursuit' },
+          { id: '2.2', description: 'Second chase beat', objective: 'Protect the evidence' },
+        ],
+      },
+      {
+        id: '3',
+        name: 'The Reckoning',
+        objective: 'Expose the architect publicly',
+        stakes: 'Failure secures permanent authoritarian rule',
+        entryCondition: 'Allies gather for final confrontation',
+        beats: [
+          { id: '3.1', description: 'Final entry beat', objective: 'Force a confession' },
+          { id: '3.2', description: 'Final resolution beat', objective: 'Stabilize the city' },
+        ],
+      },
+    ],
+  };
+
   it('should include character concept in user message', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'An exiled knight seeking redemption',
@@ -57,14 +106,47 @@ describe('buildOpeningPrompt', () => {
     expect(system).not.toContain('CHOICES:');
   });
 
-  it('should request story arc determination', () => {
+  it('should not request story arc determination', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',
       worldbuilding: '',
       tone: 'dark fantasy',
     });
 
-    expect(getUserMessage(messages).toLowerCase()).toContain('story arc');
+    expect(getUserMessage(messages).toLowerCase()).not.toContain('story arc');
+    expect(getUserMessage(messages).toLowerCase()).not.toContain('determine the overarching goal');
+  });
+
+  it('should include structure section when structure is provided', () => {
+    const messages = buildOpeningPrompt({
+      characterConcept: 'Character',
+      worldbuilding: '',
+      tone: 'dark fantasy',
+      structure: testStructure,
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).toContain('=== STORY STRUCTURE ===');
+    expect(user).toContain('Overall Theme: Survive the uprising and expose its true architect');
+    expect(user).toContain('CURRENT ACT: The Spark');
+    expect(user).toContain('Objective: Escape the city after the first riot');
+    expect(user).toContain('Stakes: Capture means execution as a traitor');
+    expect(user).toContain('CURRENT BEAT: The protagonist is caught between guards and rebels');
+    expect(user).toContain('Beat Objective: Reach a safe route out of the square');
+    expect(user).toContain("Your task: Write the opening scene working toward this beat's objective.");
+  });
+
+  it('should omit structure section when structure is not provided', () => {
+    const messages = buildOpeningPrompt({
+      characterConcept: 'Character',
+      worldbuilding: '',
+      tone: 'dark fantasy',
+    });
+
+    const user = getUserMessage(messages);
+    expect(user).not.toContain('=== STORY STRUCTURE ===');
+    expect(user).not.toContain('CURRENT ACT:');
+    expect(user).not.toContain('CURRENT BEAT:');
   });
 
   it('should include tone in user message', () => {

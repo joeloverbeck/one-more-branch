@@ -1,3 +1,5 @@
+import type { StoryStructure } from '../models/story-arc.js';
+
 export interface GenerationResult {
   narrative: string;
   choices: string[];
@@ -52,6 +54,7 @@ export interface OpeningContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  structure?: StoryStructure;
 }
 
 export interface ChatMessage {
