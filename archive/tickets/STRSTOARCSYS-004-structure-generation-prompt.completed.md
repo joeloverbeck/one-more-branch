@@ -1,11 +1,29 @@
 # STRSTOARCSYS-004: Structure Generation Prompt
 
+## Status
+Completed on 2026-02-07.
+
 ## Summary
 Create the new prompt for generating story structure BEFORE the first page. This prompt runs separately from opening/continuation prompts and outputs the 3-act structure with beats.
+
+## Assumptions Reassessment (Against Current Code)
+- `src/llm/prompts/structure-prompt.ts` does not exist yet.
+- Prompt modules use ESM-style TypeScript imports with `.js` extensions in source files (for example `../types.js`), so new prompt code should follow that style.
+- Public prompt access currently goes through both `src/llm/prompts/index.ts` and the facade `src/llm/prompts.ts`; exporting from only one would make the new prompt inconsistent to import.
+- `PromptOptions.fewShotMode` supports `'none' | 'minimal' | 'standard'`; this ticket should treat both non-`none` modes as enabling a few-shot example.
+- Existing prompt unit tests are concentrated in `test/unit/llm/prompts.test.ts`, but creating a dedicated `structure-prompt` test file is valid and lower risk for this isolated change.
+
+## Updated Scope
+- Add a new structure-generation prompt builder in `src/llm/prompts/structure-prompt.ts`.
+- Export it from both prompt barrels: `src/llm/prompts/index.ts` and `src/llm/prompts.ts`.
+- Add focused unit tests in `test/unit/llm/prompts/structure-prompt.test.ts`.
+- Keep all other prompt behavior unchanged.
 
 ## Files to Touch
 - `src/llm/prompts/structure-prompt.ts` (NEW)
 - `src/llm/prompts/index.ts` (add export)
+- `src/llm/prompts.ts` (add export)
+- `test/unit/llm/prompts/structure-prompt.test.ts` (NEW)
 
 ## Out of Scope
 - DO NOT modify `opening-prompt.ts` (that's STRSTOARCSYS-005)
@@ -19,7 +37,7 @@ Create the new prompt for generating story structure BEFORE the first page. This
 ### Create `src/llm/prompts/structure-prompt.ts`
 
 ```typescript
-import { ChatMessage, PromptOptions } from '../types';
+import type { ChatMessage, PromptOptions } from '../types.js';
 
 export interface StructureContext {
   characterConcept: string;
@@ -115,6 +133,7 @@ Create `test/unit/llm/prompts/structure-prompt.test.ts`:
 
 3. `buildStructurePrompt` with options
    - Includes few-shot example when `fewShotMode: 'standard'`
+   - Includes few-shot example when `fewShotMode: 'minimal'`
    - Omits few-shot example when `fewShotMode: 'none'`
 
 4. Content policy
@@ -133,3 +152,13 @@ Create `test/unit/llm/prompts/structure-prompt.test.ts`:
 
 ## Estimated Scope
 ~100 lines of prompt code + ~80 lines of tests
+
+## Outcome
+- Implemented `src/llm/prompts/structure-prompt.ts` with `buildStructurePrompt()` and `StructureContext`.
+- Prompt now explicitly requires exactly 3 acts, 2-4 beats per act, branching-aware milestones, and 15-50 page pacing while incorporating character concept, worldbuilding, and tone.
+- Few-shot behavior was implemented for all non-`none` modes (`minimal` and `standard`) to match current `PromptOptions`.
+- Exported `buildStructurePrompt` through both `src/llm/prompts/index.ts` and `src/llm/prompts.ts` so existing import patterns remain consistent.
+- Added focused tests in `test/unit/llm/prompts/structure-prompt.test.ts` for structure requirements, few-shot behavior, and NC-21 content policy inclusion.
+- Original plan vs actual:
+  - Planned: new structure prompt + prompt index export + dedicated tests.
+  - Actual: same scope, plus one additional export in `src/llm/prompts.ts` to align with the repository's prompt facade pattern.
