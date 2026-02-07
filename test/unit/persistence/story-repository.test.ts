@@ -4,7 +4,9 @@ import {
   StoryId,
   StoryStructure,
   createStory,
+  parsePageId,
   parseStoryId,
+  parseStructureVersionId,
 } from '@/models';
 import {
   deleteDirectory,
@@ -63,6 +65,50 @@ function buildTestStory(overrides?: Partial<Story>): Story {
   };
 }
 
+function buildVersionedStructureChain() {
+  const initialStructure = buildTestStructure();
+  const rewrittenStructure: StoryStructure = {
+    ...buildTestStructure(),
+    acts: [
+      {
+        id: '1',
+        name: 'Act I',
+        objective: 'Regroup',
+        stakes: 'Lose the final clue',
+        entryCondition: 'The plan fails',
+        beats: [
+          { id: '1.1', description: 'Escape the ambush', objective: 'Survive' },
+          { id: '1.2', description: 'Find a new lead', objective: 'Regain momentum' },
+        ],
+      },
+    ],
+  };
+
+  const firstVersionId = parseStructureVersionId('sv-1707321600000-a1b2');
+  const secondVersionId = parseStructureVersionId('sv-1707321600001-c3d4');
+
+  return [
+    {
+      id: firstVersionId,
+      structure: initialStructure,
+      previousVersionId: null,
+      createdAtPageId: null,
+      rewriteReason: null,
+      preservedBeatIds: [],
+      createdAt: new Date('2025-01-01T00:00:00.000Z'),
+    },
+    {
+      id: secondVersionId,
+      structure: rewrittenStructure,
+      previousVersionId: firstVersionId,
+      createdAtPageId: parsePageId(4),
+      rewriteReason: 'Player joined the enemy faction',
+      preservedBeatIds: ['1.1'],
+      createdAt: new Date('2025-01-01T01:00:00.000Z'),
+    },
+  ] as const;
+}
+
 describe('story-repository', () => {
   const createdStoryIds = new Set<StoryId>();
 
@@ -95,6 +141,7 @@ describe('story-repository', () => {
     expect(loaded?.tone).toBe(story.tone);
     expect(loaded?.globalCanon).toEqual(story.globalCanon);
     expect(loaded?.structure).toBeNull();
+    expect(loaded?.structureVersions).toEqual([]);
     expect(loaded?.createdAt.toISOString()).toBe(createdAt.toISOString());
     expect(loaded?.updatedAt.toISOString()).toBe(updatedAt.toISOString());
   });
@@ -114,6 +161,42 @@ describe('story-repository', () => {
     const parsed = JSON.parse(persisted) as Record<string, unknown>;
     expect(parsed['structure']).toBeDefined();
     expect(parsed['storyArc']).toBeUndefined();
+  });
+
+  it('saveStory/loadStory preserves structureVersions and version chain fields', async () => {
+    const structureVersions = buildVersionedStructureChain();
+    const story = buildTestStory({
+      structure: structureVersions[1].structure,
+      structureVersions: [...structureVersions],
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded?.structureVersions).toEqual([...structureVersions]);
+  });
+
+  it('loadStory defaults structureVersions to empty array for legacy files', async () => {
+    const legacyStory = buildTestStory();
+    createdStoryIds.add(legacyStory.id);
+
+    await ensureDirectory(getStoryDir(legacyStory.id));
+    await writeJsonFile(getStoryFilePath(legacyStory.id), {
+      id: legacyStory.id,
+      title: legacyStory.title,
+      characterConcept: legacyStory.characterConcept,
+      worldbuilding: legacyStory.worldbuilding,
+      tone: legacyStory.tone,
+      globalCanon: legacyStory.globalCanon,
+      globalCharacterCanon: legacyStory.globalCharacterCanon,
+      structure: null,
+      createdAt: legacyStory.createdAt.toISOString(),
+      updatedAt: legacyStory.updatedAt.toISOString(),
+    });
+
+    const loaded = await loadStory(legacyStory.id);
+    expect(loaded?.structureVersions).toEqual([]);
   });
 
   it('loadStory returns null when story does not exist', async () => {

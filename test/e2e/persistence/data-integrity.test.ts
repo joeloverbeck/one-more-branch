@@ -237,8 +237,7 @@ describe('Data Integrity E2E', () => {
     expect(loadedStory?.structure).toEqual(story.structure);
     expect(loadedStory?.createdAt).toEqual(story.createdAt);
     expect(loadedStory?.updatedAt).toEqual(story.updatedAt);
-    // structureVersions persistence is introduced in STRREWSYS-009/010.
-    expect(loadedStory?.structureVersions).toBeUndefined();
+    expect(loadedStory?.structureVersions).toEqual(story.structureVersions ?? []);
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
     expect(loadedPage2?.accumulatedState.changes).toEqual(['reload-root', 'reload-ending']);
   });

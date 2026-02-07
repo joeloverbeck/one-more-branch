@@ -67,8 +67,7 @@ function expectLoadedStoryToMatchPersistedFields(loaded: Story | null, expected:
   expect(loaded?.structure).toEqual(expected.structure);
   expect(loaded?.createdAt).toEqual(expected.createdAt);
   expect(loaded?.updatedAt).toEqual(expected.updatedAt);
-  // structureVersions persistence is introduced in STRREWSYS-009/010.
-  expect(loaded?.structureVersions).toBeUndefined();
+  expect(loaded?.structureVersions).toEqual(expected.structureVersions ?? []);
 }
 
 describe('story-repository integration', () => {

@@ -1,4 +1,13 @@
-import { Story, StoryId, StoryMetadata, StoryStructure, parseStoryId } from '../models';
+import {
+  Story,
+  StoryId,
+  StoryMetadata,
+  StoryStructure,
+  VersionedStoryStructure,
+  parsePageId,
+  parseStoryId,
+  parseStructureVersionId,
+} from '../models';
 import {
   deleteDirectory,
   directoryExists,
@@ -23,8 +32,19 @@ interface StoryFileData {
   globalCanon: string[];
   globalCharacterCanon: Record<string, string[]>;
   structure: StoryStructureFileData | null;
+  structureVersions?: VersionedStoryStructureFileData[];
   createdAt: string;
   updatedAt: string;
+}
+
+interface VersionedStoryStructureFileData {
+  id: string;
+  structure: StoryStructureFileData;
+  previousVersionId: string | null;
+  createdAtPageId: number | null;
+  rewriteReason: string | null;
+  preservedBeatIds: string[];
+  createdAt: string;
 }
 
 interface StoryStructureFileData {
@@ -82,6 +102,37 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
   };
 }
 
+function versionedStructureToFileData(
+  version: VersionedStoryStructure,
+): VersionedStoryStructureFileData {
+  return {
+    id: version.id,
+    structure: structureToFileData(version.structure),
+    previousVersionId: version.previousVersionId,
+    createdAtPageId: version.createdAtPageId,
+    rewriteReason: version.rewriteReason,
+    preservedBeatIds: [...version.preservedBeatIds],
+    createdAt: version.createdAt.toISOString(),
+  };
+}
+
+function fileDataToVersionedStructure(
+  data: VersionedStoryStructureFileData,
+): VersionedStoryStructure {
+  return {
+    id: parseStructureVersionId(data.id),
+    structure: fileDataToStructure(data.structure),
+    previousVersionId:
+      data.previousVersionId === null
+        ? null
+        : parseStructureVersionId(data.previousVersionId),
+    createdAtPageId: data.createdAtPageId === null ? null : parsePageId(data.createdAtPageId),
+    rewriteReason: data.rewriteReason,
+    preservedBeatIds: [...data.preservedBeatIds],
+    createdAt: new Date(data.createdAt),
+  };
+}
+
 function storyToFileData(story: Story): StoryFileData {
   const globalCharacterCanon: Record<string, string[]> = {};
   for (const [name, facts] of Object.entries(story.globalCharacterCanon)) {
@@ -97,6 +148,7 @@ function storyToFileData(story: Story): StoryFileData {
     globalCanon: [...story.globalCanon],
     globalCharacterCanon,
     structure: story.structure ? structureToFileData(story.structure) : null,
+    structureVersions: (story.structureVersions ?? []).map(versionedStructureToFileData),
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
   };
@@ -111,6 +163,10 @@ function fileDataToStory(data: StoryFileData): Story {
     }
   }
 
+  const structureVersions = data.structureVersions
+    ? data.structureVersions.map(fileDataToVersionedStructure)
+    : [];
+
   return {
     id: parseStoryId(data.id),
     title: data.title,
@@ -120,6 +176,7 @@ function fileDataToStory(data: StoryFileData): Story {
     globalCanon: [...data.globalCanon],
     globalCharacterCanon,
     structure: data.structure ? fileDataToStructure(data.structure) : null,
+    structureVersions,
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
   };
