@@ -15,7 +15,8 @@ describe('validateGenerationResponse', () => {
         healthAdded: ['  Minor wound on left arm  '],
         healthRemoved: ['  Headache  '],
         isEnding: false,
-        storyArc: '  Survive long enough to claim the throne.  ',
+        beatConcluded: true,
+        beatResolution: '  You seized the throne room before dawn.  ',
       },
       'raw json response',
     );
@@ -27,7 +28,8 @@ describe('validateGenerationResponse', () => {
     expect(result.newCanonFacts).toEqual(['The keep is haunted by old wardens']);
     expect(result.healthAdded).toEqual(['Minor wound on left arm']);
     expect(result.healthRemoved).toEqual(['Headache']);
-    expect(result.storyArc).toBe('Survive long enough to claim the throne.');
+    expect(result.beatConcluded).toBe(true);
+    expect(result.beatResolution).toBe('You seized the throne room before dawn.');
     expect(result.rawResponse).toBe('raw json response');
   });
 
@@ -50,7 +52,7 @@ describe('validateGenerationResponse', () => {
     expect(result.newCanonFacts).toEqual(['The moon well is beneath the keep']);
   });
 
-  it('should handle missing optional storyArc', () => {
+  it('should default beat evaluation fields when missing', () => {
     const result = validateGenerationResponse(
       {
         narrative: VALID_NARRATIVE,
@@ -65,7 +67,8 @@ describe('validateGenerationResponse', () => {
       'raw json response',
     );
 
-    expect(result.storyArc).toBeUndefined();
+    expect(result.beatConcluded).toBe(false);
+    expect(result.beatResolution).toBe('');
   });
 
   it('should trim and filter characterCanonFacts', () => {
@@ -192,6 +195,25 @@ describe('validateGenerationResponse', () => {
     );
 
     expect(result.rawResponse).toBe(rawResponse);
+  });
+
+  it('should not include legacy storyArc in output', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the door', 'Go back'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
+        isEnding: false,
+        storyArc: 'legacy',
+      },
+      'raw json response',
+    ) as Record<string, unknown>;
+
+    expect(result['storyArc']).toBeUndefined();
   });
 
   it('should trim and filter health fields', () => {

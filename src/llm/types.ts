@@ -14,7 +14,8 @@ export interface GenerationResult {
   characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
   characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
   isEnding: boolean;
-  storyArc?: string;
+  beatConcluded: boolean;
+  beatResolution: string;
   rawResponse: string;
 }
 

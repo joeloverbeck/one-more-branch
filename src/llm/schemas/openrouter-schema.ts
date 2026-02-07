@@ -107,12 +107,16 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           type: 'boolean',
           description: 'True only when the story concludes and choices is empty.',
         },
-        storyArc: {
+        beatConcluded: {
+          type: 'boolean',
+          description: 'True if current beat objective was fulfilled in this scene.',
+        },
+        beatResolution: {
           type: 'string',
-          description: 'Main goal/conflict for the story opening page.',
+          description: 'If beatConcluded is true, briefly describe how the beat was resolved.',
         },
       },
-      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'isEnding'],
+      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'isEnding', 'beatConcluded', 'beatResolution'],
       additionalProperties: false,
     },
   },

@@ -61,7 +61,8 @@ export const GenerationResultSchema = z
     characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
     characterStateChangesRemoved: CharacterStateChangesArraySchema.optional().default([]),
     isEnding: z.boolean(),
-    storyArc: z.string().optional().default(''),
+    beatConcluded: z.boolean().default(false),
+    beatResolution: z.string().default(''),
   })
   .superRefine((data, ctx) => {
     if (data.isEnding && data.choices.length > 0) {

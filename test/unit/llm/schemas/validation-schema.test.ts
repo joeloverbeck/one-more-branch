@@ -34,7 +34,7 @@ describe('GenerationResultSchema', () => {
       expect(result.choices).toHaveLength(0);
     });
 
-    it('should validate opening page with story arc', () => {
+    it('should validate beat evaluation fields when provided', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Take the oath', 'Leave the hall'],
@@ -42,10 +42,12 @@ describe('GenerationResultSchema', () => {
         stateChangesRemoved: [],
         newCanonFacts: ['The throne has no heir'],
         isEnding: false,
-        storyArc: 'Unify the fractured kingdoms before winter.',
+        beatConcluded: true,
+        beatResolution: 'You secured the oath of the border clans.',
       });
 
-      expect(result.storyArc).toBe('Unify the fractured kingdoms before winter.');
+      expect(result.beatConcluded).toBe(true);
+      expect(result.beatResolution).toBe('You secured the oath of the border clans.');
     });
 
     it('should validate response with character canon facts', () => {
@@ -132,7 +134,7 @@ describe('GenerationResultSchema', () => {
       expect(result.inventoryRemoved).toEqual([]);
     });
 
-    it('should default storyArc to empty string when not provided', () => {
+    it('should default beat evaluation fields when not provided', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
@@ -142,7 +144,24 @@ describe('GenerationResultSchema', () => {
         isEnding: false,
       });
 
-      expect(result.storyArc).toBe('');
+      expect(result.beatConcluded).toBe(false);
+      expect(result.beatResolution).toBe('');
+    });
+
+    it('should ignore legacy storyArc field', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        isEnding: false,
+        storyArc: 'Legacy arc field',
+      });
+
+      expect('storyArc' in result).toBe(false);
+      expect(result.beatConcluded).toBe(false);
+      expect(result.beatResolution).toBe('');
     });
   });
 

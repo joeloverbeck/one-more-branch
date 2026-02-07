@@ -62,6 +62,8 @@ describe('schema pipeline integration', () => {
       expect(schemaProps.required).toContain('healthAdded');
       expect(schemaProps.required).toContain('healthRemoved');
       expect(schemaProps.required).toContain('isEnding');
+      expect(schemaProps.required).toContain('beatConcluded');
+      expect(schemaProps.required).toContain('beatResolution');
 
       // Validate a response through the full pipeline
       const rawJson = {
@@ -76,7 +78,8 @@ describe('schema pipeline integration', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
-        storyArc: 'Survive the plague city and find the cure.',
+        beatConcluded: true,
+        beatResolution: 'You reached the plague archives alive.',
       };
 
       const result = validateGenerationResponse(rawJson, JSON.stringify(rawJson));
@@ -90,7 +93,8 @@ describe('schema pipeline integration', () => {
       expect(result.healthAdded).toEqual([]);
       expect(result.healthRemoved).toEqual([]);
       expect(result.isEnding).toBe(false);
-      expect(result.storyArc).toBe('Survive the plague city and find the cure.');
+      expect(result.beatConcluded).toBe(true);
+      expect(result.beatResolution).toBe('You reached the plague archives alive.');
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
     });
 
@@ -291,7 +295,8 @@ describe('schema pipeline integration', () => {
         healthAdded: ['  Minor wound on left arm  '],
         healthRemoved: ['  Headache  '],
         isEnding: false,
-        storyArc: '  Find the truth  ',
+        beatConcluded: true,
+        beatResolution: '  You found the encoded ledger.  ',
       };
 
       const result = validateGenerationResponse(rawJson, 'raw');
@@ -307,7 +312,8 @@ describe('schema pipeline integration', () => {
       expect(result.inventoryRemoved).toEqual(['Old map']);
       expect(result.healthAdded).toEqual(['Minor wound on left arm']);
       expect(result.healthRemoved).toEqual(['Headache']);
-      expect(result.storyArc).toBe('Find the truth');
+      expect(result.beatConcluded).toBe(true);
+      expect(result.beatResolution).toBe('You found the encoded ledger.');
     });
 
     it('should filter empty strings from arrays', () => {
@@ -358,7 +364,8 @@ describe('schema pipeline integration', () => {
       // Defaults should be applied
       expect(result.inventoryAdded).toEqual([]);
       expect(result.inventoryRemoved).toEqual([]);
-      expect(result.storyArc).toBe('');
+      expect(result.beatConcluded).toBe(false);
+      expect(result.beatResolution).toBe('');
       expect(result.newCharacterCanonFacts).toEqual({});
     });
 

@@ -6,7 +6,6 @@ export function validateGenerationResponse(
   rawResponse: string,
 ): GenerationResult {
   const validated = GenerationResultSchema.parse(rawJson);
-  const storyArc = validated.storyArc.trim();
 
   // Process newCharacterCanonFacts: trim all values
   const newCharacterCanonFacts: Record<string, string[]> = {};
@@ -43,7 +42,8 @@ export function validateGenerationResponse(
     characterStateChangesAdded,
     characterStateChangesRemoved,
     isEnding: validated.isEnding,
-    storyArc: storyArc ? storyArc : undefined,
+    beatConcluded: validated.beatConcluded,
+    beatResolution: validated.beatResolution.trim(),
     rawResponse,
   };
 }

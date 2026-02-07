@@ -11,6 +11,7 @@
 import {
   GenerationResultSchema,
   STORY_GENERATION_SCHEMA,
+  STRUCTURE_GENERATION_SCHEMA,
   isStructuredOutputNotSupported,
   validateGenerationResponse,
 } from '../../../src/llm/schemas';
@@ -19,6 +20,11 @@ describe('schemas barrel exports', () => {
   it('should export STORY_GENERATION_SCHEMA from barrel', () => {
     expect(STORY_GENERATION_SCHEMA).toBeDefined();
     expect(STORY_GENERATION_SCHEMA.type).toBe('json_schema');
+  });
+
+  it('should export STRUCTURE_GENERATION_SCHEMA from barrel', () => {
+    expect(STRUCTURE_GENERATION_SCHEMA).toBeDefined();
+    expect(STRUCTURE_GENERATION_SCHEMA.type).toBe('json_schema');
   });
 
   it('should export GenerationResultSchema from barrel', () => {

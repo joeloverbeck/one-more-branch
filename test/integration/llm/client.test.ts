@@ -47,7 +47,8 @@ describe('llm client integration (mocked fetch)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Restore the observatory before dawn breaks forever.',
+      beatConcluded: false,
+      beatResolution: '',
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
@@ -65,7 +66,8 @@ describe('llm client integration (mocked fetch)', () => {
     expect(result.choices.length).toBeGreaterThanOrEqual(2);
     expect(result.choices.length).toBeLessThanOrEqual(5);
     expect(result.isEnding).toBe(false);
-    expect(result.storyArc).toBeDefined();
+    expect(result.beatConcluded).toBe(false);
+    expect(result.beatResolution).toBe('');
   });
 
   it('should generate continuation page that reflects selected choice context', async () => {
@@ -81,6 +83,8 @@ describe('llm client integration (mocked fetch)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
+      beatConcluded: false,
+      beatResolution: '',
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
@@ -121,7 +125,8 @@ describe('llm client integration (mocked fetch)', () => {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      storyArc: 'Restore the observatory before dawn breaks forever.',
+      beatConcluded: false,
+      beatResolution: '',
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(invalidStructured)));

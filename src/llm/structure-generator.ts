@@ -4,7 +4,8 @@ import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-c
 import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
 import { withRetry } from './retry.js';
-import { type GenerationOptions, type JsonSchema, LLMError } from './types.js';
+import { STRUCTURE_GENERATION_SCHEMA } from './schemas/structure-schema.js';
+import { type GenerationOptions, LLMError } from './types.js';
 
 export interface StructureGenerationResult {
   overallTheme: string;
@@ -20,52 +21,6 @@ export interface StructureGenerationResult {
   }>;
   rawResponse: string;
 }
-
-const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'story_structure_generation',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['overallTheme', 'acts'],
-      properties: {
-        overallTheme: { type: 'string' },
-        acts: {
-          type: 'array',
-          minItems: 3,
-          maxItems: 3,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['name', 'objective', 'stakes', 'entryCondition', 'beats'],
-            properties: {
-              name: { type: 'string' },
-              objective: { type: 'string' },
-              stakes: { type: 'string' },
-              entryCondition: { type: 'string' },
-              beats: {
-                type: 'array',
-                minItems: 2,
-                maxItems: 4,
-                items: {
-                  type: 'object',
-                  additionalProperties: false,
-                  required: ['description', 'objective'],
-                  properties: {
-                    description: { type: 'string' },
-                    objective: { type: 'string' },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-};
 
 function parseStructureResponse(responseText: string): Omit<StructureGenerationResult, 'rawResponse'> {
   let parsed: unknown;

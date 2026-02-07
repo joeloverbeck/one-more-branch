@@ -2,6 +2,7 @@
 // This file exists for backward compatibility and can be removed once all imports are updated
 export {
   STORY_GENERATION_SCHEMA,
+  STRUCTURE_GENERATION_SCHEMA,
   GenerationResultSchema,
   type ValidatedGenerationResult,
   validateGenerationResponse,
