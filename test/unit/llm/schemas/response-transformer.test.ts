@@ -325,4 +325,143 @@ describe('validateGenerationResponse', () => {
 
     expect(result.deviation.detected).toBe(false);
   });
+
+  describe('malformed choices array recovery', () => {
+    it('should recover choices from brace-wrapped escaped-quote format', () => {
+      // This is the exact malformation pattern seen in production:
+      // choices: ["{\"Choice 1\",\"Choice 2\",\"Choice 3\"}"]
+      const malformedChoices = [
+        '{\\"Grab the clothes and make a run for it\\",\\"Sprint back toward the village\\",\\"Stay perfectly still\\"}',
+      ];
+
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: malformedChoices,
+          stateChangesAdded: [],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          healthAdded: [],
+          healthRemoved: [],
+          isEnding: false,
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+        },
+        'raw json response',
+      );
+
+      expect(result.choices).toEqual([
+        'Grab the clothes and make a run for it',
+        'Sprint back toward the village',
+        'Stay perfectly still',
+      ]);
+    });
+
+    it('should recover choices from brace-wrapped regular-quote format', () => {
+      // Alternative malformation: {"Choice 1","Choice 2"}
+      const malformedChoices = ['{"Open the door","Run away","Hide"}'];
+
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: malformedChoices,
+          stateChangesAdded: [],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          healthAdded: [],
+          healthRemoved: [],
+          isEnding: false,
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+        },
+        'raw json response',
+      );
+
+      expect(result.choices).toEqual(['Open the door', 'Run away', 'Hide']);
+    });
+
+    it('should recover choices from bracket-wrapped JSON array format', () => {
+      // Another malformation: stringified JSON array
+      const malformedChoices = ['["Fight back","Flee","Negotiate"]'];
+
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: malformedChoices,
+          stateChangesAdded: [],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          healthAdded: [],
+          healthRemoved: [],
+          isEnding: false,
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+        },
+        'raw json response',
+      );
+
+      expect(result.choices).toEqual(['Fight back', 'Flee', 'Negotiate']);
+    });
+
+    it('should not modify properly formatted choices array', () => {
+      const properChoices = ['Open the door', 'Go back'];
+
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: properChoices,
+          stateChangesAdded: [],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          healthAdded: [],
+          healthRemoved: [],
+          isEnding: false,
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+        },
+        'raw json response',
+      );
+
+      expect(result.choices).toEqual(['Open the door', 'Go back']);
+    });
+
+    it('should handle four choices after recovery', () => {
+      // Test with 4 choices to ensure we handle the full range correctly
+      const malformedChoices = ['{"Fight the monster","Run away","Hide behind cover","Call for help"}'];
+
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: malformedChoices,
+          stateChangesAdded: [],
+          stateChangesRemoved: [],
+          newCanonFacts: [],
+          healthAdded: [],
+          healthRemoved: [],
+          isEnding: false,
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+        },
+        'raw json response',
+      );
+
+      expect(result.choices).toHaveLength(4);
+      expect(result.choices).toEqual([
+        'Fight the monster',
+        'Run away',
+        'Hide behind cover',
+        'Call for help',
+      ]);
+    });
+  });
 });

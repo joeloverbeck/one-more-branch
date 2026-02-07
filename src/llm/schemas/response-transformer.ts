@@ -2,11 +2,122 @@ import { createBeatDeviation, createNoDeviation } from '../../models/story-arc.j
 import type { ContinuationGenerationResult } from '../types.js';
 import { GenerationResultSchema } from './validation-schema.js';
 
+/**
+ * Detects if the choices array contains a single malformed string
+ * that looks like a stringified array (e.g., {\"Choice1\",\"Choice2\"})
+ */
+function isMalformedChoicesArray(choices: unknown): boolean {
+  if (!Array.isArray(choices) || choices.length !== 1) return false;
+  const item: unknown = choices[0];
+  if (typeof item !== 'string') return false;
+  // Pattern: starts with { and contains escaped quotes, or contains multiple comma-separated quoted strings
+  const trimmed = item.trim();
+  return (
+    (trimmed.startsWith('{') && trimmed.includes('\\"')) ||
+    (trimmed.startsWith('{') && trimmed.includes('"')) ||
+    // Also catch standard JSON array accidentally stringified
+    (trimmed.startsWith('[') && trimmed.includes('"'))
+  );
+}
+
+/**
+ * Extracts individual choice strings from a malformed single-string choices array.
+ * Handles patterns like: {\"Choice 1\",\"Choice 2\"} or ["Choice 1","Choice 2"]
+ */
+function extractChoicesFromMalformedString(malformed: string): string[] {
+  let content = malformed.trim();
+
+  // Remove outer braces/brackets if present
+  if ((content.startsWith('{') && content.endsWith('}')) ||
+      (content.startsWith('[') && content.endsWith(']'))) {
+    content = content.slice(1, -1);
+  }
+
+  const choices: string[] = [];
+
+  // Check if content uses escaped quotes (\" pattern)
+  if (content.includes('\\"')) {
+    // Pattern: \"text\",\"text\" - split on \",\" and strip leading/trailing \"
+    const parts = content.split(/\\",\\"/);
+    for (const part of parts) {
+      // Remove leading \" and trailing \" if present
+      let cleaned = part;
+      if (cleaned.startsWith('\\"')) {
+        cleaned = cleaned.slice(2);
+      }
+      if (cleaned.endsWith('\\"')) {
+        cleaned = cleaned.slice(0, -2);
+      }
+      // Handle any remaining escaped quotes within the choice text
+      cleaned = cleaned.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      if (cleaned.trim()) {
+        choices.push(cleaned.trim());
+      }
+    }
+  } else {
+    // Regular quoted strings: "text","text"
+    const regularQuoteRegex = /"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+    let match: RegExpExecArray | null;
+    while ((match = regularQuoteRegex.exec(content)) !== null) {
+      const capturedGroup = match[1];
+      if (capturedGroup !== undefined) {
+        const choice = capturedGroup.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        if (choice.trim()) {
+          choices.push(choice.trim());
+        }
+      }
+    }
+  }
+
+  return choices;
+}
+
+/**
+ * Normalizes the raw JSON response to fix common LLM malformation patterns
+ * before Zod validation. Currently handles:
+ * - Choices array containing a single stringified array element
+ */
+function normalizeRawResponse(rawJson: unknown): unknown {
+  if (typeof rawJson !== 'object' || rawJson === null) {
+    return rawJson;
+  }
+
+  const obj = rawJson as Record<string, unknown>;
+  const choices = obj['choices'];
+
+  // Check for malformed choices array
+  if (isMalformedChoicesArray(choices)) {
+    const choicesArray = choices as string[];
+    const malformedString = choicesArray[0];
+    if (typeof malformedString === 'string') {
+      const extractedChoices = extractChoicesFromMalformedString(malformedString);
+
+      if (extractedChoices.length >= 2) {
+        console.warn(
+          `[response-transformer] Recovered ${extractedChoices.length} choices from malformed single-string array`
+        );
+        return {
+          ...obj,
+          choices: extractedChoices,
+        };
+      }
+      // If extraction failed or yielded too few choices, let validation fail naturally
+      console.warn(
+        '[response-transformer] Failed to recover choices from malformed string, proceeding with original'
+      );
+    }
+  }
+
+  return rawJson;
+}
+
 export function validateGenerationResponse(
   rawJson: unknown,
   rawResponse: string,
 ): ContinuationGenerationResult {
-  const validated = GenerationResultSchema.parse(rawJson);
+  // Apply normalization to fix common LLM malformation patterns before validation
+  const normalizedJson = normalizeRawResponse(rawJson);
+  const validated = GenerationResultSchema.parse(normalizedJson);
 
   // Process newCharacterCanonFacts: trim all values
   const newCharacterCanonFacts: Record<string, string[]> = {};

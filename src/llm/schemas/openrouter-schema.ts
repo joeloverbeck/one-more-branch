@@ -17,7 +17,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of 2-4 meaningful choices. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
+            'Array of 2-4 meaningful choices as SEPARATE string elements. CRITICAL FORMAT: Return as ["Choice 1", "Choice 2", "Choice 3"] where each choice is its own array element. Do NOT return a single stringified element. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
         },
         stateChangesAdded: {
           type: 'array',
