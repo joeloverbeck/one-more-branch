@@ -1,5 +1,13 @@
 import { generateContinuationPage, generateOpeningPage } from '../../../src/llm';
-import { createChoice, createPage, createStory, parsePageId, Story } from '../../../src/models';
+import {
+  createBeatDeviation,
+  createChoice,
+  createInitialVersionedStructure,
+  createPage,
+  createStory,
+  parsePageId,
+  Story,
+} from '../../../src/models';
 import { createInitialStructureState } from '../../../src/engine/structure-manager';
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
@@ -186,10 +194,12 @@ describe('page-service', () => {
 
     it('creates child page with proper parent linkage and sequential id', async () => {
       const structure = buildStructure();
+      const initialStructureVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
       const story = buildStory({
         globalCanon: ['The watch captain is corrupt'],
         structure,
+        structureVersions: [initialStructureVersion],
       });
       const parentPage = createPage({
         id: parsePageId(2),
@@ -237,11 +247,49 @@ describe('page-service', () => {
       expect(page.id).toBe(8);
       expect(page.parentPageId).toBe(parentPage.id);
       expect(page.parentChoiceIndex).toBe(0);
+      expect(page.structureVersionId).toBe(initialStructureVersion.id);
       expect(page.accumulatedState.changes).toEqual([
         ...parentPage.accumulatedState.changes,
         'Gained rooftop position',
       ]);
       expect(updatedStory.globalCanon).toContain('Clocktower guards rotate every ten minutes');
+    });
+
+    it('leaves structureVersionId null when no story structure versions exist', async () => {
+      const structure = buildStructure();
+      const story = buildStory({ structure });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You slip into the archive district after curfew.',
+        choices: [createChoice('Scale the intake vent'), createChoice('Wait for guard change')],
+        stateChanges: { added: ['Reached archive district'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You keep to the shadows while patrols pass.',
+        choices: ['Move to the vent', 'Retreat to safehouse'],
+        stateChangesAdded: ['Stayed concealed'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.structureVersionId).toBeNull();
     });
 
     it('advances structure state when continuation result concludes the current beat', async () => {
@@ -390,6 +438,53 @@ describe('page-service', () => {
       expect(branchOne.page.accumulatedStructureState.currentBeatIndex).toBe(1);
       expect(branchTwo.page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
       expect(parentPage.accumulatedStructureState.currentBeatIndex).toBe(0);
+    });
+
+    it('keeps generation behavior unchanged when deviation is present', async () => {
+      const structure = buildStructure();
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You consider betraying your original mission.',
+        choices: [createChoice('Join imperial command'), createChoice('Stay with resistance')],
+        stateChanges: { added: ['Mission allegiance uncertain'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You publicly defect and swear service to the empire.',
+        choices: ['Take command posting', 'Return as double agent'],
+        stateChangesAdded: ['Aligned with imperial command'],
+        stateChangesRemoved: [],
+        newCanonFacts: ['Resistance branded you a traitor'],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        deviation: createBeatDeviation(
+          'Current infiltration beats are invalid after defection.',
+          ['1.2'],
+          'Protagonist joined imperial command hierarchy.',
+        ),
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.id).toBe(3);
+      expect(page.parentPageId).toBe(parentPage.id);
+      expect(page.accumulatedStructureState).toBe(parentStructureState);
+      expect(updatedStory.structure).toBe(story.structure);
+      expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
     });
   });
 

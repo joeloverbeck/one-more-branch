@@ -59,8 +59,13 @@ describe('StructureVersion', () => {
     });
 
     it('generates unique IDs across repeated calls', () => {
-      const ids = new Set(Array.from({ length: 100 }, () => createStructureVersionId()));
-      expect(ids.size).toBe(100);
+      const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1707321600000);
+      try {
+        const ids = new Set(Array.from({ length: 100 }, () => createStructureVersionId()));
+        expect(ids.size).toBe(100);
+      } finally {
+        nowSpy.mockRestore();
+      }
     });
   });
 

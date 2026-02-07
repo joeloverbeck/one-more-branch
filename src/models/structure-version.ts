@@ -15,9 +15,19 @@ export interface VersionedStoryStructure {
 }
 
 const STRUCTURE_VERSION_ID_PATTERN = /^sv-\d{13}-[0-9a-f]{4}$/;
+let lastVersionTimestamp = 0;
+let versionSequence = randomBytes(2).readUInt16BE(0);
 
 export function createStructureVersionId(): StructureVersionId {
-  return `sv-${Date.now()}-${randomBytes(2).toString('hex')}` as StructureVersionId;
+  const now = Date.now();
+  if (now === lastVersionTimestamp) {
+    versionSequence = (versionSequence + 1) & 0xffff;
+  } else {
+    lastVersionTimestamp = now;
+    versionSequence = randomBytes(2).readUInt16BE(0);
+  }
+
+  return `sv-${now}-${versionSequence.toString(16).padStart(4, '0')}` as StructureVersionId;
 }
 
 export function isStructureVersionId(value: unknown): value is StructureVersionId {

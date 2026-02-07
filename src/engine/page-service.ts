@@ -4,6 +4,7 @@ import {
   createEmptyAccumulatedStructureState,
   createPage,
   generatePageId,
+  getLatestStructureVersion,
   Page,
   Story,
   parsePageId,
@@ -77,6 +78,7 @@ export async function generateNextPage(
   const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
   const parentAccumulatedCharacterState = getParentAccumulatedCharacterState(parentPage);
   const parentStructureState = parentPage.accumulatedStructureState;
+  const currentStructureVersion = getLatestStructureVersion(story);
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -132,6 +134,7 @@ export async function generateNextPage(
     parentAccumulatedHealth,
     parentAccumulatedCharacterState,
     parentAccumulatedStructureState: newStructureState,
+    structureVersionId: currentStructureVersion?.id ?? null,
   });
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
