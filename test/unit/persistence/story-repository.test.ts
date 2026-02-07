@@ -3,6 +3,7 @@ import {
   Story,
   StoryId,
   StoryStructure,
+  VersionedStoryStructure,
   createStory,
   parsePageId,
   parseStoryId,
@@ -65,7 +66,7 @@ function buildTestStory(overrides?: Partial<Story>): Story {
   };
 }
 
-function buildVersionedStructureChain() {
+function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
   const initialStructure = buildTestStructure();
   const rewrittenStructure: StoryStructure = {
     ...buildTestStructure(),

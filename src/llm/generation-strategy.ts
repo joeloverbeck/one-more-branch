@@ -10,14 +10,14 @@ import {
 import {
   LLMError,
   type ChatMessage,
+  type ContinuationGenerationResult,
   type GenerationOptions,
-  type GenerationResult,
 } from './types.js';
 
 async function callOpenRouterStructured(
   messages: ChatMessage[],
   options: GenerationOptions,
-): Promise<GenerationResult> {
+): Promise<ContinuationGenerationResult> {
   const config = getConfig().llm;
   const model = options.model ?? config.defaultModel;
   const temperature = options.temperature ?? config.temperature;
@@ -89,7 +89,7 @@ async function callOpenRouterStructured(
 export async function generateWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions,
-): Promise<GenerationResult> {
+): Promise<ContinuationGenerationResult> {
   try {
     return await callOpenRouterStructured(messages, options);
   } catch (error) {

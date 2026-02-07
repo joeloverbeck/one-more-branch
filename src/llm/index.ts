@@ -1,5 +1,9 @@
 export type {
   GenerationResult,
+  ContinuationGenerationResult,
+  CompletedBeat,
+  StructureRewriteContext,
+  StructureRewriteResult,
   GenerationOptions,
   OpeningContext,
   ContinuationContext,

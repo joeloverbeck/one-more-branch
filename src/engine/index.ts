@@ -17,6 +17,10 @@ export {
   createInitialStructureState,
   advanceStructureState,
   applyStructureProgression,
+  extractCompletedBeats,
+  buildRewriteContext,
+  getPreservedBeatIds,
+  validatePreservedBeats,
 } from './structure-manager';
 export type { StructureProgressionResult, StructureGenerationResult } from './structure-manager';
 export {

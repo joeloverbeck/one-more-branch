@@ -3,12 +3,14 @@ import {
   createBeatDeviation,
   createChoice,
   createInitialVersionedStructure,
+  createNoDeviation,
   createPage,
   createStory,
   parsePageId,
   Story,
 } from '../../../src/models';
 import { createInitialStructureState } from '../../../src/engine/structure-manager';
+import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
 import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
@@ -29,6 +31,10 @@ jest.mock('../../../src/persistence', () => ({
   },
 }));
 
+jest.mock('../../../src/engine/structure-rewriter', () => ({
+  createStructureRewriter: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateContinuationPage = generateContinuationPage as jest.MockedFunction<
   typeof generateContinuationPage
@@ -41,6 +47,8 @@ const mockedStorage = storage as {
   updateChoiceLink: jest.Mock;
   updateStory: jest.Mock;
 };
+
+const mockedCreateStructureRewriter = createStructureRewriter as jest.MockedFunction<typeof createStructureRewriter>;
 
 function buildStory(overrides?: Partial<Story>): Story {
   return {
@@ -440,7 +448,162 @@ describe('page-service', () => {
       expect(parentPage.accumulatedStructureState.currentBeatIndex).toBe(0);
     });
 
-    it('keeps generation behavior unchanged when deviation is present', async () => {
+    it('does not trigger structure rewrite when deviation is not detected', async () => {
+      const structure = buildStructure();
+      const initialStructureVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialStructureVersion],
+      });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You consider your next move.',
+        choices: [createChoice('Proceed carefully'), createChoice('Rush ahead')],
+        stateChanges: { added: ['Assessed situation'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You move carefully through the shadows.',
+        choices: ['Continue forward', 'Take alternate route'],
+        stateChangesAdded: ['Moved undetected'],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        beatConcluded: false,
+        beatResolution: '',
+        deviation: createNoDeviation(),
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
+      expect(page.structureVersionId).toBe(initialStructureVersion.id);
+      expect(updatedStory.structureVersions).toHaveLength(1);
+      expect(updatedStory.structureVersions?.[0]?.id).toBe(initialStructureVersion.id);
+    });
+
+    it('triggers structure rewrite and creates new version when deviation is detected', async () => {
+      const structure = buildStructure();
+      const initialStructureVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialStructureVersion],
+      });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You consider betraying your original mission.',
+        choices: [createChoice('Join imperial command'), createChoice('Stay with resistance')],
+        stateChanges: { added: ['Mission allegiance uncertain'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+      });
+
+      const rewrittenStructure: StoryStructure = {
+        overallTheme: 'Outmaneuver the imperial intelligence network.',
+        generatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'Imperial Service',
+            objective: 'Prove loyalty to the empire',
+            stakes: 'Discovery means execution',
+            entryCondition: 'After defection',
+            beats: [
+              {
+                id: '1.1',
+                description: 'Accept imperial posting',
+                objective: 'Gain trust within command structure',
+              },
+              {
+                id: '1.2',
+                description: 'First loyalty test',
+                objective: 'Prove allegiance to new masters',
+              },
+            ],
+          },
+        ],
+      };
+
+      const mockRewriter = {
+        rewriteStructure: jest.fn().mockResolvedValue({
+          structure: rewrittenStructure,
+          preservedBeatIds: [],
+          rawResponse: 'rewritten',
+        }),
+      };
+      mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateContinuationPage.mockResolvedValue({
+        narrative: 'You publicly defect and swear service to the empire.',
+        choices: ['Take command posting', 'Return as double agent'],
+        stateChangesAdded: ['Aligned with imperial command'],
+        stateChangesRemoved: [],
+        newCanonFacts: ['Resistance branded you a traitor'],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        isEnding: false,
+        rawResponse: 'raw',
+        beatConcluded: false,
+        beatResolution: '',
+        deviation: createBeatDeviation(
+          'Current infiltration beats are invalid after defection.',
+          ['1.2'],
+          'Protagonist joined imperial command hierarchy.',
+        ),
+      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+
+      const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(mockedCreateStructureRewriter).toHaveBeenCalled();
+      expect(mockRewriter.rewriteStructure).toHaveBeenCalledWith(
+        expect.objectContaining({
+          characterConcept: story.characterConcept,
+          worldbuilding: story.worldbuilding,
+          tone: story.tone,
+          deviationReason: 'Current infiltration beats are invalid after defection.',
+          narrativeSummary: 'Protagonist joined imperial command hierarchy.',
+        }),
+        'test-key',
+      );
+
+      expect(page.id).toBe(3);
+      expect(page.parentPageId).toBe(parentPage.id);
+      expect(page.structureVersionId).not.toBe(initialStructureVersion.id);
+      expect(page.structureVersionId).not.toBeNull();
+
+      expect(updatedStory.structureVersions).toHaveLength(2);
+      expect(updatedStory.structureVersions?.[1]?.previousVersionId).toBe(initialStructureVersion.id);
+      expect(updatedStory.structureVersions?.[1]?.rewriteReason).toBe(
+        'Current infiltration beats are invalid after defection.',
+      );
+      expect(updatedStory.structureVersions?.[1]?.createdAtPageId).toBe(page.id);
+      expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
+    });
+
+    it('does not trigger rewrite when story has no structure versions', async () => {
       const structure = buildStructure();
       const parentStructureState = createInitialStructureState(structure);
       const story = buildStory({ structure });
@@ -461,7 +624,7 @@ describe('page-service', () => {
         choices: ['Take command posting', 'Return as double agent'],
         stateChangesAdded: ['Aligned with imperial command'],
         stateChangesRemoved: [],
-        newCanonFacts: ['Resistance branded you a traitor'],
+        newCanonFacts: [],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -471,20 +634,21 @@ describe('page-service', () => {
         characterStateChangesRemoved: [],
         isEnding: false,
         rawResponse: 'raw',
+        beatConcluded: false,
+        beatResolution: '',
         deviation: createBeatDeviation(
-          'Current infiltration beats are invalid after defection.',
+          'Deviation reason.',
           ['1.2'],
-          'Protagonist joined imperial command hierarchy.',
+          'Narrative summary.',
         ),
       } as Awaited<ReturnType<typeof generateContinuationPage>>);
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      expect(page.id).toBe(3);
-      expect(page.parentPageId).toBe(parentPage.id);
-      expect(page.accumulatedStructureState).toBe(parentStructureState);
-      expect(updatedStory.structure).toBe(story.structure);
-      expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
+      expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
+      expect(page.structureVersionId).toBeNull();
+      // Story without explicit structureVersions gets an empty array from createStory
+      expect(updatedStory.structureVersions).toHaveLength(0);
     });
   });
 

@@ -320,10 +320,10 @@ describe('page-serializer', () => {
 
       it('throws error when accumulatedStructureState is missing', () => {
         const fileData = buildTestFileData();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delete (fileData as any).accumulatedStructureState;
+        const invalidFileData: Partial<typeof fileData> = { ...fileData };
+        delete invalidFileData.accumulatedStructureState;
 
-        expect(() => deserializePage(fileData)).toThrow(
+        expect(() => deserializePage(invalidFileData as typeof fileData)).toThrow(
           'Invalid page data: missing accumulatedStructureState for page 1'
         );
       });

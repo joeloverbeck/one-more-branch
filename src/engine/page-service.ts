@@ -1,10 +1,13 @@
 import { generateContinuationPage, generateOpeningPage } from '../llm';
 import {
+  addStructureVersion,
   createChoice,
   createEmptyAccumulatedStructureState,
   createPage,
+  createRewrittenVersionedStructure,
   generatePageId,
   getLatestStructureVersion,
+  isDeviation,
   Page,
   Story,
   parsePageId,
@@ -15,7 +18,8 @@ import { createCharacterStateChanges, getParentAccumulatedCharacterState } from 
 import { createHealthChanges, getParentAccumulatedHealth } from './health-manager';
 import { createInventoryChanges, getParentAccumulatedInventory } from './inventory-manager';
 import { createStateChanges, getParentAccumulatedState } from './state-manager';
-import { applyStructureProgression, createInitialStructureState } from './structure-manager';
+import { applyStructureProgression, buildRewriteContext, createInitialStructureState } from './structure-manager';
+import { createStructureRewriter } from './structure-rewriter';
 import { EngineError } from './types';
 
 export async function generateFirstPage(
@@ -98,6 +102,40 @@ export async function generateNextPage(
     { apiKey },
   );
 
+  const newPageId = generatePageId(maxPageId);
+
+  // Handle deviation if detected - triggers structure rewrite
+  let storyForRewrite = story;
+  let activeStructureVersion = currentStructureVersion;
+
+  if (
+    story.structure &&
+    currentStructureVersion &&
+    'deviation' in result &&
+    isDeviation(result.deviation)
+  ) {
+    const rewriteContext = buildRewriteContext(
+      story,
+      currentStructureVersion,
+      parentStructureState,
+      result.deviation,
+    );
+
+    const rewriter = createStructureRewriter();
+    const rewriteResult = await rewriter.rewriteStructure(rewriteContext, apiKey);
+
+    const newVersion = createRewrittenVersionedStructure(
+      currentStructureVersion,
+      rewriteResult.structure,
+      rewriteResult.preservedBeatIds,
+      result.deviation.reason,
+      newPageId,
+    );
+
+    storyForRewrite = addStructureVersion(story, newVersion);
+    activeStructureVersion = newVersion;
+  }
+
   const beatConcluded =
     'beatConcluded' in result && typeof result.beatConcluded === 'boolean'
       ? result.beatConcluded
@@ -106,9 +144,12 @@ export async function generateNextPage(
     'beatResolution' in result && typeof result.beatResolution === 'string'
       ? result.beatResolution
       : '';
-  const newStructureState = story.structure
+
+  // Use the active structure (original or rewritten) for progression
+  const activeStructure = activeStructureVersion?.structure ?? story.structure;
+  const newStructureState = activeStructure
     ? applyStructureProgression(
-        story.structure,
+        activeStructure,
         parentStructureState,
         beatConcluded,
         beatResolution,
@@ -116,7 +157,7 @@ export async function generateNextPage(
     : parentStructureState;
 
   const page = createPage({
-    id: generatePageId(maxPageId),
+    id: newPageId,
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
     stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
@@ -134,10 +175,14 @@ export async function generateNextPage(
     parentAccumulatedHealth,
     parentAccumulatedCharacterState,
     parentAccumulatedStructureState: newStructureState,
-    structureVersionId: currentStructureVersion?.id ?? null,
+    structureVersionId: activeStructureVersion?.id ?? null,
   });
 
-  const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
+  const updatedStory = updateStoryWithAllCanon(
+    storyForRewrite,
+    result.newCanonFacts,
+    result.newCharacterCanonFacts,
+  );
 
   return { page, updatedStory };
 }
