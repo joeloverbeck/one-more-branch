@@ -16,4 +16,28 @@ describe('play page template', () => {
       /<form id="api-key-form" class="api-key-form">[\s\S]*<input type="password" id="modal-api-key"/,
     );
   });
+
+  describe('act display', () => {
+    it('contains act-indicator class', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('class="act-indicator"');
+    });
+
+    it('has conditional for actDisplayInfo', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('<% if (actDisplayInfo) { %>');
+      expect(template).toContain('actDisplayInfo.displayString');
+    });
+
+    it('wraps title and act in story-title-section', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('class="story-title-section"');
+      expect(template).toMatch(
+        /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>[\s\S]*<span class="act-indicator">/,
+      );
+    });
+  });
 });

@@ -12,7 +12,12 @@
   <main class="container">
     <div class="play-container" data-story-id="<%= story.id %>" data-page-id="<%= page.id %>">
       <div class="story-header">
-        <h2><%= story.title %></h2>
+        <div class="story-title-section">
+          <h2><%= story.title %></h2>
+          <% if (actDisplayInfo) { %>
+          <span class="act-indicator"><%= actDisplayInfo.displayString %></span>
+          <% } %>
+        </div>
         <span class="page-indicator">Page <%= page.id %></span>
       </div>
 

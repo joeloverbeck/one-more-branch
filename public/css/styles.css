@@ -316,6 +316,22 @@ main {
   margin-bottom: 1rem;
 }
 
+.story-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.story-title-section h2 {
+  margin: 0;
+}
+
+.act-indicator {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 .page-indicator {
   color: var(--color-text-muted);
   white-space: nowrap;

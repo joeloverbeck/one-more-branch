@@ -3,7 +3,7 @@ import { storyEngine } from '../../engine/index.js';
 import { LLMError } from '../../llm/types.js';
 import { generateBrowserLogScript, logger } from '../../logging/index.js';
 import { PageId, StoryId } from '../../models/index.js';
-import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
+import { formatLLMError, getActDisplayInfo, wrapAsyncRoute } from '../utils/index.js';
 
 type ChoiceBody = {
   pageId?: number;
@@ -44,11 +44,14 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
       });
     }
 
+    const actDisplayInfo = getActDisplayInfo(story, page);
+
     return res.render('pages/play', {
       title: `${story.title} - One More Branch`,
       story,
       page,
       pageId,
+      actDisplayInfo,
     });
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));

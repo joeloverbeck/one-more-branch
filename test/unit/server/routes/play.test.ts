@@ -1,6 +1,14 @@
 import type { Request, Response } from 'express';
 import { storyEngine } from '@/engine';
-import { createChoice, createPage, createStory, parseStoryId } from '@/models';
+import {
+  createChoice,
+  createPage,
+  createStory,
+  parseStoryId,
+  createEmptyAccumulatedStructureState,
+  createStructureVersionId,
+} from '@/models';
+import type { VersionedStoryStructure, StoryStructure } from '@/models';
 import { playRoutes } from '@/server/routes/play';
 
 type RouteLayer = {
@@ -79,6 +87,7 @@ describe('playRoutes', () => {
         story: { ...story, id: storyId },
         page,
         pageId: 2,
+        actDisplayInfo: null,
       });
     });
 
@@ -199,6 +208,113 @@ describe('playRoutes', () => {
         'pages/play',
         expect.objectContaining({
           pageId: 1,
+        }),
+      );
+    });
+
+    it('passes actDisplayInfo when story has structure versions', async () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'The Beginning',
+            objective: 'Start the journey',
+            stakes: 'High',
+            entryCondition: 'Always',
+            beats: [],
+          },
+        ],
+      };
+      const versionId = createStructureVersionId('version-1');
+      const versionedStructure: VersionedStoryStructure = {
+        id: versionId,
+        createdAt: new Date().toISOString(),
+        createdAtPageId: 1,
+        parentVersionId: null,
+        rewriteReason: null,
+        structure,
+      };
+      const story = createStory({
+        title: 'Structured Story',
+        characterConcept: 'A hero',
+        worldbuilding: 'Fantasy world',
+        tone: 'Epic',
+      });
+      const storyWithVersions = {
+        ...story,
+        id: storyId,
+        structureVersions: [versionedStructure],
+      };
+      const page = createPage({
+        id: 1,
+        narrativeText: 'The beginning',
+        choices: [createChoice('Go north'), createChoice('Go south')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        structureVersionId: versionId,
+        accumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+        },
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue(storyWithVersions);
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(page);
+
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+
+      void getRouteHandler('get', '/:storyId')(
+        { params: { storyId }, query: { page: '1' } } as unknown as Request,
+        { status, render } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(render).toHaveBeenCalledWith(
+        'pages/play',
+        expect.objectContaining({
+          actDisplayInfo: {
+            actNumber: 1,
+            actName: 'The Beginning',
+            displayString: 'Act 1: The Beginning',
+          },
+        }),
+      );
+    });
+
+    it('passes null actDisplayInfo when page has no structure', async () => {
+      const story = createStory({
+        title: 'Simple Story',
+        characterConcept: 'A hero',
+        worldbuilding: 'World',
+        tone: 'Adventure',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'A simple story',
+        choices: [createChoice('Continue'), createChoice('Turn back')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(page);
+
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+
+      void getRouteHandler('get', '/:storyId')(
+        { params: { storyId }, query: { page: '1' } } as unknown as Request,
+        { status, render } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(render).toHaveBeenCalledWith(
+        'pages/play',
+        expect.objectContaining({
+          actDisplayInfo: null,
         }),
       );
     });
