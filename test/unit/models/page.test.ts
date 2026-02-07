@@ -1,6 +1,7 @@
 import { createChoice } from '@/models/choice';
 import { PageId } from '@/models/id';
 import { createPage, getUnexploredChoiceIndices, isPage, isPageFullyExplored } from '@/models/page';
+import { createEmptyAccumulatedStructureState } from '@/models/story-arc';
 
 describe('Page', () => {
   describe('createPage', () => {
@@ -121,6 +122,44 @@ describe('Page', () => {
 
       expect(page.accumulatedState.changes).toEqual(['Only local change']);
     });
+
+    it('uses empty structure state when parentAccumulatedStructureState is not provided', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Root page',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      expect(page.accumulatedStructureState).toEqual(createEmptyAccumulatedStructureState());
+    });
+
+    it('inherits provided parentAccumulatedStructureState', () => {
+      const parentAccumulatedStructureState = {
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          {
+            beatId: '1.1',
+            status: 'concluded' as const,
+            resolution: 'Resolved the first milestone',
+          },
+        ],
+      };
+      const page = createPage({
+        id: 2 as PageId,
+        narrativeText: 'Child page',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: 1 as PageId,
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState,
+      });
+
+      expect(page.accumulatedStructureState).toBe(parentAccumulatedStructureState);
+    });
   });
 
   describe('isPage', () => {
@@ -142,6 +181,45 @@ describe('Page', () => {
       expect(isPage(null)).toBe(false);
       expect(isPage(undefined)).toBe(false);
       expect(isPage({ id: 1 })).toBe(false);
+    });
+
+    it('returns false when accumulatedStructureState is missing', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        choices: [createChoice('A'), createChoice('B')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const invalidPage = { ...page } as Record<string, unknown>;
+      delete invalidPage.accumulatedStructureState;
+
+      expect(isPage(invalidPage)).toBe(false);
+    });
+
+    it('returns false when accumulatedStructureState shape is invalid', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        choices: [createChoice('A'), createChoice('B')],
+        stateChanges: { added: [], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      const invalidPage = {
+        ...page,
+        accumulatedStructureState: {
+          currentActIndex: -1,
+          currentBeatIndex: 0,
+          beatProgressions: [],
+        },
+      };
+
+      expect(isPage(invalidPage)).toBe(false);
     });
   });
 

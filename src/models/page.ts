@@ -1,5 +1,6 @@
 import { Choice, isChoice } from './choice';
 import { PageId } from './id';
+import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import {
   AccumulatedCharacterState,
   AccumulatedState,
@@ -33,6 +34,7 @@ export interface Page {
   readonly accumulatedHealth: Health;
   readonly characterStateChanges: CharacterStateChanges;
   readonly accumulatedCharacterState: AccumulatedCharacterState;
+  readonly accumulatedStructureState: AccumulatedStructureState;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -53,6 +55,7 @@ export interface CreatePageData {
   parentAccumulatedInventory?: Inventory;
   parentAccumulatedHealth?: Health;
   parentAccumulatedCharacterState?: AccumulatedCharacterState;
+  parentAccumulatedStructureState?: AccumulatedStructureState;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -76,6 +79,8 @@ export function createPage(data: CreatePageData): Page {
   const parentInventory = data.parentAccumulatedInventory ?? [];
   const parentHealth = data.parentAccumulatedHealth ?? [];
   const parentCharacterState = data.parentAccumulatedCharacterState ?? createEmptyAccumulatedCharacterState();
+  const parentStructureState =
+    data.parentAccumulatedStructureState ?? createEmptyAccumulatedStructureState();
   const stateChanges = data.stateChanges ?? createEmptyStateChanges();
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
   const healthChanges = data.healthChanges ?? createEmptyHealthChanges();
@@ -93,6 +98,7 @@ export function createPage(data: CreatePageData): Page {
     accumulatedHealth: applyHealthChanges(parentHealth, healthChanges),
     characterStateChanges,
     accumulatedCharacterState: applyCharacterStateChanges(parentCharacterState, characterStateChanges),
+    accumulatedStructureState: parentStructureState,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,
@@ -112,6 +118,23 @@ function isStateChanges(value: unknown): value is StateChanges {
   );
 }
 
+function isAccumulatedStructureState(value: unknown): value is AccumulatedStructureState {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj['currentActIndex'] === 'number' &&
+    Number.isInteger(obj['currentActIndex']) &&
+    obj['currentActIndex'] >= 0 &&
+    typeof obj['currentBeatIndex'] === 'number' &&
+    Number.isInteger(obj['currentBeatIndex']) &&
+    obj['currentBeatIndex'] >= 0 &&
+    Array.isArray(obj['beatProgressions'])
+  );
+}
+
 export function isPage(value: unknown): value is Page {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -127,6 +150,7 @@ export function isPage(value: unknown): value is Page {
     Array.isArray(obj['choices']) &&
     obj['choices'].every(isChoice) &&
     isStateChanges(obj['stateChanges']) &&
+    isAccumulatedStructureState(obj['accumulatedStructureState']) &&
     typeof obj['isEnding'] === 'boolean'
   );
 }

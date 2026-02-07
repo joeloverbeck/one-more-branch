@@ -1,10 +1,27 @@
 # STRSTOARCSYS-003: Update Page Model
 
+## Status
+Completed
+
 ## Summary
 Add `accumulatedStructureState` field to the Page model. Update `createPage()` to accept and compute structure state inheritance.
 
 ## Files to Touch
 - `src/models/page.ts`
+- `test/unit/models/page.test.ts`
+
+## Assumptions Reassessment (Against Current Code)
+- `src/models/story-arc.ts` already exists and exports `AccumulatedStructureState` plus `createEmptyAccumulatedStructureState()`.
+- `src/models/page.ts` is still on the pre-structure model and does not include any structure-state fields yet.
+- `isPage()` currently validates only a subset of `Page` fields (existing behavior). For this ticket, we will add structure-state validation only, without broadening unrelated guard coverage.
+- `test/unit/models/page.test.ts` currently has no assertions for structure-state inheritance or structure-state guard behavior.
+
+## Updated Scope
+- Add required `accumulatedStructureState` to `Page`.
+- Add optional `parentAccumulatedStructureState` to `CreatePageData`.
+- In `createPage()`, default to `createEmptyAccumulatedStructureState()` when parent structure state is absent; otherwise inherit parent state as-is.
+- Extend `isPage()` to reject missing/invalid `accumulatedStructureState` shape.
+- Add/adjust unit tests in `test/unit/models/page.test.ts` for the above behaviors only.
 
 ## Out of Scope
 - DO NOT modify `src/models/story.ts` (that's STRSTOARCSYS-002)
@@ -104,3 +121,19 @@ Update `test/unit/models/page.test.ts`:
 
 ## Estimated Scope
 ~30 lines of code changes + ~80 lines of test updates
+
+## Outcome
+- Implemented in `src/models/page.ts`:
+  - Added required `Page.accumulatedStructureState`.
+  - Added optional `CreatePageData.parentAccumulatedStructureState`.
+  - Updated `createPage()` to inherit parent structure state or default to `createEmptyAccumulatedStructureState()`.
+  - Updated `isPage()` to validate `accumulatedStructureState` shape (`currentActIndex`, `currentBeatIndex`, `beatProgressions`).
+- Implemented test updates in `test/unit/models/page.test.ts`:
+  - Added coverage for empty default structure state on root page.
+  - Added coverage for inheritance from `parentAccumulatedStructureState`.
+  - Added `isPage()` coverage for missing/invalid `accumulatedStructureState`.
+- Additional impacted model test updates in `test/unit/models/validation.test.ts`:
+  - Updated page-like fixtures used for validation-path assertions to include `accumulatedStructureState`, keeping validation intent unchanged.
+- Original plan vs actual:
+  - Planned scope focused on page model and page unit tests.
+  - Actual changes stayed model-layer only, but included minimal `validation` test fixture updates because `Page` gained a required field and those fixtures otherwise became invalid.
