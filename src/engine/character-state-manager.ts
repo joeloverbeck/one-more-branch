@@ -5,6 +5,7 @@ import {
   applyCharacterStateChanges as applyChanges,
   createEmptyAccumulatedCharacterState,
   normalizeCharacterName,
+  normalizeForComparison,
 } from '../models';
 
 /**
@@ -15,48 +16,65 @@ export const normalizeCharacterNameForState = normalizeCharacterName;
 /**
  * Creates CharacterStateChanges from the LLM response format.
  * The LLM returns separate arrays for added and removed state per character.
+ * Uses case-insensitive matching to merge entries for the same character,
+ * but preserves the first-seen display name (original casing).
  */
 export function createCharacterStateChanges(
   added: Array<{ characterName: string; states: readonly string[] }>,
   removed: Array<{ characterName: string; states: readonly string[] }>,
 ): CharacterStateChanges {
-  // Build a map of character names to their changes
-  const changesMap = new Map<string, { added: string[]; removed: string[] }>();
+  // Build a map using lowercased keys for case-insensitive lookup,
+  // but track the first-seen display name for each character
+  const changesMap = new Map<string, { displayName: string; added: string[]; removed: string[] }>();
 
   // Process added entries
   for (const entry of added) {
-    const normalizedName = normalizeCharacterNameForState(entry.characterName);
-    if (!normalizedName) continue;
+    const cleanedName = normalizeCharacterNameForState(entry.characterName);
+    if (!cleanedName) continue;
 
-    const existing = changesMap.get(normalizedName) ?? { added: [], removed: [] };
+    const lookupKey = normalizeForComparison(cleanedName);
+    const existing = changesMap.get(lookupKey);
     const trimmedStates = entry.states
       .map(s => s.trim())
       .filter(s => s);
-    existing.added.push(...trimmedStates);
-    changesMap.set(normalizedName, existing);
+
+    if (existing) {
+      // Merge with existing - keep FIRST-SEEN display name
+      existing.added.push(...trimmedStates);
+    } else {
+      // New character - use this casing as the display name
+      changesMap.set(lookupKey, { displayName: cleanedName, added: trimmedStates, removed: [] });
+    }
   }
 
   // Process removed entries
   for (const entry of removed) {
-    const normalizedName = normalizeCharacterNameForState(entry.characterName);
-    if (!normalizedName) continue;
+    const cleanedName = normalizeCharacterNameForState(entry.characterName);
+    if (!cleanedName) continue;
 
-    const existing = changesMap.get(normalizedName) ?? { added: [], removed: [] };
+    const lookupKey = normalizeForComparison(cleanedName);
+    const existing = changesMap.get(lookupKey);
     const trimmedStates = entry.states
       .map(s => s.trim())
       .filter(s => s);
-    existing.removed.push(...trimmedStates);
-    changesMap.set(normalizedName, existing);
+
+    if (existing) {
+      // Merge with existing - keep FIRST-SEEN display name
+      existing.removed.push(...trimmedStates);
+    } else {
+      // New character - use this casing as the display name
+      changesMap.set(lookupKey, { displayName: cleanedName, added: [], removed: trimmedStates });
+    }
   }
 
-  // Convert map to array format
+  // Convert map to array format, using the preserved display names
   const result: SingleCharacterStateChanges[] = [];
-  for (const [characterName, changes] of changesMap) {
-    if (changes.added.length > 0 || changes.removed.length > 0) {
+  for (const [, { displayName, added: addedChanges, removed: removedChanges }] of changesMap) {
+    if (addedChanges.length > 0 || removedChanges.length > 0) {
       result.push({
-        characterName,
-        added: changes.added,
-        removed: changes.removed,
+        characterName: displayName,
+        added: addedChanges,
+        removed: removedChanges,
       });
     }
   }
@@ -107,15 +125,24 @@ export function formatCharacterStateForPrompt(state: AccumulatedCharacterState):
 
 /**
  * Gets the character state for a specific character.
- * Uses normalized name matching.
+ * Uses case-insensitive name matching.
  * Returns empty array if character has no state.
  */
 export function getCharacterState(
   state: AccumulatedCharacterState,
   characterName: string,
 ): readonly string[] {
-  const normalizedName = normalizeCharacterNameForState(characterName);
-  return state[normalizedName] ?? [];
+  const cleanedName = normalizeCharacterNameForState(characterName);
+  const lookupKey = normalizeForComparison(cleanedName);
+
+  // Find the matching key (case-insensitive)
+  for (const [key, value] of Object.entries(state)) {
+    if (normalizeForComparison(key) === lookupKey) {
+      return value;
+    }
+  }
+
+  return [];
 }
 
 /**

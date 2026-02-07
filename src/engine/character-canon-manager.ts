@@ -1,48 +1,49 @@
-import { GlobalCharacterCanon, CharacterCanon } from '../models';
+import { GlobalCharacterCanon, CharacterCanon, normalizeCharacterName, normalizeForComparison } from '../models';
+
+// Re-export for backward compatibility
+export { normalizeCharacterName };
 
 /**
- * Normalizes a character name for consistent keying.
- * - Converts to lowercase
- * - Removes extra punctuation (periods, commas)
- * - Collapses multiple spaces to single space
- * - Trims whitespace
- *
- * Examples:
- * - "Dr. Cohen" -> "dr cohen"
- * - "Bobby Western" -> "bobby western"
- * - "The  Kid" -> "the kid"
+ * Helper to find the existing key for a character in the canon using case-insensitive lookup.
+ * Returns the existing key if found, or null if the character doesn't exist.
  */
-export function normalizeCharacterName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[.,;:!?'"]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+function findExistingCanonKey(canon: GlobalCharacterCanon, cleanedName: string): string | null {
+  const lookupKey = normalizeForComparison(cleanedName);
+  for (const key of Object.keys(canon)) {
+    if (normalizeForComparison(key) === lookupKey) {
+      return key;
+    }
+  }
+  return null;
 }
 
 /**
  * Adds a fact to a specific character's canon.
  * If the fact already exists (case-insensitive), returns the original canon.
  * Creates a new entry for the character if they don't exist.
+ * Uses case-insensitive lookup but preserves first-seen casing for storage.
  */
 export function addCharacterFact(
   canon: GlobalCharacterCanon,
   characterName: string,
   fact: string,
 ): GlobalCharacterCanon {
-  const normalizedName = normalizeCharacterName(characterName);
+  const cleanedName = normalizeCharacterName(characterName);
   const trimmedFact = fact.trim();
 
   if (!trimmedFact) {
     return canon;
   }
 
-  const existingFacts = canon[normalizedName] ?? [];
-  const normalizedFact = trimmedFact.toLowerCase();
+  // Find existing key (case-insensitive) or use new casing
+  const existingKey = findExistingCanonKey(canon, cleanedName);
+  const storageKey = existingKey ?? cleanedName;
+  const existingFacts = canon[storageKey] ?? [];
+  const normalizedFact = normalizeForComparison(trimmedFact);
 
   // Check if fact already exists (case-insensitive)
   const exists = existingFacts.some(
-    existingFact => existingFact.trim().toLowerCase() === normalizedFact,
+    existingFact => normalizeForComparison(existingFact) === normalizedFact,
   );
 
   if (exists) {
@@ -51,7 +52,7 @@ export function addCharacterFact(
 
   return {
     ...canon,
-    [normalizedName]: [...existingFacts, trimmedFact],
+    [storageKey]: [...existingFacts, trimmedFact],
   };
 }
 
@@ -79,15 +80,19 @@ export function mergeCharacterCanonFacts(
 
 /**
  * Retrieves all facts for a given character.
- * Uses normalized name matching, so "Dr. Cohen" and "Dr Cohen" return the same facts.
+ * Uses case-insensitive name matching, so "Dr. Cohen" and "Dr Cohen" return the same facts.
  * Returns an empty array if the character has no facts.
  */
 export function getCharacterFacts(
   canon: GlobalCharacterCanon,
   characterName: string,
 ): CharacterCanon {
-  const normalizedName = normalizeCharacterName(characterName);
-  return canon[normalizedName] ?? [];
+  const cleanedName = normalizeCharacterName(characterName);
+  const existingKey = findExistingCanonKey(canon, cleanedName);
+  if (existingKey) {
+    return canon[existingKey] ?? [];
+  }
+  return [];
 }
 
 /**

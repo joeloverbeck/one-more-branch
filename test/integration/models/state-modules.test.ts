@@ -112,7 +112,7 @@ describe('state-modules integration', () => {
       const charState1 = applyCharacterStateChanges({}, [
         { characterName: 'Greaves', added: ['Gave protagonist a map'], removed: [] },
       ]);
-      expect(charState1).toEqual({ greaves: ['Gave protagonist a map'] });
+      expect(charState1).toEqual({ Greaves: ['Gave protagonist a map'] });
     });
 
     it('processes removals correctly across all state types', () => {
@@ -235,7 +235,7 @@ describe('state-modules integration', () => {
       expect(page1.accumulatedState.changes).toEqual(['Started journey']);
       expect(page1.accumulatedInventory).toEqual(['Backpack', 'Torch']);
       expect(page1.accumulatedHealth).toEqual(['Healthy']);
-      expect(page1.accumulatedCharacterState).toEqual({ mentor: ['Gave advice'] });
+      expect(page1.accumulatedCharacterState).toEqual({ Mentor: ['Gave advice'] });
 
       // Page 2: Builds on page 1
       const page2 = createPage({
@@ -265,8 +265,8 @@ describe('state-modules integration', () => {
       expect(page2.accumulatedInventory).toEqual(['Backpack', 'Map']);
       expect(page2.accumulatedHealth).toEqual(['Healthy', 'Tired']);
       expect(page2.accumulatedCharacterState).toEqual({
-        mentor: ['Gave advice', 'Worried'],
-        greaves: ['First encounter'],
+        Mentor: ['Gave advice', 'Worried'],
+        Greaves: ['First encounter'],
       });
 
       // Page 3: Final state with more complex changes
@@ -296,8 +296,8 @@ describe('state-modules integration', () => {
       expect(page3.accumulatedInventory).toEqual(['Map', 'Gold coins', 'Ruby']);
       expect(page3.accumulatedHealth).toEqual(['Tired', 'Injured']);
       expect(page3.accumulatedCharacterState).toEqual({
-        mentor: ['Gave advice', 'Worried'],
-        greaves: ['Helped find cave'],
+        Mentor: ['Gave advice', 'Worried'],
+        Greaves: ['Helped find cave'],
       });
     });
 
@@ -322,7 +322,7 @@ describe('state-modules integration', () => {
       expect(endingPage.accumulatedState.changes).toEqual(['Story ended']);
       expect(endingPage.accumulatedInventory).toEqual(['Final reward']);
       expect(endingPage.accumulatedHealth).toEqual(['Victorious']);
-      expect(endingPage.accumulatedCharacterState).toEqual({ hero: ['Completed quest'] });
+      expect(endingPage.accumulatedCharacterState).toEqual({ Hero: ['Completed quest'] });
     });
   });
 

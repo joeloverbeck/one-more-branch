@@ -47,7 +47,7 @@ export {
   applyCharacterStateChanges,
 } from './state/index.js';
 
-export { normalizeCharacterName } from './normalize.js';
+export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 
 export {
   BeatStatus,

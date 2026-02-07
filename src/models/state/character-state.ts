@@ -36,6 +36,8 @@ export function createEmptyAccumulatedCharacterState(): AccumulatedCharacterStat
  * Applies character state changes to the accumulated character state.
  * Follows the same add/remove pattern as other state management functions.
  * Removals are processed first using case-insensitive matching.
+ * Uses case-insensitive lookup to find existing character entries,
+ * but preserves original key casing (first-seen casing).
  */
 export function applyCharacterStateChanges(
   current: AccumulatedCharacterState,
@@ -48,10 +50,21 @@ export function applyCharacterStateChanges(
     result[name] = [...state];
   }
 
+  // Build a lowercase-to-original-key map for case-insensitive lookup
+  const keyLookup = new Map<string, string>();
+  for (const name of Object.keys(result)) {
+    keyLookup.set(normalizeForComparison(name), name);
+  }
+
   // Apply each character's changes
   for (const charChange of changes) {
-    const normalizedName = normalizeCharacterName(charChange.characterName);
-    const existing = result[normalizedName] ?? [];
+    const cleanedName = normalizeCharacterName(charChange.characterName);
+    const lookupKey = normalizeForComparison(cleanedName);
+
+    // Find existing key (case-insensitive) or use new casing
+    const existingKey = keyLookup.get(lookupKey);
+    const storageKey = existingKey ?? cleanedName;
+    const existing = result[storageKey] ?? [];
 
     // Process removals first (case-insensitive match)
     for (const toRemove of charChange.removed) {
@@ -79,9 +92,14 @@ export function applyCharacterStateChanges(
 
     // Only keep the character in result if they have state entries
     if (existing.length > 0) {
-      result[normalizedName] = existing;
+      result[storageKey] = existing;
+      // Update the lookup map in case we added a new character
+      if (!existingKey) {
+        keyLookup.set(lookupKey, storageKey);
+      }
     } else {
-      delete result[normalizedName];
+      delete result[storageKey];
+      keyLookup.delete(lookupKey);
     }
   }
 

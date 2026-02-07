@@ -78,6 +78,37 @@ Use CHARACTER STATE (characterStateChangesAdded) for SITUATIONAL events that hap
 
 Rule: If it would be true in ANY playthrough, it's CANON. If it only happened because of choices made, it's STATE.
 
+STATE CHANGE QUALITY CRITERIA (CRITICAL):
+State changes should track CONSEQUENTIAL events that would affect future story decisions.
+Before adding any state change, ask: "Would this character NEED to remember this? Would it change their future behavior?"
+
+GOOD STATE CHANGES (track these):
+- Commitments: "Agreed to meet at the warehouse at midnight"
+- Knowledge: "Knows the vault combination"
+- Resources exchanged: "Gave protagonist a detailed map"
+- Relationship shifts: "Now trusts the protagonist"
+- Pending arrangements: "Waiting at the docks"
+- Significant actions: "Betrayed the guild"
+
+BAD STATE CHANGES (do NOT track these):
+- Observations: "Noticed protagonist's weapon" - trivial observation, no impact
+- Social niceties: "Shook hands" - no story consequence
+- Introductions: "Introduced herself" - already in narrative
+- Physical descriptions: "Looked tired" - use canon for permanent traits
+- Fleeting emotions: "Seemed nervous" - momentary, not consequential
+- Micro-actions: "Nodded" - too granular
+
+ANTI-PATTERNS (NEVER do these):
+- Starting with "Noticed", "Saw", "Observed" - these are observations, not state
+- Recording things already described in the narrative - redundant
+- Recording actions with no future consequence - clutter
+
+Apply the same criteria to protagonist stateChangesAdded:
+- GOOD: "Promised to return by midnight" (affects future choices)
+- GOOD: "Learned the Duke's secret weakness" (actionable knowledge)
+- BAD: "Noticed his expensive clothes" (trivial observation)
+- BAD: "Felt a chill" (momentary sensation)
+
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
 ✅ Use inventoryAdded/inventoryRemoved
 ❌ Do NOT put item gains/losses in stateChanges, newCanonFacts, or newCharacterCanonFacts

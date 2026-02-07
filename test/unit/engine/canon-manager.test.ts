@@ -161,8 +161,8 @@ describe('Canon manager', () => {
 
       expect(updated).not.toBe(story);
       expect(updated.globalCharacterCanon).toEqual({
-        'bobby western': ['Bobby is in a coma'],
-        'dr cohen': ['Dr. Cohen is a psychiatrist'],
+        'Bobby Western': ['Bobby is in a coma'],
+        'Dr Cohen': ['Dr. Cohen is a psychiatrist'],
       });
       expect(updated.updatedAt.getTime()).toBeGreaterThan(baselineUpdatedAt.getTime());
     });
@@ -175,18 +175,19 @@ describe('Canon manager', () => {
       expect(updated).toBe(story);
     });
 
-    it('merges with existing character canon', () => {
+    it('merges with existing character canon using existing key casing', () => {
       const story = {
         ...createStory({ title: 'Test Story', characterConcept: 'A hopeful knight serving a stormbound kingdom.' }),
-        globalCharacterCanon: { 'bobby western': ['Bobby is in Italy'] },
+        globalCharacterCanon: { 'Bobby Western': ['Bobby is in Italy'] },
       };
 
       const updated = updateStoryWithNewCharacterCanon(story, {
-        'Bobby Western': ['Bobby inherited gold'],
+        'bobby western': ['Bobby inherited gold'],
       });
 
+      // Uses existing key casing
       expect(updated.globalCharacterCanon).toEqual({
-        'bobby western': ['Bobby is in Italy', 'Bobby inherited gold'],
+        'Bobby Western': ['Bobby is in Italy', 'Bobby inherited gold'],
       });
     });
   });
@@ -203,7 +204,7 @@ describe('Canon manager', () => {
 
       expect(updated.globalCanon).toEqual(['The year is 1972']);
       expect(updated.globalCharacterCanon).toEqual({
-        margaret: ['Margaret is the intake nurse'],
+        'Margaret': ['Margaret is the intake nurse'],
       });
     });
 
@@ -233,7 +234,7 @@ describe('Canon manager', () => {
 
       expect(updated.globalCanon).toEqual([]);
       expect(updated.globalCharacterCanon).toEqual({
-        'the kid': ['The Kid is an eidolon'],
+        'The Kid': ['The Kid is an eidolon'],
       });
     });
   });

@@ -8,17 +8,17 @@ import type { AccumulatedCharacterState } from '../../../src/models/state';
 
 describe('character-state-manager', () => {
   describe('normalizeCharacterNameForState', () => {
-    it('converts name to lowercase', () => {
-      expect(normalizeCharacterNameForState('GREAVES')).toBe('greaves');
+    it('preserves original casing', () => {
+      expect(normalizeCharacterNameForState('GREAVES')).toBe('GREAVES');
+      expect(normalizeCharacterNameForState('Greaves')).toBe('Greaves');
     });
 
     it('trims whitespace', () => {
-      expect(normalizeCharacterNameForState('  greaves  ')).toBe('greaves');
+      expect(normalizeCharacterNameForState('  Greaves  ')).toBe('Greaves');
     });
 
-    it('handles mixed case and whitespace', () => {
-      // Punctuation is removed during normalization
-      expect(normalizeCharacterNameForState('  Dr. Elena Cohen  ')).toBe('dr elena cohen');
+    it('removes punctuation but preserves casing', () => {
+      expect(normalizeCharacterNameForState('  Dr. Elena Cohen  ')).toBe('Dr Elena Cohen');
     });
 
     it('handles empty string', () => {
@@ -32,65 +32,76 @@ describe('character-state-manager', () => {
       expect(result).toEqual([]);
     });
 
-    it('creates changes from added states', () => {
+    it('creates changes from added states with preserved casing', () => {
       const result = createCharacterStateChanges(
-        [{ characterName: 'greaves', states: ['Gave protagonist a map'] }],
+        [{ characterName: 'Greaves', states: ['Gave protagonist a map'] }],
         []
       );
       expect(result).toEqual([
-        { characterName: 'greaves', added: ['Gave protagonist a map'], removed: [] },
+        { characterName: 'Greaves', added: ['Gave protagonist a map'], removed: [] },
       ]);
     });
 
-    it('creates changes from removed states', () => {
+    it('creates changes from removed states with preserved casing', () => {
       const result = createCharacterStateChanges(
         [],
-        [{ characterName: 'greaves', states: ['Waiting at the docks'] }]
+        [{ characterName: 'Greaves', states: ['Waiting at the docks'] }]
       );
       expect(result).toEqual([
-        { characterName: 'greaves', added: [], removed: ['Waiting at the docks'] },
+        { characterName: 'Greaves', added: [], removed: ['Waiting at the docks'] },
       ]);
     });
 
     it('merges added and removed for same character', () => {
       const result = createCharacterStateChanges(
-        [{ characterName: 'greaves', states: ['Left the docks'] }],
-        [{ characterName: 'greaves', states: ['Waiting at the docks'] }]
+        [{ characterName: 'Greaves', states: ['Left the docks'] }],
+        [{ characterName: 'Greaves', states: ['Waiting at the docks'] }]
       );
       expect(result).toEqual([
-        { characterName: 'greaves', added: ['Left the docks'], removed: ['Waiting at the docks'] },
+        { characterName: 'Greaves', added: ['Left the docks'], removed: ['Waiting at the docks'] },
       ]);
     });
 
-    it('handles multiple characters', () => {
+    it('handles multiple characters with preserved casing', () => {
       const result = createCharacterStateChanges(
         [
-          { characterName: 'greaves', states: ['Gave protagonist a map'] },
-          { characterName: 'elena', states: ['Agreed to help'] },
+          { characterName: 'Greaves', states: ['Gave protagonist a map'] },
+          { characterName: 'Elena', states: ['Agreed to help'] },
         ],
         []
       );
       expect(result).toHaveLength(2);
       expect(result).toContainEqual({
-        characterName: 'greaves',
+        characterName: 'Greaves',
         added: ['Gave protagonist a map'],
         removed: [],
       });
       expect(result).toContainEqual({
-        characterName: 'elena',
+        characterName: 'Elena',
         added: ['Agreed to help'],
         removed: [],
       });
     });
 
-    it('normalizes character names', () => {
+    it('merges case-insensitively while preserving first-seen casing', () => {
       const result = createCharacterStateChanges(
         [{ characterName: '  GREAVES  ', states: ['Map given'] }],
         [{ characterName: 'greaves', states: ['Waiting'] }]
       );
-      // Should merge because normalized names are the same
+      // Should merge because normalized names are the same (case-insensitive)
+      // Casing is preserved from the first-seen entry (GREAVES)
       expect(result).toEqual([
-        { characterName: 'greaves', added: ['Map given'], removed: ['Waiting'] },
+        { characterName: 'GREAVES', added: ['Map given'], removed: ['Waiting'] },
+      ]);
+    });
+
+    it('preserves first-seen casing when processing added before removed', () => {
+      const result = createCharacterStateChanges(
+        [{ characterName: 'Captain Mira', states: ['Agreed to help'] }],
+        [{ characterName: 'CAPTAIN MIRA', states: ['Was hostile'] }]
+      );
+      expect(result).toEqual([
+        { characterName: 'Captain Mira', added: ['Agreed to help'], removed: ['Was hostile'] },
       ]);
     });
 

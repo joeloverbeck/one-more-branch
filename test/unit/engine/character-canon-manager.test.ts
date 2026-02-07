@@ -8,57 +8,58 @@ import {
 
 describe('Character canon manager', () => {
   describe('normalizeCharacterName', () => {
-    it('converts name to lowercase', () => {
-      expect(normalizeCharacterName('Bobby Western')).toBe('bobby western');
+    it('preserves original casing', () => {
+      expect(normalizeCharacterName('Bobby Western')).toBe('Bobby Western');
     });
 
-    it('removes periods and punctuation', () => {
-      expect(normalizeCharacterName('Dr. Cohen')).toBe('dr cohen');
-      expect(normalizeCharacterName("Dr. O'Brien")).toBe('dr obrien');
+    it('removes periods and punctuation but preserves casing', () => {
+      expect(normalizeCharacterName('Dr. Cohen')).toBe('Dr Cohen');
+      expect(normalizeCharacterName("Dr. O'Brien")).toBe('Dr OBrien');
     });
 
     it('collapses multiple spaces', () => {
-      expect(normalizeCharacterName('The   Kid')).toBe('the kid');
+      expect(normalizeCharacterName('The   Kid')).toBe('The Kid');
     });
 
     it('trims whitespace', () => {
-      expect(normalizeCharacterName('  Margaret  ')).toBe('margaret');
+      expect(normalizeCharacterName('  Margaret  ')).toBe('Margaret');
     });
 
     it('handles complex names with multiple punctuation', () => {
-      expect(normalizeCharacterName("Dr. J. R. R. O'Malley!")).toBe('dr j r r omalley');
+      expect(normalizeCharacterName("Dr. J. R. R. O'Malley!")).toBe('Dr J R R OMalley');
     });
   });
 
   describe('addCharacterFact', () => {
-    it('adds a new fact to a new character', () => {
+    it('adds a new fact to a new character with preserved casing', () => {
       const result = addCharacterFact({}, 'Bobby Western', 'Bobby is in a coma');
 
       expect(result).toEqual({
-        'bobby western': ['Bobby is in a coma'],
+        'Bobby Western': ['Bobby is in a coma'],
       });
     });
 
-    it('adds a new fact to an existing character', () => {
-      const canon = { 'bobby western': ['Bobby is in a coma'] };
-      const result = addCharacterFact(canon, 'Bobby Western', 'Bobby inherited gold');
+    it('adds a new fact to an existing character preserving original key casing', () => {
+      const canon = { 'Bobby Western': ['Bobby is in a coma'] };
+      const result = addCharacterFact(canon, 'bobby western', 'Bobby inherited gold');
 
+      // Should use existing key casing, not the new query casing
       expect(result).toEqual({
-        'bobby western': ['Bobby is in a coma', 'Bobby inherited gold'],
+        'Bobby Western': ['Bobby is in a coma', 'Bobby inherited gold'],
       });
     });
 
-    it('normalizes character names when adding facts', () => {
-      const canon = { 'dr cohen': ['Dr. Cohen is a psychiatrist'] };
-      const result = addCharacterFact(canon, 'Dr. Cohen', 'He wears wire-rimmed glasses');
+    it('case-insensitively matches existing characters', () => {
+      const canon = { 'Dr Cohen': ['Dr. Cohen is a psychiatrist'] };
+      const result = addCharacterFact(canon, 'DR. COHEN', 'He wears wire-rimmed glasses');
 
       expect(result).toEqual({
-        'dr cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
+        'Dr Cohen': ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'],
       });
     });
 
     it('does not add duplicate facts (case-insensitive)', () => {
-      const canon = { 'bobby western': ['Bobby is in a coma'] };
+      const canon = { 'Bobby Western': ['Bobby is in a coma'] };
       const result = addCharacterFact(canon, 'Bobby Western', 'BOBBY IS IN A COMA');
 
       expect(result).toBe(canon);
@@ -68,29 +69,39 @@ describe('Character canon manager', () => {
       const result = addCharacterFact({}, 'Margaret', '  Margaret is the intake nurse  ');
 
       expect(result).toEqual({
-        margaret: ['Margaret is the intake nurse'],
+        'Margaret': ['Margaret is the intake nurse'],
       });
     });
 
     it('ignores empty facts', () => {
-      const canon = { 'bobby western': ['Existing fact'] };
+      const canon = { 'Bobby Western': ['Existing fact'] };
       const result = addCharacterFact(canon, 'Bobby Western', '   ');
 
       expect(result).toBe(canon);
     });
 
     it('does not mutate original canon', () => {
-      const original = { 'bobby western': ['Fact A'] };
+      const original = { 'Bobby Western': ['Fact A'] };
       const result = addCharacterFact(original, 'Bobby Western', 'Fact B');
 
-      expect(original).toEqual({ 'bobby western': ['Fact A'] });
+      expect(original).toEqual({ 'Bobby Western': ['Fact A'] });
       expect(result).not.toBe(original);
+    });
+
+    it('preserves first-seen casing when adding to a new character', () => {
+      // First add to "Captain Mira"
+      const step1 = addCharacterFact({}, 'Captain Mira', 'Led the expedition');
+      expect(step1).toEqual({ 'Captain Mira': ['Led the expedition'] });
+
+      // Add with different casing - should use existing key
+      const step2 = addCharacterFact(step1, 'CAPTAIN MIRA', 'Was injured');
+      expect(step2).toEqual({ 'Captain Mira': ['Led the expedition', 'Was injured'] });
     });
   });
 
   describe('mergeCharacterCanonFacts', () => {
-    it('merges new facts for multiple characters', () => {
-      const canon = { 'bobby western': ['Bobby is in a coma'] };
+    it('merges new facts for multiple characters with preserved casing', () => {
+      const canon = { 'Bobby Western': ['Bobby is in a coma'] };
       const newFacts = {
         'Bobby Western': ['Bobby inherited gold'],
         'Dr. Cohen': ['Dr. Cohen is a psychiatrist'],
@@ -99,19 +110,33 @@ describe('Character canon manager', () => {
       const result = mergeCharacterCanonFacts(canon, newFacts);
 
       expect(result).toEqual({
-        'bobby western': ['Bobby is in a coma', 'Bobby inherited gold'],
-        'dr cohen': ['Dr. Cohen is a psychiatrist'],
+        'Bobby Western': ['Bobby is in a coma', 'Bobby inherited gold'],
+        'Dr Cohen': ['Dr. Cohen is a psychiatrist'],
+      });
+    });
+
+    it('uses existing key casing when merging case-insensitively', () => {
+      const canon = { 'Bobby Western': ['Bobby is in a coma'] };
+      const newFacts = {
+        'bobby western': ['Bobby inherited gold'],
+      };
+
+      const result = mergeCharacterCanonFacts(canon, newFacts);
+
+      // Should use existing key casing
+      expect(result).toEqual({
+        'Bobby Western': ['Bobby is in a coma', 'Bobby inherited gold'],
       });
     });
 
     it('returns original canon when no new facts', () => {
-      const canon = { 'bobby western': ['Bobby is in a coma'] };
+      const canon = { 'Bobby Western': ['Bobby is in a coma'] };
       const result = mergeCharacterCanonFacts(canon, {});
 
       expect(result).toBe(canon);
     });
 
-    it('handles multiple facts per character', () => {
+    it('handles multiple facts per character with preserved casing', () => {
       const result = mergeCharacterCanonFacts({}, {
         'The Kid': [
           'The Kid is an eidolon',
@@ -120,7 +145,7 @@ describe('Character canon manager', () => {
       });
 
       expect(result).toEqual({
-        'the kid': [
+        'The Kid': [
           'The Kid is an eidolon',
           'The Kid appears with unnerving clarity',
         ],
@@ -128,7 +153,7 @@ describe('Character canon manager', () => {
     });
 
     it('skips duplicates during merge', () => {
-      const canon = { 'bobby western': ['Bobby is in a coma'] };
+      const canon = { 'Bobby Western': ['Bobby is in a coma'] };
       const newFacts = {
         'Bobby Western': ['Bobby is in a coma', 'New fact about Bobby'],
       };
@@ -136,18 +161,18 @@ describe('Character canon manager', () => {
       const result = mergeCharacterCanonFacts(canon, newFacts);
 
       expect(result).toEqual({
-        'bobby western': ['Bobby is in a coma', 'New fact about Bobby'],
+        'Bobby Western': ['Bobby is in a coma', 'New fact about Bobby'],
       });
     });
   });
 
   describe('getCharacterFacts', () => {
-    it('returns facts for a character using normalized name lookup', () => {
+    it('returns facts for a character using case-insensitive lookup', () => {
       const canon = {
-        'dr cohen': ['Dr. Cohen is a psychiatrist', 'He wears glasses'],
+        'Dr Cohen': ['Dr. Cohen is a psychiatrist', 'He wears glasses'],
       };
 
-      const facts = getCharacterFacts(canon, 'Dr. Cohen');
+      const facts = getCharacterFacts(canon, 'dr. cohen');
 
       expect(facts).toEqual(['Dr. Cohen is a psychiatrist', 'He wears glasses']);
     });
@@ -158,8 +183,8 @@ describe('Character canon manager', () => {
       expect(facts).toEqual([]);
     });
 
-    it('finds character regardless of punctuation in query', () => {
-      const canon = { 'dr cohen': ['Fact about Dr. Cohen'] };
+    it('finds character case-insensitively regardless of query casing', () => {
+      const canon = { 'Dr Cohen': ['Fact about Dr. Cohen'] };
 
       expect(getCharacterFacts(canon, 'Dr Cohen')).toEqual(['Fact about Dr. Cohen']);
       expect(getCharacterFacts(canon, 'dr. cohen')).toEqual(['Fact about Dr. Cohen']);
@@ -168,18 +193,18 @@ describe('Character canon manager', () => {
   });
 
   describe('formatCharacterCanonForPrompt', () => {
-    it('formats character canon with names as headers', () => {
+    it('formats character canon with preserved casing in headers', () => {
       const canon = {
-        'bobby western': ['Bobby is in a coma', 'Bobby inherited gold'],
-        'dr cohen': ['Dr. Cohen is a psychiatrist'],
+        'Bobby Western': ['Bobby is in a coma', 'Bobby inherited gold'],
+        'Dr Cohen': ['Dr. Cohen is a psychiatrist'],
       };
 
       const formatted = formatCharacterCanonForPrompt(canon);
 
-      expect(formatted).toContain('[bobby western]');
+      expect(formatted).toContain('[Bobby Western]');
       expect(formatted).toContain('- Bobby is in a coma');
       expect(formatted).toContain('- Bobby inherited gold');
-      expect(formatted).toContain('[dr cohen]');
+      expect(formatted).toContain('[Dr Cohen]');
       expect(formatted).toContain('- Dr. Cohen is a psychiatrist');
     });
 
@@ -189,8 +214,8 @@ describe('Character canon manager', () => {
 
     it('separates characters with blank lines', () => {
       const canon = {
-        'bobby western': ['Fact A'],
-        'margaret': ['Fact B'],
+        'Bobby Western': ['Fact A'],
+        'Margaret': ['Fact B'],
       };
 
       const formatted = formatCharacterCanonForPrompt(canon);

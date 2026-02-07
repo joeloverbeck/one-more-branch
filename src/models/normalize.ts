@@ -11,15 +11,16 @@ export function normalizeForComparison(value: string): string {
 }
 
 /**
- * Normalizes a character name for consistent keying.
- * - Converts to lowercase
+ * Cleans a character name for consistent display.
+ * Preserves original casing but removes punctuation and normalizes whitespace.
  * - Removes extra punctuation (periods, commas, etc.)
  * - Collapses multiple spaces to single space
  * - Trims whitespace
+ *
+ * For case-insensitive comparison, use normalizeForComparison() on the result.
  */
 export function normalizeCharacterName(name: string): string {
   return name
-    .toLowerCase()
     .replace(/[.,;:!?'"]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
