@@ -17,6 +17,10 @@ describe('validateGenerationResponse', () => {
         isEnding: false,
         beatConcluded: true,
         beatResolution: '  You seized the throne room before dawn.  ',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
@@ -30,6 +34,7 @@ describe('validateGenerationResponse', () => {
     expect(result.healthRemoved).toEqual(['Headache']);
     expect(result.beatConcluded).toBe(true);
     expect(result.beatResolution).toBe('You seized the throne room before dawn.');
+    expect(result.deviation.detected).toBe(false);
     expect(result.rawResponse).toBe('raw json response');
   });
 
@@ -44,6 +49,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
@@ -63,12 +72,17 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
 
     expect(result.beatConcluded).toBe(false);
     expect(result.beatResolution).toBe('');
+    expect(result.deviation.detected).toBe(false);
   });
 
   it('should trim and filter characterCanonFacts', () => {
@@ -86,6 +100,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
@@ -106,6 +124,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
@@ -128,6 +150,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
@@ -150,6 +176,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
@@ -190,6 +220,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       rawResponse,
     );
@@ -208,6 +242,10 @@ describe('validateGenerationResponse', () => {
         healthAdded: [],
         healthRemoved: [],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
         storyArc: 'legacy',
       },
       'raw json response',
@@ -227,11 +265,64 @@ describe('validateGenerationResponse', () => {
         healthAdded: ['  Bruised ribs  ', '', '  '],
         healthRemoved: ['  Fatigue  ', '\n'],
         isEnding: false,
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
       },
       'raw json response',
     );
 
     expect(result.healthAdded).toEqual(['Bruised ribs']);
     expect(result.healthRemoved).toEqual(['Fatigue']);
+  });
+
+  it('should map valid deviation fields to BeatDeviation', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Press forward', 'Retreat'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
+        isEnding: false,
+        deviationDetected: true,
+        deviationReason: '  The protagonist switched allegiances.  ',
+        invalidatedBeatIds: [' 2.2 ', 'x', '3.1'],
+        narrativeSummary: '  You now command the opposing garrison.  ',
+      },
+      'raw json response',
+    );
+
+    expect(result.deviation.detected).toBe(true);
+    if (result.deviation.detected) {
+      expect(result.deviation.reason).toBe('The protagonist switched allegiances.');
+      expect(result.deviation.invalidatedBeatIds).toEqual(['2.2', '3.1']);
+      expect(result.deviation.narrativeSummary).toBe('You now command the opposing garrison.');
+    }
+  });
+
+  it('should fall back to NoDeviation when deviation payload is malformed', () => {
+    const result = validateGenerationResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: ['Press forward', 'Retreat'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        healthAdded: [],
+        healthRemoved: [],
+        isEnding: false,
+        deviationDetected: true,
+        deviationReason: '  ',
+        invalidatedBeatIds: ['invalid'],
+        narrativeSummary: '  ',
+      },
+      'raw json response',
+    );
+
+    expect(result.deviation.detected).toBe(false);
   });
 });

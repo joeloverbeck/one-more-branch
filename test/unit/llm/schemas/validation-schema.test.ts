@@ -148,6 +148,42 @@ describe('GenerationResultSchema', () => {
       expect(result.beatResolution).toBe('');
     });
 
+    it('should default deviation fields when not provided', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.deviationDetected).toBe(false);
+      expect(result.deviationReason).toBe('');
+      expect(result.invalidatedBeatIds).toEqual([]);
+      expect(result.narrativeSummary).toBe('');
+    });
+
+    it('should validate deviation fields when provided', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        stateChangesAdded: [],
+        stateChangesRemoved: [],
+        newCanonFacts: [],
+        isEnding: false,
+        deviationDetected: true,
+        deviationReason: 'Player allied with enemy command.',
+        invalidatedBeatIds: ['2.2', '3.1'],
+        narrativeSummary: 'The protagonist now commands enemy troops.',
+      });
+
+      expect(result.deviationDetected).toBe(true);
+      expect(result.deviationReason).toContain('allied');
+      expect(result.invalidatedBeatIds).toEqual(['2.2', '3.1']);
+      expect(result.narrativeSummary).toContain('commands');
+    });
+
     it('should ignore legacy storyArc field', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,

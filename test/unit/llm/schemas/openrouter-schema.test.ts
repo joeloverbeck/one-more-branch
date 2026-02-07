@@ -29,6 +29,10 @@ describe('STORY_GENERATION_SCHEMA', () => {
       'isEnding',
       'beatConcluded',
       'beatResolution',
+      'deviationDetected',
+      'deviationReason',
+      'invalidatedBeatIds',
+      'narrativeSummary',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });
@@ -72,13 +76,17 @@ describe('STORY_GENERATION_SCHEMA', () => {
     expect(schema.properties.inventoryRemoved.items?.type).toBe('string');
   });
 
-  it('should include beat evaluation fields and exclude legacy storyArc', () => {
+  it('should include beat/deviation fields and exclude legacy storyArc', () => {
     const schema = STORY_GENERATION_SCHEMA.json_schema.schema as {
       properties: Record<string, { type: string }>;
     };
 
     expect(schema.properties.beatConcluded.type).toBe('boolean');
     expect(schema.properties.beatResolution.type).toBe('string');
+    expect(schema.properties.deviationDetected.type).toBe('boolean');
+    expect(schema.properties.deviationReason.type).toBe('string');
+    expect(schema.properties.invalidatedBeatIds.type).toBe('array');
+    expect(schema.properties.narrativeSummary.type).toBe('string');
     expect(schema.properties.storyArc).toBeUndefined();
   });
 });

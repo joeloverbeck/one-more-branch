@@ -115,8 +115,25 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           type: 'string',
           description: 'If beatConcluded is true, briefly describe how the beat was resolved.',
         },
+        deviationDetected: {
+          type: 'boolean',
+          description: 'True when remaining planned beats are invalidated by the narrative direction.',
+        },
+        deviationReason: {
+          type: 'string',
+          description: 'Concise explanation for detected deviation; empty when no deviation.',
+        },
+        invalidatedBeatIds: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Beat IDs invalidated by deviation (format: X.Y); empty when no deviation.',
+        },
+        narrativeSummary: {
+          type: 'string',
+          description: 'Short summary of current narrative state for rewrite context; empty when no deviation.',
+        },
       },
-      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'isEnding', 'beatConcluded', 'beatResolution'],
+      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'isEnding', 'beatConcluded', 'beatResolution', 'deviationDetected', 'deviationReason', 'invalidatedBeatIds', 'narrativeSummary'],
       additionalProperties: false,
     },
   },

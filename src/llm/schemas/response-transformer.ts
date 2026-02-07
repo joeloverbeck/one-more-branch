@@ -1,10 +1,11 @@
-import type { GenerationResult } from '../types.js';
+import { createBeatDeviation, createNoDeviation } from '../../models/story-arc.js';
+import type { ContinuationGenerationResult } from '../types.js';
 import { GenerationResultSchema } from './validation-schema.js';
 
 export function validateGenerationResponse(
   rawJson: unknown,
   rawResponse: string,
-): GenerationResult {
+): ContinuationGenerationResult {
   const validated = GenerationResultSchema.parse(rawJson);
 
   // Process newCharacterCanonFacts: trim all values
@@ -28,6 +29,17 @@ export function validateGenerationResponse(
     states: entry.states.map(s => s.trim()).filter(s => s),
   })).filter(entry => entry.characterName && entry.states.length > 0);
 
+  const beatIdPattern = /^\d+\.\d+$/;
+  const invalidatedBeatIds = validated.invalidatedBeatIds
+    .map(beatId => beatId.trim())
+    .filter(beatId => beatIdPattern.test(beatId));
+  const deviationReason = validated.deviationReason.trim();
+  const narrativeSummary = validated.narrativeSummary.trim();
+  const deviation =
+    validated.deviationDetected && deviationReason && narrativeSummary && invalidatedBeatIds.length > 0
+      ? createBeatDeviation(deviationReason, invalidatedBeatIds, narrativeSummary)
+      : createNoDeviation();
+
   return {
     narrative: validated.narrative.trim(),
     choices: validated.choices.map(choice => choice.trim()),
@@ -44,6 +56,7 @@ export function validateGenerationResponse(
     isEnding: validated.isEnding,
     beatConcluded: validated.beatConcluded,
     beatResolution: validated.beatResolution.trim(),
+    deviation,
     rawResponse,
   };
 }

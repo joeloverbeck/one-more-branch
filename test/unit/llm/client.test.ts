@@ -63,6 +63,10 @@ const validStructuredPayload = {
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
+  deviationDetected: false,
+  deviationReason: '',
+  invalidatedBeatIds: [],
+  narrativeSummary: '',
 };
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -331,6 +335,7 @@ describe('llm client', () => {
     const delays = timeoutSpy.mock.calls.map(call => Number(call[1] ?? 0));
 
     expect(result.narrative.length).toBeGreaterThan(50);
+    expect(result.deviation.detected).toBe(false);
     expect(delays).toEqual([1000, 2000]);
     timeoutSpy.mockRestore();
   });
@@ -343,6 +348,10 @@ describe('llm client', () => {
       stateChangesRemoved: [],
       newCanonFacts: [],
       isEnding: false,
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [],
+      narrativeSummary: '',
     };
 
     fetchMock.mockResolvedValue(
@@ -471,6 +480,10 @@ describe('llm client', () => {
       stateChangesRemoved: [],
       newCanonFacts: [],
       isEnding: false,
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [],
+      narrativeSummary: '',
     };
 
     fetchMock.mockResolvedValue(

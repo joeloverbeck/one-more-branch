@@ -63,6 +63,10 @@ export const GenerationResultSchema = z
     isEnding: z.boolean(),
     beatConcluded: z.boolean().default(false),
     beatResolution: z.string().default(''),
+    deviationDetected: z.boolean().default(false),
+    deviationReason: z.string().default(''),
+    invalidatedBeatIds: z.array(z.string()).optional().default([]),
+    narrativeSummary: z.string().default(''),
   })
   .superRefine((data, ctx) => {
     if (data.isEnding && data.choices.length > 0) {

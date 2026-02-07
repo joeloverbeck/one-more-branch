@@ -5,6 +5,7 @@ import { resolvePromptOptions } from './options.js';
 import { buildContinuationPrompt, buildOpeningPrompt } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import {
+  type ContinuationGenerationResult,
   type ContinuationContext,
   type GenerationOptions,
   type GenerationResult,
@@ -27,7 +28,7 @@ export async function generateOpeningPage(
 export async function generateContinuationPage(
   context: ContinuationContext,
   options: GenerationOptions,
-): Promise<GenerationResult> {
+): Promise<ContinuationGenerationResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildContinuationPrompt(context, promptOptions);
 
