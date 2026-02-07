@@ -13,6 +13,14 @@ export {
 export { generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
 
 export {
+  createStoryStructure,
+  createInitialStructureState,
+  advanceStructureState,
+  applyStructureProgression,
+} from './structure-manager';
+export type { StructureProgressionResult, StructureGenerationResult } from './structure-manager';
+
+export {
   computeAccumulatedState,
   getParentAccumulatedState,
   mergeStateChanges,

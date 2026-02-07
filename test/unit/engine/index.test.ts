@@ -11,6 +11,10 @@ import {
   generateFirstPage,
   generateNextPage,
   getOrGeneratePage,
+  createStoryStructure,
+  createInitialStructureState,
+  advanceStructureState,
+  applyStructureProgression,
   computeAccumulatedState,
   getParentAccumulatedState,
   mergeStateChanges,
@@ -49,6 +53,10 @@ describe('engine barrel export', () => {
     expect(generateFirstPage).toBeDefined();
     expect(generateNextPage).toBeDefined();
     expect(getOrGeneratePage).toBeDefined();
+    expect(createStoryStructure).toBeDefined();
+    expect(createInitialStructureState).toBeDefined();
+    expect(advanceStructureState).toBeDefined();
+    expect(applyStructureProgression).toBeDefined();
 
     expect(computeAccumulatedState).toBeDefined();
     expect(getParentAccumulatedState).toBeDefined();

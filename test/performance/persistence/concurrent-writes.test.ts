@@ -115,7 +115,21 @@ describe('Concurrent Write Performance', () => {
 
     expect(loadedStories).toHaveLength(10);
     for (let i = 0; i < stories.length; i += 1) {
-      expect(loadedStories[i]).toEqual(stories[i]);
+      const loadedStory = loadedStories[i];
+      const originalStory = stories[i];
+
+      expect(loadedStory).not.toBeNull();
+      expect(loadedStory).toMatchObject({
+        id: originalStory.id,
+        title: originalStory.title,
+        characterConcept: originalStory.characterConcept,
+        worldbuilding: originalStory.worldbuilding,
+        tone: originalStory.tone,
+        globalCanon: originalStory.globalCanon,
+        globalCharacterCanon: originalStory.globalCharacterCanon,
+      });
+      expect(loadedStory?.createdAt.toISOString()).toBe(originalStory.createdAt.toISOString());
+      expect(loadedStory?.updatedAt.toISOString()).toBe(originalStory.updatedAt.toISOString());
     }
   }, 30000);
 

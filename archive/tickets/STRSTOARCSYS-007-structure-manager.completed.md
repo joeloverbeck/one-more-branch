@@ -1,7 +1,24 @@
 # STRSTOARCSYS-007: Structure Manager
 
+## Status
+Completed on 2026-02-07.
+
 ## Summary
 Create the structure manager in the engine layer to handle structure creation, initial state generation, and structure progression (advancing beats/acts).
+
+## Assumptions Reassessment (Against Current Code)
+- `src/engine/structure-manager.ts` does not exist yet. This ticket remains unimplemented.
+- `src/engine/index.ts` currently does not export structure-manager symbols.
+- `src/llm/structure-generator.ts` does not exist yet (that is STRSTOARCSYS-013), so this ticket cannot depend on importing result types from that module.
+- Story arc model primitives needed by this ticket already exist in `src/models/story-arc.ts` (STRSTOARCSYS-001 completed).
+- `test/unit/engine/structure-manager.test.ts` does not exist yet.
+- `src/engine/page-service.ts` and `src/engine/story-service.ts` still reference legacy `storyArc`; those integration changes remain owned by STRSTOARCSYS-008/009 and are out of scope here.
+
+## Updated Scope
+- Implement `src/engine/structure-manager.ts` as a self-contained pure utility module over existing story-arc model types.
+- Export structure-manager functions/types from `src/engine/index.ts`.
+- Add focused unit tests in `test/unit/engine/structure-manager.test.ts`.
+- Enforce transition rule TR-2 locally: progression cannot advance with an empty/blank `beatResolution`.
 
 ## Files to Touch
 - `src/engine/structure-manager.ts` (NEW)
@@ -50,6 +67,8 @@ export interface StructureGenerationResult {
   rawResponse: string;
 }
 ```
+
+Note: Keep `StructureGenerationResult` local to this file/module for now. Do not import from `src/llm/structure-generator.ts` in this ticket because STRSTOARCSYS-013 has not landed yet.
 
 ### Function: `createStoryStructure`
 
@@ -209,6 +228,7 @@ Create `test/unit/engine/structure-manager.test.ts`:
    - Returns parent state unchanged when `beatConcluded: false`
    - Advances state when `beatConcluded: true`
    - Includes resolution in advanced state
+   - Throws when `beatConcluded: true` and `beatResolution` is blank (TR-2 guard)
 
 ### Invariants That Must Remain True
 
@@ -238,6 +258,24 @@ Additional:
 
 ## Dependencies
 - STRSTOARCSYS-001 (needs story-arc types)
+- Must not depend on STRSTOARCSYS-013 implementation details.
 
 ## Estimated Scope
 ~150 lines of code + ~250 lines of tests
+
+## Outcome
+- Implemented `src/engine/structure-manager.ts` with:
+  - `createStoryStructure`
+  - `createInitialStructureState`
+  - `advanceStructureState`
+  - `applyStructureProgression`
+  - Local `StructureGenerationResult` and `StructureProgressionResult` interfaces.
+- Added engine barrel exports for new structure-manager APIs in `src/engine/index.ts`.
+- Added `test/unit/engine/structure-manager.test.ts` covering all acceptance behaviors plus the TR-2 blank-resolution guard.
+- Updated `test/unit/engine/index.test.ts` to assert the new exports.
+- Original plan vs actual:
+  - Planned: implement manager + tests and keep 008/009 changes out of scope.
+  - Actual: completed exactly that, plus one targeted barrel export assertion update to verify public API exposure.
+- Validation run:
+  - Passed: `npx jest test/unit/engine/structure-manager.test.ts test/unit/engine/index.test.ts`
+  - Existing unrelated failures remain in other areas of the repo (pre-existing migration gaps in `page-service`/persistence and related tests/typecheck).

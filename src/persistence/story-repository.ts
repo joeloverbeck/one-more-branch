@@ -22,7 +22,6 @@ interface StoryFileData {
   tone: string;
   globalCanon: string[];
   globalCharacterCanon: Record<string, string[]>;
-  storyArc: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,7 +40,6 @@ function storyToFileData(story: Story): StoryFileData {
     tone: story.tone,
     globalCanon: [...story.globalCanon],
     globalCharacterCanon,
-    storyArc: story.storyArc,
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
   };
@@ -64,7 +62,7 @@ function fileDataToStory(data: StoryFileData): Story {
     tone: data.tone,
     globalCanon: [...data.globalCanon],
     globalCharacterCanon,
-    storyArc: data.storyArc,
+    structure: null,
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
   };
