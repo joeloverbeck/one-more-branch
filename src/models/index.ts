@@ -65,6 +65,17 @@ export {
 } from './story-arc';
 
 export {
+  StructureVersionId,
+  VersionedStoryStructure,
+  createStructureVersionId,
+  isStructureVersionId,
+  parseStructureVersionId,
+  createInitialVersionedStructure,
+  createRewrittenVersionedStructure,
+  isVersionedStoryStructure,
+} from './structure-version';
+
+export {
   Page,
   CreatePageData,
   createPage,
