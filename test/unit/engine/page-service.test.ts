@@ -100,7 +100,8 @@ describe('page-service', () => {
   describe('generateFirstPage', () => {
     it('passes structure to opening context and uses initial structure state when present', async () => {
       const structure = buildStructure();
-      const story = buildStory({ structure });
+      const initialVersion = createInitialVersionedStructure(structure);
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
 
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You arrive under curfew bells as paper ash drifts across the square.',
@@ -134,12 +135,32 @@ describe('page-service', () => {
       expect(page.parentPageId).toBeNull();
       expect(page.parentChoiceIndex).toBeNull();
       expect(page.accumulatedStructureState).toEqual(createInitialStructureState(structure));
+      expect(page.structureVersionId).toBe(initialVersion.id);
       expect(page.choices.map(choice => choice.text)).toEqual([
         'Hide in the print shop',
         'Bribe a gate sergeant',
       ]);
       expect(updatedStory.globalCanon).toContain('The city enforces nightly curfew');
       expect(updatedStory.structure).toEqual(structure);
+    });
+
+    it('throws INVALID_STRUCTURE_VERSION when story has structure but no versions', async () => {
+      const structure = buildStructure();
+      const story = buildStory({ structure }); // Has structure but no structureVersions
+
+      let error: unknown;
+      try {
+        await generateFirstPage(story, 'test-key');
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toMatchObject({
+        name: 'EngineError',
+        code: 'INVALID_STRUCTURE_VERSION',
+      });
+      expect((error as Error).message).toContain('no structure versions');
+      expect(mockedGenerateOpeningPage).not.toHaveBeenCalled();
     });
 
     it('uses empty structure state and omits structure context when story has no structure', async () => {
@@ -277,6 +298,7 @@ describe('page-service', () => {
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: ['Reached the capital at dusk'] },
         parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialStructureVersion.id,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(7);
@@ -321,9 +343,9 @@ describe('page-service', () => {
       expect(updatedStory.globalCanon).toContain('Clocktower guards rotate every ten minutes');
     });
 
-    it('leaves structureVersionId null when no story structure versions exist', async () => {
+    it('throws INVALID_STRUCTURE_VERSION when story has structure but no versions', async () => {
       const structure = buildStructure();
-      const story = buildStory({ structure });
+      const story = buildStory({ structure }); // Has structure but no structureVersions
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You slip into the archive district after curfew.',
@@ -335,33 +357,26 @@ describe('page-service', () => {
         parentAccumulatedStructureState: createInitialStructureState(structure),
       });
 
-      mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
-        narrative: 'You keep to the shadows while patrols pass.',
-        choices: ['Move to the vent', 'Retreat to safehouse'],
-        stateChangesAdded: ['Stayed concealed'],
-        stateChangesRemoved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: {},
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
-        characterStateChangesAdded: [],
-        characterStateChangesRemoved: [],
-        isEnding: false,
-        rawResponse: 'raw',
+      let error: unknown;
+      try {
+        await generateNextPage(story, parentPage, 0, 'test-key');
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toMatchObject({
+        name: 'EngineError',
+        code: 'INVALID_STRUCTURE_VERSION',
       });
-
-      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
-
-      expect(page.structureVersionId).toBeNull();
+      expect((error as Error).message).toContain('no structure versions');
+      expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
     });
 
     it('advances structure state when continuation result concludes the current beat', async () => {
       const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
-      const story = buildStory({ structure });
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You secure forged papers in a shuttered print cellar.',
@@ -371,6 +386,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
@@ -410,8 +426,9 @@ describe('page-service', () => {
 
     it('keeps structure state unchanged when continuation result does not conclude the beat', async () => {
       const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
-      const story = buildStory({ structure });
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You wait beside the archive gate until patrols shift.',
@@ -421,6 +438,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
@@ -448,8 +466,9 @@ describe('page-service', () => {
 
     it('keeps structure progression isolated per branch', async () => {
       const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
-      const story = buildStory({ structure });
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'At the bureau wall, you choose speed or caution.',
@@ -459,6 +478,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(10);
@@ -523,6 +543,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialStructureVersion.id,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
@@ -571,6 +592,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialStructureVersion.id,
       });
 
       const rewrittenStructure: StoryStructure = {
@@ -747,7 +769,7 @@ describe('page-service', () => {
       );
     });
 
-    it('falls back to latest version when parent page has null structureVersionId', async () => {
+    it('throws INVALID_STRUCTURE_VERSION when parent page has null structureVersionId but story has structure', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
@@ -757,7 +779,7 @@ describe('page-service', () => {
         structureVersions: [initialVersion],
       });
 
-      // Parent page has null structureVersionId (created before versioning was added)
+      // Parent page has null structureVersionId - this is now invalid for structured stories
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Legacy page without version tracking.',
@@ -767,37 +789,28 @@ describe('page-service', () => {
         parentPageId: null,
         parentChoiceIndex: null,
         parentAccumulatedStructureState: parentStructureState,
-        structureVersionId: null, // No version ID
+        structureVersionId: null, // No version ID - invalid for structured stories
       });
 
-      mockedStorage.getMaxPageId.mockResolvedValue(1);
-      mockedGenerateContinuationPage.mockResolvedValue({
-        narrative: 'You move forward.',
-        choices: ['Continue', 'Turn back'],
-        stateChangesAdded: ['Advanced'],
-        stateChangesRemoved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: {},
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
-        characterStateChangesAdded: [],
-        characterStateChangesRemoved: [],
-        isEnding: false,
-        rawResponse: 'raw',
+      let error: unknown;
+      try {
+        await generateNextPage(story, parentPage, 0, 'test-key');
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toMatchObject({
+        name: 'EngineError',
+        code: 'INVALID_STRUCTURE_VERSION',
       });
-
-      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
-
-      // Should fall back to latest version when parent has no version ID
-      expect(page.structureVersionId).toBe(initialVersion.id);
+      expect((error as Error).message).toContain('null structureVersionId');
+      expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
+      expect(mockedGenerateContinuationPage).not.toHaveBeenCalled();
     });
 
-    it('does not trigger rewrite when story has no structure versions', async () => {
-      const structure = buildStructure();
-      const parentStructureState = createInitialStructureState(structure);
-      const story = buildStory({ structure });
+    it('does not trigger rewrite when story has no structure', async () => {
+      // Story without structure at all - no rewrite should occur
+      const story = buildStory(); // No structure, no versions
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You consider betraying your original mission.',
@@ -806,7 +819,6 @@ describe('page-service', () => {
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        parentAccumulatedStructureState: parentStructureState,
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
@@ -838,7 +850,7 @@ describe('page-service', () => {
 
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
       expect(page.structureVersionId).toBeNull();
-      // Story without explicit structureVersions gets an empty array from createStory
+      // Story without structure has no structureVersions
       expect(updatedStory.structureVersions).toHaveLength(0);
     });
   });

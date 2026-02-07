@@ -37,7 +37,8 @@ export type EngineErrorCode =
   | 'INVALID_CHOICE'
   | 'GENERATION_FAILED'
   | 'VALIDATION_FAILED'
-  | 'CONCURRENT_GENERATION';
+  | 'CONCURRENT_GENERATION'
+  | 'INVALID_STRUCTURE_VERSION';
 
 export class EngineError extends Error {
   constructor(

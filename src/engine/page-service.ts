@@ -27,6 +27,16 @@ export async function generateFirstPage(
   story: Story,
   apiKey: string,
 ): Promise<{ page: Page; updatedStory: Story }> {
+  const initialStructureVersion = getLatestStructureVersion(story);
+
+  // Enforce strict versioning: if story has structure, it must have structure versions
+  if (story.structure && !initialStructureVersion) {
+    throw new EngineError(
+      'Story has structure but no structure versions. This is an invalid state.',
+      'INVALID_STRUCTURE_VERSION',
+    );
+  }
+
   const result = await generateOpeningPage(
     {
       characterConcept: story.characterConcept,
@@ -37,7 +47,6 @@ export async function generateFirstPage(
     { apiKey },
   );
 
-  const initialStructureVersion = getLatestStructureVersion(story);
   const initialStructureState = story.structure
     ? createInitialStructureState(story.structure)
     : createEmptyAccumulatedStructureState();
@@ -79,16 +88,35 @@ export async function generateNextPage(
     );
   }
 
+  // Enforce strict versioning for structured stories (validate before any I/O)
+  if (story.structure) {
+    const latestVersion = getLatestStructureVersion(story);
+    if (!latestVersion) {
+      throw new EngineError(
+        'Story has structure but no structure versions. This is an invalid state.',
+        'INVALID_STRUCTURE_VERSION',
+      );
+    }
+    if (!parentPage.structureVersionId) {
+      throw new EngineError(
+        `Parent page ${parentPage.id} has null structureVersionId but story has structure. ` +
+          'All pages in structured stories must have a valid structureVersionId.',
+        'INVALID_STRUCTURE_VERSION',
+      );
+    }
+  }
+
   const maxPageId = await storage.getMaxPageId(story.id);
   const parentAccumulatedState = getParentAccumulatedState(parentPage);
   const parentAccumulatedInventory = getParentAccumulatedInventory(parentPage);
   const parentAccumulatedHealth = getParentAccumulatedHealth(parentPage);
   const parentAccumulatedCharacterState = getParentAccumulatedCharacterState(parentPage);
   const parentStructureState = parentPage.accumulatedStructureState;
-  // Use parent page's structure version for branch isolation, fall back to latest if not specified
+
+  // Use parent page's structure version for branch isolation
   const currentStructureVersion = parentPage.structureVersionId
     ? getStructureVersion(story, parentPage.structureVersionId) ?? getLatestStructureVersion(story)
-    : getLatestStructureVersion(story);
+    : null;
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
