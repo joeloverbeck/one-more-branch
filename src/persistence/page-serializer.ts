@@ -8,7 +8,9 @@ import {
   InventoryChanges,
   Page,
   PageId,
+  ProtagonistAffect,
   StateChanges,
+  createDefaultProtagonistAffect,
   parseStructureVersionId,
   parsePageId,
 } from '../models';
@@ -23,6 +25,19 @@ interface AccumulatedStructureStateFileData {
   currentActIndex: number;
   currentBeatIndex: number;
   beatProgressions: BeatProgressionFileData[];
+}
+
+interface SecondaryEmotionFileData {
+  emotion: string;
+  cause: string;
+}
+
+interface ProtagonistAffectFileData {
+  primaryEmotion: string;
+  primaryIntensity: 'mild' | 'moderate' | 'strong' | 'overwhelming';
+  primaryCause: string;
+  secondaryEmotions: SecondaryEmotionFileData[];
+  dominantMotivation: string;
 }
 
 export interface PageFileData {
@@ -56,6 +71,7 @@ export interface PageFileData {
   }>;
   accumulatedCharacterState: Record<string, string[]>;
   accumulatedStructureState: AccumulatedStructureStateFileData;
+  protagonistAffect?: ProtagonistAffectFileData;
   structureVersionId?: string | null;
   isEnding: boolean;
   parentPageId: number | null;
@@ -131,6 +147,16 @@ export function serializePage(page: Page): PageFileData {
     characterStateChanges,
     accumulatedCharacterState,
     accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
+    protagonistAffect: {
+      primaryEmotion: page.protagonistAffect.primaryEmotion,
+      primaryIntensity: page.protagonistAffect.primaryIntensity,
+      primaryCause: page.protagonistAffect.primaryCause,
+      secondaryEmotions: page.protagonistAffect.secondaryEmotions.map(se => ({
+        emotion: se.emotion,
+        cause: se.cause,
+      })),
+      dominantMotivation: page.protagonistAffect.dominantMotivation,
+    },
     structureVersionId: page.structureVersionId,
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
@@ -176,6 +202,20 @@ export function deserializePage(data: PageFileData): Page {
       ? null
       : parseStructureVersionId(data.structureVersionId);
 
+  // Handle protagonistAffect with backward compatibility for existing pages
+  const protagonistAffect: ProtagonistAffect = data.protagonistAffect
+    ? {
+        primaryEmotion: data.protagonistAffect.primaryEmotion,
+        primaryIntensity: data.protagonistAffect.primaryIntensity,
+        primaryCause: data.protagonistAffect.primaryCause,
+        secondaryEmotions: data.protagonistAffect.secondaryEmotions.map(se => ({
+          emotion: se.emotion,
+          cause: se.cause,
+        })),
+        dominantMotivation: data.protagonistAffect.dominantMotivation,
+      }
+    : createDefaultProtagonistAffect();
+
   return {
     id: parsePageId(data.id),
     narrativeText: data.narrativeText,
@@ -194,6 +234,7 @@ export function deserializePage(data: PageFileData): Page {
     characterStateChanges,
     accumulatedCharacterState,
     accumulatedStructureState,
+    protagonistAffect,
     structureVersionId,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),

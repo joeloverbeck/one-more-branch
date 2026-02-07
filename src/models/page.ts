@@ -1,5 +1,10 @@
 import { Choice, isChoice } from './choice';
 import { PageId } from './id';
+import {
+  ProtagonistAffect,
+  createDefaultProtagonistAffect,
+  isProtagonistAffect,
+} from './protagonist-affect';
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import {
@@ -36,6 +41,7 @@ export interface Page {
   readonly characterStateChanges: CharacterStateChanges;
   readonly accumulatedCharacterState: AccumulatedCharacterState;
   readonly accumulatedStructureState: AccumulatedStructureState;
+  readonly protagonistAffect: ProtagonistAffect;
   readonly structureVersionId: StructureVersionId | null;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
@@ -58,6 +64,7 @@ export interface CreatePageData {
   parentAccumulatedHealth?: Health;
   parentAccumulatedCharacterState?: AccumulatedCharacterState;
   parentAccumulatedStructureState?: AccumulatedStructureState;
+  protagonistAffect?: ProtagonistAffect;
   structureVersionId?: StructureVersionId | null;
 }
 
@@ -102,6 +109,7 @@ export function createPage(data: CreatePageData): Page {
     characterStateChanges,
     accumulatedCharacterState: applyCharacterStateChanges(parentCharacterState, characterStateChanges),
     accumulatedStructureState: parentStructureState,
+    protagonistAffect: data.protagonistAffect ?? createDefaultProtagonistAffect(),
     structureVersionId: data.structureVersionId ?? null,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
@@ -149,6 +157,10 @@ export function isPage(value: unknown): value is Page {
   const structureVersionIdValid =
     structureVersionId === null || isStructureVersionId(structureVersionId);
 
+  // protagonistAffect is optional for backward compatibility with existing pages
+  const protagonistAffectValid =
+    obj['protagonistAffect'] === undefined || isProtagonistAffect(obj['protagonistAffect']);
+
   return (
     typeof obj['id'] === 'number' &&
     Number.isInteger(obj['id']) &&
@@ -158,6 +170,7 @@ export function isPage(value: unknown): value is Page {
     obj['choices'].every(isChoice) &&
     isStateChanges(obj['stateChanges']) &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
+    protagonistAffectValid &&
     structureVersionIdValid &&
     typeof obj['isEnding'] === 'boolean'
   );

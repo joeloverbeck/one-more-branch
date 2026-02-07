@@ -47,8 +47,9 @@ ${structureSection}REQUIREMENTS (follow ALL):
 4. Provide 3 meaningful choices leading to genuinely DIFFERENT story directions (add a 4th only when the situation truly warrants another distinct path)
 5. Establish starting inventory based on the character concept (use inventoryAdded for items they would logically possess)
 6. If the character concept implies any starting physical conditions (old injuries, chronic ailments, exhaustion), use healthAdded to establish them
+7. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
 
-REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession. Starting health conditions should only be added if the character concept explicitly mentions them.`;
+REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession. Starting health conditions should only be added if the character concept explicitly mentions them. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildSystemPrompt(options) },

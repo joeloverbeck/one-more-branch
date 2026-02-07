@@ -103,6 +103,44 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description:
             'NPC states to REMOVE because they are RESOLVED or NO LONGER RELEVANT. Use EXACT text from existing NPC state entries. Empty array if nothing to remove.',
         },
+        protagonistAffect: {
+          type: 'object',
+          properties: {
+            primaryEmotion: {
+              type: 'string',
+              description: 'The dominant feeling driving the protagonist at the END of this scene (e.g., "fear", "attraction", "guilt", "determination").',
+            },
+            primaryIntensity: {
+              type: 'string',
+              enum: ['mild', 'moderate', 'strong', 'overwhelming'],
+              description: 'How intensely the protagonist feels the primary emotion.',
+            },
+            primaryCause: {
+              type: 'string',
+              description: 'What is causing this emotion (brief, specific to this scene).',
+            },
+            secondaryEmotions: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  emotion: { type: 'string' },
+                  cause: { type: 'string' },
+                },
+                required: ['emotion', 'cause'],
+                additionalProperties: false,
+              },
+              description: 'Optional background feelings with their causes.',
+            },
+            dominantMotivation: {
+              type: 'string',
+              description: 'What the protagonist most wants right now.',
+            },
+          },
+          required: ['primaryEmotion', 'primaryIntensity', 'primaryCause', 'secondaryEmotions', 'dominantMotivation'],
+          additionalProperties: false,
+          description: 'Snapshot of protagonist emotional state at END of this scene. NOT accumulated - fresh snapshot each page.',
+        },
         isEnding: {
           type: 'boolean',
           description: 'True only when the story concludes and choices is empty.',
@@ -133,7 +171,7 @@ export const STORY_GENERATION_SCHEMA: JsonSchema = {
           description: 'Short summary of current narrative state for rewrite context; empty when no deviation.',
         },
       },
-      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'isEnding', 'beatConcluded', 'beatResolution', 'deviationDetected', 'deviationReason', 'invalidatedBeatIds', 'narrativeSummary'],
+      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'protagonistAffect', 'isEnding', 'beatConcluded', 'beatResolution', 'deviationDetected', 'deviationReason', 'invalidatedBeatIds', 'narrativeSummary'],
       additionalProperties: false,
     },
   },

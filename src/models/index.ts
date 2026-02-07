@@ -84,6 +84,17 @@ export {
 } from './structure-version';
 
 export {
+  EmotionIntensity,
+  SecondaryEmotion,
+  ProtagonistAffect,
+  isEmotionIntensity,
+  isSecondaryEmotion,
+  isProtagonistAffect,
+  createDefaultProtagonistAffect,
+  formatProtagonistAffect,
+} from './protagonist-affect';
+
+export {
   Page,
   CreatePageData,
   createPage,

@@ -1,8 +1,24 @@
 import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, ContinuationContext, PromptOptions } from '../types.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../models/story-arc.js';
+import { formatProtagonistAffect, type ProtagonistAffect } from '../../models/protagonist-affect.js';
 import { buildSystemPrompt } from './system-prompt.js';
 import { truncateText } from './utils.js';
+
+/**
+ * Builds the protagonist's current emotional state section for continuation prompts.
+ * This shows the LLM how the protagonist is feeling at the start of this scene
+ * (carried over from the previous page's protagonistAffect).
+ */
+function buildProtagonistAffectSection(affect: ProtagonistAffect | undefined): string {
+  if (!affect) {
+    return '';
+  }
+  return `PROTAGONIST'S CURRENT EMOTIONAL STATE:
+${formatProtagonistAffect(affect)}
+
+`;
+}
 
 const DEVIATION_DETECTION_SECTION = `=== BEAT DEVIATION EVALUATION ===
 After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.
@@ -175,6 +191,8 @@ ${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
 
 `;
 
+  const protagonistAffectSection = buildProtagonistAffectSection(context.parentProtagonistAffect);
+
   const userPrompt = `Continue the interactive story based on the player's choice.
 
 CHARACTER CONCEPT:
@@ -182,7 +200,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${stateSection}${inventorySection}${healthSection}PREVIOUS SCENE:
+${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${stateSection}${inventorySection}${healthSection}${protagonistAffectSection}PREVIOUS SCENE:
 ${truncateText(context.previousNarrative, 2000)}
 
 PLAYER'S CHOICE: "${context.selectedChoice}"
@@ -194,8 +212,9 @@ REQUIREMENTS (follow ALL):
 4. Maintain STRICT consistency with all established facts and the current state
 5. Present 3 new meaningful choices unless this naturally leads to an ending (add a 4th only when the situation truly warrants another distinct path)
 6. Ensure choices are divergent - each must lead to a genuinely different story path
+7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 
-REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true).`;
+REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildSystemPrompt(options) },

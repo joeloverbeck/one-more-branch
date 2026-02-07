@@ -1,4 +1,4 @@
-import { Page, createChoice, parsePageId } from '@/models';
+import { Page, createChoice, parsePageId, createDefaultProtagonistAffect } from '@/models';
 import {
   deserializePage,
   PageFileData,
@@ -29,6 +29,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
       beatProgressions: [],
     },
     structureVersionId: null,
+    protagonistAffect: createDefaultProtagonistAffect(),
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -405,6 +406,7 @@ describe('page-serializer', () => {
           beatProgressions: [],
         },
         structureVersionId: null,
+        protagonistAffect: createDefaultProtagonistAffect(),
         isEnding: true,
         parentPageId: parsePageId(9),
         parentChoiceIndex: 0,

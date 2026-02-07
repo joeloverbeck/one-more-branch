@@ -53,6 +53,16 @@ export function validateGenerationResponse(
     healthRemoved: validated.healthRemoved.map(entry => entry.trim()).filter(entry => entry),
     characterStateChangesAdded,
     characterStateChangesRemoved,
+    protagonistAffect: {
+      primaryEmotion: validated.protagonistAffect.primaryEmotion.trim(),
+      primaryIntensity: validated.protagonistAffect.primaryIntensity,
+      primaryCause: validated.protagonistAffect.primaryCause.trim(),
+      secondaryEmotions: validated.protagonistAffect.secondaryEmotions.map(se => ({
+        emotion: se.emotion.trim(),
+        cause: se.cause.trim(),
+      })),
+      dominantMotivation: validated.protagonistAffect.dominantMotivation.trim(),
+    },
     isEnding: validated.isEnding,
     beatConcluded: validated.beatConcluded,
     beatResolution: validated.beatResolution.trim(),

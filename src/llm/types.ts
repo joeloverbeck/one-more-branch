@@ -1,3 +1,4 @@
+import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 
 export interface GenerationResult {
@@ -13,6 +14,7 @@ export interface GenerationResult {
   healthRemoved: string[];
   characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
   characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
+  protagonistAffect: ProtagonistAffect;
   isEnding: boolean;
   beatConcluded: boolean;
   beatResolution: string;
@@ -82,6 +84,7 @@ export interface ContinuationContext {
   accumulatedInventory: readonly string[];
   accumulatedHealth: readonly string[];
   accumulatedCharacterState: Readonly<Record<string, readonly string[]>>;
+  parentProtagonistAffect?: ProtagonistAffect;
 }
 
 export interface OpeningContext {

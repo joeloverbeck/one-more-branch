@@ -58,7 +58,8 @@ HEALTH MANAGEMENT:
 FIELD SEPARATION (CRITICAL):
 - INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
 - HEALTH (healthAdded/healthRemoved): Physical wounds, injuries, poison, illness, exhaustion - NOT emotional states
-- STATE CHANGES (stateChangesAdded/stateChangesRemoved): Emotional states, relationships, abilities, events - NOT items or physical health
+- STATE CHANGES (stateChangesAdded/stateChangesRemoved): Commitments, knowledge, relationships, events - NOT emotions, items, or health
+- PROTAGONIST AFFECT (protagonistAffect): Protagonist's emotional state SNAPSHOT at end of scene - NOT accumulated
 - WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
 - CHARACTER CANON (newCharacterCanonFacts): PERMANENT character traits, backgrounds, abilities - WHO they are
 - CHARACTER STATE (characterStateChangesAdded/characterStateChangesRemoved): SITUATIONAL NPC events - WHAT happened in THIS branch
@@ -77,6 +78,23 @@ Use CHARACTER STATE (characterStateChangesAdded) for SITUATIONAL events that hap
 - Branch-specific status: "Currently waiting at the docks"
 
 Rule: If it would be true in ANY playthrough, it's CANON. If it only happened because of choices made, it's STATE.
+
+PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):
+Track the protagonist's emotional state in the dedicated protagonistAffect field.
+This is a SNAPSHOT of how the protagonist feels at the END of this scene - NOT accumulated.
+
+Fields:
+- primaryEmotion: The dominant feeling (e.g., "fear", "attraction", "guilt", "determination")
+- primaryIntensity: mild | moderate | strong | overwhelming
+- primaryCause: What's causing this emotion (brief, specific to this scene)
+- secondaryEmotions: Optional background feelings with their causes
+- dominantMotivation: What the protagonist most wants right now
+
+CRITICAL: Emotional states belong in protagonistAffect, NOT in stateChanges.
+❌ stateChangesAdded: ["You feel attracted to Marla", "You are frustrated", "Growing suspicion"]
+✅ protagonistAffect: { primaryEmotion: "attraction", primaryIntensity: "strong", ... }
+
+The protagonistAffect is for the PROTAGONIST only. NPC emotional states should be described in the narrative, not tracked as data.
 
 STATE CHANGE QUALITY CRITERIA (CRITICAL):
 State changes should track CONSEQUENTIAL events that would affect future story decisions.
@@ -97,6 +115,8 @@ BAD STATE CHANGES (do NOT track these):
 - Physical descriptions: "Looked tired" - use canon for permanent traits
 - Fleeting emotions: "Seemed nervous" - momentary, not consequential
 - Micro-actions: "Nodded" - too granular
+- Protagonist feelings: "You feel attracted to her" - use protagonistAffect instead
+- Emotional states: "Growing frustration", "Feeling hopeful" - use protagonistAffect instead
 
 ANTI-PATTERNS (NEVER do these):
 - Starting with "Noticed", "Saw", "Observed" - these are observations, not state
@@ -108,6 +128,8 @@ Apply the same criteria to protagonist stateChangesAdded:
 - GOOD: "Learned the Duke's secret weakness" (actionable knowledge)
 - BAD: "Noticed his expensive clothes" (trivial observation)
 - BAD: "Felt a chill" (momentary sensation)
+- BAD: "You feel attracted to Marla" (use protagonistAffect for emotions)
+- BAD: "Growing sense of dread" (use protagonistAffect for emotions)
 
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
 ✅ Use inventoryAdded/inventoryRemoved

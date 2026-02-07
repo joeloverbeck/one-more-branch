@@ -26,6 +26,7 @@ describe('STORY_GENERATION_SCHEMA', () => {
       'healthRemoved',
       'characterStateChangesAdded',
       'characterStateChangesRemoved',
+      'protagonistAffect',
       'isEnding',
       'beatConcluded',
       'beatResolution',

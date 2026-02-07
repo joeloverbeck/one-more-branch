@@ -28,6 +28,33 @@ const CharacterStateChangesArraySchema = z.array(
   }),
 );
 
+// Schema for emotion intensity
+const EmotionIntensitySchema = z.enum(['mild', 'moderate', 'strong', 'overwhelming']);
+
+// Schema for secondary emotions
+const SecondaryEmotionSchema = z.object({
+  emotion: z.string().min(1, 'Secondary emotion must not be empty'),
+  cause: z.string().min(1, 'Secondary emotion cause must not be empty'),
+});
+
+// Schema for protagonist affect - emotional state snapshot
+const ProtagonistAffectSchema = z.object({
+  primaryEmotion: z.string().min(1, 'Primary emotion must not be empty'),
+  primaryIntensity: EmotionIntensitySchema,
+  primaryCause: z.string().min(1, 'Primary cause must not be empty'),
+  secondaryEmotions: z.array(SecondaryEmotionSchema).optional().default([]),
+  dominantMotivation: z.string().min(1, 'Dominant motivation must not be empty'),
+});
+
+// Default protagonist affect for backward compatibility
+const defaultProtagonistAffect = {
+  primaryEmotion: 'neutral',
+  primaryIntensity: 'mild' as const,
+  primaryCause: 'No specific emotional driver',
+  secondaryEmotions: [],
+  dominantMotivation: 'Continue forward',
+};
+
 export const GenerationResultSchema = z
   .object({
     narrative: z
@@ -60,6 +87,7 @@ export const GenerationResultSchema = z
     healthRemoved: z.array(z.string()).optional().default([]),
     characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
     characterStateChangesRemoved: CharacterStateChangesArraySchema.optional().default([]),
+    protagonistAffect: ProtagonistAffectSchema.optional().default(defaultProtagonistAffect),
     isEnding: z.boolean(),
     beatConcluded: z.boolean().default(false),
     beatResolution: z.string().default(''),
