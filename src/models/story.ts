@@ -1,6 +1,12 @@
 import { StoryId, generateStoryId, isStoryId } from './id';
 import { StoryStructure } from './story-arc';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
+import {
+  StructureVersionId,
+  VersionedStoryStructure,
+  createInitialVersionedStructure,
+  isVersionedStoryStructure,
+} from './structure-version';
 
 export type StoryTone = string;
 
@@ -13,6 +19,7 @@ export interface Story {
   globalCanon: GlobalCanon;
   globalCharacterCanon: GlobalCharacterCanon;
   structure: StoryStructure | null;
+  readonly structureVersions?: readonly VersionedStoryStructure[];
   readonly createdAt: Date;
   updatedAt: Date;
 }
@@ -56,6 +63,7 @@ export function createStory(data: CreateStoryData): Story {
     globalCanon: [],
     globalCharacterCanon: {},
     structure: null,
+    structureVersions: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -102,6 +110,7 @@ export function isStory(value: unknown): value is Story {
   const title = obj['title'];
   const characterConcept = obj['characterConcept'];
   const structure = obj['structure'];
+  const structureVersions = obj['structureVersions'];
 
   return (
     isStoryId(obj['id']) &&
@@ -114,9 +123,39 @@ export function isStory(value: unknown): value is Story {
     Array.isArray(obj['globalCanon']) &&
     isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
     (structure === null || isStoryStructure(structure)) &&
+    (structureVersions === undefined ||
+      (Array.isArray(structureVersions) &&
+        structureVersions.every(version => isVersionedStoryStructure(version)))) &&
     obj['createdAt'] instanceof Date &&
     obj['updatedAt'] instanceof Date
   );
+}
+
+export function getLatestStructureVersion(story: Story): VersionedStoryStructure | null {
+  const versions = story.structureVersions ?? [];
+  if (versions.length === 0) {
+    return null;
+  }
+
+  return versions[versions.length - 1] ?? null;
+}
+
+export function getStructureVersion(
+  story: Story,
+  versionId: StructureVersionId,
+): VersionedStoryStructure | null {
+  const versions = story.structureVersions ?? [];
+  return versions.find(version => version.id === versionId) ?? null;
+}
+
+export function addStructureVersion(story: Story, version: VersionedStoryStructure): Story {
+  const versions = story.structureVersions ?? [];
+  return {
+    ...story,
+    structure: version.structure,
+    structureVersions: [...versions, version],
+    updatedAt: new Date(),
+  };
 }
 
 export function updateStoryCanon(story: Story, newCanon: GlobalCanon): Story {
@@ -128,6 +167,12 @@ export function updateStoryCanon(story: Story, newCanon: GlobalCanon): Story {
 }
 
 export function updateStoryStructure(story: Story, structure: StoryStructure): Story {
+  const versions = story.structureVersions ?? [];
+  if (versions.length === 0) {
+    const initialVersion = createInitialVersionedStructure(structure);
+    return addStructureVersion(story, initialVersion);
+  }
+
   return {
     ...story,
     structure,

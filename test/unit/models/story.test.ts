@@ -1,7 +1,11 @@
 import { isStoryId } from '@/models/id';
 import { StoryStructure } from '@/models/story-arc';
+import { createInitialVersionedStructure } from '@/models/structure-version';
 import {
+  addStructureVersion,
   createStory,
+  getLatestStructureVersion,
+  getStructureVersion,
   isStory,
   isStoryStructure,
   updateStoryCanon,
@@ -71,6 +75,7 @@ describe('Story', () => {
       expect(story.tone).toBe('fantasy adventure');
       expect(story.globalCanon).toEqual([]);
       expect(story.structure).toBeNull();
+      expect(story.structureVersions).toEqual([]);
     });
 
     it('creates story with all fields provided', () => {
@@ -185,6 +190,19 @@ describe('Story', () => {
 
       expect(isStory(legacyStory)).toBe(false);
     });
+
+    it('returns true for legacy shape without structureVersions', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const { structureVersions: _versions, ...legacyCompatibleStory } = story;
+      expect(_versions).toEqual([]);
+
+      expect(isStory(legacyCompatibleStory)).toBe(true);
+    });
+
+    it('returns false when structureVersions contains invalid entries', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      expect(isStory({ ...story, structureVersions: ['not-a-version'] })).toBe(false);
+    });
   });
 
   describe('updateStoryCanon', () => {
@@ -212,12 +230,15 @@ describe('Story', () => {
   });
 
   describe('updateStoryStructure', () => {
-    it('updates structure to provided value', () => {
+    it('creates initial structure version when no versions exist', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
       const structure = createTestStructure();
       const updated = updateStoryStructure(story, structure);
 
       expect(updated.structure).toBe(structure);
+      expect(updated.structureVersions).toHaveLength(1);
+      expect(updated.structureVersions?.[0]?.structure).toBe(structure);
+      expect(updated.structureVersions?.[0]?.previousVersionId).toBeNull();
     });
 
     it('updates updatedAt timestamp', () => {
@@ -227,12 +248,104 @@ describe('Story', () => {
       expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(story.updatedAt.getTime());
     });
 
+    it('does not append a new version when versions already exist', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const firstStructure = createTestStructure();
+      const firstUpdated = updateStoryStructure(story, firstStructure);
+      const secondStructure = {
+        ...createTestStructure(),
+        overallTheme: 'A changed theme',
+      };
+      const secondUpdated = updateStoryStructure(firstUpdated, secondStructure);
+
+      expect(firstUpdated.structureVersions).toHaveLength(1);
+      expect(secondUpdated.structureVersions).toHaveLength(1);
+      expect(secondUpdated.structure).toEqual(secondStructure);
+    });
+
     it('does not mutate original story', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
       const updated = updateStoryStructure(story, createTestStructure());
 
       expect(story.structure).toBeNull();
       expect(updated).not.toBe(story);
+    });
+  });
+
+  describe('getLatestStructureVersion', () => {
+    it('returns null for empty structureVersions', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+
+      expect(getLatestStructureVersion(story)).toBeNull();
+    });
+
+    it('returns last version in array', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const firstVersion = createInitialVersionedStructure(createTestStructure());
+      const secondVersion = createInitialVersionedStructure({
+        ...createTestStructure(),
+        overallTheme: 'Second',
+      });
+
+      const withFirst = addStructureVersion(story, firstVersion);
+      const withSecond = addStructureVersion(withFirst, secondVersion);
+
+      expect(getLatestStructureVersion(withSecond)).toBe(secondVersion);
+    });
+  });
+
+  describe('getStructureVersion', () => {
+    it('returns null when version not found', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const version = createInitialVersionedStructure(createTestStructure());
+      const updated = addStructureVersion(story, version);
+
+      expect(getStructureVersion(updated, 'sv-1234567890123-abcd' as typeof version.id)).toBeNull();
+    });
+
+    it('returns matching version by ID', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const version = createInitialVersionedStructure(createTestStructure());
+      const updated = addStructureVersion(story, version);
+
+      expect(getStructureVersion(updated, version.id)).toBe(version);
+    });
+  });
+
+  describe('addStructureVersion', () => {
+    it('appends version to structureVersions', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const version = createInitialVersionedStructure(createTestStructure());
+      const updated = addStructureVersion(story, version);
+
+      expect(updated.structureVersions).toHaveLength(1);
+      expect(updated.structureVersions?.[0]).toBe(version);
+    });
+
+    it('updates structure field to new version structure', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const version = createInitialVersionedStructure(createTestStructure());
+      const updated = addStructureVersion(story, version);
+
+      expect(updated.structure).toBe(version.structure);
+    });
+
+    it('updates updatedAt timestamp', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const version = createInitialVersionedStructure(createTestStructure());
+      const updated = addStructureVersion(story, version);
+
+      expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(story.updatedAt.getTime());
+    });
+
+    it('returns new story object (immutability)', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      const version = createInitialVersionedStructure(createTestStructure());
+      const updated = addStructureVersion(story, version);
+
+      expect(updated).not.toBe(story);
+      expect(story.structure).toBeNull();
+      expect(story.structureVersions).toEqual([]);
     });
   });
 

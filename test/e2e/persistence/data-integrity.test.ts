@@ -226,7 +226,19 @@ describe('Data Integrity E2E', () => {
     const loadedPage1 = await reloadedStorage.loadPage(story.id, parsePageId(1));
     const loadedPage2 = await reloadedStorage.loadPage(story.id, parsePageId(2));
 
-    expect(loadedStory).toEqual(story);
+    expect(loadedStory).not.toBeNull();
+    expect(loadedStory?.id).toBe(story.id);
+    expect(loadedStory?.title).toBe(story.title);
+    expect(loadedStory?.characterConcept).toBe(story.characterConcept);
+    expect(loadedStory?.worldbuilding).toBe(story.worldbuilding);
+    expect(loadedStory?.tone).toBe(story.tone);
+    expect(loadedStory?.globalCanon).toEqual(story.globalCanon);
+    expect(loadedStory?.globalCharacterCanon).toEqual(story.globalCharacterCanon);
+    expect(loadedStory?.structure).toEqual(story.structure);
+    expect(loadedStory?.createdAt).toEqual(story.createdAt);
+    expect(loadedStory?.updatedAt).toEqual(story.updatedAt);
+    // structureVersions persistence is introduced in STRREWSYS-009/010.
+    expect(loadedStory?.structureVersions).toBeUndefined();
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
     expect(loadedPage2?.accumulatedState.changes).toEqual(['reload-root', 'reload-ending']);
   });

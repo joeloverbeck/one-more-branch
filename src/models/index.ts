@@ -92,6 +92,9 @@ export {
   createStory,
   isStory,
   isStoryStructure,
+  getLatestStructureVersion,
+  getStructureVersion,
+  addStructureVersion,
   updateStoryCanon,
   updateStoryStructure,
 } from './story';

@@ -6,6 +6,11 @@ Extend the Story model to support multiple structure versions with helper functi
 ## Dependencies
 - STRREWSYS-001 must be completed first
 
+## Reassessed Assumptions (2026-02-07)
+- `src/models/structure-version.ts` and its tests already exist and are passing from STRREWSYS-001/002.
+- Persistence and migration are explicitly out of scope for this ticket, so model/type-guard behavior must remain compatible with stories that may not yet include persisted `structureVersions`.
+- The original note "structure should always reflect the latest `structureVersions` entry" is only enforceable for flows that actually append versions. In this ticket, `updateStoryStructure` only seeds the first version; rewrite lineage creation with metadata is handled by later tickets (STRREWSYS-011/012/013).
+
 ## Files to Touch
 
 ### Modified Files
@@ -24,7 +29,12 @@ Extend the Story model to support multiple structure versions with helper functi
 
 Add imports:
 ```typescript
-import { VersionedStoryStructure, StructureVersionId } from './structure-version';
+import {
+  VersionedStoryStructure,
+  StructureVersionId,
+  createInitialVersionedStructure,
+  isVersionedStoryStructure,
+} from './structure-version';
 ```
 
 Update Story interface:
@@ -47,8 +57,9 @@ export interface Story {
   /**
    * All structure versions, ordered by creation time.
    * Index 0 is the initial structure.
+   * Optional for legacy compatibility until persistence/migration tickets land.
    */
-  readonly structureVersions: readonly VersionedStoryStructure[];
+  readonly structureVersions?: readonly VersionedStoryStructure[];
 
   readonly createdAt: Date;
   updatedAt: Date;
@@ -63,10 +74,11 @@ Add new functions:
 export function getLatestStructureVersion(
   story: Story
 ): VersionedStoryStructure | null {
-  if (story.structureVersions.length === 0) {
+  const versions = story.structureVersions ?? [];
+  if (versions.length === 0) {
     return null;
   }
-  return story.structureVersions[story.structureVersions.length - 1];
+  return versions[versions.length - 1];
 }
 
 /**
@@ -76,7 +88,8 @@ export function getStructureVersion(
   story: Story,
   versionId: StructureVersionId
 ): VersionedStoryStructure | null {
-  return story.structureVersions.find(v => v.id === versionId) ?? null;
+  const versions = story.structureVersions ?? [];
+  return versions.find(v => v.id === versionId) ?? null;
 }
 
 /**
@@ -87,10 +100,11 @@ export function addStructureVersion(
   story: Story,
   version: VersionedStoryStructure
 ): Story {
+  const versions = story.structureVersions ?? [];
   return {
     ...story,
     structure: version.structure,
-    structureVersions: [...story.structureVersions, version],
+    structureVersions: [...versions, version],
     updatedAt: new Date(),
   };
 }
@@ -120,8 +134,10 @@ export function createStory(data: CreateStoryData): Story {
 Update `updateStoryStructure`:
 ```typescript
 export function updateStoryStructure(story: Story, structure: StoryStructure): Story {
+  const versions = story.structureVersions ?? [];
+
   // If this is the first structure, create initial version
-  if (story.structureVersions.length === 0) {
+  if (versions.length === 0) {
     const initialVersion = createInitialVersionedStructure(structure);
     return addStructureVersion(story, initialVersion);
   }
@@ -136,6 +152,8 @@ export function updateStoryStructure(story: Story, structure: StoryStructure): S
 ```
 
 Update `isStory` type guard to validate `structureVersions`.
+- Accept missing `structureVersions` for legacy-loaded stories until STRREWSYS-009/010.
+- Validate entries with `isVersionedStoryStructure` when present.
 
 ### `test/unit/models/story.test.ts` Updates
 
@@ -174,10 +192,22 @@ describe('updateStoryStructure with versioning', () => {
 ### Invariants That Must Remain True
 1. **I2: Structure Versions Form Linear Chain** - Each version (except initial) points to valid previous version
 2. **Backward compatibility** - Existing code using `story.structure` continues to work
-3. **Immutability** - `structureVersions` array is readonly
+3. **Legacy compatibility pre-migration** - Stories without persisted `structureVersions` still pass runtime validation
 4. **Existing tests pass** - `npm run test:unit` passes
 
 ## Technical Notes
 - Keep `structure` field for backward compatibility during transition
-- The `structure` field should always reflect the latest `structureVersions` entry
+- `createStory` initializes `structureVersions` as `[]`; legacy stories may omit it until migration
+- Full rewrite-version lineage metadata is implemented in later STRREWSYS tickets
 - Migration of existing stories is handled in STRREWSYS-010
+
+## Status
+Completed on 2026-02-07.
+
+## Outcome
+- Implemented story-model structure versioning in `src/models/story.ts` with legacy-safe helpers:
+  `getLatestStructureVersion`, `getStructureVersion`, `addStructureVersion`.
+- Updated `createStory`, `isStory`, and `updateStoryStructure` for initial-version seeding while preserving backward compatibility for legacy stories without persisted `structureVersions`.
+- Updated model barrel exports in `src/models/index.ts`.
+- Added and updated unit tests in `test/unit/models/story.test.ts` for helper behavior, initial seeding, non-appending legacy update behavior, and legacy compatibility in `isStory`.
+- Adjusted scope from the original plan by explicitly allowing missing `structureVersions` during pre-migration phases (instead of requiring strict always-present persistence in this ticket).

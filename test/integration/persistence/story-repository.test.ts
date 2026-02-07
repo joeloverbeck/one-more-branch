@@ -55,6 +55,22 @@ function buildStory(overrides?: Partial<Story>): Story {
   };
 }
 
+function expectLoadedStoryToMatchPersistedFields(loaded: Story | null, expected: Story): void {
+  expect(loaded).not.toBeNull();
+  expect(loaded?.id).toBe(expected.id);
+  expect(loaded?.title).toBe(expected.title);
+  expect(loaded?.characterConcept).toBe(expected.characterConcept);
+  expect(loaded?.worldbuilding).toBe(expected.worldbuilding);
+  expect(loaded?.tone).toBe(expected.tone);
+  expect(loaded?.globalCanon).toEqual(expected.globalCanon);
+  expect(loaded?.globalCharacterCanon).toEqual(expected.globalCharacterCanon);
+  expect(loaded?.structure).toEqual(expected.structure);
+  expect(loaded?.createdAt).toEqual(expected.createdAt);
+  expect(loaded?.updatedAt).toEqual(expected.updatedAt);
+  // structureVersions persistence is introduced in STRREWSYS-009/010.
+  expect(loaded?.structureVersions).toBeUndefined();
+}
+
 describe('story-repository integration', () => {
   const createdStoryIds = new Set<StoryId>();
 
@@ -88,8 +104,7 @@ describe('story-repository integration', () => {
     await saveStory(story);
     const loaded = await loadStory(story.id);
 
-    expect(loaded).not.toBeNull();
-    expect(loaded).toEqual(story);
+    expectLoadedStoryToMatchPersistedFields(loaded, story);
   });
 
   it('save/load preserves null structure', async () => {
@@ -124,7 +139,8 @@ describe('story-repository integration', () => {
     };
 
     await updateStory(updatedStory);
-    await expect(loadStory(story.id)).resolves.toEqual(updatedStory);
+    const loaded = await loadStory(story.id);
+    expectLoadedStoryToMatchPersistedFields(loaded, updatedStory);
 
     await deleteStory(story.id);
     createdStoryIds.delete(story.id);
@@ -219,7 +235,7 @@ describe('story-repository integration', () => {
     expect(loadedStories).toHaveLength(stories.length);
 
     for (let i = 0; i < stories.length; i += 1) {
-      expect(loadedStories[i]).toEqual(stories[i]);
+      expectLoadedStoryToMatchPersistedFields(loadedStories[i], stories[i]);
       await expect(storyExists(stories[i].id)).resolves.toBe(true);
     }
   });
