@@ -1,16 +1,9 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
 import { logger } from '../../logging/index.js';
+import { wrapAsyncRoute } from '../utils/index.js';
 
 export const homeRoutes = Router();
-
-function wrapAsyncRoute(
-  handler: (req: Request, res: Response) => Promise<unknown>,
-): (req: Request, res: Response) => void {
-  return (req: Request, res: Response) => {
-    void handler(req, res);
-  };
-}
 
 homeRoutes.get('/', wrapAsyncRoute(async (_req: Request, res: Response) => {
   try {

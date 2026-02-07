@@ -142,6 +142,20 @@ Completed specs are archived in `archive/specs/`.
 
 All prompts include NC-21 mature content guidelines permitting explicit content, violence, and controversial themes without self-censorship, as this is an adults-only application.
 
+## MCP Server Usage
+
+When using Serena MCP for semantic code operations (symbol navigation, project memory, session persistence), it must be activated first:
+
+```
+mcp__plugin_serena_serena__activate_project with project: "one-more-branch"
+```
+
+Serena provides:
+- Symbol-level code navigation and refactoring
+- Project memory for cross-session context
+- Semantic search across the codebase
+- LSP-powered code understanding
+
 ## Testing Patterns
 
 ### Fire-and-Forget Route Handlers
