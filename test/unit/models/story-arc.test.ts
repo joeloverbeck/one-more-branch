@@ -1,6 +1,11 @@
 import {
   AccumulatedStructureState,
+  createBeatDeviation,
+  createNoDeviation,
   StoryStructure,
+  isDeviation,
+  isNoDeviation,
+  validateDeviationTargets,
   createEmptyAccumulatedStructureState,
   getBeatProgression,
   getCurrentAct,
@@ -225,6 +230,121 @@ describe('story-arc model utilities', () => {
       };
 
       expect(isLastAct(structure, state)).toBe(false);
+    });
+  });
+
+  describe('DeviationResult', () => {
+    describe('isDeviation', () => {
+      it('returns true for BeatDeviation', () => {
+        const result = createBeatDeviation(
+          'Player choice contradicted remaining beats',
+          ['2.2', '3.1'],
+          'The protagonist switched allegiances',
+        );
+
+        expect(isDeviation(result)).toBe(true);
+      });
+
+      it('returns false for NoDeviation', () => {
+        const result = createNoDeviation();
+        expect(isDeviation(result)).toBe(false);
+      });
+    });
+
+    describe('isNoDeviation', () => {
+      it('returns true for NoDeviation', () => {
+        const result = createNoDeviation();
+        expect(isNoDeviation(result)).toBe(true);
+      });
+
+      it('returns false for BeatDeviation', () => {
+        const result = createBeatDeviation(
+          'Branch no longer aligns with planned infiltration beat',
+          ['2.2'],
+          'The protagonist accepted command from the enemy',
+        );
+
+        expect(isNoDeviation(result)).toBe(false);
+      });
+    });
+
+    describe('createBeatDeviation', () => {
+      it('creates BeatDeviation with all fields', () => {
+        const result = createBeatDeviation(
+          'Narrative shifted to alliance with antagonist',
+          ['2.2', '3.1'],
+          'The team split after a betrayal',
+        );
+
+        expect(result).toEqual({
+          detected: true,
+          reason: 'Narrative shifted to alliance with antagonist',
+          invalidatedBeatIds: ['2.2', '3.1'],
+          narrativeSummary: 'The team split after a betrayal',
+        });
+      });
+
+      it('throws if invalidatedBeatIds is empty', () => {
+        expect(() => createBeatDeviation('No invalidated beats provided', [], 'Summary')).toThrow(
+          'BeatDeviation must have at least one invalidated beat ID',
+        );
+      });
+
+      it('preserves array identity', () => {
+        const invalidatedBeatIds = ['2.2', '3.1'] as const;
+        const result = createBeatDeviation('Deviation detected', invalidatedBeatIds, 'Summary');
+
+        expect(result.invalidatedBeatIds).toBe(invalidatedBeatIds);
+      });
+    });
+
+    describe('createNoDeviation', () => {
+      it('creates NoDeviation with detected false', () => {
+        expect(createNoDeviation()).toEqual({ detected: false });
+      });
+    });
+
+    describe('validateDeviationTargets', () => {
+      it('returns true when concluded beats are not invalidated', () => {
+        const deviation = createBeatDeviation('Future beats are invalid', ['2.2'], 'Summary');
+        const structureState: AccumulatedStructureState = {
+          currentActIndex: 1,
+          currentBeatIndex: 0,
+          beatProgressions: [
+            { beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
+            { beatId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
+            { beatId: '2.1', status: 'active' },
+          ],
+        };
+
+        expect(validateDeviationTargets(deviation, structureState)).toBe(true);
+      });
+
+      it('returns false when a concluded beat is invalidated', () => {
+        const deviation = createBeatDeviation('Invalidation includes completed beat', ['1.2'], 'Summary');
+        const structureState: AccumulatedStructureState = {
+          currentActIndex: 1,
+          currentBeatIndex: 0,
+          beatProgressions: [
+            { beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
+            { beatId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
+            { beatId: '2.1', status: 'active' },
+          ],
+        };
+
+        expect(validateDeviationTargets(deviation, structureState)).toBe(false);
+      });
+
+      it('returns true for beat IDs not in progressions', () => {
+        const deviation = createBeatDeviation('Future acts need replacement', ['3.1'], 'Summary');
+        const structureState: AccumulatedStructureState = {
+          currentActIndex: 1,
+          currentBeatIndex: 0,
+          beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' }],
+        };
+
+        expect(validateDeviationTargets(deviation, structureState)).toBe(true);
+      });
     });
   });
 });

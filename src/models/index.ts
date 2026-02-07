@@ -56,12 +56,20 @@ export {
   StoryStructure,
   BeatProgression,
   AccumulatedStructureState,
+  BeatDeviation,
+  NoDeviation,
+  DeviationResult,
   createEmptyAccumulatedStructureState,
   getCurrentAct,
   getCurrentBeat,
   getBeatProgression,
   isLastBeatOfAct,
   isLastAct,
+  isDeviation,
+  isNoDeviation,
+  createBeatDeviation,
+  createNoDeviation,
+  validateDeviationTargets,
 } from './story-arc';
 
 export {

@@ -78,3 +78,58 @@ export function isLastAct(structure: StoryStructure, state: AccumulatedStructure
 
   return state.currentActIndex === structure.acts.length - 1;
 }
+
+export interface BeatDeviation {
+  readonly detected: true;
+  readonly reason: string;
+  readonly invalidatedBeatIds: readonly string[];
+  readonly narrativeSummary: string;
+}
+
+export interface NoDeviation {
+  readonly detected: false;
+}
+
+export type DeviationResult = BeatDeviation | NoDeviation;
+
+export function isDeviation(result: DeviationResult): result is BeatDeviation {
+  return result.detected === true;
+}
+
+export function isNoDeviation(result: DeviationResult): result is NoDeviation {
+  return result.detected === false;
+}
+
+export function createBeatDeviation(
+  reason: string,
+  invalidatedBeatIds: readonly string[],
+  narrativeSummary: string,
+): BeatDeviation {
+  if (invalidatedBeatIds.length === 0) {
+    throw new Error('BeatDeviation must have at least one invalidated beat ID');
+  }
+
+  return {
+    detected: true,
+    reason,
+    invalidatedBeatIds,
+    narrativeSummary,
+  };
+}
+
+export function createNoDeviation(): NoDeviation {
+  return { detected: false };
+}
+
+export function validateDeviationTargets(
+  deviation: BeatDeviation,
+  structureState: AccumulatedStructureState,
+): boolean {
+  const concludedIds = new Set(
+    structureState.beatProgressions
+      .filter(beatProgression => beatProgression.status === 'concluded')
+      .map(beatProgression => beatProgression.beatId),
+  );
+
+  return deviation.invalidatedBeatIds.every(beatId => !concludedIds.has(beatId));
+}

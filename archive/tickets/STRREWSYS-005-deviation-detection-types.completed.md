@@ -6,6 +6,13 @@ Add types for detecting when the narrative has deviated from planned story beats
 ## Dependencies
 - None (can be done in parallel with STRREWSYS-001)
 
+## Assumption Check (Reassessed)
+
+- `src/models/story-arc.ts` currently does **not** define deviation result types or helpers.
+- `test/unit/models/story-arc.test.ts` currently covers base structure-state utilities only.
+- `src/models/index.ts` exports story-arc types via a named export block from `./story-arc`.
+- `createBeatDeviation()` requires at least one invalidated beat ID, so tests must **not** expect empty lists to be valid for `BeatDeviation`.
+
 ## Files to Touch
 
 ### Modified Files
@@ -157,7 +164,6 @@ describe('DeviationResult', () => {
   describe('validateDeviationTargets', () => {
     it('should return true when no concluded beats are invalidated');
     it('should return false when a concluded beat is in invalidatedBeatIds');
-    it('should return true for empty invalidatedBeatIds'); // edge case
     it('should handle beats not in progressions'); // pending beats have no entry
   });
 });
@@ -179,3 +185,13 @@ describe('DeviationResult', () => {
 - These types are used in LLM response parsing (STRREWSYS-008)
 - Keep types simple - the complexity is in parsing and handling, not the types themselves
 - `validateDeviationTargets` is a validation helper, not enforcement (callers decide what to do)
+
+## Status
+- [x] Completed
+
+## Outcome
+
+Implemented the planned model additions with one corrected assumption:
+- `createBeatDeviation()` keeps strict non-empty `invalidatedBeatIds` validation.
+- Test scope was adjusted accordingly (no "empty invalidatedBeatIds returns true" case for `BeatDeviation`).
+- Added/updated only the planned model exports and unit coverage; no broader refactors or API breaks.
