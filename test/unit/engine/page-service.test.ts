@@ -50,7 +50,7 @@ describe('page-service', () => {
   });
 
   describe('generateFirstPage', () => {
-    it('creates root page and updates story canon + arc from LLM output', async () => {
+    it('creates root page and updates story canon from LLM output', async () => {
       const story = buildStory();
 
       mockedGenerateOpeningPage.mockResolvedValue({
@@ -67,7 +67,6 @@ describe('page-service', () => {
         characterStateChangesAdded: [],
         characterStateChangesRemoved: [],
         isEnding: false,
-        storyArc: 'Deliver the decoded treaty to the resistance safely.',
         rawResponse: 'raw',
       });
 
@@ -89,7 +88,7 @@ describe('page-service', () => {
         'Bribe a gate sergeant',
       ]);
       expect(updatedStory.globalCanon).toContain('The city enforces nightly curfew');
-      expect(updatedStory.storyArc).toBe('Deliver the decoded treaty to the resistance safely.');
+      expect(updatedStory.structure).toBeNull();
     });
   });
 
@@ -116,7 +115,6 @@ describe('page-service', () => {
     it('creates child page with proper parent linkage and sequential id', async () => {
       const story = buildStory({
         globalCanon: ['The watch captain is corrupt'],
-        storyArc: 'Survive the city and deliver the treaty.',
       });
       const parentPage = createPage({
         id: parsePageId(2),

@@ -1,4 +1,5 @@
 import {
+  AccumulatedStructureState,
   AccumulatedCharacterState,
   CharacterStateChanges,
   Health,
@@ -9,6 +10,7 @@ import {
   PageId,
   StateChanges,
   StoryId,
+  createEmptyAccumulatedStructureState,
   parsePageId,
 } from '../models';
 import {
@@ -54,6 +56,16 @@ interface PageFileData {
     removed: string[];
   }>;
   accumulatedCharacterState?: Record<string, string[]>;
+  // Structure state fields (optional for migration from older pages)
+  accumulatedStructureState?: {
+    currentActIndex: number;
+    currentBeatIndex: number;
+    beatProgressions: Array<{
+      beatId: string;
+      status: 'pending' | 'active' | 'concluded';
+      resolution?: string;
+    }>;
+  };
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;
@@ -99,6 +111,15 @@ function pageToFileData(page: Page): PageFileData {
     accumulatedHealth: [...page.accumulatedHealth],
     characterStateChanges,
     accumulatedCharacterState,
+    accumulatedStructureState: {
+      currentActIndex: page.accumulatedStructureState.currentActIndex,
+      currentBeatIndex: page.accumulatedStructureState.currentBeatIndex,
+      beatProgressions: page.accumulatedStructureState.beatProgressions.map((beatProgression) => ({
+        beatId: beatProgression.beatId,
+        status: beatProgression.status,
+        resolution: beatProgression.resolution,
+      })),
+    },
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -150,6 +171,17 @@ function fileDataToPage(data: PageFileData): Page {
         Object.entries(data.accumulatedCharacterState).map(([name, state]) => [name, [...state]])
       )
     : {};
+  const accumulatedStructureState: AccumulatedStructureState = data.accumulatedStructureState
+    ? {
+        currentActIndex: data.accumulatedStructureState.currentActIndex,
+        currentBeatIndex: data.accumulatedStructureState.currentBeatIndex,
+        beatProgressions: data.accumulatedStructureState.beatProgressions.map((beatProgression) => ({
+          beatId: beatProgression.beatId,
+          status: beatProgression.status,
+          resolution: beatProgression.resolution,
+        })),
+      }
+    : createEmptyAccumulatedStructureState();
 
   return {
     id: parsePageId(data.id),
@@ -168,6 +200,7 @@ function fileDataToPage(data: PageFileData): Page {
     accumulatedHealth,
     characterStateChanges,
     accumulatedCharacterState,
+    accumulatedStructureState,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

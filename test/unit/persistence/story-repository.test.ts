@@ -38,7 +38,6 @@ function buildTestStory(overrides?: Partial<Story>): Story {
   return {
     ...baseStory,
     globalCanon: ['fact-1', 'fact-2'],
-    storyArc: 'Test arc',
     ...overrides,
   };
 }
@@ -74,7 +73,7 @@ describe('story-repository', () => {
     expect(loaded?.worldbuilding).toBe(story.worldbuilding);
     expect(loaded?.tone).toBe(story.tone);
     expect(loaded?.globalCanon).toEqual(story.globalCanon);
-    expect(loaded?.storyArc).toBe(story.storyArc);
+    expect(loaded?.structure).toBeNull();
     expect(loaded?.createdAt.toISOString()).toBe(createdAt.toISOString());
     expect(loaded?.updatedAt.toISOString()).toBe(updatedAt.toISOString());
   });
@@ -93,7 +92,6 @@ describe('story-repository', () => {
       ...story,
       worldbuilding: 'Updated worldbuilding',
       globalCanon: ['updated-fact'],
-      storyArc: null,
       updatedAt: new Date('2025-01-02T00:00:00.000Z'),
     };
 
@@ -102,7 +100,7 @@ describe('story-repository', () => {
     const loaded = await loadStory(story.id);
     expect(loaded?.worldbuilding).toBe('Updated worldbuilding');
     expect(loaded?.globalCanon).toEqual(['updated-fact']);
-    expect(loaded?.storyArc).toBeNull();
+    expect(loaded?.structure).toBeNull();
     expect(loaded?.updatedAt.toISOString()).toBe('2025-01-02T00:00:00.000Z');
   });
 
@@ -197,7 +195,8 @@ describe('story-repository', () => {
       worldbuilding: 'Mismatch world',
       tone: 'Mismatch tone',
       globalCanon: [],
-      storyArc: null,
+      globalCharacterCanon: {},
+      structure: null,
       createdAt: '2025-01-01T00:00:00.000Z',
       updatedAt: '2025-01-01T00:00:00.000Z',
     });

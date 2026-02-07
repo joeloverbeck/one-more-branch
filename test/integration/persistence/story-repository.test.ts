@@ -30,7 +30,6 @@ function buildStory(overrides?: Partial<Story>): Story {
   return {
     ...base,
     globalCanon: ['canon-1', 'canon-2'],
-    storyArc: 'integration arc',
     ...overrides,
   };
 }
@@ -61,7 +60,6 @@ describe('story-repository integration', () => {
       worldbuilding: 'Round trip world',
       tone: 'Round trip tone',
       globalCanon: ['fact-a', 'fact-b'],
-      storyArc: 'Round trip arc',
     });
     createdStoryIds.add(story.id);
 
@@ -86,7 +84,6 @@ describe('story-repository integration', () => {
       ...story,
       worldbuilding: 'Updated worldbuilding',
       globalCanon: ['updated-canon'],
-      storyArc: null,
       updatedAt: new Date('2025-02-02T00:00:00.000Z'),
     };
 
