@@ -1,6 +1,5 @@
 import { GlobalCharacterCanon, CharacterCanon, normalizeCharacterName, normalizeForComparison } from '../models';
 
-// Re-export for backward compatibility
 export { normalizeCharacterName };
 
 /**

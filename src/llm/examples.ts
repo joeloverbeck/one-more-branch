@@ -1,10 +1,6 @@
 /**
  * Few-shot examples for story generation prompts.
- *
- * This module serves as a backwards-compatible facade, re-exporting
- * from the refactored modules:
- * - few-shot-data.ts: Pure data constants
- * - few-shot-builder.ts: Message building logic
+ * Re-exports from modular modules for convenience.
  */
 
 export {

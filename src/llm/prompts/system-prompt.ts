@@ -1,14 +1,11 @@
 /**
  * System prompt exports for narrative generation.
- *
- * This module provides backward-compatible exports while delegating
- * to the modular system-prompt-builder for composition.
+ * Delegates to the modular system-prompt-builder for composition.
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { PromptOptions } from '../types.js';
 
-// Re-export from builder for backward compatibility
 export {
   buildSystemPrompt,
   composeSystemPrompt,
@@ -16,7 +13,6 @@ export {
   COT_SYSTEM_ADDITION,
 } from './system-prompt-builder.js';
 
-// Backward compatibility: SYSTEM_PROMPT now calls composer
 import { composeSystemPrompt } from './system-prompt-builder.js';
 
 /**
