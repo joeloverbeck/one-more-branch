@@ -1,6 +1,6 @@
 # ACTSTAARC-007: Update Continuation Prompt for Active State
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: HIGH (core functionality change)
 **Depends On**: ACTSTAARC-006
 **Estimated Scope**: Large
@@ -385,11 +385,48 @@ describe('buildContinuationPrompt with active state', () => {
 
 ## Definition of Done
 
-- [ ] `buildContinuationPrompt` uses new active state sections
-- [ ] Old `CURRENT STATE:` section removed
-- [ ] `SCENE BEFORE LAST:` section added for grandparent
-- [ ] Beat evaluation context uses active state
-- [ ] All prompt integration tests pass
-- [ ] Verified output format matches spec
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [x] `buildContinuationPrompt` uses new active state sections
+- [x] Old `CURRENT STATE:` section removed
+- [x] `SCENE BEFORE LAST:` section added for grandparent
+- [x] Beat evaluation context uses active state
+- [x] All prompt integration tests pass
+- [x] Verified output format matches spec
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+
+---
+
+## Outcome
+
+**Completion Date**: 2026-02-08
+
+### Changes Made
+
+**src/llm/prompts/continuation-prompt.ts:**
+- Added import for `ActiveState` type from `../../models/state/index.js`
+- Added 6 new helper functions:
+  - `buildLocationSection()` - Renders CURRENT LOCATION section
+  - `buildThreatsSection()` - Renders ACTIVE THREATS section with `t.raw` format
+  - `buildConstraintsSection()` - Renders ACTIVE CONSTRAINTS section with `c.raw` format
+  - `buildThreadsSection()` - Renders OPEN NARRATIVE THREADS section with `t.raw` format
+  - `buildSceneContextSection()` - Renders SCENE BEFORE LAST (1000 char limit) + PREVIOUS SCENE (2000 char limit)
+  - `buildActiveStateForBeatEvaluation()` - Compact state summary using `prefix` for beat evaluation context
+- Updated `buildContinuationPrompt()` to:
+  - Use new active state sections instead of old event-log `stateSection`
+  - Use `buildSceneContextSection()` for extended scene context
+  - Use `buildActiveStateForBeatEvaluation()` instead of old `accumulatedStateSummary`
+
+**Test files updated (added required `activeState` and `grandparentNarrative` fields):**
+- `test/unit/llm/prompts.test.ts` - Added 18 new tests covering all active state sections
+- `test/unit/llm/client.test.ts`
+- `test/unit/llm/few-shot-none-mode.test.ts`
+- `test/integration/llm/client.test.ts`
+- `test/integration/llm/few-shot-examples.test.ts`
+
+### Deviations from Original Plan
+- None. Implementation followed the ticket specification exactly.
+
+### Verification Results
+- All 1339 tests pass
+- TypeScript type check passes
+- ESLint passes with no errors

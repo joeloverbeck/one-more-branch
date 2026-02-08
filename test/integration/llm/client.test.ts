@@ -103,6 +103,13 @@ describe('llm client integration (mocked fetch)', () => {
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: null,
       },
       { apiKey: 'test-key' },
     );

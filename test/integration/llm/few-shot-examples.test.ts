@@ -31,6 +31,13 @@ describe('Few-Shot Examples Integration', () => {
     accumulatedInventory: ['Worn leather satchel'],
     accumulatedHealth: [],
     accumulatedCharacterState: {},
+    activeState: {
+      currentLocation: '',
+      activeThreats: [],
+      activeConstraints: [],
+      openThreads: [],
+    },
+    grandparentNarrative: null,
   };
 
   describe('Opening prompt integration with few-shot examples', () => {

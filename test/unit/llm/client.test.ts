@@ -44,6 +44,13 @@ const continuationContext = {
   accumulatedInventory: [],
   accumulatedHealth: [],
   accumulatedCharacterState: {},
+  activeState: {
+    currentLocation: '',
+    activeThreats: [],
+    activeConstraints: [],
+    openThreads: [],
+  },
+  grandparentNarrative: null,
 };
 
 const validStructuredPayload = {

@@ -2,6 +2,7 @@ import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, ContinuationContext, PromptOptions } from '../types.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../models/story-arc.js';
 import { formatProtagonistAffect, type ProtagonistAffect } from '../../models/protagonist-affect.js';
+import type { ActiveState } from '../../models/state/index.js';
 import { buildSystemPrompt } from './system-prompt.js';
 import { truncateText } from './utils.js';
 
@@ -16,6 +17,121 @@ function buildProtagonistAffectSection(affect: ProtagonistAffect | undefined): s
   }
   return `PROTAGONIST'S CURRENT EMOTIONAL STATE:
 ${formatProtagonistAffect(affect)}
+
+`;
+}
+
+/**
+ * Builds the CURRENT LOCATION section for the prompt.
+ * Only included when a location is set.
+ */
+function buildLocationSection(activeState: ActiveState): string {
+  if (!activeState.currentLocation) {
+    return '';
+  }
+  return `CURRENT LOCATION:
+${activeState.currentLocation}
+
+`;
+}
+
+/**
+ * Builds the ACTIVE THREATS section for the prompt.
+ * Only included when there are active threats.
+ */
+function buildThreatsSection(activeState: ActiveState): string {
+  if (activeState.activeThreats.length === 0) {
+    return '';
+  }
+  return `ACTIVE THREATS (dangers that exist NOW):
+${activeState.activeThreats.map(t => `- ${t.raw}`).join('\n')}
+
+`;
+}
+
+/**
+ * Builds the ACTIVE CONSTRAINTS section for the prompt.
+ * Only included when there are active constraints.
+ */
+function buildConstraintsSection(activeState: ActiveState): string {
+  if (activeState.activeConstraints.length === 0) {
+    return '';
+  }
+  return `ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):
+${activeState.activeConstraints.map(c => `- ${c.raw}`).join('\n')}
+
+`;
+}
+
+/**
+ * Builds the OPEN NARRATIVE THREADS section for the prompt.
+ * Only included when there are open threads.
+ */
+function buildThreadsSection(activeState: ActiveState): string {
+  if (activeState.openThreads.length === 0) {
+    return '';
+  }
+  return `OPEN NARRATIVE THREADS (unresolved hooks):
+${activeState.openThreads.map(t => `- ${t.raw}`).join('\n')}
+
+`;
+}
+
+/**
+ * Builds extended scene context with both previous and grandparent narratives.
+ * Grandparent narrative is truncated to 1000 chars, previous to 2000 chars.
+ */
+function buildSceneContextSection(
+  previousNarrative: string,
+  grandparentNarrative: string | null,
+): string {
+  let result = '';
+
+  if (grandparentNarrative) {
+    result += `SCENE BEFORE LAST:
+${truncateText(grandparentNarrative, 1000)}
+
+`;
+  }
+
+  result += `PREVIOUS SCENE:
+${truncateText(previousNarrative, 2000)}
+
+`;
+
+  return result;
+}
+
+/**
+ * Builds active state summary for beat evaluation context.
+ * Replaces the old accumulated state summary.
+ */
+function buildActiveStateForBeatEvaluation(activeState: ActiveState): string {
+  const parts: string[] = [];
+
+  if (activeState.currentLocation) {
+    parts.push(`Location: ${activeState.currentLocation}`);
+  }
+
+  if (activeState.activeThreats.length > 0) {
+    parts.push(`Active threats: ${activeState.activeThreats.map(t => t.prefix).join(', ')}`);
+  }
+
+  if (activeState.activeConstraints.length > 0) {
+    parts.push(`Constraints: ${activeState.activeConstraints.map(c => c.prefix).join(', ')}`);
+  }
+
+  if (activeState.openThreads.length > 0) {
+    parts.push(`Open threads: ${activeState.openThreads.map(t => t.prefix).join(', ')}`);
+  }
+
+  if (parts.length === 0) {
+    return '';
+  }
+
+  return `CURRENT STATE (for beat evaluation):
+${parts.map(p => `- ${p}`).join('\n')}
+(Consider these when evaluating beat completion)
 
 `;
 }
@@ -109,16 +225,8 @@ ${context.worldbuilding}
                   .join('\n')}`
               : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
-          // Build accumulated state summary for beat evaluation context
-          const accumulatedStateSummary =
-            context.accumulatedState.length > 0
-              ? `ACCUMULATED STORY PROGRESS (for beat evaluation):
-Key events that have occurred so far:
-${context.accumulatedState.slice(-10).map(change => `- ${change}`).join('\n')}
-(Consider these when evaluating beat completion - have we moved past the active beat's scope?)
-
-`
-              : '';
+          // Build active state summary for beat evaluation context
+          const activeStateSummary = buildActiveStateForBeatEvaluation(context.activeState);
 
           // Build beat comparison hint for progression check
           const hasPendingBeats =
@@ -143,21 +251,21 @@ ${beatLines}
 REMAINING ACTS:
 ${remainingActs || '  - None'}
 
-${accumulatedStateSummary}=== BEAT EVALUATION ===
+${activeStateSummary}=== BEAT EVALUATION ===
 After writing the narrative, evaluate whether the ACTIVE beat should be concluded.
 
 CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:
 1. The beat's objective has been substantively achieved (even if not perfectly)
 2. The narrative has moved beyond this beat's scope into territory that matches a PENDING beat
 3. Key events from later beats have already occurred (compare against PENDING beats below)
-4. The accumulated state shows the beat's goal has been reached
+4. The current state shows the beat's goal has been reached
 
 DO NOT CONCLUDE only if:
 - This scene is still squarely within the active beat's scope AND
 - The objective hasn't been meaningfully advanced
 
 CRITICAL: Evaluate CUMULATIVE progress across all scenes, not just this single page.
-Look at the ACCUMULATED STORY PROGRESS above - if those events have moved past the active beat's description, it should be concluded.
+Look at the CURRENT STATE above - if the situation has moved past the active beat's description, it should be concluded.
 
 If concluding, provide beatResolution: a brief summary of how the beat was resolved.
 
@@ -195,13 +303,12 @@ ${characterStateEntries
 
 `
       : '';
-  const stateSection =
-    context.accumulatedState.length > 0
-      ? `CURRENT STATE:
-${context.accumulatedState.map(change => `- ${change}`).join('\n')}
 
-`
-      : '';
+  // Build active state sections (replaces old stateSection)
+  const locationSection = buildLocationSection(context.activeState);
+  const threatsSection = buildThreatsSection(context.activeState);
+  const constraintsSection = buildConstraintsSection(context.activeState);
+  const threadsSection = buildThreadsSection(context.activeState);
 
   const inventorySection =
     context.accumulatedInventory.length > 0
@@ -224,6 +331,12 @@ ${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
 
   const protagonistAffectSection = buildProtagonistAffectSection(context.parentProtagonistAffect);
 
+  // Build scene context with optional grandparent narrative
+  const sceneContextSection = buildSceneContextSection(
+    context.previousNarrative,
+    context.grandparentNarrative,
+  );
+
   const userPrompt = `Continue the interactive story based on the player's choice.
 
 CHARACTER CONCEPT:
@@ -231,10 +344,7 @@ ${context.characterConcept}
 
 ${worldSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${stateSection}${inventorySection}${healthSection}${protagonistAffectSection}PREVIOUS SCENE:
-${truncateText(context.previousNarrative, 2000)}
-
-PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow ALL):
 1. Start exactly where the previous scene ended—do NOT recap or summarize what happened

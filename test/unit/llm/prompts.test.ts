@@ -405,6 +405,14 @@ describe('buildContinuationPrompt', () => {
     accumulatedInventory: [] as const,
     accumulatedHealth: [] as const,
     accumulatedCharacterState: {} as const,
+    // New active state fields
+    activeState: {
+      currentLocation: '',
+      activeThreats: [],
+      activeConstraints: [],
+      openThreads: [],
+    },
+    grandparentNarrative: null as string | null,
   };
 
   it('should include selected choice in user message', () => {
@@ -412,16 +420,17 @@ describe('buildContinuationPrompt', () => {
     expect(getUserMessage(messages)).toContain('Confront the informant at gunpoint');
   });
 
-  it('should include accumulated state when present', () => {
+  it('should NOT include old CURRENT STATE section format', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
       accumulatedState: ['Broken rib from warehouse fight', 'Lost your badge'],
     });
 
     const user = getUserMessage(messages);
-    expect(user).toContain('CURRENT STATE:');
-    expect(user).toContain('Broken rib from warehouse fight');
-    expect(user).toContain('Lost your badge');
+    // Old format should NOT appear - we now use active state sections
+    expect(user).not.toMatch(/CURRENT STATE:\n- Broken rib/);
+    expect(user).not.toContain('Broken rib from warehouse fight');
+    expect(user).not.toContain('Lost your badge');
   });
 
   it('should include global canon when present', () => {
@@ -671,5 +680,324 @@ describe('buildContinuationPrompt', () => {
 
     expect(previousSceneLine.length).toBe(2003);
     expect(previousSceneLine.endsWith('...')).toBe(true);
+  });
+
+  // Active State Section Tests
+  describe('active state sections', () => {
+    it('includes CURRENT LOCATION section when location set', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: 'A dimly lit warehouse on the docks',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).toContain('CURRENT LOCATION:');
+      expect(getUserMessage(messages)).toContain('A dimly lit warehouse on the docks');
+    });
+
+    it('omits CURRENT LOCATION section when empty', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).not.toContain('CURRENT LOCATION:');
+    });
+
+    it('includes ACTIVE THREATS section when threats present', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [
+            { prefix: 'Armed guards', description: 'patrolling nearby', raw: 'Armed guards patrolling nearby' },
+            { prefix: 'Alarm system', description: 'active', raw: 'Alarm system is active' },
+          ],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).toContain('ACTIVE THREATS (dangers that exist NOW):');
+      expect(getUserMessage(messages)).toContain('- Armed guards patrolling nearby');
+      expect(getUserMessage(messages)).toContain('- Alarm system is active');
+    });
+
+    it('omits ACTIVE THREATS section when no threats', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).not.toContain('ACTIVE THREATS');
+    });
+
+    it('includes ACTIVE CONSTRAINTS section when constraints present', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [
+            { prefix: 'Injured leg', description: 'limits mobility', raw: 'Injured leg limits mobility' },
+            { prefix: 'No weapon', description: 'unarmed', raw: 'No weapon - currently unarmed' },
+          ],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
+      expect(getUserMessage(messages)).toContain('- Injured leg limits mobility');
+      expect(getUserMessage(messages)).toContain('- No weapon - currently unarmed');
+    });
+
+    it('omits ACTIVE CONSTRAINTS section when no constraints', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).not.toContain('ACTIVE CONSTRAINTS');
+    });
+
+    it('includes OPEN THREADS section when threads present', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { prefix: 'Missing witness', description: 'whereabouts unknown', raw: 'Missing witness - whereabouts unknown' },
+            { prefix: 'Encrypted files', description: 'need decryption key', raw: 'Encrypted files need decryption key' },
+          ],
+        },
+      });
+
+      expect(getUserMessage(messages)).toContain('OPEN NARRATIVE THREADS (unresolved hooks):');
+      expect(getUserMessage(messages)).toContain('- Missing witness - whereabouts unknown');
+      expect(getUserMessage(messages)).toContain('- Encrypted files need decryption key');
+    });
+
+    it('omits OPEN THREADS section when no threads', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      expect(getUserMessage(messages)).not.toContain('OPEN NARRATIVE THREADS');
+    });
+
+    it('includes all active state sections in correct order', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        activeState: {
+          currentLocation: 'The rooftop',
+          activeThreats: [{ prefix: 'Sniper', description: 'on adjacent building', raw: 'Sniper on adjacent building' }],
+          activeConstraints: [{ prefix: 'Low ammo', description: 'only 2 rounds left', raw: 'Low ammo - only 2 rounds left' }],
+          openThreads: [{ prefix: 'Contact', description: 'awaiting signal', raw: 'Contact awaiting signal' }],
+        },
+      });
+
+      const content = getUserMessage(messages);
+      const locationIdx = content.indexOf('CURRENT LOCATION:');
+      const threatsIdx = content.indexOf('ACTIVE THREATS');
+      const constraintsIdx = content.indexOf('ACTIVE CONSTRAINTS');
+      const threadsIdx = content.indexOf('OPEN NARRATIVE THREADS');
+
+      // All should be present
+      expect(locationIdx).toBeGreaterThan(-1);
+      expect(threatsIdx).toBeGreaterThan(-1);
+      expect(constraintsIdx).toBeGreaterThan(-1);
+      expect(threadsIdx).toBeGreaterThan(-1);
+
+      // Verify order: location < threats < constraints < threads
+      expect(locationIdx).toBeLessThan(threatsIdx);
+      expect(threatsIdx).toBeLessThan(constraintsIdx);
+      expect(constraintsIdx).toBeLessThan(threadsIdx);
+    });
+  });
+
+  // Grandparent Narrative Tests
+  describe('grandparent narrative', () => {
+    it('includes both previous scenes when grandparent available', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        previousNarrative: 'The detective entered the warehouse.',
+        grandparentNarrative: 'Earlier that night, a mysterious phone call came.',
+      });
+
+      expect(getUserMessage(messages)).toContain('SCENE BEFORE LAST:');
+      expect(getUserMessage(messages)).toContain('Earlier that night, a mysterious phone call came.');
+      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE:');
+      expect(getUserMessage(messages)).toContain('The detective entered the warehouse.');
+    });
+
+    it('omits grandparent section when not available', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        previousNarrative: 'The detective entered the warehouse.',
+        grandparentNarrative: null,
+      });
+
+      expect(getUserMessage(messages)).not.toContain('SCENE BEFORE LAST:');
+      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE:');
+    });
+
+    it('truncates grandparent narrative to 1000 chars', () => {
+      const longNarrative = 'A'.repeat(1500);
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        grandparentNarrative: longNarrative,
+      });
+
+      const content = getUserMessage(messages);
+      const sceneBeforeLastSection = content.split('SCENE BEFORE LAST:\n')[1]?.split('\n\nPREVIOUS SCENE:')[0] ?? '';
+
+      // Should be truncated (1000 chars + '...')
+      expect(sceneBeforeLastSection.length).toBeLessThanOrEqual(1003);
+    });
+
+    it('places grandparent section before previous scene section', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        previousNarrative: 'Previous scene content.',
+        grandparentNarrative: 'Grandparent scene content.',
+      });
+
+      const content = getUserMessage(messages);
+      const grandparentIdx = content.indexOf('SCENE BEFORE LAST:');
+      const previousIdx = content.indexOf('PREVIOUS SCENE:');
+
+      expect(grandparentIdx).toBeGreaterThan(-1);
+      expect(previousIdx).toBeGreaterThan(-1);
+      expect(grandparentIdx).toBeLessThan(previousIdx);
+    });
+  });
+
+  // Beat Evaluation Context Tests
+  describe('beat evaluation with active state', () => {
+    it('includes active state summary in beat evaluation context', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        structure,
+        accumulatedStructureState: {
+          currentActIndex: 0,
+          currentBeatIndex: 0,
+          beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+        },
+        activeState: {
+          currentLocation: 'Hidden bunker',
+          activeThreats: [{ prefix: 'Enemy patrol', description: 'searching', raw: 'Enemy patrol searching' }],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      const content = getUserMessage(messages);
+      expect(content).toContain('CURRENT STATE (for beat evaluation):');
+      expect(content).toContain('Location: Hidden bunker');
+      expect(content).toContain('Active threats: Enemy patrol');
+      expect(content).toContain('Consider these when evaluating beat completion');
+    });
+
+    it('omits active state summary when all fields empty', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        structure,
+        accumulatedStructureState: {
+          currentActIndex: 0,
+          currentBeatIndex: 0,
+          beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+        },
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      const content = getUserMessage(messages);
+      // Should NOT contain the active state summary section
+      expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
+    });
+
+    it('uses prefix for compact beat evaluation display', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        structure,
+        accumulatedStructureState: {
+          currentActIndex: 0,
+          currentBeatIndex: 0,
+          beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+        },
+        activeState: {
+          currentLocation: '',
+          activeThreats: [
+            { prefix: 'Guard', description: 'patrolling the area', raw: 'Guard patrolling the area' },
+            { prefix: 'Dog', description: 'trained to attack', raw: 'Dog trained to attack' },
+          ],
+          activeConstraints: [
+            { prefix: 'Broken arm', description: 'cannot climb', raw: 'Broken arm - cannot climb' },
+          ],
+          openThreads: [
+            { prefix: 'Missing key', description: 'need to find it', raw: 'Missing key - need to find it' },
+          ],
+        },
+      });
+
+      const content = getUserMessage(messages);
+      // Beat evaluation section should use prefix, not raw
+      expect(content).toContain('Active threats: Guard, Dog');
+      expect(content).toContain('Constraints: Broken arm');
+      expect(content).toContain('Open threads: Missing key');
+    });
+  });
+
+  // Verify old format is NOT present
+  describe('old format removal', () => {
+    it('does not include old CURRENT STATE format with event log', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        accumulatedState: ['Event 1 happened', 'Event 2 occurred'],
+        activeState: {
+          currentLocation: 'Test location',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      const content = getUserMessage(messages);
+      // Should NOT contain the old format
+      expect(content).not.toMatch(/CURRENT STATE:\n- Event/);
+      expect(content).not.toContain('- Event 1 happened');
+      expect(content).not.toContain('- Event 2 occurred');
+    });
   });
 });

@@ -28,6 +28,13 @@ describe('fewShotMode: none', () => {
     accumulatedInventory: [],
     accumulatedHealth: [],
     parentProtagonistAffect: undefined,
+    activeState: {
+      currentLocation: '',
+      activeThreats: [],
+      activeConstraints: [],
+      openThreads: [],
+    },
+    grandparentNarrative: null,
   };
 
   const noneOptions: PromptOptions = {
