@@ -43,3 +43,18 @@ When creating PRs:
 4. **Commit & Push**
    - Detailed commit messages
    - Follow conventional commits format
+
+## Git Worktree Cleanup
+
+When finishing work in a git worktree, **always remove the worktree BEFORE deleting the branch**:
+
+```bash
+# CORRECT ORDER:
+git worktree remove .worktrees/<name>   # Remove worktree first
+git branch -d <branch-name>              # Then delete the branch
+
+# WRONG - will fail:
+git branch -d <branch-name>              # Error: branch used by worktree
+```
+
+**Why**: Git prevents deleting a branch that's checked out in any worktree. The worktree holds a reference to the branch, so you must remove the worktree first to release that reference.
