@@ -48,6 +48,27 @@ ${structureSection}REQUIREMENTS (follow ALL):
 5. Establish starting inventory based on the character concept (use inventoryAdded for items they would logically possess)
 6. If the character concept implies any starting physical conditions (old injuries, chronic ailments, exhaustion), use healthAdded to establish them
 7. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
+8. Set the initial LOCATION clearly (currentLocation field - where the protagonist is at the END of this opening scene)
+9. Establish any starting THREATS using threatsAdded (dangers present at story start, format: "THREAT_ID: description")
+10. Establish any starting CONSTRAINTS using constraintsAdded (limitations the protagonist faces, format: "CONSTRAINT_ID: description")
+11. Plant narrative THREADS using threadsAdded (mysteries, questions, hooks for later, format: "THREAD_ID: description")
+
+OPENING PAGE STATE:
+Since this is the first page, you are ESTABLISHING the initial state, not modifying previous state:
+- threatsRemoved, constraintsRemoved, threadsResolved should all be EMPTY arrays
+- currentLocation should be set to wherever the scene ends
+- Use the PREFIX_ID: description format for all added entries (e.g., "THREAT_BANDITS: Bandits spotted on the road")
+
+Example opening state:
+{
+  "currentLocation": "Village marketplace at midday",
+  "threatsAdded": [],
+  "constraintsAdded": ["CONSTRAINT_DEADLINE: Must deliver the package by nightfall"],
+  "threadsAdded": ["THREAD_PACKAGE: The package's contents are unknown"],
+  "threatsRemoved": [],
+  "constraintsRemoved": [],
+  "threadsResolved": []
+}
 
 REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession. Starting health conditions should only be added if the character concept explicitly mentions them. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.`;
 
