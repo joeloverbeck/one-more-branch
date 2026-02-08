@@ -142,6 +142,12 @@ Completed specs are archived in `archive/specs/`.
 
 All prompts include NC-21 mature content guidelines permitting explicit content, violence, and controversial themes without self-censorship, as this is an adults-only application.
 
+## Skill Invocation (MANDATORY)
+
+When a slash command (e.g., `/superpowers:execute-plan`) expands to an instruction like "Invoke the superpowers:executing-plans skill", you MUST call the `Skill` tool with the referenced skill name BEFORE taking any other action. The `<command-name>` tag means the *command wrapper* was loaded, NOT the skill itself. The skill content is only available after you call the Skill tool.
+
+Do NOT skip the Skill tool invocation. Do NOT interpret the command body as the skill content. Do NOT start implementation before the skill is loaded and its methodology followed.
+
 ## MCP Server Usage
 
 When using Serena MCP for semantic code operations (symbol navigation, project memory, session persistence), it must be activated first:
