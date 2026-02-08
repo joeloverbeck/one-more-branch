@@ -1,3 +1,5 @@
+**Status**: ✅ COMPLETED
+
 # WRIANASPL-07: Add buildAnalystStructureEvaluation() and Create Analyst Prompt
 
 ## Summary
@@ -104,3 +106,14 @@ Be conservative about deviation - minor variations are acceptable. Only mark tru
 - `buildStoryStructureSection()` is unchanged
 - `buildWriterStructureContext()` (from WRIANASPL-06) is unchanged
 - All existing tests pass
+
+## Outcome
+
+- **Completion date**: 2026-02-08
+- **What was changed**:
+  - Added `buildAnalystStructureEvaluation()` to `src/llm/prompts/continuation/story-structure-section.ts` — evaluation-focused structure section with reworded BEAT EVALUATION instructions for the analyst call
+  - Created `src/llm/prompts/analyst-prompt.ts` with `buildAnalystPrompt()` — composes system + user messages for the analyst LLM call
+  - Created `test/unit/llm/prompts/continuation/analyst-structure-evaluation.test.ts` — 12 tests covering all acceptance criteria
+  - Created `test/unit/llm/prompts/analyst-prompt.test.ts` — 7 tests covering all acceptance criteria
+- **Deviations from plan**: None
+- **Verification**: Build passes, typecheck passes, all 1364 unit tests pass (91 suites), all invariants hold
