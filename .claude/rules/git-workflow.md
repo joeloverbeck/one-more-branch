@@ -69,16 +69,22 @@ ESLint couldn't determine the plugin "@typescript-eslint" uniquely.
 - /path/to/project/node_modules/@typescript-eslint/...
 ```
 
-**Why**: Node.js module resolution walks up the directory tree, finding `node_modules` in both the worktree AND the main repository. ESLint sees duplicate plugin registrations.
+**Why**: ESLint config inheritance walks up the directory tree, loading `.eslintrc.js` from both the worktree AND the parent repository. Both configs register the same plugins, causing the conflict.
 
-**Solution**: Set `NODE_PATH` explicitly to force local resolution:
+**Solution**: Use `--no-eslintrc` to prevent config inheritance, then explicitly specify parser and plugins:
 
 ```bash
-# WRONG - fails in worktrees:
+# WRONG - fails in worktrees (even with NODE_PATH):
 npm run lint
+NODE_PATH="$(pwd)/node_modules" npx eslint src/ test/ --quiet
 
 # CORRECT - works in worktrees:
-NODE_PATH="$(pwd)/node_modules" npx eslint --ext .ts,.tsx src/ test/ --quiet
+NODE_PATH="$(pwd)/node_modules" npx eslint --no-eslintrc \
+  --parser @typescript-eslint/parser \
+  --plugin @typescript-eslint \
+  src/ test/ --quiet
 ```
 
-**When to use**: Always use the `NODE_PATH` approach when running ESLint inside a git worktree. The standard `npm run lint` works fine in the main repository.
+**Why `--no-eslintrc` is required**: The worktree's `.eslintrc.js` extends or references the parent's config via relative paths (e.g., `../../.eslintrc.js`). Simply setting `NODE_PATH` doesn't prevent ESLint from loading both configs - you must disable config inheritance entirely.
+
+**When to use**: Always use the `--no-eslintrc` approach when running ESLint inside a git worktree. The standard `npm run lint` works fine in the main repository.
