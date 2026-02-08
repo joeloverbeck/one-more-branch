@@ -1,6 +1,6 @@
 # ACTSTAARC-001: Define TaggedStateEntry Type and Prefix Parser
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: HIGH (blocking other tickets)
 **Estimated Scope**: Small
 
@@ -9,6 +9,11 @@
 ## Summary
 
 Create the foundational types and parsing functions for the new prefix-tagged state entry system. This replaces the event-log string entries with structured `TaggedStateEntry` objects that enable reliable prefix-based matching for additions and removals.
+
+## Assumption Reassessment
+
+1. Unit test layout in this repository does not currently use `test/unit/models/state/` for state tests. Existing state unit coverage is centralized in `test/unit/models/state.test.ts`.
+2. Model-layer warnings are emitted via `modelWarn` (`src/models/model-logger.ts`), not direct console output. Parser validation tests should follow that pattern when asserting warnings.
 
 ---
 
@@ -19,6 +24,7 @@ Create the foundational types and parsing functions for the new prefix-tagged st
 
 ### Modify
 - `src/models/state/index.ts` - Export new types and functions
+- `test/unit/models/state.test.ts` - Add parser and removal-prefix unit tests
 
 ---
 
@@ -83,7 +89,7 @@ Helper to extract prefix from a removal string, handling edge cases where LLM in
 
 ### Tests That Must Pass
 
-Create `test/unit/models/state/tagged-entry.test.ts`:
+Add coverage to `test/unit/models/state.test.ts`:
 
 ```typescript
 describe('parseTaggedEntry', () => {
@@ -179,9 +185,25 @@ describe('isValidRemovalPrefix', () => {
 
 ## Definition of Done
 
-- [ ] `src/models/state/tagged-entry.ts` created with all types and functions
-- [ ] `src/models/state/index.ts` exports new module
-- [ ] All 15+ unit tests pass
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
-- [ ] No console.log statements in production code
+- [x] `src/models/state/tagged-entry.ts` created with all types and functions
+- [x] `src/models/state/index.ts` exports new module
+- [x] Tagged-entry parser/removal tests pass in `test/unit/models/state.test.ts`
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+- [x] No console.log statements in production code
+
+---
+
+## Outcome
+
+- **Completed**: 2026-02-08
+- **What changed**:
+  - Added `TaggedStateEntry` support in `src/models/state/tagged-entry.ts` with `VALID_CATEGORIES`, `StateCategory`, `parseTaggedEntry`, `isValidRemovalPrefix`, and `extractPrefixFromRemoval`.
+  - Exported the new tagged-entry module from `src/models/state/index.ts`.
+  - Added parser/removal-prefix unit coverage to `test/unit/models/state.test.ts`, including warning-path assertions through `modelWarn` test logger wiring.
+- **Deviation from original plan**:
+  - Tests were added to existing `test/unit/models/state.test.ts` rather than creating `test/unit/models/state/tagged-entry.test.ts`, matching current repository test organization.
+- **Verification**:
+  - `npm run test:unit -- --testPathPattern=test/unit/models/state.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`

@@ -53,3 +53,23 @@ export {
   createEmptyAccumulatedCharacterState,
   applyCharacterStateChanges,
 } from './character-state.js';
+
+// Tagged state entries
+export {
+  VALID_CATEGORIES,
+  StateCategory,
+  TaggedStateEntry,
+  parseTaggedEntry,
+  isValidRemovalPrefix,
+  extractPrefixFromRemoval,
+} from './tagged-entry.js';
+
+// Active state
+export {
+  ActiveState,
+  ActiveStateChanges,
+  createEmptyActiveState,
+  createEmptyActiveStateChanges,
+  isActiveState,
+  isActiveStateChanges,
+} from './active-state.js';

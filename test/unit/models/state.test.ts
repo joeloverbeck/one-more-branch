@@ -6,12 +6,19 @@ import {
   applyCharacterStateChanges,
   applyHealthChanges,
   applyStateChanges,
+  createEmptyActiveState,
+  createEmptyActiveStateChanges,
   createEmptyAccumulatedCharacterState,
   createEmptyAccumulatedState,
   createEmptyCharacterStateChanges,
   createEmptyHealthChanges,
   createEmptyStateChanges,
+  extractPrefixFromRemoval,
+  isActiveState,
+  isActiveStateChanges,
+  isValidRemovalPrefix,
   mergeCanonFacts,
+  parseTaggedEntry,
 } from '../../../src/models/state';
 
 describe('State utilities', () => {
@@ -34,6 +41,122 @@ describe('State utilities', () => {
   describe('createEmptyStateChanges', () => {
     it('returns empty added and removed arrays', () => {
       expect(createEmptyStateChanges()).toEqual({ added: [], removed: [] });
+    });
+  });
+
+  describe('createEmptyActiveState', () => {
+    it('returns state with empty location', () => {
+      const state = createEmptyActiveState();
+      expect(state.currentLocation).toBe('');
+    });
+
+    it('returns state with empty threat array', () => {
+      const state = createEmptyActiveState();
+      expect(state.activeThreats).toEqual([]);
+    });
+
+    it('returns state with empty constraints array', () => {
+      const state = createEmptyActiveState();
+      expect(state.activeConstraints).toEqual([]);
+    });
+
+    it('returns state with empty threads array', () => {
+      const state = createEmptyActiveState();
+      expect(state.openThreads).toEqual([]);
+    });
+  });
+
+  describe('createEmptyActiveStateChanges', () => {
+    it('returns changes with null location', () => {
+      const changes = createEmptyActiveStateChanges();
+      expect(changes.newLocation).toBeNull();
+    });
+
+    it('returns changes with empty arrays', () => {
+      const changes = createEmptyActiveStateChanges();
+      expect(changes.threatsAdded).toEqual([]);
+      expect(changes.threatsRemoved).toEqual([]);
+      expect(changes.constraintsAdded).toEqual([]);
+      expect(changes.constraintsRemoved).toEqual([]);
+      expect(changes.threadsAdded).toEqual([]);
+      expect(changes.threadsResolved).toEqual([]);
+    });
+  });
+
+  describe('isActiveState', () => {
+    it('returns true for valid ActiveState', () => {
+      const state = {
+        currentLocation: 'Room',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      };
+      expect(isActiveState(state)).toBe(true);
+    });
+
+    it('returns false for null', () => {
+      expect(isActiveState(null)).toBe(false);
+    });
+
+    it('returns false for missing currentLocation', () => {
+      expect(isActiveState({ activeThreats: [], activeConstraints: [], openThreads: [] })).toBe(
+        false
+      );
+    });
+
+    it('returns true for state with entries', () => {
+      const state = {
+        currentLocation: 'Cave',
+        activeThreats: [{ prefix: 'THREAT_X', description: 'X', raw: 'THREAT_X: X' }],
+        activeConstraints: [],
+        openThreads: [],
+      };
+      expect(isActiveState(state)).toBe(true);
+    });
+  });
+
+  describe('isActiveStateChanges', () => {
+    it('returns true for valid changes object', () => {
+      const changes = {
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      };
+      expect(isActiveStateChanges(changes)).toBe(true);
+    });
+
+    it('returns true when newLocation is string', () => {
+      const changes = {
+        newLocation: 'New Place',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      };
+      expect(isActiveStateChanges(changes)).toBe(true);
+    });
+
+    it('returns false for missing fields', () => {
+      expect(isActiveStateChanges({ newLocation: null })).toBe(false);
+    });
+
+    it('returns false when removal arrays contain non-string values', () => {
+      const invalid = {
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: [123],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      };
+      expect(isActiveStateChanges(invalid)).toBe(false);
     });
   });
 
@@ -554,6 +677,132 @@ describe('State utilities', () => {
         expect(result.Greaves).toEqual(['State A', 'State B', 'State C']);
         expect(result.Greaves).not.toBe(originalArray);
       });
+    });
+  });
+
+  describe('parseTaggedEntry', () => {
+    it('parses valid THREAT entry', () => {
+      const result = parseTaggedEntry('THREAT_ENTITIES: Multiple entities tracking');
+      expect(result).toEqual({
+        prefix: 'THREAT_ENTITIES',
+        description: 'Multiple entities tracking',
+        raw: 'THREAT_ENTITIES: Multiple entities tracking',
+      });
+    });
+
+    it('parses valid CONSTRAINT entry', () => {
+      const result = parseTaggedEntry('CONSTRAINT_BETTY_BREATHING: Breathing fragile');
+      expect(result?.prefix).toBe('CONSTRAINT_BETTY_BREATHING');
+    });
+
+    it('parses valid THREAD entry', () => {
+      const result = parseTaggedEntry('THREAD_GRAFFITI: Meaning unknown');
+      expect(result?.prefix).toBe('THREAD_GRAFFITI');
+    });
+
+    it('returns null for entry without colon', () => {
+      logger.clear();
+      expect(parseTaggedEntry('THREAT_FIRE Fire spreading')).toBeNull();
+
+      const entries = logger.getEntries();
+      const warnEntry = entries.find(
+        e => e.level === 'warn' && e.message.includes('Invalid tagged state entry (missing colon)')
+      );
+      expect(warnEntry).toBeDefined();
+    });
+
+    it('returns null for invalid category', () => {
+      logger.clear();
+      expect(parseTaggedEntry('DANGER_FIRE: Fire spreading')).toBeNull();
+
+      const entries = logger.getEntries();
+      const warnEntry = entries.find(
+        e => e.level === 'warn' && e.message.includes('Invalid tagged state entry prefix')
+      );
+      expect(warnEntry).toBeDefined();
+    });
+
+    it('handles extra whitespace', () => {
+      const result = parseTaggedEntry('  THREAT_FIRE:   Fire spreading  ');
+      expect(result?.prefix).toBe('THREAT_FIRE');
+      expect(result?.description).toBe('Fire spreading');
+    });
+
+    it('handles empty description', () => {
+      const result = parseTaggedEntry('THREAT_FIRE:');
+      expect(result?.prefix).toBe('THREAT_FIRE');
+      expect(result?.description).toBe('');
+    });
+
+    it('handles description with colons', () => {
+      const result = parseTaggedEntry('THREAD_TIME: Clock reads 3:45 PM');
+      expect(result?.description).toBe('Clock reads 3:45 PM');
+    });
+  });
+
+  describe('isValidRemovalPrefix', () => {
+    it('accepts valid THREAT prefix', () => {
+      expect(isValidRemovalPrefix('THREAT_ENTITIES')).toBe(true);
+    });
+
+    it('accepts valid CONSTRAINT prefix', () => {
+      expect(isValidRemovalPrefix('CONSTRAINT_TIME_LIMIT')).toBe(true);
+    });
+
+    it('accepts valid THREAD prefix', () => {
+      expect(isValidRemovalPrefix('THREAD_MYSTERY_BOX')).toBe(true);
+    });
+
+    it('rejects prefix with description', () => {
+      expect(isValidRemovalPrefix('THREAT_FIRE: Fire spreading')).toBe(false);
+    });
+
+    it('rejects invalid category', () => {
+      expect(isValidRemovalPrefix('DANGER_FIRE')).toBe(false);
+    });
+
+    it('rejects empty string', () => {
+      expect(isValidRemovalPrefix('')).toBe(false);
+    });
+
+    it('rejects category without identifier', () => {
+      expect(isValidRemovalPrefix('THREAT_')).toBe(false);
+    });
+
+    it('rejects just category name', () => {
+      expect(isValidRemovalPrefix('THREAT')).toBe(false);
+    });
+  });
+
+  describe('extractPrefixFromRemoval', () => {
+    it('returns valid removal prefix unchanged', () => {
+      expect(extractPrefixFromRemoval('THREAT_ENTITIES')).toBe('THREAT_ENTITIES');
+    });
+
+    it('extracts prefix when removal includes description', () => {
+      logger.clear();
+      expect(extractPrefixFromRemoval('THREAT_ENTITIES: Multiple entities tracking')).toBe(
+        'THREAT_ENTITIES'
+      );
+
+      const entries = logger.getEntries();
+      const warnEntry = entries.find(
+        e =>
+          e.level === 'warn' &&
+          e.message.includes('Removal prefix included description; using extracted prefix')
+      );
+      expect(warnEntry).toBeDefined();
+    });
+
+    it('returns null when extracted prefix is invalid', () => {
+      logger.clear();
+      expect(extractPrefixFromRemoval('DANGER_FIRE: Fire spreading')).toBeNull();
+
+      const entries = logger.getEntries();
+      const warnEntry = entries.find(
+        e => e.level === 'warn' && e.message.includes('Invalid removal prefix')
+      );
+      expect(warnEntry).toBeDefined();
     });
   });
 });

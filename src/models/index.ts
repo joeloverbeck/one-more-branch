@@ -32,6 +32,8 @@ export {
   SingleCharacterStateChanges,
   CharacterStateChanges,
   AccumulatedCharacterState,
+  ActiveState,
+  ActiveStateChanges,
   createEmptyAccumulatedState,
   createEmptyStateChanges,
   accumulateState,
@@ -45,6 +47,10 @@ export {
   createEmptyCharacterStateChanges,
   createEmptyAccumulatedCharacterState,
   applyCharacterStateChanges,
+  createEmptyActiveState,
+  createEmptyActiveStateChanges,
+  isActiveState,
+  isActiveStateChanges,
 } from './state/index.js';
 
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
