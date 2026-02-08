@@ -15,4 +15,5 @@ export {
   getRemainingBeats,
   buildActiveStateForBeatEvaluation,
   buildStoryStructureSection,
+  buildWriterStructureContext,
 } from './story-structure-section.js';

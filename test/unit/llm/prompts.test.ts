@@ -509,7 +509,7 @@ describe('buildContinuationPrompt', () => {
     expect(getUserMessage(messages)).not.toContain('STORY ARC:');
   });
 
-  it('should include structure section and beat evaluation instructions when structure state is provided', () => {
+  it('should include structure context but NOT beat evaluation instructions (writer prompt)', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
       structure,
@@ -517,6 +517,7 @@ describe('buildContinuationPrompt', () => {
     });
 
     const user = getUserMessage(messages);
+    // Writer prompt includes structure overview
     expect(user).toContain('=== STORY STRUCTURE ===');
     expect(user).toContain('Overall Theme: Stop the city purge before dawn.');
     expect(user).toContain('CURRENT ACT: The Crackdown (Act 1 of 3)');
@@ -532,16 +533,10 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('REMAINING ACTS:');
     expect(user).toContain('Act 2: The Hunt - Cross hostile territory with the evidence');
     expect(user).toContain('Act 3: The Broadcast - Expose the planners to the public');
-    expect(user).toContain('=== BEAT EVALUATION ===');
-    expect(user).toContain('evaluate whether the ACTIVE beat should be concluded');
-    expect(user).toContain('CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:');
-    expect(user).toContain('CRITICAL: Evaluate CUMULATIVE progress across all scenes');
-    expect(user).toContain('If concluding, provide beatResolution:');
-    expect(user).toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
-    expect(user).toContain('  - 1.2: Secure evidence from an informant');
-    expect(user).toContain('  - 3.2: Deliver the proof');
-    expect(user).toContain('=== BEAT DEVIATION EVALUATION ===');
-    expect(user).toContain('deviationDetected: true');
+    // Writer prompt does NOT include beat evaluation or deviation sections
+    expect(user).not.toContain('=== BEAT EVALUATION ===');
+    expect(user).not.toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
+    expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
   });
 
   it('should omit structure section when structure context is absent', () => {
@@ -553,7 +548,7 @@ describe('buildContinuationPrompt', () => {
     expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
   });
 
-  it('should exclude concluded beats from remaining beats deviation list', () => {
+  it('should NOT include remaining beats deviation list in writer prompt', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
       structure,
@@ -561,11 +556,9 @@ describe('buildContinuationPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    const remainingSection = user.split('REMAINING BEATS TO EVALUATE FOR DEVIATION:\n')[1]?.split('\n\n=== BEAT DEVIATION EVALUATION ===')[0] ?? '';
-
-    expect(remainingSection).not.toContain('1.1: Reach a safehouse before patrols seal the district');
-    expect(remainingSection).toContain('1.2: Secure evidence from an informant');
-    expect(remainingSection).toContain('2.1: Break through checkpoints');
+    // Writer prompt does not include deviation evaluation sections
+    expect(user).not.toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
+    expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
   });
 
   it('should omit structure section when structure state points to an invalid act index', () => {
@@ -915,7 +908,7 @@ describe('buildContinuationPrompt', () => {
 
   // Beat Evaluation Context Tests
   describe('beat evaluation with active state', () => {
-    it('includes active state summary in beat evaluation context', () => {
+    it('does NOT include active state summary for beat evaluation in writer prompt', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
         structure,
@@ -933,10 +926,9 @@ describe('buildContinuationPrompt', () => {
       });
 
       const content = getUserMessage(messages);
-      expect(content).toContain('CURRENT STATE (for beat evaluation):');
-      expect(content).toContain('Location: Hidden bunker');
-      expect(content).toContain('Active threats: Enemy patrol');
-      expect(content).toContain('Consider these when evaluating beat completion');
+      // Writer prompt does not include beat evaluation active state
+      expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
+      expect(content).not.toContain('Consider these when evaluating beat completion');
     });
 
     it('omits active state summary when all fields empty', () => {
@@ -961,7 +953,7 @@ describe('buildContinuationPrompt', () => {
       expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
     });
 
-    it('uses prefix for compact beat evaluation display', () => {
+    it('does NOT include compact beat evaluation display in writer prompt', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
         structure,
@@ -986,10 +978,8 @@ describe('buildContinuationPrompt', () => {
       });
 
       const content = getUserMessage(messages);
-      // Beat evaluation section should use prefix, not raw
-      expect(content).toContain('Active threats: Guard, Dog');
-      expect(content).toContain('Constraints: Broken arm');
-      expect(content).toContain('Open threads: Missing key');
+      // Writer prompt does not include beat evaluation active state summary
+      expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
     });
   });
 
