@@ -9,7 +9,7 @@ import {
 } from '../models';
 
 /**
- * Re-export normalizeCharacterName as normalizeCharacterNameForState for backward compatibility.
+ * Alias for normalizeCharacterName providing semantic clarity in state context.
  */
 export const normalizeCharacterNameForState = normalizeCharacterName;
 
