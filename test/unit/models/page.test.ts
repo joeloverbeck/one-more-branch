@@ -1,6 +1,7 @@
 import { createChoice } from '@/models/choice';
 import { PageId } from '@/models/id';
 import { createPage, getUnexploredChoiceIndices, isPage, isPageFullyExplored } from '@/models/page';
+import type { ActiveState } from '@/models/state';
 import { createEmptyAccumulatedStructureState } from '@/models/story-arc';
 import { parseStructureVersionId } from '@/models/structure-version';
 
@@ -37,6 +38,66 @@ describe('Page', () => {
       });
 
       expect(page.accumulatedState.changes).toEqual(['Entered the cave', 'Found a key']);
+    });
+
+    it('creates page with empty active state when not provided', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'The story begins...',
+        choices: [createChoice('Go left'), createChoice('Go right')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      expect(page.activeStateChanges).toEqual({
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+      expect(page.accumulatedActiveState).toEqual({
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      });
+    });
+
+    it('applies active state changes from parent active state', () => {
+      const parentAccumulatedActiveState: ActiveState = {
+        currentLocation: 'Starting Room',
+        activeThreats: [{ prefix: 'THREAT_X', description: 'X', raw: 'THREAT_X: X' }],
+        activeConstraints: [],
+        openThreads: [],
+      };
+
+      const page = createPage({
+        id: 2 as PageId,
+        narrativeText: 'Continuation',
+        choices: [createChoice('Fight'), createChoice('Run')],
+        stateChanges: { added: ['Legacy entry'], removed: [] },
+        activeStateChanges: {
+          newLocation: 'New Room',
+          threatsAdded: [],
+          threatsRemoved: ['THREAT_X'],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        },
+        isEnding: false,
+        parentPageId: 1 as PageId,
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState,
+      });
+
+      expect(page.accumulatedState.changes).toEqual(['Legacy entry']);
+      expect(page.accumulatedActiveState.currentLocation).toBe('New Room');
+      expect(page.accumulatedActiveState.activeThreats).toEqual([]);
     });
 
     it('creates ending page with no choices', () => {
@@ -295,6 +356,43 @@ describe('Page', () => {
       const invalidPage = {
         ...page,
         structureVersionId: 'sv-invalid',
+      };
+
+      expect(isPage(invalidPage)).toBe(false);
+    });
+
+    it('returns true for legacy pages without active state fields', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Legacy',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      const legacyPage = { ...page } as Record<string, unknown>;
+      delete legacyPage.activeStateChanges;
+      delete legacyPage.accumulatedActiveState;
+
+      expect(isPage(legacyPage)).toBe(true);
+    });
+
+    it('returns false when activeStateChanges shape is invalid', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Invalid active state changes',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      const invalidPage = {
+        ...page,
+        activeStateChanges: {
+          newLocation: null,
+        },
       };
 
       expect(isPage(invalidPage)).toBe(false);

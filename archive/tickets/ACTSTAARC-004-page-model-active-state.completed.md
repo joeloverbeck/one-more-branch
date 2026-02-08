@@ -1,6 +1,6 @@
 # ACTSTAARC-004: Add Active State Fields to Page Model
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: HIGH (blocking engine and persistence changes)
 **Depends On**: ACTSTAARC-001, ACTSTAARC-002, ACTSTAARC-003
 **Estimated Scope**: Medium
@@ -19,17 +19,21 @@ This ticket maintains backward compatibility during the transition period.
 
 ### Modify
 - `src/models/page.ts` - Add new fields to Page interface and createPage function
+- `test/unit/models/page.test.ts` - Add/adjust page model tests for active state and backward compatibility
+- `src/persistence/page-serializer.ts` - Minimal compatibility update so deserialization still returns a valid `Page`
+- `test/unit/persistence/page-serializer.test.ts` - Update serializer fixtures for new `Page` fields and backward-compat defaults
 
 ---
 
 ## Out of Scope (DO NOT CHANGE)
 
 - `src/models/state/general-state.ts` - Old types remain (deprecated in separate ticket)
-- `src/llm/types.ts` - LLM types changed in ACTSTAARC-006
-- `src/engine/**` - Engine changes in ACTSTAARC-008
-- `src/persistence/**` - Persistence changes in ACTSTAARC-009
-- Prompt files - Changed in ACTSTAARC-007
-- Test fixtures - Updated in ACTSTAARC-011
+- `src/models/state/active-state.ts` and `src/models/state/active-state-apply.ts` - Already implemented in ACTSTAARC-002/003; reuse as-is from page model
+- `src/llm/types.ts` - LLM types changed in ACTSTAARC-005
+- `src/engine/**` - Engine changes in ACTSTAARC-009
+- `src/persistence/**` - Persistence changes in ACTSTAARC-011
+- Prompt files - Changed in ACTSTAARC-007, ACTSTAARC-008, ACTSTAARC-010, ACTSTAARC-015
+- Test fixtures - Updated in ACTSTAARC-013
 
 ---
 
@@ -117,6 +121,18 @@ export function isPage(value: unknown): value is Page {
   );
 }
 ```
+
+### Assumption Reassessment (Current Repo State)
+
+- Active-state core types/helpers already exist and are exported:
+  - `ActiveState`, `ActiveStateChanges`
+  - `createEmptyActiveState`, `createEmptyActiveStateChanges`
+  - `isActiveState`, `isActiveStateChanges`
+  - `applyActiveStateChanges`
+- `src/models/page.ts` currently has only legacy `stateChanges`/`accumulatedState`; this ticket should add active-state fields without removing legacy fields.
+- Existing `isPage` behavior already allows some backward compatibility patterns (`protagonistAffect` optional), so active-state checks should follow the same transition strategy (accept missing active-state fields on old persisted pages).
+- `deserializePage` currently constructs `Page` directly; once `Page` includes required active-state fields, typecheck fails unless deserializer supplies defaults.
+- Full persistence format migration stays in ACTSTAARC-011; this ticket only applies a minimal compatibility fallback in deserialization.
 
 ---
 
@@ -285,11 +301,29 @@ describe('isPage with active state', () => {
 
 ## Definition of Done
 
-- [ ] Page interface has new `activeStateChanges` and `accumulatedActiveState` fields
-- [ ] CreatePageData interface has optional new fields
-- [ ] createPage applies active state changes correctly
-- [ ] isPage handles pages with and without new fields
-- [ ] All existing page tests pass
-- [ ] All new active state tests pass
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [x] Page interface has new `activeStateChanges` and `accumulatedActiveState` fields
+- [x] CreatePageData interface has optional new fields
+- [x] createPage applies active state changes correctly
+- [x] isPage handles pages with and without new fields
+- [x] All existing page tests pass
+- [x] All new active state tests pass
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+
+---
+
+## Outcome
+
+- **Completion Date**: 2026-02-08
+- **What Actually Changed**:
+  - Updated `src/models/page.ts` to add `activeStateChanges` and `accumulatedActiveState` to `Page`, wire optional active-state inputs in `CreatePageData`, apply defaults in `createPage`, and extend `isPage` with backward-compatible active-state checks.
+  - Added/updated unit coverage in `test/unit/models/page.test.ts` for default active state, parent active-state accumulation, coexistence with legacy state fields, and legacy-object `isPage` compatibility.
+  - Applied a minimal compatibility update in `src/persistence/page-serializer.ts` so serialization/deserialization carries active-state fields while still defaulting missing active-state data for old page files.
+  - Updated `test/unit/persistence/page-serializer.test.ts` fixtures/assertions and added an explicit backward-compat test for missing active-state fields.
+- **Deviations from Original Plan**:
+  - Scope was expanded slightly to include serializer compatibility and serializer tests because `Page` gained required fields and typecheck/serialization tests surfaced this boundary dependency.
+  - Full persistence migration remains out of scope and deferred to ACTSTAARC-011.
+- **Verification Results**:
+  - `npx jest test/unit/models/page.test.ts test/unit/persistence/page-serializer.test.ts test/unit/persistence/page-repository.test.ts` passed.
+  - `npm run typecheck` passed.
+  - `npm run lint` passed.

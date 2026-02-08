@@ -1,4 +1,11 @@
-import { Page, createChoice, parsePageId, createDefaultProtagonistAffect } from '@/models';
+import {
+  Page,
+  createChoice,
+  parsePageId,
+  createDefaultProtagonistAffect,
+  createEmptyActiveState,
+  createEmptyActiveStateChanges,
+} from '@/models';
 import {
   deserializePage,
   PageFileData,
@@ -17,6 +24,8 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     choices: [createChoice('Choice A'), createChoice('Choice B')],
     stateChanges: { added: ['state-change'], removed: [] },
     accumulatedState: { changes: ['state-change'] },
+    activeStateChanges: createEmptyActiveStateChanges(),
+    accumulatedActiveState: createEmptyActiveState(),
     inventoryChanges: { added: [], removed: [] },
     accumulatedInventory: [],
     healthChanges: { added: [], removed: [] },
@@ -69,6 +78,8 @@ describe('page-serializer', () => {
         { text: 'Choice B', nextPageId: null },
       ]);
       expect(fileData.stateChanges).toEqual({ added: ['state-change'], removed: [] });
+      expect(fileData.activeStateChanges).toEqual(createEmptyActiveStateChanges());
+      expect(fileData.accumulatedActiveState).toEqual(createEmptyActiveState());
       expect(fileData.inventoryChanges).toEqual({ added: ['sword'], removed: ['dagger'] });
       expect(fileData.accumulatedInventory).toEqual(['sword', 'shield']);
       expect(fileData.healthChanges).toEqual({ added: ['poisoned'], removed: ['healthy'] });
@@ -196,6 +207,8 @@ describe('page-serializer', () => {
         { text: 'Choice B', nextPageId: null },
       ]);
       expect(page.stateChanges).toEqual({ added: ['state-change'], removed: [] });
+      expect(page.activeStateChanges).toEqual(createEmptyActiveStateChanges());
+      expect(page.accumulatedActiveState).toEqual(createEmptyActiveState());
       expect(page.inventoryChanges).toEqual({ added: ['sword'], removed: ['dagger'] });
       expect(page.accumulatedInventory).toEqual(['sword', 'shield']);
       expect(page.healthChanges).toEqual({ added: ['poisoned'], removed: ['healthy'] });
@@ -339,6 +352,17 @@ describe('page-serializer', () => {
 
         expect(page.structureVersionId).toBe('sv-1707321600000-a1b2');
       });
+
+      it('defaults active state fields when missing', () => {
+        const fileData = buildTestFileData();
+        delete fileData.activeStateChanges;
+        delete fileData.accumulatedActiveState;
+
+        const page = deserializePage(fileData);
+
+        expect(page.activeStateChanges).toEqual(createEmptyActiveStateChanges());
+        expect(page.accumulatedActiveState).toEqual(createEmptyActiveState());
+      });
     });
   });
 
@@ -394,6 +418,8 @@ describe('page-serializer', () => {
         choices: [],
         stateChanges: { added: [], removed: [] },
         accumulatedState: { changes: ['some-state'] },
+        activeStateChanges: createEmptyActiveStateChanges(),
+        accumulatedActiveState: createEmptyActiveState(),
         inventoryChanges: { added: [], removed: [] },
         accumulatedInventory: [],
         healthChanges: { added: [], removed: [] },

@@ -8,6 +8,8 @@ import {
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import {
+  ActiveState,
+  ActiveStateChanges,
   AccumulatedCharacterState,
   AccumulatedState,
   CharacterStateChanges,
@@ -16,16 +18,21 @@ import {
   Inventory,
   InventoryChanges,
   StateChanges,
+  applyActiveStateChanges,
   applyCharacterStateChanges,
   applyHealthChanges,
   applyInventoryChanges,
   applyStateChanges,
+  createEmptyActiveState,
+  createEmptyActiveStateChanges,
   createEmptyAccumulatedCharacterState,
   createEmptyAccumulatedState,
   createEmptyCharacterStateChanges,
   createEmptyHealthChanges,
   createEmptyInventoryChanges,
   createEmptyStateChanges,
+  isActiveState,
+  isActiveStateChanges,
 } from './state/index.js';
 
 export interface Page {
@@ -34,6 +41,8 @@ export interface Page {
   readonly choices: Choice[];
   readonly stateChanges: StateChanges;
   readonly accumulatedState: AccumulatedState;
+  readonly activeStateChanges: ActiveStateChanges;
+  readonly accumulatedActiveState: ActiveState;
   readonly inventoryChanges: InventoryChanges;
   readonly accumulatedInventory: Inventory;
   readonly healthChanges: HealthChanges;
@@ -53,6 +62,7 @@ export interface CreatePageData {
   narrativeText: string;
   choices: Choice[];
   stateChanges?: StateChanges;
+  activeStateChanges?: ActiveStateChanges;
   inventoryChanges?: InventoryChanges;
   healthChanges?: HealthChanges;
   characterStateChanges?: CharacterStateChanges;
@@ -60,6 +70,7 @@ export interface CreatePageData {
   parentPageId: PageId | null;
   parentChoiceIndex: number | null;
   parentAccumulatedState?: AccumulatedState;
+  parentAccumulatedActiveState?: ActiveState;
   parentAccumulatedInventory?: Inventory;
   parentAccumulatedHealth?: Health;
   parentAccumulatedCharacterState?: AccumulatedCharacterState;
@@ -86,12 +97,14 @@ export function createPage(data: CreatePageData): Page {
   }
 
   const parentState = data.parentAccumulatedState ?? createEmptyAccumulatedState();
+  const parentActiveState = data.parentAccumulatedActiveState ?? createEmptyActiveState();
   const parentInventory = data.parentAccumulatedInventory ?? [];
   const parentHealth = data.parentAccumulatedHealth ?? [];
   const parentCharacterState = data.parentAccumulatedCharacterState ?? createEmptyAccumulatedCharacterState();
   const parentStructureState =
     data.parentAccumulatedStructureState ?? createEmptyAccumulatedStructureState();
   const stateChanges = data.stateChanges ?? createEmptyStateChanges();
+  const activeStateChanges = data.activeStateChanges ?? createEmptyActiveStateChanges();
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
   const healthChanges = data.healthChanges ?? createEmptyHealthChanges();
   const characterStateChanges = data.characterStateChanges ?? createEmptyCharacterStateChanges();
@@ -102,6 +115,8 @@ export function createPage(data: CreatePageData): Page {
     choices: data.choices,
     stateChanges,
     accumulatedState: applyStateChanges(parentState, stateChanges),
+    activeStateChanges,
+    accumulatedActiveState: applyActiveStateChanges(parentActiveState, activeStateChanges),
     inventoryChanges,
     accumulatedInventory: applyInventoryChanges(parentInventory, inventoryChanges),
     healthChanges,
@@ -160,6 +175,10 @@ export function isPage(value: unknown): value is Page {
   // protagonistAffect is optional for backward compatibility with existing pages
   const protagonistAffectValid =
     obj['protagonistAffect'] === undefined || isProtagonistAffect(obj['protagonistAffect']);
+  const activeStateChangesValid =
+    obj['activeStateChanges'] === undefined || isActiveStateChanges(obj['activeStateChanges']);
+  const accumulatedActiveStateValid =
+    obj['accumulatedActiveState'] === undefined || isActiveState(obj['accumulatedActiveState']);
 
   return (
     typeof obj['id'] === 'number' &&
@@ -169,6 +188,8 @@ export function isPage(value: unknown): value is Page {
     Array.isArray(obj['choices']) &&
     obj['choices'].every(isChoice) &&
     isStateChanges(obj['stateChanges']) &&
+    activeStateChangesValid &&
+    accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
     protagonistAffectValid &&
     structureVersionIdValid &&

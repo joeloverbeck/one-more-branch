@@ -1,4 +1,6 @@
 import {
+  ActiveState,
+  ActiveStateChanges,
   AccumulatedCharacterState,
   AccumulatedStructureState,
   CharacterStateChanges,
@@ -10,6 +12,8 @@ import {
   PageId,
   ProtagonistAffect,
   StateChanges,
+  createEmptyActiveState,
+  createEmptyActiveStateChanges,
   createDefaultProtagonistAffect,
   parseStructureVersionId,
   parsePageId,
@@ -40,6 +44,12 @@ interface ProtagonistAffectFileData {
   dominantMotivation: string;
 }
 
+interface TaggedStateEntryFileData {
+  prefix: string;
+  description: string;
+  raw: string;
+}
+
 export interface PageFileData {
   id: number;
   narrativeText: string;
@@ -53,6 +63,21 @@ export interface PageFileData {
   };
   accumulatedState: {
     changes: string[];
+  };
+  activeStateChanges?: {
+    newLocation: string | null;
+    threatsAdded: string[];
+    threatsRemoved: string[];
+    constraintsAdded: string[];
+    constraintsRemoved: string[];
+    threadsAdded: string[];
+    threadsResolved: string[];
+  };
+  accumulatedActiveState?: {
+    currentLocation: string;
+    activeThreats: TaggedStateEntryFileData[];
+    activeConstraints: TaggedStateEntryFileData[];
+    openThreads: TaggedStateEntryFileData[];
   };
   inventoryChanges: {
     added: string[];
@@ -134,6 +159,21 @@ export function serializePage(page: Page): PageFileData {
     accumulatedState: {
       changes: [...page.accumulatedState.changes],
     },
+    activeStateChanges: {
+      newLocation: page.activeStateChanges.newLocation,
+      threatsAdded: [...page.activeStateChanges.threatsAdded],
+      threatsRemoved: [...page.activeStateChanges.threatsRemoved],
+      constraintsAdded: [...page.activeStateChanges.constraintsAdded],
+      constraintsRemoved: [...page.activeStateChanges.constraintsRemoved],
+      threadsAdded: [...page.activeStateChanges.threadsAdded],
+      threadsResolved: [...page.activeStateChanges.threadsResolved],
+    },
+    accumulatedActiveState: {
+      currentLocation: page.accumulatedActiveState.currentLocation,
+      activeThreats: page.accumulatedActiveState.activeThreats.map(entry => ({ ...entry })),
+      activeConstraints: page.accumulatedActiveState.activeConstraints.map(entry => ({ ...entry })),
+      openThreads: page.accumulatedActiveState.openThreads.map(entry => ({ ...entry })),
+    },
     inventoryChanges: {
       added: [...page.inventoryChanges.added],
       removed: [...page.inventoryChanges.removed],
@@ -202,6 +242,27 @@ export function deserializePage(data: PageFileData): Page {
       ? null
       : parseStructureVersionId(data.structureVersionId);
 
+  const activeStateChanges: ActiveStateChanges = data.activeStateChanges
+    ? {
+        newLocation: data.activeStateChanges.newLocation,
+        threatsAdded: [...data.activeStateChanges.threatsAdded],
+        threatsRemoved: [...data.activeStateChanges.threatsRemoved],
+        constraintsAdded: [...data.activeStateChanges.constraintsAdded],
+        constraintsRemoved: [...data.activeStateChanges.constraintsRemoved],
+        threadsAdded: [...data.activeStateChanges.threadsAdded],
+        threadsResolved: [...data.activeStateChanges.threadsResolved],
+      }
+    : createEmptyActiveStateChanges();
+
+  const accumulatedActiveState: ActiveState = data.accumulatedActiveState
+    ? {
+        currentLocation: data.accumulatedActiveState.currentLocation,
+        activeThreats: data.accumulatedActiveState.activeThreats.map(entry => ({ ...entry })),
+        activeConstraints: data.accumulatedActiveState.activeConstraints.map(entry => ({ ...entry })),
+        openThreads: data.accumulatedActiveState.openThreads.map(entry => ({ ...entry })),
+      }
+    : createEmptyActiveState();
+
   // Handle protagonistAffect with backward compatibility for existing pages
   const protagonistAffect: ProtagonistAffect = data.protagonistAffect
     ? {
@@ -227,6 +288,8 @@ export function deserializePage(data: PageFileData): Page {
     accumulatedState: {
       changes: [...data.accumulatedState.changes],
     },
+    activeStateChanges,
+    accumulatedActiveState,
     inventoryChanges,
     accumulatedInventory,
     healthChanges,
