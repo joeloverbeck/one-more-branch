@@ -84,7 +84,7 @@ export function isProtagonistAffect(value: unknown): value is ProtagonistAffect 
 
 /**
  * Creates an empty/default protagonist affect for cases where
- * the LLM doesn't provide one (backward compatibility).
+ * the LLM doesn't provide one in its response.
  */
 export function createDefaultProtagonistAffect(): ProtagonistAffect {
   return {

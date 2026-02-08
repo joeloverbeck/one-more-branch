@@ -46,7 +46,7 @@ const ProtagonistAffectSchema = z.object({
   dominantMotivation: z.string().min(1, 'Dominant motivation must not be empty'),
 });
 
-// Default protagonist affect for backward compatibility
+// Default protagonist affect when LLM doesn't provide one
 const defaultProtagonistAffect = {
   primaryEmotion: 'neutral',
   primaryIntensity: 'mild' as const,
