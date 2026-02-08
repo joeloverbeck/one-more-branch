@@ -180,7 +180,7 @@ describe('buildFewShotMessages', () => {
   });
 
   describe('active state format', () => {
-    it('should not include legacy storyArc field in any assistant example', () => {
+    it('should not include deprecated storyArc field in any assistant example', () => {
       const opening = buildFewShotMessages('opening', 'standard');
       const continuation = buildFewShotMessages('continuation', 'standard');
       const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
@@ -191,7 +191,7 @@ describe('buildFewShotMessages', () => {
       }
     });
 
-    it('should not include legacy stateChangesAdded/Removed in any example', () => {
+    it('should not include deprecated stateChangesAdded/Removed in any example', () => {
       const opening = buildFewShotMessages('opening', 'standard');
       const continuation = buildFewShotMessages('continuation', 'standard');
       const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');

@@ -490,7 +490,7 @@ describe('buildContinuationPrompt', () => {
     expect(user).not.toContain('NPC CURRENT STATE');
   });
 
-  it('should not include legacy story arc section in continuation prompt', () => {
+  it('should not include deprecated story arc section in continuation prompt', () => {
     const messages = buildContinuationPrompt(baseContext);
     expect(getUserMessage(messages)).not.toContain('STORY ARC:');
   });
