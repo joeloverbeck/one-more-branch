@@ -290,7 +290,12 @@ describe('story-service', () => {
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        parentAccumulatedActiveState: { changes: ['Accepted mission'] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Guild hall',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
       });
       mockedStorage.loadPage.mockResolvedValue(page);
 
