@@ -64,6 +64,7 @@ export const INVENTORY_MANAGEMENT = `INVENTORY MANAGEMENT:
 export const HEALTH_MANAGEMENT = `HEALTH MANAGEMENT:
 - Use healthAdded for PHYSICAL conditions the protagonist ACQUIRES (wounds, poison, injuries, illness, exhaustion).
 - Use healthRemoved for conditions that are HEALED or RESOLVED (use EXACT text from existing health entries).
+- Do NOT add a condition that already exists. If a condition worsens, remove the old entry and add the updated one.
 - Reference health conditions naturally in the narrative when relevant.
 - Physical conditions should affect available choices when appropriate (e.g., injured leg limits running).
 - Health is for PHYSICAL conditions only (emotions belong in protagonistAffect).

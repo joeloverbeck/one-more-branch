@@ -105,6 +105,7 @@ INVENTORY MANAGEMENT:
 HEALTH MANAGEMENT:
 - Use healthAdded for PHYSICAL conditions the protagonist ACQUIRES (wounds, poison, injuries, illness, exhaustion).
 - Use healthRemoved for conditions that are HEALED or RESOLVED (use EXACT text from existing health entries).
+- Do NOT add a condition that already exists. If a condition worsens, remove the old entry and add the updated one.
 - Reference health conditions naturally in the narrative when relevant.
 - Physical conditions should affect available choices when appropriate (e.g., injured leg limits running).
 - Health is for PHYSICAL conditions only (emotions belong in protagonistAffect).
@@ -324,9 +325,7 @@ REMINDER: Each choice must be something this specific character would genuinely 
   "threatsAdded": [
     "THREAT_MANHUNT: Watch squads are actively searching the district for Mara"
   ],
-  "threatsRemoved": [
-    "THREAT_ASSASSIN"
-  ],
+  "threatsRemoved": [],
   "constraintsAdded": [
     "CONSTRAINT_EXPOSED: Mara's face is now on public broadsheets"
   ],
@@ -478,6 +477,7 @@ INVENTORY MANAGEMENT:
 HEALTH MANAGEMENT:
 - Use healthAdded for PHYSICAL conditions the protagonist ACQUIRES (wounds, poison, injuries, illness, exhaustion).
 - Use healthRemoved for conditions that are HEALED or RESOLVED (use EXACT text from existing health entries).
+- Do NOT add a condition that already exists. If a condition worsens, remove the old entry and add the updated one.
 - Reference health conditions naturally in the narrative when relevant.
 - Physical conditions should affect available choices when appropriate (e.g., injured leg limits running).
 - Health is for PHYSICAL conditions only (emotions belong in protagonistAffect).
@@ -992,7 +992,7 @@ Original Theme: Power demands sacrifice; the protagonist must choose between loy
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
 
-  - Act 1, Beat 1 (beat_1_1): "A dockside deal collapses when soldiers raid the pier."
+  - Act 1, Beat 1 (1.1): "A dockside deal collapses when soldiers raid the pier."
     Objective: Escape with the ledger while deciding who to trust.
     Resolution: Mara escaped with the ledger and identified the raiders as tribunal operatives using forged watch insignia.
 
@@ -1149,12 +1149,12 @@ Look at the CURRENT STATE above - if the situation has moved past the active bea
 If concluding, provide beatResolution: a brief summary of how the beat was resolved.
 
 REMAINING BEATS TO EVALUATE FOR DEVIATION:
-  - beat_1_2: An old ally offers shelter at a steep moral price.
-  - beat_1_3: Evidence points to corruption inside the city tribunal.
-  - beat_2_1: Factions demand proof before backing an open challenge.
-  - beat_2_2: A staged tribunal hearing turns into a political trap.
-  - beat_3_1: An alliance fractures over how far to go against the tribunal.
-  - beat_3_2: The protagonist confronts tribunal leadership at the harbor court.
+  - 1.2: An old ally offers shelter at a steep moral price.
+  - 1.3: Evidence points to corruption inside the city tribunal.
+  - 2.1: Factions demand proof before backing an open challenge.
+  - 2.2: A staged tribunal hearing turns into a political trap.
+  - 3.1: An alliance fractures over how far to go against the tribunal.
+  - 3.2: The protagonist confronts tribunal leadership at the harbor court.
 
 PROGRESSION CHECK: If the current narrative situation more closely matches a PENDING beat's description than the ACTIVE beat's description, the ACTIVE beat should be marked concluded.
 
@@ -1192,7 +1192,7 @@ You force Renn to swear on his commission seal, but he snaps the seal in half an
   "deviationDetected": true,
   "deviationReason": "Future beats assuming Renn as a covert ally are invalid because he openly declared Mara a traitor and escalated citywide pursuit.",
   "invalidatedBeatIds": [
-    "beat_1_3"
+    "1.3"
   ],
   "narrativeSummary": "Mara fled into the ossuary tunnels after Renn broke with her publicly. Greyhaven is now under lockdown and she is hunted as the alleged dock massacre architect."
 }
