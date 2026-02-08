@@ -1,6 +1,6 @@
 # ACTSTAARC-010: Update Few-Shot Examples for Active State
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: MEDIUM
 **Depends On**: ACTSTAARC-008
 **Estimated Scope**: Medium
@@ -263,11 +263,61 @@ describe('few-shot examples', () => {
 
 ## Definition of Done
 
-- [ ] All continuation examples updated to new format
-- [ ] All opening examples updated to new format
-- [ ] Examples demonstrate threat resolution (removal)
-- [ ] Examples demonstrate constraint changes
-- [ ] Examples demonstrate thread resolution
-- [ ] All example tests pass
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [x] All continuation examples updated to new format
+- [x] All opening examples updated to new format
+- [x] Examples demonstrate threat resolution (removal)
+- [x] Examples demonstrate constraint changes
+- [x] Examples demonstrate thread resolution
+- [x] All example tests pass
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+
+---
+
+## Outcome
+
+**Completion Date**: 2026-02-08
+
+### What Was Changed
+
+1. **src/llm/few-shot-data.ts**:
+   - Updated `OPENING_EXAMPLE_RESPONSE` with:
+     - `currentLocation`: "Advanced Transmutation lecture hall, back row"
+     - `threatsAdded`: ["THREAT_GRIMWALD_SUSPICION: Professor Grimwald is watching you closely"]
+     - `constraintsAdded`: ["CONSTRAINT_CLASS_IN_SESSION: You are in the middle of a lecture"]
+     - `threadsAdded`: ["THREAD_FORBIDDEN_LIBRARY: ...", "THREAD_JOURNAL_ORIGIN: ..."]
+   - Updated `CONTINUATION_EXAMPLE_RESPONSE` with:
+     - `currentLocation`: "East wing corridor, beside the statue of Archmagus Caelan"
+     - `threatsAdded`: ["THREAT_FACULTY_APPROACHING: A senior faculty member is approaching"]
+     - `constraintsAdded`: ["CONSTRAINT_RESTRICTED_AREA: You are trespassing in the restricted east wing"]
+     - `constraintsRemoved`: ["CONSTRAINT_CLASS_IN_SESSION"]
+     - `threadsAdded`: ["THREAD_STATUE_MECHANISM: The third rune may open a hidden passage"]
+   - Updated `ENDING_EXAMPLE_RESPONSE` with:
+     - `currentLocation`: "Academy entrance hall, reunited with Professor Grimwald"
+     - `threatsRemoved`: ["THREAT_GRIMWALD_SUSPICION", "THREAT_FACULTY_APPROACHING"]
+     - `constraintsRemoved`: ["CONSTRAINT_RESTRICTED_AREA"]
+     - `threadsResolved`: ["THREAD_FORBIDDEN_LIBRARY", "THREAD_JOURNAL_ORIGIN"]
+   - Removed all `stateChangesAdded/stateChangesRemoved` fields from all examples
+
+2. **test/unit/llm/examples.test.ts**:
+   - Updated interface definitions to include new active state fields
+   - Renamed describe block from 'state change format' to 'active state format'
+   - Added tests for THREAT_, CONSTRAINT_, THREAD_ prefix formats
+   - Added tests verifying additions use `CATEGORY_ID: description` format
+   - Added tests verifying removals use `CATEGORY_ID` prefix-only format (no colon)
+   - Added tests verifying legacy fields are absent
+
+3. **test/integration/llm/few-shot-examples.test.ts**:
+   - Updated "Example data integrity" tests to check for new active state fields
+   - Added assertions that legacy stateChangesAdded/Removed fields are NOT present
+
+### Deviations from Original Plan
+
+None. Implementation followed the ticket specification exactly.
+
+### Verification Results
+
+- `npm run typecheck`: ✅ Passed
+- `npm test`: ✅ Passed (1375 tests)
+- All active state format tests: ✅ Passing
+- Prefix format validation: ✅ Correct for all categories
