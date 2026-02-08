@@ -81,6 +81,69 @@ ${parts.map(p => `- ${p}`).join('\n')}
 }
 
 /**
+ * Builds story structure context for the writer LLM call.
+ * Provides act/beat status for creative context only — no evaluation or deviation instructions.
+ *
+ * @param structure - The story structure (or undefined if not using structured stories)
+ * @param accumulatedStructureState - The accumulated structure state (or undefined)
+ * @returns The structure context string, or empty string if structure is missing
+ */
+export function buildWriterStructureContext(
+  structure: StoryStructure | undefined,
+  accumulatedStructureState: AccumulatedStructureState | undefined,
+): string {
+  if (!structure || !accumulatedStructureState) {
+    return '';
+  }
+
+  const state = accumulatedStructureState;
+  const currentAct = structure.acts[state.currentActIndex];
+
+  if (!currentAct) {
+    return '';
+  }
+
+  const beatLines = currentAct.beats
+    .map(beat => {
+      const progression = state.beatProgressions.find(item => item.beatId === beat.id);
+      if (progression?.status === 'concluded') {
+        const resolution =
+          progression.resolution && progression.resolution.trim().length > 0
+            ? progression.resolution
+            : 'No resolution recorded.';
+        return `  [x] CONCLUDED: ${beat.description}
+    Resolution: ${resolution}`;
+      }
+      if (progression?.status === 'active') {
+        return `  [>] ACTIVE: ${beat.description}
+    Objective: ${beat.objective}`;
+      }
+      return `  [ ] PENDING: ${beat.description}`;
+    })
+    .join('\n');
+
+  const remainingActs = structure.acts
+    .slice(state.currentActIndex + 1)
+    .map((act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`)
+    .join('\n');
+
+  return `=== STORY STRUCTURE ===
+Overall Theme: ${structure.overallTheme}
+
+CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of 3)
+Objective: ${currentAct.objective}
+Stakes: ${currentAct.stakes}
+
+BEATS IN THIS ACT:
+${beatLines}
+
+REMAINING ACTS:
+${remainingActs || '  - None'}
+
+`;
+}
+
+/**
  * Builds the complete story structure section for continuation prompts.
  * Includes act/beat status, beat evaluation instructions, and deviation detection.
  *
