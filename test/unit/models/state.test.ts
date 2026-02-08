@@ -4,6 +4,7 @@ import {
   accumulateState,
   addCanonFact,
   applyCharacterStateChanges,
+  applyActiveStateChanges,
   applyHealthChanges,
   applyStateChanges,
   createEmptyActiveState,
@@ -157,6 +158,256 @@ describe('State utilities', () => {
         threadsResolved: [],
       };
       expect(isActiveStateChanges(invalid)).toBe(false);
+    });
+  });
+
+  describe('applyActiveStateChanges', () => {
+    const emptyState = createEmptyActiveState();
+
+    it('applies threat additions', () => {
+      const result = applyActiveStateChanges(emptyState, {
+        newLocation: null,
+        threatsAdded: ['THREAT_FIRE: Fire spreading from east'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+
+      expect(result.activeThreats).toEqual([
+        {
+          prefix: 'THREAT_FIRE',
+          description: 'Fire spreading from east',
+          raw: 'THREAT_FIRE: Fire spreading from east',
+        },
+      ]);
+    });
+
+    it('removes threat entries by exact prefix', () => {
+      const result = applyActiveStateChanges(
+        {
+          currentLocation: 'Corridor',
+          activeThreats: [
+            {
+              prefix: 'THREAT_FIRE',
+              description: 'Fire spreading',
+              raw: 'THREAT_FIRE: Fire spreading',
+            },
+            {
+              prefix: 'THREAT_SMOKE',
+              description: 'Smoke is thick',
+              raw: 'THREAT_SMOKE: Smoke is thick',
+            },
+          ],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        {
+          newLocation: null,
+          threatsAdded: [],
+          threatsRemoved: ['THREAT_FIRE'],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        }
+      );
+
+      expect(result.activeThreats).toEqual([
+        {
+          prefix: 'THREAT_SMOKE',
+          description: 'Smoke is thick',
+          raw: 'THREAT_SMOKE: Smoke is thick',
+        },
+      ]);
+    });
+
+    it('extracts and applies removal prefixes even when description is included', () => {
+      const result = applyActiveStateChanges(
+        {
+          currentLocation: 'Corridor',
+          activeThreats: [
+            {
+              prefix: 'THREAT_FIRE',
+              description: 'Fire spreading',
+              raw: 'THREAT_FIRE: Fire spreading',
+            },
+          ],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        {
+          newLocation: null,
+          threatsAdded: [],
+          threatsRemoved: ['THREAT_FIRE: outdated copy'],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        }
+      );
+
+      expect(result.activeThreats).toEqual([]);
+    });
+
+    it('processes removals before additions so entries can be replaced', () => {
+      const result = applyActiveStateChanges(
+        {
+          currentLocation: '',
+          activeThreats: [{ prefix: 'THREAT_OLD', description: 'Old', raw: 'THREAT_OLD: Old' }],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        {
+          newLocation: null,
+          threatsAdded: ['THREAT_OLD: New version'],
+          threatsRemoved: ['THREAT_OLD'],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        }
+      );
+
+      expect(result.activeThreats).toEqual([
+        { prefix: 'THREAT_OLD', description: 'New version', raw: 'THREAT_OLD: New version' },
+      ]);
+    });
+
+    it('warns and keeps state when removal prefix is not present', () => {
+      logger.clear();
+      const result = applyActiveStateChanges(emptyState, {
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: ['THREAT_NONEXISTENT'],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+
+      expect(result.activeThreats).toEqual([]);
+      const entries = logger.getEntries();
+      const warnEntry = entries.find(
+        e => e.level === 'warn' && e.message.includes('Removal prefix not found, skipping')
+      );
+      expect(warnEntry).toBeDefined();
+      expect(warnEntry?.message).toContain('THREAT_NONEXISTENT');
+    });
+
+    it('warns and skips additions with the wrong category', () => {
+      logger.clear();
+      const result = applyActiveStateChanges(emptyState, {
+        newLocation: null,
+        threatsAdded: ['CONSTRAINT_TIME: Wrong category'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+
+      expect(result.activeThreats).toEqual([]);
+      const entries = logger.getEntries();
+      const warnEntry = entries.find(
+        e => e.level === 'warn' && e.message.includes('Entry category mismatch')
+      );
+      expect(warnEntry).toBeDefined();
+    });
+
+    it('updates location when newLocation is provided', () => {
+      const result = applyActiveStateChanges(emptyState, {
+        newLocation: 'New Room',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+
+      expect(result.currentLocation).toBe('New Room');
+    });
+
+    it('preserves location when newLocation is null', () => {
+      const result = applyActiveStateChanges(
+        { ...emptyState, currentLocation: 'Original Room' },
+        {
+          newLocation: null,
+          threatsAdded: [],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        }
+      );
+
+      expect(result.currentLocation).toBe('Original Room');
+    });
+
+    it('applies constraint additions and thread removals', () => {
+      const result = applyActiveStateChanges(
+        {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            {
+              prefix: 'THREAD_MYSTERY',
+              description: 'Unknown symbol',
+              raw: 'THREAD_MYSTERY: Unknown symbol',
+            },
+          ],
+        },
+        {
+          newLocation: null,
+          threatsAdded: [],
+          threatsRemoved: [],
+          constraintsAdded: ['CONSTRAINT_TIME: Only 10 minutes remaining'],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: ['THREAD_MYSTERY'],
+        }
+      );
+
+      expect(result.activeConstraints).toEqual([
+        {
+          prefix: 'CONSTRAINT_TIME',
+          description: 'Only 10 minutes remaining',
+          raw: 'CONSTRAINT_TIME: Only 10 minutes remaining',
+        },
+      ]);
+      expect(result.openThreads).toEqual([]);
+    });
+
+    it('does not mutate the original state object or nested arrays', () => {
+      const original = {
+        currentLocation: 'Room',
+        activeThreats: [{ prefix: 'THREAT_A', description: 'A', raw: 'THREAT_A: A' }],
+        activeConstraints: [],
+        openThreads: [],
+      };
+
+      const result = applyActiveStateChanges(original, {
+        newLocation: 'New Room',
+        threatsAdded: ['THREAT_B: B'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+
+      expect(result).not.toBe(original);
+      expect(result.activeThreats).not.toBe(original.activeThreats);
+      expect(original).toEqual({
+        currentLocation: 'Room',
+        activeThreats: [{ prefix: 'THREAT_A', description: 'A', raw: 'THREAT_A: A' }],
+        activeConstraints: [],
+        openThreads: [],
+      });
     });
   });
 

@@ -47,6 +47,7 @@ export {
   createEmptyCharacterStateChanges,
   createEmptyAccumulatedCharacterState,
   applyCharacterStateChanges,
+  applyActiveStateChanges,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
   isActiveState,

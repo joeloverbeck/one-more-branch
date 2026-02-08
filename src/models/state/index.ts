@@ -73,3 +73,5 @@ export {
   isActiveState,
   isActiveStateChanges,
 } from './active-state.js';
+
+export { applyActiveStateChanges } from './active-state-apply.js';
