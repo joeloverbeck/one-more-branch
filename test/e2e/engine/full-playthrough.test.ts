@@ -1,17 +1,23 @@
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
+import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
+jest.mock('@/logging/index', () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage = generateContinuationPage as jest.MockedFunction<
-  typeof generateContinuationPage
->;
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -54,7 +60,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildContinuationResult(selectedChoice: string, stepIndex: number): typeof openingResult {
+function buildWriterResult(selectedChoice: string, stepIndex: number) {
   if (selectedChoice.includes('beacon tower')) {
     return {
       narrative:
@@ -83,8 +89,6 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
       rawResponse: `continuation-beacon-${stepIndex}`,
     };
   }
@@ -117,8 +121,6 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
       rawResponse: `continuation-checkpoint-${stepIndex}`,
     };
   }
@@ -151,8 +153,6 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
       rawResponse: `continuation-stalled-${stepIndex}`,
     };
   }
@@ -185,11 +185,19 @@ function buildContinuationResult(selectedChoice: string, stepIndex: number): typ
     healthAdded: [],
     healthRemoved: [],
     isEnding: false,
-    beatConcluded: false,
-    beatResolution: '',
     rawResponse: `continuation-default-${stepIndex}`,
   };
 }
+
+const defaultAnalystResult = {
+  beatConcluded: false,
+  beatResolution: '',
+  deviationDetected: false,
+  deviationReason: '',
+  invalidatedBeatIds: [] as string[],
+  narrativeSummary: '',
+  rawResponse: 'analyst-raw',
+};
 
 const replayOpeningResult = {
   narrative:
@@ -223,7 +231,7 @@ const replayOpeningResult = {
   rawResponse: 'replay-opening',
 };
 
-function buildReplayContinuationResult(): ReturnType<typeof buildContinuationResult> {
+function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
   return {
     narrative:
       'You slip beneath the murky water, the documents sealed in waterproof wrapping. The agents never notice your passage.',
@@ -251,8 +259,6 @@ function buildReplayContinuationResult(): ReturnType<typeof buildContinuationRes
     healthAdded: [],
     healthRemoved: [],
     isEnding: false,
-    beatConcluded: false,
-    beatResolution: '',
     rawResponse: 'replay-continuation',
   };
 }
@@ -321,13 +327,14 @@ describe('story engine e2e full playthrough', () => {
     });
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
 
-    mockedGenerateContinuationPage.mockImplementation((context) => {
+    mockedGenerateWriterPage.mockImplementation((context) => {
       continuationCallCount += 1;
       if (context.characterConcept.includes('courier smuggling')) {
-        return Promise.resolve(buildReplayContinuationResult());
+        return Promise.resolve(buildReplayWriterResult());
       }
-      return Promise.resolve(buildContinuationResult(context.selectedChoice, continuationCallCount));
+      return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCallCount));
     });
+    mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
   });
 
   afterAll(async () => {

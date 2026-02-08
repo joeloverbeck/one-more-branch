@@ -1,9 +1,12 @@
-import { generateContinuationPage, generateOpeningPage } from '../../../src/llm';
 import {
-  createBeatDeviation,
+  generateAnalystEvaluation,
+  generateOpeningPage,
+  generateWriterPage,
+  mergeWriterAndAnalystResults,
+} from '../../../src/llm';
+import {
   createChoice,
   createInitialVersionedStructure,
-  createNoDeviation,
   createPage,
   createStory,
   parsePageId,
@@ -20,7 +23,18 @@ import type { StoryStructure } from '../../../src/models/story-arc';
 
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  mergeWriterAndAnalystResults: jest.requireActual('../../../src/llm').mergeWriterAndAnalystResults,
+}));
+
+jest.mock('../../../src/logging/index.js', () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 jest.mock('../../../src/persistence', () => ({
@@ -38,8 +52,9 @@ jest.mock('../../../src/engine/structure-rewriter', () => ({
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage = generateContinuationPage as jest.MockedFunction<
-  typeof generateContinuationPage
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
 >;
 
 const mockedStorage = storage as {
@@ -358,7 +373,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(7);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You move across wet tiles while patrol torches sweep below.',
         choices: ['Leap to the clocktower', 'Drop into the market canopy'],
         currentLocation: 'Rooftops above the market district',
@@ -384,15 +399,13 @@ describe('page-service', () => {
           dominantMotivation: 'reach the clocktower unseen',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(mockedStorage.getMaxPageId).toHaveBeenCalledWith(story.id);
-      expect(mockedGenerateContinuationPage).toHaveBeenCalledWith(
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
           structure,
           accumulatedStructureState: parentStructureState,
@@ -463,7 +476,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'The checkpoint captain stamps your seal and waves you through.',
         choices: ['Enter the archive corridor', 'Detour to the guard locker'],
         currentLocation: 'Inside the censors bureau',
@@ -489,10 +502,17 @@ describe('page-service', () => {
           dominantMotivation: 'reach the target ledgers',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: true,
         beatResolution: 'The forged transit seal got you through the checkpoint.',
-        rawResponse: 'raw',
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'raw-analyst',
+      });
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -527,7 +547,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You stay hidden and gather more intel from passing clerks.',
         choices: ['Keep watching', 'Create a distraction'],
         currentLocation: 'Hidden near the archive gate',
@@ -553,9 +573,16 @@ describe('page-service', () => {
           dominantMotivation: 'find the right moment',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'raw-analyst',
       });
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
@@ -581,7 +608,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(10);
-      mockedGenerateContinuationPage
+      mockedGenerateWriterPage
         .mockResolvedValueOnce({
           narrative: 'A forged seal gets you inside.',
           choices: ['Head for ledger room', 'Plant false records'],
@@ -608,10 +635,8 @@ describe('page-service', () => {
             dominantMotivation: 'reach the ledger room',
           },
           isEnding: false,
-          beatConcluded: true,
-          beatResolution: 'Checkpoint breached with forged credentials.',
           rawResponse: 'raw',
-        } as Awaited<ReturnType<typeof generateContinuationPage>>)
+        })
         .mockResolvedValueOnce({
           narrative: 'You hold position and log patrol timing.',
           choices: ['Create diversion', 'Withdraw'],
@@ -638,9 +663,27 @@ describe('page-service', () => {
             dominantMotivation: 'find the right moment',
           },
           isEnding: false,
+          rawResponse: 'raw',
+        });
+      // Branch 1: analyst concludes the beat; Branch 2: analyst does not
+      mockedGenerateAnalystEvaluation
+        .mockResolvedValueOnce({
+          beatConcluded: true,
+          beatResolution: 'Checkpoint breached with forged credentials.',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+          rawResponse: 'raw-analyst',
+        })
+        .mockResolvedValueOnce({
           beatConcluded: false,
           beatResolution: '',
-          rawResponse: 'raw',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+          rawResponse: 'raw-analyst',
         });
 
       const branchOne = await generateNextPage(story, parentPage, 0, 'test-key');
@@ -672,7 +715,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You move carefully through the shadows.',
         choices: ['Continue forward', 'Take alternate route'],
         currentLocation: 'Shadow corridor',
@@ -698,11 +741,17 @@ describe('page-service', () => {
           dominantMotivation: 'remain undetected',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
-        deviation: createNoDeviation(),
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'raw-analyst',
+      });
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -768,7 +817,7 @@ describe('page-service', () => {
       mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly defect and swear service to the empire.',
         choices: ['Take command posting', 'Return as double agent'],
         currentLocation: 'Imperial command hall',
@@ -794,15 +843,17 @@ describe('page-service', () => {
           dominantMotivation: 'prove worth to new masters',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
-        deviation: createBeatDeviation(
-          'Current infiltration beats are invalid after defection.',
-          ['1.2'],
-          'Protagonist joined imperial command hierarchy.',
-        ),
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+        deviationDetected: true,
+        deviationReason: 'Current infiltration beats are invalid after defection.',
+        invalidatedBeatIds: ['1.2'],
+        narrativeSummary: 'Protagonist joined imperial command hierarchy.',
+        rawResponse: 'raw-analyst',
+      });
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -887,7 +938,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(100);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You proceed down the left passage.',
         choices: ['Continue forward', 'Turn back'],
         currentLocation: 'Left passage in the archive',
@@ -913,9 +964,16 @@ describe('page-service', () => {
           dominantMotivation: 'find the records',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'raw-analyst',
       });
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
@@ -924,7 +982,7 @@ describe('page-service', () => {
       expect(page.structureVersionId).toBe(versionV1.id);
 
       // The LLM should have been called with v1's structure, not v2's
-      expect(mockedGenerateContinuationPage).toHaveBeenCalledWith(
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
           structure: structureV1, // Should be v1, not v2!
         }),
@@ -968,7 +1026,7 @@ describe('page-service', () => {
       });
       expect((error as Error).message).toContain('null structureVersionId');
       expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
-      expect(mockedGenerateContinuationPage).not.toHaveBeenCalled();
+      expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
     });
 
     it('does not trigger rewrite when story has no structure', async () => {
@@ -985,7 +1043,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly defect and swear service to the empire.',
         choices: ['Take command posting', 'Return as double agent'],
         currentLocation: 'Imperial command hall',
@@ -1011,18 +1069,12 @@ describe('page-service', () => {
           dominantMotivation: 'survive the transition',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
-        deviation: createBeatDeviation(
-          'Deviation reason.',
-          ['1.2'],
-          'Narrative summary.',
-        ),
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+      });
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
+      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
       expect(page.structureVersionId).toBeNull();
       // Story without structure has no structureVersions
@@ -1076,7 +1128,7 @@ describe('page-service', () => {
       mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You betray your allies.',
         choices: ['Embrace new life', 'Second thoughts'],
         currentLocation: 'The aftermath of betrayal',
@@ -1102,15 +1154,17 @@ describe('page-service', () => {
           dominantMotivation: 'justify the betrayal',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
-        deviation: createBeatDeviation(
-          'Player chose to betray allies, invalidating trust-based beats.',
-          ['1.1', '1.2'],
-          'Alliance shattered after betrayal.',
-        ),
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+        deviationDetected: true,
+        deviationReason: 'Player chose to betray allies, invalidating trust-based beats.',
+        invalidatedBeatIds: ['1.1', '1.2'],
+        narrativeSummary: 'Alliance shattered after betrayal.',
+        rawResponse: 'raw-analyst',
+      });
 
       const { deviationInfo } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -1141,7 +1195,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(2);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You continue on your path.',
         choices: ['Keep going', 'Rest'],
         currentLocation: 'The road ahead',
@@ -1167,15 +1221,126 @@ describe('page-service', () => {
           dominantMotivation: 'keep moving forward',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
-        deviation: createNoDeviation(),
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'raw-analyst',
+      });
 
       const { deviationInfo } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(deviationInfo).toBeUndefined();
+    });
+
+    it('skips analyst call when story has no structure', async () => {
+      const story = buildStory(); // No structure
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'A quiet road stretches ahead.',
+        choices: [createChoice('Follow the road'), createChoice('Cut through the woods')],
+        inventoryChanges: { added: ['On the road'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You follow the dusty road toward the distant village.',
+        choices: ['Approach the gate', 'Camp outside'],
+        currentLocation: 'Village outskirts',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'calm',
+          primaryIntensity: 'mild' as const,
+          primaryCause: 'walking in peace',
+          secondaryEmotions: [],
+          dominantMotivation: 'reach the village',
+        },
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(mockedGenerateWriterPage).toHaveBeenCalled();
+      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(page.narrativeText).toBe('You follow the dusty road toward the distant village.');
+    });
+
+    it('continues with default beat/deviation values when analyst call fails', async () => {
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You crouch behind the warehouse barrels.',
+        choices: [createChoice('Rush the door'), createChoice('Wait for the signal')],
+        inventoryChanges: { added: ['In position'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You burst through the door into the darkened room.',
+        choices: ['Search the desk', 'Check the safe'],
+        currentLocation: 'Inside the warehouse office',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'adrenaline',
+          primaryIntensity: 'strong' as const,
+          primaryCause: 'breaching the warehouse',
+          secondaryEmotions: [],
+          dominantMotivation: 'find the evidence',
+        },
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockRejectedValue(new Error('API timeout'));
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      // Page should still be generated successfully with default beat/deviation values
+      expect(page.narrativeText).toBe('You burst through the door into the darkened room.');
+      expect(page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
+      expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
     });
   });
 
@@ -1207,7 +1372,7 @@ describe('page-service', () => {
       expect(result.wasGenerated).toBe(false);
       expect(result.page).toBe(existingPage);
       expect(result.story).toBe(story);
-      expect(mockedGenerateContinuationPage).not.toHaveBeenCalled();
+      expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
       expect(mockedStorage.savePage).not.toHaveBeenCalled();
       expect(mockedStorage.updateChoiceLink).not.toHaveBeenCalled();
       expect(mockedStorage.updateStory).not.toHaveBeenCalled();
@@ -1245,7 +1410,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(1);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'A coded anthem drifts from the tavern cellar.',
         choices: ['Signal the contact', 'Circle back to the docks'],
         currentLocation: 'The tavern cellar entrance',
@@ -1271,8 +1436,6 @@ describe('page-service', () => {
           dominantMotivation: 'make contact',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 
@@ -1300,7 +1463,7 @@ describe('page-service', () => {
       });
 
       mockedStorage.getMaxPageId.mockResolvedValue(1);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You wait in silence until the patrol passes.',
         choices: ['Move now', 'Wait longer'],
         currentLocation: 'Hidden in the shadows',
@@ -1326,8 +1489,6 @@ describe('page-service', () => {
           dominantMotivation: 'remain undetected',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 
@@ -1428,7 +1589,7 @@ describe('page-service', () => {
       mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
 
       mockedStorage.getMaxPageId.mockResolvedValue(1);
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You deviate from the plan.',
         choices: ['New choice 1', 'New choice 2'],
         currentLocation: 'An unexpected path',
@@ -1454,15 +1615,17 @@ describe('page-service', () => {
           dominantMotivation: 'explore new possibilities',
         },
         isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: false,
         beatResolution: '',
-        rawResponse: 'raw',
-        deviation: createBeatDeviation(
-          'Story deviated from planned beats.',
-          ['1.1'],
-          'Player chose unexpected path.',
-        ),
-      } as Awaited<ReturnType<typeof generateContinuationPage>>);
+        deviationDetected: true,
+        deviationReason: 'Story deviated from planned beats.',
+        invalidatedBeatIds: ['1.1'],
+        narrativeSummary: 'Player chose unexpected path.',
+        rawResponse: 'raw-analyst',
+      });
 
       const result = await getOrGeneratePage(story, parentPage, 0, 'test-key');
 

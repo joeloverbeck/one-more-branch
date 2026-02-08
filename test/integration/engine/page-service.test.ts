@@ -1,8 +1,6 @@
-import { generateContinuationPage, generateOpeningPage } from '@/llm';
+import { generateAnalystEvaluation, generateOpeningPage, generateWriterPage } from '@/llm';
 import {
-  createBeatDeviation,
   createChoice,
-  createNoDeviation,
   createPage,
   createStory,
   parsePageId,
@@ -17,16 +15,29 @@ import {
   createInitialStructureState,
 } from '@/engine';
 import type { StoryStructure } from '@/models/story-arc';
-import type { GenerationResult } from '@/llm/types';
+import type { GenerationResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
+}));
+
+jest.mock('@/logging/index', () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
+  logPrompt: jest.fn(),
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage = generateContinuationPage as jest.MockedFunction<
-  typeof generateContinuationPage
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
 >;
 
 const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
@@ -106,7 +117,7 @@ function buildOpeningResult(): GenerationResult {
   };
 }
 
-function buildContinuationResult(overrides?: Partial<GenerationResult>): GenerationResult {
+function buildContinuationResult(overrides?: Partial<WriterResult>): WriterResult {
   return {
     narrative: 'The whispers lead you deeper into the maze of alleys.',
     choices: ['Enter the marked door', 'Double back to the square'],
@@ -134,9 +145,6 @@ function buildContinuationResult(overrides?: Partial<GenerationResult>): Generat
     },
     isEnding: false,
     rawResponse: 'continuation-raw',
-    beatConcluded: false,
-    beatResolution: '',
-    deviation: createNoDeviation(),
     ...overrides,
   };
 }
@@ -346,13 +354,22 @@ describe('page-service integration', () => {
       });
       await storage.savePage(storyWithStructure.id, parentPage);
 
-      mockedGenerateContinuationPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'analyst-raw',
+      });
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
       // Verify parent state was collected and passed to LLM
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      expect(mockedGenerateContinuationPage).toHaveBeenCalledWith(
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           accumulatedInventory: expect.arrayContaining(['Torch']),
@@ -402,7 +419,16 @@ describe('page-service integration', () => {
       });
       await storage.savePage(storyWithStructure.id, parentPage);
 
-      mockedGenerateContinuationPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'analyst-raw',
+      });
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -436,13 +462,15 @@ describe('page-service integration', () => {
       });
       await storage.savePage(storyWithStructure.id, parentPage);
 
-      mockedGenerateContinuationPage.mockResolvedValue({
-        ...buildContinuationResult(),
-        deviation: createBeatDeviation(
-          'Betrayal invalidates trust-based beats.',
-          ['1.2', '2.1'],
-          'The protagonist chose betrayal.',
-        ),
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: true,
+        deviationReason: 'Betrayal invalidates trust-based beats.',
+        invalidatedBeatIds: ['1.2', '2.1'],
+        narrativeSummary: 'The protagonist chose betrayal.',
+        rawResponse: 'analyst-raw',
       });
 
       const { page, updatedStory, deviationInfo } = await generateNextPage(
@@ -495,10 +523,15 @@ describe('page-service integration', () => {
       });
       await storage.savePage(storyWithStructure.id, parentPage);
 
-      mockedGenerateContinuationPage.mockResolvedValue({
-        ...buildContinuationResult(),
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
         beatConcluded: true,
         beatResolution: 'The first clue was found successfully.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'analyst-raw',
       });
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
@@ -539,7 +572,7 @@ describe('page-service integration', () => {
       });
       await storage.savePage(baseStory.id, parentPage);
 
-      mockedGenerateContinuationPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
 
       const result = await getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key');
 
@@ -598,7 +631,7 @@ describe('page-service integration', () => {
       expect(result.wasGenerated).toBe(false);
       expect(result.page.id).toBe(2);
       expect(result.page.narrativeText).toBe('Previously generated content.');
-      expect(mockedGenerateContinuationPage).not.toHaveBeenCalled();
+      expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
     });
 
     it('persists story when canon is updated', async () => {
@@ -622,7 +655,7 @@ describe('page-service integration', () => {
       });
       await storage.savePage(baseStory.id, parentPage);
 
-      mockedGenerateContinuationPage.mockResolvedValue({
+      mockedGenerateWriterPage.mockResolvedValue({
         ...buildContinuationResult(),
         newCanonFacts: ['A new world fact discovered'],
         newCharacterCanonFacts: { 'Sage': ['Knows ancient secrets'] },

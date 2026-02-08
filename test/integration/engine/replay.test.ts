@@ -1,16 +1,23 @@
 import { StoryEngine, storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
+import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
+jest.mock('@/logging/index', () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage =
-  generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -86,11 +93,10 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-const continuationResult = {
+const writerResult = {
   narrative:
     'You pursue the mirrored stars along the embankment until engraved mile markers begin counting backward and a hidden gate rises from the riverbank.',
   choices: ['Open the hidden gate', 'Mark the location and retreat'],
-  // New active state fields
   currentLocation: 'Riverside embankment',
   threatsAdded: [],
   threatsRemoved: [],
@@ -114,9 +120,17 @@ const continuationResult = {
     dominantMotivation: 'Uncover what lies beyond the gate',
   },
   isEnding: false,
+  rawResponse: 'continuation',
+};
+
+const defaultAnalystResult = {
   beatConcluded: false,
   beatResolution: '',
-  rawResponse: 'continuation',
+  deviationDetected: false,
+  deviationReason: '',
+  invalidatedBeatIds: [] as string[],
+  narrativeSummary: '',
+  rawResponse: 'analyst-raw',
 };
 
 describe('story replay integration', () => {
@@ -128,7 +142,8 @@ describe('story replay integration', () => {
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
-    mockedGenerateContinuationPage.mockResolvedValue(continuationResult);
+    mockedGenerateWriterPage.mockResolvedValue(writerResult);
+    mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
   });
 
   afterEach(async () => {

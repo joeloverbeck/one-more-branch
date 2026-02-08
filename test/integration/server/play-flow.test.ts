@@ -1,19 +1,27 @@
 import type { Request, Response, Router } from 'express';
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
+import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import type { StoryId } from '@/models';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
+jest.mock('@/logging/index', () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(), getEntries: jest.fn().mockReturnValue([]), clear: jest.fn() },
+  logPrompt: jest.fn(),
+  generateBrowserLogScript: jest.fn().mockReturnValue(''),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage =
-  generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -219,7 +227,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     createdStoryIds.add(storyId);
 
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
-    expect(mockedGenerateContinuationPage).not.toHaveBeenCalled();
+    expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
   });
 
   it('generates a continuation page through POST /play/:storyId/choice', async () => {
@@ -270,7 +278,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
 
-    mockedGenerateContinuationPage.mockResolvedValueOnce({
+    mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'You chose wisely...',
       choices: ['Continue', 'Inspect surroundings'],
       currentLocation: 'Next location',
@@ -296,9 +304,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         dominantMotivation: 'Continue',
       },
       isEnding: false,
+      rawResponse: 'continuation',
+    });
+    mockedGenerateAnalystEvaluation.mockResolvedValueOnce({
       beatConcluded: false,
       beatResolution: '',
-      rawResponse: 'continuation',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [],
+      narrativeSummary: '',
+      rawResponse: 'analyst-raw',
     });
 
     const choiceRes = createMockResponse();
@@ -328,7 +343,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     expect(choicePayload?.page?.id).toBe(2);
     expect(choicePayload?.page?.narrativeText).toBe('You chose wisely...');
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
-    expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
 
   it('replays an existing branch without a second continuation generation', async () => {
@@ -379,7 +394,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
 
-    mockedGenerateContinuationPage.mockResolvedValueOnce({
+    mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'Page 2 content...',
       choices: ['Next', 'Turn back'],
       currentLocation: 'Second location',
@@ -405,9 +420,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         dominantMotivation: 'Keep going',
       },
       isEnding: false,
+      rawResponse: 'continuation',
+    });
+    mockedGenerateAnalystEvaluation.mockResolvedValueOnce({
       beatConcluded: false,
       beatResolution: '',
-      rawResponse: 'continuation',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [],
+      narrativeSummary: '',
+      rawResponse: 'analyst-raw',
     });
 
     const firstChoiceRes = createMockResponse();
@@ -450,6 +472,6 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         wasGenerated: false,
       }),
     );
-    expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
 });

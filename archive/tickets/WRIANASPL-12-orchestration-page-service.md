@@ -1,3 +1,5 @@
+**Status**: ✅ COMPLETED
+
 # WRIANASPL-12: Wire Two-Call Orchestration into page-service.ts
 
 ## Summary
@@ -127,3 +129,14 @@ New test cases to add:
 - `npm run typecheck` passes
 - `npm run build` passes
 - `npm run test:unit` passes
+
+## Outcome
+
+- **Completed**: 2026-02-08
+- **Changes**:
+  - `src/engine/page-service.ts`: Replaced single `generateContinuationPage()` with writer→analyst→merge pipeline
+  - `test/unit/engine/page-service.test.ts`: Updated all mocks, added 2 new test cases (analyst skip, analyst failure)
+  - `test/integration/engine/page-service.test.ts`: Updated mocks for two-call pattern
+  - 6 additional test files updated (e2e, integration, server) to match new mock pattern
+- **Deviations**: Ticket scoped only unit test updates, but integration/e2e/server tests also required mock updates to pass
+- **Verification**: 111 test suites, 1541 tests passing; typecheck clean; build clean

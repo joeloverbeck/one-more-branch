@@ -1,16 +1,23 @@
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
+import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
+jest.mock('@/logging/index', () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage =
-  generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -107,7 +114,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildContinuationResult(selectedChoice: string, pageNumber: number): typeof openingResult {
+function buildWriterResult(selectedChoice: string, pageNumber: number) {
   if (selectedChoice.includes('Pursue')) {
     return {
       narrative:
@@ -136,8 +143,6 @@ function buildContinuationResult(selectedChoice: string, pageNumber: number): ty
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: true,
-      beatResolution: `Recovered decisive courier evidence on page ${pageNumber}.`,
       rawResponse: `continuation-pursue-${pageNumber}`,
     };
   }
@@ -170,8 +175,6 @@ function buildContinuationResult(selectedChoice: string, pageNumber: number): ty
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: true,
-      beatResolution: `Copied chamber logs on page ${pageNumber}.`,
       rawResponse: `continuation-press-${pageNumber}`,
     };
   }
@@ -203,9 +206,43 @@ function buildContinuationResult(selectedChoice: string, pageNumber: number): ty
     healthAdded: [],
     healthRemoved: [],
     isEnding: false,
+    rawResponse: `continuation-cautious-${pageNumber}`,
+  };
+}
+
+function buildAnalystResult(narrative: string, pageNumber: number) {
+  if (narrative.includes('catch the courier')) {
+    return {
+      beatConcluded: true,
+      beatResolution: `Recovered decisive courier evidence on page ${pageNumber}.`,
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [] as string[],
+      narrativeSummary: '',
+      rawResponse: 'analyst-raw',
+    };
+  }
+
+  if (narrative.includes('signal chamber')) {
+    return {
+      beatConcluded: true,
+      beatResolution: `Copied chamber logs on page ${pageNumber}.`,
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [] as string[],
+      narrativeSummary: '',
+      rawResponse: 'analyst-raw',
+    };
+  }
+
+  return {
     beatConcluded: false,
     beatResolution: '',
-    rawResponse: `continuation-cautious-${pageNumber}`,
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [] as string[],
+    narrativeSummary: '',
+    rawResponse: 'analyst-raw',
   };
 }
 
@@ -223,9 +260,12 @@ describe('Structured Story E2E', () => {
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
-    mockedGenerateContinuationPage.mockImplementation((context) => {
+    mockedGenerateWriterPage.mockImplementation((context) => {
       continuationCount += 1;
-      return Promise.resolve(buildContinuationResult(context.selectedChoice, continuationCount + 1));
+      return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCount + 1));
+    });
+    mockedGenerateAnalystEvaluation.mockImplementation((context) => {
+      return Promise.resolve(buildAnalystResult(context.narrative, continuationCount + 1));
     });
   });
 

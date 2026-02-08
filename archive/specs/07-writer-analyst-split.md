@@ -1,3 +1,5 @@
+**Status**: ✅ COMPLETED
+
 # Spec 07: Writer/Analyst Two-Call Split for Continuation Pages
 
 ## Problem Statement
@@ -535,3 +537,19 @@ Add exports:
    - Deviation detection triggers when story diverges
    - Stories without structure work (analyst call skipped)
    - Analyst failure doesn't crash page generation
+
+## Outcome
+
+- **Completed**: 2026-02-08
+- **Epic tickets**: WRIANASPL-01 through WRIANASPL-12, all completed
+- **What was built**:
+  - `WriterResult` and `AnalystResult` types in `src/llm/types.ts`
+  - Writer prompt (`buildWriterPrompt`) and analyst prompt (`buildAnalystPrompt`) with separate system/user prompts
+  - Writer generation strategy (`src/llm/strategies/writer-generation-strategy.ts`)
+  - Analyst generation strategy (`src/llm/strategies/analyst-generation-strategy.ts`)
+  - `generateWriterPage()` and `generateAnalystEvaluation()` client functions in `src/llm/client.ts`
+  - `mergeWriterAndAnalystResults()` pure merger in `src/llm/result-merger.ts`
+  - `buildWriterStructureContext()` for writer-facing structure context
+  - `buildAnalystStructureEvaluation()` for analyst-facing evaluation context
+  - Two-call orchestration wired into `src/engine/page-service.ts`
+- **Verification**: 111 test suites, 1541 tests passing; typecheck and build clean
