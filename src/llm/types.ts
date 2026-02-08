@@ -145,6 +145,46 @@ export interface OpenRouterResponse {
   error?: { message: string; code: string };
 }
 
+export interface WriterResult {
+  narrative: string;
+  choices: string[];
+  currentLocation: string;
+  threatsAdded: string[];
+  threatsRemoved: string[];
+  constraintsAdded: string[];
+  constraintsRemoved: string[];
+  threadsAdded: string[];
+  threadsResolved: string[];
+  newCanonFacts: string[];
+  newCharacterCanonFacts: Record<string, string[]>;
+  inventoryAdded: string[];
+  inventoryRemoved: string[];
+  healthAdded: string[];
+  healthRemoved: string[];
+  characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
+  characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
+  protagonistAffect: ProtagonistAffect;
+  isEnding: boolean;
+  rawResponse: string;
+}
+
+export interface AnalystResult {
+  beatConcluded: boolean;
+  beatResolution: string;
+  deviationDetected: boolean;
+  deviationReason: string;
+  invalidatedBeatIds: string[];
+  narrativeSummary: string;
+  rawResponse: string;
+}
+
+export interface AnalystContext {
+  narrative: string;
+  structure: StoryStructure;
+  accumulatedStructureState: AccumulatedStructureState;
+  activeState: ActiveState;
+}
+
 export class LLMError extends Error {
   constructor(
     message: string,

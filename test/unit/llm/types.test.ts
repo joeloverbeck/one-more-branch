@@ -1,4 +1,6 @@
 import type {
+  AnalystContext,
+  AnalystResult,
   CompletedBeat,
   ContinuationContext,
   ContinuationGenerationResult,
@@ -7,6 +9,7 @@ import type {
   OpeningContext,
   StructureRewriteContext,
   StructureRewriteResult,
+  WriterResult,
 } from '../../../src/llm/types';
 import { LLMError } from '../../../src/llm/types';
 import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
@@ -351,6 +354,151 @@ describe('LLM types', () => {
       if (result.deviation.detected) {
         expect(result.deviation.invalidatedBeatIds).toEqual(['2.2', '2.3']);
       }
+    });
+  });
+
+  describe('WriterResult (compile-time)', () => {
+    it('should allow creating WriterResult with all required fields', () => {
+      const result: WriterResult = {
+        narrative: 'The forest darkens as you step forward.',
+        choices: ['Draw your sword', 'Retreat quietly'],
+        currentLocation: 'Dark forest path',
+        threatsAdded: ['THREAT_BANDITS: Bandits ahead'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: ['THREAD_LOST: Lost the trail'],
+        threadsResolved: [],
+        newCanonFacts: ['The forest is cursed.'],
+        newCharacterCanonFacts: { Elara: ['Elara fears the dark'] },
+        inventoryAdded: ['rusty key'],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [{ characterName: 'Elara', states: ['frightened'] }],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'apprehension',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Strange sounds in the dark',
+          secondaryEmotions: [],
+          dominantMotivation: 'Find safe shelter',
+        },
+        isEnding: false,
+        rawResponse: '{"narrative":"..."}',
+      };
+
+      expect(result.narrative).toContain('forest');
+      expect(result.choices).toHaveLength(2);
+      expect(result.currentLocation).toBe('Dark forest path');
+    });
+
+    it('should NOT include beatConcluded, beatResolution, or deviation fields', () => {
+      const result: WriterResult = {
+        narrative: 'Test',
+        choices: ['A', 'B'],
+        currentLocation: '',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'neutral',
+          primaryIntensity: 'mild',
+          primaryCause: 'None',
+          secondaryEmotions: [],
+          dominantMotivation: 'Continue',
+        },
+        isEnding: false,
+        rawResponse: '',
+      };
+
+      // Verify these fields do NOT exist on WriterResult
+      expect('beatConcluded' in result).toBe(false);
+      expect('beatResolution' in result).toBe(false);
+      expect('deviation' in result).toBe(false);
+    });
+  });
+
+  describe('AnalystResult (compile-time)', () => {
+    it('should allow creating AnalystResult with all required fields', () => {
+      const result: AnalystResult = {
+        beatConcluded: true,
+        beatResolution: 'The protagonist escaped the dungeon',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: '{"beatConcluded":true}',
+      };
+
+      expect(result.beatConcluded).toBe(true);
+      expect(result.beatResolution).toContain('escaped');
+      expect(result.deviationDetected).toBe(false);
+    });
+
+    it('should allow creating AnalystResult with deviation detected', () => {
+      const result: AnalystResult = {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: true,
+        deviationReason: 'Protagonist allied with the antagonist',
+        invalidatedBeatIds: ['2.2', '2.3'],
+        narrativeSummary: 'The hero joined forces with the villain',
+        rawResponse: '{"deviationDetected":true}',
+      };
+
+      expect(result.deviationDetected).toBe(true);
+      expect(result.invalidatedBeatIds).toEqual(['2.2', '2.3']);
+      expect(result.narrativeSummary).toContain('villain');
+    });
+  });
+
+  describe('AnalystContext (compile-time)', () => {
+    it('should allow creating AnalystContext with all required fields', () => {
+      const context: AnalystContext = {
+        narrative: 'The protagonist confronts the guardian at the gate.',
+        structure: {
+          acts: [
+            {
+              id: '1',
+              name: 'Act I',
+              objective: 'Reach the gate',
+              stakes: 'Failure means capture',
+              entryCondition: 'Story begins',
+              beats: [{ id: '1.1', description: 'Approach', objective: 'Reach the gate' }],
+            },
+          ],
+          overallTheme: 'Courage under pressure',
+          generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        },
+        accumulatedStructureState: {
+          currentActIndex: 0,
+          currentBeatIndex: 0,
+          beatProgressions: [],
+        },
+        activeState: {
+          currentLocation: 'Gate entrance',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      };
+
+      expect(context.narrative).toContain('guardian');
+      expect(context.structure.acts).toHaveLength(1);
+      expect(context.accumulatedStructureState.currentActIndex).toBe(0);
+      expect(context.activeState.currentLocation).toBe('Gate entrance');
     });
   });
 
