@@ -9,8 +9,13 @@ describe('validateGenerationResponse', () => {
       {
         narrative: `  ${VALID_NARRATIVE}  `,
         choices: ['  Open the iron door  ', '  Climb the collapsed tower  '],
-        stateChangesAdded: ['  Entered the ruined keep  '],
-        stateChangesRemoved: [],
+        currentLocation: '  The ruined keep  ',
+        threatsAdded: ['  THREAT_RUBBLE: Unstable ceiling  '],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: ['  The keep is haunted by old wardens  '],
         healthAdded: ['  Minor wound on left arm  '],
         healthRemoved: ['  Headache  '],
@@ -27,8 +32,8 @@ describe('validateGenerationResponse', () => {
 
     expect(result.narrative).toBe(VALID_NARRATIVE);
     expect(result.choices).toEqual(['Open the iron door', 'Climb the collapsed tower']);
-    expect(result.stateChangesAdded).toEqual(['Entered the ruined keep']);
-    expect(result.stateChangesRemoved).toEqual([]);
+    expect(result.currentLocation).toBe('The ruined keep');
+    expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
     expect(result.newCanonFacts).toEqual(['The keep is haunted by old wardens']);
     expect(result.healthAdded).toEqual(['Minor wound on left arm']);
     expect(result.healthRemoved).toEqual(['Headache']);
@@ -38,13 +43,12 @@ describe('validateGenerationResponse', () => {
     expect(result.rawResponse).toBe('raw json response');
   });
 
-  it('should filter out empty strings from stateChangesAdded and newCanonFacts', () => {
+  it('should filter out empty strings from active state arrays and newCanonFacts', () => {
     const result = validateGenerationResponse(
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: ['  ', '', 'Found a hidden sigil'],
-        stateChangesRemoved: [],
+        threatsAdded: ['  ', '', 'THREAT_FIRE: Fire spreading'],
         newCanonFacts: ['\n', 'The moon well is beneath the keep'],
         healthAdded: [],
         healthRemoved: [],
@@ -57,7 +61,7 @@ describe('validateGenerationResponse', () => {
       'raw json response',
     );
 
-    expect(result.stateChangesAdded).toEqual(['Found a hidden sigil']);
+    expect(result.threatsAdded).toEqual(['THREAT_FIRE: Fire spreading']);
     expect(result.newCanonFacts).toEqual(['The moon well is beneath the keep']);
   });
 
@@ -66,8 +70,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: [],
         healthRemoved: [],
@@ -90,8 +92,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: '  Dr. Cohen  ', facts: ['  Dr. Cohen is a psychiatrist  ', '  ', ''] },
@@ -118,8 +118,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: [],
         healthRemoved: [],
@@ -140,8 +138,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
@@ -169,8 +165,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
         healthAdded: [],
@@ -192,8 +186,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Continue forward', 'Turn back'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         inventoryAdded: ['  Rusty key  ', '', '  '],
         inventoryRemoved: ['  Old map  ', '\n'],
@@ -214,8 +206,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the door', 'Go back'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: [],
         healthRemoved: [],
@@ -236,8 +226,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Open the door', 'Go back'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: [],
         healthRemoved: [],
@@ -259,8 +247,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Continue forward', 'Turn back'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: ['  Bruised ribs  ', '', '  '],
         healthRemoved: ['  Fatigue  ', '\n'],
@@ -282,8 +268,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Press forward', 'Retreat'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: [],
         healthRemoved: [],
@@ -309,8 +293,6 @@ describe('validateGenerationResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: ['Press forward', 'Retreat'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         healthAdded: [],
         healthRemoved: [],
@@ -326,6 +308,113 @@ describe('validateGenerationResponse', () => {
     expect(result.deviation.detected).toBe(false);
   });
 
+  describe('active state fields', () => {
+    it('transforms currentLocation', () => {
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: ['Continue', 'Go back'],
+          currentLocation: 'Cave entrance',
+          newCanonFacts: [],
+          isEnding: false,
+        },
+        'raw',
+      );
+
+      expect(result.currentLocation).toBe('Cave entrance');
+    });
+
+    it('transforms threat arrays', () => {
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: ['Continue', 'Go back'],
+          threatsAdded: ['THREAT_X: X'],
+          threatsRemoved: ['THREAT_Y'],
+          newCanonFacts: [],
+          isEnding: false,
+        },
+        'raw',
+      );
+
+      expect(result.threatsAdded).toEqual(['THREAT_X: X']);
+      expect(result.threatsRemoved).toEqual(['THREAT_Y']);
+    });
+
+    it('transforms constraint arrays', () => {
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: ['Continue', 'Go back'],
+          constraintsAdded: ['CONSTRAINT_TIME: 5 minutes left'],
+          constraintsRemoved: ['CONSTRAINT_OLD'],
+          newCanonFacts: [],
+          isEnding: false,
+        },
+        'raw',
+      );
+
+      expect(result.constraintsAdded).toEqual(['CONSTRAINT_TIME: 5 minutes left']);
+      expect(result.constraintsRemoved).toEqual(['CONSTRAINT_OLD']);
+    });
+
+    it('transforms thread arrays', () => {
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: ['Continue', 'Go back'],
+          threadsAdded: ['THREAD_MYSTERY: Unknown letter'],
+          threadsResolved: ['THREAD_SOLVED'],
+          newCanonFacts: [],
+          isEnding: false,
+        },
+        'raw',
+      );
+
+      expect(result.threadsAdded).toEqual(['THREAD_MYSTERY: Unknown letter']);
+      expect(result.threadsResolved).toEqual(['THREAD_SOLVED']);
+    });
+
+    it('defaults missing active state to empty', () => {
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: ['Continue', 'Go back'],
+          newCanonFacts: [],
+          isEnding: false,
+        },
+        'raw',
+      );
+
+      expect(result.currentLocation).toBe('');
+      expect(result.threatsAdded).toEqual([]);
+      expect(result.threatsRemoved).toEqual([]);
+      expect(result.constraintsAdded).toEqual([]);
+      expect(result.constraintsRemoved).toEqual([]);
+      expect(result.threadsAdded).toEqual([]);
+      expect(result.threadsResolved).toEqual([]);
+    });
+
+    it('filters whitespace-only entries from active state arrays', () => {
+      const result = validateGenerationResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: ['Continue', 'Go back'],
+          threatsAdded: ['  ', 'THREAT_VALID: Valid', '\t', ''],
+          constraintsAdded: ['', '  ', 'CONSTRAINT_VALID: Valid'],
+          threadsAdded: ['\n', 'THREAD_VALID: Valid'],
+          newCanonFacts: [],
+          isEnding: false,
+        },
+        'raw',
+      );
+
+      expect(result.threatsAdded).toEqual(['THREAT_VALID: Valid']);
+      expect(result.constraintsAdded).toEqual(['CONSTRAINT_VALID: Valid']);
+      expect(result.threadsAdded).toEqual(['THREAD_VALID: Valid']);
+    });
+  });
+
   describe('malformed choices array recovery', () => {
     it('should recover choices from brace-wrapped escaped-quote format', () => {
       // This is the exact malformation pattern seen in production:
@@ -338,8 +427,6 @@ describe('validateGenerationResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: malformedChoices,
-          stateChangesAdded: [],
-          stateChangesRemoved: [],
           newCanonFacts: [],
           healthAdded: [],
           healthRemoved: [],
@@ -367,8 +454,6 @@ describe('validateGenerationResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: malformedChoices,
-          stateChangesAdded: [],
-          stateChangesRemoved: [],
           newCanonFacts: [],
           healthAdded: [],
           healthRemoved: [],
@@ -392,8 +477,6 @@ describe('validateGenerationResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: malformedChoices,
-          stateChangesAdded: [],
-          stateChangesRemoved: [],
           newCanonFacts: [],
           healthAdded: [],
           healthRemoved: [],
@@ -416,8 +499,6 @@ describe('validateGenerationResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: properChoices,
-          stateChangesAdded: [],
-          stateChangesRemoved: [],
           newCanonFacts: [],
           healthAdded: [],
           healthRemoved: [],
@@ -441,8 +522,6 @@ describe('validateGenerationResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: malformedChoices,
-          stateChangesAdded: [],
-          stateChangesRemoved: [],
           newCanonFacts: [],
           healthAdded: [],
           healthRemoved: [],

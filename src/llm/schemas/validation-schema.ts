@@ -67,15 +67,14 @@ export const GenerationResultSchema = z
         .min(3, 'Choice must be at least 3 characters')
         .max(300, 'Choice must be at most 300 characters'),
     ),
-    stateChangesAdded: z.array(z.string()).optional().default([]),
-    stateChangesRemoved: z
-      .array(z.string())
-      .optional()
-      .default([])
-      .refine(
-        removed => removed.every(r => r.trim().length === 0 || r.trim().length > 0),
-        { message: 'State removal entries must be valid strings' }
-      ),
+    // Active state fields (replaces stateChangesAdded/stateChangesRemoved)
+    currentLocation: z.string().optional().default(''),
+    threatsAdded: z.array(z.string()).optional().default([]),
+    threatsRemoved: z.array(z.string()).optional().default([]),
+    constraintsAdded: z.array(z.string()).optional().default([]),
+    constraintsRemoved: z.array(z.string()).optional().default([]),
+    threadsAdded: z.array(z.string()).optional().default([]),
+    threadsResolved: z.array(z.string()).optional().default([]),
     newCanonFacts: z.array(z.string()),
     // Accept array format from LLM (per JSON schema), transform to Record for internal use
     newCharacterCanonFacts: CharacterCanonFactsArraySchema.optional()

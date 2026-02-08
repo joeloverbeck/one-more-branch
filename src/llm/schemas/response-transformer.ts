@@ -154,8 +154,16 @@ export function validateGenerationResponse(
   return {
     narrative: validated.narrative.trim(),
     choices: validated.choices.map(choice => choice.trim()),
-    stateChangesAdded: validated.stateChangesAdded.map(change => change.trim()).filter(change => change),
-    stateChangesRemoved: validated.stateChangesRemoved.map(change => change.trim()).filter(change => change),
+
+    // Active state fields
+    currentLocation: validated.currentLocation.trim(),
+    threatsAdded: validated.threatsAdded.map(t => t.trim()).filter(t => t),
+    threatsRemoved: validated.threatsRemoved.map(t => t.trim()).filter(t => t),
+    constraintsAdded: validated.constraintsAdded.map(c => c.trim()).filter(c => c),
+    constraintsRemoved: validated.constraintsRemoved.map(c => c.trim()).filter(c => c),
+    threadsAdded: validated.threadsAdded.map(t => t.trim()).filter(t => t),
+    threadsResolved: validated.threadsResolved.map(t => t.trim()).filter(t => t),
+
     newCanonFacts: validated.newCanonFacts.map(fact => fact.trim()).filter(fact => fact),
     newCharacterCanonFacts,
     inventoryAdded: validated.inventoryAdded.map(item => item.trim()).filter(item => item),

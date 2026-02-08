@@ -4,16 +4,29 @@ import type { AccumulatedStructureState, DeviationResult, StoryStructure } from 
 export interface GenerationResult {
   narrative: string;
   choices: string[];
-  stateChangesAdded: string[];
-  stateChangesRemoved: string[];
+
+  // Active state fields (replaces stateChangesAdded/stateChangesRemoved)
+  currentLocation: string;
+  threatsAdded: string[];
+  threatsRemoved: string[];
+  constraintsAdded: string[];
+  constraintsRemoved: string[];
+  threadsAdded: string[];
+  threadsResolved: string[];
+
+  // Canon tracking (unchanged)
   newCanonFacts: string[];
   newCharacterCanonFacts: Record<string, string[]>;
+
+  // Branch-isolated state tracking (unchanged)
   inventoryAdded: string[];
   inventoryRemoved: string[];
   healthAdded: string[];
   healthRemoved: string[];
   characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
   characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
+
+  // Emotional state and story structure (unchanged)
   protagonistAffect: ProtagonistAffect;
   isEnding: boolean;
   beatConcluded: boolean;

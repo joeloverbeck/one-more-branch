@@ -10,36 +10,47 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: ['Entered the ruined keep'],
-        stateChangesRemoved: [],
+        currentLocation: 'The ruined keep entrance',
+        threatsAdded: ['THREAT_RUBBLE: Unstable ceiling above'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: ['The keep is haunted by old wardens'],
         isEnding: false,
       });
 
       expect(result.isEnding).toBe(false);
       expect(result.choices).toHaveLength(2);
+      expect(result.currentLocation).toBe('The ruined keep entrance');
+      expect(result.threatsAdded).toHaveLength(1);
     });
 
     it('should validate a well-formed ending response', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: [],
-        stateChangesAdded: ['Accepted the crown and ended the civil war'],
-        stateChangesRemoved: [],
+        currentLocation: 'The throne room',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: ['THREAD_SUCCESSION'],
         newCanonFacts: ['The war is over'],
         isEnding: true,
       });
 
       expect(result.isEnding).toBe(true);
       expect(result.choices).toHaveLength(0);
+      expect(result.threadsResolved).toEqual(['THREAD_SUCCESSION']);
     });
 
     it('should validate beat evaluation fields when provided', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Take the oath', 'Leave the hall'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: ['The throne has no heir'],
         isEnding: false,
         beatConcluded: true,
@@ -54,8 +65,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
-        stateChangesAdded: ['Met Dr. Cohen'],
-        stateChangesRemoved: [],
         newCanonFacts: ['The year is 1972'],
         newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['Dr. Cohen is a psychiatrist', 'He wears wire-rimmed glasses'] },
@@ -72,8 +81,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
@@ -91,8 +98,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the doctor', 'Wait in silence'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
@@ -111,8 +116,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       });
@@ -124,8 +127,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       });
@@ -138,8 +139,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       });
@@ -152,8 +151,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       });
@@ -168,8 +165,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
         deviationDetected: true,
@@ -188,8 +183,6 @@ describe('GenerationResultSchema', () => {
       const result = GenerationResultSchema.parse({
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
         storyArc: 'Legacy arc field',
@@ -201,14 +194,127 @@ describe('GenerationResultSchema', () => {
     });
   });
 
+  describe('active state fields', () => {
+    it('accepts valid currentLocation', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        currentLocation: 'Dark corridor with water-stained tiles',
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.currentLocation).toBe('Dark corridor with water-stained tiles');
+    });
+
+    it('accepts empty currentLocation', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        currentLocation: '',
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.currentLocation).toBe('');
+    });
+
+    it('accepts valid threatsAdded array', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        threatsAdded: ['THREAT_FIRE: Fire spreading from east wing'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.threatsAdded).toEqual(['THREAT_FIRE: Fire spreading from east wing']);
+    });
+
+    it('accepts valid threatsRemoved array', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        threatsRemoved: ['THREAT_FIRE'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.threatsRemoved).toEqual(['THREAT_FIRE']);
+    });
+
+    it('accepts valid constraintsAdded array', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        constraintsAdded: ['CONSTRAINT_TIME: Only 5 minutes remaining'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.constraintsAdded).toHaveLength(1);
+    });
+
+    it('accepts valid threadsAdded array', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        threadsAdded: ['THREAD_LETTER: Contents of letter unknown'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.threadsAdded).toHaveLength(1);
+    });
+
+    it('defaults missing arrays to empty', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect(result.currentLocation).toBe('');
+      expect(result.threatsAdded).toEqual([]);
+      expect(result.threatsRemoved).toEqual([]);
+      expect(result.constraintsAdded).toEqual([]);
+      expect(result.constraintsRemoved).toEqual([]);
+      expect(result.threadsAdded).toEqual([]);
+      expect(result.threadsResolved).toEqual([]);
+    });
+  });
+
+  describe('removed old fields', () => {
+    it('does not include stateChangesAdded in result', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect((result as Record<string, unknown>)['stateChangesAdded']).toBeUndefined();
+    });
+
+    it('does not include stateChangesRemoved in result', () => {
+      const result = GenerationResultSchema.parse({
+        narrative: VALID_NARRATIVE,
+        choices: ['Continue forward', 'Turn back'],
+        newCanonFacts: [],
+        isEnding: false,
+      });
+
+      expect((result as Record<string, unknown>)['stateChangesRemoved']).toBeUndefined();
+    });
+  });
+
   describe('ending consistency invariant', () => {
     it('should reject non-ending with zero choices', () => {
       expect(() =>
         GenerationResultSchema.parse({
           narrative: VALID_NARRATIVE,
           choices: [],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -220,8 +326,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: VALID_NARRATIVE,
           choices: ['Continue to the next chamber'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: true,
         }),
@@ -233,8 +337,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: VALID_NARRATIVE,
           choices: ['Retreat to camp'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -255,8 +357,6 @@ describe('GenerationResultSchema', () => {
             'Choice five path',
             'Choice six path',
           ],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -268,8 +368,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: VALID_NARRATIVE,
           choices: ['Open the gate', 'open the gate', 'Hide in the shadows'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -281,8 +379,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: VALID_NARRATIVE,
           choices: ['Go', 'Stay put'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -294,8 +390,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: VALID_NARRATIVE,
           choices: ['A'.repeat(301), 'Hold your position'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -309,8 +403,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: 'Too short.',
           choices: ['Secure the relic', 'Burn the relic'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
@@ -322,8 +414,6 @@ describe('GenerationResultSchema', () => {
         GenerationResultSchema.parse({
           narrative: 'A'.repeat(15001),
           choices: ['Secure the relic', 'Burn the relic'],
-          stateChangesAdded: [],
-        stateChangesRemoved: [],
           newCanonFacts: [],
           isEnding: false,
         }),
