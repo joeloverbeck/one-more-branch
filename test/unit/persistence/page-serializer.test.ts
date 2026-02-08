@@ -245,6 +245,21 @@ describe('page-serializer', () => {
           { text: 'Choice A', nextPageId: null },
           { text: 'Choice B', nextPageId: null },
         ],
+        activeStateChanges: {
+          newLocation: null,
+          threatsAdded: [],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        },
+        accumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
         inventoryChanges: { added: [], removed: [] },
         accumulatedInventory: [],
         healthChanges: { added: [], removed: [] },
@@ -255,6 +270,13 @@ describe('page-serializer', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [],
+        },
+        protagonistAffect: {
+          primaryEmotion: 'neutral',
+          primaryIntensity: 'mild',
+          primaryCause: '',
+          secondaryEmotions: [],
+          dominantMotivation: '',
         },
         isEnding: false,
         parentPageId: null,
@@ -435,17 +457,6 @@ describe('page-serializer', () => {
         const page = deserializePage(fileData);
 
         expect(page.structureVersionId).toBe('sv-1707321600000-a1b2');
-      });
-
-      it('defaults active state fields when missing', () => {
-        const fileData = buildTestFileData();
-        delete fileData.activeStateChanges;
-        delete fileData.accumulatedActiveState;
-
-        const page = deserializePage(fileData);
-
-        expect(page.activeStateChanges).toEqual(createEmptyActiveStateChanges());
-        expect(page.accumulatedActiveState).toEqual(createEmptyActiveState());
       });
 
       it('deserializes non-empty activeStateChanges', () => {

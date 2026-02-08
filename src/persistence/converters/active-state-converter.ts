@@ -1,14 +1,8 @@
 /**
  * Converts ActiveState and ActiveStateChanges between domain model and file format.
- * Includes backward compatibility for pages created before these fields were added.
  */
 
-import {
-  ActiveState,
-  ActiveStateChanges,
-  createEmptyActiveState,
-  createEmptyActiveStateChanges,
-} from '../../models';
+import { ActiveState, ActiveStateChanges } from '../../models';
 import { PageFileData } from '../page-serializer-types';
 
 type ActiveStateChangesFileData = PageFileData['activeStateChanges'];
@@ -40,13 +34,8 @@ export function accumulatedActiveStateToFileData(
 }
 
 export function fileDataToActiveStateChanges(
-  data: ActiveStateChangesFileData | undefined
+  data: ActiveStateChangesFileData
 ): ActiveStateChanges {
-  // Backward compatibility: pages without activeStateChanges get empty defaults
-  if (!data) {
-    return createEmptyActiveStateChanges();
-  }
-
   return {
     newLocation: data.newLocation,
     threatsAdded: [...data.threatsAdded],
@@ -59,13 +48,8 @@ export function fileDataToActiveStateChanges(
 }
 
 export function fileDataToAccumulatedActiveState(
-  data: AccumulatedActiveStateFileData | undefined
+  data: AccumulatedActiveStateFileData
 ): ActiveState {
-  // Backward compatibility: pages without accumulatedActiveState get empty defaults
-  if (!data) {
-    return createEmptyActiveState();
-  }
-
   return {
     currentLocation: data.currentLocation,
     activeThreats: data.activeThreats.map((entry) => ({ ...entry })),
