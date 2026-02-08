@@ -53,8 +53,6 @@ describe('schema pipeline integration', () => {
 
       expect(schemaProps.required).toContain('narrative');
       expect(schemaProps.required).toContain('choices');
-      expect(schemaProps.required).toContain('stateChangesAdded');
-      expect(schemaProps.required).toContain('stateChangesRemoved');
       expect(schemaProps.required).toContain('newCanonFacts');
       expect(schemaProps.required).toContain('newCharacterCanonFacts');
       expect(schemaProps.required).toContain('inventoryAdded');
@@ -69,14 +67,26 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: ['Open the iron door', 'Climb the collapsed tower'],
-        stateChangesAdded: ['Entered the ruined keep'],
-        stateChangesRemoved: [],
+        currentLocation: 'The ruined keep entrance',
+        threatsAdded: ['Unstable stone ceiling'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: ['The plague archives mystery'],
+        threadsResolved: [],
         newCanonFacts: ['The keep was abandoned after the plague'],
         newCharacterCanonFacts: [],
         inventoryAdded: ['Rusty key'],
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'apprehension',
+          primaryIntensity: 'moderate',
+          primaryCause: 'The ancient ruins groan with instability',
+          secondaryEmotions: [{ emotion: 'curiosity', cause: 'Whispers of forgotten knowledge' }],
+          dominantMotivation: 'Find the plague archives',
+        },
         isEnding: false,
         beatConcluded: true,
         beatResolution: 'You reached the plague archives alive.',
@@ -86,7 +96,9 @@ describe('schema pipeline integration', () => {
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toHaveLength(2);
-      expect(result.stateChangesAdded).toEqual(['Entered the ruined keep']);
+      expect(result.currentLocation).toEqual('The ruined keep entrance');
+      expect(result.threatsAdded).toEqual(['Unstable stone ceiling']);
+      expect(result.threadsAdded).toEqual(['The plague archives mystery']);
       expect(result.newCanonFacts).toEqual(['The keep was abandoned after the plague']);
       expect(result.inventoryAdded).toEqual(['Rusty key']);
       expect(result.inventoryRemoved).toEqual([]);
@@ -102,8 +114,13 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: ['Speak to the elder', 'Wait in silence'],
-        stateChangesAdded: ['Met Elder Varn'],
-        stateChangesRemoved: [],
+        currentLocation: 'The elder council chamber',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: ['Elder Varn encounter'],
+        threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: 'Elder Varn', facts: ['She is the last of her order', 'She carries an obsidian staff'] },
@@ -113,6 +130,13 @@ describe('schema pipeline integration', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'reverence',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Meeting the last of an ancient order',
+          secondaryEmotions: [],
+          dominantMotivation: 'Learn from the elder',
+        },
         isEnding: false,
       };
 
@@ -129,8 +153,13 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: ['Follow the clue', 'Ignore it'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
+        currentLocation: 'Detective Shaw\'s office',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: 'Detective Shaw', facts: ['She wears a trench coat'] },
@@ -140,6 +169,13 @@ describe('schema pipeline integration', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'intrigue',
+          primaryIntensity: 'mild',
+          primaryCause: 'The detective seems to know more than she reveals',
+          secondaryEmotions: [],
+          dominantMotivation: 'Uncover the truth',
+        },
         isEnding: false,
       };
 
@@ -154,14 +190,26 @@ describe('schema pipeline integration', () => {
       const structured = {
         narrative: VALID_NARRATIVE,
         choices: ['Continue forward', 'Turn back'],
-        stateChangesAdded: ['Found the hidden cache'],
-        stateChangesRemoved: [],
+        currentLocation: 'Hidden cache chamber',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: ['The hidden cache discovery'],
+        threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
         inventoryAdded: ['Ancient map', 'Gold coins (50)'],
         inventoryRemoved: ['Lockpick'],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'excitement',
+          primaryIntensity: 'strong',
+          primaryCause: 'Discovered valuable treasures',
+          secondaryEmotions: [],
+          dominantMotivation: 'Secure the findings and continue exploring',
+        },
         isEnding: false,
       };
 
@@ -180,14 +228,26 @@ describe('schema pipeline integration', () => {
       const endingJson = {
         narrative: VALID_NARRATIVE,
         choices: [],
-        stateChangesAdded: ['The journey ends here'],
-        stateChangesRemoved: [],
+        currentLocation: 'The realm of peace',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: ['The central conflict'],
         newCanonFacts: ['Peace was restored'],
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'peace',
+          primaryIntensity: 'strong',
+          primaryCause: 'The journey has reached its conclusion',
+          secondaryEmotions: [{ emotion: 'satisfaction', cause: 'All threads resolved' }],
+          dominantMotivation: 'Rest at last',
+        },
         isEnding: true,
       };
 
@@ -201,14 +261,26 @@ describe('schema pipeline integration', () => {
       const invalidEndingJson = {
         narrative: VALID_NARRATIVE,
         choices: ['Continue anyway'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
+        currentLocation: 'Invalid ending location',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'confusion',
+          primaryIntensity: 'mild',
+          primaryCause: 'Invalid state',
+          secondaryEmotions: [],
+          dominantMotivation: 'Resolve the error',
+        },
         isEnding: true,
       };
 
@@ -219,14 +291,26 @@ describe('schema pipeline integration', () => {
       const invalidNonEndingJson = {
         narrative: VALID_NARRATIVE,
         choices: [],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
+        currentLocation: 'Invalid non-ending location',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'confusion',
+          primaryIntensity: 'mild',
+          primaryCause: 'Invalid state',
+          secondaryEmotions: [],
+          dominantMotivation: 'Resolve the error',
+        },
         isEnding: false,
       };
 
@@ -284,8 +368,13 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: `   ${VALID_NARRATIVE}   `,
         choices: ['  Open the door  ', '  Climb the tower  '],
-        stateChangesAdded: ['  Entered the keep  '],
-        stateChangesRemoved: [],
+        currentLocation: '  The haunted keep  ',
+        threatsAdded: ['  Ghostly presence  '],
+        threatsRemoved: [],
+        constraintsAdded: ['  Limited visibility  '],
+        constraintsRemoved: [],
+        threadsAdded: ['  The encoded ledger  '],
+        threadsResolved: [],
         newCanonFacts: ['  The keep is haunted  '],
         newCharacterCanonFacts: [
           { characterName: '  Elder Varn  ', facts: ['  She is wise  '] },
@@ -294,6 +383,13 @@ describe('schema pipeline integration', () => {
         inventoryRemoved: ['  Old map  '],
         healthAdded: ['  Minor wound on left arm  '],
         healthRemoved: ['  Headache  '],
+        protagonistAffect: {
+          primaryEmotion: '  determination  ',
+          primaryIntensity: 'strong',
+          primaryCause: '  Found valuable clues  ',
+          secondaryEmotions: [],
+          dominantMotivation: '  Decode the ledger  ',
+        },
         isEnding: false,
         beatConcluded: true,
         beatResolution: '  You found the encoded ledger.  ',
@@ -303,7 +399,10 @@ describe('schema pipeline integration', () => {
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toEqual(['Open the door', 'Climb the tower']);
-      expect(result.stateChangesAdded).toEqual(['Entered the keep']);
+      expect(result.currentLocation).toEqual('The haunted keep');
+      expect(result.threatsAdded).toEqual(['Ghostly presence']);
+      expect(result.constraintsAdded).toEqual(['Limited visibility']);
+      expect(result.threadsAdded).toEqual(['The encoded ledger']);
       expect(result.newCanonFacts).toEqual(['The keep is haunted']);
       expect(result.newCharacterCanonFacts).toEqual({
         'Elder Varn': ['She is wise'],
@@ -320,8 +419,13 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: ['Open the door', 'Climb the tower'],
-        stateChangesAdded: ['', '  ', 'Entered the keep', '\n'],
-        stateChangesRemoved: [],
+        currentLocation: 'The keep entrance',
+        threatsAdded: ['', '  ', 'Ghostly watcher', '\n'],
+        threatsRemoved: [],
+        constraintsAdded: ['', 'Locked gate'],
+        constraintsRemoved: [],
+        threadsAdded: ['The mystery', '', '   '],
+        threadsResolved: [],
         newCanonFacts: ['The keep is haunted', '', '   '],
         newCharacterCanonFacts: [
           { characterName: 'Elder Varn', facts: ['She is wise', '', '  '] },
@@ -331,12 +435,21 @@ describe('schema pipeline integration', () => {
         inventoryRemoved: ['', 'Old map'],
         healthAdded: ['Bruised ribs', '', '  '],
         healthRemoved: ['', 'Fatigue'],
+        protagonistAffect: {
+          primaryEmotion: 'caution',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Entering a dangerous place',
+          secondaryEmotions: [],
+          dominantMotivation: 'Proceed carefully',
+        },
         isEnding: false,
       };
 
       const result = validateGenerationResponse(rawJson, 'raw');
 
-      expect(result.stateChangesAdded).toEqual(['Entered the keep']);
+      expect(result.threatsAdded).toEqual(['Ghostly watcher']);
+      expect(result.constraintsAdded).toEqual(['Locked gate']);
+      expect(result.threadsAdded).toEqual(['The mystery']);
       expect(result.newCanonFacts).toEqual(['The keep is haunted']);
       expect(result.newCharacterCanonFacts).toEqual({
         'Elder Varn': ['She is wise'],
@@ -353,8 +466,6 @@ describe('schema pipeline integration', () => {
       const input = {
         narrative: VALID_NARRATIVE,
         choices: ['Choice A', 'Choice B'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       };
@@ -362,19 +473,31 @@ describe('schema pipeline integration', () => {
       const result = GenerationResultSchema.parse(input);
 
       // Defaults should be applied
+      expect(result.currentLocation).toEqual('');
+      expect(result.threatsAdded).toEqual([]);
+      expect(result.threatsRemoved).toEqual([]);
+      expect(result.constraintsAdded).toEqual([]);
+      expect(result.constraintsRemoved).toEqual([]);
+      expect(result.threadsAdded).toEqual([]);
+      expect(result.threadsResolved).toEqual([]);
       expect(result.inventoryAdded).toEqual([]);
       expect(result.inventoryRemoved).toEqual([]);
       expect(result.beatConcluded).toBe(false);
       expect(result.beatResolution).toBe('');
       expect(result.newCharacterCanonFacts).toEqual({});
+      expect(result.protagonistAffect).toEqual({
+        primaryEmotion: 'neutral',
+        primaryIntensity: 'mild',
+        primaryCause: 'No specific emotional driver',
+        secondaryEmotions: [],
+        dominantMotivation: 'Continue forward',
+      });
     });
 
     it('should reject invalid narrative length', () => {
       const input = {
         narrative: 'Too short',
         choices: ['Choice A', 'Choice B'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       };
@@ -386,8 +509,6 @@ describe('schema pipeline integration', () => {
       const input = {
         narrative: VALID_NARRATIVE,
         choices: ['Open the door', 'OPEN THE DOOR'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
         newCanonFacts: [],
         isEnding: false,
       };

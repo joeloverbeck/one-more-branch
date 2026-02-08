@@ -71,6 +71,11 @@ export async function generateNextPage(
   const parentState = collectParentState(parentPage);
   const currentStructureVersion = resolveActiveStructureVersion(story, parentPage);
 
+  // Fetch grandparent page for extended scene context
+  const grandparentPage = parentPage.parentPageId
+    ? await storage.loadPage(story.id, parentPage.parentPageId)
+    : null;
+
   const result = await generateContinuationPage(
     {
       characterConcept: story.characterConcept,
@@ -87,6 +92,9 @@ export async function generateNextPage(
       accumulatedHealth: parentState.accumulatedHealth,
       accumulatedCharacterState: parentState.accumulatedCharacterState,
       parentProtagonistAffect: parentPage.protagonistAffect,
+      // New active state fields
+      activeState: parentState.accumulatedActiveState,
+      grandparentNarrative: grandparentPage?.narrativeText ?? null,
     },
     { apiKey },
   );
@@ -143,6 +151,7 @@ export async function generateNextPage(
     parentPageId: parentPage.id,
     parentChoiceIndex: choiceIndex,
     parentAccumulatedState: parentState.accumulatedState,
+    parentAccumulatedActiveState: parentState.accumulatedActiveState,
     parentAccumulatedInventory: parentState.accumulatedInventory,
     parentAccumulatedHealth: parentState.accumulatedHealth,
     parentAccumulatedCharacterState: parentState.accumulatedCharacterState,

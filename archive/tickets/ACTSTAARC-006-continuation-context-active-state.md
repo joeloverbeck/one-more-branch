@@ -1,6 +1,6 @@
 # ACTSTAARC-006: Update ContinuationContext for Active State
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: HIGH (blocking prompt changes)
 **Depends On**: ACTSTAARC-002, ACTSTAARC-005
 **Estimated Scope**: Small
@@ -170,9 +170,35 @@ describe('ContinuationContext type', () => {
 
 ## Definition of Done
 
-- [ ] `ContinuationContext` has `activeState: ActiveState` field
-- [ ] `ContinuationContext` has `grandparentNarrative: string | null` field
-- [ ] Old `accumulatedState` field still exists (deprecated)
-- [ ] All type tests pass
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [x] `ContinuationContext` has `activeState: ActiveState` field
+- [x] `ContinuationContext` has `grandparentNarrative: string | null` field
+- [x] Old `accumulatedState` field still exists (deprecated)
+- [x] All type tests pass
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+
+---
+
+## Outcome
+
+**Completion Date**: 2026-02-08
+
+### What Was Changed
+
+1. **src/llm/types.ts**:
+   - Added import for `ActiveState` from `../models/state/index.js`
+   - Added `activeState: ActiveState` field to `ContinuationContext`
+   - Added `grandparentNarrative: string | null` field
+   - Added deprecation comment for `accumulatedState`
+
+2. **test/unit/llm/types.test.ts**:
+   - Added test cases for `activeState` field
+   - Added test cases for `grandparentNarrative` field
+   - Added test verifying `activeState` is required
+   - Added test verifying `grandparentNarrative` is required
+
+### Verification
+
+- `npm run typecheck` ✅ passes
+- `npm run lint` ✅ passes
+- `npm test` ✅ 1313 tests pass

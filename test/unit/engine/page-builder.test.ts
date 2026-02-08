@@ -16,8 +16,13 @@ function buildMockGenerationResult(overrides?: Partial<GenerationResult>): Gener
   return {
     narrative: 'You step into the shadowed corridor.',
     choices: ['Go left', 'Go right'],
-    stateChangesAdded: ['Entered the corridor'],
-    stateChangesRemoved: [],
+    currentLocation: 'Shadowed corridor',
+    threatsAdded: [],
+    threatsRemoved: [],
+    constraintsAdded: [],
+    constraintsRemoved: [],
+    threadsAdded: [],
+    threadsResolved: [],
     newCanonFacts: ['The corridor echoes with distant footsteps'],
     newCharacterCanonFacts: {},
     inventoryAdded: ['Rusty key'],
@@ -26,7 +31,16 @@ function buildMockGenerationResult(overrides?: Partial<GenerationResult>): Gener
     healthRemoved: [],
     characterStateChangesAdded: [],
     characterStateChangesRemoved: [],
+    protagonistAffect: {
+      primaryEmotion: 'curiosity',
+      primaryIntensity: 'moderate',
+      primaryCause: 'Exploring the unknown corridor',
+      secondaryEmotions: [],
+      dominantMotivation: 'Discover what lies ahead',
+    },
     isEnding: false,
+    beatConcluded: false,
+    beatResolution: '',
     rawResponse: 'raw-response',
     ...overrides,
   };
@@ -69,10 +83,12 @@ describe('page-builder', () => {
       ]);
     });
 
-    it('applies state changes from generation result', () => {
+    it('applies active state fields from generation result', () => {
       const result = buildMockGenerationResult({
-        stateChangesAdded: ['Found treasure', 'Learned secret'],
-        stateChangesRemoved: [],
+        currentLocation: 'Ancient treasury',
+        threatsAdded: ['THREAT_guardian: Guardian awakened'],
+        constraintsAdded: ['CONSTRAINT_noise: Must remain silent'],
+        threadsAdded: ['THREAD_mystery: Mystery of the vault'],
       });
       const context: FirstPageBuildContext = {
         structureState: createEmptyAccumulatedStructureState(),
@@ -81,10 +97,13 @@ describe('page-builder', () => {
 
       const page = buildFirstPage(result, context);
 
-      expect(page.stateChanges.added).toContain('Found treasure');
-      expect(page.stateChanges.added).toContain('Learned secret');
-      expect(page.accumulatedState.changes).toContain('Found treasure');
-      expect(page.accumulatedState.changes).toContain('Learned secret');
+      expect(page.accumulatedActiveState.currentLocation).toBe('Ancient treasury');
+      expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
+      expect(page.accumulatedActiveState.activeThreats[0].description).toBe('Guardian awakened');
+      expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
+      expect(page.accumulatedActiveState.activeConstraints[0].description).toBe('Must remain silent');
+      expect(page.accumulatedActiveState.openThreads).toHaveLength(1);
+      expect(page.accumulatedActiveState.openThreads[0].description).toBe('Mystery of the vault');
     });
 
     it('applies inventory changes from generation result', () => {
@@ -174,12 +193,15 @@ describe('page-builder', () => {
     });
 
     it('applies protagonist affect from generation result', () => {
-      const result = buildMockGenerationResult();
-      (result as Record<string, unknown>).protagonistAffect = {
-        dominantEmotion: 'fear',
-        internalConflict: 'trust vs survival',
-        motivation: 'escape',
-      };
+      const result = buildMockGenerationResult({
+        protagonistAffect: {
+          primaryEmotion: 'fear',
+          primaryIntensity: 'strong',
+          primaryCause: 'The guardian looms ahead',
+          secondaryEmotions: [{ emotion: 'determination', cause: 'Must protect allies' }],
+          dominantMotivation: 'escape',
+        },
+      });
       const context: FirstPageBuildContext = {
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
@@ -187,9 +209,11 @@ describe('page-builder', () => {
 
       const page = buildFirstPage(result, context);
 
-      expect(page.protagonistAffect.dominantEmotion).toBe('fear');
-      expect(page.protagonistAffect.internalConflict).toBe('trust vs survival');
-      expect(page.protagonistAffect.motivation).toBe('escape');
+      expect(page.protagonistAffect.primaryEmotion).toBe('fear');
+      expect(page.protagonistAffect.primaryIntensity).toBe('strong');
+      expect(page.protagonistAffect.primaryCause).toBe('The guardian looms ahead');
+      expect(page.protagonistAffect.secondaryEmotions).toHaveLength(1);
+      expect(page.protagonistAffect.dominantMotivation).toBe('escape');
     });
   });
 
@@ -201,6 +225,12 @@ describe('page-builder', () => {
         parentPageId: parsePageId(3),
         parentChoiceIndex: 1,
         parentAccumulatedState: { changes: ['Previous state'] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Starting area',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
         parentAccumulatedInventory: ['Map'],
         parentAccumulatedHealth: [],
         parentAccumulatedCharacterState: {},
@@ -215,16 +245,23 @@ describe('page-builder', () => {
       expect(page.parentChoiceIndex).toBe(1);
     });
 
-    it('accumulates state on top of parent state', () => {
+    it('accumulates active state on top of parent active state', () => {
       const result = buildMockGenerationResult({
-        stateChangesAdded: ['New discovery'],
-        stateChangesRemoved: [],
+        currentLocation: 'Hidden chamber',
+        threatsAdded: ['THREAT_trap: Trap triggered'],
+        threadsAdded: ['THREAD_secret: Ancient secret revealed'],
       });
       const context: ContinuationPageBuildContext = {
         pageId: parsePageId(2),
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: ['Previous state'] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Entrance hall',
+          activeThreats: [{ prefix: 'THREAT_patrol', description: 'Guardian patrol', raw: 'THREAT_patrol: Guardian patrol' }],
+          activeConstraints: [{ prefix: 'CONSTRAINT_noise', description: 'Noise attracts guards', raw: 'CONSTRAINT_noise: Noise attracts guards' }],
+          openThreads: [{ prefix: 'THREAD_key', description: 'Missing key', raw: 'THREAD_key: Missing key' }],
+        },
         parentAccumulatedInventory: [],
         parentAccumulatedHealth: [],
         parentAccumulatedCharacterState: {},
@@ -234,8 +271,13 @@ describe('page-builder', () => {
 
       const page = buildContinuationPage(result, context);
 
-      expect(page.accumulatedState.changes).toContain('Previous state');
-      expect(page.accumulatedState.changes).toContain('New discovery');
+      expect(page.accumulatedActiveState.currentLocation).toBe('Hidden chamber');
+      expect(page.accumulatedActiveState.activeThreats).toHaveLength(2);
+      expect(page.accumulatedActiveState.activeThreats.map(t => t.description)).toContain('Guardian patrol');
+      expect(page.accumulatedActiveState.activeThreats.map(t => t.description)).toContain('Trap triggered');
+      expect(page.accumulatedActiveState.openThreads).toHaveLength(2);
+      expect(page.accumulatedActiveState.openThreads.map(t => t.description)).toContain('Missing key');
+      expect(page.accumulatedActiveState.openThreads.map(t => t.description)).toContain('Ancient secret revealed');
     });
 
     it('accumulates inventory on top of parent inventory', () => {
@@ -248,6 +290,12 @@ describe('page-builder', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: [] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Corridor',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
         parentAccumulatedInventory: ['Torch', 'Rope'],
         parentAccumulatedHealth: [],
         parentAccumulatedCharacterState: {},
@@ -272,6 +320,12 @@ describe('page-builder', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: [] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Poisoned chamber',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
         parentAccumulatedInventory: [],
         parentAccumulatedHealth: ['Minor wound'],
         parentAccumulatedCharacterState: {},
@@ -297,6 +351,12 @@ describe('page-builder', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: [] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Meeting room',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
         parentAccumulatedInventory: [],
         parentAccumulatedHealth: [],
         parentAccumulatedCharacterState: { 'Ally': ['Trusting'] },
@@ -326,6 +386,12 @@ describe('page-builder', () => {
         parentPageId: parsePageId(2),
         parentChoiceIndex: 0,
         parentAccumulatedState: { changes: [] },
+        parentAccumulatedActiveState: {
+          currentLocation: 'Act 2 location',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
         parentAccumulatedInventory: [],
         parentAccumulatedHealth: [],
         parentAccumulatedCharacterState: {},

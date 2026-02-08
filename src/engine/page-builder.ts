@@ -2,8 +2,11 @@ import {
   AccumulatedCharacterState,
   AccumulatedState,
   AccumulatedStructureState,
+  ActiveState,
+  ActiveStateChanges,
   createChoice,
   createEmptyAccumulatedStructureState,
+  createEmptyStateChanges,
   createPage,
   Health,
   Inventory,
@@ -16,7 +19,6 @@ import { GenerationResult } from '../llm/types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
-import { createStateChanges } from './state-manager';
 
 /**
  * Context for building the first page of a story.
@@ -36,11 +38,28 @@ export interface ContinuationPageBuildContext {
   readonly parentPageId: PageId;
   readonly parentChoiceIndex: number;
   readonly parentAccumulatedState: AccumulatedState;
+  readonly parentAccumulatedActiveState: ActiveState;
   readonly parentAccumulatedInventory: Inventory;
   readonly parentAccumulatedHealth: Health;
   readonly parentAccumulatedCharacterState: AccumulatedCharacterState;
   readonly structureState: AccumulatedStructureState;
   readonly structureVersionId: StructureVersionId | null;
+}
+
+/**
+ * Maps GenerationResult fields to ActiveStateChanges.
+ * Handles the conversion from LLM output format to the typed change structure.
+ */
+function mapToActiveStateChanges(result: GenerationResult): ActiveStateChanges {
+  return {
+    newLocation: result.currentLocation || null,
+    threatsAdded: result.threatsAdded,
+    threatsRemoved: result.threatsRemoved,
+    constraintsAdded: result.constraintsAdded,
+    constraintsRemoved: result.constraintsRemoved,
+    threadsAdded: result.threadsAdded,
+    threadsResolved: result.threadsResolved,
+  };
 }
 
 /**
@@ -55,7 +74,10 @@ export function buildFirstPage(
     id: parsePageId(1),
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
-    stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
+    // Old state changes deprecated - use empty during transition
+    stateChanges: createEmptyStateChanges(),
+    // New active state changes
+    activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     characterStateChanges: createCharacterStateChanges(
@@ -83,7 +105,10 @@ export function buildContinuationPage(
     id: context.pageId,
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
-    stateChanges: createStateChanges(result.stateChangesAdded, result.stateChangesRemoved),
+    // Old state changes deprecated - use empty during transition
+    stateChanges: createEmptyStateChanges(),
+    // New active state changes
+    activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     characterStateChanges: createCharacterStateChanges(
@@ -95,6 +120,7 @@ export function buildContinuationPage(
     parentPageId: context.parentPageId,
     parentChoiceIndex: context.parentChoiceIndex,
     parentAccumulatedState: context.parentAccumulatedState,
+    parentAccumulatedActiveState: context.parentAccumulatedActiveState,
     parentAccumulatedInventory: context.parentAccumulatedInventory,
     parentAccumulatedHealth: context.parentAccumulatedHealth,
     parentAccumulatedCharacterState: context.parentAccumulatedCharacterState,

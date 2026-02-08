@@ -77,8 +77,13 @@ function buildOpeningResult(): GenerationResult {
   return {
     narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
     choices: ['Follow the whispers', 'Seek shelter in the tavern'],
-    stateChangesAdded: ['Arrived in the shadow city'],
-    stateChangesRemoved: [],
+    currentLocation: 'The fog-shrouded city entrance',
+    threatsAdded: ['THREAT_whispers: The whispers seem to know your name'],
+    threatsRemoved: [],
+    constraintsAdded: [],
+    constraintsRemoved: [],
+    threadsAdded: ['THREAD_fog: The mystery of the whispering fog'],
+    threadsResolved: [],
     newCanonFacts: ['The city fog carries voices of the dead'],
     newCharacterCanonFacts: { 'The Watcher': ['Observes from the bell tower'] },
     inventoryAdded: ['Weathered map'],
@@ -105,8 +110,13 @@ function buildContinuationResult(overrides?: Partial<GenerationResult>): Generat
   return {
     narrative: 'The whispers lead you deeper into the maze of alleys.',
     choices: ['Enter the marked door', 'Double back to the square'],
-    stateChangesAdded: ['Navigated the whisper trail'],
-    stateChangesRemoved: [],
+    currentLocation: 'Maze of alleys',
+    threatsAdded: ['THREAT_shadows: Shadows move with purpose in the alleyways'],
+    threatsRemoved: [],
+    constraintsAdded: [],
+    constraintsRemoved: [],
+    threadsAdded: ['THREAD_door: The marked door mystery'],
+    threadsResolved: [],
     newCanonFacts: ['Marked doors hide resistance cells'],
     newCharacterCanonFacts: {},
     inventoryAdded: [],
@@ -360,9 +370,12 @@ describe('page-service integration', () => {
         { apiKey: 'test-api-key' },
       );
 
-      // Verify new state accumulates on top of parent
+      // Verify old state from parent is preserved
       expect(page.accumulatedState.changes).toContain('Started journey');
-      expect(page.accumulatedState.changes).toContain('Navigated the whisper trail');
+      // Verify new active state accumulates correctly (new system uses activeState)
+      expect(page.accumulatedActiveState.currentLocation).toBe('Maze of alleys');
+      // Active state uses tagged entries with prefix/description/raw structure
+      expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
       expect(page.accumulatedInventory).toContain('Torch');
       expect(page.accumulatedHealth).toContain('Minor fatigue');
       expect(page.accumulatedCharacterState['Companion']).toContain('Loyal');

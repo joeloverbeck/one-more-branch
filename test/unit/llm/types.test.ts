@@ -10,6 +10,7 @@ import type {
 } from '../../../src/llm/types';
 import { LLMError } from '../../../src/llm/types';
 import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
+import type { ActiveState } from '../../../src/models/state/index';
 
 describe('LLM types', () => {
   describe('LLMError', () => {
@@ -53,8 +54,13 @@ describe('LLM types', () => {
       const result: GenerationResult = {
         narrative: 'You arrive at a crossroads.',
         choices: ['Take the left path', 'Take the right path'],
-        stateChangesAdded: ['learned-map'],
-        stateChangesRemoved: [],
+        currentLocation: 'Forest crossroads',
+        threatsAdded: ['THREAT_WOLVES: Wolves spotted nearby'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: ['The forest has two exits.'],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
@@ -63,6 +69,13 @@ describe('LLM types', () => {
         healthRemoved: [],
         characterStateChangesAdded: [],
         characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'cautious',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Unfamiliar surroundings',
+          secondaryEmotions: [],
+          dominantMotivation: 'Find safe path forward',
+        },
         isEnding: false,
         beatConcluded: false,
         beatResolution: '',
@@ -71,6 +84,7 @@ describe('LLM types', () => {
 
       expect(result.isEnding).toBe(false);
       expect(result.choices).toHaveLength(2);
+      expect(result.currentLocation).toBe('Forest crossroads');
     });
 
     it('should allow creating GenerationOptions with only apiKey', () => {
@@ -105,10 +119,182 @@ describe('LLM types', () => {
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: 'Marsh edge',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: null,
       };
 
       expect(context.globalCanon[0]).toContain('siege');
       expect(context.accumulatedState[0]).toBe('wounded-shoulder');
+      expect(context.activeState.currentLocation).toBe('Marsh edge');
+    });
+  });
+
+  describe('ContinuationContext type', () => {
+    it('allows context with active state', () => {
+      const context: ContinuationContext = {
+        characterConcept: 'A brave knight',
+        worldbuilding: 'Medieval fantasy',
+        tone: 'Epic adventure',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: 'Previous scene...',
+        selectedChoice: 'Go left',
+        accumulatedState: [], // Old, still required during transition
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: 'Castle gate',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: null,
+      };
+
+      // TypeScript compile-time check - if this compiles, the type is valid
+      expect(context.activeState.currentLocation).toBe('Castle gate');
+    });
+
+    it('allows context with grandparent narrative', () => {
+      const context: ContinuationContext = {
+        characterConcept: 'A brave knight',
+        worldbuilding: 'Medieval fantasy',
+        tone: 'Epic adventure',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: 'Previous scene...',
+        selectedChoice: 'Go left',
+        accumulatedState: [],
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: 'Earlier scene...',
+      };
+
+      expect(context.grandparentNarrative).toBe('Earlier scene...');
+    });
+
+    it('allows null grandparent narrative', () => {
+      const context: ContinuationContext = {
+        characterConcept: 'A brave knight',
+        worldbuilding: 'Medieval fantasy',
+        tone: 'Epic adventure',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: 'Previous scene...',
+        selectedChoice: 'Go left',
+        accumulatedState: [],
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: null,
+      };
+
+      expect(context.grandparentNarrative).toBeNull();
+    });
+
+    it('requires activeState field', () => {
+      // This should cause TypeScript error if activeState is omitted
+      // @ts-expect-error - Testing that activeState is required
+      const invalidContext: ContinuationContext = {
+        characterConcept: 'Test',
+        worldbuilding: 'Test',
+        tone: 'Test',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: '',
+        selectedChoice: '',
+        accumulatedState: [],
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        grandparentNarrative: null,
+        // Missing activeState!
+      };
+
+      // This line exists only to use the variable (test would fail at compile time)
+      expect(invalidContext).toBeDefined();
+    });
+
+    it('requires grandparentNarrative field', () => {
+      // @ts-expect-error - Testing that grandparentNarrative is required
+      const invalidContext: ContinuationContext = {
+        characterConcept: 'Test',
+        worldbuilding: 'Test',
+        tone: 'Test',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: '',
+        selectedChoice: '',
+        accumulatedState: [],
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        // Missing grandparentNarrative!
+      };
+
+      // This line exists only to use the variable (test would fail at compile time)
+      expect(invalidContext).toBeDefined();
+    });
+
+    it('allows active state with populated fields', () => {
+      const activeState: ActiveState = {
+        currentLocation: 'Dark forest clearing',
+        activeThreats: [
+          { prefix: 'THREAT_WOLVES', description: 'Pack of wolves circling', raw: 'THREAT_WOLVES: Pack of wolves circling' },
+        ],
+        activeConstraints: [
+          { prefix: 'CONSTRAINT_INJURED', description: 'Twisted ankle limits speed', raw: 'CONSTRAINT_INJURED: Twisted ankle limits speed' },
+        ],
+        openThreads: [
+          { prefix: 'THREAD_MAP', description: 'Map destination unknown', raw: 'THREAD_MAP: Map destination unknown' },
+        ],
+      };
+
+      const context: ContinuationContext = {
+        characterConcept: 'A ranger',
+        worldbuilding: 'Dangerous wilderness',
+        tone: 'Survival',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: 'The wolves appeared...',
+        selectedChoice: 'Stand ground',
+        accumulatedState: [],
+        accumulatedInventory: ['torch', 'dagger'],
+        accumulatedHealth: ['minor-cut'],
+        accumulatedCharacterState: {},
+        activeState,
+        grandparentNarrative: 'You entered the forest at dawn...',
+      };
+
+      expect(context.activeState.activeThreats).toHaveLength(1);
+      expect(context.activeState.activeThreats[0].prefix).toBe('THREAT_WOLVES');
+      expect(context.activeState.activeConstraints).toHaveLength(1);
+      expect(context.activeState.openThreads).toHaveLength(1);
     });
   });
 
@@ -117,8 +303,13 @@ describe('LLM types', () => {
       return {
         narrative: 'The lantern flickers as footsteps approach.',
         choices: ['Hide behind the crates', 'Call out to the footsteps'],
-        stateChangesAdded: [],
-        stateChangesRemoved: [],
+        currentLocation: 'Dimly lit warehouse',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
@@ -127,6 +318,13 @@ describe('LLM types', () => {
         healthRemoved: [],
         characterStateChangesAdded: [],
         characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'tense',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Mysterious footsteps',
+          secondaryEmotions: [],
+          dominantMotivation: 'Avoid detection',
+        },
         isEnding: false,
         beatConcluded: false,
         beatResolution: '',

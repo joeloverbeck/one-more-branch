@@ -125,7 +125,7 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
 
-      // Required fields
+      // Required fields (still uses legacy stateChangesAdded format in examples)
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
       expect(parsed).toHaveProperty('stateChangesAdded');
@@ -141,7 +141,7 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
 
-      // Required fields
+      // Required fields (still uses legacy stateChangesAdded format in examples)
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
       expect(parsed).toHaveProperty('stateChangesAdded');
@@ -158,7 +158,7 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(endingAssistantContent) as Record<string, unknown>;
 
-      // Required fields
+      // Required fields (still uses legacy stateChangesAdded format in examples)
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
       expect(parsed).toHaveProperty('stateChangesAdded');
@@ -230,9 +230,8 @@ describe('Few-Shot Examples Integration', () => {
         const parsed = JSON.parse(example.content) as Record<string, unknown>;
         const validated = validateGenerationResponse(parsed, example.content);
 
-        // Ensure key fields are preserved
+        // Ensure key fields are preserved (examples still use legacy stateChangesAdded format)
         expect(validated.narrative.length).toBeGreaterThan(0);
-        expect(validated.stateChangesAdded.length).toBeGreaterThanOrEqual(0);
         expect(validated.newCanonFacts.length).toBeGreaterThanOrEqual(0);
       }
     });

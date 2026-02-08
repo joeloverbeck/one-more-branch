@@ -1,4 +1,5 @@
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
+import type { ActiveState } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 
 export interface GenerationResult {
@@ -93,11 +94,20 @@ export interface ContinuationContext {
   accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
   selectedChoice: string;
+
+  // Deprecated: Old event-log state (kept for transition period)
   accumulatedState: readonly string[];
+
   accumulatedInventory: readonly string[];
   accumulatedHealth: readonly string[];
   accumulatedCharacterState: Readonly<Record<string, readonly string[]>>;
   parentProtagonistAffect?: ProtagonistAffect;
+
+  // NEW: Active state fields
+  activeState: ActiveState;
+
+  // NEW: Extended scene context
+  grandparentNarrative: string | null;
 }
 
 export interface OpeningContext {

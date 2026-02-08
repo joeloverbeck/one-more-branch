@@ -2,6 +2,7 @@ import {
   AccumulatedCharacterState,
   AccumulatedState,
   AccumulatedStructureState,
+  ActiveState,
   Health,
   Inventory,
   Page,
@@ -17,6 +18,7 @@ import { getParentAccumulatedState } from './state-manager';
  */
 export interface CollectedParentState {
   readonly accumulatedState: AccumulatedState;
+  readonly accumulatedActiveState: ActiveState;
   readonly accumulatedInventory: Inventory;
   readonly accumulatedHealth: Health;
   readonly accumulatedCharacterState: AccumulatedCharacterState;
@@ -25,11 +27,12 @@ export interface CollectedParentState {
 
 /**
  * Collects all accumulated state from a parent page.
- * Aggregates state, inventory, health, character state, and structure state.
+ * Aggregates state, inventory, health, character state, structure state, and active state.
  */
 export function collectParentState(parentPage: Page): CollectedParentState {
   return {
     accumulatedState: getParentAccumulatedState(parentPage),
+    accumulatedActiveState: parentPage.accumulatedActiveState,
     accumulatedInventory: getParentAccumulatedInventory(parentPage),
     accumulatedHealth: getParentAccumulatedHealth(parentPage),
     accumulatedCharacterState: getParentAccumulatedCharacterState(parentPage),
