@@ -10,8 +10,7 @@ export {
 } from './narrative-core.js';
 
 export {
-  STATE_MANAGEMENT,
-  STATE_REMOVAL_RULES,
+  ACTIVE_STATE_TRACKING,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
@@ -23,6 +22,6 @@ export {
 } from './character-systems.js';
 
 export {
-  STATE_CHANGE_QUALITY,
+  ACTIVE_STATE_QUALITY,
   CANON_QUALITY,
 } from './quality-criteria.js';

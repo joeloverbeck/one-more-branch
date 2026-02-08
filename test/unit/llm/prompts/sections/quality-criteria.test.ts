@@ -3,65 +3,84 @@
  */
 
 import {
-  STATE_CHANGE_QUALITY,
+  ACTIVE_STATE_QUALITY,
   CANON_QUALITY,
 } from '../../../../../src/llm/prompts/sections/quality-criteria.js';
 
 describe('quality-criteria sections', () => {
-  describe('STATE_CHANGE_QUALITY', () => {
+  describe('ACTIVE_STATE_QUALITY', () => {
     it('is a non-empty string', () => {
-      expect(typeof STATE_CHANGE_QUALITY).toBe('string');
-      expect(STATE_CHANGE_QUALITY.length).toBeGreaterThan(0);
+      expect(typeof ACTIVE_STATE_QUALITY).toBe('string');
+      expect(ACTIVE_STATE_QUALITY.length).toBeGreaterThan(0);
     });
 
     it('includes section header with CRITICAL marker', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('STATE CHANGE QUALITY CRITERIA (CRITICAL):');
+      expect(ACTIVE_STATE_QUALITY).toContain('ACTIVE STATE QUALITY CRITERIA (CRITICAL):');
     });
 
-    it('emphasizes CONSEQUENTIAL events', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('CONSEQUENTIAL');
+    it('emphasizes current truth', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('TRUE RIGHT NOW');
     });
 
     it('includes decision question', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('NEED to remember');
-      expect(STATE_CHANGE_QUALITY).toContain('change their future behavior');
+      expect(ACTIVE_STATE_QUALITY).toContain('currently happening');
+      expect(ACTIVE_STATE_QUALITY).toContain('immediate situation');
     });
 
-    it('includes GOOD STATE CHANGES section', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('GOOD STATE CHANGES');
+    it('includes GOOD THREATS section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('GOOD THREATS');
+      expect(ACTIVE_STATE_QUALITY).toContain('threatsAdded');
     });
 
-    it('lists good state change examples', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('Commitments');
-      expect(STATE_CHANGE_QUALITY).toContain('Knowledge');
-      expect(STATE_CHANGE_QUALITY).toContain('Relationship shifts');
+    it('lists good threat examples with prefix format', () => {
+      expect(ACTIVE_STATE_QUALITY).toMatch(/THREAT_\w+:/);
     });
 
-    it('includes BAD STATE CHANGES section', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('BAD STATE CHANGES');
+    it('includes BAD THREATS section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('BAD THREATS');
     });
 
-    it('lists bad state change examples', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('Observations');
-      expect(STATE_CHANGE_QUALITY).toContain('Social niceties');
-      expect(STATE_CHANGE_QUALITY).toContain('Fleeting emotions');
+    it('includes GOOD CONSTRAINTS section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('GOOD CONSTRAINTS');
+      expect(ACTIVE_STATE_QUALITY).toContain('constraintsAdded');
     });
 
-    it('includes ANTI-PATTERNS section', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('ANTI-PATTERNS');
+    it('lists good constraint examples with prefix format', () => {
+      expect(ACTIVE_STATE_QUALITY).toMatch(/CONSTRAINT_\w+:/);
+    });
+
+    it('includes BAD CONSTRAINTS section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('BAD CONSTRAINTS');
+    });
+
+    it('includes GOOD THREADS section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('GOOD THREADS');
+      expect(ACTIVE_STATE_QUALITY).toContain('threadsAdded');
+    });
+
+    it('lists good thread examples with prefix format', () => {
+      expect(ACTIVE_STATE_QUALITY).toMatch(/THREAD_\w+:/);
+    });
+
+    it('includes BAD THREADS section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('BAD THREADS');
+    });
+
+    it('includes REMOVAL QUALITY section', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('REMOVAL QUALITY');
+    });
+
+    it('explains prefix-only removal', () => {
+      expect(ACTIVE_STATE_QUALITY).toContain('ONLY the prefix');
     });
 
     it('includes inventory direction', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('inventoryAdded/inventoryRemoved');
-      expect(STATE_CHANGE_QUALITY).toContain('✅ Use');
+      expect(ACTIVE_STATE_QUALITY).toContain('inventoryAdded/inventoryRemoved');
+      expect(ACTIVE_STATE_QUALITY).toContain('✅ Use');
     });
 
     it('includes health direction', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('healthAdded/healthRemoved');
-    });
-
-    it('clarifies protagonistAffect for emotions', () => {
-      expect(STATE_CHANGE_QUALITY).toContain('protagonistAffect');
+      expect(ACTIVE_STATE_QUALITY).toContain('healthAdded/healthRemoved');
     });
   });
 

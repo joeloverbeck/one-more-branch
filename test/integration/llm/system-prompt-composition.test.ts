@@ -32,18 +32,19 @@ describe('buildSystemPrompt composition', () => {
       expect(prompt).toContain('newCanonFacts or newCharacterCanonFacts');
     });
 
-    it('includes STATE MANAGEMENT section', () => {
+    it('includes ACTIVE STATE TRACKING section', () => {
       const prompt = buildSystemPrompt();
-      expect(prompt).toContain('STATE MANAGEMENT (ADD/REMOVE PATTERN):');
-      expect(prompt).toContain('stateChangesAdded:');
-      expect(prompt).toContain('stateChangesRemoved:');
+      expect(prompt).toContain('ACTIVE STATE TRACKING');
+      expect(prompt).toContain('currentLocation');
+      expect(prompt).toContain('THREAT_IDENTIFIER');
+      expect(prompt).toContain('CONSTRAINT_IDENTIFIER');
+      expect(prompt).toContain('THREAD_IDENTIFIER');
     });
 
-    it('includes STATE REMOVAL RULES section', () => {
+    it('explains prefix-only removal protocol', () => {
       const prompt = buildSystemPrompt();
-      expect(prompt).toContain('STATE REMOVAL RULES:');
-      expect(prompt).toContain('RESOLVED');
-      expect(prompt).toContain('CONTRADICTED');
+      expect(prompt).toContain('ONLY the prefix');
+      expect(prompt).toContain('threatsRemoved');
     });
 
     it('includes INVENTORY MANAGEMENT section', () => {
@@ -65,7 +66,8 @@ describe('buildSystemPrompt composition', () => {
       expect(prompt).toContain('FIELD SEPARATION (CRITICAL):');
       expect(prompt).toContain('INVENTORY');
       expect(prompt).toContain('HEALTH');
-      expect(prompt).toContain('STATE CHANGES');
+      expect(prompt).toContain('ACTIVE STATE');
+      expect(prompt).toContain('PREFIX_ID: Description');
       expect(prompt).toContain('PROTAGONIST AFFECT');
       expect(prompt).toContain('WORLD FACTS');
       expect(prompt).toContain('CHARACTER CANON');
@@ -86,12 +88,14 @@ describe('buildSystemPrompt composition', () => {
       expect(prompt).toContain('protagonistAffect');
     });
 
-    it('includes STATE CHANGE QUALITY CRITERIA section', () => {
+    it('includes ACTIVE STATE QUALITY CRITERIA section', () => {
       const prompt = buildSystemPrompt();
-      expect(prompt).toContain('STATE CHANGE QUALITY CRITERIA (CRITICAL):');
-      expect(prompt).toContain('GOOD STATE CHANGES');
-      expect(prompt).toContain('BAD STATE CHANGES');
-      expect(prompt).toContain('ANTI-PATTERNS');
+      expect(prompt).toContain('ACTIVE STATE QUALITY CRITERIA (CRITICAL):');
+      expect(prompt).toContain('GOOD THREATS');
+      expect(prompt).toContain('BAD THREATS');
+      expect(prompt).toContain('GOOD CONSTRAINTS');
+      expect(prompt).toContain('GOOD THREADS');
+      expect(prompt).toContain('REMOVAL QUALITY');
     });
 
     it('includes CANON QUALITY CRITERIA section', () => {
@@ -223,10 +227,10 @@ describe('buildStructureSystemPrompt composition', () => {
   });
 
   describe('section exclusions', () => {
-    it('does NOT include state management sections', () => {
+    it('does NOT include active state tracking sections', () => {
       const prompt = buildStructureSystemPrompt();
-      expect(prompt).not.toContain('STATE MANAGEMENT (ADD/REMOVE PATTERN):');
-      expect(prompt).not.toContain('stateChangesAdded:');
+      expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+      expect(prompt).not.toContain('threatsAdded');
     });
 
     it('does NOT include inventory management', () => {

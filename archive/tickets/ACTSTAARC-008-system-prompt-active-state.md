@@ -1,6 +1,6 @@
 # ACTSTAARC-008: Update System Prompt for Active State Output Format
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: HIGH (instructs LLM on new format)
 **Depends On**: ACTSTAARC-005
 **Estimated Scope**: Medium
@@ -180,10 +180,48 @@ describe('buildSystemPrompt', () => {
 
 ## Definition of Done
 
-- [ ] System prompt includes active state section
-- [ ] Prefix format clearly explained with examples
-- [ ] Removal protocol explained (prefix-only)
-- [ ] Old state format references removed
-- [ ] All system prompt tests pass
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [x] System prompt includes active state section
+- [x] Prefix format clearly explained with examples
+- [x] Removal protocol explained (prefix-only)
+- [x] Old state format references removed
+- [x] All system prompt tests pass
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+
+---
+
+## Outcome
+
+**Completed**: 2026-02-08
+
+### Changes Made
+
+1. **`src/llm/prompts/sections/state-tracking.ts`**
+   - Replaced `STATE_MANAGEMENT` and `STATE_REMOVAL_RULES` with `ACTIVE_STATE_TRACKING`
+   - Updated `FIELD_SEPARATION` to reference new active state fields with PREFIX_ID format
+
+2. **`src/llm/prompts/sections/quality-criteria.ts`**
+   - Replaced `STATE_CHANGE_QUALITY` with `ACTIVE_STATE_QUALITY`
+   - New content includes GOOD/BAD examples for THREATS, CONSTRAINTS, THREADS
+
+3. **`src/llm/prompts/sections/index.ts`**
+   - Updated exports to use new constant names
+
+4. **`src/llm/prompts/system-prompt-builder.ts`**
+   - Updated imports and `NARRATIVE_SECTIONS` array
+
+5. **Test files created/updated:**
+   - `test/unit/llm/prompts/system-prompt.test.ts` (NEW)
+   - `test/unit/llm/prompts/sections/state-tracking.test.ts`
+   - `test/unit/llm/prompts/sections/quality-criteria.test.ts`
+   - `test/integration/llm/system-prompt-composition.test.ts`
+
+### Deviations from Original Plan
+
+- The test for "does not mention old stateChangesAdded" was adjusted to check for instructional usage patterns rather than any occurrence, since `stateChangesAdded` still appears in anti-pattern examples (with ❌) showing what NOT to do.
+
+### Verification
+
+- TypeScript: ✅ No errors
+- ESLint: ✅ Passes
+- Tests: ✅ 121 related tests pass, 1352 total tests pass

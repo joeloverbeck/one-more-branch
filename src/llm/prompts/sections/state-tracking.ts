@@ -1,24 +1,58 @@
 /**
- * State tracking guidelines for inventory, health, and general state changes.
- * Covers ADD/REMOVE patterns and field separation rules.
+ * State tracking guidelines for inventory, health, and active state.
+ * Covers the prefix tag system and field separation rules.
  */
 
-export const STATE_MANAGEMENT = `STATE MANAGEMENT (ADD/REMOVE PATTERN):
-- stateChangesAdded: NEW conditions, events, or status changes that happened THIS SCENE.
-- stateChangesRemoved: Existing states that are now RESOLVED, CONTRADICTED, or NO LONGER RELEVANT.
-- Use second person ("You") for player events (e.g., "You were wounded...", "You befriended...").
-- Identify NPCs by full name when available (e.g., "Captain Mira was wounded").
-- Keep state changes concise but specific.
-- State changes are for CONDITIONS and EVENTS only - NOT for items (use inventory fields).`;
+export const ACTIVE_STATE_TRACKING = `=== ACTIVE STATE TRACKING ===
 
-export const STATE_REMOVAL_RULES = `STATE REMOVAL RULES:
-- When a condition is RESOLVED (healing removes injury), REMOVE the old state and ADD the new state.
-- When a condition is CONTRADICTED (allegiance changes), REMOVE the old state and ADD the new state.
-- When a condition NO LONGER APPLIES (temporary effects expire), REMOVE the state.
-- Use EXACT or very close text matching the existing state entry for removals.
-- Example: If CURRENT STATE shows "You are wounded from the battle", and player heals:
-  - stateChangesRemoved: ["You are wounded from the battle"]
-  - stateChangesAdded: ["You have been healed and feel restored"]`;
+You must track the story's CURRENT STATE using structured fields. These represent what is TRUE RIGHT NOW, not a history of what happened.
+
+LOCATION:
+- Set "currentLocation" to where the protagonist is at the END of this scene
+- If location doesn't change, set to the same value as before
+- Be specific: "cramped maintenance tunnel" not just "tunnel"
+
+THREATS (dangers that exist NOW):
+- Add new threats using format: "THREAT_IDENTIFIER: Description"
+- The IDENTIFIER should be short and unique (e.g., THREAT_FIRE, THREAT_GUARDS, THREAT_CREATURE)
+- To remove a resolved threat, put ONLY the prefix in "threatsRemoved" (e.g., "THREAT_FIRE")
+- Only include threats that are CURRENTLY present, not past dangers
+
+CONSTRAINTS (limitations affecting protagonist NOW):
+- Add using format: "CONSTRAINT_IDENTIFIER: Description"
+- Examples: CONSTRAINT_INJURED_LEG, CONSTRAINT_TIME_LIMIT, CONSTRAINT_NO_LIGHT
+- Remove when constraint is no longer active
+
+THREADS (unresolved narrative hooks):
+- Add using format: "THREAD_IDENTIFIER: Description"
+- These are mysteries, unanswered questions, or plot hooks
+- Examples: THREAD_LETTER_CONTENTS, THREAD_STRANGER_IDENTITY
+- Resolve when the mystery is answered or hook is resolved
+
+IMPORTANT RULES:
+1. For removals, use ONLY the prefix (e.g., "THREAT_FIRE"), not the full entry
+2. Each prefix should be unique within its category
+3. Don't duplicate entries - update by removing old and adding new
+4. Empty arrays mean "no changes" for that category
+
+Example output for active state:
+
+{
+  "currentLocation": "abandoned subway platform",
+  "threatsAdded": [
+    "THREAT_RATS: Large rats moving in the shadows",
+    "THREAT_UNSTABLE_FLOOR: Floor tiles are cracking"
+  ],
+  "threatsRemoved": ["THREAT_GUARD"],
+  "constraintsAdded": [
+    "CONSTRAINT_FLASHLIGHT_DIM: Flashlight battery is failing"
+  ],
+  "constraintsRemoved": [],
+  "threadsAdded": [
+    "THREAD_GRAFFITI: Strange symbols on the wall"
+  ],
+  "threadsResolved": ["THREAD_LOCKED_DOOR"]
+}`;
 
 export const INVENTORY_MANAGEMENT = `INVENTORY MANAGEMENT:
 - Use inventoryAdded for items the protagonist GAINS (be specific: "Rusty iron key", "50 gold coins", not just "key" or "money").
@@ -38,7 +72,7 @@ export const HEALTH_MANAGEMENT = `HEALTH MANAGEMENT:
 export const FIELD_SEPARATION = `FIELD SEPARATION (CRITICAL):
 - INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
 - HEALTH (healthAdded/healthRemoved): Physical wounds, injuries, poison, illness, exhaustion - NOT emotional states
-- STATE CHANGES (stateChangesAdded/stateChangesRemoved): Commitments, knowledge, relationships, events - NOT emotions, items, or health
+- ACTIVE STATE (threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved): Current dangers, limitations, and narrative hooks using PREFIX_ID: Description format
 - PROTAGONIST AFFECT (protagonistAffect): Protagonist's emotional state SNAPSHOT at end of scene - NOT accumulated
 - WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
 - CHARACTER CANON (newCharacterCanonFacts): PERMANENT character traits, backgrounds, abilities - WHO they are

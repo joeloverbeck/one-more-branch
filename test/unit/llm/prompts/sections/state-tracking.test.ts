@@ -3,66 +3,61 @@
  */
 
 import {
-  STATE_MANAGEMENT,
-  STATE_REMOVAL_RULES,
+  ACTIVE_STATE_TRACKING,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
 } from '../../../../../src/llm/prompts/sections/state-tracking.js';
 
 describe('state-tracking sections', () => {
-  describe('STATE_MANAGEMENT', () => {
+  describe('ACTIVE_STATE_TRACKING', () => {
     it('is a non-empty string', () => {
-      expect(typeof STATE_MANAGEMENT).toBe('string');
-      expect(STATE_MANAGEMENT.length).toBeGreaterThan(0);
+      expect(typeof ACTIVE_STATE_TRACKING).toBe('string');
+      expect(ACTIVE_STATE_TRACKING.length).toBeGreaterThan(0);
     });
 
     it('includes section header', () => {
-      expect(STATE_MANAGEMENT).toContain('STATE MANAGEMENT (ADD/REMOVE PATTERN):');
+      expect(ACTIVE_STATE_TRACKING).toContain('ACTIVE STATE TRACKING');
     });
 
-    it('documents stateChangesAdded field', () => {
-      expect(STATE_MANAGEMENT).toContain('stateChangesAdded:');
+    it('explains currentLocation field', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('currentLocation');
+      expect(ACTIVE_STATE_TRACKING).toContain('END of this scene');
     });
 
-    it('documents stateChangesRemoved field', () => {
-      expect(STATE_MANAGEMENT).toContain('stateChangesRemoved:');
+    it('explains THREAT format with prefix', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('THREAT_IDENTIFIER');
+      expect(ACTIVE_STATE_TRACKING).toMatch(/THREAT_\w+:/);
     });
 
-    it('requires second person for player events', () => {
-      expect(STATE_MANAGEMENT).toContain('second person');
-      expect(STATE_MANAGEMENT).toContain('"You"');
+    it('explains CONSTRAINT format with prefix', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('CONSTRAINT_IDENTIFIER');
+      expect(ACTIVE_STATE_TRACKING).toMatch(/CONSTRAINT_\w+/);
     });
 
-    it('clarifies state changes exclude items', () => {
-      expect(STATE_MANAGEMENT).toContain('NOT for items');
-    });
-  });
-
-  describe('STATE_REMOVAL_RULES', () => {
-    it('is a non-empty string', () => {
-      expect(typeof STATE_REMOVAL_RULES).toBe('string');
-      expect(STATE_REMOVAL_RULES.length).toBeGreaterThan(0);
+    it('explains THREAD format with prefix', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('THREAD_IDENTIFIER');
+      expect(ACTIVE_STATE_TRACKING).toMatch(/THREAD_\w+/);
     });
 
-    it('includes section header', () => {
-      expect(STATE_REMOVAL_RULES).toContain('STATE REMOVAL RULES:');
+    it('explains prefix-only removal protocol', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('ONLY the prefix');
+      expect(ACTIVE_STATE_TRACKING).toContain('threatsRemoved');
     });
 
-    it('covers RESOLVED conditions', () => {
-      expect(STATE_REMOVAL_RULES).toContain('RESOLVED');
+    it('includes IMPORTANT RULES section', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('IMPORTANT RULES');
     });
 
-    it('covers CONTRADICTED conditions', () => {
-      expect(STATE_REMOVAL_RULES).toContain('CONTRADICTED');
+    it('provides example output', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('Example output');
+      expect(ACTIVE_STATE_TRACKING).toMatch(/"currentLocation":/);
+      expect(ACTIVE_STATE_TRACKING).toMatch(/"threatsAdded":/);
     });
 
-    it('requires exact text matching for removals', () => {
-      expect(STATE_REMOVAL_RULES).toContain('EXACT');
-    });
-
-    it('includes example', () => {
-      expect(STATE_REMOVAL_RULES).toContain('Example:');
+    it('clarifies state represents current truth', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('TRUE RIGHT NOW');
+      expect(ACTIVE_STATE_TRACKING).toContain('not a history');
     });
   });
 
@@ -141,9 +136,12 @@ describe('state-tracking sections', () => {
       expect(FIELD_SEPARATION).toContain('healthAdded/healthRemoved');
     });
 
-    it('documents STATE CHANGES fields', () => {
-      expect(FIELD_SEPARATION).toContain('STATE CHANGES');
-      expect(FIELD_SEPARATION).toContain('stateChangesAdded/stateChangesRemoved');
+    it('documents ACTIVE STATE fields with prefix format', () => {
+      expect(FIELD_SEPARATION).toContain('ACTIVE STATE');
+      expect(FIELD_SEPARATION).toContain('threatsAdded/threatsRemoved');
+      expect(FIELD_SEPARATION).toContain('constraintsAdded/constraintsRemoved');
+      expect(FIELD_SEPARATION).toContain('threadsAdded/threadsResolved');
+      expect(FIELD_SEPARATION).toContain('PREFIX_ID: Description');
     });
 
     it('documents PROTAGONIST AFFECT field', () => {
