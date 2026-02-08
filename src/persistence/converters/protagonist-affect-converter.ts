@@ -1,9 +1,8 @@
 /**
  * Converts ProtagonistAffect between domain model and file format.
- * Includes backward compatibility for pages created before protagonistAffect was added.
  */
 
-import { ProtagonistAffect, createDefaultProtagonistAffect } from '../../models';
+import { ProtagonistAffect } from '../../models';
 import { ProtagonistAffectFileData } from '../page-serializer-types';
 
 export function protagonistAffectToFileData(
@@ -22,13 +21,8 @@ export function protagonistAffectToFileData(
 }
 
 export function fileDataToProtagonistAffect(
-  data: ProtagonistAffectFileData | undefined
+  data: ProtagonistAffectFileData
 ): ProtagonistAffect {
-  // Backward compatibility: pages without protagonistAffect get default values
-  if (!data) {
-    return createDefaultProtagonistAffect();
-  }
-
   return {
     primaryEmotion: data.primaryEmotion,
     primaryIntensity: data.primaryIntensity,

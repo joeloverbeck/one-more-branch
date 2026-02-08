@@ -73,7 +73,7 @@ export interface PageFileData {
   }>;
   accumulatedCharacterState: Record<string, string[]>;
   accumulatedStructureState: AccumulatedStructureStateFileData;
-  protagonistAffect?: ProtagonistAffectFileData;
+  protagonistAffect: ProtagonistAffectFileData;
   structureVersionId?: string | null;
   isEnding: boolean;
   parentPageId: number | null;
