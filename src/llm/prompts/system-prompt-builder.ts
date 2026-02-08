@@ -66,7 +66,9 @@ DIVERGENCE ENFORCEMENT:
 Each choice MUST change at least ONE of the following:
 (1) Location, (2) Immediate goal, (3) NPC relationship or stance,
 (4) Time pressure or urgency, (5) Control of a key item,
-(6) Heat/attention level, (7) Injury or condition.
+(6) Heat/attention level, (7) Injury or condition,
+(8) Information revealed or thread advanced.
+Each choice MUST change a different element from the list above.
 If you cannot produce 2-3 choices that each change a different element, consider making this an ENDING.
 
 CHOICE FORMATTING:
