@@ -120,7 +120,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedActiveState: page1.accumulatedActiveState,
     });
     const page3 = createPage({
       id: parsePageId(3),
@@ -130,7 +130,7 @@ describe('page-repository integration', () => {
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 1,
-      parentAccumulatedState: page2.accumulatedState,
+      parentAccumulatedActiveState: page2.accumulatedActiveState,
     });
 
     await savePage(story.id, page1);
@@ -161,7 +161,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedActiveState: page1.accumulatedActiveState,
     });
 
     await savePage(story.id, page1);
@@ -187,7 +187,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedActiveState: page1.accumulatedActiveState,
     });
     const endingA = createPage({
       id: parsePageId(3),
@@ -197,7 +197,7 @@ describe('page-repository integration', () => {
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page2.accumulatedState,
+      parentAccumulatedActiveState: page2.accumulatedActiveState,
     });
     const endingB = createPage({
       id: parsePageId(4),
@@ -207,7 +207,7 @@ describe('page-repository integration', () => {
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 1,
-      parentAccumulatedState: page2.accumulatedState,
+      parentAccumulatedActiveState: page2.accumulatedActiveState,
     });
 
     await savePage(story.id, page1);
@@ -232,7 +232,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: root.accumulatedState,
+      parentAccumulatedActiveState: root.accumulatedActiveState,
       parentAccumulatedStructureState: {
         currentActIndex: 0,
         currentBeatIndex: 1,
@@ -251,7 +251,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 1,
-      parentAccumulatedState: root.accumulatedState,
+      parentAccumulatedActiveState: root.accumulatedActiveState,
       parentAccumulatedStructureState: {
         currentActIndex: 0,
         currentBeatIndex: 0,
@@ -359,7 +359,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: root.accumulatedState,
+      parentAccumulatedActiveState: root.accumulatedActiveState,
       activeStateChanges: {
         newLocation: 'Forest clearing - safe',
         threatsAdded: [],
@@ -386,7 +386,7 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 1,
-      parentAccumulatedState: root.accumulatedState,
+      parentAccumulatedActiveState: root.accumulatedActiveState,
       activeStateChanges: {
         newLocation: 'Tree canopy - elevated',
         threatsAdded: [],

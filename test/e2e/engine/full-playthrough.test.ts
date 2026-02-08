@@ -257,10 +257,10 @@ function buildReplayContinuationResult(): ReturnType<typeof buildContinuationRes
   };
 }
 
-function expectAccumulatedStatePrefix(parent: Page, child: Page): void {
-  expect(child.accumulatedState.changes.length).toBeGreaterThanOrEqual(parent.accumulatedState.changes.length);
-  expect(child.accumulatedState.changes.slice(0, parent.accumulatedState.changes.length)).toEqual(
-    parent.accumulatedState.changes,
+function expectAccumulatedInventoryPrefix(parent: Page, child: Page): void {
+  expect(child.accumulatedInventory.length).toBeGreaterThanOrEqual(parent.accumulatedInventory.length);
+  expect(child.accumulatedInventory.slice(0, parent.accumulatedInventory.length)).toEqual(
+    parent.accumulatedInventory,
   );
 }
 
@@ -370,7 +370,7 @@ describe('story engine e2e full playthrough', () => {
 
       expect(result.page.parentPageId).toBe(currentPage.id);
       expect(result.page.parentChoiceIndex).toBe(0);
-      expectAccumulatedStatePrefix(currentPage, result.page);
+      expectAccumulatedInventoryPrefix(currentPage, result.page);
 
       transitionsMade += 1;
       visitedPageIds.push(result.page.id);

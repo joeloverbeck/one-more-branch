@@ -1,4 +1,4 @@
-import { AccumulatedState, Page, PageId, Story, StoryId, StoryMetadata } from '../models';
+import { Page, PageId, Story, StoryId, StoryMetadata } from '../models';
 import { ensureStoriesDir } from './file-utils';
 import {
   deleteStory,
@@ -19,7 +19,6 @@ import {
   updateChoiceLink,
   updatePage,
 } from './page-repository';
-import { computeAccumulatedState } from './page-state-service';
 
 export class Storage {
   init(): void {
@@ -89,10 +88,6 @@ export class Storage {
 
   async findEndingPages(storyId: StoryId): Promise<PageId[]> {
     return findEndingPages(storyId);
-  }
-
-  async computeAccumulatedState(storyId: StoryId, pageId: PageId): Promise<AccumulatedState> {
-    return computeAccumulatedState(storyId, pageId);
   }
 }
 

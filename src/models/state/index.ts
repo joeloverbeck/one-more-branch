@@ -3,17 +3,6 @@
  * Re-exports all state-related types and functions from individual modules.
  */
 
-// General state
-export {
-  StateChange,
-  StateChanges,
-  AccumulatedState,
-  createEmptyAccumulatedState,
-  createEmptyStateChanges,
-  applyStateChanges,
-  accumulateState,
-} from './general-state.js';
-
 // Canon
 export { CanonFact, GlobalCanon, addCanonFact, mergeCanonFacts } from './canon.js';
 

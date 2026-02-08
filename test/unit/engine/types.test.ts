@@ -33,7 +33,6 @@ describe('Engine types', () => {
         id: parsePageId(1),
         narrativeText: 'The tower door creaks open.',
         choices: [],
-        stateChanges: { added: [], removed: [] },
         isEnding: true,
         parentPageId: null,
         parentChoiceIndex: null,

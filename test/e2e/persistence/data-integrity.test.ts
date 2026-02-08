@@ -60,7 +60,7 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(1),
       narrativeText: 'Page 1 narrative',
       choices: [createChoice('Option A'), createChoice('Option B')],
-      stateChanges: { added: ['root-event'], removed: [] },
+      inventoryChanges: { added: ['root-event'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -71,11 +71,11 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(2),
       narrativeText: 'Page 2 narrative',
       choices: [],
-      stateChanges: { added: ['branch-a-event'], removed: [] },
+      inventoryChanges: { added: ['branch-a-event'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedInventory: page1.accumulatedInventory,
     });
     await storage.savePage(story.id, page2);
 
@@ -83,11 +83,11 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(3),
       narrativeText: 'Page 3 narrative',
       choices: [],
-      stateChanges: { added: ['branch-b-event'], removed: [] },
+      inventoryChanges: { added: ['branch-b-event'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 1,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedInventory: page1.accumulatedInventory,
     });
     await storage.savePage(story.id, page3);
 
@@ -100,8 +100,8 @@ describe('Data Integrity E2E', () => {
 
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
     expect(loadedPage1?.choices[1]?.nextPageId).toBe(parsePageId(3));
-    expect(loadedPage2?.accumulatedState.changes).toEqual(['root-event', 'branch-a-event']);
-    expect(loadedPage3?.accumulatedState.changes).toEqual(['root-event', 'branch-b-event']);
+    expect(loadedPage2?.accumulatedInventory).toEqual(['root-event', 'branch-a-event']);
+    expect(loadedPage3?.accumulatedInventory).toEqual(['root-event', 'branch-b-event']);
   });
 
   it('maintains branching integrity with distinct accumulated states', async () => {
@@ -119,7 +119,7 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(1),
       narrativeText: 'Root page',
       choices: [createChoice('Path A'), createChoice('Path B'), createChoice('Path C')],
-      stateChanges: { added: ['root'], removed: [] },
+      inventoryChanges: { added: ['root'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -130,19 +130,19 @@ describe('Data Integrity E2E', () => {
       {
         id: parsePageId(2),
         text: 'Branch A',
-        stateChange: 'branch-a',
+        inventoryChange: 'branch-a',
         choiceIndex: 0,
       },
       {
         id: parsePageId(3),
         text: 'Branch B',
-        stateChange: 'branch-b',
+        inventoryChange: 'branch-b',
         choiceIndex: 1,
       },
       {
         id: parsePageId(4),
         text: 'Branch C',
-        stateChange: 'branch-c',
+        inventoryChange: 'branch-c',
         choiceIndex: 2,
       },
     ] as const;
@@ -152,11 +152,11 @@ describe('Data Integrity E2E', () => {
         id: branch.id,
         narrativeText: branch.text,
         choices: [],
-        stateChanges: { added: [branch.stateChange], removed: [] },
+        inventoryChanges: { added: [branch.inventoryChange], removed: [] },
         isEnding: true,
         parentPageId: parsePageId(1),
         parentChoiceIndex: branch.choiceIndex,
-        parentAccumulatedState: page1.accumulatedState,
+        parentAccumulatedInventory: page1.accumulatedInventory,
       });
 
       await storage.savePage(story.id, page);
@@ -170,14 +170,14 @@ describe('Data Integrity E2E', () => {
       parsePageId(4),
     ]);
 
-    const loadedBranchStates = await Promise.all(
+    const loadedBranchInventory = await Promise.all(
       branchPages.map(async (branch) => {
         const loaded = await storage.loadPage(story.id, branch.id);
-        return loaded?.accumulatedState.changes;
+        return loaded?.accumulatedInventory;
       }),
     );
 
-    expect(loadedBranchStates).toEqual([
+    expect(loadedBranchInventory).toEqual([
       ['root', 'branch-a'],
       ['root', 'branch-b'],
       ['root', 'branch-c'],
@@ -199,7 +199,7 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(1),
       narrativeText: 'Reload root',
       choices: [createChoice('Go left'), createChoice('Go right')],
-      stateChanges: { added: ['reload-root'], removed: [] },
+      inventoryChanges: { added: ['reload-root'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -208,11 +208,11 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(2),
       narrativeText: 'Reload ending',
       choices: [],
-      stateChanges: { added: ['reload-ending'], removed: [] },
+      inventoryChanges: { added: ['reload-ending'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedInventory: page1.accumulatedInventory,
     });
 
     await storage.savePage(story.id, page1);
@@ -239,7 +239,7 @@ describe('Data Integrity E2E', () => {
     expect(loadedStory?.updatedAt).toEqual(story.updatedAt);
     expect(loadedStory?.structureVersions).toEqual(story.structureVersions ?? []);
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
-    expect(loadedPage2?.accumulatedState.changes).toEqual(['reload-root', 'reload-ending']);
+    expect(loadedPage2?.accumulatedInventory).toEqual(['reload-root', 'reload-ending']);
   });
 
   it('deletes stories with cascading cleanup of page files and story directory', async () => {
@@ -257,7 +257,7 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(1),
       narrativeText: 'Delete root',
       choices: [createChoice('A'), createChoice('B')],
-      stateChanges: { added: ['delete-root'], removed: [] },
+      inventoryChanges: { added: ['delete-root'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -266,11 +266,11 @@ describe('Data Integrity E2E', () => {
       id: parsePageId(2),
       narrativeText: 'Delete child',
       choices: [],
-      stateChanges: { added: ['delete-child'], removed: [] },
+      inventoryChanges: { added: ['delete-child'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: page1.accumulatedState,
+      parentAccumulatedInventory: page1.accumulatedInventory,
     });
 
     await storage.savePage(story.id, page1);

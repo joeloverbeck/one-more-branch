@@ -11,26 +11,21 @@ import {
   ActiveState,
   ActiveStateChanges,
   AccumulatedCharacterState,
-  AccumulatedState,
   CharacterStateChanges,
   Health,
   HealthChanges,
   Inventory,
   InventoryChanges,
-  StateChanges,
   applyActiveStateChanges,
   applyCharacterStateChanges,
   applyHealthChanges,
   applyInventoryChanges,
-  applyStateChanges,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
   createEmptyAccumulatedCharacterState,
-  createEmptyAccumulatedState,
   createEmptyCharacterStateChanges,
   createEmptyHealthChanges,
   createEmptyInventoryChanges,
-  createEmptyStateChanges,
   isActiveState,
   isActiveStateChanges,
 } from './state/index.js';
@@ -39,8 +34,6 @@ export interface Page {
   readonly id: PageId;
   readonly narrativeText: string;
   readonly choices: Choice[];
-  readonly stateChanges: StateChanges;
-  readonly accumulatedState: AccumulatedState;
   readonly activeStateChanges: ActiveStateChanges;
   readonly accumulatedActiveState: ActiveState;
   readonly inventoryChanges: InventoryChanges;
@@ -61,7 +54,6 @@ export interface CreatePageData {
   id: PageId;
   narrativeText: string;
   choices: Choice[];
-  stateChanges?: StateChanges;
   activeStateChanges?: ActiveStateChanges;
   inventoryChanges?: InventoryChanges;
   healthChanges?: HealthChanges;
@@ -69,7 +61,6 @@ export interface CreatePageData {
   isEnding: boolean;
   parentPageId: PageId | null;
   parentChoiceIndex: number | null;
-  parentAccumulatedState?: AccumulatedState;
   parentAccumulatedActiveState?: ActiveState;
   parentAccumulatedInventory?: Inventory;
   parentAccumulatedHealth?: Health;
@@ -96,14 +87,12 @@ export function createPage(data: CreatePageData): Page {
     throw new Error('Pages after page 1 must have a parent');
   }
 
-  const parentState = data.parentAccumulatedState ?? createEmptyAccumulatedState();
   const parentActiveState = data.parentAccumulatedActiveState ?? createEmptyActiveState();
   const parentInventory = data.parentAccumulatedInventory ?? [];
   const parentHealth = data.parentAccumulatedHealth ?? [];
   const parentCharacterState = data.parentAccumulatedCharacterState ?? createEmptyAccumulatedCharacterState();
   const parentStructureState =
     data.parentAccumulatedStructureState ?? createEmptyAccumulatedStructureState();
-  const stateChanges = data.stateChanges ?? createEmptyStateChanges();
   const activeStateChanges = data.activeStateChanges ?? createEmptyActiveStateChanges();
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
   const healthChanges = data.healthChanges ?? createEmptyHealthChanges();
@@ -113,8 +102,6 @@ export function createPage(data: CreatePageData): Page {
     id: data.id,
     narrativeText: data.narrativeText.trim(),
     choices: data.choices,
-    stateChanges,
-    accumulatedState: applyStateChanges(parentState, stateChanges),
     activeStateChanges,
     accumulatedActiveState: applyActiveStateChanges(parentActiveState, activeStateChanges),
     inventoryChanges,
@@ -130,19 +117,6 @@ export function createPage(data: CreatePageData): Page {
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,
   };
-}
-
-function isStateChanges(value: unknown): value is StateChanges {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const obj = value as Record<string, unknown>;
-  return (
-    Array.isArray(obj['added']) &&
-    obj['added'].every((item: unknown) => typeof item === 'string') &&
-    Array.isArray(obj['removed']) &&
-    obj['removed'].every((item: unknown) => typeof item === 'string')
-  );
 }
 
 function isAccumulatedStructureState(value: unknown): value is AccumulatedStructureState {
@@ -187,7 +161,6 @@ export function isPage(value: unknown): value is Page {
     typeof obj['narrativeText'] === 'string' &&
     Array.isArray(obj['choices']) &&
     obj['choices'].every(isChoice) &&
-    isStateChanges(obj['stateChanges']) &&
     activeStateChangesValid &&
     accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&

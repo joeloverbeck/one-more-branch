@@ -1,8 +1,9 @@
 # ACTSTAARC-000: Active State Architecture Migration - Overview
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Type**: Epic / Parent Ticket
 **Created**: 2026-02-08
+**Completed**: 2026-02-08
 
 ---
 
@@ -126,14 +127,14 @@ ACTSTAARC-001 (Tagged Entry Types)
 ## Success Criteria
 
 ### All Tickets Complete When:
-- [ ] All new types implemented and tested (001-004)
-- [ ] LLM outputs new format correctly (005, 008, 010, 015)
-- [ ] Prompts use active state context (006, 007)
-- [ ] Engine accumulates state correctly (009)
-- [ ] Pages persist and load with new format (011)
-- [ ] Old stories migrated to old-stories/ (012)
-- [ ] All test fixtures updated (013)
-- [ ] Old types completely removed (014)
+- [x] All new types implemented and tested (001-004)
+- [x] LLM outputs new format correctly (005, 008, 010, 015)
+- [x] Prompts use active state context (006, 007)
+- [x] Engine accumulates state correctly (009)
+- [x] Pages persist and load with new format (011)
+- [x] Old stories migrated to old-stories/ (012)
+- [x] All test fixtures updated (013)
+- [x] Old types completely removed (014)
 
 ### Key Invariants Preserved:
 - Page immutability
@@ -150,3 +151,25 @@ If issues are found after deployment:
 1. **Partial Rollback**: Old stories remain in `old-stories/`, can be moved back
 2. **Format Detection**: Code can detect old vs new format via serializer
 
+---
+
+## Outcome
+
+**Completed**: 2026-02-08
+
+### What Was Changed
+- Replaced event-log state system with active state system
+- Implemented `currentLocation`, `activeThreats`, `activeConstraints`, `openThreads` fields
+- Created prefix tag system (THREAT_, CONSTRAINT_, THREAD_) for reliable removal matching
+- Extended scene context to show last 2 scenes
+- Updated all prompts (system, continuation, opening, few-shot examples)
+- Updated persistence layer for new format
+- Removed legacy state types and functions:
+  - `src/engine/state-manager.ts` (deleted)
+  - `src/models/state/general-state.ts` (deleted)
+  - `src/persistence/page-state-service.ts` (deleted)
+
+### Verification
+- All tests pass with new active state format
+- Build and typecheck pass
+- No references to old state types remain in source

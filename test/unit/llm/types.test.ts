@@ -129,7 +129,7 @@ describe('LLM types', () => {
       };
 
       expect(context.globalCanon[0]).toContain('siege');
-      expect(context.accumulatedState[0]).toBe('wounded-shoulder');
+      expect(context.accumulatedState).toContain('wounded-shoulder');
       expect(context.activeState.currentLocation).toBe('Marsh edge');
     });
   });

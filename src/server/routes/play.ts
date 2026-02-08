@@ -98,7 +98,6 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
         id: result.page.id,
         narrativeText: result.page.narrativeText,
         choices: result.page.choices,
-        stateChanges: result.page.stateChanges,
         isEnding: result.page.isEnding,
       },
       actDisplayInfo,

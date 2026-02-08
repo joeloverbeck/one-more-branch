@@ -12,7 +12,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: '  The story begins...  ',
         choices: [createChoice('Go left'), createChoice('Go right')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -22,22 +21,21 @@ describe('Page', () => {
       expect(page.parentPageId).toBeNull();
       expect(page.parentChoiceIndex).toBeNull();
       expect(page.narrativeText).toBe('The story begins...');
-      expect(page.accumulatedState.changes).toEqual([]);
     });
 
-    it('creates page with parent and correctly accumulates state', () => {
+    it('creates page with parent', () => {
       const page = createPage({
         id: 2 as PageId,
         narrativeText: 'Next page',
         choices: [createChoice('Fight'), createChoice('Run')],
-        stateChanges: { added: ['Found a key'], removed: [] },
         isEnding: false,
         parentPageId: 1 as PageId,
         parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: ['Entered the cave'] },
       });
 
-      expect(page.accumulatedState.changes).toEqual(['Entered the cave', 'Found a key']);
+      expect(page.id).toBe(2);
+      expect(page.parentPageId).toBe(1);
+      expect(page.parentChoiceIndex).toBe(0);
     });
 
     it('creates page with empty active state when not provided', () => {
@@ -79,7 +77,6 @@ describe('Page', () => {
         id: 2 as PageId,
         narrativeText: 'Continuation',
         choices: [createChoice('Fight'), createChoice('Run')],
-        stateChanges: { added: ['Legacy entry'], removed: [] },
         activeStateChanges: {
           newLocation: 'New Room',
           threatsAdded: [],
@@ -95,7 +92,6 @@ describe('Page', () => {
         parentAccumulatedActiveState,
       });
 
-      expect(page.accumulatedState.changes).toEqual(['Legacy entry']);
       expect(page.accumulatedActiveState.currentLocation).toBe('New Room');
       expect(page.accumulatedActiveState.activeThreats).toEqual([]);
     });
@@ -105,7 +101,6 @@ describe('Page', () => {
         id: 3 as PageId,
         narrativeText: 'Ending',
         choices: [],
-        stateChanges: { added: ['The end'], removed: [] },
         isEnding: true,
         parentPageId: 2 as PageId,
         parentChoiceIndex: 1,
@@ -121,7 +116,6 @@ describe('Page', () => {
           id: 2 as PageId,
           narrativeText: 'Bad ending',
           choices: [createChoice('Continue')],
-          stateChanges: { added: [], removed: [] },
           isEnding: true,
           parentPageId: 1 as PageId,
           parentChoiceIndex: 0,
@@ -135,7 +129,6 @@ describe('Page', () => {
           id: 2 as PageId,
           narrativeText: 'Bad branch',
           choices: [createChoice('Only one')],
-          stateChanges: { added: [], removed: [] },
           isEnding: false,
           parentPageId: 1 as PageId,
           parentChoiceIndex: 0,
@@ -149,7 +142,6 @@ describe('Page', () => {
           id: 1 as PageId,
           narrativeText: 'Invalid root',
           choices: [createChoice('A'), createChoice('B')],
-          stateChanges: { added: [], removed: [] },
           isEnding: false,
           parentPageId: 2 as PageId,
           parentChoiceIndex: 0,
@@ -163,26 +155,11 @@ describe('Page', () => {
           id: 2 as PageId,
           narrativeText: 'Invalid child',
           choices: [createChoice('A'), createChoice('B')],
-          stateChanges: { added: [], removed: [] },
           isEnding: false,
           parentPageId: null,
           parentChoiceIndex: null,
         })
       ).toThrow('Pages after page 1 must have a parent');
-    });
-
-    it('uses empty parent state when parentAccumulatedState is not provided', () => {
-      const page = createPage({
-        id: 2 as PageId,
-        narrativeText: 'No parent state passed',
-        choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: ['Only local change'], removed: [] },
-        isEnding: false,
-        parentPageId: 1 as PageId,
-        parentChoiceIndex: 0,
-      });
-
-      expect(page.accumulatedState.changes).toEqual(['Only local change']);
     });
 
     it('uses empty structure state when parentAccumulatedStructureState is not provided', () => {
@@ -258,7 +235,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: 'Valid',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -278,7 +254,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: 'Valid',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -294,7 +269,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: 'Valid',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -317,7 +291,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: 'Valid',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -333,7 +306,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: 'Valid',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -348,7 +320,6 @@ describe('Page', () => {
         id: 1 as PageId,
         narrativeText: 'Valid',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -408,7 +379,6 @@ describe('Page', () => {
           createChoice('A', 2 as PageId),
           createChoice('B', 3 as PageId),
         ],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -425,7 +395,6 @@ describe('Page', () => {
           createChoice('A', 2 as PageId),
           createChoice('B'),
         ],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -445,7 +414,6 @@ describe('Page', () => {
           createChoice('B'),
           createChoice('C'),
         ],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -462,7 +430,6 @@ describe('Page', () => {
           createChoice('A', 2 as PageId),
           createChoice('B', 3 as PageId),
         ],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,

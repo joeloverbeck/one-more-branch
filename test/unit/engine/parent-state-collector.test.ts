@@ -20,19 +20,30 @@ describe('parent-state-collector', () => {
 
       const collected = collectParentState(firstPage);
 
-      expect(collected.accumulatedState.changes).toEqual([]);
+      expect(collected.accumulatedActiveState.currentLocation).toBe('');
+      expect(collected.accumulatedActiveState.activeThreats).toEqual([]);
+      expect(collected.accumulatedActiveState.activeConstraints).toEqual([]);
+      expect(collected.accumulatedActiveState.openThreads).toEqual([]);
       expect(collected.accumulatedInventory).toEqual([]);
       expect(collected.accumulatedHealth).toEqual([]);
       expect(collected.accumulatedCharacterState).toEqual({});
       expect(collected.structureState).toEqual(createEmptyAccumulatedStructureState());
     });
 
-    it('collects accumulated state from page with state changes', () => {
+    it('collects accumulated active state from page with active state changes', () => {
       const pageWithState = createPage({
         id: parsePageId(1),
         narrativeText: 'You found something.',
         choices: [createChoice('Take it'), createChoice('Leave it')],
-        stateChanges: { added: ['Discovered secret passage'], removed: [] },
+        activeStateChanges: {
+          newLocation: 'Secret passage',
+          threatsAdded: [],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -40,7 +51,7 @@ describe('parent-state-collector', () => {
 
       const collected = collectParentState(pageWithState);
 
-      expect(collected.accumulatedState.changes).toContain('Discovered secret passage');
+      expect(collected.accumulatedActiveState.currentLocation).toBe('Secret passage');
     });
 
     it('collects accumulated inventory from page with inventory changes', () => {
@@ -135,7 +146,15 @@ describe('parent-state-collector', () => {
         id: parsePageId(1),
         narrativeText: 'A lot happened.',
         choices: [createChoice('Option A'), createChoice('Option B')],
-        stateChanges: { added: ['Quest started'], removed: [] },
+        activeStateChanges: {
+          newLocation: 'Quest start location',
+          threatsAdded: [],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        },
         inventoryChanges: { added: ['Map'], removed: [] },
         healthChanges: { added: ['Well rested'], removed: [] },
         characterStateChanges: [
@@ -149,7 +168,7 @@ describe('parent-state-collector', () => {
 
       const collected = collectParentState(complexPage);
 
-      expect(collected.accumulatedState.changes).toContain('Quest started');
+      expect(collected.accumulatedActiveState.currentLocation).toBe('Quest start location');
       expect(collected.accumulatedInventory).toContain('Map');
       expect(collected.accumulatedHealth).toContain('Well rested');
       expect(collected.accumulatedCharacterState['Guide']).toContain('Helpful');
@@ -169,7 +188,7 @@ describe('parent-state-collector', () => {
       const collected: CollectedParentState = collectParentState(page);
 
       // Type checking - these should all be accessible
-      expect(collected.accumulatedState).toBeDefined();
+      expect(collected.accumulatedActiveState).toBeDefined();
       expect(collected.accumulatedInventory).toBeDefined();
       expect(collected.accumulatedHealth).toBeDefined();
       expect(collected.accumulatedCharacterState).toBeDefined();

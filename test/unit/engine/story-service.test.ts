@@ -154,7 +154,6 @@ describe('story-service', () => {
         id: parsePageId(1),
         narrativeText: 'The lantern light flickers as the first route is revealed.',
         choices: [createChoice('Enter the archive'), createChoice('Follow the patrol road')],
-        stateChanges: { added: ['Accepted the mapping commission'], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -288,11 +287,10 @@ describe('story-service', () => {
         id: parsePageId(2),
         narrativeText: 'Page content for delegation coverage in getPage.',
         choices: [createChoice('A'), createChoice('B')],
-        stateChanges: { added: [], removed: [] },
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: ['Accepted mission'] },
+        parentAccumulatedActiveState: { changes: ['Accepted mission'] },
       });
       mockedStorage.loadPage.mockResolvedValue(page);
 
@@ -340,7 +338,6 @@ describe('story-service', () => {
         id: parsePageId(1),
         narrativeText: 'Page one opens with two diverging routes to test counts cleanly.',
         choices: [createChoice('Scout east', parsePageId(2)), createChoice('Scout west')],
-        stateChanges: { added: ['Started expedition'], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -349,21 +346,19 @@ describe('story-service', () => {
         id: parsePageId(2),
         narrativeText: 'Page two closes the branch to represent an ending node in stats.',
         choices: [],
-        stateChanges: { added: ['Reached terminal outpost'], removed: [] },
         isEnding: true,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        parentAccumulatedState: page1.accumulatedState,
+        parentAccumulatedActiveState: page1.accumulatedActiveState,
       });
       const page3 = createPage({
         id: parsePageId(3),
         narrativeText: 'Page three remains open with one explored and one unexplored choice.',
         choices: [createChoice('Investigate beacon', parsePageId(4)), createChoice('Retreat')],
-        stateChanges: { added: ['Found a secondary route'], removed: [] },
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 1,
-        parentAccumulatedState: page1.accumulatedState,
+        parentAccumulatedActiveState: page1.accumulatedActiveState,
       });
 
       mockedStorage.loadAllPages.mockResolvedValue(

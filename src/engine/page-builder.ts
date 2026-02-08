@@ -1,12 +1,10 @@
 import {
   AccumulatedCharacterState,
-  AccumulatedState,
   AccumulatedStructureState,
   ActiveState,
   ActiveStateChanges,
   createChoice,
   createEmptyAccumulatedStructureState,
-  createEmptyStateChanges,
   createPage,
   Health,
   Inventory,
@@ -37,7 +35,6 @@ export interface ContinuationPageBuildContext {
   readonly pageId: PageId;
   readonly parentPageId: PageId;
   readonly parentChoiceIndex: number;
-  readonly parentAccumulatedState: AccumulatedState;
   readonly parentAccumulatedActiveState: ActiveState;
   readonly parentAccumulatedInventory: Inventory;
   readonly parentAccumulatedHealth: Health;
@@ -74,9 +71,6 @@ export function buildFirstPage(
     id: parsePageId(1),
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
-    // Old state changes deprecated - use empty during transition
-    stateChanges: createEmptyStateChanges(),
-    // New active state changes
     activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
@@ -105,9 +99,6 @@ export function buildContinuationPage(
     id: context.pageId,
     narrativeText: result.narrative,
     choices: result.choices.map(choiceText => createChoice(choiceText)),
-    // Old state changes deprecated - use empty during transition
-    stateChanges: createEmptyStateChanges(),
-    // New active state changes
     activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
@@ -119,7 +110,6 @@ export function buildContinuationPage(
     isEnding: result.isEnding,
     parentPageId: context.parentPageId,
     parentChoiceIndex: context.parentChoiceIndex,
-    parentAccumulatedState: context.parentAccumulatedState,
     parentAccumulatedActiveState: context.parentAccumulatedActiveState,
     parentAccumulatedInventory: context.parentAccumulatedInventory,
     parentAccumulatedHealth: context.parentAccumulatedHealth,

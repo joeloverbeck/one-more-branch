@@ -34,7 +34,6 @@ function buildRootPage(overrides?: Partial<Page>): Page {
     id: parsePageId(1),
     narrativeText: 'Root narrative',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
-    stateChanges: { added: ['root-change'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -43,19 +42,13 @@ function buildRootPage(overrides?: Partial<Page>): Page {
 }
 
 function buildChildPage(overrides?: Partial<Page>): Page {
-  const parentState = overrides?.accumulatedState ?? {
-    changes: ['root-change'],
-  };
-
   return createPage({
     id: parsePageId(2),
     narrativeText: 'Child narrative',
     choices: [createChoice('Choice C'), createChoice('Choice D')],
-    stateChanges: { added: ['child-change'], removed: [] },
     isEnding: false,
     parentPageId: parsePageId(1),
     parentChoiceIndex: 0,
-    parentAccumulatedState: parentState,
     ...overrides,
   });
 }
@@ -76,8 +69,7 @@ describe('page-repository', () => {
     await saveStory(story);
 
     const basePage = buildRootPage({
-      stateChanges: { added: ['root-change', 'extra-change'], removed: [] },
-      accumulatedState: { changes: ['root-change', 'extra-change'] },
+      inventoryChanges: { added: ['root-item', 'extra-item'], removed: [] },
     });
     const page: Page = {
       ...basePage,
@@ -98,8 +90,8 @@ describe('page-repository', () => {
     expect(loaded?.id).toBe(page.id);
     expect(loaded?.narrativeText).toBe(page.narrativeText);
     expect(loaded?.choices).toEqual(page.choices);
-    expect(loaded?.stateChanges).toEqual(page.stateChanges);
-    expect(loaded?.accumulatedState).toEqual(page.accumulatedState);
+    expect(loaded?.inventoryChanges).toEqual(page.inventoryChanges);
+    expect(loaded?.accumulatedInventory).toEqual(page.accumulatedInventory);
     expect(loaded?.accumulatedStructureState).toEqual(page.accumulatedStructureState);
     expect(loaded?.isEnding).toBe(page.isEnding);
     expect(loaded?.parentPageId).toBe(page.parentPageId);
@@ -228,11 +220,11 @@ describe('page-repository', () => {
       id: parsePageId(3),
       narrativeText: 'Ending',
       choices: [],
-      stateChanges: { added: ['ending-change'], removed: [] },
+      inventoryChanges: { added: ['ending-item'], removed: [] },
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 1,
-      parentAccumulatedState: { changes: ['root-change', 'child-change'] },
+      parentAccumulatedInventory: ['root-item', 'child-item'],
     });
     await savePage(story.id, endingPage);
 
@@ -251,8 +243,40 @@ describe('page-repository', () => {
       id: mismatchedPageId,
       narrativeText: 'Mismatch',
       choices: [],
-      stateChanges: { added: [], removed: [] },
-      accumulatedState: { changes: [] },
+      inventoryChanges: { added: [], removed: [] },
+      accumulatedInventory: [],
+      healthChanges: { added: [], removed: [] },
+      accumulatedHealth: [],
+      characterStateChanges: [],
+      accumulatedCharacterState: {},
+      activeStateChanges: {
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      },
+      accumulatedActiveState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      accumulatedStructureState: {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [],
+      },
+      protagonistAffect: {
+        primaryEmotion: 'neutral',
+        primaryIntensity: 'mild',
+        primaryCause: 'No specific emotional driver',
+        secondaryEmotions: [],
+        dominantMotivation: 'Continue forward',
+      },
+      structureVersionId: null,
       isEnding: true,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -269,19 +293,18 @@ describe('page-repository', () => {
     await saveStory(story);
 
     const pageId = parsePageId(6);
-    // Write incomplete page data (missing inventoryChanges, healthChanges, etc.)
+    // Write incomplete page data (missing required fields)
     await writeJsonFile(getPageFilePath(story.id, pageId), {
       id: pageId,
       narrativeText: 'Missing required fields',
       choices: [],
-      stateChanges: { added: [], removed: [] },
-      accumulatedState: { changes: [] },
+      // Missing inventoryChanges, healthChanges, etc.
       isEnding: true,
       parentPageId: null,
       parentChoiceIndex: null,
     });
 
-    // Should throw because required fields (inventoryChanges, etc.) are missing
+    // Should throw because required fields are missing
     await expect(loadPage(story.id, pageId)).rejects.toThrow();
   });
 
@@ -296,8 +319,7 @@ describe('page-repository', () => {
     const updatedPage = buildRootPage({
       narrativeText: 'Updated narrative',
       choices: [createChoice('Updated choice A'), createChoice('Updated choice B')],
-      stateChanges: { added: ['updated-change'], removed: [] },
-      accumulatedState: { changes: ['updated-change'] },
+      inventoryChanges: { added: ['updated-item'], removed: [] },
     });
     await updatePage(story.id, updatedPage);
 
@@ -307,6 +329,6 @@ describe('page-repository', () => {
       'Updated choice A',
       'Updated choice B',
     ]);
-    expect(loaded?.stateChanges).toEqual({ added: ['updated-change'], removed: [] });
+    expect(loaded?.inventoryChanges).toEqual({ added: ['updated-item'], removed: [] });
   });
 });

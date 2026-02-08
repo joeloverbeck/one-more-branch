@@ -333,7 +333,6 @@ describe('page-service integration', () => {
         id: parsePageId(1),
         narrativeText: 'The journey begins.',
         choices: [createChoice('Go left'), createChoice('Go right')],
-        stateChanges: { added: ['Started journey'], removed: [] },
         inventoryChanges: { added: ['Torch'], removed: [] },
         healthChanges: { added: ['Minor fatigue'], removed: [] },
         characterStateChanges: [
@@ -356,8 +355,6 @@ describe('page-service integration', () => {
       expect(mockedGenerateContinuationPage).toHaveBeenCalledWith(
         expect.objectContaining({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          accumulatedState: expect.arrayContaining(['Started journey']),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           accumulatedInventory: expect.arrayContaining(['Torch']),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           accumulatedHealth: expect.arrayContaining(['Minor fatigue']),
@@ -370,9 +367,7 @@ describe('page-service integration', () => {
         { apiKey: 'test-api-key' },
       );
 
-      // Verify old state from parent is preserved
-      expect(page.accumulatedState.changes).toContain('Started journey');
-      // Verify new active state accumulates correctly (new system uses activeState)
+      // Verify active state accumulates correctly
       expect(page.accumulatedActiveState.currentLocation).toBe('Maze of alleys');
       // Active state uses tagged entries with prefix/description/raw structure
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);

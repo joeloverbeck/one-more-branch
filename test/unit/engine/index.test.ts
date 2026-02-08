@@ -17,11 +17,7 @@ import {
   applyStructureProgression,
   createStructureRewriter,
   mergePreservedWithRegenerated,
-  computeAccumulatedState,
-  getParentAccumulatedState,
-  mergeStateChanges,
-  formatStateForDisplay,
-  getRecentChanges,
+  collectParentState,
   updateStoryWithNewCanon,
   formatCanonForPrompt,
   mightContradictCanon,
@@ -62,11 +58,7 @@ describe('engine barrel export', () => {
     expect(createStructureRewriter).toBeDefined();
     expect(mergePreservedWithRegenerated).toBeDefined();
 
-    expect(computeAccumulatedState).toBeDefined();
-    expect(getParentAccumulatedState).toBeDefined();
-    expect(mergeStateChanges).toBeDefined();
-    expect(formatStateForDisplay).toBeDefined();
-    expect(getRecentChanges).toBeDefined();
+    expect(collectParentState).toBeDefined();
 
     expect(updateStoryWithNewCanon).toBeDefined();
     expect(formatCanonForPrompt).toBeDefined();
@@ -82,7 +74,6 @@ describe('engine barrel export', () => {
       id: parsePageId(1),
       narrativeText: 'Night rain fractures every lantern into twins.',
       choices: [],
-      stateChanges: { added: [], removed: [] },
       isEnding: true,
       parentPageId: null,
       parentChoiceIndex: null,

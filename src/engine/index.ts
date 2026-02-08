@@ -60,13 +60,6 @@ export {
 } from './structure-rewriter';
 export type { StructureRewriter, StructureRewriteGenerator } from './structure-rewriter';
 
-export {
-  computeAccumulatedState,
-  getParentAccumulatedState,
-  mergeStateChanges,
-  formatStateForDisplay,
-  getRecentChanges,
-} from './state-manager';
 
 export {
   updateStoryWithNewCanon,

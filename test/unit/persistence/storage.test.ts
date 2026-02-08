@@ -38,14 +38,9 @@ jest.mock('@/persistence/page-repository', () => ({
   findEndingPages: jest.fn(),
 }));
 
-jest.mock('@/persistence/page-state-service', () => ({
-  computeAccumulatedState: jest.fn(),
-}));
-
 import * as persistence from '@/persistence';
 import { ensureStoriesDir } from '@/persistence/file-utils';
 import * as pageRepository from '@/persistence/page-repository';
-import * as pageStateService from '@/persistence/page-state-service';
 import { Storage, storage } from '@/persistence/storage';
 import * as storyRepository from '@/persistence/story-repository';
 
@@ -60,7 +55,6 @@ describe('storage facade', () => {
     id: parsePageId(1),
     narrativeText: 'page',
     choices: [createChoice('c1'), createChoice('c2')],
-    stateChanges: { added: ['s1'], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -142,11 +136,6 @@ describe('storage facade', () => {
     (
       pageRepository.findEndingPages as jest.MockedFunction<typeof pageRepository.findEndingPages>
     ).mockResolvedValue([nextPageId]);
-    (
-      pageStateService.computeAccumulatedState as jest.MockedFunction<
-        typeof pageStateService.computeAccumulatedState
-      >
-    ).mockResolvedValue({ changes: ['a', 'b'] });
 
     await facade.savePage(storyId, page);
     await facade.updatePage(storyId, page);
@@ -156,9 +145,6 @@ describe('storage facade', () => {
     await expect(facade.getMaxPageId(storyId)).resolves.toBe(2);
     await facade.updateChoiceLink(storyId, pageId, 0, nextPageId);
     await expect(facade.findEndingPages(storyId)).resolves.toEqual([nextPageId]);
-    await expect(facade.computeAccumulatedState(storyId, pageId)).resolves.toEqual({
-      changes: ['a', 'b'],
-    });
 
     expect(pageRepository.savePage).toHaveBeenCalledWith(storyId, page);
     expect(pageRepository.updatePage).toHaveBeenCalledWith(storyId, page);
@@ -168,7 +154,6 @@ describe('storage facade', () => {
     expect(pageRepository.getMaxPageId).toHaveBeenCalledWith(storyId);
     expect(pageRepository.updateChoiceLink).toHaveBeenCalledWith(storyId, pageId, 0, nextPageId);
     expect(pageRepository.findEndingPages).toHaveBeenCalledWith(storyId);
-    expect(pageStateService.computeAccumulatedState).toHaveBeenCalledWith(storyId, pageId);
   });
 });
 
@@ -195,6 +180,5 @@ describe('persistence index exports', () => {
     expect(persistence.getMaxPageId).toBe(pageRepository.getMaxPageId);
     expect(persistence.updateChoiceLink).toBe(pageRepository.updateChoiceLink);
     expect(persistence.findEndingPages).toBe(pageRepository.findEndingPages);
-    expect(persistence.computeAccumulatedState).toBe(pageStateService.computeAccumulatedState);
   });
 });

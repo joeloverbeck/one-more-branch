@@ -52,7 +52,6 @@ describe('getActDisplayInfo', () => {
     id: 1,
     narrativeText: 'Test narrative',
     choices: [createChoice('Choice 1'), createChoice('Choice 2')],
-    stateChanges: { added: [], removed: [] },
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,

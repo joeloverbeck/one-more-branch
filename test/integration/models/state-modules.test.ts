@@ -10,14 +10,6 @@
 import { normalizeCharacterName } from '@/models/normalize';
 import { normalizeCharacterNameForState } from '@/engine/character-state-manager';
 import {
-  // General state
-  StateChange,
-  StateChanges,
-  AccumulatedState,
-  createEmptyAccumulatedState,
-  createEmptyStateChanges,
-  applyStateChanges,
-  accumulateState,
   // Canon
   CanonFact,
   GlobalCanon,
@@ -87,13 +79,6 @@ describe('state-modules integration', () => {
 
   describe('cross-module state accumulation', () => {
     it('applies all state types correctly in isolation', () => {
-      // General state
-      const state1 = applyStateChanges(createEmptyAccumulatedState(), {
-        added: ['Entered forest', 'Found map'],
-        removed: [],
-      });
-      expect(state1.changes).toEqual(['Entered forest', 'Found map']);
-
       // Inventory
       const inv1 = applyInventoryChanges([], {
         added: ['Sword', 'Shield'],
@@ -116,13 +101,6 @@ describe('state-modules integration', () => {
     });
 
     it('processes removals correctly across all state types', () => {
-      // General state with removal
-      const state = applyStateChanges(
-        { changes: ['Entered forest', 'Found map'] },
-        { added: ['Left forest'], removed: ['Entered forest'] }
-      );
-      expect(state.changes).toEqual(['Found map', 'Left forest']);
-
       // Inventory with removal
       const inv = applyInventoryChanges(['Sword', 'Shield'], {
         added: ['Bow'],
@@ -147,11 +125,8 @@ describe('state-modules integration', () => {
   });
 
   describe('barrel export verification', () => {
-    it('exports all 30+ expected types and functions from @/models', () => {
+    it('exports all expected types and functions from @/models', () => {
       // Types (verified by using them)
-      const stateChange: StateChange = 'test';
-      const stateChanges: StateChanges = { added: [], removed: [] };
-      const accState: AccumulatedState = { changes: [] };
       const canonFact: CanonFact = 'test';
       const globalCanon: GlobalCanon = [];
       const charCanonFact: CharacterCanonFact = 'test';
@@ -174,10 +149,6 @@ describe('state-modules integration', () => {
       const accCharState: AccumulatedCharacterState = {};
 
       // Functions (verified by calling them)
-      expect(typeof createEmptyAccumulatedState).toBe('function');
-      expect(typeof createEmptyStateChanges).toBe('function');
-      expect(typeof applyStateChanges).toBe('function');
-      expect(typeof accumulateState).toBe('function');
       expect(typeof addCanonFact).toBe('function');
       expect(typeof mergeCanonFacts).toBe('function');
       expect(typeof createEmptyInventoryChanges).toBe('function');
@@ -189,9 +160,6 @@ describe('state-modules integration', () => {
       expect(typeof applyCharacterStateChanges).toBe('function');
 
       // Suppress unused variable warnings
-      expect(stateChange).toBeDefined();
-      expect(stateChanges).toBeDefined();
-      expect(accState).toBeDefined();
       expect(canonFact).toBeDefined();
       expect(globalCanon).toBeDefined();
       expect(charCanonFact).toBeDefined();
@@ -221,7 +189,6 @@ describe('state-modules integration', () => {
           createChoice('Go north'),
           createChoice('Go south'),
         ],
-        stateChanges: { added: ['Started journey'], removed: [] },
         inventoryChanges: { added: ['Backpack', 'Torch'], removed: [] },
         healthChanges: { added: ['Healthy'], removed: [] },
         characterStateChanges: [
@@ -232,7 +199,6 @@ describe('state-modules integration', () => {
         parentChoiceIndex: null,
       });
 
-      expect(page1.accumulatedState.changes).toEqual(['Started journey']);
       expect(page1.accumulatedInventory).toEqual(['Backpack', 'Torch']);
       expect(page1.accumulatedHealth).toEqual(['Healthy']);
       expect(page1.accumulatedCharacterState).toEqual({ Mentor: ['Gave advice'] });
@@ -245,7 +211,6 @@ describe('state-modules integration', () => {
           createChoice('Explore cave'),
           createChoice('Continue north'),
         ],
-        stateChanges: { added: ['Entered forest'], removed: [] },
         inventoryChanges: { added: ['Map'], removed: ['Torch'] },
         healthChanges: { added: ['Tired'], removed: [] },
         characterStateChanges: [
@@ -255,13 +220,11 @@ describe('state-modules integration', () => {
         isEnding: false,
         parentPageId: 1,
         parentChoiceIndex: 0,
-        parentAccumulatedState: page1.accumulatedState,
         parentAccumulatedInventory: page1.accumulatedInventory,
         parentAccumulatedHealth: page1.accumulatedHealth,
         parentAccumulatedCharacterState: page1.accumulatedCharacterState,
       });
 
-      expect(page2.accumulatedState.changes).toEqual(['Started journey', 'Entered forest']);
       expect(page2.accumulatedInventory).toEqual(['Backpack', 'Map']);
       expect(page2.accumulatedHealth).toEqual(['Healthy', 'Tired']);
       expect(page2.accumulatedCharacterState).toEqual({
@@ -277,7 +240,6 @@ describe('state-modules integration', () => {
           createChoice('Enter cave'),
           createChoice('Return home'),
         ],
-        stateChanges: { added: ['Found treasure'], removed: ['Started journey'] },
         inventoryChanges: { added: ['Gold coins', 'Ruby'], removed: ['Backpack'] },
         healthChanges: { added: ['Injured'], removed: ['Healthy'] },
         characterStateChanges: [
@@ -286,13 +248,11 @@ describe('state-modules integration', () => {
         isEnding: false,
         parentPageId: 2,
         parentChoiceIndex: 0,
-        parentAccumulatedState: page2.accumulatedState,
         parentAccumulatedInventory: page2.accumulatedInventory,
         parentAccumulatedHealth: page2.accumulatedHealth,
         parentAccumulatedCharacterState: page2.accumulatedCharacterState,
       });
 
-      expect(page3.accumulatedState.changes).toEqual(['Entered forest', 'Found treasure']);
       expect(page3.accumulatedInventory).toEqual(['Map', 'Gold coins', 'Ruby']);
       expect(page3.accumulatedHealth).toEqual(['Tired', 'Injured']);
       expect(page3.accumulatedCharacterState).toEqual({
@@ -306,7 +266,6 @@ describe('state-modules integration', () => {
         id: 1,
         narrativeText: 'Your journey ends here.',
         choices: [],
-        stateChanges: { added: ['Story ended'], removed: [] },
         inventoryChanges: { added: ['Final reward'], removed: [] },
         healthChanges: { added: ['Victorious'], removed: [] },
         characterStateChanges: [
@@ -319,7 +278,6 @@ describe('state-modules integration', () => {
 
       expect(endingPage.isEnding).toBe(true);
       expect(endingPage.choices).toHaveLength(0);
-      expect(endingPage.accumulatedState.changes).toEqual(['Story ended']);
       expect(endingPage.accumulatedInventory).toEqual(['Final reward']);
       expect(endingPage.accumulatedHealth).toEqual(['Victorious']);
       expect(endingPage.accumulatedCharacterState).toEqual({ Hero: ['Completed quest'] });
@@ -346,18 +304,6 @@ describe('state-modules integration', () => {
 
       expect(merged).toHaveLength(3);
       expect(merged).toEqual(['Existing fact', 'New fact 1', 'New fact 2']);
-    });
-  });
-
-  describe('deprecated accumulateState function', () => {
-    it('accumulateState behaves identically to applyStateChanges', () => {
-      const parent: AccumulatedState = { changes: ['State 1', 'State 2'] };
-      const changes: StateChanges = { added: ['State 3'], removed: ['State 1'] };
-
-      const result1 = accumulateState(parent, changes);
-      const result2 = applyStateChanges(parent, changes);
-
-      expect(result1).toEqual(result2);
     });
   });
 });

@@ -22,8 +22,6 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     id: parsePageId(1),
     narrativeText: 'Test narrative',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
-    stateChanges: { added: ['state-change'], removed: [] },
-    accumulatedState: { changes: ['state-change'] },
     activeStateChanges: createEmptyActiveStateChanges(),
     accumulatedActiveState: createEmptyActiveState(),
     inventoryChanges: { added: [], removed: [] },
@@ -77,7 +75,6 @@ describe('page-serializer', () => {
         { text: 'Choice A', nextPageId: null },
         { text: 'Choice B', nextPageId: null },
       ]);
-      expect(fileData.stateChanges).toEqual({ added: ['state-change'], removed: [] });
       expect(fileData.activeStateChanges).toEqual(createEmptyActiveStateChanges());
       expect(fileData.accumulatedActiveState).toEqual(createEmptyActiveState());
       expect(fileData.inventoryChanges).toEqual({ added: ['sword'], removed: ['dagger'] });
@@ -104,19 +101,19 @@ describe('page-serializer', () => {
 
     it('creates deep copies of arrays to prevent mutation', () => {
       const page = buildTestPage({
-        stateChanges: { added: ['original'], removed: [] },
-        accumulatedState: { changes: ['original'] },
+        inventoryChanges: { added: ['original'], removed: [] },
+        accumulatedInventory: ['original'],
       });
 
       const fileData = serializePage(page);
 
       // Mutate the file data
-      fileData.stateChanges.added.push('mutated');
-      fileData.accumulatedState.changes.push('mutated');
+      fileData.inventoryChanges.added.push('mutated');
+      fileData.accumulatedInventory.push('mutated');
 
       // Original page should be unchanged
-      expect(page.stateChanges.added).toEqual(['original']);
-      expect(page.accumulatedState.changes).toEqual(['original']);
+      expect(page.inventoryChanges.added).toEqual(['original']);
+      expect(page.accumulatedInventory).toEqual(['original']);
     });
 
     it('serializes parent page id and choice index for child pages', () => {
@@ -230,8 +227,8 @@ describe('page-serializer', () => {
       const fileData = serializePage(page);
 
       // Mutate the file data
-      fileData.activeStateChanges!.threatsAdded.push('THREAT_B: Mutated');
-      fileData.accumulatedActiveState!.activeThreats.push({ prefix: 'THREAT_B', description: 'Mutated', raw: 'THREAT_B: Mutated' });
+      fileData.activeStateChanges.threatsAdded.push('THREAT_B: Mutated');
+      fileData.accumulatedActiveState.activeThreats.push({ prefix: 'THREAT_B', description: 'Mutated', raw: 'THREAT_B: Mutated' });
 
       // Original page should be unchanged
       expect(page.activeStateChanges.threatsAdded).toEqual(['THREAT_A: Original']);
@@ -248,8 +245,6 @@ describe('page-serializer', () => {
           { text: 'Choice A', nextPageId: null },
           { text: 'Choice B', nextPageId: null },
         ],
-        stateChanges: { added: ['state-change'], removed: [] },
-        accumulatedState: { changes: ['state-change'] },
         inventoryChanges: { added: [], removed: [] },
         accumulatedInventory: [],
         healthChanges: { added: [], removed: [] },
@@ -296,7 +291,6 @@ describe('page-serializer', () => {
         { text: 'Choice A', nextPageId: null },
         { text: 'Choice B', nextPageId: null },
       ]);
-      expect(page.stateChanges).toEqual({ added: ['state-change'], removed: [] });
       expect(page.activeStateChanges).toEqual(createEmptyActiveStateChanges());
       expect(page.accumulatedActiveState).toEqual(createEmptyActiveState());
       expect(page.inventoryChanges).toEqual({ added: ['sword'], removed: ['dagger'] });
@@ -323,19 +317,19 @@ describe('page-serializer', () => {
 
     it('creates deep copies of arrays to prevent mutation', () => {
       const fileData = buildTestFileData({
-        stateChanges: { added: ['original'], removed: [] },
-        accumulatedState: { changes: ['original'] },
+        inventoryChanges: { added: ['original'], removed: [] },
+        accumulatedInventory: ['original'],
       });
 
       const page = deserializePage(fileData);
 
       // Mutate the original file data
-      fileData.stateChanges.added.push('mutated');
-      fileData.accumulatedState.changes.push('mutated');
+      fileData.inventoryChanges.added.push('mutated');
+      fileData.accumulatedInventory.push('mutated');
 
       // Deserialized page should be unchanged
-      expect(page.stateChanges.added).toEqual(['original']);
-      expect(page.accumulatedState.changes).toEqual(['original']);
+      expect(page.inventoryChanges.added).toEqual(['original']);
+      expect(page.accumulatedInventory).toEqual(['original']);
     });
 
     it('deserializes parent page id and choice index for child pages', () => {
@@ -532,8 +526,8 @@ describe('page-serializer', () => {
         const page = deserializePage(fileData);
 
         // Mutate the original file data
-        fileData.activeStateChanges!.threatsAdded.push('THREAT_MUTATED: Mutated');
-        fileData.accumulatedActiveState!.activeThreats.push({ prefix: 'THREAT_MUTATED', description: 'Mutated', raw: 'THREAT_MUTATED: Mutated' });
+        fileData.activeStateChanges.threatsAdded.push('THREAT_MUTATED: Mutated');
+        fileData.accumulatedActiveState.activeThreats.push({ prefix: 'THREAT_MUTATED', description: 'Mutated', raw: 'THREAT_MUTATED: Mutated' });
 
         // Deserialized page should be unchanged
         expect(page.activeStateChanges.threatsAdded).toEqual(['THREAT_ORIGINAL: Original threat']);
@@ -552,8 +546,6 @@ describe('page-serializer', () => {
           { text: 'Second choice', nextPageId: null },
           { text: 'Third choice', nextPageId: parsePageId(7) },
         ],
-        stateChanges: { added: ['change1', 'change2'], removed: ['old-change'] },
-        accumulatedState: { changes: ['change1', 'change2', 'existing'] },
         inventoryChanges: { added: ['magic-sword', 'potion'], removed: ['rusty-dagger'] },
         accumulatedInventory: ['magic-sword', 'potion', 'gold-coins'],
         healthChanges: { added: ['blessed'], removed: ['cursed'] },
@@ -592,8 +584,6 @@ describe('page-serializer', () => {
         id: parsePageId(10),
         narrativeText: 'The end of the story',
         choices: [],
-        stateChanges: { added: [], removed: [] },
-        accumulatedState: { changes: ['some-state'] },
         activeStateChanges: createEmptyActiveStateChanges(),
         accumulatedActiveState: createEmptyActiveState(),
         inventoryChanges: { added: [], removed: [] },
@@ -630,8 +620,6 @@ describe('page-serializer', () => {
           { text: 'Fight the dragon', nextPageId: null },
           { text: 'Negotiate with the dragon', nextPageId: null },
         ],
-        stateChanges: { added: ['encountered dragon'], removed: [] },
-        accumulatedState: { changes: ['encountered dragon'] },
         activeStateChanges: {
           newLocation: 'Dragon lair - treasure chamber',
           threatsAdded: ['THREAT_DRAGON: Ancient red dragon awakened', 'THREAT_FLAMES: Fire filling the chamber'],
@@ -651,7 +639,7 @@ describe('page-serializer', () => {
             { prefix: 'CONSTRAINT_HEAT', description: 'Extreme heat limiting movement', raw: 'CONSTRAINT_HEAT: Extreme heat limiting movement' },
           ],
           openThreads: [
-            { prefix: 'THREAD_ARTIFACT', description: 'The legendary sword is within reach', raw: 'THREAD_ARTIFACT: The legendary sword is within reach' },
+            { prefix: 'THREAD_ARTIFACT', description: 'The legendary sword is within reach', raw: 'THREAT_ARTIFACT: The legendary sword is within reach' },
             { prefix: 'THREAD_ESCAPE', description: 'Must find way out after getting sword', raw: 'THREAD_ESCAPE: Must find way out after getting sword' },
           ],
         },

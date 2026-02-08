@@ -11,7 +11,6 @@ import {
   Page,
   PageId,
   ProtagonistAffect,
-  StateChanges,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
   createDefaultProtagonistAffect,
@@ -57,14 +56,7 @@ export interface PageFileData {
     text: string;
     nextPageId: number | null;
   }>;
-  stateChanges: {
-    added: string[];
-    removed: string[];
-  };
-  accumulatedState: {
-    changes: string[];
-  };
-  activeStateChanges?: {
+  activeStateChanges: {
     newLocation: string | null;
     threatsAdded: string[];
     threatsRemoved: string[];
@@ -73,7 +65,7 @@ export interface PageFileData {
     threadsAdded: string[];
     threadsResolved: string[];
   };
-  accumulatedActiveState?: {
+  accumulatedActiveState: {
     currentLocation: string;
     activeThreats: TaggedStateEntryFileData[];
     activeConstraints: TaggedStateEntryFileData[];
@@ -152,13 +144,6 @@ export function serializePage(page: Page): PageFileData {
       text: choice.text,
       nextPageId: choice.nextPageId,
     })),
-    stateChanges: {
-      added: [...page.stateChanges.added],
-      removed: [...page.stateChanges.removed],
-    },
-    accumulatedState: {
-      changes: [...page.accumulatedState.changes],
-    },
     activeStateChanges: {
       newLocation: page.activeStateChanges.newLocation,
       threatsAdded: [...page.activeStateChanges.threatsAdded],
@@ -205,11 +190,6 @@ export function serializePage(page: Page): PageFileData {
 }
 
 export function deserializePage(data: PageFileData): Page {
-  const stateChanges: StateChanges = {
-    added: [...data.stateChanges.added],
-    removed: [...data.stateChanges.removed],
-  };
-
   const inventoryChanges: InventoryChanges = {
     added: [...data.inventoryChanges.added],
     removed: [...data.inventoryChanges.removed],
@@ -284,10 +264,6 @@ export function deserializePage(data: PageFileData): Page {
       text: choice.text,
       nextPageId: choice.nextPageId === null ? null : parsePageId(choice.nextPageId),
     })),
-    stateChanges,
-    accumulatedState: {
-      changes: [...data.accumulatedState.changes],
-    },
     activeStateChanges,
     accumulatedActiveState,
     inventoryChanges,

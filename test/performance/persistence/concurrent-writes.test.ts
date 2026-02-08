@@ -58,7 +58,7 @@ describe('Concurrent Write Performance', () => {
       id: parsePageId(1),
       narrativeText: 'Root',
       choices: [createChoice('A'), createChoice('B'), createChoice('C'), createChoice('D')],
-      stateChanges: { added: ['root'], removed: [] },
+      inventoryChanges: { added: ['root-item'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -74,11 +74,11 @@ describe('Concurrent Write Performance', () => {
           id: pageId,
           narrativeText: `Page ${pageId} content`,
           choices: [],
-          stateChanges: { added: [`event-${pageId}`], removed: [] },
+          inventoryChanges: { added: [`event-${pageId}`], removed: [] },
           isEnding: true,
           parentPageId: parsePageId(1),
           parentChoiceIndex: index % 4,
-          parentAccumulatedState: root.accumulatedState,
+          parentAccumulatedInventory: root.accumulatedInventory,
         }),
       );
     });
@@ -91,7 +91,8 @@ describe('Concurrent Write Performance', () => {
     for (let pageNumber = 2; pageNumber <= 11; pageNumber += 1) {
       const page = pages.get(parsePageId(pageNumber));
       expect(page?.narrativeText).toBe(`Page ${pageNumber} content`);
-      expect(page?.accumulatedState.changes).toEqual(['root', `event-${pageNumber}`]);
+      expect(page?.accumulatedInventory).toContain('root-item');
+      expect(page?.accumulatedInventory).toContain(`event-${pageNumber}`);
     }
   }, 30000);
 
@@ -148,7 +149,7 @@ describe('Concurrent Write Performance', () => {
       id: parsePageId(1),
       narrativeText: 'Read/write root',
       choices: [createChoice('A'), createChoice('B'), createChoice('C'), createChoice('D')],
-      stateChanges: { added: ['root-read-write'], removed: [] },
+      inventoryChanges: { added: ['root-read-write'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -163,11 +164,11 @@ describe('Concurrent Write Performance', () => {
           id: pageId,
           narrativeText: `RW Page ${pageId}`,
           choices: [],
-          stateChanges: { added: [`rw-${pageId}`], removed: [] },
+          inventoryChanges: { added: [`rw-${pageId}`], removed: [] },
           isEnding: true,
           parentPageId: parsePageId(1),
           parentChoiceIndex: index % 4,
-          parentAccumulatedState: root.accumulatedState,
+          parentAccumulatedInventory: root.accumulatedInventory,
         }),
       );
     });
@@ -209,7 +210,7 @@ describe('Concurrent Write Performance', () => {
       id: parsePageId(1),
       narrativeText: 'Lock root',
       choices: [createChoice('A'), createChoice('B')],
-      stateChanges: { added: ['lock-root'], removed: [] },
+      inventoryChanges: { added: ['lock-root'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,

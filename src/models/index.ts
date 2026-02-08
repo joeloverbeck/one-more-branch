@@ -13,14 +13,11 @@ export {
 export { Choice, createChoice, isChoice, isChoiceExplored } from './choice';
 
 export {
-  StateChange,
-  StateChanges,
   CanonFact,
   GlobalCanon,
   CharacterCanonFact,
   CharacterCanon,
   GlobalCharacterCanon,
-  AccumulatedState,
   InventoryItem,
   Inventory,
   InventoryChanges,
@@ -34,10 +31,6 @@ export {
   AccumulatedCharacterState,
   ActiveState,
   ActiveStateChanges,
-  createEmptyAccumulatedState,
-  createEmptyStateChanges,
-  accumulateState,
-  applyStateChanges,
   addCanonFact,
   mergeCanonFacts,
   createEmptyInventoryChanges,

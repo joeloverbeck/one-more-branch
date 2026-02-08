@@ -272,7 +272,6 @@ describe('story-repository integration', () => {
       id: parsePageId(1),
       narrativeText: 'Root',
       choices: [createChoice('Left'), createChoice('Right')],
-      stateChanges: { added: ['root'], removed: [] },
       isEnding: false,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -281,11 +280,10 @@ describe('story-repository integration', () => {
       id: parsePageId(2),
       narrativeText: 'Child',
       choices: [createChoice('Forward'), createChoice('Back')],
-      stateChanges: { added: ['child'], removed: [] },
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedState: rootPage.accumulatedState,
+      parentAccumulatedActiveState: rootPage.accumulatedActiveState,
     });
 
     await savePage(story.id, rootPage);

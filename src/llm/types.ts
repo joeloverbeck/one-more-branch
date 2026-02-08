@@ -95,9 +95,6 @@ export interface ContinuationContext {
   previousNarrative: string;
   selectedChoice: string;
 
-  // Deprecated: Old event-log state (kept for transition period)
-  accumulatedState: readonly string[];
-
   accumulatedInventory: readonly string[];
   accumulatedHealth: readonly string[];
   accumulatedCharacterState: Readonly<Record<string, readonly string[]>>;
