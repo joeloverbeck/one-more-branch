@@ -1,27 +1,37 @@
 /**
  * Barrel export for all system prompt section modules.
- * Centralizes imports for the system prompt builder.
+ * Organized into shared, opening, and continuation sections.
  */
 
+// Shared sections (used by both opening and continuation)
 export {
   STORYTELLING_GUIDELINES,
-  CONTINUITY_RULES,
   ENDING_GUIDELINES,
-} from './narrative-core.js';
-
-export {
   ACTIVE_STATE_TRACKING,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
-} from './state-tracking.js';
-
-export {
-  CHARACTER_CANON_VS_STATE,
   PROTAGONIST_AFFECT,
-} from './character-systems.js';
+} from './shared/index.js';
 
+// Opening-specific sections
 export {
-  ACTIVE_STATE_QUALITY,
-  CANON_QUALITY,
-} from './quality-criteria.js';
+  OPENING_ESTABLISHMENT_RULES,
+  OPENING_CHARACTER_CANON_GUIDANCE,
+  OPENING_ACTIVE_STATE_QUALITY,
+  OPENING_CANON_QUALITY,
+} from './opening/index.js';
+
+// Continuation-specific sections
+export {
+  CONTINUATION_CONTINUITY_RULES,
+  CHARACTER_CANON_VS_STATE,
+  CONTINUATION_ACTIVE_STATE_QUALITY,
+  CONTINUATION_CANON_QUALITY,
+} from './continuation/index.js';
+
+// Backward compatibility aliases
+// These are deprecated - use the specific opening/continuation versions
+export { CONTINUATION_CONTINUITY_RULES as CONTINUITY_RULES } from './continuation/index.js';
+export { CONTINUATION_ACTIVE_STATE_QUALITY as ACTIVE_STATE_QUALITY } from './continuation/index.js';
+export { CONTINUATION_CANON_QUALITY as CANON_QUALITY } from './continuation/index.js';

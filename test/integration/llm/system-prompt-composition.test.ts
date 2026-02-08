@@ -27,9 +27,10 @@ describe('buildSystemPrompt composition', () => {
 
     it('includes CONTINUITY RULES section', () => {
       const prompt = buildSystemPrompt();
-      expect(prompt).toContain('CONTINUITY RULES:');
-      expect(prompt).toContain('Do NOT contradict Established World Facts');
-      expect(prompt).toContain('newCanonFacts or newCharacterCanonFacts');
+      expect(prompt).toContain('CONTINUITY RULES (CONTINUATION):');
+      expect(prompt).toContain('ESTABLISHED WORLD FACTS');
+      expect(prompt).toContain('newCanonFacts');
+      expect(prompt).toContain('newCharacterCanonFacts');
     });
 
     it('includes ACTIVE STATE TRACKING section', () => {

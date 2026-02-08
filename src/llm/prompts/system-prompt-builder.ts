@@ -1,23 +1,38 @@
 /**
  * System prompt builder module.
  * Composes the full system prompt from modular sections.
+ * Provides separate builders for opening and continuation prompts.
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { PromptOptions } from '../types.js';
+
+// Shared sections
 import {
   STORYTELLING_GUIDELINES,
-  CONTINUITY_RULES,
   ENDING_GUIDELINES,
   ACTIVE_STATE_TRACKING,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
-  CHARACTER_CANON_VS_STATE,
   PROTAGONIST_AFFECT,
-  ACTIVE_STATE_QUALITY,
-  CANON_QUALITY,
-} from './sections/index.js';
+} from './sections/shared/index.js';
+
+// Opening-specific sections
+import {
+  OPENING_ESTABLISHMENT_RULES,
+  OPENING_CHARACTER_CANON_GUIDANCE,
+  OPENING_ACTIVE_STATE_QUALITY,
+  OPENING_CANON_QUALITY,
+} from './sections/opening/index.js';
+
+// Continuation-specific sections
+import {
+  CONTINUATION_CONTINUITY_RULES,
+  CHARACTER_CANON_VS_STATE,
+  CONTINUATION_ACTIVE_STATE_QUALITY,
+  CONTINUATION_CANON_QUALITY,
+} from './sections/continuation/index.js';
 
 /**
  * Introduction establishing the LLM's role as a storyteller.
@@ -79,36 +94,60 @@ Format your response as:
 IMPORTANT: Your final JSON must be inside <output> tags.`;
 
 /**
- * All narrative sections in their proper order.
- * This tuple type ensures no section is accidentally omitted.
+ * Shared narrative sections used by both prompt types.
  */
-const NARRATIVE_SECTIONS = [
+const SHARED_SECTIONS = [
   STORYTELLING_GUIDELINES,
-  CONTINUITY_RULES,
   ACTIVE_STATE_TRACKING,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
-  CHARACTER_CANON_VS_STATE,
   PROTAGONIST_AFFECT,
-  ACTIVE_STATE_QUALITY,
-  CANON_QUALITY,
   ENDING_GUIDELINES,
 ] as const;
 
 /**
- * Composes the base system prompt from all sections.
- * This is the core prompt without any optional enhancements.
+ * Opening-specific narrative sections.
  */
-export function composeSystemPrompt(): string {
-  return [SYSTEM_INTRO, CONTENT_POLICY, ...NARRATIVE_SECTIONS].join('\n\n');
+const OPENING_SECTIONS = [
+  OPENING_ESTABLISHMENT_RULES,
+  OPENING_CHARACTER_CANON_GUIDANCE,
+  OPENING_ACTIVE_STATE_QUALITY,
+  OPENING_CANON_QUALITY,
+] as const;
+
+/**
+ * Continuation-specific narrative sections.
+ */
+const CONTINUATION_SECTIONS = [
+  CONTINUATION_CONTINUITY_RULES,
+  CHARACTER_CANON_VS_STATE,
+  CONTINUATION_ACTIVE_STATE_QUALITY,
+  CONTINUATION_CANON_QUALITY,
+] as const;
+
+/**
+ * Composes the opening system prompt from all relevant sections.
+ * Focuses on establishment and character concept fidelity.
+ */
+export function composeOpeningSystemPrompt(): string {
+  return [SYSTEM_INTRO, CONTENT_POLICY, ...SHARED_SECTIONS, ...OPENING_SECTIONS].join('\n\n');
 }
 
 /**
- * Builds the complete system prompt with optional enhancements.
+ * Composes the continuation system prompt from all relevant sections.
+ * Focuses on continuity and consistency with established facts.
  */
-export function buildSystemPrompt(options?: PromptOptions): string {
-  let prompt = composeSystemPrompt();
+export function composeContinuationSystemPrompt(): string {
+  return [SYSTEM_INTRO, CONTENT_POLICY, ...SHARED_SECTIONS, ...CONTINUATION_SECTIONS].join('\n\n');
+}
+
+/**
+ * Builds the complete opening system prompt with optional enhancements.
+ * Use this for generating the first page of a story.
+ */
+export function buildOpeningSystemPrompt(options?: PromptOptions): string {
+  let prompt = composeOpeningSystemPrompt();
 
   // Add strict choice guidelines if requested
   if (options?.choiceGuidance === 'strict') {
@@ -122,3 +161,42 @@ export function buildSystemPrompt(options?: PromptOptions): string {
 
   return prompt;
 }
+
+/**
+ * Builds the complete continuation system prompt with optional enhancements.
+ * Use this for generating subsequent pages of a story.
+ */
+export function buildContinuationSystemPrompt(options?: PromptOptions): string {
+  let prompt = composeContinuationSystemPrompt();
+
+  // Add strict choice guidelines if requested
+  if (options?.choiceGuidance === 'strict') {
+    prompt += STRICT_CHOICE_GUIDELINES;
+  }
+
+  // Add CoT instructions if enabled
+  if (options?.enableChainOfThought) {
+    prompt += COT_SYSTEM_ADDITION;
+  }
+
+  return prompt;
+}
+
+/**
+ * @deprecated Use buildOpeningSystemPrompt or buildContinuationSystemPrompt instead.
+ * This function is kept for backward compatibility and defaults to the continuation prompt.
+ */
+export function buildSystemPrompt(options?: PromptOptions): string {
+  return buildContinuationSystemPrompt(options);
+}
+
+/**
+ * @deprecated Use composeContinuationSystemPrompt instead.
+ * This function is kept for backward compatibility.
+ */
+export function composeSystemPrompt(): string {
+  return composeContinuationSystemPrompt();
+}
+
+// Re-export constants for backward compatibility
+export { SYSTEM_INTRO, SHARED_SECTIONS as NARRATIVE_SECTIONS };

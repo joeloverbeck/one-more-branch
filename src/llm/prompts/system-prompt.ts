@@ -8,18 +8,38 @@ import type { PromptOptions } from '../types.js';
 
 export {
   buildSystemPrompt,
+  buildOpeningSystemPrompt,
+  buildContinuationSystemPrompt,
   composeSystemPrompt,
+  composeOpeningSystemPrompt,
+  composeContinuationSystemPrompt,
   STRICT_CHOICE_GUIDELINES,
   COT_SYSTEM_ADDITION,
 } from './system-prompt-builder.js';
 
-import { composeSystemPrompt } from './system-prompt-builder.js';
+import {
+  composeOpeningSystemPrompt,
+  composeContinuationSystemPrompt,
+} from './system-prompt-builder.js';
 
 /**
- * The complete system prompt for narrative page generation.
+ * The complete system prompt for continuation page generation.
  * Includes all sections for storytelling, state management, and quality criteria.
+ * @deprecated Use buildContinuationSystemPrompt() for dynamic prompt generation.
  */
-export const SYSTEM_PROMPT = composeSystemPrompt();
+export const SYSTEM_PROMPT = composeContinuationSystemPrompt();
+
+/**
+ * The complete system prompt for opening page generation.
+ * Focuses on establishment and character concept fidelity.
+ */
+export const OPENING_SYSTEM_PROMPT = composeOpeningSystemPrompt();
+
+/**
+ * The complete system prompt for continuation page generation.
+ * Focuses on continuity and consistency with established facts.
+ */
+export const CONTINUATION_SYSTEM_PROMPT = composeContinuationSystemPrompt();
 
 /**
  * Minimal system prompt for structure generation.

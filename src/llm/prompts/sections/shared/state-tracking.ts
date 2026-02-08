@@ -1,6 +1,6 @@
 /**
- * State tracking guidelines for inventory, health, and active state.
- * Covers the prefix tag system and field separation rules.
+ * State tracking guidelines shared by both opening and continuation prompts.
+ * Covers inventory, health, active state, and field separation.
  */
 
 export const ACTIVE_STATE_TRACKING = `=== ACTIVE STATE TRACKING ===
@@ -51,7 +51,7 @@ Example output for active state:
   "threadsAdded": [
     "THREAD_GRAFFITI: Strange symbols on the wall"
   ],
-  "threadsResolved": ["THREAD_LOCKED_DOOR"]
+  "threadsResolved": ["THREAT_LOCKED_DOOR"]
 }`;
 
 export const INVENTORY_MANAGEMENT = `INVENTORY MANAGEMENT:

@@ -1,6 +1,6 @@
 /**
- * Core narrative guidelines for storytelling.
- * Covers prose style, continuity, and ending conventions.
+ * Core narrative guidelines shared by both opening and continuation prompts.
+ * Covers prose style and ending conventions.
  */
 
 export const STORYTELLING_GUIDELINES = `STORYTELLING GUIDELINES:
@@ -15,11 +15,6 @@ export const STORYTELLING_GUIDELINES = `STORYTELLING GUIDELINES:
 - Build tension and dramatic stakes naturally.
 - React believably to player choices.
 - Each choice should represent a genuinely different path.`;
-
-export const CONTINUITY_RULES = `CONTINUITY RULES:
-- Do NOT contradict Established World Facts or Current State.
-- Do NOT retcon names, roles, species, or relationships already established.
-- Any new permanent facts introduced MUST appear in newCanonFacts or newCharacterCanonFacts.`;
 
 export const ENDING_GUIDELINES = `When writing endings (character death, victory, conclusion):
 - Make the ending feel earned and meaningful.

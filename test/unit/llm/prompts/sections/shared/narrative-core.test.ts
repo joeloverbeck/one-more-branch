@@ -1,14 +1,13 @@
 /**
- * Unit tests for narrative-core section module.
+ * Unit tests for shared narrative-core section module.
  */
 
 import {
   STORYTELLING_GUIDELINES,
-  CONTINUITY_RULES,
   ENDING_GUIDELINES,
-} from '../../../../../src/llm/prompts/sections/narrative-core.js';
+} from '../../../../../../src/llm/prompts/sections/shared/narrative-core.js';
 
-describe('narrative-core sections', () => {
+describe('shared narrative-core sections', () => {
   describe('STORYTELLING_GUIDELINES', () => {
     it('is a non-empty string', () => {
       expect(typeof STORYTELLING_GUIDELINES).toBe('string');
@@ -35,31 +34,6 @@ describe('narrative-core sections', () => {
 
     it('mentions player agency', () => {
       expect(STORYTELLING_GUIDELINES).toContain('player agency');
-    });
-  });
-
-  describe('CONTINUITY_RULES', () => {
-    it('is a non-empty string', () => {
-      expect(typeof CONTINUITY_RULES).toBe('string');
-      expect(CONTINUITY_RULES.length).toBeGreaterThan(0);
-    });
-
-    it('includes section header', () => {
-      expect(CONTINUITY_RULES).toContain('CONTINUITY RULES:');
-    });
-
-    it('prohibits contradicting established facts', () => {
-      expect(CONTINUITY_RULES).toContain('Do NOT contradict');
-      expect(CONTINUITY_RULES).toContain('Established World Facts');
-    });
-
-    it('prohibits retcons', () => {
-      expect(CONTINUITY_RULES).toContain('Do NOT retcon');
-    });
-
-    it('requires new facts in canon fields', () => {
-      expect(CONTINUITY_RULES).toContain('newCanonFacts');
-      expect(CONTINUITY_RULES).toContain('newCharacterCanonFacts');
     });
   });
 

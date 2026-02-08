@@ -1,5 +1,5 @@
 /**
- * Unit tests for state-tracking section module.
+ * Unit tests for shared state-tracking section module.
  */
 
 import {
@@ -7,9 +7,9 @@ import {
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
-} from '../../../../../src/llm/prompts/sections/state-tracking.js';
+} from '../../../../../../src/llm/prompts/sections/shared/state-tracking.js';
 
-describe('state-tracking sections', () => {
+describe('shared state-tracking sections', () => {
   describe('ACTIVE_STATE_TRACKING', () => {
     it('is a non-empty string', () => {
       expect(typeof ACTIVE_STATE_TRACKING).toBe('string');

@@ -1,9 +1,9 @@
 /**
- * Quality criteria for active state and canon facts.
- * Defines good/bad patterns and anti-patterns.
+ * Quality criteria specific to continuation prompts.
+ * Includes removal patterns and state modification guidance.
  */
 
-export const ACTIVE_STATE_QUALITY = `ACTIVE STATE QUALITY CRITERIA (CRITICAL):
+export const CONTINUATION_ACTIVE_STATE_QUALITY = `ACTIVE STATE QUALITY CRITERIA (CRITICAL):
 Active state entries should track conditions that are TRUE RIGHT NOW and affect current story decisions.
 Before adding any entry, ask: "Is this currently happening? Does it affect the protagonist's immediate situation?"
 
@@ -37,7 +37,7 @@ BAD THREADS (do NOT add):
 - Current events: "THREAD_FIGHTING: Currently in combat" - this is a threat
 - Character traits: "THREAD_BRAVE: Protagonist is courageous" - use characterCanon
 
-REMOVAL QUALITY:
+REMOVAL QUALITY (for continuation scenes):
 - Remove threats when the danger no longer exists (guards defeated, fire extinguished)
 - Remove constraints when the limitation is overcome (healed, light found)
 - Resolve threads when the mystery is answered or hook is addressed
@@ -51,7 +51,7 @@ When the protagonist is wounded, poisoned, exhausted, or healed:
 ✅ Use healthAdded/healthRemoved
 ❌ Do NOT put physical conditions in threatsAdded or constraintsAdded`;
 
-export const CANON_QUALITY = `CANON QUALITY CRITERIA (CRITICAL):
+export const CONTINUATION_CANON_QUALITY = `CANON QUALITY CRITERIA (CRITICAL):
 Canon facts should be PERMANENT world-building or character elements likely to matter across MULTIPLE scenes.
 Before adding any canon, ask: "Would this fact constrain or inform future scenes in ANY branch?"
 

@@ -4,7 +4,11 @@
  * and does not include old state format references.
  */
 
-import { buildSystemPrompt } from '../../../../src/llm/prompts/system-prompt.js';
+import {
+  buildSystemPrompt,
+  buildOpeningSystemPrompt,
+  buildContinuationSystemPrompt,
+} from '../../../../src/llm/prompts/system-prompt.js';
 
 describe('buildSystemPrompt', () => {
   describe('active state tracking section', () => {
@@ -147,12 +151,174 @@ describe('buildSystemPrompt', () => {
 
     it('still includes continuity rules', () => {
       const prompt = buildSystemPrompt();
-      expect(prompt).toContain('CONTINUITY RULES:');
+      expect(prompt).toContain('CONTINUITY RULES (CONTINUATION):');
     });
 
     it('still includes ending guidelines', () => {
       const prompt = buildSystemPrompt();
       expect(prompt).toContain('When writing endings');
     });
+  });
+});
+
+describe('buildOpeningSystemPrompt', () => {
+  describe('establishment rules (opening-specific)', () => {
+    it('includes ESTABLISHMENT RULES section', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('ESTABLISHMENT RULES (OPENING):');
+    });
+
+    it('includes character concept fidelity', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('CHARACTER CONCEPT FIDELITY');
+    });
+
+    it('includes what you establish section', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('WHAT YOU ESTABLISH:');
+    });
+
+    it('mentions empty removed arrays', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('removed');
+      expect(prompt).toContain('EMPTY');
+    });
+
+    it('does NOT contain CONTINUITY RULES', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).not.toContain('CONTINUITY RULES');
+    });
+
+    it('does NOT reference Established World Facts header', () => {
+      const prompt = buildOpeningSystemPrompt();
+      // Opening has no established facts yet, so shouldn't reference them
+      expect(prompt).not.toContain('DO NOT CONTRADICT:');
+    });
+  });
+
+  describe('opening quality criteria', () => {
+    it('includes opening-specific active state quality', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('OPENING ACTIVE STATE QUALITY:');
+    });
+
+    it('includes opening canon quality', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('OPENING CANON QUALITY:');
+    });
+
+    it('mentions initial threats', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('GOOD INITIAL THREATS');
+    });
+  });
+
+  describe('shared sections preserved', () => {
+    it('includes storytelling guidelines', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('STORYTELLING GUIDELINES:');
+    });
+
+    it('includes inventory management', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('INVENTORY MANAGEMENT:');
+    });
+
+    it('includes health management', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('HEALTH MANAGEMENT:');
+    });
+
+    it('includes protagonist affect', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('PROTAGONIST AFFECT');
+    });
+
+    it('includes active state tracking', () => {
+      const prompt = buildOpeningSystemPrompt();
+      expect(prompt).toContain('ACTIVE STATE TRACKING');
+    });
+  });
+});
+
+describe('buildContinuationSystemPrompt', () => {
+  describe('continuity rules (continuation-specific)', () => {
+    it('includes CONTINUITY RULES section', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('CONTINUITY RULES (CONTINUATION):');
+    });
+
+    it('references DO NOT CONTRADICT', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('DO NOT CONTRADICT:');
+    });
+
+    it('includes ESTABLISHED WORLD FACTS reference', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('ESTABLISHED WORLD FACTS');
+    });
+
+    it('includes CHARACTER INFORMATION reference', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('CHARACTER INFORMATION');
+    });
+
+    it('forbids retcons', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('RETCONS ARE FORBIDDEN');
+    });
+
+    it('does NOT contain ESTABLISHMENT RULES', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).not.toContain('ESTABLISHMENT RULES (OPENING)');
+    });
+  });
+
+  describe('continuation quality criteria', () => {
+    it('includes active state quality with removal patterns', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('ACTIVE STATE QUALITY CRITERIA');
+      expect(prompt).toContain('REMOVAL QUALITY');
+    });
+
+    it('includes canon quality', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('CANON QUALITY CRITERIA');
+    });
+  });
+
+  describe('shared sections preserved', () => {
+    it('includes storytelling guidelines', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('STORYTELLING GUIDELINES:');
+    });
+
+    it('includes inventory management', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('INVENTORY MANAGEMENT:');
+    });
+
+    it('includes health management', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('HEALTH MANAGEMENT:');
+    });
+
+    it('includes protagonist affect', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('PROTAGONIST AFFECT');
+    });
+
+    it('includes active state tracking', () => {
+      const prompt = buildContinuationSystemPrompt();
+      expect(prompt).toContain('ACTIVE STATE TRACKING');
+    });
+  });
+});
+
+describe('buildSystemPrompt (deprecated)', () => {
+  it('returns same content as buildContinuationSystemPrompt for backward compatibility', () => {
+    const deprecated = buildSystemPrompt();
+    const continuation = buildContinuationSystemPrompt();
+    expect(deprecated).toBe(continuation);
   });
 });

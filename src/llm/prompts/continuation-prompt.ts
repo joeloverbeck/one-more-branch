@@ -1,6 +1,6 @@
 import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, ContinuationContext, PromptOptions } from '../types.js';
-import { buildSystemPrompt } from './system-prompt.js';
+import { buildContinuationSystemPrompt } from './system-prompt.js';
 import {
   buildProtagonistAffectSection,
   buildSceneContextSection,
@@ -114,7 +114,7 @@ REQUIREMENTS (follow ALL):
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.`;
 
   const messages: ChatMessage[] = [
-    { role: 'system', content: buildSystemPrompt(options) },
+    { role: 'system', content: buildContinuationSystemPrompt(options) },
   ];
 
   // Add few-shot examples if requested

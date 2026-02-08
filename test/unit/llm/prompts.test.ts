@@ -235,7 +235,7 @@ describe('buildOpeningPrompt', () => {
     expect(system).toContain('Time pressure');
   });
 
-  it('should include CONTINUITY RULES in system message', () => {
+  it('should include ESTABLISHMENT RULES in system message for opening', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',
       worldbuilding: '',
@@ -243,10 +243,24 @@ describe('buildOpeningPrompt', () => {
     });
 
     const system = getSystemMessage(messages);
-    expect(system).toContain('CONTINUITY RULES');
-    expect(system).toContain('Do NOT contradict');
-    expect(system).toContain('Do NOT retcon');
+    // Opening uses ESTABLISHMENT RULES, not CONTINUITY RULES
+    expect(system).toContain('ESTABLISHMENT RULES (OPENING)');
+    expect(system).toContain('CHARACTER CONCEPT FIDELITY (CRITICAL)');
+    expect(system).toContain('FIRST page');
     expect(system).toContain('newCanonFacts');
+  });
+
+  it('should NOT include CONTINUITY RULES in opening system message', () => {
+    const messages = buildOpeningPrompt({
+      characterConcept: 'Character',
+      worldbuilding: '',
+      tone: 'dark fantasy',
+    });
+
+    const system = getSystemMessage(messages);
+    // Opening should NOT have continuation-specific continuity rules
+    expect(system).not.toContain('CONTINUITY RULES (CONTINUATION)');
+    expect(system).not.toContain('ESTABLISHED WORLD FACTS');
   });
 
   it('should include enhanced storytelling guidelines', () => {
