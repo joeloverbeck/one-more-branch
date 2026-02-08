@@ -1,220 +1,175 @@
-# ACTSTAARC-014: Deprecate Old State Types
+# ACTSTAARC-014: Remove Old State Types
 
 **Status**: PENDING
-**Priority**: LOW (cleanup after migration verified)
-**Depends On**: All other ACTSTAARC tickets
-**Estimated Scope**: Small
+**Priority**: MEDIUM (cleanup enables cleaner architecture)
+**Depends On**: All other ACTSTAARC tickets (completed)
+**Estimated Scope**: Medium
 
 ---
 
 ## Summary
 
-Add deprecation notices to old state types and functions that are being replaced by the active state system. This ticket should be done AFTER the migration is verified to work correctly.
+Remove all legacy event-log state types and functions that have been replaced by the active state system. The active state migration is complete (ACTSTAARC-001 through 015, except 012 and 014), and old stories have been migrated to `old-stories/`. No deprecation period needed—complete removal now.
 
 ---
 
-## Files to Touch
+## Rationale
 
-### Modify
-- `src/models/state/general-state.ts` - Add deprecation notices
-- `src/llm/types.ts` - Add deprecation notice to old ContinuationContext field
-
----
-
-## Out of Scope (DO NOT CHANGE)
-
-- All other files - They're already updated to use new types
-- Actual removal of types - That's a future ticket after deprecation period
-- Test files - They should use new types already
+- **No backward compatibility burden**: Old stories are archived, new stories use active state
+- **Maintenance hygiene**: Unused code becomes a maintenance liability
+- **Architectural clarity**: Single source of truth for state management
+- **Test simplification**: Remove dual-format handling from tests
 
 ---
 
-## Implementation Details
+## Types and Functions to Remove
 
-### Deprecate Old State Types
+### From `src/models/state/general-state.ts`
 
-```typescript
-// src/models/state/general-state.ts
+Remove entirely:
+- `StateChange` type alias
+- `StateChanges` interface
+- `AccumulatedState` interface
+- `createEmptyAccumulatedState()` function
+- `createEmptyStateChanges()` function
+- `applyStateChanges()` function
+- `accumulateState()` function
 
-/**
- * @deprecated Use TaggedStateEntry and ActiveState instead.
- * This type is replaced by the active state system and will be removed in a future version.
- */
-export type StateChange = string;
+### From `src/models/page.ts`
 
-/**
- * @deprecated Use ActiveStateChanges instead.
- * This type is replaced by the active state system and will be removed in a future version.
- */
-export interface StateChanges {
-  readonly added: readonly StateChange[];
-  readonly removed: readonly StateChange[];
-}
+Remove from `Page` interface:
+- `stateChanges: StateChanges` field
+- `accumulatedState: AccumulatedState` field
 
-/**
- * @deprecated Use ActiveState instead.
- * This type is replaced by the active state system and will be removed in a future version.
- */
-export interface AccumulatedState {
-  readonly changes: readonly StateChange[];
-}
+Remove from `CreatePageData` interface:
+- `stateChanges?: StateChanges` parameter
+- `parentAccumulatedState?: AccumulatedState` parameter
 
-/**
- * @deprecated Use createEmptyActiveState instead.
- */
-export function createEmptyAccumulatedState(): AccumulatedState {
-  console.warn('createEmptyAccumulatedState is deprecated. Use createEmptyActiveState instead.');
-  return { changes: [] };
-}
+Update `createPage()` function:
+- Remove state change application logic for old types
+- Remove `stateChanges` and `accumulatedState` from page object construction
 
-/**
- * @deprecated Use createEmptyActiveStateChanges instead.
- */
-export function createEmptyStateChanges(): StateChanges {
-  console.warn('createEmptyStateChanges is deprecated. Use createEmptyActiveStateChanges instead.');
-  return { added: [], removed: [] };
-}
+### From Module Exports
 
-/**
- * @deprecated Use applyActiveStateChanges instead.
- */
-export function applyStateChanges(
-  current: AccumulatedState,
-  changes: StateChanges
-): AccumulatedState {
-  console.warn('applyStateChanges is deprecated. Use applyActiveStateChanges instead.');
-  // ... existing implementation
-}
-```
+Remove from `src/models/index.ts`:
+- All re-exports of old state types and functions
 
-### Deprecate Old Context Field
+Remove from `src/models/state/index.ts`:
+- All re-exports of old state types and functions
 
-```typescript
-// src/llm/types.ts
+---
 
-export interface ContinuationContext {
-  // ... other fields ...
+## Files to Modify
 
-  /**
-   * @deprecated Use activeState instead.
-   * This field contains the old event log format and will be removed.
-   */
-  accumulatedState: readonly string[];
+### Core Models
+- `src/models/state/general-state.ts` - Remove types and functions
+- `src/models/page.ts` - Remove fields and related logic
+- `src/models/index.ts` - Update exports
+- `src/models/state/index.ts` - Update exports
 
-  /** The current active state (location, threats, constraints, threads) */
-  activeState: ActiveState;
+### Engine Layer
+- `src/engine/state-manager.ts` - Remove `computeAccumulatedState`, `mergeStateChanges`, `formatStateForDisplay`
+- `src/engine/parent-state-collector.ts` - Remove `accumulatedState` from `CollectedParentState`
+- `src/engine/page-builder.ts` - Remove `stateChanges: createEmptyStateChanges()` assignments
 
-  // ... other fields ...
-}
-```
+### Persistence Layer
+- `src/persistence/page-serializer.ts` - Remove `stateChanges` and `accumulatedState` from `PageFileData`
+- `src/persistence/page-state-service.ts` - Update if it references old types
 
-### Add Migration Guide Comment
+### LLM Layer
+- `src/llm/types.ts` - Remove `accumulatedState` from `ContinuationContext` (if present)
+
+---
+
+## Test Updates Required
+
+All tests referencing old state types must be updated. Key patterns to find and remove:
 
 ```typescript
-// src/models/state/general-state.ts
-
-/**
- * MIGRATION GUIDE
- * ===============
- *
- * The old state system used an event log pattern:
- *   stateChanges: { added: string[], removed: string[] }
- *   accumulatedState: { changes: string[] }
- *
- * This is replaced by the active state system:
- *   activeStateChanges: ActiveStateChanges
- *   accumulatedActiveState: ActiveState
- *
- * Key differences:
- * 1. Active state tracks current truths, not historical events
- * 2. Entries use prefix tags for reliable matching (THREAT_ID: description)
- * 3. Removals use prefix-only format for matching
- * 4. State is categorized: threats, constraints, threads, location
- *
- * See specs/active-state-architecture.md for full details.
- */
+// REMOVE patterns like:
+stateChanges: { added: [...], removed: [...] }
+accumulatedState: { changes: [...] }
+parentAccumulatedState: page.accumulatedState
+createEmptyStateChanges()
+createEmptyAccumulatedState()
 ```
+
+### Test directories to scan:
+- `test/unit/models/`
+- `test/unit/engine/`
+- `test/unit/persistence/`
+- `test/integration/`
+- `test/e2e/`
+- `test/performance/`
+- `test/memory/`
+
+---
+
+## Implementation Order
+
+1. **Remove type definitions** (general-state.ts)
+2. **Update Page model** (page.ts)
+3. **Update module exports** (index.ts files)
+4. **Update engine layer** (state-manager, parent-state-collector, page-builder)
+5. **Update persistence layer** (page-serializer, page-state-service)
+6. **Update LLM types** (types.ts)
+7. **Update all tests** (comprehensive scan and update)
+8. **Verify clean build**
 
 ---
 
 ## Acceptance Criteria
 
-### Tests That Must Pass
-
-The deprecation should not break any tests:
+### Code Verification
 
 ```bash
-npm run test
+# No old type references in source
+grep -r "StateChange\|AccumulatedState" src/ --include="*.ts" | grep -v ".test.ts"
+# Expected: No output
+
+# No old field references in models
+grep -r "stateChanges\|accumulatedState" src/models/ --include="*.ts"
+# Expected: No output (or only comments explaining removal)
 ```
 
-### Deprecation Verification
+### Build Verification
 
-```typescript
-describe('Deprecated state types', () => {
-  it('createEmptyAccumulatedState logs deprecation warning', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-    createEmptyAccumulatedState();
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('deprecated')
-    );
-
-    warnSpy.mockRestore();
-  });
-
-  it('createEmptyStateChanges logs deprecation warning', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-    createEmptyStateChanges();
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('deprecated')
-    );
-
-    warnSpy.mockRestore();
-  });
-
-  it('applyStateChanges logs deprecation warning', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-    applyStateChanges({ changes: [] }, { added: [], removed: [] });
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('deprecated')
-    );
-
-    warnSpy.mockRestore();
-  });
-});
+```bash
+npm run typecheck  # Must pass
+npm run lint       # Must pass
+npm run build      # Must succeed
 ```
 
-### Invariants That Must Remain True
+### Test Verification
 
-1. **No Breaking Changes**: Deprecated functions still work
-2. **Clear Warnings**: Deprecation warnings indicate replacement
-3. **JSDoc Deprecation**: IDE shows deprecation in autocompletion
-4. **Migration Guide**: Clear documentation for migration path
-5. **Tests Still Pass**: All existing tests continue to work
+```bash
+npm run test       # All tests pass
+npm run test:coverage  # Coverage maintained
+```
 
 ---
 
 ## Definition of Done
 
-- [ ] `@deprecated` JSDoc added to old types
-- [ ] `console.warn` added to deprecated functions
-- [ ] Migration guide comment added
-- [ ] All tests pass (with deprecation warnings mocked)
-- [ ] IDE shows deprecation warnings on hover
+- [ ] All old state types removed from `general-state.ts`
+- [ ] `Page` interface no longer has `stateChanges` or `accumulatedState`
+- [ ] `CreatePageData` no longer has old state parameters
+- [ ] Module exports updated (no old type exports)
+- [ ] State manager functions for old types removed
+- [ ] Parent state collector uses only active state
+- [ ] Page builder uses only active state
+- [ ] Persistence serialization uses only active state
+- [ ] All test files updated
 - [ ] `npm run typecheck` passes
 - [ ] `npm run lint` passes
+- [ ] `npm run test` passes
+- [ ] Grep verification confirms no old type references
 
 ---
 
-## Future Work (NOT in this ticket)
+## Out of Scope
 
-In a future version, after deprecation period:
-- Remove `StateChange`, `StateChanges`, `AccumulatedState` types
-- Remove `stateChanges` and `accumulatedState` from Page interface
-- Remove `accumulatedState` from ContinuationContext
-- Remove deprecated factory functions
+- Modifying `old-stories/` directory (archived data left as-is)
+- Creating migration scripts for old stories (they're archived, not active)
+- Adding any backward compatibility shims
+- Adding deprecation warnings (we're removing, not deprecating)

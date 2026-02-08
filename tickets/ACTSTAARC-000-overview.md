@@ -52,7 +52,7 @@ This epic tracks the migration from the event-log state system (`stateChanges`/`
 |--------|-------|------------|----------|
 | ACTSTAARC-012 | Implement Old Story Migration | 011 | MEDIUM |
 | ACTSTAARC-013 | Update Test Fixtures and Mocks | 004, 005, 006 | MEDIUM |
-| ACTSTAARC-014 | Deprecate Old State Types | All others | LOW |
+| ACTSTAARC-014 | Remove Old State Types | All others | MEDIUM |
 
 ---
 
@@ -133,14 +133,13 @@ ACTSTAARC-001 (Tagged Entry Types)
 - [ ] Pages persist and load with new format (011)
 - [ ] Old stories migrated to old-stories/ (012)
 - [ ] All test fixtures updated (013)
-- [ ] Old types deprecated with warnings (014)
+- [ ] Old types completely removed (014)
 
 ### Key Invariants Preserved:
 - Page immutability
 - Branch isolation
 - State accumulation correctness
-- Backward compatibility during transition
-- No data loss for existing stories
+- No data loss for existing stories (archived to old-stories/)
 
 ---
 
@@ -149,15 +148,5 @@ ACTSTAARC-001 (Tagged Entry Types)
 If issues are found after deployment:
 
 1. **Partial Rollback**: Old stories remain in `old-stories/`, can be moved back
-2. **Format Detection**: Code can detect old vs new format
-3. **Deprecation Period**: Old types still functional until explicit removal
+2. **Format Detection**: Code can detect old vs new format via serializer
 
----
-
-## Post-Migration Cleanup (Future)
-
-After migration is verified stable:
-1. Remove old state types entirely
-2. Remove `stateChanges`/`accumulatedState` from Page
-3. Remove `accumulatedState` from ContinuationContext
-4. Delete `old-stories/` directory (user decision)
