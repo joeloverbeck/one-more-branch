@@ -1,6 +1,4 @@
 import {
-  ActiveState,
-  ActiveStateChanges,
   AccumulatedCharacterState,
   AccumulatedStructureState,
   CharacterStateChanges,
@@ -10,118 +8,23 @@ import {
   InventoryChanges,
   Page,
   PageId,
-  ProtagonistAffect,
-  createEmptyActiveState,
-  createEmptyActiveStateChanges,
-  createDefaultProtagonistAffect,
   parseStructureVersionId,
   parsePageId,
 } from '../models';
+import { PageFileData } from './page-serializer-types';
+import {
+  structureStateToFileData,
+  fileDataToStructureState,
+  protagonistAffectToFileData,
+  fileDataToProtagonistAffect,
+  activeStateChangesToFileData,
+  accumulatedActiveStateToFileData,
+  fileDataToActiveStateChanges,
+  fileDataToAccumulatedActiveState,
+} from './converters';
 
-interface BeatProgressionFileData {
-  beatId: string;
-  status: 'pending' | 'active' | 'concluded';
-  resolution?: string;
-}
-
-interface AccumulatedStructureStateFileData {
-  currentActIndex: number;
-  currentBeatIndex: number;
-  beatProgressions: BeatProgressionFileData[];
-}
-
-interface SecondaryEmotionFileData {
-  emotion: string;
-  cause: string;
-}
-
-interface ProtagonistAffectFileData {
-  primaryEmotion: string;
-  primaryIntensity: 'mild' | 'moderate' | 'strong' | 'overwhelming';
-  primaryCause: string;
-  secondaryEmotions: SecondaryEmotionFileData[];
-  dominantMotivation: string;
-}
-
-interface TaggedStateEntryFileData {
-  prefix: string;
-  description: string;
-  raw: string;
-}
-
-export interface PageFileData {
-  id: number;
-  narrativeText: string;
-  choices: Array<{
-    text: string;
-    nextPageId: number | null;
-  }>;
-  activeStateChanges: {
-    newLocation: string | null;
-    threatsAdded: string[];
-    threatsRemoved: string[];
-    constraintsAdded: string[];
-    constraintsRemoved: string[];
-    threadsAdded: string[];
-    threadsResolved: string[];
-  };
-  accumulatedActiveState: {
-    currentLocation: string;
-    activeThreats: TaggedStateEntryFileData[];
-    activeConstraints: TaggedStateEntryFileData[];
-    openThreads: TaggedStateEntryFileData[];
-  };
-  inventoryChanges: {
-    added: string[];
-    removed: string[];
-  };
-  accumulatedInventory: string[];
-  healthChanges: {
-    added: string[];
-    removed: string[];
-  };
-  accumulatedHealth: string[];
-  characterStateChanges: Array<{
-    characterName: string;
-    added: string[];
-    removed: string[];
-  }>;
-  accumulatedCharacterState: Record<string, string[]>;
-  accumulatedStructureState: AccumulatedStructureStateFileData;
-  protagonistAffect?: ProtagonistAffectFileData;
-  structureVersionId?: string | null;
-  isEnding: boolean;
-  parentPageId: number | null;
-  parentChoiceIndex: number | null;
-}
-
-function structureStateToFileData(
-  state: AccumulatedStructureState
-): AccumulatedStructureStateFileData {
-  return {
-    currentActIndex: state.currentActIndex,
-    currentBeatIndex: state.currentBeatIndex,
-    beatProgressions: state.beatProgressions.map((beatProgression) => ({
-      beatId: beatProgression.beatId,
-      status: beatProgression.status,
-      resolution: beatProgression.resolution,
-    })),
-  };
-}
-
-function fileDataToStructureState(
-  data: AccumulatedStructureStateFileData
-): AccumulatedStructureState {
-  return {
-    currentActIndex: data.currentActIndex,
-    currentBeatIndex: data.currentBeatIndex,
-    beatProgressions: data.beatProgressions.map((beatProgression) => ({
-      beatId: beatProgression.beatId,
-      status: beatProgression.status,
-      resolution: beatProgression.resolution,
-    })),
-  };
-}
+// Re-export PageFileData for public API
+export { PageFileData } from './page-serializer-types';
 
 export function serializePage(page: Page): PageFileData {
   // Convert CharacterStateChanges to file format
@@ -144,21 +47,8 @@ export function serializePage(page: Page): PageFileData {
       text: choice.text,
       nextPageId: choice.nextPageId,
     })),
-    activeStateChanges: {
-      newLocation: page.activeStateChanges.newLocation,
-      threatsAdded: [...page.activeStateChanges.threatsAdded],
-      threatsRemoved: [...page.activeStateChanges.threatsRemoved],
-      constraintsAdded: [...page.activeStateChanges.constraintsAdded],
-      constraintsRemoved: [...page.activeStateChanges.constraintsRemoved],
-      threadsAdded: [...page.activeStateChanges.threadsAdded],
-      threadsResolved: [...page.activeStateChanges.threadsResolved],
-    },
-    accumulatedActiveState: {
-      currentLocation: page.accumulatedActiveState.currentLocation,
-      activeThreats: page.accumulatedActiveState.activeThreats.map(entry => ({ ...entry })),
-      activeConstraints: page.accumulatedActiveState.activeConstraints.map(entry => ({ ...entry })),
-      openThreads: page.accumulatedActiveState.openThreads.map(entry => ({ ...entry })),
-    },
+    activeStateChanges: activeStateChangesToFileData(page.activeStateChanges),
+    accumulatedActiveState: accumulatedActiveStateToFileData(page.accumulatedActiveState),
     inventoryChanges: {
       added: [...page.inventoryChanges.added],
       removed: [...page.inventoryChanges.removed],
@@ -172,16 +62,7 @@ export function serializePage(page: Page): PageFileData {
     characterStateChanges,
     accumulatedCharacterState,
     accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
-    protagonistAffect: {
-      primaryEmotion: page.protagonistAffect.primaryEmotion,
-      primaryIntensity: page.protagonistAffect.primaryIntensity,
-      primaryCause: page.protagonistAffect.primaryCause,
-      secondaryEmotions: page.protagonistAffect.secondaryEmotions.map(se => ({
-        emotion: se.emotion,
-        cause: se.cause,
-      })),
-      dominantMotivation: page.protagonistAffect.dominantMotivation,
-    },
+    protagonistAffect: protagonistAffectToFileData(page.protagonistAffect),
     structureVersionId: page.structureVersionId,
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
@@ -222,40 +103,10 @@ export function deserializePage(data: PageFileData): Page {
       ? null
       : parseStructureVersionId(data.structureVersionId);
 
-  const activeStateChanges: ActiveStateChanges = data.activeStateChanges
-    ? {
-        newLocation: data.activeStateChanges.newLocation,
-        threatsAdded: [...data.activeStateChanges.threatsAdded],
-        threatsRemoved: [...data.activeStateChanges.threatsRemoved],
-        constraintsAdded: [...data.activeStateChanges.constraintsAdded],
-        constraintsRemoved: [...data.activeStateChanges.constraintsRemoved],
-        threadsAdded: [...data.activeStateChanges.threadsAdded],
-        threadsResolved: [...data.activeStateChanges.threadsResolved],
-      }
-    : createEmptyActiveStateChanges();
+  const activeStateChanges = fileDataToActiveStateChanges(data.activeStateChanges);
+  const accumulatedActiveState = fileDataToAccumulatedActiveState(data.accumulatedActiveState);
 
-  const accumulatedActiveState: ActiveState = data.accumulatedActiveState
-    ? {
-        currentLocation: data.accumulatedActiveState.currentLocation,
-        activeThreats: data.accumulatedActiveState.activeThreats.map(entry => ({ ...entry })),
-        activeConstraints: data.accumulatedActiveState.activeConstraints.map(entry => ({ ...entry })),
-        openThreads: data.accumulatedActiveState.openThreads.map(entry => ({ ...entry })),
-      }
-    : createEmptyActiveState();
-
-  // Handle protagonistAffect with backward compatibility for existing pages
-  const protagonistAffect: ProtagonistAffect = data.protagonistAffect
-    ? {
-        primaryEmotion: data.protagonistAffect.primaryEmotion,
-        primaryIntensity: data.protagonistAffect.primaryIntensity,
-        primaryCause: data.protagonistAffect.primaryCause,
-        secondaryEmotions: data.protagonistAffect.secondaryEmotions.map(se => ({
-          emotion: se.emotion,
-          cause: se.cause,
-        })),
-        dominantMotivation: data.protagonistAffect.dominantMotivation,
-      }
-    : createDefaultProtagonistAffect();
+  const protagonistAffect = fileDataToProtagonistAffect(data.protagonistAffect);
 
   return {
     id: parsePageId(data.id),
