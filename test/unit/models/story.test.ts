@@ -92,6 +92,78 @@ describe('Story', () => {
       expect(story.tone).toBe('dark and mysterious');
     });
 
+    it('creates story with npcs when provided', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        npcs: 'Gandalf the wizard, Frodo the hobbit',
+      });
+
+      expect(story.npcs).toBe('Gandalf the wizard, Frodo the hobbit');
+    });
+
+    it('creates story with startingSituation when provided', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        startingSituation: 'You wake up in a dungeon cell',
+      });
+
+      expect(story.startingSituation).toBe('You wake up in a dungeon cell');
+    });
+
+    it('trims npcs and startingSituation', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        npcs: '  Gandalf  ',
+        startingSituation: '  Dungeon cell  ',
+      });
+
+      expect(story.npcs).toBe('Gandalf');
+      expect(story.startingSituation).toBe('Dungeon cell');
+    });
+
+    it('sets npcs to undefined when empty string', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        npcs: '',
+      });
+
+      expect(story.npcs).toBeUndefined();
+    });
+
+    it('sets startingSituation to undefined when empty string', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        startingSituation: '',
+      });
+
+      expect(story.startingSituation).toBeUndefined();
+    });
+
+    it('sets npcs to undefined when whitespace only', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        npcs: '   ',
+      });
+
+      expect(story.npcs).toBeUndefined();
+    });
+
+    it('sets startingSituation to undefined when whitespace only', () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'A brave knight',
+        startingSituation: '   ',
+      });
+
+      expect(story.startingSituation).toBeUndefined();
+    });
+
     it('trims whitespace from title, characterConcept, worldbuilding, and tone', () => {
       const story = createStory({
         title: '  Title  ',

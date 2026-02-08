@@ -22,6 +22,15 @@ ${context.worldbuilding}
 `
     : '';
 
+  const npcsSection = context.npcs
+    ? `NPCS (Available Characters):
+${context.npcs}
+
+These characters are available for use in the story. Introduce or involve them when narratively appropriate.
+
+`
+    : '';
+
   const structureSection = buildStoryStructureSection(
     context.structure,
     context.accumulatedStructureState,
@@ -96,7 +105,7 @@ ${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 

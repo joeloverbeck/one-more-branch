@@ -14,7 +14,7 @@ CHARACTER CONCEPT FIDELITY (CRITICAL):
 - Any abilities or limitations mentioned in the concept must be respected
 
 WHAT YOU ESTABLISH:
-- LOCATION: Where the story begins (be specific and evocative)
+- LOCATION: Where the story begins (be specific and evocative). If a STARTING SITUATION is provided, honor its location and scene requirements.
 - INVENTORY: Items the character would logically possess based on their background
 - HEALTH: Only conditions explicitly implied by the character concept
 - ACTIVE STATE: Initial threats, constraints, and narrative threads

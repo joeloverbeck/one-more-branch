@@ -16,6 +16,24 @@ ${context.worldbuilding}
 `
     : '';
 
+  const npcsSection = context.npcs
+    ? `NPCS (Available Characters):
+${context.npcs}
+
+These characters are available for use in the story. Introduce them when narratively appropriate - you don't need to include all of them, and you don't need to introduce them all in the opening.
+
+`
+    : '';
+
+  const startingSituationSection = context.startingSituation
+    ? `STARTING SITUATION (MUST FOLLOW):
+${context.startingSituation}
+
+You MUST begin the story with this situation. This takes precedence over your creative decisions about how to open the narrative. Incorporate the specified scene, circumstances, or events exactly as described.
+
+`
+    : '';
+
   const structureSection =
     context.structure && firstAct && firstBeat
       ? `=== STORY STRUCTURE ===
@@ -38,7 +56,7 @@ Your task: Write the opening scene working toward this beat's objective.
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
 ${structureSection}REQUIREMENTS (follow ALL):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action

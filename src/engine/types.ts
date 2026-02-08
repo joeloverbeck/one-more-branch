@@ -28,6 +28,8 @@ export interface StartStoryOptions {
   readonly characterConcept: string;
   readonly worldbuilding?: string;
   readonly tone?: string;
+  readonly npcs?: string;
+  readonly startingSituation?: string;
   readonly apiKey: string;
 }
 

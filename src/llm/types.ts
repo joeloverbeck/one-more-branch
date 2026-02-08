@@ -87,6 +87,7 @@ export interface ContinuationContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  npcs?: string;
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc?: string | null;
@@ -111,6 +112,8 @@ export interface OpeningContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  npcs?: string;
+  startingSituation?: string;
   structure?: StoryStructure;
 }
 

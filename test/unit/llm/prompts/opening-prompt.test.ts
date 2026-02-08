@@ -117,3 +117,84 @@ describe('buildOpeningPrompt with active state', () => {
     expect(userMessage).toContain('ESTABLISHING');
   });
 });
+
+describe('buildOpeningPrompt with npcs and startingSituation', () => {
+  it('includes NPC section when npcs is provided', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A brave knight',
+      worldbuilding: 'Medieval fantasy',
+      tone: 'Adventure',
+      npcs: 'Gandalf the wizard, a wise mentor',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('NPCS (Available Characters)');
+    expect(userMessage).toContain('Gandalf the wizard, a wise mentor');
+    expect(userMessage).toContain('you don\'t need to include all of them');
+  });
+
+  it('omits NPC section when npcs is not provided', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A brave knight',
+      worldbuilding: 'Medieval fantasy',
+      tone: 'Adventure',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('NPCS (Available Characters)');
+  });
+
+  it('includes starting situation section when startingSituation is provided', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A brave knight',
+      worldbuilding: 'Medieval fantasy',
+      tone: 'Adventure',
+      startingSituation: 'You wake up in a dungeon cell',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('STARTING SITUATION (MUST FOLLOW)');
+    expect(userMessage).toContain('You wake up in a dungeon cell');
+    expect(userMessage).toContain('MUST begin the story with this situation');
+  });
+
+  it('omits starting situation section when startingSituation is not provided', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A brave knight',
+      worldbuilding: 'Medieval fantasy',
+      tone: 'Adventure',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('STARTING SITUATION');
+  });
+
+  it('includes both NPC and starting situation sections in correct order', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A brave knight',
+      worldbuilding: 'Medieval fantasy',
+      tone: 'Adventure',
+      npcs: 'The wise wizard',
+      startingSituation: 'You wake up in a dungeon',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    const npcIndex = userMessage.indexOf('NPCS (Available Characters)');
+    const situationIndex = userMessage.indexOf('STARTING SITUATION (MUST FOLLOW)');
+    const toneIndex = userMessage.indexOf('TONE/GENRE:');
+
+    expect(npcIndex).toBeGreaterThan(0);
+    expect(situationIndex).toBeGreaterThan(npcIndex);
+    expect(toneIndex).toBeGreaterThan(situationIndex);
+  });
+});

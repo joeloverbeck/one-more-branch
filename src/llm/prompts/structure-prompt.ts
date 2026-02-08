@@ -5,6 +5,8 @@ export interface StructureContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  npcs?: string;
+  startingSituation?: string;
 }
 
 const STRUCTURE_FEW_SHOT_USER = `Generate a story structure before the first page.
@@ -79,12 +81,20 @@ export function buildStructurePrompt(
     ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
     : '';
 
+  const npcsSection = context.npcs
+    ? `NPCS (Available Characters):\n${context.npcs}\n\n`
+    : '';
+
+  const startingSituationSection = context.startingSituation
+    ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
+    : '';
+
   const userPrompt = `Generate a story structure before the first page.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return exactly 3 acts following setup, confrontation, and resolution.

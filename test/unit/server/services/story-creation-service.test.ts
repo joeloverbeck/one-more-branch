@@ -130,6 +130,36 @@ describe('story-creation-service', () => {
       }
     });
 
+    it('accepts optional npcs and startingSituation as undefined', () => {
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        apiKey: 'sk-valid-api-key-12345',
+      });
+
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.trimmed.npcs).toBeUndefined();
+        expect(result.trimmed.startingSituation).toBeUndefined();
+      }
+    });
+
+    it('trims npcs and startingSituation when provided', () => {
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        npcs: '  Gandalf the wizard  ',
+        startingSituation: '  In a dark tavern  ',
+        apiKey: 'sk-valid-api-key-12345',
+      });
+
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.trimmed.npcs).toBe('Gandalf the wizard');
+        expect(result.trimmed.startingSituation).toBe('In a dark tavern');
+      }
+    });
+
     it('validates in correct priority order: title, characterConcept, apiKey', () => {
       // All invalid - should fail on title first
       let result = validateStoryInput({});

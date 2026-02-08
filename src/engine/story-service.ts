@@ -34,6 +34,8 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
     characterConcept,
     worldbuilding: options.worldbuilding,
     tone: options.tone,
+    npcs: options.npcs,
+    startingSituation: options.startingSituation,
   });
 
   try {
@@ -44,6 +46,8 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
         characterConcept: story.characterConcept,
         worldbuilding: story.worldbuilding,
         tone: story.tone,
+        npcs: story.npcs,
+        startingSituation: story.startingSituation,
       },
       options.apiKey,
     );

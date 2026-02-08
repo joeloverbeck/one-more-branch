@@ -1014,4 +1014,63 @@ describe('buildContinuationPrompt', () => {
       expect(content).not.toContain('- Event 2 occurred');
     });
   });
+
+  describe('npcs and startingSituation', () => {
+    it('includes NPC section when npcs is provided', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        npcs: 'Gandalf the wizard, a wise mentor who guides the hero',
+      });
+
+      const content = getUserMessage(messages);
+      expect(content).toContain('NPCS (Available Characters)');
+      expect(content).toContain('Gandalf the wizard, a wise mentor who guides the hero');
+      expect(content).toContain('Introduce or involve them when narratively appropriate');
+    });
+
+    it('omits NPC section when npcs is not provided', () => {
+      const messages = buildContinuationPrompt(baseContext);
+
+      const content = getUserMessage(messages);
+      expect(content).not.toContain('NPCS (Available Characters)');
+    });
+
+    it('omits NPC section when npcs is empty string', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        npcs: '',
+      });
+
+      const content = getUserMessage(messages);
+      expect(content).not.toContain('NPCS (Available Characters)');
+    });
+
+    it('does NOT include starting situation in continuation prompts', () => {
+      // Starting situation should only appear in opening prompts, never in continuation
+      const messages = buildContinuationPrompt(baseContext);
+
+      const content = getUserMessage(messages);
+      expect(content).not.toContain('STARTING SITUATION');
+      expect(content).not.toContain('MUST FOLLOW');
+    });
+
+    it('places NPC section after worldbuilding and before tone', () => {
+      const messages = buildContinuationPrompt({
+        ...baseContext,
+        worldbuilding: 'A medieval fantasy world with magic',
+        npcs: 'The wise wizard Merlin',
+      });
+
+      const content = getUserMessage(messages);
+      const worldbuildingIdx = content.indexOf('WORLDBUILDING:');
+      const npcsIdx = content.indexOf('NPCS (Available Characters)');
+      const toneIdx = content.indexOf('TONE/GENRE:');
+
+      expect(worldbuildingIdx).toBeGreaterThan(-1);
+      expect(npcsIdx).toBeGreaterThan(-1);
+      expect(toneIdx).toBeGreaterThan(-1);
+      expect(worldbuildingIdx).toBeLessThan(npcsIdx);
+      expect(npcsIdx).toBeLessThan(toneIdx);
+    });
+  });
 });
