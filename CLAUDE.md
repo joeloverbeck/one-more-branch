@@ -156,6 +156,30 @@ Serena provides:
 - Semantic search across the codebase
 - LSP-powered code understanding
 
+## Archiving Tickets and Specs
+
+When asked to archive a ticket, spec, or brainstorming document:
+
+1. **Edit the document** to mark its final status at the top:
+   - `**Status**: ✅ COMPLETED` - Fully implemented
+   - `**Status**: ❌ REJECTED` - Decided not to implement
+   - `**Status**: ⏸️ DEFERRED` - Postponed for later
+   - `**Status**: 🚫 NOT IMPLEMENTED` - Started but abandoned
+
+2. **Add an Outcome section** at the bottom (for completed tickets):
+   - Completion date
+   - What was actually changed
+   - Any deviations from the original plan
+   - Verification results
+
+3. **Move to appropriate archive subfolder**:
+   - `archive/tickets/` - Implementation tickets
+   - `archive/specs/` - Design specifications
+   - `archive/brainstorming/` - Brainstorming documents
+   - `archive/reports/` - Reports
+
+4. **Delete the original** from `tickets/`, `specs/`, `brainstorming/`, or `reports/`
+
 ## Testing Patterns
 
 ### Fire-and-Forget Route Handlers
