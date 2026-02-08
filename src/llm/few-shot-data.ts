@@ -34,11 +34,20 @@ export const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
       'Use a minor illusion spell to make the journal appear to be your textbook',
       'Excuse yourself claiming sudden illness and slip away to investigate',
     ],
-    stateChangesAdded: [
-      'You discovered a mysterious journal about the forbidden library',
-      'You drew unwanted attention from Professor Grimwald',
+    currentLocation: 'Advanced Transmutation lecture hall, back row',
+    threatsAdded: [
+      'THREAT_GRIMWALD_SUSPICION: Professor Grimwald is watching you closely',
     ],
-    stateChangesRemoved: [],
+    threatsRemoved: [],
+    constraintsAdded: [
+      'CONSTRAINT_CLASS_IN_SESSION: You are in the middle of a lecture',
+    ],
+    constraintsRemoved: [],
+    threadsAdded: [
+      'THREAD_FORBIDDEN_LIBRARY: The journal speaks of a library beneath the academy',
+      'THREAD_JOURNAL_ORIGIN: Where did this journal come from and who wrote it?',
+    ],
+    threadsResolved: [],
     newCanonFacts: [
       'Celestria Academy floats among the clouds on enchanted foundations',
       'Professor Grimwald teaches Advanced Transmutation',
@@ -115,12 +124,21 @@ export const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
       'Hide behind the statue and wait to see who the faculty member is',
       'Use an illusion to make yourself appear invisible and observe',
     ],
-    stateChangesAdded: [
-      'You entered the restricted east wing',
-      'You located the statue of Archmagus Caelan',
-      'You detected an approaching faculty member',
+    currentLocation: 'East wing corridor, beside the statue of Archmagus Caelan',
+    threatsAdded: [
+      'THREAT_FACULTY_APPROACHING: A senior faculty member is approaching your position',
     ],
-    stateChangesRemoved: [],
+    threatsRemoved: [],
+    constraintsAdded: [
+      'CONSTRAINT_RESTRICTED_AREA: You are trespassing in the restricted east wing',
+    ],
+    constraintsRemoved: [
+      'CONSTRAINT_CLASS_IN_SESSION',
+    ],
+    threadsAdded: [
+      'THREAD_STATUE_MECHANISM: The third rune on the staff may open a hidden passage',
+    ],
+    threadsResolved: [],
     newCanonFacts: [
       'The east wing houses portraits of ancient magisters',
       "Archmagus Caelan's statue has a staff with runes",
@@ -185,13 +203,20 @@ export const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
     narrative:
       'With trembling hands, you close the Codex of Unmaking and speak the words of binding. The ritual you learned from decoding the journal—the one its previous owner died protecting—wraps around the book like chains of light.\n\nThe hungry void within the pages screams, a sound that exists only in your mind, but you hold firm. You are Lyra, curious and stubborn and utterly unwilling to let ancient darkness win. The light grows brighter, the chains tighter, until finally the Codex falls silent.\n\nYou stand alone in the heart of the forbidden library, surrounded by floating tomes that no longer seem threatening. The knowledge here isn\'t dangerous—only the Codex was. And now it sleeps, bound by magic both ancient and new.\n\nWhen you emerge from the east wing three hours later, covered in dust and exhaustion, you find Professor Grimwald waiting. But the suspicion in his eyes has been replaced by something else—respect, perhaps, or recognition.\n\n"I wondered when someone would find their way down there," he says quietly. "I\'ve been waiting thirty years for a student brave enough—and clever enough—to do what needed to be done."\n\nHe extends his hand. In his palm rests a silver pin—the mark of the Academy\'s secret order of librarians.\n\n"Welcome, Miss Lyra. Your real education begins now."',
     choices: [],
-    stateChangesAdded: [
-      'You successfully bound the Codex of Unmaking',
-      "You earned Professor Grimwald's respect",
-      "You were inducted into the Academy's secret order of librarians",
+    currentLocation: 'Academy entrance hall, reunited with Professor Grimwald',
+    threatsAdded: [],
+    threatsRemoved: [
+      'THREAT_GRIMWALD_SUSPICION',
+      'THREAT_FACULTY_APPROACHING',
     ],
-    stateChangesRemoved: [
-      'You drew unwanted attention from Professor Grimwald',
+    constraintsAdded: [],
+    constraintsRemoved: [
+      'CONSTRAINT_RESTRICTED_AREA',
+    ],
+    threadsAdded: [],
+    threadsResolved: [
+      'THREAD_FORBIDDEN_LIBRARY',
+      'THREAD_JOURNAL_ORIGIN',
     ],
     newCanonFacts: [
       'The Codex of Unmaking can be bound by those who know the ritual',

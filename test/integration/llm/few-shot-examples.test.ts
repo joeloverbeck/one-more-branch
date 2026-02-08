@@ -132,14 +132,23 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
 
-      // Required fields (still uses legacy stateChangesAdded format in examples)
+      // Required fields - uses new active state format
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
-      expect(parsed).toHaveProperty('stateChangesAdded');
+      expect(parsed).toHaveProperty('currentLocation');
+      expect(parsed).toHaveProperty('threatsAdded');
+      expect(parsed).toHaveProperty('threatsRemoved');
+      expect(parsed).toHaveProperty('constraintsAdded');
+      expect(parsed).toHaveProperty('constraintsRemoved');
+      expect(parsed).toHaveProperty('threadsAdded');
+      expect(parsed).toHaveProperty('threadsResolved');
       expect(parsed).toHaveProperty('newCanonFacts');
       expect(parsed).toHaveProperty('isEnding');
       expect(parsed).toHaveProperty('beatConcluded');
       expect(parsed).toHaveProperty('beatResolution');
+      // Legacy fields should NOT be present
+      expect(parsed).not.toHaveProperty('stateChangesAdded');
+      expect(parsed).not.toHaveProperty('stateChangesRemoved');
     });
 
     it('should have all required fields in continuation example', () => {
@@ -148,15 +157,23 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
 
-      // Required fields (still uses legacy stateChangesAdded format in examples)
+      // Required fields - uses new active state format
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
-      expect(parsed).toHaveProperty('stateChangesAdded');
-      expect(parsed).toHaveProperty('stateChangesRemoved');
+      expect(parsed).toHaveProperty('currentLocation');
+      expect(parsed).toHaveProperty('threatsAdded');
+      expect(parsed).toHaveProperty('threatsRemoved');
+      expect(parsed).toHaveProperty('constraintsAdded');
+      expect(parsed).toHaveProperty('constraintsRemoved');
+      expect(parsed).toHaveProperty('threadsAdded');
+      expect(parsed).toHaveProperty('threadsResolved');
       expect(parsed).toHaveProperty('newCanonFacts');
       expect(parsed).toHaveProperty('isEnding');
       expect(parsed).toHaveProperty('beatConcluded');
       expect(parsed).toHaveProperty('beatResolution');
+      // Legacy fields should NOT be present
+      expect(parsed).not.toHaveProperty('stateChangesAdded');
+      expect(parsed).not.toHaveProperty('stateChangesRemoved');
     });
 
     it('should have all required fields in ending example', () => {
@@ -165,15 +182,23 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(endingAssistantContent) as Record<string, unknown>;
 
-      // Required fields (still uses legacy stateChangesAdded format in examples)
+      // Required fields - uses new active state format
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
-      expect(parsed).toHaveProperty('stateChangesAdded');
-      expect(parsed).toHaveProperty('stateChangesRemoved');
+      expect(parsed).toHaveProperty('currentLocation');
+      expect(parsed).toHaveProperty('threatsAdded');
+      expect(parsed).toHaveProperty('threatsRemoved');
+      expect(parsed).toHaveProperty('constraintsAdded');
+      expect(parsed).toHaveProperty('constraintsRemoved');
+      expect(parsed).toHaveProperty('threadsAdded');
+      expect(parsed).toHaveProperty('threadsResolved');
       expect(parsed).toHaveProperty('newCanonFacts');
       expect(parsed).toHaveProperty('isEnding');
       expect(parsed).toHaveProperty('beatConcluded');
       expect(parsed).toHaveProperty('beatResolution');
+      // Legacy fields should NOT be present
+      expect(parsed).not.toHaveProperty('stateChangesAdded');
+      expect(parsed).not.toHaveProperty('stateChangesRemoved');
     });
   });
 
@@ -237,9 +262,10 @@ describe('Few-Shot Examples Integration', () => {
         const parsed = JSON.parse(example.content) as Record<string, unknown>;
         const validated = validateGenerationResponse(parsed, example.content);
 
-        // Ensure key fields are preserved (examples still use legacy stateChangesAdded format)
+        // Ensure key fields are preserved (examples use new active state format)
         expect(validated.narrative.length).toBeGreaterThan(0);
         expect(validated.newCanonFacts.length).toBeGreaterThanOrEqual(0);
+        expect(validated.currentLocation).toBeDefined();
       }
     });
   });
