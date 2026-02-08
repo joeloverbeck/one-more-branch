@@ -18,6 +18,9 @@ old-stories/
 # Local config overrides
 configs/local.json
 
+# Git worktrees
+.worktrees/
+
 # IDE
 .vscode/
 .idea/
