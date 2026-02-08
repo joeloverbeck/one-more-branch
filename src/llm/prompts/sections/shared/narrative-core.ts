@@ -5,7 +5,10 @@
 
 export const STORYTELLING_GUIDELINES = `STORYTELLING GUIDELINES:
 - Write vivid, evocative prose that brings the world to life.
-- Use second person perspective ("you").
+- Use second person perspective ("you"), but write as though the protagonist's own mind is narrating the experience.
+- Match diction, observations, and internal reactions to the protagonist's personality, background, and emotional state.
+- What the protagonist NOTICES and HOW they describe it should reflect who they are: a thief cases the room for exits; a healer notices the injured; a scholar reads the inscriptions first.
+- Let emotional state color the prose naturally—a frightened character's narration is terse and hypervigilant; a confident one is expansive and unhurried.
 - Format narrative with blank lines between paragraphs for readability.
 - Show character through action, not exposition—let behavior reveal personality.
 - Keep scenes focused and forward-moving; avoid sprawling recaps.
