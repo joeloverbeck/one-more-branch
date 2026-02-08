@@ -16,4 +16,5 @@ export {
   buildActiveStateForBeatEvaluation,
   buildStoryStructureSection,
   buildWriterStructureContext,
+  buildAnalystStructureEvaluation,
 } from './story-structure-section.js';

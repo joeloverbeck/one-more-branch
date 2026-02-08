@@ -1,5 +1,7 @@
 # WRIANASPL-11: Create Result Merger
 
+**Status**: ✅ COMPLETED
+
 ## Summary
 
 Create `mergeWriterAndAnalystResults()` — the pure function that combines a `WriterResult` and an optional `AnalystResult` into a `ContinuationGenerationResult`. This is the single integration point between the two-call pipeline and the existing downstream code.
@@ -75,3 +77,12 @@ Key behavior:
 - `createBeatDeviation()` and `createNoDeviation()` in `story-arc.ts` are unchanged
 - The deviation construction logic matches exactly what `validateGenerationResponse()` does (same 4-condition check)
 - All existing tests pass: `npm run test:unit`
+
+## Outcome
+
+- **Completed**: 2026-02-08
+- **Files created**:
+  - `src/llm/result-merger.ts` — `mergeWriterAndAnalystResults()` function
+  - `test/unit/llm/result-merger.test.ts` — 9 unit tests
+- **Deviations**: None. Implementation matches spec exactly.
+- **Verification**: typecheck clean, build succeeds, 92 suites / 1373 tests pass

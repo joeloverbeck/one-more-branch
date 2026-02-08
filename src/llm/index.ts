@@ -10,6 +10,9 @@ export type {
   ChatMessage,
   JsonSchema,
   PromptOptions,
+  WriterResult,
+  AnalystResult,
+  AnalystContext,
 } from './types.js';
 
 export { LLMError } from './types.js';
@@ -31,9 +34,15 @@ export {
 
 export {
   STORY_GENERATION_SCHEMA,
+  WRITER_GENERATION_SCHEMA,
+  ANALYST_SCHEMA,
   GenerationResultSchema,
   validateGenerationResponse,
+  validateWriterResponse,
+  validateAnalystResponse,
   isStructuredOutputNotSupported,
 } from './schemas/index.js';
 
-export { generateOpeningPage, generateContinuationPage, validateApiKey } from './client.js';
+export { generateOpeningPage, generateContinuationPage, generateWriterPage, generateAnalystEvaluation, validateApiKey } from './client.js';
+
+export { mergeWriterAndAnalystResults } from './result-merger.js';
