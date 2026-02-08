@@ -1,6 +1,6 @@
 # ACTSTAARC-011: Update Persistence Layer for Active State
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: HIGH (data must persist correctly)
 **Depends On**: ACTSTAARC-004
 **Estimated Scope**: Medium
@@ -280,10 +280,36 @@ describe('page persistence with active state', () => {
 
 ## Definition of Done
 
-- [ ] Pages with active state serialize correctly
-- [ ] Pages without active state (old format) load with defaults
-- [ ] TaggedStateEntry structure preserved in JSON
-- [ ] Round-trip tests pass
-- [ ] Backward compatibility tests pass
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
+- [x] Pages with active state serialize correctly
+- [x] Pages without active state (old format) load with defaults
+- [x] TaggedStateEntry structure preserved in JSON
+- [x] Round-trip tests pass
+- [x] Backward compatibility tests pass
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+
+---
+
+## Outcome
+
+**Completion Date**: 2026-02-08
+
+**What Was Changed**:
+- Added comprehensive unit tests to `test/unit/persistence/page-serializer.test.ts`:
+  - Serialization of non-empty activeStateChanges
+  - Serialization of accumulatedActiveState with TaggedStateEntry structures
+  - Deep copy mutation protection tests
+  - Deserialization tests for both fields
+  - Round-trip preservation for complex active state
+- Added integration tests to `test/integration/persistence/page-repository.test.ts`:
+  - Full save/load round-trip with TaggedStateEntry structures
+  - Branch-divergent active state across sibling pages
+
+**Deviations from Plan**:
+- Core serialization/deserialization was already implemented in `src/persistence/page-serializer.ts` (lines 162-176 and 245-264) by a previous ticket
+- This ticket focused on adding the acceptance criteria tests rather than implementation
+
+**Verification Results**:
+- 1322 tests passing
+- typecheck passes
+- lint passes (with NODE_PATH workaround for worktree)
