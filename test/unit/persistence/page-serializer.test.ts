@@ -147,6 +147,96 @@ describe('page-serializer', () => {
         { text: 'Go right', nextPageId: null },
       ]);
     });
+
+    it('serializes non-empty activeStateChanges', () => {
+      const page = buildTestPage({
+        activeStateChanges: {
+          newLocation: 'Cave entrance',
+          threatsAdded: ['THREAT_CAVE: Unstable rocks overhead'],
+          threatsRemoved: ['THREAT_WOLVES'],
+          constraintsAdded: ['CONSTRAINT_DARK: No light source'],
+          constraintsRemoved: [],
+          threadsAdded: ['THREAD_TREASURE: Rumors of hidden treasure'],
+          threadsResolved: ['THREAD_PURSUIT'],
+        },
+      });
+
+      const fileData = serializePage(page);
+
+      expect(fileData.activeStateChanges).toEqual({
+        newLocation: 'Cave entrance',
+        threatsAdded: ['THREAT_CAVE: Unstable rocks overhead'],
+        threatsRemoved: ['THREAT_WOLVES'],
+        constraintsAdded: ['CONSTRAINT_DARK: No light source'],
+        constraintsRemoved: [],
+        threadsAdded: ['THREAD_TREASURE: Rumors of hidden treasure'],
+        threadsResolved: ['THREAD_PURSUIT'],
+      });
+    });
+
+    it('serializes non-empty accumulatedActiveState with TaggedStateEntry structures', () => {
+      const page = buildTestPage({
+        accumulatedActiveState: {
+          currentLocation: 'Forest clearing',
+          activeThreats: [
+            { prefix: 'THREAT_WOLVES', description: 'Wolf pack circling', raw: 'THREAT_WOLVES: Wolf pack circling' },
+            { prefix: 'THREAT_STORM', description: 'Storm approaching', raw: 'THREAT_STORM: Storm approaching' },
+          ],
+          activeConstraints: [
+            { prefix: 'CONSTRAINT_INJURED', description: 'Twisted ankle', raw: 'CONSTRAINT_INJURED: Twisted ankle' },
+          ],
+          openThreads: [
+            { prefix: 'THREAD_LETTER', description: 'Mysterious letter unread', raw: 'THREAD_LETTER: Mysterious letter unread' },
+          ],
+        },
+      });
+
+      const fileData = serializePage(page);
+
+      expect(fileData.accumulatedActiveState).toEqual({
+        currentLocation: 'Forest clearing',
+        activeThreats: [
+          { prefix: 'THREAT_WOLVES', description: 'Wolf pack circling', raw: 'THREAT_WOLVES: Wolf pack circling' },
+          { prefix: 'THREAT_STORM', description: 'Storm approaching', raw: 'THREAT_STORM: Storm approaching' },
+        ],
+        activeConstraints: [
+          { prefix: 'CONSTRAINT_INJURED', description: 'Twisted ankle', raw: 'CONSTRAINT_INJURED: Twisted ankle' },
+        ],
+        openThreads: [
+          { prefix: 'THREAD_LETTER', description: 'Mysterious letter unread', raw: 'THREAD_LETTER: Mysterious letter unread' },
+        ],
+      });
+    });
+
+    it('creates deep copies of active state arrays to prevent mutation', () => {
+      const page = buildTestPage({
+        activeStateChanges: {
+          newLocation: 'Room',
+          threatsAdded: ['THREAT_A: Original'],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        },
+        accumulatedActiveState: {
+          currentLocation: 'Room',
+          activeThreats: [{ prefix: 'THREAT_A', description: 'Original', raw: 'THREAT_A: Original' }],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      });
+
+      const fileData = serializePage(page);
+
+      // Mutate the file data
+      fileData.activeStateChanges!.threatsAdded.push('THREAT_B: Mutated');
+      fileData.accumulatedActiveState!.activeThreats.push({ prefix: 'THREAT_B', description: 'Mutated', raw: 'THREAT_B: Mutated' });
+
+      // Original page should be unchanged
+      expect(page.activeStateChanges.threatsAdded).toEqual(['THREAT_A: Original']);
+      expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
+    });
   });
 
   describe('deserializePage', () => {
@@ -363,6 +453,92 @@ describe('page-serializer', () => {
         expect(page.activeStateChanges).toEqual(createEmptyActiveStateChanges());
         expect(page.accumulatedActiveState).toEqual(createEmptyActiveState());
       });
+
+      it('deserializes non-empty activeStateChanges', () => {
+        const fileData = buildTestFileData({
+          activeStateChanges: {
+            newLocation: 'Dungeon entrance',
+            threatsAdded: ['THREAT_SKELETON: Animated skeleton guards'],
+            threatsRemoved: ['THREAT_BANDITS'],
+            constraintsAdded: ['CONSTRAINT_TORCH: Limited torch light'],
+            constraintsRemoved: [],
+            threadsAdded: [],
+            threadsResolved: ['THREAD_ESCAPE_ROUTE'],
+          },
+        });
+
+        const page = deserializePage(fileData);
+
+        expect(page.activeStateChanges).toEqual({
+          newLocation: 'Dungeon entrance',
+          threatsAdded: ['THREAT_SKELETON: Animated skeleton guards'],
+          threatsRemoved: ['THREAT_BANDITS'],
+          constraintsAdded: ['CONSTRAINT_TORCH: Limited torch light'],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: ['THREAD_ESCAPE_ROUTE'],
+        });
+      });
+
+      it('deserializes non-empty accumulatedActiveState with TaggedStateEntry structures', () => {
+        const fileData = buildTestFileData({
+          accumulatedActiveState: {
+            currentLocation: 'Throne room',
+            activeThreats: [
+              { prefix: 'THREAT_KING', description: 'Mad king on throne', raw: 'THREAT_KING: Mad king on throne' },
+            ],
+            activeConstraints: [
+              { prefix: 'CONSTRAINT_GUARDS', description: 'Surrounded by guards', raw: 'CONSTRAINT_GUARDS: Surrounded by guards' },
+              { prefix: 'CONSTRAINT_UNARMED', description: 'Weapons confiscated', raw: 'CONSTRAINT_UNARMED: Weapons confiscated' },
+            ],
+            openThreads: [
+              { prefix: 'THREAD_PROPHECY', description: 'Ancient prophecy unfulfilled', raw: 'THREAD_PROPHECY: Ancient prophecy unfulfilled' },
+            ],
+          },
+        });
+
+        const page = deserializePage(fileData);
+
+        expect(page.accumulatedActiveState.currentLocation).toBe('Throne room');
+        expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
+        expect(page.accumulatedActiveState.activeThreats[0]).toEqual({
+          prefix: 'THREAT_KING',
+          description: 'Mad king on throne',
+          raw: 'THREAT_KING: Mad king on throne',
+        });
+        expect(page.accumulatedActiveState.activeConstraints).toHaveLength(2);
+        expect(page.accumulatedActiveState.openThreads).toHaveLength(1);
+      });
+
+      it('creates deep copies of active state arrays during deserialization', () => {
+        const fileData = buildTestFileData({
+          activeStateChanges: {
+            newLocation: 'Room',
+            threatsAdded: ['THREAT_ORIGINAL: Original threat'],
+            threatsRemoved: [],
+            constraintsAdded: [],
+            constraintsRemoved: [],
+            threadsAdded: [],
+            threadsResolved: [],
+          },
+          accumulatedActiveState: {
+            currentLocation: 'Room',
+            activeThreats: [{ prefix: 'THREAT_ORIGINAL', description: 'Original threat', raw: 'THREAT_ORIGINAL: Original threat' }],
+            activeConstraints: [],
+            openThreads: [],
+          },
+        });
+
+        const page = deserializePage(fileData);
+
+        // Mutate the original file data
+        fileData.activeStateChanges!.threatsAdded.push('THREAT_MUTATED: Mutated');
+        fileData.accumulatedActiveState!.activeThreats.push({ prefix: 'THREAT_MUTATED', description: 'Mutated', raw: 'THREAT_MUTATED: Mutated' });
+
+        // Deserialized page should be unchanged
+        expect(page.activeStateChanges.threatsAdded).toEqual(['THREAT_ORIGINAL: Original threat']);
+        expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
+      });
     });
   });
 
@@ -444,6 +620,75 @@ describe('page-serializer', () => {
       expect(deserialized).toEqual(endingPage);
       expect(deserialized.isEnding).toBe(true);
       expect(deserialized.choices).toEqual([]);
+    });
+
+    it('preserves complex active state with all TaggedStateEntry fields through round-trip', () => {
+      const pageWithActiveState: Page = {
+        id: parsePageId(7),
+        narrativeText: 'A scene with complex active state',
+        choices: [
+          { text: 'Fight the dragon', nextPageId: null },
+          { text: 'Negotiate with the dragon', nextPageId: null },
+        ],
+        stateChanges: { added: ['encountered dragon'], removed: [] },
+        accumulatedState: { changes: ['encountered dragon'] },
+        activeStateChanges: {
+          newLocation: 'Dragon lair - treasure chamber',
+          threatsAdded: ['THREAT_DRAGON: Ancient red dragon awakened', 'THREAT_FLAMES: Fire filling the chamber'],
+          threatsRemoved: ['THREAT_GUARDS'],
+          constraintsAdded: ['CONSTRAINT_HEAT: Extreme heat limiting movement'],
+          constraintsRemoved: ['CONSTRAINT_STEALTH'],
+          threadsAdded: ['THREAD_ARTIFACT: The legendary sword is within reach'],
+          threadsResolved: ['THREAD_ENTRANCE'],
+        },
+        accumulatedActiveState: {
+          currentLocation: 'Dragon lair - treasure chamber',
+          activeThreats: [
+            { prefix: 'THREAT_DRAGON', description: 'Ancient red dragon awakened', raw: 'THREAT_DRAGON: Ancient red dragon awakened' },
+            { prefix: 'THREAT_FLAMES', description: 'Fire filling the chamber', raw: 'THREAT_FLAMES: Fire filling the chamber' },
+          ],
+          activeConstraints: [
+            { prefix: 'CONSTRAINT_HEAT', description: 'Extreme heat limiting movement', raw: 'CONSTRAINT_HEAT: Extreme heat limiting movement' },
+          ],
+          openThreads: [
+            { prefix: 'THREAD_ARTIFACT', description: 'The legendary sword is within reach', raw: 'THREAD_ARTIFACT: The legendary sword is within reach' },
+            { prefix: 'THREAD_ESCAPE', description: 'Must find way out after getting sword', raw: 'THREAD_ESCAPE: Must find way out after getting sword' },
+          ],
+        },
+        inventoryChanges: { added: [], removed: [] },
+        accumulatedInventory: ['torch', 'rope'],
+        healthChanges: { added: [], removed: [] },
+        accumulatedHealth: [],
+        characterStateChanges: [],
+        accumulatedCharacterState: {},
+        accumulatedStructureState: {
+          currentActIndex: 1,
+          currentBeatIndex: 2,
+          beatProgressions: [],
+        },
+        structureVersionId: null,
+        protagonistAffect: createDefaultProtagonistAffect(),
+        isEnding: false,
+        parentPageId: parsePageId(6),
+        parentChoiceIndex: 1,
+      };
+
+      const serialized = serializePage(pageWithActiveState);
+      const deserialized = deserializePage(serialized);
+
+      expect(deserialized).toEqual(pageWithActiveState);
+
+      // Explicitly verify TaggedStateEntry structure is preserved
+      expect(deserialized.accumulatedActiveState.activeThreats[0]).toEqual({
+        prefix: 'THREAT_DRAGON',
+        description: 'Ancient red dragon awakened',
+        raw: 'THREAT_DRAGON: Ancient red dragon awakened',
+      });
+
+      // Verify all arrays are preserved
+      expect(deserialized.activeStateChanges.threatsAdded).toHaveLength(2);
+      expect(deserialized.activeStateChanges.threatsRemoved).toEqual(['THREAT_GUARDS']);
+      expect(deserialized.accumulatedActiveState.openThreads).toHaveLength(2);
     });
   });
 

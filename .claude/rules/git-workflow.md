@@ -58,3 +58,27 @@ git branch -d <branch-name>              # Error: branch used by worktree
 ```
 
 **Why**: Git prevents deleting a branch that's checked out in any worktree. The worktree holds a reference to the branch, so you must remove the worktree first to release that reference.
+
+## ESLint in Git Worktrees
+
+When running ESLint in a git worktree, you may encounter a **duplicate plugin error**:
+
+```
+ESLint couldn't determine the plugin "@typescript-eslint" uniquely.
+- /path/to/project/.worktrees/feature/node_modules/@typescript-eslint/...
+- /path/to/project/node_modules/@typescript-eslint/...
+```
+
+**Why**: Node.js module resolution walks up the directory tree, finding `node_modules` in both the worktree AND the main repository. ESLint sees duplicate plugin registrations.
+
+**Solution**: Set `NODE_PATH` explicitly to force local resolution:
+
+```bash
+# WRONG - fails in worktrees:
+npm run lint
+
+# CORRECT - works in worktrees:
+NODE_PATH="$(pwd)/node_modules" npx eslint --ext .ts,.tsx src/ test/ --quiet
+```
+
+**When to use**: Always use the `NODE_PATH` approach when running ESLint inside a git worktree. The standard `npm run lint` works fine in the main repository.

@@ -1,4 +1,6 @@
 import {
+  ActiveState,
+  ActiveStateChanges,
   Page,
   Story,
   StoryId,
@@ -272,5 +274,153 @@ describe('page-repository integration', () => {
     expect(loadedBranchB?.accumulatedStructureState).toEqual(branchB.accumulatedStructureState);
     expect(loadedBranchA?.accumulatedStructureState.currentBeatIndex).toBe(1);
     expect(loadedBranchB?.accumulatedStructureState.currentBeatIndex).toBe(0);
+  });
+
+  it('save/load round-trip preserves active state fields with TaggedStateEntry structures', async () => {
+    const story = buildStory({ characterConcept: `${TEST_PREFIX} active state persistence` });
+    createdStoryIds.add(story.id);
+    await saveStory(story);
+
+    const activeStateChanges: ActiveStateChanges = {
+      newLocation: 'Abandoned temple',
+      threatsAdded: ['THREAT_GUARDIAN: Stone guardian awakened', 'THREAT_TRAP: Pressure plates detected'],
+      threatsRemoved: ['THREAT_STORM'],
+      constraintsAdded: ['CONSTRAINT_DARKNESS: No natural light'],
+      constraintsRemoved: [],
+      threadsAdded: ['THREAD_RELIC: Ancient relic rumored to be here'],
+      threadsResolved: ['THREAD_MAP'],
+    };
+
+    const accumulatedActiveState: ActiveState = {
+      currentLocation: 'Abandoned temple',
+      activeThreats: [
+        { prefix: 'THREAT_GUARDIAN', description: 'Stone guardian awakened', raw: 'THREAT_GUARDIAN: Stone guardian awakened' },
+        { prefix: 'THREAT_TRAP', description: 'Pressure plates detected', raw: 'THREAT_TRAP: Pressure plates detected' },
+      ],
+      activeConstraints: [
+        { prefix: 'CONSTRAINT_DARKNESS', description: 'No natural light', raw: 'CONSTRAINT_DARKNESS: No natural light' },
+      ],
+      openThreads: [
+        { prefix: 'THREAD_RELIC', description: 'Ancient relic rumored to be here', raw: 'THREAD_RELIC: Ancient relic rumored to be here' },
+      ],
+    };
+
+    const page = createPage({
+      id: parsePageId(1),
+      narrativeText: 'You enter the abandoned temple...',
+      choices: [createChoice('Proceed carefully'), createChoice('Search for traps')],
+      stateChanges: { added: ['entered temple'], removed: [] },
+      isEnding: false,
+      parentPageId: null,
+      parentChoiceIndex: null,
+      activeStateChanges,
+      parentAccumulatedActiveState: {
+        currentLocation: 'Forest edge',
+        activeThreats: [{ prefix: 'THREAT_STORM', description: 'Storm approaching', raw: 'THREAT_STORM: Storm approaching' }],
+        activeConstraints: [],
+        openThreads: [{ prefix: 'THREAD_MAP', description: 'Following old map', raw: 'THREAD_MAP: Following old map' }],
+      },
+    });
+
+    await savePage(story.id, page);
+    const loaded = await loadPage(story.id, page.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded!.activeStateChanges).toEqual(activeStateChanges);
+    expect(loaded!.accumulatedActiveState).toEqual(accumulatedActiveState);
+
+    // Explicitly verify TaggedStateEntry structure survived file I/O
+    expect(loaded!.accumulatedActiveState.activeThreats[0]).toEqual({
+      prefix: 'THREAT_GUARDIAN',
+      description: 'Stone guardian awakened',
+      raw: 'THREAT_GUARDIAN: Stone guardian awakened',
+    });
+
+    // Verify all arrays have correct lengths
+    expect(loaded!.accumulatedActiveState.activeThreats).toHaveLength(2);
+    expect(loaded!.accumulatedActiveState.activeConstraints).toHaveLength(1);
+    expect(loaded!.accumulatedActiveState.openThreads).toHaveLength(1);
+  });
+
+  it('save/load preserves branch-divergent active state across sibling pages', async () => {
+    const story = buildStory({ characterConcept: `${TEST_PREFIX} divergent active state branches` });
+    createdStoryIds.add(story.id);
+    await saveStory(story);
+
+    const root = buildRootPage();
+    await savePage(story.id, root);
+
+    // Branch A: Resolves a threat, adds new constraint
+    const branchA = createPage({
+      id: parsePageId(2),
+      narrativeText: 'Branch A: You defeat the wolf...',
+      choices: [createChoice('Continue'), createChoice('Rest')],
+      stateChanges: { added: ['wolf defeated'], removed: [] },
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 0,
+      parentAccumulatedState: root.accumulatedState,
+      activeStateChanges: {
+        newLocation: 'Forest clearing - safe',
+        threatsAdded: [],
+        threatsRemoved: ['THREAT_WOLF'],
+        constraintsAdded: ['CONSTRAINT_TIRED: Exhausted from fight'],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      },
+      parentAccumulatedActiveState: {
+        currentLocation: 'Forest path',
+        activeThreats: [{ prefix: 'THREAT_WOLF', description: 'Hungry wolf stalking', raw: 'THREAT_WOLF: Hungry wolf stalking' }],
+        activeConstraints: [],
+        openThreads: [],
+      },
+    });
+
+    // Branch B: Avoids wolf, different location
+    const branchB = createPage({
+      id: parsePageId(3),
+      narrativeText: 'Branch B: You climb a tree to escape...',
+      choices: [createChoice('Wait'), createChoice('Call for help')],
+      stateChanges: { added: ['climbed tree'], removed: [] },
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 1,
+      parentAccumulatedState: root.accumulatedState,
+      activeStateChanges: {
+        newLocation: 'Tree canopy - elevated',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: ['CONSTRAINT_STUCK: Cannot descend safely'],
+        constraintsRemoved: [],
+        threadsAdded: ['THREAD_RESCUE: Must find another way down'],
+        threadsResolved: [],
+      },
+      parentAccumulatedActiveState: {
+        currentLocation: 'Forest path',
+        activeThreats: [{ prefix: 'THREAT_WOLF', description: 'Hungry wolf stalking', raw: 'THREAT_WOLF: Hungry wolf stalking' }],
+        activeConstraints: [],
+        openThreads: [],
+      },
+    });
+
+    await savePage(story.id, branchA);
+    await savePage(story.id, branchB);
+
+    const loadedA = await loadPage(story.id, branchA.id);
+    const loadedB = await loadPage(story.id, branchB.id);
+
+    // Branch A resolved threat, has constraint
+    expect(loadedA!.accumulatedActiveState.currentLocation).toBe('Forest clearing - safe');
+    expect(loadedA!.accumulatedActiveState.activeThreats).toHaveLength(0);
+    expect(loadedA!.accumulatedActiveState.activeConstraints).toHaveLength(1);
+    expect(loadedA!.accumulatedActiveState.activeConstraints[0].prefix).toBe('CONSTRAINT_TIRED');
+
+    // Branch B still has threat, different location and constraint
+    expect(loadedB!.accumulatedActiveState.currentLocation).toBe('Tree canopy - elevated');
+    expect(loadedB!.accumulatedActiveState.activeThreats).toHaveLength(1);
+    expect(loadedB!.accumulatedActiveState.activeThreats[0].prefix).toBe('THREAT_WOLF');
+    expect(loadedB!.accumulatedActiveState.openThreads).toHaveLength(1);
+    expect(loadedB!.accumulatedActiveState.openThreads[0].prefix).toBe('THREAD_RESCUE');
   });
 });
