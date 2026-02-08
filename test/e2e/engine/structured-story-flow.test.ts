@@ -1,11 +1,13 @@
 import { storyEngine } from '@/engine';
 import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { StoryId } from '@/models';
+import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
@@ -114,7 +116,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string, pageNumber: number) {
+function buildWriterResult(selectedChoice: string, pageNumber: number): WriterResult {
   if (selectedChoice.includes('Pursue')) {
     return {
       narrative:
@@ -210,7 +212,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number) {
   };
 }
 
-function buildAnalystResult(narrative: string, pageNumber: number) {
+function buildAnalystResult(narrative: string, pageNumber: number): AnalystResult {
   if (narrative.includes('catch the courier')) {
     return {
       beatConcluded: true,

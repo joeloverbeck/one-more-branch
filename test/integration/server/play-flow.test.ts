@@ -9,6 +9,7 @@ jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));

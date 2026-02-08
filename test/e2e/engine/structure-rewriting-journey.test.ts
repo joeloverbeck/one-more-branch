@@ -1,11 +1,13 @@
 import { StoryEngine, storyEngine } from '@/engine';
 import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { StoryId } from '@/models';
+import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
@@ -182,7 +184,7 @@ function createRewriteFetchResponse(): Response {
   } as Response;
 }
 
-function buildWriterResult(selectedChoice: string) {
+function buildWriterResult(selectedChoice: string): WriterResult {
   if (selectedChoice === 'Commit to the alliance publicly') {
     return {
       narrative:
@@ -278,7 +280,7 @@ function buildWriterResult(selectedChoice: string) {
   };
 }
 
-function buildAnalystResult(narrative: string) {
+function buildAnalystResult(narrative: string): AnalystResult {
   if (narrative.includes('copy sealed dispatches')) {
     return {
       beatConcluded: true,

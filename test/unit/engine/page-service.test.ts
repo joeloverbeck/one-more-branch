@@ -2,7 +2,6 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generateWriterPage,
-  mergeWriterAndAnalystResults,
 } from '../../../src/llm';
 import {
   createChoice,
@@ -25,6 +24,7 @@ jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('../../../src/llm').mergeWriterAndAnalystResults,
 }));
 

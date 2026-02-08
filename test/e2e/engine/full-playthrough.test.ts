@@ -1,11 +1,13 @@
 import { storyEngine } from '@/engine';
 import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
+import type { WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
@@ -60,7 +62,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string, stepIndex: number) {
+function buildWriterResult(selectedChoice: string, stepIndex: number): WriterResult {
   if (selectedChoice.includes('beacon tower')) {
     return {
       narrative:

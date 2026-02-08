@@ -16,8 +16,13 @@ describe('STORY_GENERATION_SCHEMA', () => {
     expect(schema.required).toEqual([
       'narrative',
       'choices',
-      'stateChangesAdded',
-      'stateChangesRemoved',
+      'currentLocation',
+      'threatsAdded',
+      'threatsRemoved',
+      'constraintsAdded',
+      'constraintsRemoved',
+      'threadsAdded',
+      'threadsResolved',
       'newCanonFacts',
       'newCharacterCanonFacts',
       'inventoryAdded',
@@ -89,5 +94,50 @@ describe('STORY_GENERATION_SCHEMA', () => {
     expect(schema.properties.invalidatedBeatIds.type).toBe('array');
     expect(schema.properties.narrativeSummary.type).toBe('string');
     expect(schema.properties.storyArc).toBeUndefined();
+  });
+
+  it('should define active state fields with correct types and descriptions', () => {
+    const schema = STORY_GENERATION_SCHEMA.json_schema.schema as {
+      properties: Record<string, { type: string; items?: { type: string }; description: string }>;
+    };
+
+    expect(schema.properties.currentLocation.type).toBe('string');
+    expect(schema.properties.currentLocation.description).toContain('END of this scene');
+
+    expect(schema.properties.threatsAdded.type).toBe('array');
+    expect(schema.properties.threatsAdded.items?.type).toBe('string');
+    expect(schema.properties.threatsAdded.description).toContain('THREAT_ID');
+
+    expect(schema.properties.threatsRemoved.type).toBe('array');
+    expect(schema.properties.threatsRemoved.items?.type).toBe('string');
+    expect(schema.properties.threatsRemoved.description).toContain('prefix only');
+
+    expect(schema.properties.constraintsAdded.type).toBe('array');
+    expect(schema.properties.constraintsAdded.items?.type).toBe('string');
+    expect(schema.properties.constraintsAdded.description).toContain('CONSTRAINT_ID');
+
+    expect(schema.properties.constraintsRemoved.type).toBe('array');
+    expect(schema.properties.constraintsRemoved.items?.type).toBe('string');
+    expect(schema.properties.constraintsRemoved.description).toContain('prefix only');
+
+    expect(schema.properties.threadsAdded.type).toBe('array');
+    expect(schema.properties.threadsAdded.items?.type).toBe('string');
+    expect(schema.properties.threadsAdded.description).toContain('THREAD_ID');
+
+    expect(schema.properties.threadsResolved.type).toBe('array');
+    expect(schema.properties.threadsResolved.items?.type).toBe('string');
+    expect(schema.properties.threadsResolved.description).toContain('prefix only');
+  });
+
+  it('should not contain legacy stateChangesAdded/stateChangesRemoved fields', () => {
+    const schema = STORY_GENERATION_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+
+    expect(schema.properties.stateChangesAdded).toBeUndefined();
+    expect(schema.properties.stateChangesRemoved).toBeUndefined();
+    expect(schema.required).not.toContain('stateChangesAdded');
+    expect(schema.required).not.toContain('stateChangesRemoved');
   });
 });

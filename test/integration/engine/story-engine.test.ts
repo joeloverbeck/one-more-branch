@@ -1,11 +1,13 @@
 import { storyEngine } from '@/engine';
 import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
+import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
@@ -92,7 +94,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string) {
+function buildWriterResult(selectedChoice: string): WriterResult {
   if (selectedChoice === 'Investigate the ember trail') {
     return {
       narrative:
@@ -156,7 +158,7 @@ function buildWriterResult(selectedChoice: string) {
   };
 }
 
-function buildAnalystResult(narrative: string) {
+function buildAnalystResult(narrative: string): AnalystResult {
   if (narrative.includes('embers down alleys')) {
     return {
       beatConcluded: true,
