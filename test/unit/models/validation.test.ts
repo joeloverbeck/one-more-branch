@@ -96,59 +96,75 @@ describe('Validation', () => {
     });
 
     it("returns valid=false with min-choice error for non-ending with 1 choice", () => {
-      const page: unknown = {
-        id: 2,
+      // Create a valid non-ending page first
+      const basePage = createPage({
+        id: 2 as PageId,
         narrativeText: 'A'.repeat(60),
-        choices: [{ text: 'Only option', nextPageId: null }],
-        accumulatedStructureState: { currentActIndex: 0, currentBeatIndex: 0, beatProgressions: [] },
-        structureVersionId: null,
+        choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
-        parentPageId: 1,
+        parentPageId: 1 as PageId,
         parentChoiceIndex: 0,
+      });
+
+      // Modify to have only 1 choice (below min of 2)
+      const invalidPage = {
+        ...basePage,
+        choices: [createChoice('Only option')],
       };
 
-      const result = validatePage(page);
+      const result = validatePage(invalidPage);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Non-ending pages must have at least 2 choices');
     });
 
     it("returns valid=false with max-choice error for non-ending with 6 choices", () => {
-      const page: unknown = {
-        id: 2,
+      // Create a valid non-ending page first
+      const basePage = createPage({
+        id: 2 as PageId,
         narrativeText: 'A'.repeat(60),
-        choices: [
-          { text: 'A', nextPageId: null },
-          { text: 'B', nextPageId: null },
-          { text: 'C', nextPageId: null },
-          { text: 'D', nextPageId: null },
-          { text: 'E', nextPageId: null },
-          { text: 'F', nextPageId: null },
-        ],
-        accumulatedStructureState: { currentActIndex: 0, currentBeatIndex: 0, beatProgressions: [] },
-        structureVersionId: null,
+        choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
-        parentPageId: 1,
+        parentPageId: 1 as PageId,
         parentChoiceIndex: 0,
+      });
+
+      // Modify to have 6 choices (exceeds max of 5)
+      const invalidPage = {
+        ...basePage,
+        choices: [
+          createChoice('A'),
+          createChoice('B'),
+          createChoice('C'),
+          createChoice('D'),
+          createChoice('E'),
+          createChoice('F'),
+        ],
       };
 
-      const result = validatePage(page);
+      const result = validatePage(invalidPage);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Too many choices (maximum 5)');
     });
 
     it("returns valid=false with ending-choice error for ending page with choices", () => {
-      const page: unknown = {
-        id: 2,
+      // Create a valid non-ending page first, then modify to test the invariant
+      const basePage = createPage({
+        id: 2 as PageId,
         narrativeText: 'A'.repeat(60),
-        choices: [{ text: 'Should not exist', nextPageId: null }],
-        accumulatedStructureState: { currentActIndex: 0, currentBeatIndex: 0, beatProgressions: [] },
-        structureVersionId: null,
-        isEnding: true,
-        parentPageId: 1,
+        choices: [createChoice('Choice A'), createChoice('Choice B')],
+        isEnding: false,
+        parentPageId: 1 as PageId,
         parentChoiceIndex: 0,
+      });
+
+      // Modify to create an invalid ending page with choices
+      const invalidPage = {
+        ...basePage,
+        isEnding: true,
+        choices: [createChoice('Should not exist')],
       };
 
-      const result = validatePage(page);
+      const result = validatePage(invalidPage);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Ending pages must have no choices');
     });

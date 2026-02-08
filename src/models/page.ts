@@ -146,13 +146,9 @@ export function isPage(value: unknown): value is Page {
   const structureVersionIdValid =
     structureVersionId === null || isStructureVersionId(structureVersionId);
 
-  // protagonistAffect is optional for backward compatibility with existing pages
-  const protagonistAffectValid =
-    obj['protagonistAffect'] === undefined || isProtagonistAffect(obj['protagonistAffect']);
-  const activeStateChangesValid =
-    obj['activeStateChanges'] === undefined || isActiveStateChanges(obj['activeStateChanges']);
-  const accumulatedActiveStateValid =
-    obj['accumulatedActiveState'] === undefined || isActiveState(obj['accumulatedActiveState']);
+  const protagonistAffectValid = isProtagonistAffect(obj['protagonistAffect']);
+  const activeStateChangesValid = isActiveStateChanges(obj['activeStateChanges']);
+  const accumulatedActiveStateValid = isActiveState(obj['accumulatedActiveState']);
 
   return (
     typeof obj['id'] === 'number' &&

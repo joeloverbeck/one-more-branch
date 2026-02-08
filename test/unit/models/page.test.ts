@@ -332,21 +332,21 @@ describe('Page', () => {
       expect(isPage(invalidPage)).toBe(false);
     });
 
-    it('returns true for legacy pages without active state fields', () => {
+    it('returns false for pages missing active state fields', () => {
       const page = createPage({
         id: 1 as PageId,
-        narrativeText: 'Legacy',
+        narrativeText: 'Missing fields',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
       });
 
-      const legacyPage = { ...page } as Record<string, unknown>;
-      delete legacyPage.activeStateChanges;
-      delete legacyPage.accumulatedActiveState;
+      const invalidPage = { ...page } as Record<string, unknown>;
+      delete invalidPage.activeStateChanges;
+      delete invalidPage.accumulatedActiveState;
 
-      expect(isPage(legacyPage)).toBe(true);
+      expect(isPage(invalidPage)).toBe(false);
     });
 
     it('returns false when activeStateChanges shape is invalid', () => {
