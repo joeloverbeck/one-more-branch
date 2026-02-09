@@ -327,6 +327,7 @@ describe('structure-generator', () => {
 
   it('falls back premise to overallTheme when premise is missing', async () => {
     const payload = createValidStructurePayload();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { premise: _premise, ...withoutPremise } = payload;
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutPremise)));
 
@@ -339,6 +340,7 @@ describe('structure-generator', () => {
 
   it('falls back pacingBudget to defaults when pacingBudget is missing', async () => {
     const payload = createValidStructurePayload();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pacingBudget: _pacingBudget, ...withoutBudget } = payload;
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutBudget)));
 
