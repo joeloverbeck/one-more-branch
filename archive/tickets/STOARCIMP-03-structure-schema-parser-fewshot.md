@@ -1,5 +1,7 @@
 # STOARCIMP-03: Update structure schema, parser, and few-shot examples for new fields
 
+**Status**: ✅ COMPLETED
+
 **Phase**: 1 (Data Model Enrichment)
 **Spec sections**: 1.5, 1.6, 1.9
 **Depends on**: STOARCIMP-01
@@ -59,3 +61,18 @@ Update the structure generation pipeline to produce and parse the new fields:
 - **Beat `id` generation**: If IDs are assigned during parsing, assignment logic is unchanged.
 - **`rawResponse` preserved**: The raw LLM response string is still included.
 - **All existing tests pass**.
+
+## Outcome
+
+**Completed**: 2026-02-09
+
+**Changes made:**
+- `src/llm/schemas/structure-schema.ts`: Added `premise` (required string), `pacingBudget` (required object with `targetPagesMin`/`targetPagesMax`), and beat `role` (required enum of 4 values) to `STRUCTURE_GENERATION_SCHEMA`.
+- `src/llm/prompts/structure-prompt.ts`: Updated `STRUCTURE_FEW_SHOT_ASSISTANT` to include `premise`, `pacingBudget`, and beat `role` fields with appropriate example values.
+- `test/unit/llm/schemas/structure-schema.test.ts`: Updated required array assertions; added 3 new tests for premise, pacingBudget, and role schema properties.
+- `test/unit/llm/structure-generator.test.ts`: Added 4 new tests for parser fallback behavior (premise→overallTheme, pacingBudget→defaults, missing role→escalation, invalid role handling).
+- `test/unit/llm/prompts/structure-prompt.test.ts`: Added 1 new test verifying few-shot assistant message contains all new fields.
+
+**Deviations**: None. Parser and `StructureGenerationResult` type already had the new fields from STOARCIMP-01, so only schema + few-shot + tests needed updating.
+
+**Verification**: 95 unit test suites pass (1401 tests), TypeScript typecheck clean, 0 regressions.

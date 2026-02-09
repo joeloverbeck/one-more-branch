@@ -43,7 +43,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       additionalProperties: boolean;
     };
 
-    expect(schema.required).toEqual(['overallTheme', 'acts']);
+    expect(schema.required).toEqual(['overallTheme', 'premise', 'pacingBudget', 'acts']);
     expect(schema.properties.acts.items.required).toEqual([
       'name',
       'objective',
@@ -54,7 +54,61 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     expect(schema.properties.acts.items.properties.beats.items.required).toEqual([
       'description',
       'objective',
+      'role',
     ]);
     expect(schema.additionalProperties).toBe(false);
+  });
+
+  it('should include premise as a string property', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: { premise: { type: string; description: string } };
+    };
+
+    expect(schema.properties.premise.type).toBe('string');
+    expect(schema.properties.premise.description).toContain('dramatic question');
+  });
+
+  it('should include pacingBudget as an object with targetPagesMin and targetPagesMax', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        pacingBudget: {
+          type: string;
+          required: string[];
+          properties: {
+            targetPagesMin: { type: string };
+            targetPagesMax: { type: string };
+          };
+        };
+      };
+    };
+
+    expect(schema.properties.pacingBudget.type).toBe('object');
+    expect(schema.properties.pacingBudget.required).toEqual(['targetPagesMin', 'targetPagesMax']);
+    expect(schema.properties.pacingBudget.properties.targetPagesMin.type).toBe('number');
+    expect(schema.properties.pacingBudget.properties.targetPagesMax.type).toBe('number');
+  });
+
+  it('should include beat role as an enum of dramatic function values', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    role: { type: string; enum: string[] };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const roleSchema = schema.properties.acts.items.properties.beats.items.properties.role;
+    expect(roleSchema.type).toBe('string');
+    expect(roleSchema.enum).toEqual(['setup', 'escalation', 'turning_point', 'resolution']);
   });
 });

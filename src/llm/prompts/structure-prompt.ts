@@ -21,6 +21,8 @@ TONE/GENRE: grim political fantasy`;
 
 const STRUCTURE_FEW_SHOT_ASSISTANT = `{
   "overallTheme": "Redeem a stained name by exposing the city tribunal's crimes",
+  "premise": "A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption before they execute her as a scapegoat.",
+  "pacingBudget": { "targetPagesMin": 20, "targetPagesMax": 40 },
   "acts": [
     {
       "name": "Ashes of Trust",
@@ -30,11 +32,13 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
       "beats": [
         {
           "description": "A former ally offers proof of a frame-up in exchange for protection",
-          "objective": "Decide whether to trust an ally tied to the tribunal"
+          "objective": "Decide whether to trust an ally tied to the tribunal",
+          "role": "setup"
         },
         {
           "description": "The protagonist steals sealed court ledgers from a guarded archive",
-          "objective": "Secure evidence before the tribunal can destroy it"
+          "objective": "Secure evidence before the tribunal can destroy it",
+          "role": "turning_point"
         }
       ]
     },
@@ -46,11 +50,13 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
       "beats": [
         {
           "description": "Rival houses demand proof before committing support",
-          "objective": "Win backing without revealing all leverage"
+          "objective": "Win backing without revealing all leverage",
+          "role": "escalation"
         },
         {
           "description": "The protagonist is cornered into a public hearing rigged by enemies",
-          "objective": "Survive the hearing and force hidden evidence into the open"
+          "objective": "Survive the hearing and force hidden evidence into the open",
+          "role": "turning_point"
         }
       ]
     },
@@ -62,11 +68,13 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
       "beats": [
         {
           "description": "A final alliance fractures over how far justice should go",
-          "objective": "Choose between revenge and legitimate accountability"
+          "objective": "Choose between revenge and legitimate accountability",
+          "role": "turning_point"
         },
         {
           "description": "The protagonist confronts the tribunal leadership at the old harbor court",
-          "objective": "End the conspiracy while preserving a future worth protecting"
+          "objective": "End the conspiracy while preserving a future worth protecting",
+          "role": "resolution"
         }
       ]
     }

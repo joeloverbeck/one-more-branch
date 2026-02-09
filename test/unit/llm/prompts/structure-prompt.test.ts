@@ -71,6 +71,17 @@ describe('buildStructurePrompt', () => {
     expect(systemMessage).toContain('NC-21');
     expect(systemMessage).toContain(CONTENT_POLICY);
   });
+
+  it('few-shot assistant message includes premise, pacingBudget, and role fields', () => {
+    const messages = buildStructurePrompt(baseContext, { fewShotMode: 'standard' });
+    const assistantMessage = messages.find(m => m.role === 'assistant')?.content ?? '';
+
+    expect(assistantMessage).toContain('"premise"');
+    expect(assistantMessage).toContain('"pacingBudget"');
+    expect(assistantMessage).toContain('"targetPagesMin"');
+    expect(assistantMessage).toContain('"targetPagesMax"');
+    expect(assistantMessage).toContain('"role"');
+  });
 });
 
 describe('buildStructurePrompt - minimal system prompt', () => {

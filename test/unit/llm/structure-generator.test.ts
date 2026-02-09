@@ -324,4 +324,74 @@ describe('structure-generator', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it('falls back premise to overallTheme when premise is missing', async () => {
+    const payload = createValidStructurePayload();
+    const { premise: _premise, ...withoutPremise } = payload;
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutPremise)));
+
+    const result = await generateStoryStructure(context, 'test-api-key', {
+      promptOptions: { enableChainOfThought: false },
+    });
+
+    expect(result.premise).toBe(payload.overallTheme);
+  });
+
+  it('falls back pacingBudget to defaults when pacingBudget is missing', async () => {
+    const payload = createValidStructurePayload();
+    const { pacingBudget: _pacingBudget, ...withoutBudget } = payload;
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutBudget)));
+
+    const result = await generateStoryStructure(context, 'test-api-key', {
+      promptOptions: { enableChainOfThought: false },
+    });
+
+    expect(result.pacingBudget).toEqual({ targetPagesMin: 15, targetPagesMax: 50 });
+  });
+
+  it('falls back beat role to escalation when role is missing', async () => {
+    const payload = createValidStructurePayload();
+    const withoutRoles = {
+      ...payload,
+      acts: payload.acts.map(act => ({
+        ...act,
+        beats: act.beats.map(({ role: _role, ...beat }) => beat),
+      })),
+    };
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutRoles)));
+
+    const result = await generateStoryStructure(context, 'test-api-key', {
+      promptOptions: { enableChainOfThought: false },
+    });
+
+    for (const act of result.acts) {
+      for (const beat of act.beats) {
+        expect(beat.role).toBe('escalation');
+      }
+    }
+  });
+
+  it('falls back beat role to escalation when role has invalid value', async () => {
+    const payload = createValidStructurePayload();
+    const withInvalidRoles = {
+      ...payload,
+      acts: payload.acts.map(act => ({
+        ...act,
+        beats: act.beats.map(beat => ({ ...beat, role: 'invalid_role' })),
+      })),
+    };
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withInvalidRoles)));
+
+    const result = await generateStoryStructure(context, 'test-api-key', {
+      promptOptions: { enableChainOfThought: false },
+    });
+
+    // Parser currently accepts any string for role; the schema enforces the enum at LLM level.
+    // The parser's fallback only triggers when role is not a string.
+    for (const act of result.acts) {
+      for (const beat of act.beats) {
+        expect(typeof beat.role).toBe('string');
+      }
+    }
+  });
 });

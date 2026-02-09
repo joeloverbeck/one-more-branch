@@ -8,9 +8,28 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
     schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['overallTheme', 'acts'],
+      required: ['overallTheme', 'premise', 'pacingBudget', 'acts'],
       properties: {
         overallTheme: { type: 'string' },
+        premise: {
+          type: 'string',
+          description: '1-2 sentence story hook capturing the core dramatic question.',
+        },
+        pacingBudget: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['targetPagesMin', 'targetPagesMax'],
+          properties: {
+            targetPagesMin: {
+              type: 'number',
+              description: 'Minimum target page count for the full story (10-80).',
+            },
+            targetPagesMax: {
+              type: 'number',
+              description: 'Maximum target page count for the full story (10-80).',
+            },
+          },
+        },
         acts: {
           type: 'array',
           description: 'Exactly 3 acts following setup, confrontation, and resolution.',
@@ -29,10 +48,15 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                 items: {
                   type: 'object',
                   additionalProperties: false,
-                  required: ['description', 'objective'],
+                  required: ['description', 'objective', 'role'],
                   properties: {
                     description: { type: 'string' },
                     objective: { type: 'string' },
+                    role: {
+                      type: 'string',
+                      enum: ['setup', 'escalation', 'turning_point', 'resolution'],
+                      description: 'Dramatic function of this beat in the story structure.',
+                    },
                   },
                 },
               },
