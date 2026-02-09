@@ -1,324 +1,178 @@
 /**
- * Unit tests for system prompt active state content.
- * Verifies that the system prompt includes new active state format instructions
- * and does not include old state format references.
+ * Unit tests for system prompt composition.
+ * Verifies that system prompts contain only creative persona sections
+ * and that data rules contain the schema/state sections.
  */
 
 import {
-  buildSystemPrompt,
   buildOpeningSystemPrompt,
   buildContinuationSystemPrompt,
+  composeCreativeSystemPrompt,
+  composeOpeningDataRules,
+  composeContinuationDataRules,
 } from '../../../../src/llm/prompts/system-prompt.js';
 
-describe('buildSystemPrompt', () => {
-  describe('active state tracking section', () => {
-    it('includes active state tracking section', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('ACTIVE STATE TRACKING');
-    });
-
-    it('explains THREAT format', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('THREAT_IDENTIFIER');
-      expect(prompt).toMatch(/THREAT_\w+:/);
-    });
-
-    it('explains CONSTRAINT format', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('CONSTRAINT_IDENTIFIER');
-    });
-
-    it('explains THREAD format', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('THREAD_IDENTIFIER');
-    });
-
-    it('explains prefix-only removal', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('ONLY the prefix');
-      expect(prompt).toContain('threatsRemoved');
-    });
-
-    it('includes currentLocation instruction', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('currentLocation');
-    });
-
-    it('provides example output', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toMatch(/"currentLocation":/);
-      expect(prompt).toMatch(/"threatsAdded":/);
-    });
+describe('composeCreativeSystemPrompt', () => {
+  it('includes storyteller introduction', () => {
+    const prompt = composeCreativeSystemPrompt();
+    expect(prompt).toContain('expert interactive fiction storyteller');
+    expect(prompt).toContain('Dungeon Master');
   });
 
-  describe('old format removal', () => {
-    it('does not instruct to use stateChangesAdded', () => {
-      const prompt = buildSystemPrompt();
-      // The old format instructed to use stateChanges - new format uses threats/constraints/threads
-      // stateChangesAdded may still appear in anti-pattern examples (❌) showing what NOT to do
-      expect(prompt).not.toContain('Use stateChangesAdded');
-      expect(prompt).not.toContain('put in stateChangesAdded');
-    });
-
-    it('does not instruct to use stateChangesRemoved', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).not.toContain('Use stateChangesRemoved');
-      expect(prompt).not.toContain('put in stateChangesRemoved');
-    });
-
-    it('does not include old STATE MANAGEMENT header', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).not.toContain('STATE MANAGEMENT (ADD/REMOVE PATTERN):');
-    });
-
-    it('does not include old STATE REMOVAL RULES section', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).not.toContain('STATE REMOVAL RULES:');
-    });
-
-    it('does not include old STATE CHANGE QUALITY section', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).not.toContain('STATE CHANGE QUALITY CRITERIA (CRITICAL):');
-    });
+  it('includes content policy', () => {
+    const prompt = composeCreativeSystemPrompt();
+    expect(prompt).toContain('CONTENT GUIDELINES:');
+    expect(prompt).toContain('NC-21 (ADULTS ONLY)');
   });
 
-  describe('active state quality criteria', () => {
-    it('includes ACTIVE STATE QUALITY section', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('ACTIVE STATE QUALITY CRITERIA (CRITICAL):');
-    });
-
-    it('includes GOOD THREATS examples', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('GOOD THREATS');
-    });
-
-    it('includes GOOD CONSTRAINTS examples', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('GOOD CONSTRAINTS');
-    });
-
-    it('includes GOOD THREADS examples', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('GOOD THREADS');
-    });
-
-    it('includes REMOVAL QUALITY guidance', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('REMOVAL QUALITY');
-    });
+  it('includes storytelling guidelines', () => {
+    const prompt = composeCreativeSystemPrompt();
+    expect(prompt).toContain('STORYTELLING GUIDELINES:');
+    expect(prompt).toContain('Write vivid, evocative prose');
   });
 
-  describe('field separation', () => {
-    it('includes ACTIVE STATE field description', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('ACTIVE STATE');
-      expect(prompt).toContain('threatsAdded/threatsRemoved');
-      expect(prompt).toContain('constraintsAdded/constraintsRemoved');
-      expect(prompt).toContain('threadsAdded/threadsResolved');
-    });
-
-    it('mentions PREFIX_ID format', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('PREFIX_ID: Description');
-    });
+  it('includes ending guidelines', () => {
+    const prompt = composeCreativeSystemPrompt();
+    expect(prompt).toContain('When writing endings');
+    expect(prompt).toContain('Make the ending feel earned');
   });
 
-  describe('preserved sections', () => {
-    it('still includes inventory management', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('INVENTORY MANAGEMENT:');
-      expect(prompt).toContain('inventoryAdded');
-      expect(prompt).toContain('inventoryRemoved');
-    });
-
-    it('still includes health management', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('HEALTH MANAGEMENT:');
-      expect(prompt).toContain('healthAdded');
-      expect(prompt).toContain('healthRemoved');
-    });
-
-    it('still includes canon quality', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('CANON QUALITY CRITERIA (CRITICAL):');
-    });
-
-    it('still includes storytelling guidelines', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('STORYTELLING GUIDELINES:');
-    });
-
-    it('still includes continuity rules', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('CONTINUITY RULES (CONTINUATION):');
-    });
-
-    it('still includes ending guidelines', () => {
-      const prompt = buildSystemPrompt();
-      expect(prompt).toContain('When writing endings');
-    });
+  it('does NOT include data-schema sections', () => {
+    const prompt = composeCreativeSystemPrompt();
+    expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+    expect(prompt).not.toContain('INVENTORY MANAGEMENT:');
+    expect(prompt).not.toContain('HEALTH MANAGEMENT:');
+    expect(prompt).not.toContain('FIELD SEPARATION:');
+    expect(prompt).not.toContain('PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):');
+    expect(prompt).not.toContain('ESTABLISHMENT RULES');
+    expect(prompt).not.toContain('CONTINUITY RULES');
+    expect(prompt).not.toContain('CHOICE REQUIREMENTS:');
   });
 });
 
 describe('buildOpeningSystemPrompt', () => {
-  describe('establishment rules (opening-specific)', () => {
-    it('includes ESTABLISHMENT RULES section', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('ESTABLISHMENT RULES (OPENING):');
-    });
-
-    it('includes character concept fidelity', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('CHARACTER CONCEPT FIDELITY');
-    });
-
-    it('includes what you establish section', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('WHAT YOU ESTABLISH:');
-    });
-
-    it('mentions empty removed arrays', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('removed');
-      expect(prompt).toContain('EMPTY');
-    });
-
-    it('does NOT contain CONTINUITY RULES', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).not.toContain('CONTINUITY RULES');
-    });
-
-    it('does NOT reference Established World Facts header', () => {
-      const prompt = buildOpeningSystemPrompt();
-      // Opening has no established facts yet, so shouldn't reference them
-      expect(prompt).not.toContain('DO NOT CONTRADICT:');
-    });
+  it('contains creative sections only', () => {
+    const prompt = buildOpeningSystemPrompt();
+    expect(prompt).toContain('STORYTELLING GUIDELINES:');
+    expect(prompt).toContain('When writing endings');
+    expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+    expect(prompt).not.toContain('INVENTORY MANAGEMENT:');
+    expect(prompt).not.toContain('ESTABLISHMENT RULES');
   });
 
-  describe('opening quality criteria', () => {
-    it('includes opening-specific active state quality', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('OPENING ACTIVE STATE QUALITY:');
-    });
-
-    it('includes opening canon quality', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('OPENING CANON QUALITY:');
-    });
-
-    it('mentions initial threats', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('GOOD INITIAL THREATS');
-    });
+  it('adds CoT when enableChainOfThought is true', () => {
+    const prompt = buildOpeningSystemPrompt({ enableChainOfThought: true });
+    expect(prompt).toContain('REASONING PROCESS:');
+    expect(prompt).toContain('<thinking>');
+    expect(prompt).toContain('<output>');
   });
 
-  describe('shared sections preserved', () => {
-    it('includes storytelling guidelines', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('STORYTELLING GUIDELINES:');
-    });
+  it('does NOT add CoT when enableChainOfThought is false', () => {
+    const prompt = buildOpeningSystemPrompt({ enableChainOfThought: false });
+    expect(prompt).not.toContain('REASONING PROCESS:');
+  });
 
-    it('includes inventory management', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('INVENTORY MANAGEMENT:');
-    });
+  it('does NOT include strict choice guidelines (they go in data rules now)', () => {
+    const prompt = buildOpeningSystemPrompt({ choiceGuidance: 'strict' });
+    expect(prompt).not.toContain('CHOICE REQUIREMENTS:');
+    expect(prompt).not.toContain('DIVERGENCE ENFORCEMENT');
+  });
 
-    it('includes health management', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('HEALTH MANAGEMENT:');
-    });
-
-    it('includes protagonist affect', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('PROTAGONIST AFFECT');
-    });
-
-    it('includes active state tracking', () => {
-      const prompt = buildOpeningSystemPrompt();
-      expect(prompt).toContain('ACTIVE STATE TRACKING');
-    });
+  it('is identical to buildContinuationSystemPrompt', () => {
+    expect(buildOpeningSystemPrompt()).toBe(buildContinuationSystemPrompt());
+    expect(buildOpeningSystemPrompt({ enableChainOfThought: true })).toBe(
+      buildContinuationSystemPrompt({ enableChainOfThought: true }),
+    );
   });
 });
 
 describe('buildContinuationSystemPrompt', () => {
-  describe('continuity rules (continuation-specific)', () => {
-    it('includes CONTINUITY RULES section', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('CONTINUITY RULES (CONTINUATION):');
-    });
-
-    it('references DO NOT CONTRADICT', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('DO NOT CONTRADICT:');
-    });
-
-    it('includes ESTABLISHED WORLD FACTS reference', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('ESTABLISHED WORLD FACTS');
-    });
-
-    it('includes CHARACTER INFORMATION reference', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('CHARACTER INFORMATION');
-    });
-
-    it('forbids retcons', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('RETCONS ARE FORBIDDEN');
-    });
-
-    it('does NOT contain ESTABLISHMENT RULES', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).not.toContain('ESTABLISHMENT RULES (OPENING)');
-    });
+  it('contains creative sections only', () => {
+    const prompt = buildContinuationSystemPrompt();
+    expect(prompt).toContain('STORYTELLING GUIDELINES:');
+    expect(prompt).toContain('When writing endings');
+    expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+    expect(prompt).not.toContain('CONTINUITY RULES');
+    expect(prompt).not.toContain('CANON QUALITY CRITERIA:');
   });
 
-  describe('continuation quality criteria', () => {
-    it('includes active state quality with removal patterns', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('ACTIVE STATE QUALITY CRITERIA');
-      expect(prompt).toContain('REMOVAL QUALITY');
-    });
-
-    it('includes canon quality', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('CANON QUALITY CRITERIA');
-    });
-  });
-
-  describe('shared sections preserved', () => {
-    it('includes storytelling guidelines', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('STORYTELLING GUIDELINES:');
-    });
-
-    it('includes inventory management', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('INVENTORY MANAGEMENT:');
-    });
-
-    it('includes health management', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('HEALTH MANAGEMENT:');
-    });
-
-    it('includes protagonist affect', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('PROTAGONIST AFFECT');
-    });
-
-    it('includes active state tracking', () => {
-      const prompt = buildContinuationSystemPrompt();
-      expect(prompt).toContain('ACTIVE STATE TRACKING');
-    });
+  it('adds CoT when enableChainOfThought is true', () => {
+    const prompt = buildContinuationSystemPrompt({ enableChainOfThought: true });
+    expect(prompt).toContain('REASONING PROCESS:');
+    expect(prompt).toContain('<thinking>');
   });
 });
 
-describe('buildSystemPrompt (deprecated)', () => {
-  it('returns same content as buildContinuationSystemPrompt for backward compatibility', () => {
-    const deprecated = buildSystemPrompt();
-    const continuation = buildContinuationSystemPrompt();
-    expect(deprecated).toBe(continuation);
+describe('composeOpeningDataRules', () => {
+  it('includes shared data sections', () => {
+    const rules = composeOpeningDataRules();
+    expect(rules).toContain('ACTIVE STATE TRACKING');
+    expect(rules).toContain('INVENTORY MANAGEMENT:');
+    expect(rules).toContain('HEALTH MANAGEMENT:');
+    expect(rules).toContain('FIELD SEPARATION:');
+    expect(rules).toContain('PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):');
+  });
+
+  it('includes opening-specific sections', () => {
+    const rules = composeOpeningDataRules();
+    expect(rules).toContain('ESTABLISHMENT RULES (OPENING):');
+    expect(rules).toContain('CHARACTER CONCEPT FIDELITY:');
+    expect(rules).toContain('OPENING ACTIVE STATE QUALITY:');
+    expect(rules).toContain('OPENING CANON QUALITY:');
+  });
+
+  it('does NOT include continuation-specific sections', () => {
+    const rules = composeOpeningDataRules();
+    expect(rules).not.toContain('CONTINUITY RULES (CONTINUATION):');
+    expect(rules).not.toContain('CHARACTER CANON vs CHARACTER STATE:');
+    expect(rules).not.toContain('REMOVAL QUALITY');
+  });
+
+  it('includes strict choice guidelines when choiceGuidance is strict', () => {
+    const rules = composeOpeningDataRules({ choiceGuidance: 'strict' });
+    expect(rules).toContain('CHOICE REQUIREMENTS:');
+    expect(rules).toContain('DIVERGENCE ENFORCEMENT');
+  });
+
+  it('does NOT include strict choice guidelines when choiceGuidance is basic', () => {
+    const rules = composeOpeningDataRules({ choiceGuidance: 'basic' });
+    expect(rules).not.toContain('CHOICE REQUIREMENTS:');
+  });
+});
+
+describe('composeContinuationDataRules', () => {
+  it('includes shared data sections', () => {
+    const rules = composeContinuationDataRules();
+    expect(rules).toContain('ACTIVE STATE TRACKING');
+    expect(rules).toContain('INVENTORY MANAGEMENT:');
+    expect(rules).toContain('HEALTH MANAGEMENT:');
+    expect(rules).toContain('FIELD SEPARATION:');
+    expect(rules).toContain('PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):');
+  });
+
+  it('includes continuation-specific sections', () => {
+    const rules = composeContinuationDataRules();
+    expect(rules).toContain('CONTINUITY RULES (CONTINUATION):');
+    expect(rules).toContain('CHARACTER CANON vs CHARACTER STATE:');
+    expect(rules).toContain('ACTIVE STATE QUALITY CRITERIA:');
+    expect(rules).toContain('CANON QUALITY CRITERIA:');
+  });
+
+  it('does NOT include opening-specific sections', () => {
+    const rules = composeContinuationDataRules();
+    expect(rules).not.toContain('ESTABLISHMENT RULES (OPENING):');
+    expect(rules).not.toContain('OPENING ACTIVE STATE QUALITY:');
+    expect(rules).not.toContain('OPENING CANON QUALITY:');
+  });
+
+  it('includes strict choice guidelines when choiceGuidance is strict', () => {
+    const rules = composeContinuationDataRules({ choiceGuidance: 'strict' });
+    expect(rules).toContain('CHOICE REQUIREMENTS:');
+    expect(rules).toContain('DIVERGENCE ENFORCEMENT');
+  });
+
+  it('does NOT include strict choice guidelines when choiceGuidance is basic', () => {
+    const rules = composeContinuationDataRules({ choiceGuidance: 'basic' });
+    expect(rules).not.toContain('CHOICE REQUIREMENTS:');
   });
 });

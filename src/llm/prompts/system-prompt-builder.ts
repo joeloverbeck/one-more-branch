@@ -1,7 +1,7 @@
 /**
  * System prompt builder module.
- * Composes the full system prompt from modular sections.
- * Provides separate builders for opening and continuation prompts.
+ * Composes system prompts (creative persona only) and data rules (for user message).
+ * System message = creative persona; data/schema rules go in the user message.
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
@@ -43,9 +43,8 @@ const SYSTEM_INTRO = `You are an expert interactive fiction storyteller and Dung
  * Strict choice guidelines for enforcing high-quality divergent choices.
  */
 export const STRICT_CHOICE_GUIDELINES = `
-
-CHOICE REQUIREMENTS (CRITICAL):
-Each choice MUST satisfy ALL of the following:
+CHOICE REQUIREMENTS:
+Each choice should satisfy all of the following:
 
 1. IN-CHARACTER: The protagonist would genuinely consider this action given their personality and situation
 2. CONSEQUENTIAL: The choice meaningfully changes the story direction
@@ -63,12 +62,12 @@ FORBIDDEN CHOICE PATTERNS:
 - Passive phrasing: "Consider talking to..." instead of "Talk to..."
 
 DIVERGENCE ENFORCEMENT:
-Each choice MUST change at least ONE of the following:
+Each choice should change at least one of the following:
 (1) Location, (2) Immediate goal, (3) NPC relationship or stance,
 (4) Time pressure or urgency, (5) Control of a key item,
 (6) Heat/attention level, (7) Injury or condition,
 (8) Information revealed or thread advanced.
-Each choice MUST change a different element from the list above.
+Each choice should change a different element from the list above.
 If you cannot produce 2-3 choices that each change a different element, consider making this an ENDING.
 
 CHOICE FORMATTING:
@@ -93,25 +92,30 @@ Format your response as:
 <thinking>[your reasoning]</thinking>
 <output>{JSON response}</output>
 
-IMPORTANT: Your final JSON must be inside <output> tags.`;
+Your final JSON should be inside <output> tags.`;
 
 /**
- * Shared narrative sections used by both prompt types.
+ * Creative sections that belong in the system message.
+ * These define persona, prose style, and creative guidelines.
  */
-const SHARED_SECTIONS = [
-  STORYTELLING_GUIDELINES,
+const CREATIVE_SECTIONS = [STORYTELLING_GUIDELINES, ENDING_GUIDELINES] as const;
+
+/**
+ * Shared data-schema sections used by both prompt types.
+ * These define state tracking, inventory, health, and field separation rules.
+ */
+const SHARED_DATA_SECTIONS = [
   ACTIVE_STATE_TRACKING,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
   PROTAGONIST_AFFECT,
-  ENDING_GUIDELINES,
 ] as const;
 
 /**
- * Opening-specific narrative sections.
+ * Opening-specific data sections.
  */
-const OPENING_SECTIONS = [
+const OPENING_DATA_SECTIONS = [
   OPENING_ESTABLISHMENT_RULES,
   OPENING_CHARACTER_CANON_GUIDANCE,
   OPENING_ACTIVE_STATE_QUALITY,
@@ -119,9 +123,9 @@ const OPENING_SECTIONS = [
 ] as const;
 
 /**
- * Continuation-specific narrative sections.
+ * Continuation-specific data sections.
  */
-const CONTINUATION_SECTIONS = [
+const CONTINUATION_DATA_SECTIONS = [
   CONTINUATION_CONTINUITY_RULES,
   CHARACTER_CANON_VS_STATE,
   CONTINUATION_ACTIVE_STATE_QUALITY,
@@ -129,34 +133,48 @@ const CONTINUATION_SECTIONS = [
 ] as const;
 
 /**
- * Composes the opening system prompt from all relevant sections.
- * Focuses on establishment and character concept fidelity.
+ * Composes the creative system prompt (shared by both opening and continuation).
+ * Contains only persona, content policy, prose style, and ending guidelines.
  */
-export function composeOpeningSystemPrompt(): string {
-  return [SYSTEM_INTRO, CONTENT_POLICY, ...SHARED_SECTIONS, ...OPENING_SECTIONS].join('\n\n');
+export function composeCreativeSystemPrompt(): string {
+  return [SYSTEM_INTRO, CONTENT_POLICY, ...CREATIVE_SECTIONS].join('\n\n');
 }
 
 /**
- * Composes the continuation system prompt from all relevant sections.
- * Focuses on continuity and consistency with established facts.
+ * Composes the data rules for opening prompts.
+ * These go in the user message, not the system message.
  */
-export function composeContinuationSystemPrompt(): string {
-  return [SYSTEM_INTRO, CONTENT_POLICY, ...SHARED_SECTIONS, ...CONTINUATION_SECTIONS].join('\n\n');
+export function composeOpeningDataRules(options?: PromptOptions): string {
+  const sections: string[] = [...SHARED_DATA_SECTIONS, ...OPENING_DATA_SECTIONS];
+
+  if (options?.choiceGuidance === 'strict') {
+    sections.push(STRICT_CHOICE_GUIDELINES);
+  }
+
+  return sections.join('\n\n');
 }
 
 /**
- * Builds the complete opening system prompt with optional enhancements.
- * Use this for generating the first page of a story.
+ * Composes the data rules for continuation prompts.
+ * These go in the user message, not the system message.
+ */
+export function composeContinuationDataRules(options?: PromptOptions): string {
+  const sections: string[] = [...SHARED_DATA_SECTIONS, ...CONTINUATION_DATA_SECTIONS];
+
+  if (options?.choiceGuidance === 'strict') {
+    sections.push(STRICT_CHOICE_GUIDELINES);
+  }
+
+  return sections.join('\n\n');
+}
+
+/**
+ * Builds the complete opening system prompt with optional CoT.
+ * Contains creative persona only — data rules are in the user message.
  */
 export function buildOpeningSystemPrompt(options?: PromptOptions): string {
-  let prompt = composeOpeningSystemPrompt();
+  let prompt = composeCreativeSystemPrompt();
 
-  // Add strict choice guidelines if requested
-  if (options?.choiceGuidance === 'strict') {
-    prompt += STRICT_CHOICE_GUIDELINES;
-  }
-
-  // Add CoT instructions if enabled
   if (options?.enableChainOfThought) {
     prompt += COT_SYSTEM_ADDITION;
   }
@@ -165,40 +183,15 @@ export function buildOpeningSystemPrompt(options?: PromptOptions): string {
 }
 
 /**
- * Builds the complete continuation system prompt with optional enhancements.
- * Use this for generating subsequent pages of a story.
+ * Builds the complete continuation system prompt with optional CoT.
+ * Contains creative persona only — data rules are in the user message.
  */
 export function buildContinuationSystemPrompt(options?: PromptOptions): string {
-  let prompt = composeContinuationSystemPrompt();
+  let prompt = composeCreativeSystemPrompt();
 
-  // Add strict choice guidelines if requested
-  if (options?.choiceGuidance === 'strict') {
-    prompt += STRICT_CHOICE_GUIDELINES;
-  }
-
-  // Add CoT instructions if enabled
   if (options?.enableChainOfThought) {
     prompt += COT_SYSTEM_ADDITION;
   }
 
   return prompt;
 }
-
-/**
- * @deprecated Use buildOpeningSystemPrompt or buildContinuationSystemPrompt instead.
- * This function is kept for backward compatibility and defaults to the continuation prompt.
- */
-export function buildSystemPrompt(options?: PromptOptions): string {
-  return buildContinuationSystemPrompt(options);
-}
-
-/**
- * @deprecated Use composeContinuationSystemPrompt instead.
- * This function is kept for backward compatibility.
- */
-export function composeSystemPrompt(): string {
-  return composeContinuationSystemPrompt();
-}
-
-// Re-export constants for backward compatibility
-export { SYSTEM_INTRO, SHARED_SECTIONS as NARRATIVE_SECTIONS };

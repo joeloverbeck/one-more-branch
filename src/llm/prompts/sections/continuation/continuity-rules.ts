@@ -4,7 +4,7 @@
  */
 
 export const CONTINUATION_CONTINUITY_RULES = `CONTINUITY RULES (CONTINUATION):
-You are continuing an EXISTING story. Consistency with established facts is CRITICAL.
+You are continuing an EXISTING story. Consistency with established facts is essential.
 
 DO NOT CONTRADICT:
 - ESTABLISHED WORLD FACTS - permanent world-building truths listed in that section
@@ -34,7 +34,7 @@ Before generating your response, mentally verify:
 4. Am I respecting the protagonist's current health conditions?
 5. Am I acknowledging active threats and constraints?`;
 
-export const CHARACTER_CANON_VS_STATE = `CHARACTER CANON vs CHARACTER STATE (CRITICAL DISTINCTION):
+export const CHARACTER_CANON_VS_STATE = `CHARACTER CANON vs CHARACTER STATE:
 Use CHARACTER CANON (newCharacterCanonFacts) for PERMANENT traits that define WHO they are:
 - Inherent abilities: "Transforms between midnight and dawn"
 - Physical traits: "Eyes turn black during transformation"

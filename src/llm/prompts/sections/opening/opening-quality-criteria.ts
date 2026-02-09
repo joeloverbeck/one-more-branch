@@ -27,9 +27,9 @@ BAD INITIAL ENTRIES (do NOT add):
 - Constraints that are just inventory facts ("CONSTRAINT_UNARMED: No weapon") - implied by inventory
 
 OPENING-SPECIFIC REMINDERS:
-- threatsRemoved, constraintsRemoved, threadsResolved MUST be empty arrays
-- inventoryRemoved and healthRemoved MUST be empty arrays
-- characterStateChangesRemoved MUST be empty arrays
+- threatsRemoved, constraintsRemoved, threadsResolved should be empty arrays
+- inventoryRemoved and healthRemoved should be empty arrays
+- characterStateChangesRemoved should be empty arrays
 - You are creating initial state, not modifying existing state`;
 
 export const OPENING_CANON_QUALITY = `OPENING CANON QUALITY:

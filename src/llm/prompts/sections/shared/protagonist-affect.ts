@@ -13,7 +13,7 @@ Fields:
 - secondaryEmotions: Optional background feelings with their causes
 - dominantMotivation: What the protagonist most wants right now
 
-CRITICAL: Emotional states belong in protagonistAffect, NOT in active state fields.
+Emotional states belong in protagonistAffect, not in active state fields.
 ❌ threatsAdded: ["THREAT_ATTRACTION: You feel attracted to Marla"] (emotions are NOT threats)
 ✅ protagonistAffect: { primaryEmotion: "attraction", primaryIntensity: "strong", ... }
 

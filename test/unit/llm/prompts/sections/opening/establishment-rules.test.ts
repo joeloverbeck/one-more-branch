@@ -24,7 +24,7 @@ describe('opening establishment-rules sections', () => {
     });
 
     it('emphasizes character concept fidelity', () => {
-      expect(OPENING_ESTABLISHMENT_RULES).toContain('CHARACTER CONCEPT FIDELITY (CRITICAL)');
+      expect(OPENING_ESTABLISHMENT_RULES).toContain('CHARACTER CONCEPT FIDELITY:');
       expect(OPENING_ESTABLISHMENT_RULES).toContain('PRIMARY source of truth');
     });
 

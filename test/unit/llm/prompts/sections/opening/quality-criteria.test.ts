@@ -44,8 +44,8 @@ describe('opening quality-criteria sections', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toMatch(/THREAD_\w+:/);
     });
 
-    it('specifies removed arrays must be empty', () => {
-      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threatsRemoved, constraintsRemoved, threadsResolved MUST be empty');
+    it('specifies removed arrays should be empty', () => {
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threatsRemoved, constraintsRemoved, threadsResolved should be empty');
     });
 
     it('does NOT include REMOVAL QUALITY section', () => {

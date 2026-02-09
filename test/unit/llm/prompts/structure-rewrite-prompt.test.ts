@@ -1,6 +1,6 @@
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildStructureRewritePrompt } from '../../../../src/llm/prompts/structure-rewrite-prompt';
-import { buildSystemPrompt } from '../../../../src/llm/prompts/system-prompt';
+import { buildContinuationSystemPrompt, composeContinuationDataRules } from '../../../../src/llm/prompts/system-prompt';
 import type { StructureRewriteContext } from '../../../../src/llm/types';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
@@ -202,13 +202,13 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     expect(systemMessage).not.toContain('FORBIDDEN CHOICE PATTERNS');
   });
 
-  it('is significantly shorter than the full system prompt', () => {
+  it('is significantly shorter than the full narrative prompt (system + data rules)', () => {
     const messages = buildStructureRewritePrompt(baseContext);
     const structureSystemPrompt = getSystemMessage(messages);
-    const fullSystemPrompt = buildSystemPrompt();
+    const fullNarrativePrompt = buildContinuationSystemPrompt() + composeContinuationDataRules();
 
-    // Structure prompt should be at most 40% the size of full prompt
-    expect(structureSystemPrompt.length).toBeLessThan(fullSystemPrompt.length * 0.4);
+    // Structure prompt should be at most 40% the size of full narrative prompt
+    expect(structureSystemPrompt.length).toBeLessThan(fullNarrativePrompt.length * 0.4);
   });
 
   it('includes structure-specific guidelines', () => {

@@ -3,7 +3,7 @@
  * Includes removal patterns and state modification guidance.
  */
 
-export const CONTINUATION_ACTIVE_STATE_QUALITY = `ACTIVE STATE QUALITY CRITERIA (CRITICAL):
+export const CONTINUATION_ACTIVE_STATE_QUALITY = `ACTIVE STATE QUALITY CRITERIA:
 Active state entries should track conditions that are TRUE RIGHT NOW and affect current story decisions.
 Before adding any entry, ask: "Is this currently happening? Does it affect the protagonist's immediate situation?"
 
@@ -51,7 +51,7 @@ When the protagonist is wounded, poisoned, exhausted, or healed:
 ✅ Use healthAdded/healthRemoved
 ❌ Do NOT put physical conditions in threatsAdded or constraintsAdded`;
 
-export const CONTINUATION_CANON_QUALITY = `CANON QUALITY CRITERIA (CRITICAL):
+export const CONTINUATION_CANON_QUALITY = `CANON QUALITY CRITERIA:
 Canon facts should be PERMANENT world-building or character elements likely to matter across MULTIPLE scenes.
 Before adding any canon, ask: "Would this fact constrain or inform future scenes in ANY branch?"
 

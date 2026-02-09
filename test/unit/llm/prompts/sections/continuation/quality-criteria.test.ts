@@ -14,8 +14,8 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY.length).toBeGreaterThan(0);
     });
 
-    it('includes section header with CRITICAL marker', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('ACTIVE STATE QUALITY CRITERIA (CRITICAL):');
+    it('includes section header', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('ACTIVE STATE QUALITY CRITERIA:');
     });
 
     it('emphasizes current truth', () => {
@@ -90,8 +90,8 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_CANON_QUALITY.length).toBeGreaterThan(0);
     });
 
-    it('includes section header with CRITICAL marker', () => {
-      expect(CONTINUATION_CANON_QUALITY).toContain('CANON QUALITY CRITERIA (CRITICAL):');
+    it('includes section header', () => {
+      expect(CONTINUATION_CANON_QUALITY).toContain('CANON QUALITY CRITERIA:');
     });
 
     it('emphasizes PERMANENT facts', () => {

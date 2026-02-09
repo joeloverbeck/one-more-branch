@@ -260,7 +260,7 @@ DO NOT CONCLUDE only if:
 - This scene is still squarely within the active beat's scope AND
 - The objective hasn't been meaningfully advanced
 
-CRITICAL: Evaluate CUMULATIVE progress across all scenes, not just this single page.
+Evaluate cumulative progress across all scenes, not just this single page.
 Look at the CURRENT STATE above - if the situation has moved past the active beat's description, it should be concluded.
 
 If concluding, provide beatResolution: a brief summary of how the beat was resolved.

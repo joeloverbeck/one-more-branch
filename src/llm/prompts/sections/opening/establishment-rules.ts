@@ -6,7 +6,7 @@
 export const OPENING_ESTABLISHMENT_RULES = `ESTABLISHMENT RULES (OPENING):
 This is the FIRST page - you are ESTABLISHING initial state, not maintaining continuity.
 
-CHARACTER CONCEPT FIDELITY (CRITICAL):
+CHARACTER CONCEPT FIDELITY:
 - The character concept is your PRIMARY source of truth
 - Starting inventory must reflect the character's background and profession
 - Starting health conditions ONLY if explicitly mentioned in the concept

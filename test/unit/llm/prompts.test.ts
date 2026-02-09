@@ -205,7 +205,7 @@ describe('buildOpeningPrompt', () => {
     expect(messages[3]?.role).toBe('user'); // actual prompt
   });
 
-  it('should include strict choice guidelines when choiceGuidance: strict', () => {
+  it('should include strict choice guidelines in user message when choiceGuidance: strict', () => {
     const messages = buildOpeningPrompt(
       {
         characterConcept: 'Character',
@@ -215,14 +215,14 @@ describe('buildOpeningPrompt', () => {
       { choiceGuidance: 'strict' },
     );
 
-    const system = getSystemMessage(messages);
-    expect(system).toContain('CHOICE REQUIREMENTS (CRITICAL)');
-    expect(system).toContain('IN-CHARACTER');
-    expect(system).toContain('DIVERGENT');
-    expect(system).toContain('FORBIDDEN CHOICE PATTERNS');
+    const user = getUserMessage(messages);
+    expect(user).toContain('CHOICE REQUIREMENTS:');
+    expect(user).toContain('IN-CHARACTER');
+    expect(user).toContain('DIVERGENT');
+    expect(user).toContain('FORBIDDEN CHOICE PATTERNS');
   });
 
-  it('should include DIVERGENCE ENFORCEMENT in strict choice guidelines', () => {
+  it('should include DIVERGENCE ENFORCEMENT in user message with strict choice guidelines', () => {
     const messages = buildOpeningPrompt(
       {
         characterConcept: 'Character',
@@ -232,26 +232,26 @@ describe('buildOpeningPrompt', () => {
       { choiceGuidance: 'strict' },
     );
 
-    const system = getSystemMessage(messages);
-    expect(system).toContain('DIVERGENCE ENFORCEMENT');
-    expect(system).toContain('Location');
-    expect(system).toContain('NPC relationship');
-    expect(system).toContain('Time pressure');
+    const user = getUserMessage(messages);
+    expect(user).toContain('DIVERGENCE ENFORCEMENT');
+    expect(user).toContain('Location');
+    expect(user).toContain('NPC relationship');
+    expect(user).toContain('Time pressure');
   });
 
-  it('should include ESTABLISHMENT RULES in system message for opening', () => {
+  it('should include ESTABLISHMENT RULES in user message for opening (data rules)', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',
       worldbuilding: '',
       tone: 'dark fantasy',
     });
 
-    const system = getSystemMessage(messages);
-    // Opening uses ESTABLISHMENT RULES, not CONTINUITY RULES
-    expect(system).toContain('ESTABLISHMENT RULES (OPENING)');
-    expect(system).toContain('CHARACTER CONCEPT FIDELITY (CRITICAL)');
-    expect(system).toContain('FIRST page');
-    expect(system).toContain('newCanonFacts');
+    const user = getUserMessage(messages);
+    // Opening data rules include ESTABLISHMENT RULES
+    expect(user).toContain('ESTABLISHMENT RULES (OPENING)');
+    expect(user).toContain('CHARACTER CONCEPT FIDELITY:');
+    expect(user).toContain('FIRST page');
+    expect(user).toContain('newCanonFacts');
   });
 
   it('should NOT include CONTINUITY RULES in opening system message', () => {
@@ -289,8 +289,8 @@ describe('buildOpeningPrompt', () => {
       { choiceGuidance: 'basic' },
     );
 
-    const system = getSystemMessage(messages);
-    expect(system).not.toContain('CHOICE REQUIREMENTS (CRITICAL)');
+    const user = getUserMessage(messages);
+    expect(user).not.toContain('CHOICE REQUIREMENTS:');
   });
 
   it('should include CoT instructions when enableChainOfThought: true', () => {
@@ -332,7 +332,7 @@ describe('buildOpeningPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    expect(user).toContain('REQUIREMENTS (follow ALL)');
+    expect(user).toContain('REQUIREMENTS (follow all)');
     expect(user).toContain('1.');
     expect(user).toContain('2.');
     expect(user).toContain('3.');
@@ -512,7 +512,7 @@ describe('buildContinuationPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    expect(user).not.toContain('NPC CURRENT STATE');
+    expect(user).not.toContain('NPC CURRENT STATE (branch-specific events):');
   });
 
   it('should not include deprecated story arc section in continuation prompt', () => {
@@ -642,7 +642,7 @@ describe('buildContinuationPrompt', () => {
     const messages = buildContinuationPrompt(baseContext);
 
     const user = getUserMessage(messages);
-    expect(user).toContain('REQUIREMENTS (follow ALL)');
+    expect(user).toContain('REQUIREMENTS (follow all)');
     expect(user).toContain('1.');
     expect(user).toContain('2.');
     expect(user).toContain('3.');
@@ -759,7 +759,7 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).not.toContain('ACTIVE THREATS');
+      expect(getUserMessage(messages)).not.toContain('ACTIVE THREATS (dangers that exist NOW):');
     });
 
     it('includes ACTIVE CONSTRAINTS section when constraints present', () => {
@@ -792,7 +792,7 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).not.toContain('ACTIVE CONSTRAINTS');
+      expect(getUserMessage(messages)).not.toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
     });
 
     it('includes OPEN THREADS section when threads present', () => {
@@ -840,10 +840,12 @@ describe('buildContinuationPrompt', () => {
       });
 
       const content = getUserMessage(messages);
-      const locationIdx = content.indexOf('CURRENT LOCATION:');
-      const threatsIdx = content.indexOf('ACTIVE THREATS');
-      const constraintsIdx = content.indexOf('ACTIVE CONSTRAINTS');
-      const threadsIdx = content.indexOf('OPEN NARRATIVE THREADS');
+      // Use dynamic section headers (with their specific suffixes) to avoid matching
+      // the data rules text which also mentions these terms in a different context
+      const locationIdx = content.indexOf('CURRENT LOCATION:\nThe rooftop');
+      const threatsIdx = content.indexOf('ACTIVE THREATS (dangers that exist NOW):');
+      const constraintsIdx = content.indexOf('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
+      const threadsIdx = content.indexOf('OPEN NARRATIVE THREADS (unresolved hooks):');
 
       // All should be present
       expect(locationIdx).toBeGreaterThan(-1);

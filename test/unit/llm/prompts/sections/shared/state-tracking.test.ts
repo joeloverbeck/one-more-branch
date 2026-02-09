@@ -45,8 +45,8 @@ describe('shared state-tracking sections', () => {
       expect(ACTIVE_STATE_TRACKING).toContain('threatsRemoved');
     });
 
-    it('includes IMPORTANT RULES section', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('IMPORTANT RULES');
+    it('includes Rules section', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('Rules:');
     });
 
     it('provides example output', () => {
@@ -126,8 +126,8 @@ describe('shared state-tracking sections', () => {
       expect(FIELD_SEPARATION.length).toBeGreaterThan(0);
     });
 
-    it('includes section header with CRITICAL marker', () => {
-      expect(FIELD_SEPARATION).toContain('FIELD SEPARATION (CRITICAL):');
+    it('includes section header', () => {
+      expect(FIELD_SEPARATION).toContain('FIELD SEPARATION:');
     });
 
     it('documents INVENTORY fields', () => {

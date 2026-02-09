@@ -116,6 +116,37 @@ describe('buildOpeningPrompt with active state', () => {
     expect(userMessage).toContain('first page');
     expect(userMessage).toContain('ESTABLISHING');
   });
+
+  it('includes data rules in user message', () => {
+    const context: OpeningContext = {
+      characterConcept: 'Test',
+      worldbuilding: 'Test',
+      tone: 'Test',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('=== DATA & STATE RULES ===');
+    expect(userMessage).toContain('ACTIVE STATE TRACKING');
+    expect(userMessage).toContain('INVENTORY MANAGEMENT:');
+    expect(userMessage).toContain('ESTABLISHMENT RULES (OPENING):');
+  });
+
+  it('does NOT include data rules in system message', () => {
+    const context: OpeningContext = {
+      characterConcept: 'Test',
+      worldbuilding: 'Test',
+      tone: 'Test',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const systemMessage = messages.find(m => m.role === 'system')!.content;
+
+    expect(systemMessage).not.toContain('ACTIVE STATE TRACKING');
+    expect(systemMessage).not.toContain('INVENTORY MANAGEMENT:');
+    expect(systemMessage).not.toContain('ESTABLISHMENT RULES');
+  });
 });
 
 describe('buildOpeningPrompt with npcs and startingSituation', () => {
@@ -159,9 +190,9 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
-    expect(userMessage).toContain('STARTING SITUATION (MUST FOLLOW)');
+    expect(userMessage).toContain('STARTING SITUATION:');
     expect(userMessage).toContain('You wake up in a dungeon cell');
-    expect(userMessage).toContain('MUST begin the story with this situation');
+    expect(userMessage).toContain('Begin the story with this situation');
   });
 
   it('omits starting situation section when startingSituation is not provided', () => {
@@ -174,7 +205,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
-    expect(userMessage).not.toContain('STARTING SITUATION');
+    expect(userMessage).not.toContain('STARTING SITUATION:\n');
   });
 
   it('includes both NPC and starting situation sections in correct order', () => {
@@ -190,7 +221,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
     const npcIndex = userMessage.indexOf('NPCS (Available Characters)');
-    const situationIndex = userMessage.indexOf('STARTING SITUATION (MUST FOLLOW)');
+    const situationIndex = userMessage.indexOf('STARTING SITUATION:');
     const toneIndex = userMessage.indexOf('TONE/GENRE:');
 
     expect(npcIndex).toBeGreaterThan(0);

@@ -5,7 +5,7 @@
 
 export const ACTIVE_STATE_TRACKING = `=== ACTIVE STATE TRACKING ===
 
-You must track the story's CURRENT STATE using structured fields. These represent what is TRUE RIGHT NOW, not a history of what happened.
+Track the story's current state using structured fields. These represent what is TRUE RIGHT NOW, not a history of what happened.
 
 LOCATION:
 - Set "currentLocation" to where the protagonist is at the END of this scene
@@ -29,7 +29,7 @@ THREADS (unresolved narrative hooks):
 - Examples: THREAD_LETTER_CONTENTS, THREAD_STRANGER_IDENTITY
 - Resolve when the mystery is answered or hook is resolved
 
-IMPORTANT RULES:
+Rules:
 1. For removals, use ONLY the prefix (e.g., "THREAT_FIRE"), not the full entry
 2. Each prefix should be unique within its category
 3. Don't duplicate entries - update by removing old and adding new
@@ -70,7 +70,7 @@ export const HEALTH_MANAGEMENT = `HEALTH MANAGEMENT:
 - Health is for PHYSICAL conditions only (emotions belong in protagonistAffect).
 - Examples of health conditions: "Your head throbs painfully", "Poison spreads through your arm", "You feel exhausted", "A deep gash mars your shoulder".`;
 
-export const FIELD_SEPARATION = `FIELD SEPARATION (CRITICAL):
+export const FIELD_SEPARATION = `FIELD SEPARATION:
 - INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
 - HEALTH (healthAdded/healthRemoved): Physical wounds, injuries, poison, illness, exhaustion - NOT emotional states
 - ACTIVE STATE (threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved): Current dangers, limitations, and narrative hooks using PREFIX_ID: Description format

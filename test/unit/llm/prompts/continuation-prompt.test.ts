@@ -112,4 +112,20 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     const userMessage = messages.find(m => m.role === 'user');
     expect(userMessage?.content).not.toContain('PACING DIRECTIVE');
   });
+
+  it('includes data rules in user message', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const userMessage = messages.find(m => m.role === 'user');
+    expect(userMessage?.content).toContain('=== DATA & STATE RULES ===');
+    expect(userMessage?.content).toContain('ACTIVE STATE TRACKING');
+    expect(userMessage?.content).toContain('CONTINUITY RULES (CONTINUATION):');
+  });
+
+  it('does NOT include data rules in system message', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const systemMessage = messages.find(m => m.role === 'system');
+    expect(systemMessage?.content).not.toContain('ACTIVE STATE TRACKING');
+    expect(systemMessage?.content).not.toContain('CONTINUITY RULES');
+    expect(systemMessage?.content).not.toContain('INVENTORY MANAGEMENT:');
+  });
 });

@@ -1,6 +1,6 @@
 import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, OpeningContext, PromptOptions } from '../types.js';
-import { buildOpeningSystemPrompt } from './system-prompt.js';
+import { buildOpeningSystemPrompt, composeOpeningDataRules } from './system-prompt.js';
 
 export function buildOpeningPrompt(
   context: OpeningContext,
@@ -8,6 +8,8 @@ export function buildOpeningPrompt(
 ): ChatMessage[] {
   const firstAct = context.structure?.acts[0];
   const firstBeat = firstAct?.beats[0];
+
+  const dataRules = composeOpeningDataRules(options);
 
   const worldSection = context.worldbuilding
     ? `WORLDBUILDING:
@@ -26,10 +28,10 @@ These characters are available for use in the story. Introduce them when narrati
     : '';
 
   const startingSituationSection = context.startingSituation
-    ? `STARTING SITUATION (MUST FOLLOW):
+    ? `STARTING SITUATION:
 ${context.startingSituation}
 
-You MUST begin the story with this situation. This takes precedence over your creative decisions about how to open the narrative. Incorporate the specified scene, circumstances, or events exactly as described.
+Begin the story with this situation. This takes precedence over your creative decisions about how to open the narrative. Incorporate the specified scene, circumstances, or events exactly as described.
 
 `
     : '';
@@ -53,12 +55,15 @@ Your task: Write the opening scene working toward this beat's objective.
 
   const userPrompt = `Create the opening scene for a new interactive story.
 
+=== DATA & STATE RULES ===
+${dataRules}
+
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
-${structureSection}REQUIREMENTS (follow ALL):
+${structureSection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in

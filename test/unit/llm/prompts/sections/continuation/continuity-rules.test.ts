@@ -50,9 +50,9 @@ describe('continuation continuity-rules sections', () => {
       expect(CHARACTER_CANON_VS_STATE.length).toBeGreaterThan(0);
     });
 
-    it('includes section header with CRITICAL marker', () => {
+    it('includes section header', () => {
       expect(CHARACTER_CANON_VS_STATE).toContain(
-        'CHARACTER CANON vs CHARACTER STATE (CRITICAL DISTINCTION):',
+        'CHARACTER CANON vs CHARACTER STATE:',
       );
     });
 

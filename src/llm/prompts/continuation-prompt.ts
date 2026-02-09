@@ -1,6 +1,6 @@
 import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, ContinuationContext, PromptOptions } from '../types.js';
-import { buildContinuationSystemPrompt } from './system-prompt.js';
+import { buildContinuationSystemPrompt, composeContinuationDataRules } from './system-prompt.js';
 import {
   buildProtagonistAffectSection,
   buildSceneContextSection,
@@ -15,6 +15,8 @@ export function buildContinuationPrompt(
   context: ContinuationContext,
   options?: PromptOptions,
 ): ChatMessage[] {
+  const dataRules = composeContinuationDataRules(options);
+
   const worldSection = context.worldbuilding
     ? `WORLDBUILDING:
 ${context.worldbuilding}
@@ -39,7 +41,7 @@ These characters are available for use in the story. Introduce or involve them w
   const pacingNudgeSection = context.accumulatedStructureState?.pacingNudge
     ? `=== PACING DIRECTIVE ===
 The story analyst detected a pacing issue: ${context.accumulatedStructureState.pacingNudge}
-This page MUST advance the narrative toward resolving the current beat or deliver a meaningful story event.
+This page should advance the narrative toward resolving the current beat or deliver a meaningful story event.
 Do not repeat setup or exposition -- push the story forward with action, revelation, or irreversible change.
 
 `
@@ -110,6 +112,9 @@ ${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
 
   const userPrompt = `Continue the interactive story based on the player's choice.
 
+=== DATA & STATE RULES ===
+${dataRules}
+
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
@@ -117,13 +122,13 @@ ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${structureSection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
-REQUIREMENTS (follow ALL):
+REQUIREMENTS (follow all):
 1. Start exactly where the previous scene ended—do NOT recap or summarize what happened
    - Do NOT repeat or rephrase the last sentence of the previous scene
    - Begin with an action, dialogue, or reaction within the next 1-2 beats
 2. Show the direct, immediate consequences of the player's choice - the story must react
 3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
-4. Maintain STRICT consistency with all established facts and the current state
+4. Maintain consistency with all established facts and the current state
 5. Present 3 new meaningful choices unless this naturally leads to an ending (add a 4th only when the situation truly warrants another distinct path)
 6. Ensure choices are divergent - each must lead to a genuinely different story path
 7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
