@@ -1,5 +1,7 @@
 # STOARCIMP-07: Add dramatic function guidance to structure generation and rewrite prompts
 
+**Status**: ✅ COMPLETED
+
 **Phase**: 3 (Prompt Quality Improvements)
 **Spec sections**: 3.1, 3.2 (prompt text only, not code changes)
 **Depends on**: STOARCIMP-01, STOARCIMP-03, STOARCIMP-04
@@ -58,3 +60,20 @@ Note: STOARCIMP-03 handles the few-shot example data updates. STOARCIMP-04 handl
 - **2-4 beats per act**: Prompt still requires 2-4 beats.
 - **Branching awareness**: Existing instructions about branching fiction are preserved.
 - **All existing tests pass**.
+
+## Outcome
+
+**Completion date**: 2026-02-09
+
+**What was changed**:
+- `src/llm/prompts/structure-prompt.ts`: Added requirements 8 (dramatic role guidance with act placement), 9 (premise instruction), 10 (pacing budget instruction). Updated OUTPUT SHAPE to include premise, pacingBudget, and beat role.
+- `test/unit/llm/prompts/structure-prompt.test.ts`: Added 4 new tests for dramatic role guidance, premise instruction, pacing budget instruction, and OUTPUT SHAPE completeness.
+
+**Deviations from plan**:
+- `structure-rewrite-prompt.ts` required no changes -- STOARCIMP-04 had already implemented all required instructional text (requirements 8-10, OUTPUT SHAPE, role preservation).
+- `structure-rewrite-prompt.test.ts` required no changes -- existing tests already covered role preservation.
+
+**Verification results**:
+- TypeScript build: pass
+- 115 test suites: pass
+- 1588 tests passing (4 new), 16 skipped, 0 failures
