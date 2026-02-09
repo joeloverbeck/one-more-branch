@@ -1,5 +1,7 @@
 # STOARCIMP-08: Wire beat role and pacing into continuation prompts (writer context, analyst evaluation, nudge injection)
 
+**Status**: ✅ COMPLETED
+
 **Phase**: 2+3 (Analyst Pacing Instructions + Prompt Quality)
 **Spec sections**: 2.5, 3.3, 3.4, 3.5
 **Depends on**: STOARCIMP-01, STOARCIMP-02, STOARCIMP-03, STOARCIMP-05, STOARCIMP-06
@@ -76,3 +78,24 @@ In `buildContinuationPrompt` (`continuation-prompt.ts`):
 - **Analyst prompt structure preserved**: Existing beat evaluation and deviation detection sections unchanged -- pacing evaluation is an ADDITION, not a replacement.
 - **Opening prompt untouched**: `buildOpeningPrompt` is not modified.
 - **All existing tests pass**.
+
+## Outcome
+
+**Completed**: 2026-02-09
+
+### What was changed
+
+- `src/llm/prompts/continuation/story-structure-section.ts`: Beat lines in both `buildWriterStructureContext` and `buildAnalystStructureEvaluation` now include `(role)` labels. Added `Premise:` line to structure header. Added `=== PACING EVALUATION ===` section to analyst with computed thresholds (totalBeats, avgPagesPerBeat, maxPagesPerBeat) and BEAT STALL / MISSING MIDPOINT detection criteria.
+- `src/llm/prompts/continuation-prompt.ts`: Added `=== PACING DIRECTIVE ===` injection when `accumulatedStructureState.pacingNudge` is non-null, placed between structure and canon sections.
+- Updated test fixtures in 4 files to include `premise`, `pacingBudget`, and beat `role` fields.
+- Added 9 new tests covering beat roles, premise, pacing evaluation section, threshold correctness, and nudge injection.
+
+### Deviations from plan
+
+None. Implementation follows spec sections 2.5, 3.3, 3.4, 3.5 exactly.
+
+### Verification
+
+- `npm run typecheck` passes
+- 1613 tests pass, 0 failures across 116 suites
+- All 10 acceptance criteria verified

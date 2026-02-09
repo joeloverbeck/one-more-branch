@@ -9,6 +9,8 @@ import {
 describe('story-structure-section', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
+    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -18,9 +20,9 @@ describe('story-structure-section', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside' },
-          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence' },
-          { id: '1.3', description: 'Choose ally', objective: 'Commit to ally' },
+          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence', role: 'escalation' },
+          { id: '1.3', description: 'Choose ally', objective: 'Commit to ally', role: 'turning_point' },
         ],
       },
       {
@@ -30,8 +32,8 @@ describe('story-structure-section', () => {
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north' },
-          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive' },
+          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north', role: 'escalation' },
+          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
         ],
       },
       {
@@ -41,8 +43,8 @@ describe('story-structure-section', () => {
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
         beats: [
-          { id: '3.1', description: 'Reach relay core', objective: 'Seize control room' },
-          { id: '3.2', description: 'Deliver proof', objective: 'Transmit evidence' },
+          { id: '3.1', description: 'Reach relay core', objective: 'Seize control room', role: 'escalation' },
+          { id: '3.2', description: 'Deliver proof', objective: 'Transmit evidence', role: 'resolution' },
         ],
       },
     ],

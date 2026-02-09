@@ -4,6 +4,8 @@ import { buildWriterStructureContext } from '../../../../../src/llm/prompts/cont
 describe('buildWriterStructureContext', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
+    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -13,9 +15,9 @@ describe('buildWriterStructureContext', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside' },
-          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence' },
-          { id: '1.3', description: 'Choose ally', objective: 'Commit to ally' },
+          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence', role: 'escalation' },
+          { id: '1.3', description: 'Choose ally', objective: 'Commit to ally', role: 'turning_point' },
         ],
       },
       {
@@ -25,8 +27,8 @@ describe('buildWriterStructureContext', () => {
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north' },
-          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive' },
+          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north', role: 'escalation' },
+          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
         ],
       },
       {
@@ -36,8 +38,8 @@ describe('buildWriterStructureContext', () => {
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
         beats: [
-          { id: '3.1', description: 'Reach relay core', objective: 'Seize control room' },
-          { id: '3.2', description: 'Deliver proof', objective: 'Transmit evidence' },
+          { id: '3.1', description: 'Reach relay core', objective: 'Seize control room', role: 'escalation' },
+          { id: '3.2', description: 'Deliver proof', objective: 'Transmit evidence', role: 'resolution' },
         ],
       },
     ],
@@ -116,11 +118,11 @@ describe('buildWriterStructureContext', () => {
     };
 
     const result = buildWriterStructureContext(testStructure, state);
-    expect(result).toContain('[x] CONCLUDED: Reach safehouse');
+    expect(result).toContain('[x] CONCLUDED (setup): Reach safehouse');
     expect(result).toContain('Resolution: Reached safehouse');
-    expect(result).toContain('[>] ACTIVE: Secure evidence');
+    expect(result).toContain('[>] ACTIVE (escalation): Secure evidence');
     expect(result).toContain('Objective: Protect evidence');
-    expect(result).toContain('[ ] PENDING: Choose ally');
+    expect(result).toContain('[ ] PENDING (turning_point): Choose ally');
   });
 
   it('includes remaining acts overview', () => {
@@ -216,6 +218,37 @@ describe('buildWriterStructureContext', () => {
 
     const result = buildWriterStructureContext(testStructure, state);
     expect(result).not.toContain('PROGRESSION CHECK');
+  });
+
+  it('includes premise after overall theme', () => {
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildWriterStructureContext(testStructure, state);
+    expect(result).toContain('Premise: A fugitive must broadcast evidence');
+  });
+
+  it('includes beat role labels for all beat statuses', () => {
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 1,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Done' },
+        { beatId: '1.2', status: 'active' },
+      ],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildWriterStructureContext(testStructure, state);
+    expect(result).toContain('(setup)');
+    expect(result).toContain('(escalation)');
+    expect(result).toContain('(turning_point)');
   });
 
   it('does NOT contain "CURRENT STATE (for beat evaluation)"', () => {

@@ -6,6 +6,8 @@ import { buildAnalystPrompt } from '../../../../src/llm/prompts/analyst-prompt';
 describe('buildAnalystPrompt', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
+    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -15,8 +17,8 @@ describe('buildAnalystPrompt', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside' },
-          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence' },
+          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence', role: 'escalation' },
         ],
       },
       {
@@ -26,7 +28,7 @@ describe('buildAnalystPrompt', () => {
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north' },
+          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north', role: 'escalation' },
         ],
       },
     ],

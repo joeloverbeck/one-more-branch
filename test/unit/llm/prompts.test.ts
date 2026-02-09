@@ -15,6 +15,8 @@ function getUserMessage(messages: { role: string; content: string }[]): string {
 describe('buildOpeningPrompt', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Survive the uprising and expose its true architect',
+    premise: 'A fugitive must uncover the uprising architect before being silenced forever.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -28,11 +30,13 @@ describe('buildOpeningPrompt', () => {
             id: '1.1',
             description: 'The protagonist is caught between guards and rebels',
             objective: 'Reach a safe route out of the square',
+            role: 'setup',
           },
           {
             id: '1.2',
             description: 'A former ally offers help with conditions',
             objective: 'Choose whether to trust the ally',
+            role: 'turning_point',
           },
         ],
       },
@@ -43,8 +47,8 @@ describe('buildOpeningPrompt', () => {
         stakes: 'Losing evidence lets the conflict spiral',
         entryCondition: 'The protagonist leaves the capital',
         beats: [
-          { id: '2.1', description: 'First chase beat', objective: 'Evade pursuit' },
-          { id: '2.2', description: 'Second chase beat', objective: 'Protect the evidence' },
+          { id: '2.1', description: 'First chase beat', objective: 'Evade pursuit', role: 'escalation' },
+          { id: '2.2', description: 'Second chase beat', objective: 'Protect the evidence', role: 'turning_point' },
         ],
       },
       {
@@ -54,8 +58,8 @@ describe('buildOpeningPrompt', () => {
         stakes: 'Failure secures permanent authoritarian rule',
         entryCondition: 'Allies gather for final confrontation',
         beats: [
-          { id: '3.1', description: 'Final entry beat', objective: 'Force a confession' },
-          { id: '3.2', description: 'Final resolution beat', objective: 'Stabilize the city' },
+          { id: '3.1', description: 'Final entry beat', objective: 'Force a confession', role: 'escalation' },
+          { id: '3.2', description: 'Final resolution beat', objective: 'Stabilize the city', role: 'resolution' },
         ],
       },
     ],
@@ -340,6 +344,8 @@ describe('buildOpeningPrompt', () => {
 describe('buildContinuationPrompt', () => {
   const structure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
+    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -353,16 +359,19 @@ describe('buildContinuationPrompt', () => {
             id: '1.1',
             description: 'Reach a safehouse before patrols seal the district',
             objective: 'Get inside the safehouse',
+            role: 'setup',
           },
           {
             id: '1.2',
             description: 'Secure evidence from an informant',
             objective: 'Protect the evidence from raiders',
+            role: 'escalation',
           },
           {
             id: '1.3',
             description: 'Choose who to trust for extraction',
             objective: 'Commit to an ally',
+            role: 'turning_point',
           },
         ],
       },
@@ -373,8 +382,8 @@ describe('buildContinuationPrompt', () => {
         stakes: 'If lost, the purge becomes permanent.',
         entryCondition: 'You leave the capital perimeter.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find a route north' },
-          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive' },
+          { id: '2.1', description: 'Break through checkpoints', objective: 'Find a route north', role: 'escalation' },
+          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
         ],
       },
       {
@@ -384,8 +393,8 @@ describe('buildContinuationPrompt', () => {
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'You gain access to the relay tower.',
         beats: [
-          { id: '3.1', description: 'Reach the relay core', objective: 'Seize control room access' },
-          { id: '3.2', description: 'Deliver the proof', objective: 'Transmit unedited evidence' },
+          { id: '3.1', description: 'Reach the relay core', objective: 'Seize control room access', role: 'escalation' },
+          { id: '3.2', description: 'Deliver the proof', objective: 'Transmit unedited evidence', role: 'resolution' },
         ],
       },
     ],
@@ -526,12 +535,12 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('Objective: Escape the first sweep');
     expect(user).toContain('Stakes: Capture means public execution.');
     expect(user).toContain(
-      '[x] CONCLUDED: Reach a safehouse before patrols seal the district',
+      '[x] CONCLUDED (setup): Reach a safehouse before patrols seal the district',
     );
     expect(user).toContain('Resolution: You slipped through a drainage tunnel into the safehouse.');
-    expect(user).toContain('[>] ACTIVE: Secure evidence from an informant');
+    expect(user).toContain('[>] ACTIVE (escalation): Secure evidence from an informant');
     expect(user).toContain('Objective: Protect the evidence from raiders');
-    expect(user).toContain('[ ] PENDING: Choose who to trust for extraction');
+    expect(user).toContain('[ ] PENDING (turning_point): Choose who to trust for extraction');
     expect(user).toContain('REMAINING ACTS:');
     expect(user).toContain('Act 2: The Hunt - Cross hostile territory with the evidence');
     expect(user).toContain('Act 3: The Broadcast - Expose the planners to the public');

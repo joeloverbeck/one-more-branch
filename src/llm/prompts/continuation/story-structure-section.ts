@@ -111,14 +111,14 @@ export function buildWriterStructureContext(
           progression.resolution && progression.resolution.trim().length > 0
             ? progression.resolution
             : 'No resolution recorded.';
-        return `  [x] CONCLUDED: ${beat.description}
+        return `  [x] CONCLUDED (${beat.role}): ${beat.description}
     Resolution: ${resolution}`;
       }
       if (progression?.status === 'active') {
-        return `  [>] ACTIVE: ${beat.description}
+        return `  [>] ACTIVE (${beat.role}): ${beat.description}
     Objective: ${beat.objective}`;
       }
-      return `  [ ] PENDING: ${beat.description}`;
+      return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })
     .join('\n');
 
@@ -129,6 +129,7 @@ export function buildWriterStructureContext(
 
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
+Premise: ${structure.premise}
 
 CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of 3)
 Objective: ${currentAct.objective}
@@ -173,14 +174,14 @@ export function buildAnalystStructureEvaluation(
           progression.resolution && progression.resolution.trim().length > 0
             ? progression.resolution
             : 'No resolution recorded.';
-        return `  [x] CONCLUDED: ${beat.description}
+        return `  [x] CONCLUDED (${beat.role}): ${beat.description}
     Resolution: ${resolution}`;
       }
       if (progression?.status === 'active') {
-        return `  [>] ACTIVE: ${beat.description}
+        return `  [>] ACTIVE (${beat.role}): ${beat.description}
     Objective: ${beat.objective}`;
       }
-      return `  [ ] PENDING: ${beat.description}`;
+      return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })
     .join('\n');
 
@@ -208,8 +209,33 @@ PROGRESSION CHECK: If the current narrative situation more closely matches a PEN
 `
     : '';
 
+  const totalBeats = structure.acts.reduce((sum, act) => sum + act.beats.length, 0);
+  const avgPagesPerBeat = Math.round(structure.pacingBudget.targetPagesMax / totalBeats);
+  const maxPagesPerBeat = Math.ceil(structure.pacingBudget.targetPagesMax / totalBeats) + 2;
+
+  const pacingEvaluationSection = `=== PACING EVALUATION ===
+Pages spent on current beat: ${state.pagesInCurrentBeat}
+Story pacing budget: ${structure.pacingBudget.targetPagesMin}-${structure.pacingBudget.targetPagesMax} total pages
+Total beats in structure: ${totalBeats}
+Average pages per beat (budget-based): ~${avgPagesPerBeat}
+
+DETECT A PACING ISSUE (pacingIssueDetected: true) when EITHER applies:
+1. BEAT STALL: pagesInCurrentBeat exceeds ${maxPagesPerBeat} (roughly targetPagesMax / totalBeats, rounded up + 2) AND the beat objective has not been meaningfully advanced
+2. MISSING MIDPOINT: The story has consumed more than 50% of its page budget (estimated from beat progression and pagesInCurrentBeat) without any turning_point beat being concluded
+
+If pacingIssueDetected is true:
+- pacingIssueReason: Explain what's stalling or missing
+- recommendedAction:
+  - "nudge" if a stronger directive in the next page could fix it (e.g., "this scene must deliver a reveal")
+  - "rewrite" if the remaining structure needs to be pulled closer (e.g., turning points are too far away)
+
+If no pacing issue: pacingIssueDetected: false, pacingIssueReason: "", recommendedAction: "none"
+
+`;
+
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
+Premise: ${structure.premise}
 
 CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of 3)
 Objective: ${currentAct.objective}
@@ -243,6 +269,6 @@ ${remainingBeatsSection}
 ${beatComparisonHint}
 ${DEVIATION_DETECTION_SECTION}
 
-`;
+${pacingEvaluationSection}`;
 }
 

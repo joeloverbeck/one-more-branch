@@ -36,6 +36,15 @@ These characters are available for use in the story. Introduce or involve them w
     context.accumulatedStructureState,
   );
 
+  const pacingNudgeSection = context.accumulatedStructureState?.pacingNudge
+    ? `=== PACING DIRECTIVE ===
+The story analyst detected a pacing issue: ${context.accumulatedStructureState.pacingNudge}
+This page MUST advance the narrative toward resolving the current beat or deliver a meaningful story event.
+Do not repeat setup or exposition -- push the story forward with action, revelation, or irreversible change.
+
+`
+    : '';
+
   const canonSection =
     context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
@@ -106,7 +115,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow ALL):
 1. Start exactly where the previous scene ended—do NOT recap or summarize what happened
