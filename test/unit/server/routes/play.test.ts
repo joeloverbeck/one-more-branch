@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express';
 import { storyEngine } from '@/engine';
 import {
+  CHOICE_TYPE_COLORS,
   createChoice,
   createPage,
   createStory,
   parseStoryId,
   createEmptyAccumulatedStructureState,
   createStructureVersionId,
+  PRIMARY_DELTA_LABELS,
 } from '@/models';
 import type { VersionedStoryStructure, StoryStructure } from '@/models';
 import { playRoutes } from '@/server/routes/play';
@@ -58,6 +60,7 @@ describe('playRoutes', () => {
       const page = createPage({
         id: 2,
         narrativeText: 'You stand at a fork in the road.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Take left path'), createChoice('Take right path')],
         isEnding: false,
         parentPageId: 1,
@@ -87,6 +90,8 @@ describe('playRoutes', () => {
         page,
         pageId: 2,
         actDisplayInfo: null,
+        choiceTypeLabels: CHOICE_TYPE_COLORS,
+        primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
     });
 
@@ -147,6 +152,7 @@ describe('playRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'The first page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go north'), createChoice('Go south')],
         isEnding: false,
         parentPageId: null,
@@ -183,6 +189,7 @@ describe('playRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'The launch pad',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Launch'), createChoice('Abort')],
         isEnding: false,
         parentPageId: null,
@@ -245,6 +252,7 @@ describe('playRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'The beginning',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go north'), createChoice('Go south')],
         isEnding: false,
         parentPageId: null,
@@ -289,6 +297,7 @@ describe('playRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'A simple story',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Turn back')],
         isEnding: false,
         parentPageId: null,
@@ -358,6 +367,7 @@ describe('playRoutes', () => {
       const resultPage = createPage({
         id: 3,
         narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Investigate'), createChoice('Retreat')],
         isEnding: false,
         parentPageId: 2,
@@ -411,6 +421,7 @@ describe('playRoutes', () => {
       const resultPage = createPage({
         id: 3,
         narrativeText: 'The story path shifted.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('New path A'), createChoice('New path B')],
         isEnding: false,
         parentPageId: 2,
@@ -462,6 +473,7 @@ describe('playRoutes', () => {
       const resultPage = createPage({
         id: 3,
         narrativeText: 'Story continues normally.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Wait')],
         isEnding: false,
         parentPageId: 2,
@@ -537,6 +549,7 @@ describe('playRoutes', () => {
       const resultPage = createPage({
         id: 3,
         narrativeText: 'You entered Act Two.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Retreat')],
         isEnding: false,
         parentPageId: 2,
@@ -589,6 +602,7 @@ describe('playRoutes', () => {
       const resultPage = createPage({
         id: 3,
         narrativeText: 'A simple continuation.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Wait')],
         isEnding: false,
         parentPageId: 2,

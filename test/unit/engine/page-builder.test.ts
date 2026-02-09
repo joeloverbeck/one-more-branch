@@ -15,7 +15,10 @@ import {
 function buildMockGenerationResult(overrides?: Partial<WriterResult>): WriterResult {
   return {
     narrative: 'You step into the shadowed corridor.',
-    choices: ['Go left', 'Go right'],
+    choices: [
+      { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Go right', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Shadowed corridor',
     threatsAdded: [],
     threatsRemoved: [],
@@ -39,6 +42,7 @@ function buildMockGenerationResult(overrides?: Partial<WriterResult>): WriterRes
       dominantMotivation: 'Discover what lies ahead',
     },
     isEnding: false,
+    sceneSummary: 'Test summary of the scene events and consequences.',
     rawResponse: 'raw-response',
     ...overrides,
   };
@@ -63,7 +67,11 @@ describe('page-builder', () => {
     it('maps narrative and choices from generation result', () => {
       const result = buildMockGenerationResult({
         narrative: 'The adventure begins.',
-        choices: ['Enter the cave', 'Climb the mountain', 'Rest by the river'],
+        choices: [
+          { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Climb the mountain', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Rest by the river', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'CONDITION_CHANGE' },
+        ],
       });
       const context: FirstPageBuildContext = {
         structureState: createEmptyAccumulatedStructureState(),

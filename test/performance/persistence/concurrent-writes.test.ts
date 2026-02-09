@@ -57,6 +57,7 @@ describe('Concurrent Write Performance', () => {
     const root = createPage({
       id: parsePageId(1),
       narrativeText: 'Root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('A'), createChoice('B'), createChoice('C'), createChoice('D')],
       inventoryChanges: { added: ['root-item'], removed: [] },
       isEnding: false,
@@ -73,6 +74,7 @@ describe('Concurrent Write Performance', () => {
         createPage({
           id: pageId,
           narrativeText: `Page ${pageId} content`,
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [],
           inventoryChanges: { added: [`event-${pageId}`], removed: [] },
           isEnding: true,
@@ -148,6 +150,7 @@ describe('Concurrent Write Performance', () => {
     const root = createPage({
       id: parsePageId(1),
       narrativeText: 'Read/write root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('A'), createChoice('B'), createChoice('C'), createChoice('D')],
       inventoryChanges: { added: ['root-read-write'], removed: [] },
       isEnding: false,
@@ -163,6 +166,7 @@ describe('Concurrent Write Performance', () => {
         createPage({
           id: pageId,
           narrativeText: `RW Page ${pageId}`,
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [],
           inventoryChanges: { added: [`rw-${pageId}`], removed: [] },
           isEnding: true,
@@ -209,6 +213,7 @@ describe('Concurrent Write Performance', () => {
     const page1 = createPage({
       id: parsePageId(1),
       narrativeText: 'Lock root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('A'), createChoice('B')],
       inventoryChanges: { added: ['lock-root'], removed: [] },
       isEnding: false,

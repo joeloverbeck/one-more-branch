@@ -54,9 +54,25 @@
           <button
             class="choice-btn"
             data-choice-index="<%= index %>"
+            data-choice-type="<%= choice.choiceType %>"
+            data-primary-delta="<%= choice.primaryDelta %>"
             <%= choice.nextPageId ? 'data-explored="true"' : '' %>
           >
-            <%= choice.text %>
+            <span class="choice-icon-pill" aria-hidden="true">
+              <img class="choice-icon choice-icon--type"
+                   src="/images/icons/<%= choice.choiceType.toLowerCase().replace(/_/g, '-') %>.png"
+                   alt=""
+                   title="<%= choiceTypeLabels[choice.choiceType] ? choiceTypeLabels[choice.choiceType].label : '' %>"
+                   width="24" height="24" loading="lazy"
+                   onerror="this.style.display='none'">
+              <img class="choice-icon choice-icon--delta"
+                   src="/images/icons/<%= choice.primaryDelta.toLowerCase().replace(/_/g, '-') %>.png"
+                   alt=""
+                   title="<%= primaryDeltaLabels[choice.primaryDelta] || '' %>"
+                   width="24" height="24" loading="lazy"
+                   onerror="this.style.display='none'">
+            </span>
+            <span class="choice-text"><%= choice.text %></span>
             <% if (choice.nextPageId) { %>
             <span class="explored-marker" title="Previously explored">↩</span>
             <% } %>
@@ -68,6 +84,31 @@
                  placeholder="Introduce your own custom choice..."
                  maxlength="500" />
           <button type="button" class="custom-choice-btn">Add</button>
+        </div>
+        <div class="custom-choice-enums">
+          <select class="custom-choice-type">
+            <option value="TACTICAL_APPROACH">Method/Tactic</option>
+            <option value="MORAL_DILEMMA">Moral Choice</option>
+            <option value="IDENTITY_EXPRESSION">Define Yourself</option>
+            <option value="RELATIONSHIP_SHIFT">Relationship</option>
+            <option value="RESOURCE_COMMITMENT">Spend/Risk</option>
+            <option value="INVESTIGATION">Investigate</option>
+            <option value="PATH_DIVERGENCE">Change Direction</option>
+            <option value="CONFRONTATION">Confront/Fight</option>
+            <option value="AVOIDANCE_RETREAT">Avoid/Flee</option>
+          </select>
+          <select class="custom-choice-delta">
+            <option value="LOCATION_CHANGE">Location</option>
+            <option value="GOAL_SHIFT">Goal</option>
+            <option value="RELATIONSHIP_CHANGE">Relationship</option>
+            <option value="URGENCY_CHANGE">Time Pressure</option>
+            <option value="ITEM_CONTROL">Item</option>
+            <option value="EXPOSURE_CHANGE">Attention</option>
+            <option value="CONDITION_CHANGE">Condition</option>
+            <option value="INFORMATION_REVEALED">Information</option>
+            <option value="THREAT_SHIFT">Danger</option>
+            <option value="CONSTRAINT_CHANGE">Limitation</option>
+          </select>
         </div>
       </section>
       <% } %>

@@ -153,6 +153,7 @@ describe('story-service', () => {
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'The lantern light flickers as the first route is revealed.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Enter the archive'), createChoice('Follow the patrol road')],
         isEnding: false,
         parentPageId: null,
@@ -286,6 +287,7 @@ describe('story-service', () => {
       const page = createPage({
         id: parsePageId(2),
         narrativeText: 'Page content for delegation coverage in getPage.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: parsePageId(1),
@@ -342,6 +344,7 @@ describe('story-service', () => {
       const page1 = createPage({
         id: parsePageId(1),
         narrativeText: 'Page one opens with two diverging routes to test counts cleanly.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Scout east', parsePageId(2)), createChoice('Scout west')],
         isEnding: false,
         parentPageId: null,
@@ -350,6 +353,7 @@ describe('story-service', () => {
       const page2 = createPage({
         id: parsePageId(2),
         narrativeText: 'Page two closes the branch to represent an ending node in stats.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         isEnding: true,
         parentPageId: parsePageId(1),
@@ -359,6 +363,7 @@ describe('story-service', () => {
       const page3 = createPage({
         id: parsePageId(3),
         narrativeText: 'Page three remains open with one explored and one unexplored choice.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Investigate beacon', parsePageId(4)), createChoice('Retreat')],
         isEnding: false,
         parentPageId: parsePageId(1),

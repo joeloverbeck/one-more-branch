@@ -1,4 +1,12 @@
 import { createChoice as createChoiceDirect } from '@/models/choice';
+import {
+  ChoiceType as ChoiceTypeDirect,
+  PrimaryDelta as PrimaryDeltaDirect,
+  CHOICE_TYPE_VALUES as CHOICE_TYPE_VALUES_Direct,
+  PRIMARY_DELTA_VALUES as PRIMARY_DELTA_VALUES_Direct,
+  CHOICE_TYPE_COLORS as CHOICE_TYPE_COLORS_Direct,
+  PRIMARY_DELTA_LABELS as PRIMARY_DELTA_LABELS_Direct,
+} from '@/models/choice-enums';
 import { createPage as createPageDirect } from '@/models/page';
 import { createEmptyAccumulatedStructureState as createEmptyAccumulatedStructureStateDirect } from '@/models/story-arc';
 import { createStory as createStoryDirect } from '@/models/story';
@@ -16,6 +24,15 @@ describe('models barrel exports', () => {
     );
   });
 
+  it('re-exports choice enum types and constants', () => {
+    expect(models.ChoiceType).toBe(ChoiceTypeDirect);
+    expect(models.PrimaryDelta).toBe(PrimaryDeltaDirect);
+    expect(models.CHOICE_TYPE_VALUES).toBe(CHOICE_TYPE_VALUES_Direct);
+    expect(models.PRIMARY_DELTA_VALUES).toBe(PRIMARY_DELTA_VALUES_Direct);
+    expect(models.CHOICE_TYPE_COLORS).toBe(CHOICE_TYPE_COLORS_Direct);
+    expect(models.PRIMARY_DELTA_LABELS).toBe(PRIMARY_DELTA_LABELS_Direct);
+  });
+
   it('supports creating and validating model objects via barrel imports', () => {
     const story = models.createStory({
       title: 'Test Story',
@@ -25,6 +42,7 @@ describe('models barrel exports', () => {
     const page = models.createPage({
       id: pageId,
       narrativeText: 'A'.repeat(60),
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [models.createChoice('Option A'), models.createChoice('Option B')],
       isEnding: false,
       parentPageId: null,

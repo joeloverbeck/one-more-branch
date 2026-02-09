@@ -33,7 +33,10 @@ const openingContext = {
 const validStructuredPayload = {
   narrative:
     'You descend into the vault with water up to your knees and the lantern shaking in your grip while distant chanting rises from the stone arches above you.',
-  choices: ['Advance toward the chanting', 'Retreat and seal the grate'],
+  choices: [
+    { text: 'Advance toward the chanting', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Retreat and seal the grate', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+  ],
   currentLocation: 'The drowned vault',
   threatsAdded: [],
   threatsRemoved: [],
@@ -56,6 +59,7 @@ const validStructuredPayload = {
     secondaryEmotions: [],
     dominantMotivation: 'Uncover the source of the chanting',
   },
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
 };
 
@@ -310,7 +314,9 @@ describe('llm client', () => {
   it('should treat schema validation failures as retryable', async () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
-      choices: ['Only one choice'],
+      choices: [
+        { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      ],
       currentLocation: 'Invalid location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -333,6 +339,7 @@ describe('llm client', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Resolve the error',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
     };
 
@@ -444,7 +451,9 @@ describe('llm client', () => {
   it('should log raw response when structured validation fails', async () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
-      choices: ['Only one choice'],
+      choices: [
+        { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      ],
       currentLocation: 'Invalid location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -467,6 +476,7 @@ describe('llm client', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Resolve the error',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
     };
 

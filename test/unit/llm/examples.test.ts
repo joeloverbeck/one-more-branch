@@ -38,7 +38,7 @@ describe('buildFewShotMessages', () => {
 
       interface OpeningExample {
         narrative: string;
-        choices: string[];
+        choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
         currentLocation: string;
         threatsAdded: string[];
         threatsRemoved: string[];
@@ -114,7 +114,7 @@ describe('buildFewShotMessages', () => {
 
       interface ContinuationExample {
         narrative: string;
-        choices: string[];
+        choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
         currentLocation: string;
         threatsAdded: string[];
         threatsRemoved: string[];
@@ -160,7 +160,7 @@ describe('buildFewShotMessages', () => {
       const endingAssistantContent = messages[3]?.content ?? '';
 
       interface EndingExample {
-        choices: string[];
+        choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
         isEnding: boolean;
       }
 

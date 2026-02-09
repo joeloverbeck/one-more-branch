@@ -43,6 +43,6 @@ describe('public client script', () => {
 
     expect(script).toContain('escapeHtmlWithBreaks(data.page.narrativeText || \'\')');
     expect(script).toContain('changes.map((change) => `<li>${escapeHtml(change)}</li>`)');
-    expect(script).toContain('${escapeHtml(choiceText)}');
+    expect(script).toContain("escapeHtml(choiceText)");
   });
 });

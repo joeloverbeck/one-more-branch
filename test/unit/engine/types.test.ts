@@ -32,6 +32,7 @@ describe('Engine types', () => {
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'The tower door creaks open.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         isEnding: true,
         parentPageId: null,

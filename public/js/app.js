@@ -42,6 +42,18 @@
     return escapeHtml(text).replace(/\n/g, '<br>');
   }
 
+  function enumToIconName(enumValue) {
+    if (typeof enumValue !== 'string' || enumValue.length === 0) {
+      return '';
+    }
+    return enumValue.toLowerCase().replace(/_/g, '-');
+  }
+
+  function getIconPath(enumValue) {
+    var name = enumToIconName(enumValue);
+    return name ? '/images/icons/' + name + '.png' : '';
+  }
+
   function initPlayPage() {
     const container = document.querySelector('.play-container');
     if (!container) {
@@ -101,20 +113,85 @@
     }
 
     function renderChoiceButtons(choiceList) {
-      return choiceList.map((choice, index) => {
-        const isExplored = Boolean(choice.nextPageId);
-        const choiceText = typeof choice.text === 'string' ? choice.text : '';
+      return choiceList.map(function(choice, index) {
+        var isExplored = Boolean(choice.nextPageId);
+        var choiceText = typeof choice.text === 'string' ? choice.text : '';
+        var choiceType = typeof choice.choiceType === 'string' ? choice.choiceType : '';
+        var primaryDelta = typeof choice.primaryDelta === 'string' ? choice.primaryDelta : '';
 
-        return `
-          <button
-            class="choice-btn"
-            data-choice-index="${index}"
-            ${isExplored ? 'data-explored="true"' : ''}
-          >
-            ${escapeHtml(choiceText)}
-            ${isExplored ? '<span class="explored-marker" title="Previously explored">↩</span>' : ''}
-          </button>
-        `;
+        var typeIconPath = getIconPath(choiceType);
+        var deltaIconPath = getIconPath(primaryDelta);
+        var typeLabel = CHOICE_TYPE_LABEL_MAP[choiceType] || '';
+        var deltaLabel = PRIMARY_DELTA_LABEL_MAP[primaryDelta] || '';
+
+        var pillHtml = '';
+        if (typeIconPath || deltaIconPath) {
+          pillHtml = '<span class="choice-icon-pill" aria-hidden="true">';
+          if (typeIconPath) {
+            pillHtml += '<img class="choice-icon choice-icon--type"'
+              + ' src="' + escapeHtml(typeIconPath) + '"'
+              + ' alt="" title="' + escapeHtml(typeLabel) + '"'
+              + ' width="24" height="24" loading="lazy"'
+              + " onerror=\"this.style.display='none'\">";
+          }
+          if (deltaIconPath) {
+            pillHtml += '<img class="choice-icon choice-icon--delta"'
+              + ' src="' + escapeHtml(deltaIconPath) + '"'
+              + ' alt="" title="' + escapeHtml(deltaLabel) + '"'
+              + ' width="24" height="24" loading="lazy"'
+              + " onerror=\"this.style.display='none'\">";
+          }
+          pillHtml += '</span>';
+        }
+
+        return '<button'
+          + ' class="choice-btn"'
+          + ' data-choice-index="' + index + '"'
+          + ' data-choice-type="' + escapeHtml(choiceType) + '"'
+          + ' data-primary-delta="' + escapeHtml(primaryDelta) + '"'
+          + (isExplored ? ' data-explored="true"' : '')
+          + '>'
+          + pillHtml
+          + '<span class="choice-text">' + escapeHtml(choiceText) + '</span>'
+          + (isExplored ? '<span class="explored-marker" title="Previously explored">&#8617;</span>' : '')
+          + '</button>';
+      }).join('');
+    }
+
+    var CHOICE_TYPES = [
+      { value: 'TACTICAL_APPROACH', label: 'Method/Tactic' },
+      { value: 'MORAL_DILEMMA', label: 'Moral Choice' },
+      { value: 'IDENTITY_EXPRESSION', label: 'Define Yourself' },
+      { value: 'RELATIONSHIP_SHIFT', label: 'Relationship' },
+      { value: 'RESOURCE_COMMITMENT', label: 'Spend/Risk' },
+      { value: 'INVESTIGATION', label: 'Investigate' },
+      { value: 'PATH_DIVERGENCE', label: 'Change Direction' },
+      { value: 'CONFRONTATION', label: 'Confront/Fight' },
+      { value: 'AVOIDANCE_RETREAT', label: 'Avoid/Flee' },
+    ];
+
+    var PRIMARY_DELTAS = [
+      { value: 'LOCATION_CHANGE', label: 'Location' },
+      { value: 'GOAL_SHIFT', label: 'Goal' },
+      { value: 'RELATIONSHIP_CHANGE', label: 'Relationship' },
+      { value: 'URGENCY_CHANGE', label: 'Time Pressure' },
+      { value: 'ITEM_CONTROL', label: 'Item' },
+      { value: 'EXPOSURE_CHANGE', label: 'Attention' },
+      { value: 'CONDITION_CHANGE', label: 'Condition' },
+      { value: 'INFORMATION_REVEALED', label: 'Information' },
+      { value: 'THREAT_SHIFT', label: 'Danger' },
+      { value: 'CONSTRAINT_CHANGE', label: 'Limitation' },
+    ];
+
+    var CHOICE_TYPE_LABEL_MAP = {};
+    CHOICE_TYPES.forEach(function(ct) { CHOICE_TYPE_LABEL_MAP[ct.value] = ct.label; });
+
+    var PRIMARY_DELTA_LABEL_MAP = {};
+    PRIMARY_DELTAS.forEach(function(pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.label; });
+
+    function renderSelectOptions(items) {
+      return items.map(function(item) {
+        return '<option value="' + escapeHtml(item.value) + '">' + escapeHtml(item.label) + '</option>';
       }).join('');
     }
 
@@ -126,6 +203,14 @@
                  maxlength="500" />
           <button type="button" class="custom-choice-btn">Add</button>
         </div>
+        <div class="custom-choice-enums">
+          <select class="custom-choice-type">
+            ${renderSelectOptions(CHOICE_TYPES)}
+          </select>
+          <select class="custom-choice-delta">
+            ${renderSelectOptions(PRIMARY_DELTAS)}
+          </select>
+        </div>
       `;
     }
 
@@ -134,6 +219,10 @@
       const existingCustom = choicesSection.querySelector('.custom-choice-container');
       if (existingCustom) {
         existingCustom.remove();
+      }
+      const existingEnums = choicesSection.querySelector('.custom-choice-enums');
+      if (existingEnums) {
+        existingEnums.remove();
       }
       choices.insertAdjacentHTML('afterend', renderCustomChoiceInput());
       bindCustomChoiceEvents();
@@ -210,10 +299,15 @@
       if (addBtn) addBtn.disabled = true;
       input.disabled = true;
 
+      const choiceTypeSelect = choicesSection.querySelector('.custom-choice-type');
+      const primaryDeltaSelect = choicesSection.querySelector('.custom-choice-delta');
+      const choiceType = choiceTypeSelect ? choiceTypeSelect.value : 'TACTICAL_APPROACH';
+      const primaryDelta = primaryDeltaSelect ? primaryDeltaSelect.value : 'GOAL_SHIFT';
+
       fetch(`/play/${storyId}/custom-choice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pageId: currentPageId, choiceText: text }),
+        body: JSON.stringify({ pageId: currentPageId, choiceText: text, choiceType: choiceType, primaryDelta: primaryDelta }),
       })
         .then(function(response) {
           return response.json().then(function(data) {

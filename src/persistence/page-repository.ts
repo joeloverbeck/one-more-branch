@@ -1,4 +1,4 @@
-import { Choice, Page, PageId, StoryId } from '../models';
+import { Choice, ChoiceType, Page, PageId, PrimaryDelta, StoryId } from '../models';
 import {
   fileExists,
   getPageFilePath,
@@ -118,7 +118,9 @@ export async function updateChoiceLink(
 export async function addChoice(
   storyId: StoryId,
   pageId: PageId,
-  choiceText: string
+  choiceText: string,
+  choiceType: ChoiceType = ChoiceType.TACTICAL_APPROACH,
+  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT,
 ): Promise<Page> {
   return withLock(storyId, async () => {
     const page = await loadPage(storyId, pageId);
@@ -132,6 +134,8 @@ export async function addChoice(
 
     const newChoice: Choice = {
       text: choiceText.trim(),
+      choiceType,
+      primaryDelta,
       nextPageId: null,
     };
 

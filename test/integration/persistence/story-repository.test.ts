@@ -271,6 +271,7 @@ describe('story-repository integration', () => {
     const rootPage = createPage({
       id: parsePageId(1),
       narrativeText: 'Root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Left'), createChoice('Right')],
       isEnding: false,
       parentPageId: null,
@@ -279,6 +280,7 @@ describe('story-repository integration', () => {
     const childPage = createPage({
       id: parsePageId(2),
       narrativeText: 'Child',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Forward'), createChoice('Back')],
       isEnding: false,
       parentPageId: parsePageId(1),

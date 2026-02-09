@@ -1,6 +1,8 @@
 import {
   Page,
   createChoice,
+  ChoiceType,
+  PrimaryDelta,
   parsePageId,
   createDefaultProtagonistAffect,
   createEmptyActiveState,
@@ -21,6 +23,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
   const basePage: Page = {
     id: parsePageId(1),
     narrativeText: 'Test narrative',
+    sceneSummary: 'Test summary.',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
     activeStateChanges: createEmptyActiveStateChanges(),
     accumulatedActiveState: createEmptyActiveState(),
@@ -76,8 +79,8 @@ describe('page-serializer', () => {
       expect(fileData.id).toBe(1);
       expect(fileData.narrativeText).toBe('Test narrative');
       expect(fileData.choices).toEqual([
-        { text: 'Choice A', nextPageId: null },
-        { text: 'Choice B', nextPageId: null },
+        { text: 'Choice A', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
+        { text: 'Choice B', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
       ]);
       expect(fileData.activeStateChanges).toEqual(createEmptyActiveStateChanges());
       expect(fileData.accumulatedActiveState).toEqual(createEmptyActiveState());
@@ -138,16 +141,16 @@ describe('page-serializer', () => {
     it('serializes choices with linked next page ids', () => {
       const page = buildTestPage({
         choices: [
-          { text: 'Go left', nextPageId: parsePageId(2) },
-          { text: 'Go right', nextPageId: null },
+          { text: 'Go left', choiceType: ChoiceType.PATH_DIVERGENCE, primaryDelta: PrimaryDelta.LOCATION_CHANGE, nextPageId: parsePageId(2) },
+          { text: 'Go right', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
         ],
       });
 
       const fileData = serializePage(page);
 
       expect(fileData.choices).toEqual([
-        { text: 'Go left', nextPageId: 2 },
-        { text: 'Go right', nextPageId: null },
+        { text: 'Go left', choiceType: ChoiceType.PATH_DIVERGENCE, primaryDelta: PrimaryDelta.LOCATION_CHANGE, nextPageId: 2 },
+        { text: 'Go right', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
       ]);
     });
 
@@ -247,9 +250,10 @@ describe('page-serializer', () => {
       return {
         id: 1,
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary.',
         choices: [
-          { text: 'Choice A', nextPageId: null },
-          { text: 'Choice B', nextPageId: null },
+          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: null },
+          { text: 'Choice B', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: null },
         ],
         activeStateChanges: {
           newLocation: null,
@@ -320,8 +324,8 @@ describe('page-serializer', () => {
       expect(page.id).toBe(1);
       expect(page.narrativeText).toBe('Test narrative');
       expect(page.choices).toEqual([
-        { text: 'Choice A', nextPageId: null },
-        { text: 'Choice B', nextPageId: null },
+        { text: 'Choice A', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
+        { text: 'Choice B', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
       ]);
       expect(page.activeStateChanges).toEqual(createEmptyActiveStateChanges());
       expect(page.accumulatedActiveState).toEqual(createEmptyActiveState());
@@ -382,16 +386,16 @@ describe('page-serializer', () => {
     it('deserializes choices with linked next page ids', () => {
       const fileData = buildTestFileData({
         choices: [
-          { text: 'Go left', nextPageId: 2 },
-          { text: 'Go right', nextPageId: null },
+          { text: 'Go left', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+          { text: 'Go right', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: null },
         ],
       });
 
       const page = deserializePage(fileData);
 
       expect(page.choices).toEqual([
-        { text: 'Go left', nextPageId: 2 },
-        { text: 'Go right', nextPageId: null },
+        { text: 'Go left', choiceType: ChoiceType.PATH_DIVERGENCE, primaryDelta: PrimaryDelta.LOCATION_CHANGE, nextPageId: 2 },
+        { text: 'Go right', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
       ]);
     });
 
@@ -564,10 +568,11 @@ describe('page-serializer', () => {
       const originalPage = buildTestPage({
         id: parsePageId(5),
         narrativeText: 'A complex narrative with special characters: "quotes", \'apostrophes\', & symbols',
+        sceneSummary: 'Test summary.',
         choices: [
-          { text: 'First choice', nextPageId: parsePageId(6) },
-          { text: 'Second choice', nextPageId: null },
-          { text: 'Third choice', nextPageId: parsePageId(7) },
+          { text: 'First choice', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: parsePageId(6) },
+          { text: 'Second choice', choiceType: ChoiceType.MORAL_DILEMMA, primaryDelta: PrimaryDelta.RELATIONSHIP_CHANGE, nextPageId: null },
+          { text: 'Third choice', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED, nextPageId: parsePageId(7) },
         ],
         inventoryChanges: { added: ['magic-sword', 'potion'], removed: ['rusty-dagger'] },
         accumulatedInventory: ['magic-sword', 'potion', 'gold-coins'],
@@ -608,6 +613,7 @@ describe('page-serializer', () => {
       const endingPage: Page = {
         id: parsePageId(10),
         narrativeText: 'The end of the story',
+        sceneSummary: 'Test summary.',
         choices: [],
         activeStateChanges: createEmptyActiveStateChanges(),
         accumulatedActiveState: createEmptyActiveState(),
@@ -643,9 +649,10 @@ describe('page-serializer', () => {
       const pageWithActiveState: Page = {
         id: parsePageId(7),
         narrativeText: 'A scene with complex active state',
+        sceneSummary: 'Test summary.',
         choices: [
-          { text: 'Fight the dragon', nextPageId: null },
-          { text: 'Negotiate with the dragon', nextPageId: null },
+          { text: 'Fight the dragon', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT, nextPageId: null },
+          { text: 'Negotiate with the dragon', choiceType: ChoiceType.RELATIONSHIP_SHIFT, primaryDelta: PrimaryDelta.RELATIONSHIP_CHANGE, nextPageId: null },
         ],
         activeStateChanges: {
           newLocation: 'Dragon lair - treasure chamber',

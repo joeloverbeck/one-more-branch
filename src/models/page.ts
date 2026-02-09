@@ -33,6 +33,7 @@ import {
 export interface Page {
   readonly id: PageId;
   readonly narrativeText: string;
+  readonly sceneSummary: string;
   readonly choices: Choice[];
   readonly activeStateChanges: ActiveStateChanges;
   readonly accumulatedActiveState: ActiveState;
@@ -53,6 +54,7 @@ export interface Page {
 export interface CreatePageData {
   id: PageId;
   narrativeText: string;
+  sceneSummary: string;
   choices: Choice[];
   activeStateChanges?: ActiveStateChanges;
   inventoryChanges?: InventoryChanges;
@@ -101,6 +103,7 @@ export function createPage(data: CreatePageData): Page {
   return {
     id: data.id,
     narrativeText: data.narrativeText.trim(),
+    sceneSummary: data.sceneSummary.trim(),
     choices: data.choices,
     activeStateChanges,
     accumulatedActiveState: applyActiveStateChanges(parentActiveState, activeStateChanges),
@@ -155,6 +158,7 @@ export function isPage(value: unknown): value is Page {
     Number.isInteger(obj['id']) &&
     obj['id'] >= 1 &&
     typeof obj['narrativeText'] === 'string' &&
+    typeof obj['sceneSummary'] === 'string' &&
     Array.isArray(obj['choices']) &&
     obj['choices'].every(isChoice) &&
     activeStateChangesValid &&

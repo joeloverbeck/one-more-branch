@@ -12,6 +12,7 @@ describe('parent-state-collector', () => {
       const firstPage = createPage({
         id: parsePageId(1),
         narrativeText: 'You begin your journey.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go north'), createChoice('Go south')],
         isEnding: false,
         parentPageId: null,
@@ -34,6 +35,7 @@ describe('parent-state-collector', () => {
       const pageWithState = createPage({
         id: parsePageId(1),
         narrativeText: 'You found something.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Take it'), createChoice('Leave it')],
         activeStateChanges: {
           newLocation: 'Secret passage',
@@ -58,6 +60,7 @@ describe('parent-state-collector', () => {
       const pageWithInventory = createPage({
         id: parsePageId(1),
         narrativeText: 'You picked up an item.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Use it'), createChoice('Keep it')],
         inventoryChanges: { added: ['Ancient key', 'Torch'], removed: [] },
         isEnding: false,
@@ -75,6 +78,7 @@ describe('parent-state-collector', () => {
       const pageWithHealth = createPage({
         id: parsePageId(1),
         narrativeText: 'You were injured.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Rest'), createChoice('Continue')],
         healthChanges: { added: ['Minor wound', 'Fatigue'], removed: [] },
         isEnding: false,
@@ -92,6 +96,7 @@ describe('parent-state-collector', () => {
       const pageWithCharacterState = createPage({
         id: parsePageId(1),
         narrativeText: 'Your companion grew closer.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Talk'), createChoice('Rest')],
         characterStateChanges: [
           { characterName: 'Elena', added: ['Trusting', 'Curious'], removed: [] },
@@ -121,6 +126,7 @@ describe('parent-state-collector', () => {
       const pageWithStructure = createPage({
         id: parsePageId(1),
         narrativeText: 'You advanced the story.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Explore')],
         isEnding: false,
         parentPageId: null,
@@ -145,6 +151,7 @@ describe('parent-state-collector', () => {
       const complexPage = createPage({
         id: parsePageId(1),
         narrativeText: 'A lot happened.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Option A'), createChoice('Option B')],
         activeStateChanges: {
           newLocation: 'Quest start location',
@@ -179,6 +186,7 @@ describe('parent-state-collector', () => {
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'Test page.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,

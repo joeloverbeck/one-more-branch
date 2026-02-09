@@ -35,6 +35,7 @@ describe('fewShotMode: none', () => {
       openThreads: [],
     },
     grandparentNarrative: null,
+    ancestorSummaries: [],
   };
 
   const noneOptions: PromptOptions = {

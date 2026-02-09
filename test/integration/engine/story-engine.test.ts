@@ -65,7 +65,10 @@ const mockedStructureResult = {
 const openingResult = {
   narrative:
     'You step into Lanternport as the harbor lights ignite in impossible colors and every captain in the bay turns to watch your arrival in uneasy silence.',
-  choices: ['Investigate the ember trail', 'Question the ferryman'],
+  choices: [
+    { text: 'Investigate the ember trail', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Question the ferryman', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+  ],
   currentLocation: 'Lanternport harbor district',
   threatsAdded: ['Unwelcome attention from harbor captains'],
   threatsRemoved: [],
@@ -88,6 +91,7 @@ const openingResult = {
     secondaryEmotions: [{ emotion: 'unease', cause: 'The captains watching in silence' }],
     dominantMotivation: 'Understand the source of the strange phenomena',
   },
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
@@ -99,7 +103,10 @@ function buildWriterResult(selectedChoice: string): WriterResult {
     return {
       narrative:
         'You follow embers down alleys of wet stone, where shuttered windows open just enough for whispered warnings and the ash forms a map beneath your boots.',
-      choices: ['Enter the ash-marked chapel', 'Return to the docks with proof'],
+      choices: [
+        { text: 'Enter the ash-marked chapel', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Return to the docks with proof', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Chapel district alleys',
       threatsAdded: ['Whispered warnings from hidden watchers'],
       threatsRemoved: [],
@@ -122,6 +129,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
         secondaryEmotions: [{ emotion: 'wariness', cause: 'The whispered warnings' }],
         dominantMotivation: 'Reach the source of the ember trail',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: 'continuation-ember',
     };
@@ -130,7 +138,10 @@ function buildWriterResult(selectedChoice: string): WriterResult {
   return {
     narrative:
       'The ferryman speaks in a voice like scraped iron and admits he has rowed passengers to a pier that does not exist on any map, then offers you passage.',
-    choices: ['Accept passage to the hidden pier', 'Detain the ferryman for answers'],
+    choices: [
+      { text: 'Accept passage to the hidden pier', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Lanternport docks',
     threatsAdded: [],
     threatsRemoved: [],
@@ -153,6 +164,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       secondaryEmotions: [{ emotion: 'suspicion', cause: 'The ferryman seems too willing to share' }],
       dominantMotivation: 'Learn what the ferryman knows',
     },
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: 'continuation-ferryman',
   };
@@ -167,6 +179,9 @@ function buildAnalystResult(narrative: string): AnalystResult {
       deviationReason: '',
       invalidatedBeatIds: [] as string[],
       narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none',
       rawResponse: 'analyst-raw',
     };
   }
@@ -178,6 +193,9 @@ function buildAnalystResult(narrative: string): AnalystResult {
     deviationReason: '',
     invalidatedBeatIds: [] as string[],
     narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
     rawResponse: 'analyst-raw',
   };
 }
@@ -375,6 +393,9 @@ describe('story-engine integration', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -384,6 +405,9 @@ describe('story-engine integration', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       });
 
@@ -514,6 +538,9 @@ describe('story-engine integration', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -523,6 +550,9 @@ describe('story-engine integration', () => {
         deviationReason: 'The protagonist publicly defects, invalidating infiltration beats.',
         invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
         narrativeSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       });
 

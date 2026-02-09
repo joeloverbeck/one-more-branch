@@ -11,6 +11,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: '  The story begins...  ',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go left'), createChoice('Go right')],
         isEnding: false,
         parentPageId: null,
@@ -27,6 +28,7 @@ describe('Page', () => {
       const page = createPage({
         id: 2 as PageId,
         narrativeText: 'Next page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Fight'), createChoice('Run')],
         isEnding: false,
         parentPageId: 1 as PageId,
@@ -42,6 +44,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'The story begins...',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go left'), createChoice('Go right')],
         isEnding: false,
         parentPageId: null,
@@ -76,6 +79,7 @@ describe('Page', () => {
       const page = createPage({
         id: 2 as PageId,
         narrativeText: 'Continuation',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Fight'), createChoice('Run')],
         activeStateChanges: {
           newLocation: 'New Room',
@@ -100,6 +104,7 @@ describe('Page', () => {
       const page = createPage({
         id: 3 as PageId,
         narrativeText: 'Ending',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         isEnding: true,
         parentPageId: 2 as PageId,
@@ -115,6 +120,7 @@ describe('Page', () => {
         createPage({
           id: 2 as PageId,
           narrativeText: 'Bad ending',
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [createChoice('Continue')],
           isEnding: true,
           parentPageId: 1 as PageId,
@@ -128,6 +134,7 @@ describe('Page', () => {
         createPage({
           id: 2 as PageId,
           narrativeText: 'Bad branch',
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [createChoice('Only one')],
           isEnding: false,
           parentPageId: 1 as PageId,
@@ -141,6 +148,7 @@ describe('Page', () => {
         createPage({
           id: 1 as PageId,
           narrativeText: 'Invalid root',
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [createChoice('A'), createChoice('B')],
           isEnding: false,
           parentPageId: 2 as PageId,
@@ -154,6 +162,7 @@ describe('Page', () => {
         createPage({
           id: 2 as PageId,
           narrativeText: 'Invalid child',
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [createChoice('A'), createChoice('B')],
           isEnding: false,
           parentPageId: null,
@@ -166,6 +175,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Root page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -190,6 +200,7 @@ describe('Page', () => {
       const page = createPage({
         id: 2 as PageId,
         narrativeText: 'Child page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: 1 as PageId,
@@ -204,6 +215,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Root page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -218,6 +230,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Root page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -234,6 +247,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -253,6 +267,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -268,6 +283,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -292,6 +308,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -307,6 +324,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -321,6 +339,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -338,6 +357,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Missing fields',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -355,6 +375,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Invalid active state changes',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -377,6 +398,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Explored',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('A', 2 as PageId),
           createChoice('B', 3 as PageId),
@@ -393,6 +415,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Partially explored',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('A', 2 as PageId),
           createChoice('B'),
@@ -411,6 +434,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Branching',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('A', 2 as PageId),
           createChoice('B'),
@@ -428,6 +452,7 @@ describe('Page', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'Fully explored',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('A', 2 as PageId),
           createChoice('B', 3 as PageId),

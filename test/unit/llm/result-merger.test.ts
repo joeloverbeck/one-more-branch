@@ -4,7 +4,10 @@ import type { AnalystResult, WriterResult } from '../../../src/llm/types.js';
 function createWriterResult(overrides: Partial<WriterResult> = {}): WriterResult {
   return {
     narrative: 'The hero entered the cave.',
-    choices: ['Go left', 'Go right'],
+    choices: [
+      { text: 'Go left', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+      { text: 'Go right', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    ],
     currentLocation: 'Dark cave',
     threatsAdded: ['THREAT_BATS: Swarm of bats'],
     threatsRemoved: [],
@@ -28,6 +31,7 @@ function createWriterResult(overrides: Partial<WriterResult> = {}): WriterResult
       dominantMotivation: 'Find the treasure',
     },
     isEnding: false,
+    sceneSummary: 'The hero enters a dark cave and encounters a hostile goblin.',
     rawResponse: 'writer raw response',
     ...overrides,
   };

@@ -23,16 +23,16 @@ Write an engaging opening that:
 1. Introduces the protagonist in a compelling scene.
 2. Establishes the world and atmosphere matching the tone.
 3. Presents an initial situation or hook that draws the player in.
-4. Provides 3 meaningful choices for what the protagonist might do (4 only when truly warranted).`;
+4. Provides 3 meaningful structured choice objects (4 only when truly warranted).`;
 
 export const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
   {
     narrative:
       'The morning bell sends its chime rippling through the floating spires of Celestria Academy—a resonance pattern you once calculated should be impossible at this altitude, but magic has never cared much for your equations. You are Lyra, third-year apprentice, and you have not slept properly in three weeks.\n\nYou sit in the back row of Professor Grimwald\'s Advanced Transmutation lecture, but the words washing over you might as well be wind noise. Your attention belongs entirely to the leather-bound journal hidden in your lap. You found it wedged behind a loose stone in the restricted section—the kind of hiding spot that practically begged to be discovered, if you were the sort of person who ran your fingers along every crack in every wall. Which, obviously, you are.\n\nThe journal speaks of a place beneath the academy. A library older than the institution itself. The implications make your pulse quicken every time you think about them: knowledge the founders deemed too dangerous for students, which means knowledge the founders understood, which means someone wrote it down somewhere, which means it can be learned.\n\nYou trace the symbol on the cover—it resembles the Aldermani script from Professor Vex\'s etymology lectures, but the ligatures are wrong, older somehow. The leather feels warm against your fingers, almost alive. A rational mind would find that alarming. Your rational mind finds it fascinating.\n\n"Miss Lyra!" Grimwald\'s voice hits you like a slap. "Perhaps you\'d like to share with the class what\'s so fascinating?"\n\nEvery head turns. Elena—your roommate, your conscience, the only person who can make you feel guilty with just her eyebrows—shoots you a look from two rows ahead that says don\'t you dare.',
     choices: [
-      'Hide the journal and apologize, claiming you were taking notes',
-      'Use a minor illusion spell to make the journal appear to be your textbook',
-      'Excuse yourself claiming sudden illness and slip away to investigate',
+      { text: 'Hide the journal and apologize, claiming you were taking notes', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+      { text: 'Use a minor illusion spell to make the journal appear to be your textbook', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Excuse yourself claiming sudden illness and slip away to investigate', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
     ],
     currentLocation: 'Advanced Transmutation lecture hall, back row',
     threatsAdded: [
@@ -61,6 +61,7 @@ export const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
     healthRemoved: [],
     characterStateChangesAdded: [],
     characterStateChangesRemoved: [],
+    sceneSummary: 'Lyra discovers a mysterious journal hidden in the restricted section of Celestria Academy during Professor Grimwald\'s lecture. The journal describes a forbidden library beneath the academy, and her attempt to study it draws unwanted attention from the professor.',
     isEnding: false,
   },
   null,
@@ -111,16 +112,16 @@ Continue the story:
 1. Show the direct consequences of the player's choice.
 2. Advance the narrative naturally from this decision.
 3. Maintain consistency with all established facts and the current state.
-4. Present 3 new meaningful choices (4 only when truly warranted), unless this leads to an ending.`;
+4. Present 3 new meaningful structured choice objects (4 only when truly warranted), unless this leads to an ending.`;
 
 export const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
   {
     narrative:
       "Your footsteps echo against the marble with every step down toward the east wing, and you find yourself counting them—an anxious habit you picked up during first-year exams and never managed to shake. Fourteen steps. Fifteen. Each one a small, irreversible commitment.\n\nThe east wing greets you with the kind of silence that belongs in tombs. Dust motes drift through shafts of pale light, and the air tastes stale, preserved—like opening a book that hasn't been read in decades. You know that taste. You love that taste. Portraits of long-dead magisters line the walls, and you catch yourself trying to identify them by period: the high collars suggest Second Convocation era, the brushwork is definitely pre-Sundering.\n\nFocus, Lyra.\n\nThe statue of Archmagus Caelan stands at the corridor's end—stern face, flowing robes, one hand raised mid-cast. You've read about him: the architect of the academy's original ward system, brilliant and paranoid in equal measure. Exactly the sort of person who would build a hidden entrance and then leave clues for anyone clever enough to find them. The journal described a mechanism—the third rune on his staff. Your fingers itch.\n\nThen the journal flares warm against your chest, and you hear footsteps. Not from behind you. From a side passage. Someone else is in the restricted wing, and the logical part of your brain—the part that sounds annoyingly like Elena—points out that you have no plausible excuse for being here.\n\nYou press yourself against the wall beside the statue, heart slamming. Through the shadows: robes. Deep purple. Senior faculty. They haven't spotted you yet, but they're heading your way.\n\nThe mechanism is right there, within arm's reach. You could activate it now and pray the passage opens fast enough to swallow you. Or you could wait—watch—find out who else has business in a place that's supposed to be empty.",
     choices: [
-      "Quickly press the third rune and hope the passage opens before you're discovered",
-      'Hide behind the statue and wait to see who the faculty member is',
-      'Use an illusion to make yourself appear invisible and observe',
+      { text: "Quickly press the third rune and hope the passage opens before you're discovered", choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+      { text: 'Hide behind the statue and wait to see who the faculty member is', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Use an illusion to make yourself appear invisible and observe', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
     ],
     currentLocation: 'East wing corridor, beside the statue of Archmagus Caelan',
     threatsAdded: [
@@ -148,6 +149,7 @@ export const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
     healthRemoved: [],
     characterStateChangesAdded: [],
     characterStateChangesRemoved: [],
+    sceneSummary: 'Lyra ventures into the restricted east wing and locates the statue of Archmagus Caelan. As she reaches the mechanism described in the journal, approaching faculty footsteps force her to decide between activating the hidden passage immediately or hiding to observe.',
     isEnding: false,
   },
   null,
@@ -192,7 +194,7 @@ Continue the story:
 1. Show the direct consequences of the player's choice.
 2. Advance the narrative naturally from this decision.
 3. Maintain consistency with all established facts and the current state.
-4. Present 3 new meaningful choices (4 only when truly warranted), unless this leads to an ending.`;
+4. Present 3 new meaningful structured choice objects (4 only when truly warranted), unless this leads to an ending.`;
 
 export const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
   {
@@ -225,6 +227,7 @@ export const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
     healthRemoved: [],
     characterStateChangesAdded: [],
     characterStateChangesRemoved: [],
+    sceneSummary: 'Lyra performs the binding ritual on the Codex of Unmaking, resisting its temptation to be read. She seals the dangerous knowledge and emerges to find Professor Grimwald waiting with respect rather than suspicion, welcoming her into the Academy\'s secret order of librarians.',
     isEnding: true,
   },
   null,

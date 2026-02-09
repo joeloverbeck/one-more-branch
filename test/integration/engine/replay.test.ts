@@ -64,7 +64,10 @@ const mockedStructureResult = {
 const openingResult = {
   narrative:
     'At first bell you cross the bridge into Brightwater and the river mirrors an unfamiliar constellation that shifts whenever you speak your own name.',
-  choices: ['Follow the mirrored stars', 'Consult the archivist'],
+  choices: [
+    { text: 'Follow the mirrored stars', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Consult the archivist', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+  ],
   // New active state fields
   currentLocation: 'Brightwater bridge',
   threatsAdded: [],
@@ -88,6 +91,7 @@ const openingResult = {
     secondaryEmotions: [],
     dominantMotivation: 'Understand the strange phenomenon',
   },
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
@@ -97,7 +101,10 @@ const openingResult = {
 const writerResult = {
   narrative:
     'You pursue the mirrored stars along the embankment until engraved mile markers begin counting backward and a hidden gate rises from the riverbank.',
-  choices: ['Open the hidden gate', 'Mark the location and retreat'],
+  choices: [
+    { text: 'Open the hidden gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Mark the location and retreat', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+  ],
   currentLocation: 'Riverside embankment',
   threatsAdded: [],
   threatsRemoved: [],
@@ -120,6 +127,7 @@ const writerResult = {
     secondaryEmotions: [],
     dominantMotivation: 'Uncover what lies beyond the gate',
   },
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   rawResponse: 'continuation',
 };
@@ -131,6 +139,9 @@ const defaultAnalystResult = {
   deviationReason: '',
   invalidatedBeatIds: [] as string[],
   narrativeSummary: '',
+  pacingIssueDetected: false,
+  pacingIssueReason: '',
+  recommendedAction: 'none' as const,
   rawResponse: 'analyst-raw',
 };
 

@@ -58,7 +58,10 @@ function createTestStoryWithStructure(): Story {
 function createMockResult(hasDeviation: boolean): ContinuationGenerationResult {
   return {
     narrative: 'Test narrative',
-    choices: ['Choice A', 'Choice B'],
+    choices: [
+      { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     stateChangesAdded: [],
     stateChangesRemoved: [],
     newCanonFacts: [],

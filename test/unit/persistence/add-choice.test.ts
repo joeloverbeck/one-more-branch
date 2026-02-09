@@ -22,6 +22,7 @@ function buildRootPage(overrides?: Partial<Page>): Page {
   return createPage({
     id: parsePageId(1),
     narrativeText: 'Root narrative',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
     isEnding: false,
     parentPageId: null,
@@ -106,6 +107,7 @@ describe('addChoice', () => {
     const endingPage = createPage({
       id: parsePageId(1),
       narrativeText: 'The end',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       isEnding: true,
       parentPageId: null,

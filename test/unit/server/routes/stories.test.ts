@@ -167,6 +167,7 @@ describe('storyRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'Page text',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go left'), createChoice('Go right')],
         isEnding: false,
         parentPageId: null,
@@ -706,6 +707,7 @@ describe('storyRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'Page text',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go left'), createChoice('Go right')],
         isEnding: false,
         parentPageId: null,
@@ -756,6 +758,7 @@ describe('storyRoutes', () => {
       const page = createPage({
         id: 1,
         narrativeText: 'Page text',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go left'), createChoice('Go right')],
         isEnding: false,
         parentPageId: null,

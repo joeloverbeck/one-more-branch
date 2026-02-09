@@ -84,7 +84,10 @@ const mockedStructureResult = {
 const openingResult = {
   narrative:
     'You step onto the flooded parliament steps and swear temporary loyalty so you can track who is rewriting emergency laws overnight.',
-  choices: ['Commit to the alliance publicly', 'Refuse and go underground'],
+  choices: [
+    { text: 'Commit to the alliance publicly', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Refuse and go underground', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+  ],
   currentLocation: 'Flooded parliament steps',
   threatsAdded: ['Regime surveillance on parliament grounds'],
   threatsRemoved: [],
@@ -107,6 +110,7 @@ const openingResult = {
   inventoryRemoved: [],
   healthAdded: [],
   healthRemoved: [],
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
@@ -189,7 +193,10 @@ function buildWriterResult(selectedChoice: string): WriterResult {
     return {
       narrative:
         'Inside the alliance chamber you copy sealed dispatches proving law edits are synchronized to private signal towers.',
-      choices: ['Leak your true intent to a dockworker ally', 'Double down publicly to gain rank'],
+      choices: [
+        { text: 'Leak your true intent to a dockworker ally', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Double down publicly to gain rank', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Alliance chamber interior',
       threatsAdded: [],
       threatsRemoved: [],
@@ -212,6 +219,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: 'continuation-initial',
     };
@@ -221,7 +229,10 @@ function buildWriterResult(selectedChoice: string): WriterResult {
     return {
       narrative:
         'Your covert leak is exposed, and the alliance recasts you as a loyal enforcer, invalidating the original infiltration route.',
-      choices: ['Rebuild trust with dockworkers', 'Attempt immediate forum confrontation'],
+      choices: [
+        { text: 'Rebuild trust with dockworkers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Attempt immediate forum confrontation', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Alliance controlled territory',
       threatsAdded: ['Alliance propaganda targeting protagonist'],
       threatsRemoved: [],
@@ -244,6 +255,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: 'continuation-deviation',
     };
@@ -275,6 +287,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
     inventoryRemoved: [],
     healthAdded: [],
     healthRemoved: [],
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: true,
     rawResponse: 'continuation-ending',
   };
@@ -289,6 +302,9 @@ function buildAnalystResult(narrative: string): AnalystResult {
       deviationReason: '',
       invalidatedBeatIds: [] as string[],
       narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none',
       rawResponse: 'analyst-raw',
     };
   }
@@ -301,6 +317,9 @@ function buildAnalystResult(narrative: string): AnalystResult {
       deviationReason: 'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
       invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
       narrativeSummary: 'Public perception now places the protagonist inside alliance leadership.',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none',
       rawResponse: 'analyst-raw',
     };
   }
@@ -312,6 +331,9 @@ function buildAnalystResult(narrative: string): AnalystResult {
     deviationReason: '',
     invalidatedBeatIds: [] as string[],
     narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
     rawResponse: 'analyst-raw',
   };
 }

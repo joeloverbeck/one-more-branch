@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine/index.js';
 import { LLMError } from '../../llm/types.js';
 import { generateBrowserLogScript, logger } from '../../logging/index.js';
-import { PageId, StoryId } from '../../models/index.js';
+import { CHOICE_TYPE_COLORS, ChoiceType, CHOICE_TYPE_VALUES, PageId, PRIMARY_DELTA_LABELS, PrimaryDelta, PRIMARY_DELTA_VALUES, StoryId } from '../../models/index.js';
 import { addChoice } from '../../persistence/index.js';
 import { formatLLMError, getActDisplayInfo, wrapAsyncRoute } from '../utils/index.js';
 
@@ -15,6 +15,8 @@ type ChoiceBody = {
 type CustomChoiceBody = {
   pageId?: number;
   choiceText?: string;
+  choiceType?: string;
+  primaryDelta?: string;
 };
 
 function parseRequestedPageId(pageQuery: unknown): number {
@@ -58,6 +60,8 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
       page,
       pageId,
       actDisplayInfo,
+      choiceTypeLabels: CHOICE_TYPE_COLORS,
+      primaryDeltaLabels: PRIMARY_DELTA_LABELS,
     });
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
@@ -168,7 +172,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
 
 playRoutes.post('/:storyId/custom-choice', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
-  const { pageId, choiceText } = req.body as CustomChoiceBody;
+  const { pageId, choiceText, choiceType: rawChoiceType, primaryDelta: rawPrimaryDelta } = req.body as CustomChoiceBody;
 
   if (pageId === undefined || typeof choiceText !== 'string') {
     return res.status(400).json({ error: 'Missing pageId or choiceText' });
@@ -183,11 +187,26 @@ playRoutes.post('/:storyId/custom-choice', wrapAsyncRoute(async (req: Request, r
     return res.status(400).json({ error: 'Choice text must be 500 characters or fewer' });
   }
 
+  // Validate choiceType if provided
+  const choiceType = rawChoiceType && CHOICE_TYPE_VALUES.includes(rawChoiceType as ChoiceType)
+    ? rawChoiceType as ChoiceType
+    : ChoiceType.TACTICAL_APPROACH;
+
+  // Validate primaryDelta if provided
+  const primaryDelta = rawPrimaryDelta && PRIMARY_DELTA_VALUES.includes(rawPrimaryDelta as PrimaryDelta)
+    ? rawPrimaryDelta as PrimaryDelta
+    : PrimaryDelta.GOAL_SHIFT;
+
   try {
-    const updatedPage = await addChoice(storyId as StoryId, pageId as PageId, trimmed);
+    const updatedPage = await addChoice(storyId as StoryId, pageId as PageId, trimmed, choiceType, primaryDelta);
 
     return res.json({
-      choices: updatedPage.choices.map(c => ({ text: c.text, nextPageId: c.nextPageId })),
+      choices: updatedPage.choices.map(c => ({
+        text: c.text,
+        choiceType: c.choiceType,
+        primaryDelta: c.primaryDelta,
+        nextPageId: c.nextPageId,
+      })),
     });
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));

@@ -8,7 +8,10 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        choices: [
+          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'The ruined keep',
         threatsAdded: ['THREAT_RUBBLE: Unstable ceiling'],
         threatsRemoved: [],
@@ -35,13 +38,17 @@ describe('validateWriterResponse', () => {
           secondaryEmotions: [{ emotion: 'curiosity', cause: 'Strange sounds' }],
           dominantMotivation: 'Survive and escape',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',
     );
 
     expect(result.narrative).toBe(VALID_NARRATIVE);
-    expect(result.choices).toEqual(['Open the iron door', 'Climb the collapsed tower']);
+    expect(result.choices).toEqual([
+      { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+    ]);
     expect(result.currentLocation).toBe('The ruined keep');
     expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
     expect(result.constraintsAdded).toEqual(['CONSTRAINT_TIME: 5 minutes left']);
@@ -65,7 +72,10 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: `  ${VALID_NARRATIVE}  `,
-        choices: ['  Open the iron door  ', '  Climb the collapsed tower  '],
+        choices: [
+          { text: '  Open the iron door  ', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: '  Climb the collapsed tower  ', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: '  The ruined keep  ',
         threatsAdded: ['  THREAT_RUBBLE: Unstable ceiling  '],
         threatsRemoved: [],
@@ -92,13 +102,17 @@ describe('validateWriterResponse', () => {
           secondaryEmotions: [{ emotion: '  curiosity  ', cause: '  Strange sounds  ' }],
           dominantMotivation: '  Survive  ',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',
     );
 
     expect(result.narrative).toBe(VALID_NARRATIVE);
-    expect(result.choices).toEqual(['Open the iron door', 'Climb the collapsed tower']);
+    expect(result.choices).toEqual([
+      { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+    ]);
     expect(result.currentLocation).toBe('The ruined keep');
     expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
     expect(result.constraintsAdded).toEqual(['CONSTRAINT_TIME: 5 minutes']);
@@ -124,13 +138,17 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        choices: [
+          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         threatsAdded: ['  ', '', 'THREAT_FIRE: Fire spreading'],
         newCanonFacts: ['\n', 'The moon well is beneath the keep'],
         inventoryAdded: ['  ', '', 'Rusty key'],
         inventoryRemoved: ['\t', ''],
         healthAdded: ['', '  ', 'Bruised ribs'],
         healthRemoved: ['\n'],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',
@@ -154,16 +172,22 @@ describe('validateWriterResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: malformedChoices,
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',
     );
 
-    expect(result.choices).toEqual([
-      'Grab the clothes and make a run for it',
-      'Sprint back toward the village',
-      'Stay perfectly still',
-    ]);
+    // Malformed string choices are recovered and upgraded to structured objects
+    expect(result.choices).toHaveLength(3);
+    expect(result.choices[0].text).toBe('Grab the clothes and make a run for it');
+    expect(result.choices[1].text).toBe('Sprint back toward the village');
+    expect(result.choices[2].text).toBe('Stay perfectly still');
+    // Each recovered choice should have choiceType and primaryDelta
+    for (const choice of result.choices) {
+      expect(choice.choiceType).toBeDefined();
+      expect(choice.primaryDelta).toBeDefined();
+    }
   });
 
   it('should reject responses with empty narrative', () => {
@@ -171,7 +195,10 @@ describe('validateWriterResponse', () => {
       validateWriterResponse(
         {
           narrative: '',
-          choices: ['Open the door', 'Go back'],
+          choices: [
+            { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+            { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
           newCanonFacts: [],
           isEnding: false,
         },
@@ -185,8 +212,11 @@ describe('validateWriterResponse', () => {
       validateWriterResponse(
         {
           narrative: VALID_NARRATIVE,
-          choices: ['Only one choice'],
+          choices: [
+            { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          ],
           newCanonFacts: [],
+          sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
         },
         'raw json response',
@@ -200,6 +230,7 @@ describe('validateWriterResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: [],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: true,
       },
       'raw json response',
@@ -213,8 +244,12 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the door', 'Go back'],
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',
@@ -248,8 +283,12 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the door', 'Go back'],
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       rawResponse,
@@ -262,8 +301,12 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the door', 'Go back'],
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',
@@ -282,7 +325,10 @@ describe('validateWriterResponse', () => {
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
-        choices: ['Continue', 'Go back'],
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Go back the way you came', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         newCanonFacts: [],
         newCharacterCanonFacts: [
           { characterName: '  Dr. Cohen  ', facts: ['  He is a psychiatrist  ', '  ', ''] },
@@ -295,6 +341,7 @@ describe('validateWriterResponse', () => {
         characterStateChangesRemoved: [
           { characterName: 'NPC', states: ['  ', ''] },
         ],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
       'raw json response',

@@ -13,6 +13,15 @@ export {
 export { Choice, createChoice, isChoice, isChoiceExplored } from './choice';
 
 export {
+  ChoiceType,
+  PrimaryDelta,
+  CHOICE_TYPE_VALUES,
+  PRIMARY_DELTA_VALUES,
+  CHOICE_TYPE_COLORS,
+  PRIMARY_DELTA_LABELS,
+} from './choice-enums';
+
+export {
   CanonFact,
   GlobalCanon,
   CharacterCanonFact,

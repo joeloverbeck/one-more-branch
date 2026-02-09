@@ -85,8 +85,8 @@ const openingResult = {
   narrative:
     'You arrive in the rain-soaked capital square as the city clocks skip thirteen seconds in unison and every guard looks toward the archives.',
   choices: [
-    'Pursue the masked courier through the archive tunnels',
-    'Hide in the crowd and decode the clock anomaly first',
+    { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
   ],
   currentLocation: 'Rain-soaked capital square',
   threatsAdded: ['Guards alerted by clock anomaly'],
@@ -110,6 +110,7 @@ const openingResult = {
   inventoryRemoved: [],
   healthAdded: [],
   healthRemoved: [],
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
@@ -121,7 +122,10 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
     return {
       narrative:
         'You catch the courier in a submerged tunnel and recover encoded route slips linking the archive signal to regime patrol schedules.',
-      choices: ['Press deeper toward the signal source', 'Retreat and brief your contact'],
+      choices: [
+        { text: 'Press deeper toward the signal source', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Submerged archive tunnel',
       threatsAdded: [],
       threatsRemoved: ['Masked courier'],
@@ -144,6 +148,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: `continuation-pursue-${pageNumber}`,
     };
@@ -153,7 +158,10 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
     return {
       narrative:
         'At the signal chamber you copy command logs that prove the archive clocks are weaponized for mass disinformation.',
-      choices: ['Exfiltrate with the logs', 'Trigger a distraction in the chamber'],
+      choices: [
+        { text: 'Exfiltrate with the logs', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Signal chamber deep in archive',
       threatsAdded: ['Chamber security systems'],
       threatsRemoved: [],
@@ -176,6 +184,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: `continuation-press-${pageNumber}`,
     };
@@ -184,7 +193,10 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
   return {
     narrative:
       'You stay hidden and map guard rotations from the crowd, gaining context but no decisive breakthrough yet.',
-    choices: ['Follow a rotation change to the east gate', 'Wait for a second anomaly cycle'],
+    choices: [
+      { text: 'Follow a rotation change to the east gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Wait for a second anomaly cycle', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Hidden in capital square crowd',
     threatsAdded: [],
     threatsRemoved: [],
@@ -207,6 +219,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
     inventoryRemoved: [],
     healthAdded: [],
     healthRemoved: [],
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: `continuation-cautious-${pageNumber}`,
   };
@@ -221,6 +234,9 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
       deviationReason: '',
       invalidatedBeatIds: [] as string[],
       narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none',
       rawResponse: 'analyst-raw',
     };
   }
@@ -233,6 +249,9 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
       deviationReason: '',
       invalidatedBeatIds: [] as string[],
       narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none',
       rawResponse: 'analyst-raw',
     };
   }
@@ -244,6 +263,9 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
     deviationReason: '',
     invalidatedBeatIds: [] as string[],
     narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
     rawResponse: 'analyst-raw',
   };
 }

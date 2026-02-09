@@ -185,6 +185,7 @@ describe('state-modules integration', () => {
       const page1 = createPage({
         id: 1,
         narrativeText: 'The adventure begins.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('Go north'),
           createChoice('Go south'),
@@ -207,6 +208,7 @@ describe('state-modules integration', () => {
       const page2 = createPage({
         id: 2,
         narrativeText: 'You travel north into the forest.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('Explore cave'),
           createChoice('Continue north'),
@@ -236,6 +238,7 @@ describe('state-modules integration', () => {
       const page3 = createPage({
         id: 3,
         narrativeText: 'You discover a hidden cave.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [
           createChoice('Enter cave'),
           createChoice('Return home'),
@@ -265,6 +268,7 @@ describe('state-modules integration', () => {
       const endingPage = createPage({
         id: 1,
         narrativeText: 'Your journey ends here.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         inventoryChanges: { added: ['Final reward'], removed: [] },
         healthChanges: { added: ['Victorious'], removed: [] },

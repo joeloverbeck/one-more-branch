@@ -66,6 +66,7 @@ function buildPage(overrides?: Partial<ReturnType<typeof createPage>>): ReturnTy
   return createPage({
     id: PAGE_1,
     narrativeText: 'Rain needles the harbor while the bell tower glows blue.',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('Inspect the bell tower'), createChoice('Question the harbormaster')],
     isEnding: false,
     parentPageId: null,
@@ -186,6 +187,7 @@ describe('story-engine', () => {
       const nextPage = buildPage({
         id: PAGE_2,
         narrativeText: 'The tower machinery churns behind rusted brass doors.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         parentPageId: PAGE_1,
         parentChoiceIndex: 0,
       });

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
 
 const CharacterCanonFactsArraySchema = z.array(
   z.object({
@@ -48,6 +49,15 @@ const defaultProtagonistAffect = {
   dominantMotivation: 'Continue forward',
 };
 
+const ChoiceObjectSchema = z.object({
+  text: z
+    .string()
+    .min(3, 'Choice text must be at least 3 characters')
+    .max(300, 'Choice text must be at most 300 characters'),
+  choiceType: z.nativeEnum(ChoiceType),
+  primaryDelta: z.nativeEnum(PrimaryDelta),
+});
+
 /**
  * Zod validation schema for writer responses.
  */
@@ -57,12 +67,7 @@ export const WriterResultSchema = z
       .string()
       .min(50, 'Narrative must be at least 50 characters')
       .max(15000, 'Narrative must be at most 15000 characters'),
-    choices: z.array(
-      z
-        .string()
-        .min(3, 'Choice must be at least 3 characters')
-        .max(300, 'Choice must be at most 300 characters'),
-    ),
+    choices: z.array(ChoiceObjectSchema),
     currentLocation: z.string().optional().default(''),
     threatsAdded: z.array(z.string()).optional().default([]),
     threatsRemoved: z.array(z.string()).optional().default([]),
@@ -81,6 +86,7 @@ export const WriterResultSchema = z
     characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
     characterStateChangesRemoved: CharacterStateChangesArraySchema.optional().default([]),
     protagonistAffect: ProtagonistAffectSchema.optional().default(defaultProtagonistAffect),
+    sceneSummary: z.string().min(20).max(500),
     isEnding: z.boolean(),
   })
   .superRefine((data, ctx) => {
@@ -108,13 +114,26 @@ export const WriterResultSchema = z
       });
     }
 
-    const normalizedChoices = data.choices.map(choice => choice.toLowerCase().trim());
+    const normalizedChoices = data.choices.map(choice => choice.text.toLowerCase().trim());
     if (new Set(normalizedChoices).size !== normalizedChoices.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Choices must be unique (case-insensitive)',
         path: ['choices'],
       });
+    }
+
+    // Warn (but don't reject) if all choices share the same choiceType
+    if (data.choices.length >= 2) {
+      const types = new Set(data.choices.map(c => c.choiceType));
+      const deltas = new Set(data.choices.map(c => c.primaryDelta));
+      if (types.size === 1 && deltas.size === 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'All choices share the same choiceType and primaryDelta - consider diversifying',
+          path: ['choices'],
+        });
+      }
     }
   });
 

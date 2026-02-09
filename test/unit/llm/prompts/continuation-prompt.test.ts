@@ -65,6 +65,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
       accumulatedCharacterState: {},
       activeState: emptyActiveState,
       grandparentNarrative: null,
+      ancestorSummaries: [],
       ...overrides,
     };
   }

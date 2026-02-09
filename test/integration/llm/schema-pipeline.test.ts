@@ -64,7 +64,10 @@ describe('schema pipeline integration', () => {
       // Validate a response through the full pipeline
       const rawJson = {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the iron door', 'Climb the collapsed tower'],
+        choices: [
+          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'The ruined keep entrance',
         threatsAdded: ['Unstable stone ceiling'],
         threatsRemoved: [],
@@ -87,6 +90,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [{ emotion: 'curiosity', cause: 'Whispers of forgotten knowledge' }],
           dominantMotivation: 'Find the plague archives',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -109,7 +113,10 @@ describe('schema pipeline integration', () => {
     it('should transform character canon facts array to record through full flow', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
-        choices: ['Speak to the elder', 'Wait in silence'],
+        choices: [
+          { text: 'Speak to the elder', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Wait in silence', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'The elder council chamber',
         threatsAdded: [],
         threatsRemoved: [],
@@ -133,6 +140,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: 'Learn from the elder',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -148,7 +156,10 @@ describe('schema pipeline integration', () => {
     it('should merge duplicate character entries in canon facts', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
-        choices: ['Follow the clue', 'Ignore it'],
+        choices: [
+          { text: 'Follow the clue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Ignore it', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'Detective Shaw\'s office',
         threatsAdded: [],
         threatsRemoved: [],
@@ -172,6 +183,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: 'Uncover the truth',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -185,7 +197,10 @@ describe('schema pipeline integration', () => {
     it('should handle inventory fields through pipeline', async () => {
       const structured = {
         narrative: VALID_NARRATIVE,
-        choices: ['Continue forward', 'Turn back'],
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Turn back', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'Hidden cache chamber',
         threatsAdded: [],
         threatsRemoved: [],
@@ -208,6 +223,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: 'Secure the findings and continue exploring',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -246,6 +262,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [{ emotion: 'satisfaction', cause: 'All threads resolved' }],
           dominantMotivation: 'Rest at last',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: true,
       };
 
@@ -258,7 +275,9 @@ describe('schema pipeline integration', () => {
     it('should reject ending page with non-zero choices', () => {
       const invalidEndingJson = {
         narrative: VALID_NARRATIVE,
-        choices: ['Continue anyway'],
+        choices: [
+          { text: 'Continue anyway', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        ],
         currentLocation: 'Invalid ending location',
         threatsAdded: [],
         threatsRemoved: [],
@@ -279,6 +298,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: 'Resolve the error',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: true,
       };
 
@@ -309,6 +329,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: 'Resolve the error',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -365,7 +386,10 @@ describe('schema pipeline integration', () => {
     it('should trim whitespace through full pipeline', () => {
       const rawJson = {
         narrative: `   ${VALID_NARRATIVE}   `,
-        choices: ['  Open the door  ', '  Climb the tower  '],
+        choices: [
+          { text: '  Open the door  ', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: '  Climb the tower  ', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: '  The haunted keep  ',
         threatsAdded: ['  Ghostly presence  '],
         threatsRemoved: [],
@@ -388,13 +412,17 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: '  Decode the ledger  ',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
       const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
-      expect(result.choices).toEqual(['Open the door', 'Climb the tower']);
+      expect(result.choices).toEqual([
+        { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ]);
       expect(result.currentLocation).toEqual('The haunted keep');
       expect(result.threatsAdded).toEqual(['Ghostly presence']);
       expect(result.constraintsAdded).toEqual(['Limited visibility']);
@@ -412,7 +440,10 @@ describe('schema pipeline integration', () => {
     it('should filter empty strings from arrays', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the door', 'Climb the tower'],
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'The keep entrance',
         threatsAdded: ['', '  ', 'Ghostly watcher', '\n'],
         threatsRemoved: [],
@@ -436,6 +467,7 @@ describe('schema pipeline integration', () => {
           secondaryEmotions: [],
           dominantMotivation: 'Proceed carefully',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -459,8 +491,12 @@ describe('schema pipeline integration', () => {
     it('should parse valid input and apply defaults', () => {
       const input = {
         narrative: VALID_NARRATIVE,
-        choices: ['Choice A', 'Choice B'],
+        choices: [
+          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -489,8 +525,12 @@ describe('schema pipeline integration', () => {
     it('should reject invalid narrative length', () => {
       const input = {
         narrative: 'Too short',
-        choices: ['Choice A', 'Choice B'],
+        choices: [
+          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 
@@ -500,8 +540,12 @@ describe('schema pipeline integration', () => {
     it('should reject duplicate choices (case-insensitive)', () => {
       const input = {
         narrative: VALID_NARRATIVE,
-        choices: ['Open the door', 'OPEN THE DOOR'],
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'OPEN THE DOOR', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
 

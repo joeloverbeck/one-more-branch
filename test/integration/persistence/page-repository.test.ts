@@ -39,6 +39,7 @@ function buildRootPage(overrides?: Partial<Page>): Page {
   return createPage({
     id: parsePageId(1),
     narrativeText: 'Root page',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
     stateChanges: { added: ['root-change'], removed: [] },
     isEnding: false,
@@ -73,6 +74,7 @@ describe('page-repository integration', () => {
 
     const root = buildRootPage({
       narrativeText: 'Round-trip root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       stateChanges: { added: ['event-1', 'event-2'], removed: [] },
     });
 
@@ -117,6 +119,7 @@ describe('page-repository integration', () => {
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'Second page',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('A'), createChoice('B')],
       stateChanges: { added: ['second'], removed: [] },
       isEnding: false,
@@ -127,6 +130,7 @@ describe('page-repository integration', () => {
     const page3 = createPage({
       id: parsePageId(3),
       narrativeText: 'Third page',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       stateChanges: { added: ['third'], removed: [] },
       isEnding: true,
@@ -158,6 +162,7 @@ describe('page-repository integration', () => {
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'Child of first choice',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Continue'), createChoice('Stop')],
       stateChanges: { added: ['linked'], removed: [] },
       isEnding: false,
@@ -184,6 +189,7 @@ describe('page-repository integration', () => {
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'Middle',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Left'), createChoice('Right')],
       stateChanges: { added: ['middle'], removed: [] },
       isEnding: false,
@@ -194,6 +200,7 @@ describe('page-repository integration', () => {
     const endingA = createPage({
       id: parsePageId(3),
       narrativeText: 'Ending A',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       stateChanges: { added: ['ending-a'], removed: [] },
       isEnding: true,
@@ -204,6 +211,7 @@ describe('page-repository integration', () => {
     const endingB = createPage({
       id: parsePageId(4),
       narrativeText: 'Ending B',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       stateChanges: { added: ['ending-b'], removed: [] },
       isEnding: true,
@@ -229,6 +237,7 @@ describe('page-repository integration', () => {
     const branchA = createPage({
       id: parsePageId(2),
       narrativeText: 'Branch A advances the first beat.',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Continue A'), createChoice('Fallback A')],
       stateChanges: { added: ['A advanced'], removed: [] },
       isEnding: false,
@@ -250,6 +259,7 @@ describe('page-repository integration', () => {
     const branchB = createPage({
       id: parsePageId(3),
       narrativeText: 'Branch B keeps the opener active.',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Continue B'), createChoice('Fallback B')],
       stateChanges: { added: ['B observed'], removed: [] },
       isEnding: false,
@@ -314,6 +324,7 @@ describe('page-repository integration', () => {
     const page = createPage({
       id: parsePageId(1),
       narrativeText: 'You enter the abandoned temple...',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Proceed carefully'), createChoice('Search for traps')],
       stateChanges: { added: ['entered temple'], removed: [] },
       isEnding: false,
@@ -360,6 +371,7 @@ describe('page-repository integration', () => {
     const branchA = createPage({
       id: parsePageId(2),
       narrativeText: 'Branch A: You defeat the wolf...',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Continue'), createChoice('Rest')],
       stateChanges: { added: ['wolf defeated'], removed: [] },
       isEnding: false,
@@ -387,6 +399,7 @@ describe('page-repository integration', () => {
     const branchB = createPage({
       id: parsePageId(3),
       narrativeText: 'Branch B: You climb a tree to escape...',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Wait'), createChoice('Call for help')],
       stateChanges: { added: ['climbed tree'], removed: [] },
       isEnding: false,

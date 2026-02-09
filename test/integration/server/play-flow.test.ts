@@ -176,7 +176,11 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   it('creates a story through POST /stories/create with mocked LLM output', async () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'You find yourself in a dark forest...',
-      choices: ['Enter the cave', 'Follow the path', 'Climb a tree'],
+      choices: [
+        { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Follow the path', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        { text: 'Climb a tree', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+      ],
       currentLocation: 'Dark forest',
       threatsAdded: [],
       threatsRemoved: [],
@@ -199,6 +203,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Explore',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       beatConcluded: false,
       beatResolution: '',
@@ -234,7 +239,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   it('generates a continuation page through POST /play/:storyId/choice', async () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'Initial narrative...',
-      choices: ['Choice A', 'Choice B'],
+      choices: [
+        { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Starting location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -257,6 +265,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Progress',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       beatConcluded: false,
       beatResolution: '',
@@ -281,7 +290,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'You chose wisely...',
-      choices: ['Continue', 'Inspect surroundings'],
+      choices: [
+        { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Inspect surroundings', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Next location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -304,6 +316,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Continue',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: 'continuation',
     });
@@ -314,6 +327,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       deviationReason: '',
       invalidatedBeatIds: [],
       narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none' as const,
       rawResponse: 'analyst-raw',
     });
 
@@ -350,7 +366,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   it('replays an existing branch without a second continuation generation', async () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'Start...',
-      choices: ['Go', 'Wait'],
+      choices: [
+        { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Wait', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Starting point',
       threatsAdded: [],
       threatsRemoved: [],
@@ -373,6 +392,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Move forward',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       beatConcluded: false,
       beatResolution: '',
@@ -397,7 +417,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'Page 2 content...',
-      choices: ['Next', 'Turn back'],
+      choices: [
+        { text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Turn back', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Second location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -420,6 +443,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Keep going',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: 'continuation',
     });
@@ -430,6 +454,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       deviationReason: '',
       invalidatedBeatIds: [],
       narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none' as const,
       rawResponse: 'analyst-raw',
     });
 

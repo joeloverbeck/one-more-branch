@@ -51,6 +51,7 @@ describe('getActDisplayInfo', () => {
   const basePage = createPage({
     id: 1,
     narrativeText: 'Test narrative',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('Choice 1'), createChoice('Choice 2')],
     isEnding: false,
     parentPageId: null,

@@ -38,7 +38,10 @@ describe('llm client integration (mocked fetch)', () => {
     const structured = {
       narrative:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
-      choices: ['Consult the brass star map', 'Climb to the highest platform'],
+      choices: [
+        { text: 'Consult the brass star map', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Climb to the highest platform', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'The abandoned observatory',
       threatsAdded: [],
       threatsRemoved: [],
@@ -61,6 +64,7 @@ describe('llm client integration (mocked fetch)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Understand the observatory',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
     };
 
@@ -85,7 +89,10 @@ describe('llm client integration (mocked fetch)', () => {
     const invalidStructured = {
       narrative:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
-      choices: ['Consult the brass star map', 'consult the brass star map'],
+      choices: [
+        { text: 'Consult the brass star map', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'consult the brass star map', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'The abandoned observatory',
       threatsAdded: [],
       threatsRemoved: [],
@@ -108,6 +115,7 @@ describe('llm client integration (mocked fetch)', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Understand the observatory',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
     };
 

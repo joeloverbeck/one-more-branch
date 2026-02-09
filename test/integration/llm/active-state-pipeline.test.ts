@@ -9,7 +9,11 @@ import { buildFirstPage, createEmptyStructureContext } from '../../../src/engine
 describe('Active state pipeline integration', () => {
   const rawLlmResponse = {
     narrative: 'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
-    choices: ['Rush to save the innkeeper', 'Flee through the back door', 'Search for water'],
+    choices: [
+      { text: 'Rush to save the innkeeper', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Flee through the back door', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+      { text: 'Search for water', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Burning tavern',
     threatsAdded: ['THREAT_FIRE: The tavern is engulfed in flames and could collapse at any moment'],
     threatsRemoved: [],
@@ -32,6 +36,7 @@ describe('Active state pipeline integration', () => {
       secondaryEmotions: [{ emotion: 'determination', cause: 'Someone needs your help' }],
       dominantMotivation: 'Save the innkeeper before the roof caves in',
     },
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
   };
 
@@ -81,7 +86,11 @@ describe('Active state pipeline integration', () => {
     // Writer responses don't include beat/deviation fields
     const writerLlmResponse = {
       narrative: 'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
-      choices: ['Rush to save the innkeeper', 'Flee through the back door', 'Search for water'],
+      choices: [
+        { text: 'Rush to save the innkeeper', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Flee through the back door', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        { text: 'Search for water', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Burning tavern',
       threatsAdded: ['THREAT_FIRE: The tavern is engulfed in flames'],
       threatsRemoved: [],
@@ -104,6 +113,7 @@ describe('Active state pipeline integration', () => {
         secondaryEmotions: [],
         dominantMotivation: 'Survive',
       },
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
     };
 

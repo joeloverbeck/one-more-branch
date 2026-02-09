@@ -88,7 +88,10 @@ function buildStructure(): StoryStructure {
 function buildOpeningResult(): WriterResult {
   return {
     narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
-    choices: ['Follow the whispers', 'Seek shelter in the tavern'],
+    choices: [
+      { text: 'Follow the whispers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Seek shelter in the tavern', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'The fog-shrouded city entrance',
     threatsAdded: ['THREAT_whispers: The whispers seem to know your name'],
     threatsRemoved: [],
@@ -111,6 +114,7 @@ function buildOpeningResult(): WriterResult {
       secondaryEmotions: [],
       dominantMotivation: 'uncover the truth',
     },
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: 'opening-raw',
   };
@@ -119,7 +123,10 @@ function buildOpeningResult(): WriterResult {
 function buildContinuationResult(overrides?: Partial<WriterResult>): WriterResult {
   return {
     narrative: 'The whispers lead you deeper into the maze of alleys.',
-    choices: ['Enter the marked door', 'Double back to the square'],
+    choices: [
+      { text: 'Enter the marked door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Double back to the square', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Maze of alleys',
     threatsAdded: ['THREAT_shadows: Shadows move with purpose in the alleyways'],
     threatsRemoved: [],
@@ -142,6 +149,7 @@ function buildContinuationResult(overrides?: Partial<WriterResult>): WriterResul
       secondaryEmotions: [],
       dominantMotivation: 'reach the resistance',
     },
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: 'continuation-raw',
     ...overrides,
@@ -341,6 +349,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'The journey begins.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Go left'), createChoice('Go right')],
         inventoryChanges: { added: ['Torch'], removed: [] },
         healthChanges: { added: ['Minor fatigue'], removed: [] },
@@ -363,6 +372,9 @@ describe('page-service integration', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       });
 
@@ -413,6 +425,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Holt pours you a drink.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Ask about the rumor'), createChoice('Leave quietly')],
         stateChanges: { added: ['Met Holt'], removed: [] },
         isEnding: false,
@@ -449,6 +462,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'At the crossroads.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Path A'), createChoice('Path B')],
         stateChanges: { added: ['Reached crossroads'], removed: [] },
         isEnding: false,
@@ -467,6 +481,9 @@ describe('page-service integration', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       });
 
@@ -492,6 +509,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'A pivotal moment.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Betray allies'), createChoice('Stay loyal')],
         stateChanges: { added: ['At pivotal moment'], removed: [] },
         isEnding: false,
@@ -510,6 +528,9 @@ describe('page-service integration', () => {
         deviationReason: 'Betrayal invalidates trust-based beats.',
         invalidatedBeatIds: ['1.2', '2.1'],
         narrativeSummary: 'The protagonist chose betrayal.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       });
 
@@ -553,6 +574,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Working on the first beat.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Complete the beat'), createChoice('Wait for opportunity')],
         stateChanges: { added: ['Working on beat'], removed: [] },
         isEnding: false,
@@ -571,6 +593,9 @@ describe('page-service integration', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
         rawResponse: 'analyst-raw',
       });
 
@@ -604,6 +629,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'The starting point.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Explore'), createChoice('Wait')],
         stateChanges: { added: ['Started'], removed: [] },
         isEnding: false,
@@ -645,6 +671,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root page.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Already explored', parsePageId(2)), createChoice('New path')],
         stateChanges: { added: ['At root'], removed: [] },
         isEnding: false,
@@ -656,6 +683,7 @@ describe('page-service integration', () => {
       const existingChildPage = createPage({
         id: parsePageId(2),
         narrativeText: 'Previously generated content.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Go back')],
         stateChanges: { added: ['Explored before'], removed: [] },
         isEnding: false,
@@ -687,6 +715,7 @@ describe('page-service integration', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'The lore begins.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Discover more'), createChoice('Rest first')],
         stateChanges: { added: ['Started'], removed: [] },
         isEnding: false,

@@ -15,6 +15,7 @@ import {
   Story,
 } from '../models';
 import { storage } from '../persistence';
+import { collectAncestorContext } from './ancestor-collector';
 import { updateStoryWithAllCanon } from './canon-manager';
 import { handleDeviation, isActualDeviation } from './deviation-handler';
 import { buildContinuationPage, buildFirstPage } from './page-builder';
@@ -80,10 +81,8 @@ export async function generateNextPage(
   const parentState = collectParentState(parentPage);
   const currentStructureVersion = resolveActiveStructureVersion(story, parentPage);
 
-  // Fetch grandparent page for extended scene context
-  const grandparentPage = parentPage.parentPageId
-    ? await storage.loadPage(story.id, parentPage.parentPageId)
-    : null;
+  // Collect hierarchical ancestor context (full text for 2 nearest, summaries for older)
+  const ancestorContext = await collectAncestorContext(story.id, parentPage);
 
   // Writer call (always runs)
   const writerResult = await generateWriterPage(
@@ -103,7 +102,8 @@ export async function generateNextPage(
       accumulatedCharacterState: parentState.accumulatedCharacterState,
       parentProtagonistAffect: parentPage.protagonistAffect,
       activeState: parentState.accumulatedActiveState,
-      grandparentNarrative: grandparentPage?.narrativeText ?? null,
+      grandparentNarrative: ancestorContext.grandparentNarrative,
+      ancestorSummaries: ancestorContext.ancestorSummaries,
     },
     { apiKey },
   );

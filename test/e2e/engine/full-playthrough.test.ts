@@ -30,9 +30,9 @@ const openingResult = {
   narrative:
     'The time fractures shimmer at the district boundary as you check your sibling is still hidden in the cellar. Patrol searchlights sweep the fog-choked streets.',
   choices: [
-    'Scout the beacon tower before midnight',
-    'Check the patrol schedules at the border checkpoint',
-    'Search for a safer hiding spot deeper in the stalled district',
+    { text: 'Scout the beacon tower before midnight', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Check the patrol schedules at the border checkpoint', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    { text: 'Search for a safer hiding spot deeper in the stalled district', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
   ],
   currentLocation: 'District boundary near cellar hideout',
   threatsAdded: ['Patrol searchlights sweeping fog'],
@@ -56,6 +56,7 @@ const openingResult = {
   inventoryRemoved: [],
   healthAdded: [],
   healthRemoved: [],
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
@@ -67,7 +68,10 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
     return {
       narrative:
         'You reach the beacon tower as the last light fades. The machinery hums with temporal energy, and you spot a patrol approaching from the east.',
-      choices: ['Climb the tower to disable the beacon', 'Hide and observe the patrol pattern'],
+      choices: [
+        { text: 'Climb the tower to disable the beacon', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Hide and observe the patrol pattern', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Beacon tower base',
       threatsAdded: ['Patrol approaching from the east'],
       threatsRemoved: [],
@@ -90,6 +94,7 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: `continuation-beacon-${stepIndex}`,
     };
@@ -99,7 +104,10 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
     return {
       narrative:
         'The checkpoint guard is distracted by a commotion. You slip past and find the schedule board, memorizing the patrol routes.',
-      choices: ['Copy the full schedule and escape', 'Sabotage the schedule board'],
+      choices: [
+        { text: 'Copy the full schedule and escape', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Sabotage the schedule board', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Border checkpoint interior',
       threatsAdded: [],
       threatsRemoved: ['Checkpoint guard attention'],
@@ -122,6 +130,7 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: `continuation-checkpoint-${stepIndex}`,
     };
@@ -131,7 +140,10 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
     return {
       narrative:
         'The stalled district is eerily quiet—time moves slowly here. You find an abandoned warehouse where clocks tick once per hour.',
-      choices: ['Set up a long-term hideout', 'Use the time dilation to plan your next move'],
+      choices: [
+        { text: 'Set up a long-term hideout', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Use the time dilation to plan your next move', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
       currentLocation: 'Time-dilated warehouse in stalled district',
       threatsAdded: [],
       threatsRemoved: ['Immediate patrol threat'],
@@ -154,6 +166,7 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: `continuation-stalled-${stepIndex}`,
     };
@@ -163,7 +176,10 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
   return {
     narrative:
       'Your actions draw attention. A patrol closes in, and you must make a critical decision that will determine your fate.',
-    choices: ['Surrender to protect your sibling', 'Make a desperate escape attempt'],
+    choices: [
+      { text: 'Surrender to protect your sibling', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Make a desperate escape attempt', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Exposed position near patrol route',
     threatsAdded: ['Patrol closing in'],
     threatsRemoved: [],
@@ -186,6 +202,7 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
     inventoryRemoved: [],
     healthAdded: [],
     healthRemoved: [],
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: `continuation-default-${stepIndex}`,
   };
@@ -198,13 +215,19 @@ const defaultAnalystResult = {
   deviationReason: '',
   invalidatedBeatIds: [] as string[],
   narrativeSummary: '',
+  pacingIssueDetected: false,
+  pacingIssueReason: '',
+  recommendedAction: 'none' as const,
   rawResponse: 'analyst-raw',
 };
 
 const replayOpeningResult = {
   narrative:
     'The canal waters rise as the dawn siren sounds. You clutch the testimony documents, watching political agents argue on the bridge above.',
-  choices: ['Swim under the bridge while they argue', 'Wait for the water level to change'],
+  choices: [
+    { text: 'Swim under the bridge while they argue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Wait for the water level to change', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+  ],
   currentLocation: 'Canal waterway beneath bridge',
   threatsAdded: ['Political agents on bridge above'],
   threatsRemoved: [],
@@ -227,6 +250,7 @@ const replayOpeningResult = {
   inventoryRemoved: [],
   healthAdded: [],
   healthRemoved: [],
+  sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
@@ -237,7 +261,10 @@ function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
   return {
     narrative:
       'You slip beneath the murky water, the documents sealed in waterproof wrapping. The agents never notice your passage.',
-    choices: ['Surface at the safe house dock', 'Continue underwater to the testimony hall'],
+    choices: [
+      { text: 'Surface at the safe house dock', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Continue underwater to the testimony hall', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
     currentLocation: 'Underwater passage beneath bridge',
     threatsAdded: [],
     threatsRemoved: ['Political agents on bridge'],
@@ -260,6 +287,7 @@ function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
     inventoryRemoved: [],
     healthAdded: [],
     healthRemoved: [],
+    sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: 'replay-continuation',
   };

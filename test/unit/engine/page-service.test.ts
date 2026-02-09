@@ -125,7 +125,10 @@ describe('page-service', () => {
 
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You arrive under curfew bells as paper ash drifts across the square.',
-        choices: ['Hide in the print shop', 'Bribe a gate sergeant'],
+        choices: [
+          { text: 'Hide in the print shop', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Bribe a gate sergeant', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
         currentLocation: 'The capital square at dusk',
         threatsAdded: [],
         threatsRemoved: [],
@@ -148,6 +151,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'find safe passage',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -200,7 +204,10 @@ describe('page-service', () => {
 
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You arrive under curfew bells as paper ash drifts across the square.',
-        choices: ['Hide in the print shop', 'Bribe a gate sergeant'],
+        choices: [
+          { text: 'Hide in the print shop', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Bribe a gate sergeant', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
         currentLocation: 'The capital square at dusk',
         threatsAdded: [],
         threatsRemoved: [],
@@ -223,6 +230,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'find safe passage',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -258,7 +266,10 @@ describe('page-service', () => {
 
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You slip through the checkpoint as dusk falls.',
-        choices: ['Head to the safe house', 'Scout the perimeter'],
+        choices: [
+          { text: 'Head to the safe house', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Scout the perimeter', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'Inside the city walls',
         threatsAdded: [],
         threatsRemoved: [],
@@ -281,6 +292,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'find safe shelter',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -296,7 +308,10 @@ describe('page-service', () => {
 
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You begin your journey.',
-        choices: ['Go north', 'Go south'],
+        choices: [
+          { text: 'Go north', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Go south', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'The starting point',
         threatsAdded: [],
         threatsRemoved: [],
@@ -319,6 +334,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'explore the world',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -335,6 +351,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         inventoryChanges: { added: ['Started mission'], removed: [] },
         isEnding: false,
@@ -361,6 +378,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You slip into an alley lit by furnace smoke.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Take the rooftops'), createChoice('Use the sewer tunnels')],
         inventoryChanges: { added: ['Escaped the checkpoint'], removed: [] },
         isEnding: false,
@@ -374,7 +392,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(7);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You move across wet tiles while patrol torches sweep below.',
-        choices: ['Leap to the clocktower', 'Drop into the market canopy'],
+        choices: [
+          { text: 'Leap to the clocktower', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Drop into the market canopy', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'Rooftops above the market district',
         threatsAdded: ['THREAT_patrol: Patrol torches scanning below'],
         threatsRemoved: [],
@@ -397,6 +418,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'reach the clocktower unseen',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -434,6 +456,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You slip into the archive district after curfew.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Scale the intake vent'), createChoice('Wait for guard change')],
         inventoryChanges: { added: ['Reached archive district'], removed: [] },
         isEnding: false,
@@ -465,6 +488,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You secure forged papers in a shuttered print cellar.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Approach the archive checkpoint'), createChoice('Scout the sewer hatch')],
         inventoryChanges: { added: ['Acquired forged transit seal'], removed: [] },
         isEnding: false,
@@ -477,7 +501,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'The checkpoint captain stamps your seal and waves you through.',
-        choices: ['Enter the archive corridor', 'Detour to the guard locker'],
+        choices: [
+          { text: 'Enter the archive corridor', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Detour to the guard locker', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: 'Inside the censors bureau',
         threatsAdded: [],
         threatsRemoved: ['Checkpoint security'],
@@ -500,6 +527,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'reach the target ledgers',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -539,6 +567,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You wait beside the archive gate until patrols shift.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Slip in behind a clerk'), createChoice('Retreat before dawn')],
         inventoryChanges: { added: ['Observed patrol rotation'], removed: [] },
         isEnding: false,
@@ -551,7 +580,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You stay hidden and gather more intel from passing clerks.',
-        choices: ['Keep watching', 'Create a distraction'],
+        choices: [
+          { text: 'Keep watching', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Create a distraction', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+        ],
         currentLocation: 'Hidden near the archive gate',
         threatsAdded: [],
         threatsRemoved: [],
@@ -574,6 +606,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'find the right moment',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -606,6 +639,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'At the bureau wall, you choose speed or caution.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Force a checkpoint pass'), createChoice('Gather more evidence first')],
         inventoryChanges: { added: ['Reached bureau perimeter'], removed: [] },
         isEnding: false,
@@ -619,7 +653,10 @@ describe('page-service', () => {
       mockedGenerateWriterPage
         .mockResolvedValueOnce({
           narrative: 'A forged seal gets you inside.',
-          choices: ['Head for ledger room', 'Plant false records'],
+          choices: [
+            { text: 'Head for ledger room', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+            { text: 'Plant false records', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+          ],
           currentLocation: 'Inside the bureau',
           threatsAdded: [],
           threatsRemoved: ['Checkpoint guards'],
@@ -642,12 +679,16 @@ describe('page-service', () => {
             secondaryEmotions: [],
             dominantMotivation: 'reach the ledger room',
           },
+          sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
           rawResponse: 'raw',
         })
         .mockResolvedValueOnce({
           narrative: 'You hold position and log patrol timing.',
-          choices: ['Create diversion', 'Withdraw'],
+          choices: [
+            { text: 'Create diversion', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+            { text: 'Withdraw', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
           currentLocation: 'Hidden observation post',
           threatsAdded: [],
           threatsRemoved: [],
@@ -670,6 +711,7 @@ describe('page-service', () => {
             secondaryEmotions: [],
             dominantMotivation: 'find the right moment',
           },
+          sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
           rawResponse: 'raw',
         });
@@ -722,6 +764,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You consider your next move.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Proceed carefully'), createChoice('Rush ahead')],
         inventoryChanges: { added: ['Assessed situation'], removed: [] },
         isEnding: false,
@@ -734,7 +777,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You move carefully through the shadows.',
-        choices: ['Continue forward', 'Take alternate route'],
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Take alternate route', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'Shadow corridor',
         threatsAdded: [],
         threatsRemoved: [],
@@ -757,6 +803,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'remain undetected',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -792,6 +839,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You consider betraying your original mission.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Join imperial command'), createChoice('Stay with resistance')],
         inventoryChanges: { added: ['Mission allegiance uncertain'], removed: [] },
         isEnding: false,
@@ -843,7 +891,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly defect and swear service to the empire.',
-        choices: ['Take command posting', 'Return as double agent'],
+        choices: [
+          { text: 'Take command posting', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Return as double agent', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
         currentLocation: 'Imperial command hall',
         threatsAdded: ['Resistance hunting you'],
         threatsRemoved: ['Imperial suspicion'],
@@ -866,6 +917,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'prove worth to new masters',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -957,6 +1009,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You stand at a crossroads in the archive.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Take the left passage'), createChoice('Take the right passage')],
         inventoryChanges: { added: ['Reached crossroads'], removed: [] },
         isEnding: false,
@@ -969,7 +1022,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(100);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You proceed down the left passage.',
-        choices: ['Continue forward', 'Turn back'],
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Turn back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'Left passage in the archive',
         threatsAdded: [],
         threatsRemoved: [],
@@ -992,6 +1048,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'find the records',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1036,6 +1093,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Legacy page without version tracking.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Proceed'), createChoice('Stay back')],
         inventoryChanges: { added: ['Started'], removed: [] },
         isEnding: false,
@@ -1067,6 +1125,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You consider betraying your original mission.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Join imperial command'), createChoice('Stay with resistance')],
         inventoryChanges: { added: ['Mission allegiance uncertain'], removed: [] },
         isEnding: false,
@@ -1077,7 +1136,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly defect and swear service to the empire.',
-        choices: ['Take command posting', 'Return as double agent'],
+        choices: [
+          { text: 'Take command posting', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Return as double agent', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
         currentLocation: 'Imperial command hall',
         threatsAdded: ['Resistance hunters'],
         threatsRemoved: [],
@@ -1100,6 +1162,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'survive the transition',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1124,6 +1187,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You consider a dramatic change of course.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Betray allies'), createChoice('Stay loyal')],
         inventoryChanges: { added: ['At crossroads'], removed: [] },
         isEnding: false,
@@ -1164,7 +1228,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You betray your allies.',
-        choices: ['Embrace new life', 'Second thoughts'],
+        choices: [
+          { text: 'Embrace new life', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Second thoughts', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+        ],
         currentLocation: 'The aftermath of betrayal',
         threatsAdded: ['Former allies seek revenge'],
         threatsRemoved: [],
@@ -1187,6 +1254,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'justify the betrayal',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1222,6 +1290,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You proceed normally.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Continue'), createChoice('Wait')],
         inventoryChanges: { added: ['Proceeding'], removed: [] },
         isEnding: false,
@@ -1234,7 +1303,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You continue on your path.',
-        choices: ['Keep going', 'Rest'],
+        choices: [
+          { text: 'Keep going', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Rest', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'CONDITION_CHANGE' },
+        ],
         currentLocation: 'The road ahead',
         threatsAdded: [],
         threatsRemoved: [],
@@ -1257,6 +1329,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'keep moving forward',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1283,6 +1356,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'A quiet road stretches ahead.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Follow the road'), createChoice('Cut through the woods')],
         inventoryChanges: { added: ['On the road'], removed: [] },
         isEnding: false,
@@ -1293,7 +1367,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You follow the dusty road toward the distant village.',
-        choices: ['Approach the gate', 'Camp outside'],
+        choices: [
+          { text: 'Approach the gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Camp outside', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'Village outskirts',
         threatsAdded: [],
         threatsRemoved: [],
@@ -1316,6 +1393,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'reach the village',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1335,6 +1413,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(2),
         narrativeText: 'You crouch behind the warehouse barrels.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Rush the door'), createChoice('Wait for the signal')],
         inventoryChanges: { added: ['In position'], removed: [] },
         isEnding: false,
@@ -1347,7 +1426,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(2);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You burst through the door into the darkened room.',
-        choices: ['Search the desk', 'Check the safe'],
+        choices: [
+          { text: 'Search the desk', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Check the safe', choiceType: 'INVESTIGATION', primaryDelta: 'ITEM_CONTROL' },
+        ],
         currentLocation: 'Inside the warehouse office',
         threatsAdded: [],
         threatsRemoved: [],
@@ -1370,6 +1452,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'find the evidence',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1395,6 +1478,7 @@ describe('page-service', () => {
         const parentPage = createPage({
           id: parsePageId(2),
           narrativeText: 'You wait in the shadows.',
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [createChoice('Move forward'), createChoice('Hold position')],
           inventoryChanges: { added: ['In position'], removed: [] },
           isEnding: false,
@@ -1407,7 +1491,10 @@ describe('page-service', () => {
         mockedStorage.getMaxPageId.mockResolvedValue(2);
         mockedGenerateWriterPage.mockResolvedValue({
           narrative: 'You creep through the corridor.',
-          choices: ['Open the door', 'Turn back'],
+          choices: [
+            { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+            { text: 'Turn back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
           currentLocation: 'A dim corridor',
           threatsAdded: [],
           threatsRemoved: [],
@@ -1430,6 +1517,7 @@ describe('page-service', () => {
             secondaryEmotions: [],
             dominantMotivation: 'reach the objective',
           },
+          sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
           rawResponse: 'raw',
         });
@@ -1510,6 +1598,7 @@ describe('page-service', () => {
         const parentPage = createPage({
           id: parsePageId(2),
           narrativeText: 'A critical turning point.',
+          sceneSummary: 'Test summary of the scene events and consequences.',
           choices: [createChoice('Defect'), createChoice('Hold')],
           inventoryChanges: { added: ['At turning point'], removed: [] },
           isEnding: false,
@@ -1555,7 +1644,10 @@ describe('page-service', () => {
         mockedStorage.getMaxPageId.mockResolvedValue(2);
         mockedGenerateWriterPage.mockResolvedValue({
           narrative: 'You defect to the other side.',
-          choices: ['Accept posting', 'Go underground'],
+          choices: [
+            { text: 'Accept posting', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
+            { text: 'Go underground', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
           currentLocation: 'The defection point',
           threatsAdded: ['Hunted by former allies'],
           threatsRemoved: [],
@@ -1578,6 +1670,7 @@ describe('page-service', () => {
             secondaryEmotions: [],
             dominantMotivation: 'survive the transition',
           },
+          sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
           rawResponse: 'raw',
         });
@@ -1611,6 +1704,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A', parsePageId(2)), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -1619,6 +1713,7 @@ describe('page-service', () => {
       const existingPage = createPage({
         id: parsePageId(2),
         narrativeText: 'Existing',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         isEnding: true,
         parentPageId: parsePageId(1),
@@ -1644,6 +1739,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A', parsePageId(3)), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -1663,6 +1759,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         inventoryChanges: { added: ['Started mission'], removed: [] },
         isEnding: false,
@@ -1673,7 +1770,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'A coded anthem drifts from the tavern cellar.',
-        choices: ['Signal the contact', 'Circle back to the docks'],
+        choices: [
+          { text: 'Signal the contact', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'RELATIONSHIP_CHANGE' },
+          { text: 'Circle back to the docks', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'The tavern cellar entrance',
         threatsAdded: [],
         threatsRemoved: [],
@@ -1696,6 +1796,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'make contact',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1717,6 +1818,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -1726,7 +1828,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You wait in silence until the patrol passes.',
-        choices: ['Move now', 'Wait longer'],
+        choices: [
+          { text: 'Move now', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'URGENCY_CHANGE' },
+          { text: 'Wait longer', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'CONDITION_CHANGE' },
+        ],
         currentLocation: 'Hidden in the shadows',
         threatsAdded: [],
         threatsRemoved: [],
@@ -1749,6 +1854,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'remain undetected',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });
@@ -1763,6 +1869,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A'), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -1783,6 +1890,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('A', parsePageId(2)), createChoice('B')],
         isEnding: false,
         parentPageId: null,
@@ -1791,6 +1899,7 @@ describe('page-service', () => {
       const existingPage = createPage({
         id: parsePageId(2),
         narrativeText: 'Cached page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         isEnding: true,
         parentPageId: parsePageId(1),
@@ -1817,6 +1926,7 @@ describe('page-service', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Deviate'), createChoice('Normal')],
         isEnding: false,
         parentPageId: null,
@@ -1854,7 +1964,10 @@ describe('page-service', () => {
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You deviate from the plan.',
-        choices: ['New choice 1', 'New choice 2'],
+        choices: [
+          { text: 'New choice 1', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'New choice 2', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'An unexpected path',
         threatsAdded: ['Unknown consequences'],
         threatsRemoved: [],
@@ -1877,6 +1990,7 @@ describe('page-service', () => {
           secondaryEmotions: [],
           dominantMotivation: 'explore new possibilities',
         },
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
         rawResponse: 'raw',
       });

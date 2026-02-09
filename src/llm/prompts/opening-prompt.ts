@@ -68,7 +68,7 @@ ${structureSection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in
-4. Provide 3 meaningful choices leading to genuinely DIFFERENT story directions (add a 4th only when the situation truly warrants another distinct path)
+4. Provide 3 meaningful structured choice objects with text, choiceType, and primaryDelta - each choice MUST have a different choiceType OR primaryDelta (add a 4th only when the situation truly warrants another distinct path)
 5. Establish starting inventory based on the character concept (use inventoryAdded for items they would logically possess)
 6. If the character concept implies any starting physical conditions (old injuries, chronic ailments, exhaustion), use healthAdded to establish them
 7. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
@@ -76,6 +76,7 @@ ${structureSection}REQUIREMENTS (follow all):
 9. Establish any starting THREATS using threatsAdded (dangers present at story start, format: "THREAT_ID: description")
 10. Establish any starting CONSTRAINTS using constraintsAdded (limitations the protagonist faces, format: "CONSTRAINT_ID: description")
 11. Plant narrative THREADS using threadsAdded (mysteries, questions, hooks for later, format: "THREAD_ID: description")
+12. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 
 OPENING PAGE STATE:
 Since this is the first page, you are ESTABLISHING the initial state, not modifying previous state:

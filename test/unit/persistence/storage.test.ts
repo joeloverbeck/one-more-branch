@@ -54,6 +54,7 @@ describe('storage facade', () => {
   const page = createPage({
     id: parsePageId(1),
     narrativeText: 'page',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('c1'), createChoice('c2')],
     isEnding: false,
     parentPageId: null,

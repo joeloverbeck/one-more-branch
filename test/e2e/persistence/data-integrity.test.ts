@@ -59,6 +59,7 @@ describe('Data Integrity E2E', () => {
     const page1 = createPage({
       id: parsePageId(1),
       narrativeText: 'Page 1 narrative',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Option A'), createChoice('Option B')],
       inventoryChanges: { added: ['root-event'], removed: [] },
       isEnding: false,
@@ -70,6 +71,7 @@ describe('Data Integrity E2E', () => {
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'Page 2 narrative',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       inventoryChanges: { added: ['branch-a-event'], removed: [] },
       isEnding: true,
@@ -82,6 +84,7 @@ describe('Data Integrity E2E', () => {
     const page3 = createPage({
       id: parsePageId(3),
       narrativeText: 'Page 3 narrative',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       inventoryChanges: { added: ['branch-b-event'], removed: [] },
       isEnding: true,
@@ -118,6 +121,7 @@ describe('Data Integrity E2E', () => {
     const page1 = createPage({
       id: parsePageId(1),
       narrativeText: 'Root page',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Path A'), createChoice('Path B'), createChoice('Path C')],
       inventoryChanges: { added: ['root'], removed: [] },
       isEnding: false,
@@ -151,6 +155,7 @@ describe('Data Integrity E2E', () => {
       const page = createPage({
         id: branch.id,
         narrativeText: branch.text,
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         inventoryChanges: { added: [branch.inventoryChange], removed: [] },
         isEnding: true,
@@ -198,6 +203,7 @@ describe('Data Integrity E2E', () => {
     const page1 = createPage({
       id: parsePageId(1),
       narrativeText: 'Reload root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Go left'), createChoice('Go right')],
       inventoryChanges: { added: ['reload-root'], removed: [] },
       isEnding: false,
@@ -207,6 +213,7 @@ describe('Data Integrity E2E', () => {
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'Reload ending',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       inventoryChanges: { added: ['reload-ending'], removed: [] },
       isEnding: true,
@@ -256,6 +263,7 @@ describe('Data Integrity E2E', () => {
     const page1 = createPage({
       id: parsePageId(1),
       narrativeText: 'Delete root',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('A'), createChoice('B')],
       inventoryChanges: { added: ['delete-root'], removed: [] },
       isEnding: false,
@@ -265,6 +273,7 @@ describe('Data Integrity E2E', () => {
     const page2 = createPage({
       id: parsePageId(2),
       narrativeText: 'Delete child',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       inventoryChanges: { added: ['delete-child'], removed: [] },
       isEnding: true,

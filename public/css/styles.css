@@ -516,6 +516,75 @@ main {
   color: var(--color-success);
 }
 
+/* Choice icon pill */
+.choice-icon-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px 6px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.choice-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 3px;
+}
+
+.choice-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Choice type color coding */
+.choice-btn[data-choice-type="TACTICAL_APPROACH"] { background: #1a5276; color: #ffffff; }
+.choice-btn[data-choice-type="MORAL_DILEMMA"] { background: #7d3c98; color: #ffffff; }
+.choice-btn[data-choice-type="IDENTITY_EXPRESSION"] { background: #b7950b; color: #000000; }
+.choice-btn[data-choice-type="RELATIONSHIP_SHIFT"] { background: #c0392b; color: #ffffff; }
+.choice-btn[data-choice-type="RESOURCE_COMMITMENT"] { background: #d4ac0d; color: #000000; }
+.choice-btn[data-choice-type="INVESTIGATION"] { background: #148f77; color: #ffffff; }
+.choice-btn[data-choice-type="PATH_DIVERGENCE"] { background: #d35400; color: #ffffff; }
+.choice-btn[data-choice-type="CONFRONTATION"] { background: #922b21; color: #ffffff; }
+.choice-btn[data-choice-type="AVOIDANCE_RETREAT"] { background: #1a5253; color: #ffffff; }
+
+.choice-btn[data-choice-type]:hover:not(:disabled),
+.choice-btn[data-choice-type]:focus-visible:not(:disabled) {
+  filter: brightness(1.2);
+  transform: translateX(2px);
+}
+
+.choice-btn[data-choice-type][data-explored] {
+  opacity: 0.75;
+}
+
+/* Custom choice enum selects */
+.custom-choice-enums {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.custom-choice-enums select {
+  flex: 1;
+  color: var(--color-text);
+  background: rgba(14, 24, 49, 0.75);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.custom-choice-enums select:focus {
+  outline: 2px solid transparent;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.25);
+}
+
 .custom-choice-container {
   display: flex;
   gap: 0.5rem;
@@ -673,5 +742,15 @@ main {
   .story-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .choice-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .choice-icon-pill {
+    padding: 2px 4px;
+    gap: 3px;
   }
 }

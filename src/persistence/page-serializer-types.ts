@@ -39,8 +39,11 @@ export interface TaggedStateEntryFileData {
 export interface PageFileData {
   id: number;
   narrativeText: string;
+  sceneSummary: string;
   choices: Array<{
     text: string;
+    choiceType: string;
+    primaryDelta: string;
     nextPageId: number | null;
   }>;
   activeStateChanges: {

@@ -73,6 +73,7 @@ describe('engine barrel export', () => {
     const page = createPage({
       id: parsePageId(1),
       narrativeText: 'Night rain fractures every lantern into twins.',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       isEnding: true,
       parentPageId: null,

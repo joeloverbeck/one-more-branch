@@ -105,10 +105,11 @@ ${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
 
   const protagonistAffectSection = buildProtagonistAffectSection(context.parentProtagonistAffect);
 
-  // Build scene context with optional grandparent narrative
+  // Build scene context with hierarchical ancestor summaries
   const sceneContextSection = buildSceneContextSection(
     context.previousNarrative,
     context.grandparentNarrative,
+    context.ancestorSummaries,
   );
 
   const userPrompt = `Continue the interactive story based on the player's choice.
@@ -130,9 +131,10 @@ REQUIREMENTS (follow all):
 2. Show the direct, immediate consequences of the player's choice - the story must react
 3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
 4. Maintain consistency with all established facts and the current state
-5. Present 3 new meaningful choices unless this naturally leads to an ending (add a 4th only when the situation truly warrants another distinct path)
-6. Ensure choices are divergent - each must lead to a genuinely different story path
+5. Present 3 new meaningful structured choice objects with text, choiceType, and primaryDelta - each choice MUST have a different choiceType OR primaryDelta (add a 4th only when the situation truly warrants another distinct path)
+6. Ensure choices are divergent via their enum tags - each must change a different dimension of the story
 7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
+8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.`;
 

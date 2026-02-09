@@ -70,7 +70,8 @@ export function buildFirstPage(
   return createPage({
     id: parsePageId(1),
     narrativeText: result.narrative,
-    choices: result.choices.map(choiceText => createChoice(choiceText)),
+    sceneSummary: result.sceneSummary,
+    choices: result.choices.map(c => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
     activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
@@ -98,7 +99,8 @@ export function buildContinuationPage(
   return createPage({
     id: context.pageId,
     narrativeText: result.narrative,
-    choices: result.choices.map(choiceText => createChoice(choiceText)),
+    sceneSummary: result.sceneSummary,
+    choices: result.choices.map(c => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
     activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),

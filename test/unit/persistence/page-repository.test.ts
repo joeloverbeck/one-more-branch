@@ -33,6 +33,7 @@ function buildRootPage(overrides?: Partial<Page>): Page {
   return createPage({
     id: parsePageId(1),
     narrativeText: 'Root narrative',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('Choice A'), createChoice('Choice B')],
     isEnding: false,
     parentPageId: null,
@@ -45,6 +46,7 @@ function buildChildPage(overrides?: Partial<Page>): Page {
   return createPage({
     id: parsePageId(2),
     narrativeText: 'Child narrative',
+    sceneSummary: 'Test summary of the scene events and consequences.',
     choices: [createChoice('Choice C'), createChoice('Choice D')],
     isEnding: false,
     parentPageId: parsePageId(1),
@@ -223,6 +225,7 @@ describe('page-repository', () => {
     const endingPage = createPage({
       id: parsePageId(3),
       narrativeText: 'Ending',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       inventoryChanges: { added: ['ending-item'], removed: [] },
       isEnding: true,
@@ -246,6 +249,7 @@ describe('page-repository', () => {
     await writeJsonFile(getPageFilePath(story.id, expectedPageId), {
       id: mismatchedPageId,
       narrativeText: 'Mismatch',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       inventoryChanges: { added: [], removed: [] },
       accumulatedInventory: [],
@@ -283,6 +287,7 @@ describe('page-repository', () => {
         dominantMotivation: 'Continue forward',
       },
       structureVersionId: null,
+      sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: true,
       parentPageId: null,
       parentChoiceIndex: null,
@@ -303,6 +308,7 @@ describe('page-repository', () => {
     await writeJsonFile(getPageFilePath(story.id, pageId), {
       id: pageId,
       narrativeText: 'Missing required fields',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [],
       // Missing inventoryChanges, healthChanges, etc.
       isEnding: true,
@@ -324,6 +330,7 @@ describe('page-repository', () => {
 
     const updatedPage = buildRootPage({
       narrativeText: 'Updated narrative',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Updated choice A'), createChoice('Updated choice B')],
       inventoryChanges: { added: ['updated-item'], removed: [] },
     });

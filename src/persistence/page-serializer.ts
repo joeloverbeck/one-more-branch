@@ -2,12 +2,14 @@ import {
   AccumulatedCharacterState,
   AccumulatedStructureState,
   CharacterStateChanges,
+  ChoiceType,
   Health,
   HealthChanges,
   Inventory,
   InventoryChanges,
   Page,
   PageId,
+  PrimaryDelta,
   parseStructureVersionId,
   parsePageId,
 } from '../models';
@@ -43,8 +45,11 @@ export function serializePage(page: Page): PageFileData {
   return {
     id: page.id,
     narrativeText: page.narrativeText,
+    sceneSummary: page.sceneSummary,
     choices: page.choices.map((choice) => ({
       text: choice.text,
+      choiceType: choice.choiceType,
+      primaryDelta: choice.primaryDelta,
       nextPageId: choice.nextPageId,
     })),
     activeStateChanges: activeStateChangesToFileData(page.activeStateChanges),
@@ -111,8 +116,11 @@ export function deserializePage(data: PageFileData): Page {
   return {
     id: parsePageId(data.id),
     narrativeText: data.narrativeText,
+    sceneSummary: data.sceneSummary,
     choices: data.choices.map((choice) => ({
       text: choice.text,
+      choiceType: (choice.choiceType ?? 'TACTICAL_APPROACH') as ChoiceType,
+      primaryDelta: (choice.primaryDelta ?? 'GOAL_SHIFT') as PrimaryDelta,
       nextPageId: choice.nextPageId === null ? null : parsePageId(choice.nextPageId),
     })),
     activeStateChanges,

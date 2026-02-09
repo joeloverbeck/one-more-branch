@@ -37,6 +37,7 @@ describe('Few-Shot Examples Integration', () => {
       openThreads: [],
     },
     grandparentNarrative: null,
+    ancestorSummaries: [],
   };
 
   describe('Opening prompt integration with few-shot examples', () => {
@@ -90,8 +91,9 @@ describe('Few-Shot Examples Integration', () => {
       expect(endingAssistant?.role).toBe('assistant');
 
       const parsed = JSON.parse(endingAssistant?.content ?? '{}') as {
+        sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: boolean;
-        choices: string[];
+        choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
       };
       expect(parsed.isEnding).toBe(true);
       expect(parsed.choices).toHaveLength(0);

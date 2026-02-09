@@ -32,6 +32,7 @@ describe('WRITER_GENERATION_SCHEMA', () => {
       'characterStateChangesAdded',
       'characterStateChangesRemoved',
       'protagonistAffect',
+      'sceneSummary',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);

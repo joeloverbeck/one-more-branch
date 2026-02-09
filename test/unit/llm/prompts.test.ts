@@ -234,9 +234,8 @@ describe('buildOpeningPrompt', () => {
 
     const user = getUserMessage(messages);
     expect(user).toContain('DIVERGENCE ENFORCEMENT');
-    expect(user).toContain('Location');
-    expect(user).toContain('NPC relationship');
-    expect(user).toContain('Time pressure');
+    expect(user).toContain('choiceType');
+    expect(user).toContain('primaryDelta');
   });
 
   it('should include ESTABLISHMENT RULES in user message for opening (data rules)', () => {
@@ -407,6 +406,7 @@ describe('buildContinuationPrompt', () => {
       openThreads: [],
     },
     grandparentNarrative: null as string | null,
+    ancestorSummaries: [],
   };
 
   it('should include selected choice in user message', () => {
@@ -554,7 +554,7 @@ describe('buildContinuationPrompt', () => {
     const user = getUserMessage(messages);
     expect(user).not.toContain('=== STORY STRUCTURE ===');
     expect(user).not.toContain('=== BEAT EVALUATION ===');
-    expect(user).toContain('PREVIOUS SCENE:');
+    expect(user).toContain('PREVIOUS SCENE (full text for style continuity):');
   });
 
   it('should include previous narrative', () => {
@@ -648,7 +648,7 @@ describe('buildContinuationPrompt', () => {
     });
 
     const previousSceneLine =
-      getUserMessage(messages).split('PREVIOUS SCENE:\n')[1]?.split('\n\nPLAYER')[0] ?? '';
+      getUserMessage(messages).split('PREVIOUS SCENE (full text for style continuity):\n')[1]?.split('\n\nPLAYER')[0] ?? '';
 
     expect(previousSceneLine).toBe(narrative);
   });
@@ -661,7 +661,7 @@ describe('buildContinuationPrompt', () => {
     });
 
     const previousSceneLine =
-      getUserMessage(messages).split('PREVIOUS SCENE:\n')[1]?.split('\n\nPLAYER')[0] ?? '';
+      getUserMessage(messages).split('PREVIOUS SCENE (full text for style continuity):\n')[1]?.split('\n\nPLAYER')[0] ?? '';
 
     expect(previousSceneLine.length).toBe(2500);
     expect(previousSceneLine).not.toContain('...');
@@ -836,11 +836,12 @@ describe('buildContinuationPrompt', () => {
         ...baseContext,
         previousNarrative: 'The detective entered the warehouse.',
         grandparentNarrative: 'Earlier that night, a mysterious phone call came.',
+        ancestorSummaries: [],
       });
 
-      expect(getUserMessage(messages)).toContain('SCENE BEFORE LAST:');
+      expect(getUserMessage(messages)).toContain('SCENE BEFORE LAST (full text for style continuity):');
       expect(getUserMessage(messages)).toContain('Earlier that night, a mysterious phone call came.');
-      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE:');
+      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE (full text for style continuity):');
       expect(getUserMessage(messages)).toContain('The detective entered the warehouse.');
     });
 
@@ -849,10 +850,11 @@ describe('buildContinuationPrompt', () => {
         ...baseContext,
         previousNarrative: 'The detective entered the warehouse.',
         grandparentNarrative: null,
+        ancestorSummaries: [],
       });
 
-      expect(getUserMessage(messages)).not.toContain('SCENE BEFORE LAST:');
-      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE:');
+      expect(getUserMessage(messages)).not.toContain('SCENE BEFORE LAST (full text for style continuity):');
+      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE (full text for style continuity):');
     });
 
     it('passes through long grandparent narrative without truncation', () => {
@@ -860,10 +862,11 @@ describe('buildContinuationPrompt', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
         grandparentNarrative: longNarrative,
+        ancestorSummaries: [],
       });
 
       const content = getUserMessage(messages);
-      const sceneBeforeLastSection = content.split('SCENE BEFORE LAST:\n')[1]?.split('\n\nPREVIOUS SCENE:')[0] ?? '';
+      const sceneBeforeLastSection = content.split('SCENE BEFORE LAST (full text for style continuity):\n')[1]?.split('\n\nPREVIOUS SCENE (full text for style continuity):')[0] ?? '';
 
       expect(sceneBeforeLastSection).toBe(longNarrative);
     });
@@ -873,11 +876,12 @@ describe('buildContinuationPrompt', () => {
         ...baseContext,
         previousNarrative: 'Previous scene content.',
         grandparentNarrative: 'Grandparent scene content.',
+        ancestorSummaries: [],
       });
 
       const content = getUserMessage(messages);
-      const grandparentIdx = content.indexOf('SCENE BEFORE LAST:');
-      const previousIdx = content.indexOf('PREVIOUS SCENE:');
+      const grandparentIdx = content.indexOf('SCENE BEFORE LAST (full text for style continuity):');
+      const previousIdx = content.indexOf('PREVIOUS SCENE (full text for style continuity):');
 
       expect(grandparentIdx).toBeGreaterThan(-1);
       expect(previousIdx).toBeGreaterThan(-1);

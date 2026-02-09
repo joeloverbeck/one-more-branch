@@ -15,9 +15,52 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
         },
         choices: {
           type: 'array',
-          items: { type: 'string' },
+          items: {
+            type: 'object',
+            properties: {
+              text: {
+                type: 'string',
+                description: 'The choice text the player sees. Start with a verb. 3-300 characters.',
+              },
+              choiceType: {
+                type: 'string',
+                enum: [
+                  'TACTICAL_APPROACH',
+                  'MORAL_DILEMMA',
+                  'IDENTITY_EXPRESSION',
+                  'RELATIONSHIP_SHIFT',
+                  'RESOURCE_COMMITMENT',
+                  'INVESTIGATION',
+                  'PATH_DIVERGENCE',
+                  'CONFRONTATION',
+                  'AVOIDANCE_RETREAT',
+                ],
+                description:
+                  'What this choice is ABOUT. TACTICAL_APPROACH=method/tactic, MORAL_DILEMMA=value conflict, IDENTITY_EXPRESSION=self-definition, RELATIONSHIP_SHIFT=changing a relationship, RESOURCE_COMMITMENT=spending/risking something scarce, INVESTIGATION=examining/learning/revealing, PATH_DIVERGENCE=fundamentally different direction, CONFRONTATION=engaging/fighting, AVOIDANCE_RETREAT=fleeing/hiding/de-escalating.',
+              },
+              primaryDelta: {
+                type: 'string',
+                enum: [
+                  'LOCATION_CHANGE',
+                  'GOAL_SHIFT',
+                  'RELATIONSHIP_CHANGE',
+                  'URGENCY_CHANGE',
+                  'ITEM_CONTROL',
+                  'EXPOSURE_CHANGE',
+                  'CONDITION_CHANGE',
+                  'INFORMATION_REVEALED',
+                  'THREAT_SHIFT',
+                  'CONSTRAINT_CHANGE',
+                ],
+                description:
+                  'What this choice primarily CHANGES in the world. LOCATION_CHANGE=protagonist moves, GOAL_SHIFT=objective changes, RELATIONSHIP_CHANGE=NPC stance shifts, URGENCY_CHANGE=time pressure shifts, ITEM_CONTROL=significant object changes hands, EXPOSURE_CHANGE=attention/suspicion changes, CONDITION_CHANGE=physical condition changes, INFORMATION_REVEALED=new knowledge gained, THREAT_SHIFT=danger introduced/neutralized, CONSTRAINT_CHANGE=limitation imposed/lifted.',
+              },
+            },
+            required: ['text', 'choiceType', 'primaryDelta'],
+            additionalProperties: false,
+          },
           description:
-            'Array of 2-4 meaningful choices as SEPARATE string elements. CRITICAL FORMAT: Return as ["Choice 1", "Choice 2", "Choice 3"] where each choice is its own array element. Do NOT return a single stringified element. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
+            'Array of 2-4 structured choice objects. Each choice MUST have a different choiceType OR primaryDelta from all other choices. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
         },
         currentLocation: {
           type: 'string',
@@ -170,12 +213,17 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           additionalProperties: false,
           description: 'Snapshot of protagonist emotional state at END of this scene. NOT accumulated - fresh snapshot each page.',
         },
+        sceneSummary: {
+          type: 'string',
+          description:
+            'A 2-3 sentence factual summary of what happened in this scene. Focus on key events, decisions made, and consequences. This will be used as context for future scenes, so emphasize plot-relevant facts over atmospheric details.',
+        },
         isEnding: {
           type: 'boolean',
           description: 'True only when the story concludes and choices is empty.',
         },
       },
-      required: ['narrative', 'choices', 'currentLocation', 'threatsAdded', 'threatsRemoved', 'constraintsAdded', 'constraintsRemoved', 'threadsAdded', 'threadsResolved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'protagonistAffect', 'isEnding'],
+      required: ['narrative', 'choices', 'currentLocation', 'threatsAdded', 'threatsRemoved', 'constraintsAdded', 'constraintsRemoved', 'threadsAdded', 'threadsResolved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'protagonistAffect', 'sceneSummary', 'isEnding'],
       additionalProperties: false,
     },
   },

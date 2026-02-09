@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import {
   createChoice,
   createPage,
+  ChoiceType,
+  PrimaryDelta,
   parsePageId,
   parseStoryId,
 } from '@/models';
@@ -104,6 +106,7 @@ describe('POST /:storyId/custom-choice', () => {
     const page = createPage({
       id: parsePageId(1),
       narrativeText: 'A story unfolds',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Choice A'), createChoice('Choice B')],
       isEnding: false,
       parentPageId: null,
@@ -113,7 +116,7 @@ describe('POST /:storyId/custom-choice', () => {
       ...page,
       choices: [
         ...page.choices,
-        { text: 'Custom choice', nextPageId: null },
+        { text: 'Custom choice', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
       ],
     };
 
@@ -128,13 +131,13 @@ describe('POST /:storyId/custom-choice', () => {
     );
     await flushPromises();
 
-    expect(addChoiceSpy).toHaveBeenCalledWith(storyId, 1, 'Custom choice');
+    expect(addChoiceSpy).toHaveBeenCalledWith(storyId, 1, 'Custom choice', ChoiceType.TACTICAL_APPROACH, PrimaryDelta.GOAL_SHIFT);
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith({
       choices: [
-        { text: 'Choice A', nextPageId: null },
-        { text: 'Choice B', nextPageId: null },
-        { text: 'Custom choice', nextPageId: null },
+        { text: 'Choice A', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
+        { text: 'Choice B', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
+        { text: 'Custom choice', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
       ],
     });
   });
@@ -197,6 +200,7 @@ describe('POST /:storyId/custom-choice', () => {
     const page = createPage({
       id: parsePageId(1),
       narrativeText: 'Story',
+      sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('A'), createChoice('B')],
       isEnding: false,
       parentPageId: null,
@@ -205,7 +209,7 @@ describe('POST /:storyId/custom-choice', () => {
     const text500 = 'x'.repeat(500);
     const updatedPage = {
       ...page,
-      choices: [...page.choices, { text: text500, nextPageId: null }],
+      choices: [...page.choices, { text: text500, choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null }],
     };
 
     jest.spyOn(pageRepository, 'addChoice').mockResolvedValue(updatedPage);

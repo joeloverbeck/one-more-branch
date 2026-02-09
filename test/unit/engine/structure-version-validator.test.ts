@@ -90,6 +90,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -108,6 +109,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -124,6 +126,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -142,6 +145,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -159,6 +163,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -177,6 +182,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -196,6 +202,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,
@@ -229,6 +236,7 @@ describe('structure-version-validator', () => {
       const parentPage = createPage({
         id: parsePageId(1),
         narrativeText: 'Test narrative',
+        sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Choice A'), createChoice('Choice B')],
         isEnding: false,
         parentPageId: null,

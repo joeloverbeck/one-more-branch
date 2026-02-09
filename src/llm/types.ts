@@ -1,7 +1,14 @@
+import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
+import type { PageId } from '../models/id.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { ActiveState } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
+
+export interface AncestorSummary {
+  readonly pageId: PageId;
+  readonly summary: string;
+}
 
 export interface ContinuationGenerationResult extends WriterResult {
   readonly beatConcluded: boolean;
@@ -78,6 +85,7 @@ export interface ContinuationContext {
 
   // NEW: Extended scene context
   grandparentNarrative: string | null;
+  ancestorSummaries: readonly AncestorSummary[];
 }
 
 export interface OpeningContext {
@@ -119,7 +127,7 @@ export interface OpenRouterResponse {
 
 export interface WriterResult {
   narrative: string;
-  choices: string[];
+  choices: Array<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }>;
   currentLocation: string;
   threatsAdded: string[];
   threatsRemoved: string[];
@@ -137,6 +145,7 @@ export interface WriterResult {
   characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
   protagonistAffect: ProtagonistAffect;
   isEnding: boolean;
+  sceneSummary: string;
   rawResponse: string;
 }
 

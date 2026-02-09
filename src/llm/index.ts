@@ -1,4 +1,5 @@
 export type {
+  AncestorSummary,
   ContinuationGenerationResult,
   CompletedBeat,
   StructureRewriteContext,

@@ -55,7 +55,10 @@ describe('LLM types', () => {
     it('should allow creating WriterResult with all required fields', () => {
       const result: WriterResult = {
         narrative: 'You arrive at a crossroads.',
-        choices: ['Take the left path', 'Take the right path'],
+        choices: [
+          { text: 'Take the left path', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Take the right path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        ],
         currentLocation: 'Forest crossroads',
         threatsAdded: ['THREAT_WOLVES: Wolves spotted nearby'],
         threatsRemoved: [],
@@ -79,6 +82,7 @@ describe('LLM types', () => {
           dominantMotivation: 'Find safe path forward',
         },
         isEnding: false,
+        sceneSummary: 'The protagonist arrives at a fork in the forest path.',
         rawResponse: '{"narrative":"You arrive at a crossroads."}',
       };
 
@@ -126,6 +130,7 @@ describe('LLM types', () => {
           openThreads: [],
         },
         grandparentNarrative: null,
+        ancestorSummaries: [],
       };
 
       expect(context.globalCanon[0]).toContain('siege');
@@ -154,6 +159,7 @@ describe('LLM types', () => {
           openThreads: [],
         },
         grandparentNarrative: null,
+        ancestorSummaries: [],
       };
 
       // TypeScript compile-time check - if this compiles, the type is valid
@@ -180,6 +186,7 @@ describe('LLM types', () => {
           openThreads: [],
         },
         grandparentNarrative: 'Earlier scene...',
+        ancestorSummaries: [],
       };
 
       expect(context.grandparentNarrative).toBe('Earlier scene...');
@@ -205,6 +212,7 @@ describe('LLM types', () => {
           openThreads: [],
         },
         grandparentNarrative: null,
+        ancestorSummaries: [],
       };
 
       expect(context.grandparentNarrative).toBeNull();
@@ -226,6 +234,7 @@ describe('LLM types', () => {
         accumulatedHealth: [],
         accumulatedCharacterState: {},
         grandparentNarrative: null,
+        ancestorSummaries: [],
         // Missing activeState!
       };
 
@@ -253,6 +262,7 @@ describe('LLM types', () => {
           activeConstraints: [],
           openThreads: [],
         },
+        ancestorSummaries: [],
         // Missing grandparentNarrative!
       };
 
@@ -288,6 +298,7 @@ describe('LLM types', () => {
         accumulatedCharacterState: {},
         activeState,
         grandparentNarrative: 'You entered the forest at dawn...',
+        ancestorSummaries: [],
       };
 
       expect(context.activeState.activeThreats).toHaveLength(1);
@@ -301,7 +312,10 @@ describe('LLM types', () => {
     function buildBaseWriterResult(): WriterResult {
       return {
         narrative: 'The lantern flickers as footsteps approach.',
-        choices: ['Hide behind the crates', 'Call out to the footsteps'],
+        choices: [
+          { text: 'Hide behind the crates', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'EXPOSURE_CHANGE' },
+          { text: 'Call out to the footsteps', choiceType: 'CONFRONTATION', primaryDelta: 'RELATIONSHIP_CHANGE' },
+        ],
         currentLocation: 'Dimly lit warehouse',
         threatsAdded: [],
         threatsRemoved: [],
@@ -325,6 +339,7 @@ describe('LLM types', () => {
           dominantMotivation: 'Avoid detection',
         },
         isEnding: false,
+        sceneSummary: 'Footsteps approach the warehouse, forcing a quick decision.',
         rawResponse: '{"narrative":"..."}',
       };
     }
@@ -365,7 +380,10 @@ describe('LLM types', () => {
     it('should allow creating WriterResult with all required fields', () => {
       const result: WriterResult = {
         narrative: 'The forest darkens as you step forward.',
-        choices: ['Draw your sword', 'Retreat quietly'],
+        choices: [
+          { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+          { text: 'Retreat quietly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
         currentLocation: 'Dark forest path',
         threatsAdded: ['THREAT_BANDITS: Bandits ahead'],
         threatsRemoved: [],
@@ -389,6 +407,7 @@ describe('LLM types', () => {
           dominantMotivation: 'Find safe shelter',
         },
         isEnding: false,
+        sceneSummary: 'The protagonist faces bandits in a darkening forest.',
         rawResponse: '{"narrative":"..."}',
       };
 
@@ -400,7 +419,10 @@ describe('LLM types', () => {
     it('should NOT include beatConcluded, beatResolution, or deviation fields', () => {
       const result: WriterResult = {
         narrative: 'Test',
-        choices: ['A', 'B'],
+        choices: [
+          { text: 'A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
         currentLocation: '',
         threatsAdded: [],
         threatsRemoved: [],
@@ -424,6 +446,7 @@ describe('LLM types', () => {
           dominantMotivation: 'Continue',
         },
         isEnding: false,
+        sceneSummary: 'A minimal test scene for type validation.',
         rawResponse: '',
       };
 

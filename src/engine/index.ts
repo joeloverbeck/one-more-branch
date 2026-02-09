@@ -12,6 +12,10 @@ export {
 
 export { generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
 
+// Ancestor context collection
+export { collectAncestorContext } from './ancestor-collector';
+export type { AncestorContext } from './ancestor-collector';
+
 // Page building
 export {
   buildFirstPage,

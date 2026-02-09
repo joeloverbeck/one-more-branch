@@ -35,7 +35,10 @@ describe('llm barrel exports', () => {
   it('should support type usage through barrel exports', () => {
     const result: WriterResult = {
       narrative: 'The bridge shakes as thunder rolls over the ravine.',
-      choices: ['Cross quickly', 'Retreat to camp'],
+      choices: [
+        { text: 'Cross quickly', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+        { text: 'Retreat to camp', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'GOAL_SHIFT' },
+      ],
       currentLocation: 'The Old Bridge',
       threatsAdded: [],
       threatsRemoved: [],
@@ -59,6 +62,7 @@ describe('llm barrel exports', () => {
         dominantMotivation: 'Survive the crossing',
       },
       isEnding: false,
+      sceneSummary: 'Thunder and wind threaten to collapse the old bridge.',
       rawResponse: '{"narrative":"..."}',
     };
     const options: GenerationOptions = { apiKey: 'test-key' };
@@ -85,6 +89,7 @@ describe('llm barrel exports', () => {
         openThreads: [],
       },
       grandparentNarrative: null,
+      ancestorSummaries: [],
     };
     const message: ChatMessage = { role: 'user', content: 'Continue the story' };
     const schema: JsonSchema = WRITER_GENERATION_SCHEMA;
