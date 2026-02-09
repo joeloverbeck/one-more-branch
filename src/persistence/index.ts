@@ -21,6 +21,7 @@ export {
 } from './story-repository';
 
 export {
+  addChoice,
   findEndingPages,
   getMaxPageId,
   loadAllPages,

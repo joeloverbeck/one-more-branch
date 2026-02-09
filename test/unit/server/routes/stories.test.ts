@@ -724,6 +724,59 @@ describe('storyRoutes', () => {
         storyId: '550e8400-e29b-41d4-a716-446655440000',
       });
     });
+
+    it('passes npcs and startingSituation through to startStory when provided', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
+      const story = createStory({
+        title: 'Test Title',
+        characterConcept: 'Test Concept Here',
+        worldbuilding: 'World',
+        tone: 'Epic',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'Page text',
+        choices: [createChoice('Go left'), createChoice('Go right')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+        story: { ...story, id: storyId },
+        page,
+      });
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: 'Test Title',
+            characterConcept: 'Test Concept Here',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            npcs: '  Gandalf the Grey, wise wizard  ',
+            startingSituation: '  You awaken in a dark cave  ',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(startStorySpy).toHaveBeenCalledWith({
+        title: 'Test Title',
+        characterConcept: 'Test Concept Here',
+        worldbuilding: 'World',
+        tone: 'Epic',
+        npcs: 'Gandalf the Grey, wise wizard',
+        startingSituation: 'You awaken in a dark cave',
+        apiKey: 'valid-key-12345',
+      });
+      expect(json).toHaveBeenCalledWith({
+        success: true,
+        storyId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+    });
   });
 
   describe('POST /create-ajax error', () => {

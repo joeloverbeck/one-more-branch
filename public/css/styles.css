@@ -456,6 +456,48 @@ main {
   color: var(--color-success);
 }
 
+.custom-choice-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.custom-choice-input {
+  flex: 1;
+  color: var(--color-text);
+  background: rgba(14, 24, 49, 0.75);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.85rem 0.95rem;
+  font: inherit;
+}
+
+.custom-choice-input:focus {
+  outline: 2px solid transparent;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.25);
+}
+
+.custom-choice-btn {
+  width: 80px;
+  flex-shrink: 0;
+  color: #fff;
+  background: var(--color-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0.85rem 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  transition: background-color var(--transition), transform var(--transition);
+}
+
+.custom-choice-btn:hover,
+.custom-choice-btn:focus-visible {
+  background: var(--color-secondary-hover);
+  transform: translateY(-1px);
+}
+
 .ending-banner {
   margin-top: 1.1rem;
   border: 1px solid var(--border-color);

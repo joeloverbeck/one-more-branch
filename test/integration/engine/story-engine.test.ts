@@ -1,16 +1,25 @@
 import { storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
-import { createBeatDeviation, createNoDeviation, parsePageId, StoryId } from '@/models';
+import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
+import { parsePageId, StoryId } from '@/models';
+import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
+jest.mock('@/logging/index', () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage =
-  generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -82,11 +91,10 @@ const openingResult = {
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
-  deviation: createNoDeviation(),
   rawResponse: 'opening',
 };
 
-function buildContinuationResult(selectedChoice: string): typeof openingResult {
+function buildWriterResult(selectedChoice: string): WriterResult {
   if (selectedChoice === 'Investigate the ember trail') {
     return {
       narrative:
@@ -115,9 +123,6 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
         dominantMotivation: 'Reach the source of the ember trail',
       },
       isEnding: false,
-      beatConcluded: true,
-      beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
-      deviation: createNoDeviation(),
       rawResponse: 'continuation-ember',
     };
   }
@@ -149,10 +154,31 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
       dominantMotivation: 'Learn what the ferryman knows',
     },
     isEnding: false,
+    rawResponse: 'continuation-ferryman',
+  };
+}
+
+function buildAnalystResult(narrative: string): AnalystResult {
+  if (narrative.includes('embers down alleys')) {
+    return {
+      beatConcluded: true,
+      beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [] as string[],
+      narrativeSummary: '',
+      rawResponse: 'analyst-raw',
+    };
+  }
+
+  return {
     beatConcluded: false,
     beatResolution: '',
-    deviation: createNoDeviation(),
-    rawResponse: 'continuation-ferryman',
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [] as string[],
+    narrativeSummary: '',
+    rawResponse: 'analyst-raw',
   };
 }
 
@@ -238,8 +264,11 @@ describe('story-engine integration', () => {
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
-    mockedGenerateContinuationPage.mockImplementation((context) =>
-      Promise.resolve(buildContinuationResult(context.selectedChoice)),
+    mockedGenerateWriterPage.mockImplementation((context) =>
+      Promise.resolve(buildWriterResult(context.selectedChoice)),
+    );
+    mockedGenerateAnalystEvaluation.mockImplementation((context) =>
+      Promise.resolve(buildAnalystResult(context.narrative)),
     );
   });
 
@@ -327,18 +356,35 @@ describe('story-engine integration', () => {
       beatId: '1.2',
       status: 'active',
     });
-    expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
 
   it('should advance to the next act when the final beat in the current act is concluded', async () => {
-    mockedGenerateContinuationPage
+    mockedGenerateWriterPage
       .mockResolvedValueOnce({
-        ...buildContinuationResult('Investigate the ember trail'),
+        ...buildWriterResult('Investigate the ember trail'),
       })
       .mockResolvedValueOnce({
-        ...buildContinuationResult('Enter the ash-marked chapel'),
+        ...buildWriterResult('Enter the ash-marked chapel'),
+      });
+    mockedGenerateAnalystEvaluation
+      .mockResolvedValueOnce({
+        beatConcluded: true,
+        beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'analyst-raw',
+      })
+      .mockResolvedValueOnce({
         beatConcluded: true,
         beatResolution: 'Local allies joined and the setup arc closed.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'analyst-raw',
       });
 
     const start = await storyEngine.startStory({
@@ -405,7 +451,7 @@ describe('story-engine integration', () => {
     expect(second.wasGenerated).toBe(false);
     expect(second.page.id).toBe(first.page.id);
     expect(second.page.narrativeText).toBe(first.page.narrativeText);
-    expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
 
   it('should maintain branch isolation', async () => {
@@ -449,25 +495,35 @@ describe('story-engine integration', () => {
       beatId: '1.1',
       status: 'active',
     });
-    expect(mockedGenerateContinuationPage).toHaveBeenCalledTimes(2);
+    expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
   });
 
   it('should create a rewritten structure version and attach it to generated page when deviation is detected', async () => {
-    mockedGenerateContinuationPage
+    mockedGenerateWriterPage
       .mockResolvedValueOnce({
-        ...buildContinuationResult('Investigate the ember trail'),
-        beatConcluded: true,
-        beatResolution: 'The harbor cartel link is proven beyond doubt.',
+        ...buildWriterResult('Investigate the ember trail'),
       })
       .mockResolvedValueOnce({
-        ...buildContinuationResult('Enter the ash-marked chapel'),
+        ...buildWriterResult('Enter the ash-marked chapel'),
+      });
+    mockedGenerateAnalystEvaluation
+      .mockResolvedValueOnce({
+        beatConcluded: true,
+        beatResolution: 'The harbor cartel link is proven beyond doubt.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        rawResponse: 'analyst-raw',
+      })
+      .mockResolvedValueOnce({
         beatConcluded: false,
         beatResolution: '',
-        deviation: createBeatDeviation(
-          'The protagonist publicly defects, invalidating infiltration beats.',
-          ['2.1', '2.2', '3.1', '3.2'],
-          'The city now sees the protagonist as aligned with the regime on paper.',
-        ),
+        deviationDetected: true,
+        deviationReason: 'The protagonist publicly defects, invalidating infiltration beats.',
+        invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
+        narrativeSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
+        rawResponse: 'analyst-raw',
       });
 
     const start = await storyEngine.startStory({

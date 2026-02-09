@@ -30,6 +30,8 @@ interface StoryFileData {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  npcs: string | null;
+  startingSituation: string | null;
   globalCanon: string[];
   globalCharacterCanon: Record<string, string[]>;
   structure: StoryStructureFileData | null;
@@ -155,6 +157,8 @@ function storyToFileData(story: Story): StoryFileData {
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
+    npcs: story.npcs ?? null,
+    startingSituation: story.startingSituation ?? null,
     globalCanon: [...story.globalCanon],
     globalCharacterCanon,
     structure: story.structure ? structureToFileData(story.structure) : null,
@@ -165,6 +169,14 @@ function storyToFileData(story: Story): StoryFileData {
 }
 
 function fileDataToStory(data: StoryFileData): Story {
+  const rawData = data as unknown as Record<string, unknown>;
+  if (!('npcs' in rawData) || !('startingSituation' in rawData)) {
+    throw new Error(
+      `Story file ${data.id} is missing required fields: npcs and/or startingSituation. ` +
+        'This story was created before these fields were tracked. Please recreate the story.',
+    );
+  }
+
   // Migration: handle existing stories without globalCharacterCanon
   const globalCharacterCanon: Record<string, readonly string[]> = {};
   if (data.globalCharacterCanon) {
@@ -183,6 +195,8 @@ function fileDataToStory(data: StoryFileData): Story {
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
+    ...(data.npcs !== null ? { npcs: data.npcs } : {}),
+    ...(data.startingSituation !== null ? { startingSituation: data.startingSituation } : {}),
     globalCanon: [...data.globalCanon],
     globalCharacterCanon,
     structure: data.structure ? fileDataToStructure(data.structure) : null,
@@ -244,7 +258,12 @@ export async function listStories(): Promise<StoryMetadata[]> {
   const stories: StoryMetadata[] = [];
 
   for (const storyId of storyIds) {
-    const story = await loadStory(storyId as StoryId);
+    let story: Story | null;
+    try {
+      story = await loadStory(storyId as StoryId);
+    } catch {
+      continue;
+    }
 
     if (!story) {
       continue;

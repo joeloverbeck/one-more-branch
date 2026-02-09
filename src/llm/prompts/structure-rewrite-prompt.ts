@@ -38,10 +38,10 @@ Tone: gritty low fantasy with noir undertones
 Original Theme: Escape a blood-soaked past by completing one final contract
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
-  - Act 1, Beat 1 (beat_1_1): "A desperate employer offers terms too good to refuse"
+  - Act 1, Beat 1 (1.1): "A desperate employer offers terms too good to refuse"
     Objective: Decide whether to take the contract despite warning signs
     Resolution: Vera accepted Lord Vane's contract after verifying Duke Ashford's seal
-  - Act 1, Beat 2 (beat_1_2): "The true nature of the target is revealed"
+  - Act 1, Beat 2 (1.2): "The true nature of the target is revealed"
     Objective: Determine if the job is worth the escalating risk
     Resolution: Vera learned the target is Lady Elowen and agreed to proceed
 

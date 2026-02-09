@@ -3,7 +3,6 @@ import type { ActiveState } from '../../../../../src/models/state';
 import {
   getRemainingBeats,
   buildActiveStateForBeatEvaluation,
-  buildStoryStructureSection,
   DEVIATION_DETECTION_SECTION,
 } from '../../../../../src/llm/prompts/continuation/story-structure-section';
 
@@ -162,77 +161,6 @@ describe('story-structure-section', () => {
       const result = buildActiveStateForBeatEvaluation(state);
 
       expect(result).toContain('Open threads: Missing key');
-    });
-  });
-
-  describe('buildStoryStructureSection', () => {
-    it('returns empty string when structure is undefined', () => {
-      const result = buildStoryStructureSection(undefined, undefined, emptyActiveState);
-      expect(result).toBe('');
-    });
-
-    it('returns empty string when accumulatedStructureState is undefined', () => {
-      const result = buildStoryStructureSection(testStructure, undefined, emptyActiveState);
-      expect(result).toBe('');
-    });
-
-    it('returns empty string when act index is invalid', () => {
-      const state: AccumulatedStructureState = {
-        currentActIndex: 9, // Invalid index
-        currentBeatIndex: 0,
-        beatProgressions: [],
-      };
-
-      const result = buildStoryStructureSection(testStructure, state, emptyActiveState);
-      expect(result).toBe('');
-    });
-
-    it('includes beat statuses in output', () => {
-      const state: AccumulatedStructureState = {
-        currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '1.3', status: 'pending' },
-        ],
-      };
-
-      const result = buildStoryStructureSection(testStructure, state, emptyActiveState);
-
-      expect(result).toContain('[x] CONCLUDED: Reach safehouse');
-      expect(result).toContain('[>] ACTIVE: Secure evidence');
-      expect(result).toContain('[ ] PENDING: Choose ally');
-    });
-
-    it('includes deviation detection section', () => {
-      const state: AccumulatedStructureState = {
-        currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      };
-
-      const result = buildStoryStructureSection(testStructure, state, emptyActiveState);
-
-      expect(result).toContain('=== BEAT DEVIATION EVALUATION ===');
-      expect(result).toContain('deviationDetected: true');
-    });
-
-    it('includes remaining beats for deviation evaluation', () => {
-      const state: AccumulatedStructureState = {
-        currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.2', status: 'active' },
-        ],
-      };
-
-      const result = buildStoryStructureSection(testStructure, state, emptyActiveState);
-
-      expect(result).toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
-      expect(result).toContain('1.2: Secure evidence');
-      expect(result).not.toContain('1.1: Reach safehouse');
     });
   });
 

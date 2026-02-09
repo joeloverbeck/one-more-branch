@@ -114,6 +114,10 @@ describe('shared state-tracking sections', () => {
     it('includes examples', () => {
       expect(HEALTH_MANAGEMENT).toContain('Examples of health conditions:');
     });
+
+    it('includes anti-duplication rule', () => {
+      expect(HEALTH_MANAGEMENT).toContain('Do NOT add a condition that already exists');
+    });
   });
 
   describe('FIELD_SEPARATION', () => {

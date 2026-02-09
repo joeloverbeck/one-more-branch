@@ -58,11 +58,11 @@ describe('logPrompt', () => {
         { role: 'user', content: 'User content' },
       ];
 
-      logPrompt(mockLogger, 'continuation', messages);
+      logPrompt(mockLogger, 'writer', messages);
 
       const context = mockLogger.infoCalls[0]?.context;
 
-      expect(context?.promptType).toBe('continuation');
+      expect(context?.promptType).toBe('writer');
       expect(context?.messageCount).toBe(2);
       expect(context?.previews).toHaveLength(2);
     });
@@ -116,7 +116,7 @@ describe('logPrompt', () => {
         { role: 'assistant', content: 'Assistant' },
       ];
 
-      logPrompt(mockLogger, 'continuation', messages);
+      logPrompt(mockLogger, 'writer', messages);
 
       expect(mockLogger.debugCalls).toHaveLength(3);
       expect(mockLogger.debugCalls[0]?.message).toContain('[system]');
@@ -146,14 +146,14 @@ describe('logPrompt', () => {
       expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('opening');
     });
 
-    it('should handle continuation prompt type', () => {
+    it('should handle writer prompt type', () => {
       const mockLogger = createMockLogger();
       const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
 
-      logPrompt(mockLogger, 'continuation', messages);
+      logPrompt(mockLogger, 'writer', messages);
 
-      expect(mockLogger.infoCalls[0]?.message).toContain('continuation');
-      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('continuation');
+      expect(mockLogger.infoCalls[0]?.message).toContain('writer');
+      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('writer');
     });
 
     it('should handle structure prompt type', () => {

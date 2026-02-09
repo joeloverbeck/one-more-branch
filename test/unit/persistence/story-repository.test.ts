@@ -192,6 +192,8 @@ describe('story-repository', () => {
       globalCanon: legacyStory.globalCanon,
       globalCharacterCanon: legacyStory.globalCharacterCanon,
       structure: null,
+      npcs: null,
+      startingSituation: null,
       createdAt: legacyStory.createdAt.toISOString(),
       updatedAt: legacyStory.updatedAt.toISOString(),
     });
@@ -319,12 +321,89 @@ describe('story-repository', () => {
       globalCanon: [],
       globalCharacterCanon: {},
       structure: null,
+      npcs: null,
+      startingSituation: null,
       createdAt: '2025-01-01T00:00:00.000Z',
       updatedAt: '2025-01-01T00:00:00.000Z',
     });
 
     await expect(loadStory(MISMATCH_REQUEST_ID)).rejects.toThrow(
       `Story ID mismatch: expected ${MISMATCH_REQUEST_ID}, found ${MISMATCH_FILE_ID}`,
+    );
+  });
+
+  it('saveStory/loadStory preserves npcs field', async () => {
+    const story = buildTestStory({ npcs: 'Grizzled barkeep named Holt' });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.npcs).toBe('Grizzled barkeep named Holt');
+  });
+
+  it('saveStory/loadStory preserves startingSituation field', async () => {
+    const story = buildTestStory({ startingSituation: 'Waking up in a dungeon cell' });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.startingSituation).toBe('Waking up in a dungeon cell');
+  });
+
+  it('saveStory/loadStory preserves both npcs and startingSituation together', async () => {
+    const story = buildTestStory({
+      npcs: 'A mysterious oracle',
+      startingSituation: 'Standing at the crossroads',
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.npcs).toBe('A mysterious oracle');
+    expect(loaded?.startingSituation).toBe('Standing at the crossroads');
+  });
+
+  it('saveStory/loadStory writes null for npcs and startingSituation when undefined', async () => {
+    const story = buildTestStory();
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+
+    const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
+    const parsed = JSON.parse(persisted) as Record<string, unknown>;
+
+    expect('npcs' in parsed).toBe(true);
+    expect(parsed['npcs']).toBeNull();
+    expect('startingSituation' in parsed).toBe(true);
+    expect(parsed['startingSituation']).toBeNull();
+  });
+
+  it('loadStory throws when npcs or startingSituation keys are missing from file', async () => {
+    const story = buildTestStory();
+    createdStoryIds.add(story.id);
+
+    await ensureDirectory(getStoryDir(story.id));
+    await writeJsonFile(getStoryFilePath(story.id), {
+      id: story.id,
+      title: story.title,
+      characterConcept: story.characterConcept,
+      worldbuilding: story.worldbuilding,
+      tone: story.tone,
+      globalCanon: story.globalCanon,
+      globalCharacterCanon: story.globalCharacterCanon,
+      structure: null,
+      createdAt: story.createdAt.toISOString(),
+      updatedAt: story.updatedAt.toISOString(),
+    });
+
+    await expect(loadStory(story.id)).rejects.toThrow(
+      /missing required fields: npcs and\/or startingSituation/,
     );
   });
 });

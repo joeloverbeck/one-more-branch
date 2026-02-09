@@ -8,7 +8,7 @@ import {
   buildThreatsSection,
   buildConstraintsSection,
   buildThreadsSection,
-  buildStoryStructureSection,
+  buildWriterStructureContext,
 } from './continuation/index.js';
 
 export function buildContinuationPrompt(
@@ -31,10 +31,9 @@ These characters are available for use in the story. Introduce or involve them w
 `
     : '';
 
-  const structureSection = buildStoryStructureSection(
+  const structureSection = buildWriterStructureContext(
     context.structure,
     context.accumulatedStructureState,
-    context.activeState,
   );
 
   const canonSection =

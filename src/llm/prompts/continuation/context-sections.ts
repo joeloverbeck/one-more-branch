@@ -1,5 +1,4 @@
 import { formatProtagonistAffect, type ProtagonistAffect } from '../../../models/protagonist-affect.js';
-import { truncateText } from '../utils.js';
 
 /**
  * Builds the protagonist's current emotional state section for continuation prompts.
@@ -18,7 +17,6 @@ ${formatProtagonistAffect(affect)}
 
 /**
  * Builds extended scene context with both previous and grandparent narratives.
- * Grandparent narrative is truncated to 1000 chars, previous to 2000 chars.
  */
 export function buildSceneContextSection(
   previousNarrative: string,
@@ -28,13 +26,13 @@ export function buildSceneContextSection(
 
   if (grandparentNarrative) {
     result += `SCENE BEFORE LAST:
-${truncateText(grandparentNarrative, 1000)}
+${grandparentNarrative}
 
 `;
   }
 
   result += `PREVIOUS SCENE:
-${truncateText(previousNarrative, 2000)}
+${previousNarrative}
 
 `;
 

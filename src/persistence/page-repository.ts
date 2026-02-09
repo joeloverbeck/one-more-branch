@@ -1,4 +1,4 @@
-import { Page, PageId, StoryId } from '../models';
+import { Choice, Page, PageId, StoryId } from '../models';
 import {
   fileExists,
   getPageFilePath,
@@ -112,6 +112,37 @@ export async function updateChoiceLink(
     };
 
     await writeJsonFile(getPageFilePath(storyId, pageId), serializePage(updatedPage));
+  });
+}
+
+export async function addChoice(
+  storyId: StoryId,
+  pageId: PageId,
+  choiceText: string
+): Promise<Page> {
+  return withLock(storyId, async () => {
+    const page = await loadPage(storyId, pageId);
+    if (!page) {
+      throw new Error(`Page ${pageId} not found in story ${storyId}`);
+    }
+
+    if (page.isEnding) {
+      throw new Error(`Cannot add choices to ending page ${pageId}`);
+    }
+
+    const newChoice: Choice = {
+      text: choiceText.trim(),
+      nextPageId: null,
+    };
+
+    const updatedPage: Page = {
+      ...page,
+      choices: [...page.choices, newChoice],
+    };
+
+    await writeJsonFile(getPageFilePath(storyId, pageId), serializePage(updatedPage));
+
+    return updatedPage;
   });
 }
 

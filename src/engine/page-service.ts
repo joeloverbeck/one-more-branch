@@ -1,4 +1,11 @@
-import { generateContinuationPage, generateOpeningPage } from '../llm';
+import {
+  generateAnalystEvaluation,
+  generateOpeningPage,
+  generateWriterPage,
+  mergeWriterAndAnalystResults,
+} from '../llm';
+import type { AnalystResult } from '../llm';
+import { logger } from '../logging/index.js';
 import {
   createEmptyAccumulatedStructureState,
   generatePageId,
@@ -78,7 +85,8 @@ export async function generateNextPage(
     ? await storage.loadPage(story.id, parentPage.parentPageId)
     : null;
 
-  const result = await generateContinuationPage(
+  // Writer call (always runs)
+  const writerResult = await generateWriterPage(
     {
       characterConcept: story.characterConcept,
       worldbuilding: story.worldbuilding,
@@ -94,12 +102,34 @@ export async function generateNextPage(
       accumulatedHealth: parentState.accumulatedHealth,
       accumulatedCharacterState: parentState.accumulatedCharacterState,
       parentProtagonistAffect: parentPage.protagonistAffect,
-      // New active state fields
       activeState: parentState.accumulatedActiveState,
       grandparentNarrative: grandparentPage?.narrativeText ?? null,
     },
     { apiKey },
   );
+
+  // Analyst call (only when structure exists)
+  let analystResult: AnalystResult | null = null;
+  const activeStructureForAnalyst = currentStructureVersion?.structure ?? story.structure;
+  if (activeStructureForAnalyst && parentState.structureState) {
+    try {
+      analystResult = await generateAnalystEvaluation(
+        {
+          narrative: writerResult.narrative,
+          structure: activeStructureForAnalyst,
+          accumulatedStructureState: parentState.structureState,
+          activeState: parentState.accumulatedActiveState,
+        },
+        { apiKey },
+      );
+    } catch (error) {
+      // Graceful degradation: log warning, continue without analyst data
+      logger.warn('Analyst evaluation failed, continuing with defaults', { error });
+    }
+  }
+
+  // Merge into ContinuationGenerationResult
+  const result = mergeWriterAndAnalystResults(writerResult, analystResult);
 
   const newPageId = generatePageId(maxPageId);
 

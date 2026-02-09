@@ -1,5 +1,7 @@
 # WRIANASPL-10: Update All Index Exports
 
+**Status**: ✅ COMPLETED
+
 ## Summary
 
 Update the four index.ts barrel export files to expose all new modules created in tickets WRIANASPL-01 through WRIANASPL-09. This is a mechanical wiring ticket.
@@ -79,3 +81,14 @@ export { buildWriterStructureContext, buildAnalystStructureEvaluation } from './
 - All existing exports are preserved — no removals, no renames
 - The existing public API of `src/llm/index.ts` is a superset of what it was before
 - Import paths are all `.js` extension (ESM convention used in this project)
+
+## Outcome
+
+- **Completed**: 2026-02-08
+- **Files modified**:
+  - `src/llm/index.ts` — Added WriterResult, AnalystResult, AnalystContext types; generateWriterPage, generateAnalystEvaluation, mergeWriterAndAnalystResults functions; WRITER_GENERATION_SCHEMA, ANALYST_SCHEMA, validateWriterResponse, validateAnalystResponse
+  - `src/llm/schemas/index.ts` — Added WRITER_GENERATION_SCHEMA, ANALYST_SCHEMA, validateWriterResponse, validateAnalystResponse
+  - `src/llm/prompts/index.ts` — Added buildAnalystPrompt
+  - `src/llm/prompts/continuation/index.ts` — Added buildAnalystStructureEvaluation
+- **Deviations**: None. All exports match ticket spec exactly.
+- **Verification**: typecheck clean, build succeeds, 92 suites / 1373 tests pass

@@ -19,17 +19,46 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           description:
             'Array of 2-4 meaningful choices as SEPARATE string elements. CRITICAL FORMAT: Return as ["Choice 1", "Choice 2", "Choice 3"] where each choice is its own array element. Do NOT return a single stringified element. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
         },
-        stateChangesAdded: {
-          type: 'array',
-          items: { type: 'string' },
+        currentLocation: {
+          type: 'string',
           description:
-            'NEW conditions, events, or status changes to ADD to the current state. Use for injuries, relationships, emotional states, abilities gained - NOT for items (use inventoryAdded/inventoryRemoved). Use second person for player ("You were wounded...", "You befriended..."). Identify NPCs by name.',
+            'Where the protagonist is at the END of this scene. Use a concise place name (e.g., "Blacksmith forge", "City gate", "Dense forest clearing"). Empty string if location is unchanged.',
         },
-        stateChangesRemoved: {
+        threatsAdded: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'State entries to REMOVE because they are RESOLVED, CONTRADICTED, or NO LONGER RELEVANT. Use EXACT or very close text of the existing state entry. Example: Remove "You are wounded" when healed, remove "You are exhausted" after resting.',
+            'Active threats introduced in this scene. Format: "THREAT_ID: Description" (e.g., "THREAT_FIRE: The building is ablaze and collapsing", "THREAT_GUARDS: City guards are searching for you"). Empty array if none.',
+        },
+        threatsRemoved: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Threats resolved in this scene. Use the prefix only (e.g., "THREAT_FIRE", "THREAT_GUARDS"). Empty array if none.',
+        },
+        constraintsAdded: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Constraints imposed on the protagonist in this scene. Format: "CONSTRAINT_ID: Description" (e.g., "CONSTRAINT_BOUND: Your hands are tied behind your back", "CONSTRAINT_OATH: You swore not to harm the villagers"). Empty array if none.',
+        },
+        constraintsRemoved: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Constraints lifted in this scene. Use the prefix only (e.g., "CONSTRAINT_BOUND", "CONSTRAINT_OATH"). Empty array if none.',
+        },
+        threadsAdded: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Open narrative threads introduced in this scene. Format: "THREAD_ID: Description" (e.g., "THREAD_MISSING_CHILD: A villager mentioned their child has been missing for three days"). Empty array if none.',
+        },
+        threadsResolved: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Narrative threads resolved in this scene. Use the prefix only (e.g., "THREAD_MISSING_CHILD"). Empty array if none.',
         },
         newCanonFacts: {
           type: 'array',
@@ -146,7 +175,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           description: 'True only when the story concludes and choices is empty.',
         },
       },
-      required: ['narrative', 'choices', 'stateChangesAdded', 'stateChangesRemoved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'protagonistAffect', 'isEnding'],
+      required: ['narrative', 'choices', 'currentLocation', 'threatsAdded', 'threatsRemoved', 'constraintsAdded', 'constraintsRemoved', 'threadsAdded', 'threadsResolved', 'newCanonFacts', 'newCharacterCanonFacts', 'inventoryAdded', 'inventoryRemoved', 'healthAdded', 'healthRemoved', 'characterStateChangesAdded', 'characterStateChangesRemoved', 'protagonistAffect', 'isEnding'],
       additionalProperties: false,
     },
   },

@@ -1,16 +1,21 @@
 import { logger, logPrompt } from '../logging/index.js';
+import { generateAnalystWithFallback } from './analyst-generation.js';
 import { generateWithFallback } from './generation-strategy.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
+import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
 import { buildContinuationPrompt, buildOpeningPrompt } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import {
-  type ContinuationGenerationResult,
+  type AnalystContext,
+  type AnalystResult,
   type ContinuationContext,
   type GenerationOptions,
   type GenerationResult,
   type OpeningContext,
+  type WriterResult,
 } from './types.js';
+import { generateWriterWithFallback } from './writer-generation.js';
 
 export async function generateOpeningPage(
   context: OpeningContext,
@@ -25,17 +30,29 @@ export async function generateOpeningPage(
   return withRetry(() => generateWithFallback(messages, resolvedOptions));
 }
 
-export async function generateContinuationPage(
+export async function generateWriterPage(
   context: ContinuationContext,
   options: GenerationOptions,
-): Promise<ContinuationGenerationResult> {
+): Promise<WriterResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildContinuationPrompt(context, promptOptions);
 
-  logPrompt(logger, 'continuation', messages);
+  logPrompt(logger, 'writer', messages);
 
   const resolvedOptions = { ...options, promptOptions };
-  return withRetry(() => generateWithFallback(messages, resolvedOptions));
+  return withRetry(() => generateWriterWithFallback(messages, resolvedOptions));
+}
+
+export async function generateAnalystEvaluation(
+  context: AnalystContext,
+  options: GenerationOptions,
+): Promise<AnalystResult> {
+  const messages = buildAnalystPrompt(context);
+
+  logPrompt(logger, 'analyst', messages);
+
+  const analystOptions = { ...options, temperature: 0.3, maxTokens: 1024 };
+  return withRetry(() => generateAnalystWithFallback(messages, analystOptions));
 }
 
 export async function validateApiKey(apiKey: string): Promise<boolean> {

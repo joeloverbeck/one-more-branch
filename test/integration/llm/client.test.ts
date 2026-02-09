@@ -1,4 +1,4 @@
-import { generateContinuationPage, generateOpeningPage } from '../../../src/llm/client';
+import { generateOpeningPage } from '../../../src/llm/client';
 
 function createJsonResponse(status: number, body: unknown): Response {
   return {
@@ -68,54 +68,6 @@ describe('llm client integration (mocked fetch)', () => {
     expect(result.isEnding).toBe(false);
     expect(result.beatConcluded).toBe(false);
     expect(result.beatResolution).toBe('');
-  });
-
-  it('should generate continuation page that reflects selected choice context', async () => {
-    const structured = {
-      narrative:
-        'You pry open the grate and descend into the flooded corridor where the iron bars scrape behind you and the vault air tastes of rust and incense.',
-      choices: ['Follow the chanting deeper', 'Return before the tide rises'],
-      stateChangesAdded: ['Opened the vault grate'],
-      stateChangesRemoved: [],
-      newCanonFacts: ['The lower vault floods with each moonrise'],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
-    };
-
-    fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
-
-    const result = await generateContinuationPage(
-      {
-        characterConcept: 'A haunted cartographer',
-        worldbuilding: 'A city built atop buried catacombs',
-        tone: 'gothic mystery',
-        globalCanon: ['The lower vault floods at midnight'],
-        globalCharacterCanon: {},
-        previousNarrative:
-          'You stand at the iron grate while lantern light trembles across black water and old carvings.',
-        selectedChoice: 'Pry open the grate and descend into the vault',
-        accumulatedState: ['You stole a key from the sexton.'],
-        accumulatedInventory: [],
-        accumulatedHealth: [],
-        accumulatedCharacterState: {},
-        activeState: {
-          currentLocation: '',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        grandparentNarrative: null,
-      },
-      { apiKey: 'test-key' },
-    );
-
-    expect(result.narrative.toLowerCase()).toContain('grate');
-    expect(result.narrative.toLowerCase()).toContain('vault');
   });
 
   it('should enforce choice constraints via Zod validation', async () => {

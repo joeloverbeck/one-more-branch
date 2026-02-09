@@ -144,23 +144,20 @@ ${remainingActs || '  - None'}
 }
 
 /**
- * Builds the complete story structure section for continuation prompts.
- * Includes act/beat status, beat evaluation instructions, and deviation detection.
+ * Builds the structure evaluation section for the analyst LLM call.
+ * Contains evaluation-focused content reframed for analytical assessment.
+ * Parameters are NOT optional — this function is only called when structure exists.
  *
- * @param structure - The story structure (or undefined if not using structured stories)
- * @param accumulatedStructureState - The accumulated structure state (or undefined)
+ * @param structure - The story structure
+ * @param accumulatedStructureState - The accumulated structure state
  * @param activeState - The current active state for beat evaluation context
- * @returns The complete structure section string, or empty string if structure is missing
+ * @returns The analyst structure evaluation string
  */
-export function buildStoryStructureSection(
-  structure: StoryStructure | undefined,
-  accumulatedStructureState: AccumulatedStructureState | undefined,
+export function buildAnalystStructureEvaluation(
+  structure: StoryStructure,
+  accumulatedStructureState: AccumulatedStructureState,
   activeState: ActiveState,
 ): string {
-  if (!structure || !accumulatedStructureState) {
-    return '';
-  }
-
   const state = accumulatedStructureState;
   const currentAct = structure.acts[state.currentActIndex];
 
@@ -200,10 +197,8 @@ export function buildStoryStructureSection(
           .join('\n')}`
       : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
-  // Build active state summary for beat evaluation context
   const activeStateSummary = buildActiveStateForBeatEvaluation(activeState);
 
-  // Build beat comparison hint for progression check
   const hasPendingBeats =
     state.currentBeatIndex < currentAct.beats.length - 1 ||
     state.currentActIndex < structure.acts.length - 1;
@@ -227,7 +222,7 @@ REMAINING ACTS:
 ${remainingActs || '  - None'}
 
 ${activeStateSummary}=== BEAT EVALUATION ===
-After writing the narrative, evaluate whether the ACTIVE beat should be concluded.
+Evaluate the following narrative against this structure to determine beat completion.
 
 CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:
 1. The beat's objective has been substantively achieved (even if not perfectly)
@@ -250,3 +245,4 @@ ${DEVIATION_DETECTION_SECTION}
 
 `;
 }
+

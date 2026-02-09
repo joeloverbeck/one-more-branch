@@ -2,7 +2,7 @@ import { getConfig } from '../config/index.js';
 import type { ChatMessage } from '../llm/types.js';
 import type { Logger } from './types.js';
 
-export type PromptType = 'opening' | 'continuation' | 'structure' | 'structure-rewrite';
+export type PromptType = 'opening' | 'writer' | 'analyst' | 'structure' | 'structure-rewrite';
 
 /**
  * Truncates text to a maximum length, adding ellipsis if needed.

@@ -1,16 +1,25 @@
 import { StoryEngine, storyEngine } from '@/engine';
-import { generateContinuationPage, generateOpeningPage, generateStoryStructure } from '@/llm';
-import { createBeatDeviation, createNoDeviation, StoryId } from '@/models';
+import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
+import { StoryId } from '@/models';
+import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateContinuationPage: jest.fn(),
+  generateWriterPage: jest.fn(),
+  generateAnalystEvaluation: jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
+jest.mock('@/logging/index', () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateContinuationPage =
-  generateContinuationPage as jest.MockedFunction<typeof generateContinuationPage>;
+const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -101,7 +110,6 @@ const openingResult = {
   isEnding: false,
   beatConcluded: false,
   beatResolution: '',
-  deviation: createNoDeviation(),
   rawResponse: 'opening',
 };
 
@@ -176,7 +184,7 @@ function createRewriteFetchResponse(): Response {
   } as Response;
 }
 
-function buildContinuationResult(selectedChoice: string): typeof openingResult {
+function buildWriterResult(selectedChoice: string): WriterResult {
   if (selectedChoice === 'Commit to the alliance publicly') {
     return {
       narrative:
@@ -205,9 +213,6 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: true,
-      beatResolution: 'Secured proof that alliance command controls emergency law edits.',
-      deviation: createNoDeviation(),
       rawResponse: 'continuation-initial',
     };
   }
@@ -240,13 +245,6 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
       healthAdded: [],
       healthRemoved: [],
       isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
-      deviation: createBeatDeviation(
-        'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
-        ['2.1', '2.2', '3.1', '3.2'],
-        'Public perception now places the protagonist inside alliance leadership.',
-      ),
       rawResponse: 'continuation-deviation',
     };
   }
@@ -278,10 +276,43 @@ function buildContinuationResult(selectedChoice: string): typeof openingResult {
     healthAdded: [],
     healthRemoved: [],
     isEnding: true,
+    rawResponse: 'continuation-ending',
+  };
+}
+
+function buildAnalystResult(narrative: string): AnalystResult {
+  if (narrative.includes('copy sealed dispatches')) {
+    return {
+      beatConcluded: true,
+      beatResolution: 'Secured proof that alliance command controls emergency law edits.',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [] as string[],
+      narrativeSummary: '',
+      rawResponse: 'analyst-raw',
+    };
+  }
+
+  if (narrative.includes('covert leak is exposed')) {
+    return {
+      beatConcluded: false,
+      beatResolution: '',
+      deviationDetected: true,
+      deviationReason: 'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
+      invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
+      narrativeSummary: 'Public perception now places the protagonist inside alliance leadership.',
+      rawResponse: 'analyst-raw',
+    };
+  }
+
+  return {
     beatConcluded: true,
     beatResolution: 'Alliance emergency authority ended through public accountability.',
-    deviation: createNoDeviation(),
-    rawResponse: 'continuation-ending',
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [] as string[],
+    narrativeSummary: '',
+    rawResponse: 'analyst-raw',
   };
 }
 
@@ -299,8 +330,11 @@ describe('Structure Rewriting Journey E2E', () => {
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
-    mockedGenerateContinuationPage.mockImplementation((context) =>
-      Promise.resolve(buildContinuationResult(context.selectedChoice)),
+    mockedGenerateWriterPage.mockImplementation((context) =>
+      Promise.resolve(buildWriterResult(context.selectedChoice)),
+    );
+    mockedGenerateAnalystEvaluation.mockImplementation((context) =>
+      Promise.resolve(buildAnalystResult(context.narrative)),
     );
 
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;

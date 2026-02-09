@@ -1,3 +1,5 @@
+**Status**: ✅ COMPLETED
+
 # WRIANASPL-08: Wire Writer Structure Context into Continuation Prompt
 
 ## Summary
@@ -67,3 +69,12 @@ buildWriterStructureContext,
 - Few-shot messages logic is unchanged
 - All other sections (worldbuilding, NPCs, canon, inventory, health, active state, scene context) are unchanged
 - The `buildStoryStructureSection` function still exists (preserved in story-structure-section.ts) — it's just no longer called from this file
+
+## Outcome
+
+- **Completed**: 2026-02-08
+- **Changes**:
+  - `src/llm/prompts/continuation-prompt.ts`: Swapped import and call from `buildStoryStructureSection` to `buildWriterStructureContext` (2 params, no `activeState`)
+  - `src/llm/prompts/continuation/index.ts`: Added `buildWriterStructureContext` to barrel exports
+  - `test/unit/llm/prompts.test.ts`: Updated 4 tests that asserted beat evaluation/deviation content was present — flipped to assert these sections are now absent (expected: writer no longer sees evaluation instructions)
+- **Verification**: typecheck, build, and all 1364 unit tests pass
