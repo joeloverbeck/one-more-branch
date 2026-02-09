@@ -1,5 +1,7 @@
 # Improvements to Story Architecture
 
+**Status**: ✅ COMPLETED (refined into specs/story-architecture-improvements.md, all 8 tickets implemented)
+
 Your current pipeline is already strong on continuity + state bookkeeping (active threats/constraints/threads, inventory/health separation, protagonistAffect snapshot, “no retcons”), and it’s cleanly modularized into: structure generation (3 acts + 2–4 beats/act) 
 
 03-structure-prompt
