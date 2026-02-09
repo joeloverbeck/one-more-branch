@@ -10,6 +10,8 @@ import { type GenerationOptions, LLMError } from './types.js';
 
 export interface StructureGenerationResult {
   overallTheme: string;
+  premise: string;
+  pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   acts: Array<{
     name: string;
     objective: string;
@@ -18,6 +20,7 @@ export interface StructureGenerationResult {
     beats: Array<{
       description: string;
       objective: string;
+      role: string;
     }>;
   }>;
   rawResponse: string;
@@ -93,9 +96,12 @@ function parseStructureResponse(responseText: string): Omit<StructureGenerationR
         );
       }
 
+      const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
+
       return {
         description: beatData['description'],
         objective: beatData['objective'],
+        role,
       };
     });
 
@@ -108,8 +114,24 @@ function parseStructureResponse(responseText: string): Omit<StructureGenerationR
     };
   });
 
+  const premise = typeof data['premise'] === 'string' ? data['premise'] : data['overallTheme'];
+  const rawBudget = data['pacingBudget'];
+  const pacingBudget =
+    typeof rawBudget === 'object' && rawBudget !== null
+      ? {
+          targetPagesMin: typeof (rawBudget as Record<string, unknown>)['targetPagesMin'] === 'number'
+            ? ((rawBudget as Record<string, unknown>)['targetPagesMin'] as number)
+            : 15,
+          targetPagesMax: typeof (rawBudget as Record<string, unknown>)['targetPagesMax'] === 'number'
+            ? ((rawBudget as Record<string, unknown>)['targetPagesMax'] as number)
+            : 50,
+        }
+      : { targetPagesMin: 15, targetPagesMax: 50 };
+
   return {
     overallTheme: data['overallTheme'],
+    premise,
+    pacingBudget,
     acts,
   };
 }

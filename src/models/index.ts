@@ -51,6 +51,8 @@ export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 
 export {
   BeatStatus,
+  BeatRole,
+  PacingBudget,
   StoryBeat,
   StoryAct,
   StoryStructure,

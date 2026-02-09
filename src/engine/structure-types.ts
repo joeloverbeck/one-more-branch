@@ -15,6 +15,8 @@ export interface StructureProgressionResult {
  */
 export interface StructureGenerationResult {
   overallTheme: string;
+  premise: string;
+  pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   acts: Array<{
     name: string;
     objective: string;
@@ -23,6 +25,7 @@ export interface StructureGenerationResult {
     beats: Array<{
       description: string;
       objective: string;
+      role: string;
     }>;
   }>;
   rawResponse: string;

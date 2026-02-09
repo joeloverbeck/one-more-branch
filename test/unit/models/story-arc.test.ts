@@ -1,5 +1,8 @@
 import {
   AccumulatedStructureState,
+  BeatRole,
+  PacingBudget,
+  StoryBeat,
   createBeatDeviation,
   createNoDeviation,
   StoryStructure,
@@ -17,6 +20,8 @@ import {
 function createTestStructure(): StoryStructure {
   return {
     overallTheme: 'Survival against impossible odds',
+    premise: 'A lone wanderer must unite warring clans before an ancient threat consumes the land.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     generatedAt: new Date('2026-02-07T00:00:00.000Z'),
     acts: [
       {
@@ -30,11 +35,13 @@ function createTestStructure(): StoryStructure {
             id: '1.1',
             description: 'The call to action appears',
             objective: 'Accept the quest',
+            role: 'setup',
           },
           {
             id: '1.2',
             description: 'The hero gathers allies',
             objective: 'Form a reliable team',
+            role: 'turning_point',
           },
         ],
       },
@@ -49,11 +56,13 @@ function createTestStructure(): StoryStructure {
             id: '2.1',
             description: 'The antagonist strikes back',
             objective: 'Survive the ambush',
+            role: 'escalation',
           },
           {
             id: '2.2',
             description: 'The team regroups',
             objective: 'Recover resources and morale',
+            role: 'escalation',
           },
         ],
       },
@@ -68,6 +77,7 @@ function createTestStructure(): StoryStructure {
             id: '3.1',
             description: 'The final confrontation begins',
             objective: 'Defeat the antagonist',
+            role: 'resolution',
           },
         ],
       },
@@ -76,6 +86,75 @@ function createTestStructure(): StoryStructure {
 }
 
 describe('story-arc model utilities', () => {
+  describe('BeatRole type', () => {
+    it('accepts all valid beat roles on StoryBeat', () => {
+      const roles: BeatRole[] = ['setup', 'escalation', 'turning_point', 'resolution'];
+      for (const role of roles) {
+        const beat: StoryBeat = {
+          id: '1.1',
+          description: 'Test beat',
+          objective: 'Test objective',
+          role,
+        };
+        expect(beat.role).toBe(role);
+      }
+    });
+
+    it('round-trips beat role through object spread', () => {
+      const beat: StoryBeat = {
+        id: '1.1',
+        description: 'A pivotal moment',
+        objective: 'Force a decision',
+        role: 'turning_point',
+      };
+      const copy = { ...beat };
+      expect(copy.role).toBe('turning_point');
+    });
+  });
+
+  describe('StoryStructure premise field', () => {
+    it('includes premise on StoryStructure', () => {
+      const structure = createTestStructure();
+      expect(structure.premise).toBe(
+        'A lone wanderer must unite warring clans before an ancient threat consumes the land.',
+      );
+    });
+
+    it('premise is accessible as a string', () => {
+      const structure: StoryStructure = {
+        ...createTestStructure(),
+        premise: 'A disgraced guard must expose the tribunal.',
+      };
+      expect(typeof structure.premise).toBe('string');
+      expect(structure.premise).toBe('A disgraced guard must expose the tribunal.');
+    });
+  });
+
+  describe('PacingBudget and StoryStructure.pacingBudget', () => {
+    it('includes pacingBudget on StoryStructure', () => {
+      const structure = createTestStructure();
+      expect(structure.pacingBudget).toEqual({
+        targetPagesMin: 15,
+        targetPagesMax: 40,
+      });
+    });
+
+    it('pacingBudget values are accessible', () => {
+      const budget: PacingBudget = { targetPagesMin: 10, targetPagesMax: 80 };
+      expect(budget.targetPagesMin).toBe(10);
+      expect(budget.targetPagesMax).toBe(80);
+    });
+
+    it('pacingBudget can be set to boundary values', () => {
+      const structure: StoryStructure = {
+        ...createTestStructure(),
+        pacingBudget: { targetPagesMin: 10, targetPagesMax: 80 },
+      };
+      expect(structure.pacingBudget.targetPagesMin).toBe(10);
+      expect(structure.pacingBudget.targetPagesMax).toBe(80);
+    });
+  });
+
   describe('createEmptyAccumulatedStructureState', () => {
     it('creates an initial empty state', () => {
       expect(createEmptyAccumulatedStructureState()).toEqual({

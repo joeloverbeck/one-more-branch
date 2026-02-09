@@ -53,6 +53,8 @@ function createRewriteContext(overrides?: Partial<StructureRewriteContext>): Str
 function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>): StructureGenerationResult {
   return {
     overallTheme: 'Rewritten theme candidate',
+    premise: 'A disgraced captain must unite rival fleets before storm season destroys the archipelago.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
         name: 'Act One',
@@ -63,10 +65,12 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
           {
             description: 'Survive the mutiny at Blackwake Harbor',
             objective: 'Escape with command logs',
+            role: 'setup',
           },
           {
             description: 'Negotiate safe passage with neutral captains',
             objective: 'Secure routes to contested waters',
+            role: 'turning_point',
           },
         ],
       },
@@ -79,10 +83,12 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
           {
             description: 'Intercept the sabotage convoy',
             objective: 'Protect alliance supply lines',
+            role: 'escalation',
           },
           {
             description: 'Expose the guild traitor on the war council',
             objective: 'Preserve command legitimacy',
+            role: 'turning_point',
           },
         ],
       },
@@ -95,10 +101,12 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
           {
             description: 'Lead a final strike through the maelstrom',
             objective: 'Break the siege of the capital dock',
+            role: 'turning_point',
           },
           {
             description: 'Choose mercy or retribution for captured rivals',
             objective: 'Define the new political order',
+            role: 'resolution',
           },
         ],
       },
@@ -111,6 +119,8 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
 function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructure {
   return {
     overallTheme: 'Generated structure theme',
+    premise: 'A test premise for the generated structure.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     generatedAt: new Date('2026-02-07T00:00:00.000Z'),
     acts: [
       {
@@ -120,8 +130,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 1',
         entryCondition: 'Entry 1',
         beats: [
-          { id: '1.1', description: 'Beat 1.1', objective: 'Goal 1.1' },
-          { id: '1.2', description: 'Beat 1.2', objective: 'Goal 1.2' },
+          { id: '1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
+          { id: '1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
         ],
       },
       {
@@ -131,8 +141,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 2',
         entryCondition: 'Entry 2',
         beats: [
-          { id: '2.1', description: 'Beat 2.1', objective: 'Goal 2.1' },
-          { id: '2.2', description: 'Beat 2.2', objective: 'Goal 2.2' },
+          { id: '2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
+          { id: '2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
         ],
       },
       {
@@ -142,8 +152,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 3',
         entryCondition: 'Entry 3',
         beats: [
-          { id: '3.1', description: 'Beat 3.1', objective: 'Goal 3.1' },
-          { id: '3.2', description: 'Beat 3.2', objective: 'Goal 3.2' },
+          { id: '3.1', description: 'Beat 3.1', objective: 'Goal 3.1', role: 'turning_point' },
+          { id: '3.2', description: 'Beat 3.2', objective: 'Goal 3.2', role: 'resolution' },
         ],
       },
     ],
@@ -185,11 +195,13 @@ describe('structure-rewriter', () => {
         id: '1.1',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
+        role: 'escalation',
       });
       expect(result.structure.acts[0]?.beats[1]).toEqual({
         id: '1.2',
         description: 'Negotiate safe passage with neutral captains',
         objective: 'Secure routes to contested waters',
+        role: 'turning_point',
       });
     });
   });
@@ -218,6 +230,7 @@ describe('structure-rewriter', () => {
         id: '1.1',
         description: 'Preserved 1.1',
         objective: 'Keep original objective',
+        role: 'escalation',
       });
 
       for (const [actIndex, act] of merged.acts.entries()) {
@@ -237,8 +250,8 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
             beats: [
-              { id: '1.1', description: 'Beat 1.1', objective: 'Goal 1.1' },
-              { id: '1.2', description: 'Beat 1.2', objective: 'Goal 1.2' },
+              { id: '1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
+              { id: '1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
             ],
           },
           {
@@ -248,8 +261,8 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
             beats: [
-              { id: '2.1', description: 'Beat 2.1', objective: 'Goal 2.1' },
-              { id: '2.2', description: 'Beat 2.2', objective: 'Goal 2.2' },
+              { id: '2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
+              { id: '2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
             ],
           },
         ],
