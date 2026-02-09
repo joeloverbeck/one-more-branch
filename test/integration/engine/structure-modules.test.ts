@@ -177,7 +177,10 @@ describe('structure modules integration', () => {
         '',
       );
 
-      expect(grandchildState).toBe(childState);
+      expect(grandchildState).toEqual({
+        ...childState,
+        pagesInCurrentBeat: childState.pagesInCurrentBeat + 1,
+      });
     });
   });
 

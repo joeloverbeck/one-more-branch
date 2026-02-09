@@ -16,6 +16,8 @@ export function structureStateToFileData(
       status: beatProgression.status,
       resolution: beatProgression.resolution,
     })),
+    pagesInCurrentBeat: state.pagesInCurrentBeat,
+    pacingNudge: state.pacingNudge,
   };
 }
 
@@ -30,5 +32,7 @@ export function fileDataToStructureState(
       status: beatProgression.status,
       resolution: beatProgression.resolution,
     })),
+    pagesInCurrentBeat: data.pagesInCurrentBeat ?? 0,
+    pacingNudge: data.pacingNudge ?? null,
   };
 }

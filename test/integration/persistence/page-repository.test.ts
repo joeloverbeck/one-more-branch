@@ -97,6 +97,8 @@ describe('page-repository integration', () => {
           { beatId: '1.2', status: 'active' },
           { beatId: '1.3', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       },
     });
 
@@ -241,6 +243,8 @@ describe('page-repository integration', () => {
           { beatId: '1.2', status: 'active' },
           { beatId: '1.3', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       },
     });
     const branchB = createPage({
@@ -260,6 +264,8 @@ describe('page-repository integration', () => {
           { beatId: '1.2', status: 'pending' },
           { beatId: '1.3', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       },
     });
 

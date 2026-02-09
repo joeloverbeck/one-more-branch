@@ -280,6 +280,8 @@ describe('Page', () => {
           currentActIndex: -1,
           currentBeatIndex: 0,
           beatProgressions: [],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
       };
 

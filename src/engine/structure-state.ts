@@ -23,6 +23,8 @@ export function createInitialStructureState(structure: StoryStructure): Accumula
     currentActIndex: 0,
     currentBeatIndex: 0,
     beatProgressions,
+    pagesInCurrentBeat: 0,
+    pacingNudge: null,
   };
 }
 
@@ -66,6 +68,8 @@ export function advanceStructureState(
         currentActIndex: currentState.currentActIndex,
         currentBeatIndex: currentState.currentBeatIndex,
         beatProgressions: concludedProgressions,
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       },
       actAdvanced: false,
       beatAdvanced: false,
@@ -87,6 +91,8 @@ export function advanceStructureState(
       currentActIndex: nextActIndex,
       currentBeatIndex: nextBeatIndex,
       beatProgressions: activatedProgressions,
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     },
     actAdvanced: isLastBeatOfAct,
     beatAdvanced: true,
@@ -105,7 +111,10 @@ export function applyStructureProgression(
   beatResolution: string,
 ): AccumulatedStructureState {
   if (!beatConcluded) {
-    return parentState;
+    return {
+      ...parentState,
+      pagesInCurrentBeat: parentState.pagesInCurrentBeat + 1,
+    };
   }
 
   const result = advanceStructureState(structure, parentState, beatResolution);

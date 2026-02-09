@@ -486,6 +486,8 @@ describe('LLM types', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         activeState: {
           currentLocation: 'Gate entrance',

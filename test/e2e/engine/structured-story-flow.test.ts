@@ -325,7 +325,10 @@ describe('Structured Story E2E', () => {
       apiKey: 'mock-api-key',
     });
 
-    expect(cautiousBranch.accumulatedStructureState).toEqual(firstPage.accumulatedStructureState);
+    expect(cautiousBranch.accumulatedStructureState).toEqual({
+      ...firstPage.accumulatedStructureState,
+      pagesInCurrentBeat: firstPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+    });
   });
 
   it('persists beat advancement across multiple generated pages', async () => {

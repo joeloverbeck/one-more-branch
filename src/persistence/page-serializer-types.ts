@@ -13,6 +13,8 @@ export interface AccumulatedStructureStateFileData {
   currentActIndex: number;
   currentBeatIndex: number;
   beatProgressions: BeatProgressionFileData[];
+  pagesInCurrentBeat?: number;
+  pacingNudge?: string | null;
 }
 
 export interface SecondaryEmotionFileData {

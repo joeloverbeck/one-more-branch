@@ -41,6 +41,8 @@ export interface AccumulatedStructureState {
   readonly currentActIndex: number;
   readonly currentBeatIndex: number;
   readonly beatProgressions: readonly BeatProgression[];
+  readonly pagesInCurrentBeat: number;
+  readonly pacingNudge: string | null;
 }
 
 export function createEmptyAccumulatedStructureState(): AccumulatedStructureState {
@@ -48,6 +50,8 @@ export function createEmptyAccumulatedStructureState(): AccumulatedStructureStat
     currentActIndex: 0,
     currentBeatIndex: 0,
     beatProgressions: [],
+    pagesInCurrentBeat: 0,
+    pacingNudge: null,
   };
 }
 

@@ -61,6 +61,8 @@ describe('story-structure-section', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const remaining = getRemainingBeats(testStructure, state);
@@ -78,6 +80,8 @@ describe('story-structure-section', () => {
           { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
           { beatId: '1.2', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const remaining = getRemainingBeats(testStructure, state);
@@ -97,6 +101,8 @@ describe('story-structure-section', () => {
           { beatId: '1.3', status: 'concluded', resolution: 'Done' },
           { beatId: '2.1', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const remaining = getRemainingBeats(testStructure, state);

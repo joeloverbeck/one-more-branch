@@ -163,6 +163,8 @@ describe('page-builder', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null as string | null,
       };
       const versionId = 'sv-12345-abcdef' as StructureVersionId;
       const context: FirstPageBuildContext = {
@@ -379,6 +381,8 @@ describe('page-builder', () => {
           { beatId: '1.1', status: 'concluded' as const, resolution: 'Done' },
           { beatId: '2.1', status: 'active' as const },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null as string | null,
       };
       const versionId = 'sv-67890-xyz123' as StructureVersionId;
       const context: ContinuationPageBuildContext = {
@@ -414,6 +418,8 @@ describe('page-builder', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       });
       expect(context.structureVersionId).toBeNull();
     });

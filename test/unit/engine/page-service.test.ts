@@ -241,6 +241,8 @@ describe('page-service', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       });
       expect(updatedStory.structure).toBeNull();
     });
@@ -587,7 +589,10 @@ describe('page-service', () => {
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      expect(page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
+      expect(page.accumulatedStructureState).toEqual({
+        ...parentPage.accumulatedStructureState,
+        pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+      });
     });
 
     it('keeps structure progression isolated per branch', async () => {
@@ -690,7 +695,10 @@ describe('page-service', () => {
       const branchTwo = await generateNextPage(story, parentPage, 1, 'test-key');
 
       expect(branchOne.page.accumulatedStructureState.currentBeatIndex).toBe(1);
-      expect(branchTwo.page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
+      expect(branchTwo.page.accumulatedStructureState).toEqual({
+        ...parentPage.accumulatedStructureState,
+        pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+      });
       expect(parentPage.accumulatedStructureState.currentBeatIndex).toBe(0);
     });
 
@@ -1339,7 +1347,10 @@ describe('page-service', () => {
 
       // Page should still be generated successfully with default beat/deviation values
       expect(page.narrativeText).toBe('You burst through the door into the darkened room.');
-      expect(page.accumulatedStructureState).toBe(parentPage.accumulatedStructureState);
+      expect(page.accumulatedStructureState).toEqual({
+        ...parentPage.accumulatedStructureState,
+        pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+      });
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
     });
   });

@@ -48,6 +48,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(undefined, state);
@@ -64,6 +66,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 9,
       currentBeatIndex: 0,
       beatProgressions: [],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -75,6 +79,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -86,6 +92,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -103,6 +111,8 @@ describe('buildWriterStructureContext', () => {
         { beatId: '1.2', status: 'active' },
         { beatId: '1.3', status: 'pending' },
       ],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -118,6 +128,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -131,6 +143,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 2,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '3.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -143,6 +157,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -155,6 +171,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -166,6 +184,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -177,6 +197,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -188,6 +210,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
@@ -199,6 +223,8 @@ describe('buildWriterStructureContext', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);

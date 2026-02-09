@@ -85,6 +85,8 @@ describe('structure-state', () => {
           { beatId: '1.2', status: 'active' },
           { beatId: '2.1', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const result = advanceStructureState(structure, currentState, 'The hero leaves home.');
@@ -115,6 +117,8 @@ describe('structure-state', () => {
           { beatId: '1.2', status: 'concluded', resolution: 'He left home.' },
           { beatId: '2.1', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const result = advanceStructureState(structure, currentState, 'The hero recovers and rallies.');
@@ -163,13 +167,17 @@ describe('structure-state', () => {
   });
 
   describe('applyStructureProgression', () => {
-    it('returns parent state unchanged when beatConcluded is false', () => {
+    it('increments pagesInCurrentBeat when beatConcluded is false', () => {
       const structure = createStructure();
       const parentState = createInitialStructureState(structure);
 
       const result = applyStructureProgression(structure, parentState, false, '');
 
-      expect(result).toBe(parentState);
+      expect(result).not.toBe(parentState);
+      expect(result).toEqual({
+        ...parentState,
+        pagesInCurrentBeat: parentState.pagesInCurrentBeat + 1,
+      });
     });
 
     it('advances state with resolution when beatConcluded is true', () => {
@@ -199,6 +207,101 @@ describe('structure-state', () => {
       expect(() => applyStructureProgression(structure, parentState, true, '   ')).toThrow(
         'Cannot advance structure without a non-empty beat resolution',
       );
+    });
+
+    it('accumulates pagesInCurrentBeat across successive non-concluded progressions', () => {
+      const structure = createStructure();
+      const initial = createInitialStructureState(structure);
+
+      const page1 = applyStructureProgression(structure, initial, false, '');
+      const page2 = applyStructureProgression(structure, page1, false, '');
+      const page3 = applyStructureProgression(structure, page2, false, '');
+
+      expect(initial.pagesInCurrentBeat).toBe(0);
+      expect(page1.pagesInCurrentBeat).toBe(1);
+      expect(page2.pagesInCurrentBeat).toBe(2);
+      expect(page3.pagesInCurrentBeat).toBe(3);
+    });
+
+    it('resets pagesInCurrentBeat to 0 when beat is concluded', () => {
+      const structure = createStructure();
+      const initial = createInitialStructureState(structure);
+
+      const page1 = applyStructureProgression(structure, initial, false, '');
+      const page2 = applyStructureProgression(structure, page1, false, '');
+      expect(page2.pagesInCurrentBeat).toBe(2);
+
+      const advanced = applyStructureProgression(structure, page2, true, 'Beat resolved.');
+      expect(advanced.pagesInCurrentBeat).toBe(0);
+    });
+
+    it('initializes pacingNudge as null and resets on beat advancement', () => {
+      const structure = createStructure();
+      const initial = createInitialStructureState(structure);
+      expect(initial.pacingNudge).toBeNull();
+
+      const page1 = applyStructureProgression(structure, initial, false, '');
+      expect(page1.pacingNudge).toBeNull();
+
+      const advanced = applyStructureProgression(structure, page1, true, 'Resolved.');
+      expect(advanced.pacingNudge).toBeNull();
+    });
+
+    it('does not mutate parent state (branch isolation)', () => {
+      const structure = createStructure();
+      const parentState = createInitialStructureState(structure);
+
+      const branchA = applyStructureProgression(structure, parentState, false, '');
+      const branchB = applyStructureProgression(structure, parentState, false, '');
+
+      expect(parentState.pagesInCurrentBeat).toBe(0);
+      expect(branchA.pagesInCurrentBeat).toBe(1);
+      expect(branchB.pagesInCurrentBeat).toBe(1);
+      expect(branchA).not.toBe(branchB);
+      expect(branchA).toEqual(branchB);
+    });
+  });
+
+  describe('createInitialStructureState paging fields', () => {
+    it('starts with pagesInCurrentBeat 0 and pacingNudge null', () => {
+      const structure = createStructure();
+      const state = createInitialStructureState(structure);
+
+      expect(state.pagesInCurrentBeat).toBe(0);
+      expect(state.pacingNudge).toBeNull();
+    });
+  });
+
+  describe('advanceStructureState paging fields', () => {
+    it('resets pagesInCurrentBeat and pacingNudge on normal advancement', () => {
+      const structure = createStructure();
+      const state = createInitialStructureState(structure);
+
+      const result = advanceStructureState(structure, state, 'The hero agrees.');
+
+      expect(result.updatedState.pagesInCurrentBeat).toBe(0);
+      expect(result.updatedState.pacingNudge).toBeNull();
+    });
+
+    it('resets pagesInCurrentBeat and pacingNudge on story completion', () => {
+      const structure = createStructure();
+      const currentState: AccumulatedStructureState = {
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { beatId: '2.1', status: 'active' },
+        ],
+        pagesInCurrentBeat: 5,
+        pacingNudge: null,
+      };
+
+      const result = advanceStructureState(structure, currentState, 'Final resolution.');
+
+      expect(result.isComplete).toBe(true);
+      expect(result.updatedState.pagesInCurrentBeat).toBe(0);
+      expect(result.updatedState.pacingNudge).toBeNull();
     });
   });
 });

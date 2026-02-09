@@ -63,6 +63,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.2', status: 'concluded', resolution: 'Left home.' },
           { beatId: '1.1', status: 'concluded', resolution: 'Heard the warning.' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const completed = extractCompletedBeats(structure, state);
@@ -104,6 +106,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.1', status: 'concluded', resolution: 'Resolved first beat.' },
           { beatId: '9.9', status: 'concluded', resolution: 'Invalid beat reference.' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
@@ -126,6 +130,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.2', status: 'active' },
           { beatId: '2.1', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       const completed = extractCompletedBeats(structure, state);
@@ -153,6 +159,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.2', status: 'active' },
           { beatId: '2.1', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
       const deviation = createBeatDeviation(
         'The protagonist switched allegiance.',
@@ -194,6 +202,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '2.1', status: 'concluded', resolution: 'Resolved again.' },
           { beatId: '2.2', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getPreservedBeatIds(state)).toEqual(['1.1', '2.1']);
@@ -207,6 +217,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.1', status: 'active' },
           { beatId: '1.2', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getPreservedBeatIds(state)).toEqual([]);
@@ -225,6 +237,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.2', status: 'concluded', resolution: 'Resolved.' },
           { beatId: '2.1', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(true);
@@ -243,6 +257,8 @@ describe('structure-rewrite-support', () => {
         currentActIndex: 1,
         currentBeatIndex: 0,
         beatProgressions: [{ beatId: '2.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
@@ -267,6 +283,8 @@ describe('structure-rewrite-support', () => {
         currentActIndex: 0,
         currentBeatIndex: 1,
         beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
@@ -291,6 +309,8 @@ describe('structure-rewrite-support', () => {
         currentActIndex: 0,
         currentBeatIndex: 1,
         beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
@@ -318,6 +338,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.1', status: 'concluded', resolution: 'Resolved.' },
           { beatId: '1.2', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(true);
@@ -334,6 +356,8 @@ describe('structure-rewrite-support', () => {
           { beatId: '1.2', status: 'pending' },
           { beatId: '2.1', status: 'pending' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(true);
@@ -346,6 +370,8 @@ describe('structure-rewrite-support', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [{ beatId: 'invalid-id', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);

@@ -34,6 +34,8 @@ function buildTestPage(overrides?: Partial<Page>): Page {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     },
     structureVersionId: null,
     protagonistAffect: createDefaultProtagonistAffect(),
@@ -64,6 +66,8 @@ describe('page-serializer', () => {
             { beatId: '1.1', status: 'concluded', resolution: 'Won the battle' },
             { beatId: '1.2', status: 'active' },
           ],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
       });
 
@@ -90,8 +94,10 @@ describe('page-serializer', () => {
         currentBeatIndex: 2,
         beatProgressions: [
           { beatId: '1.1', status: 'concluded', resolution: 'Won the battle' },
-          { beatId: '1.2', status: 'active' },
+          { beatId: '1.2', status: 'active', resolution: undefined },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       });
       expect(fileData.structureVersionId).toBeNull();
       expect(fileData.isEnding).toBe(false);
@@ -270,6 +276,8 @@ describe('page-serializer', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         protagonistAffect: {
           primaryEmotion: 'neutral',
@@ -302,6 +310,8 @@ describe('page-serializer', () => {
             { beatId: '1.1', status: 'concluded', resolution: 'Won the battle' },
             { beatId: '1.2', status: 'active' },
           ],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
       });
 
@@ -328,8 +338,10 @@ describe('page-serializer', () => {
         currentBeatIndex: 2,
         beatProgressions: [
           { beatId: '1.1', status: 'concluded', resolution: 'Won the battle' },
-          { beatId: '1.2', status: 'active' },
+          { beatId: '1.2', status: 'active', resolution: undefined },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       });
       expect(page.structureVersionId).toBeNull();
       expect(page.isEnding).toBe(false);
@@ -578,6 +590,8 @@ describe('page-serializer', () => {
             { beatId: '2.1', status: 'active' },
             { beatId: '2.2', status: 'pending' },
           ],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         isEnding: false,
         parentPageId: parsePageId(4),
@@ -607,6 +621,8 @@ describe('page-serializer', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         structureVersionId: null,
         protagonistAffect: createDefaultProtagonistAffect(),
@@ -664,6 +680,8 @@ describe('page-serializer', () => {
           currentActIndex: 1,
           currentBeatIndex: 2,
           beatProgressions: [],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         structureVersionId: null,
         protagonistAffect: createDefaultProtagonistAffect(),

@@ -36,6 +36,8 @@ describe('buildAnalystPrompt', () => {
     currentActIndex: 0,
     currentBeatIndex: 0,
     beatProgressions: [{ beatId: '1.1', status: 'active' }],
+    pagesInCurrentBeat: 0,
+    pacingNudge: null,
   };
 
   const testActiveState: ActiveState = {

@@ -406,6 +406,8 @@ describe('buildContinuationPrompt', () => {
       { beatId: '3.1', status: 'pending' },
       { beatId: '3.2', status: 'pending' },
     ],
+    pagesInCurrentBeat: 0,
+    pacingNudge: null,
   };
   const baseContext = {
     characterConcept: 'A disgraced detective',
@@ -913,6 +915,8 @@ describe('buildContinuationPrompt', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         activeState: {
           currentLocation: 'Hidden bunker',
@@ -936,6 +940,8 @@ describe('buildContinuationPrompt', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         activeState: {
           currentLocation: '',
@@ -958,6 +964,8 @@ describe('buildContinuationPrompt', () => {
           currentActIndex: 0,
           currentBeatIndex: 0,
           beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         },
         activeState: {
           currentLocation: '',

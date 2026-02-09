@@ -1,5 +1,7 @@
 # STOARCIMP-02: Add pagesInCurrentBeat and pacingNudge to AccumulatedStructureState
 
+**Status**: COMPLETED
+
 **Phase**: 1 (Data Model Enrichment)
 **Spec sections**: 1.4, 2.8
 **Depends on**: STOARCIMP-01
@@ -51,3 +53,16 @@ Update `createEmptyAccumulatedStructureState` to initialize both fields.
 - **Page immutability**: No page model changes.
 - **Immutable state**: `applyStructureProgression` and `advanceStructureState` return new objects, never mutate input.
 - **All existing tests pass**.
+
+## Outcome
+
+- **Completion date**: 2026-02-09
+- **What changed**:
+  - `src/models/story-arc.ts`: Added `pagesInCurrentBeat: number` and `pacingNudge: string | null` to `AccumulatedStructureState`. Updated `createEmptyAccumulatedStructureState`.
+  - `src/engine/structure-state.ts`: Updated `createInitialStructureState`, `advanceStructureState`, and `applyStructureProgression` to handle both new fields (initialize, reset, increment).
+  - `src/persistence/page-serializer-types.ts`: Added optional fields for backwards-compatible deserialization.
+  - `src/persistence/converters/structure-state-converter.ts`: Updated serialization/deserialization with `?? 0` / `?? null` defaults.
+  - 18 test files updated to include new fields in inline `AccumulatedStructureState` objects. Identity checks (`toBe`) replaced with equality checks (`toEqual`) where `applyStructureProgression` now returns new objects.
+  - 7 new acceptance criteria tests added to `structure-state.test.ts`.
+- **Deviations**: Persistence layer (serializer types and converter) was updated for backwards compatibility, beyond the original "files to touch" list. This was necessary to prevent deserialization failures.
+- **Verification**: All 115 test suites pass (1562 tests). TypeScript typecheck clean.

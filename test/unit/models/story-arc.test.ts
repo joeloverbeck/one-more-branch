@@ -161,6 +161,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       });
     });
   });
@@ -172,6 +174,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 1,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getCurrentAct(structure, state)?.id).toBe('2');
@@ -183,6 +187,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 4,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getCurrentAct(structure, state)).toBeUndefined();
@@ -196,6 +202,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 0,
         currentBeatIndex: 1,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getCurrentBeat(structure, state)?.id).toBe('1.2');
@@ -207,6 +215,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 10,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getCurrentBeat(structure, state)).toBeUndefined();
@@ -218,6 +228,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 1,
         currentBeatIndex: 6,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getCurrentBeat(structure, state)).toBeUndefined();
@@ -233,6 +245,8 @@ describe('story-arc model utilities', () => {
           { beatId: '1.1', status: 'concluded', resolution: 'Hero agreed to the mission' },
           { beatId: '1.2', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getBeatProgression(state, '1.1')).toEqual({
@@ -247,6 +261,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(getBeatProgression(state, '9.9')).toBeUndefined();
@@ -260,6 +276,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 0,
         currentBeatIndex: 1,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(isLastBeatOfAct(structure, state)).toBe(true);
@@ -271,6 +289,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 1,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(isLastBeatOfAct(structure, state)).toBe(false);
@@ -282,6 +302,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 10,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(isLastBeatOfAct(structure, state)).toBe(false);
@@ -295,6 +317,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 2,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(isLastAct(structure, state)).toBe(true);
@@ -306,6 +330,8 @@ describe('story-arc model utilities', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       };
 
       expect(isLastAct(structure, state)).toBe(false);
@@ -394,6 +420,8 @@ describe('story-arc model utilities', () => {
             { beatId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
             { beatId: '2.1', status: 'active' },
           ],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         };
 
         expect(validateDeviationTargets(deviation, structureState)).toBe(true);
@@ -409,6 +437,8 @@ describe('story-arc model utilities', () => {
             { beatId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
             { beatId: '2.1', status: 'active' },
           ],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         };
 
         expect(validateDeviationTargets(deviation, structureState)).toBe(false);
@@ -420,6 +450,8 @@ describe('story-arc model utilities', () => {
           currentActIndex: 1,
           currentBeatIndex: 0,
           beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' }],
+          pagesInCurrentBeat: 0,
+          pacingNudge: null,
         };
 
         expect(validateDeviationTargets(deviation, structureState)).toBe(true);

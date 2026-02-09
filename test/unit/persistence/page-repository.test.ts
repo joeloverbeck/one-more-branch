@@ -80,6 +80,8 @@ describe('page-repository', () => {
           { beatId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
           { beatId: '1.2', status: 'active' },
         ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       },
     };
 
@@ -106,6 +108,8 @@ describe('page-repository', () => {
         { beatId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
         { beatId: '1.2', status: 'active' },
       ],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     });
 
     const persisted = await loadPage(story.id, page.id);
@@ -268,6 +272,8 @@ describe('page-repository', () => {
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
       },
       protagonistAffect: {
         primaryEmotion: 'neutral',

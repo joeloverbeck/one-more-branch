@@ -56,6 +56,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -67,6 +69,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -84,6 +88,8 @@ describe('buildAnalystStructureEvaluation', () => {
         { beatId: '1.2', status: 'active' },
         { beatId: '1.3', status: 'pending' },
       ],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -99,6 +105,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -112,6 +120,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -123,6 +133,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -134,6 +146,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -145,6 +159,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
     const activeState: ActiveState = {
       currentLocation: 'The old warehouse',
@@ -164,6 +180,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -176,6 +194,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 0,
       currentBeatIndex: 0,
       beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -191,6 +211,8 @@ describe('buildAnalystStructureEvaluation', () => {
         { beatId: '3.1', status: 'concluded', resolution: 'Seized' },
         { beatId: '3.2', status: 'active' },
       ],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
@@ -202,6 +224,8 @@ describe('buildAnalystStructureEvaluation', () => {
       currentActIndex: 9,
       currentBeatIndex: 0,
       beatProgressions: [],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
     };
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
