@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Duplicated from validation-schema.ts to avoid modifying it (per WRIANASPL-03 scope)
 const CharacterCanonFactsArraySchema = z.array(
   z.object({
     characterName: z.string(),
@@ -51,9 +50,6 @@ const defaultProtagonistAffect = {
 
 /**
  * Zod validation schema for writer responses.
- * Mirrors GenerationResultSchema but without the 6 analyst fields:
- * beatConcluded, beatResolution, deviationDetected, deviationReason,
- * invalidatedBeatIds, narrativeSummary.
  */
 export const WriterResultSchema = z
   .object({

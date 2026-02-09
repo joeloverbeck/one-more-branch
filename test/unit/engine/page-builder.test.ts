@@ -3,7 +3,7 @@ import {
   parsePageId,
   StructureVersionId,
 } from '@/models';
-import type { GenerationResult } from '@/llm/types';
+import type { WriterResult } from '@/llm/types';
 import {
   buildFirstPage,
   buildContinuationPage,
@@ -12,7 +12,7 @@ import {
   ContinuationPageBuildContext,
 } from '@/engine/page-builder';
 
-function buildMockGenerationResult(overrides?: Partial<GenerationResult>): GenerationResult {
+function buildMockGenerationResult(overrides?: Partial<WriterResult>): WriterResult {
   return {
     narrative: 'You step into the shadowed corridor.',
     choices: ['Go left', 'Go right'],
@@ -39,8 +39,6 @@ function buildMockGenerationResult(overrides?: Partial<GenerationResult>): Gener
       dominantMotivation: 'Discover what lies ahead',
     },
     isEnding: false,
-    beatConcluded: false,
-    beatResolution: '',
     rawResponse: 'raw-response',
     ...overrides,
   };

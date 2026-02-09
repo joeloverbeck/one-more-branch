@@ -1,5 +1,4 @@
 export type {
-  GenerationResult,
   ContinuationGenerationResult,
   CompletedBeat,
   StructureRewriteContext,
@@ -27,11 +26,8 @@ export { generateStoryStructure } from './structure-generator.js';
 export type { StructureGenerationResult } from './structure-generator.js';
 
 export {
-  STORY_GENERATION_SCHEMA,
   WRITER_GENERATION_SCHEMA,
   ANALYST_SCHEMA,
-  GenerationResultSchema,
-  validateGenerationResponse,
   validateWriterResponse,
   validateAnalystResponse,
   isStructuredOutputNotSupported,

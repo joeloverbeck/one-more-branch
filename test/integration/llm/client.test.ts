@@ -39,16 +39,29 @@ describe('llm client integration (mocked fetch)', () => {
       narrative:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
       choices: ['Consult the brass star map', 'Climb to the highest platform'],
-      stateChangesAdded: ['Entered the abandoned observatory'],
-      stateChangesRemoved: [],
+      currentLocation: 'The abandoned observatory',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [],
+      threadsResolved: [],
       newCanonFacts: ['The observatory responds to bloodline magic'],
+      newCharacterCanonFacts: [],
       inventoryAdded: [],
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'awe',
+        primaryIntensity: 'strong',
+        primaryCause: 'The sky responds to your presence',
+        secondaryEmotions: [],
+        dominantMotivation: 'Understand the observatory',
+      },
       isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
@@ -66,8 +79,6 @@ describe('llm client integration (mocked fetch)', () => {
     expect(result.choices.length).toBeGreaterThanOrEqual(2);
     expect(result.choices.length).toBeLessThanOrEqual(5);
     expect(result.isEnding).toBe(false);
-    expect(result.beatConcluded).toBe(false);
-    expect(result.beatResolution).toBe('');
   });
 
   it('should enforce choice constraints via Zod validation', async () => {
@@ -75,16 +86,29 @@ describe('llm client integration (mocked fetch)', () => {
       narrative:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
       choices: ['Consult the brass star map', 'consult the brass star map'],
-      stateChangesAdded: ['Entered the abandoned observatory'],
-      stateChangesRemoved: [],
+      currentLocation: 'The abandoned observatory',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [],
+      threadsResolved: [],
       newCanonFacts: ['The observatory responds to bloodline magic'],
+      newCharacterCanonFacts: [],
       inventoryAdded: [],
       inventoryRemoved: [],
       healthAdded: [],
       healthRemoved: [],
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'awe',
+        primaryIntensity: 'strong',
+        primaryCause: 'The sky responds to your presence',
+        secondaryEmotions: [],
+        dominantMotivation: 'Understand the observatory',
+      },
       isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(invalidStructured)));

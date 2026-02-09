@@ -15,7 +15,7 @@ import {
   createInitialStructureState,
 } from '@/engine';
 import type { StoryStructure } from '@/models/story-arc';
-import type { GenerationResult, WriterResult } from '@/llm/types';
+import type { WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -85,7 +85,7 @@ function buildStructure(): StoryStructure {
   };
 }
 
-function buildOpeningResult(): GenerationResult {
+function buildOpeningResult(): WriterResult {
   return {
     narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
     choices: ['Follow the whispers', 'Seek shelter in the tavern'],
@@ -112,8 +112,6 @@ function buildOpeningResult(): GenerationResult {
       dominantMotivation: 'uncover the truth',
     },
     isEnding: false,
-    beatConcluded: false,
-    beatResolution: '',
     rawResponse: 'opening-raw',
   };
 }

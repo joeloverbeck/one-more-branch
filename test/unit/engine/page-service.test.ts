@@ -149,8 +149,6 @@ describe('page-service', () => {
           dominantMotivation: 'find safe passage',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 
@@ -226,8 +224,6 @@ describe('page-service', () => {
           dominantMotivation: 'find safe passage',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 
@@ -286,8 +282,6 @@ describe('page-service', () => {
           dominantMotivation: 'find safe shelter',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 
@@ -326,8 +320,6 @@ describe('page-service', () => {
           dominantMotivation: 'explore the world',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: 'raw',
       });
 

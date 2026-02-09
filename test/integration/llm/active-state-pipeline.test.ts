@@ -1,4 +1,3 @@
-import { validateGenerationResponse } from '../../../src/llm/schemas/response-transformer';
 import { validateWriterResponse } from '../../../src/llm/schemas/writer-response-transformer';
 import { buildFirstPage, createEmptyStructureContext } from '../../../src/engine/page-builder';
 
@@ -34,17 +33,11 @@ describe('Active state pipeline integration', () => {
       dominantMotivation: 'Save the innkeeper before the roof caves in',
     },
     isEnding: false,
-    beatConcluded: false,
-    beatResolution: '',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [],
-    narrativeSummary: '',
   };
 
   it('should populate activeStateChanges and accumulatedActiveState through the full pipeline', () => {
-    // Step 1: Validate + transform through response-transformer (continuation path)
-    const generationResult = validateGenerationResponse(rawLlmResponse, JSON.stringify(rawLlmResponse));
+    // Step 1: Validate + transform through writer-response-transformer
+    const generationResult = validateWriterResponse(rawLlmResponse, JSON.stringify(rawLlmResponse));
 
     // Verify transformer output has populated active state fields
     expect(generationResult.currentLocation).toBe('Burning tavern');
@@ -133,7 +126,7 @@ describe('Active state pipeline integration', () => {
       threadsResolved: [],
     };
 
-    const generationResult = validateGenerationResponse(
+    const generationResult = validateWriterResponse(
       emptyActiveStateResponse,
       JSON.stringify(emptyActiveStateResponse),
     );

@@ -8,7 +8,7 @@
 
 import { buildOpeningPrompt } from '../../../src/llm/prompts/opening-prompt';
 import { buildContinuationPrompt } from '../../../src/llm/prompts/continuation-prompt';
-import { validateGenerationResponse } from '../../../src/llm/schemas/response-transformer';
+import { validateWriterResponse } from '../../../src/llm/schemas/writer-response-transformer';
 import { buildFewShotMessages } from '../../../src/llm/examples';
 import type { OpeningContext, ContinuationContext } from '../../../src/llm/types';
 
@@ -27,7 +27,6 @@ describe('Few-Shot Examples Integration', () => {
     globalCharacterCanon: {},
     previousNarrative: 'You stand at the crossroads, considering your next move.',
     selectedChoice: 'Head toward the marketplace',
-    accumulatedState: ['You arrived in Ironhaven yesterday'],
     accumulatedInventory: ['Worn leather satchel'],
     accumulatedHealth: [],
     accumulatedCharacterState: {},
@@ -144,8 +143,6 @@ describe('Few-Shot Examples Integration', () => {
       expect(parsed).toHaveProperty('threadsResolved');
       expect(parsed).toHaveProperty('newCanonFacts');
       expect(parsed).toHaveProperty('isEnding');
-      expect(parsed).toHaveProperty('beatConcluded');
-      expect(parsed).toHaveProperty('beatResolution');
       // Legacy fields should NOT be present
       expect(parsed).not.toHaveProperty('stateChangesAdded');
       expect(parsed).not.toHaveProperty('stateChangesRemoved');
@@ -169,8 +166,6 @@ describe('Few-Shot Examples Integration', () => {
       expect(parsed).toHaveProperty('threadsResolved');
       expect(parsed).toHaveProperty('newCanonFacts');
       expect(parsed).toHaveProperty('isEnding');
-      expect(parsed).toHaveProperty('beatConcluded');
-      expect(parsed).toHaveProperty('beatResolution');
       // Legacy fields should NOT be present
       expect(parsed).not.toHaveProperty('stateChangesAdded');
       expect(parsed).not.toHaveProperty('stateChangesRemoved');
@@ -194,8 +189,6 @@ describe('Few-Shot Examples Integration', () => {
       expect(parsed).toHaveProperty('threadsResolved');
       expect(parsed).toHaveProperty('newCanonFacts');
       expect(parsed).toHaveProperty('isEnding');
-      expect(parsed).toHaveProperty('beatConcluded');
-      expect(parsed).toHaveProperty('beatResolution');
       // Legacy fields should NOT be present
       expect(parsed).not.toHaveProperty('stateChangesAdded');
       expect(parsed).not.toHaveProperty('stateChangesRemoved');
@@ -203,48 +196,46 @@ describe('Few-Shot Examples Integration', () => {
   });
 
   describe('Schema validation compatibility', () => {
-    it('should pass validateGenerationResponse for opening example', () => {
+    it('should pass validateWriterResponse for opening example', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '{}';
       const parsed = JSON.parse(assistantContent) as unknown;
 
-      // validateGenerationResponse should not throw
-      expect(() => validateGenerationResponse(parsed, assistantContent)).not.toThrow();
+      // validateWriterResponse should not throw
+      expect(() => validateWriterResponse(parsed, assistantContent)).not.toThrow();
 
-      const result = validateGenerationResponse(parsed, assistantContent);
+      const result = validateWriterResponse(parsed, assistantContent);
       expect(result.narrative).toBeDefined();
       expect(result.choices.length).toBeGreaterThan(0);
       expect(result.isEnding).toBe(false);
     });
 
-    it('should pass validateGenerationResponse for continuation example', () => {
+    it('should pass validateWriterResponse for continuation example', () => {
       const messages = buildFewShotMessages('continuation', 'minimal');
       const assistantContent = messages[1]?.content ?? '{}';
       const parsed = JSON.parse(assistantContent) as unknown;
 
-      // validateGenerationResponse should not throw
-      expect(() => validateGenerationResponse(parsed, assistantContent)).not.toThrow();
+      // validateWriterResponse should not throw
+      expect(() => validateWriterResponse(parsed, assistantContent)).not.toThrow();
 
-      const result = validateGenerationResponse(parsed, assistantContent);
+      const result = validateWriterResponse(parsed, assistantContent);
       expect(result.narrative).toBeDefined();
       expect(result.choices.length).toBeGreaterThan(0);
       expect(result.isEnding).toBe(false);
     });
 
-    it('should pass validateGenerationResponse for ending example', () => {
+    it('should pass validateWriterResponse for ending example', () => {
       const messages = buildFewShotMessages('continuation', 'standard');
       const endingAssistantContent = messages[3]?.content ?? '{}';
       const parsed = JSON.parse(endingAssistantContent) as unknown;
 
-      // validateGenerationResponse should not throw
-      expect(() => validateGenerationResponse(parsed, endingAssistantContent)).not.toThrow();
+      // validateWriterResponse should not throw
+      expect(() => validateWriterResponse(parsed, endingAssistantContent)).not.toThrow();
 
-      const result = validateGenerationResponse(parsed, endingAssistantContent);
+      const result = validateWriterResponse(parsed, endingAssistantContent);
       expect(result.narrative).toBeDefined();
       expect(result.choices).toHaveLength(0);
       expect(result.isEnding).toBe(true);
-      expect(result.beatConcluded).toBe(true);
-      expect(result.beatResolution.length).toBeGreaterThan(0);
     });
 
     it('should preserve all example data through validation without data loss', () => {
@@ -260,7 +251,7 @@ describe('Few-Shot Examples Integration', () => {
 
       for (const example of examples) {
         const parsed = JSON.parse(example.content) as Record<string, unknown>;
-        const validated = validateGenerationResponse(parsed, example.content);
+        const validated = validateWriterResponse(parsed, example.content);
 
         // Ensure key fields are preserved (examples use new active state format)
         expect(validated.narrative.length).toBeGreaterThan(0);

@@ -34,8 +34,13 @@ const validStructuredPayload = {
   narrative:
     'You descend into the vault with water up to your knees and the lantern shaking in your grip while distant chanting rises from the stone arches above you.',
   choices: ['Advance toward the chanting', 'Retreat and seal the grate'],
-  stateChangesAdded: ['Entered the drowned vault'],
-  stateChangesRemoved: [],
+  currentLocation: 'The drowned vault',
+  threatsAdded: [],
+  threatsRemoved: [],
+  constraintsAdded: [],
+  constraintsRemoved: [],
+  threadsAdded: [],
+  threadsResolved: [],
   newCanonFacts: ['A chanting cult gathers beneath the cathedral'],
   newCharacterCanonFacts: [],
   inventoryAdded: [],
@@ -44,13 +49,14 @@ const validStructuredPayload = {
   healthRemoved: [],
   characterStateChangesAdded: [],
   characterStateChangesRemoved: [],
+  protagonistAffect: {
+    primaryEmotion: 'dread',
+    primaryIntensity: 'strong',
+    primaryCause: 'Descending into a flooded vault with distant chanting',
+    secondaryEmotions: [],
+    dominantMotivation: 'Uncover the source of the chanting',
+  },
   isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
-  deviationDetected: false,
-  deviationReason: '',
-  invalidatedBeatIds: [],
-  narrativeSummary: '',
 };
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -305,14 +311,29 @@ describe('llm client', () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: ['Only one choice'],
-      stateChangesAdded: [],
-      stateChangesRemoved: [],
+      currentLocation: 'Invalid location',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [],
+      threadsResolved: [],
       newCanonFacts: [],
+      newCharacterCanonFacts: [],
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'confusion',
+        primaryIntensity: 'mild',
+        primaryCause: 'Invalid state',
+        secondaryEmotions: [],
+        dominantMotivation: 'Resolve the error',
+      },
       isEnding: false,
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [],
-      narrativeSummary: '',
     };
 
     fetchMock.mockResolvedValue(
@@ -424,14 +445,29 @@ describe('llm client', () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: ['Only one choice'],
-      stateChangesAdded: [],
-      stateChangesRemoved: [],
+      currentLocation: 'Invalid location',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [],
+      threadsResolved: [],
       newCanonFacts: [],
+      newCharacterCanonFacts: [],
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'confusion',
+        primaryIntensity: 'mild',
+        primaryCause: 'Invalid state',
+        secondaryEmotions: [],
+        dominantMotivation: 'Resolve the error',
+      },
       isEnding: false,
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [],
-      narrativeSummary: '',
     };
 
     fetchMock.mockResolvedValue(
@@ -453,7 +489,7 @@ describe('llm client', () => {
 
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const validationErrorCall = errorCalls.find(
-      ([message]) => message === 'LLM structured response validation failed',
+      ([message]) => message === 'Writer structured response validation failed',
     );
     expect(validationErrorCall).toBeDefined();
     const validationErrorMetadata =

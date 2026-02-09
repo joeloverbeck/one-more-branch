@@ -152,9 +152,7 @@ Continuation example: Lyra heading to the east wing to find the statue of Archma
   "healthRemoved": [],
   "characterStateChangesAdded": [],
   "characterStateChangesRemoved": [],
-  "isEnding": false,
-  "beatConcluded": false,
-  "beatResolution": ""
+  "isEnding": false
 }
 ```
 
@@ -182,9 +180,7 @@ Continuation example: Lyra heading to the east wing to find the statue of Archma
   "healthRemoved": [],
   "characterStateChangesAdded": [],
   "characterStateChangesRemoved": [],
-  "isEnding": true,
-  "beatConcluded": true,
-  "beatResolution": "You bound the Codex of Unmaking and secured Professor Grimwald's alliance to protect the library."
+  "isEnding": true
 }
 ```
 

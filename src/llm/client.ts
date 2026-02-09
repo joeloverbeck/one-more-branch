@@ -1,6 +1,5 @@
 import { logger, logPrompt } from '../logging/index.js';
 import { generateAnalystWithFallback } from './analyst-generation.js';
-import { generateWithFallback } from './generation-strategy.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
 import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
@@ -11,7 +10,6 @@ import {
   type AnalystResult,
   type ContinuationContext,
   type GenerationOptions,
-  type GenerationResult,
   type OpeningContext,
   type WriterResult,
 } from './types.js';
@@ -20,14 +18,14 @@ import { generateWriterWithFallback } from './writer-generation.js';
 export async function generateOpeningPage(
   context: OpeningContext,
   options: GenerationOptions,
-): Promise<GenerationResult> {
+): Promise<WriterResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildOpeningPrompt(context, promptOptions);
 
   logPrompt(logger, 'opening', messages);
 
   const resolvedOptions = { ...options, promptOptions };
-  return withRetry(() => generateWithFallback(messages, resolvedOptions));
+  return withRetry(() => generateWriterWithFallback(messages, resolvedOptions));
 }
 
 export async function generateWriterPage(

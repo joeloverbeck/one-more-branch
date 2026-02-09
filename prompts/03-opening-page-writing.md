@@ -139,9 +139,7 @@ Same as minimal for opening prompts.
   "healthRemoved": [],
   "characterStateChangesAdded": [],
   "characterStateChangesRemoved": [],
-  "isEnding": false,
-  "beatConcluded": false,
-  "beatResolution": ""
+  "isEnding": false
 }
 ```
 

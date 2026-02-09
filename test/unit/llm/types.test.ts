@@ -5,7 +5,6 @@ import type {
   ContinuationContext,
   ContinuationGenerationResult,
   GenerationOptions,
-  GenerationResult,
   OpeningContext,
   StructureRewriteContext,
   StructureRewriteResult,
@@ -53,8 +52,8 @@ describe('LLM types', () => {
   });
 
   describe('type compatibility (compile-time)', () => {
-    it('should allow creating GenerationResult with all required fields', () => {
-      const result: GenerationResult = {
+    it('should allow creating WriterResult with all required fields', () => {
+      const result: WriterResult = {
         narrative: 'You arrive at a crossroads.',
         choices: ['Take the left path', 'Take the right path'],
         currentLocation: 'Forest crossroads',
@@ -80,8 +79,6 @@ describe('LLM types', () => {
           dominantMotivation: 'Find safe path forward',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: '{"narrative":"You arrive at a crossroads."}',
       };
 
@@ -118,7 +115,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: 'You survived the ambush at dusk.',
         selectedChoice: 'Track the raiders into the marsh',
-        accumulatedState: ['wounded-shoulder'],
+
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
@@ -132,7 +129,6 @@ describe('LLM types', () => {
       };
 
       expect(context.globalCanon[0]).toContain('siege');
-      expect(context.accumulatedState).toContain('wounded-shoulder');
       expect(context.activeState.currentLocation).toBe('Marsh edge');
     });
   });
@@ -147,7 +143,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: 'Previous scene...',
         selectedChoice: 'Go left',
-        accumulatedState: [], // Old, still required during transition
+
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
@@ -173,7 +169,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: 'Previous scene...',
         selectedChoice: 'Go left',
-        accumulatedState: [],
+
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
@@ -198,7 +194,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: 'Previous scene...',
         selectedChoice: 'Go left',
-        accumulatedState: [],
+
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
@@ -225,7 +221,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: '',
         selectedChoice: '',
-        accumulatedState: [],
+
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
@@ -247,7 +243,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: '',
         selectedChoice: '',
-        accumulatedState: [],
+
         accumulatedInventory: [],
         accumulatedHealth: [],
         accumulatedCharacterState: {},
@@ -286,7 +282,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: 'The wolves appeared...',
         selectedChoice: 'Stand ground',
-        accumulatedState: [],
+
         accumulatedInventory: ['torch', 'dagger'],
         accumulatedHealth: ['minor-cut'],
         accumulatedCharacterState: {},
@@ -302,7 +298,7 @@ describe('LLM types', () => {
   });
 
   describe('ContinuationGenerationResult', () => {
-    function buildBaseGenerationResult(): GenerationResult {
+    function buildBaseWriterResult(): WriterResult {
       return {
         narrative: 'The lantern flickers as footsteps approach.',
         choices: ['Hide behind the crates', 'Call out to the footsteps'],
@@ -329,15 +325,15 @@ describe('LLM types', () => {
           dominantMotivation: 'Avoid detection',
         },
         isEnding: false,
-        beatConcluded: false,
-        beatResolution: '',
         rawResponse: '{"narrative":"..."}',
       };
     }
 
-    it('should extend GenerationResult with deviation field (NoDeviation)', () => {
+    it('should extend WriterResult with analyst fields (NoDeviation)', () => {
       const result: ContinuationGenerationResult = {
-        ...buildBaseGenerationResult(),
+        ...buildBaseWriterResult(),
+        beatConcluded: false,
+        beatResolution: '',
         deviation: createNoDeviation(),
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -347,9 +343,11 @@ describe('LLM types', () => {
       expect(result.deviation.detected).toBe(false);
     });
 
-    it('should extend GenerationResult with deviation field (BeatDeviation)', () => {
+    it('should extend WriterResult with analyst fields (BeatDeviation)', () => {
       const result: ContinuationGenerationResult = {
-        ...buildBaseGenerationResult(),
+        ...buildBaseWriterResult(),
+        beatConcluded: true,
+        beatResolution: 'The allies turned against each other',
         deviation: createBeatDeviation('Future beats no longer fit', ['2.2', '2.3'], 'Allies joined enemy'),
         pacingIssueDetected: false,
         pacingIssueReason: '',

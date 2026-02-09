@@ -3,40 +3,9 @@ import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { ActiveState } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 
-export interface GenerationResult {
-  narrative: string;
-  choices: string[];
-
-  // Active state fields (replaces stateChangesAdded/stateChangesRemoved)
-  currentLocation: string;
-  threatsAdded: string[];
-  threatsRemoved: string[];
-  constraintsAdded: string[];
-  constraintsRemoved: string[];
-  threadsAdded: string[];
-  threadsResolved: string[];
-
-  // Canon tracking (unchanged)
-  newCanonFacts: string[];
-  newCharacterCanonFacts: Record<string, string[]>;
-
-  // Branch-isolated state tracking (unchanged)
-  inventoryAdded: string[];
-  inventoryRemoved: string[];
-  healthAdded: string[];
-  healthRemoved: string[];
-  characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
-  characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
-
-  // Emotional state and story structure (unchanged)
-  protagonistAffect: ProtagonistAffect;
-  isEnding: boolean;
-  beatConcluded: boolean;
-  beatResolution: string;
-  rawResponse: string;
-}
-
-export interface ContinuationGenerationResult extends GenerationResult {
+export interface ContinuationGenerationResult extends WriterResult {
+  readonly beatConcluded: boolean;
+  readonly beatResolution: string;
   readonly deviation: DeviationResult;
   readonly pacingIssueDetected: boolean;
   readonly pacingIssueReason: string;

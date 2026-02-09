@@ -5,7 +5,6 @@ import { WriterResultSchema } from './writer-validation-schema.js';
  * Detects if the choices array contains a single malformed string
  * that looks like a stringified array (e.g., {\"Choice1\",\"Choice2\"})
  *
- * Duplicated from response-transformer.ts to avoid modifying that file.
  */
 function isMalformedChoicesArray(choices: unknown): boolean {
   if (!Array.isArray(choices) || choices.length !== 1) return false;
@@ -23,7 +22,6 @@ function isMalformedChoicesArray(choices: unknown): boolean {
  * Extracts individual choice strings from a malformed single-string choices array.
  * Handles patterns like: {\"Choice 1\",\"Choice 2\"} or ["Choice 1","Choice 2"]
  *
- * Duplicated from response-transformer.ts to avoid modifying that file.
  */
 function extractChoicesFromMalformedString(malformed: string): string[] {
   let content = malformed.trim();
@@ -74,7 +72,6 @@ function extractChoicesFromMalformedString(malformed: string): string[] {
  * before Zod validation. Currently handles:
  * - Choices array containing a single stringified array element
  *
- * Duplicated from response-transformer.ts to avoid modifying that file.
  */
 function normalizeRawResponse(rawJson: unknown): unknown {
   if (typeof rawJson !== 'object' || rawJson === null) {

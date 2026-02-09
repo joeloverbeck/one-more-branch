@@ -1,10 +1,10 @@
 import {
-  GenerationResultSchema,
-  STORY_GENERATION_SCHEMA,
+  WRITER_GENERATION_SCHEMA,
   isStructuredOutputNotSupported,
-  validateGenerationResponse,
+  validateWriterResponse,
 } from '../../../src/llm/schemas';
-import { generateWithFallback } from '../../../src/llm/generation-strategy';
+import { WriterResultSchema } from '../../../src/llm/schemas/writer-validation-schema';
+import { generateWriterWithFallback } from '../../../src/llm/writer-generation';
 
 const VALID_NARRATIVE =
   'You step through the shattered gate and feel the cold wind carry ash across your face as the ruined city groans awake around you. The ancient stones whisper of forgotten wars.';
@@ -46,7 +46,7 @@ describe('schema pipeline integration', () => {
   describe('full generation flow', () => {
     it('should validate structured output with all fields', () => {
       // Test the schema structure matches expected format
-      const schemaProps = STORY_GENERATION_SCHEMA.json_schema.schema as {
+      const schemaProps = WRITER_GENERATION_SCHEMA.json_schema.schema as {
         required: string[];
         properties: Record<string, unknown>;
       };
@@ -60,8 +60,6 @@ describe('schema pipeline integration', () => {
       expect(schemaProps.required).toContain('healthAdded');
       expect(schemaProps.required).toContain('healthRemoved');
       expect(schemaProps.required).toContain('isEnding');
-      expect(schemaProps.required).toContain('beatConcluded');
-      expect(schemaProps.required).toContain('beatResolution');
 
       // Validate a response through the full pipeline
       const rawJson = {
@@ -80,6 +78,8 @@ describe('schema pipeline integration', () => {
         inventoryRemoved: [],
         healthAdded: [],
         healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         protagonistAffect: {
           primaryEmotion: 'apprehension',
           primaryIntensity: 'moderate',
@@ -88,11 +88,9 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Find the plague archives',
         },
         isEnding: false,
-        beatConcluded: true,
-        beatResolution: 'You reached the plague archives alive.',
       };
 
-      const result = validateGenerationResponse(rawJson, JSON.stringify(rawJson));
+      const result = validateWriterResponse(rawJson, JSON.stringify(rawJson));
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toHaveLength(2);
@@ -105,8 +103,6 @@ describe('schema pipeline integration', () => {
       expect(result.healthAdded).toEqual([]);
       expect(result.healthRemoved).toEqual([]);
       expect(result.isEnding).toBe(false);
-      expect(result.beatConcluded).toBe(true);
-      expect(result.beatResolution).toBe('You reached the plague archives alive.');
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
     });
 
@@ -140,7 +136,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      const result = validateGenerationResponse(rawJson, 'raw');
+      const result = validateWriterResponse(rawJson, 'raw');
 
       // Array format should be transformed to Record format
       expect(result.newCharacterCanonFacts).toEqual({
@@ -179,7 +175,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      const result = validateGenerationResponse(rawJson, 'raw');
+      const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.newCharacterCanonFacts).toEqual({
         'Detective Shaw': ['She wears a trench coat', 'She has a silver badge'],
@@ -203,6 +199,8 @@ describe('schema pipeline integration', () => {
         inventoryRemoved: ['Lockpick'],
         healthAdded: [],
         healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
         protagonistAffect: {
           primaryEmotion: 'excitement',
           primaryIntensity: 'strong',
@@ -215,7 +213,7 @@ describe('schema pipeline integration', () => {
 
       fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
 
-      const result = await generateWithFallback(
+      const result = await generateWriterWithFallback(
         [{ role: 'user', content: 'Test prompt' }],
         { apiKey: 'test-key' },
       );
@@ -251,7 +249,7 @@ describe('schema pipeline integration', () => {
         isEnding: true,
       };
 
-      const result = validateGenerationResponse(endingJson, 'raw');
+      const result = validateWriterResponse(endingJson, 'raw');
 
       expect(result.isEnding).toBe(true);
       expect(result.choices).toHaveLength(0);
@@ -284,7 +282,7 @@ describe('schema pipeline integration', () => {
         isEnding: true,
       };
 
-      expect(() => validateGenerationResponse(invalidEndingJson, 'raw')).toThrow();
+      expect(() => validateWriterResponse(invalidEndingJson, 'raw')).toThrow();
     });
 
     it('should reject non-ending page with zero choices', () => {
@@ -314,7 +312,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      expect(() => validateGenerationResponse(invalidNonEndingJson, 'raw')).toThrow();
+      expect(() => validateWriterResponse(invalidNonEndingJson, 'raw')).toThrow();
     });
   });
 
@@ -328,7 +326,7 @@ describe('schema pipeline integration', () => {
 
       // Attach rejection handler early to prevent unhandled rejection detection
       // 400 errors are non-retryable so no timer advancement needed
-      const promise = generateWithFallback(
+      const promise = generateWriterWithFallback(
         [{ role: 'user', content: 'Test prompt' }],
         { apiKey: 'test-key', model: 'unsupported-model' },
       );
@@ -391,11 +389,9 @@ describe('schema pipeline integration', () => {
           dominantMotivation: '  Decode the ledger  ',
         },
         isEnding: false,
-        beatConcluded: true,
-        beatResolution: '  You found the encoded ledger.  ',
       };
 
-      const result = validateGenerationResponse(rawJson, 'raw');
+      const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toEqual(['Open the door', 'Climb the tower']);
@@ -411,8 +407,6 @@ describe('schema pipeline integration', () => {
       expect(result.inventoryRemoved).toEqual(['Old map']);
       expect(result.healthAdded).toEqual(['Minor wound on left arm']);
       expect(result.healthRemoved).toEqual(['Headache']);
-      expect(result.beatConcluded).toBe(true);
-      expect(result.beatResolution).toBe('You found the encoded ledger.');
     });
 
     it('should filter empty strings from arrays', () => {
@@ -445,7 +439,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      const result = validateGenerationResponse(rawJson, 'raw');
+      const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.threatsAdded).toEqual(['Ghostly watcher']);
       expect(result.constraintsAdded).toEqual(['Locked gate']);
@@ -470,7 +464,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      const result = GenerationResultSchema.parse(input);
+      const result = WriterResultSchema.parse(input);
 
       // Defaults should be applied
       expect(result.currentLocation).toEqual('');
@@ -482,8 +476,6 @@ describe('schema pipeline integration', () => {
       expect(result.threadsResolved).toEqual([]);
       expect(result.inventoryAdded).toEqual([]);
       expect(result.inventoryRemoved).toEqual([]);
-      expect(result.beatConcluded).toBe(false);
-      expect(result.beatResolution).toBe('');
       expect(result.newCharacterCanonFacts).toEqual({});
       expect(result.protagonistAffect).toEqual({
         primaryEmotion: 'neutral',
@@ -502,7 +494,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      expect(() => GenerationResultSchema.parse(input)).toThrow();
+      expect(() => WriterResultSchema.parse(input)).toThrow();
     });
 
     it('should reject duplicate choices (case-insensitive)', () => {
@@ -513,7 +505,7 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      expect(() => GenerationResultSchema.parse(input)).toThrow('Choices must be unique');
+      expect(() => WriterResultSchema.parse(input)).toThrow('Choices must be unique');
     });
   });
 });

@@ -75,8 +75,6 @@ describe('buildFewShotMessages', () => {
       expect(parsed.characterStateChangesAdded).toBeInstanceOf(Array);
       expect(parsed.characterStateChangesRemoved).toBeInstanceOf(Array);
       expect(parsed.isEnding).toBe(false);
-      expect(parsed.beatConcluded).toBe(false);
-      expect(parsed.beatResolution).toBe('');
       expect(parsed.storyArc).toBeUndefined();
     });
   });
@@ -154,8 +152,6 @@ describe('buildFewShotMessages', () => {
       expect(parsed.characterStateChangesAdded).toBeInstanceOf(Array);
       expect(parsed.characterStateChangesRemoved).toBeInstanceOf(Array);
       expect(parsed.isEnding).toBe(false);
-      expect(parsed.beatConcluded).toBe(false);
-      expect(parsed.beatResolution).toBe('');
       expect(parsed.storyArc).toBeUndefined();
     });
 
@@ -166,16 +162,12 @@ describe('buildFewShotMessages', () => {
       interface EndingExample {
         choices: string[];
         isEnding: boolean;
-        beatConcluded: boolean;
-        beatResolution: string;
       }
 
       const parsed: EndingExample = JSON.parse(endingAssistantContent) as EndingExample;
 
       expect(parsed.isEnding).toBe(true);
       expect(parsed.choices).toHaveLength(0);
-      expect(parsed.beatConcluded).toBe(true);
-      expect(parsed.beatResolution.length).toBeGreaterThan(0);
     });
   });
 

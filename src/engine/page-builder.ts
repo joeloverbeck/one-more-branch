@@ -13,7 +13,7 @@ import {
   parsePageId,
   StructureVersionId,
 } from '../models';
-import { GenerationResult } from '../llm/types';
+import { WriterResult } from '../llm/types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
@@ -44,10 +44,10 @@ export interface ContinuationPageBuildContext {
 }
 
 /**
- * Maps GenerationResult fields to ActiveStateChanges.
+ * Maps WriterResult fields to ActiveStateChanges.
  * Handles the conversion from LLM output format to the typed change structure.
  */
-function mapToActiveStateChanges(result: GenerationResult): ActiveStateChanges {
+function mapToActiveStateChanges(result: WriterResult): ActiveStateChanges {
   return {
     newLocation: result.currentLocation || null,
     threatsAdded: result.threatsAdded,
@@ -64,7 +64,7 @@ function mapToActiveStateChanges(result: GenerationResult): ActiveStateChanges {
  * Handles page assembly with initial structure state.
  */
 export function buildFirstPage(
-  result: GenerationResult,
+  result: WriterResult,
   context: FirstPageBuildContext,
 ): Page {
   return createPage({
@@ -92,7 +92,7 @@ export function buildFirstPage(
  * Handles page assembly with parent state inheritance.
  */
 export function buildContinuationPage(
-  result: GenerationResult,
+  result: WriterResult,
   context: ContinuationPageBuildContext,
 ): Page {
   return createPage({

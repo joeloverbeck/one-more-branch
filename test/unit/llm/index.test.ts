@@ -1,32 +1,30 @@
 import {
   CONTENT_POLICY,
-  GenerationResultSchema,
   LLMError,
-  STORY_GENERATION_SCHEMA,
+  WRITER_GENERATION_SCHEMA,
   buildContinuationPrompt,
   buildOpeningPrompt,
   generateOpeningPage,
   isStructuredOutputNotSupported,
   validateApiKey,
-  validateGenerationResponse,
+  validateWriterResponse,
 } from '../../../src/llm/index';
 import * as llm from '../../../src/llm/index';
 import type {
   ChatMessage,
   ContinuationContext,
   GenerationOptions,
-  GenerationResult,
   JsonSchema,
   OpeningContext,
+  WriterResult,
 } from '../../../src/llm/index';
 
 describe('llm barrel exports', () => {
   it('should export runtime symbols', () => {
     expect(typeof LLMError).toBe('function');
     expect(typeof CONTENT_POLICY).toBe('string');
-    expect(STORY_GENERATION_SCHEMA.type).toBe('json_schema');
-    expect(typeof GenerationResultSchema.safeParse).toBe('function');
-    expect(typeof validateGenerationResponse).toBe('function');
+    expect(WRITER_GENERATION_SCHEMA.type).toBe('json_schema');
+    expect(typeof validateWriterResponse).toBe('function');
     expect(typeof isStructuredOutputNotSupported).toBe('function');
     expect(typeof buildOpeningPrompt).toBe('function');
     expect(typeof buildContinuationPrompt).toBe('function');
@@ -35,12 +33,31 @@ describe('llm barrel exports', () => {
   });
 
   it('should support type usage through barrel exports', () => {
-    const result: GenerationResult = {
+    const result: WriterResult = {
       narrative: 'The bridge shakes as thunder rolls over the ravine.',
       choices: ['Cross quickly', 'Retreat to camp'],
-      stateChangesAdded: ['Reached the old bridge'],
-      stateChangesRemoved: [],
+      currentLocation: 'The Old Bridge',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [],
+      threadsResolved: [],
       newCanonFacts: ['The ravine bridge is unstable'],
+      newCharacterCanonFacts: {},
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'fear',
+        primaryIntensity: 'moderate',
+        primaryCause: 'The bridge is swaying dangerously',
+        secondaryEmotions: [],
+        dominantMotivation: 'Survive the crossing',
+      },
       isEnding: false,
       rawResponse: '{"narrative":"..."}',
     };
@@ -58,13 +75,19 @@ describe('llm barrel exports', () => {
       globalCharacterCanon: {},
       previousNarrative: 'You stand before the swaying bridge as lightning forks overhead.',
       selectedChoice: 'Step onto the bridge and run',
-      accumulatedState: ['Recovered the signal flare'],
       accumulatedInventory: [],
       accumulatedHealth: [],
       accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: 'The Old Bridge',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
     };
     const message: ChatMessage = { role: 'user', content: 'Continue the story' };
-    const schema: JsonSchema = STORY_GENERATION_SCHEMA;
+    const schema: JsonSchema = WRITER_GENERATION_SCHEMA;
 
     expect(result.choices).toHaveLength(2);
     expect(options.apiKey).toBe('test-key');
