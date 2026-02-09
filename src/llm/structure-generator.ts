@@ -1,6 +1,5 @@
 import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
-import { extractOutputFromCoT } from './cot-parser.js';
 import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
@@ -189,7 +188,7 @@ export async function generateStoryStructure(
       throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
     }
 
-    const responseText = promptOptions.enableChainOfThought ? extractOutputFromCoT(content) : content;
+    const responseText = content;
     const parsed = parseStructureResponse(responseText);
 
     return {

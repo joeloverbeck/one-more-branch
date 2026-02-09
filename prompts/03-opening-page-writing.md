@@ -24,15 +24,6 @@ The system prompt combines:
    - Keep scenes focused and forward-moving
 4. **Ending Guidelines**: How to handle endings (earned, meaningful, no choices when concluded).
 
-### Optional: Chain of Thought
-
-When enabled, appends reasoning instructions:
-- Consider character motivations and emotional state
-- Plan how this scene advances toward the story arc
-- Brainstorm 3-4 potential choices, select best 3 (4th only if truly warranted)
-- Verify each choice is in-character, consequential, and divergent
-- Output format: `<thinking>` tags then `<output>` tags
-
 ---
 
 ## User Prompt

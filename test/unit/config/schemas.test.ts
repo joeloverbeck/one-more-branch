@@ -13,7 +13,6 @@ describe('config schemas', () => {
       expect(result.llm.retry.maxRetries).toBe(3);
       expect(result.llm.retry.baseDelayMs).toBe(1000);
       expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
-      expect(result.llm.promptOptions.enableChainOfThought).toBe(true);
       expect(result.llm.promptOptions.choiceGuidance).toBe('strict');
       expect(result.logging.level).toBe('info');
       expect(result.logging.promptPreviewLength).toBe(100);
@@ -156,7 +155,7 @@ describe('config schemas', () => {
       const input = {
         llm: {
           retry: { maxRetries: 7 },
-          promptOptions: { enableChainOfThought: false },
+          promptOptions: { choiceGuidance: 'basic' as const },
         },
       };
 
@@ -164,12 +163,11 @@ describe('config schemas', () => {
 
       // Overridden values
       expect(result.llm.retry.maxRetries).toBe(7);
-      expect(result.llm.promptOptions.enableChainOfThought).toBe(false);
+      expect(result.llm.promptOptions.choiceGuidance).toBe('basic');
 
       // Default values preserved
       expect(result.llm.retry.baseDelayMs).toBe(1000);
       expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
-      expect(result.llm.promptOptions.choiceGuidance).toBe('strict');
     });
   });
 });

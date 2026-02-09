@@ -74,8 +74,6 @@ export interface StructureRewriteResult {
 export interface PromptOptions {
   /** 'none' | 'minimal' (1 example) | 'standard' (2-3 examples) */
   fewShotMode?: 'none' | 'minimal' | 'standard';
-  /** Enable <thinking>...</thinking> reasoning phase */
-  enableChainOfThought?: boolean;
   /** 'basic' (current) | 'strict' (explicit constraints) */
   choiceGuidance?: 'basic' | 'strict';
 }

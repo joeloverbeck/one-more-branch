@@ -13,7 +13,6 @@ import {
   buildStructureSystemPrompt,
   STRUCTURE_SYSTEM_PROMPT,
   STRICT_CHOICE_GUIDELINES,
-  COT_SYSTEM_ADDITION,
 } from '../../../src/llm/prompts/system-prompt.js';
 import { CONTENT_POLICY } from '../../../src/llm/content-policy.js';
 
@@ -223,25 +222,8 @@ describe('continuation data rules composition', () => {
 });
 
 describe('build system prompt options', () => {
-  it('adds COT_SYSTEM_ADDITION when enableChainOfThought: true', () => {
-    const prompt = buildContinuationSystemPrompt({ enableChainOfThought: true });
-    expect(prompt).toContain('REASONING PROCESS:');
-    expect(prompt).toContain('<thinking>');
-    expect(prompt).toContain('<output>');
-    expect(prompt).toContain('Consider character motivations');
-  });
-
-  it('does NOT add CoT when enableChainOfThought: false', () => {
-    const prompt = buildContinuationSystemPrompt({ enableChainOfThought: false });
-    expect(prompt).not.toContain('REASONING PROCESS:');
-    expect(prompt).not.toContain('<thinking>');
-  });
-
   it('opening and continuation system prompts are identical', () => {
     expect(buildOpeningSystemPrompt()).toBe(buildContinuationSystemPrompt());
-    expect(buildOpeningSystemPrompt({ enableChainOfThought: true })).toBe(
-      buildContinuationSystemPrompt({ enableChainOfThought: true }),
-    );
   });
 });
 
@@ -249,11 +231,6 @@ describe('exported constants', () => {
   it('exports STRICT_CHOICE_GUIDELINES constant', () => {
     expect(STRICT_CHOICE_GUIDELINES).toContain('CHOICE REQUIREMENTS:');
     expect(typeof STRICT_CHOICE_GUIDELINES).toBe('string');
-  });
-
-  it('exports COT_SYSTEM_ADDITION constant', () => {
-    expect(COT_SYSTEM_ADDITION).toContain('REASONING PROCESS:');
-    expect(typeof COT_SYSTEM_ADDITION).toBe('string');
   });
 });
 
@@ -302,24 +279,8 @@ describe('buildStructureSystemPrompt composition', () => {
     });
   });
 
-  describe('options handling', () => {
-    it('adds CoT reasoning when enableChainOfThought: true', () => {
-      const prompt = buildStructureSystemPrompt({ enableChainOfThought: true });
-      expect(prompt).toContain('REASONING PROCESS:');
-      expect(prompt).toContain('<thinking>');
-      expect(prompt).toContain('<output>');
-      expect(prompt).toContain('Consider how the character concept drives the story');
-    });
-
-    it('does NOT add CoT when enableChainOfThought: false', () => {
-      const prompt = buildStructureSystemPrompt({ enableChainOfThought: false });
-      expect(prompt).not.toContain('REASONING PROCESS:');
-      expect(prompt).not.toContain('<thinking>');
-    });
-  });
-
   describe('exported constants', () => {
-    it('exports STRUCTURE_SYSTEM_PROMPT constant matching buildStructureSystemPrompt() with no options', () => {
+    it('exports STRUCTURE_SYSTEM_PROMPT constant matching buildStructureSystemPrompt()', () => {
       expect(STRUCTURE_SYSTEM_PROMPT).toBe(buildStructureSystemPrompt());
     });
   });

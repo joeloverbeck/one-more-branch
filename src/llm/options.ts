@@ -8,7 +8,6 @@ export function getDefaultPromptOptions(): PromptOptions {
   const { promptOptions } = getConfig().llm;
   return {
     fewShotMode: promptOptions.fewShotMode,
-    enableChainOfThought: promptOptions.enableChainOfThought,
     choiceGuidance: promptOptions.choiceGuidance,
   };
 }

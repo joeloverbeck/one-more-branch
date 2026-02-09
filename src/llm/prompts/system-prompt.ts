@@ -4,7 +4,6 @@
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
-import type { PromptOptions } from '../types.js';
 
 export {
   buildOpeningSystemPrompt,
@@ -13,7 +12,6 @@ export {
   composeOpeningDataRules,
   composeContinuationDataRules,
   STRICT_CHOICE_GUIDELINES,
-  COT_SYSTEM_ADDITION,
 } from './system-prompt-builder.js';
 
 /**
@@ -34,27 +32,9 @@ STRUCTURE DESIGN GUIDELINES:
 - Consider pacing suitable for 15-50 page interactive stories.`;
 
 /**
- * Builds the system prompt for structure generation with optional enhancements.
+ * Builds the system prompt for structure generation.
  * Uses a minimal prompt focused only on structure design.
  */
-export function buildStructureSystemPrompt(options?: PromptOptions): string {
-  let prompt = STRUCTURE_SYSTEM_PROMPT;
-
-  if (options?.enableChainOfThought) {
-    prompt += `
-
-REASONING PROCESS:
-Before generating your response, think through your approach inside <thinking> tags:
-1. Consider how the character concept drives the story
-2. Plan dramatic arc and escalation
-3. Design beats that allow for player agency and branching
-
-Format your response as:
-<thinking>[your reasoning]</thinking>
-<output>{JSON response}</output>
-
-Your final JSON should be inside <output> tags.`;
-  }
-
-  return prompt;
+export function buildStructureSystemPrompt(): string {
+  return STRUCTURE_SYSTEM_PROMPT;
 }

@@ -18,7 +18,6 @@ Identical to the opening page system prompt:
 2. **Content Policy**: NC-21 adults-only, no restrictions.
 3. **Storytelling Guidelines**: Second person, protagonist-voiced narration, emotional prose, show-don't-tell.
 4. **Ending Guidelines**: Earned endings, no choices when concluded.
-5. **Optional Chain of Thought**: `<thinking>` then `<output>` tags.
 
 ---
 

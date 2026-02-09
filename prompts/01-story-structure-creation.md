@@ -29,10 +29,6 @@ Included in the system prompt. NC-21 adults-only policy: all topics, themes, and
 - Consider pacing suitable for 15-50 page interactive stories.
 ```
 
-### Optional: Chain of Thought
-
-When `enableChainOfThought` is true, the system prompt appends instructions to reason inside `<thinking>` tags before outputting JSON inside `<output>` tags.
-
 ---
 
 ## User Prompt

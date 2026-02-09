@@ -15,7 +15,6 @@
     },
     "promptOptions": {
       "fewShotMode": "standard",
-      "enableChainOfThought": false,
       "choiceGuidance": "basic"
     }
   },

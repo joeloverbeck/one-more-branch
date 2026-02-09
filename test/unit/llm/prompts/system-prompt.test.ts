@@ -60,29 +60,14 @@ describe('buildOpeningSystemPrompt', () => {
     expect(prompt).not.toContain('ESTABLISHMENT RULES');
   });
 
-  it('adds CoT when enableChainOfThought is true', () => {
-    const prompt = buildOpeningSystemPrompt({ enableChainOfThought: true });
-    expect(prompt).toContain('REASONING PROCESS:');
-    expect(prompt).toContain('<thinking>');
-    expect(prompt).toContain('<output>');
-  });
-
-  it('does NOT add CoT when enableChainOfThought is false', () => {
-    const prompt = buildOpeningSystemPrompt({ enableChainOfThought: false });
-    expect(prompt).not.toContain('REASONING PROCESS:');
-  });
-
   it('does NOT include strict choice guidelines (they go in data rules now)', () => {
-    const prompt = buildOpeningSystemPrompt({ choiceGuidance: 'strict' });
+    const prompt = buildOpeningSystemPrompt();
     expect(prompt).not.toContain('CHOICE REQUIREMENTS:');
     expect(prompt).not.toContain('DIVERGENCE ENFORCEMENT');
   });
 
   it('is identical to buildContinuationSystemPrompt', () => {
     expect(buildOpeningSystemPrompt()).toBe(buildContinuationSystemPrompt());
-    expect(buildOpeningSystemPrompt({ enableChainOfThought: true })).toBe(
-      buildContinuationSystemPrompt({ enableChainOfThought: true }),
-    );
   });
 });
 
@@ -96,11 +81,6 @@ describe('buildContinuationSystemPrompt', () => {
     expect(prompt).not.toContain('CANON QUALITY CRITERIA:');
   });
 
-  it('adds CoT when enableChainOfThought is true', () => {
-    const prompt = buildContinuationSystemPrompt({ enableChainOfThought: true });
-    expect(prompt).toContain('REASONING PROCESS:');
-    expect(prompt).toContain('<thinking>');
-  });
 });
 
 describe('composeOpeningDataRules', () => {

@@ -5,7 +5,6 @@
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
-import type { PromptOptions } from '../types.js';
 
 // Shared sections
 import {
@@ -77,24 +76,6 @@ CHOICE FORMATTING:
 ❌ BAD: "You could try to negotiate" (passive voice, vague)`;
 
 /**
- * Chain-of-thought reasoning instructions for narrative generation.
- */
-export const COT_SYSTEM_ADDITION = `
-
-REASONING PROCESS:
-Before generating your response, think through your approach inside <thinking> tags:
-1. Consider character motivations and current emotional state
-2. Plan how this scene advances toward the story arc
-3. Brainstorm 3-4 potential choices, then select the best 3 (add a 4th only if the situation truly warrants another distinct, meaningful path)
-4. Verify each choice is in-character, consequential, and divergent
-
-Format your response as:
-<thinking>[your reasoning]</thinking>
-<output>{JSON response}</output>
-
-Your final JSON should be inside <output> tags.`;
-
-/**
  * Creative sections that belong in the system message.
  * These define persona, prose style, and creative guidelines.
  */
@@ -144,7 +125,7 @@ export function composeCreativeSystemPrompt(): string {
  * Composes the data rules for opening prompts.
  * These go in the user message, not the system message.
  */
-export function composeOpeningDataRules(options?: PromptOptions): string {
+export function composeOpeningDataRules(options?: { choiceGuidance?: 'basic' | 'strict' }): string {
   const sections: string[] = [...SHARED_DATA_SECTIONS, ...OPENING_DATA_SECTIONS];
 
   if (options?.choiceGuidance === 'strict') {
@@ -158,7 +139,7 @@ export function composeOpeningDataRules(options?: PromptOptions): string {
  * Composes the data rules for continuation prompts.
  * These go in the user message, not the system message.
  */
-export function composeContinuationDataRules(options?: PromptOptions): string {
+export function composeContinuationDataRules(options?: { choiceGuidance?: 'basic' | 'strict' }): string {
   const sections: string[] = [...SHARED_DATA_SECTIONS, ...CONTINUATION_DATA_SECTIONS];
 
   if (options?.choiceGuidance === 'strict') {
@@ -169,29 +150,17 @@ export function composeContinuationDataRules(options?: PromptOptions): string {
 }
 
 /**
- * Builds the complete opening system prompt with optional CoT.
+ * Builds the complete opening system prompt.
  * Contains creative persona only — data rules are in the user message.
  */
-export function buildOpeningSystemPrompt(options?: PromptOptions): string {
-  let prompt = composeCreativeSystemPrompt();
-
-  if (options?.enableChainOfThought) {
-    prompt += COT_SYSTEM_ADDITION;
-  }
-
-  return prompt;
+export function buildOpeningSystemPrompt(): string {
+  return composeCreativeSystemPrompt();
 }
 
 /**
- * Builds the complete continuation system prompt with optional CoT.
+ * Builds the complete continuation system prompt.
  * Contains creative persona only — data rules are in the user message.
  */
-export function buildContinuationSystemPrompt(options?: PromptOptions): string {
-  let prompt = composeCreativeSystemPrompt();
-
-  if (options?.enableChainOfThought) {
-    prompt += COT_SYSTEM_ADDITION;
-  }
-
-  return prompt;
+export function buildContinuationSystemPrompt(): string {
+  return composeCreativeSystemPrompt();
 }

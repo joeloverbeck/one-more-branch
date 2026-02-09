@@ -12,7 +12,7 @@ Called by the engine when `deviationDetected: true` from the analyst prompt. Onl
 
 ## System Prompt
 
-Uses the same `buildStructureSystemPrompt()` as the structure creation prompt. Same content policy, same structure design guidelines, same optional chain-of-thought.
+Uses the same `buildStructureSystemPrompt()` as the structure creation prompt. Same content policy, same structure design guidelines.
 
 ---
 

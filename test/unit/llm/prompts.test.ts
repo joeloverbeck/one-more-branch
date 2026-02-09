@@ -293,37 +293,6 @@ describe('buildOpeningPrompt', () => {
     expect(user).not.toContain('CHOICE REQUIREMENTS:');
   });
 
-  it('should include CoT instructions when enableChainOfThought: true', () => {
-    const messages = buildOpeningPrompt(
-      {
-        characterConcept: 'Character',
-        worldbuilding: '',
-        tone: 'dark fantasy',
-      },
-      { enableChainOfThought: true },
-    );
-
-    const system = getSystemMessage(messages);
-    expect(system).toContain('REASONING PROCESS');
-    expect(system).toContain('<thinking>');
-    expect(system).toContain('<output>');
-  });
-
-  it('should NOT include CoT instructions when enableChainOfThought: false', () => {
-    const messages = buildOpeningPrompt(
-      {
-        characterConcept: 'Character',
-        worldbuilding: '',
-        tone: 'dark fantasy',
-      },
-      { enableChainOfThought: false },
-    );
-
-    const system = getSystemMessage(messages);
-    expect(system).not.toContain('REASONING PROCESS');
-    expect(system).not.toContain('<thinking>');
-  });
-
   it('should include numbered REQUIREMENTS in user message', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',

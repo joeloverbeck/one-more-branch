@@ -27,12 +27,6 @@ export { generateStoryStructure } from './structure-generator.js';
 export type { StructureGenerationResult } from './structure-generator.js';
 
 export {
-  extractOutputFromCoT,
-  extractThinkingSection,
-  hasCoTFormatting,
-} from './cot-parser.js';
-
-export {
   STORY_GENERATION_SCHEMA,
   WRITER_GENERATION_SCHEMA,
   ANALYST_SCHEMA,

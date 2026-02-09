@@ -39,7 +39,6 @@ describe('fewShotMode: none', () => {
 
   const noneOptions: PromptOptions = {
     fewShotMode: 'none',
-    enableChainOfThought: true,
     choiceGuidance: 'strict',
   };
 
@@ -98,7 +97,6 @@ describe('fewShotMode: none', () => {
   describe('comparison with minimal mode', () => {
     const minimalOptions: PromptOptions = {
       fewShotMode: 'minimal',
-      enableChainOfThought: true,
       choiceGuidance: 'strict',
     };
 

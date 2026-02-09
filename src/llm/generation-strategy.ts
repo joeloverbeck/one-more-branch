@@ -1,6 +1,5 @@
 import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
-import { extractOutputFromCoT } from './cot-parser.js';
 import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
 import {
   isStructuredOutputNotSupported,
@@ -22,8 +21,6 @@ async function callOpenRouterStructured(
   const model = options.model ?? config.defaultModel;
   const temperature = options.temperature ?? config.temperature;
   const maxTokens = options.maxTokens ?? config.maxTokens;
-  const enableCoT = options.promptOptions?.enableChainOfThought ?? config.promptOptions.enableChainOfThought;
-
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -54,15 +51,10 @@ async function callOpenRouterStructured(
   }
 
   const data = await readJsonResponse(response);
-  let content = data.choices[0]?.message?.content;
+  const content = data.choices[0]?.message?.content;
 
   if (!content) {
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
-
-  // Extract output from CoT format if CoT was enabled
-  if (enableCoT) {
-    content = extractOutputFromCoT(content);
   }
 
   let parsed: unknown;

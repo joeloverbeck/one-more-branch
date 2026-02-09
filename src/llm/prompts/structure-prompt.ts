@@ -138,7 +138,7 @@ OUTPUT SHAPE:
       - objective: specific protagonist goal for the beat
       - role: "setup" | "escalation" | "turning_point" | "resolution"`;
 
-  const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt(options) }];
+  const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt() }];
 
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(

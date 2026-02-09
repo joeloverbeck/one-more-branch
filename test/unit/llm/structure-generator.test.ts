@@ -154,7 +154,7 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
 
     const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     expect(result).toEqual({ ...payload, rawResponse: rawContent });
@@ -182,7 +182,7 @@ describe('structure-generator', () => {
       model: 'openai/gpt-4.1-mini',
       temperature: 0.55,
       maxTokens: 1234,
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     const body = getRequestBody();
@@ -196,7 +196,7 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
     await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     const body = getRequestBody();
@@ -332,7 +332,7 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutPremise)));
 
     const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     expect(result.premise).toBe(payload.overallTheme);
@@ -345,7 +345,7 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutBudget)));
 
     const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     expect(result.pacingBudget).toEqual({ targetPagesMin: 15, targetPagesMax: 50 });
@@ -363,7 +363,7 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutRoles)));
 
     const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     for (const act of result.acts) {
@@ -385,7 +385,7 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withInvalidRoles)));
 
     const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: { enableChainOfThought: false },
+      promptOptions: {},
     });
 
     // Parser currently accepts any string for role; the schema enforces the enum at LLM level.

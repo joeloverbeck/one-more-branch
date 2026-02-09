@@ -196,7 +196,7 @@ OUTPUT SHAPE (same as original structure):
       - objective: specific protagonist goal for the beat
       - role: "setup" | "escalation" | "turning_point" | "resolution"`;
 
-  const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt(options) }];
+  const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt() }];
 
   // Add few-shot example for structure rewrite
   if (options?.fewShotMode && options.fewShotMode !== 'none') {

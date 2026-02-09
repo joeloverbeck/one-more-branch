@@ -97,7 +97,7 @@ Example opening state:
 REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession. Starting health conditions should only be added if the character concept explicitly mentions them. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.`;
 
   const messages: ChatMessage[] = [
-    { role: 'system', content: buildOpeningSystemPrompt(options) },
+    { role: 'system', content: buildOpeningSystemPrompt() },
   ];
 
   // Add few-shot examples if requested
