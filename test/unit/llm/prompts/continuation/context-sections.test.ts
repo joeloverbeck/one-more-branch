@@ -61,20 +61,12 @@ describe('context-sections', () => {
       expect(grandparentIdx).toBeLessThan(previousIdx);
     });
 
-    it('truncates grandparent narrative to 1000 chars', () => {
-      const longNarrative = 'A'.repeat(1500);
+    it('preserves full narrative without truncation', () => {
+      const longNarrative = 'A'.repeat(5000);
       const result = buildSceneContextSection('Short.', longNarrative);
 
       const section = result.split('SCENE BEFORE LAST:\n')[1]?.split('\n\nPREVIOUS SCENE:')[0] ?? '';
-      expect(section.length).toBeLessThanOrEqual(1003); // 1000 + '...'
-    });
-
-    it('truncates previous narrative to 2000 chars', () => {
-      const longNarrative = 'B'.repeat(2500);
-      const result = buildSceneContextSection(longNarrative, null);
-
-      const section = result.split('PREVIOUS SCENE:\n')[1]?.split('\n\n')[0] ?? '';
-      expect(section.length).toBeLessThanOrEqual(2003); // 2000 + '...'
+      expect(section).toBe(longNarrative);
     });
   });
 });

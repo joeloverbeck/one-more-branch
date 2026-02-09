@@ -657,7 +657,7 @@ describe('buildContinuationPrompt', () => {
     expect(getUserMessage(messages)).toContain('A short prior scene.');
   });
 
-  it('should truncate at sentence boundary when possible', () => {
+  it('should pass through long narratives without truncation', () => {
     const narrative =
       `A${'a'.repeat(1040)}. ` +
       `B${'b'.repeat(1040)}. ` +
@@ -670,12 +670,10 @@ describe('buildContinuationPrompt', () => {
     const previousSceneLine =
       getUserMessage(messages).split('PREVIOUS SCENE:\n')[1]?.split('\n\nPLAYER')[0] ?? '';
 
-    expect(previousSceneLine.endsWith('.')).toBe(true);
-    expect(previousSceneLine.length).toBeLessThanOrEqual(2000);
-    expect(previousSceneLine).not.toContain('...');
+    expect(previousSceneLine).toBe(narrative);
   });
 
-  it('should add ellipsis when no good boundary found', () => {
+  it('should pass through very long narratives without ellipsis', () => {
     const narrative = 'x'.repeat(2500);
     const messages = buildContinuationPrompt({
       ...baseContext,
@@ -685,8 +683,8 @@ describe('buildContinuationPrompt', () => {
     const previousSceneLine =
       getUserMessage(messages).split('PREVIOUS SCENE:\n')[1]?.split('\n\nPLAYER')[0] ?? '';
 
-    expect(previousSceneLine.length).toBe(2003);
-    expect(previousSceneLine.endsWith('...')).toBe(true);
+    expect(previousSceneLine.length).toBe(2500);
+    expect(previousSceneLine).not.toContain('...');
   });
 
   // Active State Section Tests
@@ -875,7 +873,7 @@ describe('buildContinuationPrompt', () => {
       expect(getUserMessage(messages)).toContain('PREVIOUS SCENE:');
     });
 
-    it('truncates grandparent narrative to 1000 chars', () => {
+    it('passes through long grandparent narrative without truncation', () => {
       const longNarrative = 'A'.repeat(1500);
       const messages = buildContinuationPrompt({
         ...baseContext,
@@ -885,8 +883,7 @@ describe('buildContinuationPrompt', () => {
       const content = getUserMessage(messages);
       const sceneBeforeLastSection = content.split('SCENE BEFORE LAST:\n')[1]?.split('\n\nPREVIOUS SCENE:')[0] ?? '';
 
-      // Should be truncated (1000 chars + '...')
-      expect(sceneBeforeLastSection.length).toBeLessThanOrEqual(1003);
+      expect(sceneBeforeLastSection).toBe(longNarrative);
     });
 
     it('places grandparent section before previous scene section', () => {
