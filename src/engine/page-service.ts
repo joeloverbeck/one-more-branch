@@ -169,7 +169,7 @@ export async function generateNextPage(
 
   // Use the active structure (original or rewritten) for progression
   const activeStructure = activeStructureVersion?.structure ?? story.structure;
-  const newStructureState = activeStructure
+  let newStructureState = activeStructure
     ? applyStructureProgression(
         activeStructure,
         parentState.structureState,
@@ -177,6 +177,25 @@ export async function generateNextPage(
         beatResolution,
       )
     : parentState.structureState;
+
+  // Pacing response: only when no deviation was triggered
+  if (!deviationInfo && newStructureState) {
+    if (result.recommendedAction === 'rewrite') {
+      logger.warn('Pacing issue detected: rewrite recommended (deferred)', {
+        pacingIssueReason: result.pacingIssueReason,
+        pagesInCurrentBeat: newStructureState.pagesInCurrentBeat,
+      });
+      newStructureState = { ...newStructureState, pacingNudge: null };
+    } else if (result.recommendedAction === 'nudge') {
+      logger.info('Pacing nudge applied', {
+        pacingIssueReason: result.pacingIssueReason,
+        pagesInCurrentBeat: newStructureState.pagesInCurrentBeat,
+      });
+      newStructureState = { ...newStructureState, pacingNudge: result.pacingIssueReason };
+    } else {
+      newStructureState = { ...newStructureState, pacingNudge: null };
+    }
+  }
 
   const page = buildContinuationPage(result, {
     pageId: newPageId,

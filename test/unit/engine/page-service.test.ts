@@ -18,6 +18,7 @@ import { createStructureRewriter } from '../../../src/engine/structure-rewriter'
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
 import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
+import { logger } from '../../../src/logging/index.js';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
 jest.mock('../../../src/llm', () => ({
@@ -82,6 +83,8 @@ function buildStory(overrides?: Partial<Story>): Story {
 function buildStructure(): StoryStructure {
   return {
     overallTheme: 'Outmaneuver the imperial intelligence network.',
+    premise: 'A courier must smuggle evidence through occupied territory without being caught.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -95,11 +98,13 @@ function buildStructure(): StoryStructure {
             id: '1.1',
             description: 'Secure a forged transit seal',
             objective: 'Gain access credentials',
+            role: 'setup' as const,
           },
           {
             id: '1.2',
             description: 'Enter the records archive',
             objective: 'Reach the target ledgers',
+            role: 'escalation' as const,
           },
         ],
       },
@@ -513,6 +518,9 @@ describe('page-service', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -584,6 +592,9 @@ describe('page-service', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -679,6 +690,9 @@ describe('page-service', () => {
           deviationReason: '',
           invalidatedBeatIds: [],
           narrativeSummary: '',
+          pacingIssueDetected: false,
+          pacingIssueReason: '',
+          recommendedAction: 'none',
           rawResponse: 'raw-analyst',
         })
         .mockResolvedValueOnce({
@@ -688,6 +702,9 @@ describe('page-service', () => {
           deviationReason: '',
           invalidatedBeatIds: [],
           narrativeSummary: '',
+          pacingIssueDetected: false,
+          pacingIssueReason: '',
+          recommendedAction: 'none',
           rawResponse: 'raw-analyst',
         });
 
@@ -758,6 +775,9 @@ describe('page-service', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -791,6 +811,8 @@ describe('page-service', () => {
 
       const rewrittenStructure: StoryStructure = {
         overallTheme: 'Outmaneuver the imperial intelligence network.',
+        premise: 'A courier defects to the empire and must prove loyalty.',
+        pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
           {
@@ -804,11 +826,13 @@ describe('page-service', () => {
                 id: '1.1',
                 description: 'Accept imperial posting',
                 objective: 'Gain trust within command structure',
+                role: 'setup' as const,
               },
               {
                 id: '1.2',
                 description: 'First loyalty test',
                 objective: 'Prove allegiance to new masters',
+                role: 'escalation' as const,
               },
             ],
           },
@@ -860,6 +884,9 @@ describe('page-service', () => {
         deviationReason: 'Current infiltration beats are invalid after defection.',
         invalidatedBeatIds: ['1.2'],
         narrativeSummary: 'Protagonist joined imperial command hierarchy.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -900,6 +927,8 @@ describe('page-service', () => {
       // Create a rewritten structure v2 (simulating another branch caused a rewrite)
       const structureV2: StoryStructure = {
         overallTheme: 'Rewritten theme from another branch.',
+        premise: 'A different path through the occupied territory.',
+        pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
           {
@@ -909,8 +938,8 @@ describe('page-service', () => {
             stakes: 'Different stakes',
             entryCondition: 'Different entry',
             beats: [
-              { id: '1.1', description: 'Different beat 1', objective: 'Different obj 1' },
-              { id: '1.2', description: 'Different beat 2', objective: 'Different obj 2' },
+              { id: '1.1', description: 'Different beat 1', objective: 'Different obj 1', role: 'setup' as const },
+              { id: '1.2', description: 'Different beat 2', objective: 'Different obj 2', role: 'escalation' as const },
             ],
           },
         ],
@@ -981,6 +1010,9 @@ describe('page-service', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -1111,6 +1143,8 @@ describe('page-service', () => {
 
       const rewrittenStructure: StoryStructure = {
         overallTheme: 'New path theme.',
+        premise: 'After betraying allies, the protagonist forges a new identity.',
+        pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
           {
@@ -1120,7 +1154,7 @@ describe('page-service', () => {
             stakes: 'Everything',
             entryCondition: 'After betrayal',
             beats: [
-              { id: '1.1', description: 'Accept new role', objective: 'Establish new identity' },
+              { id: '1.1', description: 'Accept new role', objective: 'Establish new identity', role: 'setup' as const },
             ],
           },
         ],
@@ -1171,6 +1205,9 @@ describe('page-service', () => {
         deviationReason: 'Player chose to betray allies, invalidating trust-based beats.',
         invalidatedBeatIds: ['1.1', '1.2'],
         narrativeSummary: 'Alliance shattered after betrayal.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -1238,6 +1275,9 @@ describe('page-service', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 
@@ -1352,6 +1392,224 @@ describe('page-service', () => {
         pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
       });
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
+    });
+
+    describe('pacing response', () => {
+      function buildPacingTestSetup(): { story: Story; parentPage: ReturnType<typeof createPage> } {
+        const structure = buildStructure();
+        const initialVersion = createInitialVersionedStructure(structure);
+        const parentStructureState = createInitialStructureState(structure);
+        const story = buildStory({ structure, structureVersions: [initialVersion] });
+        const parentPage = createPage({
+          id: parsePageId(2),
+          narrativeText: 'You wait in the shadows.',
+          choices: [createChoice('Move forward'), createChoice('Hold position')],
+          inventoryChanges: { added: ['In position'], removed: [] },
+          isEnding: false,
+          parentPageId: parsePageId(1),
+          parentChoiceIndex: 0,
+          parentAccumulatedStructureState: parentStructureState,
+          structureVersionId: initialVersion.id,
+        });
+
+        mockedStorage.getMaxPageId.mockResolvedValue(2);
+        mockedGenerateWriterPage.mockResolvedValue({
+          narrative: 'You creep through the corridor.',
+          choices: ['Open the door', 'Turn back'],
+          currentLocation: 'A dim corridor',
+          threatsAdded: [],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+          newCanonFacts: [],
+          newCharacterCanonFacts: {},
+          inventoryAdded: [],
+          inventoryRemoved: [],
+          healthAdded: [],
+          healthRemoved: [],
+          characterStateChangesAdded: [],
+          characterStateChangesRemoved: [],
+          protagonistAffect: {
+            primaryEmotion: 'tension',
+            primaryIntensity: 'moderate' as const,
+            primaryCause: 'creeping through unknown territory',
+            secondaryEmotions: [],
+            dominantMotivation: 'reach the objective',
+          },
+          isEnding: false,
+          rawResponse: 'raw',
+        });
+
+        return { story, parentPage };
+      }
+
+      it('sets pacingNudge when recommendedAction is nudge', async () => {
+        const { story, parentPage } = buildPacingTestSetup();
+        mockedGenerateAnalystEvaluation.mockResolvedValue({
+          beatConcluded: false,
+          beatResolution: '',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+          pacingIssueDetected: true,
+          pacingIssueReason: 'Beat stalled',
+          recommendedAction: 'nudge',
+          rawResponse: 'raw-analyst',
+        });
+
+        const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+        expect(page.accumulatedStructureState.pacingNudge).toBe('Beat stalled');
+      });
+
+      it('clears pacingNudge when recommendedAction is none', async () => {
+        const { story, parentPage } = buildPacingTestSetup();
+        mockedGenerateAnalystEvaluation.mockResolvedValue({
+          beatConcluded: false,
+          beatResolution: '',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+          pacingIssueDetected: false,
+          pacingIssueReason: '',
+          recommendedAction: 'none',
+          rawResponse: 'raw-analyst',
+        });
+
+        const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+        expect(page.accumulatedStructureState.pacingNudge).toBeNull();
+      });
+
+      it('logs warning for rewrite but does not trigger rewrite', async () => {
+        const { story, parentPage } = buildPacingTestSetup();
+        mockedGenerateAnalystEvaluation.mockResolvedValue({
+          beatConcluded: false,
+          beatResolution: '',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedBeatIds: [],
+          narrativeSummary: '',
+          pacingIssueDetected: true,
+          pacingIssueReason: 'Beat dragging on too long',
+          recommendedAction: 'rewrite',
+          rawResponse: 'raw-analyst',
+        });
+
+        const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+        expect((logger.warn as jest.Mock).mock.calls).toContainEqual([
+          'Pacing issue detected: rewrite recommended (deferred)',
+          expect.objectContaining({ pacingIssueReason: 'Beat dragging on too long' }),
+        ]);
+        expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
+        expect(page.accumulatedStructureState.pacingNudge).toBeNull();
+      });
+
+      it('skips pacing logic when deviation is detected', async () => {
+        const structure = buildStructure();
+        const initialVersion = createInitialVersionedStructure(structure);
+        const parentStructureState = createInitialStructureState(structure);
+        const story = buildStory({ structure, structureVersions: [initialVersion] });
+        const parentPage = createPage({
+          id: parsePageId(2),
+          narrativeText: 'A critical turning point.',
+          choices: [createChoice('Defect'), createChoice('Hold')],
+          inventoryChanges: { added: ['At turning point'], removed: [] },
+          isEnding: false,
+          parentPageId: parsePageId(1),
+          parentChoiceIndex: 0,
+          parentAccumulatedStructureState: parentStructureState,
+          structureVersionId: initialVersion.id,
+        });
+
+        const rewrittenStructure: StoryStructure = {
+          overallTheme: 'After the defection.',
+          premise: 'The courier chose a new path after defecting.',
+          pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
+          generatedAt: new Date('2026-01-02T00:00:00.000Z'),
+          acts: [
+            {
+              id: '1',
+              name: 'New Path',
+              objective: 'Survive',
+              stakes: 'Everything',
+              entryCondition: 'After defection',
+              beats: [
+                {
+                  id: '1.1',
+                  description: 'New beginning',
+                  objective: 'Establish new life',
+                  role: 'setup' as const,
+                },
+              ],
+            },
+          ],
+        };
+
+        const mockRewriter = {
+          rewriteStructure: jest.fn().mockResolvedValue({
+            structure: rewrittenStructure,
+            preservedBeatIds: [],
+            rawResponse: 'rewritten',
+          }),
+        };
+        mockedCreateStructureRewriter.mockReturnValue(mockRewriter);
+
+        mockedStorage.getMaxPageId.mockResolvedValue(2);
+        mockedGenerateWriterPage.mockResolvedValue({
+          narrative: 'You defect to the other side.',
+          choices: ['Accept posting', 'Go underground'],
+          currentLocation: 'The defection point',
+          threatsAdded: ['Hunted by former allies'],
+          threatsRemoved: [],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+          newCanonFacts: [],
+          newCharacterCanonFacts: {},
+          inventoryAdded: [],
+          inventoryRemoved: [],
+          healthAdded: [],
+          healthRemoved: [],
+          characterStateChangesAdded: [],
+          characterStateChangesRemoved: [],
+          protagonistAffect: {
+            primaryEmotion: 'resolve',
+            primaryIntensity: 'strong' as const,
+            primaryCause: 'making an irreversible choice',
+            secondaryEmotions: [],
+            dominantMotivation: 'survive the transition',
+          },
+          isEnding: false,
+          rawResponse: 'raw',
+        });
+        mockedGenerateAnalystEvaluation.mockResolvedValue({
+          beatConcluded: false,
+          beatResolution: '',
+          deviationDetected: true,
+          deviationReason: 'Defection invalidates current beats.',
+          invalidatedBeatIds: ['1.1', '1.2'],
+          narrativeSummary: 'Player defected.',
+          pacingIssueDetected: true,
+          pacingIssueReason: 'Beat stalled before defection',
+          recommendedAction: 'nudge',
+          rawResponse: 'raw-analyst',
+        });
+
+        const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+        // Deviation was triggered, so pacing logic should be skipped.
+        // The pacingNudge should come from the rewritten structure's initial state, not from pacing logic.
+        expect(mockedCreateStructureRewriter).toHaveBeenCalled();
+        // Pacing nudge should NOT be set since deviation takes priority
+        expect(page.accumulatedStructureState.pacingNudge).toBeNull();
+      });
     });
   });
 
@@ -1577,6 +1835,8 @@ describe('page-service', () => {
 
       const rewrittenStructure: StoryStructure = {
         overallTheme: 'Rewritten after deviation.',
+        premise: 'The story takes an unexpected turn after the protagonist deviates.',
+        pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
           {
@@ -1585,7 +1845,7 @@ describe('page-service', () => {
             objective: 'New direction',
             stakes: 'High',
             entryCondition: 'After deviation',
-            beats: [{ id: '1.1', description: 'New beat', objective: 'New objective' }],
+            beats: [{ id: '1.1', description: 'New beat', objective: 'New objective', role: 'setup' as const }],
           },
         ],
       };
@@ -1635,6 +1895,9 @@ describe('page-service', () => {
         deviationReason: 'Story deviated from planned beats.',
         invalidatedBeatIds: ['1.1'],
         narrativeSummary: 'Player chose unexpected path.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: 'raw-analyst',
       });
 

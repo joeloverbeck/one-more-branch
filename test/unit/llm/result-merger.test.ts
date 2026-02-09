@@ -175,4 +175,45 @@ describe('mergeWriterAndAnalystResults', () => {
     expect(result).toHaveProperty('deviation');
     expect(result.deviation).toHaveProperty('detected');
   });
+
+  describe('pacing field pass-through', () => {
+    it('should pass through pacing fields when analyst has pacing issue', () => {
+      const writer = createWriterResult();
+      const analyst = createAnalystResult({
+        pacingIssueDetected: true,
+        pacingIssueReason: 'Stalled',
+        recommendedAction: 'nudge',
+      });
+
+      const result = mergeWriterAndAnalystResults(writer, analyst);
+
+      expect(result.pacingIssueDetected).toBe(true);
+      expect(result.pacingIssueReason).toBe('Stalled');
+      expect(result.recommendedAction).toBe('nudge');
+    });
+
+    it('should default pacing fields when analyst is null', () => {
+      const writer = createWriterResult();
+      const result = mergeWriterAndAnalystResults(writer, null);
+
+      expect(result.pacingIssueDetected).toBe(false);
+      expect(result.pacingIssueReason).toBe('');
+      expect(result.recommendedAction).toBe('none');
+    });
+
+    it('should pass through no-pacing-issue correctly', () => {
+      const writer = createWriterResult();
+      const analyst = createAnalystResult({
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+      });
+
+      const result = mergeWriterAndAnalystResults(writer, analyst);
+
+      expect(result.pacingIssueDetected).toBe(false);
+      expect(result.pacingIssueReason).toBe('');
+      expect(result.recommendedAction).toBe('none');
+    });
+  });
 });
