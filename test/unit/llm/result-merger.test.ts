@@ -41,6 +41,9 @@ function createAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystRes
     deviationReason: '',
     invalidatedBeatIds: [],
     narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
     rawResponse: 'analyst raw response',
     ...overrides,
   };

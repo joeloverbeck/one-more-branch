@@ -21,6 +21,9 @@ export function mergeWriterAndAnalystResults(
     beatConcluded,
     beatResolution,
     deviation,
+    pacingIssueDetected: analyst?.pacingIssueDetected ?? false,
+    pacingIssueReason: analyst?.pacingIssueReason ?? '',
+    recommendedAction: analyst?.recommendedAction ?? 'none',
     rawResponse: writer.rawResponse,
   };
 }

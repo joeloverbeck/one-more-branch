@@ -186,6 +186,9 @@ export function validateGenerationResponse(
     beatConcluded: validated.beatConcluded,
     beatResolution: validated.beatResolution.trim(),
     deviation,
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
     rawResponse,
   };
 }

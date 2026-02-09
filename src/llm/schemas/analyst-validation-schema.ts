@@ -7,4 +7,7 @@ export const AnalystResultSchema = z.object({
   deviationReason: z.string().default(''),
   invalidatedBeatIds: z.array(z.string()).optional().default([]),
   narrativeSummary: z.string().default(''),
+  pacingIssueDetected: z.boolean().default(false),
+  pacingIssueReason: z.string().default(''),
+  recommendedAction: z.enum(['none', 'nudge', 'rewrite']).catch('none').default('none'),
 });

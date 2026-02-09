@@ -144,4 +144,94 @@ describe('validateAnalystResponse', () => {
     expect(result.beatConcluded).toBe(true);
     expect(result.beatResolution).toBe('Beat concluded via string input');
   });
+
+  describe('pacing fields', () => {
+    it('parses all pacing fields correctly when present', () => {
+      const input = {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: true,
+        pacingIssueReason: 'Beat stalled',
+        recommendedAction: 'nudge',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.pacingIssueDetected).toBe(true);
+      expect(result.pacingIssueReason).toBe('Beat stalled');
+      expect(result.recommendedAction).toBe('nudge');
+    });
+
+    it('defaults missing pacing fields to safe values', () => {
+      const input = {};
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.pacingIssueDetected).toBe(false);
+      expect(result.pacingIssueReason).toBe('');
+      expect(result.recommendedAction).toBe('none');
+    });
+
+    it('defaults invalid recommendedAction to none', () => {
+      const input = {
+        pacingIssueDetected: true,
+        pacingIssueReason: 'Stalled',
+        recommendedAction: 'invalid_value',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.recommendedAction).toBe('none');
+    });
+
+    it('trims pacingIssueReason whitespace', () => {
+      const input = {
+        pacingIssueDetected: true,
+        pacingIssueReason: '  Beat has stalled for too long  ',
+        recommendedAction: 'rewrite',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.pacingIssueReason).toBe('Beat has stalled for too long');
+    });
+
+    it('accepts rewrite as a valid recommendedAction', () => {
+      const input = {
+        pacingIssueDetected: true,
+        pacingIssueReason: 'Turning points too far away',
+        recommendedAction: 'rewrite',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.recommendedAction).toBe('rewrite');
+    });
+
+    it('preserves pacing fields alongside existing analyst fields', () => {
+      const input = {
+        beatConcluded: true,
+        beatResolution: 'The protagonist escaped',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: true,
+        pacingIssueReason: 'Beat stalled',
+        recommendedAction: 'nudge',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.beatConcluded).toBe(true);
+      expect(result.beatResolution).toBe('The protagonist escaped');
+      expect(result.pacingIssueDetected).toBe(true);
+      expect(result.pacingIssueReason).toBe('Beat stalled');
+      expect(result.recommendedAction).toBe('nudge');
+    });
+  });
 });

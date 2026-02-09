@@ -339,6 +339,9 @@ describe('LLM types', () => {
       const result: ContinuationGenerationResult = {
         ...buildBaseGenerationResult(),
         deviation: createNoDeviation(),
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
       };
 
       expect(result.deviation.detected).toBe(false);
@@ -348,6 +351,9 @@ describe('LLM types', () => {
       const result: ContinuationGenerationResult = {
         ...buildBaseGenerationResult(),
         deviation: createBeatDeviation('Future beats no longer fit', ['2.2', '2.3'], 'Allies joined enemy'),
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
       };
 
       expect(result.deviation.detected).toBe(true);
@@ -439,6 +445,9 @@ describe('LLM types', () => {
         deviationReason: '',
         invalidatedBeatIds: [],
         narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -455,6 +464,9 @@ describe('LLM types', () => {
         deviationReason: 'Protagonist allied with the antagonist',
         invalidatedBeatIds: ['2.2', '2.3'],
         narrativeSummary: 'The hero joined forces with the villain',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
         rawResponse: '{"deviationDetected":true}',
       };
 

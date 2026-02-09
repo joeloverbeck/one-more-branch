@@ -39,6 +39,22 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'Short summary of current narrative state for rewrite context; empty when no deviation.',
         },
+        pacingIssueDetected: {
+          type: 'boolean',
+          description:
+            'True if the narrative shows pacing problems: a beat stalling beyond expected page count, or the story passing through its midpoint without a meaningful reveal or reversal.',
+        },
+        pacingIssueReason: {
+          type: 'string',
+          description:
+            'If pacingIssueDetected is true, explains the pacing problem. Empty when no issue.',
+        },
+        recommendedAction: {
+          type: 'string',
+          enum: ['none', 'nudge', 'rewrite'],
+          description:
+            'Recommended response to pacing issue. "none" if no issue. "nudge" to inject a directive into the next continuation prompt. "rewrite" to trigger a structure rewrite pulling turning points closer.',
+        },
       },
       required: [
         'beatConcluded',
@@ -47,6 +63,9 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'deviationReason',
         'invalidatedBeatIds',
         'narrativeSummary',
+        'pacingIssueDetected',
+        'pacingIssueReason',
+        'recommendedAction',
       ],
       additionalProperties: false,
     },

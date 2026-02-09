@@ -1,3 +1,5 @@
+**Status**: ✅ COMPLETED
+
 # STOARCIMP-05: Extend analyst types, JSON schema, Zod schema, and response transformer for pacing detection
 
 **Phase**: 2 (Analyst Pacing Detection)
@@ -59,3 +61,22 @@ Extend the analyst pipeline to support pacing detection fields:
 - **Existing analyst fields unchanged**: `beatConcluded`, `beatResolution`, `deviationDetected`, `deviationReason`, `invalidatedBeatIds`, `narrativeSummary` behavior identical.
 - **Backward-safe defaults**: If LLM omits pacing fields, system behaves as if no pacing issue.
 - **All existing tests pass**.
+
+## Outcome
+
+**Completed**: 2026-02-09
+
+**What was changed**:
+- `src/llm/types.ts`: Added `PacingRecommendedAction` type, extended `AnalystResult` and `ContinuationGenerationResult` with 3 pacing fields.
+- `src/llm/schemas/analyst-schema.ts`: Added 3 pacing fields to JSON schema properties and `required` array.
+- `src/llm/schemas/analyst-validation-schema.ts`: Added 3 pacing fields with defaults; used `.catch('none')` to coerce invalid `recommendedAction`.
+- `src/llm/schemas/analyst-response-transformer.ts`: Passed through 3 pacing fields with `pacingIssueReason` trimmed.
+- `src/llm/result-merger.ts`: Added backward-safe pacing defaults to satisfy `ContinuationGenerationResult` type.
+- `src/llm/schemas/response-transformer.ts`: Added backward-safe pacing defaults.
+- `test/unit/llm/schemas/analyst-response-transformer.test.ts`: 6 new tests for pacing field parsing, defaults, coercion, and trimming.
+- `test/unit/llm/result-merger.test.ts`: Updated mock to include pacing fields.
+- `test/unit/llm/types.test.ts`: Updated mocks for `AnalystResult` and `ContinuationGenerationResult`.
+
+**Deviations**: `result-merger.ts` and `response-transformer.ts` were listed as out-of-scope but required minimal changes (adding defaults) because extending `ContinuationGenerationResult` broke their return types.
+
+**Verification**: TypeScript typecheck passes. 95 test suites, 1424 tests all passing.

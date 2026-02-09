@@ -37,6 +37,9 @@ export interface GenerationResult {
 
 export interface ContinuationGenerationResult extends GenerationResult {
   readonly deviation: DeviationResult;
+  readonly pacingIssueDetected: boolean;
+  readonly pacingIssueReason: string;
+  readonly recommendedAction: PacingRecommendedAction;
 }
 
 export interface CompletedBeat {
@@ -169,6 +172,8 @@ export interface WriterResult {
   rawResponse: string;
 }
 
+export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
+
 export interface AnalystResult {
   beatConcluded: boolean;
   beatResolution: string;
@@ -176,6 +181,9 @@ export interface AnalystResult {
   deviationReason: string;
   invalidatedBeatIds: string[];
   narrativeSummary: string;
+  pacingIssueDetected: boolean;
+  pacingIssueReason: string;
+  recommendedAction: PacingRecommendedAction;
   rawResponse: string;
 }
 
