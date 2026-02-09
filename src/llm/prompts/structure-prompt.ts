@@ -112,9 +112,18 @@ REQUIREMENTS (follow ALL):
 5. Use worldbuilding details to shape stakes, pressures, and act entry conditions.
 6. Calibrate intensity and storytelling style to the specified tone.
 7. Design structure pacing suitable for a 15-50 page interactive story.
+8. Design beats with clear dramatic roles:
+   - At least one beat in Act 1 should be a "turning_point" representing a point of no return
+   - The midpoint of the story (typically late Act 1 or mid Act 2) should include a reveal or reversal that reframes prior events
+   - Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice
+   - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "resolution" for denouement
+9. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
+10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
 
 OUTPUT SHAPE:
 - overallTheme: string
+- premise: string (1-2 sentence story hook)
+- pacingBudget: { targetPagesMin: number, targetPagesMax: number }
 - acts: exactly 3 items
 - each act has:
   - name: evocative act title
@@ -124,7 +133,8 @@ OUTPUT SHAPE:
   - beats: 2-4 items
     - each beat has:
       - description: what should happen in this beat
-      - objective: specific protagonist goal for the beat`;
+      - objective: specific protagonist goal for the beat
+      - role: "setup" | "escalation" | "turning_point" | "resolution"`;
 
   const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt(options) }];
 

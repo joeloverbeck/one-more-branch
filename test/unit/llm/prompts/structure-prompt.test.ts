@@ -82,6 +82,44 @@ describe('buildStructurePrompt', () => {
     expect(assistantMessage).toContain('"targetPagesMax"');
     expect(assistantMessage).toContain('"role"');
   });
+
+  it('contains dramatic role guidance with all four beat roles', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('setup');
+    expect(lastUser).toContain('escalation');
+    expect(lastUser).toContain('turning_point');
+    expect(lastUser).toContain('resolution');
+    expect(lastUser).toContain('dramatic roles');
+  });
+
+  it('contains premise instruction', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('premise');
+    expect(lastUser).toContain('1-2 sentence hook');
+  });
+
+  it('contains pacing budget instruction', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('pacing budget');
+    expect(lastUser).toContain('targetPagesMin');
+    expect(lastUser).toContain('targetPagesMax');
+  });
+
+  it('OUTPUT SHAPE includes premise, pacingBudget, and beat role', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('OUTPUT SHAPE');
+    expect(lastUser).toContain('premise: string');
+    expect(lastUser).toContain('pacingBudget:');
+    expect(lastUser).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
+  });
 });
 
 describe('buildStructurePrompt - minimal system prompt', () => {
