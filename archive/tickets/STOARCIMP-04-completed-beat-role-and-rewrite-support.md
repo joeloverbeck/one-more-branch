@@ -1,5 +1,7 @@
 # STOARCIMP-04: Add role to CompletedBeat and update structure rewrite support
 
+**Status**: ✅ COMPLETED
+
 **Phase**: 1 (Data Model Enrichment)
 **Spec sections**: 1.7 (structure-state tracking already done in STOARCIMP-02), 1.8, 3.2
 **Depends on**: STOARCIMP-01, STOARCIMP-02, STOARCIMP-03
@@ -54,3 +56,26 @@ Ensure the structure rewrite pipeline is aware of beat roles:
 - **Structure rewrite preservation**: Rewritten structures include completed beats with unchanged descriptions, objectives, and now also roles.
 - **Acyclic graph**: No page links create cycles -- untouched.
 - **All existing tests pass**.
+
+## Outcome
+
+**Completed**: 2026-02-09
+
+**Changes made**:
+- Added `role: string` to `CompletedBeat` interface in `src/llm/types.ts`
+- `extractCompletedBeats` now includes `role: beat.role` in extracted beats
+- `validatePreservedBeats` now fails if a preserved beat's role changes
+- `formatCompletedBeats` output includes `[role]` (e.g., `[setup]`, `[turning_point]`)
+- Structure rewrite prompt updated: REQUIREMENTS includes role preservation, OUTPUT SHAPE includes `premise`/`pacingBudget`/`role`
+- Few-shot user example shows `[setup]` and `[turning_point]` on completed beats
+- Few-shot assistant response includes `premise`, `pacingBudget`, and `role` on every beat
+- Schema: rewrite uses same schema as generation (already handled by STOARCIMP-03)
+
+**Tests added/updated**:
+- `structure-rewrite-support.test.ts`: fixtures updated, new test for role change detection
+- `structure-rewrite-prompt.test.ts`: fixtures updated, tests for new OUTPUT SHAPE fields and few-shot content
+- `types.test.ts`: all `StoryStructure`, `StoryBeat`, and `CompletedBeat` literals updated
+
+**Verification**: `npm run typecheck` passes, 1587/1587 tests pass across 115 suites.
+
+**Deviations**: None. Schema item #6 confirmed as already handled by STOARCIMP-03.

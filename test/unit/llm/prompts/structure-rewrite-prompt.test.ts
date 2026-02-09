@@ -25,6 +25,7 @@ describe('buildStructureRewritePrompt', () => {
         beatId: '1.1',
         description: 'Escape the tribunal ambush in the port quarter',
         objective: 'Survive and recover a smuggled ledger',
+        role: 'setup',
         resolution: 'You escaped through maintenance sluices with the ledger intact.',
       },
     ],
@@ -62,11 +63,11 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain(baseContext.narrativeSummary);
   });
 
-  it('lists completed beats as canon with act/beat numbering, beat id, and resolution', () => {
+  it('lists completed beats as canon with act/beat numbering, beat id, role, and resolution', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     expect(user).toContain('CANON - DO NOT CHANGE');
-    expect(user).toContain('Act 1, Beat 1 (1.1)');
+    expect(user).toContain('Act 1, Beat 1 (1.1) [setup]');
     expect(user).toContain('Resolution: You escaped through maintenance sluices with the ledger intact.');
   });
 
@@ -109,12 +110,16 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('remaining beats in Act 3');
   });
 
-  it('includes JSON-compatible output shape description', () => {
+  it('includes JSON-compatible output shape description with premise, pacingBudget, and role', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     // Now uses JSON output shape matching the schema
     expect(user).toContain('OUTPUT SHAPE');
     expect(user).toContain('overallTheme: string');
+    expect(user).toContain('premise: string');
+    expect(user).toContain('pacingBudget:');
+    expect(user).toContain('targetPagesMin');
+    expect(user).toContain('targetPagesMax');
     expect(user).toContain('acts: exactly 3 items');
     expect(user).toContain('name: evocative act title');
     expect(user).toContain('objective: main goal for the act');
@@ -122,6 +127,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('entryCondition:');
     expect(user).toContain('beats: 2-4 items');
     expect(user).toContain('description: what should happen in this beat');
+    expect(user).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
   });
 
   it('instructs to preserve completed beats in the output', () => {
@@ -145,10 +151,20 @@ describe('buildStructureRewritePrompt', () => {
     expect(messages[2]?.role).toBe('assistant');
     expect(messages[3]?.role).toBe('user');
 
-    // Few-shot assistant response should be valid JSON
+    // Few-shot assistant response should be valid JSON with new fields
     const fewShotAssistant = messages[2]?.content ?? '';
     expect(fewShotAssistant).toContain('"overallTheme"');
+    expect(fewShotAssistant).toContain('"premise"');
+    expect(fewShotAssistant).toContain('"pacingBudget"');
+    expect(fewShotAssistant).toContain('"targetPagesMin"');
+    expect(fewShotAssistant).toContain('"targetPagesMax"');
     expect(fewShotAssistant).toContain('"acts"');
+    expect(fewShotAssistant).toContain('"role"');
+
+    // Few-shot user message should include role in completed beats
+    const fewShotUser = messages[1]?.content ?? '';
+    expect(fewShotUser).toContain('[setup]');
+    expect(fewShotUser).toContain('[turning_point]');
   });
 });
 

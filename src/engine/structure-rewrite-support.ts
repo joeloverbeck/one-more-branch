@@ -38,6 +38,7 @@ export function extractCompletedBeats(
       beatId: progression.beatId,
       description: beat.description,
       objective: beat.objective,
+      role: beat.role,
       resolution: progression.resolution ?? '',
     });
   }
@@ -115,7 +116,11 @@ export function validatePreservedBeats(
       return false;
     }
 
-    if (newBeat.description !== originalBeat.description || newBeat.objective !== originalBeat.objective) {
+    if (
+      newBeat.description !== originalBeat.description ||
+      newBeat.objective !== originalBeat.objective ||
+      newBeat.role !== originalBeat.role
+    ) {
       return false;
     }
   }

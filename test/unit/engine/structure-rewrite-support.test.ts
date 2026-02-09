@@ -15,6 +15,8 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../src/mod
 function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'Restore the broken kingdom',
+    premise: 'A reluctant hero must leave home to save a crumbling kingdom before it falls to ruin.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
         name: 'Act One',
@@ -22,8 +24,8 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
         beats: [
-          { description: 'A warning arrives', objective: 'Hear the warning' },
-          { description: 'A difficult choice', objective: 'Leave home' },
+          { description: 'A warning arrives', objective: 'Hear the warning', role: 'setup' },
+          { description: 'A difficult choice', objective: 'Leave home', role: 'turning_point' },
         ],
       },
       {
@@ -31,7 +33,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [{ description: 'First major setback', objective: 'Recover from loss' }],
+        beats: [{ description: 'First major setback', objective: 'Recover from loss', role: 'escalation' }],
       },
     ],
     rawResponse: '{"mock":true}',
@@ -76,6 +78,7 @@ describe('structure-rewrite-support', () => {
           beatId: '1.1',
           description: 'A warning arrives',
           objective: 'Hear the warning',
+          role: 'setup',
           resolution: 'Heard the warning.',
         },
         {
@@ -84,6 +87,7 @@ describe('structure-rewrite-support', () => {
           beatId: '1.2',
           description: 'A difficult choice',
           objective: 'Leave home',
+          role: 'turning_point',
           resolution: 'Left home.',
         },
         {
@@ -92,6 +96,7 @@ describe('structure-rewrite-support', () => {
           beatId: '2.1',
           description: 'First major setback',
           objective: 'Recover from loss',
+          role: 'escalation',
           resolution: 'Recovered from loss.',
         },
       ]);
@@ -185,6 +190,7 @@ describe('structure-rewrite-support', () => {
           beatId: '1.1',
           description: 'A warning arrives',
           objective: 'Hear the warning',
+          role: 'setup',
           resolution: 'Accepted the call.',
         },
       ]);
@@ -316,6 +322,32 @@ describe('structure-rewrite-support', () => {
       expect(validatePreservedBeats(original, next, state)).toBe(false);
     });
 
+    it('returns false when completed beat role changes', () => {
+      const original = createStructure();
+      const next: StoryStructure = {
+        ...createStructure(),
+        acts: [
+          {
+            ...original.acts[0]!,
+            beats: [
+              { ...original.acts[0]!.beats[0]!, role: 'resolution' as const },
+              original.acts[0]!.beats[1]!,
+            ],
+          },
+          original.acts[1]!,
+        ],
+      };
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      expect(validatePreservedBeats(original, next, state)).toBe(false);
+    });
+
     it('returns true when new beats are added after preserved beats', () => {
       const original = createStructure();
       const next: StoryStructure = {
@@ -325,7 +357,7 @@ describe('structure-rewrite-support', () => {
             ...original.acts[0]!,
             beats: [
               ...original.acts[0]!.beats,
-              { id: '1.3', description: 'Additional beat', objective: 'New objective' },
+              { id: '1.3', description: 'Additional beat', objective: 'New objective', role: 'escalation' as const },
             ],
           },
           original.acts[1]!,

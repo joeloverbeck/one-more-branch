@@ -476,10 +476,12 @@ describe('LLM types', () => {
               objective: 'Reach the gate',
               stakes: 'Failure means capture',
               entryCondition: 'Story begins',
-              beats: [{ id: '1.1', description: 'Approach', objective: 'Reach the gate' }],
+              beats: [{ id: '1.1', description: 'Approach', objective: 'Reach the gate', role: 'setup' }],
             },
           ],
           overallTheme: 'Courage under pressure',
+          premise: 'A lone warrior must breach an unbreakable gate to save a captive ally.',
+          pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
           generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         },
         accumulatedStructureState: {
@@ -514,8 +516,8 @@ describe('LLM types', () => {
           stakes: 'Failure means immediate danger',
           entryCondition: 'Story begins',
           beats: [
-            { id: '1.1', description: 'Inciting incident', objective: 'Respond to threat' },
-            { id: '1.2', description: 'Decision point', objective: 'Choose direction' },
+            { id: '1.1', description: 'Inciting incident', objective: 'Respond to threat', role: 'setup' },
+            { id: '1.2', description: 'Decision point', objective: 'Choose direction', role: 'turning_point' },
           ],
         },
         {
@@ -525,8 +527,8 @@ describe('LLM types', () => {
           stakes: 'Failure means loss of allies',
           entryCondition: 'Protagonist commits',
           beats: [
-            { id: '2.1', description: 'Complication', objective: 'Adapt plan' },
-            { id: '2.2', description: 'Setback', objective: 'Recover momentum' },
+            { id: '2.1', description: 'Complication', objective: 'Adapt plan', role: 'escalation' },
+            { id: '2.2', description: 'Setback', objective: 'Recover momentum', role: 'escalation' },
           ],
         },
         {
@@ -536,12 +538,14 @@ describe('LLM types', () => {
           stakes: 'Failure means catastrophe',
           entryCondition: 'Final confrontation begins',
           beats: [
-            { id: '3.1', description: 'Climax', objective: 'Confront antagonist' },
-            { id: '3.2', description: 'Aftermath', objective: 'Secure outcome' },
+            { id: '3.1', description: 'Climax', objective: 'Confront antagonist', role: 'turning_point' },
+            { id: '3.2', description: 'Aftermath', objective: 'Secure outcome', role: 'resolution' },
           ],
         },
       ],
       overallTheme: 'Hope under pressure',
+      premise: 'A team under siege must hold together when every option demands sacrifice.',
+      pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
       generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };
 
@@ -552,6 +556,7 @@ describe('LLM types', () => {
         beatId: '1.2',
         description: 'Decision point',
         objective: 'Choose direction',
+        role: 'turning_point',
         resolution: 'Chose to trust the rebel faction',
       };
 

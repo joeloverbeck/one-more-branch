@@ -45,6 +45,7 @@ export interface CompletedBeat {
   readonly beatId: string;
   readonly description: string;
   readonly objective: string;
+  readonly role: string;
   readonly resolution: string;
 }
 
