@@ -66,6 +66,7 @@ export function mergePreservedWithRegenerated(
       id: `${actIndex + 1}.${index + 1}`,
       description: beat.description,
       objective: beat.objective,
+      role: 'escalation' as const,
     }));
 
     const seenBeatSignature = new Set(
@@ -82,6 +83,7 @@ export function mergePreservedWithRegenerated(
         id: `${actIndex + 1}.${mergedBeats.length + 1}`,
         description: beat.description,
         objective: beat.objective,
+        role: beat.role,
       });
       seenBeatSignature.add(signature);
     }
@@ -103,6 +105,8 @@ export function mergePreservedWithRegenerated(
   return {
     acts: mergedActs,
     overallTheme: originalTheme,
+    premise: regeneratedStructure.premise,
+    pacingBudget: regeneratedStructure.pacingBudget,
     generatedAt: new Date(),
   };
 }
@@ -177,9 +181,12 @@ function parseStructureResponse(responseText: string): Omit<StructureGenerationR
         );
       }
 
+      const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
+
       return {
         description: beatData['description'],
         objective: beatData['objective'],
+        role,
       };
     });
 
@@ -192,8 +199,24 @@ function parseStructureResponse(responseText: string): Omit<StructureGenerationR
     };
   });
 
+  const premise = typeof data['premise'] === 'string' ? data['premise'] : data['overallTheme'];
+  const rawBudget = data['pacingBudget'];
+  const pacingBudget =
+    typeof rawBudget === 'object' && rawBudget !== null
+      ? {
+          targetPagesMin: typeof (rawBudget as Record<string, unknown>)['targetPagesMin'] === 'number'
+            ? ((rawBudget as Record<string, unknown>)['targetPagesMin'] as number)
+            : 15,
+          targetPagesMax: typeof (rawBudget as Record<string, unknown>)['targetPagesMax'] === 'number'
+            ? ((rawBudget as Record<string, unknown>)['targetPagesMax'] as number)
+            : 50,
+        }
+      : { targetPagesMin: 15, targetPagesMax: 50 };
+
   return {
     overallTheme: data['overallTheme'],
+    premise,
+    pacingBudget,
     acts,
   };
 }

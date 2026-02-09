@@ -1,4 +1,5 @@
 import {
+  BeatRole,
   Story,
   StoryId,
   StoryMetadata,
@@ -58,9 +59,12 @@ interface StoryStructureFileData {
       id: string;
       description: string;
       objective: string;
+      role: string;
     }>;
   }>;
   overallTheme: string;
+  premise: string;
+  pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   generatedAt: string;
 }
 
@@ -76,9 +80,12 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         id: beat.id,
         description: beat.description,
         objective: beat.objective,
+        role: beat.role,
       })),
     })),
     overallTheme: structure.overallTheme,
+    premise: structure.premise,
+    pacingBudget: structure.pacingBudget,
     generatedAt: structure.generatedAt.toISOString(),
   };
 }
@@ -95,9 +102,12 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         id: beat.id,
         description: beat.description,
         objective: beat.objective,
+        role: beat.role as BeatRole,
       })),
     })),
     overallTheme: data.overallTheme,
+    premise: data.premise,
+    pacingBudget: data.pacingBudget,
     generatedAt: new Date(data.generatedAt),
   };
 }

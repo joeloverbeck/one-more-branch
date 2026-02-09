@@ -23,6 +23,8 @@ import { generateStoryStructure } from '../../../src/llm/structure-generator';
 
 interface StructurePayload {
   overallTheme: string;
+  premise: string;
+  pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   acts: Array<{
     name: string;
     objective: string;
@@ -31,6 +33,7 @@ interface StructurePayload {
     beats: Array<{
       description: string;
       objective: string;
+      role: string;
     }>;
   }>;
 }
@@ -38,6 +41,8 @@ interface StructurePayload {
 function createValidStructurePayload(): StructurePayload {
   return {
     overallTheme: 'Expose the tribunal and reclaim your honor.',
+    premise: 'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     acts: [
       {
         name: 'Act I',
@@ -45,8 +50,8 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure means execution.',
         entryCondition: 'A public murder is pinned on the protagonist.',
         beats: [
-          { description: 'Find a hidden witness.', objective: 'Obtain credible evidence.' },
-          { description: 'Steal archive records.', objective: 'Secure proof before it burns.' },
+          { description: 'Find a hidden witness.', objective: 'Obtain credible evidence.', role: 'setup' },
+          { description: 'Steal archive records.', objective: 'Secure proof before it burns.', role: 'turning_point' },
         ],
       },
       {
@@ -55,8 +60,8 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure locks the city under martial rule.',
         entryCondition: 'The records name powerful conspirators.',
         beats: [
-          { description: 'Negotiate with rivals.', objective: 'Gain reluctant allies.' },
-          { description: 'Survive a rigged hearing.', objective: 'Force evidence into the open.' },
+          { description: 'Negotiate with rivals.', objective: 'Gain reluctant allies.', role: 'escalation' },
+          { description: 'Survive a rigged hearing.', objective: 'Force evidence into the open.', role: 'turning_point' },
         ],
       },
       {
@@ -65,8 +70,8 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure cements permanent authoritarian control.',
         entryCondition: 'Conspirators are identified and vulnerable.',
         beats: [
-          { description: 'Alliance fractures.', objective: 'Choose justice over revenge.' },
-          { description: 'Confront tribunal leaders.', objective: 'Resolve the central conflict.' },
+          { description: 'Alliance fractures.', objective: 'Choose justice over revenge.', role: 'turning_point' },
+          { description: 'Confront tribunal leaders.', objective: 'Resolve the central conflict.', role: 'resolution' },
         ],
       },
     ],
@@ -238,7 +243,7 @@ describe('structure-generator', () => {
     const payload = createValidStructurePayload();
     payload.acts[1] = {
       ...payload.acts[1],
-      beats: [{ description: 'Only one beat', objective: 'Insufficient beats.' }],
+      beats: [{ description: 'Only one beat', objective: 'Insufficient beats.', role: 'escalation' }],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
@@ -269,8 +274,8 @@ describe('structure-generator', () => {
     payload.acts[2] = {
       ...payload.acts[2],
       beats: [
-        { description: 'Complete the confrontation.', objective: 'Resolve climax.' },
-        { description: 'Missing objective', objective: undefined as unknown as string },
+        { description: 'Complete the confrontation.', objective: 'Resolve climax.', role: 'turning_point' },
+        { description: 'Missing objective', objective: undefined as unknown as string, role: 'resolution' },
       ],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));

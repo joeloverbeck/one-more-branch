@@ -1,5 +1,14 @@
-import type { StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
+import type { BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
 import type { StructureGenerationResult } from './structure-types';
+
+const VALID_BEAT_ROLES: readonly string[] = ['setup', 'escalation', 'turning_point', 'resolution'];
+
+function parseBeatRole(role: string): BeatRole {
+  if (VALID_BEAT_ROLES.includes(role)) {
+    return role as BeatRole;
+  }
+  return 'escalation';
+}
 
 /**
  * Creates StoryStructure from raw generation result.
@@ -12,6 +21,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       id: `${actId}.${beatIndex + 1}`,
       description: beatData.description,
       objective: beatData.objective,
+      role: parseBeatRole(beatData.role),
     }));
 
     return {
@@ -27,6 +37,8 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
   return {
     acts,
     overallTheme: result.overallTheme,
+    premise: result.premise,
+    pacingBudget: result.pacingBudget,
     generatedAt: new Date(),
   };
 }

@@ -1,9 +1,12 @@
 export type BeatStatus = 'pending' | 'active' | 'concluded';
 
+export type BeatRole = 'setup' | 'escalation' | 'turning_point' | 'resolution';
+
 export interface StoryBeat {
   readonly id: string;
   readonly description: string;
   readonly objective: string;
+  readonly role: BeatRole;
 }
 
 export interface StoryAct {
@@ -15,9 +18,16 @@ export interface StoryAct {
   readonly beats: readonly StoryBeat[];
 }
 
+export interface PacingBudget {
+  readonly targetPagesMin: number;
+  readonly targetPagesMax: number;
+}
+
 export interface StoryStructure {
   readonly acts: readonly StoryAct[];
   readonly overallTheme: string;
+  readonly premise: string;
+  readonly pacingBudget: PacingBudget;
   readonly generatedAt: Date;
 }
 
