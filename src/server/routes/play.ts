@@ -3,12 +3,18 @@ import { storyEngine } from '../../engine/index.js';
 import { LLMError } from '../../llm/types.js';
 import { generateBrowserLogScript, logger } from '../../logging/index.js';
 import { PageId, StoryId } from '../../models/index.js';
+import { addChoice } from '../../persistence/index.js';
 import { formatLLMError, getActDisplayInfo, wrapAsyncRoute } from '../utils/index.js';
 
 type ChoiceBody = {
   pageId?: number;
   choiceIndex?: number;
   apiKey?: string;
+};
+
+type CustomChoiceBody = {
+  pageId?: number;
+  choiceText?: string;
 };
 
 function parseRequestedPageId(pageQuery: unknown): number {
@@ -157,6 +163,45 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     }
 
     return res.status(500).json(errorResponse);
+  }
+}));
+
+playRoutes.post('/:storyId/custom-choice', wrapAsyncRoute(async (req: Request, res: Response) => {
+  const { storyId } = req.params;
+  const { pageId, choiceText } = req.body as CustomChoiceBody;
+
+  if (pageId === undefined || typeof choiceText !== 'string') {
+    return res.status(400).json({ error: 'Missing pageId or choiceText' });
+  }
+
+  const trimmed = choiceText.trim();
+  if (trimmed.length === 0) {
+    return res.status(400).json({ error: 'Choice text cannot be empty' });
+  }
+
+  if (trimmed.length > 500) {
+    return res.status(400).json({ error: 'Choice text must be 500 characters or fewer' });
+  }
+
+  try {
+    const updatedPage = await addChoice(storyId as StoryId, pageId as PageId, trimmed);
+
+    return res.json({
+      choices: updatedPage.choices.map(c => ({ text: c.text, nextPageId: c.nextPageId })),
+    });
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+
+    if (err.message.includes('not found')) {
+      return res.status(404).json({ error: err.message });
+    }
+
+    if (err.message.includes('ending page')) {
+      return res.status(409).json({ error: err.message });
+    }
+
+    logger.error('Error adding custom choice:', { error: err.message, stack: err.stack });
+    return res.status(500).json({ error: 'Failed to add custom choice' });
   }
 }));
 

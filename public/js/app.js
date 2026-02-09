@@ -100,6 +100,45 @@
       });
     }
 
+    function renderChoiceButtons(choiceList) {
+      return choiceList.map((choice, index) => {
+        const isExplored = Boolean(choice.nextPageId);
+        const choiceText = typeof choice.text === 'string' ? choice.text : '';
+
+        return `
+          <button
+            class="choice-btn"
+            data-choice-index="${index}"
+            ${isExplored ? 'data-explored="true"' : ''}
+          >
+            ${escapeHtml(choiceText)}
+            ${isExplored ? '<span class="explored-marker" title="Previously explored">↩</span>' : ''}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderCustomChoiceInput() {
+      return `
+        <div class="custom-choice-container">
+          <input type="text" class="custom-choice-input"
+                 placeholder="Introduce your own custom choice..."
+                 maxlength="500" />
+          <button type="button" class="custom-choice-btn">Add</button>
+        </div>
+      `;
+    }
+
+    function rebuildChoicesSection(choiceList) {
+      choices.innerHTML = renderChoiceButtons(choiceList);
+      const existingCustom = choicesSection.querySelector('.custom-choice-container');
+      if (existingCustom) {
+        existingCustom.remove();
+      }
+      choices.insertAdjacentHTML('afterend', renderCustomChoiceInput());
+      bindCustomChoiceEvents();
+    }
+
     function setChoicesDisabled(disabled) {
       const allButtons = choices.querySelectorAll('.choice-btn');
       allButtons.forEach((button) => {
@@ -159,6 +198,60 @@
         choicesSection.parentNode.insertBefore(banner, choicesSection);
       }
     }
+
+    function handleCustomChoiceSubmit() {
+      const input = choicesSection.querySelector('.custom-choice-input');
+      if (!input) return;
+
+      const text = input.value.trim();
+      if (!text) return;
+
+      const addBtn = choicesSection.querySelector('.custom-choice-btn');
+      if (addBtn) addBtn.disabled = true;
+      input.disabled = true;
+
+      fetch(`/play/${storyId}/custom-choice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageId: currentPageId, choiceText: text }),
+      })
+        .then(function(response) {
+          return response.json().then(function(data) {
+            if (!response.ok) {
+              throw new Error(data.error || 'Failed to add custom choice');
+            }
+            return data;
+          });
+        })
+        .then(function(data) {
+          rebuildChoicesSection(data.choices);
+        })
+        .catch(function(error) {
+          alert(error instanceof Error ? error.message : 'Failed to add custom choice');
+          if (addBtn) addBtn.disabled = false;
+          if (input) input.disabled = false;
+        });
+    }
+
+    function bindCustomChoiceEvents() {
+      const addBtn = choicesSection.querySelector('.custom-choice-btn');
+      const input = choicesSection.querySelector('.custom-choice-input');
+
+      if (addBtn) {
+        addBtn.addEventListener('click', handleCustomChoiceSubmit);
+      }
+      if (input) {
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleCustomChoiceSubmit();
+          }
+        });
+      }
+    }
+
+    // Bind events for the initial custom choice input rendered by the server
+    bindCustomChoiceEvents();
 
     choices.addEventListener('click', async (event) => {
       const clickedElement = event.target;
@@ -261,21 +354,7 @@
             </div>
           `;
         } else {
-          choices.innerHTML = data.page.choices.map((choice, index) => {
-            const isExplored = Boolean(choice.nextPageId);
-            const choiceText = typeof choice.text === 'string' ? choice.text : '';
-
-            return `
-              <button
-                class="choice-btn"
-                data-choice-index="${index}"
-                ${isExplored ? 'data-explored="true"' : ''}
-              >
-                ${escapeHtml(choiceText)}
-                ${isExplored ? '<span class="explored-marker" title="Previously explored">↩</span>' : ''}
-              </button>
-            `;
-          }).join('');
+          rebuildChoicesSection(data.page.choices);
         }
 
         narrative.scrollIntoView({ behavior: 'smooth' });
