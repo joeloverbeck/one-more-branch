@@ -81,16 +81,12 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     return res.status(400).json({ error: 'Missing pageId or choiceIndex' });
   }
 
-  if (!apiKey) {
-    return res.status(400).json({ error: 'API key required' });
-  }
-
   try {
     const result = await storyEngine.makeChoice({
       storyId: storyId as StoryId,
       pageId: pageId as PageId,
       choiceIndex,
-      apiKey,
+      apiKey: apiKey ?? undefined,
     });
 
     // Load story to compute actDisplayInfo for the new page

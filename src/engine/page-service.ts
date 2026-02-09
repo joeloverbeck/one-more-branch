@@ -7,6 +7,7 @@ import {
 import type { AnalystResult } from '../llm';
 import { logger } from '../logging/index.js';
 import {
+  AccumulatedStructureState,
   createEmptyAccumulatedStructureState,
   generatePageId,
   getLatestStructureVersion,
@@ -112,12 +113,16 @@ export async function generateNextPage(
   let analystResult: AnalystResult | null = null;
   const activeStructureForAnalyst = currentStructureVersion?.structure ?? story.structure;
   if (activeStructureForAnalyst && parentState.structureState) {
+    const analystStructureState: AccumulatedStructureState = {
+      ...parentState.structureState,
+      pagesInCurrentBeat: parentState.structureState.pagesInCurrentBeat + 1,
+    };
     try {
       analystResult = await generateAnalystEvaluation(
         {
           narrative: writerResult.narrative,
           structure: activeStructureForAnalyst,
-          accumulatedStructureState: parentState.structureState,
+          accumulatedStructureState: analystStructureState,
           activeState: parentState.accumulatedActiveState,
         },
         { apiKey },
@@ -222,7 +227,7 @@ export async function getOrGeneratePage(
   story: Story,
   parentPage: Page,
   choiceIndex: number,
-  apiKey: string,
+  apiKey?: string,
 ): Promise<{ page: Page; story: Story; wasGenerated: boolean; deviationInfo?: DeviationInfo }> {
   const choice = parentPage.choices[choiceIndex];
   if (!choice) {
@@ -242,6 +247,13 @@ export async function getOrGeneratePage(
     }
 
     return { page, story, wasGenerated: false };
+  }
+
+  if (!apiKey) {
+    throw new EngineError(
+      'API key is required to generate new pages',
+      'VALIDATION_FAILED',
+    );
   }
 
   const { page, updatedStory, deviationInfo } = await generateNextPage(story, parentPage, choiceIndex, apiKey);

@@ -503,7 +503,6 @@ main {
 
 .choice-btn:hover:not(:disabled),
 .choice-btn:focus-visible:not(:disabled) {
-  background: rgba(83, 52, 131, 0.35);
   transform: translateX(2px);
 }
 
@@ -513,26 +512,51 @@ main {
 }
 
 .explored-marker {
-  color: var(--color-success);
+  position: absolute;
+  right: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  border: 2px solid var(--color-success);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Choice row: pill + button side by side */
+.choice-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 /* Choice icon pill */
 .choice-icon-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
-  padding: 3px 6px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.25);
+  padding: 5px 8px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .choice-icon {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .choice-text {
@@ -551,11 +575,24 @@ main {
 .choice-btn[data-choice-type="CONFRONTATION"] { background: #922b21; color: #ffffff; }
 .choice-btn[data-choice-type="AVOIDANCE_RETREAT"] { background: #1a5253; color: #ffffff; }
 
-.choice-btn[data-choice-type]:hover:not(:disabled),
-.choice-btn[data-choice-type]:focus-visible:not(:disabled) {
-  filter: brightness(1.2);
-  transform: translateX(2px);
-}
+.choice-btn[data-choice-type="TACTICAL_APPROACH"]:hover:not(:disabled),
+.choice-btn[data-choice-type="TACTICAL_APPROACH"]:focus-visible:not(:disabled) { background: #21679a; }
+.choice-btn[data-choice-type="MORAL_DILEMMA"]:hover:not(:disabled),
+.choice-btn[data-choice-type="MORAL_DILEMMA"]:focus-visible:not(:disabled) { background: #9b4dbe; }
+.choice-btn[data-choice-type="IDENTITY_EXPRESSION"]:hover:not(:disabled),
+.choice-btn[data-choice-type="IDENTITY_EXPRESSION"]:focus-visible:not(:disabled) { background: #d4b10d; }
+.choice-btn[data-choice-type="RELATIONSHIP_SHIFT"]:hover:not(:disabled),
+.choice-btn[data-choice-type="RELATIONSHIP_SHIFT"]:focus-visible:not(:disabled) { background: #e04535; }
+.choice-btn[data-choice-type="RESOURCE_COMMITMENT"]:hover:not(:disabled),
+.choice-btn[data-choice-type="RESOURCE_COMMITMENT"]:focus-visible:not(:disabled) { background: #efc40f; }
+.choice-btn[data-choice-type="INVESTIGATION"]:hover:not(:disabled),
+.choice-btn[data-choice-type="INVESTIGATION"]:focus-visible:not(:disabled) { background: #1ab394; }
+.choice-btn[data-choice-type="PATH_DIVERGENCE"]:hover:not(:disabled),
+.choice-btn[data-choice-type="PATH_DIVERGENCE"]:focus-visible:not(:disabled) { background: #e96a1b; }
+.choice-btn[data-choice-type="CONFRONTATION"]:hover:not(:disabled),
+.choice-btn[data-choice-type="CONFRONTATION"]:focus-visible:not(:disabled) { background: #b83429; }
+.choice-btn[data-choice-type="AVOIDANCE_RETREAT"]:hover:not(:disabled),
+.choice-btn[data-choice-type="AVOIDANCE_RETREAT"]:focus-visible:not(:disabled) { background: #216869; }
 
 .choice-btn[data-choice-type][data-explored] {
   opacity: 0.75;
@@ -745,12 +782,16 @@ main {
   }
 
   .choice-icon {
-    width: 18px;
-    height: 18px;
+    width: 26px;
+    height: 26px;
   }
 
   .choice-icon-pill {
-    padding: 2px 4px;
-    gap: 3px;
+    padding: 4px 6px;
+    gap: 4px;
+  }
+
+  .choice-row {
+    gap: 0.4rem;
   }
 }

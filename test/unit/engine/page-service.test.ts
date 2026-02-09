@@ -1351,6 +1351,88 @@ describe('page-service', () => {
       expect(deviationInfo).toBeUndefined();
     });
 
+    it('passes pre-incremented pagesInCurrentBeat to analyst evaluation', async () => {
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = {
+        ...createInitialStructureState(structure),
+        pagesInCurrentBeat: 2,
+      };
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You scout the perimeter.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Enter now'), createChoice('Wait for nightfall')],
+        inventoryChanges: { added: ['Scouted perimeter'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You slip through the gap in the fence.',
+        choices: [
+          { text: 'Head left', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Head right', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        currentLocation: 'Inside the compound',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'focus',
+          primaryIntensity: 'moderate' as const,
+          primaryCause: 'entering the compound',
+          secondaryEmotions: [],
+          dominantMotivation: 'reach the target',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        rawResponse: 'raw-analyst',
+      });
+
+      await generateNextPage(story, parentPage, 0, 'test-key');
+
+      const firstAnalystCall = mockedGenerateAnalystEvaluation.mock.calls[0];
+      expect(firstAnalystCall).toBeDefined();
+      if (!firstAnalystCall) {
+        return;
+      }
+
+      const [analystInput, analystOptions] = firstAnalystCall;
+      expect(analystInput.accumulatedStructureState.pagesInCurrentBeat).toBe(
+        parentStructureState.pagesInCurrentBeat + 1,
+      );
+      expect(analystOptions).toEqual({ apiKey: 'test-key' });
+    });
+
     it('skips analyst call when story has no structure', async () => {
       const story = buildStory(); // No structure
       const parentPage = createPage({
@@ -1883,6 +1965,58 @@ describe('page-service', () => {
       );
       expect(mockedStorage.loadPage).not.toHaveBeenCalled();
       expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
+    });
+
+    it('returns existing page without apiKey when choice is already explored', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A', parsePageId(2)), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const existingPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'Existing page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [],
+        isEnding: true,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedInventory: parentPage.accumulatedInventory,
+      });
+
+      mockedStorage.loadPage.mockResolvedValue(existingPage);
+
+      const result = await getOrGeneratePage(story, parentPage, 0);
+
+      expect(result.wasGenerated).toBe(false);
+      expect(result.page).toBe(existingPage);
+      expect(result.story).toBe(story);
+      expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
+    });
+
+    it('throws VALIDATION_FAILED when apiKey is missing and choice needs generation', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      await expect(getOrGeneratePage(story, parentPage, 0)).rejects.toMatchObject({
+        name: 'EngineError',
+        code: 'VALIDATION_FAILED',
+      });
+      expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
+      expect(mockedStorage.savePage).not.toHaveBeenCalled();
     });
 
     it('returns undefined deviationInfo when loading cached page', async () => {

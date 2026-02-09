@@ -51,32 +51,34 @@
         <h3>What do you do?</h3>
         <div class="choices" id="choices">
           <% page.choices.forEach((choice, index) => { %>
-          <button
-            class="choice-btn"
-            data-choice-index="<%= index %>"
-            data-choice-type="<%= choice.choiceType %>"
-            data-primary-delta="<%= choice.primaryDelta %>"
-            <%= choice.nextPageId ? 'data-explored="true"' : '' %>
-          >
+          <div class="choice-row">
             <span class="choice-icon-pill" aria-hidden="true">
               <img class="choice-icon choice-icon--type"
                    src="/images/icons/<%= choice.choiceType.toLowerCase().replace(/_/g, '-') %>.png"
                    alt=""
                    title="<%= choiceTypeLabels[choice.choiceType] ? choiceTypeLabels[choice.choiceType].label : '' %>"
-                   width="24" height="24" loading="lazy"
+                   width="32" height="32" loading="lazy"
                    onerror="this.style.display='none'">
               <img class="choice-icon choice-icon--delta"
                    src="/images/icons/<%= choice.primaryDelta.toLowerCase().replace(/_/g, '-') %>.png"
                    alt=""
                    title="<%= primaryDeltaLabels[choice.primaryDelta] || '' %>"
-                   width="24" height="24" loading="lazy"
+                   width="32" height="32" loading="lazy"
                    onerror="this.style.display='none'">
             </span>
-            <span class="choice-text"><%= choice.text %></span>
+            <button
+              class="choice-btn"
+              data-choice-index="<%= index %>"
+              data-choice-type="<%= choice.choiceType %>"
+              data-primary-delta="<%= choice.primaryDelta %>"
+              <%= choice.nextPageId ? 'data-explored="true"' : '' %>
+            >
+              <span class="choice-text"><%= choice.text %></span>
+            </button>
             <% if (choice.nextPageId) { %>
             <span class="explored-marker" title="Previously explored">↩</span>
             <% } %>
-          </button>
+          </div>
           <% }) %>
         </div>
         <div class="custom-choice-container">

@@ -37,7 +37,7 @@ export interface MakeChoiceOptions {
   readonly storyId: StoryId;
   readonly pageId: PageId;
   readonly choiceIndex: number;
-  readonly apiKey: string;
+  readonly apiKey?: string;
 }
 
 export type EngineErrorCode =

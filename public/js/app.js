@@ -131,30 +131,32 @@
             pillHtml += '<img class="choice-icon choice-icon--type"'
               + ' src="' + escapeHtml(typeIconPath) + '"'
               + ' alt="" title="' + escapeHtml(typeLabel) + '"'
-              + ' width="24" height="24" loading="lazy"'
+              + ' width="32" height="32" loading="lazy"'
               + " onerror=\"this.style.display='none'\">";
           }
           if (deltaIconPath) {
             pillHtml += '<img class="choice-icon choice-icon--delta"'
               + ' src="' + escapeHtml(deltaIconPath) + '"'
               + ' alt="" title="' + escapeHtml(deltaLabel) + '"'
-              + ' width="24" height="24" loading="lazy"'
+              + ' width="32" height="32" loading="lazy"'
               + " onerror=\"this.style.display='none'\">";
           }
           pillHtml += '</span>';
         }
 
-        return '<button'
+        return '<div class="choice-row">'
+          + pillHtml
+          + '<button'
           + ' class="choice-btn"'
           + ' data-choice-index="' + index + '"'
           + ' data-choice-type="' + escapeHtml(choiceType) + '"'
           + ' data-primary-delta="' + escapeHtml(primaryDelta) + '"'
           + (isExplored ? ' data-explored="true"' : '')
           + '>'
-          + pillHtml
           + '<span class="choice-text">' + escapeHtml(choiceText) + '</span>'
+          + '</button>'
           + (isExplored ? '<span class="explored-marker" title="Previously explored">&#8617;</span>' : '')
-          + '</button>';
+          + '</div>';
       }).join('');
     }
 
@@ -364,21 +366,26 @@
       }
 
       try {
-        const apiKey = await ensureApiKey();
+        const isExplored = button.dataset.explored === 'true';
+        const apiKey = isExplored ? getApiKey() : await ensureApiKey();
 
         setChoicesDisabled(true);
         loading.style.display = 'flex';
+
+        const body = {
+          pageId: currentPageId,
+          choiceIndex,
+        };
+        if (apiKey) {
+          body.apiKey = apiKey;
+        }
 
         const response = await fetch(`/play/${storyId}/choice`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            pageId: currentPageId,
-            choiceIndex,
-            apiKey,
-          }),
+          body: JSON.stringify(body),
         });
 
         const data = await response.json();

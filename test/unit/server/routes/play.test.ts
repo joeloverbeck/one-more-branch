@@ -340,19 +340,48 @@ describe('playRoutes', () => {
       expect(json).toHaveBeenCalledWith({ error: 'Missing pageId or choiceIndex' });
     });
 
-    it('returns 400 JSON when apiKey is missing', async () => {
-      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice');
+    it('passes request to makeChoice when apiKey is missing (explored choices do not need it)', async () => {
+      const resultPage = createPage({
+        id: 2,
+        narrativeText: 'Existing page.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [],
+        isEnding: true,
+        parentPageId: 1,
+        parentChoiceIndex: 0,
+      });
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: false,
+      });
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
 
-      await getRouteHandler('post', '/:storyId/choice')(
+      void getRouteHandler('post', '/:storyId/choice')(
         { params: { storyId }, body: { pageId: 1, choiceIndex: 0 } } as Request,
         { status, json } as unknown as Response,
       );
+      await flushPromises();
 
-      expect(makeChoiceSpy).not.toHaveBeenCalled();
-      expect(status).toHaveBeenCalledWith(400);
-      expect(json).toHaveBeenCalledWith({ error: 'API key required' });
+      expect(makeChoiceSpy).toHaveBeenCalledWith({
+        storyId,
+        pageId: 1,
+        choiceIndex: 0,
+        apiKey: undefined,
+      });
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          wasGenerated: false,
+        }),
+      );
     });
   });
 
