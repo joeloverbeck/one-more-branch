@@ -341,6 +341,8 @@
             characterConcept: formData.get('characterConcept'),
             worldbuilding: formData.get('worldbuilding'),
             tone: formData.get('tone'),
+            npcs: formData.get('npcs'),
+            startingSituation: formData.get('startingSituation'),
             apiKey: formData.get('apiKey'),
           }),
         });
