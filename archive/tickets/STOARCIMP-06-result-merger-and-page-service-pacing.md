@@ -1,5 +1,7 @@
 # STOARCIMP-06: Wire pacing fields through result merger and page-service runtime
 
+**Status**: ✅ COMPLETED
+
 **Phase**: 2 (Analyst Pacing Detection)
 **Spec sections**: 2.6, 2.7
 **Depends on**: STOARCIMP-02, STOARCIMP-05
@@ -57,3 +59,22 @@ Complete the pacing detection runtime path:
 - **No actual rewrite for pacing**: `recommendedAction: 'rewrite'` only logs -- no structure rewrite triggered.
 - **Fire-once nudge**: `pacingNudge` clears after consumption unless analyst fires again.
 - **All existing tests pass**.
+
+## Outcome
+
+**Completed**: 2026-02-09
+
+### What was changed
+- `src/engine/page-service.ts`: Added pacing response block after deviation handling in `generateNextPage`. Handles nudge (sets `pacingNudge`), rewrite (logs warning, deferred), and none/default (clears `pacingNudge`). Deviation takes priority.
+- `src/llm/result-merger.ts`: Already had pacing fields wired through from STOARCIMP-05. No changes needed.
+- `test/unit/llm/result-merger.test.ts`: Added 3 pacing-specific tests (acceptance criteria 1-3).
+- `test/unit/engine/page-service.test.ts`: Added 4 pacing response tests (acceptance criteria 4-7). Also fixed all existing analyst mocks to include required pacing fields and all inline `StoryStructure` objects to include `premise`, `pacingBudget`, and beat `role`.
+
+### Deviations from plan
+- The result merger already had pacing fields wired through (done in STOARCIMP-05), so no production code changes were needed there -- only new tests.
+- Existing test mocks needed updating for `premise`, `pacingBudget`, beat `role`, and pacing fields that were added in prior tickets.
+
+### Verification
+- `npm run typecheck`: passes
+- `npm run lint`: passes (0 errors, 0 warnings)
+- `npm test`: 1600 tests pass across 115 suites
