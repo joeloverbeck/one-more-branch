@@ -1,4 +1,4 @@
-import { Page, PageId, Story, StoryId } from '../models';
+import { Npc, Page, PageId, Story, StoryId } from '../models';
 
 export interface StartStoryResult {
   readonly story: Story;
@@ -28,7 +28,7 @@ export interface StartStoryOptions {
   readonly characterConcept: string;
   readonly worldbuilding?: string;
   readonly tone?: string;
-  readonly npcs?: string;
+  readonly npcs?: readonly Npc[];
   readonly startingSituation?: string;
   readonly apiKey: string;
 }

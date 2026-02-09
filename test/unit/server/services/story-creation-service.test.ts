@@ -144,18 +144,21 @@ describe('story-creation-service', () => {
       }
     });
 
-    it('trims npcs and startingSituation when provided', () => {
+    it('trims and filters npcs when provided', () => {
       const result = validateStoryInput({
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
-        npcs: '  Gandalf the wizard  ',
+        npcs: [
+          { name: '  Gandalf  ', description: '  A wise wizard  ' },
+          { name: '', description: 'No name' },
+        ],
         startingSituation: '  In a dark tavern  ',
         apiKey: 'sk-valid-api-key-12345',
       });
 
       expect(result.valid).toBe(true);
       if (result.valid) {
-        expect(result.trimmed.npcs).toBe('Gandalf the wizard');
+        expect(result.trimmed.npcs).toEqual([{ name: 'Gandalf', description: 'A wise wizard' }]);
         expect(result.trimmed.startingSituation).toBe('In a dark tavern');
       }
     });

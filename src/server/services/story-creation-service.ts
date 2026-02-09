@@ -1,12 +1,13 @@
 import type { LLMError } from '../../llm/types.js';
 import { logger } from '../../logging/index.js';
+import type { Npc } from '../../models/npc.js';
 
 export type StoryFormInput = {
   title?: string;
   characterConcept?: string;
   worldbuilding?: string;
   tone?: string;
-  npcs?: string;
+  npcs?: Array<{ name?: string; description?: string }>;
   startingSituation?: string;
   apiKey?: string;
 };
@@ -16,7 +17,7 @@ export type TrimmedStoryInput = {
   characterConcept: string;
   worldbuilding?: string;
   tone?: string;
-  npcs?: string;
+  npcs?: Npc[];
   startingSituation?: string;
   apiKey: string;
 };
@@ -46,6 +47,13 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     return { valid: false, error: 'OpenRouter API key is required' };
   }
 
+  const validNpcs = input.npcs
+    ?.map(npc => ({
+      name: (npc.name ?? '').trim(),
+      description: (npc.description ?? '').trim(),
+    }))
+    .filter(npc => npc.name.length > 0 && npc.description.length > 0);
+
   return {
     valid: true,
     trimmed: {
@@ -53,7 +61,7 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
       characterConcept: trimmedCharacterConcept,
       worldbuilding: input.worldbuilding?.trim(),
       tone: input.tone?.trim(),
-      npcs: input.npcs?.trim(),
+      npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
       startingSituation: input.startingSituation?.trim(),
       apiKey: trimmedApiKey,
     },

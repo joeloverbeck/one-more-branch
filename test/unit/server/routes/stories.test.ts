@@ -67,7 +67,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
-        values: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
       });
     });
 
@@ -94,7 +94,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
-        values: { title: 'Test Title', characterConcept: '   too short   ', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: '   too short   ', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
       });
     });
 
@@ -115,7 +115,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
-        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
       });
     });
 
@@ -142,7 +142,7 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
-        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
       });
 
       const renderCalls = render.mock.calls as unknown[][];
@@ -233,6 +233,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -270,6 +272,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -306,6 +310,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -342,6 +348,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -379,6 +387,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -417,6 +427,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -455,6 +467,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -491,6 +505,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -524,6 +540,8 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
         },
       });
     });
@@ -755,7 +773,7 @@ describe('storyRoutes', () => {
             characterConcept: 'Test Concept Here',
             worldbuilding: 'World',
             tone: 'Epic',
-            npcs: '  Gandalf the Grey, wise wizard  ',
+            npcs: [{ name: '  Gandalf the Grey  ', description: '  wise wizard  ' }],
             startingSituation: '  You awaken in a dark cave  ',
             apiKey: 'valid-key-12345',
           },
@@ -768,7 +786,7 @@ describe('storyRoutes', () => {
         characterConcept: 'Test Concept Here',
         worldbuilding: 'World',
         tone: 'Epic',
-        npcs: 'Gandalf the Grey, wise wizard',
+        npcs: [{ name: 'Gandalf the Grey', description: 'wise wizard' }],
         startingSituation: 'You awaken in a dark cave',
         apiKey: 'valid-key-12345',
       });

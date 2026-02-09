@@ -128,4 +128,6 @@ export {
   validateStoryIntegrity,
 } from './validation';
 
+export { Npc, formatNpcsForPrompt, isNpcArray } from './npc';
+
 export { setModelLogger, getModelLogger, modelWarn } from './model-logger';

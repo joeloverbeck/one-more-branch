@@ -1,3 +1,4 @@
+import { formatNpcsForPrompt } from '../../models/npc.js';
 import { buildFewShotMessages } from '../examples.js';
 import type { ChatMessage, OpeningContext, PromptOptions } from '../types.js';
 import { buildOpeningSystemPrompt, composeOpeningDataRules } from './system-prompt.js';
@@ -18,9 +19,9 @@ ${context.worldbuilding}
 `
     : '';
 
-  const npcsSection = context.npcs
+  const npcsSection = context.npcs && context.npcs.length > 0
     ? `NPCS (Available Characters):
-${context.npcs}
+${formatNpcsForPrompt(context.npcs)}
 
 These characters are available for use in the story. Introduce them when narratively appropriate - you don't need to include all of them, and you don't need to introduce them all in the opening.
 

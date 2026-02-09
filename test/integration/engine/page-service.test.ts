@@ -402,7 +402,7 @@ describe('page-service integration', () => {
         characterConcept: `${TEST_PREFIX} npcs-passthrough`,
         worldbuilding: 'A world with memorable characters.',
         tone: 'dramatic',
-        npcs: 'Grizzled barkeep named Holt who knows everyone',
+        npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
       });
       await storage.saveStory(baseStory);
       createdStoryIds.add(baseStory.id);
@@ -410,7 +410,7 @@ describe('page-service integration', () => {
       // Reload from disk to prove persistence roundtrip
       const reloadedStory = await storage.loadStory(baseStory.id);
       expect(reloadedStory).not.toBeNull();
-      expect(reloadedStory!.npcs).toBe('Grizzled barkeep named Holt who knows everyone');
+      expect(reloadedStory!.npcs).toEqual([{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }]);
 
       const parentPage = createPage({
         id: parsePageId(1),
@@ -429,7 +429,7 @@ describe('page-service integration', () => {
 
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          npcs: 'Grizzled barkeep named Holt who knows everyone',
+          npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
         }),
         { apiKey: 'test-api-key' },
       );

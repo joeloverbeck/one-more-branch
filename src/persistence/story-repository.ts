@@ -30,7 +30,7 @@ interface StoryFileData {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
-  npcs: string | null;
+  npcs: Array<{ name: string; description: string }> | null;
   startingSituation: string | null;
   globalCanon: string[];
   globalCharacterCanon: Record<string, string[]>;
@@ -157,7 +157,7 @@ function storyToFileData(story: Story): StoryFileData {
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
-    npcs: story.npcs ?? null,
+    npcs: story.npcs ? story.npcs.map(npc => ({ name: npc.name, description: npc.description })) : null,
     startingSituation: story.startingSituation ?? null,
     globalCanon: [...story.globalCanon],
     globalCharacterCanon,
@@ -169,14 +169,6 @@ function storyToFileData(story: Story): StoryFileData {
 }
 
 function fileDataToStory(data: StoryFileData): Story {
-  const rawData = data as unknown as Record<string, unknown>;
-  if (!('npcs' in rawData) || !('startingSituation' in rawData)) {
-    throw new Error(
-      `Story file ${data.id} is missing required fields: npcs and/or startingSituation. ` +
-        'This story was created before these fields were tracked. Please recreate the story.',
-    );
-  }
-
   // Migration: handle existing stories without globalCharacterCanon
   const globalCharacterCanon: Record<string, readonly string[]> = {};
   if (data.globalCharacterCanon) {
@@ -195,7 +187,9 @@ function fileDataToStory(data: StoryFileData): Story {
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
-    ...(data.npcs !== null ? { npcs: data.npcs } : {}),
+    ...(data.npcs !== null && data.npcs.length > 0
+      ? { npcs: data.npcs.map(npc => ({ name: npc.name, description: npc.description })) }
+      : {}),
     ...(data.startingSituation !== null ? { startingSituation: data.startingSituation } : {}),
     globalCanon: [...data.globalCanon],
     globalCharacterCanon,

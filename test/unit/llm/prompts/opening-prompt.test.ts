@@ -155,14 +155,15 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
       characterConcept: 'A brave knight',
       worldbuilding: 'Medieval fantasy',
       tone: 'Adventure',
-      npcs: 'Gandalf the wizard, a wise mentor',
+      npcs: [{ name: 'Gandalf', description: 'A wise mentor' }],
     };
 
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
     expect(userMessage).toContain('NPCS (Available Characters)');
-    expect(userMessage).toContain('Gandalf the wizard, a wise mentor');
+    expect(userMessage).toContain('NPC: Gandalf');
+    expect(userMessage).toContain('A wise mentor');
     expect(userMessage).toContain('you don\'t need to include all of them');
   });
 
@@ -213,7 +214,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
       characterConcept: 'A brave knight',
       worldbuilding: 'Medieval fantasy',
       tone: 'Adventure',
-      npcs: 'The wise wizard',
+      npcs: [{ name: 'Merlin', description: 'The wise wizard' }],
       startingSituation: 'You wake up in a dungeon',
     };
 

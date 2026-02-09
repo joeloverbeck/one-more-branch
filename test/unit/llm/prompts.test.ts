@@ -1025,12 +1025,13 @@ describe('buildContinuationPrompt', () => {
     it('includes NPC section when npcs is provided', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
-        npcs: 'Gandalf the wizard, a wise mentor who guides the hero',
+        npcs: [{ name: 'Gandalf', description: 'A wise mentor who guides the hero' }],
       });
 
       const content = getUserMessage(messages);
       expect(content).toContain('NPCS (Available Characters)');
-      expect(content).toContain('Gandalf the wizard, a wise mentor who guides the hero');
+      expect(content).toContain('NPC: Gandalf');
+      expect(content).toContain('A wise mentor who guides the hero');
       expect(content).toContain('Introduce or involve them when narratively appropriate');
     });
 
@@ -1041,10 +1042,10 @@ describe('buildContinuationPrompt', () => {
       expect(content).not.toContain('NPCS (Available Characters)');
     });
 
-    it('omits NPC section when npcs is empty string', () => {
+    it('omits NPC section when npcs is empty array', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
-        npcs: '',
+        npcs: [],
       });
 
       const content = getUserMessage(messages);
@@ -1064,7 +1065,7 @@ describe('buildContinuationPrompt', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
         worldbuilding: 'A medieval fantasy world with magic',
-        npcs: 'The wise wizard Merlin',
+        npcs: [{ name: 'Merlin', description: 'The wise wizard' }],
       });
 
       const content = getUserMessage(messages);

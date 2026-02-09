@@ -333,14 +333,16 @@ describe('story-repository', () => {
   });
 
   it('saveStory/loadStory preserves npcs field', async () => {
-    const story = buildTestStory({ npcs: 'Grizzled barkeep named Holt' });
+    const story = buildTestStory({
+      npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
+    });
     createdStoryIds.add(story.id);
 
     await saveStory(story);
     const loaded = await loadStory(story.id);
 
     expect(loaded).not.toBeNull();
-    expect(loaded?.npcs).toBe('Grizzled barkeep named Holt');
+    expect(loaded?.npcs).toEqual([{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }]);
   });
 
   it('saveStory/loadStory preserves startingSituation field', async () => {
@@ -356,7 +358,7 @@ describe('story-repository', () => {
 
   it('saveStory/loadStory preserves both npcs and startingSituation together', async () => {
     const story = buildTestStory({
-      npcs: 'A mysterious oracle',
+      npcs: [{ name: 'Oracle', description: 'A mysterious oracle' }],
       startingSituation: 'Standing at the crossroads',
     });
     createdStoryIds.add(story.id);
@@ -365,7 +367,7 @@ describe('story-repository', () => {
     const loaded = await loadStory(story.id);
 
     expect(loaded).not.toBeNull();
-    expect(loaded?.npcs).toBe('A mysterious oracle');
+    expect(loaded?.npcs).toEqual([{ name: 'Oracle', description: 'A mysterious oracle' }]);
     expect(loaded?.startingSituation).toBe('Standing at the crossroads');
   });
 
@@ -384,26 +386,23 @@ describe('story-repository', () => {
     expect(parsed['startingSituation']).toBeNull();
   });
 
-  it('loadStory throws when npcs or startingSituation keys are missing from file', async () => {
-    const story = buildTestStory();
+  it('saveStory/loadStory roundtrips npcs as array of objects', async () => {
+    const story = buildTestStory({
+      npcs: [
+        { name: 'Alice', description: 'A mentor figure' },
+        { name: 'Bob', description: 'An antagonist' },
+      ],
+    });
     createdStoryIds.add(story.id);
 
-    await ensureDirectory(getStoryDir(story.id));
-    await writeJsonFile(getStoryFilePath(story.id), {
-      id: story.id,
-      title: story.title,
-      characterConcept: story.characterConcept,
-      worldbuilding: story.worldbuilding,
-      tone: story.tone,
-      globalCanon: story.globalCanon,
-      globalCharacterCanon: story.globalCharacterCanon,
-      structure: null,
-      createdAt: story.createdAt.toISOString(),
-      updatedAt: story.updatedAt.toISOString(),
-    });
+    await saveStory(story);
 
-    await expect(loadStory(story.id)).rejects.toThrow(
-      /missing required fields: npcs and\/or startingSituation/,
-    );
+    const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
+    const parsed = JSON.parse(persisted) as Record<string, unknown>;
+
+    expect(parsed['npcs']).toEqual([
+      { name: 'Alice', description: 'A mentor figure' },
+      { name: 'Bob', description: 'An antagonist' },
+    ]);
   });
 });

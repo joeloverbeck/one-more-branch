@@ -96,10 +96,16 @@ describe('Story', () => {
       const story = createStory({
         title: 'Test',
         characterConcept: 'A brave knight',
-        npcs: 'Gandalf the wizard, Frodo the hobbit',
+        npcs: [
+          { name: 'Gandalf', description: 'A wise wizard' },
+          { name: 'Frodo', description: 'A brave hobbit' },
+        ],
       });
 
-      expect(story.npcs).toBe('Gandalf the wizard, Frodo the hobbit');
+      expect(story.npcs).toEqual([
+        { name: 'Gandalf', description: 'A wise wizard' },
+        { name: 'Frodo', description: 'A brave hobbit' },
+      ]);
     });
 
     it('creates story with startingSituation when provided', () => {
@@ -112,23 +118,27 @@ describe('Story', () => {
       expect(story.startingSituation).toBe('You wake up in a dungeon cell');
     });
 
-    it('trims npcs and startingSituation', () => {
+    it('filters out npcs with empty name or description', () => {
       const story = createStory({
         title: 'Test',
         characterConcept: 'A brave knight',
-        npcs: '  Gandalf  ',
+        npcs: [
+          { name: 'Gandalf', description: 'A wizard' },
+          { name: '', description: 'No name' },
+          { name: 'Frodo', description: '' },
+        ],
         startingSituation: '  Dungeon cell  ',
       });
 
-      expect(story.npcs).toBe('Gandalf');
+      expect(story.npcs).toEqual([{ name: 'Gandalf', description: 'A wizard' }]);
       expect(story.startingSituation).toBe('Dungeon cell');
     });
 
-    it('sets npcs to undefined when empty string', () => {
+    it('sets npcs to undefined when empty array', () => {
       const story = createStory({
         title: 'Test',
         characterConcept: 'A brave knight',
-        npcs: '',
+        npcs: [],
       });
 
       expect(story.npcs).toBeUndefined();
@@ -144,11 +154,14 @@ describe('Story', () => {
       expect(story.startingSituation).toBeUndefined();
     });
 
-    it('sets npcs to undefined when whitespace only', () => {
+    it('sets npcs to undefined when all entries have empty names', () => {
       const story = createStory({
         title: 'Test',
         characterConcept: 'A brave knight',
-        npcs: '   ',
+        npcs: [
+          { name: '   ', description: 'A wizard' },
+          { name: '', description: 'A hobbit' },
+        ],
       });
 
       expect(story.npcs).toBeUndefined();

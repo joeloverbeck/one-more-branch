@@ -24,7 +24,7 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
     characterConcept: input.characterConcept,
     worldbuilding: input.worldbuilding,
     tone: input.tone,
-    npcs: input.npcs,
+    npcs: input.npcs ?? [],
     startingSituation: input.startingSituation,
   };
 

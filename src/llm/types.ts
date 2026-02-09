@@ -1,3 +1,4 @@
+import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { ActiveState } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
@@ -91,7 +92,7 @@ export interface ContinuationContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
-  npcs?: string;
+  npcs?: readonly Npc[];
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc?: string | null;
@@ -116,7 +117,7 @@ export interface OpeningContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
-  npcs?: string;
+  npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
 }

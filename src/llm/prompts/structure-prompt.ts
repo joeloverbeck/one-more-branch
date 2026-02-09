@@ -1,3 +1,5 @@
+import type { Npc } from '../../models/npc.js';
+import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { ChatMessage, PromptOptions } from '../types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 
@@ -5,7 +7,7 @@ export interface StructureContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
-  npcs?: string;
+  npcs?: readonly Npc[];
   startingSituation?: string;
 }
 
@@ -89,8 +91,8 @@ export function buildStructurePrompt(
     ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
     : '';
 
-  const npcsSection = context.npcs
-    ? `NPCS (Available Characters):\n${context.npcs}\n\n`
+  const npcsSection = context.npcs && context.npcs.length > 0
+    ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
     : '';
 
   const startingSituationSection = context.startingSituation

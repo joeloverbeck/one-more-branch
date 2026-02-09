@@ -1,4 +1,5 @@
 import { StoryId, generateStoryId, isStoryId } from './id';
+import { Npc } from './npc';
 import { StoryStructure } from './story-arc';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
 import {
@@ -16,7 +17,7 @@ export interface Story {
   readonly characterConcept: string;
   readonly worldbuilding: string;
   readonly tone: StoryTone;
-  readonly npcs?: string;
+  readonly npcs?: readonly Npc[];
   readonly startingSituation?: string;
   globalCanon: GlobalCanon;
   globalCharacterCanon: GlobalCharacterCanon;
@@ -31,7 +32,7 @@ export interface CreateStoryData {
   characterConcept: string;
   worldbuilding?: string;
   tone?: string;
-  npcs?: string;
+  npcs?: readonly Npc[];
   startingSituation?: string;
 }
 
@@ -58,7 +59,10 @@ export function createStory(data: CreateStoryData): Story {
 
   const now = new Date();
 
-  const npcs = data.npcs?.trim();
+  const validNpcs = data.npcs?.filter(
+    npc => npc.name.trim().length > 0 && npc.description.trim().length > 0,
+  );
+  const npcs = validNpcs && validNpcs.length > 0 ? validNpcs : undefined;
   const startingSituation = data.startingSituation?.trim();
 
   return {
@@ -67,7 +71,7 @@ export function createStory(data: CreateStoryData): Story {
     characterConcept,
     worldbuilding: data.worldbuilding?.trim() ?? '',
     tone: data.tone?.trim() ?? 'fantasy adventure',
-    npcs: npcs && npcs.length > 0 ? npcs : undefined,
+    npcs,
     startingSituation: startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
     globalCanon: [],
     globalCharacterCanon: {},

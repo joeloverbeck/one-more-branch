@@ -57,13 +57,34 @@
         </div>
 
         <div class="form-group">
-          <label for="npcs">NPCs (Optional)</label>
-          <textarea
-            id="npcs"
-            name="npcs"
-            rows="4"
-            placeholder="Describe recurring characters: allies, rivals, mentors, enemies. Include their names, personalities, relationships to the protagonist, and motivations."
-          ><%= values.npcs || '' %></textarea>
+          <label>NPCs (Optional)</label>
+          <div id="npc-entries">
+            <% const npcList = values.npcs || []; %>
+            <% for (let i = 0; i < npcList.length; i++) { %>
+            <div class="npc-entry" data-index="<%= i %>">
+              <div class="npc-entry-header">
+                <strong><%= npcList[i].name %></strong>
+                <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
+              </div>
+              <p class="npc-entry-description"><%= npcList[i].description %></p>
+            </div>
+            <% } %>
+          </div>
+          <div class="npc-add-form">
+            <input
+              type="text"
+              id="npc-name-input"
+              placeholder="NPC name"
+              maxlength="100"
+            >
+            <textarea
+              id="npc-desc-input"
+              rows="2"
+              placeholder="Describe this character: personality, role, relationship to the protagonist."
+            ></textarea>
+            <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
+          </div>
+          <input type="hidden" id="npcs-json" name="npcsJson" value="">
         </div>
 
         <div class="form-group">
