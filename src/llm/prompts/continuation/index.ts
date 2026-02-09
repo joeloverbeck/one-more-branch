@@ -11,10 +11,6 @@ export {
 
 // Story structure section (beat evaluation, deviation detection)
 export {
-  DEVIATION_DETECTION_SECTION,
-  getRemainingBeats,
-  buildActiveStateForBeatEvaluation,
-  buildStoryStructureSection,
   buildWriterStructureContext,
   buildAnalystStructureEvaluation,
 } from './story-structure-section.js';

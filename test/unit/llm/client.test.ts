@@ -19,7 +19,6 @@ jest.mock('../../../src/logging/index.js', () => ({
 }));
 
 import {
-  generateContinuationPage,
   generateOpeningPage,
   validateApiKey,
 } from '../../../src/llm/client';
@@ -29,28 +28,6 @@ const openingContext = {
   characterConcept: 'A haunted cartographer',
   worldbuilding: 'A city built atop buried catacombs',
   tone: 'gothic mystery',
-};
-
-const continuationContext = {
-  characterConcept: 'A haunted cartographer',
-  worldbuilding: 'A city built atop buried catacombs',
-  tone: 'gothic mystery',
-  globalCanon: ['The lower vault floods at midnight'],
-  globalCharacterCanon: {},
-  previousNarrative:
-    'You stand at the iron grate while lantern light trembles across black water and old carvings.',
-  selectedChoice: 'Pry open the grate and descend into the vault',
-  accumulatedState: ['You stole a key from the sexton.'],
-  accumulatedInventory: [],
-  accumulatedHealth: [],
-  accumulatedCharacterState: {},
-  activeState: {
-    currentLocation: '',
-    activeThreats: [],
-    activeConstraints: [],
-    openThreads: [],
-  },
-  grandparentNarrative: null,
 };
 
 const validStructuredPayload = {
@@ -324,29 +301,6 @@ describe('llm client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should use exponential backoff and succeed if retry succeeds', async () => {
-    const timeoutSpy = jest.spyOn(global, 'setTimeout');
-
-    fetchMock
-      .mockResolvedValueOnce(createErrorResponse(500, 'server error'))
-      .mockResolvedValueOnce(createErrorResponse(500, 'server error'))
-      .mockResolvedValueOnce(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
-
-    const pending = generateContinuationPage(continuationContext, { apiKey: 'test-key' });
-
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-
-    const result = await pending;
-
-    const delays = timeoutSpy.mock.calls.map(call => Number(call[1] ?? 0));
-
-    expect(result.narrative.length).toBeGreaterThan(50);
-    expect(result.deviation.detected).toBe(false);
-    expect(delays).toEqual([1000, 2000]);
-    timeoutSpy.mockRestore();
-  });
-
   it('should treat schema validation failures as retryable', async () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
@@ -388,19 +342,6 @@ describe('llm client', () => {
     expect(mockLogPrompt).toHaveBeenCalledWith(
       mockLogger,
       'opening',
-      expect.any(Array),
-    );
-    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
-  });
-
-  it('should log continuation prompts before API call', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
-
-    await generateContinuationPage(continuationContext, { apiKey: 'test-key' });
-
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'continuation',
       expect.any(Array),
     );
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);

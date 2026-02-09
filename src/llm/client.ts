@@ -9,7 +9,6 @@ import { withRetry } from './retry.js';
 import {
   type AnalystContext,
   type AnalystResult,
-  type ContinuationGenerationResult,
   type ContinuationContext,
   type GenerationOptions,
   type GenerationResult,
@@ -26,19 +25,6 @@ export async function generateOpeningPage(
   const messages = buildOpeningPrompt(context, promptOptions);
 
   logPrompt(logger, 'opening', messages);
-
-  const resolvedOptions = { ...options, promptOptions };
-  return withRetry(() => generateWithFallback(messages, resolvedOptions));
-}
-
-export async function generateContinuationPage(
-  context: ContinuationContext,
-  options: GenerationOptions,
-): Promise<ContinuationGenerationResult> {
-  const promptOptions = resolvePromptOptions(options);
-  const messages = buildContinuationPrompt(context, promptOptions);
-
-  logPrompt(logger, 'continuation', messages);
 
   const resolvedOptions = { ...options, promptOptions };
   return withRetry(() => generateWithFallback(messages, resolvedOptions));

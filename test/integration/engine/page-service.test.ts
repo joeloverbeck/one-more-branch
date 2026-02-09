@@ -394,6 +394,45 @@ describe('page-service integration', () => {
       expect(page.accumulatedCharacterState['Companion']).toContain('Loyal');
     });
 
+    it('passes npcs from story to writer prompt after disk roundtrip', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} npcs-passthrough`,
+        worldbuilding: 'A world with memorable characters.',
+        tone: 'dramatic',
+        npcs: 'Grizzled barkeep named Holt who knows everyone',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      // Reload from disk to prove persistence roundtrip
+      const reloadedStory = await storage.loadStory(baseStory.id);
+      expect(reloadedStory).not.toBeNull();
+      expect(reloadedStory!.npcs).toBe('Grizzled barkeep named Holt who knows everyone');
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Holt pours you a drink.',
+        choices: [createChoice('Ask about the rumor'), createChoice('Leave quietly')],
+        stateChanges: { added: ['Met Holt'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      await storage.savePage(reloadedStory!.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+
+      await generateNextPage(reloadedStory!, parentPage, 0, 'test-api-key');
+
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          npcs: 'Grizzled barkeep named Holt who knows everyone',
+        }),
+        { apiKey: 'test-api-key' },
+      );
+    });
+
     it('uses parent structureVersionId for branch isolation', async () => {
       const structure = buildStructure();
       const baseStory = createStory({
