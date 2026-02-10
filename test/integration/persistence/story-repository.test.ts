@@ -32,12 +32,26 @@ function buildStructure(): StoryStructure {
         stakes: 'City falls to chaos',
         entryCondition: 'Signal is detected',
         beats: [
-          { id: '1.1', description: 'Trace source', objective: 'Find the tower' },
-          { id: '1.2', description: 'Enter tower', objective: 'Reach control room' },
+          {
+            id: '1.1',
+            name: 'Signal triangulation',
+            description: 'Trace source',
+            objective: 'Find the tower',
+            role: 'setup',
+          },
+          {
+            id: '1.2',
+            name: 'Tower breach',
+            description: 'Enter tower',
+            objective: 'Reach control room',
+            role: 'turning_point',
+          },
         ],
       },
     ],
     overallTheme: 'Trust and sacrifice',
+    premise: 'A city scout races to decode a hostile transmission before dawn.',
+    pacingBudget: { targetPagesMin: 12, targetPagesMax: 28 },
     generatedAt: new Date('2025-02-01T00:00:00.000Z'),
   };
 }
@@ -132,8 +146,20 @@ describe('story-repository integration', () => {
           stakes: 'Trust collapses',
           entryCondition: 'Crisis begins',
           beats: [
-            { id: '1.1', description: 'Initial disruption', objective: 'Establish risk' },
-            { id: '1.2', description: 'Forced response', objective: 'Commit to action' },
+            {
+              id: '1.1',
+              name: 'City blackout',
+              description: 'Initial disruption',
+              objective: 'Establish risk',
+              role: 'setup',
+            },
+            {
+              id: '1.2',
+              name: 'Emergency briefing',
+              description: 'Forced response',
+              objective: 'Commit to action',
+              role: 'escalation',
+            },
           ],
         },
         {
@@ -143,8 +169,20 @@ describe('story-repository integration', () => {
           stakes: 'Allies fracture',
           entryCondition: 'The threat adapts',
           beats: [
-            { id: '2.1', description: 'Countermove', objective: 'Regain initiative' },
-            { id: '2.2', description: 'Setback', objective: 'Survive consequences' },
+            {
+              id: '2.1',
+              name: 'Counterintelligence push',
+              description: 'Countermove',
+              objective: 'Regain initiative',
+              role: 'turning_point',
+            },
+            {
+              id: '2.2',
+              name: 'Trust fracture',
+              description: 'Setback',
+              objective: 'Survive consequences',
+              role: 'escalation',
+            },
           ],
         },
         {
@@ -154,12 +192,26 @@ describe('story-repository integration', () => {
           stakes: 'Future order is decided',
           entryCondition: 'A final opening appears',
           beats: [
-            { id: '3.1', description: 'Final gambit', objective: 'Expose truth' },
-            { id: '3.2', description: 'Aftermath', objective: 'Stabilize outcomes' },
+            {
+              id: '3.1',
+              name: 'Broadcast the proof',
+              description: 'Final gambit',
+              objective: 'Expose truth',
+              role: 'turning_point',
+            },
+            {
+              id: '3.2',
+              name: 'Reconstruction council',
+              description: 'Aftermath',
+              objective: 'Stabilize outcomes',
+              role: 'resolution',
+            },
           ],
         },
       ],
       overallTheme: 'Integrity under pressure',
+      premise: 'A resistance cell must expose a fabricated war narrative.',
+      pacingBudget: { targetPagesMin: 18, targetPagesMax: 36 },
       generatedAt: new Date('2025-02-03T00:00:00.000Z'),
     };
 

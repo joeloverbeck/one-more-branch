@@ -205,6 +205,13 @@ describe('story-repository', () => {
     const loaded = await loadStory(story.id);
 
     expect(loaded?.structureVersions).toEqual([...structureVersions]);
+
+    const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
+    const parsed = JSON.parse(persisted) as {
+      structureVersions: Array<{ structure: { acts: Array<{ beats: Array<{ name: string }> }> } }>;
+    };
+    expect(parsed.structureVersions[0]?.structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
+    expect(parsed.structureVersions[1]?.structure.acts[0]?.beats[0]?.name).toBe('Ambush escape');
   });
 
   it('loadStory defaults structureVersions to empty array for legacy files', async () => {
