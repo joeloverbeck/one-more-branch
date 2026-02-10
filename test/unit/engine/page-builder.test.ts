@@ -55,7 +55,7 @@ describe('page-builder', () => {
         currentLocation: 'Ancient treasury',
         threatsAdded: ['Guardian awakened'],
         constraintsAdded: ['Must remain silent'],
-        threadsAdded: ['Mystery of the vault'],
+        threadsAdded: [{ text: 'Mystery of the vault', threadType: 'MYSTERY', urgency: 'HIGH' }],
         inventoryAdded: ['Sword', 'Shield'],
         healthAdded: ['Minor wound'],
         characterStateChangesAdded: [{ characterName: 'Ally', states: ['Trusting'] }],
@@ -103,7 +103,7 @@ describe('page-builder', () => {
       const result = buildMockGenerationResult({
         currentLocation: 'Hidden chamber',
         threatsAdded: ['Trap triggered'],
-        threadsAdded: ['Ancient secret revealed'],
+        threadsAdded: [{ text: 'Ancient secret revealed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
         characterStateChangesRemoved: ['cs-1'],
       });
       const context: ContinuationPageBuildContext = {

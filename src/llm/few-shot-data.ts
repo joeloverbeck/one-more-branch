@@ -44,8 +44,16 @@ export const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
     ],
     constraintsRemoved: [],
     threadsAdded: [
-      'The journal speaks of a library beneath the academy',
-      'Where did this journal come from and who wrote it?',
+      {
+        text: 'The journal speaks of a library beneath the academy',
+        threadType: 'MYSTERY',
+        urgency: 'HIGH',
+      },
+      {
+        text: 'Where did this journal come from and who wrote it?',
+        threadType: 'MYSTERY',
+        urgency: 'MEDIUM',
+      },
     ],
     threadsResolved: [],
     newCanonFacts: [
@@ -135,7 +143,11 @@ export const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
       'cn-1',
     ],
     threadsAdded: [
-      'The third rune on the staff may open a hidden passage',
+      {
+        text: 'The third rune on the staff may open a hidden passage',
+        threadType: 'QUEST',
+        urgency: 'HIGH',
+      },
     ],
     threadsResolved: [],
     newCanonFacts: [

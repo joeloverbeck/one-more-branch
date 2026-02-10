@@ -127,6 +127,22 @@ function normalizeRawResponse(rawJson: unknown): unknown {
   return rawJson;
 }
 
+function normalizeThreadsAdded(
+  threadsAdded: Array<{ text: string; threadType: WriterResult['threadsAdded'][number]['threadType']; urgency: WriterResult['threadsAdded'][number]['urgency'] }>,
+): WriterResult['threadsAdded'] {
+  return threadsAdded.map((thread, index) => {
+    const text = thread.text.trim();
+    if (!text) {
+      throw new Error(`threadsAdded[${index}].text must not be empty after trim`);
+    }
+    return {
+      text,
+      threadType: thread.threadType,
+      urgency: thread.urgency,
+    };
+  });
+}
+
 export function validateWriterResponse(rawJson: unknown, rawResponse: string): WriterResult {
   const normalizedJson = normalizeRawResponse(rawJson);
   const validated = WriterResultSchema.parse(normalizedJson);
@@ -162,7 +178,7 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): W
     threatsRemoved: validated.threatsRemoved.map((t) => t.trim()).filter((t) => t),
     constraintsAdded: validated.constraintsAdded.map((c) => c.trim()).filter((c) => c),
     constraintsRemoved: validated.constraintsRemoved.map((c) => c.trim()).filter((c) => c),
-    threadsAdded: validated.threadsAdded.map((t) => t.trim()).filter((t) => t),
+    threadsAdded: normalizeThreadsAdded(validated.threadsAdded),
     threadsResolved: validated.threadsResolved.map((t) => t.trim()).filter((t) => t),
     newCanonFacts: validated.newCanonFacts.map((fact) => fact.trim()).filter((fact) => fact),
     newCharacterCanonFacts,

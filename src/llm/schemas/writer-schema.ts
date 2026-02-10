@@ -93,9 +93,24 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
         },
         threadsAdded: {
           type: 'array',
-          items: { type: 'string' },
+          items: {
+            type: 'object',
+            properties: {
+              text: { type: 'string' },
+              threadType: {
+                type: 'string',
+                enum: ['MYSTERY', 'QUEST', 'RELATIONSHIP', 'DANGER', 'INFORMATION', 'RESOURCE', 'MORAL'],
+              },
+              urgency: {
+                type: 'string',
+                enum: ['LOW', 'MEDIUM', 'HIGH'],
+              },
+            },
+            required: ['text', 'threadType', 'urgency'],
+            additionalProperties: false,
+          },
           description:
-            'Plain text description of new thread (server assigns ID). E.g., "A villager mentioned their child has been missing for three days". Empty array if none.',
+            'New open thread objects (server assigns ID) with text + classification tags. E.g., [{ "text": "A villager mentioned their child has been missing for three days", "threadType": "MYSTERY", "urgency": "HIGH" }]. Empty array if none.',
         },
         threadsResolved: {
           type: 'array',

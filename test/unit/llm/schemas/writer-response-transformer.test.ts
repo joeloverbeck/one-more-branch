@@ -17,7 +17,9 @@ describe('validateWriterResponse', () => {
         threatsRemoved: [],
         constraintsAdded: ['CONSTRAINT_TIME: 5 minutes left'],
         constraintsRemoved: [],
-        threadsAdded: ['THREAD_MYSTERY: Unknown letter'],
+        threadsAdded: [
+          { text: 'THREAD_MYSTERY: Unknown letter', threadType: 'MYSTERY', urgency: 'HIGH' },
+        ],
         threadsResolved: [],
         newCanonFacts: ['The keep is haunted by old wardens'],
         newCharacterCanonFacts: [
@@ -52,7 +54,9 @@ describe('validateWriterResponse', () => {
     expect(result.currentLocation).toBe('The ruined keep');
     expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
     expect(result.constraintsAdded).toEqual(['CONSTRAINT_TIME: 5 minutes left']);
-    expect(result.threadsAdded).toEqual(['THREAD_MYSTERY: Unknown letter']);
+    expect(result.threadsAdded).toEqual([
+      { text: 'THREAD_MYSTERY: Unknown letter', threadType: 'MYSTERY', urgency: 'HIGH' },
+    ]);
     expect(result.newCanonFacts).toEqual(['The keep is haunted by old wardens']);
     expect(result.newCharacterCanonFacts).toEqual({
       'Dr. Cohen': ['He is a psychiatrist'],
@@ -81,7 +85,9 @@ describe('validateWriterResponse', () => {
         threatsRemoved: [],
         constraintsAdded: ['  CONSTRAINT_TIME: 5 minutes  '],
         constraintsRemoved: [],
-        threadsAdded: ['  THREAD_MYSTERY: Unknown letter  '],
+        threadsAdded: [
+          { text: '  THREAD_MYSTERY: Unknown letter  ', threadType: 'MYSTERY', urgency: 'HIGH' },
+        ],
         threadsResolved: [],
         newCanonFacts: ['  The keep is haunted  '],
         newCharacterCanonFacts: [
@@ -116,7 +122,9 @@ describe('validateWriterResponse', () => {
     expect(result.currentLocation).toBe('The ruined keep');
     expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
     expect(result.constraintsAdded).toEqual(['CONSTRAINT_TIME: 5 minutes']);
-    expect(result.threadsAdded).toEqual(['THREAD_MYSTERY: Unknown letter']);
+    expect(result.threadsAdded).toEqual([
+      { text: 'THREAD_MYSTERY: Unknown letter', threadType: 'MYSTERY', urgency: 'HIGH' },
+    ]);
     expect(result.newCanonFacts).toEqual(['The keep is haunted']);
     expect(result.newCharacterCanonFacts).toEqual({
       'Dr. Cohen': ['He is a psychiatrist'],
@@ -371,5 +379,43 @@ describe('validateWriterResponse', () => {
     );
 
     expect(result.characterStateChangesRemoved).toEqual(['cs-1', 'cs-3']);
+  });
+
+  it('should reject legacy string-array threadsAdded payloads', () => {
+    expect(() =>
+      validateWriterResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: [
+            { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+            { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
+          threadsAdded: ['Legacy thread shape'],
+          newCanonFacts: [],
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          isEnding: false,
+        },
+        'raw json response',
+      ),
+    ).toThrow();
+  });
+
+  it('should reject typed threadsAdded entries with empty text after trim', () => {
+    expect(() =>
+      validateWriterResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: [
+            { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+            { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
+          threadsAdded: [{ text: '   ', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
+          newCanonFacts: [],
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          isEnding: false,
+        },
+        'raw json response',
+      ),
+    ).toThrow('threadsAdded[0].text must not be empty after trim');
   });
 });

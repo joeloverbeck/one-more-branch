@@ -39,7 +39,7 @@ const openingResult = {
   threatsRemoved: [],
   constraintsAdded: ['Sibling hidden in cellar'],
   constraintsRemoved: [],
-  threadsAdded: ['Time fractures detected at district boundary'],
+  threadsAdded: [{ text: 'Time fractures detected at district boundary', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
   threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'anxiety',
@@ -77,7 +77,7 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: ['Beacon machinery humming with temporal energy'],
+      threadsAdded: [{ text: 'Beacon machinery humming with temporal energy', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'tension',
@@ -149,7 +149,7 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       threatsRemoved: ['Immediate patrol threat'],
       constraintsAdded: ['Time moves slowly here'],
       constraintsRemoved: [],
-      threadsAdded: ['Abandoned warehouse discovered'],
+      threadsAdded: [{ text: 'Abandoned warehouse discovered', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'relief',

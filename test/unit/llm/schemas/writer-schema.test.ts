@@ -40,7 +40,18 @@ describe('WRITER_GENERATION_SCHEMA', () => {
 
   it('should define active state fields with correct types', () => {
     const schema = WRITER_GENERATION_SCHEMA.json_schema.schema as {
-      properties: Record<string, { type: string; items?: { type: string }; description: string }>;
+      properties: Record<
+        string,
+        {
+          type: string;
+          items?: {
+            type: string;
+            required?: string[];
+            properties?: Record<string, { type: string; enum?: string[] }>;
+          };
+          description: string;
+        }
+      >;
     };
 
     expect(schema.properties.currentLocation.type).toBe('string');
@@ -53,7 +64,26 @@ describe('WRITER_GENERATION_SCHEMA', () => {
     expect(schema.properties.constraintsRemoved.type).toBe('array');
     expect(schema.properties.constraintsRemoved.items?.type).toBe('string');
     expect(schema.properties.threadsAdded.type).toBe('array');
-    expect(schema.properties.threadsAdded.items?.type).toBe('string');
+    expect(schema.properties.threadsAdded.items?.type).toBe('object');
+    expect(schema.properties.threadsAdded.items?.required).toEqual([
+      'text',
+      'threadType',
+      'urgency',
+    ]);
+    expect(schema.properties.threadsAdded.items?.properties?.threadType?.enum).toEqual([
+      'MYSTERY',
+      'QUEST',
+      'RELATIONSHIP',
+      'DANGER',
+      'INFORMATION',
+      'RESOURCE',
+      'MORAL',
+    ]);
+    expect(schema.properties.threadsAdded.items?.properties?.urgency?.enum).toEqual([
+      'LOW',
+      'MEDIUM',
+      'HIGH',
+    ]);
     expect(schema.properties.threadsResolved.type).toBe('array');
     expect(schema.properties.threadsResolved.items?.type).toBe('string');
     expect(schema.properties.characterStateChangesRemoved.type).toBe('array');
@@ -71,7 +101,7 @@ describe('WRITER_GENERATION_SCHEMA', () => {
       'Plain text description of new constraint',
     );
     expect(schema.properties.constraintsRemoved.description).toContain('["cn-1"]');
-    expect(schema.properties.threadsAdded.description).toContain('Plain text description of new thread');
+    expect(schema.properties.threadsAdded.description).toContain('text + classification tags');
     expect(schema.properties.threadsResolved.description).toContain('["td-1"]');
     expect(schema.properties.inventoryRemoved.description).toContain('["inv-1"]');
     expect(schema.properties.healthRemoved.description).toContain('["hp-2"]');

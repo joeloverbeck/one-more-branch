@@ -19,7 +19,7 @@ describe('Active state pipeline integration', () => {
     threatsRemoved: [],
     constraintsAdded: ['Thick smoke limits visibility to a few feet'],
     constraintsRemoved: [],
-    threadsAdded: ['The innkeeper is trapped behind the bar'],
+    threadsAdded: [{ text: 'The innkeeper is trapped behind the bar', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
     threadsResolved: [],
     newCanonFacts: ['The Golden Flagon tavern is the oldest building in Millhaven'],
     newCharacterCanonFacts: [{ characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] }],
@@ -53,7 +53,7 @@ describe('Active state pipeline integration', () => {
       'Thick smoke limits visibility to a few feet',
     ]);
     expect(generationResult.threadsAdded).toEqual([
-      'The innkeeper is trapped behind the bar',
+      { text: 'The innkeeper is trapped behind the bar', threadType: 'INFORMATION', urgency: 'MEDIUM' },
     ]);
 
     // Step 2: Build page via page-builder
@@ -105,7 +105,7 @@ describe('Active state pipeline integration', () => {
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: ['The innkeeper is trapped'],
+      threadsAdded: [{ text: 'The innkeeper is trapped', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: [],
@@ -130,7 +130,9 @@ describe('Active state pipeline integration', () => {
 
     expect(writerResult.currentLocation).toBe('Burning tavern');
     expect(writerResult.threatsAdded).toEqual(['The tavern is engulfed in flames']);
-    expect(writerResult.threadsAdded).toEqual(['The innkeeper is trapped']);
+    expect(writerResult.threadsAdded).toEqual([
+      { text: 'The innkeeper is trapped', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+    ]);
   });
 
   it('should default to empty active state when LLM returns empty arrays', () => {

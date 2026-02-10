@@ -2,7 +2,7 @@ import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { PageId } from '../models/id.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
-import type { ActiveState, KeyedEntry } from '../models/state/index.js';
+import type { ActiveState, KeyedEntry, ThreadType, Urgency } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 
 export interface AncestorSummary {
@@ -130,7 +130,7 @@ export interface WriterResult {
   threatsRemoved: string[];
   constraintsAdded: string[];
   constraintsRemoved: string[];
-  threadsAdded: string[];
+  threadsAdded: ThreadAdd[];
   threadsResolved: string[];
   newCanonFacts: string[];
   newCharacterCanonFacts: Record<string, string[]>;
@@ -144,6 +144,12 @@ export interface WriterResult {
   isEnding: boolean;
   sceneSummary: string;
   rawResponse: string;
+}
+
+export interface ThreadAdd {
+  text: string;
+  threadType: ThreadType;
+  urgency: Urgency;
 }
 
 export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';

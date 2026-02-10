@@ -229,20 +229,34 @@ describe('buildFewShotMessages', () => {
       }
     });
 
-    it('should use plain text format for thread additions', () => {
+    it('should use typed object format for thread additions', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '';
 
       interface ExampleResponse {
-        threadsAdded: string[];
+        threadsAdded: Array<{
+          text: string;
+          threadType: string;
+          urgency: string;
+        }>;
       }
 
       const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
 
       expect(parsed.threadsAdded.length).toBeGreaterThan(0);
       for (const thread of parsed.threadsAdded) {
-        expect(thread).not.toContain(':');
-        expect(thread).not.toMatch(/^THREAD_/);
+        expect(thread.text).not.toContain(':');
+        expect(thread.text).not.toMatch(/^THREAD_/);
+        expect([
+          'MYSTERY',
+          'QUEST',
+          'RELATIONSHIP',
+          'DANGER',
+          'INFORMATION',
+          'RESOURCE',
+          'MORAL',
+        ]).toContain(thread.threadType);
+        expect(['LOW', 'MEDIUM', 'HIGH']).toContain(thread.urgency);
       }
     });
 

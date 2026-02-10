@@ -396,7 +396,7 @@ describe('LLM types', () => {
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: ['THREAD_LOST: Lost the trail'],
+        threadsAdded: [{ text: 'THREAD_LOST: Lost the trail', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
         threadsResolved: [],
         newCanonFacts: ['The forest is cursed.'],
         newCharacterCanonFacts: { Elara: ['Elara fears the dark'] },

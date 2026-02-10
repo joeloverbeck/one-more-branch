@@ -99,7 +99,7 @@ const openingResult = {
   threatsRemoved: [],
   constraintsAdded: [],
   constraintsRemoved: [],
-  threadsAdded: ['Clock anomaly synchronization mystery'],
+  threadsAdded: [{ text: 'Clock anomaly synchronization mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
   threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'intrigue',
@@ -137,7 +137,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
       threatsRemoved: ['Masked courier'],
       constraintsAdded: [`Courier evidence secured on page ${pageNumber}`],
       constraintsRemoved: [],
-      threadsAdded: ['Archive signal linked to patrol schedules'],
+      threadsAdded: [{ text: 'Archive signal linked to patrol schedules', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'determination',
@@ -173,7 +173,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
       threatsRemoved: [],
       constraintsAdded: [`Signal chamber logs copied on page ${pageNumber}`],
       constraintsRemoved: [],
-      threadsAdded: ['Clock weaponization for disinformation confirmed'],
+      threadsAdded: [{ text: 'Clock weaponization for disinformation confirmed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'triumph',

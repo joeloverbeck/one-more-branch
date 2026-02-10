@@ -73,7 +73,9 @@ describe('schema pipeline integration', () => {
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: ['The plague archives mystery'],
+        threadsAdded: [
+          { text: 'The plague archives mystery', threadType: 'MYSTERY', urgency: 'HIGH' },
+        ],
         threadsResolved: [],
         newCanonFacts: ['The keep was abandoned after the plague'],
         newCharacterCanonFacts: [],
@@ -100,7 +102,9 @@ describe('schema pipeline integration', () => {
       expect(result.choices).toHaveLength(2);
       expect(result.currentLocation).toEqual('The ruined keep entrance');
       expect(result.threatsAdded).toEqual(['Unstable stone ceiling']);
-      expect(result.threadsAdded).toEqual(['The plague archives mystery']);
+      expect(result.threadsAdded).toEqual([
+        { text: 'The plague archives mystery', threadType: 'MYSTERY', urgency: 'HIGH' },
+      ]);
       expect(result.newCanonFacts).toEqual(['The keep was abandoned after the plague']);
       expect(result.inventoryAdded).toEqual(['Rusty key']);
       expect(result.inventoryRemoved).toEqual([]);
@@ -122,7 +126,7 @@ describe('schema pipeline integration', () => {
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: ['Elder Varn encounter'],
+        threadsAdded: [{ text: 'Elder Varn encounter', threadType: 'RELATIONSHIP', urgency: 'MEDIUM' }],
         threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
@@ -206,7 +210,7 @@ describe('schema pipeline integration', () => {
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: ['The hidden cache discovery'],
+        threadsAdded: [{ text: 'The hidden cache discovery', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
         threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
@@ -395,7 +399,7 @@ describe('schema pipeline integration', () => {
         threatsRemoved: [],
         constraintsAdded: ['  Limited visibility  '],
         constraintsRemoved: [],
-        threadsAdded: ['  The encoded ledger  '],
+        threadsAdded: [{ text: '  The encoded ledger  ', threadType: 'MYSTERY', urgency: 'HIGH' }],
         threadsResolved: [],
         newCanonFacts: ['  The keep is haunted  '],
         newCharacterCanonFacts: [
@@ -426,7 +430,9 @@ describe('schema pipeline integration', () => {
       expect(result.currentLocation).toEqual('The haunted keep');
       expect(result.threatsAdded).toEqual(['Ghostly presence']);
       expect(result.constraintsAdded).toEqual(['Limited visibility']);
-      expect(result.threadsAdded).toEqual(['The encoded ledger']);
+      expect(result.threadsAdded).toEqual([
+        { text: 'The encoded ledger', threadType: 'MYSTERY', urgency: 'HIGH' },
+      ]);
       expect(result.newCanonFacts).toEqual(['The keep is haunted']);
       expect(result.newCharacterCanonFacts).toEqual({
         'Elder Varn': ['She is wise'],
@@ -449,7 +455,7 @@ describe('schema pipeline integration', () => {
         threatsRemoved: [],
         constraintsAdded: ['', 'Locked gate'],
         constraintsRemoved: [],
-        threadsAdded: ['The mystery', '', '   '],
+        threadsAdded: [{ text: 'The mystery', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
         threadsResolved: [],
         newCanonFacts: ['The keep is haunted', '', '   '],
         newCharacterCanonFacts: [
@@ -475,7 +481,9 @@ describe('schema pipeline integration', () => {
 
       expect(result.threatsAdded).toEqual(['Ghostly watcher']);
       expect(result.constraintsAdded).toEqual(['Locked gate']);
-      expect(result.threadsAdded).toEqual(['The mystery']);
+      expect(result.threadsAdded).toEqual([
+        { text: 'The mystery', threadType: 'MYSTERY', urgency: 'MEDIUM' },
+      ]);
       expect(result.newCanonFacts).toEqual(['The keep is haunted']);
       expect(result.newCharacterCanonFacts).toEqual({
         'Elder Varn': ['She is wise'],
@@ -550,6 +558,22 @@ describe('schema pipeline integration', () => {
       };
 
       expect(() => WriterResultSchema.parse(input)).toThrow('Choices must be unique');
+    });
+
+    it('should reject legacy string-array threadsAdded', () => {
+      const input = {
+        narrative: VALID_NARRATIVE,
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        threadsAdded: ['legacy-thread-shape'],
+        newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+      };
+
+      expect(() => WriterResultSchema.parse(input)).toThrow();
     });
   });
 });

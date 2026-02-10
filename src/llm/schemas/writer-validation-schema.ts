@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
+import { ThreadType, Urgency } from '../../models/state/index.js';
 
 const CharacterCanonFactsArraySchema = z.array(
   z.object({
@@ -58,6 +59,12 @@ const ChoiceObjectSchema = z.object({
   primaryDelta: z.nativeEnum(PrimaryDelta),
 });
 
+const ThreadAddSchema = z.object({
+  text: z.string(),
+  threadType: z.nativeEnum(ThreadType),
+  urgency: z.nativeEnum(Urgency),
+});
+
 export const WriterResultSchema = z
   .object({
     narrative: z
@@ -70,7 +77,7 @@ export const WriterResultSchema = z
     threatsRemoved: z.array(z.string()).optional().default([]),
     constraintsAdded: z.array(z.string()).optional().default([]),
     constraintsRemoved: z.array(z.string()).optional().default([]),
-    threadsAdded: z.array(z.string()).optional().default([]),
+    threadsAdded: z.array(ThreadAddSchema).optional().default([]),
     threadsResolved: z.array(z.string()).optional().default([]),
     newCanonFacts: z.array(z.string()),
     newCharacterCanonFacts: CharacterCanonFactsArraySchema.optional()

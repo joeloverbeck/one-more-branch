@@ -99,7 +99,7 @@ const openingResult = {
   threatsRemoved: [],
   constraintsAdded: ['Sworn temporary loyalty to alliance'],
   constraintsRemoved: [],
-  threadsAdded: ['Tracking emergency law rewrites'],
+  threadsAdded: [{ text: 'Tracking emergency law rewrites', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
   threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'determination',
@@ -214,7 +214,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       threatsRemoved: [],
       constraintsAdded: ['Copied dispatches as evidence'],
       constraintsRemoved: [],
-      threadsAdded: ['Signal tower coordination exposed'],
+      threadsAdded: [{ text: 'Signal tower coordination exposed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'triumph',
@@ -250,7 +250,7 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       threatsRemoved: [],
       constraintsAdded: ['Cover identity compromised'],
       constraintsRemoved: ['Infiltration route access'],
-      threadsAdded: ['Public perception inverted by propaganda'],
+      threadsAdded: [{ text: 'Public perception inverted by propaganda', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'dismay',
