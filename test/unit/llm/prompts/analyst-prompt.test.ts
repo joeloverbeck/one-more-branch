@@ -93,4 +93,38 @@ describe('buildAnalystPrompt', () => {
     const messages = buildAnalystPrompt(testContext);
     expect(messages[0].content).toContain('conservative about deviation');
   });
+
+  it('system message enforces Step A then Step B sequence', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('Step A: Classify scene signals using the provided enums.');
+    expect(messages[0].content).toContain(
+      'Step B: Apply the completion gate against the active beat objective before deciding beatConcluded.',
+    );
+  });
+
+  it('system message requires extracting objective anchors (1-3)', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain(
+      'extract 1-3 objective anchors from activeBeat.objective',
+    );
+  });
+
+  it('system message requires mapping anchors to concrete evidence', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('map each anchor to concrete evidence');
+  });
+
+  it('system message requires cumulative narrative and state evidence', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain(
+      'Evidence is cumulative across the current narrative and active state.',
+    );
+  });
+
+  it('system message defaults to non-conclusion when explicit anchor evidence is absent', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain(
+      'If no anchor has explicit evidence, beatConcluded must be false.',
+    );
+  });
 });
