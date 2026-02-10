@@ -418,4 +418,42 @@ describe('validateWriterResponse', () => {
       ),
     ).toThrow('threadsAdded[0].text must not be empty after trim');
   });
+
+  it('should reject ID-like additions for threatsAdded', () => {
+    expect(() =>
+      validateWriterResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: [
+            { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+            { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
+          threatsAdded: ['th-1'],
+          newCanonFacts: [],
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          isEnding: false,
+        },
+        'raw json response',
+      ),
+    ).toThrow('state_id.addition.must_not_be_id_like');
+  });
+
+  it('should reject cross-category IDs in constraintsRemoved', () => {
+    expect(() =>
+      validateWriterResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: [
+            { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+            { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          ],
+          constraintsRemoved: ['th-3'],
+          newCanonFacts: [],
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          isEnding: false,
+        },
+        'raw json response',
+      ),
+    ).toThrow('state_id.id_only_field.prefix_mismatch');
+  });
 });

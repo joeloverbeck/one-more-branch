@@ -215,7 +215,7 @@ describe('schema pipeline integration', () => {
         newCanonFacts: [],
         newCharacterCanonFacts: [],
         inventoryAdded: ['Ancient map', 'Gold coins (50)'],
-        inventoryRemoved: ['Lockpick'],
+        inventoryRemoved: ['inv-1'],
         healthAdded: [],
         healthRemoved: [],
         characterStateChangesAdded: [],
@@ -239,7 +239,7 @@ describe('schema pipeline integration', () => {
       );
 
       expect(result.inventoryAdded).toEqual(['Ancient map', 'Gold coins (50)']);
-      expect(result.inventoryRemoved).toEqual(['Lockpick']);
+      expect(result.inventoryRemoved).toEqual(['inv-1']);
     });
 
     it('should validate ending page with zero choices', () => {
@@ -252,7 +252,7 @@ describe('schema pipeline integration', () => {
         constraintsAdded: [],
         constraintsRemoved: [],
         threadsAdded: [],
-        threadsResolved: ['The central conflict'],
+        threadsResolved: ['td-1'],
         newCanonFacts: ['Peace was restored'],
         newCharacterCanonFacts: [],
         inventoryAdded: [],
@@ -406,9 +406,9 @@ describe('schema pipeline integration', () => {
           { characterName: '  Elder Varn  ', facts: ['  She is wise  '] },
         ],
         inventoryAdded: ['  Ancient key  '],
-        inventoryRemoved: ['  Old map  '],
+        inventoryRemoved: ['  inv-9  '],
         healthAdded: ['  Minor wound on left arm  '],
-        healthRemoved: ['  Headache  '],
+        healthRemoved: ['  hp-5  '],
         protagonistAffect: {
           primaryEmotion: '  determination  ',
           primaryIntensity: 'strong',
@@ -438,9 +438,9 @@ describe('schema pipeline integration', () => {
         'Elder Varn': ['She is wise'],
       });
       expect(result.inventoryAdded).toEqual(['Ancient key']);
-      expect(result.inventoryRemoved).toEqual(['Old map']);
+      expect(result.inventoryRemoved).toEqual(['inv-9']);
       expect(result.healthAdded).toEqual(['Minor wound on left arm']);
-      expect(result.healthRemoved).toEqual(['Headache']);
+      expect(result.healthRemoved).toEqual(['hp-5']);
     });
 
     it('should filter empty strings from arrays', () => {
@@ -463,9 +463,9 @@ describe('schema pipeline integration', () => {
           { characterName: 'Empty', facts: ['', '   '] },
         ],
         inventoryAdded: ['Key', '', '  '],
-        inventoryRemoved: ['', 'Old map'],
+        inventoryRemoved: ['', 'inv-4'],
         healthAdded: ['Bruised ribs', '', '  '],
-        healthRemoved: ['', 'Fatigue'],
+        healthRemoved: ['', 'hp-2'],
         protagonistAffect: {
           primaryEmotion: 'caution',
           primaryIntensity: 'moderate',
@@ -489,9 +489,9 @@ describe('schema pipeline integration', () => {
         'Elder Varn': ['She is wise'],
       });
       expect(result.inventoryAdded).toEqual(['Key']);
-      expect(result.inventoryRemoved).toEqual(['Old map']);
+      expect(result.inventoryRemoved).toEqual(['inv-4']);
       expect(result.healthAdded).toEqual(['Bruised ribs']);
-      expect(result.healthRemoved).toEqual(['Fatigue']);
+      expect(result.healthRemoved).toEqual(['hp-2']);
     });
   });
 
@@ -574,6 +574,24 @@ describe('schema pipeline integration', () => {
       };
 
       expect(() => WriterResultSchema.parse(input)).toThrow();
+    });
+
+    it('should reject cross-category removal IDs by prefix', () => {
+      const input = {
+        narrative: VALID_NARRATIVE,
+        choices: [
+          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        constraintsRemoved: ['th-1'],
+        newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+      };
+
+      expect(() => WriterResultSchema.parse(input)).toThrow(
+        'state_id.id_only_field.prefix_mismatch',
+      );
     });
   });
 });
