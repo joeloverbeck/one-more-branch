@@ -130,6 +130,59 @@ describe('buildAnalystStructureEvaluation', () => {
     expect(result).toContain('=== BEAT EVALUATION ===');
   });
 
+  it('includes SCENE SIGNAL CLASSIFICATION with required enums', () => {
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
+    expect(result).toContain('=== SCENE SIGNAL CLASSIFICATION ===');
+    expect(result).toContain('sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT');
+    expect(result).toContain('objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT');
+    expect(result).toContain('commitmentStrength: NONE | TENTATIVE | EXPLICIT_REVERSIBLE | EXPLICIT_IRREVERSIBLE');
+    expect(result).toContain(
+      'structuralPositionSignal: WITHIN_ACTIVE_BEAT | BRIDGING_TO_NEXT_BEAT | CLEARLY_IN_NEXT_BEAT',
+    );
+    expect(result).toContain('entryConditionReadiness: NOT_READY | PARTIAL | READY');
+  });
+
+  it('includes COMPLETION GATE with turning_point-specific clause and false-positive guards', () => {
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      pagesInCurrentBeat: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
+    expect(result).toContain('=== COMPLETION GATE ===');
+    expect(result).toContain('Base gate for all beat roles (must satisfy at least one):');
+    expect(result).toContain(
+      'objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective',
+    );
+    expect(result).toContain(
+      'structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective',
+    );
+    expect(result).toContain('Additional gate for turning_point:');
+    expect(result).toContain(
+      'commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE',
+    );
+    expect(result).toContain(
+      'If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions',
+    );
+    expect(result).toContain(
+      'Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence',
+    );
+    expect(result).toContain(
+      'SCOPE_SHIFT alone cannot conclude a beat without objective resolution or explicit structural supersession evidence',
+    );
+  });
+
   it('includes DEVIATION section', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,

@@ -175,7 +175,7 @@ export function buildAnalystStructureEvaluation(
     state.currentActIndex < structure.acts.length - 1;
   const beatComparisonHint = hasPendingBeats
     ? `
-PROGRESSION CHECK: If the current narrative situation more closely matches a PENDING beat's description than the ACTIVE beat's description, the ACTIVE beat should be marked concluded.
+PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions when classifying structuralPositionSignal. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate.
 `
     : '';
 
@@ -220,15 +220,30 @@ ${remainingActs || '  - None'}
 ${activeStateSummary}=== BEAT EVALUATION ===
 Evaluate the following narrative against this structure to determine beat completion.
 
-CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:
-1. The beat's objective has been substantively achieved (even if not perfectly)
-2. The narrative has moved beyond this beat's scope into territory that matches a PENDING beat
-3. Key events from later beats have already occurred (compare against PENDING beats below)
-4. The current state shows the beat's goal has been reached
+=== SCENE SIGNAL CLASSIFICATION ===
+Classify the narrative before deciding beatConcluded:
+- sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT
+- objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT
+- commitmentStrength: NONE | TENTATIVE | EXPLICIT_REVERSIBLE | EXPLICIT_IRREVERSIBLE
+- structuralPositionSignal: WITHIN_ACTIVE_BEAT | BRIDGING_TO_NEXT_BEAT | CLEARLY_IN_NEXT_BEAT
+- entryConditionReadiness: NOT_READY | PARTIAL | READY
 
-DO NOT CONCLUDE only if:
-- This scene is still squarely within the active beat's scope AND
-- The beat objective remains genuinely unresolved
+=== COMPLETION GATE ===
+Set beatConcluded: true only when the gate is satisfied.
+
+Base gate for all beat roles (must satisfy at least one):
+1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective
+2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective
+
+Additional gate for turning_point:
+- commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE
+- If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions
+
+Negative guards:
+- Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence
+- SCOPE_SHIFT alone cannot conclude a beat without objective resolution or explicit structural supersession evidence
+
+If the completion gate is not satisfied, set beatConcluded: false.
 
 ${beatComparisonHint}${DEVIATION_DETECTION_SECTION}
 ${remainingBeatsSection}
