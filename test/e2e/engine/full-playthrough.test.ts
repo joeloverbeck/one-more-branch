@@ -309,8 +309,16 @@ const mockedStructureResult = {
       stakes: 'Failure leaves the protagonist blind to the core danger.',
       entryCondition: 'A disruptive event forces action.',
       beats: [
-        { description: 'Discover the first anomaly.', objective: 'Confirm the threat is real.' },
-        { description: 'Gather immediate allies.', objective: 'Avoid isolation.' },
+        {
+          name: 'First anomaly discovery',
+          description: 'Discover the first anomaly.',
+          objective: 'Confirm the threat is real.',
+        },
+        {
+          name: 'Immediate ally recruitment',
+          description: 'Gather immediate allies.',
+          objective: 'Avoid isolation.',
+        },
       ],
     },
     {
@@ -319,8 +327,16 @@ const mockedStructureResult = {
       stakes: 'Failure gives control to the antagonist force.',
       entryCondition: 'The threat’s network is partially mapped.',
       beats: [
-        { description: 'Attempt a risky infiltration.', objective: 'Extract actionable proof.' },
-        { description: 'Survive retaliation.', objective: 'Preserve capability to continue.' },
+        {
+          name: 'Risky infiltration attempt',
+          description: 'Attempt a risky infiltration.',
+          objective: 'Extract actionable proof.',
+        },
+        {
+          name: 'Retaliation endurance',
+          description: 'Survive retaliation.',
+          objective: 'Preserve capability to continue.',
+        },
       ],
     },
     {
@@ -329,8 +345,16 @@ const mockedStructureResult = {
       stakes: 'Failure permanently cements the hostile status quo.',
       entryCondition: 'Public confrontation becomes unavoidable.',
       beats: [
-        { description: 'Commit to final strategy.', objective: 'Align allies and resources.' },
-        { description: 'Deliver decisive action.', objective: 'Resolve primary conflict.' },
+        {
+          name: 'Final strategy commitment',
+          description: 'Commit to final strategy.',
+          objective: 'Align allies and resources.',
+        },
+        {
+          name: 'Decisive action delivery',
+          description: 'Deliver decisive action.',
+          objective: 'Resolve primary conflict.',
+        },
       ],
     },
   ],
@@ -387,6 +411,11 @@ describe('story engine e2e full playthrough', () => {
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(start.story.id);
+    for (const act of start.story.structure?.acts ?? []) {
+      for (const beat of act.beats) {
+        expect(beat.name).toBeTruthy();
+      }
+    }
 
     const visitedPageIds: PageId[] = [start.page.id];
     let transitionsMade = 0;

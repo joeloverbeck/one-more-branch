@@ -36,10 +36,12 @@ const mockedStructureResult = {
       entryCondition: 'A public emergency forces immediate action.',
       beats: [
         {
+          name: 'Alliance commitment',
           description: 'Publicly commit to a risky alliance.',
           objective: 'Gain temporary access to restricted circles.',
         },
         {
+          name: 'Alliance control map',
           description: 'Privately map who controls the alliance.',
           objective: 'Find leverage before exposure.',
         },
@@ -52,10 +54,12 @@ const mockedStructureResult = {
       entryCondition: 'The first command links are identified.',
       beats: [
         {
+          name: 'Command relay infiltration',
           description: 'Infiltrate the command relay.',
           objective: 'Extract plans before they are burned.',
         },
         {
+          name: 'Informant protection',
           description: 'Protect informants from retaliation.',
           objective: 'Keep evidence channels alive.',
         },
@@ -68,10 +72,12 @@ const mockedStructureResult = {
       entryCondition: 'Enough evidence exists for direct challenge.',
       beats: [
         {
+          name: 'Witness assembly',
           description: 'Assemble witnesses for public testimony.',
           objective: 'Make suppression impossible.',
         },
         {
+          name: 'Civic forum confrontation',
           description: 'Confront leadership in the civic forum.',
           objective: 'Resolve the conflict with public accountability.',
         },
@@ -391,6 +397,11 @@ describe('Structure Rewriting Journey E2E', () => {
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(start.story.id);
+    for (const act of start.story.structure?.acts ?? []) {
+      for (const beat of act.beats) {
+        expect(beat.name).toBeTruthy();
+      }
+    }
 
     const page2 = await storyEngine.makeChoice({
       storyId: start.story.id,

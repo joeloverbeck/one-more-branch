@@ -1,7 +1,7 @@
 # Beat Names In Structure + Play Header
 
 ## Status
-**Status**: Proposed
+**Status**: ✅ COMPLETED
 
 ## Problem
 `StoryBeat` currently has:
@@ -154,3 +154,15 @@ No fallback rendering for missing beat name in the new architecture path.
 4. Update persistence converters/repository.
 5. Update play view-helper + EJS output.
 6. Update tests/fixtures and run full test suite.
+
+## Outcome
+- **Completion date**: 2026-02-10
+- **What was implemented**:
+  - `StoryBeat.name` is a required first-class field across structure models, generators/rewriters, persistence, and display helpers.
+  - Play header display now includes both beat label and beat name (`Act N ... - Beat X.Y ...`).
+  - Integration/E2E fixtures were normalized so mocked structure beats include explicit `name`.
+  - Targeted and full test verification completed successfully, including `npm test` and `npm run typecheck`.
+- **Notable deviations from original plan**:
+  - No additional play-header assertion updates were required in this final fixture-verification pass because targeted tests did not assert header strings.
+- **Verification summary**:
+  - Beat-name contract enforcement is covered by unit, integration, and E2E suites and passes in the current branch.

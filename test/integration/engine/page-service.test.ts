@@ -59,12 +59,14 @@ function buildStructure(): StoryStructure {
         beats: [
           {
             id: '1.1',
+            name: 'First clue',
             description: 'Find the first clue',
             objective: 'Establish the mystery',
             role: 'setup',
           },
           {
             id: '1.2',
+            name: 'Ally secured',
             description: 'Secure an ally',
             objective: 'Build support network',
             role: 'escalation',
@@ -80,6 +82,7 @@ function buildStructure(): StoryStructure {
         beats: [
           {
             id: '2.1',
+            name: 'Enemy territory infiltration',
             description: 'Infiltrate enemy territory',
             objective: 'Gather critical intel',
             role: 'turning_point',
@@ -282,6 +285,11 @@ describe('page-service integration', () => {
       mockedGenerateOpeningPage.mockResolvedValue(buildOpeningResult());
 
       const { page, updatedStory } = await generateFirstPage(storyWithStructure, 'test-api-key');
+      for (const act of storyWithStructure.structure?.acts ?? []) {
+        for (const beat of act.beats) {
+          expect(beat.name).toBeTruthy();
+        }
+      }
 
       // Verify page assembly
       expect(page.id).toBe(1);

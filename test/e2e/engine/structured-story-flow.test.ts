@@ -36,10 +36,12 @@ const mockedStructureResult = {
       entryCondition: 'A public anomaly forces immediate action.',
       beats: [
         {
+          name: 'Public anomaly witness',
           description: 'Witness a manipulated event in public.',
           objective: 'Collect undeniable first evidence.',
         },
         {
+          name: 'Trusted contact secured',
           description: 'Find a trustworthy contact.',
           objective: 'Avoid facing the threat alone.',
         },
@@ -52,10 +54,12 @@ const mockedStructureResult = {
       entryCondition: 'Initial evidence points to coordinated control.',
       beats: [
         {
+          name: 'Archive node infiltration',
           description: 'Infiltrate an archive node.',
           objective: 'Extract operational records.',
         },
         {
+          name: 'Retaliation survival',
           description: 'Survive retaliation and regroup.',
           objective: 'Preserve momentum into the final phase.',
         },
@@ -68,10 +72,12 @@ const mockedStructureResult = {
       entryCondition: 'Enough proof exists to challenge the system publicly.',
       beats: [
         {
+          name: 'Public reveal coordination',
           description: 'Coordinate allies for a public reveal.',
           objective: 'Synchronize final action.',
         },
         {
+          name: 'Final confrontation',
           description: 'Execute the final confrontation.',
           objective: 'Resolve the central conflict.',
         },
@@ -318,6 +324,9 @@ describe('Structured Story E2E', () => {
     for (const act of story.structure?.acts ?? []) {
       expect(act.beats.length).toBeGreaterThanOrEqual(2);
       expect(act.beats.length).toBeLessThanOrEqual(4);
+      for (const beat of act.beats) {
+        expect(beat.name).toBeTruthy();
+      }
     }
 
     expect(page.accumulatedStructureState.currentActIndex).toBe(0);

@@ -148,6 +148,10 @@ When a slash command (e.g., `/superpowers:execute-plan`) expands to an instructi
 
 Do NOT skip the Skill tool invocation. Do NOT interpret the command body as the skill content. Do NOT start implementation before the skill is loaded and its methodology followed.
 
+## Coding Guidelines
+
+Follow the 1-3-1 rule: When stuck, provide 1 clearly defined problem, give 3 potential options for how to overcome it, and 1 recommendation. Do not proceed implementing any of the options until I confirm.
+
 ## MCP Server Usage
 
 When using Serena MCP for semantic code operations (symbol navigation, project memory, session persistence), it must be activated first:

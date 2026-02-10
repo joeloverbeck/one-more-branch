@@ -24,6 +24,10 @@
 - ESLint enforces `no-explicit-any`, `prefer-optional-chain`, `prefer-nullish-coalescing`.
 - Test files use `*.test.ts` naming.
 
+## Coding Guidelines
+
+Follow the 1-3-1 rule: When stuck, provide 1 clearly defined problem, give 3 potential options for how to overcome it, and 1 recommendation. Do not proceed implementing any of the options until I confirm.
+
 ## Testing Guidelines
 - Jest + `ts-jest` with `test/**/*.test.ts` as the matcher.
 - Coverage thresholds: 70% global for branches/functions/lines/statements.
