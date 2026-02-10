@@ -10,6 +10,8 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../src/mod
 function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'Restore the broken kingdom',
+    premise: 'A reluctant hero must leave home to save a crumbling kingdom.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
         name: 'Act One',
@@ -17,8 +19,8 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
         beats: [
-          { description: 'A warning arrives', objective: 'Hear the warning' },
-          { description: 'A difficult choice', objective: 'Leave home' },
+          { name: 'Messenger arrives', description: 'A warning arrives', objective: 'Hear the warning', role: 'setup' },
+          { name: 'Choose departure', description: 'A difficult choice', objective: 'Leave home', role: 'turning_point' },
         ],
       },
       {
@@ -26,7 +28,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [{ description: 'First major setback', objective: 'Recover from loss' }],
+        beats: [{ name: 'First setback', description: 'First major setback', objective: 'Recover from loss', role: 'escalation' }],
       },
     ],
     rawResponse: '{"mock":true}',

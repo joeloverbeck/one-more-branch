@@ -4,6 +4,7 @@ export type BeatRole = 'setup' | 'escalation' | 'turning_point' | 'resolution';
 
 export interface StoryBeat {
   readonly id: string;
+  readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly role: BeatRole;

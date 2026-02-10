@@ -15,9 +15,9 @@ describe('buildWriterStructureContext', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
-          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence', role: 'escalation' },
-          { id: '1.3', description: 'Choose ally', objective: 'Commit to ally', role: 'turning_point' },
+          { id: '1.1', name: 'Safehouse run', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          { id: '1.2', name: 'Evidence lock', description: 'Secure evidence', objective: 'Protect evidence', role: 'escalation' },
+          { id: '1.3', name: 'Ally decision', description: 'Choose ally', objective: 'Commit to ally', role: 'turning_point' },
         ],
       },
       {
@@ -27,8 +27,8 @@ describe('buildWriterStructureContext', () => {
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north', role: 'escalation' },
-          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
+          { id: '2.1', name: 'Checkpoint breach', description: 'Break through checkpoints', objective: 'Find route north', role: 'escalation' },
+          { id: '2.2', name: 'Witness defense', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
         ],
       },
       {
@@ -38,8 +38,8 @@ describe('buildWriterStructureContext', () => {
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
         beats: [
-          { id: '3.1', description: 'Reach relay core', objective: 'Seize control room', role: 'escalation' },
-          { id: '3.2', description: 'Deliver proof', objective: 'Transmit evidence', role: 'resolution' },
+          { id: '3.1', name: 'Relay approach', description: 'Reach relay core', objective: 'Seize control room', role: 'escalation' },
+          { id: '3.2', name: 'Public reveal', description: 'Deliver proof', objective: 'Transmit evidence', role: 'resolution' },
         ],
       },
     ],

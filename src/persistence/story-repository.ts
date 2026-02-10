@@ -59,6 +59,7 @@ interface StoryStructureFileData {
     entryCondition: string;
     beats: Array<{
       id: string;
+      name: string;
       description: string;
       objective: string;
       role: string;
@@ -80,6 +81,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
       entryCondition: act.entryCondition,
       beats: act.beats.map(beat => ({
         id: beat.id,
+        name: beat.name,
         description: beat.description,
         objective: beat.objective,
         role: beat.role,
@@ -102,6 +104,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
       entryCondition: act.entryCondition,
       beats: act.beats.map(beat => ({
         id: beat.id,
+        name: beat.name,
         description: beat.description,
         objective: beat.objective,
         role: beat.role as BeatRole,

@@ -196,8 +196,8 @@ function createRewriteFetchResponse(): Response {
         stakes: 'Capture means execution.',
         entryCondition: 'Cover blown.',
         beats: [
-          { description: 'Find emergency shelter', objective: 'Avoid immediate capture.' },
-          { description: 'Establish new identity', objective: 'Move freely again.' },
+          { name: 'Emergency shelter', description: 'Find emergency shelter', objective: 'Avoid immediate capture.' },
+          { name: 'New identity', description: 'Establish new identity', objective: 'Move freely again.' },
         ],
       },
       {
@@ -206,8 +206,8 @@ function createRewriteFetchResponse(): Response {
         stakes: 'Isolation means death.',
         entryCondition: 'New identity secured.',
         beats: [
-          { description: 'Find underground contact', objective: 'Access resistance.' },
-          { description: 'Prove loyalty', objective: 'Gain trust.' },
+          { name: 'Underground contact', description: 'Find underground contact', objective: 'Access resistance.' },
+          { name: 'Loyalty proof', description: 'Prove loyalty', objective: 'Gain trust.' },
         ],
       },
       {
@@ -216,8 +216,8 @@ function createRewriteFetchResponse(): Response {
         stakes: 'Final chance.',
         entryCondition: 'Network ready.',
         beats: [
-          { description: 'Execute plan', objective: 'Destroy evidence.' },
-          { description: 'Escape or die', objective: 'Survive the aftermath.' },
+          { name: 'Plan execution', description: 'Execute plan', objective: 'Destroy evidence.' },
+          { name: 'Escape route', description: 'Escape or die', objective: 'Survive the aftermath.' },
         ],
       },
     ],

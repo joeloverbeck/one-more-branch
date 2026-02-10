@@ -17,6 +17,7 @@ export interface StructureGenerationResult {
     stakes: string;
     entryCondition: string;
     beats: Array<{
+      name: string;
       description: string;
       objective: string;
       role: string;
@@ -87,7 +88,11 @@ function parseStructureResponse(responseText: string): Omit<StructureGenerationR
       }
 
       const beatData = beat as Record<string, unknown>;
-      if (typeof beatData['description'] !== 'string' || typeof beatData['objective'] !== 'string') {
+      if (
+        typeof beatData['name'] !== 'string' ||
+        typeof beatData['description'] !== 'string' ||
+        typeof beatData['objective'] !== 'string'
+      ) {
         throw new LLMError(
           `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
           'STRUCTURE_PARSE_ERROR',
@@ -98,6 +103,7 @@ function parseStructureResponse(responseText: string): Omit<StructureGenerationR
       const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
 
       return {
+        name: beatData['name'],
         description: beatData['description'],
         objective: beatData['objective'],
         role,

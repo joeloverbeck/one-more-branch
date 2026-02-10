@@ -36,6 +36,7 @@ export function extractCompletedBeats(
       actIndex: indices.actIndex,
       beatIndex: indices.beatIndex,
       beatId: progression.beatId,
+      name: beat.name,
       description: beat.description,
       objective: beat.objective,
       role: beat.role,
@@ -117,6 +118,7 @@ export function validatePreservedBeats(
     }
 
     if (
+      newBeat.name !== originalBeat.name ||
       newBeat.description !== originalBeat.description ||
       newBeat.objective !== originalBeat.objective ||
       newBeat.role !== originalBeat.role

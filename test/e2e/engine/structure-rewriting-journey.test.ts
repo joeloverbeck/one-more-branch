@@ -128,10 +128,12 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'The alliance now sees the hero as compromised.',
         beats: [
           {
+            name: 'Risky alliance commitment',
             description: 'Publicly commit to a risky alliance.',
             objective: 'Gain temporary access to restricted circles.',
           },
           {
+            name: 'Hidden ally trust repair',
             description: 'Rebuild trust with one hidden ally.',
             objective: 'Create a resilient evidence channel.',
           },
@@ -144,10 +146,12 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'Hidden channels expose legal manipulation.',
         beats: [
           {
+            name: 'Forged decree exposure',
             description: 'Expose forged emergency decrees.',
             objective: 'Disrupt command authority.',
           },
           {
+            name: 'Witness shield',
             description: 'Shield witnesses from reprisals.',
             objective: 'Preserve evidence continuity.',
           },
@@ -160,10 +164,12 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'Public doubt reaches critical mass.',
         beats: [
           {
+            name: 'Public witness chain',
             description: 'Coordinate a public witness chain.',
             objective: 'Prevent information suppression.',
           },
           {
+            name: 'Binding civic vote',
             description: 'Force a binding civic vote.',
             objective: 'End emergency rule through accountability.',
           },

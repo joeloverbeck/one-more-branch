@@ -24,8 +24,8 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
         beats: [
-          { description: 'A warning arrives', objective: 'Hear the warning', role: 'setup' },
-          { description: 'A difficult choice', objective: 'Leave home', role: 'turning_point' },
+          { name: 'Messenger arrives', description: 'A warning arrives', objective: 'Hear the warning', role: 'setup' },
+          { name: 'Choose departure', description: 'A difficult choice', objective: 'Leave home', role: 'turning_point' },
         ],
       },
       {
@@ -33,7 +33,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [{ description: 'First major setback', objective: 'Recover from loss', role: 'escalation' }],
+        beats: [{ name: 'First setback', description: 'First major setback', objective: 'Recover from loss', role: 'escalation' }],
       },
     ],
     rawResponse: '{"mock":true}',
@@ -76,6 +76,7 @@ describe('structure-rewrite-support', () => {
           actIndex: 0,
           beatIndex: 0,
           beatId: '1.1',
+          name: 'Messenger arrives',
           description: 'A warning arrives',
           objective: 'Hear the warning',
           role: 'setup',
@@ -85,6 +86,7 @@ describe('structure-rewrite-support', () => {
           actIndex: 0,
           beatIndex: 1,
           beatId: '1.2',
+          name: 'Choose departure',
           description: 'A difficult choice',
           objective: 'Leave home',
           role: 'turning_point',
@@ -94,6 +96,7 @@ describe('structure-rewrite-support', () => {
           actIndex: 1,
           beatIndex: 0,
           beatId: '2.1',
+          name: 'First setback',
           description: 'First major setback',
           objective: 'Recover from loss',
           role: 'escalation',
@@ -188,6 +191,7 @@ describe('structure-rewrite-support', () => {
           actIndex: 0,
           beatIndex: 0,
           beatId: '1.1',
+          name: 'Messenger arrives',
           description: 'A warning arrives',
           objective: 'Hear the warning',
           role: 'setup',
@@ -279,6 +283,32 @@ describe('structure-rewrite-support', () => {
             ...original.acts[0]!,
             beats: [
               { ...original.acts[0]!.beats[0]!, description: 'Different description' },
+              original.acts[0]!.beats[1]!,
+            ],
+          },
+          original.acts[1]!,
+        ],
+      };
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      expect(validatePreservedBeats(original, next, state)).toBe(false);
+    });
+
+    it('returns false when completed beat name changes', () => {
+      const original = createStructure();
+      const next: StoryStructure = {
+        ...createStructure(),
+        acts: [
+          {
+            ...original.acts[0]!,
+            beats: [
+              { ...original.acts[0]!.beats[0]!, name: 'Different beat name' },
               original.acts[0]!.beats[1]!,
             ],
           },

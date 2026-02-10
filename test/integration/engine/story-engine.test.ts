@@ -211,10 +211,12 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'The old alliances are broken.',
         beats: [
           {
+            name: 'Trust rebuild',
             description: 'Rebuild trust with one key ally',
             objective: 'Secure a credible witness.',
           },
           {
+            name: 'First lie exposed',
             description: 'Expose the first lie in the new regime',
             objective: 'Open a path to a counter-move.',
           },
@@ -227,10 +229,12 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'New network is operational.',
         beats: [
           {
+            name: 'Supply disruption',
             description: 'Disrupt supply chains feeding the regime',
             objective: 'Force visible concessions.',
           },
           {
+            name: 'Retaliation survival',
             description: 'Survive coordinated retaliation',
             objective: 'Keep allies united under pressure.',
           },
@@ -243,10 +247,12 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'Public sentiment has shifted.',
         beats: [
           {
+            name: 'Public reckoning',
             description: 'Force a public reckoning',
             objective: 'Reveal proof to the city.',
           },
           {
+            name: 'Accountable power',
             description: 'Conclude with accountable power',
             objective: 'Prevent a return to old corruption.',
           },

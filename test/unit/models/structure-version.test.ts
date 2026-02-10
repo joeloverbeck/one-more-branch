@@ -19,8 +19,20 @@ function createTestStructure(): StoryStructure {
         stakes: 'Fail to begin',
         entryCondition: 'Quest accepted',
         beats: [
-          { id: '1.1', description: 'Beat 1', objective: 'Do first thing' },
-          { id: '1.2', description: 'Beat 2', objective: 'Do second thing' },
+          {
+            id: '1.1',
+            name: 'First move',
+            description: 'Beat 1',
+            objective: 'Do first thing',
+            role: 'setup',
+          },
+          {
+            id: '1.2',
+            name: 'Second move',
+            description: 'Beat 2',
+            objective: 'Do second thing',
+            role: 'escalation',
+          },
         ],
       },
       {
@@ -30,8 +42,20 @@ function createTestStructure(): StoryStructure {
         stakes: 'Fall behind',
         entryCondition: 'Hero commits',
         beats: [
-          { id: '2.1', description: 'Beat 1', objective: 'Take a risk' },
-          { id: '2.2', description: 'Beat 2', objective: 'Recover losses' },
+          {
+            id: '2.1',
+            name: 'Risk taken',
+            description: 'Beat 1',
+            objective: 'Take a risk',
+            role: 'escalation',
+          },
+          {
+            id: '2.2',
+            name: 'Recovery',
+            description: 'Beat 2',
+            objective: 'Recover losses',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -41,12 +65,26 @@ function createTestStructure(): StoryStructure {
         stakes: 'Everything is lost',
         entryCondition: 'Final chance',
         beats: [
-          { id: '3.1', description: 'Beat 1', objective: 'End conflict' },
-          { id: '3.2', description: 'Beat 2', objective: 'Land ending' },
+          {
+            id: '3.1',
+            name: 'Final clash',
+            description: 'Beat 1',
+            objective: 'End conflict',
+            role: 'turning_point',
+          },
+          {
+            id: '3.2',
+            name: 'Aftermath',
+            description: 'Beat 2',
+            objective: 'Land ending',
+            role: 'resolution',
+          },
         ],
       },
     ],
     overallTheme: 'Resilience',
+    premise: 'A stubborn crew must hold together through escalating losses.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     generatedAt: new Date('2026-02-07T00:00:00.000Z'),
   };
 }

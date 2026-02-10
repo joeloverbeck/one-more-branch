@@ -534,7 +534,7 @@ describe('LLM types', () => {
               objective: 'Reach the gate',
               stakes: 'Failure means capture',
               entryCondition: 'Story begins',
-              beats: [{ id: '1.1', description: 'Approach', objective: 'Reach the gate', role: 'setup' }],
+              beats: [{ id: '1.1', name: 'Gate approach', description: 'Approach', objective: 'Reach the gate', role: 'setup' }],
             },
           ],
           overallTheme: 'Courage under pressure',
@@ -585,8 +585,8 @@ describe('LLM types', () => {
           stakes: 'Failure means loss of allies',
           entryCondition: 'Protagonist commits',
           beats: [
-            { id: '2.1', description: 'Complication', objective: 'Adapt plan', role: 'escalation' },
-            { id: '2.2', description: 'Setback', objective: 'Recover momentum', role: 'escalation' },
+            { id: '2.1', name: 'Complication', description: 'Complication', objective: 'Adapt plan', role: 'escalation' },
+            { id: '2.2', name: 'Setback', description: 'Setback', objective: 'Recover momentum', role: 'escalation' },
           ],
         },
         {
@@ -596,8 +596,8 @@ describe('LLM types', () => {
           stakes: 'Failure means catastrophe',
           entryCondition: 'Final confrontation begins',
           beats: [
-            { id: '3.1', description: 'Climax', objective: 'Confront antagonist', role: 'turning_point' },
-            { id: '3.2', description: 'Aftermath', objective: 'Secure outcome', role: 'resolution' },
+            { id: '3.1', name: 'Climax', description: 'Climax', objective: 'Confront antagonist', role: 'turning_point' },
+            { id: '3.2', name: 'Aftermath', description: 'Aftermath', objective: 'Secure outcome', role: 'resolution' },
           ],
         },
       ],
@@ -612,6 +612,7 @@ describe('LLM types', () => {
         actIndex: 0,
         beatIndex: 1,
         beatId: '1.2',
+        name: 'Decision point',
         description: 'Decision point',
         objective: 'Choose direction',
         role: 'turning_point',

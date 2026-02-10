@@ -23,6 +23,7 @@ export interface StructureGenerationResult {
     stakes: string;
     entryCondition: string;
     beats: Array<{
+      name: string;
       description: string;
       objective: string;
       role: string;

@@ -31,6 +31,7 @@ interface StructurePayload {
     stakes: string;
     entryCondition: string;
     beats: Array<{
+      name: string;
       description: string;
       objective: string;
       role: string;
@@ -50,8 +51,8 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure means execution.',
         entryCondition: 'A public murder is pinned on the protagonist.',
         beats: [
-          { description: 'Find a hidden witness.', objective: 'Obtain credible evidence.', role: 'setup' },
-          { description: 'Steal archive records.', objective: 'Secure proof before it burns.', role: 'turning_point' },
+          { name: 'Witness contact', description: 'Find a hidden witness.', objective: 'Obtain credible evidence.', role: 'setup' },
+          { name: 'Archive theft', description: 'Steal archive records.', objective: 'Secure proof before it burns.', role: 'turning_point' },
         ],
       },
       {
@@ -60,8 +61,8 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure locks the city under martial rule.',
         entryCondition: 'The records name powerful conspirators.',
         beats: [
-          { description: 'Negotiate with rivals.', objective: 'Gain reluctant allies.', role: 'escalation' },
-          { description: 'Survive a rigged hearing.', objective: 'Force evidence into the open.', role: 'turning_point' },
+          { name: 'Rival negotiation', description: 'Negotiate with rivals.', objective: 'Gain reluctant allies.', role: 'escalation' },
+          { name: 'Rigged hearing', description: 'Survive a rigged hearing.', objective: 'Force evidence into the open.', role: 'turning_point' },
         ],
       },
       {
@@ -70,8 +71,8 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure cements permanent authoritarian control.',
         entryCondition: 'Conspirators are identified and vulnerable.',
         beats: [
-          { description: 'Alliance fractures.', objective: 'Choose justice over revenge.', role: 'turning_point' },
-          { description: 'Confront tribunal leaders.', objective: 'Resolve the central conflict.', role: 'resolution' },
+          { name: 'Alliance split', description: 'Alliance fractures.', objective: 'Choose justice over revenge.', role: 'turning_point' },
+          { name: 'Tribunal reckoning', description: 'Confront tribunal leaders.', objective: 'Resolve the central conflict.', role: 'resolution' },
         ],
       },
     ],
@@ -243,7 +244,7 @@ describe('structure-generator', () => {
     const payload = createValidStructurePayload();
     payload.acts[1] = {
       ...payload.acts[1],
-      beats: [{ description: 'Only one beat', objective: 'Insufficient beats.', role: 'escalation' }],
+      beats: [{ name: 'Single beat', description: 'Only one beat', objective: 'Insufficient beats.', role: 'escalation' }],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
@@ -274,8 +275,31 @@ describe('structure-generator', () => {
     payload.acts[2] = {
       ...payload.acts[2],
       beats: [
-        { description: 'Complete the confrontation.', objective: 'Resolve climax.', role: 'turning_point' },
-        { description: 'Missing objective', objective: undefined as unknown as string, role: 'resolution' },
+        { name: 'Climax confrontation', description: 'Complete the confrontation.', objective: 'Resolve climax.', role: 'turning_point' },
+        { name: 'Invalid objective', description: 'Missing objective', objective: undefined as unknown as string, role: 'resolution' },
+      ],
+    };
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+
+    const pending = generateStoryStructure(context, 'test-api-key');
+    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
+
+    await advanceRetryDelays();
+    await expectation;
+  });
+
+  it('throws STRUCTURE_PARSE_ERROR when a beat name is missing', async () => {
+    const payload = createValidStructurePayload();
+    payload.acts[0] = {
+      ...payload.acts[0],
+      beats: [
+        {
+          name: undefined as unknown as string,
+          description: 'Find a hidden witness.',
+          objective: 'Obtain credible evidence.',
+          role: 'setup',
+        },
+        payload.acts[0]!.beats[1]!,
       ],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));

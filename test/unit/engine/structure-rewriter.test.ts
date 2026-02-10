@@ -36,8 +36,10 @@ function createRewriteContext(overrides?: Partial<StructureRewriteContext>): Str
         actIndex: 0,
         beatIndex: 0,
         beatId: '1.1',
+        name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
+        role: 'setup',
         resolution: 'The captain escaped with proof of betrayal.',
       },
     ],
@@ -63,11 +65,13 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
         entryCondition: 'Alliance is announced in harbor council',
         beats: [
           {
+            name: 'Mutiny escape',
             description: 'Survive the mutiny at Blackwake Harbor',
             objective: 'Escape with command logs',
             role: 'setup',
           },
           {
+            name: 'Neutral passage pact',
             description: 'Negotiate safe passage with neutral captains',
             objective: 'Secure routes to contested waters',
             role: 'turning_point',
@@ -81,11 +85,13 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
         entryCondition: 'Alliance fleet enters blockade corridor',
         beats: [
           {
+            name: 'Convoy interception',
             description: 'Intercept the sabotage convoy',
             objective: 'Protect alliance supply lines',
             role: 'escalation',
           },
           {
+            name: 'Council exposure',
             description: 'Expose the guild traitor on the war council',
             objective: 'Preserve command legitimacy',
             role: 'turning_point',
@@ -99,11 +105,13 @@ function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>
         entryCondition: 'Stormfront closes around final harbor',
         beats: [
           {
+            name: 'Maelstrom strike',
             description: 'Lead a final strike through the maelstrom',
             objective: 'Break the siege of the capital dock',
             role: 'turning_point',
           },
           {
+            name: 'Judgment of rivals',
             description: 'Choose mercy or retribution for captured rivals',
             objective: 'Define the new political order',
             role: 'resolution',
@@ -130,8 +138,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 1',
         entryCondition: 'Entry 1',
         beats: [
-          { id: '1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
-          { id: '1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
+          { id: '1.1', name: 'Beat Name 1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
+          { id: '1.2', name: 'Beat Name 1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
         ],
       },
       {
@@ -141,8 +149,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 2',
         entryCondition: 'Entry 2',
         beats: [
-          { id: '2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
-          { id: '2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
+          { id: '2.1', name: 'Beat Name 2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
+          { id: '2.2', name: 'Beat Name 2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
         ],
       },
       {
@@ -152,8 +160,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 3',
         entryCondition: 'Entry 3',
         beats: [
-          { id: '3.1', description: 'Beat 3.1', objective: 'Goal 3.1', role: 'turning_point' },
-          { id: '3.2', description: 'Beat 3.2', objective: 'Goal 3.2', role: 'resolution' },
+          { id: '3.1', name: 'Beat Name 3.1', description: 'Beat 3.1', objective: 'Goal 3.1', role: 'turning_point' },
+          { id: '3.2', name: 'Beat Name 3.2', description: 'Beat 3.2', objective: 'Goal 3.2', role: 'resolution' },
         ],
       },
     ],
@@ -193,12 +201,14 @@ describe('structure-rewriter', () => {
       expect(result.structure.acts).toHaveLength(3);
       expect(result.structure.acts[0]?.beats[0]).toEqual({
         id: '1.1',
+        name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
         role: 'escalation',
       });
       expect(result.structure.acts[0]?.beats[1]).toEqual({
         id: '1.2',
+        name: 'Neutral passage pact',
         description: 'Negotiate safe passage with neutral captains',
         objective: 'Secure routes to contested waters',
         role: 'turning_point',
@@ -215,8 +225,10 @@ describe('structure-rewriter', () => {
             actIndex: 0,
             beatIndex: 0,
             beatId: '1.1',
+            name: 'Preserved Beat',
             description: 'Preserved 1.1',
             objective: 'Keep original objective',
+            role: 'setup',
             resolution: 'Resolved already',
           },
         ],
@@ -228,6 +240,7 @@ describe('structure-rewriter', () => {
       expect(merged.acts).toHaveLength(3);
       expect(merged.acts[0]?.beats[0]).toEqual({
         id: '1.1',
+        name: 'Preserved Beat',
         description: 'Preserved 1.1',
         objective: 'Keep original objective',
         role: 'escalation',
@@ -250,8 +263,8 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
             beats: [
-              { id: '1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
-              { id: '1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
+              { id: '1.1', name: 'Beat Name 1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
+              { id: '1.2', name: 'Beat Name 1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
             ],
           },
           {
@@ -261,8 +274,8 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
             beats: [
-              { id: '2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
-              { id: '2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
+              { id: '2.1', name: 'Beat Name 2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
+              { id: '2.2', name: 'Beat Name 2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
             ],
           },
         ],

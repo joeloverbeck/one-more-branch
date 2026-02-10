@@ -19,6 +19,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
     const actId = String(actIndex + 1);
     const beats: StoryBeat[] = actData.beats.map((beatData, beatIndex) => ({
       id: `${actId}.${beatIndex + 1}`,
+      name: beatData.name,
       description: beatData.description,
       objective: beatData.objective,
       role: parseBeatRole(beatData.role),

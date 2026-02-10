@@ -23,6 +23,7 @@ export interface CompletedBeat {
   readonly actIndex: number;
   readonly beatIndex: number;
   readonly beatId: string;
+  readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly role: string;

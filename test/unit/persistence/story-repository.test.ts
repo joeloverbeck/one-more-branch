@@ -41,12 +41,26 @@ function buildTestStructure(): StoryStructure {
         stakes: 'Lose your home',
         entryCondition: 'A call to action appears',
         beats: [
-          { id: '1.1', description: 'Meet the guide', objective: 'Find an ally' },
-          { id: '1.2', description: 'Cross the threshold', objective: 'Leave safety' },
+          {
+            id: '1.1',
+            name: 'Guide encounter',
+            description: 'Meet the guide',
+            objective: 'Find an ally',
+            role: 'setup',
+          },
+          {
+            id: '1.2',
+            name: 'Threshold crossing',
+            description: 'Cross the threshold',
+            objective: 'Leave safety',
+            role: 'turning_point',
+          },
         ],
       },
     ],
     overallTheme: 'Hope against fear',
+    premise: 'A sheltered survivor must leave home to stop a spreading ruin.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 35 },
     generatedAt: new Date('2025-01-01T00:00:00.000Z'),
   };
 }
@@ -78,8 +92,20 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
         stakes: 'Lose the final clue',
         entryCondition: 'The plan fails',
         beats: [
-          { id: '1.1', description: 'Escape the ambush', objective: 'Survive' },
-          { id: '1.2', description: 'Find a new lead', objective: 'Regain momentum' },
+          {
+            id: '1.1',
+            name: 'Ambush escape',
+            description: 'Escape the ambush',
+            objective: 'Survive',
+            role: 'setup',
+          },
+          {
+            id: '1.2',
+            name: 'New lead',
+            description: 'Find a new lead',
+            objective: 'Regain momentum',
+            role: 'escalation',
+          },
         ],
       },
     ],
@@ -157,9 +183,12 @@ describe('story-repository', () => {
 
     const loaded = await loadStory(story.id);
     expect(loaded?.structure).toEqual(story.structure);
+    expect(loaded?.structure?.acts[0]?.beats[0]?.name).toBe('Guide encounter');
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as Record<string, unknown>;
+    const structure = parsed['structure'] as { acts: Array<{ beats: Array<{ name: string }> }> };
+    expect(structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
     expect(parsed['structure']).toBeDefined();
     expect(parsed['storyArc']).toBeUndefined();
   });
