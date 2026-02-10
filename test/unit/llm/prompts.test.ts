@@ -797,7 +797,9 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).not.toContain('OPEN NARRATIVE THREADS');
+      // Shared rules text always mentions "OPEN NARRATIVE THREADS"; assert
+      // the runtime keyed section is absent by checking no keyed thread rows.
+      expect(getUserMessage(messages)).not.toContain('- [td-');
     });
 
     it('includes all active state sections in correct order', () => {

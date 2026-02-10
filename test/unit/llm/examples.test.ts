@@ -195,7 +195,7 @@ describe('buildFewShotMessages', () => {
       }
     });
 
-    it('should use THREAT_ prefix format for threat additions', () => {
+    it('should use plain text format for threat additions', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '';
 
@@ -207,11 +207,12 @@ describe('buildFewShotMessages', () => {
 
       expect(parsed.threatsAdded.length).toBeGreaterThan(0);
       for (const threat of parsed.threatsAdded) {
-        expect(threat).toMatch(/^THREAT_\w+:/);
+        expect(threat).not.toContain(':');
+        expect(threat).not.toMatch(/^THREAT_/);
       }
     });
 
-    it('should use CONSTRAINT_ prefix format for constraint additions', () => {
+    it('should use plain text format for constraint additions', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '';
 
@@ -223,11 +224,12 @@ describe('buildFewShotMessages', () => {
 
       expect(parsed.constraintsAdded.length).toBeGreaterThan(0);
       for (const constraint of parsed.constraintsAdded) {
-        expect(constraint).toMatch(/^CONSTRAINT_\w+:/);
+        expect(constraint).not.toContain(':');
+        expect(constraint).not.toMatch(/^CONSTRAINT_/);
       }
     });
 
-    it('should use THREAD_ prefix format for thread additions', () => {
+    it('should use plain text format for thread additions', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '';
 
@@ -239,11 +241,12 @@ describe('buildFewShotMessages', () => {
 
       expect(parsed.threadsAdded.length).toBeGreaterThan(0);
       for (const thread of parsed.threadsAdded) {
-        expect(thread).toMatch(/^THREAD_\w+:/);
+        expect(thread).not.toContain(':');
+        expect(thread).not.toMatch(/^THREAD_/);
       }
     });
 
-    it('should use prefix-only format for removals (no colon)', () => {
+    it('should use keyed ID format for removals (no colon)', () => {
       const messages = buildFewShotMessages('continuation', 'standard');
       const endingAssistantContent = messages[3]?.content ?? '';
 
@@ -258,19 +261,19 @@ describe('buildFewShotMessages', () => {
       // Ending example should have removals
       expect(parsed.threatsRemoved.length).toBeGreaterThan(0);
       for (const removal of parsed.threatsRemoved) {
-        expect(removal).toMatch(/^THREAT_\w+$/);
+        expect(removal).toMatch(/^th-\d+$/);
         expect(removal).not.toContain(':');
       }
 
       expect(parsed.constraintsRemoved.length).toBeGreaterThan(0);
       for (const removal of parsed.constraintsRemoved) {
-        expect(removal).toMatch(/^CONSTRAINT_\w+$/);
+        expect(removal).toMatch(/^cn-\d+$/);
         expect(removal).not.toContain(':');
       }
 
       expect(parsed.threadsResolved.length).toBeGreaterThan(0);
       for (const resolution of parsed.threadsResolved) {
-        expect(resolution).toMatch(/^THREAD_\w+$/);
+        expect(resolution).toMatch(/^td-\d+$/);
         expect(resolution).not.toContain(':');
       }
     });

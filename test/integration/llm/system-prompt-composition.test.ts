@@ -82,14 +82,19 @@ describe('opening data rules composition', () => {
       const rules = composeOpeningDataRules();
       expect(rules).toContain('ACTIVE STATE TRACKING');
       expect(rules).toContain('currentLocation');
-      expect(rules).toContain('THREAT_IDENTIFIER');
-      expect(rules).toContain('CONSTRAINT_IDENTIFIER');
-      expect(rules).toContain('THREAD_IDENTIFIER');
+      expect(rules).toContain('plain text description');
+      expect(rules).toContain('"th-1"');
+      expect(rules).toContain('"cn-1"');
+      expect(rules).toContain('"td-1"');
+      expect(rules).not.toContain('THREAT_IDENTIFIER');
+      expect(rules).not.toContain('CONSTRAINT_IDENTIFIER');
+      expect(rules).not.toContain('THREAD_IDENTIFIER');
     });
 
-    it('explains prefix-only removal protocol', () => {
+    it('explains ID-based removal protocol', () => {
       const rules = composeOpeningDataRules();
-      expect(rules).toContain('ONLY the prefix');
+      expect(rules).toContain('use ONLY IDs');
+      expect(rules).not.toContain('ONLY the prefix');
       expect(rules).toContain('threatsRemoved');
     });
 
@@ -113,7 +118,8 @@ describe('opening data rules composition', () => {
       expect(rules).toContain('INVENTORY');
       expect(rules).toContain('HEALTH');
       expect(rules).toContain('ACTIVE STATE');
-      expect(rules).toContain('PREFIX_ID: Description');
+      expect(rules).toContain('Additions are plain text; removals/resolutions use IDs');
+      expect(rules).not.toContain('PREFIX_ID: Description');
       expect(rules).toContain('PROTAGONIST AFFECT');
       expect(rules).toContain('WORLD FACTS');
       expect(rules).toContain('CHARACTER CANON');

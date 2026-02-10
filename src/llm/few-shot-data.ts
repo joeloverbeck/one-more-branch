@@ -36,16 +36,16 @@ export const OPENING_EXAMPLE_RESPONSE = JSON.stringify(
     ],
     currentLocation: 'Advanced Transmutation lecture hall, back row',
     threatsAdded: [
-      'THREAT_GRIMWALD_SUSPICION: Professor Grimwald is watching you closely',
+      'Professor Grimwald is watching you closely',
     ],
     threatsRemoved: [],
     constraintsAdded: [
-      'CONSTRAINT_CLASS_IN_SESSION: You are in the middle of a lecture',
+      'You are in the middle of a lecture',
     ],
     constraintsRemoved: [],
     threadsAdded: [
-      'THREAD_FORBIDDEN_LIBRARY: The journal speaks of a library beneath the academy',
-      'THREAD_JOURNAL_ORIGIN: Where did this journal come from and who wrote it?',
+      'The journal speaks of a library beneath the academy',
+      'Where did this journal come from and who wrote it?',
     ],
     threadsResolved: [],
     newCanonFacts: [
@@ -125,17 +125,17 @@ export const CONTINUATION_EXAMPLE_RESPONSE = JSON.stringify(
     ],
     currentLocation: 'East wing corridor, beside the statue of Archmagus Caelan',
     threatsAdded: [
-      'THREAT_FACULTY_APPROACHING: A senior faculty member is approaching your position',
+      'A senior faculty member is approaching your position',
     ],
     threatsRemoved: [],
     constraintsAdded: [
-      'CONSTRAINT_RESTRICTED_AREA: You are trespassing in the restricted east wing',
+      'You are trespassing in the restricted east wing',
     ],
     constraintsRemoved: [
-      'CONSTRAINT_CLASS_IN_SESSION',
+      'cn-1',
     ],
     threadsAdded: [
-      'THREAD_STATUE_MECHANISM: The third rune on the staff may open a hidden passage',
+      'The third rune on the staff may open a hidden passage',
     ],
     threadsResolved: [],
     newCanonFacts: [
@@ -204,17 +204,17 @@ export const ENDING_EXAMPLE_RESPONSE = JSON.stringify(
     currentLocation: 'Academy entrance hall, reunited with Professor Grimwald',
     threatsAdded: [],
     threatsRemoved: [
-      'THREAT_GRIMWALD_SUSPICION',
-      'THREAT_FACULTY_APPROACHING',
+      'th-1',
+      'th-2',
     ],
     constraintsAdded: [],
     constraintsRemoved: [
-      'CONSTRAINT_RESTRICTED_AREA',
+      'cn-2',
     ],
     threadsAdded: [],
     threadsResolved: [
-      'THREAD_FORBIDDEN_LIBRARY',
-      'THREAD_JOURNAL_ORIGIN',
+      'td-1',
+      'td-2',
     ],
     newCanonFacts: [
       'The Codex of Unmaking can be bound by those who know the ritual',

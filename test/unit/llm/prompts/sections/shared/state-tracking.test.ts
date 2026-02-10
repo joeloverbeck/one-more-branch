@@ -25,24 +25,24 @@ describe('shared state-tracking sections', () => {
       expect(ACTIVE_STATE_TRACKING).toContain('END of this scene');
     });
 
-    it('explains THREAT format with prefix', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('THREAT_IDENTIFIER');
-      expect(ACTIVE_STATE_TRACKING).toMatch(/THREAT_\w+:/);
+    it('explains THREAT additions/removals with IDs', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('plain text description');
+      expect(ACTIVE_STATE_TRACKING).toContain('"th-1"');
     });
 
-    it('explains CONSTRAINT format with prefix', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('CONSTRAINT_IDENTIFIER');
-      expect(ACTIVE_STATE_TRACKING).toMatch(/CONSTRAINT_\w+/);
+    it('explains CONSTRAINT additions/removals with IDs', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('ACTIVE CONSTRAINTS');
+      expect(ACTIVE_STATE_TRACKING).toContain('"cn-1"');
     });
 
-    it('explains THREAD format with prefix', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('THREAD_IDENTIFIER');
-      expect(ACTIVE_STATE_TRACKING).toMatch(/THREAD_\w+/);
+    it('explains THREAD additions/resolutions with IDs', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS');
+      expect(ACTIVE_STATE_TRACKING).toContain('"td-1"');
     });
 
-    it('explains prefix-only removal protocol', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('ONLY the prefix');
-      expect(ACTIVE_STATE_TRACKING).toContain('threatsRemoved');
+    it('does not mention legacy prefix format', () => {
+      expect(ACTIVE_STATE_TRACKING).not.toContain('THREAT_IDENTIFIER');
+      expect(ACTIVE_STATE_TRACKING).not.toContain('PREFIX_ID');
     });
 
     it('includes Rules section', () => {
@@ -79,6 +79,11 @@ describe('shared state-tracking sections', () => {
       expect(INVENTORY_MANAGEMENT).toContain('inventoryRemoved');
     });
 
+    it('requires ID-based inventory removals', () => {
+      expect(INVENTORY_MANAGEMENT).toContain('item\'s ID');
+      expect(INVENTORY_MANAGEMENT).toContain('"inv-1"');
+    });
+
     it('requires specific item names', () => {
       expect(INVENTORY_MANAGEMENT).toContain('be specific');
     });
@@ -104,6 +109,11 @@ describe('shared state-tracking sections', () => {
 
     it('documents healthRemoved field', () => {
       expect(HEALTH_MANAGEMENT).toContain('healthRemoved');
+    });
+
+    it('requires ID-based health removals', () => {
+      expect(HEALTH_MANAGEMENT).toContain('condition ID');
+      expect(HEALTH_MANAGEMENT).toContain('"hp-2"');
     });
 
     it('clarifies health is for physical conditions only', () => {
@@ -140,12 +150,13 @@ describe('shared state-tracking sections', () => {
       expect(FIELD_SEPARATION).toContain('healthAdded/healthRemoved');
     });
 
-    it('documents ACTIVE STATE fields with prefix format', () => {
+    it('documents ACTIVE STATE fields with plain additions and ID removals', () => {
       expect(FIELD_SEPARATION).toContain('ACTIVE STATE');
       expect(FIELD_SEPARATION).toContain('threatsAdded/threatsRemoved');
       expect(FIELD_SEPARATION).toContain('constraintsAdded/constraintsRemoved');
       expect(FIELD_SEPARATION).toContain('threadsAdded/threadsResolved');
-      expect(FIELD_SEPARATION).toContain('PREFIX_ID: Description');
+      expect(FIELD_SEPARATION).toContain('Additions are plain text');
+      expect(FIELD_SEPARATION).toContain('removals/resolutions use IDs');
     });
 
     it('documents PROTAGONIST AFFECT field', () => {

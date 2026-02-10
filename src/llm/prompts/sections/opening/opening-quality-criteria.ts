@@ -8,23 +8,23 @@ Focus on ESTABLISHMENT, not removal. For the opening page:
 
 GOOD INITIAL THREATS (threatsAdded):
 - Dangers present at story start that create immediate tension
-- "THREAT_GUARDS: Two guards watch the town gate"
-- "THREAT_STORM: A violent storm is approaching"
+- "Two guards watch the town gate"
+- "A violent storm is approaching"
 
 GOOD INITIAL CONSTRAINTS (constraintsAdded):
 - Limitations the protagonist faces from the start
-- "CONSTRAINT_DEADLINE: Must reach the city before nightfall"
-- "CONSTRAINT_DISGUISED: Identity must remain hidden"
+- "Must reach the city before nightfall"
+- "Identity must remain hidden"
 
 GOOD INITIAL THREADS (threadsAdded):
 - Mysteries or hooks that create intrigue
-- "THREAD_PACKAGE: The sealed package's contents are unknown"
-- "THREAD_STRANGER: The hooded figure's motives are unclear"
+- "The sealed package's contents are unknown"
+- "The hooded figure's motives are unclear"
 
 BAD INITIAL ENTRIES (do NOT add):
-- Entries that imply past events ("THREAT_REVENGE: Enemies seek revenge for past wrongs") - if relevant, establish it in the narrative
-- Overly vague entries ("THREAT_DANGER: Something feels wrong") - be specific
-- Constraints that are just inventory facts ("CONSTRAINT_UNARMED: No weapon") - implied by inventory
+- Entries that imply past events ("Enemies seek revenge for past wrongs") - if relevant, establish it in the narrative
+- Overly vague entries ("Something feels wrong") - be specific
+- Constraints that are just inventory facts ("No weapon") - implied by inventory
 
 OPENING-SPECIFIC REMINDERS:
 - threatsRemoved, constraintsRemoved, threadsResolved should be empty arrays

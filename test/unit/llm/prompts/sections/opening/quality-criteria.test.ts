@@ -38,10 +38,13 @@ describe('opening quality-criteria sections', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threadsAdded');
     });
 
-    it('lists examples with prefix format', () => {
-      expect(OPENING_ACTIVE_STATE_QUALITY).toMatch(/THREAT_\w+:/);
-      expect(OPENING_ACTIVE_STATE_QUALITY).toMatch(/CONSTRAINT_\w+:/);
-      expect(OPENING_ACTIVE_STATE_QUALITY).toMatch(/THREAD_\w+:/);
+    it('lists plain-text examples without prefix format', () => {
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Two guards watch the town gate"');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Must reach the city before nightfall"');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"The sealed package\'s contents are unknown"');
+      expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('THREAT_');
+      expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('CONSTRAINT_');
+      expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('THREAD_');
     });
 
     it('specifies removed arrays should be empty', () => {

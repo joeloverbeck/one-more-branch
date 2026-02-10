@@ -1,6 +1,6 @@
 # KEYSTAENT-04: Update LLM prompts, quality criteria, and few-shot examples
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: 4
 **Depends on**: KEYSTAENT-02, KEYSTAENT-03
 **Branch**: keyed-state-entries
@@ -9,35 +9,35 @@
 
 ## Summary
 
-Update all prompt text to display keyed entries in `[id] text` format, remove `PREFIX_ID: Description` format instructions, and update few-shot examples to use plain-text additions and ID-based removals.
+Finalize keyed-entry prompt guidance by removing remaining legacy `PREFIX_ID: Description` instructions and updating few-shot examples to use plain-text additions and ID-based removals.
+
+## Assumption Reassessment (Before Implementation)
+
+The original ticket assumed several files were still un-migrated. Current code state differs:
+
+- `src/llm/prompts/continuation-prompt.ts` already renders keyed entries as `- [id] text` for character state, inventory, and health.
+- `src/llm/prompts/continuation/active-state-sections.ts` already renders threats/constraints/threads as `- [id] text`.
+- Remaining legacy behavior is concentrated in:
+  - `src/llm/prompts/sections/shared/state-tracking.ts`
+  - `src/llm/prompts/opening-prompt.ts`
+  - `src/llm/prompts/sections/opening/opening-quality-criteria.ts`
+  - `src/llm/few-shot-data.ts`
+- Existing tests still assert legacy prefix formats in several prompt/example test files and need updating.
+
+Scope is narrowed to those remaining legacy prompt/example files and the tests that validate them.
 
 ## Files to Touch
 
-- `src/llm/prompts/continuation-prompt.ts` — **MODIFY**
-- `src/llm/prompts/continuation/active-state-sections.ts` — **MODIFY**
 - `src/llm/prompts/sections/shared/state-tracking.ts` — **MODIFY**
 - `src/llm/prompts/opening-prompt.ts` — **MODIFY**
 - `src/llm/prompts/sections/opening/opening-quality-criteria.ts` — **MODIFY**
 - `src/llm/few-shot-data.ts` — **MODIFY**
+- `test/unit/llm/prompts/sections/shared/state-tracking.test.ts` — **MODIFY**
+- `test/unit/llm/prompts/opening-prompt.test.ts` — **MODIFY**
+- `test/unit/llm/prompts/sections/opening/quality-criteria.test.ts` — **MODIFY**
+- `test/unit/llm/examples.test.ts` — **MODIFY**
 
 ## What to Implement
-
-### `continuation-prompt.ts`
-
-Lines 70-78 (character state section):
-- Change `- ${state}` → `- [${state.id}] ${state.text}` (the `states` are now `KeyedEntry[]`)
-
-Lines 87-93 (inventory section):
-- Change `- ${item}` → `- [${item.id}] ${item.text}` (items are now `KeyedEntry[]`)
-
-Lines 95-104 (health section):
-- Change `- ${entry}` → `- [${entry.id}] ${entry.text}` (entries are now `KeyedEntry[]`)
-
-### `active-state-sections.ts`
-
-- `buildThreatsSection`: `- ${t.raw}` → `- [${t.id}] ${t.text}`
-- `buildConstraintsSection`: `- ${c.raw}` → `- [${c.id}] ${c.text}`
-- `buildThreadsSection`: `- ${t.raw}` → `- [${t.id}] ${t.text}`
 
 ### `state-tracking.ts`
 
@@ -106,33 +106,27 @@ Update all three examples:
 
 ### Tests that must pass
 
-Update `test/unit/llm/prompts/continuation-prompt.test.ts`:
-
-1. Character state section renders `[cs-1] Gave protagonist a map` format (not plain string)
-2. Inventory section renders `[inv-1] Rusty iron key` format
-3. Health section renders `[hp-1] Bruised arm` format
-4. Empty state sections still render correctly (empty or default text)
-
-Update `test/unit/llm/prompts/continuation/active-state-sections.test.ts`:
-
-5. `buildThreatsSection` renders `[th-1] Fire everywhere` format
-6. `buildConstraintsSection` renders `[cn-1] Hands are bound` format
-7. `buildThreadsSection` renders `[td-1] Missing child mystery` format
-
 Update `test/unit/llm/prompts/sections/shared/state-tracking.test.ts`:
 
-8. `ACTIVE_STATE_TRACKING` does NOT contain `THREAT_IDENTIFIER:` or `PREFIX_ID:` strings
-9. `ACTIVE_STATE_TRACKING` contains `th-1` and `cn-1` style ID references
+1. `ACTIVE_STATE_TRACKING` does NOT contain `THREAT_IDENTIFIER:` or `PREFIX_ID:` strings
+2. `ACTIVE_STATE_TRACKING` contains `th-1` and `cn-1` style ID references
+3. Inventory/health guidance references ID-based removals (`inv-N`, `hp-N`)
+4. `FIELD_SEPARATION` no longer references `PREFIX_ID: Description`
 
 Update `test/unit/llm/prompts/opening-prompt.test.ts`:
 
-10. Opening prompt does NOT contain `PREFIX_ID: description` format instructions
-11. Opening prompt example JSON uses plain text for additions
+5. Opening prompt does NOT contain `PREFIX_ID: description` format instructions
+6. Opening prompt example JSON uses plain text for additions
 
 Update `test/unit/llm/examples.test.ts`:
 
-12. Few-shot examples do NOT contain `THREAT_`, `CONSTRAINT_`, or `THREAD_` prefixes in added entries
-13. Few-shot removal examples use `th-N`, `cn-N`, `td-N` format IDs
+7. Few-shot examples do NOT contain `THREAT_`, `CONSTRAINT_`, or `THREAD_` prefixes in added entries
+8. Few-shot removal examples use `th-N`, `cn-N`, `td-N` format IDs
+
+Update `test/unit/llm/prompts/sections/opening/quality-criteria.test.ts`:
+
+9. Opening quality examples use plain-text additions (no `THREAT_`/`CONSTRAINT_`/`THREAD_` prefixes)
+10. Assertions expecting prefix-format examples are removed/replaced
 
 ### Invariants that must remain true
 
@@ -140,3 +134,18 @@ Update `test/unit/llm/examples.test.ts`:
 - Prompt text is clear to the LLM about the distinction: plain text for additions, IDs for removals
 - Few-shot examples are internally consistent (removals reference IDs that would exist from prior additions)
 - `npm run typecheck` passes for all prompt files
+- No legacy prefix-format instructions remain in opening/shared prompt guidance
+
+## Outcome
+
+- **Completion date**: 2026-02-10
+- **What actually changed**:
+  - Updated remaining legacy prompt guidance in shared state-tracking, opening prompt instructions, opening quality criteria, and few-shot data.
+  - Replaced legacy prefix-based examples with plain-text additions and ID-based removals (`th-N`, `cn-N`, `td-N`, `inv-N`, `hp-N`) where applicable.
+  - Updated prompt/example unit tests that still enforced legacy prefix behavior.
+- **Deviation from original plan**:
+  - `continuation-prompt.ts` and `continuation/active-state-sections.ts` were already compliant and required no code changes.
+  - Scope was narrowed to only the remaining legacy files plus directly affected tests.
+- **Verification results**:
+  - `npm run test:unit -- --coverage=false --runTestsByPath test/unit/llm/prompts/sections/shared/state-tracking.test.ts test/unit/llm/prompts/opening-prompt.test.ts test/unit/llm/prompts/sections/opening/quality-criteria.test.ts test/unit/llm/examples.test.ts` passed.
+  - `npm run test:unit -- --coverage=false --runTestsByPath test/unit/llm/prompts/continuation-prompt.test.ts test/unit/llm/prompts/continuation/active-state-sections.test.ts` passed.
