@@ -18,6 +18,7 @@ import { createStructureRewriter } from '../../../src/engine/structure-rewriter'
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
 import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
+import { LLMError } from '../../../src/llm/types';
 import { logger } from '../../../src/logging/index.js';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
@@ -2188,6 +2189,44 @@ describe('page-service', () => {
       expect(mockedStorage.savePage.mock.invocationCallOrder[0]).toBeLessThan(
         mockedStorage.updateChoiceLink.mock.invocationCallOrder[0],
       );
+    });
+
+    it('does not commit page data when writer validation fails', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Root',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGenerateWriterPage.mockRejectedValue(
+        new LLMError(
+          'Deterministic writer output validation failed',
+          'VALIDATION_ERROR',
+          false,
+          {
+            ruleKeys: ['writer_output.choice_pair.duplicate'],
+            validationIssues: [
+              {
+                ruleKey: 'writer_output.choice_pair.duplicate',
+                fieldPath: 'choices[1]',
+              },
+            ],
+          },
+        ),
+      );
+
+      await expect(getOrGeneratePage(story, parentPage, 0, 'test-key')).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+      });
+      expect(mockedStorage.savePage).not.toHaveBeenCalled();
+      expect(mockedStorage.updateChoiceLink).not.toHaveBeenCalled();
+      expect(mockedStorage.updateStory).not.toHaveBeenCalled();
     });
 
     it('does not persist story when generation produces no canon or arc updates', async () => {

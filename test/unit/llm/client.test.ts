@@ -311,7 +311,7 @@ describe('llm client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should treat schema validation failures as retryable', async () => {
+  it('should treat schema validation failures as non-retryable', async () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: [
@@ -352,14 +352,11 @@ describe('llm client', () => {
     // Attach rejection handler early to prevent unhandled rejection detection
     const expectation = expect(promise).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
-      retryable: true,
+      retryable: false,
     });
 
-    // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-
     await expectation;
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('should log opening prompts before API call', async () => {
@@ -486,16 +483,20 @@ describe('llm client', () => {
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
-    // Attach rejection handler early
-    const expectation = expect(promise).rejects.toMatchObject({
+    await expect(promise).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
+      retryable: false,
     });
 
-    // Advance through retry delays
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-
-    await expectation;
+    const rejectedError = await promise.catch((error: unknown): unknown => error);
+    expect(rejectedError).toBeInstanceOf(LLMError);
+    const errorContext =
+      rejectedError instanceof LLMError
+        ? rejectedError.context
+        : undefined;
+    expect(Array.isArray(errorContext?.validationIssues)).toBe(true);
+    expect(Array.isArray(errorContext?.ruleKeys)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const validationErrorCall = errorCalls.find(
@@ -509,6 +510,14 @@ describe('llm client', () => {
         ? (validationErrorCall[1] as { rawResponse?: string })
         : undefined;
     expect(validationErrorMetadata?.rawResponse).toContain('Only one choice');
+    const validationIssues =
+      validationErrorCall &&
+      typeof validationErrorCall[1] === 'object' &&
+      validationErrorCall[1] !== null &&
+      'validationIssues' in validationErrorCall[1]
+        ? (validationErrorCall[1] as { validationIssues?: unknown }).validationIssues
+        : undefined;
+    expect(Array.isArray(validationIssues)).toBe(true);
   });
 });
 

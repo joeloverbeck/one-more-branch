@@ -15,6 +15,7 @@ import {
   createInitialStructureState,
 } from '@/engine';
 import type { StoryStructure } from '@/models/story-arc';
+import { LLMError } from '@/llm/types';
 import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
@@ -975,6 +976,51 @@ describe('page-service integration', () => {
       const reloadedStory = await storage.loadStory(baseStory.id);
       expect(reloadedStory?.globalCanon).toContain('A new world fact discovered');
       expect(reloadedStory?.globalCharacterCanon['Sage']).toContain('Knows ancient secrets');
+    });
+
+    it('does not persist page or choice link when writer validation fails', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} validation-failure`,
+        worldbuilding: 'A world with strict validation.',
+        tone: 'tense',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Parent page.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Explore'), createChoice('Wait')],
+        stateChanges: { added: ['Started'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      await storage.savePage(baseStory.id, parentPage);
+
+      mockedGenerateWriterPage.mockRejectedValue(
+        new LLMError('Deterministic validation failed', 'VALIDATION_ERROR', false, {
+          ruleKeys: ['writer_output.choice_pair.duplicate'],
+          validationIssues: [
+            {
+              ruleKey: 'writer_output.choice_pair.duplicate',
+              fieldPath: 'choices[1]',
+            },
+          ],
+        }),
+      );
+
+      await expect(getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key')).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+      });
+
+      const child = await storage.loadPage(baseStory.id, parsePageId(2));
+      expect(child).toBeNull();
+
+      const parentAfter = await storage.loadPage(baseStory.id, parentPage.id);
+      expect(parentAfter?.choices[0]?.nextPageId).toBeNull();
     });
   });
 });

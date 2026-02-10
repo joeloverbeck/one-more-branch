@@ -5,6 +5,11 @@ import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
 import { WRITER_GENERATION_SCHEMA } from './schemas/writer-schema.js';
 import { validateWriterResponse } from './schemas/writer-response-transformer.js';
 import {
+  extractWriterValidationIssues,
+  validateDeterministicWriterOutput,
+  WriterOutputValidationError,
+} from './validation/writer-output-validator.js';
+import {
   LLMError,
   type ChatMessage,
   type GenerationOptions,
@@ -63,16 +68,30 @@ async function callWriterStructured(
   }
 
   try {
-    return validateWriterResponse(parsed, content);
+    const validated = validateWriterResponse(parsed, content);
+    const deterministicIssues = validateDeterministicWriterOutput(validated);
+    if (deterministicIssues.length > 0) {
+      throw new WriterOutputValidationError(deterministicIssues);
+    }
+
+    return validated;
   } catch (error) {
-    logger.error('Writer structured response validation failed', { rawResponse: content });
+    const issues = extractWriterValidationIssues(error);
+    logger.error('Writer structured response validation failed', {
+      rawResponse: content,
+      validationIssues: issues,
+    });
 
     if (error instanceof LLMError) {
       throw error;
     }
 
     const message = error instanceof Error ? error.message : 'Failed to validate structured response';
-    throw new LLMError(message, 'VALIDATION_ERROR', true);
+    throw new LLMError(message, 'VALIDATION_ERROR', false, {
+      rawResponse: content,
+      validationIssues: issues,
+      ruleKeys: [...new Set(issues.map(issue => issue.ruleKey))],
+    });
   }
 }
 
