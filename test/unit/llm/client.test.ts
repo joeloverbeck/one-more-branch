@@ -110,6 +110,7 @@ describe('llm client', () => {
   beforeEach(() => {
     fetchMock.mockReset();
     mockLogPrompt.mockReset();
+    mockLogger.info.mockReset();
     mockLogger.warn.mockReset();
     mockLogger.error.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -608,6 +609,79 @@ describe('llm client', () => {
         : undefined;
     expect(typeof counterContext?.ruleKey).toBe('string');
     expect(typeof counterContext?.count).toBe('number');
+  });
+
+  it('repairs misplaced removal IDs when writerValidationContext confirms the ID exists', async () => {
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(
+        JSON.stringify({
+          ...validStructuredPayload,
+          threatsRemoved: ['td-1'],
+          threadsResolved: [],
+        }),
+      ),
+    );
+
+    const result = await generateWriterPage(continuationContext, {
+      apiKey: 'test-key',
+      writerValidationContext: {
+        removableIds: {
+          threats: [],
+          constraints: [],
+          threads: ['td-1'],
+          inventory: [],
+          health: [],
+          characterState: [],
+        },
+      },
+    });
+
+    expect(result.threatsRemoved).toEqual([]);
+    expect(result.threadsResolved).toEqual(['td-1']);
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'Writer removal ID field mismatch repaired',
+      expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        repairs: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'td-1',
+            fromField: 'threatsRemoved',
+            toField: 'threadsResolved',
+          }),
+        ]),
+      }),
+    );
+  });
+
+  it('does not repair unknown misplaced IDs and still fails validation', async () => {
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(
+        JSON.stringify({
+          ...validStructuredPayload,
+          threatsRemoved: ['td-999'],
+          threadsResolved: [],
+        }),
+      ),
+    );
+
+    await expect(
+      generateWriterPage(continuationContext, {
+        apiKey: 'test-key',
+        writerValidationContext: {
+          removableIds: {
+            threats: [],
+            constraints: [],
+            threads: ['td-1'],
+            inventory: [],
+            health: [],
+            characterState: [],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      retryable: false,
+    });
   });
 });
 

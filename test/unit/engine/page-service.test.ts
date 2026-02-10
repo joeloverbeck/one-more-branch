@@ -473,7 +473,28 @@ describe('page-service', () => {
           selectedChoice: parentPage.choices[0]?.text,
           activeState: parentPage.accumulatedActiveState,
         }),
-        { apiKey: 'test-key', observability: { storyId: story.id, pageId: parentPage.id } },
+        expect.objectContaining({
+          apiKey: 'test-key',
+          observability: { storyId: story.id, pageId: parentPage.id },
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          writerValidationContext: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            removableIds: expect.objectContaining({
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              threats: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              constraints: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              threads: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              inventory: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              health: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              characterState: expect.any(Array),
+            }),
+          }),
+        }),
       );
       expect(page.id).toBe(8);
       expect(page.parentPageId).toBe(parentPage.id);
@@ -1371,7 +1392,10 @@ describe('page-service', () => {
         expect.objectContaining({
           structure: structureV1, // Should be v1, not v2!
         }),
-        { apiKey: 'test-key', observability: { storyId: story.id, pageId: parentPage.id } },
+        expect.objectContaining({
+          apiKey: 'test-key',
+          observability: { storyId: story.id, pageId: parentPage.id },
+        }),
       );
     });
 

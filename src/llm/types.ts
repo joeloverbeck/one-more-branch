@@ -59,6 +59,17 @@ export interface GenerationObservabilityContext {
   requestId?: string;
 }
 
+export interface WriterValidationContext {
+  removableIds: {
+    threats: readonly string[];
+    constraints: readonly string[];
+    threads: readonly string[];
+    inventory: readonly string[];
+    health: readonly string[];
+    characterState: readonly string[];
+  };
+}
+
 export interface GenerationOptions {
   apiKey: string;
   model?: string;
@@ -66,6 +77,7 @@ export interface GenerationOptions {
   maxTokens?: number;
   promptOptions?: PromptOptions;
   observability?: GenerationObservabilityContext;
+  writerValidationContext?: WriterValidationContext;
 }
 
 export interface ContinuationContext {

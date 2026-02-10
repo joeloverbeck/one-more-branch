@@ -15,6 +15,7 @@ import {
   WriterOutputValidationError,
   type WriterOutputValidationIssue,
 } from './validation/writer-output-validator.js';
+import { repairWriterRemovalIdFieldMismatches } from './validation/writer-id-repair.js';
 import {
   LLMError,
   type ChatMessage,
@@ -98,9 +99,19 @@ async function callWriterStructured(
   const parsedMessage = parseMessageJsonContent(content);
   const parsed = parsedMessage.parsed;
   const rawContent = parsedMessage.rawText;
+  const repairResult = repairWriterRemovalIdFieldMismatches(
+    parsed,
+    options.writerValidationContext,
+  );
+  if (repairResult.repairs.length > 0) {
+    logger.info('Writer removal ID field mismatch repaired', {
+      repairs: repairResult.repairs,
+      ...buildObservabilityContext(options.observability),
+    });
+  }
 
   try {
-    const validated = validateWriterResponse(parsed, rawContent);
+    const validated = validateWriterResponse(repairResult.repairedJson, rawContent);
     const deterministicIssues = validateDeterministicWriterOutput(validated);
     if (deterministicIssues.length > 0) {
       throw new WriterOutputValidationError(deterministicIssues);

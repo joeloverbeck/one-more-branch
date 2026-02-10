@@ -425,6 +425,24 @@ describe('page-service integration', () => {
         }),
         expect.objectContaining({
           apiKey: 'test-api-key',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          writerValidationContext: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            removableIds: expect.objectContaining({
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              threats: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              constraints: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              threads: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              inventory: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              health: expect.any(Array),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              characterState: expect.any(Array),
+            }),
+          }),
         }),
       );
       const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];

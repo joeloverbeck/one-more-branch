@@ -118,6 +118,17 @@ export async function generateNextPage(
         storyId: story.id,
         pageId: parentPage.id,
       },
+      writerValidationContext: {
+        removableIds: {
+          threats: parentState.accumulatedActiveState.activeThreats.map(entry => entry.id),
+          constraints: parentState.accumulatedActiveState.activeConstraints.map(entry => entry.id),
+          threads: parentState.accumulatedActiveState.openThreads.map(entry => entry.id),
+          inventory: parentState.accumulatedInventory.map(entry => entry.id),
+          health: parentState.accumulatedHealth.map(entry => entry.id),
+          characterState: Object.values(parentState.accumulatedCharacterState)
+            .flatMap(entries => entries.map(entry => entry.id)),
+        },
+      },
     },
   );
 
