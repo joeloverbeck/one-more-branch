@@ -1,6 +1,6 @@
 # Spec: Server-Assigned Keyed IDs for State Entries
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Created**: 2026-02-09
 **Scope**: Models, LLM prompts/schemas, engine, persistence, migration
 
