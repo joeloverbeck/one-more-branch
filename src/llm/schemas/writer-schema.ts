@@ -71,37 +71,37 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Active threats introduced in this scene. Format: "THREAT_ID: Description" (e.g., "THREAT_FIRE: The building is ablaze and collapsing", "THREAT_GUARDS: City guards are searching for you"). Empty array if none.',
+            'Plain text description of new threat (server assigns ID). E.g., "Fire is spreading through the building". Empty array if none.',
         },
         threatsRemoved: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Threats resolved in this scene. Use the prefix only (e.g., "THREAT_FIRE", "THREAT_GUARDS"). Empty array if none.',
+            'IDs to remove, e.g., ["th-1"]. Use ONLY IDs shown in ACTIVE THREATS. Empty array if none.',
         },
         constraintsAdded: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Constraints imposed on the protagonist in this scene. Format: "CONSTRAINT_ID: Description" (e.g., "CONSTRAINT_BOUND: Your hands are tied behind your back", "CONSTRAINT_OATH: You swore not to harm the villagers"). Empty array if none.',
+            'Plain text description of new constraint (server assigns ID). E.g., "Your hands are tied behind your back". Empty array if none.',
         },
         constraintsRemoved: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Constraints lifted in this scene. Use the prefix only (e.g., "CONSTRAINT_BOUND", "CONSTRAINT_OATH"). Empty array if none.',
+            'IDs to remove, e.g., ["cn-1"]. Use ONLY IDs shown in ACTIVE CONSTRAINTS. Empty array if none.',
         },
         threadsAdded: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Open narrative threads introduced in this scene. Format: "THREAD_ID: Description" (e.g., "THREAD_MISSING_CHILD: A villager mentioned their child has been missing for three days"). Empty array if none.',
+            'Plain text description of new thread (server assigns ID). E.g., "A villager mentioned their child has been missing for three days". Empty array if none.',
         },
         threadsResolved: {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Narrative threads resolved in this scene. Use the prefix only (e.g., "THREAD_MISSING_CHILD"). Empty array if none.',
+            'IDs to resolve, e.g., ["td-1"]. Use ONLY IDs shown in OPEN NARRATIVE THREADS. Empty array if none.',
         },
         newCanonFacts: {
           type: 'array',
@@ -133,7 +133,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Items the protagonist LOST, USED UP, or DISCARDED in this scene. Use the EXACT text of the existing inventory item. Empty array if nothing lost.',
+            'IDs to remove, e.g., ["inv-1"]. Use ONLY IDs shown in YOUR INVENTORY. Empty array if nothing lost.',
         },
         healthAdded: {
           type: 'array',
@@ -145,7 +145,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Health conditions that are RESOLVED or HEALED in this scene. Use the EXACT text from existing health entries. Empty array if nothing healed.',
+            'IDs to remove, e.g., ["hp-2"]. Use ONLY IDs shown in YOUR HEALTH. Empty array if nothing healed.',
         },
         characterStateChangesAdded: {
           type: 'array',
@@ -163,17 +163,9 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
         },
         characterStateChangesRemoved: {
           type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              characterName: { type: 'string' },
-              states: { type: 'array', items: { type: 'string' } },
-            },
-            required: ['characterName', 'states'],
-            additionalProperties: false,
-          },
+          items: { type: 'string' },
           description:
-            'NPC states to REMOVE because they are RESOLVED or NO LONGER RELEVANT. Use EXACT text from existing NPC state entries. Empty array if nothing to remove.',
+            'IDs to remove, e.g., ["cs-1", "cs-3"]. Use ONLY IDs shown in NPC CURRENT STATE. Empty array if nothing to remove.',
         },
         protagonistAffect: {
           type: 'object',

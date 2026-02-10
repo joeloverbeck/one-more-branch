@@ -12,7 +12,7 @@ import type {
 } from '../../../src/llm/types';
 import { LLMError } from '../../../src/llm/types';
 import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
-import type { ActiveState } from '../../../src/models/state/index';
+import type { ActiveState, KeyedEntry } from '../../../src/models/state/index';
 
 describe('LLM types', () => {
   describe('LLMError', () => {
@@ -274,15 +274,21 @@ describe('LLM types', () => {
       const activeState: ActiveState = {
         currentLocation: 'Dark forest clearing',
         activeThreats: [
-          { prefix: 'THREAT_WOLVES', description: 'Pack of wolves circling', raw: 'THREAT_WOLVES: Pack of wolves circling' },
+          { id: 'th-1', text: 'Pack of wolves circling' },
         ],
         activeConstraints: [
-          { prefix: 'CONSTRAINT_INJURED', description: 'Twisted ankle limits speed', raw: 'CONSTRAINT_INJURED: Twisted ankle limits speed' },
+          { id: 'cn-1', text: 'Twisted ankle limits speed' },
         ],
         openThreads: [
-          { prefix: 'THREAD_MAP', description: 'Map destination unknown', raw: 'THREAD_MAP: Map destination unknown' },
+          { id: 'td-1', text: 'Map destination unknown' },
         ],
       };
+
+      const accumulatedInventory: readonly KeyedEntry[] = [
+        { id: 'inv-1', text: 'torch' },
+        { id: 'inv-2', text: 'dagger' },
+      ];
+      const accumulatedHealth: readonly KeyedEntry[] = [{ id: 'hp-1', text: 'minor-cut' }];
 
       const context: ContinuationContext = {
         characterConcept: 'A ranger',
@@ -293,8 +299,8 @@ describe('LLM types', () => {
         previousNarrative: 'The wolves appeared...',
         selectedChoice: 'Stand ground',
 
-        accumulatedInventory: ['torch', 'dagger'],
-        accumulatedHealth: ['minor-cut'],
+        accumulatedInventory,
+        accumulatedHealth,
         accumulatedCharacterState: {},
         activeState,
         grandparentNarrative: 'You entered the forest at dawn...',
@@ -302,7 +308,8 @@ describe('LLM types', () => {
       };
 
       expect(context.activeState.activeThreats).toHaveLength(1);
-      expect(context.activeState.activeThreats[0].prefix).toBe('THREAT_WOLVES');
+      expect(context.activeState.activeThreats[0].id).toBe('th-1');
+      expect(context.accumulatedInventory[0].id).toBe('inv-1');
       expect(context.activeState.activeConstraints).toHaveLength(1);
       expect(context.activeState.openThreads).toHaveLength(1);
     });

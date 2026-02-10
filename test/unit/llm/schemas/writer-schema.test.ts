@@ -56,6 +56,28 @@ describe('WRITER_GENERATION_SCHEMA', () => {
     expect(schema.properties.threadsAdded.items?.type).toBe('string');
     expect(schema.properties.threadsResolved.type).toBe('array');
     expect(schema.properties.threadsResolved.items?.type).toBe('string');
+    expect(schema.properties.characterStateChangesRemoved.type).toBe('array');
+    expect(schema.properties.characterStateChangesRemoved.items?.type).toBe('string');
+  });
+
+  it('should document keyed-id removals and plain-text additions for state fields', () => {
+    const schema = WRITER_GENERATION_SCHEMA.json_schema.schema as {
+      properties: Record<string, { description: string }>;
+    };
+
+    expect(schema.properties.threatsAdded.description).toContain('Plain text description of new threat');
+    expect(schema.properties.threatsRemoved.description).toContain('["th-1"]');
+    expect(schema.properties.constraintsAdded.description).toContain(
+      'Plain text description of new constraint',
+    );
+    expect(schema.properties.constraintsRemoved.description).toContain('["cn-1"]');
+    expect(schema.properties.threadsAdded.description).toContain('Plain text description of new thread');
+    expect(schema.properties.threadsResolved.description).toContain('["td-1"]');
+    expect(schema.properties.inventoryRemoved.description).toContain('["inv-1"]');
+    expect(schema.properties.healthRemoved.description).toContain('["hp-2"]');
+    expect(schema.properties.characterStateChangesRemoved.description).toContain(
+      '["cs-1", "cs-3"]',
+    );
   });
 
   it('should not contain legacy stateChangesAdded/stateChangesRemoved fields', () => {

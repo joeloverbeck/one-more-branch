@@ -353,4 +353,23 @@ describe('validateWriterResponse', () => {
     ]);
     expect(result.characterStateChangesRemoved).toEqual(['cs-7']);
   });
+
+  it('should preserve valid character state removal IDs', () => {
+    const result = validateWriterResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        newCanonFacts: [],
+        characterStateChangesRemoved: ['cs-1', 'cs-3'],
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.characterStateChangesRemoved).toEqual(['cs-1', 'cs-3']);
+  });
 });
