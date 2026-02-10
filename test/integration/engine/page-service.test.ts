@@ -15,7 +15,7 @@ import {
   createInitialStructureState,
 } from '@/engine';
 import type { StoryStructure } from '@/models/story-arc';
-import type { WriterResult } from '@/llm/types';
+import type { AnalystResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -46,6 +46,8 @@ const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
 function buildStructure(): StoryStructure {
   return {
     overallTheme: 'Navigate political intrigue in a city of shadows.',
+    premise: 'A courier uncovers a conspiracy while navigating rival factions.',
+    pacingBudget: { targetPagesMin: 12, targetPagesMax: 24 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
       {
@@ -59,11 +61,13 @@ function buildStructure(): StoryStructure {
             id: '1.1',
             description: 'Find the first clue',
             objective: 'Establish the mystery',
+            role: 'setup',
           },
           {
             id: '1.2',
             description: 'Secure an ally',
             objective: 'Build support network',
+            role: 'escalation',
           },
         ],
       },
@@ -78,6 +82,7 @@ function buildStructure(): StoryStructure {
             id: '2.1',
             description: 'Infiltrate enemy territory',
             objective: 'Gather critical intel',
+            role: 'turning_point',
           },
         ],
       },
@@ -152,6 +157,31 @@ function buildContinuationResult(overrides?: Partial<WriterResult>): WriterResul
     sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: 'continuation-raw',
+    ...overrides,
+  };
+}
+
+function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
+  return {
+    beatConcluded: false,
+    beatResolution: '',
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [],
+    narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
+    sceneMomentum: 'STASIS',
+    objectiveEvidenceStrength: 'NONE',
+    commitmentStrength: 'NONE',
+    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+    entryConditionReadiness: 'NOT_READY',
+    objectiveAnchors: ['Establish the mystery'],
+    anchorEvidence: [''],
+    completionGateSatisfied: false,
+    completionGateFailureReason: '',
+    rawResponse: 'analyst-raw',
     ...overrides,
   };
 }
@@ -366,18 +396,7 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
-        beatConcluded: false,
-        beatResolution: '',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: '',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        rawResponse: 'analyst-raw',
-      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue(buildAnalystResult());
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -480,18 +499,7 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
-        beatConcluded: false,
-        beatResolution: '',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: '',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        rawResponse: 'analyst-raw',
-      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue(buildAnalystResult());
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -527,18 +535,14 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
-        beatConcluded: false,
-        beatResolution: '',
-        deviationDetected: true,
-        deviationReason: 'Betrayal invalidates trust-based beats.',
-        invalidatedBeatIds: ['1.2', '2.1'],
-        narrativeSummary: 'The protagonist chose betrayal.',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        rawResponse: 'analyst-raw',
-      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          deviationDetected: true,
+          deviationReason: 'Betrayal invalidates trust-based beats.',
+          invalidatedBeatIds: ['1.2', '2.1'],
+          narrativeSummary: 'The protagonist chose betrayal.',
+        }),
+      );
 
       const { page, updatedStory, deviationInfo } = await generateNextPage(
         storyWithStructure,
@@ -592,18 +596,16 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
-        beatConcluded: true,
-        beatResolution: 'The first clue was found successfully.',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: '',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        rawResponse: 'analyst-raw',
-      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          beatConcluded: true,
+          beatResolution: 'The first clue was found successfully.',
+          objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+          completionGateSatisfied: true,
+          objectiveAnchors: ['Establish the mystery'],
+          anchorEvidence: ['The first clue was found successfully.'],
+        }),
+      );
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -618,6 +620,225 @@ describe('page-service integration', () => {
         beatId: '1.2',
         status: 'active',
       });
+    });
+
+    it('action-heavy scene without explicit objective evidence does not conclude beat', async () => {
+      const structure = buildStructure();
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} gating-false-positive`,
+        worldbuilding: 'A war-torn capital with collapsing checkpoints.',
+        tone: 'high-intensity thriller',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The team races through exploding streets to reach the archive.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Rush the archive gate'), createChoice('Take rooftop route')],
+        stateChanges: { added: ['Under pursuit'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(
+        buildContinuationResult({
+          narrative:
+            'Gunfire tears across the boulevard as the team sprints between burning vehicles and collapsing barricades.',
+        }),
+      );
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          beatConcluded: false,
+          sceneMomentum: 'MAJOR_PROGRESS',
+          objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+          commitmentStrength: 'TENTATIVE',
+          structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+          entryConditionReadiness: 'PARTIAL',
+          objectiveAnchors: ['Establish the mystery'],
+          anchorEvidence: [''],
+          completionGateSatisfied: false,
+          completionGateFailureReason: 'Action escalation occurred without explicit objective completion.',
+        }),
+      );
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      expect(page.accumulatedStructureState.currentActIndex).toBe(0);
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'active',
+      });
+      expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
+        expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
+      );
+    });
+
+    it('turning_point with explicit commitment and anchor evidence can conclude beat', async () => {
+      const baseStructure = buildStructure();
+      const structure: StoryStructure = {
+        ...baseStructure,
+        acts: [
+          {
+            ...baseStructure.acts[0],
+            beats: [
+              {
+                ...baseStructure.acts[0]!.beats[0]!,
+                role: 'turning_point',
+                objective: 'Publicly commit to exposing the conspiracy',
+              },
+              baseStructure.acts[0]!.beats[1]!,
+            ],
+          },
+          baseStructure.acts[1]!,
+        ],
+      };
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} gating-turning-point`,
+        worldbuilding: 'A capital where every vow is a political weapon.',
+        tone: 'political thriller',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The council chamber waits in tense silence.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Make the accusation publicly'), createChoice('Delay and gather more proof')],
+        stateChanges: { added: ['Conspiracy evidence prepared'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(
+        buildContinuationResult({
+          narrative:
+            'Before the full council, you name the conspirators and swear to release the ledgers, accepting exile if you fail.',
+        }),
+      );
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          beatConcluded: true,
+          beatResolution: 'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
+          sceneMomentum: 'MAJOR_PROGRESS',
+          objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+          commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+          structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
+          entryConditionReadiness: 'READY',
+          objectiveAnchors: ['Publicly commit to exposing the conspiracy'],
+          anchorEvidence: ['You publicly accuse the conspirators and swear to release the ledgers.'],
+          completionGateSatisfied: true,
+        }),
+      );
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'concluded',
+        resolution:
+          'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
+      });
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.2',
+        status: 'active',
+      });
+    });
+
+    it.each([
+      {
+        label: 'political thriller',
+        concept: 'A whistleblower tries to survive a corrupt ministry purge.',
+        worldbuilding: 'A surveillance state where ministries erase dissent overnight.',
+        tone: 'tense political thriller',
+        narrative:
+          'Black sedans close in as leaked dossiers trigger a citywide crackdown, but no proof reaches the tribunal yet.',
+      },
+      {
+        label: 'wilderness survival',
+        concept: 'A stranded climber searches for a pass before winter closes in.',
+        worldbuilding: 'An alpine range with unstable weather and no rescue corridor.',
+        tone: 'gritty survival drama',
+        narrative:
+          'An avalanche forces a desperate sprint across breaking ice, but no secure route beyond the ridge is established.',
+      },
+      {
+        label: 'romance drama',
+        concept: 'Former lovers navigate a high-stakes reunion amid family pressure.',
+        worldbuilding: 'A coastal city where family alliances shape every relationship.',
+        tone: 'emotional romance drama',
+        narrative:
+          'The reunion erupts into confessions and confrontation, but neither character makes an explicit commitment to rebuild trust.',
+      },
+    ])('applies the same completion-gate semantics for $label domain scenarios', async scenario => {
+      const structure = buildStructure();
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} cross-domain-${scenario.label}`,
+        worldbuilding: scenario.worldbuilding,
+        tone: scenario.tone,
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: scenario.concept,
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Push forward under pressure'), createChoice('Hold position and reassess')],
+        stateChanges: { added: ['Pressure escalates'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult({ narrative: scenario.narrative }));
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          beatConcluded: false,
+          sceneMomentum: 'MAJOR_PROGRESS',
+          objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+          commitmentStrength: 'TENTATIVE',
+          structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+          entryConditionReadiness: 'PARTIAL',
+          objectiveAnchors: ['Establish the mystery'],
+          anchorEvidence: [''],
+          completionGateSatisfied: false,
+          completionGateFailureReason: 'Escalation alone is insufficient without explicit objective evidence.',
+        }),
+      );
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      expect(page.accumulatedStructureState.currentActIndex).toBe(0);
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'active',
+      });
+      expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
+        expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
+      );
     });
   });
 
