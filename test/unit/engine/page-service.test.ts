@@ -112,6 +112,38 @@ function buildStructure(): StoryStructure {
   };
 }
 
+function buildTurningPointFirstBeatStructure(): StoryStructure {
+  return {
+    overallTheme: 'Expose the conspiracy before the regime consolidates power.',
+    premise: 'A courier must force a public commitment that irreversibly changes the conflict.',
+    pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    acts: [
+      {
+        id: '1',
+        name: 'Commitment',
+        objective: 'Force a point-of-no-return decision',
+        stakes: 'Failure means the conspiracy becomes untouchable',
+        entryCondition: 'Evidence is assembled',
+        beats: [
+          {
+            id: '1.1',
+            description: 'Make the public accusation',
+            objective: 'Commit publicly to exposing the conspiracy',
+            role: 'turning_point' as const,
+          },
+          {
+            id: '1.2',
+            description: 'Withstand immediate retaliation',
+            objective: 'Survive the first counterstrike',
+            role: 'resolution' as const,
+          },
+        ],
+      },
+    ],
+  };
+}
+
 describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -556,6 +588,263 @@ describe('page-service', () => {
       expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
         beatId: '1.2',
         status: 'active',
+      });
+    });
+
+    it('guardrail prevents turning_point progression when completion gate is not satisfied', async () => {
+      const structure = buildTurningPointFirstBeatStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You stand before the full council with ledgers in hand.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Accuse the minister publicly'), createChoice('Delay and gather one more witness')],
+        inventoryChanges: { added: ['Council hearing scheduled'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'The chamber erupts, but your accusation remains ambiguous and contestable.',
+        choices: [
+          { text: 'Name names now', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        currentLocation: 'Council chamber',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'urgency',
+          primaryIntensity: 'strong' as const,
+          primaryCause: 'public confrontation under pressure',
+          secondaryEmotions: [],
+          dominantMotivation: 'force accountability',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: true,
+        beatResolution: 'The accusation scene escalates rapidly.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'MAJOR_PROGRESS',
+        objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+        commitmentStrength: 'TENTATIVE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'PARTIAL',
+        objectiveAnchors: ['Commit publicly to exposing the conspiracy'],
+        anchorEvidence: [''],
+        completionGateSatisfied: false,
+        completionGateFailureReason: 'No explicit irrevocable commitment was made.',
+        rawResponse: 'raw-analyst',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'active',
+      });
+      expect(logger.warn).toHaveBeenCalledWith(
+        'Turning point completion gate mismatch; forcing beatConcluded=false',
+        expect.objectContaining({
+          storyId: story.id,
+          parentPageId: parentPage.id,
+          beatId: '1.1',
+          beatRole: 'turning_point',
+          completionGateFailureReason: 'No explicit irrevocable commitment was made.',
+        }),
+      );
+    });
+
+    it('does not apply turning_point guardrail to non-turning_point beats', async () => {
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You are still on the setup beat.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Push through checkpoint'), createChoice('Retreat')],
+        inventoryChanges: { added: ['Forged papers'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You slip through the gate and secure access.',
+        choices: [
+          { text: 'Proceed to archive wing', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Hold position', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        currentLocation: 'Archive threshold',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'focus',
+          primaryIntensity: 'moderate' as const,
+          primaryCause: 'momentum through security',
+          secondaryEmotions: [],
+          dominantMotivation: 'reach the ledgers',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: true,
+        beatResolution: 'Checkpoint bypassed successfully.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'MAJOR_PROGRESS',
+        objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
+        entryConditionReadiness: 'READY',
+        objectiveAnchors: ['Gain access credentials'],
+        anchorEvidence: ['Forged papers are accepted and access is granted.'],
+        completionGateSatisfied: false,
+        completionGateFailureReason: 'Intentional control case for non-turning-point beat.',
+        rawResponse: 'raw-analyst',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(logger.warn).not.toHaveBeenCalledWith(
+        'Turning point completion gate mismatch; forcing beatConcluded=false',
+        expect.anything(),
+      );
+    });
+
+    it('allows turning_point progression when completion gate is satisfied', async () => {
+      const structure = buildTurningPointFirstBeatStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'The council awaits your declaration.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Commit publicly now'), createChoice('Abandon the hearing')],
+        inventoryChanges: { added: ['Prepared public evidence packet'], removed: [] },
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(2);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You publicly name the conspirators and bind yourself to the prosecution.',
+        choices: [
+          { text: 'Face retaliation head-on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+          { text: 'Seek immediate sanctuary', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        currentLocation: 'Council chamber',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'resolve',
+          primaryIntensity: 'strong' as const,
+          primaryCause: 'irreversible public commitment',
+          secondaryEmotions: [],
+          dominantMotivation: 'see the conspiracy broken',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: true,
+        beatResolution: 'The accusation is publicly and irreversibly committed.',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'MAJOR_PROGRESS',
+        objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+        commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+        structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
+        entryConditionReadiness: 'READY',
+        objectiveAnchors: ['Commit publicly to exposing the conspiracy'],
+        anchorEvidence: ['The protagonist names conspirators and accepts immediate legal risk.'],
+        completionGateSatisfied: true,
+        completionGateFailureReason: '',
+        rawResponse: 'raw-analyst',
+      });
+
+      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'concluded',
+        resolution: 'The accusation is publicly and irreversibly committed.',
       });
     });
 

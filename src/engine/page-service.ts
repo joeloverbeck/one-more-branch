@@ -10,6 +10,7 @@ import {
   AccumulatedStructureState,
   createEmptyAccumulatedStructureState,
   generatePageId,
+  getCurrentBeat,
   getLatestStructureVersion,
   isDeviation,
   Page,
@@ -163,7 +164,14 @@ export async function generateNextPage(
     deviationInfo = devResult.deviationInfo;
   }
 
-  const beatConcluded =
+  // Use the active structure (original or rewritten) for progression
+  const activeStructure = activeStructureVersion?.structure ?? story.structure;
+  const activeBeat =
+    activeStructure && parentState.structureState
+      ? getCurrentBeat(activeStructure, parentState.structureState)
+      : undefined;
+
+  let beatConcluded =
     'beatConcluded' in result && typeof result.beatConcluded === 'boolean'
       ? result.beatConcluded
       : false;
@@ -172,8 +180,23 @@ export async function generateNextPage(
       ? result.beatResolution
       : '';
 
-  // Use the active structure (original or rewritten) for progression
-  const activeStructure = activeStructureVersion?.structure ?? story.structure;
+  if (
+    activeBeat?.role === 'turning_point' &&
+    analystResult?.beatConcluded === true &&
+    analystResult.completionGateSatisfied === false &&
+    beatConcluded
+  ) {
+    beatConcluded = false;
+    logger.warn('Turning point completion gate mismatch; forcing beatConcluded=false', {
+      storyId: story.id,
+      parentPageId: parentPage.id,
+      beatId: activeBeat.id,
+      beatRole: activeBeat.role,
+      completionGateFailureReason:
+        analystResult.completionGateFailureReason || 'Completion gate not satisfied',
+    });
+  }
+
   let newStructureState = activeStructure
     ? applyStructureProgression(
         activeStructure,
