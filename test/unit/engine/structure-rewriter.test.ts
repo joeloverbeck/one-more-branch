@@ -204,7 +204,7 @@ describe('structure-rewriter', () => {
         name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
-        role: 'escalation',
+        role: 'setup',
       });
       expect(result.structure.acts[0]?.beats[1]).toEqual({
         id: '1.2',
@@ -243,7 +243,7 @@ describe('structure-rewriter', () => {
         name: 'Preserved Beat',
         description: 'Preserved 1.1',
         objective: 'Keep original objective',
-        role: 'escalation',
+        role: 'setup',
       });
 
       for (const [actIndex, act] of merged.acts.entries()) {
@@ -251,6 +251,72 @@ describe('structure-rewriter', () => {
           expect(beat.id).toBe(`${actIndex + 1}.${beatIndex + 1}`);
         }
       }
+    });
+
+    it('retains preserved beat IDs and appends regenerated beats after the highest preserved index', () => {
+      const regenerated = createStoryStructure({
+        acts: [
+          {
+            id: '1',
+            name: 'Act One',
+            objective: 'Objective 1',
+            stakes: 'Stakes 1',
+            entryCondition: 'Entry 1',
+            beats: [
+              { id: '1.1', name: 'Beat Name 1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
+              { id: '1.2', name: 'Beat Name 1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
+            ],
+          },
+          {
+            id: '2',
+            name: 'Act Two',
+            objective: 'Objective 2',
+            stakes: 'Stakes 2',
+            entryCondition: 'Entry 2',
+            beats: [
+              { id: '2.1', name: 'Beat Name 2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
+              { id: '2.2', name: 'Beat Name 2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
+            ],
+          },
+          {
+            id: '3',
+            name: 'Act Three',
+            objective: 'Objective 3',
+            stakes: 'Stakes 3',
+            entryCondition: 'Entry 3',
+            beats: [
+              { id: '3.1', name: 'Beat Name 3.1', description: 'Beat 3.1', objective: 'Goal 3.1', role: 'turning_point' },
+              { id: '3.2', name: 'Beat Name 3.2', description: 'Beat 3.2', objective: 'Goal 3.2', role: 'resolution' },
+            ],
+          },
+        ],
+      });
+
+      const merged = mergePreservedWithRegenerated(
+        [
+          {
+            actIndex: 0,
+            beatIndex: 1,
+            beatId: '1.2',
+            name: 'Preserved Beat 1.2',
+            description: 'Preserved 1.2',
+            objective: 'Keep original objective',
+            role: 'turning_point',
+            resolution: 'Resolved already',
+          },
+        ],
+        regenerated,
+        'Original theme',
+      );
+
+      expect(merged.acts[0]?.beats[0]).toEqual({
+        id: '1.2',
+        name: 'Preserved Beat 1.2',
+        description: 'Preserved 1.2',
+        objective: 'Keep original objective',
+        role: 'turning_point',
+      });
+      expect(merged.acts[0]?.beats[1]?.id).toBe('1.3');
     });
 
     it('throws when an act has neither preserved nor regenerated beats', () => {

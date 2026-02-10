@@ -4,7 +4,7 @@ import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from '../llm/h
 import { buildStructureRewritePrompt } from '../llm/prompts/structure-rewrite-prompt';
 import { STRUCTURE_GENERATION_SCHEMA } from '../llm/schemas/structure-schema';
 import { ChatMessage, CompletedBeat, LLMError, StructureRewriteContext, StructureRewriteResult } from '../llm/types';
-import { StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
+import { BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
 import { createStoryStructure } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
@@ -16,6 +16,35 @@ export type StructureRewriteGenerator = (
   messages: ChatMessage[],
   apiKey: string,
 ) => Promise<StructureGenerationResult>;
+
+const VALID_BEAT_ROLES: readonly BeatRole[] = ['setup', 'escalation', 'turning_point', 'resolution'];
+
+function parseBeatRole(role: string): BeatRole {
+  if (VALID_BEAT_ROLES.includes(role as BeatRole)) {
+    return role as BeatRole;
+  }
+  return 'escalation';
+}
+
+function parseBeatNumber(beatId: string, actIndex: number): number | null {
+  const match = /^(\d+)\.(\d+)$/.exec(beatId);
+  if (!match) {
+    return null;
+  }
+
+  const parsedAct = Number(match[1]);
+  const parsedBeat = Number(match[2]);
+  if (
+    !Number.isInteger(parsedAct) ||
+    !Number.isInteger(parsedBeat) ||
+    parsedAct !== actIndex + 1 ||
+    parsedBeat <= 0
+  ) {
+    return null;
+  }
+
+  return parsedBeat;
+}
 
 export function createStructureRewriter(
   generator: StructureRewriteGenerator = generateRewrittenStructure,
@@ -61,13 +90,21 @@ export function mergePreservedWithRegenerated(
       return a.beatIndex - b.beatIndex;
     });
 
-    const mergedBeats: StoryBeat[] = preservedInAct.map((beat, index) => ({
-      id: `${actIndex + 1}.${index + 1}`,
+    const mergedBeats: StoryBeat[] = preservedInAct.map(beat => ({
+      id: beat.beatId,
       name: beat.name,
       description: beat.description,
       objective: beat.objective,
-      role: 'escalation' as const,
+      role: parseBeatRole(beat.role),
     }));
+
+    let nextBeatNumber = mergedBeats.reduce((max, beat) => {
+      const beatNumber = parseBeatNumber(beat.id, actIndex);
+      if (beatNumber === null) {
+        return max;
+      }
+      return Math.max(max, beatNumber);
+    }, 0);
 
     const seenBeatSignature = new Set(
       mergedBeats.map(beat => `${beat.description}\n${beat.objective}`),
@@ -80,12 +117,13 @@ export function mergePreservedWithRegenerated(
       }
 
       mergedBeats.push({
-        id: `${actIndex + 1}.${mergedBeats.length + 1}`,
+        id: `${actIndex + 1}.${nextBeatNumber + 1}`,
         name: beat.name,
         description: beat.description,
         objective: beat.objective,
         role: beat.role,
       });
+      nextBeatNumber += 1;
       seenBeatSignature.add(signature);
     }
 

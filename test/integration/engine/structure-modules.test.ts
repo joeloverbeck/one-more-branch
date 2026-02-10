@@ -23,6 +23,8 @@ import { createBeatDeviation } from '../../../src/models/story-arc';
 function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'A hero rises to save the realm',
+    premise: 'A reluctant guardian must unify fractured allies before an ancient force consumes the realm.',
+    pacingBudget: { targetPagesMin: 16, targetPagesMax: 38 },
     acts: [
       {
         name: 'The Call',
@@ -30,8 +32,18 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Village destruction',
         entryCondition: 'Mysterious stranger arrives',
         beats: [
-          { description: 'Strange omens appear', objective: 'Notice the signs' },
-          { description: 'A challenge is issued', objective: 'Accept or reject' },
+          {
+            name: 'Omen in the valley',
+            description: 'Strange omens appear',
+            objective: 'Notice the signs',
+            role: 'setup',
+          },
+          {
+            name: 'Challenge declared',
+            description: 'A challenge is issued',
+            objective: 'Accept or reject',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -40,8 +52,18 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Running out of time',
         entryCondition: 'Hero departs',
         beats: [
-          { description: 'First obstacle', objective: 'Overcome the barrier' },
-          { description: 'Unexpected ally', objective: 'Form alliance' },
+          {
+            name: 'Broken pass',
+            description: 'First obstacle',
+            objective: 'Overcome the barrier',
+            role: 'escalation',
+          },
+          {
+            name: 'Uneasy ally',
+            description: 'Unexpected ally',
+            objective: 'Form alliance',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -50,7 +72,12 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Everything at risk',
         entryCondition: 'Final confrontation',
         beats: [
-          { description: 'Final battle', objective: 'Defeat the enemy' },
+          {
+            name: 'Final battle',
+            description: 'Final battle',
+            objective: 'Defeat the enemy',
+            role: 'resolution',
+          },
         ],
       },
     ],

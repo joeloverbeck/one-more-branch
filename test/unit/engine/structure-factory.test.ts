@@ -4,6 +4,8 @@ import type { StructureGenerationResult } from '../../../src/engine/structure-ty
 function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'Restore the broken kingdom',
+    premise: 'An exiled heir must unite rival houses before the capital collapses into civil war.',
+    pacingBudget: { targetPagesMin: 18, targetPagesMax: 42 },
     acts: [
       {
         name: 'Act One',
@@ -11,8 +13,18 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
         beats: [
-          { description: 'A warning arrives', objective: 'Hear the warning' },
-          { description: 'A difficult choice', objective: 'Leave home' },
+          {
+            name: 'Messenger warning',
+            description: 'A warning arrives',
+            objective: 'Hear the warning',
+            role: 'setup',
+          },
+          {
+            name: 'Crossroads decision',
+            description: 'A difficult choice',
+            objective: 'Leave home',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -20,7 +32,14 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [{ description: 'First major setback', objective: 'Recover from loss' }],
+        beats: [
+          {
+            name: 'First major setback',
+            description: 'First major setback',
+            objective: 'Recover from loss',
+            role: 'escalation',
+          },
+        ],
       },
     ],
     rawResponse: '{"mock":true}',
@@ -39,6 +58,7 @@ describe('structure-factory', () => {
       expect(result.acts[0]?.beats[1]?.id).toBe('1.2');
       expect(result.acts[1]?.beats[0]?.id).toBe('2.1');
       expect(result.acts[0]?.name).toBe('Act One');
+      expect(result.acts[0]?.beats[0]?.name).toBe('Messenger warning');
       expect(result.acts[0]?.beats[0]?.description).toBe('A warning arrives');
     });
 
