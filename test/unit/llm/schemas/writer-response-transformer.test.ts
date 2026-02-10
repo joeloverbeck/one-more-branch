@@ -170,6 +170,30 @@ describe('validateWriterResponse', () => {
     expect(result.healthRemoved).toEqual([]);
   });
 
+  it('should accept scene summaries longer than 500 characters', () => {
+    const longSceneSummary =
+      'After securing the relic, you navigate a collapsed hallway while the fortress trembles from distant bombardment, then coordinate a risky evacuation through a flooded service tunnel as rival scouts close in from two flanks. ' +
+      'You choose to abandon heavy supplies to preserve speed, mark safe anchor points for allies, and redirect the group toward a concealed maintenance shaft that leads to an old observatory where a backup signal system can be restored. ' +
+      'By the time you emerge, two allies are injured but stable, one rival tracker defects after witnessing the sabotage order, and your team commits to broadcasting proof of the commander\'s betrayal before dawn despite the near certainty of retaliation.';
+
+    const result = validateWriterResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: [
+          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        newCanonFacts: [],
+        sceneSummary: longSceneSummary,
+        isEnding: false,
+      },
+      'raw json response',
+    );
+
+    expect(result.sceneSummary).toBe(longSceneSummary);
+    expect(result.sceneSummary.length).toBeGreaterThan(500);
+  });
+
   it('should handle malformed single-string choices array (recovery)', () => {
     const malformedChoices = [
       '{\\"Grab the clothes and make a run for it\\",\\"Sprint back toward the village\\",\\"Stay perfectly still\\"}',

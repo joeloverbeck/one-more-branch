@@ -95,7 +95,7 @@ export const WriterResultSchema = z
     characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
     characterStateChangesRemoved: z.array(z.string()).optional().default([]),
     protagonistAffect: ProtagonistAffectSchema.optional().default(defaultProtagonistAffect),
-    sceneSummary: z.string().min(20).max(500),
+    sceneSummary: z.string().min(20),
     isEnding: z.boolean(),
   })
   .superRefine((data, ctx) => {
