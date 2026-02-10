@@ -11,6 +11,35 @@ export interface KeyedEntry {
   readonly text: string;
 }
 
+export enum ThreadType {
+  MYSTERY = 'MYSTERY',
+  QUEST = 'QUEST',
+  RELATIONSHIP = 'RELATIONSHIP',
+  DANGER = 'DANGER',
+  INFORMATION = 'INFORMATION',
+  RESOURCE = 'RESOURCE',
+  MORAL = 'MORAL',
+}
+
+export enum Urgency {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
+export interface ThreadEntry extends KeyedEntry {
+  readonly threadType: ThreadType;
+  readonly urgency: Urgency;
+}
+
+export function isThreadType(value: unknown): value is ThreadType {
+  return typeof value === 'string' && Object.values(ThreadType).includes(value as ThreadType);
+}
+
+export function isUrgency(value: unknown): value is Urgency {
+  return typeof value === 'string' && Object.values(Urgency).includes(value as Urgency);
+}
+
 export type StateIdPrefix = 'inv' | 'hp' | 'cs' | 'th' | 'cn' | 'td';
 
 const ID_PATTERN = /^[a-z]+-(\d+)$/;
@@ -63,13 +92,13 @@ export function assignIds(
   return result;
 }
 
-export function removeByIds(
-  entries: readonly KeyedEntry[],
+export function removeByIds<T extends KeyedEntry>(
+  entries: readonly T[],
   idsToRemove: readonly string[],
-): readonly KeyedEntry[] {
+): readonly T[] {
   const removeSet = new Set(idsToRemove);
   const matched = new Set<string>();
-  const result: KeyedEntry[] = [];
+  const result: T[] = [];
 
   for (const entry of entries) {
     if (removeSet.has(entry.id)) {

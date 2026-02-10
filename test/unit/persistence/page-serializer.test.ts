@@ -2,6 +2,8 @@ import {
   ChoiceType,
   Page,
   PrimaryDelta,
+  ThreadType,
+  Urgency,
   createChoice,
   createDefaultProtagonistAffect,
   createEmptyActiveState,
@@ -139,7 +141,14 @@ describe('page-serializer', () => {
           currentLocation: 'Forest',
           activeThreats: [{ id: 'th-2', text: 'A hungry wolf is stalking nearby' }],
           activeConstraints: [{ id: 'cn-1', text: 'No light source is available' }],
-          openThreads: [{ id: 'td-1', text: 'Find where the torn map leads' }],
+          openThreads: [
+            {
+              id: 'td-1',
+              text: 'Find where the torn map leads',
+              threadType: ThreadType.MYSTERY,
+              urgency: Urgency.HIGH,
+            },
+          ],
         },
       });
 
@@ -157,7 +166,14 @@ describe('page-serializer', () => {
           currentLocation: 'Watchtower',
           activeThreats: [{ id: 'th-1', text: 'Incoming scouts' }],
           activeConstraints: [{ id: 'cn-1', text: 'Bridge is collapsed' }],
-          openThreads: [{ id: 'td-1', text: 'Find a crossing' }],
+          openThreads: [
+            {
+              id: 'td-1',
+              text: 'Find a crossing',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.MEDIUM,
+            },
+          ],
         },
         characterStateChanges: {
           added: [{ characterName: 'Mira', states: ['alert'] }],

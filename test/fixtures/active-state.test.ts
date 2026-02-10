@@ -5,6 +5,7 @@
 import { isActiveState, isActiveStateChanges } from '../../src/models/state/index.js';
 import {
   createMockKeyedEntry,
+  createMockThreadEntry,
   createMockActiveState,
   createMockActiveStateChanges,
   FIXTURES,
@@ -47,7 +48,7 @@ describe('Active state fixtures', () => {
     it('allows overrides for all fields', () => {
       const threat = createMockKeyedEntry('th', 1, 'Test threat');
       const constraint = createMockKeyedEntry('cn', 1, 'Test constraint');
-      const thread = createMockKeyedEntry('td', 1, 'Test thread');
+      const thread = createMockThreadEntry(1, 'Test thread');
 
       const state = createMockActiveState({
         currentLocation: 'Custom Location',

@@ -1,6 +1,8 @@
 import {
   ActiveState,
   ActiveStateChanges,
+  ThreadType,
+  Urgency,
   Page,
   Story,
   StoryId,
@@ -317,7 +319,12 @@ describe('page-repository integration', () => {
         { id: 'cn-1', text: 'CONSTRAINT_DARKNESS: No natural light' },
       ],
       openThreads: [
-        { id: 'td-2', text: 'THREAD_RELIC: Ancient relic rumored to be here' },
+        {
+          id: 'td-2',
+          text: 'THREAD_RELIC: Ancient relic rumored to be here',
+          threadType: ThreadType.INFORMATION,
+          urgency: Urgency.MEDIUM,
+        },
       ],
     };
 
@@ -335,7 +342,14 @@ describe('page-repository integration', () => {
         currentLocation: 'Forest edge',
         activeThreats: [{ id: 'th-1', text: 'THREAT_STORM: Storm approaching' }],
         activeConstraints: [],
-        openThreads: [{ id: 'td-1', text: 'THREAD_MAP: Following old map' }],
+        openThreads: [
+          {
+            id: 'td-1',
+            text: 'THREAD_MAP: Following old map',
+            threadType: ThreadType.MYSTERY,
+            urgency: Urgency.MEDIUM,
+          },
+        ],
       },
     });
 

@@ -4,6 +4,10 @@ import {
   nextId,
   assignIds,
   removeByIds,
+  isThreadType,
+  isUrgency,
+  ThreadType,
+  Urgency,
 } from '../../../../src/models/state/keyed-entry.js';
 import { modelWarn } from '../../../../src/models/model-logger.js';
 
@@ -105,5 +109,17 @@ describe('removeByIds', () => {
     expect(mockedModelWarn).toHaveBeenCalledWith(
       'removeByIds: ID "th-99" did not match any entry',
     );
+  });
+});
+
+describe('thread metadata enums', () => {
+  it('validates thread type values', () => {
+    expect(isThreadType(ThreadType.MYSTERY)).toBe(true);
+    expect(isThreadType('UNKNOWN')).toBe(false);
+  });
+
+  it('validates urgency values', () => {
+    expect(isUrgency(Urgency.HIGH)).toBe(true);
+    expect(isUrgency('CRITICAL')).toBe(false);
   });
 });

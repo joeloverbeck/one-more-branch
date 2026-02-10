@@ -8,6 +8,9 @@ import {
   ActiveState,
   ActiveStateChanges,
   KeyedEntry,
+  ThreadEntry,
+  ThreadType,
+  Urgency,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
 } from '../../src/models/state/index.js';
@@ -19,6 +22,23 @@ export function createMockKeyedEntry(prefix: 'th' | 'cn' | 'td', id: number, tex
   return {
     id: `${prefix}-${id}`,
     text,
+  };
+}
+
+/**
+ * Creates a mock thread entry with required metadata.
+ */
+export function createMockThreadEntry(
+  id: number,
+  text: string,
+  threadType: ThreadType = ThreadType.INFORMATION,
+  urgency: Urgency = Urgency.MEDIUM,
+): ThreadEntry {
+  return {
+    id: `td-${id}`,
+    text,
+    threadType,
+    urgency,
   };
 }
 
@@ -78,7 +98,7 @@ export const FIXTURES = {
     currentLocation: 'Town square',
     activeThreats: [],
     activeConstraints: [],
-    openThreads: [createMockKeyedEntry('td', 1, "The mysterious letter's contents remain unknown")],
+    openThreads: [createMockThreadEntry(1, "The mysterious letter's contents remain unknown")],
   } as ActiveState,
 
   fullState: {
@@ -91,7 +111,7 @@ export const FIXTURES = {
       createMockKeyedEntry('cn', 1, 'Injured leg limits mobility'),
     ],
     openThreads: [
-      createMockKeyedEntry('td', 1, "The map's destination remains unclear"),
+      createMockThreadEntry(1, "The map's destination remains unclear", ThreadType.MYSTERY, Urgency.HIGH),
     ],
   } as ActiveState,
 

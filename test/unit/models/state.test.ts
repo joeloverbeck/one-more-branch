@@ -1,6 +1,8 @@
 import { logger } from '../../../src/logging/index';
 import { setModelLogger } from '../../../src/models/model-logger';
 import {
+  ThreadType,
+  Urgency,
   addCanonFact,
   applyCharacterStateChanges,
   applyActiveStateChanges,
@@ -72,6 +74,17 @@ describe('State utilities', () => {
           activeThreats: [{ prefix: 'THREAT_X', description: 'y', raw: 'THREAT_X: y' }],
           activeConstraints: [],
           openThreads: [],
+        }),
+      ).toBe(false);
+    });
+
+    it('returns false for thread entries missing metadata', () => {
+      expect(
+        isActiveState({
+          currentLocation: 'x',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [{ id: 'td-1', text: 'Missing metadata' }],
         }),
       ).toBe(false);
     });
@@ -296,7 +309,14 @@ describe('State utilities', () => {
           currentLocation: 'Before',
           activeThreats: [{ id: 'th-1', text: 'Old threat' }],
           activeConstraints: [{ id: 'cn-1', text: 'Old constraint' }],
-          openThreads: [{ id: 'td-1', text: 'Old thread' }],
+          openThreads: [
+            {
+              id: 'td-1',
+              text: 'Old thread',
+              threadType: ThreadType.MYSTERY,
+              urgency: Urgency.HIGH,
+            },
+          ],
         },
         {
           newLocation: 'After',
@@ -313,8 +333,36 @@ describe('State utilities', () => {
         currentLocation: 'After',
         activeThreats: [{ id: 'th-2', text: 'New threat' }],
         activeConstraints: [{ id: 'cn-2', text: 'New constraint' }],
-        openThreads: [{ id: 'td-2', text: 'New thread' }],
+        openThreads: [
+          {
+            id: 'td-2',
+            text: 'New thread',
+            threadType: ThreadType.INFORMATION,
+            urgency: Urgency.MEDIUM,
+          },
+        ],
       });
+    });
+
+    it('assigns default thread metadata for new thread additions', () => {
+      const result = applyActiveStateChanges(createEmptyActiveState(), {
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: ['Signal in the ruins'],
+        threadsResolved: [],
+      });
+
+      expect(result.openThreads).toEqual([
+        {
+          id: 'td-1',
+          text: 'Signal in the ruins',
+          threadType: ThreadType.INFORMATION,
+          urgency: Urgency.MEDIUM,
+        },
+      ]);
     });
 
     it('is immutable', () => {

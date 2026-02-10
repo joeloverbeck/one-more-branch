@@ -2,13 +2,13 @@
  * Active-state types and guards for tracking truths that are true right now.
  */
 
-import { KeyedEntry } from './keyed-entry.js';
+import { KeyedEntry, ThreadEntry, isThreadType, isUrgency } from './keyed-entry.js';
 
 export interface ActiveState {
   readonly currentLocation: string;
   readonly activeThreats: readonly KeyedEntry[];
   readonly activeConstraints: readonly KeyedEntry[];
-  readonly openThreads: readonly KeyedEntry[];
+  readonly openThreads: readonly ThreadEntry[];
 }
 
 export interface ActiveStateChanges {
@@ -47,8 +47,17 @@ function isKeyedEntry(value: unknown): value is KeyedEntry {
     return false;
   }
 
-  const obj = value as Record<string, unknown>;
+  const obj = value as unknown as Record<string, unknown>;
   return typeof obj['id'] === 'string' && typeof obj['text'] === 'string';
+}
+
+function isThreadEntry(value: unknown): value is ThreadEntry {
+  if (!isKeyedEntry(value)) {
+    return false;
+  }
+
+  const obj = value as unknown as Record<string, unknown>;
+  return isThreadType(obj['threadType']) && isUrgency(obj['urgency']);
 }
 
 function isStringArray(value: unknown): value is readonly string[] {
@@ -68,7 +77,7 @@ export function isActiveState(value: unknown): value is ActiveState {
     Array.isArray(obj['activeConstraints']) &&
     obj['activeConstraints'].every(isKeyedEntry) &&
     Array.isArray(obj['openThreads']) &&
-    obj['openThreads'].every(isKeyedEntry)
+    obj['openThreads'].every(isThreadEntry)
   );
 }
 

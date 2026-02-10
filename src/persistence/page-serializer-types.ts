@@ -3,6 +3,8 @@
  * These interfaces define the JSON structure stored on disk.
  */
 
+import type { ThreadType, Urgency } from '../models';
+
 export interface BeatProgressionFileData {
   beatId: string;
   status: 'pending' | 'active' | 'concluded';
@@ -35,6 +37,11 @@ export interface KeyedEntryFileData {
   text: string;
 }
 
+export interface ThreadEntryFileData extends KeyedEntryFileData {
+  threadType: ThreadType;
+  urgency: Urgency;
+}
+
 export interface PageFileData {
   id: number;
   narrativeText: string;
@@ -58,7 +65,7 @@ export interface PageFileData {
     currentLocation: string;
     activeThreats: KeyedEntryFileData[];
     activeConstraints: KeyedEntryFileData[];
-    openThreads: KeyedEntryFileData[];
+    openThreads: ThreadEntryFileData[];
   };
   inventoryChanges: {
     added: string[];

@@ -43,7 +43,12 @@ export {
 // Keyed state entries
 export {
   KeyedEntry,
+  ThreadEntry,
+  ThreadType,
+  Urgency,
   StateIdPrefix,
+  isThreadType,
+  isUrgency,
   extractIdNumber,
   getMaxIdNumber,
   nextId,
