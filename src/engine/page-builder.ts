@@ -54,7 +54,11 @@ function mapToActiveStateChanges(result: WriterResult): ActiveStateChanges {
     threatsRemoved: result.threatsRemoved,
     constraintsAdded: result.constraintsAdded,
     constraintsRemoved: result.constraintsRemoved,
-    threadsAdded: result.threadsAdded.map(thread => thread.text),
+    threadsAdded: result.threadsAdded.map(thread => ({
+      text: thread.text,
+      threadType: thread.threadType,
+      urgency: thread.urgency,
+    })),
     threadsResolved: result.threadsResolved,
   };
 }

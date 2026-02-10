@@ -29,12 +29,17 @@ describe('public stylesheet', () => {
     expect(css).toContain('.choice-btn');
     expect(css).toContain('.loading-overlay');
     expect(css).toContain('.modal');
+    expect(css).toContain('.open-threads-panel');
+    expect(css).toContain('.open-threads-list');
   });
 
   it('includes mobile and spinner animation rules', () => {
     const css = fs.readFileSync(cssPath, 'utf8');
 
     expect(css).toContain('@media (max-width: 600px)');
+    expect(css).toContain('.open-threads-panel {');
+    expect(css).toContain('position: static;');
+    expect(css).toContain('position: fixed;');
     expect(css).toContain('@keyframes spin');
   });
 

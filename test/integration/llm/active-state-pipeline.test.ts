@@ -69,7 +69,11 @@ describe('Active state pipeline integration', () => {
       'Thick smoke limits visibility to a few feet',
     ]);
     expect(page.activeStateChanges.threadsAdded).toEqual([
-      'The innkeeper is trapped behind the bar',
+      {
+        text: 'The innkeeper is trapped behind the bar',
+        threadType: 'INFORMATION',
+        urgency: 'MEDIUM',
+      },
     ]);
 
     // Step 4: Verify accumulated active state was computed (applied to empty parent)

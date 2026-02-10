@@ -42,6 +42,12 @@ export interface ThreadEntryFileData extends KeyedEntryFileData {
   urgency: Urgency;
 }
 
+export interface ThreadAdditionFileData {
+  text: string;
+  threadType: ThreadType;
+  urgency: Urgency;
+}
+
 export interface PageFileData {
   id: number;
   narrativeText: string;
@@ -58,7 +64,7 @@ export interface PageFileData {
     threatsRemoved: string[];
     constraintsAdded: string[];
     constraintsRemoved: string[];
-    threadsAdded: string[];
+    threadsAdded: Array<string | ThreadAdditionFileData>;
     threadsResolved: string[];
   };
   accumulatedActiveState: {

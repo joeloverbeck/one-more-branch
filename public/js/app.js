@@ -76,6 +76,91 @@
       return;
     }
 
+    function getUrgencyPriority(urgency) {
+      if (urgency === 'HIGH') {
+        return 0;
+      }
+      if (urgency === 'MEDIUM') {
+        return 1;
+      }
+      if (urgency === 'LOW') {
+        return 2;
+      }
+      return 3;
+    }
+
+    function renderOpenThreadsPanel(openThreads) {
+      const existingPanel = document.getElementById('open-threads-panel');
+
+      if (!Array.isArray(openThreads) || openThreads.length === 0) {
+        if (existingPanel) {
+          existingPanel.remove();
+        }
+        return;
+      }
+
+      const normalizedThreads = openThreads
+        .map(function(thread, index) {
+          if (!thread || typeof thread !== 'object') {
+            return null;
+          }
+
+          var id = typeof thread.id === 'string' ? thread.id : '';
+          var text = typeof thread.text === 'string' ? thread.text : '';
+          var threadType = typeof thread.threadType === 'string' ? thread.threadType : '';
+          var urgency = typeof thread.urgency === 'string' ? thread.urgency : '';
+
+          if (!id || !text || !threadType || !urgency) {
+            return null;
+          }
+
+          return { id: id, text: text, threadType: threadType, urgency: urgency, index: index };
+        })
+        .filter(function(thread) {
+          return thread !== null;
+        })
+        .sort(function(left, right) {
+          var urgencyDelta = getUrgencyPriority(left.urgency) - getUrgencyPriority(right.urgency);
+          if (urgencyDelta !== 0) {
+            return urgencyDelta;
+          }
+          return left.index - right.index;
+        });
+
+      if (normalizedThreads.length === 0) {
+        if (existingPanel) {
+          existingPanel.remove();
+        }
+        return;
+      }
+
+      const listHtml = normalizedThreads.map(function(thread) {
+        return '<li class="open-threads-item">'
+          + '(' + escapeHtml(thread.threadType) + '/' + escapeHtml(thread.urgency) + ') '
+          + escapeHtml(thread.text)
+          + '</li>';
+      }).join('');
+
+      if (existingPanel) {
+        const list = existingPanel.querySelector('#open-threads-list');
+        if (list) {
+          list.innerHTML = listHtml;
+        }
+        return;
+      }
+
+      const panel = document.createElement('aside');
+      panel.className = 'open-threads-panel';
+      panel.id = 'open-threads-panel';
+      panel.setAttribute('aria-labelledby', 'open-threads-title');
+      panel.innerHTML = '<h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>'
+        + '<ul class="open-threads-list" id="open-threads-list">'
+        + listHtml
+        + '</ul>';
+
+      narrative.before(panel);
+    }
+
     function ensureApiKey() {
       return new Promise((resolve, reject) => {
         const key = getApiKey();
@@ -411,6 +496,7 @@
         history.pushState({}, '', `/play/${storyId}?page=${currentPageId}`);
 
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
+        renderOpenThreadsPanel(data.page.openThreads);
         renderStateChanges(data.page.stateChanges);
         renderDeviationBanner(data.deviationInfo);
 

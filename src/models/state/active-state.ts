@@ -2,7 +2,7 @@
  * Active-state types and guards for tracking truths that are true right now.
  */
 
-import { KeyedEntry, ThreadEntry, isThreadType, isUrgency } from './keyed-entry.js';
+import { KeyedEntry, ThreadEntry, ThreadType, Urgency, isThreadType, isUrgency } from './keyed-entry.js';
 
 export interface ActiveState {
   readonly currentLocation: string;
@@ -17,8 +17,14 @@ export interface ActiveStateChanges {
   readonly threatsRemoved: readonly string[];
   readonly constraintsAdded: readonly string[];
   readonly constraintsRemoved: readonly string[];
-  readonly threadsAdded: readonly string[];
+  readonly threadsAdded: readonly (string | ThreadAddition)[];
   readonly threadsResolved: readonly string[];
+}
+
+export interface ThreadAddition {
+  readonly text: string;
+  readonly threadType: ThreadType;
+  readonly urgency: Urgency;
 }
 
 export function createEmptyActiveState(): ActiveState {
@@ -64,6 +70,23 @@ function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every(item => typeof item === 'string');
 }
 
+function isThreadAddition(value: unknown): value is ThreadAddition {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj['text'] === 'string' &&
+    isThreadType(obj['threadType']) &&
+    isUrgency(obj['urgency'])
+  );
+}
+
+function isThreadAddedArray(value: unknown): value is readonly (string | ThreadAddition)[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'string' || isThreadAddition(item));
+}
+
 export function isActiveState(value: unknown): value is ActiveState {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -93,7 +116,7 @@ export function isActiveStateChanges(value: unknown): value is ActiveStateChange
     isStringArray(obj['threatsRemoved']) &&
     isStringArray(obj['constraintsAdded']) &&
     isStringArray(obj['constraintsRemoved']) &&
-    isStringArray(obj['threadsAdded']) &&
+    isThreadAddedArray(obj['threadsAdded']) &&
     isStringArray(obj['threadsResolved'])
   );
 }

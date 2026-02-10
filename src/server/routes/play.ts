@@ -4,7 +4,12 @@ import { LLMError } from '../../llm/types.js';
 import { generateBrowserLogScript, logger } from '../../logging/index.js';
 import { CHOICE_TYPE_COLORS, ChoiceType, CHOICE_TYPE_VALUES, PageId, PRIMARY_DELTA_LABELS, PrimaryDelta, PRIMARY_DELTA_VALUES, StoryId } from '../../models/index.js';
 import { addChoice } from '../../persistence/index.js';
-import { formatLLMError, getActDisplayInfo, wrapAsyncRoute } from '../utils/index.js';
+import {
+  formatLLMError,
+  getActDisplayInfo,
+  getOpenThreadPanelRows,
+  wrapAsyncRoute,
+} from '../utils/index.js';
 
 type ChoiceBody = {
   pageId?: number;
@@ -53,6 +58,7 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
     }
 
     const actDisplayInfo = getActDisplayInfo(story, page);
+    const openThreadPanelRows = getOpenThreadPanelRows(page.accumulatedActiveState.openThreads);
 
     return res.render('pages/play', {
       title: `${story.title} - One More Branch`,
@@ -60,6 +66,7 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
       page,
       pageId,
       actDisplayInfo,
+      openThreadPanelRows,
       choiceTypeLabels: CHOICE_TYPE_COLORS,
       primaryDeltaLabels: PRIMARY_DELTA_LABELS,
     });
@@ -92,6 +99,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     // Load story to compute actDisplayInfo for the new page
     const story = await storyEngine.loadStory(storyId as StoryId);
     const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
+    const openThreads = getOpenThreadPanelRows(result.page.accumulatedActiveState.openThreads);
 
     // Extract logs for browser console and clear to prevent accumulation
     const logEntries = logger.getEntries();
@@ -105,6 +113,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
         narrativeText: result.page.narrativeText,
         choices: result.page.choices,
         isEnding: result.page.isEnding,
+        openThreads,
       },
       actDisplayInfo,
       wasGenerated: result.wasGenerated,

@@ -1,4 +1,4 @@
 export { wrapAsyncRoute } from './async-route.js';
 export { formatLLMError } from './llm-error-formatter.js';
-export { getActDisplayInfo } from './view-helpers.js';
-export type { ActDisplayInfo } from './view-helpers.js';
+export { getActDisplayInfo, getOpenThreadPanelRows } from './view-helpers.js';
+export type { ActDisplayInfo, OpenThreadPanelRow } from './view-helpers.js';

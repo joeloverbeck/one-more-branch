@@ -1,4 +1,4 @@
-import { ActiveState, ActiveStateChanges } from './active-state.js';
+import { ActiveState, ActiveStateChanges, ThreadAddition } from './active-state.js';
 import {
   KeyedEntry,
   StateIdPrefix,
@@ -6,6 +6,9 @@ import {
   ThreadType,
   Urgency,
   assignIds,
+  getMaxIdNumber,
+  isThreadType,
+  isUrgency,
   removeByIds,
 } from './keyed-entry.js';
 
@@ -22,15 +25,46 @@ function applyKeyedChanges(
 
 function applyThreadChanges(
   current: readonly ThreadEntry[],
-  added: readonly string[],
+  added: readonly (string | ThreadAddition)[],
   removed: readonly string[],
 ): readonly ThreadEntry[] {
   const afterRemoval = removeByIds(current, removed);
-  const typedAdditions = assignIds(current, added, 'td').map((entry) => ({
-    ...entry,
-    threadType: ThreadType.INFORMATION,
-    urgency: Urgency.MEDIUM,
-  }));
+  let nextIdNumber = getMaxIdNumber(current, 'td');
+  const typedAdditions: ThreadEntry[] = [];
+
+  for (const addedThread of added) {
+    if (typeof addedThread === 'string') {
+      const text = addedThread.trim();
+      if (!text) {
+        continue;
+      }
+      nextIdNumber += 1;
+      typedAdditions.push({
+        id: `td-${nextIdNumber}`,
+        text,
+        threadType: ThreadType.INFORMATION,
+        urgency: Urgency.MEDIUM,
+      });
+      continue;
+    }
+
+    const text = addedThread.text.trim();
+    if (!text) {
+      continue;
+    }
+
+    nextIdNumber += 1;
+    typedAdditions.push({
+      id: `td-${nextIdNumber}`,
+      text,
+      threadType: isThreadType(addedThread.threadType)
+        ? addedThread.threadType
+        : ThreadType.INFORMATION,
+      urgency: isUrgency(addedThread.urgency)
+        ? addedThread.urgency
+        : Urgency.MEDIUM,
+    });
+  }
 
   return [...afterRemoval, ...typedAdditions];
 }

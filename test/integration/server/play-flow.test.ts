@@ -142,6 +142,7 @@ async function waitForMock(mock: jest.Mock, timeout = 1000): Promise<void> {
 describe('Play Flow Integration (Mocked LLM)', () => {
   const createdStoryIds = new Set<StoryId>();
   const createStoryHandler = getRouteHandler(storyRoutes, 'post', '/create');
+  const getPlayHandler = getRouteHandler(playRoutes, 'get', '/:storyId');
   const chooseHandler = getRouteHandler(playRoutes, 'post', '/:storyId/choice');
 
   beforeEach(() => {
@@ -501,5 +502,161 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       }),
     );
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns sorted open threads on initial render and in AJAX choice responses', async () => {
+    mockedGenerateOpeningPage.mockResolvedValueOnce({
+      narrative: 'Opening scene with multiple active threads.',
+      choices: [
+        { text: 'Advance', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Investigate', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
+      currentLocation: 'City outskirts',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [
+        { text: 'Check the abandoned supply route', threadType: 'QUEST', urgency: 'LOW' },
+        { text: 'Stop the imminent sabotage', threadType: 'DANGER', urgency: 'HIGH' },
+      ],
+      threadsResolved: [],
+      newCanonFacts: [],
+      newCharacterCanonFacts: {},
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'concerned',
+        primaryIntensity: 'moderate',
+        primaryCause: 'Conflicting priorities',
+        secondaryEmotions: [],
+        dominantMotivation: 'Prevent disaster',
+      },
+      sceneSummary: 'Test summary of the scene events and consequences.',
+      isEnding: false,
+      beatConcluded: false,
+      beatResolution: '',
+      rawResponse: 'opening',
+    });
+
+    const createRes = createMockResponse();
+    void createStoryHandler(
+      {
+        body: {
+          title: `${TEST_PREFIX} Threads`,
+          characterConcept: `${TEST_PREFIX} open-thread-panel`,
+          apiKey: 'mock-api-key-12345',
+        },
+      } as Request,
+      createRes.res,
+    );
+    await waitForMock(createRes.redirect);
+
+    const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
+    createdStoryIds.add(storyId);
+
+    const playRes = createMockResponse();
+    void getPlayHandler(
+      {
+        params: { storyId },
+        query: { page: '1' },
+      } as unknown as Request,
+      playRes.res,
+    );
+    await waitForMock(playRes.render);
+
+    const playPayload = getMockCallArg(playRes.render, 0, 1) as
+      | { openThreadPanelRows?: Array<{ id: string; urgency: string; threadType: string }> }
+      | undefined;
+    expect(playPayload?.openThreadPanelRows?.map(row => row.id)).toEqual(['td-2', 'td-1']);
+    expect(playPayload?.openThreadPanelRows?.[0]).toMatchObject({
+      id: 'td-2',
+      threadType: 'DANGER',
+      urgency: 'HIGH',
+    });
+
+    mockedGenerateWriterPage.mockResolvedValueOnce({
+      narrative: 'Continuation updates open threads.',
+      choices: [
+        { text: 'Press on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Reassess', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      ],
+      currentLocation: 'Inside the city',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [{ text: 'Find the hidden relay', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsResolved: ['td-2'],
+      newCanonFacts: [],
+      newCharacterCanonFacts: {},
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      protagonistAffect: {
+        primaryEmotion: 'focused',
+        primaryIntensity: 'moderate',
+        primaryCause: 'A clear lead emerged',
+        secondaryEmotions: [],
+        dominantMotivation: 'Track the signal',
+      },
+      sceneSummary: 'Test summary of the scene events and consequences.',
+      isEnding: false,
+      rawResponse: 'continuation',
+    });
+    mockedGenerateAnalystEvaluation.mockResolvedValueOnce({
+      beatConcluded: false,
+      beatResolution: '',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [],
+      narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none' as const,
+      rawResponse: 'analyst-raw',
+    });
+
+    const choiceRes = createMockResponse();
+    void chooseHandler(
+      {
+        params: { storyId },
+        body: {
+          pageId: 1,
+          choiceIndex: 0,
+          apiKey: 'mock-api-key-12345',
+        },
+      } as unknown as Request,
+      choiceRes.res,
+    );
+    await waitForMock(choiceRes.json);
+
+    const choicePayload = getMockCallArg(choiceRes.json, 0, 0) as
+      | {
+          success?: boolean;
+          page?: {
+            openThreads?: Array<{ id: string; threadType: string; urgency: string; text: string }>;
+          };
+        }
+      | undefined;
+    expect(choicePayload?.success).toBe(true);
+    expect(choicePayload?.page?.openThreads?.map(row => row.id)).toEqual(['td-3', 'td-1']);
+    expect(choicePayload?.page?.openThreads).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'td-3',
+          threadType: 'INFORMATION',
+          urgency: 'MEDIUM',
+          text: 'Find the hidden relay',
+        }),
+      ]),
+    );
   });
 });

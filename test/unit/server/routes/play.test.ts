@@ -9,6 +9,8 @@ import {
   createEmptyAccumulatedStructureState,
   createStructureVersionId,
   PRIMARY_DELTA_LABELS,
+  ThreadType,
+  Urgency,
 } from '@/models';
 import type { VersionedStoryStructure, StoryStructure } from '@/models';
 import { playRoutes } from '@/server/routes/play';
@@ -65,6 +67,15 @@ describe('playRoutes', () => {
         isEnding: false,
         parentPageId: 1,
         parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { id: 'td-1', text: 'Medium urgency', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+            { id: 'td-2', text: 'High urgency', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+          ],
+        },
       });
       const loadStorySpy = jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({
         ...story,
@@ -90,6 +101,22 @@ describe('playRoutes', () => {
         page,
         pageId: 2,
         actDisplayInfo: null,
+        openThreadPanelRows: [
+          {
+            id: 'td-2',
+            text: 'High urgency',
+            threadType: ThreadType.MYSTERY,
+            urgency: Urgency.HIGH,
+            displayLabel: '(MYSTERY/HIGH) High urgency',
+          },
+          {
+            id: 'td-1',
+            text: 'Medium urgency',
+            threadType: ThreadType.QUEST,
+            urgency: Urgency.MEDIUM,
+            displayLabel: '(QUEST/MEDIUM) Medium urgency',
+          },
+        ],
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -418,6 +445,15 @@ describe('playRoutes', () => {
         isEnding: false,
         parentPageId: 2,
         parentChoiceIndex: 1,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { id: 'td-1', text: 'Keep watch', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
+            { id: 'td-2', text: 'Find the witness', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+          ],
+        },
       });
       jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
@@ -451,10 +487,67 @@ describe('playRoutes', () => {
             narrativeText: resultPage.narrativeText,
             choices: resultPage.choices,
             isEnding: resultPage.isEnding,
+            openThreads: [
+              {
+                id: 'td-2',
+                text: 'Find the witness',
+                threadType: ThreadType.MYSTERY,
+                urgency: Urgency.HIGH,
+                displayLabel: '(MYSTERY/HIGH) Find the witness',
+              },
+              {
+                id: 'td-1',
+                text: 'Keep watch',
+                threadType: ThreadType.INFORMATION,
+                urgency: Urgency.LOW,
+                displayLabel: '(INFORMATION/LOW) Keep watch',
+              },
+            ],
           },
           wasGenerated: true,
         }),
       );
+    });
+
+    it('returns empty openThreads for pages with no active threads', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A quiet moment.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Continue'), createChoice('Observe')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      const payload = (json.mock.calls[0] as unknown[] | undefined)?.[0] as
+        | { page?: { openThreads?: unknown[] } }
+        | undefined;
+      expect(payload?.page?.openThreads).toEqual([]);
     });
 
     it('includes deviationInfo in response when deviation occurred', async () => {

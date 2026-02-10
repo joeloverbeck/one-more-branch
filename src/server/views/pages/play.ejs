@@ -21,6 +21,19 @@
         <span class="page-indicator">Page <%= page.id %></span>
       </div>
 
+      <% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>
+      <aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
+        <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
+        <ul class="open-threads-list" id="open-threads-list">
+          <% openThreadPanelRows.forEach((thread) => { %>
+          <li class="open-threads-item">
+            <%= thread.displayLabel %>
+          </li>
+          <% }) %>
+        </ul>
+      </aside>
+      <% } %>
+
       <article class="narrative" id="narrative">
         <div class="narrative-text">
           <%- page.narrativeText.replace(/\n/g, '<br>') %>

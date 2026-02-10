@@ -1,5 +1,5 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
-import { getCurrentAct, getCurrentBeat, getStructureVersion } from '../../models/index.js';
+import { getCurrentAct, getCurrentBeat, getStructureVersion, Urgency } from '../../models/index.js';
 
 export interface ActDisplayInfo {
   readonly actNumber: number;
@@ -7,6 +7,35 @@ export interface ActDisplayInfo {
   readonly beatId: string;
   readonly beatName: string;
   readonly displayString: string;
+}
+
+export interface OpenThreadPanelRow {
+  readonly id: string;
+  readonly text: string;
+  readonly threadType: string;
+  readonly urgency: string;
+  readonly displayLabel: string;
+}
+
+type OpenThreadLike = {
+  readonly id: string;
+  readonly text: string;
+  readonly threadType: string;
+  readonly urgency: string;
+};
+
+const URGENCY_PRIORITY: Record<Urgency, number> = {
+  [Urgency.HIGH]: 0,
+  [Urgency.MEDIUM]: 1,
+  [Urgency.LOW]: 2,
+};
+
+function getUrgencyPriority(urgency: string): number {
+  if (urgency in URGENCY_PRIORITY) {
+    return URGENCY_PRIORITY[urgency as Urgency];
+  }
+
+  return 3;
 }
 
 function extractActNumber(actId: string, fallbackIndex: number): number {
@@ -40,4 +69,25 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
     beatName: currentBeat.name,
     displayString: `Act ${actNumber}: ${currentAct.name} - Beat ${currentBeat.id}: ${currentBeat.name}`,
   };
+}
+
+export function getOpenThreadPanelRows(openThreads: readonly OpenThreadLike[]): OpenThreadPanelRow[] {
+  return openThreads
+    .map((thread, index) => ({ thread, index }))
+    .sort((left, right) => {
+      const urgencyDelta =
+        getUrgencyPriority(left.thread.urgency) - getUrgencyPriority(right.thread.urgency);
+      if (urgencyDelta !== 0) {
+        return urgencyDelta;
+      }
+
+      return left.index - right.index;
+    })
+    .map(({ thread }) => ({
+      id: thread.id,
+      text: thread.text,
+      threadType: thread.threadType,
+      urgency: thread.urgency,
+      displayLabel: `(${thread.threadType}/${thread.urgency}) ${thread.text}`,
+    }));
 }

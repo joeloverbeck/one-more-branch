@@ -40,4 +40,27 @@ describe('play page template', () => {
       );
     });
   });
+
+  describe('open threads panel', () => {
+    it('contains panel container and heading text', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('id="open-threads-panel"');
+      expect(template).toContain('Active Threads');
+    });
+
+    it('uses semantic list markup for thread rows', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('<ul class="open-threads-list" id="open-threads-list">');
+      expect(template).toContain('<li class="open-threads-item">');
+    });
+
+    it('renders panel conditionally when openThreadPanelRows exist', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('<% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>');
+      expect(template).toContain('openThreadPanelRows.forEach');
+    });
+  });
 });

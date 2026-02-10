@@ -1,10 +1,12 @@
-import { getActDisplayInfo } from '@/server/utils/view-helpers';
+import { getActDisplayInfo, getOpenThreadPanelRows } from '@/server/utils/view-helpers';
 import {
   createPage,
   createChoice,
   createStory,
   createEmptyAccumulatedStructureState,
   parseStructureVersionId,
+  ThreadType,
+  Urgency,
 } from '@/models';
 import type { Story, Page, VersionedStoryStructure, StoryStructure, StructureVersionId } from '@/models';
 
@@ -277,5 +279,44 @@ describe('getActDisplayInfo', () => {
 
       expect(result).toBeNull();
     });
+  });
+});
+
+describe('getOpenThreadPanelRows', () => {
+  it('sorts by urgency in HIGH, MEDIUM, LOW order', () => {
+    const result = getOpenThreadPanelRows([
+      { id: 'td-1', text: 'Low urgency thread', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
+      { id: 'td-2', text: 'High urgency thread', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+      { id: 'td-3', text: 'Medium urgency thread', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+    ]);
+
+    expect(result.map(row => row.id)).toEqual(['td-2', 'td-3', 'td-1']);
+  });
+
+  it('preserves source order for matching urgencies', () => {
+    const result = getOpenThreadPanelRows([
+      { id: 'td-1', text: 'First', threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM },
+      { id: 'td-2', text: 'Second', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+      { id: 'td-3', text: 'Third', threadType: ThreadType.MORAL, urgency: Urgency.MEDIUM },
+    ]);
+
+    expect(result.map(row => row.id)).toEqual(['td-1', 'td-2', 'td-3']);
+  });
+
+  it('builds display labels using (<TYPE>/<URGENCY>) <text> format', () => {
+    const result = getOpenThreadPanelRows([
+      { id: 'td-1', text: 'Unknown force in the city', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+    ]);
+
+    expect(result[0]?.displayLabel).toBe('(MYSTERY/HIGH) Unknown force in the city');
+  });
+
+  it('treats unknown urgency as lowest priority', () => {
+    const result = getOpenThreadPanelRows([
+      { id: 'td-1', text: 'Unknown urgency', threadType: ThreadType.QUEST, urgency: 'CRITICAL' },
+      { id: 'td-2', text: 'Known urgency', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+    ]);
+
+    expect(result.map(row => row.id)).toEqual(['td-2', 'td-1']);
   });
 });

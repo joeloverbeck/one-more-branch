@@ -44,5 +44,21 @@ describe('public client script', () => {
     expect(script).toContain('escapeHtmlWithBreaks(data.page.narrativeText || \'\')');
     expect(script).toContain('changes.map((change) => `<li>${escapeHtml(change)}</li>`)');
     expect(script).toContain("escapeHtml(choiceText)");
+    expect(script).toContain("escapeHtml(thread.text)");
+  });
+
+  it('contains dedicated open-thread panel render/rebuild function', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('function renderOpenThreadsPanel(openThreads)');
+    expect(script).toContain("document.getElementById('open-threads-panel')");
+    expect(script).toContain('existingPanel.remove()');
+  });
+
+  it('updates open-thread panel from AJAX choice response data', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads);');
+    expect(script).toContain("if (!Array.isArray(openThreads) || openThreads.length === 0)");
   });
 });
