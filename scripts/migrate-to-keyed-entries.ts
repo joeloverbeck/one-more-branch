@@ -1,7 +1,9 @@
+import { loadConfig } from '../src/config/index.js';
 import { getStoriesDir } from '../src/persistence/file-utils.js';
 import { migrateStoriesToKeyedEntries } from '../src/persistence/migrate-keyed-entries.js';
 
 export async function runMigration(): Promise<void> {
+  loadConfig();
   const storiesDir = getStoriesDir();
   const report = await migrateStoriesToKeyedEntries(storiesDir);
   console.log(

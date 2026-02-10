@@ -20,7 +20,8 @@
     "lint": "eslint src test --ext .ts",
     "lint:fix": "eslint src test --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate:keyed-entries": "tsc -p tsconfig.scripts.json && node .tmp/scripts-dist/scripts/migrate-to-keyed-entries.js"
   },
   "engines": {
     "node": ">=18.0.0"
