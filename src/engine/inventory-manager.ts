@@ -42,13 +42,11 @@ export function addInventoryItem(inventory: Inventory, item: string): Inventory 
 
 /**
  * Removes an item from the inventory immutably.
- * Removes only the first matching item (case-insensitive).
- * Returns unchanged inventory if item not found.
+ * Matches by entry ID and returns unchanged inventory if ID is not found.
  */
-export function removeInventoryItem(inventory: Inventory, item: string): Inventory {
-  const normalizedItem = normalizeItemName(item);
+export function removeInventoryItem(inventory: Inventory, itemId: string): Inventory {
   const result = [...inventory];
-  const index = result.findIndex(i => normalizeItemName(i.text) === normalizedItem);
+  const index = result.findIndex(i => i.id === itemId);
   if (index !== -1) {
     result.splice(index, 1);
   }

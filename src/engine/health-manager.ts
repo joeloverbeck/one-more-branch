@@ -42,13 +42,11 @@ export function addHealthEntry(health: Health, entry: string): Health {
 
 /**
  * Removes a health entry immutably.
- * Removes only the first matching entry (case-insensitive).
- * Returns unchanged health if entry not found.
+ * Matches by entry ID and returns unchanged health if ID is not found.
  */
-export function removeHealthEntry(health: Health, entry: string): Health {
-  const normalizedEntry = normalizeHealthEntry(entry);
+export function removeHealthEntry(health: Health, entryId: string): Health {
   const result = [...health];
-  const index = result.findIndex(e => normalizeHealthEntry(e.text) === normalizedEntry);
+  const index = result.findIndex(e => e.id === entryId);
   if (index !== -1) {
     result.splice(index, 1);
   }

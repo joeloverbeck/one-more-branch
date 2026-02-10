@@ -59,6 +59,7 @@ describe('page-builder', () => {
         inventoryAdded: ['Sword', 'Shield'],
         healthAdded: ['Minor wound'],
         characterStateChangesAdded: [{ characterName: 'Ally', states: ['Trusting'] }],
+        characterStateChangesRemoved: ['cs-7'],
       });
       const context: FirstPageBuildContext = {
         structureState: createEmptyAccumulatedStructureState(),
@@ -73,6 +74,7 @@ describe('page-builder', () => {
       expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Sword' }, { id: 'inv-2', text: 'Shield' }]);
       expect(page.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'Minor wound' }]);
       expect(page.accumulatedCharacterState['Ally']).toEqual([{ id: 'cs-1', text: 'Trusting' }]);
+      expect(page.characterStateChanges.removed).toEqual(['cs-7']);
     });
 
     it('assigns structure state and version from context', () => {
@@ -102,6 +104,7 @@ describe('page-builder', () => {
         currentLocation: 'Hidden chamber',
         threatsAdded: ['Trap triggered'],
         threadsAdded: ['Ancient secret revealed'],
+        characterStateChangesRemoved: ['cs-1'],
       });
       const context: ContinuationPageBuildContext = {
         pageId: parsePageId(2),
@@ -135,6 +138,7 @@ describe('page-builder', () => {
         'Ancient secret revealed',
       ]);
       expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Map' }, { id: 'inv-2', text: 'Rusty key' }]);
+      expect(page.characterStateChanges.removed).toEqual(['cs-1']);
     });
   });
 

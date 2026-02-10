@@ -1,6 +1,8 @@
 import {
   createCharacterStateChanges,
   formatCharacterStateForPrompt,
+  getCharacterState,
+  hasCharacterState,
   getParentAccumulatedCharacterState,
   normalizeCharacterNameForState,
 } from '../../../src/engine/character-state-manager';
@@ -34,6 +36,21 @@ describe('character-state-manager', () => {
         greaves: [cs(1, 'Gave protagonist a map')],
       };
       expect(formatCharacterStateForPrompt(state)).toBe('[greaves]\n- [cs-1] Gave protagonist a map');
+    });
+  });
+
+  describe('query helpers', () => {
+    const state: AccumulatedCharacterState = {
+      Mira: [cs(1, 'Freed'), cs(2, 'Alert')],
+    };
+
+    it('getCharacterState returns keyed entries for a character', () => {
+      expect(getCharacterState(state, 'mira')).toEqual([cs(1, 'Freed'), cs(2, 'Alert')]);
+    });
+
+    it('hasCharacterState matches on keyed entry text', () => {
+      expect(hasCharacterState(state, 'Mira', 'freed')).toBe(true);
+      expect(hasCharacterState(state, 'Mira', 'missing')).toBe(false);
     });
   });
 

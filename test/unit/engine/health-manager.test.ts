@@ -29,10 +29,14 @@ describe('health-manager', () => {
       ]);
     });
 
-    it('removes entry with text match', () => {
-      expect(removeHealthEntry([hp(1, 'Minor wound'), hp(2, 'Fatigue')], 'minor WOUND')).toEqual([
+    it('removes entry by ID', () => {
+      expect(removeHealthEntry([hp(1, 'Minor wound'), hp(2, 'Fatigue')], 'hp-1')).toEqual([
         hp(2, 'Fatigue'),
       ]);
+    });
+
+    it('leaves health unchanged when ID is not found', () => {
+      expect(removeHealthEntry([hp(1, 'Minor wound')], 'hp-999')).toEqual([hp(1, 'Minor wound')]);
     });
   });
 

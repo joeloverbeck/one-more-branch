@@ -61,16 +61,22 @@ describe('inventory-manager', () => {
   });
 
   describe('removeInventoryItem', () => {
-    it('should remove item from inventory (case-insensitive)', () => {
+    it('should remove item from inventory by ID', () => {
       const inventory: Inventory = [inv(1, 'Sword'), inv(2, 'Shield')];
-      const result = removeInventoryItem(inventory, 'sword');
+      const result = removeInventoryItem(inventory, 'inv-1');
       expect(result).toEqual([inv(2, 'Shield')]);
     });
 
-    it('should remove first occurrence only (for duplicates)', () => {
+    it('should remove only the matching ID when text is duplicated', () => {
       const inventory: Inventory = [inv(1, 'Health Potion'), inv(2, 'Shield'), inv(3, 'Health Potion')];
-      const result = removeInventoryItem(inventory, 'Health Potion');
-      expect(result).toEqual([inv(2, 'Shield'), inv(3, 'Health Potion')]);
+      const result = removeInventoryItem(inventory, 'inv-3');
+      expect(result).toEqual([inv(1, 'Health Potion'), inv(2, 'Shield')]);
+    });
+
+    it('should leave inventory unchanged when ID is not found', () => {
+      const inventory: Inventory = [inv(1, 'Health Potion')];
+      const result = removeInventoryItem(inventory, 'inv-999');
+      expect(result).toEqual([inv(1, 'Health Potion')]);
     });
   });
 

@@ -74,13 +74,13 @@ export function formatCharacterStateForPrompt(state: AccumulatedCharacterState):
 export function getCharacterState(
   state: AccumulatedCharacterState,
   characterName: string,
-): readonly string[] {
+): AccumulatedCharacterState[string] {
   const cleanedName = normalizeCharacterNameForState(characterName);
   const lookupKey = normalizeForComparison(cleanedName);
 
   for (const [key, value] of Object.entries(state)) {
     if (normalizeForComparison(key) === lookupKey) {
-      return value.map(v => v.text);
+      return value;
     }
   }
 
@@ -97,7 +97,7 @@ export function hasCharacterState(
 ): boolean {
   const characterState = getCharacterState(state, characterName);
   const normalizedEntry = stateEntry.trim().toLowerCase();
-  return characterState.some(s => s.trim().toLowerCase() === normalizedEntry);
+  return characterState.some(s => s.text.trim().toLowerCase() === normalizedEntry);
 }
 
 /**
