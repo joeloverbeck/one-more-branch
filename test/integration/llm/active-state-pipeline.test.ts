@@ -15,11 +15,11 @@ describe('Active state pipeline integration', () => {
       { text: 'Search for water', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
     ],
     currentLocation: 'Burning tavern',
-    threatsAdded: ['THREAT_FIRE: The tavern is engulfed in flames and could collapse at any moment'],
+    threatsAdded: ['The tavern is engulfed in flames and could collapse at any moment'],
     threatsRemoved: [],
-    constraintsAdded: ['CONSTRAINT_SMOKE: Thick smoke limits visibility to a few feet'],
+    constraintsAdded: ['Thick smoke limits visibility to a few feet'],
     constraintsRemoved: [],
-    threadsAdded: ['THREAD_INNKEEPER: The innkeeper is trapped behind the bar'],
+    threadsAdded: ['The innkeeper is trapped behind the bar'],
     threadsResolved: [],
     newCanonFacts: ['The Golden Flagon tavern is the oldest building in Millhaven'],
     newCharacterCanonFacts: [{ characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] }],
@@ -47,13 +47,13 @@ describe('Active state pipeline integration', () => {
     // Verify transformer output has populated active state fields
     expect(generationResult.currentLocation).toBe('Burning tavern');
     expect(generationResult.threatsAdded).toEqual([
-      'THREAT_FIRE: The tavern is engulfed in flames and could collapse at any moment',
+      'The tavern is engulfed in flames and could collapse at any moment',
     ]);
     expect(generationResult.constraintsAdded).toEqual([
-      'CONSTRAINT_SMOKE: Thick smoke limits visibility to a few feet',
+      'Thick smoke limits visibility to a few feet',
     ]);
     expect(generationResult.threadsAdded).toEqual([
-      'THREAD_INNKEEPER: The innkeeper is trapped behind the bar',
+      'The innkeeper is trapped behind the bar',
     ]);
 
     // Step 2: Build page via page-builder
@@ -63,26 +63,32 @@ describe('Active state pipeline integration', () => {
     // Step 3: Verify page has populated activeStateChanges
     expect(page.activeStateChanges.newLocation).toBe('Burning tavern');
     expect(page.activeStateChanges.threatsAdded).toEqual([
-      'THREAT_FIRE: The tavern is engulfed in flames and could collapse at any moment',
+      'The tavern is engulfed in flames and could collapse at any moment',
     ]);
     expect(page.activeStateChanges.constraintsAdded).toEqual([
-      'CONSTRAINT_SMOKE: Thick smoke limits visibility to a few feet',
+      'Thick smoke limits visibility to a few feet',
     ]);
     expect(page.activeStateChanges.threadsAdded).toEqual([
-      'THREAD_INNKEEPER: The innkeeper is trapped behind the bar',
+      'The innkeeper is trapped behind the bar',
     ]);
 
     // Step 4: Verify accumulated active state was computed (applied to empty parent)
     expect(page.accumulatedActiveState.currentLocation).toBe('Burning tavern');
     expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
     expect(page.accumulatedActiveState.activeThreats[0]?.id).toBe('th-1');
-    expect(page.accumulatedActiveState.activeThreats[0]?.text).toContain('THREAT_FIRE:');
+    expect(page.accumulatedActiveState.activeThreats[0]?.text).toBe(
+      'The tavern is engulfed in flames and could collapse at any moment',
+    );
     expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
     expect(page.accumulatedActiveState.activeConstraints[0]?.id).toBe('cn-1');
-    expect(page.accumulatedActiveState.activeConstraints[0]?.text).toContain('CONSTRAINT_SMOKE:');
+    expect(page.accumulatedActiveState.activeConstraints[0]?.text).toBe(
+      'Thick smoke limits visibility to a few feet',
+    );
     expect(page.accumulatedActiveState.openThreads).toHaveLength(1);
     expect(page.accumulatedActiveState.openThreads[0]?.id).toBe('td-1');
-    expect(page.accumulatedActiveState.openThreads[0]?.text).toContain('THREAD_INNKEEPER:');
+    expect(page.accumulatedActiveState.openThreads[0]?.text).toBe(
+      'The innkeeper is trapped behind the bar',
+    );
   });
 
   it('should populate active state through the writer pipeline', () => {
@@ -95,11 +101,11 @@ describe('Active state pipeline integration', () => {
         { text: 'Search for water', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
       ],
       currentLocation: 'Burning tavern',
-      threatsAdded: ['THREAT_FIRE: The tavern is engulfed in flames'],
+      threatsAdded: ['The tavern is engulfed in flames'],
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: ['THREAD_INNKEEPER: The innkeeper is trapped'],
+      threadsAdded: ['The innkeeper is trapped'],
       threadsResolved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: [],
@@ -123,8 +129,8 @@ describe('Active state pipeline integration', () => {
     const writerResult = validateWriterResponse(writerLlmResponse, JSON.stringify(writerLlmResponse));
 
     expect(writerResult.currentLocation).toBe('Burning tavern');
-    expect(writerResult.threatsAdded).toEqual(['THREAT_FIRE: The tavern is engulfed in flames']);
-    expect(writerResult.threadsAdded).toEqual(['THREAD_INNKEEPER: The innkeeper is trapped']);
+    expect(writerResult.threatsAdded).toEqual(['The tavern is engulfed in flames']);
+    expect(writerResult.threadsAdded).toEqual(['The innkeeper is trapped']);
   });
 
   it('should default to empty active state when LLM returns empty arrays', () => {

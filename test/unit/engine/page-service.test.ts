@@ -397,9 +397,9 @@ describe('page-service', () => {
           { text: 'Drop into the market canopy', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
         ],
         currentLocation: 'Rooftops above the market district',
-        threatsAdded: ['THREAT_patrol: Patrol torches scanning below'],
+        threatsAdded: ['Patrol torches are scanning the rooftops below'],
         threatsRemoved: [],
-        constraintsAdded: ['CONSTRAINT_stealth: Must move quietly'],
+        constraintsAdded: ['Must move quietly to avoid detection'],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -444,7 +444,7 @@ describe('page-service', () => {
       expect(page.accumulatedInventory).toEqual(parentPage.accumulatedInventory);
       // New active state is in accumulatedActiveState
       expect(page.accumulatedActiveState.currentLocation).toBe('Rooftops above the market district');
-      // Active state uses tagged entries with prefix/description/raw structure
+      // Active state stores keyed entries ({ id, text }) in accumulated state
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
       expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
       expect(updatedStory.globalCanon).toContain('Clocktower guards rotate every ten minutes');

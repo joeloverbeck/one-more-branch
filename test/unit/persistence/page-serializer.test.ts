@@ -128,18 +128,18 @@ describe('page-serializer', () => {
       const page = buildTestPage({
         activeStateChanges: {
           newLocation: 'Forest',
-          threatsAdded: ['THREAT_WOLF: Hungry wolf'],
+          threatsAdded: ['A hungry wolf is stalking nearby'],
           threatsRemoved: ['th-1'],
-          constraintsAdded: ['CONSTRAINT_DARK: No light'],
+          constraintsAdded: ['No light source is available'],
           constraintsRemoved: [],
-          threadsAdded: ['THREAD_MAP: Follow map'],
+          threadsAdded: ['Find where the torn map leads'],
           threadsResolved: [],
         },
         accumulatedActiveState: {
           currentLocation: 'Forest',
-          activeThreats: [{ id: 'th-2', text: 'THREAT_WOLF: Hungry wolf' }],
-          activeConstraints: [{ id: 'cn-1', text: 'CONSTRAINT_DARK: No light' }],
-          openThreads: [{ id: 'td-1', text: 'THREAD_MAP: Follow map' }],
+          activeThreats: [{ id: 'th-2', text: 'A hungry wolf is stalking nearby' }],
+          activeConstraints: [{ id: 'cn-1', text: 'No light source is available' }],
+          openThreads: [{ id: 'td-1', text: 'Find where the torn map leads' }],
         },
       });
 
@@ -289,7 +289,7 @@ describe('page-serializer', () => {
         ],
         activeStateChanges: {
           newLocation: 'Temple',
-          threatsAdded: ['THREAT_GUARD: Armed guard'],
+          threatsAdded: ['An armed guard blocks the inner doorway'],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -298,7 +298,7 @@ describe('page-serializer', () => {
         },
         accumulatedActiveState: {
           currentLocation: 'Temple',
-          activeThreats: [{ id: 'th-1', text: 'THREAT_GUARD: Armed guard' }],
+          activeThreats: [{ id: 'th-1', text: 'An armed guard blocks the inner doorway' }],
           activeConstraints: [],
           openThreads: [],
         },
