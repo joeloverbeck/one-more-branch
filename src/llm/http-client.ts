@@ -97,10 +97,12 @@ function extractLikelyJsonSubstring(input: string): string | null {
 }
 
 function parseJsonWithFallbacks(jsonText: string): JsonRoot | null {
+  const repaired = repairMalformedJson(jsonText);
   const candidates = [
     jsonText,
     stripMarkdownCodeFence(jsonText),
     extractLikelyJsonSubstring(stripMarkdownCodeFence(jsonText)) ?? '',
+    repaired ?? '',
   ].filter((candidate, index, all) => candidate.trim().length > 0 && all.indexOf(candidate) === index);
 
   for (const candidate of candidates) {
@@ -112,6 +114,73 @@ function parseJsonWithFallbacks(jsonText: string): JsonRoot | null {
   }
 
   return null;
+}
+
+function appendMissingClosingDelimiters(input: string): string | null {
+  const expectedClosers: string[] = [];
+  let inString = false;
+  let escaped = false;
+
+  for (const char of input) {
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === '{') {
+      expectedClosers.push('}');
+      continue;
+    }
+
+    if (char === '[') {
+      expectedClosers.push(']');
+      continue;
+    }
+
+    if (char === '}' || char === ']') {
+      const expected = expectedClosers.pop();
+      if (expected !== char) {
+        return null;
+      }
+    }
+  }
+
+  if (inString || escaped) {
+    return null;
+  }
+
+  return input + expectedClosers.reverse().join('');
+}
+
+function repairMalformedJson(input: string): string | null {
+  const trimmed = input.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+
+  const base = stripMarkdownCodeFence(trimmed);
+  const extracted = extractLikelyJsonSubstring(base) ?? base;
+  const withoutTrailingCommas = extracted.replace(/,\s*([}\]])/g, '$1');
+
+  return appendMissingClosingDelimiters(withoutTrailingCommas);
 }
 
 export function parseMessageJsonContent(content: unknown): { parsed: JsonRoot; rawText: string } {
@@ -126,6 +195,7 @@ export function parseMessageJsonContent(content: unknown): { parsed: JsonRoot; r
     parseStage: 'message_content',
     contentShape: describeContentShape(content),
     contentPreview: truncateForContext(rawText.trim()),
+    rawContent: rawText,
   });
 }
 

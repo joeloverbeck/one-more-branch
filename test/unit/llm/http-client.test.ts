@@ -26,6 +26,29 @@ describe('http-client', () => {
         expect(llmError.context?.['parseStage']).toBe('message_content');
       }
     });
+
+    it('repairs JSON with trailing commas', () => {
+      const result = parseMessageJsonContent('{"ok":true,"items":[1,2,],}');
+      expect(result.parsed).toEqual({ ok: true, items: [1, 2] });
+    });
+
+    it('repairs JSON with missing closing delimiters', () => {
+      const result = parseMessageJsonContent('{"ok":true,"nested":{"count":2}');
+      expect(result.parsed).toEqual({ ok: true, nested: { count: 2 } });
+    });
+
+    it('includes full raw content in INVALID_JSON context', () => {
+      const rawContent = '{"ok": true, "narrative": "unterminated';
+
+      try {
+        parseMessageJsonContent(rawContent);
+        throw new Error('Expected parseMessageJsonContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.context?.['rawContent']).toBe(rawContent);
+      }
+    });
   });
 
   describe('readJsonResponse', () => {

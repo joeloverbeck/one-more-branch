@@ -988,6 +988,58 @@ describe('storyRoutes', () => {
         }),
       );
     });
+
+    it('includes full raw message content in debug payload for INVALID_JSON', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const rawContent = '{"overallTheme":"Theme","premise":"Broken response';
+      const llmError = new LLMError('Invalid JSON response from OpenRouter', 'INVALID_JSON', true, {
+        parseStage: 'message_content',
+        contentShape: 'string',
+        contentPreview: rawContent.slice(0, 20),
+        rawContent,
+      });
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: 'Test Title',
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledTimes(1);
+      const jsonMock = json as jest.Mock<void, [unknown]>;
+      const responseBody = jsonMock.mock.calls[0]?.[0] as
+        | {
+          success: boolean;
+          code: string;
+          debug?: {
+            parseStage?: string;
+            contentShape?: string;
+            contentPreview?: string;
+            rawContent?: string;
+          };
+        }
+        | undefined;
+      expect(responseBody).toMatchObject({
+        success: false,
+        code: 'INVALID_JSON',
+        debug: {
+          parseStage: 'message_content',
+          contentShape: 'string',
+          contentPreview: rawContent.slice(0, 20),
+          rawContent,
+        },
+      });
+    });
   });
 
   describe('POST /:storyId/delete', () => {
