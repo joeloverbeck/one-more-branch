@@ -153,14 +153,37 @@ describe('page-serializer', () => {
       const page = buildTestPage({
         accumulatedInventory: [{ id: 'inv-1', text: 'original' }],
         accumulatedHealth: [{ id: 'hp-1', text: 'healthy' }],
+        accumulatedActiveState: {
+          currentLocation: 'Watchtower',
+          activeThreats: [{ id: 'th-1', text: 'Incoming scouts' }],
+          activeConstraints: [{ id: 'cn-1', text: 'Bridge is collapsed' }],
+          openThreads: [{ id: 'td-1', text: 'Find a crossing' }],
+        },
+        characterStateChanges: {
+          added: [{ characterName: 'Mira', states: ['alert'] }],
+          removed: ['cs-3'],
+        },
+        accumulatedCharacterState: {
+          Mira: [{ id: 'cs-4', text: 'alert' }],
+        },
       });
 
       const fileData = serializePage(page);
       fileData.accumulatedInventory[0] = { id: 'inv-1', text: 'mutated' };
       fileData.accumulatedHealth.push({ id: 'hp-2', text: 'mutated' });
+      fileData.accumulatedActiveState.activeThreats[0] = { id: 'th-1', text: 'mutated' };
+      fileData.characterStateChanges.added[0].states[0] = 'mutated';
+      fileData.accumulatedCharacterState['Mira'] = [{ id: 'cs-4', text: 'mutated' }];
 
       expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'original' }]);
       expect(page.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'healthy' }]);
+      expect(page.accumulatedActiveState.activeThreats).toEqual([
+        { id: 'th-1', text: 'Incoming scouts' },
+      ]);
+      expect(page.characterStateChanges.added[0]?.states).toEqual(['alert']);
+      expect(page.accumulatedCharacterState).toEqual({
+        Mira: [{ id: 'cs-4', text: 'alert' }],
+      });
     });
   });
 
@@ -193,12 +216,35 @@ describe('page-serializer', () => {
     it('creates deep copies during deserialization', () => {
       const fileData = buildTestFileData({
         accumulatedInventory: [{ id: 'inv-1', text: 'item' }],
+        accumulatedActiveState: {
+          currentLocation: 'Cellar',
+          activeThreats: [{ id: 'th-8', text: 'Flooding water' }],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        characterStateChanges: {
+          added: [{ characterName: 'Greaves', states: ['wary'] }],
+          removed: ['cs-9'],
+        },
+        accumulatedCharacterState: {
+          Greaves: [{ id: 'cs-10', text: 'wary' }],
+        },
       });
 
       const page = deserializePage(fileData);
       fileData.accumulatedInventory[0] = { id: 'inv-1', text: 'mutated' };
+      fileData.accumulatedActiveState.activeThreats[0] = { id: 'th-8', text: 'mutated' };
+      fileData.characterStateChanges.added[0].states[0] = 'mutated';
+      fileData.accumulatedCharacterState['Greaves'] = [{ id: 'cs-10', text: 'mutated' }];
 
       expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'item' }]);
+      expect(page.accumulatedActiveState.activeThreats).toEqual([
+        { id: 'th-8', text: 'Flooding water' },
+      ]);
+      expect(page.characterStateChanges.added[0]?.states).toEqual(['wary']);
+      expect(page.accumulatedCharacterState).toEqual({
+        Greaves: [{ id: 'cs-10', text: 'wary' }],
+      });
     });
 
     it('defaults structureVersionId to null when missing', () => {

@@ -258,7 +258,10 @@ describe('page-repository', () => {
       accumulatedInventory: [],
       healthChanges: { added: [], removed: [] },
       accumulatedHealth: [],
-      characterStateChanges: [],
+      characterStateChanges: {
+        added: [],
+        removed: [],
+      },
       accumulatedCharacterState: {},
       activeStateChanges: {
         newLocation: null,
