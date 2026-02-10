@@ -40,21 +40,26 @@ export function getRemainingBeats(
 
 export function buildActiveStateForBeatEvaluation(activeState: ActiveState): string {
   const parts: string[] = [];
+  const threatTexts = activeState.activeThreats.map(threat => threat.text.trim()).filter(Boolean);
+  const constraintTexts = activeState.activeConstraints
+    .map(constraint => constraint.text.trim())
+    .filter(Boolean);
+  const threadTexts = activeState.openThreads.map(thread => thread.text.trim()).filter(Boolean);
 
   if (activeState.currentLocation) {
     parts.push(`Location: ${activeState.currentLocation}`);
   }
 
-  if (activeState.activeThreats.length > 0) {
-    parts.push(`Active threats: ${activeState.activeThreats.map(t => t.id).join(', ')}`);
+  if (threatTexts.length > 0) {
+    parts.push(`Active threats: ${threatTexts.join(', ')}`);
   }
 
-  if (activeState.activeConstraints.length > 0) {
-    parts.push(`Constraints: ${activeState.activeConstraints.map(c => c.id).join(', ')}`);
+  if (constraintTexts.length > 0) {
+    parts.push(`Constraints: ${constraintTexts.join(', ')}`);
   }
 
-  if (activeState.openThreads.length > 0) {
-    parts.push(`Open threads: ${activeState.openThreads.map(t => t.id).join(', ')}`);
+  if (threadTexts.length > 0) {
+    parts.push(`Open threads: ${threadTexts.join(', ')}`);
   }
 
   if (parts.length === 0) {

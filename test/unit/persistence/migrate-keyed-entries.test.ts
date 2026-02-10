@@ -147,6 +147,7 @@ describe('migrateStoriesToKeyedEntries', () => {
     expect(report.storiesProcessed).toBe(1);
     expect(report.pagesVisited).toBe(2);
     expect(report.pagesMigrated).toBe(2);
+    expect(report.pagesFailed).toBe(0);
 
     const migratedPage1 = JSON.parse(
       await fs.readFile(path.join(storyDir, 'page_1.json'), 'utf-8'),
@@ -189,5 +190,121 @@ describe('migrateStoriesToKeyedEntries', () => {
       },
     });
     expect(secondRun.pagesMigrated).toBe(0);
+  });
+
+  it('converts legacy open thread strings to typed thread entries with deterministic defaults', async () => {
+    const storyDir = path.join(storiesDir, 'story-threads');
+    await fs.mkdir(storyDir, { recursive: true });
+
+    const page1 = createLegacyPage({
+      id: 1,
+      accumulatedActiveState: {
+        currentLocation: 'Square',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: ['  Mystery in the bell tower  '],
+      },
+      activeStateChanges: {
+        newLocation: 'Square',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: ['  Follow the strange footsteps  '],
+        threadsResolved: [],
+      },
+    });
+
+    await fs.writeFile(path.join(storyDir, 'page_1.json'), `${JSON.stringify(page1, null, 2)}\n`, 'utf-8');
+
+    const report = await migrateStoriesToKeyedEntries(storiesDir, {
+      logger: {
+        log: () => undefined,
+        warn: () => undefined,
+        error: () => undefined,
+      },
+    });
+
+    expect(report.pagesMigrated).toBe(1);
+    expect(report.pagesFailed).toBe(0);
+
+    const migratedPage = JSON.parse(
+      await fs.readFile(path.join(storyDir, 'page_1.json'), 'utf-8'),
+    ) as JsonObject;
+
+    expect((migratedPage['accumulatedActiveState'] as JsonObject)['openThreads']).toEqual([
+      {
+        id: 'td-1',
+        text: 'Mystery in the bell tower',
+        threadType: 'INFORMATION',
+        urgency: 'MEDIUM',
+      },
+    ]);
+    expect((migratedPage['activeStateChanges'] as JsonObject)['threadsAdded']).toEqual([
+      'Follow the strange footsteps',
+    ]);
+  });
+
+  it('fails page migration for unsupported openThreads shape and reports page failure', async () => {
+    const storyDir = path.join(storiesDir, 'story-invalid-threads');
+    await fs.mkdir(storyDir, { recursive: true });
+
+    const page1 = createLegacyPage({
+      id: 1,
+      accumulatedActiveState: {
+        currentLocation: 'Square',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [123],
+      },
+    });
+
+    await fs.writeFile(path.join(storyDir, 'page_1.json'), `${JSON.stringify(page1, null, 2)}\n`, 'utf-8');
+
+    const errors: Array<{ message: string; context?: unknown }> = [];
+    const report = await migrateStoriesToKeyedEntries(storiesDir, {
+      logger: {
+        log: () => undefined,
+        warn: () => undefined,
+        error: (message: string, context?: unknown) => errors.push({ message, context }),
+      } as unknown as Pick<Console, 'log' | 'warn' | 'error'>,
+    });
+
+    expect(report.pagesMigrated).toBe(0);
+    expect(report.pagesFailed).toBe(1);
+    expect(errors.some(entry => entry.message === 'Page migration failed')).toBe(true);
+    const failureContext = errors.find(entry => entry.message === 'Page migration failed')?.context as
+      | Record<string, unknown>
+      | undefined;
+    expect(failureContext?.storyId).toBe('story-invalid-threads');
+    expect(failureContext?.pageId).toBe(1);
+  });
+
+  it('fails page migration when migrated thread text is empty after trim', async () => {
+    const storyDir = path.join(storiesDir, 'story-empty-thread');
+    await fs.mkdir(storyDir, { recursive: true });
+
+    const page1 = createLegacyPage({
+      id: 1,
+      accumulatedActiveState: {
+        currentLocation: 'Square',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: ['   '],
+      },
+    });
+
+    await fs.writeFile(path.join(storyDir, 'page_1.json'), `${JSON.stringify(page1, null, 2)}\n`, 'utf-8');
+
+    const report = await migrateStoriesToKeyedEntries(storiesDir, {
+      logger: {
+        log: () => undefined,
+        warn: () => undefined,
+        error: () => undefined,
+      },
+    });
+
+    expect(report.pagesMigrated).toBe(0);
+    expect(report.pagesFailed).toBe(1);
   });
 });

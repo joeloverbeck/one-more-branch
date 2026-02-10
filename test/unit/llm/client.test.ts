@@ -20,6 +20,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import {
   generateOpeningPage,
+  generateWriterPage,
   validateApiKey,
 } from '../../../src/llm/client';
 import { LLMError } from '../../../src/llm/types';
@@ -28,6 +29,27 @@ const openingContext = {
   characterConcept: 'A haunted cartographer',
   worldbuilding: 'A city built atop buried catacombs',
   tone: 'gothic mystery',
+};
+
+const continuationContext = {
+  characterConcept: 'A haunted cartographer',
+  worldbuilding: 'A city built atop buried catacombs',
+  tone: 'gothic mystery',
+  globalCanon: [],
+  globalCharacterCanon: {},
+  previousNarrative: 'You descend into the vault.',
+  selectedChoice: 'Advance toward the chanting',
+  accumulatedInventory: [],
+  accumulatedHealth: [],
+  accumulatedCharacterState: {},
+  activeState: {
+    currentLocation: 'The drowned vault',
+    activeThreats: [],
+    activeConstraints: [],
+    openThreads: [],
+  },
+  grandparentNarrative: null,
+  ancestorSummaries: [],
 };
 
 const validStructuredPayload = {
@@ -518,6 +540,53 @@ describe('llm client', () => {
         ? (validationErrorCall[1] as { validationIssues?: unknown }).validationIssues
         : undefined;
     expect(Array.isArray(validationIssues)).toBe(true);
+  });
+
+  it('emits validator failure counters with observability identifiers when provided', async () => {
+    const invalidStructuredPayload = {
+      ...validStructuredPayload,
+      choices: [
+        { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      ],
+    };
+
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload)),
+    );
+
+    await expect(
+      generateWriterPage(continuationContext, {
+        apiKey: 'test-key',
+        observability: {
+          storyId: 'story-123',
+          pageId: 7,
+          requestId: 'req-abc',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      retryable: false,
+    });
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'Writer validator failure counter',
+      expect.objectContaining({
+        storyId: 'story-123',
+        pageId: 7,
+        requestId: 'req-abc',
+      }),
+    );
+    const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
+    const counterCall = errorCalls.find(
+      ([message]) => message === 'Writer validator failure counter',
+    );
+    expect(counterCall).toBeDefined();
+    const counterContext =
+      counterCall && typeof counterCall[1] === 'object' && counterCall[1] !== null
+        ? (counterCall[1] as Record<string, unknown>)
+        : undefined;
+    expect(typeof counterContext?.ruleKey).toBe('string');
+    expect(typeof counterContext?.count).toBe('number');
   });
 });
 

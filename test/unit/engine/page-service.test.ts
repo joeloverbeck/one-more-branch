@@ -204,7 +204,7 @@ describe('page-service', () => {
           tone: story.tone,
           structure,
         },
-        { apiKey: 'test-key' },
+        { apiKey: 'test-key', observability: { storyId: story.id } },
       );
       expect(page.id).toBe(1);
       expect(page.parentPageId).toBeNull();
@@ -283,7 +283,7 @@ describe('page-service', () => {
           tone: story.tone,
           structure: undefined,
         },
-        { apiKey: 'test-key' },
+        { apiKey: 'test-key', observability: { storyId: story.id } },
       );
       expect(page.accumulatedStructureState).toEqual({
         currentActIndex: 0,
@@ -473,7 +473,7 @@ describe('page-service', () => {
           selectedChoice: parentPage.choices[0]?.text,
           activeState: parentPage.accumulatedActiveState,
         }),
-        { apiKey: 'test-key' },
+        { apiKey: 'test-key', observability: { storyId: story.id, pageId: parentPage.id } },
       );
       expect(page.id).toBe(8);
       expect(page.parentPageId).toBe(parentPage.id);
@@ -1371,7 +1371,7 @@ describe('page-service', () => {
         expect.objectContaining({
           structure: structureV1, // Should be v1, not v2!
         }),
-        { apiKey: 'test-key' },
+        { apiKey: 'test-key', observability: { storyId: story.id, pageId: parentPage.id } },
       );
     });
 

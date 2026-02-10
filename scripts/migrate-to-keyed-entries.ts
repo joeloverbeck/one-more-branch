@@ -7,7 +7,7 @@ export async function runMigration(): Promise<void> {
   const storiesDir = getStoriesDir();
   const report = await migrateStoriesToKeyedEntries(storiesDir);
   console.log(
-    `Migration complete: ${report.storiesProcessed} stories, ${report.pagesVisited} pages visited, ${report.pagesMigrated} pages migrated, ${report.warnings} warnings.`,
+    `Migration complete: ${report.storiesProcessed} stories, ${report.pagesVisited} pages visited, ${report.pagesMigrated} pages migrated, ${report.pagesFailed} pages failed, ${report.warnings} warnings.`,
   );
 }
 

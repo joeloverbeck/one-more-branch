@@ -1,6 +1,15 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { KeyedEntry, StateIdPrefix, extractIdNumber } from '../models/state/keyed-entry.js';
+import {
+  KeyedEntry,
+  StateIdPrefix,
+  ThreadEntry,
+  ThreadType,
+  Urgency,
+  extractIdNumber,
+  isThreadType,
+  isUrgency,
+} from '../models/state/keyed-entry.js';
 
 interface TaggedEntryLike {
   readonly prefix: string;
@@ -14,7 +23,7 @@ interface ParentContext {
   readonly characterState: Readonly<Record<string, readonly KeyedEntry[]>>;
   readonly activeThreats: readonly KeyedEntry[];
   readonly activeConstraints: readonly KeyedEntry[];
-  readonly openThreads: readonly KeyedEntry[];
+  readonly openThreads: readonly ThreadEntry[];
   readonly threatAliases: Readonly<Record<string, string>>;
   readonly constraintAliases: Readonly<Record<string, string>>;
   readonly threadAliases: Readonly<Record<string, string>>;
@@ -31,6 +40,7 @@ export interface MigrationReport {
   readonly storiesProcessed: number;
   readonly pagesVisited: number;
   readonly pagesMigrated: number;
+  readonly pagesFailed: number;
   readonly warnings: number;
 }
 
@@ -71,6 +81,15 @@ function isKeyedEntry(value: unknown): value is KeyedEntry {
   return isObject(value) && typeof value['id'] === 'string' && typeof value['text'] === 'string';
 }
 
+function isThreadEntry(value: unknown): value is ThreadEntry {
+  const obj = value as Record<string, unknown>;
+  return (
+    isKeyedEntry(value) &&
+    isThreadType(obj['threadType']) &&
+    isUrgency(obj['urgency'])
+  );
+}
+
 function isTaggedEntryLike(value: unknown): value is TaggedEntryLike {
   return (
     isObject(value) &&
@@ -95,11 +114,20 @@ function nextId(prefix: StateIdPrefix, counter: number): string {
   return `${prefix}-${counter + 1}`;
 }
 
-function consumeByText(
-  candidates: readonly KeyedEntry[],
+function normalizeThreadText(text: string, pageId: number | null, source: string): string {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    const pageLabel = pageId === null ? 'unknown page' : `page ${pageId}`;
+    throw new Error(`Empty thread text after trim in ${source} for ${pageLabel}`);
+  }
+  return trimmed;
+}
+
+function consumeByText<T extends KeyedEntry>(
+  candidates: readonly T[],
   text: string,
   consumed: Set<number>,
-): KeyedEntry | null {
+): T | null {
   for (let index = 0; index < candidates.length; index += 1) {
     if (consumed.has(index)) {
       continue;
@@ -168,6 +196,12 @@ interface ConvertEntriesResult {
   readonly counter: number;
 }
 
+interface ConvertThreadEntriesResult {
+  readonly entries: ThreadEntry[];
+  readonly aliases: Record<string, string>;
+  readonly counter: number;
+}
+
 function convertEntries(
   legacyEntries: unknown,
   parentEntries: readonly KeyedEntry[],
@@ -213,6 +247,81 @@ function convertEntries(
     }
 
     entries.push({ id, text });
+    aliases[id] = id;
+    if (aliasKey) {
+      aliases[aliasKey] = id;
+    }
+  }
+
+  for (const [alias, id] of Object.entries(inheritedAliases)) {
+    if (!aliases[alias] && entries.some(entry => entry.id === id)) {
+      aliases[alias] = id;
+    }
+  }
+
+  return { entries, aliases, counter };
+}
+
+function convertThreadEntries(
+  legacyEntries: unknown,
+  parentEntries: readonly ThreadEntry[],
+  inheritedAliases: Readonly<Record<string, string>>,
+  initialCounter: number,
+  pageId: number | null,
+): ConvertThreadEntriesResult {
+  const items: unknown[] = Array.isArray(legacyEntries) ? legacyEntries : [];
+  const consumedParent = new Set<number>();
+  const entries: ThreadEntry[] = [];
+  const aliases: Record<string, string> = {};
+  let counter = initialCounter;
+
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+
+    if (isThreadEntry(item)) {
+      const text = normalizeThreadText(item.text, pageId, `openThreads[${index}]`);
+      const idNumber = getIdNumberIfValid(item.id, 'td');
+      if (idNumber !== null && idNumber > counter) {
+        counter = idNumber;
+      }
+      entries.push({
+        id: item.id,
+        text,
+        threadType: item.threadType,
+        urgency: item.urgency,
+      });
+      aliases[item.id] = item.id;
+      continue;
+    }
+
+    let text: string;
+    let aliasKey: string | null = null;
+
+    if (isKeyedEntry(item)) {
+      text = normalizeThreadText(item.text, pageId, `openThreads[${index}]`);
+    } else if (isTaggedEntryLike(item)) {
+      text = normalizeThreadText(item.description, pageId, `openThreads[${index}]`);
+      aliasKey = item.prefix.trim();
+    } else if (typeof item === 'string') {
+      text = normalizeThreadText(item, pageId, `openThreads[${index}]`);
+    } else {
+      throw new Error(
+        `Unsupported thread shape in openThreads[${index}] on page ${pageId ?? 'unknown'}`,
+      );
+    }
+
+    const fromParent = consumeByText(parentEntries, text, consumedParent);
+    const id = fromParent ? fromParent.id : nextId('td', counter);
+    if (!fromParent) {
+      counter += 1;
+    }
+
+    entries.push({
+      id,
+      text,
+      threadType: fromParent?.threadType ?? ThreadType.INFORMATION,
+      urgency: fromParent?.urgency ?? Urgency.MEDIUM,
+    });
     aliases[id] = id;
     if (aliasKey) {
       aliases[aliasKey] = id;
@@ -518,6 +627,7 @@ function migratePageData(
   warn: (message: string) => void,
 ): { migrated: Record<string, unknown>; context: MigratedPageContext } {
   const page = deepClone(originalPage);
+  const pageId = typeof page['id'] === 'number' ? page['id'] : null;
   const counters = { ...parent.counters };
 
   const inventory = convertEntries(
@@ -572,12 +682,12 @@ function migratePageData(
   counters.cn = constraints.counter;
   accumulatedActiveState['activeConstraints'] = constraints.entries;
 
-  const threads = convertEntries(
+  const threads = convertThreadEntries(
     accumulatedActiveState['openThreads'],
     parent.openThreads,
     parent.threadAliases,
-    'td',
     counters.td,
+    pageId,
   );
   counters.td = threads.counter;
   accumulatedActiveState['openThreads'] = threads.entries;
@@ -623,7 +733,12 @@ function migratePageData(
     activeStateChanges['constraintsAdded'],
   ).map(normalizeActiveAddition);
   activeStateChanges['threadsAdded'] = asStringArray(activeStateChanges['threadsAdded']).map(
-    normalizeActiveAddition,
+    (raw, index) =>
+      normalizeThreadText(
+        normalizeActiveAddition(raw),
+        pageId,
+        `activeStateChanges.threadsAdded[${index}]`,
+      ),
   );
 
   activeStateChanges['threatsRemoved'] = asStringArray(activeStateChanges['threatsRemoved']).map(
@@ -676,10 +791,11 @@ function migratePageData(
 async function migrateStoryDirectory(
   storyDir: string,
   options: {
-    readonly logger: Pick<Console, 'log' | 'warn'>;
+    readonly logger: Pick<Console, 'log' | 'warn' | 'error'>;
+    readonly storyId: string;
     readonly warningCounter: { value: number };
   },
-): Promise<{ visitedPages: number; migratedPages: number }> {
+): Promise<{ visitedPages: number; migratedPages: number; failedPages: number }> {
   const logger = options.logger;
   const warningCounter = options.warningCounter;
   const files = await fs.readdir(storyDir, { withFileTypes: true });
@@ -693,7 +809,7 @@ async function migrateStoryDirectory(
     });
 
   if (pageFiles.length === 0) {
-    return { visitedPages: 0, migratedPages: 0 };
+    return { visitedPages: 0, migratedPages: 0, failedPages: 0 };
   }
 
   const pagesById = new Map<number, Record<string, unknown>>();
@@ -712,6 +828,7 @@ async function migrateStoryDirectory(
   const traversalOrder = buildPageTraversalOrder(pagesById);
   const contextsById = new Map<number, MigratedPageContext>();
   let migratedPages = 0;
+  let failedPages = 0;
 
   for (const pageId of traversalOrder) {
     const originalPage = pagesById.get(pageId);
@@ -720,24 +837,33 @@ async function migrateStoryDirectory(
       continue;
     }
 
-    const parentIdRaw = originalPage['parentPageId'];
-    const parentId = typeof parentIdRaw === 'number' ? parentIdRaw : null;
-    const parentContext = parentId !== null ? contextsById.get(parentId) ?? EMPTY_CONTEXT : EMPTY_CONTEXT;
-    const warn = createWarn(options.logger, warningCounter);
-    const { migrated, context } = migratePageData(originalPage, makeParentContextCopy(parentContext), warn);
+    try {
+      const parentIdRaw = originalPage['parentPageId'];
+      const parentId = typeof parentIdRaw === 'number' ? parentIdRaw : null;
+      const parentContext = parentId !== null ? contextsById.get(parentId) ?? EMPTY_CONTEXT : EMPTY_CONTEXT;
+      const warn = createWarn(options.logger, warningCounter);
+      const { migrated, context } = migratePageData(originalPage, makeParentContextCopy(parentContext), warn);
 
-    const changed = await writePageWithBackupIfChanged(filePath, originalPage, migrated);
-    if (changed) {
-      migratedPages += 1;
-      logger.log(`  Page ${pageId}: migrated`);
-    } else {
-      logger.log(`  Page ${pageId}: unchanged`);
+      const changed = await writePageWithBackupIfChanged(filePath, originalPage, migrated);
+      if (changed) {
+        migratedPages += 1;
+        logger.log(`  Page ${pageId}: migrated`);
+      } else {
+        logger.log(`  Page ${pageId}: unchanged`);
+      }
+
+      contextsById.set(pageId, context);
+    } catch (error) {
+      failedPages += 1;
+      logger.error('Page migration failed', {
+        storyId: options.storyId,
+        pageId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
-
-    contextsById.set(pageId, context);
   }
 
-  return { visitedPages: traversalOrder.length, migratedPages };
+  return { visitedPages: traversalOrder.length, migratedPages, failedPages };
 }
 
 export async function migrateStoriesToKeyedEntries(
@@ -755,19 +881,22 @@ export async function migrateStoriesToKeyedEntries(
 
   let pagesVisited = 0;
   let pagesMigrated = 0;
+  let pagesFailed = 0;
 
   for (const storyId of storyDirs) {
     logger.log(`Processing story ${storyId}...`);
     const storyDir = path.join(storiesDir, storyId);
-    const result = await migrateStoryDirectory(storyDir, { logger, warningCounter });
+    const result = await migrateStoryDirectory(storyDir, { logger, storyId, warningCounter });
     pagesVisited += result.visitedPages;
     pagesMigrated += result.migratedPages;
+    pagesFailed += result.failedPages;
   }
 
   return {
     storiesProcessed: storyDirs.length,
     pagesVisited,
     pagesMigrated,
+    pagesFailed,
     warnings: warningCounter.value,
   };
 }

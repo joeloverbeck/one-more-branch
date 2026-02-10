@@ -227,7 +227,8 @@ describe('buildAnalystStructureEvaluation', () => {
     const result = buildAnalystStructureEvaluation(testStructure, state, activeState);
     expect(result).toContain('CURRENT STATE (for beat evaluation)');
     expect(result).toContain('Location: The old warehouse');
-    expect(result).toContain('Active threats: th-1');
+    expect(result).toContain('Active threats: A patrol approaches');
+    expect(result).not.toContain('Active threats: th-1');
   });
 
   it('uses evaluation-focused language, NOT "After writing the narrative"', () => {

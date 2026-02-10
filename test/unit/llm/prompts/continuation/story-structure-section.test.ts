@@ -130,7 +130,7 @@ describe('story-structure-section', () => {
       expect(result).toContain('Location: Hidden bunker');
     });
 
-    it('uses prefix for threats, not raw', () => {
+    it('uses threat text (not IDs)', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         activeThreats: [
@@ -141,11 +141,11 @@ describe('story-structure-section', () => {
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Active threats: th-2, th-5');
-      expect(result).not.toContain('patrolling the area');
+      expect(result).toContain('Active threats: Guard patrolling the area, Dog trained to attack');
+      expect(result).not.toContain('Active threats: th-2, th-5');
     });
 
-    it('uses prefix for constraints', () => {
+    it('uses constraint text (not IDs)', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         activeConstraints: [
@@ -155,10 +155,11 @@ describe('story-structure-section', () => {
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Constraints: cn-8');
+      expect(result).toContain('Constraints: Broken arm - cannot climb');
+      expect(result).not.toContain('Constraints: cn-8');
     });
 
-    it('uses prefix for threads', () => {
+    it('uses thread text (not IDs)', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         openThreads: [
@@ -168,7 +169,8 @@ describe('story-structure-section', () => {
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Open threads: td-3');
+      expect(result).toContain('Open threads: Missing key - need to find it');
+      expect(result).not.toContain('Open threads: td-3');
     });
   });
 

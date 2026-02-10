@@ -423,8 +423,15 @@ describe('page-service integration', () => {
             'Companion': expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
           }),
         }),
-        { apiKey: 'test-api-key' },
+        expect.objectContaining({
+          apiKey: 'test-api-key',
+        }),
       );
+      const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];
+      expect(writerOptions?.observability).toEqual({
+        storyId: storyWithStructure.id,
+        pageId: parentPage.id,
+      });
 
       // Verify active state accumulates correctly
       expect(page.accumulatedActiveState.currentLocation).toBe('Maze of alleys');
@@ -476,8 +483,15 @@ describe('page-service integration', () => {
         expect.objectContaining({
           npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
         }),
-        { apiKey: 'test-api-key' },
+        expect.objectContaining({
+          apiKey: 'test-api-key',
+        }),
       );
+      const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];
+      expect(writerOptions?.observability).toEqual({
+        storyId: reloadedStory!.id,
+        pageId: parentPage.id,
+      });
     });
 
     it('uses parent structureVersionId for branch isolation', async () => {

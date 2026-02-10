@@ -53,12 +53,19 @@ export interface PromptOptions {
   choiceGuidance?: 'basic' | 'strict';
 }
 
+export interface GenerationObservabilityContext {
+  storyId?: string;
+  pageId?: number;
+  requestId?: string;
+}
+
 export interface GenerationOptions {
   apiKey: string;
   model?: string;
   temperature?: number;
   maxTokens?: number;
   promptOptions?: PromptOptions;
+  observability?: GenerationObservabilityContext;
 }
 
 export interface ContinuationContext {

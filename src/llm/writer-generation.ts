@@ -8,13 +8,43 @@ import {
   extractWriterValidationIssues,
   validateDeterministicWriterOutput,
   WriterOutputValidationError,
+  type WriterOutputValidationIssue,
 } from './validation/writer-output-validator.js';
 import {
   LLMError,
   type ChatMessage,
   type GenerationOptions,
+  type GenerationObservabilityContext,
   type WriterResult,
 } from './types.js';
+
+function buildObservabilityContext(
+  context: GenerationObservabilityContext | undefined,
+): Record<string, unknown> {
+  return {
+    storyId: context?.storyId ?? null,
+    pageId: context?.pageId ?? null,
+    requestId: context?.requestId ?? null,
+  };
+}
+
+function emitValidatorFailureCounters(
+  issues: readonly WriterOutputValidationIssue[],
+  observability: GenerationObservabilityContext | undefined,
+): void {
+  const countsByRule = new Map<string, number>();
+  for (const issue of issues) {
+    countsByRule.set(issue.ruleKey, (countsByRule.get(issue.ruleKey) ?? 0) + 1);
+  }
+
+  for (const [ruleKey, count] of countsByRule.entries()) {
+    logger.error('Writer validator failure counter', {
+      ruleKey,
+      count,
+      ...buildObservabilityContext(observability),
+    });
+  }
+}
 
 async function callWriterStructured(
   messages: ChatMessage[],
@@ -77,9 +107,11 @@ async function callWriterStructured(
     return validated;
   } catch (error) {
     const issues = extractWriterValidationIssues(error);
+    emitValidatorFailureCounters(issues, options.observability);
     logger.error('Writer structured response validation failed', {
       rawResponse: content,
       validationIssues: issues,
+      ...buildObservabilityContext(options.observability),
     });
 
     if (error instanceof LLMError) {
@@ -91,6 +123,7 @@ async function callWriterStructured(
       rawResponse: content,
       validationIssues: issues,
       ruleKeys: [...new Set(issues.map(issue => issue.ruleKey))],
+      ...buildObservabilityContext(options.observability),
     });
   }
 }

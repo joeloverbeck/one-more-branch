@@ -1,5 +1,7 @@
 # Spec: Prompt System Improvements (Post-Review)
 
+**Status**: ✅ COMPLETED
+
 ## Goals
 - Improve long-run narrative coherence and state correctness (especially thread/state staleness).
 - Reduce schema/prompt noncompliance at runtime.
@@ -148,3 +150,13 @@
 - Adding enums for threats/constraints/inventory/health beyond current rules.
 - Adding beat emotional tone tags or convergence-point schema fields.
 - Changing the 3-act / 2–4 beats constraints.
+
+## Outcome
+- Completion date: 2026-02-10
+- What was actually changed:
+- Writer contract, prompt contract, deterministic validator, and migration/observability work were delivered across `PROSYSIMP-01` through `PROSYSIMP-06`.
+- The final cutover ticket (`PROSYSIMP-06`) completed strict thread migration handling for persisted open threads and added structured validator/migration observability context.
+- Deviations from original plan:
+- `ActiveStateChanges.threadsAdded` remained text-based for engine/persistence deltas by design; typed thread object enforcement is at writer boundary and persisted accumulated open-thread state.
+- Verification:
+- Targeted unit/integration suites and `npm run typecheck` passed for the final cutover work.

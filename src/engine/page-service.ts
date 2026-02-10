@@ -45,7 +45,12 @@ export async function generateFirstPage(
       startingSituation: story.startingSituation,
       structure: story.structure ?? undefined,
     },
-    { apiKey },
+    {
+      apiKey,
+      observability: {
+        storyId: story.id,
+      },
+    },
   );
 
   const initialStructureState = story.structure
@@ -107,7 +112,13 @@ export async function generateNextPage(
       grandparentNarrative: ancestorContext.grandparentNarrative,
       ancestorSummaries: ancestorContext.ancestorSummaries,
     },
-    { apiKey },
+    {
+      apiKey,
+      observability: {
+        storyId: story.id,
+        pageId: parentPage.id,
+      },
+    },
   );
 
   // Analyst call (only when structure exists)
