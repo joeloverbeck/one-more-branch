@@ -8,40 +8,40 @@ Active state entries should track conditions that are TRUE RIGHT NOW and affect 
 Before adding any entry, ask: "Is this currently happening? Does it affect the protagonist's immediate situation?"
 
 GOOD THREATS (threatsAdded):
-- "THREAT_GUARDS: Two guards patrol the corridor ahead"
-- "THREAT_FIRE: Flames spreading from the east wing"
-- "THREAT_BEAST: Something large is stalking in the darkness"
+- "Two guards patrol the corridor ahead"
+- "Flames spread from the east wing"
+- "Something large stalks in the darkness"
 
 BAD THREATS (do NOT add):
-- Past dangers: "THREAT_AMBUSH: Was attacked earlier" - no longer active
-- Vague fears: "THREAT_DANGER: Something feels wrong" - too vague
-- Non-threats: "THREAT_DARK: It's dark" - use CONSTRAINT instead
+- Past dangers: "Was attacked earlier" - no longer active
+- Vague fears: "Something feels wrong" - too vague
+- Non-threats: "It's dark" - use CONSTRAINT instead
 
 GOOD CONSTRAINTS (constraintsAdded):
-- "CONSTRAINT_INJURED_LEG: Leg wound slows movement"
-- "CONSTRAINT_NO_LIGHT: Complete darkness limits visibility"
-- "CONSTRAINT_TIME_LIMIT: Must escape before dawn"
+- "Leg wound slows movement"
+- "Complete darkness limits visibility"
+- "Must escape before dawn"
 
 BAD CONSTRAINTS (do NOT add):
-- Emotions: "CONSTRAINT_FEAR: Protagonist is scared" - use protagonistAffect
-- Past events: "CONSTRAINT_BETRAYED: Was betrayed by ally" - use threadsAdded for unresolved hooks
-- Inventory limits: "CONSTRAINT_NO_WEAPON: Unarmed" - implied by inventory
+- Emotions: "Protagonist is scared" - use protagonistAffect
+- Past events: "Was betrayed by ally" - use threadsAdded for unresolved hooks
+- Inventory limits: "Unarmed" - implied by inventory
 
 GOOD THREADS (threadsAdded):
-- "THREAD_MYSTERIOUS_LETTER: The letter's contents remain unknown"
-- "THREAD_STRANGER_IDENTITY: Who was the hooded figure?"
-- "THREAD_MISSING_ARTIFACT: The artifact was not where expected"
+- "The letter's contents remain unknown"
+- "Who was the hooded figure?"
+- "The artifact was not where expected"
 
 BAD THREADS (do NOT add):
 - Resolved questions: Threads should be mysteries, not answered facts
-- Current events: "THREAD_FIGHTING: Currently in combat" - this is a threat
-- Character traits: "THREAD_BRAVE: Protagonist is courageous" - use characterCanon
+- Current events: "Currently in combat" - this is a threat
+- Character traits: "Protagonist is courageous" - use characterCanon
 
 REMOVAL QUALITY (for continuation scenes):
 - Remove threats when the danger no longer exists (guards defeated, fire extinguished)
 - Remove constraints when the limitation is overcome (healed, light found)
 - Resolve threads when the mystery is answered or hook is addressed
-- Always use ONLY the prefix for removals (e.g., "THREAT_FIRE", not the full entry)
+- Always use ONLY the server-assigned ID for removals/resolutions (e.g., "th-2", "cn-1", "td-3")
 
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
 ✅ Use inventoryAdded/inventoryRemoved

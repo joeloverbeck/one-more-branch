@@ -32,8 +32,8 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threatsAdded');
     });
 
-    it('lists good threat examples with prefix format', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toMatch(/THREAT_\w+:/);
+    it('lists good threat examples in natural language', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('"Two guards patrol the corridor ahead"');
     });
 
     it('includes BAD THREATS section', () => {
@@ -45,8 +45,8 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('constraintsAdded');
     });
 
-    it('lists good constraint examples with prefix format', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toMatch(/CONSTRAINT_\w+:/);
+    it('lists good constraint examples in natural language', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('"Leg wound slows movement"');
     });
 
     it('includes BAD CONSTRAINTS section', () => {
@@ -58,8 +58,8 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threadsAdded');
     });
 
-    it('lists good thread examples with prefix format', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toMatch(/THREAD_\w+:/);
+    it('lists good thread examples in natural language', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('"The letter\'s contents remain unknown"');
     });
 
     it('includes BAD THREADS section', () => {
@@ -70,8 +70,9 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('REMOVAL QUALITY');
     });
 
-    it('explains prefix-only removal', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('ONLY the prefix');
+    it('explains ID-based removal', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('ONLY the server-assigned ID');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('"th-2", "cn-1", "td-3"');
     });
 
     it('includes inventory direction', () => {
