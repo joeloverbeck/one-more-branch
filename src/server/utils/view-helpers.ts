@@ -1,9 +1,11 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
-import { getCurrentAct, getStructureVersion } from '../../models/index.js';
+import { getCurrentAct, getCurrentBeat, getStructureVersion } from '../../models/index.js';
 
 export interface ActDisplayInfo {
   readonly actNumber: number;
   readonly actName: string;
+  readonly beatId: string;
+  readonly beatName: string;
   readonly displayString: string;
 }
 
@@ -28,10 +30,14 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
   if (!currentAct) return null;
 
   const actNumber = extractActNumber(currentAct.id, page.accumulatedStructureState.currentActIndex);
+  const currentBeat = getCurrentBeat(structureVersion.structure, page.accumulatedStructureState);
+  if (!currentBeat) return null;
 
   return {
     actNumber,
     actName: currentAct.name,
-    displayString: `Act ${actNumber}: ${currentAct.name}`,
+    beatId: currentBeat.id,
+    beatName: currentBeat.name,
+    displayString: `Act ${actNumber}: ${currentAct.name} - Beat ${currentBeat.id}: ${currentBeat.name}`,
   };
 }

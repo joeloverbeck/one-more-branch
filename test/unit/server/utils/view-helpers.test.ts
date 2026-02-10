@@ -10,14 +10,29 @@ import type { Story, Page, VersionedStoryStructure, StoryStructure, StructureVer
 
 function createTestStructure(acts: Array<{ id: string; name: string }>): StoryStructure {
   return {
-    acts: acts.map(act => ({
+    acts: acts.map((act, index) => ({
       id: act.id,
       name: act.name,
       objective: 'Test objective',
       stakes: 'Test stakes',
       entryCondition: 'Test entry',
-      beats: [],
+      beats: [
+        {
+          id: `${index + 1}.1`,
+          name: `${act.name} Beat`,
+          description: 'Test beat description',
+          objective: 'Test beat objective',
+          role: 'setup',
+        },
+      ],
     })),
+    overallTheme: 'Test theme',
+    premise: 'Test premise',
+    pacingBudget: {
+      targetPagesMin: 1,
+      targetPagesMax: 2,
+    },
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
   };
 }
 
@@ -83,7 +98,9 @@ describe('getActDisplayInfo', () => {
       expect(result).toEqual({
         actNumber: 1,
         actName: 'The Beginning',
-        displayString: 'Act 1: The Beginning',
+        beatId: '1.1',
+        beatName: 'The Beginning Beat',
+        displayString: 'Act 1: The Beginning - Beat 1.1: The Beginning Beat',
       });
     });
 
@@ -111,7 +128,9 @@ describe('getActDisplayInfo', () => {
       expect(result).toEqual({
         actNumber: 2,
         actName: 'The Middle',
-        displayString: 'Act 2: The Middle',
+        beatId: '2.1',
+        beatName: 'The Middle Beat',
+        displayString: 'Act 2: The Middle - Beat 2.1: The Middle Beat',
       });
     });
 
@@ -139,7 +158,9 @@ describe('getActDisplayInfo', () => {
       expect(result).toEqual({
         actNumber: 2,
         actName: 'Another Custom',
-        displayString: 'Act 2: Another Custom',
+        beatId: '2.1',
+        beatName: 'Another Custom Beat',
+        displayString: 'Act 2: Another Custom - Beat 2.1: Another Custom Beat',
       });
     });
   });
@@ -227,6 +248,28 @@ describe('getActDisplayInfo', () => {
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 5, // Out of bounds
+        },
+      };
+
+      const result = getActDisplayInfo(story, page);
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null when currentBeatIndex is out of bounds', () => {
+      const structure = createTestStructure([{ id: 'act-1', name: 'Only Act' }]);
+      const versionId = createTestVersionId('0001');
+      const story: Story = {
+        ...baseStory,
+        structureVersions: [createTestVersionedStructure(versionId, structure)],
+      };
+      const page: Page = {
+        ...basePage,
+        structureVersionId: versionId,
+        accumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+          currentBeatIndex: 3,
         },
       };
 

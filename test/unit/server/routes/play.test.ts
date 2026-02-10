@@ -225,9 +225,24 @@ describe('playRoutes', () => {
             objective: 'Start the journey',
             stakes: 'High',
             entryCondition: 'Always',
-            beats: [],
+            beats: [
+              {
+                id: '1.1',
+                name: 'The Setup',
+                description: 'Introduce the journey.',
+                objective: 'Start moving.',
+                role: 'setup',
+              },
+            ],
           },
         ],
+        overallTheme: 'Test theme',
+        premise: 'Test premise',
+        pacingBudget: {
+          targetPagesMin: 1,
+          targetPagesMax: 3,
+        },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
       };
       const versionId = createStructureVersionId('version-1');
       const versionedStructure: VersionedStoryStructure = {
@@ -281,7 +296,9 @@ describe('playRoutes', () => {
           actDisplayInfo: {
             actNumber: 1,
             actName: 'The Beginning',
-            displayString: 'Act 1: The Beginning',
+            beatId: '1.1',
+            beatName: 'The Setup',
+            displayString: 'Act 1: The Beginning - Beat 1.1: The Setup',
           },
         }),
       );
@@ -543,7 +560,15 @@ describe('playRoutes', () => {
             objective: 'Begin the journey',
             stakes: 'High',
             entryCondition: 'Always',
-            beats: [],
+            beats: [
+              {
+                id: '1.1',
+                name: 'Opening Move',
+                description: 'Start the story.',
+                objective: 'Launch act one.',
+                role: 'setup',
+              },
+            ],
           },
           {
             id: 'act-2',
@@ -551,9 +576,24 @@ describe('playRoutes', () => {
             objective: 'Face challenges',
             stakes: 'Higher',
             entryCondition: 'After act one',
-            beats: [],
+            beats: [
+              {
+                id: '2.1',
+                name: 'Rising Pressure',
+                description: 'Pressure escalates.',
+                objective: 'Force commitment.',
+                role: 'escalation',
+              },
+            ],
           },
         ],
+        overallTheme: 'Test theme',
+        premise: 'Test premise',
+        pacingBudget: {
+          targetPagesMin: 2,
+          targetPagesMax: 4,
+        },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
       };
       const versionId = createStructureVersionId('version-1');
       const versionedStructure: VersionedStoryStructure = {
@@ -615,7 +655,9 @@ describe('playRoutes', () => {
           actDisplayInfo: {
             actNumber: 2,
             actName: 'Act Two',
-            displayString: 'Act 2: Act Two',
+            beatId: '2.1',
+            beatName: 'Rising Pressure',
+            displayString: 'Act 2: Act Two - Beat 2.1: Rising Pressure',
           },
         }),
       );
