@@ -1,6 +1,11 @@
 import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
-import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
+import {
+  OPENROUTER_API_URL,
+  parseMessageJsonContent,
+  readErrorDetails,
+  readJsonResponse,
+} from './http-client.js';
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
 import { WRITER_GENERATION_SCHEMA } from './schemas/writer-schema.js';
 import { validateWriterResponse } from './schemas/writer-response-transformer.js';
@@ -90,15 +95,12 @@ async function callWriterStructured(
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content) as unknown;
-  } catch {
-    throw new LLMError('Invalid JSON response from OpenRouter', 'INVALID_JSON', true);
-  }
+  const parsedMessage = parseMessageJsonContent(content);
+  const parsed = parsedMessage.parsed;
+  const rawContent = parsedMessage.rawText;
 
   try {
-    const validated = validateWriterResponse(parsed, content);
+    const validated = validateWriterResponse(parsed, rawContent);
     const deterministicIssues = validateDeterministicWriterOutput(validated);
     if (deterministicIssues.length > 0) {
       throw new WriterOutputValidationError(deterministicIssues);
@@ -109,7 +111,7 @@ async function callWriterStructured(
     const issues = extractWriterValidationIssues(error);
     emitValidatorFailureCounters(issues, options.observability);
     logger.error('Writer structured response validation failed', {
-      rawResponse: content,
+      rawResponse: rawContent,
       validationIssues: issues,
       ...buildObservabilityContext(options.observability),
     });
@@ -120,7 +122,7 @@ async function callWriterStructured(
 
     const message = error instanceof Error ? error.message : 'Failed to validate structured response';
     throw new LLMError(message, 'VALIDATION_ERROR', false, {
-      rawResponse: content,
+      rawResponse: rawContent,
       validationIssues: issues,
       ruleKeys: [...new Set(issues.map(issue => issue.ruleKey))],
       ...buildObservabilityContext(options.observability),

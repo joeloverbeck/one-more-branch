@@ -89,6 +89,9 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
           httpStatus?: number;
           model?: string;
           rawError?: string;
+          parseStage?: string;
+          contentShape?: string;
+          contentPreview?: string;
         };
       } = {
         success: false,
@@ -102,6 +105,9 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
           httpStatus: error.context?.['httpStatus'] as number | undefined,
           model: error.context?.['model'] as string | undefined,
           rawError: error.context?.['rawErrorBody'] as string | undefined,
+          parseStage: error.context?.['parseStage'] as string | undefined,
+          contentShape: error.context?.['contentShape'] as string | undefined,
+          contentPreview: error.context?.['contentPreview'] as string | undefined,
         };
       }
 

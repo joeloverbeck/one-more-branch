@@ -118,7 +118,12 @@ export interface JsonSchema {
 export interface OpenRouterResponse {
   id: string;
   choices: Array<{
-    message: { content: string };
+    message: {
+      content:
+        | string
+        | Array<{ type?: string; text?: string; content?: string }>
+        | Record<string, unknown>;
+    };
     finish_reason: string;
   }>;
   usage?: {

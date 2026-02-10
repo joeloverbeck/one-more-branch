@@ -295,6 +295,27 @@ describe('llm client', () => {
     await expectation;
   });
 
+  it('should parse structured output when content is returned as text parts', async () => {
+    fetchMock.mockResolvedValue(
+      createJsonResponse(200, {
+        id: 'or-1',
+        choices: [
+          {
+            message: {
+              content: [{ type: 'text', text: JSON.stringify(validStructuredPayload) }],
+            },
+            finish_reason: 'stop',
+          },
+        ],
+      }),
+    );
+
+    const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
+
+    expect(result.narrative).toContain('You descend into the vault');
+    expect(result.choices).toHaveLength(2);
+  });
+
   it('should throw clear error when structured output not supported', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(400, 'response_format is not supported'));
 

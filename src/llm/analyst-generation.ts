@@ -1,6 +1,11 @@
 import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
-import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
+import {
+  OPENROUTER_API_URL,
+  parseMessageJsonContent,
+  readErrorDetails,
+  readJsonResponse,
+} from './http-client.js';
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
 import { ANALYST_SCHEMA } from './schemas/analyst-schema.js';
 import { validateAnalystResponse } from './schemas/analyst-response-transformer.js';
@@ -58,17 +63,14 @@ async function callAnalystStructured(
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content) as unknown;
-  } catch {
-    throw new LLMError('Invalid JSON response from OpenRouter', 'INVALID_JSON', true);
-  }
+  const parsedMessage = parseMessageJsonContent(content);
+  const parsed = parsedMessage.parsed;
+  const rawContent = parsedMessage.rawText;
 
   try {
-    return validateAnalystResponse(parsed, content);
+    return validateAnalystResponse(parsed, rawContent);
   } catch (error) {
-    logger.error('Analyst structured response validation failed', { rawResponse: content });
+    logger.error('Analyst structured response validation failed', { rawResponse: rawContent });
 
     if (error instanceof LLMError) {
       throw error;

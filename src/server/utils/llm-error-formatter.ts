@@ -8,6 +8,8 @@ export function formatLLMError(error: LLMError): string {
   const httpStatus = error.context?.['httpStatus'] as number | undefined;
   const parsedError = error.context?.['parsedError'] as { message?: string; code?: string } | undefined;
   const rawErrorBody = error.context?.['rawErrorBody'] as string | undefined;
+  const parseStage = error.context?.['parseStage'] as string | undefined;
+  const contentShape = error.context?.['contentShape'] as string | undefined;
 
   // Extract provider-specific error message if available
   const providerMessage = parsedError?.message ?? '';
@@ -44,6 +46,15 @@ export function formatLLMError(error: LLMError): string {
   }
   if (httpStatus && httpStatus >= 500) {
     return 'OpenRouter service is temporarily unavailable. Please try again later.';
+  }
+
+  if (error.code === 'INVALID_JSON') {
+    if (parseStage === 'response_body') {
+      return 'API error: OpenRouter returned a non-JSON HTTP response. Please try again.';
+    }
+    if (parseStage === 'message_content') {
+      return `API error: Model returned malformed JSON content${contentShape ? ` (${contentShape})` : ''}. Please retry.`;
+    }
   }
 
   // Handle network errors (no httpStatus) - timeouts, DNS failures, etc.

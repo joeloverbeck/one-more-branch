@@ -377,7 +377,7 @@ main {
   position: fixed;
   top: 120px;
   right: max(1rem, calc((100vw - var(--container-width)) / 2 - 300px));
-  width: min(280px, calc(100vw - 2rem));
+  width: min(550px, calc(100vw - 2rem));
   max-height: calc(100vh - 140px);
   overflow-y: auto;
   border: 1px solid var(--border-color);

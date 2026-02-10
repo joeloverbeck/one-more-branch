@@ -1,6 +1,46 @@
-import { readErrorDetails } from '../../../src/llm/http-client';
+import { parseMessageJsonContent, readErrorDetails, readJsonResponse } from '../../../src/llm/http-client';
+import { LLMError } from '../../../src/llm/types';
 
 describe('http-client', () => {
+  describe('parseMessageJsonContent', () => {
+    it('parses JSON wrapped in markdown code fences', () => {
+      const result = parseMessageJsonContent('```json\n{"ok":true}\n```');
+      expect(result.parsed).toEqual({ ok: true });
+    });
+
+    it('parses content arrays with text parts', () => {
+      const result = parseMessageJsonContent([
+        { type: 'text', text: '{"ok":true,"count":2}' },
+      ]);
+      expect(result.parsed).toEqual({ ok: true, count: 2 });
+    });
+
+    it('throws INVALID_JSON with parse context for malformed content', () => {
+      try {
+        parseMessageJsonContent('not json at all');
+        throw new Error('Expected parseMessageJsonContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('INVALID_JSON');
+        expect(llmError.context?.['parseStage']).toBe('message_content');
+      }
+    });
+  });
+
+  describe('readJsonResponse', () => {
+    it('throws INVALID_JSON with response-body parse context when body is not JSON', async () => {
+      const response = new Response('not-json', { status: 200 });
+
+      const error = await readJsonResponse(response).catch((err: unknown) => err);
+
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      expect(llmError.code).toBe('INVALID_JSON');
+      expect(llmError.context?.['parseStage']).toBe('response_body');
+    });
+  });
+
   describe('readErrorDetails', () => {
     it('should parse JSON error response with error object', async () => {
       const body = JSON.stringify({

@@ -1,6 +1,11 @@
 import { getConfig } from '../config';
 import { logger, logPrompt } from '../logging';
-import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from '../llm/http-client';
+import {
+  OPENROUTER_API_URL,
+  parseMessageJsonContent,
+  readErrorDetails,
+  readJsonResponse,
+} from '../llm/http-client';
 import { buildStructureRewritePrompt } from '../llm/prompts/structure-rewrite-prompt';
 import { STRUCTURE_GENERATION_SCHEMA } from '../llm/schemas/structure-schema';
 import { ChatMessage, CompletedBeat, LLMError, StructureRewriteContext, StructureRewriteResult } from '../llm/types';
@@ -309,7 +314,8 @@ async function generateRewrittenStructure(
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
   }
 
-  const responseText = content;
+  const parsedMessage = parseMessageJsonContent(content);
+  const responseText = parsedMessage.rawText;
   const parsed = parseStructureResponse(responseText);
 
   return {

@@ -216,6 +216,19 @@ describe('structure-generator', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it('parses JSON wrapped in markdown code fences', async () => {
+    const payload = createValidStructurePayload();
+    const fenced = `\`\`\`json\n${JSON.stringify(payload)}\n\`\`\``;
+    fetchMock.mockResolvedValue(responseWithMessageContent(fenced));
+
+    const result = await generateStoryStructure(context, 'test-api-key', {
+      promptOptions: {},
+    });
+
+    expect(result.overallTheme).toBe(payload.overallTheme);
+    expect(result.acts).toHaveLength(3);
+  });
+
   it('throws STRUCTURE_PARSE_ERROR when overallTheme is missing', async () => {
     const payload = createValidStructurePayload();
     const invalid = { acts: payload.acts };

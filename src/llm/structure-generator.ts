@@ -1,6 +1,11 @@
 import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
-import { OPENROUTER_API_URL, readErrorDetails, readJsonResponse } from './http-client.js';
+import {
+  OPENROUTER_API_URL,
+  parseMessageJsonContent,
+  readErrorDetails,
+  readJsonResponse,
+} from './http-client.js';
 import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
 import { withRetry } from './retry.js';
@@ -26,13 +31,7 @@ export interface StructureGenerationResult {
   rawResponse: string;
 }
 
-function parseStructureResponse(responseText: string): Omit<StructureGenerationResult, 'rawResponse'> {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(responseText) as unknown;
-  } catch {
-    throw new LLMError('Invalid JSON response from OpenRouter', 'INVALID_JSON', true);
-  }
+function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult, 'rawResponse'> {
 
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError('Structure response must be an object', 'STRUCTURE_PARSE_ERROR', true);
@@ -194,8 +193,9 @@ export async function generateStoryStructure(
       throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
     }
 
-    const responseText = content;
-    const parsed = parseStructureResponse(responseText);
+    const parsedMessage = parseMessageJsonContent(content);
+    const responseText = parsedMessage.rawText;
+    const parsed = parseStructureResponse(parsedMessage.parsed);
 
     return {
       ...parsed,
