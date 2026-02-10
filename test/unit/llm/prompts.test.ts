@@ -460,18 +460,21 @@ describe('buildContinuationPrompt', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
       accumulatedCharacterState: {
-        greaves: ['Gave protagonist a sketched map', 'Proposed a 70-30 split'],
-        elena: ['Agreed to meet at the docks'],
+        greaves: [
+          { id: 'cs-1', text: 'Gave protagonist a sketched map' },
+          { id: 'cs-2', text: 'Proposed a 70-30 split' },
+        ],
+        elena: [{ id: 'cs-3', text: 'Agreed to meet at the docks' }],
       },
     });
 
     const user = getUserMessage(messages);
     expect(user).toContain('NPC CURRENT STATE (branch-specific events):');
     expect(user).toContain('[greaves]');
-    expect(user).toContain('- Gave protagonist a sketched map');
-    expect(user).toContain('- Proposed a 70-30 split');
+    expect(user).toContain('- [cs-1] Gave protagonist a sketched map');
+    expect(user).toContain('- [cs-2] Proposed a 70-30 split');
     expect(user).toContain('[elena]');
-    expect(user).toContain('- Agreed to meet at the docks');
+    expect(user).toContain('- [cs-3] Agreed to meet at the docks');
   });
 
   it('should not include NPC current state section when empty', () => {
@@ -704,8 +707,8 @@ describe('buildContinuationPrompt', () => {
         activeState: {
           currentLocation: '',
           activeThreats: [
-            { prefix: 'Armed guards', description: 'patrolling nearby', raw: 'Armed guards patrolling nearby' },
-            { prefix: 'Alarm system', description: 'active', raw: 'Alarm system is active' },
+            { id: 'th-1', text: 'Armed guards patrolling nearby' },
+            { id: 'th-2', text: 'Alarm system is active' },
           ],
           activeConstraints: [],
           openThreads: [],
@@ -713,8 +716,8 @@ describe('buildContinuationPrompt', () => {
       });
 
       expect(getUserMessage(messages)).toContain('ACTIVE THREATS (dangers that exist NOW):');
-      expect(getUserMessage(messages)).toContain('- Armed guards patrolling nearby');
-      expect(getUserMessage(messages)).toContain('- Alarm system is active');
+      expect(getUserMessage(messages)).toContain('- [th-1] Armed guards patrolling nearby');
+      expect(getUserMessage(messages)).toContain('- [th-2] Alarm system is active');
     });
 
     it('omits ACTIVE THREATS section when no threats', () => {
@@ -738,16 +741,16 @@ describe('buildContinuationPrompt', () => {
           currentLocation: '',
           activeThreats: [],
           activeConstraints: [
-            { prefix: 'Injured leg', description: 'limits mobility', raw: 'Injured leg limits mobility' },
-            { prefix: 'No weapon', description: 'unarmed', raw: 'No weapon - currently unarmed' },
+            { id: 'cn-1', text: 'Injured leg limits mobility' },
+            { id: 'cn-2', text: 'No weapon - currently unarmed' },
           ],
           openThreads: [],
         },
       });
 
       expect(getUserMessage(messages)).toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
-      expect(getUserMessage(messages)).toContain('- Injured leg limits mobility');
-      expect(getUserMessage(messages)).toContain('- No weapon - currently unarmed');
+      expect(getUserMessage(messages)).toContain('- [cn-1] Injured leg limits mobility');
+      expect(getUserMessage(messages)).toContain('- [cn-2] No weapon - currently unarmed');
     });
 
     it('omits ACTIVE CONSTRAINTS section when no constraints', () => {
@@ -772,15 +775,15 @@ describe('buildContinuationPrompt', () => {
           activeThreats: [],
           activeConstraints: [],
           openThreads: [
-            { prefix: 'Missing witness', description: 'whereabouts unknown', raw: 'Missing witness - whereabouts unknown' },
-            { prefix: 'Encrypted files', description: 'need decryption key', raw: 'Encrypted files need decryption key' },
+            { id: 'td-1', text: 'Missing witness - whereabouts unknown' },
+            { id: 'td-2', text: 'Encrypted files need decryption key' },
           ],
         },
       });
 
       expect(getUserMessage(messages)).toContain('OPEN NARRATIVE THREADS (unresolved hooks):');
-      expect(getUserMessage(messages)).toContain('- Missing witness - whereabouts unknown');
-      expect(getUserMessage(messages)).toContain('- Encrypted files need decryption key');
+      expect(getUserMessage(messages)).toContain('- [td-1] Missing witness - whereabouts unknown');
+      expect(getUserMessage(messages)).toContain('- [td-2] Encrypted files need decryption key');
     });
 
     it('omits OPEN THREADS section when no threads', () => {
@@ -802,9 +805,9 @@ describe('buildContinuationPrompt', () => {
         ...baseContext,
         activeState: {
           currentLocation: 'The rooftop',
-          activeThreats: [{ prefix: 'Sniper', description: 'on adjacent building', raw: 'Sniper on adjacent building' }],
-          activeConstraints: [{ prefix: 'Low ammo', description: 'only 2 rounds left', raw: 'Low ammo - only 2 rounds left' }],
-          openThreads: [{ prefix: 'Contact', description: 'awaiting signal', raw: 'Contact awaiting signal' }],
+          activeThreats: [{ id: 'th-1', text: 'Sniper on adjacent building' }],
+          activeConstraints: [{ id: 'cn-1', text: 'Low ammo - only 2 rounds left' }],
+          openThreads: [{ id: 'td-1', text: 'Contact awaiting signal' }],
         },
       });
 
@@ -904,7 +907,7 @@ describe('buildContinuationPrompt', () => {
         },
         activeState: {
           currentLocation: 'Hidden bunker',
-          activeThreats: [{ prefix: 'Enemy patrol', description: 'searching', raw: 'Enemy patrol searching' }],
+          activeThreats: [{ id: 'th-4', text: 'Enemy patrol searching' }],
           activeConstraints: [],
           openThreads: [],
         },
@@ -954,14 +957,14 @@ describe('buildContinuationPrompt', () => {
         activeState: {
           currentLocation: '',
           activeThreats: [
-            { prefix: 'Guard', description: 'patrolling the area', raw: 'Guard patrolling the area' },
-            { prefix: 'Dog', description: 'trained to attack', raw: 'Dog trained to attack' },
+            { id: 'th-10', text: 'Guard patrolling the area' },
+            { id: 'th-11', text: 'Dog trained to attack' },
           ],
           activeConstraints: [
-            { prefix: 'Broken arm', description: 'cannot climb', raw: 'Broken arm - cannot climb' },
+            { id: 'cn-9', text: 'Broken arm - cannot climb' },
           ],
           openThreads: [
-            { prefix: 'Missing key', description: 'need to find it', raw: 'Missing key - need to find it' },
+            { id: 'td-5', text: 'Missing key - need to find it' },
           ],
         },
       });

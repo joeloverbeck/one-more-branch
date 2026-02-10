@@ -1,19 +1,11 @@
 import type { WriterResult } from '../types.js';
 import { WriterResultSchema } from './writer-validation-schema.js';
 
-/**
- * Detects if the choices array contains plain strings instead of objects.
- * This can happen if the LLM ignores the structured format instruction.
- */
 function hasPlainStringChoices(choices: unknown): boolean {
   if (!Array.isArray(choices)) return false;
   return choices.length > 0 && choices.every(item => typeof item === 'string');
 }
 
-/**
- * Converts plain string choices to structured choice objects with default enums.
- * Falls back gracefully when the LLM returns old-format string choices.
- */
 function upgradeStringChoicesToObjects(choices: string[]): Array<{ text: string; choiceType: string; primaryDelta: string }> {
   const defaultTypes = [
     'TACTICAL_APPROACH',
@@ -37,11 +29,6 @@ function upgradeStringChoicesToObjects(choices: string[]): Array<{ text: string;
   }));
 }
 
-/**
- * Detects if the choices array contains a single malformed string
- * that looks like a stringified array (e.g., {\"Choice1\",\"Choice2\"})
- *
- */
 function isMalformedChoicesArray(choices: unknown): boolean {
   if (!Array.isArray(choices) || choices.length !== 1) return false;
   const item: unknown = choices[0];
@@ -54,11 +41,6 @@ function isMalformedChoicesArray(choices: unknown): boolean {
   );
 }
 
-/**
- * Extracts individual choice strings from a malformed single-string choices array.
- * Handles patterns like: {\"Choice 1\",\"Choice 2\"} or ["Choice 1","Choice 2"]
- *
- */
 function extractChoicesFromMalformedString(malformed: string): string[] {
   let content = malformed.trim();
 
@@ -103,13 +85,6 @@ function extractChoicesFromMalformedString(malformed: string): string[] {
   return choices;
 }
 
-/**
- * Normalizes the raw JSON response to fix common LLM malformation patterns
- * before Zod validation. Handles:
- * - Choices array containing a single stringified array element
- * - Choices as plain strings instead of objects (upgrades to objects)
- *
- */
 function normalizeRawResponse(rawJson: unknown): unknown {
   if (typeof rawJson !== 'object' || rawJson === null) {
     return rawJson;
@@ -118,7 +93,6 @@ function normalizeRawResponse(rawJson: unknown): unknown {
   const obj = rawJson as Record<string, unknown>;
   const choices = obj['choices'];
 
-  // Handle malformed single-string array
   if (isMalformedChoicesArray(choices)) {
     const choicesArray = choices as string[];
     const malformedString = choicesArray[0];
@@ -140,7 +114,6 @@ function normalizeRawResponse(rawJson: unknown): unknown {
     }
   }
 
-  // Handle plain string choices (LLM returned old format)
   if (hasPlainStringChoices(choices)) {
     console.warn(
       '[writer-response-transformer] Upgrading plain string choices to structured objects',
@@ -158,7 +131,6 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): W
   const normalizedJson = normalizeRawResponse(rawJson);
   const validated = WriterResultSchema.parse(normalizedJson);
 
-  // Process newCharacterCanonFacts: trim all values
   const newCharacterCanonFacts: Record<string, string[]> = {};
   for (const [name, facts] of Object.entries(validated.newCharacterCanonFacts)) {
     const trimmedFacts = facts.map((fact) => fact.trim()).filter((fact) => fact);
@@ -167,7 +139,6 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): W
     }
   }
 
-  // Process characterStateChangesAdded: trim all values
   const characterStateChangesAdded = validated.characterStateChangesAdded
     .map((entry) => ({
       characterName: entry.characterName.trim(),
@@ -175,13 +146,9 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): W
     }))
     .filter((entry) => entry.characterName && entry.states.length > 0);
 
-  // Process characterStateChangesRemoved: trim all values
   const characterStateChangesRemoved = validated.characterStateChangesRemoved
-    .map((entry) => ({
-      characterName: entry.characterName.trim(),
-      states: entry.states.map((s) => s.trim()).filter((s) => s),
-    }))
-    .filter((entry) => entry.characterName && entry.states.length > 0);
+    .map(id => id.trim())
+    .filter(id => id);
 
   return {
     narrative: validated.narrative.trim(),

@@ -1,7 +1,6 @@
 import {
   AccumulatedCharacterState,
   CharacterStateChanges,
-  SingleCharacterStateChanges,
   applyCharacterStateChanges as applyChanges,
   createEmptyAccumulatedCharacterState,
   normalizeCharacterName,
@@ -15,71 +14,24 @@ export const normalizeCharacterNameForState = normalizeCharacterName;
 
 /**
  * Creates CharacterStateChanges from the LLM response format.
- * The LLM returns separate arrays for added and removed state per character.
- * Uses case-insensitive matching to merge entries for the same character,
- * but preserves the first-seen display name (original casing).
  */
 export function createCharacterStateChanges(
   added: Array<{ characterName: string; states: readonly string[] }>,
-  removed: Array<{ characterName: string; states: readonly string[] }>,
+  removed: readonly string[],
 ): CharacterStateChanges {
-  // Build a map using lowercased keys for case-insensitive lookup,
-  // but track the first-seen display name for each character
-  const changesMap = new Map<string, { displayName: string; added: string[]; removed: string[] }>();
+  const normalizedAdded = added
+    .map(entry => ({
+      characterName: normalizeCharacterNameForState(entry.characterName),
+      states: entry.states.map(s => s.trim()).filter(s => s),
+    }))
+    .filter(entry => entry.characterName && entry.states.length > 0);
 
-  // Process added entries
-  for (const entry of added) {
-    const cleanedName = normalizeCharacterNameForState(entry.characterName);
-    if (!cleanedName) continue;
+  const normalizedRemoved = removed.map(id => id.trim()).filter(id => id);
 
-    const lookupKey = normalizeForComparison(cleanedName);
-    const existing = changesMap.get(lookupKey);
-    const trimmedStates = entry.states
-      .map(s => s.trim())
-      .filter(s => s);
-
-    if (existing) {
-      // Merge with existing - keep FIRST-SEEN display name
-      existing.added.push(...trimmedStates);
-    } else {
-      // New character - use this casing as the display name
-      changesMap.set(lookupKey, { displayName: cleanedName, added: trimmedStates, removed: [] });
-    }
-  }
-
-  // Process removed entries
-  for (const entry of removed) {
-    const cleanedName = normalizeCharacterNameForState(entry.characterName);
-    if (!cleanedName) continue;
-
-    const lookupKey = normalizeForComparison(cleanedName);
-    const existing = changesMap.get(lookupKey);
-    const trimmedStates = entry.states
-      .map(s => s.trim())
-      .filter(s => s);
-
-    if (existing) {
-      // Merge with existing - keep FIRST-SEEN display name
-      existing.removed.push(...trimmedStates);
-    } else {
-      // New character - use this casing as the display name
-      changesMap.set(lookupKey, { displayName: cleanedName, added: [], removed: trimmedStates });
-    }
-  }
-
-  // Convert map to array format, using the preserved display names
-  const result: SingleCharacterStateChanges[] = [];
-  for (const [, { displayName, added: addedChanges, removed: removedChanges }] of changesMap) {
-    if (addedChanges.length > 0 || removedChanges.length > 0) {
-      result.push({
-        characterName: displayName,
-        added: addedChanges,
-        removed: removedChanges,
-      });
-    }
-  }
-
-  return result;
+  return {
+    added: normalizedAdded,
+    removed: normalizedRemoved,
+  };
 }
 
 /**
@@ -96,15 +48,6 @@ export function applyCharacterStateChanges(
 /**
  * Formats accumulated character state for inclusion in LLM prompts.
  * Returns empty string if no character state exists.
- *
- * Example output:
- * NPC CURRENT STATE:
- * [greaves]
- * - Gave protagonist a map
- * - Proposed 70-30 split
- *
- * [vespera]
- * - Knows about the hidden cave
  */
 export function formatCharacterStateForPrompt(state: AccumulatedCharacterState): string {
   const entries = Object.entries(state).filter(([, states]) => states.length > 0);
@@ -115,7 +58,7 @@ export function formatCharacterStateForPrompt(state: AccumulatedCharacterState):
 
   const formattedEntries = entries
     .map(([name, states]) => {
-      const stateLines = states.map(s => `- ${s}`).join('\n');
+      const stateLines = states.map(s => `- [${s.id}] ${s.text}`).join('\n');
       return `[${name}]\n${stateLines}`;
     })
     .join('\n\n');
@@ -135,10 +78,9 @@ export function getCharacterState(
   const cleanedName = normalizeCharacterNameForState(characterName);
   const lookupKey = normalizeForComparison(cleanedName);
 
-  // Find the matching key (case-insensitive)
   for (const [key, value] of Object.entries(state)) {
     if (normalizeForComparison(key) === lookupKey) {
-      return value;
+      return value.map(v => v.text);
     }
   }
 

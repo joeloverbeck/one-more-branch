@@ -93,8 +93,8 @@ describe('Concurrent Write Performance', () => {
     for (let pageNumber = 2; pageNumber <= 11; pageNumber += 1) {
       const page = pages.get(parsePageId(pageNumber));
       expect(page?.narrativeText).toBe(`Page ${pageNumber} content`);
-      expect(page?.accumulatedInventory).toContain('root-item');
-      expect(page?.accumulatedInventory).toContain(`event-${pageNumber}`);
+      expect(page?.accumulatedInventory.map(entry => entry.text)).toContain('root-item');
+      expect(page?.accumulatedInventory.map(entry => entry.text)).toContain(`event-${pageNumber}`);
     }
   }, 30000);
 

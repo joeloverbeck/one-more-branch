@@ -72,13 +72,12 @@ ${characterCanonEntries
     characterStateEntries.length > 0
       ? `NPC CURRENT STATE (branch-specific events):
 ${characterStateEntries
-  .map(([name, states]) => `[${name}]\n${states.map(state => `- ${state}`).join('\n')}`)
+  .map(([name, states]) => `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`)
   .join('\n\n')}
 
 `
       : '';
 
-  // Build active state sections
   const locationSection = buildLocationSection(context.activeState);
   const threatsSection = buildThreatsSection(context.activeState);
   const constraintsSection = buildConstraintsSection(context.activeState);
@@ -87,7 +86,7 @@ ${characterStateEntries
   const inventorySection =
     context.accumulatedInventory.length > 0
       ? `YOUR INVENTORY:
-${context.accumulatedInventory.map(item => `- ${item}`).join('\n')}
+${context.accumulatedInventory.map(item => `- [${item.id}] ${item.text}`).join('\n')}
 
 `
       : '';
@@ -95,7 +94,7 @@ ${context.accumulatedInventory.map(item => `- ${item}`).join('\n')}
   const healthSection =
     context.accumulatedHealth.length > 0
       ? `YOUR HEALTH:
-${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
+${context.accumulatedHealth.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')}
 
 `
       : `YOUR HEALTH:
@@ -105,7 +104,6 @@ ${context.accumulatedHealth.map(entry => `- ${entry}`).join('\n')}
 
   const protagonistAffectSection = buildProtagonistAffectSection(context.parentProtagonistAffect);
 
-  // Build scene context with hierarchical ancestor summaries
   const sceneContextSection = buildSceneContextSection(
     context.previousNarrative,
     context.grandparentNarrative,
@@ -142,7 +140,6 @@ REMINDER: If the player's choice naturally leads to a story conclusion, make it 
     { role: 'system', content: buildContinuationSystemPrompt() },
   ];
 
-  // Add few-shot examples if requested
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(...buildFewShotMessages('continuation', options.fewShotMode));
   }

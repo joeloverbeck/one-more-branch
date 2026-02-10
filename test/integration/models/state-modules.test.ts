@@ -1,48 +1,35 @@
 /**
- * Integration tests for refactored state modules.
- * Verifies:
- * 1. Normalization consistency across modules
- * 2. Cross-module state accumulation
- * 3. Barrel export verification
- * 4. Page chain with mixed state types
+ * Integration tests for state modules under keyed-entry architecture.
  */
 
 import { normalizeCharacterName } from '@/models/normalize';
 import { normalizeCharacterNameForState } from '@/engine/character-state-manager';
 import {
-  // Canon
   CanonFact,
   GlobalCanon,
-  addCanonFact,
-  mergeCanonFacts,
-  // Character canon
   CharacterCanonFact,
   CharacterCanon,
   GlobalCharacterCanon,
-  // Inventory
-  InventoryItem,
   Inventory,
   InventoryChanges,
-  createEmptyInventoryChanges,
-  applyInventoryChanges,
-  // Health
-  HealthEntry,
   Health,
   HealthChanges,
-  createEmptyHealthChanges,
-  applyHealthChanges,
-  // Character state
-  CharacterStateEntry,
   CharacterState,
-  SingleCharacterStateChanges,
+  CharacterStateAddition,
   CharacterStateChanges,
   AccumulatedCharacterState,
+  addCanonFact,
+  mergeCanonFacts,
+  createEmptyInventoryChanges,
+  applyInventoryChanges,
+  createEmptyHealthChanges,
+  applyHealthChanges,
   createEmptyCharacterStateChanges,
   createEmptyAccumulatedCharacterState,
   applyCharacterStateChanges,
-  // Page creation
   createPage,
   createChoice,
+  parsePageId,
 } from '@/models';
 
 describe('state-modules integration', () => {
@@ -63,9 +50,7 @@ describe('state-modules integration', () => {
       ];
 
       for (const testCase of testCases) {
-        expect(normalizeCharacterName(testCase)).toBe(
-          normalizeCharacterNameForState(testCase)
-        );
+        expect(normalizeCharacterName(testCase)).toBe(normalizeCharacterNameForState(testCase));
       }
     });
 
@@ -79,76 +64,97 @@ describe('state-modules integration', () => {
 
   describe('cross-module state accumulation', () => {
     it('applies all state types correctly in isolation', () => {
-      // Inventory
       const inv1 = applyInventoryChanges([], {
         added: ['Sword', 'Shield'],
         removed: [],
       });
-      expect(inv1).toEqual(['Sword', 'Shield']);
+      expect(inv1).toEqual([
+        { id: 'inv-1', text: 'Sword' },
+        { id: 'inv-2', text: 'Shield' },
+      ]);
 
-      // Health
       const health1 = applyHealthChanges([], {
         added: ['Healthy', 'Well-rested'],
         removed: [],
       });
-      expect(health1).toEqual(['Healthy', 'Well-rested']);
-
-      // Character state
-      const charState1 = applyCharacterStateChanges({}, [
-        { characterName: 'Greaves', added: ['Gave protagonist a map'], removed: [] },
+      expect(health1).toEqual([
+        { id: 'hp-1', text: 'Healthy' },
+        { id: 'hp-2', text: 'Well-rested' },
       ]);
-      expect(charState1).toEqual({ Greaves: ['Gave protagonist a map'] });
+
+      const charState1 = applyCharacterStateChanges({}, {
+        added: [{ characterName: 'Greaves', states: ['Gave protagonist a map'] }],
+        removed: [],
+      });
+      expect(charState1).toEqual({
+        Greaves: [{ id: 'cs-1', text: 'Gave protagonist a map' }],
+      });
     });
 
     it('processes removals correctly across all state types', () => {
-      // Inventory with removal
-      const inv = applyInventoryChanges(['Sword', 'Shield'], {
+      const existingInventory = [
+        { id: 'inv-1', text: 'Sword' },
+        { id: 'inv-2', text: 'Shield' },
+      ] as const;
+      const inv = applyInventoryChanges(existingInventory, {
         added: ['Bow'],
-        removed: ['Sword'],
+        removed: ['inv-1'],
       });
-      expect(inv).toEqual(['Shield', 'Bow']);
+      expect(inv).toEqual([
+        { id: 'inv-2', text: 'Shield' },
+        { id: 'inv-3', text: 'Bow' },
+      ]);
 
-      // Health with removal
-      const health = applyHealthChanges(['Healthy', 'Poisoned'], {
+      const existingHealth = [
+        { id: 'hp-1', text: 'Healthy' },
+        { id: 'hp-2', text: 'Poisoned' },
+      ] as const;
+      const health = applyHealthChanges(existingHealth, {
         added: ['Cured'],
-        removed: ['Poisoned'],
+        removed: ['hp-2'],
       });
-      expect(health).toEqual(['Healthy', 'Cured']);
+      expect(health).toEqual([
+        { id: 'hp-1', text: 'Healthy' },
+        { id: 'hp-3', text: 'Cured' },
+      ]);
 
-      // Character state with removal
       const charState = applyCharacterStateChanges(
-        { greaves: ['Gave map', 'Friendly'] },
-        [{ characterName: 'Greaves', added: ['Suspicious'], removed: ['Friendly'] }]
+        {
+          greaves: [
+            { id: 'cs-1', text: 'Gave map' },
+            { id: 'cs-2', text: 'Friendly' },
+          ],
+        },
+        {
+          added: [{ characterName: 'Greaves', states: ['Suspicious'] }],
+          removed: ['cs-2'],
+        },
       );
-      expect(charState).toEqual({ greaves: ['Gave map', 'Suspicious'] });
+      expect(charState).toEqual({
+        greaves: [
+          { id: 'cs-1', text: 'Gave map' },
+          { id: 'cs-3', text: 'Suspicious' },
+        ],
+      });
     });
   });
 
   describe('barrel export verification', () => {
     it('exports all expected types and functions from @/models', () => {
-      // Types (verified by using them)
       const canonFact: CanonFact = 'test';
       const globalCanon: GlobalCanon = [];
       const charCanonFact: CharacterCanonFact = 'test';
       const charCanon: CharacterCanon = [];
       const globalCharCanon: GlobalCharacterCanon = {};
-      const invItem: InventoryItem = 'test';
       const inv: Inventory = [];
       const invChanges: InventoryChanges = { added: [], removed: [] };
-      const healthEntry: HealthEntry = 'test';
       const health: Health = [];
       const healthChanges: HealthChanges = { added: [], removed: [] };
-      const charStateEntry: CharacterStateEntry = 'test';
       const charState: CharacterState = [];
-      const singleCharChanges: SingleCharacterStateChanges = {
-        characterName: 'test',
-        added: [],
-        removed: [],
-      };
-      const charStateChanges: CharacterStateChanges = [];
+      const charStateAddition: CharacterStateAddition = { characterName: 'test', states: [] };
+      const charStateChanges: CharacterStateChanges = { added: [], removed: [] };
       const accCharState: AccumulatedCharacterState = {};
 
-      // Functions (verified by calling them)
       expect(typeof addCanonFact).toBe('function');
       expect(typeof mergeCanonFacts).toBe('function');
       expect(typeof createEmptyInventoryChanges).toBe('function');
@@ -159,21 +165,17 @@ describe('state-modules integration', () => {
       expect(typeof createEmptyAccumulatedCharacterState).toBe('function');
       expect(typeof applyCharacterStateChanges).toBe('function');
 
-      // Suppress unused variable warnings
       expect(canonFact).toBeDefined();
       expect(globalCanon).toBeDefined();
       expect(charCanonFact).toBeDefined();
       expect(charCanon).toBeDefined();
       expect(globalCharCanon).toBeDefined();
-      expect(invItem).toBeDefined();
       expect(inv).toBeDefined();
       expect(invChanges).toBeDefined();
-      expect(healthEntry).toBeDefined();
       expect(health).toBeDefined();
       expect(healthChanges).toBeDefined();
-      expect(charStateEntry).toBeDefined();
       expect(charState).toBeDefined();
-      expect(singleCharChanges).toBeDefined();
+      expect(charStateAddition).toBeDefined();
       expect(charStateChanges).toBeDefined();
       expect(accCharState).toBeDefined();
     });
@@ -181,100 +183,116 @@ describe('state-modules integration', () => {
 
   describe('page chain with mixed state types', () => {
     it('accumulates all state types correctly through page chain', () => {
-      // Page 1: Initial state
       const page1 = createPage({
-        id: 1,
+        id: parsePageId(1),
         narrativeText: 'The adventure begins.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [
-          createChoice('Go north'),
-          createChoice('Go south'),
-        ],
+        choices: [createChoice('Go north'), createChoice('Go south')],
         inventoryChanges: { added: ['Backpack', 'Torch'], removed: [] },
         healthChanges: { added: ['Healthy'], removed: [] },
-        characterStateChanges: [
-          { characterName: 'Mentor', added: ['Gave advice'], removed: [] },
-        ],
+        characterStateChanges: {
+          added: [{ characterName: 'Mentor', states: ['Gave advice'] }],
+          removed: [],
+        },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
       });
 
-      expect(page1.accumulatedInventory).toEqual(['Backpack', 'Torch']);
-      expect(page1.accumulatedHealth).toEqual(['Healthy']);
-      expect(page1.accumulatedCharacterState).toEqual({ Mentor: ['Gave advice'] });
+      expect(page1.accumulatedInventory.map(entry => entry.text)).toEqual(['Backpack', 'Torch']);
+      expect(page1.accumulatedHealth.map(entry => entry.text)).toEqual(['Healthy']);
+      expect(page1.accumulatedCharacterState['Mentor']?.map(entry => entry.text)).toEqual([
+        'Gave advice',
+      ]);
 
-      // Page 2: Builds on page 1
+      const torchId = page1.accumulatedInventory.find(item => item.text === 'Torch')?.id;
+      expect(torchId).toBeDefined();
+
       const page2 = createPage({
-        id: 2,
+        id: parsePageId(2),
         narrativeText: 'You travel north into the forest.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [
-          createChoice('Explore cave'),
-          createChoice('Continue north'),
-        ],
-        inventoryChanges: { added: ['Map'], removed: ['Torch'] },
+        choices: [createChoice('Explore cave'), createChoice('Continue north')],
+        inventoryChanges: { added: ['Map'], removed: [torchId!] },
         healthChanges: { added: ['Tired'], removed: [] },
-        characterStateChanges: [
-          { characterName: 'Mentor', added: ['Worried'], removed: [] },
-          { characterName: 'Greaves', added: ['First encounter'], removed: [] },
-        ],
+        characterStateChanges: {
+          added: [
+            { characterName: 'Mentor', states: ['Worried'] },
+            { characterName: 'Greaves', states: ['First encounter'] },
+          ],
+          removed: [],
+        },
         isEnding: false,
-        parentPageId: 1,
+        parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedInventory: page1.accumulatedInventory,
         parentAccumulatedHealth: page1.accumulatedHealth,
         parentAccumulatedCharacterState: page1.accumulatedCharacterState,
       });
 
-      expect(page2.accumulatedInventory).toEqual(['Backpack', 'Map']);
-      expect(page2.accumulatedHealth).toEqual(['Healthy', 'Tired']);
-      expect(page2.accumulatedCharacterState).toEqual({
-        Mentor: ['Gave advice', 'Worried'],
-        Greaves: ['First encounter'],
-      });
+      expect(page2.accumulatedInventory.map(entry => entry.text)).toEqual(['Backpack', 'Map']);
+      expect(page2.accumulatedHealth.map(entry => entry.text)).toEqual(['Healthy', 'Tired']);
+      expect(page2.accumulatedCharacterState['Mentor']?.map(entry => entry.text)).toEqual([
+        'Gave advice',
+        'Worried',
+      ]);
+      expect(page2.accumulatedCharacterState['Greaves']?.map(entry => entry.text)).toEqual([
+        'First encounter',
+      ]);
 
-      // Page 3: Final state with more complex changes
+      const healthyId = page2.accumulatedHealth.find(entry => entry.text === 'Healthy')?.id;
+      const firstEncounterId = page2.accumulatedCharacterState['Greaves']?.find(
+        entry => entry.text === 'First encounter',
+      )?.id;
+      expect(healthyId).toBeDefined();
+      expect(firstEncounterId).toBeDefined();
+
       const page3 = createPage({
-        id: 3,
+        id: parsePageId(3),
         narrativeText: 'You discover a hidden cave.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [
-          createChoice('Enter cave'),
-          createChoice('Return home'),
-        ],
-        inventoryChanges: { added: ['Gold coins', 'Ruby'], removed: ['Backpack'] },
-        healthChanges: { added: ['Injured'], removed: ['Healthy'] },
-        characterStateChanges: [
-          { characterName: 'Greaves', added: ['Helped find cave'], removed: ['First encounter'] },
-        ],
+        choices: [createChoice('Enter cave'), createChoice('Return home')],
+        inventoryChanges: { added: ['Gold coins', 'Ruby'], removed: ['inv-1'] },
+        healthChanges: { added: ['Injured'], removed: [healthyId!] },
+        characterStateChanges: {
+          added: [{ characterName: 'Greaves', states: ['Helped find cave'] }],
+          removed: [firstEncounterId!],
+        },
         isEnding: false,
-        parentPageId: 2,
+        parentPageId: parsePageId(2),
         parentChoiceIndex: 0,
         parentAccumulatedInventory: page2.accumulatedInventory,
         parentAccumulatedHealth: page2.accumulatedHealth,
         parentAccumulatedCharacterState: page2.accumulatedCharacterState,
       });
 
-      expect(page3.accumulatedInventory).toEqual(['Map', 'Gold coins', 'Ruby']);
-      expect(page3.accumulatedHealth).toEqual(['Tired', 'Injured']);
-      expect(page3.accumulatedCharacterState).toEqual({
-        Mentor: ['Gave advice', 'Worried'],
-        Greaves: ['Helped find cave'],
-      });
+      expect(page3.accumulatedInventory.map(entry => entry.text)).toEqual([
+        'Map',
+        'Gold coins',
+        'Ruby',
+      ]);
+      expect(page3.accumulatedHealth.map(entry => entry.text)).toEqual(['Tired', 'Injured']);
+      expect(page3.accumulatedCharacterState['Mentor']?.map(entry => entry.text)).toEqual([
+        'Gave advice',
+        'Worried',
+      ]);
+      expect(page3.accumulatedCharacterState['Greaves']?.map(entry => entry.text)).toEqual([
+        'Helped find cave',
+      ]);
     });
 
     it('handles ending page with all state types', () => {
       const endingPage = createPage({
-        id: 1,
+        id: parsePageId(1),
         narrativeText: 'Your journey ends here.',
         sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [],
         inventoryChanges: { added: ['Final reward'], removed: [] },
         healthChanges: { added: ['Victorious'], removed: [] },
-        characterStateChanges: [
-          { characterName: 'Hero', added: ['Completed quest'], removed: [] },
-        ],
+        characterStateChanges: {
+          added: [{ characterName: 'Hero', states: ['Completed quest'] }],
+          removed: [],
+        },
         isEnding: true,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -282,9 +300,11 @@ describe('state-modules integration', () => {
 
       expect(endingPage.isEnding).toBe(true);
       expect(endingPage.choices).toHaveLength(0);
-      expect(endingPage.accumulatedInventory).toEqual(['Final reward']);
-      expect(endingPage.accumulatedHealth).toEqual(['Victorious']);
-      expect(endingPage.accumulatedCharacterState).toEqual({ Hero: ['Completed quest'] });
+      expect(endingPage.accumulatedInventory.map(entry => entry.text)).toEqual(['Final reward']);
+      expect(endingPage.accumulatedHealth.map(entry => entry.text)).toEqual(['Victorious']);
+      expect(endingPage.accumulatedCharacterState['Hero']?.map(entry => entry.text)).toEqual([
+        'Completed quest',
+      ]);
     });
   });
 
@@ -292,8 +312,8 @@ describe('state-modules integration', () => {
     it('addCanonFact deduplicates case-insensitively', () => {
       let canon: GlobalCanon = [];
       canon = addCanonFact(canon, 'The sword is magical');
-      canon = addCanonFact(canon, 'THE SWORD IS MAGICAL'); // Duplicate
-      canon = addCanonFact(canon, 'the sword is magical'); // Duplicate
+      canon = addCanonFact(canon, 'THE SWORD IS MAGICAL');
+      canon = addCanonFact(canon, 'the sword is magical');
       canon = addCanonFact(canon, 'The hero is brave');
 
       expect(canon).toHaveLength(2);
@@ -302,7 +322,7 @@ describe('state-modules integration', () => {
 
     it('mergeCanonFacts handles multiple facts', () => {
       const canon: GlobalCanon = ['Existing fact'];
-      const newFacts = ['New fact 1', 'New fact 2', 'Existing fact']; // Last is duplicate
+      const newFacts = ['New fact 1', 'New fact 2', 'Existing fact'];
 
       const merged = mergeCanonFacts(canon, newFacts);
 

@@ -30,10 +30,9 @@ export interface ProtagonistAffectFileData {
   dominantMotivation: string;
 }
 
-export interface TaggedStateEntryFileData {
-  prefix: string;
-  description: string;
-  raw: string;
+export interface KeyedEntryFileData {
+  id: string;
+  text: string;
 }
 
 export interface PageFileData {
@@ -57,26 +56,28 @@ export interface PageFileData {
   };
   accumulatedActiveState: {
     currentLocation: string;
-    activeThreats: TaggedStateEntryFileData[];
-    activeConstraints: TaggedStateEntryFileData[];
-    openThreads: TaggedStateEntryFileData[];
+    activeThreats: KeyedEntryFileData[];
+    activeConstraints: KeyedEntryFileData[];
+    openThreads: KeyedEntryFileData[];
   };
   inventoryChanges: {
     added: string[];
     removed: string[];
   };
-  accumulatedInventory: string[];
+  accumulatedInventory: KeyedEntryFileData[];
   healthChanges: {
     added: string[];
     removed: string[];
   };
-  accumulatedHealth: string[];
-  characterStateChanges: Array<{
-    characterName: string;
-    added: string[];
+  accumulatedHealth: KeyedEntryFileData[];
+  characterStateChanges: {
+    added: Array<{
+      characterName: string;
+      states: string[];
+    }>;
     removed: string[];
-  }>;
-  accumulatedCharacterState: Record<string, string[]>;
+  };
+  accumulatedCharacterState: Record<string, KeyedEntryFileData[]>;
   accumulatedStructureState: AccumulatedStructureStateFileData;
   protagonistAffect: ProtagonistAffectFileData;
   structureVersionId?: string | null;

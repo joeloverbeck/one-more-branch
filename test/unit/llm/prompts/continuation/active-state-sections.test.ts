@@ -41,16 +41,16 @@ describe('active-state-sections', () => {
       const state: ActiveState = {
         ...emptyState,
         activeThreats: [
-          { prefix: 'Guard', description: 'patrolling', raw: 'Guard patrolling the area' },
-          { prefix: 'Alarm', description: 'active', raw: 'Alarm system is active' },
+          { id: 'th-1', text: 'Guard patrolling the area' },
+          { id: 'th-2', text: 'Alarm system is active' },
         ],
       };
 
       const result = buildThreatsSection(state);
 
       expect(result).toContain('ACTIVE THREATS (dangers that exist NOW):');
-      expect(result).toContain('- Guard patrolling the area');
-      expect(result).toContain('- Alarm system is active');
+      expect(result).toContain('- [th-1] Guard patrolling the area');
+      expect(result).toContain('- [th-2] Alarm system is active');
     });
   });
 
@@ -63,14 +63,14 @@ describe('active-state-sections', () => {
       const state: ActiveState = {
         ...emptyState,
         activeConstraints: [
-          { prefix: 'Injured leg', description: 'limits mobility', raw: 'Injured leg limits mobility' },
+          { id: 'cn-1', text: 'Injured leg limits mobility' },
         ],
       };
 
       const result = buildConstraintsSection(state);
 
       expect(result).toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
-      expect(result).toContain('- Injured leg limits mobility');
+      expect(result).toContain('- [cn-1] Injured leg limits mobility');
     });
   });
 
@@ -83,14 +83,14 @@ describe('active-state-sections', () => {
       const state: ActiveState = {
         ...emptyState,
         openThreads: [
-          { prefix: 'Missing witness', description: 'whereabouts unknown', raw: 'Missing witness - whereabouts unknown' },
+          { id: 'td-1', text: 'Missing witness - whereabouts unknown' },
         ],
       };
 
       const result = buildThreadsSection(state);
 
       expect(result).toContain('OPEN NARRATIVE THREADS (unresolved hooks):');
-      expect(result).toContain('- Missing witness - whereabouts unknown');
+      expect(result).toContain('- [td-1] Missing witness - whereabouts unknown');
     });
   });
 });

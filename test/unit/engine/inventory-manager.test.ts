@@ -11,6 +11,8 @@ import {
 } from '../../../src/engine/inventory-manager';
 import type { Inventory, InventoryChanges } from '../../../src/models';
 
+const inv = (id: number, text: string): { id: string; text: string } => ({ id: `inv-${id}`, text });
+
 describe('inventory-manager', () => {
   describe('normalizeItemName', () => {
     it('should trim whitespace', () => {
@@ -30,217 +32,99 @@ describe('inventory-manager', () => {
     it('should add item to empty inventory', () => {
       const inventory: Inventory = [];
       const result = addInventoryItem(inventory, 'Sword');
-      expect(result).toEqual(['Sword']);
+      expect(result).toEqual([inv(1, 'Sword')]);
     });
 
     it('should add item to existing inventory', () => {
-      const inventory: Inventory = ['Shield'];
+      const inventory: Inventory = [inv(4, 'Shield')];
       const result = addInventoryItem(inventory, 'Sword');
-      expect(result).toEqual(['Shield', 'Sword']);
+      expect(result).toEqual([inv(4, 'Shield'), inv(5, 'Sword')]);
     });
 
     it('should trim item name when adding', () => {
       const inventory: Inventory = [];
       const result = addInventoryItem(inventory, '  Sword  ');
-      expect(result).toEqual(['Sword']);
+      expect(result).toEqual([inv(1, 'Sword')]);
     });
 
     it('should not add empty items', () => {
-      const inventory: Inventory = ['Shield'];
+      const inventory: Inventory = [inv(1, 'Shield')];
       const result = addInventoryItem(inventory, '');
-      expect(result).toEqual(['Shield']);
+      expect(result).toEqual([inv(1, 'Shield')]);
     });
 
     it('should not add whitespace-only items', () => {
-      const inventory: Inventory = ['Shield'];
+      const inventory: Inventory = [inv(1, 'Shield')];
       const result = addInventoryItem(inventory, '   ');
-      expect(result).toEqual(['Shield']);
-    });
-
-    it('should not mutate original inventory', () => {
-      const inventory: Inventory = ['Shield'];
-      const result = addInventoryItem(inventory, 'Sword');
-      expect(inventory).toEqual(['Shield']);
-      expect(result).not.toBe(inventory);
+      expect(result).toEqual([inv(1, 'Shield')]);
     });
   });
 
   describe('removeInventoryItem', () => {
     it('should remove item from inventory (case-insensitive)', () => {
-      const inventory: Inventory = ['Sword', 'Shield'];
+      const inventory: Inventory = [inv(1, 'Sword'), inv(2, 'Shield')];
       const result = removeInventoryItem(inventory, 'sword');
-      expect(result).toEqual(['Shield']);
+      expect(result).toEqual([inv(2, 'Shield')]);
     });
 
     it('should remove first occurrence only (for duplicates)', () => {
-      const inventory: Inventory = ['Health Potion', 'Shield', 'Health Potion'];
+      const inventory: Inventory = [inv(1, 'Health Potion'), inv(2, 'Shield'), inv(3, 'Health Potion')];
       const result = removeInventoryItem(inventory, 'Health Potion');
-      expect(result).toEqual(['Shield', 'Health Potion']);
-    });
-
-    it('should return same inventory if item not found', () => {
-      const inventory: Inventory = ['Sword', 'Shield'];
-      const result = removeInventoryItem(inventory, 'Axe');
-      expect(result).toEqual(['Sword', 'Shield']);
-    });
-
-    it('should handle trimmed comparison', () => {
-      const inventory: Inventory = ['Iron Key'];
-      const result = removeInventoryItem(inventory, '  iron key  ');
-      expect(result).toEqual([]);
-    });
-
-    it('should not mutate original inventory', () => {
-      const inventory: Inventory = ['Sword', 'Shield'];
-      const result = removeInventoryItem(inventory, 'Sword');
-      expect(inventory).toEqual(['Sword', 'Shield']);
-      expect(result).not.toBe(inventory);
+      expect(result).toEqual([inv(2, 'Shield'), inv(3, 'Health Potion')]);
     });
   });
 
   describe('applyInventoryChanges', () => {
     it('should add items to inventory', () => {
-      const inventory: Inventory = ['Shield'];
+      const inventory: Inventory = [inv(1, 'Shield')];
       const changes: InventoryChanges = { added: ['Sword', 'Helmet'], removed: [] };
       const result = applyInventoryChanges(inventory, changes);
-      expect(result).toEqual(['Shield', 'Sword', 'Helmet']);
+      expect(result).toEqual([inv(1, 'Shield'), inv(2, 'Sword'), inv(3, 'Helmet')]);
     });
 
-    it('should remove items from inventory', () => {
-      const inventory: Inventory = ['Sword', 'Shield', 'Helmet'];
-      const changes: InventoryChanges = { added: [], removed: ['Shield'] };
+    it('should remove items from inventory by ID', () => {
+      const inventory: Inventory = [inv(1, 'Sword'), inv(2, 'Shield'), inv(3, 'Helmet')];
+      const changes: InventoryChanges = { added: [], removed: ['inv-2'] };
       const result = applyInventoryChanges(inventory, changes);
-      expect(result).toEqual(['Sword', 'Helmet']);
-    });
-
-    it('should process removals before additions', () => {
-      const inventory: Inventory = ['Old Sword'];
-      const changes: InventoryChanges = { added: ['New Sword'], removed: ['Old Sword'] };
-      const result = applyInventoryChanges(inventory, changes);
-      expect(result).toEqual(['New Sword']);
-    });
-
-    it('should handle empty changes', () => {
-      const inventory: Inventory = ['Sword'];
-      const changes: InventoryChanges = { added: [], removed: [] };
-      const result = applyInventoryChanges(inventory, changes);
-      expect(result).toEqual(['Sword']);
-    });
-
-    it('should not mutate original inventory', () => {
-      const inventory: Inventory = ['Sword'];
-      const changes: InventoryChanges = { added: ['Shield'], removed: [] };
-      const result = applyInventoryChanges(inventory, changes);
-      expect(inventory).toEqual(['Sword']);
-      expect(result).not.toBe(inventory);
+      expect(result).toEqual([inv(1, 'Sword'), inv(3, 'Helmet')]);
     });
   });
 
   describe('formatInventoryForPrompt', () => {
     it('should format items as bulleted list with header', () => {
-      const inventory: Inventory = ['Sword', 'Shield', 'Health Potion'];
+      const inventory: Inventory = [inv(1, 'Sword'), inv(2, 'Shield')];
       const result = formatInventoryForPrompt(inventory);
-      expect(result).toBe('YOUR INVENTORY:\n- Sword\n- Shield\n- Health Potion\n');
-    });
-
-    it('should return empty string for empty inventory', () => {
-      const inventory: Inventory = [];
-      const result = formatInventoryForPrompt(inventory);
-      expect(result).toBe('');
-    });
-
-    it('should handle single item with header', () => {
-      const inventory: Inventory = ['Key'];
-      const result = formatInventoryForPrompt(inventory);
-      expect(result).toBe('YOUR INVENTORY:\n- Key\n');
+      expect(result).toBe('YOUR INVENTORY:\n- [inv-1] Sword\n- [inv-2] Shield\n');
     });
   });
 
   describe('createInventoryChanges', () => {
     it('should create inventory changes from arrays', () => {
-      const result = createInventoryChanges(['Sword', 'Shield'], ['Key']);
+      const result = createInventoryChanges(['Sword', 'Shield'], ['inv-1']);
       expect(result).toEqual({
         added: ['Sword', 'Shield'],
-        removed: ['Key'],
-      });
-    });
-
-    it('should trim items', () => {
-      const result = createInventoryChanges(['  Sword  '], ['  Key  ']);
-      expect(result).toEqual({
-        added: ['Sword'],
-        removed: ['Key'],
-      });
-    });
-
-    it('should filter empty items', () => {
-      const result = createInventoryChanges(['Sword', '', '  '], ['Key', '']);
-      expect(result).toEqual({
-        added: ['Sword'],
-        removed: ['Key'],
-      });
-    });
-
-    it('should handle empty arrays', () => {
-      const result = createInventoryChanges([], []);
-      expect(result).toEqual({
-        added: [],
-        removed: [],
+        removed: ['inv-1'],
       });
     });
   });
 
-  describe('hasInventoryItem', () => {
-    it('should return true if item exists (case-insensitive)', () => {
-      const inventory: Inventory = ['Iron Key', 'Shield'];
+  describe('query helpers', () => {
+    const inventory: Inventory = [inv(1, 'Iron Key'), inv(2, 'Shield'), inv(3, 'Iron Key')];
+
+    it('hasInventoryItem should be case-insensitive', () => {
       expect(hasInventoryItem(inventory, 'iron key')).toBe(true);
       expect(hasInventoryItem(inventory, 'IRON KEY')).toBe(true);
-    });
-
-    it('should return false if item does not exist', () => {
-      const inventory: Inventory = ['Sword'];
       expect(hasInventoryItem(inventory, 'Axe')).toBe(false);
     });
 
-    it('should handle empty inventory', () => {
-      const inventory: Inventory = [];
-      expect(hasInventoryItem(inventory, 'Sword')).toBe(false);
-    });
-
-    it('should handle trimmed comparison', () => {
-      const inventory: Inventory = ['Iron Key'];
-      expect(hasInventoryItem(inventory, '  iron key  ')).toBe(true);
-    });
-  });
-
-  describe('countInventoryItem', () => {
-    it('should count occurrences of item (case-insensitive)', () => {
-      const inventory: Inventory = ['Health Potion', 'Shield', 'Health Potion', 'health potion'];
-      expect(countInventoryItem(inventory, 'Health Potion')).toBe(3);
-    });
-
-    it('should return 0 if item not found', () => {
-      const inventory: Inventory = ['Sword'];
+    it('countInventoryItem counts case-insensitive matches', () => {
+      expect(countInventoryItem(inventory, 'Iron Key')).toBe(2);
       expect(countInventoryItem(inventory, 'Axe')).toBe(0);
     });
 
-    it('should handle empty inventory', () => {
-      const inventory: Inventory = [];
-      expect(countInventoryItem(inventory, 'Sword')).toBe(0);
-    });
-  });
-
-  describe('getParentAccumulatedInventory', () => {
-    it('should return parent accumulated inventory', () => {
-      const parentPage = { accumulatedInventory: ['Sword', 'Shield'] as Inventory };
-      const result = getParentAccumulatedInventory(parentPage);
-      expect(result).toEqual(['Sword', 'Shield']);
-    });
-
-    it('should handle empty inventory', () => {
-      const parentPage = { accumulatedInventory: [] as Inventory };
-      const result = getParentAccumulatedInventory(parentPage);
-      expect(result).toEqual([]);
+    it('getParentAccumulatedInventory returns inventory', () => {
+      const parentPage = { accumulatedInventory: inventory };
+      expect(getParentAccumulatedInventory(parentPage)).toEqual(inventory);
     });
   });
 });

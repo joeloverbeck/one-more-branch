@@ -75,11 +75,14 @@ describe('Active state pipeline integration', () => {
     // Step 4: Verify accumulated active state was computed (applied to empty parent)
     expect(page.accumulatedActiveState.currentLocation).toBe('Burning tavern');
     expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
-    expect(page.accumulatedActiveState.activeThreats[0]?.prefix).toBe('THREAT_FIRE');
+    expect(page.accumulatedActiveState.activeThreats[0]?.id).toBe('th-1');
+    expect(page.accumulatedActiveState.activeThreats[0]?.text).toContain('THREAT_FIRE:');
     expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
-    expect(page.accumulatedActiveState.activeConstraints[0]?.prefix).toBe('CONSTRAINT_SMOKE');
+    expect(page.accumulatedActiveState.activeConstraints[0]?.id).toBe('cn-1');
+    expect(page.accumulatedActiveState.activeConstraints[0]?.text).toContain('CONSTRAINT_SMOKE:');
     expect(page.accumulatedActiveState.openThreads).toHaveLength(1);
-    expect(page.accumulatedActiveState.openThreads[0]?.prefix).toBe('THREAD_INNKEEPER');
+    expect(page.accumulatedActiveState.openThreads[0]?.id).toBe('td-1');
+    expect(page.accumulatedActiveState.openThreads[0]?.text).toContain('THREAD_INNKEEPER:');
   });
 
   it('should populate active state through the writer pipeline', () => {

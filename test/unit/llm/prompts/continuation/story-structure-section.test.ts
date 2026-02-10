@@ -134,14 +134,14 @@ describe('story-structure-section', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         activeThreats: [
-          { prefix: 'Guard', description: 'patrolling', raw: 'Guard patrolling the area' },
-          { prefix: 'Dog', description: 'trained', raw: 'Dog trained to attack' },
+          { id: 'th-2', text: 'Guard patrolling the area' },
+          { id: 'th-5', text: 'Dog trained to attack' },
         ],
       };
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Active threats: Guard, Dog');
+      expect(result).toContain('Active threats: th-2, th-5');
       expect(result).not.toContain('patrolling the area');
     });
 
@@ -149,26 +149,26 @@ describe('story-structure-section', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         activeConstraints: [
-          { prefix: 'Broken arm', description: 'cannot climb', raw: 'Broken arm - cannot climb' },
+          { id: 'cn-8', text: 'Broken arm - cannot climb' },
         ],
       };
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Constraints: Broken arm');
+      expect(result).toContain('Constraints: cn-8');
     });
 
     it('uses prefix for threads', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         openThreads: [
-          { prefix: 'Missing key', description: 'need to find', raw: 'Missing key - need to find it' },
+          { id: 'td-3', text: 'Missing key - need to find it' },
         ],
       };
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Open threads: Missing key');
+      expect(result).toContain('Open threads: td-3');
     });
   });
 

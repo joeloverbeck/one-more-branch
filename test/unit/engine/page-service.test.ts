@@ -384,7 +384,7 @@ describe('page-service', () => {
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        parentAccumulatedInventory: ['Reached the capital at dusk'],
+        parentAccumulatedInventory: [{ id: 'inv-1', text: 'Reached the capital at dusk' }],
         parentAccumulatedStructureState: parentStructureState,
         structureVersionId: initialStructureVersion.id,
       });

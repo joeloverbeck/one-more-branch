@@ -15,7 +15,6 @@ export {
 
 // Inventory
 export {
-  InventoryItem,
   Inventory,
   InventoryChanges,
   createEmptyInventoryChanges,
@@ -24,7 +23,6 @@ export {
 
 // Health
 export {
-  HealthEntry,
   Health,
   HealthChanges,
   createEmptyHealthChanges,
@@ -33,9 +31,8 @@ export {
 
 // Character state
 export {
-  CharacterStateEntry,
   CharacterState,
-  SingleCharacterStateChanges,
+  CharacterStateAddition,
   CharacterStateChanges,
   AccumulatedCharacterState,
   createEmptyCharacterStateChanges,
@@ -43,15 +40,16 @@ export {
   applyCharacterStateChanges,
 } from './character-state.js';
 
-// Tagged state entries
+// Keyed state entries
 export {
-  VALID_CATEGORIES,
-  StateCategory,
-  TaggedStateEntry,
-  parseTaggedEntry,
-  isValidRemovalPrefix,
-  extractPrefixFromRemoval,
-} from './tagged-entry.js';
+  KeyedEntry,
+  StateIdPrefix,
+  extractIdNumber,
+  getMaxIdNumber,
+  nextId,
+  assignIds,
+  removeByIds,
+} from './keyed-entry.js';
 
 // Active state
 export {

@@ -166,7 +166,7 @@ describe('buildAnalystStructureEvaluation', () => {
     };
     const activeState: ActiveState = {
       currentLocation: 'The old warehouse',
-      activeThreats: [{ prefix: 'patrol', description: 'A patrol approaches', raw: '[patrol] A patrol approaches' }],
+      activeThreats: [{ id: 'th-1', text: 'A patrol approaches' }],
       activeConstraints: [],
       openThreads: [],
     };
@@ -174,7 +174,7 @@ describe('buildAnalystStructureEvaluation', () => {
     const result = buildAnalystStructureEvaluation(testStructure, state, activeState);
     expect(result).toContain('CURRENT STATE (for beat evaluation)');
     expect(result).toContain('Location: The old warehouse');
-    expect(result).toContain('Active threats: patrol');
+    expect(result).toContain('Active threats: th-1');
   });
 
   it('uses evaluation-focused language, NOT "After writing the narrative"', () => {

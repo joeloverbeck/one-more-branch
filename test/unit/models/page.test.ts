@@ -71,7 +71,7 @@ describe('Page', () => {
     it('applies active state changes from parent active state', () => {
       const parentAccumulatedActiveState: ActiveState = {
         currentLocation: 'Starting Room',
-        activeThreats: [{ prefix: 'THREAT_X', description: 'X', raw: 'THREAT_X: X' }],
+        activeThreats: [{ id: 'th-1', text: 'X' }],
         activeConstraints: [],
         openThreads: [],
       };
@@ -84,7 +84,7 @@ describe('Page', () => {
         activeStateChanges: {
           newLocation: 'New Room',
           threatsAdded: [],
-          threatsRemoved: ['THREAT_X'],
+          threatsRemoved: ['th-1'],
           constraintsAdded: [],
           constraintsRemoved: [],
           threadsAdded: [],

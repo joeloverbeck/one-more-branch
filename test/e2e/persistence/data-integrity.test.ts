@@ -103,8 +103,14 @@ describe('Data Integrity E2E', () => {
 
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
     expect(loadedPage1?.choices[1]?.nextPageId).toBe(parsePageId(3));
-    expect(loadedPage2?.accumulatedInventory).toEqual(['root-event', 'branch-a-event']);
-    expect(loadedPage3?.accumulatedInventory).toEqual(['root-event', 'branch-b-event']);
+    expect(loadedPage2?.accumulatedInventory.map(entry => entry.text)).toEqual([
+      'root-event',
+      'branch-a-event',
+    ]);
+    expect(loadedPage3?.accumulatedInventory.map(entry => entry.text)).toEqual([
+      'root-event',
+      'branch-b-event',
+    ]);
   });
 
   it('maintains branching integrity with distinct accumulated states', async () => {
@@ -178,7 +184,7 @@ describe('Data Integrity E2E', () => {
     const loadedBranchInventory = await Promise.all(
       branchPages.map(async (branch) => {
         const loaded = await storage.loadPage(story.id, branch.id);
-        return loaded?.accumulatedInventory;
+        return loaded?.accumulatedInventory.map(entry => entry.text);
       }),
     );
 
@@ -246,7 +252,10 @@ describe('Data Integrity E2E', () => {
     expect(loadedStory?.updatedAt).toEqual(story.updatedAt);
     expect(loadedStory?.structureVersions).toEqual(story.structureVersions ?? []);
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
-    expect(loadedPage2?.accumulatedInventory).toEqual(['reload-root', 'reload-ending']);
+    expect(loadedPage2?.accumulatedInventory.map(entry => entry.text)).toEqual([
+      'reload-root',
+      'reload-ending',
+    ]);
   });
 
   it('deletes stories with cascading cleanup of page files and story directory', async () => {

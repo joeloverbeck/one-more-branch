@@ -58,9 +58,6 @@ const ChoiceObjectSchema = z.object({
   primaryDelta: z.nativeEnum(PrimaryDelta),
 });
 
-/**
- * Zod validation schema for writer responses.
- */
 export const WriterResultSchema = z
   .object({
     narrative: z
@@ -84,7 +81,7 @@ export const WriterResultSchema = z
     healthAdded: z.array(z.string()).optional().default([]),
     healthRemoved: z.array(z.string()).optional().default([]),
     characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
-    characterStateChangesRemoved: CharacterStateChangesArraySchema.optional().default([]),
+    characterStateChangesRemoved: z.array(z.string()).optional().default([]),
     protagonistAffect: ProtagonistAffectSchema.optional().default(defaultProtagonistAffect),
     sceneSummary: z.string().min(20).max(500),
     isEnding: z.boolean(),
@@ -123,7 +120,6 @@ export const WriterResultSchema = z
       });
     }
 
-    // Warn (but don't reject) if all choices share the same choiceType
     if (data.choices.length >= 2) {
       const types = new Set(data.choices.map(c => c.choiceType));
       const deltas = new Set(data.choices.map(c => c.primaryDelta));

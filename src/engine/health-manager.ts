@@ -1,10 +1,22 @@
 import {
   Health,
   HealthChanges,
-  HealthEntry,
   applyHealthChanges as applyChanges,
   createEmptyHealthChanges,
 } from '../models';
+
+function getMaxHealthId(health: Health): number {
+  let maxId = 0;
+  for (const entry of health) {
+    if (entry.id.startsWith('hp-')) {
+      const num = Number.parseInt(entry.id.slice(3), 10);
+      if (Number.isFinite(num) && num > maxId) {
+        maxId = num;
+      }
+    }
+  }
+  return maxId;
+}
 
 /**
  * Normalizes a health entry for comparison purposes.
@@ -18,12 +30,14 @@ export function normalizeHealthEntry(entry: string): string {
  * Adds a health entry immutably.
  * Allows duplicates (e.g., multiple injuries).
  */
-export function addHealthEntry(health: Health, entry: HealthEntry): Health {
+export function addHealthEntry(health: Health, entry: string): Health {
   const trimmed = entry.trim();
   if (!trimmed) {
     return health;
   }
-  return [...health, trimmed];
+
+  const nextId = getMaxHealthId(health) + 1;
+  return [...health, { id: `hp-${nextId}`, text: trimmed }];
 }
 
 /**
@@ -31,10 +45,10 @@ export function addHealthEntry(health: Health, entry: HealthEntry): Health {
  * Removes only the first matching entry (case-insensitive).
  * Returns unchanged health if entry not found.
  */
-export function removeHealthEntry(health: Health, entry: HealthEntry): Health {
+export function removeHealthEntry(health: Health, entry: string): Health {
   const normalizedEntry = normalizeHealthEntry(entry);
   const result = [...health];
-  const index = result.findIndex(e => normalizeHealthEntry(e) === normalizedEntry);
+  const index = result.findIndex(e => normalizeHealthEntry(e.text) === normalizedEntry);
   if (index !== -1) {
     result.splice(index, 1);
   }
@@ -58,7 +72,7 @@ export function formatHealthForPrompt(health: Health): string {
     return 'YOUR HEALTH:\n- You feel fine.\n';
   }
 
-  const formattedEntries = health.map(entry => `- ${entry}`).join('\n');
+  const formattedEntries = health.map(entry => `- [${entry.id}] ${entry.text}`).join('\n');
   return `YOUR HEALTH:\n${formattedEntries}\n`;
 }
 
@@ -78,9 +92,9 @@ export function createHealthChanges(
 /**
  * Checks if health contains a specific condition (case-insensitive).
  */
-export function hasHealthCondition(health: Health, condition: HealthEntry): boolean {
+export function hasHealthCondition(health: Health, condition: string): boolean {
   const normalizedCondition = normalizeHealthEntry(condition);
-  return health.some(e => normalizeHealthEntry(e) === normalizedCondition);
+  return health.some(e => normalizeHealthEntry(e.text) === normalizedCondition);
 }
 
 /**

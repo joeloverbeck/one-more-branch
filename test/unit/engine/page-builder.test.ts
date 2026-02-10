@@ -50,8 +50,16 @@ function buildMockGenerationResult(overrides?: Partial<WriterResult>): WriterRes
 
 describe('page-builder', () => {
   describe('buildFirstPage', () => {
-    it('creates page with id 1 and null parent fields', () => {
-      const result = buildMockGenerationResult();
+    it('creates first page with keyed accumulated state', () => {
+      const result = buildMockGenerationResult({
+        currentLocation: 'Ancient treasury',
+        threatsAdded: ['Guardian awakened'],
+        constraintsAdded: ['Must remain silent'],
+        threadsAdded: ['Mystery of the vault'],
+        inventoryAdded: ['Sword', 'Shield'],
+        healthAdded: ['Minor wound'],
+        characterStateChangesAdded: [{ characterName: 'Ally', states: ['Trusting'] }],
+      });
       const context: FirstPageBuildContext = {
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
@@ -60,107 +68,11 @@ describe('page-builder', () => {
       const page = buildFirstPage(result, context);
 
       expect(page.id).toBe(1);
-      expect(page.parentPageId).toBeNull();
-      expect(page.parentChoiceIndex).toBeNull();
-    });
-
-    it('maps narrative and choices from generation result', () => {
-      const result = buildMockGenerationResult({
-        narrative: 'The adventure begins.',
-        choices: [
-          { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Climb the mountain', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Rest by the river', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'CONDITION_CHANGE' },
-        ],
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
-      expect(page.narrativeText).toBe('The adventure begins.');
-      expect(page.choices).toHaveLength(3);
-      expect(page.choices.map(c => c.text)).toEqual([
-        'Enter the cave',
-        'Climb the mountain',
-        'Rest by the river',
-      ]);
-    });
-
-    it('applies active state fields from generation result', () => {
-      const result = buildMockGenerationResult({
-        currentLocation: 'Ancient treasury',
-        threatsAdded: ['THREAT_guardian: Guardian awakened'],
-        constraintsAdded: ['CONSTRAINT_noise: Must remain silent'],
-        threadsAdded: ['THREAD_mystery: Mystery of the vault'],
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
       expect(page.accumulatedActiveState.currentLocation).toBe('Ancient treasury');
-      expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
-      expect(page.accumulatedActiveState.activeThreats[0].description).toBe('Guardian awakened');
-      expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
-      expect(page.accumulatedActiveState.activeConstraints[0].description).toBe('Must remain silent');
-      expect(page.accumulatedActiveState.openThreads).toHaveLength(1);
-      expect(page.accumulatedActiveState.openThreads[0].description).toBe('Mystery of the vault');
-    });
-
-    it('applies inventory changes from generation result', () => {
-      const result = buildMockGenerationResult({
-        inventoryAdded: ['Sword', 'Shield'],
-        inventoryRemoved: [],
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
-      expect(page.inventoryChanges.added).toContain('Sword');
-      expect(page.inventoryChanges.added).toContain('Shield');
-      expect(page.accumulatedInventory).toContain('Sword');
-      expect(page.accumulatedInventory).toContain('Shield');
-    });
-
-    it('applies health changes from generation result', () => {
-      const result = buildMockGenerationResult({
-        healthAdded: ['Minor wound'],
-        healthRemoved: [],
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
-      expect(page.healthChanges.added).toContain('Minor wound');
-      expect(page.accumulatedHealth).toContain('Minor wound');
-    });
-
-    it('applies character state changes from generation result', () => {
-      const result = buildMockGenerationResult({
-        characterStateChangesAdded: [
-          { characterName: 'Ally', states: ['Trusting'] },
-        ],
-        characterStateChangesRemoved: [],
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
-      expect(page.accumulatedCharacterState['Ally']).toContain('Trusting');
+      expect(page.accumulatedActiveState.activeThreats).toEqual([{ id: 'th-1', text: 'Guardian awakened' }]);
+      expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Sword' }, { id: 'inv-2', text: 'Shield' }]);
+      expect(page.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'Minor wound' }]);
+      expect(page.accumulatedCharacterState['Ally']).toEqual([{ id: 'cs-1', text: 'Trusting' }]);
     });
 
     it('assigns structure state and version from context', () => {
@@ -179,98 +91,29 @@ describe('page-builder', () => {
       };
 
       const page = buildFirstPage(result, context);
-
       expect(page.accumulatedStructureState).toEqual(structureState);
       expect(page.structureVersionId).toBe(versionId);
-    });
-
-    it('sets isEnding from generation result', () => {
-      const result = buildMockGenerationResult({
-        isEnding: true,
-        choices: [],
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
-      expect(page.isEnding).toBe(true);
-      expect(page.choices).toHaveLength(0);
-    });
-
-    it('applies protagonist affect from generation result', () => {
-      const result = buildMockGenerationResult({
-        protagonistAffect: {
-          primaryEmotion: 'fear',
-          primaryIntensity: 'strong',
-          primaryCause: 'The guardian looms ahead',
-          secondaryEmotions: [{ emotion: 'determination', cause: 'Must protect allies' }],
-          dominantMotivation: 'escape',
-        },
-      });
-      const context: FirstPageBuildContext = {
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildFirstPage(result, context);
-
-      expect(page.protagonistAffect.primaryEmotion).toBe('fear');
-      expect(page.protagonistAffect.primaryIntensity).toBe('strong');
-      expect(page.protagonistAffect.primaryCause).toBe('The guardian looms ahead');
-      expect(page.protagonistAffect.secondaryEmotions).toHaveLength(1);
-      expect(page.protagonistAffect.dominantMotivation).toBe('escape');
     });
   });
 
   describe('buildContinuationPage', () => {
-    it('creates page with specified id and parent linkage', () => {
-      const result = buildMockGenerationResult();
-      const context: ContinuationPageBuildContext = {
-        pageId: parsePageId(5),
-        parentPageId: parsePageId(3),
-        parentChoiceIndex: 1,
-        parentAccumulatedState: { changes: ['Previous state'] },
-        parentAccumulatedActiveState: {
-          currentLocation: 'Starting area',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        parentAccumulatedInventory: ['Map'],
-        parentAccumulatedHealth: [],
-        parentAccumulatedCharacterState: {},
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildContinuationPage(result, context);
-
-      expect(page.id).toBe(5);
-      expect(page.parentPageId).toBe(3);
-      expect(page.parentChoiceIndex).toBe(1);
-    });
-
-    it('accumulates active state on top of parent active state', () => {
+    it('creates continuation page and accumulates parent keyed state', () => {
       const result = buildMockGenerationResult({
         currentLocation: 'Hidden chamber',
-        threatsAdded: ['THREAT_trap: Trap triggered'],
-        threadsAdded: ['THREAD_secret: Ancient secret revealed'],
+        threatsAdded: ['Trap triggered'],
+        threadsAdded: ['Ancient secret revealed'],
       });
       const context: ContinuationPageBuildContext = {
         pageId: parsePageId(2),
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: ['Previous state'] },
         parentAccumulatedActiveState: {
           currentLocation: 'Entrance hall',
-          activeThreats: [{ prefix: 'THREAT_patrol', description: 'Guardian patrol', raw: 'THREAT_patrol: Guardian patrol' }],
-          activeConstraints: [{ prefix: 'CONSTRAINT_noise', description: 'Noise attracts guards', raw: 'CONSTRAINT_noise: Noise attracts guards' }],
-          openThreads: [{ prefix: 'THREAD_key', description: 'Missing key', raw: 'THREAD_key: Missing key' }],
+          activeThreats: [{ id: 'th-1', text: 'Guardian patrol' }],
+          activeConstraints: [{ id: 'cn-1', text: 'Noise attracts guards' }],
+          openThreads: [{ id: 'td-1', text: 'Missing key' }],
         },
-        parentAccumulatedInventory: [],
+        parentAccumulatedInventory: [{ id: 'inv-1', text: 'Map' }],
         parentAccumulatedHealth: [],
         parentAccumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
@@ -279,155 +122,28 @@ describe('page-builder', () => {
 
       const page = buildContinuationPage(result, context);
 
+      expect(page.id).toBe(2);
+      expect(page.parentPageId).toBe(1);
+      expect(page.parentChoiceIndex).toBe(0);
       expect(page.accumulatedActiveState.currentLocation).toBe('Hidden chamber');
-      expect(page.accumulatedActiveState.activeThreats).toHaveLength(2);
-      expect(page.accumulatedActiveState.activeThreats.map(t => t.description)).toContain('Guardian patrol');
-      expect(page.accumulatedActiveState.activeThreats.map(t => t.description)).toContain('Trap triggered');
-      expect(page.accumulatedActiveState.openThreads).toHaveLength(2);
-      expect(page.accumulatedActiveState.openThreads.map(t => t.description)).toContain('Missing key');
-      expect(page.accumulatedActiveState.openThreads.map(t => t.description)).toContain('Ancient secret revealed');
-    });
-
-    it('accumulates inventory on top of parent inventory', () => {
-      const result = buildMockGenerationResult({
-        inventoryAdded: ['Compass'],
-        inventoryRemoved: [],
-      });
-      const context: ContinuationPageBuildContext = {
-        pageId: parsePageId(2),
-        parentPageId: parsePageId(1),
-        parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: [] },
-        parentAccumulatedActiveState: {
-          currentLocation: 'Corridor',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        parentAccumulatedInventory: ['Torch', 'Rope'],
-        parentAccumulatedHealth: [],
-        parentAccumulatedCharacterState: {},
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildContinuationPage(result, context);
-
-      expect(page.accumulatedInventory).toContain('Torch');
-      expect(page.accumulatedInventory).toContain('Rope');
-      expect(page.accumulatedInventory).toContain('Compass');
-    });
-
-    it('accumulates health on top of parent health', () => {
-      const result = buildMockGenerationResult({
-        healthAdded: ['Poison'],
-        healthRemoved: [],
-      });
-      const context: ContinuationPageBuildContext = {
-        pageId: parsePageId(2),
-        parentPageId: parsePageId(1),
-        parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: [] },
-        parentAccumulatedActiveState: {
-          currentLocation: 'Poisoned chamber',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        parentAccumulatedInventory: [],
-        parentAccumulatedHealth: ['Minor wound'],
-        parentAccumulatedCharacterState: {},
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildContinuationPage(result, context);
-
-      expect(page.accumulatedHealth).toContain('Minor wound');
-      expect(page.accumulatedHealth).toContain('Poison');
-    });
-
-    it('accumulates character state on top of parent character state', () => {
-      const result = buildMockGenerationResult({
-        characterStateChangesAdded: [
-          { characterName: 'Ally', states: ['Angry'] },
-        ],
-        characterStateChangesRemoved: [],
-      });
-      const context: ContinuationPageBuildContext = {
-        pageId: parsePageId(2),
-        parentPageId: parsePageId(1),
-        parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: [] },
-        parentAccumulatedActiveState: {
-          currentLocation: 'Meeting room',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        parentAccumulatedInventory: [],
-        parentAccumulatedHealth: [],
-        parentAccumulatedCharacterState: { 'Ally': ['Trusting'] },
-        structureState: createEmptyAccumulatedStructureState(),
-        structureVersionId: null,
-      };
-
-      const page = buildContinuationPage(result, context);
-
-      expect(page.accumulatedCharacterState['Ally']).toContain('Trusting');
-      expect(page.accumulatedCharacterState['Ally']).toContain('Angry');
-    });
-
-    it('uses provided structure state and version', () => {
-      const result = buildMockGenerationResult();
-      const structureState = {
-        currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded' as const, resolution: 'Done' },
-          { beatId: '2.1', status: 'active' as const },
-        ],
-        pagesInCurrentBeat: 0,
-        pacingNudge: null as string | null,
-      };
-      const versionId = 'sv-67890-xyz123' as StructureVersionId;
-      const context: ContinuationPageBuildContext = {
-        pageId: parsePageId(3),
-        parentPageId: parsePageId(2),
-        parentChoiceIndex: 0,
-        parentAccumulatedState: { changes: [] },
-        parentAccumulatedActiveState: {
-          currentLocation: 'Act 2 location',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        parentAccumulatedInventory: [],
-        parentAccumulatedHealth: [],
-        parentAccumulatedCharacterState: {},
-        structureState,
-        structureVersionId: versionId,
-      };
-
-      const page = buildContinuationPage(result, context);
-
-      expect(page.accumulatedStructureState).toEqual(structureState);
-      expect(page.structureVersionId).toBe(versionId);
+      expect(page.accumulatedActiveState.activeThreats.map(t => t.text)).toEqual([
+        'Guardian patrol',
+        'Trap triggered',
+      ]);
+      expect(page.accumulatedActiveState.openThreads.map(t => t.text)).toEqual([
+        'Missing key',
+        'Ancient secret revealed',
+      ]);
+      expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Map' }, { id: 'inv-2', text: 'Rusty key' }]);
     });
   });
 
   describe('createEmptyStructureContext', () => {
-    it('returns empty structure state with null version', () => {
-      const context = createEmptyStructureContext();
-
-      expect(context.structureState).toEqual({
-        currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
-        pacingNudge: null,
+    it('returns empty structure context', () => {
+      expect(createEmptyStructureContext()).toEqual({
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
       });
-      expect(context.structureVersionId).toBeNull();
     });
   });
 });

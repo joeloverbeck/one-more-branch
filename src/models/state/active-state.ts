@@ -2,13 +2,13 @@
  * Active-state types and guards for tracking truths that are true right now.
  */
 
-import { TaggedStateEntry } from './tagged-entry.js';
+import { KeyedEntry } from './keyed-entry.js';
 
 export interface ActiveState {
   readonly currentLocation: string;
-  readonly activeThreats: readonly TaggedStateEntry[];
-  readonly activeConstraints: readonly TaggedStateEntry[];
-  readonly openThreads: readonly TaggedStateEntry[];
+  readonly activeThreats: readonly KeyedEntry[];
+  readonly activeConstraints: readonly KeyedEntry[];
+  readonly openThreads: readonly KeyedEntry[];
 }
 
 export interface ActiveStateChanges {
@@ -42,17 +42,13 @@ export function createEmptyActiveStateChanges(): ActiveStateChanges {
   };
 }
 
-function isTaggedStateEntry(value: unknown): value is TaggedStateEntry {
+function isKeyedEntry(value: unknown): value is KeyedEntry {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
 
   const obj = value as Record<string, unknown>;
-  return (
-    typeof obj['prefix'] === 'string' &&
-    typeof obj['description'] === 'string' &&
-    typeof obj['raw'] === 'string'
-  );
+  return typeof obj['id'] === 'string' && typeof obj['text'] === 'string';
 }
 
 function isStringArray(value: unknown): value is readonly string[] {
@@ -68,11 +64,11 @@ export function isActiveState(value: unknown): value is ActiveState {
   return (
     typeof obj['currentLocation'] === 'string' &&
     Array.isArray(obj['activeThreats']) &&
-    obj['activeThreats'].every(isTaggedStateEntry) &&
+    obj['activeThreats'].every(isKeyedEntry) &&
     Array.isArray(obj['activeConstraints']) &&
-    obj['activeConstraints'].every(isTaggedStateEntry) &&
+    obj['activeConstraints'].every(isKeyedEntry) &&
     Array.isArray(obj['openThreads']) &&
-    obj['openThreads'].every(isTaggedStateEntry)
+    obj['openThreads'].every(isKeyedEntry)
   );
 }
 

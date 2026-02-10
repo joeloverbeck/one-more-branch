@@ -231,7 +231,10 @@ describe('page-repository', () => {
       isEnding: true,
       parentPageId: parsePageId(2),
       parentChoiceIndex: 1,
-      parentAccumulatedInventory: ['root-item', 'child-item'],
+      parentAccumulatedInventory: [
+        { id: 'inv-1', text: 'root-item' },
+        { id: 'inv-2', text: 'child-item' },
+      ],
     });
     await savePage(story.id, endingPage);
 

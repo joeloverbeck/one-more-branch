@@ -17,7 +17,7 @@ const ID_PATTERN = /^[a-z]+-(\d+)$/;
 
 export function extractIdNumber(id: string): number {
   const match = ID_PATTERN.exec(id);
-  if (!match || match[1] === undefined) {
+  if (!match?.[1]) {
     throw new Error(`Malformed keyed entry ID: "${id}"`);
   }
   return parseInt(match[1], 10);

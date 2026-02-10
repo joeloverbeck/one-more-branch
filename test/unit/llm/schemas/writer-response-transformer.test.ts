@@ -338,9 +338,7 @@ describe('validateWriterResponse', () => {
           { characterName: '  Guard  ', states: ['  Suspicious  ', '  ', ''] },
           { characterName: '  ', states: ['Valid state'] },
         ],
-        characterStateChangesRemoved: [
-          { characterName: 'NPC', states: ['  ', ''] },
-        ],
+        characterStateChangesRemoved: ['  ', '', 'cs-7'],
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
@@ -353,6 +351,6 @@ describe('validateWriterResponse', () => {
     expect(result.characterStateChangesAdded).toEqual([
       { characterName: 'Guard', states: ['Suspicious'] },
     ]);
-    expect(result.characterStateChangesRemoved).toEqual([]);
+    expect(result.characterStateChangesRemoved).toEqual(['cs-7']);
   });
 });

@@ -1,10 +1,6 @@
 import type { AccumulatedStructureState, StoryStructure } from '../../../models/story-arc.js';
 import type { ActiveState } from '../../../models/state/index.js';
 
-/**
- * Deviation detection instructions for the LLM.
- * Included in structured story prompts to evaluate whether remaining beats are still valid.
- */
 export const DEVIATION_DETECTION_SECTION = `=== BEAT DEVIATION EVALUATION ===
 After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.
 
@@ -25,10 +21,6 @@ If no deviation is detected, mark deviationDetected: false.
 Be conservative. Minor variations are acceptable; only mark true deviation for genuine invalidation.
 `;
 
-/**
- * Gets the remaining (non-concluded) beats from the story structure.
- * Used to build the deviation evaluation section.
- */
 export function getRemainingBeats(
   structure: StoryStructure,
   state: AccumulatedStructureState,
@@ -46,10 +38,6 @@ export function getRemainingBeats(
   );
 }
 
-/**
- * Builds active state summary for beat evaluation context.
- * Uses compact prefix format for threats/constraints/threads.
- */
 export function buildActiveStateForBeatEvaluation(activeState: ActiveState): string {
   const parts: string[] = [];
 
@@ -58,15 +46,15 @@ export function buildActiveStateForBeatEvaluation(activeState: ActiveState): str
   }
 
   if (activeState.activeThreats.length > 0) {
-    parts.push(`Active threats: ${activeState.activeThreats.map(t => t.prefix).join(', ')}`);
+    parts.push(`Active threats: ${activeState.activeThreats.map(t => t.id).join(', ')}`);
   }
 
   if (activeState.activeConstraints.length > 0) {
-    parts.push(`Constraints: ${activeState.activeConstraints.map(c => c.prefix).join(', ')}`);
+    parts.push(`Constraints: ${activeState.activeConstraints.map(c => c.id).join(', ')}`);
   }
 
   if (activeState.openThreads.length > 0) {
-    parts.push(`Open threads: ${activeState.openThreads.map(t => t.prefix).join(', ')}`);
+    parts.push(`Open threads: ${activeState.openThreads.map(t => t.id).join(', ')}`);
   }
 
   if (parts.length === 0) {
@@ -80,14 +68,6 @@ ${parts.map(p => `- ${p}`).join('\n')}
 `;
 }
 
-/**
- * Builds story structure context for the writer LLM call.
- * Provides act/beat status for creative context only — no evaluation or deviation instructions.
- *
- * @param structure - The story structure (or undefined if not using structured stories)
- * @param accumulatedStructureState - The accumulated structure state (or undefined)
- * @returns The structure context string, or empty string if structure is missing
- */
 export function buildWriterStructureContext(
   structure: StoryStructure | undefined,
   accumulatedStructureState: AccumulatedStructureState | undefined,
@@ -144,16 +124,6 @@ ${remainingActs || '  - None'}
 `;
 }
 
-/**
- * Builds the structure evaluation section for the analyst LLM call.
- * Contains evaluation-focused content reframed for analytical assessment.
- * Parameters are NOT optional — this function is only called when structure exists.
- *
- * @param structure - The story structure
- * @param accumulatedStructureState - The accumulated structure state
- * @param activeState - The current active state for beat evaluation context
- * @returns The analyst structure evaluation string
- */
 export function buildAnalystStructureEvaluation(
   structure: StoryStructure,
   accumulatedStructureState: AccumulatedStructureState,
@@ -258,17 +228,10 @@ CONCLUDE THE BEAT (beatConcluded: true) when ANY of these apply:
 
 DO NOT CONCLUDE only if:
 - This scene is still squarely within the active beat's scope AND
-- The objective hasn't been meaningfully advanced
+- The beat objective remains genuinely unresolved
 
-Evaluate cumulative progress across all scenes, not just this single page.
-Look at the CURRENT STATE above - if the situation has moved past the active beat's description, it should be concluded.
-
-If concluding, provide beatResolution: a brief summary of how the beat was resolved.
-
+${beatComparisonHint}${DEVIATION_DETECTION_SECTION}
 ${remainingBeatsSection}
-${beatComparisonHint}
-${DEVIATION_DETECTION_SECTION}
 
 ${pacingEvaluationSection}`;
 }
-

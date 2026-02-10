@@ -292,7 +292,7 @@ describe('page-repository integration', () => {
     expect(loadedBranchB?.accumulatedStructureState.currentBeatIndex).toBe(0);
   });
 
-  it('save/load round-trip preserves active state fields with TaggedStateEntry structures', async () => {
+  it('save/load round-trip preserves active state fields with keyed entries', async () => {
     const story = buildStory({ characterConcept: `${TEST_PREFIX} active state persistence` });
     createdStoryIds.add(story.id);
     await saveStory(story);
@@ -300,24 +300,24 @@ describe('page-repository integration', () => {
     const activeStateChanges: ActiveStateChanges = {
       newLocation: 'Abandoned temple',
       threatsAdded: ['THREAT_GUARDIAN: Stone guardian awakened', 'THREAT_TRAP: Pressure plates detected'],
-      threatsRemoved: ['THREAT_STORM'],
+      threatsRemoved: ['th-1'],
       constraintsAdded: ['CONSTRAINT_DARKNESS: No natural light'],
       constraintsRemoved: [],
       threadsAdded: ['THREAD_RELIC: Ancient relic rumored to be here'],
-      threadsResolved: ['THREAD_MAP'],
+      threadsResolved: ['td-1'],
     };
 
     const accumulatedActiveState: ActiveState = {
       currentLocation: 'Abandoned temple',
       activeThreats: [
-        { prefix: 'THREAT_GUARDIAN', description: 'Stone guardian awakened', raw: 'THREAT_GUARDIAN: Stone guardian awakened' },
-        { prefix: 'THREAT_TRAP', description: 'Pressure plates detected', raw: 'THREAT_TRAP: Pressure plates detected' },
+        { id: 'th-2', text: 'THREAT_GUARDIAN: Stone guardian awakened' },
+        { id: 'th-3', text: 'THREAT_TRAP: Pressure plates detected' },
       ],
       activeConstraints: [
-        { prefix: 'CONSTRAINT_DARKNESS', description: 'No natural light', raw: 'CONSTRAINT_DARKNESS: No natural light' },
+        { id: 'cn-1', text: 'CONSTRAINT_DARKNESS: No natural light' },
       ],
       openThreads: [
-        { prefix: 'THREAD_RELIC', description: 'Ancient relic rumored to be here', raw: 'THREAD_RELIC: Ancient relic rumored to be here' },
+        { id: 'td-2', text: 'THREAD_RELIC: Ancient relic rumored to be here' },
       ],
     };
 
@@ -333,9 +333,9 @@ describe('page-repository integration', () => {
       activeStateChanges,
       parentAccumulatedActiveState: {
         currentLocation: 'Forest edge',
-        activeThreats: [{ prefix: 'THREAT_STORM', description: 'Storm approaching', raw: 'THREAT_STORM: Storm approaching' }],
+        activeThreats: [{ id: 'th-1', text: 'THREAT_STORM: Storm approaching' }],
         activeConstraints: [],
-        openThreads: [{ prefix: 'THREAD_MAP', description: 'Following old map', raw: 'THREAD_MAP: Following old map' }],
+        openThreads: [{ id: 'td-1', text: 'THREAD_MAP: Following old map' }],
       },
     });
 
@@ -346,11 +346,10 @@ describe('page-repository integration', () => {
     expect(loaded!.activeStateChanges).toEqual(activeStateChanges);
     expect(loaded!.accumulatedActiveState).toEqual(accumulatedActiveState);
 
-    // Explicitly verify TaggedStateEntry structure survived file I/O
+    // Explicitly verify keyed entry structure survived file I/O
     expect(loaded!.accumulatedActiveState.activeThreats[0]).toEqual({
-      prefix: 'THREAT_GUARDIAN',
-      description: 'Stone guardian awakened',
-      raw: 'THREAT_GUARDIAN: Stone guardian awakened',
+      id: 'th-2',
+      text: 'THREAT_GUARDIAN: Stone guardian awakened',
     });
 
     // Verify all arrays have correct lengths
@@ -377,11 +376,10 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 0,
-      parentAccumulatedActiveState: root.accumulatedActiveState,
       activeStateChanges: {
         newLocation: 'Forest clearing - safe',
         threatsAdded: [],
-        threatsRemoved: ['THREAT_WOLF'],
+        threatsRemoved: ['th-1'],
         constraintsAdded: ['CONSTRAINT_TIRED: Exhausted from fight'],
         constraintsRemoved: [],
         threadsAdded: [],
@@ -389,7 +387,7 @@ describe('page-repository integration', () => {
       },
       parentAccumulatedActiveState: {
         currentLocation: 'Forest path',
-        activeThreats: [{ prefix: 'THREAT_WOLF', description: 'Hungry wolf stalking', raw: 'THREAT_WOLF: Hungry wolf stalking' }],
+        activeThreats: [{ id: 'th-1', text: 'THREAT_WOLF: Hungry wolf stalking' }],
         activeConstraints: [],
         openThreads: [],
       },
@@ -405,7 +403,6 @@ describe('page-repository integration', () => {
       isEnding: false,
       parentPageId: parsePageId(1),
       parentChoiceIndex: 1,
-      parentAccumulatedActiveState: root.accumulatedActiveState,
       activeStateChanges: {
         newLocation: 'Tree canopy - elevated',
         threatsAdded: [],
@@ -417,7 +414,7 @@ describe('page-repository integration', () => {
       },
       parentAccumulatedActiveState: {
         currentLocation: 'Forest path',
-        activeThreats: [{ prefix: 'THREAT_WOLF', description: 'Hungry wolf stalking', raw: 'THREAT_WOLF: Hungry wolf stalking' }],
+        activeThreats: [{ id: 'th-1', text: 'THREAT_WOLF: Hungry wolf stalking' }],
         activeConstraints: [],
         openThreads: [],
       },
@@ -433,13 +430,13 @@ describe('page-repository integration', () => {
     expect(loadedA!.accumulatedActiveState.currentLocation).toBe('Forest clearing - safe');
     expect(loadedA!.accumulatedActiveState.activeThreats).toHaveLength(0);
     expect(loadedA!.accumulatedActiveState.activeConstraints).toHaveLength(1);
-    expect(loadedA!.accumulatedActiveState.activeConstraints[0].prefix).toBe('CONSTRAINT_TIRED');
+    expect(loadedA!.accumulatedActiveState.activeConstraints[0].id).toBe('cn-1');
 
     // Branch B still has threat, different location and constraint
     expect(loadedB!.accumulatedActiveState.currentLocation).toBe('Tree canopy - elevated');
     expect(loadedB!.accumulatedActiveState.activeThreats).toHaveLength(1);
-    expect(loadedB!.accumulatedActiveState.activeThreats[0].prefix).toBe('THREAT_WOLF');
+    expect(loadedB!.accumulatedActiveState.activeThreats[0].id).toBe('th-1');
     expect(loadedB!.accumulatedActiveState.openThreads).toHaveLength(1);
-    expect(loadedB!.accumulatedActiveState.openThreads[0].prefix).toBe('THREAD_RESCUE');
+    expect(loadedB!.accumulatedActiveState.openThreads[0].id).toBe('td-1');
   });
 });

@@ -25,21 +25,12 @@ import {
   fileDataToAccumulatedActiveState,
 } from './converters';
 
-// Re-export PageFileData for public API
 export { PageFileData } from './page-serializer-types';
 
 export function serializePage(page: Page): PageFileData {
-  // Convert CharacterStateChanges to file format
-  const characterStateChanges = page.characterStateChanges.map((change) => ({
-    characterName: change.characterName,
-    added: [...change.added],
-    removed: [...change.removed],
-  }));
-
-  // Convert AccumulatedCharacterState to file format
-  const accumulatedCharacterState: Record<string, string[]> = {};
+  const accumulatedCharacterState: Record<string, Array<{ id: string; text: string }>> = {};
   for (const [name, state] of Object.entries(page.accumulatedCharacterState)) {
-    accumulatedCharacterState[name] = [...state];
+    accumulatedCharacterState[name] = state.map(entry => ({ ...entry }));
   }
 
   return {
@@ -58,13 +49,19 @@ export function serializePage(page: Page): PageFileData {
       added: [...page.inventoryChanges.added],
       removed: [...page.inventoryChanges.removed],
     },
-    accumulatedInventory: [...page.accumulatedInventory],
+    accumulatedInventory: page.accumulatedInventory.map(entry => ({ ...entry })),
     healthChanges: {
       added: [...page.healthChanges.added],
       removed: [...page.healthChanges.removed],
     },
-    accumulatedHealth: [...page.accumulatedHealth],
-    characterStateChanges,
+    accumulatedHealth: page.accumulatedHealth.map(entry => ({ ...entry })),
+    characterStateChanges: {
+      added: page.characterStateChanges.added.map(change => ({
+        characterName: change.characterName,
+        states: [...change.states],
+      })),
+      removed: [...page.characterStateChanges.removed],
+    },
     accumulatedCharacterState,
     accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
     protagonistAffect: protagonistAffectToFileData(page.protagonistAffect),
@@ -81,27 +78,32 @@ export function deserializePage(data: PageFileData): Page {
     removed: [...data.inventoryChanges.removed],
   };
 
-  const accumulatedInventory: Inventory = [...data.accumulatedInventory];
+  const accumulatedInventory: Inventory = data.accumulatedInventory.map(entry => ({ ...entry }));
 
   const healthChanges: HealthChanges = {
     added: [...data.healthChanges.added],
     removed: [...data.healthChanges.removed],
   };
 
-  const accumulatedHealth: Health = [...data.accumulatedHealth];
+  const accumulatedHealth: Health = data.accumulatedHealth.map(entry => ({ ...entry }));
 
-  const characterStateChanges: CharacterStateChanges = data.characterStateChanges.map((change) => ({
-    characterName: change.characterName,
-    added: [...change.added],
-    removed: [...change.removed],
-  }));
+  const characterStateChanges: CharacterStateChanges = {
+    added: data.characterStateChanges.added.map(change => ({
+      characterName: change.characterName,
+      states: [...change.states],
+    })),
+    removed: [...data.characterStateChanges.removed],
+  };
 
   const accumulatedCharacterState: AccumulatedCharacterState = Object.fromEntries(
-    Object.entries(data.accumulatedCharacterState).map(([name, state]) => [name, [...state]])
+    Object.entries(data.accumulatedCharacterState).map(([name, state]) => [
+      name,
+      state.map(entry => ({ ...entry })),
+    ]),
   );
 
   const accumulatedStructureState: AccumulatedStructureState = fileDataToStructureState(
-    data.accumulatedStructureState
+    data.accumulatedStructureState,
   );
   const structureVersionId =
     data.structureVersionId === undefined || data.structureVersionId === null

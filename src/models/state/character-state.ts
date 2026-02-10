@@ -5,24 +5,30 @@
 
 import { modelWarn } from '../model-logger.js';
 import { normalizeCharacterName, normalizeForComparison } from '../normalize.js';
+import { KeyedEntry } from './keyed-entry.js';
 
-export type CharacterStateEntry = string;
-export type CharacterState = readonly CharacterStateEntry[];
+export type CharacterState = readonly KeyedEntry[];
 
-export interface SingleCharacterStateChanges {
+export interface CharacterStateAddition {
   readonly characterName: string;
-  readonly added: readonly CharacterStateEntry[];
-  readonly removed: readonly CharacterStateEntry[];
+  readonly states: readonly string[];
 }
 
-export type CharacterStateChanges = readonly SingleCharacterStateChanges[];
+export interface CharacterStateChanges {
+  readonly added: readonly CharacterStateAddition[];
+  readonly removed: readonly string[];
+}
+
 export type AccumulatedCharacterState = Readonly<Record<string, CharacterState>>;
 
 /**
- * Creates an empty CharacterStateChanges array.
+ * Creates an empty CharacterStateChanges object.
  */
 export function createEmptyCharacterStateChanges(): CharacterStateChanges {
-  return [];
+  return {
+    added: [],
+    removed: [],
+  };
 }
 
 /**
@@ -32,74 +38,98 @@ export function createEmptyAccumulatedCharacterState(): AccumulatedCharacterStat
   return {};
 }
 
+function getGlobalCharacterStateMaxId(current: AccumulatedCharacterState): number {
+  let maxId = 0;
+  for (const states of Object.values(current)) {
+    for (const state of states) {
+      if (state.id.startsWith('cs-')) {
+        const num = Number.parseInt(state.id.slice(3), 10);
+        if (Number.isFinite(num) && num > maxId) {
+          maxId = num;
+        }
+      }
+    }
+  }
+  return maxId;
+}
+
 /**
  * Applies character state changes to the accumulated character state.
- * Follows the same add/remove pattern as other state management functions.
- * Removals are processed first using case-insensitive matching.
  * Uses case-insensitive lookup to find existing character entries,
- * but preserves original key casing (first-seen casing).
+ * while preserving original key casing (first-seen casing).
  */
 export function applyCharacterStateChanges(
   current: AccumulatedCharacterState,
-  changes: CharacterStateChanges
+  changes: CharacterStateChanges,
 ): AccumulatedCharacterState {
-  const result: Record<string, string[]> = {};
+  const result: Record<string, KeyedEntry[]> = {};
 
-  // Copy existing state
   for (const [name, state] of Object.entries(current)) {
     result[name] = [...state];
   }
 
-  // Build a lowercase-to-original-key map for case-insensitive lookup
   const keyLookup = new Map<string, string>();
   for (const name of Object.keys(result)) {
     keyLookup.set(normalizeForComparison(name), name);
   }
 
-  // Apply each character's changes
-  for (const charChange of changes) {
-    const cleanedName = normalizeCharacterName(charChange.characterName);
-    const lookupKey = normalizeForComparison(cleanedName);
+  let currentMaxId = getGlobalCharacterStateMaxId(current);
 
-    // Find existing key (case-insensitive) or use new casing
+  const removals = new Set(changes.removed);
+  if (removals.size > 0) {
+    const matched = new Set<string>();
+    for (const [name, states] of Object.entries(result)) {
+      const kept = states.filter(state => {
+        if (removals.has(state.id)) {
+          matched.add(state.id);
+          return false;
+        }
+        return true;
+      });
+
+      if (kept.length > 0) {
+        result[name] = kept;
+      } else {
+        delete result[name];
+        keyLookup.delete(normalizeForComparison(name));
+      }
+    }
+
+    for (const id of changes.removed) {
+      if (!matched.has(id)) {
+        modelWarn(`Character state removal ID did not match any existing entry: "${id}"`);
+      }
+    }
+  }
+
+  for (const addition of changes.added) {
+    const cleanedName = normalizeCharacterName(addition.characterName);
+    if (!cleanedName) {
+      continue;
+    }
+
+    const lookupKey = normalizeForComparison(cleanedName);
     const existingKey = keyLookup.get(lookupKey);
     const storageKey = existingKey ?? cleanedName;
-    const existing = result[storageKey] ?? [];
 
-    // Process removals first (case-insensitive match)
-    for (const toRemove of charChange.removed) {
-      const normalizedRemove = normalizeForComparison(toRemove);
-      if (!normalizedRemove) continue; // Skip empty strings silently
-      const index = existing.findIndex(
-        entry => normalizeForComparison(entry) === normalizedRemove
-      );
-      if (index !== -1) {
-        existing.splice(index, 1);
-      } else {
-        modelWarn(
-          `Character state removal did not match any existing entry for "${charChange.characterName}": "${toRemove}"`
-        );
-      }
+    if (!result[storageKey]) {
+      result[storageKey] = [];
+      keyLookup.set(lookupKey, storageKey);
     }
 
-    // Then add new entries
-    for (const toAdd of charChange.added) {
-      const trimmed = toAdd.trim();
-      if (trimmed) {
-        existing.push(trimmed);
+    for (const stateText of addition.states) {
+      const trimmed = stateText.trim();
+      if (!trimmed) {
+        continue;
       }
+      currentMaxId += 1;
+      result[storageKey].push({ id: `cs-${currentMaxId}`, text: trimmed });
     }
+  }
 
-    // Only keep the character in result if they have state entries
-    if (existing.length > 0) {
-      result[storageKey] = existing;
-      // Update the lookup map in case we added a new character
-      if (!existingKey) {
-        keyLookup.set(lookupKey, storageKey);
-      }
-    } else {
-      delete result[storageKey];
-      keyLookup.delete(lookupKey);
+  for (const [name, states] of Object.entries(result)) {
+    if (states.length === 0) {
+      delete result[name];
     }
   }
 

@@ -2,7 +2,7 @@ import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { PageId } from '../models/id.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
-import type { ActiveState } from '../models/state/index.js';
+import type { ActiveState, KeyedEntry } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 
 export interface AncestorSummary {
@@ -48,9 +48,7 @@ export interface StructureRewriteResult {
 }
 
 export interface PromptOptions {
-  /** 'none' | 'minimal' (1 example) | 'standard' (2-3 examples) */
   fewShotMode?: 'none' | 'minimal' | 'standard';
-  /** 'basic' (current) | 'strict' (explicit constraints) */
   choiceGuidance?: 'basic' | 'strict';
 }
 
@@ -75,15 +73,13 @@ export interface ContinuationContext {
   previousNarrative: string;
   selectedChoice: string;
 
-  accumulatedInventory: readonly string[];
-  accumulatedHealth: readonly string[];
-  accumulatedCharacterState: Readonly<Record<string, readonly string[]>>;
+  accumulatedInventory: readonly KeyedEntry[];
+  accumulatedHealth: readonly KeyedEntry[];
+  accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;
   parentProtagonistAffect?: ProtagonistAffect;
 
-  // NEW: Active state fields
   activeState: ActiveState;
 
-  // NEW: Extended scene context
   grandparentNarrative: string | null;
   ancestorSummaries: readonly AncestorSummary[];
 }
@@ -142,7 +138,7 @@ export interface WriterResult {
   healthAdded: string[];
   healthRemoved: string[];
   characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
-  characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
+  characterStateChangesRemoved: string[];
   protagonistAffect: ProtagonistAffect;
   isEnding: boolean;
   sceneSummary: string;

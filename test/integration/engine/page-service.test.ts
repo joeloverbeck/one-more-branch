@@ -353,9 +353,10 @@ describe('page-service integration', () => {
         choices: [createChoice('Go left'), createChoice('Go right')],
         inventoryChanges: { added: ['Torch'], removed: [] },
         healthChanges: { added: ['Minor fatigue'], removed: [] },
-        characterStateChanges: [
-          { characterName: 'Companion', added: ['Loyal'], removed: [] },
-        ],
+        characterStateChanges: {
+          added: [{ characterName: 'Companion', states: ['Loyal'] }],
+          removed: [],
+        },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -385,13 +386,13 @@ describe('page-service integration', () => {
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          accumulatedInventory: expect.arrayContaining(['Torch']),
+          accumulatedInventory: expect.arrayContaining([expect.objectContaining({ text: 'Torch' })]),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          accumulatedHealth: expect.arrayContaining(['Minor fatigue']),
+          accumulatedHealth: expect.arrayContaining([expect.objectContaining({ text: 'Minor fatigue' })]),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           accumulatedCharacterState: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            'Companion': expect.arrayContaining(['Loyal']),
+            'Companion': expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
           }),
         }),
         { apiKey: 'test-api-key' },
@@ -399,11 +400,16 @@ describe('page-service integration', () => {
 
       // Verify active state accumulates correctly
       expect(page.accumulatedActiveState.currentLocation).toBe('Maze of alleys');
-      // Active state uses tagged entries with prefix/description/raw structure
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
-      expect(page.accumulatedInventory).toContain('Torch');
-      expect(page.accumulatedHealth).toContain('Minor fatigue');
-      expect(page.accumulatedCharacterState['Companion']).toContain('Loyal');
+      expect(page.accumulatedInventory).toEqual(
+        expect.arrayContaining([expect.objectContaining({ text: 'Torch' })]),
+      );
+      expect(page.accumulatedHealth).toEqual(
+        expect.arrayContaining([expect.objectContaining({ text: 'Minor fatigue' })]),
+      );
+      expect(page.accumulatedCharacterState['Companion']).toEqual(
+        expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
+      );
     });
 
     it('passes npcs from story to writer prompt after disk roundtrip', async () => {

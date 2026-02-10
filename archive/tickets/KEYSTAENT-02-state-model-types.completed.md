@@ -1,6 +1,6 @@
 # KEYSTAENT-02: Migrate state model types to KeyedEntry
 
-**Status**: PENDING
+**Status**: ✅ COMPLETED
 **Priority**: 2
 **Depends on**: KEYSTAENT-01
 **Branch**: keyed-state-entries
@@ -9,7 +9,14 @@
 
 ## Summary
 
-Convert all state model types (`Inventory`, `Health`, `CharacterState`, `ActiveState`, `ActiveStateApply`) from plain strings / `TaggedStateEntry` to `KeyedEntry`. Update barrel exports in `index.ts`.
+Convert all state model types (`Inventory`, `Health`, `CharacterState`, `ActiveState`, `ActiveStateApply`) from plain strings / legacy tagged-entry usage to `KeyedEntry`. Update state and model barrel exports.
+
+## Reassessed Assumptions (2026-02-10)
+
+- `KEYSTAENT-01` already deleted `src/models/state/tagged-entry.ts` and added `src/models/state/keyed-entry.ts`.
+- Current code is in a hybrid state: `keyed-entry.ts` exists, but state modules and tests still use string arrays and legacy tagged-entry logic.
+- `src/models/index.ts` currently re-exports removed/legacy state symbols, so this ticket must update that barrel too to keep state API coherent.
+- Existing `test/unit/models/state.test.ts` still validates legacy `TaggedStateEntry` behavior and must be updated to keyed-ID behavior.
 
 ## Files to Touch
 
@@ -19,6 +26,8 @@ Convert all state model types (`Inventory`, `Health`, `CharacterState`, `ActiveS
 - `src/models/state/active-state.ts` — **MODIFY**
 - `src/models/state/active-state-apply.ts` — **MODIFY**
 - `src/models/state/index.ts` — **MODIFY**
+- `src/models/index.ts` — **MODIFY** (state re-export alignment)
+- `test/unit/models/state.test.ts` — **MODIFY** (replace legacy tagged-entry assertions)
 
 ## What to Implement
 
@@ -27,13 +36,13 @@ Convert all state model types (`Inventory`, `Health`, `CharacterState`, `ActiveS
 - Remove `InventoryItem` type alias (was just `string`)
 - `InventoryChanges.added`: stays `readonly string[]` (LLM sends plain text for additions)
 - `InventoryChanges.removed`: change to `readonly string[]` (now contains IDs like `"inv-2"`)
-- `applyInventoryChanges(current, changes)`: use `removeByIds(current, changes.removed)` then `assignIds(afterRemoval, changes.added, 'inv')` to produce new entries, then concatenate
+- `applyInventoryChanges(current, changes)`: use `removeByIds(current, changes.removed)` then `assignIds(current, changes.added, 'inv')` to preserve monotonic IDs, then concatenate
 
 ### `health.ts`
 - `Health`: change from `readonly string[]` to `readonly KeyedEntry[]`
 - Remove `HealthEntry` type alias
 - `HealthChanges.removed`: now contains IDs (`"hp-1"`)
-- `applyHealthChanges(current, changes)`: use `removeByIds` + `assignIds` with prefix `'hp'`
+- `applyHealthChanges(current, changes)`: use `removeByIds` + `assignIds(current, ..., 'hp')` to preserve monotonic IDs
 
 ### `character-state.ts`
 - `CharacterState`: `readonly string[]` → `readonly KeyedEntry[]`
@@ -64,17 +73,20 @@ Convert all state model types (`Inventory`, `Health`, `CharacterState`, `ActiveS
 ### `active-state-apply.ts`
 - Replace `applyTaggedChanges` with `applyKeyedChanges(current, added, removed, prefix)`:
   - Use `removeByIds(current, removed)` for removals
-  - Use `assignIds(afterRemoval, added, prefix)` for additions
+  - Use `assignIds(current, added, prefix)` for additions (do not reuse IDs after removal)
   - Concatenate remaining + new entries
 - Remove all category validation (`hasExpectedCategoryPrefix`, `StateCategory` import)
 - `applyActiveStateChanges()`: call `applyKeyedChanges` with `'th'`, `'cn'`, `'td'` prefixes
 
 ### `index.ts`
-- Remove all `tagged-entry.ts` exports (`VALID_CATEGORIES`, `StateCategory`, `TaggedStateEntry`, `parseTaggedEntry`, `isValidRemovalPrefix`, `extractPrefixFromRemoval`)
+- Remove stale/legacy tagged-entry exports from the state barrel (`src/models/state/index.ts`). (`tagged-entry.ts` file was already deleted in KEYSTAENT-01.)
 - Add `keyed-entry.ts` exports (`KeyedEntry`, `StateIdPrefix`, `extractIdNumber`, `getMaxIdNumber`, `nextId`, `assignIds`, `removeByIds`)
 - Remove `SingleCharacterStateChanges` export
 - Add `CharacterStateAddition` export
 - Update any changed function signatures in re-exports
+
+### `src/models/index.ts`
+- Keep top-level `@/models` state exports aligned with `src/models/state/index.ts` changes.
 
 ## Out of Scope
 
@@ -102,6 +114,7 @@ Update `test/unit/models/state.test.ts`:
 10. **Active state mixed**: additions + removals across threats/constraints/threads work correctly
 11. **isActiveState**: returns true for `{currentLocation:'x', activeThreats:[{id:'th-1',text:'y'}], activeConstraints:[], openThreads:[]}`
 12. **isActiveState**: returns false for old `TaggedStateEntry` shape `{prefix:'x', description:'y', raw:'z'}`
+13. **Legacy tagged-entry parsing tests removed**: `parseTaggedEntry` / `isValidRemovalPrefix` / `extractPrefixFromRemoval` are no longer referenced in `state.test.ts`
 
 ### Invariants that must remain true
 
@@ -109,3 +122,18 @@ Update `test/unit/models/state.test.ts`:
 - `cs-N` IDs are globally unique across all characters (not per-character)
 - Empty characters (0 state entries) are removed from `AccumulatedCharacterState`
 - `npm run typecheck` passes for all files in `src/models/state/`
+
+## Outcome
+
+- **Completed**: 2026-02-10
+- **What changed**:
+  - Migrated `inventory`, `health`, `character-state`, `active-state`, and `active-state-apply` to `KeyedEntry`-based state handling.
+  - Replaced legacy character-state change array shape with `{ added, removed }` and global `cs-*` ID assignment.
+  - Updated `src/models/state/index.ts` and `src/models/index.ts` exports to remove tagged-entry exports and expose keyed-entry utilities/types.
+  - Rewrote `test/unit/models/state.test.ts` to keyed-ID behavior and kept `test/unit/models/state/keyed-entry.test.ts` as the foundation coverage.
+- **Deviations from original plan**:
+  - Corrected algorithm wording to preserve monotonic IDs across removals (`assignIds(current, ...)`) to match acceptance examples (`inv-2`, `hp-2`, `th-2` behavior).
+  - Added `src/models/index.ts` alignment explicitly since the ticket originally only listed the state barrel.
+- **Verification**:
+  - `npx jest test/unit/models/state.test.ts test/unit/models/state/keyed-entry.test.ts` (pass)
+  - `npx tsc --noEmit src/models/state/*.ts` (pass)

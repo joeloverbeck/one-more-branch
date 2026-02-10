@@ -7,28 +7,18 @@
 import {
   ActiveState,
   ActiveStateChanges,
-  TaggedStateEntry,
+  KeyedEntry,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
 } from '../../src/models/state/index.js';
 
 /**
- * Creates a mock tagged state entry for testing.
- *
- * @param category - The category: THREAT, CONSTRAINT, or THREAD
- * @param id - Unique identifier for this entry (e.g., 'FIRE', 'TIME_LIMIT')
- * @param description - Human-readable description of the entry
+ * Creates a mock keyed state entry for testing.
  */
-export function createMockTaggedEntry(
-  category: 'THREAT' | 'CONSTRAINT' | 'THREAD',
-  id: string,
-  description: string
-): TaggedStateEntry {
-  const prefix = `${category}_${id}`;
+export function createMockKeyedEntry(prefix: 'th' | 'cn' | 'td', id: number, text: string): KeyedEntry {
   return {
-    prefix,
-    description,
-    raw: `${prefix}: ${description}`,
+    id: `${prefix}-${id}`,
+    text,
   };
 }
 
@@ -67,55 +57,47 @@ export function createMockActiveStateChanges(
  * Common fixture scenarios for active state testing.
  */
 export const FIXTURES = {
-  /** Empty active state - all arrays empty, no location */
   emptyActiveState: createEmptyActiveState(),
-
-  /** Empty active state changes - no modifications */
   emptyActiveStateChanges: createEmptyActiveStateChanges(),
 
-  /** State with a single active threat */
   stateWithThreat: {
     currentLocation: 'Dark corridor',
-    activeThreats: [createMockTaggedEntry('THREAT', 'FIRE', 'Fire spreading from the east wing')],
+    activeThreats: [createMockKeyedEntry('th', 1, 'Fire spreading from the east wing')],
     activeConstraints: [],
     openThreads: [],
   } as ActiveState,
 
-  /** State with a single constraint */
   stateWithConstraint: {
     currentLocation: 'Library',
     activeThreats: [],
-    activeConstraints: [createMockTaggedEntry('CONSTRAINT', 'QUIET', 'Must stay quiet to avoid detection')],
+    activeConstraints: [createMockKeyedEntry('cn', 1, 'Must stay quiet to avoid detection')],
     openThreads: [],
   } as ActiveState,
 
-  /** State with a single open thread */
   stateWithThread: {
     currentLocation: 'Town square',
     activeThreats: [],
     activeConstraints: [],
-    openThreads: [createMockTaggedEntry('THREAD', 'LETTER', "The mysterious letter's contents remain unknown")],
+    openThreads: [createMockKeyedEntry('td', 1, "The mysterious letter's contents remain unknown")],
   } as ActiveState,
 
-  /** Full state with multiple entries in all categories */
   fullState: {
     currentLocation: 'Cave entrance',
     activeThreats: [
-      createMockTaggedEntry('THREAT', 'WOLVES', 'A wolf pack is hunting nearby'),
-      createMockTaggedEntry('THREAT', 'STORM', 'A violent storm is approaching'),
+      createMockKeyedEntry('th', 1, 'A wolf pack is hunting nearby'),
+      createMockKeyedEntry('th', 2, 'A violent storm is approaching'),
     ],
     activeConstraints: [
-      createMockTaggedEntry('CONSTRAINT', 'INJURED', 'Injured leg limits mobility'),
+      createMockKeyedEntry('cn', 1, 'Injured leg limits mobility'),
     ],
     openThreads: [
-      createMockTaggedEntry('THREAD', 'MAP', "The map's destination remains unclear"),
+      createMockKeyedEntry('td', 1, "The map's destination remains unclear"),
     ],
   } as ActiveState,
 
-  /** Changes that add a threat */
   changesAddingThreat: {
     newLocation: null,
-    threatsAdded: ['THREAT_FIRE: Fire spreading from the east wing'],
+    threatsAdded: ['Fire spreading from the east wing'],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
@@ -123,18 +105,16 @@ export const FIXTURES = {
     threadsResolved: [],
   } as ActiveStateChanges,
 
-  /** Changes that remove a threat */
   changesRemovingThreat: {
     newLocation: null,
     threatsAdded: [],
-    threatsRemoved: ['THREAT_FIRE'],
+    threatsRemoved: ['th-1'],
     constraintsAdded: [],
     constraintsRemoved: [],
     threadsAdded: [],
     threadsResolved: [],
   } as ActiveStateChanges,
 
-  /** Changes that update location */
   changesUpdatingLocation: {
     newLocation: 'New hidden chamber',
     threatsAdded: [],
@@ -145,14 +125,13 @@ export const FIXTURES = {
     threadsResolved: [],
   } as ActiveStateChanges,
 
-  /** Complex changes with multiple operations */
   complexChanges: {
     newLocation: 'Underground passage',
-    threatsAdded: ['THREAT_COLLAPSE: The tunnel is unstable'],
-    threatsRemoved: ['THREAT_WOLVES'],
-    constraintsAdded: ['CONSTRAINT_DARKNESS: Complete darkness requires careful movement'],
+    threatsAdded: ['The tunnel is unstable'],
+    threatsRemoved: ['th-1'],
+    constraintsAdded: ['Complete darkness requires careful movement'],
     constraintsRemoved: [],
-    threadsAdded: ['THREAD_SOUNDS: Strange sounds echo from below'],
-    threadsResolved: ['THREAD_MAP'],
+    threadsAdded: ['Strange sounds echo from below'],
+    threadsResolved: ['td-1'],
   } as ActiveStateChanges,
 } as const;

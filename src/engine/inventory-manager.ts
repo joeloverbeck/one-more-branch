@@ -1,10 +1,22 @@
 import {
   Inventory,
   InventoryChanges,
-  InventoryItem,
   applyInventoryChanges as applyChanges,
   createEmptyInventoryChanges,
 } from '../models';
+
+function getMaxInventoryId(inventory: Inventory): number {
+  let maxId = 0;
+  for (const entry of inventory) {
+    if (entry.id.startsWith('inv-')) {
+      const num = Number.parseInt(entry.id.slice(4), 10);
+      if (Number.isFinite(num) && num > maxId) {
+        maxId = num;
+      }
+    }
+  }
+  return maxId;
+}
 
 /**
  * Normalizes an item name for comparison purposes.
@@ -18,12 +30,14 @@ export function normalizeItemName(item: string): string {
  * Adds an item to the inventory immutably.
  * Allows duplicates (e.g., multiple "Health Potion" entries).
  */
-export function addInventoryItem(inventory: Inventory, item: InventoryItem): Inventory {
+export function addInventoryItem(inventory: Inventory, item: string): Inventory {
   const trimmed = item.trim();
   if (!trimmed) {
     return inventory;
   }
-  return [...inventory, trimmed];
+
+  const nextId = getMaxInventoryId(inventory) + 1;
+  return [...inventory, { id: `inv-${nextId}`, text: trimmed }];
 }
 
 /**
@@ -31,10 +45,10 @@ export function addInventoryItem(inventory: Inventory, item: InventoryItem): Inv
  * Removes only the first matching item (case-insensitive).
  * Returns unchanged inventory if item not found.
  */
-export function removeInventoryItem(inventory: Inventory, item: InventoryItem): Inventory {
+export function removeInventoryItem(inventory: Inventory, item: string): Inventory {
   const normalizedItem = normalizeItemName(item);
   const result = [...inventory];
-  const index = result.findIndex(i => normalizeItemName(i) === normalizedItem);
+  const index = result.findIndex(i => normalizeItemName(i.text) === normalizedItem);
   if (index !== -1) {
     result.splice(index, 1);
   }
@@ -58,7 +72,7 @@ export function formatInventoryForPrompt(inventory: Inventory): string {
     return '';
   }
 
-  const formattedItems = inventory.map(item => `- ${item}`).join('\n');
+  const formattedItems = inventory.map(item => `- [${item.id}] ${item.text}`).join('\n');
   return `YOUR INVENTORY:\n${formattedItems}\n`;
 }
 
@@ -78,17 +92,17 @@ export function createInventoryChanges(
 /**
  * Checks if inventory contains an item (case-insensitive).
  */
-export function hasInventoryItem(inventory: Inventory, item: InventoryItem): boolean {
+export function hasInventoryItem(inventory: Inventory, item: string): boolean {
   const normalizedItem = normalizeItemName(item);
-  return inventory.some(i => normalizeItemName(i) === normalizedItem);
+  return inventory.some(i => normalizeItemName(i.text) === normalizedItem);
 }
 
 /**
  * Counts occurrences of an item in inventory (case-insensitive).
  */
-export function countInventoryItem(inventory: Inventory, item: InventoryItem): number {
+export function countInventoryItem(inventory: Inventory, item: string): number {
   const normalizedItem = normalizeItemName(item);
-  return inventory.filter(i => normalizeItemName(i) === normalizedItem).length;
+  return inventory.filter(i => normalizeItemName(i.text) === normalizedItem).length;
 }
 
 /**

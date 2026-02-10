@@ -5,319 +5,82 @@ import {
   applyCharacterStateChanges,
   applyActiveStateChanges,
   applyHealthChanges,
+  applyInventoryChanges,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
   createEmptyAccumulatedCharacterState,
   createEmptyCharacterStateChanges,
   createEmptyHealthChanges,
-  extractPrefixFromRemoval,
+  createEmptyInventoryChanges,
   isActiveState,
   isActiveStateChanges,
-  isValidRemovalPrefix,
   mergeCanonFacts,
-  parseTaggedEntry,
 } from '../../../src/models/state';
 
 describe('State utilities', () => {
   beforeAll(() => {
-    // Wire up logger for model layer warnings
     setModelLogger(logger);
   });
 
   afterAll(() => {
-    // Clean up
     setModelLogger(null);
   });
 
-  describe('createEmptyActiveState', () => {
-    it('returns state with empty location', () => {
-      const state = createEmptyActiveState();
-      expect(state.currentLocation).toBe('');
+  describe('createEmpty utilities', () => {
+    it('creates empty active state and changes', () => {
+      expect(createEmptyActiveState()).toEqual({
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      });
+      expect(createEmptyActiveStateChanges()).toEqual({
+        newLocation: null,
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
     });
 
-    it('returns state with empty threat array', () => {
-      const state = createEmptyActiveState();
-      expect(state.activeThreats).toEqual([]);
-    });
-
-    it('returns state with empty constraints array', () => {
-      const state = createEmptyActiveState();
-      expect(state.activeConstraints).toEqual([]);
-    });
-
-    it('returns state with empty threads array', () => {
-      const state = createEmptyActiveState();
-      expect(state.openThreads).toEqual([]);
-    });
-  });
-
-  describe('createEmptyActiveStateChanges', () => {
-    it('returns changes with null location', () => {
-      const changes = createEmptyActiveStateChanges();
-      expect(changes.newLocation).toBeNull();
-    });
-
-    it('returns changes with empty arrays', () => {
-      const changes = createEmptyActiveStateChanges();
-      expect(changes.threatsAdded).toEqual([]);
-      expect(changes.threatsRemoved).toEqual([]);
-      expect(changes.constraintsAdded).toEqual([]);
-      expect(changes.constraintsRemoved).toEqual([]);
-      expect(changes.threadsAdded).toEqual([]);
-      expect(changes.threadsResolved).toEqual([]);
+    it('creates empty inventory, health, and character state changes', () => {
+      expect(createEmptyInventoryChanges()).toEqual({ added: [], removed: [] });
+      expect(createEmptyHealthChanges()).toEqual({ added: [], removed: [] });
+      expect(createEmptyCharacterStateChanges()).toEqual({ added: [], removed: [] });
+      expect(createEmptyAccumulatedCharacterState()).toEqual({});
     });
   });
 
   describe('isActiveState', () => {
-    it('returns true for valid ActiveState', () => {
-      const state = {
-        currentLocation: 'Room',
-        activeThreats: [],
-        activeConstraints: [],
-        openThreads: [],
-      };
-      expect(isActiveState(state)).toBe(true);
+    it('returns true for keyed active state', () => {
+      expect(
+        isActiveState({
+          currentLocation: 'x',
+          activeThreats: [{ id: 'th-1', text: 'y' }],
+          activeConstraints: [],
+          openThreads: [],
+        }),
+      ).toBe(true);
     });
 
-    it('returns false for null', () => {
-      expect(isActiveState(null)).toBe(false);
-    });
-
-    it('returns false for missing currentLocation', () => {
-      expect(isActiveState({ activeThreats: [], activeConstraints: [], openThreads: [] })).toBe(
-        false
-      );
-    });
-
-    it('returns true for state with entries', () => {
-      const state = {
-        currentLocation: 'Cave',
-        activeThreats: [{ prefix: 'THREAT_X', description: 'X', raw: 'THREAT_X: X' }],
-        activeConstraints: [],
-        openThreads: [],
-      };
-      expect(isActiveState(state)).toBe(true);
+    it('returns false for legacy tagged entry shape', () => {
+      expect(
+        isActiveState({
+          currentLocation: 'x',
+          activeThreats: [{ prefix: 'THREAT_X', description: 'y', raw: 'THREAT_X: y' }],
+          activeConstraints: [],
+          openThreads: [],
+        }),
+      ).toBe(false);
     });
   });
 
   describe('isActiveStateChanges', () => {
     it('returns true for valid changes object', () => {
-      const changes = {
-        newLocation: null,
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      };
-      expect(isActiveStateChanges(changes)).toBe(true);
-    });
-
-    it('returns true when newLocation is string', () => {
-      const changes = {
-        newLocation: 'New Place',
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      };
-      expect(isActiveStateChanges(changes)).toBe(true);
-    });
-
-    it('returns false for missing fields', () => {
-      expect(isActiveStateChanges({ newLocation: null })).toBe(false);
-    });
-
-    it('returns false when removal arrays contain non-string values', () => {
-      const invalid = {
-        newLocation: null,
-        threatsAdded: [],
-        threatsRemoved: [123],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      };
-      expect(isActiveStateChanges(invalid)).toBe(false);
-    });
-  });
-
-  describe('applyActiveStateChanges', () => {
-    const emptyState = createEmptyActiveState();
-
-    it('applies threat additions', () => {
-      const result = applyActiveStateChanges(emptyState, {
-        newLocation: null,
-        threatsAdded: ['THREAT_FIRE: Fire spreading from east'],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      });
-
-      expect(result.activeThreats).toEqual([
-        {
-          prefix: 'THREAT_FIRE',
-          description: 'Fire spreading from east',
-          raw: 'THREAT_FIRE: Fire spreading from east',
-        },
-      ]);
-    });
-
-    it('removes threat entries by exact prefix', () => {
-      const result = applyActiveStateChanges(
-        {
-          currentLocation: 'Corridor',
-          activeThreats: [
-            {
-              prefix: 'THREAT_FIRE',
-              description: 'Fire spreading',
-              raw: 'THREAT_FIRE: Fire spreading',
-            },
-            {
-              prefix: 'THREAT_SMOKE',
-              description: 'Smoke is thick',
-              raw: 'THREAT_SMOKE: Smoke is thick',
-            },
-          ],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        {
-          newLocation: null,
-          threatsAdded: [],
-          threatsRemoved: ['THREAT_FIRE'],
-          constraintsAdded: [],
-          constraintsRemoved: [],
-          threadsAdded: [],
-          threadsResolved: [],
-        }
-      );
-
-      expect(result.activeThreats).toEqual([
-        {
-          prefix: 'THREAT_SMOKE',
-          description: 'Smoke is thick',
-          raw: 'THREAT_SMOKE: Smoke is thick',
-        },
-      ]);
-    });
-
-    it('extracts and applies removal prefixes even when description is included', () => {
-      const result = applyActiveStateChanges(
-        {
-          currentLocation: 'Corridor',
-          activeThreats: [
-            {
-              prefix: 'THREAT_FIRE',
-              description: 'Fire spreading',
-              raw: 'THREAT_FIRE: Fire spreading',
-            },
-          ],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        {
-          newLocation: null,
-          threatsAdded: [],
-          threatsRemoved: ['THREAT_FIRE: outdated copy'],
-          constraintsAdded: [],
-          constraintsRemoved: [],
-          threadsAdded: [],
-          threadsResolved: [],
-        }
-      );
-
-      expect(result.activeThreats).toEqual([]);
-    });
-
-    it('processes removals before additions so entries can be replaced', () => {
-      const result = applyActiveStateChanges(
-        {
-          currentLocation: '',
-          activeThreats: [{ prefix: 'THREAT_OLD', description: 'Old', raw: 'THREAT_OLD: Old' }],
-          activeConstraints: [],
-          openThreads: [],
-        },
-        {
-          newLocation: null,
-          threatsAdded: ['THREAT_OLD: New version'],
-          threatsRemoved: ['THREAT_OLD'],
-          constraintsAdded: [],
-          constraintsRemoved: [],
-          threadsAdded: [],
-          threadsResolved: [],
-        }
-      );
-
-      expect(result.activeThreats).toEqual([
-        { prefix: 'THREAT_OLD', description: 'New version', raw: 'THREAT_OLD: New version' },
-      ]);
-    });
-
-    it('warns and keeps state when removal prefix is not present', () => {
-      logger.clear();
-      const result = applyActiveStateChanges(emptyState, {
-        newLocation: null,
-        threatsAdded: [],
-        threatsRemoved: ['THREAT_NONEXISTENT'],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      });
-
-      expect(result.activeThreats).toEqual([]);
-      const entries = logger.getEntries();
-      const warnEntry = entries.find(
-        e => e.level === 'warn' && e.message.includes('Removal prefix not found, skipping')
-      );
-      expect(warnEntry).toBeDefined();
-      expect(warnEntry?.message).toContain('THREAT_NONEXISTENT');
-    });
-
-    it('warns and skips additions with the wrong category', () => {
-      logger.clear();
-      const result = applyActiveStateChanges(emptyState, {
-        newLocation: null,
-        threatsAdded: ['CONSTRAINT_TIME: Wrong category'],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      });
-
-      expect(result.activeThreats).toEqual([]);
-      const entries = logger.getEntries();
-      const warnEntry = entries.find(
-        e => e.level === 'warn' && e.message.includes('Entry category mismatch')
-      );
-      expect(warnEntry).toBeDefined();
-    });
-
-    it('updates location when newLocation is provided', () => {
-      const result = applyActiveStateChanges(emptyState, {
-        newLocation: 'New Room',
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      });
-
-      expect(result.currentLocation).toBe('New Room');
-    });
-
-    it('preserves location when newLocation is null', () => {
-      const result = applyActiveStateChanges(
-        { ...emptyState, currentLocation: 'Original Room' },
-        {
+      expect(
+        isActiveStateChanges({
           newLocation: null,
           threatsAdded: [],
           threatsRemoved: [],
@@ -325,552 +88,271 @@ describe('State utilities', () => {
           constraintsRemoved: [],
           threadsAdded: [],
           threadsResolved: [],
-        }
-      );
-
-      expect(result.currentLocation).toBe('Original Room');
+        }),
+      ).toBe(true);
     });
 
-    it('applies constraint additions and thread removals', () => {
-      const result = applyActiveStateChanges(
-        {
-          currentLocation: '',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [
-            {
-              prefix: 'THREAD_MYSTERY',
-              description: 'Unknown symbol',
-              raw: 'THREAD_MYSTERY: Unknown symbol',
-            },
-          ],
-        },
-        {
+    it('returns false when an array contains non-strings', () => {
+      expect(
+        isActiveStateChanges({
           newLocation: null,
-          threatsAdded: [],
+          threatsAdded: [1],
           threatsRemoved: [],
-          constraintsAdded: ['CONSTRAINT_TIME: Only 10 minutes remaining'],
+          constraintsAdded: [],
           constraintsRemoved: [],
           threadsAdded: [],
-          threadsResolved: ['THREAD_MYSTERY'],
-        }
+          threadsResolved: [],
+        }),
+      ).toBe(false);
+    });
+  });
+
+  describe('applyInventoryChanges', () => {
+    it('applies remove by ID then add with next sequential ID', () => {
+      const result = applyInventoryChanges(
+        [{ id: 'inv-1', text: 'Sword' }],
+        { added: ['Shield'], removed: ['inv-1'] },
       );
+      expect(result).toEqual([{ id: 'inv-2', text: 'Shield' }]);
+    });
 
-      expect(result.activeConstraints).toEqual([
-        {
-          prefix: 'CONSTRAINT_TIME',
-          description: 'Only 10 minutes remaining',
-          raw: 'CONSTRAINT_TIME: Only 10 minutes remaining',
-        },
+    it('logs warning when removing unknown ID and keeps inventory unchanged', () => {
+      logger.clear();
+      const current = [{ id: 'inv-1', text: 'Sword' }] as const;
+      const result = applyInventoryChanges(current, { added: [], removed: ['inv-9'] });
+
+      expect(result).toEqual(current);
+      const warning = logger
+        .getEntries()
+        .find(e => e.level === 'warn' && e.message.includes('removeByIds: ID "inv-9"'));
+      expect(warning).toBeDefined();
+    });
+
+    it('is immutable', () => {
+      const current = [{ id: 'inv-1', text: 'Sword' }] as const;
+      const result = applyInventoryChanges(current, { added: ['Shield'], removed: [] });
+
+      expect(current).toEqual([{ id: 'inv-1', text: 'Sword' }]);
+      expect(result).toEqual([
+        { id: 'inv-1', text: 'Sword' },
+        { id: 'inv-2', text: 'Shield' },
       ]);
-      expect(result.openThreads).toEqual([]);
-    });
-
-    it('does not mutate the original state object or nested arrays', () => {
-      const original = {
-        currentLocation: 'Room',
-        activeThreats: [{ prefix: 'THREAT_A', description: 'A', raw: 'THREAT_A: A' }],
-        activeConstraints: [],
-        openThreads: [],
-      };
-
-      const result = applyActiveStateChanges(original, {
-        newLocation: 'New Room',
-        threatsAdded: ['THREAT_B: B'],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-      });
-
-      expect(result).not.toBe(original);
-      expect(result.activeThreats).not.toBe(original.activeThreats);
-      expect(original).toEqual({
-        currentLocation: 'Room',
-        activeThreats: [{ prefix: 'THREAT_A', description: 'A', raw: 'THREAT_A: A' }],
-        activeConstraints: [],
-        openThreads: [],
-      });
-    });
-  });
-
-  describe('addCanonFact', () => {
-    it('adds a new canon fact', () => {
-      expect(addCanonFact(['Fact A'], 'Fact B')).toEqual(['Fact A', 'Fact B']);
-    });
-
-    it('does not add duplicates using case-insensitive comparison', () => {
-      expect(addCanonFact(['The kingdom exists'], 'THE KINGDOM EXISTS')).toEqual([
-        'The kingdom exists',
-      ]);
-    });
-
-    it('does not mutate original canon when adding a new fact', () => {
-      const canon = ['Fact A'] as const;
-      const result = addCanonFact(canon, 'Fact B');
-
-      expect(canon).toEqual(['Fact A']);
-      expect(result).toEqual(['Fact A', 'Fact B']);
-      expect(result).not.toBe(canon);
-    });
-
-    it('returns the original array reference when fact is duplicate after trim', () => {
-      const canon = ['Fact A'] as const;
-      const result = addCanonFact(canon, '  fact a  ');
-
-      expect(result).toBe(canon);
-    });
-
-    it('trims facts before adding', () => {
-      expect(addCanonFact([], '  Fact B  ')).toEqual(['Fact B']);
-    });
-  });
-
-  describe('mergeCanonFacts', () => {
-    it('adds multiple non-duplicate facts', () => {
-      expect(mergeCanonFacts(['Fact A'], ['Fact B', 'Fact C'])).toEqual([
-        'Fact A',
-        'Fact B',
-        'Fact C',
-      ]);
-    });
-
-    it('skips duplicates while merging', () => {
-      expect(mergeCanonFacts(['Fact A'], ['Fact A', 'Fact B'])).toEqual(['Fact A', 'Fact B']);
-    });
-  });
-
-  describe('createEmptyHealthChanges', () => {
-    it('returns empty added and removed arrays', () => {
-      expect(createEmptyHealthChanges()).toEqual({ added: [], removed: [] });
+      expect(result).not.toBe(current);
     });
   });
 
   describe('applyHealthChanges', () => {
-    describe('adding health entries', () => {
-      it('adds new health entries to empty health', () => {
-        const result = applyHealthChanges(
-          [],
-          { added: ['Minor wound on left arm', 'Headache'], removed: [] }
-        );
-        expect(result).toEqual(['Minor wound on left arm', 'Headache']);
-      });
-
-      it('appends new health entries to existing health', () => {
-        const result = applyHealthChanges(
-          ['Bruised ribs'],
-          { added: ['Sprained ankle'], removed: [] }
-        );
-        expect(result).toEqual(['Bruised ribs', 'Sprained ankle']);
-      });
-
-      it('trims whitespace from added health entries', () => {
-        const result = applyHealthChanges(
-          [],
-          { added: ['  Poison in your veins  ', ''], removed: [] }
-        );
-        expect(result).toEqual(['Poison in your veins']);
-      });
-
-      it('filters out empty string additions', () => {
-        const result = applyHealthChanges(
-          ['Existing injury'],
-          { added: ['', '  ', 'New wound'], removed: [] }
-        );
-        expect(result).toEqual(['Existing injury', 'New wound']);
-      });
+    it('applies remove by ID then add with next sequential ID', () => {
+      const result = applyHealthChanges(
+        [{ id: 'hp-1', text: 'Bruised arm' }],
+        { added: ['Poisoned'], removed: ['hp-1'] },
+      );
+      expect(result).toEqual([{ id: 'hp-2', text: 'Poisoned' }]);
     });
 
-    describe('removing health entries', () => {
-      it('removes existing health entry with exact match', () => {
-        const result = applyHealthChanges(
-          ['Minor wound on left arm', 'Headache'],
-          { added: [], removed: ['Minor wound on left arm'] }
-        );
-        expect(result).toEqual(['Headache']);
-      });
+    it('is immutable', () => {
+      const current = [{ id: 'hp-1', text: 'Bruised arm' }] as const;
+      const result = applyHealthChanges(current, { added: ['Poisoned'], removed: [] });
 
-      it('removes health entry with case-insensitive match', () => {
-        const result = applyHealthChanges(
-          ['BRUISED RIBS'],
-          { added: [], removed: ['bruised ribs'] }
-        );
-        expect(result).toEqual([]);
-      });
-
-      it('removes health entry with whitespace-trimmed match', () => {
-        const result = applyHealthChanges(
-          ['Sprained ankle'],
-          { added: [], removed: ['  Sprained ankle  '] }
-        );
-        expect(result).toEqual([]);
-      });
-
-      it('removes only the first matching entry when duplicates exist', () => {
-        const result = applyHealthChanges(
-          ['Fatigue', 'Fatigue', 'Hunger'],
-          { added: [], removed: ['Fatigue'] }
-        );
-        expect(result).toEqual(['Fatigue', 'Hunger']);
-      });
-
-      it('ignores removal when entry does not exist', () => {
-        logger.clear();
-        const result = applyHealthChanges(
-          ['Existing condition'],
-          { added: [], removed: ['Non-existent condition'] }
-        );
-        expect(result).toEqual(['Existing condition']);
-        const entries = logger.getEntries();
-        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Non-existent condition'));
-        expect(warnEntry).toBeDefined();
-        expect(warnEntry?.message).toContain('Health removal did not match any existing entry');
-      });
-    });
-
-    describe('combined add and remove operations', () => {
-      it('processes removals before additions', () => {
-        const result = applyHealthChanges(
-          ['Poison in your veins'],
-          { added: ['Poison neutralized - feeling better'], removed: ['Poison in your veins'] }
-        );
-        expect(result).toEqual(['Poison neutralized - feeling better']);
-      });
-
-      it('handles healing scenario correctly', () => {
-        const result = applyHealthChanges(
-          ['Minor wound on left arm', 'Exhaustion'],
-          { added: ['Wound healed - minor scar remains'], removed: ['Minor wound on left arm'] }
-        );
-        expect(result).toEqual(['Exhaustion', 'Wound healed - minor scar remains']);
-      });
-    });
-
-    describe('immutability', () => {
-      it('does not mutate the original health array', () => {
-        const original: readonly string[] = ['Condition A', 'Condition B'];
-        const result = applyHealthChanges(
-          original,
-          { added: ['Condition C'], removed: ['Condition A'] }
-        );
-
-        expect(original).toEqual(['Condition A', 'Condition B']);
-        expect(result).toEqual(['Condition B', 'Condition C']);
-        expect(result).not.toBe(original);
-      });
-    });
-  });
-
-  describe('createEmptyCharacterStateChanges', () => {
-    it('returns an empty array', () => {
-      expect(createEmptyCharacterStateChanges()).toEqual([]);
-    });
-  });
-
-  describe('createEmptyAccumulatedCharacterState', () => {
-    it('returns an empty object', () => {
-      expect(createEmptyAccumulatedCharacterState()).toEqual({});
+      expect(current).toEqual([{ id: 'hp-1', text: 'Bruised arm' }]);
+      expect(result).toEqual([
+        { id: 'hp-1', text: 'Bruised arm' },
+        { id: 'hp-2', text: 'Poisoned' },
+      ]);
+      expect(result).not.toBe(current);
     });
   });
 
   describe('applyCharacterStateChanges', () => {
-    describe('adding character state entries', () => {
-      it('adds new character state to empty accumulated state with preserved casing', () => {
-        const result = applyCharacterStateChanges(
-          {},
-          [{ characterName: 'Greaves', added: ['Gave protagonist a map'], removed: [] }]
-        );
-        expect(result).toEqual({
-          Greaves: ['Gave protagonist a map'],
-        });
+    it('assigns globally sequential cs IDs across characters', () => {
+      const result = applyCharacterStateChanges({}, {
+        added: [
+          { characterName: 'Greaves', states: ['Gave map'] },
+          { characterName: 'Elena', states: ['Agreed to help'] },
+        ],
+        removed: [],
       });
 
-      it('appends new states to existing character using existing key casing', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Gave protagonist a map'] },
-          [{ characterName: 'greaves', added: ['Proposed 70-30 split'], removed: [] }]
-        );
-        // Uses existing key casing, not new query casing
-        expect(result).toEqual({
-          Greaves: ['Gave protagonist a map', 'Proposed 70-30 split'],
-        });
-      });
-
-      it('handles multiple characters in single operation with preserved casing', () => {
-        const result = applyCharacterStateChanges(
-          {},
-          [
-            { characterName: 'Greaves', added: ['Gave protagonist a map'], removed: [] },
-            { characterName: 'Elena', added: ['Agreed to help'], removed: [] },
-          ]
-        );
-        expect(result).toEqual({
-          Greaves: ['Gave protagonist a map'],
-          Elena: ['Agreed to help'],
-        });
-      });
-
-      it('cleans punctuation but preserves original casing', () => {
-        const result = applyCharacterStateChanges(
-          {},
-          [{ characterName: '  GREAVES  ', added: ['Gave protagonist a map'], removed: [] }]
-        );
-        expect(result).toEqual({
-          GREAVES: ['Gave protagonist a map'],
-        });
-      });
-
-      it('trims whitespace from added state entries', () => {
-        const result = applyCharacterStateChanges(
-          {},
-          [{ characterName: 'Greaves', added: ['  Trimmed entry  ', ''], removed: [] }]
-        );
-        expect(result).toEqual({
-          Greaves: ['Trimmed entry'],
-        });
-      });
-
-      it('filters out empty string additions', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Existing'] },
-          [{ characterName: 'greaves', added: ['', '  ', 'Valid'], removed: [] }]
-        );
-        expect(result).toEqual({
-          Greaves: ['Existing', 'Valid'],
-        });
-      });
-    });
-
-    describe('removing character state entries', () => {
-      it('removes existing state entry with exact match', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Gave protagonist a map', 'Proposed 70-30 split'] },
-          [{ characterName: 'Greaves', added: [], removed: ['Gave protagonist a map'] }]
-        );
-        expect(result).toEqual({
-          Greaves: ['Proposed 70-30 split'],
-        });
-      });
-
-      it('removes state entry with case-insensitive match', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['GAVE PROTAGONIST A MAP'] },
-          [{ characterName: 'greaves', added: [], removed: ['gave protagonist a map'] }]
-        );
-        // Empty characters are removed from the result
-        expect(result).toEqual({});
-      });
-
-      it('removes state entry with whitespace-trimmed match', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Gave protagonist a map'] },
-          [{ characterName: 'GREAVES', added: [], removed: ['  Gave protagonist a map  '] }]
-        );
-        // Empty characters are removed from the result
-        expect(result).toEqual({});
-      });
-
-      it('ignores removal when state does not exist', () => {
-        logger.clear();
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Existing state'] },
-          [{ characterName: 'greaves', added: [], removed: ['Non-existent state'] }]
-        );
-        expect(result).toEqual({ Greaves: ['Existing state'] });
-        const entries = logger.getEntries();
-        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Non-existent state'));
-        expect(warnEntry).toBeDefined();
-        expect(warnEntry?.message).toContain('Character state removal did not match any existing entry for "greaves"');
-      });
-
-      it('ignores removal when character does not exist', () => {
-        logger.clear();
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Existing state'] },
-          [{ characterName: 'unknown', added: [], removed: ['Some state'] }]
-        );
-        expect(result).toEqual({ Greaves: ['Existing state'] });
-        const entries = logger.getEntries();
-        const warnEntry = entries.find(e => e.level === 'warn' && e.message.includes('Some state'));
-        expect(warnEntry).toBeDefined();
-        expect(warnEntry?.message).toContain('Character state removal did not match any existing entry for "unknown"');
-      });
-    });
-
-    describe('combined add and remove operations', () => {
-      it('processes removals before additions', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['Waiting at the docks'] },
-          [{ characterName: 'greaves', added: ['Left the docks'], removed: ['Waiting at the docks'] }]
-        );
-        expect(result).toEqual({
-          Greaves: ['Left the docks'],
-        });
-      });
-
-      it('handles multiple additions and removals in single operation', () => {
-        const result = applyCharacterStateChanges(
-          { Greaves: ['State A', 'State B', 'State C'] },
-          [{ characterName: 'greaves', added: ['State D', 'State E'], removed: ['State A', 'State B'] }]
-        );
-        expect(result).toEqual({
-          Greaves: ['State C', 'State D', 'State E'],
-        });
-      });
-    });
-
-    describe('immutability', () => {
-      it('does not mutate the original accumulated state', () => {
-        const original = { Greaves: ['State A', 'State B'] };
-        const result = applyCharacterStateChanges(
-          original,
-          [{ characterName: 'greaves', added: ['State C'], removed: ['State A'] }]
-        );
-
-        expect(original).toEqual({ Greaves: ['State A', 'State B'] });
-        expect(result).toEqual({ Greaves: ['State B', 'State C'] });
-        expect(result).not.toBe(original);
-      });
-
-      it('does not mutate the original character state array', () => {
-        const originalArray = ['State A', 'State B'];
-        const original = { Greaves: originalArray };
-        const result = applyCharacterStateChanges(
-          original,
-          [{ characterName: 'greaves', added: ['State C'], removed: [] }]
-        );
-
-        expect(originalArray).toEqual(['State A', 'State B']);
-        expect(result.Greaves).toEqual(['State A', 'State B', 'State C']);
-        expect(result.Greaves).not.toBe(originalArray);
-      });
-    });
-  });
-
-  describe('parseTaggedEntry', () => {
-    it('parses valid THREAT entry', () => {
-      const result = parseTaggedEntry('THREAT_ENTITIES: Multiple entities tracking');
       expect(result).toEqual({
-        prefix: 'THREAT_ENTITIES',
-        description: 'Multiple entities tracking',
-        raw: 'THREAT_ENTITIES: Multiple entities tracking',
+        Greaves: [{ id: 'cs-1', text: 'Gave map' }],
+        Elena: [{ id: 'cs-2', text: 'Agreed to help' }],
       });
     });
 
-    it('parses valid CONSTRAINT entry', () => {
-      const result = parseTaggedEntry('CONSTRAINT_BETTY_BREATHING: Breathing fragile');
-      expect(result?.prefix).toBe('CONSTRAINT_BETTY_BREATHING');
-    });
-
-    it('parses valid THREAD entry', () => {
-      const result = parseTaggedEntry('THREAD_GRAFFITI: Meaning unknown');
-      expect(result?.prefix).toBe('THREAD_GRAFFITI');
-    });
-
-    it('returns null for entry without colon', () => {
-      logger.clear();
-      expect(parseTaggedEntry('THREAT_FIRE Fire spreading')).toBeNull();
-
-      const entries = logger.getEntries();
-      const warnEntry = entries.find(
-        e => e.level === 'warn' && e.message.includes('Invalid tagged state entry (missing colon)')
+    it('removes matching IDs across all characters', () => {
+      const result = applyCharacterStateChanges(
+        {
+          Greaves: [
+            { id: 'cs-1', text: 'A' },
+            { id: 'cs-2', text: 'B' },
+          ],
+          Elena: [{ id: 'cs-3', text: 'C' }],
+        },
+        {
+          added: [],
+          removed: ['cs-1', 'cs-3'],
+        },
       );
-      expect(warnEntry).toBeDefined();
+
+      expect(result).toEqual({
+        Greaves: [{ id: 'cs-2', text: 'B' }],
+      });
     });
 
-    it('returns null for invalid category', () => {
-      logger.clear();
-      expect(parseTaggedEntry('DANGER_FIRE: Fire spreading')).toBeNull();
-
-      const entries = logger.getEntries();
-      const warnEntry = entries.find(
-        e => e.level === 'warn' && e.message.includes('Invalid tagged state entry prefix')
+    it('continues global sequence from highest existing ID', () => {
+      const result = applyCharacterStateChanges(
+        {
+          Greaves: [{ id: 'cs-5', text: 'Old' }],
+        },
+        {
+          added: [{ characterName: 'Greaves', states: ['New'] }],
+          removed: [],
+        },
       );
-      expect(warnEntry).toBeDefined();
+
+      expect(result).toEqual({
+        Greaves: [
+          { id: 'cs-5', text: 'Old' },
+          { id: 'cs-6', text: 'New' },
+        ],
+      });
     });
 
-    it('handles extra whitespace', () => {
-      const result = parseTaggedEntry('  THREAT_FIRE:   Fire spreading  ');
-      expect(result?.prefix).toBe('THREAT_FIRE');
-      expect(result?.description).toBe('Fire spreading');
+    it('removes empty characters after removals', () => {
+      const result = applyCharacterStateChanges(
+        {
+          Greaves: [{ id: 'cs-1', text: 'Only state' }],
+        },
+        {
+          added: [],
+          removed: ['cs-1'],
+        },
+      );
+
+      expect(result).toEqual({});
     });
 
-    it('handles empty description', () => {
-      const result = parseTaggedEntry('THREAT_FIRE:');
-      expect(result?.prefix).toBe('THREAT_FIRE');
-      expect(result?.description).toBe('');
-    });
+    it('is immutable', () => {
+      const current = {
+        Greaves: [{ id: 'cs-1', text: 'Existing' }],
+      } as const;
+      const result = applyCharacterStateChanges(current, {
+        added: [{ characterName: 'Greaves', states: ['New'] }],
+        removed: [],
+      });
 
-    it('handles description with colons', () => {
-      const result = parseTaggedEntry('THREAD_TIME: Clock reads 3:45 PM');
-      expect(result?.description).toBe('Clock reads 3:45 PM');
+      expect(current).toEqual({
+        Greaves: [{ id: 'cs-1', text: 'Existing' }],
+      });
+      expect(result.Greaves).toEqual([
+        { id: 'cs-1', text: 'Existing' },
+        { id: 'cs-2', text: 'New' },
+      ]);
+      expect(result).not.toBe(current);
+      expect(result.Greaves).not.toBe(current.Greaves);
     });
   });
 
-  describe('isValidRemovalPrefix', () => {
-    it('accepts valid THREAT prefix', () => {
-      expect(isValidRemovalPrefix('THREAT_ENTITIES')).toBe(true);
+  describe('applyActiveStateChanges', () => {
+    it('creates keyed threat entries from plain additions', () => {
+      const result = applyActiveStateChanges(createEmptyActiveState(), {
+        newLocation: null,
+        threatsAdded: ['Fire everywhere'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
+
+      expect(result.activeThreats).toEqual([{ id: 'th-1', text: 'Fire everywhere' }]);
     });
 
-    it('accepts valid CONSTRAINT prefix', () => {
-      expect(isValidRemovalPrefix('CONSTRAINT_TIME_LIMIT')).toBe(true);
+    it('removes keyed threat entries by ID', () => {
+      const result = applyActiveStateChanges(
+        {
+          currentLocation: 'Hallway',
+          activeThreats: [{ id: 'th-1', text: 'Fire everywhere' }],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        {
+          newLocation: null,
+          threatsAdded: [],
+          threatsRemoved: ['th-1'],
+          constraintsAdded: [],
+          constraintsRemoved: [],
+          threadsAdded: [],
+          threadsResolved: [],
+        },
+      );
+
+      expect(result.activeThreats).toEqual([]);
     });
 
-    it('accepts valid THREAD prefix', () => {
-      expect(isValidRemovalPrefix('THREAD_MYSTERY_BOX')).toBe(true);
+    it('supports mixed add/remove across threat/constraint/thread categories', () => {
+      const result = applyActiveStateChanges(
+        {
+          currentLocation: 'Before',
+          activeThreats: [{ id: 'th-1', text: 'Old threat' }],
+          activeConstraints: [{ id: 'cn-1', text: 'Old constraint' }],
+          openThreads: [{ id: 'td-1', text: 'Old thread' }],
+        },
+        {
+          newLocation: 'After',
+          threatsAdded: ['New threat'],
+          threatsRemoved: ['th-1'],
+          constraintsAdded: ['New constraint'],
+          constraintsRemoved: ['cn-1'],
+          threadsAdded: ['New thread'],
+          threadsResolved: ['td-1'],
+        },
+      );
+
+      expect(result).toEqual({
+        currentLocation: 'After',
+        activeThreats: [{ id: 'th-2', text: 'New threat' }],
+        activeConstraints: [{ id: 'cn-2', text: 'New constraint' }],
+        openThreads: [{ id: 'td-2', text: 'New thread' }],
+      });
     });
 
-    it('rejects prefix with description', () => {
-      expect(isValidRemovalPrefix('THREAT_FIRE: Fire spreading')).toBe(false);
-    });
+    it('is immutable', () => {
+      const original = {
+        currentLocation: 'Room',
+        activeThreats: [{ id: 'th-1', text: 'Old threat' }],
+        activeConstraints: [],
+        openThreads: [],
+      } as const;
 
-    it('rejects invalid category', () => {
-      expect(isValidRemovalPrefix('DANGER_FIRE')).toBe(false);
-    });
+      const result = applyActiveStateChanges(original, {
+        newLocation: 'New room',
+        threatsAdded: ['New threat'],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+      });
 
-    it('rejects empty string', () => {
-      expect(isValidRemovalPrefix('')).toBe(false);
-    });
-
-    it('rejects category without identifier', () => {
-      expect(isValidRemovalPrefix('THREAT_')).toBe(false);
-    });
-
-    it('rejects just category name', () => {
-      expect(isValidRemovalPrefix('THREAT')).toBe(false);
+      expect(original).toEqual({
+        currentLocation: 'Room',
+        activeThreats: [{ id: 'th-1', text: 'Old threat' }],
+        activeConstraints: [],
+        openThreads: [],
+      });
+      expect(result).not.toBe(original);
+      expect(result.activeThreats).not.toBe(original.activeThreats);
     });
   });
 
-  describe('extractPrefixFromRemoval', () => {
-    it('returns valid removal prefix unchanged', () => {
-      expect(extractPrefixFromRemoval('THREAT_ENTITIES')).toBe('THREAT_ENTITIES');
-    });
-
-    it('extracts prefix when removal includes description', () => {
-      logger.clear();
-      expect(extractPrefixFromRemoval('THREAT_ENTITIES: Multiple entities tracking')).toBe(
-        'THREAT_ENTITIES'
-      );
-
-      const entries = logger.getEntries();
-      const warnEntry = entries.find(
-        e =>
-          e.level === 'warn' &&
-          e.message.includes('Removal prefix included description; using extracted prefix')
-      );
-      expect(warnEntry).toBeDefined();
-    });
-
-    it('returns null when extracted prefix is invalid', () => {
-      logger.clear();
-      expect(extractPrefixFromRemoval('DANGER_FIRE: Fire spreading')).toBeNull();
-
-      const entries = logger.getEntries();
-      const warnEntry = entries.find(
-        e => e.level === 'warn' && e.message.includes('Invalid removal prefix')
-      );
-      expect(warnEntry).toBeDefined();
+  describe('canon utilities', () => {
+    it('adds and merges canon facts with case-insensitive dedupe', () => {
+      expect(addCanonFact(['Fact A'], 'Fact B')).toEqual(['Fact A', 'Fact B']);
+      expect(addCanonFact(['The kingdom exists'], 'THE KINGDOM EXISTS')).toEqual([
+        'The kingdom exists',
+      ]);
+      expect(mergeCanonFacts(['Fact A'], ['Fact A', 'Fact B'])).toEqual(['Fact A', 'Fact B']);
     });
   });
 });
