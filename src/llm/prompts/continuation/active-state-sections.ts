@@ -35,7 +35,7 @@ export function buildThreadsSection(activeState: ActiveState): string {
     return '';
   }
   return `OPEN NARRATIVE THREADS (unresolved hooks):
-${activeState.openThreads.map(t => `- [${t.id}] ${t.text}`).join('\n')}
+${activeState.openThreads.map(t => `- [${t.id}] (${t.threadType}/${t.urgency}) ${t.text}`).join('\n')}
 
 `;
 }

@@ -37,6 +37,7 @@ describe('shared state-tracking sections', () => {
 
     it('explains THREAD additions/resolutions with IDs', () => {
       expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS');
+      expect(ACTIVE_STATE_TRACKING).toContain('object with text, threadType, and urgency');
       expect(ACTIVE_STATE_TRACKING).toContain('"td-1"');
     });
 
@@ -150,12 +151,12 @@ describe('shared state-tracking sections', () => {
       expect(FIELD_SEPARATION).toContain('healthAdded/healthRemoved');
     });
 
-    it('documents ACTIVE STATE fields with plain additions and ID removals', () => {
+    it('documents ACTIVE STATE fields with typed thread additions and ID removals', () => {
       expect(FIELD_SEPARATION).toContain('ACTIVE STATE');
       expect(FIELD_SEPARATION).toContain('threatsAdded/threatsRemoved');
       expect(FIELD_SEPARATION).toContain('constraintsAdded/constraintsRemoved');
       expect(FIELD_SEPARATION).toContain('threadsAdded/threadsResolved');
-      expect(FIELD_SEPARATION).toContain('Additions are plain text');
+      expect(FIELD_SEPARATION).toContain('Threat/constraint additions are plain text, thread additions are typed objects');
       expect(FIELD_SEPARATION).toContain('removals/resolutions use IDs');
     });
 

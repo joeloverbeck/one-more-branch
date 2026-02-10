@@ -58,8 +58,10 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threadsAdded');
     });
 
-    it('lists good thread examples in natural language', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('"The letter\'s contents remain unknown"');
+    it('lists good thread examples in typed object format', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('{ text: "The letter\'s contents remain unknown", threadType: "MYSTERY", urgency: "MEDIUM" }');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threadType');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('urgency');
     });
 
     it('includes BAD THREADS section', () => {

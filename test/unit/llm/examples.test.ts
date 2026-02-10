@@ -44,7 +44,7 @@ describe('buildFewShotMessages', () => {
         threatsRemoved: string[];
         constraintsAdded: string[];
         constraintsRemoved: string[];
-        threadsAdded: string[];
+        threadsAdded: Array<{ text: string; threadType: string; urgency: string }>;
         threadsResolved: string[];
         healthAdded: string[];
         healthRemoved: string[];
@@ -120,7 +120,7 @@ describe('buildFewShotMessages', () => {
         threatsRemoved: string[];
         constraintsAdded: string[];
         constraintsRemoved: string[];
-        threadsAdded: string[];
+        threadsAdded: Array<{ text: string; threadType: string; urgency: string }>;
         threadsResolved: string[];
         newCanonFacts: string[];
         healthAdded: string[];

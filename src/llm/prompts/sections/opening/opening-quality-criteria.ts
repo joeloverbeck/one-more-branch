@@ -18,8 +18,8 @@ GOOD INITIAL CONSTRAINTS (constraintsAdded):
 
 GOOD INITIAL THREADS (threadsAdded):
 - Mysteries or hooks that create intrigue
-- "The sealed package's contents are unknown"
-- "The hooded figure's motives are unclear"
+- { text: "The sealed package's contents are unknown", threadType: "MYSTERY", urgency: "MEDIUM" }
+- { text: "The hooded figure's motives are unclear", threadType: "MYSTERY", urgency: "HIGH" }
 
 BAD INITIAL ENTRIES (do NOT add):
 - Entries that imply past events ("Enemies seek revenge for past wrongs") - if relevant, establish it in the narrative

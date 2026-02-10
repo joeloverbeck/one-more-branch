@@ -775,15 +775,15 @@ describe('buildContinuationPrompt', () => {
           activeThreats: [],
           activeConstraints: [],
           openThreads: [
-            { id: 'td-1', text: 'Missing witness - whereabouts unknown' },
-            { id: 'td-2', text: 'Encrypted files need decryption key' },
+            { id: 'td-1', text: 'Missing witness - whereabouts unknown', threadType: 'MYSTERY', urgency: 'HIGH' },
+            { id: 'td-2', text: 'Encrypted files need decryption key', threadType: 'QUEST', urgency: 'MEDIUM' },
           ],
         },
       });
 
       expect(getUserMessage(messages)).toContain('OPEN NARRATIVE THREADS (unresolved hooks):');
-      expect(getUserMessage(messages)).toContain('- [td-1] Missing witness - whereabouts unknown');
-      expect(getUserMessage(messages)).toContain('- [td-2] Encrypted files need decryption key');
+      expect(getUserMessage(messages)).toContain('- [td-1] (MYSTERY/HIGH) Missing witness - whereabouts unknown');
+      expect(getUserMessage(messages)).toContain('- [td-2] (QUEST/MEDIUM) Encrypted files need decryption key');
     });
 
     it('omits OPEN THREADS section when no threads', () => {
@@ -809,7 +809,7 @@ describe('buildContinuationPrompt', () => {
           currentLocation: 'The rooftop',
           activeThreats: [{ id: 'th-1', text: 'Sniper on adjacent building' }],
           activeConstraints: [{ id: 'cn-1', text: 'Low ammo - only 2 rounds left' }],
-          openThreads: [{ id: 'td-1', text: 'Contact awaiting signal' }],
+          openThreads: [{ id: 'td-1', text: 'Contact awaiting signal', threadType: 'INFORMATION', urgency: 'LOW' }],
         },
       });
 

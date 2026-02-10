@@ -75,21 +75,22 @@ ${structureSection}REQUIREMENTS (follow all):
 8. Set the initial LOCATION clearly (currentLocation field - where the protagonist is at the END of this opening scene)
 9. Establish any starting THREATS using threatsAdded (plain text descriptions of dangers present at story start)
 10. Establish any starting CONSTRAINTS using constraintsAdded (plain text descriptions of limitations the protagonist faces)
-11. Plant narrative THREADS using threadsAdded (plain text descriptions of mysteries, questions, and hooks for later)
+11. Plant narrative THREADS using threadsAdded objects with text, threadType, and urgency (server assigns IDs)
 12. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 
 OPENING PAGE STATE:
 Since this is the first page, you are ESTABLISHING the initial state, not modifying previous state:
 - threatsRemoved, constraintsRemoved, threadsResolved should all be EMPTY arrays
 - currentLocation should be set to wherever the scene ends
-- Use plain text descriptions for all added entries (IDs are assigned by the server)
+- Use plain text descriptions for threatsAdded/constraintsAdded (IDs are assigned by the server)
+- Use typed thread objects for threadsAdded: { "text": string, "threadType": enum, "urgency": enum }
 
 Example opening state:
 {
   "currentLocation": "Village marketplace at midday",
   "threatsAdded": [],
   "constraintsAdded": ["Must deliver the package by nightfall"],
-  "threadsAdded": ["The package's contents are unknown"],
+  "threadsAdded": [{"text": "The package's contents are unknown", "threadType": "MYSTERY", "urgency": "MEDIUM"}],
   "threatsRemoved": [],
   "constraintsRemoved": [],
   "threadsResolved": []

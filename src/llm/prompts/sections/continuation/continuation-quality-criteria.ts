@@ -28,9 +28,9 @@ BAD CONSTRAINTS (do NOT add):
 - Inventory limits: "Unarmed" - implied by inventory
 
 GOOD THREADS (threadsAdded):
-- "The letter's contents remain unknown"
-- "Who was the hooded figure?"
-- "The artifact was not where expected"
+- { text: "The letter's contents remain unknown", threadType: "MYSTERY", urgency: "MEDIUM" }
+- { text: "Who was the hooded figure?", threadType: "MYSTERY", urgency: "HIGH" }
+- { text: "The artifact was not where expected", threadType: "QUEST", urgency: "HIGH" }
 
 BAD THREADS (do NOT add):
 - Resolved questions: Threads should be mysteries, not answered facts

@@ -73,7 +73,7 @@ describe('buildOpeningPrompt with active state', () => {
     expect(content).toMatch(/"threadsAdded":/);
   });
 
-  it('uses plain-text additions and does not include prefix format examples', () => {
+  it('uses plain text for threats/constraints and typed objects for thread additions', () => {
     const context: OpeningContext = {
       characterConcept: 'Test',
       worldbuilding: 'Test',
@@ -83,7 +83,10 @@ describe('buildOpeningPrompt with active state', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
-    expect(userMessage).toContain('plain text descriptions');
+    expect(userMessage).toContain('plain text descriptions for threatsAdded/constraintsAdded');
+    expect(userMessage).toContain('typed thread objects for threadsAdded');
+    expect(userMessage).toContain('"threadType"');
+    expect(userMessage).toContain('"urgency"');
     expect(userMessage).not.toContain('PREFIX_ID: description');
     expect(userMessage).not.toContain('format: "THREAT_ID: description"');
     expect(userMessage).not.toContain('format: "CONSTRAINT_ID: description"');

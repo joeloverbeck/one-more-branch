@@ -23,13 +23,13 @@ CONSTRAINTS (limitations affecting protagonist NOW):
 - Only include constraints that are CURRENTLY active
 
 THREADS (unresolved narrative hooks):
-- To ADD a thread, provide a plain text description (the server assigns an ID automatically)
+- To ADD a thread, provide an object with text, threadType, and urgency (the server assigns an ID automatically)
 - To RESOLVE a thread, use its ID exactly as shown in OPEN NARRATIVE THREADS (e.g., "td-1")
 - These are mysteries, unanswered questions, or plot hooks
 
 Rules:
 1. For removals/resolutions, use ONLY IDs (e.g., "th-1", "cn-2", "td-3")
-2. Additions are plain text only (do not include your own IDs or prefixes)
+2. threatsAdded/constraintsAdded are plain text only; threadsAdded uses typed objects (do not include your own IDs or prefixes)
 3. Don't duplicate entries - update by removing old and adding new
 4. Empty arrays mean "no changes" for that category
 
@@ -47,7 +47,11 @@ Example output for active state:
   ],
   "constraintsRemoved": ["cn-1"],
   "threadsAdded": [
-    "Strange symbols on the wall"
+    {
+      "text": "Strange symbols on the wall",
+      "threadType": "MYSTERY",
+      "urgency": "HIGH"
+    }
   ],
   "threadsResolved": ["td-1"]
 }`;
@@ -71,7 +75,7 @@ export const HEALTH_MANAGEMENT = `HEALTH MANAGEMENT:
 export const FIELD_SEPARATION = `FIELD SEPARATION:
 - INVENTORY (inventoryAdded/inventoryRemoved): Physical objects the protagonist possesses, gains, or loses
 - HEALTH (healthAdded/healthRemoved): Physical wounds, injuries, poison, illness, exhaustion - NOT emotional states
-- ACTIVE STATE (threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved): Current dangers, limitations, and narrative hooks. Additions are plain text; removals/resolutions use IDs shown in prompt state sections.
+- ACTIVE STATE (threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved): Current dangers, limitations, and narrative hooks. Threat/constraint additions are plain text, thread additions are typed objects, and removals/resolutions use IDs shown in prompt state sections.
 - PROTAGONIST AFFECT (protagonistAffect): Protagonist's emotional state SNAPSHOT at end of scene - NOT accumulated
 - WORLD FACTS (newCanonFacts): Permanent world-building facts - NOT items or character traits
 - CHARACTER CANON (newCharacterCanonFacts): PERMANENT character traits, backgrounds, abilities - WHO they are

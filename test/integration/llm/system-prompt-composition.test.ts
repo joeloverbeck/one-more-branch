@@ -118,7 +118,8 @@ describe('opening data rules composition', () => {
       expect(rules).toContain('INVENTORY');
       expect(rules).toContain('HEALTH');
       expect(rules).toContain('ACTIVE STATE');
-      expect(rules).toContain('Additions are plain text; removals/resolutions use IDs');
+      expect(rules).toContain('Threat/constraint additions are plain text, thread additions are typed objects');
+      expect(rules).toContain('removals/resolutions use IDs');
       expect(rules).not.toContain('PREFIX_ID: Description');
       expect(rules).toContain('PROTAGONIST AFFECT');
       expect(rules).toContain('WORLD FACTS');

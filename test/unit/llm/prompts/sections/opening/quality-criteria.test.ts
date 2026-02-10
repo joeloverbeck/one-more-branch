@@ -38,10 +38,12 @@ describe('opening quality-criteria sections', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threadsAdded');
     });
 
-    it('lists plain-text examples without prefix format', () => {
+    it('lists typed thread examples and plain text threat/constraint examples', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Two guards watch the town gate"');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Must reach the city before nightfall"');
-      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"The sealed package\'s contents are unknown"');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('{ text: "The sealed package\'s contents are unknown", threadType: "MYSTERY", urgency: "MEDIUM" }');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threadType');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('urgency');
       expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('THREAT_');
       expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('CONSTRAINT_');
       expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('THREAD_');

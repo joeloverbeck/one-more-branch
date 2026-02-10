@@ -1,3 +1,4 @@
+import { ThreadType, Urgency } from '../../../../../src/models/state';
 import type { ActiveState } from '../../../../../src/models/state';
 import {
   buildLocationSection,
@@ -79,18 +80,23 @@ describe('active-state-sections', () => {
       expect(buildThreadsSection(emptyState)).toBe('');
     });
 
-    it('formats threads with header and raw text', () => {
+    it('formats threads with header, tags, and raw text', () => {
       const state: ActiveState = {
         ...emptyState,
         openThreads: [
-          { id: 'td-1', text: 'Missing witness - whereabouts unknown' },
+          {
+            id: 'td-1',
+            text: 'Missing witness - whereabouts unknown',
+            threadType: ThreadType.MYSTERY,
+            urgency: Urgency.HIGH,
+          },
         ],
       };
 
       const result = buildThreadsSection(state);
 
       expect(result).toContain('OPEN NARRATIVE THREADS (unresolved hooks):');
-      expect(result).toContain('- [td-1] Missing witness - whereabouts unknown');
+      expect(result).toContain('- [td-1] (MYSTERY/HIGH) Missing witness - whereabouts unknown');
     });
   });
 });
