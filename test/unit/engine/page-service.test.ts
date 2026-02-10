@@ -67,6 +67,12 @@ const mockedStorage = storage as {
 };
 
 const mockedCreateStructureRewriter = createStructureRewriter as jest.MockedFunction<typeof createStructureRewriter>;
+const mockedLogger = logger as {
+  info: jest.Mock;
+  warn: jest.Mock;
+  error: jest.Mock;
+  debug: jest.Mock;
+};
 
 function buildStory(overrides?: Partial<Story>): Story {
   return {
@@ -671,7 +677,7 @@ describe('page-service', () => {
         beatId: '1.1',
         status: 'active',
       });
-      expect(logger.warn).toHaveBeenCalledWith(
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
         'Turning point completion gate mismatch; forcing beatConcluded=false',
         expect.objectContaining({
           storyId: story.id,
@@ -759,7 +765,7 @@ describe('page-service', () => {
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
-      expect(logger.warn).not.toHaveBeenCalledWith(
+      expect(mockedLogger.warn).not.toHaveBeenCalledWith(
         'Turning point completion gate mismatch; forcing beatConcluded=false',
         expect.anything(),
       );

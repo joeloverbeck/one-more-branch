@@ -1,6 +1,6 @@
 # Beat Conclusion Robustness Spec: Scene-Signal Gating for Analyst
 
-**Status**: Proposed
+**Status**: ✅ COMPLETED
 **Date**: 2026-02-10
 **Owner**: Story Engine / LLM Prompting
 
@@ -230,3 +230,17 @@ Schema rules:
 1. Should runtime guardrails apply only to `turning_point` or all beat roles?
 2. Should objective-anchor extraction happen purely in analyst prompt, or partially precomputed in engine and injected as context?
 3. Should we track a per-story calibration mode (strict vs balanced) for completion gating?
+
+## Outcome
+
+- Completion date: 2026-02-10
+- What was actually changed:
+  - Implemented scene-signal classification and completion-gate diagnostics in analyst prompt/schema/validation/transformer pipeline.
+  - Added/updated page-service guardrail behavior for guarded completion progression checks.
+  - Added focused unit/integration coverage for false-positive prevention, true-positive turning-point completion, and cross-domain story-agnostic gating.
+  - Verified via focused test runs and typecheck in BEACONSCESIGGAT-06.
+- Deviations from original plan:
+  - Runtime guardrail remained targeted to guarded scenarios rather than broad role-wide enforcement.
+  - Verification commands were normalized to deterministic `--runTestsByPath` invocation in the final verification ticket.
+- Verification results:
+  - Focused gating unit tests, integration page-service gating tests, and `tsc --noEmit` passed on 2026-02-10.
