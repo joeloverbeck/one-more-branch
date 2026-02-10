@@ -72,7 +72,7 @@ describe('buildStructurePrompt', () => {
     expect(systemMessage).toContain(CONTENT_POLICY);
   });
 
-  it('few-shot assistant message includes premise, pacingBudget, and role fields', () => {
+  it('few-shot assistant message includes premise, pacingBudget, beat name, and role fields', () => {
     const messages = buildStructurePrompt(baseContext, { fewShotMode: 'standard' });
     const assistantMessage = messages.find(m => m.role === 'assistant')?.content ?? '';
 
@@ -80,6 +80,7 @@ describe('buildStructurePrompt', () => {
     expect(assistantMessage).toContain('"pacingBudget"');
     expect(assistantMessage).toContain('"targetPagesMin"');
     expect(assistantMessage).toContain('"targetPagesMax"');
+    expect(assistantMessage).toContain('"name"');
     expect(assistantMessage).toContain('"role"');
   });
 
@@ -111,13 +112,14 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('targetPagesMax');
   });
 
-  it('OUTPUT SHAPE includes premise, pacingBudget, and beat role', () => {
+  it('OUTPUT SHAPE includes premise, pacingBudget, beat name, and beat role', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
     expect(lastUser).toContain('OUTPUT SHAPE');
     expect(lastUser).toContain('premise: string');
     expect(lastUser).toContain('pacingBudget:');
+    expect(lastUser).toContain('name: short evocative beat title');
     expect(lastUser).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
   });
 });

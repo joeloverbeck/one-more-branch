@@ -20,7 +20,7 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
 
   return completedBeats
     .map(
-      beat => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}]: "${beat.description}"
+      beat => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
     Objective: ${beat.objective}
     Resolution: ${beat.resolution}`,
     )
@@ -67,21 +67,25 @@ const STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT = `{
       "entryCondition": "Already in progress",
       "beats": [
         {
+          "name": "The Offer with Hooks",
           "description": "A desperate employer offers terms too good to refuse",
           "objective": "Decide whether to take the contract despite warning signs",
           "role": "setup"
         },
         {
+          "name": "Target Unmasked",
           "description": "The true nature of the target is revealed",
           "objective": "Determine if the job is worth the escalating risk",
           "role": "turning_point"
         },
         {
+          "name": "Blood on the Contract",
           "description": "Vera must escape before Vane's death is discovered",
           "objective": "Evade pursuit and reach safety to plan the extraction alone",
           "role": "escalation"
         },
         {
+          "name": "No Patron, No Excuse",
           "description": "Without an employer, Vera decides whether to continue for her own reasons",
           "objective": "Commit to the extraction or abandon the contract entirely",
           "role": "turning_point"
@@ -95,16 +99,19 @@ const STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT = `{
       "entryCondition": "Vera commits to extracting Lady Elowen on her own terms",
       "beats": [
         {
+          "name": "Hunters on the Road",
           "description": "The journey reveals others hunting Lady Elowen for their own purposes",
           "objective": "Navigate competing interests while maintaining surprise",
           "role": "escalation"
         },
         {
+          "name": "The Target Bites Back",
           "description": "Lady Elowen proves to have her own agenda complicating extraction",
           "objective": "Negotiate with the target while keeping the mission viable",
           "role": "escalation"
         },
         {
+          "name": "Ghosts of Border Wars",
           "description": "Vera's past catches up as someone from the border wars recognizes her",
           "objective": "Handle the threat without compromising the extraction",
           "role": "turning_point"
@@ -118,11 +125,13 @@ const STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT = `{
       "entryCondition": "Lady Elowen is extracted but the path to safety is contested",
       "beats": [
         {
+          "name": "Duke's Ultimatum",
           "description": "Duke Ashford's forces close in, demanding both Vera and his daughter",
           "objective": "Negotiate, fight, or flee—reach a resolution with the Duke",
           "role": "turning_point"
         },
         {
+          "name": "What Freedom Costs",
           "description": "The true cost of the contract is revealed in who Vera has become",
           "objective": "Decide what legacy to leave and whether the fishing cottage is still possible",
           "role": "resolution"
@@ -167,7 +176,7 @@ ${context.narrativeSummary}
 Generate NEW beats to replace invalidated ones. You are regenerating: ${getActsToRegenerate(context.currentActIndex)}.
 
 REQUIREMENTS (follow ALL):
-1. Preserve completed beats exactly—include them in the output with unchanged descriptions, objectives, and roles
+1. Preserve completed beats exactly—include them in the output with unchanged names, descriptions, objectives, and roles
 2. Maintain thematic coherence with: "${context.originalTheme}"
 3. Build naturally from the current narrative state
 4. Follow three-act structure principles (setup, confrontation, resolution)
@@ -192,6 +201,7 @@ OUTPUT SHAPE (same as original structure):
   - entryCondition: what triggers transition into this act
   - beats: 2-4 items (including any preserved beats)
     - each beat has:
+      - name: short evocative beat title
       - description: what should happen in this beat
       - objective: specific protagonist goal for the beat
       - role: "setup" | "escalation" | "turning_point" | "resolution"`;

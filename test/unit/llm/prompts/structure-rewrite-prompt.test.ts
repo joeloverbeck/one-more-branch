@@ -23,6 +23,7 @@ describe('buildStructureRewritePrompt', () => {
         actIndex: 0,
         beatIndex: 0,
         beatId: '1.1',
+        name: 'Sluice Flight',
         description: 'Escape the tribunal ambush in the port quarter',
         objective: 'Survive and recover a smuggled ledger',
         role: 'setup',
@@ -67,7 +68,7 @@ describe('buildStructureRewritePrompt', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     expect(user).toContain('CANON - DO NOT CHANGE');
-    expect(user).toContain('Act 1, Beat 1 (1.1) [setup]');
+    expect(user).toContain('Act 1, Beat 1 (1.1) [setup] "Sluice Flight"');
     expect(user).toContain('Resolution: You escaped through maintenance sluices with the ledger intact.');
   });
 
@@ -110,7 +111,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('remaining beats in Act 3');
   });
 
-  it('includes JSON-compatible output shape description with premise, pacingBudget, and role', () => {
+  it('includes JSON-compatible output shape description with premise, pacingBudget, beat name, and role', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     // Now uses JSON output shape matching the schema
@@ -126,6 +127,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('stakes: consequence of failure');
     expect(user).toContain('entryCondition:');
     expect(user).toContain('beats: 2-4 items');
+    expect(user).toContain('name: short evocative beat title');
     expect(user).toContain('description: what should happen in this beat');
     expect(user).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
   });
@@ -159,6 +161,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(fewShotAssistant).toContain('"targetPagesMin"');
     expect(fewShotAssistant).toContain('"targetPagesMax"');
     expect(fewShotAssistant).toContain('"acts"');
+    expect(fewShotAssistant).toContain('"name"');
     expect(fewShotAssistant).toContain('"role"');
 
     // Few-shot user message should include role in completed beats

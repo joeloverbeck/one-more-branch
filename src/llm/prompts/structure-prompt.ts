@@ -33,11 +33,13 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
       "entryCondition": "The protagonist is blamed for a public murder",
       "beats": [
         {
+          "name": "A Bargain in Smoke",
           "description": "A former ally offers proof of a frame-up in exchange for protection",
           "objective": "Decide whether to trust an ally tied to the tribunal",
           "role": "setup"
         },
         {
+          "name": "Ledgers in the Dark",
           "description": "The protagonist steals sealed court ledgers from a guarded archive",
           "objective": "Secure evidence before the tribunal can destroy it",
           "role": "turning_point"
@@ -51,11 +53,13 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
       "entryCondition": "The stolen ledgers reveal a list of compromised officials",
       "beats": [
         {
+          "name": "Proof for the Faithless",
           "description": "Rival houses demand proof before committing support",
           "objective": "Win backing without revealing all leverage",
           "role": "escalation"
         },
         {
+          "name": "The Rigged Hearing",
           "description": "The protagonist is cornered into a public hearing rigged by enemies",
           "objective": "Survive the hearing and force hidden evidence into the open",
           "role": "turning_point"
@@ -69,11 +73,13 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
       "entryCondition": "Key conspirators are identified and vulnerable",
       "beats": [
         {
+          "name": "Fractured Oaths",
           "description": "A final alliance fractures over how far justice should go",
           "objective": "Choose between revenge and legitimate accountability",
           "role": "turning_point"
         },
         {
+          "name": "Harbor Court Reckoning",
           "description": "The protagonist confronts the tribunal leadership at the old harbor court",
           "objective": "End the conspiracy while preserving a future worth protecting",
           "role": "resolution"
@@ -134,6 +140,7 @@ OUTPUT SHAPE:
   - entryCondition: what triggers transition into this act
   - beats: 2-4 items
     - each beat has:
+      - name: short evocative beat title
       - description: what should happen in this beat
       - objective: specific protagonist goal for the beat
       - role: "setup" | "escalation" | "turning_point" | "resolution"`;

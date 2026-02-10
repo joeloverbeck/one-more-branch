@@ -52,6 +52,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'beats',
     ]);
     expect(schema.properties.acts.items.properties.beats.items.required).toEqual([
+      'name',
       'description',
       'objective',
       'role',

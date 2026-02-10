@@ -48,8 +48,9 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                 items: {
                   type: 'object',
                   additionalProperties: false,
-                  required: ['description', 'objective', 'role'],
+                  required: ['name', 'description', 'objective', 'role'],
                   properties: {
+                    name: { type: 'string' },
                     description: { type: 'string' },
                     objective: { type: 'string' },
                     role: {
