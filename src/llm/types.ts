@@ -146,6 +146,23 @@ export interface WriterResult {
 }
 
 export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
+export type SceneMomentum =
+  | 'STASIS'
+  | 'INCREMENTAL_PROGRESS'
+  | 'MAJOR_PROGRESS'
+  | 'REVERSAL_OR_SETBACK'
+  | 'SCOPE_SHIFT';
+export type ObjectiveEvidenceStrength = 'NONE' | 'WEAK_IMPLICIT' | 'CLEAR_EXPLICIT';
+export type CommitmentStrength =
+  | 'NONE'
+  | 'TENTATIVE'
+  | 'EXPLICIT_REVERSIBLE'
+  | 'EXPLICIT_IRREVERSIBLE';
+export type StructuralPositionSignal =
+  | 'WITHIN_ACTIVE_BEAT'
+  | 'BRIDGING_TO_NEXT_BEAT'
+  | 'CLEARLY_IN_NEXT_BEAT';
+export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
 
 export interface AnalystResult {
   beatConcluded: boolean;
@@ -157,6 +174,15 @@ export interface AnalystResult {
   pacingIssueDetected: boolean;
   pacingIssueReason: string;
   recommendedAction: PacingRecommendedAction;
+  sceneMomentum: SceneMomentum;
+  objectiveEvidenceStrength: ObjectiveEvidenceStrength;
+  commitmentStrength: CommitmentStrength;
+  structuralPositionSignal: StructuralPositionSignal;
+  entryConditionReadiness: EntryConditionReadiness;
+  objectiveAnchors: string[];
+  anchorEvidence: string[];
+  completionGateSatisfied: boolean;
+  completionGateFailureReason: string;
   rawResponse: string;
 }
 

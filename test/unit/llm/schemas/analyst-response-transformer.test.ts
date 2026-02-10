@@ -2,6 +2,17 @@ import { validateAnalystResponse } from '../../../../src/llm/schemas/analyst-res
 
 describe('validateAnalystResponse', () => {
   const RAW_RESPONSE = '{"beatConcluded":true}';
+  const VALID_DIAGNOSTICS = {
+    sceneMomentum: 'MAJOR_PROGRESS',
+    objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+    commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+    structuralPositionSignal: 'CLEARLY_IN_NEXT_BEAT',
+    entryConditionReadiness: 'READY',
+    objectiveAnchors: ['recover key', 'unlock gate'],
+    anchorEvidence: ['key recovered on-page', 'gate opened in final paragraph'],
+    completionGateSatisfied: true,
+    completionGateFailureReason: '',
+  } as const;
 
   it('parses valid analyst response correctly', () => {
     const input = {
@@ -11,6 +22,7 @@ describe('validateAnalystResponse', () => {
       deviationReason: '',
       invalidatedBeatIds: [],
       narrativeSummary: '',
+      ...VALID_DIAGNOSTICS,
     };
 
     const result = validateAnalystResponse(input, RAW_RESPONSE);
@@ -21,6 +33,13 @@ describe('validateAnalystResponse', () => {
     expect(result.deviationReason).toBe('');
     expect(result.invalidatedBeatIds).toEqual([]);
     expect(result.narrativeSummary).toBe('');
+    expect(result.sceneMomentum).toBe('MAJOR_PROGRESS');
+    expect(result.objectiveAnchors).toEqual(['recover key', 'unlock gate']);
+    expect(result.anchorEvidence).toEqual([
+      'key recovered on-page',
+      'gate opened in final paragraph',
+    ]);
+    expect(result.completionGateSatisfied).toBe(true);
     expect(result.rawResponse).toBe(RAW_RESPONSE);
   });
 
@@ -68,6 +87,15 @@ describe('validateAnalystResponse', () => {
     expect(result.deviationReason).toBe('');
     expect(result.invalidatedBeatIds).toEqual([]);
     expect(result.narrativeSummary).toBe('');
+    expect(result.sceneMomentum).toBe('STASIS');
+    expect(result.objectiveEvidenceStrength).toBe('NONE');
+    expect(result.commitmentStrength).toBe('NONE');
+    expect(result.structuralPositionSignal).toBe('WITHIN_ACTIVE_BEAT');
+    expect(result.entryConditionReadiness).toBe('NOT_READY');
+    expect(result.objectiveAnchors).toEqual([]);
+    expect(result.anchorEvidence).toEqual([]);
+    expect(result.completionGateSatisfied).toBe(false);
+    expect(result.completionGateFailureReason).toBe('');
   });
 
   it('returns rawResponse in the result', () => {
@@ -81,6 +109,7 @@ describe('validateAnalystResponse', () => {
     const input = {
       beatConcluded: true,
       beatResolution: 'resolved',
+      completionGateSatisfied: true,
     };
 
     const result = validateAnalystResponse(input, RAW_RESPONSE);
@@ -97,6 +126,7 @@ describe('validateAnalystResponse', () => {
     const input = {
       beatConcluded: true,
       beatResolution: 'Hero defeated the guardian and claimed the artifact',
+      completionGateSatisfied: true,
       deviationDetected: false,
       deviationReason: '',
       invalidatedBeatIds: [],
@@ -133,6 +163,7 @@ describe('validateAnalystResponse', () => {
     const jsonString = JSON.stringify({
       beatConcluded: true,
       beatResolution: 'Beat concluded via string input',
+      ...VALID_DIAGNOSTICS,
       deviationDetected: false,
       deviationReason: '',
       invalidatedBeatIds: [],
@@ -143,6 +174,77 @@ describe('validateAnalystResponse', () => {
 
     expect(result.beatConcluded).toBe(true);
     expect(result.beatResolution).toBe('Beat concluded via string input');
+  });
+
+  describe('scene-signal diagnostics', () => {
+    it('coerces invalid diagnostic enums to conservative defaults', () => {
+      const input = {
+        beatConcluded: true,
+        completionGateSatisfied: true,
+        sceneMomentum: 'INVALID',
+        objectiveEvidenceStrength: 'WRONG',
+        commitmentStrength: 'BAD',
+        structuralPositionSignal: 'NOPE',
+        entryConditionReadiness: 'MAYBE',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.sceneMomentum).toBe('STASIS');
+      expect(result.objectiveEvidenceStrength).toBe('NONE');
+      expect(result.commitmentStrength).toBe('NONE');
+      expect(result.structuralPositionSignal).toBe('WITHIN_ACTIVE_BEAT');
+      expect(result.entryConditionReadiness).toBe('NOT_READY');
+    });
+
+    it('trims/sanitizes anchors, caps to 3, and aligns evidence order', () => {
+      const input = {
+        ...VALID_DIAGNOSTICS,
+        objectiveAnchors: ['  one  ', '', 'two', 'three', 'four'],
+        anchorEvidence: ['  a  ', 'b', '  c  ', 'd'],
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.objectiveAnchors).toEqual(['one', 'two', 'three']);
+      expect(result.anchorEvidence).toEqual(['a', 'b', 'c']);
+    });
+
+    it('pads missing anchor evidence and ignores non-array diagnostics', () => {
+      const input = {
+        ...VALID_DIAGNOSTICS,
+        objectiveAnchors: ['first', 'second'],
+        anchorEvidence: ['only-first'],
+      };
+
+      const malformedInput = {
+        ...input,
+        objectiveAnchors: 'not-an-array',
+        anchorEvidence: { nope: true },
+      };
+
+      const validResult = validateAnalystResponse(input, RAW_RESPONSE);
+      const malformedResult = validateAnalystResponse(malformedInput, RAW_RESPONSE);
+
+      expect(validResult.anchorEvidence).toEqual(['only-first', '']);
+      expect(malformedResult.objectiveAnchors).toEqual([]);
+      expect(malformedResult.anchorEvidence).toEqual([]);
+    });
+
+    it('forces conservative beatConcluded=false when completion gate is unsatisfied', () => {
+      const input = {
+        ...VALID_DIAGNOSTICS,
+        beatConcluded: true,
+        completionGateSatisfied: false,
+        completionGateFailureReason: 'Objective anchor not satisfied',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.beatConcluded).toBe(false);
+      expect(result.completionGateSatisfied).toBe(false);
+      expect(result.completionGateFailureReason).toBe('Objective anchor not satisfied');
+    });
   });
 
   describe('pacing fields', () => {
@@ -216,6 +318,7 @@ describe('validateAnalystResponse', () => {
       const input = {
         beatConcluded: true,
         beatResolution: 'The protagonist escaped',
+        completionGateSatisfied: true,
         deviationDetected: false,
         deviationReason: '',
         invalidatedBeatIds: [],

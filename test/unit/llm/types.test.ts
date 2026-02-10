@@ -476,6 +476,15 @@ describe('LLM types', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',
+        sceneMomentum: 'STASIS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'NOT_READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -495,6 +504,15 @@ describe('LLM types', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',
+        sceneMomentum: 'STASIS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'NOT_READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
         rawResponse: '{"deviationDetected":true}',
       };
 
