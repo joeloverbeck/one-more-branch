@@ -15,6 +15,7 @@ export type {
   OpeningPagePlanContext,
   ContinuationPagePlanContext,
   PagePlanGenerationResult,
+  PageWriterResult,
   WriterResult,
   AnalystResult,
   AnalystContext,

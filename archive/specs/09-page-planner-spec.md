@@ -1,4 +1,4 @@
-**Status**: Draft
+**Status**: ✅ COMPLETED
 
 # Spec 09: Page Planner
 
@@ -108,3 +108,18 @@ In `src/engine/page-service.ts`:
 2. Unit: planner schema validation and transformer trimming.
 3. Unit: planner ID validation and duplicate-intent rejection.
 4. Integration: planner output is consumed by writer/reconciler in page generation flow.
+
+## Outcome
+
+- Completion date: 2026-02-11
+- What was changed:
+  - Implemented planner data contracts (`PagePlan`, planner context/result types) in `src/llm/types.ts`.
+  - Implemented planner prompt + sections and planner client flow (`generatePagePlan`) with structured output schema/validation.
+  - Implemented deterministic planner validation and response transformer behavior for malformed/invalid planner outputs.
+  - Integrated planner into `page-service` first-page and continuation generation before writer invocation.
+  - Passed planner guidance into writer/opening prompt contexts and included observability metadata (`storyId`, `pageId`, `requestId`) for planner calls.
+  - Added/updated unit and integration tests covering planner prompt, schema validation, and planner integration sequencing.
+- Deviations from original plan:
+  - Reconciler integration remains deferred; planner output is currently consumed by writer path and integration seam only.
+- Verification:
+  - Full repository tests and lint pass (`npm run test`, `npm run lint`).

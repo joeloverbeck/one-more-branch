@@ -148,9 +148,18 @@ export interface OpenRouterResponse {
   error?: { message: string; code: string };
 }
 
-export interface WriterResult {
+export interface PageWriterResult {
   narrative: string;
   choices: Array<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }>;
+  sceneSummary: string;
+  protagonistAffect: ProtagonistAffect;
+  isEnding: boolean;
+  rawResponse: string;
+}
+
+export interface WriterResult extends PageWriterResult {
+  // Compatibility fields retained during writer contract migration.
+  // These state/canon fields remain on WriterResult until downstream migration completes.
   currentLocation: string;
   threatsAdded: string[];
   threatsRemoved: string[];
@@ -166,10 +175,6 @@ export interface WriterResult {
   healthRemoved: string[];
   characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
   characterStateChangesRemoved: string[];
-  protagonistAffect: ProtagonistAffect;
-  isEnding: boolean;
-  sceneSummary: string;
-  rawResponse: string;
 }
 
 export interface ThreadAdd {

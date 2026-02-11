@@ -8,6 +8,7 @@ import type {
   GenerationOptions,
   OpeningContext,
   OpeningPagePlanContext,
+  PageWriterResult,
   PagePlan,
   PagePlanContext,
   PagePlanGenerationResult,
@@ -511,6 +512,30 @@ describe('LLM types', () => {
   });
 
   describe('WriterResult (compile-time)', () => {
+    it('should allow creating PageWriterResult with creative-only fields', () => {
+      const result: PageWriterResult = {
+        narrative: 'The forest darkens as you step forward.',
+        choices: [
+          { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+          { text: 'Retreat quietly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        protagonistAffect: {
+          primaryEmotion: 'apprehension',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Strange sounds in the dark',
+          secondaryEmotions: [],
+          dominantMotivation: 'Find safe shelter',
+        },
+        isEnding: false,
+        sceneSummary: 'The protagonist faces bandits in a darkening forest.',
+        rawResponse: '{"narrative":"..."}',
+      };
+
+      expect(result.narrative).toContain('forest');
+      expect(result.choices).toHaveLength(2);
+      expect(result.sceneSummary).toContain('bandits');
+    });
+
     it('should allow creating WriterResult with all required fields', () => {
       const result: WriterResult = {
         narrative: 'The forest darkens as you step forward.',
@@ -548,6 +573,30 @@ describe('LLM types', () => {
       expect(result.narrative).toContain('forest');
       expect(result.choices).toHaveLength(2);
       expect(result.currentLocation).toBe('Dark forest path');
+    });
+
+    it('should not allow state/canon-only fields on PageWriterResult', () => {
+      const result: PageWriterResult = {
+        narrative: 'Test',
+        choices: [
+          { text: 'A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        protagonistAffect: {
+          primaryEmotion: 'neutral',
+          primaryIntensity: 'mild',
+          primaryCause: 'None',
+          secondaryEmotions: [],
+          dominantMotivation: 'Continue',
+        },
+        isEnding: false,
+        sceneSummary: 'A minimal test scene for type validation.',
+        rawResponse: '',
+      };
+
+      expect('currentLocation' in result).toBe(false);
+      expect('threatsAdded' in result).toBe(false);
+      expect('newCanonFacts' in result).toBe(false);
     });
 
     it('should NOT include beatConcluded, beatResolution, or deviation fields', () => {

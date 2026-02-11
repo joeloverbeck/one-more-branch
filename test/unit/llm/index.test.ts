@@ -21,6 +21,7 @@ import type {
   OpeningContext,
   PagePlan,
   PagePlanGenerationResult,
+  PageWriterResult,
   WriterResult,
 } from '../../../src/llm/index';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
@@ -40,12 +41,25 @@ describe('llm barrel exports', () => {
   });
 
   it('should support type usage through barrel exports', () => {
-    const result: WriterResult = {
+    const pageWriterResult: PageWriterResult = {
       narrative: 'The bridge shakes as thunder rolls over the ravine.',
       choices: [
         { text: 'Cross quickly', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
         { text: 'Retreat to camp', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'GOAL_SHIFT' },
       ],
+      protagonistAffect: {
+        primaryEmotion: 'fear',
+        primaryIntensity: 'moderate',
+        primaryCause: 'The bridge is swaying dangerously',
+        secondaryEmotions: [],
+        dominantMotivation: 'Survive the crossing',
+      },
+      isEnding: false,
+      sceneSummary: 'Thunder and wind threaten to collapse the old bridge.',
+      rawResponse: '{"narrative":"..."}',
+    };
+    const result: WriterResult = {
+      ...pageWriterResult,
       currentLocation: 'The Old Bridge',
       threatsAdded: [],
       threatsRemoved: [],
@@ -61,16 +75,6 @@ describe('llm barrel exports', () => {
       healthRemoved: [],
       characterStateChangesAdded: [],
       characterStateChangesRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'fear',
-        primaryIntensity: 'moderate',
-        primaryCause: 'The bridge is swaying dangerously',
-        secondaryEmotions: [],
-        dominantMotivation: 'Survive the crossing',
-      },
-      isEnding: false,
-      sceneSummary: 'Thunder and wind threaten to collapse the old bridge.',
-      rawResponse: '{"narrative":"..."}',
     };
     const options: GenerationOptions = { apiKey: 'test-key' };
     const opening: OpeningContext = {
@@ -166,6 +170,7 @@ describe('llm barrel exports', () => {
     };
 
     expect(result.choices).toHaveLength(2);
+    expect(pageWriterResult.choices).toHaveLength(2);
     expect(options.apiKey).toBe('test-key');
     expect(opening.tone).toBe('tense adventure');
     expect(continuation.selectedChoice).toContain('bridge');
