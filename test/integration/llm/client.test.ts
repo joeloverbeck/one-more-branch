@@ -202,8 +202,8 @@ describe('llm client integration (mocked fetch)', () => {
         sceneIntent: 'Escalate pressure with moving machinery and shrinking options.',
         continuityAnchors: ['The observatory is still reacting to your presence.'],
         stateIntents: {
-          threats: { add: [], removeIds: [], replace: [] },
-          constraints: { add: [], removeIds: [], replace: [] },
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
           threads: {
             add: [
               {
@@ -213,11 +213,10 @@ describe('llm client integration (mocked fetch)', () => {
               },
             ],
             resolveIds: [],
-            replace: [],
           },
-          inventory: { add: [], removeIds: [], replace: [] },
-          health: { add: [], removeIds: [], replace: [] },
-          characterState: { add: [], removeIds: [], replace: [] },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
         writerBrief: {

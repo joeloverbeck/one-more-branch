@@ -33,16 +33,15 @@ const validPlannerPayload = {
   continuityAnchors: ['The bell tower remains occupied by sentries.'],
   stateIntents: {
     currentLocation: 'Archive access corridor',
-    threats: { add: ['A patrol rounds the corridor.'], removeIds: [], replace: [] },
-    constraints: { add: ['Lantern oil is almost gone.'], removeIds: [], replace: [] },
+    threats: { add: ['A patrol rounds the corridor.'], removeIds: [] },
+    constraints: { add: ['Lantern oil is almost gone.'], removeIds: [] },
     threads: {
       add: [{ text: 'Reach the archive door before lockout.', threadType: ThreadType.QUEST, urgency: Urgency.HIGH }],
       resolveIds: [],
-      replace: [],
     },
-    inventory: { add: ['A bent lockpick'], removeIds: [], replace: [] },
-    health: { add: ['A fresh bruise on the shoulder'], removeIds: [], replace: [] },
-    characterState: { add: [{ characterName: 'Mara', states: ['Focused under pressure'] }], removeIds: [], replace: [] },
+    inventory: { add: ['A bent lockpick'], removeIds: [] },
+    health: { add: ['A fresh bruise on the shoulder'], removeIds: [] },
+    characterState: { add: [{ characterName: 'Mara', states: ['Focused under pressure'] }], removeIds: [] },
     canon: { worldAdd: ['The archive lockout triggers at moonset.'], characterAdd: [] },
   },
   writerBrief: {

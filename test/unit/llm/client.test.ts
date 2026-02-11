@@ -111,8 +111,8 @@ const validPlannerPayload = {
   continuityAnchors: ['The chanting still echoes through the vault.'],
   stateIntents: {
     currentLocation: 'Flooded vault antechamber',
-    threats: { add: ['Cult sentries close in from two sides.'], removeIds: [], replace: [] },
-    constraints: { add: ['Torchlight is flickering out.'], removeIds: [], replace: [] },
+    threats: { add: ['Cult sentries close in from two sides.'], removeIds: [] },
+    constraints: { add: ['Torchlight is flickering out.'], removeIds: [] },
     threads: {
       add: [
         {
@@ -122,11 +122,10 @@ const validPlannerPayload = {
         },
       ],
       resolveIds: [],
-      replace: [],
     },
-    inventory: { add: ['A cracked lantern lens'], removeIds: [], replace: [] },
-    health: { add: ['Minor smoke inhalation'], removeIds: [], replace: [] },
-    characterState: { add: [{ characterName: 'Mara', states: ['Shaken but determined'] }], removeIds: [], replace: [] },
+    inventory: { add: ['A cracked lantern lens'], removeIds: [] },
+    health: { add: ['Minor smoke inhalation'], removeIds: [] },
+    characterState: { add: [{ characterName: 'Mara', states: ['Shaken but determined'] }], removeIds: [] },
     canon: { worldAdd: ['The lower vault has ritual markings on every column.'], characterAdd: [] },
   },
   writerBrief: {

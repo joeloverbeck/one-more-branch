@@ -41,12 +41,12 @@ describe('buildOpeningPrompt with active state', () => {
         sceneIntent: 'Introduce the debt collector conflict',
         continuityAnchors: ['The debt is due by sunrise'],
         stateIntents: {
-          threats: { add: [], removeIds: [], replace: [] },
-          constraints: { add: [], removeIds: [], replace: [] },
-          threads: { add: [], resolveIds: [], replace: [] },
-          inventory: { add: [], removeIds: [], replace: [] },
-          health: { add: [], removeIds: [], replace: [] },
-          characterState: { add: [], removeIds: [], replace: [] },
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
+          threads: { add: [], resolveIds: [] },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
         writerBrief: {

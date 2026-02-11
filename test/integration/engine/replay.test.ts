@@ -201,12 +201,12 @@ describe('story replay integration', () => {
       sceneIntent: 'Progress the current scene with immediate consequences.',
       continuityAnchors: [],
       stateIntents: {
-        threats: { add: [], removeIds: [], replace: [] },
-        constraints: { add: [], removeIds: [], replace: [] },
-        threads: { add: [], resolveIds: [], replace: [] },
-        inventory: { add: [], removeIds: [], replace: [] },
-        health: { add: [], removeIds: [], replace: [] },
-        characterState: { add: [], removeIds: [], replace: [] },
+        threats: { add: [], removeIds: [] },
+        constraints: { add: [], removeIds: [] },
+        threads: { add: [], resolveIds: [] },
+        inventory: { add: [], removeIds: [] },
+        health: { add: [], removeIds: [] },
+        characterState: { add: [], removeIds: [] },
         canon: { worldAdd: [], characterAdd: [] },
       },
       writerBrief: {

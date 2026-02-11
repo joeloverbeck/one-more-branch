@@ -22,20 +22,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
               properties: {
                 add: { type: 'array', items: { type: 'string' } },
                 removeIds: { type: 'array', items: { type: 'string' } },
-                replace: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      removeId: { type: 'string' },
-                      addText: { type: 'string' },
-                    },
-                    required: ['removeId', 'addText'],
-                    additionalProperties: false,
-                  },
-                },
               },
-              required: ['add', 'removeIds', 'replace'],
+              required: ['add', 'removeIds'],
               additionalProperties: false,
             },
             constraints: {
@@ -43,20 +31,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
               properties: {
                 add: { type: 'array', items: { type: 'string' } },
                 removeIds: { type: 'array', items: { type: 'string' } },
-                replace: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      removeId: { type: 'string' },
-                      addText: { type: 'string' },
-                    },
-                    required: ['removeId', 'addText'],
-                    additionalProperties: false,
-                  },
-                },
               },
-              required: ['add', 'removeIds', 'replace'],
+              required: ['add', 'removeIds'],
               additionalProperties: false,
             },
             threads: {
@@ -90,43 +66,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
                   },
                 },
                 resolveIds: { type: 'array', items: { type: 'string' } },
-                replace: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      resolveId: { type: 'string' },
-                      add: {
-                        type: 'object',
-                        properties: {
-                          text: { type: 'string' },
-                          threadType: {
-                            type: 'string',
-                            enum: [
-                              'MYSTERY',
-                              'QUEST',
-                              'RELATIONSHIP',
-                              'DANGER',
-                              'INFORMATION',
-                              'RESOURCE',
-                              'MORAL',
-                            ],
-                          },
-                          urgency: {
-                            type: 'string',
-                            enum: ['LOW', 'MEDIUM', 'HIGH'],
-                          },
-                        },
-                        required: ['text', 'threadType', 'urgency'],
-                        additionalProperties: false,
-                      },
-                    },
-                    required: ['resolveId', 'add'],
-                    additionalProperties: false,
-                  },
-                },
               },
-              required: ['add', 'resolveIds', 'replace'],
+              required: ['add', 'resolveIds'],
               additionalProperties: false,
             },
             inventory: {
@@ -134,20 +75,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
               properties: {
                 add: { type: 'array', items: { type: 'string' } },
                 removeIds: { type: 'array', items: { type: 'string' } },
-                replace: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      removeId: { type: 'string' },
-                      addText: { type: 'string' },
-                    },
-                    required: ['removeId', 'addText'],
-                    additionalProperties: false,
-                  },
-                },
               },
-              required: ['add', 'removeIds', 'replace'],
+              required: ['add', 'removeIds'],
               additionalProperties: false,
             },
             health: {
@@ -155,20 +84,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
               properties: {
                 add: { type: 'array', items: { type: 'string' } },
                 removeIds: { type: 'array', items: { type: 'string' } },
-                replace: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      removeId: { type: 'string' },
-                      addText: { type: 'string' },
-                    },
-                    required: ['removeId', 'addText'],
-                    additionalProperties: false,
-                  },
-                },
               },
-              required: ['add', 'removeIds', 'replace'],
+              required: ['add', 'removeIds'],
               additionalProperties: false,
             },
             characterState: {
@@ -187,28 +104,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
                   },
                 },
                 removeIds: { type: 'array', items: { type: 'string' } },
-                replace: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      removeId: { type: 'string' },
-                      add: {
-                        type: 'object',
-                        properties: {
-                          characterName: { type: 'string' },
-                          states: { type: 'array', items: { type: 'string' } },
-                        },
-                        required: ['characterName', 'states'],
-                        additionalProperties: false,
-                      },
-                    },
-                    required: ['removeId', 'add'],
-                    additionalProperties: false,
-                  },
-                },
               },
-              required: ['add', 'removeIds', 'replace'],
+              required: ['add', 'removeIds'],
               additionalProperties: false,
             },
             canon: {

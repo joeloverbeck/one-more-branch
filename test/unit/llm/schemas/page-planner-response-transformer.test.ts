@@ -10,32 +10,26 @@ function createValidPlannerPayload(): Record<string, unknown> {
       threats: {
         add: ['Archers establish crossfire from the catwalk'],
         removeIds: [],
-        replace: [],
       },
       constraints: {
         add: ['Visibility is reduced by smoke'],
         removeIds: [],
-        replace: [],
       },
       threads: {
         add: [{ text: 'Secure a fallback route through the lower gate', threadType: 'DANGER', urgency: 'HIGH' }],
         resolveIds: [],
-        replace: [],
       },
       inventory: {
         add: ['A cracked signal horn'],
         removeIds: [],
-        replace: [],
       },
       health: {
         add: ['Shallow cut on your forearm'],
         removeIds: [],
-        replace: [],
       },
       characterState: {
         add: [{ characterName: 'Captain Ives', states: ['Pinned near the eastern stair'] }],
         removeIds: [],
-        replace: [],
       },
       canon: {
         worldAdd: ['The eastern stairwell overlooks the collapsed market square.'],
@@ -96,10 +90,13 @@ describe('validatePagePlannerResponse', () => {
     expect(() => validatePagePlannerResponse(rawJson, '{"raw":"planner"}')).toThrow(LLMError);
   });
 
-  it('throws when replace payload is incomplete after trim', () => {
+  it('throws when character state add has no non-empty states', () => {
     const rawJson = createValidPlannerPayload();
-    (rawJson.stateIntents as { threats: { replace: Array<{ removeId: string; addText: string }> } }).threats.replace =
-      [{ removeId: 'th-1', addText: '   ' }];
+    (
+      rawJson.stateIntents as {
+        characterState: { add: Array<{ characterName: string; states: string[] }> };
+      }
+    ).characterState.add = [{ characterName: 'Mara', states: ['   '] }];
 
     expect(() => validatePagePlannerResponse(rawJson, '{"raw":"planner"}')).toThrow(LLMError);
   });

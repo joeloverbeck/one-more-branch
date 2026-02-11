@@ -16,8 +16,9 @@ MUST NOT:
 - Do NOT include explanation outside the JSON object.
 
 ID RULES:
-- removeIds/resolveIds/removeId/resolveId must reference IDs from provided continuation context.
+- removeIds/resolveIds must reference IDs from provided continuation context.
 - Opening mode commonly has no removable IDs; use empty arrays when nothing should be removed.
+- There is no replace field. To progress an existing item, remove the old ID and add the new evolved text/object in the same payload.
 
 THREAD CONTRACT (OPEN LOOPS ONLY):
 - THREADS = unresolved open loops, never current-state facts.

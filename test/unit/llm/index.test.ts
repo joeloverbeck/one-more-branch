@@ -132,16 +132,15 @@ describe('llm barrel exports', () => {
       sceneIntent: 'Escalate the bridge crossing into a commitment.',
       continuityAnchors: ['Storm worsens', 'Bridge remains unstable'],
       stateIntents: {
-        threats: { add: [], removeIds: [], replace: [] },
-        constraints: { add: [], removeIds: [], replace: [] },
+        threats: { add: [], removeIds: [] },
+        constraints: { add: [], removeIds: [] },
         threads: {
           add: [{ text: 'Reach the far side before collapse', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }],
           resolveIds: [],
-          replace: [],
         },
-        inventory: { add: [], removeIds: [], replace: [] },
-        health: { add: [], removeIds: [], replace: [] },
-        characterState: { add: [], removeIds: [], replace: [] },
+        inventory: { add: [], removeIds: [] },
+        health: { add: [], removeIds: [] },
+        characterState: { add: [], removeIds: [] },
         canon: { worldAdd: [], characterAdd: [] },
       },
       writerBrief: {

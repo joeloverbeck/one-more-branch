@@ -1,11 +1,8 @@
 import type {
   CharacterStateIntentAdd,
-  CharacterStateIntentReplace,
   PagePlan,
   PageWriterResult,
-  TextIntentReplace,
   ThreadAdd,
-  ThreadIntentReplace,
 } from '../llm/types.js';
 import { ThreadType } from '../models/state/index.js';
 import type {
@@ -17,7 +14,6 @@ import type {
 } from './state-reconciler-types.js';
 
 const UNKNOWN_STATE_ID = 'UNKNOWN_STATE_ID';
-const MALFORMED_REPLACE_PAYLOAD = 'MALFORMED_REPLACE_PAYLOAD';
 const DUPLICATE_CANON_FACT = 'DUPLICATE_CANON_FACT';
 const MISSING_NARRATIVE_EVIDENCE = 'MISSING_NARRATIVE_EVIDENCE';
 const THREAD_DUPLICATE_LIKE_ADD = 'THREAD_DUPLICATE_LIKE_ADD';
@@ -139,34 +135,6 @@ function normalizeAndValidateRemoveIds(
   }
 
   return result;
-}
-
-function expandTextReplacements(
-  replacements: readonly TextIntentReplace[],
-  field: string,
-  diagnostics: StateReconciliationDiagnostic[],
-): { add: string[]; removeIds: string[] } {
-  const add: string[] = [];
-  const removeIds: string[] = [];
-
-  replacements.forEach((entry, index) => {
-    const removeId = normalizeId(entry.removeId);
-    const addText = normalizeIntentText(entry.addText);
-
-    if (!removeId || !addText) {
-      diagnostics.push({
-        code: MALFORMED_REPLACE_PAYLOAD,
-        field: `${field}.replace[${index}]`,
-        message: `Malformed replace payload at ${field}.replace[${index}].`,
-      });
-      return;
-    }
-
-    removeIds.push(removeId);
-    add.push(addText);
-  });
-
-  return { add, removeIds };
 }
 
 function normalizeThreadAdds(additions: readonly ThreadAdd[]): ReconciledThreadAdd[] {
@@ -323,37 +291,6 @@ function applyThreadDedupAndContradictionRules(
   return acceptedAdds;
 }
 
-function expandThreadReplacements(
-  replacements: readonly ThreadIntentReplace[],
-  diagnostics: StateReconciliationDiagnostic[],
-): { add: ReconciledThreadAdd[]; resolveIds: string[] } {
-  const add: ReconciledThreadAdd[] = [];
-  const resolveIds: string[] = [];
-
-  replacements.forEach((entry, index) => {
-    const resolveId = normalizeId(entry.resolveId);
-    const text = normalizeIntentText(entry.add.text);
-
-    if (!resolveId || !text) {
-      diagnostics.push({
-        code: MALFORMED_REPLACE_PAYLOAD,
-        field: `stateIntents.threads.replace[${index}]`,
-        message: `Malformed replace payload at stateIntents.threads.replace[${index}].`,
-      });
-      return;
-    }
-
-    resolveIds.push(resolveId);
-    add.push({
-      text,
-      threadType: entry.add.threadType,
-      urgency: entry.add.urgency,
-    });
-  });
-
-  return { add, resolveIds };
-}
-
 function normalizeCharacterStateAdds(
   additions: readonly CharacterStateIntentAdd[],
 ): ReconciledCharacterStateAdd[] {
@@ -389,40 +326,6 @@ function normalizeCharacterStateAdds(
   }
 
   return [...byCharacter.values()];
-}
-
-function expandCharacterStateReplacements(
-  replacements: readonly CharacterStateIntentReplace[],
-  diagnostics: StateReconciliationDiagnostic[],
-): { add: ReconciledCharacterStateAdd[]; removeIds: string[] } {
-  const add: ReconciledCharacterStateAdd[] = [];
-  const removeIds: string[] = [];
-
-  replacements.forEach((entry, index) => {
-    const removeId = normalizeId(entry.removeId);
-    const characterName = normalizeIntentText(entry.add.characterName);
-    const normalizedStates = dedupeByKey(
-      entry.add.states.map(normalizeIntentText).filter(Boolean),
-      intentComparisonKey,
-    );
-
-    if (!removeId || !characterName || normalizedStates.length === 0) {
-      diagnostics.push({
-        code: MALFORMED_REPLACE_PAYLOAD,
-        field: `stateIntents.characterState.replace[${index}]`,
-        message: `Malformed replace payload at stateIntents.characterState.replace[${index}].`,
-      });
-      return;
-    }
-
-    removeIds.push(removeId);
-    add.push({
-      characterName,
-      states: normalizedStates,
-    });
-  });
-
-  return { add, removeIds };
 }
 
 function normalizeCharacterCanonFacts(
@@ -547,84 +450,50 @@ export function reconcileState(
     `${writerOutput.narrative} ${writerOutput.sceneSummary}`,
   );
 
-  const textReplacementThreats = expandTextReplacements(
-    plan.stateIntents.threats.replace,
-    'stateIntents.threats',
-    diagnostics,
-  );
-  const textReplacementConstraints = expandTextReplacements(
-    plan.stateIntents.constraints.replace,
-    'stateIntents.constraints',
-    diagnostics,
-  );
-  const textReplacementInventory = expandTextReplacements(
-    plan.stateIntents.inventory.replace,
-    'stateIntents.inventory',
-    diagnostics,
-  );
-  const textReplacementHealth = expandTextReplacements(
-    plan.stateIntents.health.replace,
-    'stateIntents.health',
-    diagnostics,
-  );
-
-  const threadReplacements = expandThreadReplacements(
-    plan.stateIntents.threads.replace,
-    diagnostics,
-  );
-
-  const characterStateReplacements = expandCharacterStateReplacements(
-    plan.stateIntents.characterState.replace,
-    diagnostics,
-  );
-
   const threatsRemoved = normalizeAndValidateRemoveIds(
-    [...plan.stateIntents.threats.removeIds, ...textReplacementThreats.removeIds],
+    plan.stateIntents.threats.removeIds,
     new Set(previousState.threats.map(entry => entry.id)),
     'threatsRemoved',
     diagnostics,
   );
 
   const constraintsRemoved = normalizeAndValidateRemoveIds(
-    [...plan.stateIntents.constraints.removeIds, ...textReplacementConstraints.removeIds],
+    plan.stateIntents.constraints.removeIds,
     new Set(previousState.constraints.map(entry => entry.id)),
     'constraintsRemoved',
     diagnostics,
   );
 
   const threadsResolved = normalizeAndValidateRemoveIds(
-    [...plan.stateIntents.threads.resolveIds, ...threadReplacements.resolveIds],
+    plan.stateIntents.threads.resolveIds,
     new Set(previousState.threads.map(entry => entry.id)),
     'threadsResolved',
     diagnostics,
   );
 
   const inventoryRemoved = normalizeAndValidateRemoveIds(
-    [...plan.stateIntents.inventory.removeIds, ...textReplacementInventory.removeIds],
+    plan.stateIntents.inventory.removeIds,
     new Set(previousState.inventory.map(entry => entry.id)),
     'inventoryRemoved',
     diagnostics,
   );
 
   const healthRemoved = normalizeAndValidateRemoveIds(
-    [...plan.stateIntents.health.removeIds, ...textReplacementHealth.removeIds],
+    plan.stateIntents.health.removeIds,
     new Set(previousState.health.map(entry => entry.id)),
     'healthRemoved',
     diagnostics,
   );
 
   const characterStateChangesRemoved = normalizeAndValidateRemoveIds(
-    [
-      ...plan.stateIntents.characterState.removeIds,
-      ...characterStateReplacements.removeIds,
-    ],
+    plan.stateIntents.characterState.removeIds,
     new Set(previousState.characterState.map(entry => entry.id)),
     'characterStateChangesRemoved',
     diagnostics,
   );
 
   const threatsAdded = applyNarrativeEvidenceGate(
-    normalizeTextIntents([...plan.stateIntents.threats.add, ...textReplacementThreats.add]),
+    normalizeTextIntents(plan.stateIntents.threats.add),
     'threatsAdded',
     value => value,
     evidenceText,
@@ -640,10 +509,7 @@ export function reconcileState(
   );
 
   const constraintsAdded = applyNarrativeEvidenceGate(
-    normalizeTextIntents([
-      ...plan.stateIntents.constraints.add,
-      ...textReplacementConstraints.add,
-    ]),
+    normalizeTextIntents(plan.stateIntents.constraints.add),
     'constraintsAdded',
     value => value,
     evidenceText,
@@ -660,7 +526,7 @@ export function reconcileState(
 
   const threadsAdded = applyNarrativeEvidenceGate(
     applyThreadDedupAndContradictionRules(
-      normalizeThreadAdds([...plan.stateIntents.threads.add, ...threadReplacements.add]),
+      normalizeThreadAdds(plan.stateIntents.threads.add),
       previousState.threads,
       threadsResolved,
       diagnostics,
@@ -680,7 +546,7 @@ export function reconcileState(
   );
 
   const inventoryAdded = applyNarrativeEvidenceGate(
-    normalizeTextIntents([...plan.stateIntents.inventory.add, ...textReplacementInventory.add]),
+    normalizeTextIntents(plan.stateIntents.inventory.add),
     'inventoryAdded',
     value => value,
     evidenceText,
@@ -696,7 +562,7 @@ export function reconcileState(
   );
 
   const healthAdded = applyNarrativeEvidenceGate(
-    normalizeTextIntents([...plan.stateIntents.health.add, ...textReplacementHealth.add]),
+    normalizeTextIntents(plan.stateIntents.health.add),
     'healthAdded',
     value => value,
     evidenceText,
@@ -712,10 +578,7 @@ export function reconcileState(
   );
 
   const characterStateChangesAdded = applyNarrativeEvidenceGate(
-    normalizeCharacterStateAdds([
-      ...plan.stateIntents.characterState.add,
-      ...characterStateReplacements.add,
-    ]),
+    normalizeCharacterStateAdds(plan.stateIntents.characterState.add),
     'characterStateChangesAdded',
     value => `${value.characterName} ${value.states.join(' ')}`,
     evidenceText,

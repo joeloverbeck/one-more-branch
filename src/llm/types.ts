@@ -205,26 +205,14 @@ export interface ThreadAdd {
   urgency: Urgency;
 }
 
-export interface TextIntentReplace {
-  removeId: string;
-  addText: string;
-}
-
 export interface TextIntentMutations {
   add: string[];
   removeIds: string[];
-  replace: TextIntentReplace[];
-}
-
-export interface ThreadIntentReplace {
-  resolveId: string;
-  add: ThreadAdd;
 }
 
 export interface ThreadIntentMutations {
   add: ThreadAdd[];
   resolveIds: string[];
-  replace: ThreadIntentReplace[];
 }
 
 export interface CharacterStateIntentAdd {
@@ -232,15 +220,9 @@ export interface CharacterStateIntentAdd {
   states: string[];
 }
 
-export interface CharacterStateIntentReplace {
-  removeId: string;
-  add: CharacterStateIntentAdd;
-}
-
 export interface CharacterStateIntentMutations {
   add: CharacterStateIntentAdd[];
   removeIds: string[];
-  replace: CharacterStateIntentReplace[];
 }
 
 export interface CanonIntents {

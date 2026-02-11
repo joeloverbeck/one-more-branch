@@ -7,7 +7,6 @@ import {
 
 const DUPLICATE_INTENT_RULE_KEY = 'planner.duplicate_intent';
 const REQUIRED_TEXT_RULE_KEY = 'planner.required_text.empty_after_trim';
-const REPLACE_RULE_KEY = 'planner.replace_payload.incomplete';
 
 function normalized(value: string): string {
   return value.trim().toLowerCase();
@@ -85,52 +84,20 @@ function addIdPrefixIssues(
   });
 }
 
-function addIncompleteReplaceIssue(
-  removeId: string,
-  addText: string,
-  path: (string | number)[],
-  ctx: z.RefinementCtx,
-): void {
-  if (removeId.trim() && addText.trim()) {
-    return;
-  }
-
-  ctx.addIssue({
-    code: z.ZodIssueCode.custom,
-    message: REPLACE_RULE_KEY,
-    path,
-    params: {
-      ruleKey: REPLACE_RULE_KEY,
-    },
-  });
-}
-
 const ThreadIntentAddSchema = z.object({
   text: z.string(),
   threadType: z.nativeEnum(ThreadType),
   urgency: z.nativeEnum(Urgency),
 });
 
-const TextIntentReplaceSchema = z.object({
-  removeId: z.string(),
-  addText: z.string(),
-});
-
 const TextIntentMutationsSchema = z.object({
   add: z.array(z.string()),
   removeIds: z.array(z.string()),
-  replace: z.array(TextIntentReplaceSchema),
-});
-
-const ThreadIntentReplaceSchema = z.object({
-  resolveId: z.string(),
-  add: ThreadIntentAddSchema,
 });
 
 const ThreadIntentMutationsSchema = z.object({
   add: z.array(ThreadIntentAddSchema),
   resolveIds: z.array(z.string()),
-  replace: z.array(ThreadIntentReplaceSchema),
 });
 
 const CharacterStateIntentAddSchema = z.object({
@@ -138,15 +105,9 @@ const CharacterStateIntentAddSchema = z.object({
   states: z.array(z.string()),
 });
 
-const CharacterStateIntentReplaceSchema = z.object({
-  removeId: z.string(),
-  add: CharacterStateIntentAddSchema,
-});
-
 const CharacterStateIntentMutationsSchema = z.object({
   add: z.array(CharacterStateIntentAddSchema),
   removeIds: z.array(z.string()),
-  replace: z.array(CharacterStateIntentReplaceSchema),
 });
 
 const CanonIntentsSchema = z.object({
@@ -245,94 +206,8 @@ export const PagePlannerResultSchema = z
       ctx,
     );
 
-    data.stateIntents.threats.replace.forEach((entry, index) => {
-      addIdPrefixIssues(
-        [entry.removeId],
-        'stateIntents.threats.replace.removeId',
-        STATE_ID_PREFIXES.threats,
-        ['stateIntents', 'threats', 'replace', index, 'removeId'],
-        ctx,
-      );
-      addIncompleteReplaceIssue(
-        entry.removeId,
-        entry.addText,
-        ['stateIntents', 'threats', 'replace', index],
-        ctx,
-      );
-    });
-
-    data.stateIntents.constraints.replace.forEach((entry, index) => {
-      addIdPrefixIssues(
-        [entry.removeId],
-        'stateIntents.constraints.replace.removeId',
-        STATE_ID_PREFIXES.constraints,
-        ['stateIntents', 'constraints', 'replace', index, 'removeId'],
-        ctx,
-      );
-      addIncompleteReplaceIssue(
-        entry.removeId,
-        entry.addText,
-        ['stateIntents', 'constraints', 'replace', index],
-        ctx,
-      );
-    });
-
-    data.stateIntents.inventory.replace.forEach((entry, index) => {
-      addIdPrefixIssues(
-        [entry.removeId],
-        'stateIntents.inventory.replace.removeId',
-        STATE_ID_PREFIXES.inventory,
-        ['stateIntents', 'inventory', 'replace', index, 'removeId'],
-        ctx,
-      );
-      addIncompleteReplaceIssue(
-        entry.removeId,
-        entry.addText,
-        ['stateIntents', 'inventory', 'replace', index],
-        ctx,
-      );
-    });
-
-    data.stateIntents.health.replace.forEach((entry, index) => {
-      addIdPrefixIssues(
-        [entry.removeId],
-        'stateIntents.health.replace.removeId',
-        STATE_ID_PREFIXES.health,
-        ['stateIntents', 'health', 'replace', index, 'removeId'],
-        ctx,
-      );
-      addIncompleteReplaceIssue(
-        entry.removeId,
-        entry.addText,
-        ['stateIntents', 'health', 'replace', index],
-        ctx,
-      );
-    });
-
     data.stateIntents.threads.add.forEach((entry, index) => {
       addRequiredTrimmedTextIssue(entry.text, ['stateIntents', 'threads', 'add', index, 'text'], ctx);
-    });
-    data.stateIntents.threads.replace.forEach((entry, index) => {
-      addIdPrefixIssues(
-        [entry.resolveId],
-        'stateIntents.threads.replace.resolveId',
-        STATE_ID_PREFIXES.threads,
-        ['stateIntents', 'threads', 'replace', index, 'resolveId'],
-        ctx,
-      );
-      addRequiredTrimmedTextIssue(
-        entry.add.text,
-        ['stateIntents', 'threads', 'replace', index, 'add', 'text'],
-        ctx,
-      );
-      if (!entry.resolveId.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: REPLACE_RULE_KEY,
-          path: ['stateIntents', 'threads', 'replace', index],
-          params: { ruleKey: REPLACE_RULE_KEY },
-        });
-      }
     });
 
     data.stateIntents.characterState.add.forEach((entry, index) => {
@@ -351,36 +226,6 @@ export const PagePlannerResultSchema = z
       }
     });
 
-    data.stateIntents.characterState.replace.forEach((entry, index) => {
-      addIdPrefixIssues(
-        [entry.removeId],
-        'stateIntents.characterState.replace.removeId',
-        STATE_ID_PREFIXES.characterState,
-        ['stateIntents', 'characterState', 'replace', index, 'removeId'],
-        ctx,
-      );
-      addRequiredTrimmedTextIssue(
-        entry.add.characterName,
-        ['stateIntents', 'characterState', 'replace', index, 'add', 'characterName'],
-        ctx,
-      );
-      if (entry.add.states.map(state => state.trim()).filter(Boolean).length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: REQUIRED_TEXT_RULE_KEY,
-          path: ['stateIntents', 'characterState', 'replace', index, 'add', 'states'],
-          params: { ruleKey: REQUIRED_TEXT_RULE_KEY },
-        });
-      }
-      if (!entry.removeId.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: REPLACE_RULE_KEY,
-          path: ['stateIntents', 'characterState', 'replace', index],
-          params: { ruleKey: REPLACE_RULE_KEY },
-        });
-      }
-    });
   });
 
 export type ValidatedPagePlannerResult = z.infer<typeof PagePlannerResultSchema>;

@@ -11,12 +11,12 @@ function buildPlan(overrides?: Partial<PagePlan>): PagePlan {
     continuityAnchors: ['Watch patrols every bridge crossing'],
     stateIntents: {
       currentLocation: 'South market district',
-      threats: { add: [], removeIds: [], replace: [] },
-      constraints: { add: [], removeIds: [], replace: [] },
-      threads: { add: [], resolveIds: [], replace: [] },
-      inventory: { add: [], removeIds: [], replace: [] },
-      health: { add: [], removeIds: [], replace: [] },
-      characterState: { add: [], removeIds: [], replace: [] },
+      threats: { add: [], removeIds: [] },
+      constraints: { add: [], removeIds: [] },
+      threads: { add: [], resolveIds: [] },
+      inventory: { add: [], removeIds: [] },
+      health: { add: [], removeIds: [] },
+      characterState: { add: [], removeIds: [] },
       canon: { worldAdd: [], characterAdd: [] },
     },
     writerBrief: {
@@ -120,7 +120,6 @@ function buildThreadAddPlan(threadType: ThreadType, text: string): PagePlan {
       threads: {
         add: [{ text, threadType, urgency: Urgency.HIGH }],
         resolveIds: [],
-        replace: [],
       },
     },
   });
@@ -159,7 +158,6 @@ function buildThreadFixturePlan(scenario: ThreadDedupFixtureScenario): PagePlan 
       threads: {
         add: scenario.add,
         resolveIds: scenario.resolveIds,
-        replace: [],
       },
     },
   });
@@ -173,7 +171,6 @@ describe('state-reconciler', () => {
         threats: {
           add: ['  Patrol   pressure  rising  ', 'patrol pressure rising'],
           removeIds: [],
-          replace: [],
         },
       },
     });
@@ -183,24 +180,21 @@ describe('state-reconciler', () => {
     expect(result.threatsAdded).toEqual(['Patrol pressure rising']);
   });
 
-  it('expands replace intents into remove+add operations for text/thread/character-state categories', () => {
+  it('applies remove+add progression for text/thread/character-state categories', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
         threats: {
-          add: [],
-          removeIds: [],
-          replace: [{ removeId: 'th-1', addText: '   Patrols split into two search teams  ' }],
+          add: ['   Patrols split into two search teams  '],
+          removeIds: ['th-1'],
         },
         threads: {
-          add: [],
-          resolveIds: [],
-          replace: [{ resolveId: 'td-1', add: { text: 'Find a hidden route', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM } }],
+          add: [{ text: 'Find a hidden route', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM }],
+          resolveIds: ['td-1'],
         },
         characterState: {
-          add: [],
-          removeIds: [],
-          replace: [{ removeId: 'cs-1', add: { characterName: ' Mara ', states: ['  Focused  under pressure  '] } }],
+          add: [{ characterName: ' Mara ', states: ['  Focused  under pressure  '] }],
+          removeIds: ['cs-1'],
         },
       },
     });
@@ -233,7 +227,6 @@ describe('state-reconciler', () => {
             },
           ],
           resolveIds: [],
-          replace: [],
         },
       },
     });
@@ -276,7 +269,6 @@ describe('state-reconciler', () => {
             },
           ],
           resolveIds: ['td-1'],
-          replace: [],
         },
       },
     });
@@ -474,7 +466,6 @@ describe('state-reconciler', () => {
             },
           ],
           resolveIds: [],
-          replace: [],
         },
       },
     });
@@ -516,7 +507,6 @@ describe('state-reconciler', () => {
             },
           ],
           resolveIds: [],
-          replace: [],
         },
       },
     });
@@ -543,8 +533,8 @@ describe('state-reconciler', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
-        threats: { add: [], removeIds: ['th-999'], replace: [] },
-        threads: { add: [], resolveIds: ['td-999'], replace: [] },
+        threats: { add: [], removeIds: ['th-999'] },
+        threads: { add: [], resolveIds: ['td-999'] },
       },
     });
 
@@ -570,9 +560,9 @@ describe('state-reconciler', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
-        inventory: { add: [], removeIds: ['inv-999'], replace: [] },
-        health: { add: [], removeIds: ['hp-999'], replace: [] },
-        characterState: { add: [], removeIds: ['cs-999'], replace: [] },
+        inventory: { add: [], removeIds: ['inv-999'] },
+        health: { add: [], removeIds: ['hp-999'] },
+        characterState: { add: [], removeIds: ['cs-999'] },
       },
     });
 
@@ -600,19 +590,13 @@ describe('state-reconciler', () => {
     ]);
   });
 
-  it('returns diagnostics for malformed replace payloads and does not apply malformed entries', () => {
+  it('drops malformed character-state additions without emitting reconciliation diagnostics', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
-        threats: {
-          add: [],
-          removeIds: [],
-          replace: [{ removeId: '   ', addText: 'valid text' }],
-        },
         characterState: {
-          add: [],
+          add: [{ characterName: 'Mara', states: ['   '] }],
           removeIds: [],
-          replace: [{ removeId: 'cs-1', add: { characterName: 'Mara', states: ['   '] } }],
         },
       },
     });
@@ -623,18 +607,7 @@ describe('state-reconciler', () => {
     expect(result.threatsRemoved).toEqual([]);
     expect(result.characterStateChangesAdded).toEqual([]);
     expect(result.characterStateChangesRemoved).toEqual([]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'MALFORMED_REPLACE_PAYLOAD',
-        field: 'stateIntents.threats.replace[0]',
-        message: 'Malformed replace payload at stateIntents.threats.replace[0].',
-      },
-      {
-        code: 'MALFORMED_REPLACE_PAYLOAD',
-        field: 'stateIntents.characterState.replace[0]',
-        message: 'Malformed replace payload at stateIntents.characterState.replace[0].',
-      },
-    ]);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
   it('produces stable output for repeated runs with identical input', () => {
@@ -644,7 +617,6 @@ describe('state-reconciler', () => {
         inventory: {
           add: ['  Lockpick   Set ', 'lockpick set'],
           removeIds: ['inv-1'],
-          replace: [],
         },
       },
     });
@@ -705,7 +677,6 @@ describe('state-reconciler', () => {
         constraints: {
           add: ['Obsidian cipher fallback'],
           removeIds: [],
-          replace: [],
         },
       },
     });
@@ -730,7 +701,6 @@ describe('state-reconciler', () => {
         inventory: {
           add: ['IRON-GATE breach kit'],
           removeIds: [],
-          replace: [],
         },
       },
     });

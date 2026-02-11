@@ -169,32 +169,26 @@ describe('LLM types', () => {
           threats: {
             add: ['Lightning strikes the eastern support cables'],
             removeIds: [],
-            replace: [],
           },
           constraints: {
             add: ['Strong crosswinds reduce visibility'],
             removeIds: [],
-            replace: [],
           },
           threads: {
             add: [{ text: 'Secure a safe path across the bridge', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }],
             resolveIds: [],
-            replace: [],
           },
           inventory: {
             add: [],
             removeIds: [],
-            replace: [],
           },
           health: {
             add: [],
             removeIds: [],
-            replace: [],
           },
           characterState: {
             add: [{ characterName: 'Scout', states: ['focused'] }],
             removeIds: [],
-            replace: [{ removeId: 'cs-1', add: { characterName: 'Scout', states: ['resolute'] } }],
           },
           canon: {
             worldAdd: ['The bridge groans audibly before each thunderclap.'],
@@ -209,7 +203,7 @@ describe('LLM types', () => {
       };
 
       expect(plan.stateIntents.threads.add[0].threadType).toBe(ThreadType.DANGER);
-      expect(plan.stateIntents.characterState.replace[0].add.states).toEqual(['resolute']);
+      expect(plan.stateIntents.characterState.add[0].states).toEqual(['focused']);
     });
 
     it('should allow creating opening and continuation PagePlanContext variants', () => {
@@ -264,12 +258,12 @@ describe('LLM types', () => {
         sceneIntent: 'Escalate danger and force a commitment.',
         continuityAnchors: [],
         stateIntents: {
-          threats: { add: [], removeIds: [], replace: [] },
-          constraints: { add: [], removeIds: [], replace: [] },
-          threads: { add: [], resolveIds: [], replace: [] },
-          inventory: { add: [], removeIds: [], replace: [] },
-          health: { add: [], removeIds: [], replace: [] },
-          characterState: { add: [], removeIds: [], replace: [] },
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
+          threads: { add: [], resolveIds: [] },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
         writerBrief: {

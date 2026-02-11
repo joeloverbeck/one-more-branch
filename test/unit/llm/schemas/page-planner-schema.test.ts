@@ -44,7 +44,7 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       'canon',
     ]);
     expect(stateIntents.additionalProperties).toBe(false);
-    expect(threads.required).toEqual(['add', 'resolveIds', 'replace']);
+    expect(threads.required).toEqual(['add', 'resolveIds']);
     expect(threadAddItems.properties.threadType?.enum).toEqual([
       'MYSTERY',
       'QUEST',

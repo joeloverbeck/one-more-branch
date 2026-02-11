@@ -14,8 +14,9 @@ describe('planner state-intent rules sections', () => {
     });
 
     it('requires ID references to come from provided continuation context', () => {
-      expect(PLANNER_STATE_INTENT_RULES).toContain('removeIds/resolveIds/removeId/resolveId');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('removeIds/resolveIds');
       expect(PLANNER_STATE_INTENT_RULES).toContain('provided continuation context');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('There is no replace field');
     });
 
     it('does not include inline OUTPUT FORMAT scaffolding', () => {

@@ -119,22 +119,10 @@ export function validatePagePlannerResponse(
         threats: {
           add: normalizeStringArray(validated.stateIntents.threats.add),
           removeIds: normalizeStringArray(validated.stateIntents.threats.removeIds),
-          replace: validated.stateIntents.threats.replace
-            .map((entry) => ({
-              removeId: entry.removeId.trim(),
-              addText: entry.addText.trim(),
-            }))
-            .filter(entry => entry.removeId && entry.addText),
         },
         constraints: {
           add: normalizeStringArray(validated.stateIntents.constraints.add),
           removeIds: normalizeStringArray(validated.stateIntents.constraints.removeIds),
-          replace: validated.stateIntents.constraints.replace
-            .map((entry) => ({
-              removeId: entry.removeId.trim(),
-              addText: entry.addText.trim(),
-            }))
-            .filter(entry => entry.removeId && entry.addText),
         },
         threads: {
           add: validated.stateIntents.threads.add
@@ -145,36 +133,14 @@ export function validatePagePlannerResponse(
             }))
             .filter(entry => entry.text),
           resolveIds: normalizeStringArray(validated.stateIntents.threads.resolveIds),
-          replace: validated.stateIntents.threads.replace
-            .map((entry) => ({
-              resolveId: entry.resolveId.trim(),
-              add: {
-                text: entry.add.text.trim(),
-                threadType: entry.add.threadType,
-                urgency: entry.add.urgency,
-              },
-            }))
-            .filter(entry => entry.resolveId && entry.add.text),
         },
         inventory: {
           add: normalizeStringArray(validated.stateIntents.inventory.add),
           removeIds: normalizeStringArray(validated.stateIntents.inventory.removeIds),
-          replace: validated.stateIntents.inventory.replace
-            .map((entry) => ({
-              removeId: entry.removeId.trim(),
-              addText: entry.addText.trim(),
-            }))
-            .filter(entry => entry.removeId && entry.addText),
         },
         health: {
           add: normalizeStringArray(validated.stateIntents.health.add),
           removeIds: normalizeStringArray(validated.stateIntents.health.removeIds),
-          replace: validated.stateIntents.health.replace
-            .map((entry) => ({
-              removeId: entry.removeId.trim(),
-              addText: entry.addText.trim(),
-            }))
-            .filter(entry => entry.removeId && entry.addText),
         },
         characterState: {
           add: validated.stateIntents.characterState.add
@@ -184,15 +150,6 @@ export function validatePagePlannerResponse(
             }))
             .filter(entry => entry.characterName && entry.states.length > 0),
           removeIds: normalizeStringArray(validated.stateIntents.characterState.removeIds),
-          replace: validated.stateIntents.characterState.replace
-            .map((entry) => ({
-              removeId: entry.removeId.trim(),
-              add: {
-                characterName: entry.add.characterName.trim(),
-                states: normalizeStringArray(entry.add.states),
-              },
-            }))
-            .filter(entry => entry.removeId && entry.add.characterName && entry.add.states.length > 0),
         },
         canon: {
           worldAdd: normalizeStringArray(validated.stateIntents.canon.worldAdd),
