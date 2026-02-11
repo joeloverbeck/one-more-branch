@@ -1,4 +1,7 @@
 import type {
+  GenerationStageCallback,
+  GenerationStageEvent,
+  GenerationStageStatus,
   GenerationStage,
   MakeChoiceOptions,
   MakeChoiceResult,
@@ -44,6 +47,22 @@ describe('Engine types', () => {
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);
+    });
+
+    it('supports generation stage callback contracts', () => {
+      const status: GenerationStageStatus = 'started';
+      const event: GenerationStageEvent = {
+        stage: 'PLANNING_PAGE',
+        status,
+        attempt: 1,
+      };
+      const callback: GenerationStageCallback = jest.fn();
+
+      callback(event);
+
+      expect(event.stage).toBe('PLANNING_PAGE');
+      expect(event.attempt).toBe(1);
+      expect(callback).toHaveBeenCalledWith(event);
     });
 
     it('supports StartStoryResult and MakeChoiceResult', () => {

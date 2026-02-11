@@ -99,10 +99,12 @@ describe('story-engine', () => {
     it('delegates to startNewStory', async () => {
       const story = buildStory();
       const page = buildPage();
+      const onGenerationStage = jest.fn();
       const options = {
         characterConcept: 'A long enough concept for validation checks.',
         tone: 'tense',
         apiKey: 'test-key',
+        onGenerationStage,
       };
       mockedStartNewStory.mockResolvedValue({ story, page });
 
@@ -206,10 +208,17 @@ describe('story-engine', () => {
           pageId: PAGE_1,
           choiceIndex: 0,
           apiKey: 'test-key',
+          onGenerationStage: jest.fn(),
         }),
       ).resolves.toEqual({ page: nextPage, wasGenerated: true });
 
-      expect(mockedGetOrGeneratePage).toHaveBeenCalledWith(story, page, 0, 'test-key');
+      expect(mockedGetOrGeneratePage).toHaveBeenCalledWith(
+        story,
+        page,
+        0,
+        'test-key',
+        expect.any(Function),
+      );
     });
   });
 

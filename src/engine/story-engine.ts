@@ -51,6 +51,7 @@ export class StoryEngine {
       currentPage,
       options.choiceIndex,
       options.apiKey,
+      options.onGenerationStage,
     );
 
     return { page, wasGenerated, deviationInfo };

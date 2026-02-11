@@ -135,6 +135,10 @@ export {
 
 export { EngineError } from './types';
 export type {
+  GenerationStage,
+  GenerationStageStatus,
+  GenerationStageEvent,
+  GenerationStageCallback,
   StartStoryResult,
   MakeChoiceResult,
   PlaySession,

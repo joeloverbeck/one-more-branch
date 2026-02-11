@@ -41,6 +41,7 @@ import {
   validateContinuationStructureVersion,
   validateFirstPageStructureVersion,
 } from './structure-version-validator';
+import type { GenerationStage, GenerationStageCallback } from './types';
 import { DeviationInfo, EngineError } from './types';
 
 function createGenerationRequestId(): string {
@@ -97,6 +98,20 @@ interface ReconciliationRetryGenerationOptions {
     pagePlan: Awaited<ReturnType<typeof generatePagePlan>>,
     failureReasons?: readonly ReconciliationFailureReason[],
   ) => Promise<WriterResult>;
+  onGenerationStage?: GenerationStageCallback;
+}
+
+function emitGenerationStage(
+  onGenerationStage: GenerationStageCallback | undefined,
+  stage: GenerationStage,
+  status: 'started' | 'completed',
+  attempt: number,
+): void {
+  onGenerationStage?.({ stage, status, attempt });
+}
+
+function resolveWriterStage(mode: PagePlanContext['mode']): GenerationStage {
+  return mode === 'opening' ? 'WRITING_OPENING_PAGE' : 'WRITING_CONTINUING_PAGE';
 }
 
 function createSuccessPipelineMetrics(
@@ -130,6 +145,7 @@ async function generateWithReconciliationRetry({
   previousState,
   buildPlanContext,
   generateWriter,
+  onGenerationStage,
 }: ReconciliationRetryGenerationOptions): Promise<{
   writerResult: WriterResult;
   reconciliation: StateReconciliationResult;
@@ -161,6 +177,7 @@ async function generateWithReconciliationRetry({
   let reconcilerRetried = false;
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
+    emitGenerationStage(onGenerationStage, 'PLANNING_PAGE', 'started', attempt);
     logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'planner' });
     const plannerStart = Date.now();
     let pagePlan: Awaited<ReturnType<typeof generatePagePlan>>;
@@ -203,6 +220,7 @@ async function generateWithReconciliationRetry({
     }
     const plannerDuration = Date.now() - plannerStart;
     plannerDurationMs += plannerDuration;
+    emitGenerationStage(onGenerationStage, 'PLANNING_PAGE', 'completed', attempt);
     logger.info('Generation stage completed', {
       ...baseLogContext,
       attempt,
@@ -210,6 +228,8 @@ async function generateWithReconciliationRetry({
       durationMs: plannerDuration,
     });
 
+    const writerStage = resolveWriterStage(mode);
+    emitGenerationStage(onGenerationStage, writerStage, 'started', attempt);
     logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'writer' });
     const writerStart = Date.now();
     let writerResult: WriterResult;
@@ -242,6 +262,7 @@ async function generateWithReconciliationRetry({
     }
     const writerDuration = Date.now() - writerStart;
     writerDurationMs += writerDuration;
+    emitGenerationStage(onGenerationStage, writerStage, 'completed', attempt);
     logger.info('Generation stage completed', {
       ...baseLogContext,
       attempt,
@@ -365,6 +386,7 @@ async function generateWithReconciliationRetry({
 export async function generateFirstPage(
   story: Story,
   apiKey: string,
+  onGenerationStage?: GenerationStageCallback,
 ): Promise<{ page: Page; updatedStory: Story; metrics: GenerationPipelineMetrics }> {
   validateFirstPageStructureVersion(story);
 
@@ -413,6 +435,7 @@ export async function generateFirstPage(
             },
           },
         ),
+      onGenerationStage,
     });
   const result = mergePageWriterAndReconciledStateWithAnalystResults(
     writerResult,
@@ -440,6 +463,7 @@ export async function generateNextPage(
   parentPage: Page,
   choiceIndex: number,
   apiKey: string,
+  onGenerationStage?: GenerationStageCallback,
 ): Promise<{
   page: Page;
   updatedStory: Story;
@@ -524,6 +548,7 @@ export async function generateNextPage(
             },
           },
         ),
+      onGenerationStage,
     });
 
   // Analyst call (only when structure exists)
@@ -535,6 +560,7 @@ export async function generateNextPage(
       pagesInCurrentBeat: parentState.structureState.pagesInCurrentBeat + 1,
     };
     try {
+      emitGenerationStage(onGenerationStage, 'ANALYZING_SCENE', 'started', 1);
       analystResult = await generateAnalystEvaluation(
         {
           narrative: writerResult.narrative,
@@ -544,6 +570,7 @@ export async function generateNextPage(
         },
         { apiKey },
       );
+      emitGenerationStage(onGenerationStage, 'ANALYZING_SCENE', 'completed', 1);
     } catch (error) {
       // Graceful degradation: log warning, continue without analyst data
       logger.warn('Analyst evaluation failed, continuing with defaults', { error });
@@ -671,6 +698,7 @@ export async function getOrGeneratePage(
   parentPage: Page,
   choiceIndex: number,
   apiKey?: string,
+  onGenerationStage?: GenerationStageCallback,
 ): Promise<{
   page: Page;
   story: Story;
@@ -710,6 +738,7 @@ export async function getOrGeneratePage(
     parentPage,
     choiceIndex,
     apiKey,
+    onGenerationStage,
   );
 
   await storage.savePage(story.id, page);

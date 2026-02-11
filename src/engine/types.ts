@@ -9,6 +9,15 @@ export const GENERATION_STAGES = [
 ] as const;
 
 export type GenerationStage = (typeof GENERATION_STAGES)[number];
+export type GenerationStageStatus = 'started' | 'completed';
+
+export interface GenerationStageEvent {
+  readonly stage: GenerationStage;
+  readonly status: GenerationStageStatus;
+  readonly attempt: number;
+}
+
+export type GenerationStageCallback = (event: GenerationStageEvent) => void;
 
 export interface StartStoryResult {
   readonly story: Story;
@@ -41,6 +50,7 @@ export interface StartStoryOptions {
   readonly npcs?: readonly Npc[];
   readonly startingSituation?: string;
   readonly apiKey: string;
+  readonly onGenerationStage?: GenerationStageCallback;
 }
 
 export interface MakeChoiceOptions {
@@ -48,6 +58,7 @@ export interface MakeChoiceOptions {
   readonly pageId: PageId;
   readonly choiceIndex: number;
   readonly apiKey?: string;
+  readonly onGenerationStage?: GenerationStageCallback;
 }
 
 export type EngineErrorCode =

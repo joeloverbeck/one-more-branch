@@ -41,6 +41,11 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
   try {
     await storage.saveStory(story);
 
+    options.onGenerationStage?.({
+      stage: 'RESTRUCTURING_STORY',
+      status: 'started',
+      attempt: 1,
+    });
     const structureResult = await generateStoryStructure(
       {
         characterConcept: story.characterConcept,
@@ -51,11 +56,20 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
       },
       options.apiKey,
     );
+    options.onGenerationStage?.({
+      stage: 'RESTRUCTURING_STORY',
+      status: 'completed',
+      attempt: 1,
+    });
     const structure = createStoryStructure(structureResult);
     const storyWithStructure = updateStoryStructure(story, structure);
     await storage.updateStory(storyWithStructure);
 
-    const { page, updatedStory } = await generateFirstPage(storyWithStructure, options.apiKey);
+    const { page, updatedStory } = await generateFirstPage(
+      storyWithStructure,
+      options.apiKey,
+      options.onGenerationStage,
+    );
 
     await storage.savePage(story.id, page);
 

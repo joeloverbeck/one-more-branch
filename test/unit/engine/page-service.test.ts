@@ -239,6 +239,7 @@ describe('page-service', () => {
   describe('generateFirstPage', () => {
     it('retries reconciliation once with strict failure reasons and preserves request correlation', async () => {
       const story = buildStory();
+      const onGenerationStage = jest.fn();
       const pagePlan = buildPagePlanResult();
       const openingWriterResult: WriterResult = {
         narrative: 'You dive behind a collapsed archway as horns echo through the square.',
@@ -288,7 +289,7 @@ describe('page-service', () => {
           passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
         );
 
-      const { metrics } = await generateFirstPage(story, 'test-key');
+      const { metrics } = await generateFirstPage(story, 'test-key', onGenerationStage);
 
       expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
       expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(2);
@@ -391,6 +392,16 @@ describe('page-service', () => {
           ],
         ]),
       );
+      expect(onGenerationStage.mock.calls).toEqual([
+        [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 2 }],
+        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2 }],
+      ]);
     });
 
     it('passes structure to opening context and uses initial structure state when present', async () => {
@@ -928,6 +939,86 @@ describe('page-service', () => {
       expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
         mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
       );
+    });
+
+    it('emits continuation and analyst stage callbacks at prompt boundaries', async () => {
+      const onGenerationStage = jest.fn();
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const parentStructureState = createInitialStructureState(structure);
+      const story = buildStory({
+        structure,
+        structureVersions: [initialVersion],
+      });
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'You slip into the archive.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate the logbook'), createChoice('Lock the door')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: parentStructureState,
+        structureVersionId: initialVersion.id,
+      });
+
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'Dust rises as you open the ledger.',
+        choices: [
+          { text: 'Copy names', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Hide evidence', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        ],
+        currentLocation: 'Archive office',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'focus',
+          primaryIntensity: 'moderate' as const,
+          primaryCause: 'found useful records',
+          secondaryEmotions: [],
+          dominantMotivation: 'secure proof',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: 'The protagonist recovered useful clues.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        completionGateSatisfied: true,
+        rawResponse: 'raw-analyst',
+      });
+
+      await generateNextPage(story, parentPage, 0, 'test-key', onGenerationStage);
+
+      expect(onGenerationStage.mock.calls).toEqual([
+        [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ANALYZING_SCENE', status: 'started', attempt: 1 }],
+        [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1 }],
+      ]);
     });
 
     it('aborts continuation generation before writer call when planner fails', async () => {

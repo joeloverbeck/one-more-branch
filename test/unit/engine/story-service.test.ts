@@ -148,6 +148,7 @@ describe('story-service', () => {
 
     it('generates structure before first page and passes structured story forward', async () => {
       const createStorySpy = jest.spyOn(models, 'createStory');
+      const onGenerationStage = jest.fn();
       const story = buildStory();
       const structureResult = buildStructureGenerationResult();
       const page = createPage({
@@ -174,6 +175,7 @@ describe('story-service', () => {
         worldbuilding: 'High valleys controlled by signal towers',
         tone: 'tense exploration',
         apiKey: 'test-key',
+        onGenerationStage,
       });
 
       expect(createStorySpy).toHaveBeenCalledWith({
@@ -194,9 +196,14 @@ describe('story-service', () => {
       expect(mockedStorage.updateStory).toHaveBeenCalled();
       const firstPageCall = mockedGenerateFirstPage.mock.calls[0];
       expect(firstPageCall?.[1]).toBe('test-key');
+      expect(firstPageCall?.[2]).toBe(onGenerationStage);
       const structuredStory = firstPageCall?.[0];
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
+      expect(onGenerationStage.mock.calls).toEqual([
+        [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
+        [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 }],
+      ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
       expect(result).toEqual({ story: updatedStory, page });
