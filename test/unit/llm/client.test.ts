@@ -20,6 +20,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import {
   generatePagePlan,
+  generatePageWriterOutput,
   generateOpeningPage,
   generateWriterPage,
   validateApiKey,
@@ -729,6 +730,30 @@ describe('llm client', () => {
 
     expect(result.threatsRemoved).toEqual(['td-999']);
     expect(result.threadsResolved).toEqual([]);
+  });
+
+  it('should support generatePageWriterOutput by forwarding plan into writer prompt context', async () => {
+    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+
+    await generatePageWriterOutput(continuationContext, validPlannerPayload, { apiKey: 'test-key' });
+
+    const body = getRequestBody();
+    const messages =
+      Array.isArray(body.messages) ? (body.messages as Array<{ content?: string }>) : [];
+    const userPrompt =
+      messages.find(
+        message =>
+          typeof message.content === 'string' &&
+          message.content.includes('Continue the interactive story based on the player\'s choice.'),
+      )?.content ?? '';
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(
+      mockLogger,
+      'writer',
+      expect.any(Array),
+    );
+    expect(userPrompt).toContain(`Scene Intent: ${validPlannerPayload.sceneIntent}`);
+    expect(userPrompt).toContain(validPlannerPayload.writerBrief.openingLineDirective);
   });
 
   it('should log planner prompts before API call', async () => {

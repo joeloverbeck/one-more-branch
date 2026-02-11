@@ -12,6 +12,7 @@ import {
   type ContinuationContext,
   type GenerationOptions,
   type OpeningContext,
+  type PagePlan,
   type PagePlanContext,
   type PagePlanGenerationResult,
   type WriterResult,
@@ -42,6 +43,14 @@ export async function generateWriterPage(
 
   const resolvedOptions = { ...options, promptOptions };
   return withRetry(() => generateWriterWithFallback(messages, resolvedOptions));
+}
+
+export async function generatePageWriterOutput(
+  context: ContinuationContext,
+  plan: PagePlan,
+  options: GenerationOptions,
+): Promise<WriterResult> {
+  return generateWriterPage({ ...context, pagePlan: plan }, options);
 }
 
 export async function generateAnalystEvaluation(

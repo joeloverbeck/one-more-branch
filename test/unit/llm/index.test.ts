@@ -5,6 +5,7 @@ import {
   buildContinuationPrompt,
   buildOpeningPrompt,
   generatePagePlan,
+  generatePageWriterOutput,
   generateOpeningPage,
   isStructuredOutputNotSupported,
   validateApiKey,
@@ -36,6 +37,7 @@ describe('llm barrel exports', () => {
     expect(typeof buildOpeningPrompt).toBe('function');
     expect(typeof buildContinuationPrompt).toBe('function');
     expect(typeof generateOpeningPage).toBe('function');
+    expect(typeof generatePageWriterOutput).toBe('function');
     expect(typeof generatePagePlan).toBe('function');
     expect(typeof validateApiKey).toBe('function');
   });
