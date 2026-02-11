@@ -66,6 +66,10 @@ describe('public client script', () => {
     expect(script).toContain("class=\"thread-icon-pill\"");
     expect(script).toContain("class=\"thread-icon-badge thread-icon-badge--type\"");
     expect(script).toContain("class=\"thread-icon-badge thread-icon-badge--urgency\"");
-    expect(script).toContain("class=\"open-threads-text\"");
+    expect(script).toContain('function getOpenThreadUrgencyClass(urgency)');
+    expect(script).toContain("return 'open-threads-text--high';");
+    expect(script).toContain("return 'open-threads-text--medium';");
+    expect(script).toContain("return 'open-threads-text--low';");
+    expect(script).toContain("class=\"open-threads-text ");
   });
 });

@@ -45,7 +45,7 @@
                      onerror="this.style.display='none'">
               </span>
             </span>
-            <span class="open-threads-text"><%= thread.text %></span>
+            <span class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>"><%= thread.text %></span>
           </li>
           <% }) %>
         </ul>

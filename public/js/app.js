@@ -83,6 +83,19 @@
     return html;
   }
 
+  function getOpenThreadUrgencyClass(urgency) {
+    if (urgency === 'HIGH') {
+      return 'open-threads-text--high';
+    }
+    if (urgency === 'MEDIUM') {
+      return 'open-threads-text--medium';
+    }
+    if (urgency === 'LOW') {
+      return 'open-threads-text--low';
+    }
+    return 'open-threads-text--low';
+  }
+
   function initPlayPage() {
     const container = document.querySelector('.play-container');
     if (!container) {
@@ -164,9 +177,10 @@
       }
 
       const listHtml = normalizedThreads.map(function(thread) {
+        var urgencyClass = getOpenThreadUrgencyClass(thread.urgency);
         return '<li class="open-threads-item">'
           + renderThreadBadgePill(thread.threadType, thread.urgency)
-          + '<span class="open-threads-text">' + escapeHtml(thread.text) + '</span>'
+          + '<span class="open-threads-text ' + urgencyClass + '">' + escapeHtml(thread.text) + '</span>'
           + '</li>';
       }).join('');
 

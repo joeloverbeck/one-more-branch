@@ -34,6 +34,9 @@ describe('public stylesheet', () => {
     expect(css).toContain('.thread-icon-pill');
     expect(css).toContain('.thread-icon-badge');
     expect(css).toContain('.thread-icon');
+    expect(css).toContain('.open-threads-text--high');
+    expect(css).toContain('.open-threads-text--medium');
+    expect(css).toContain('.open-threads-text--low');
   });
 
   it('includes mobile and spinner animation rules', () => {

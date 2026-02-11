@@ -64,7 +64,8 @@ describe('play page template', () => {
       expect(template).toContain('class="thread-icon-badge thread-icon-badge--urgency"');
       expect(template).toContain('/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, \'-\') %>.png');
       expect(template).toContain('/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>.png');
-      expect(template).toContain('<span class="open-threads-text"><%= thread.text %></span>');
+      expect(template).toContain('class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>"');
+      expect(template).toContain('<%= thread.text %></span>');
     });
 
     it('renders panel conditionally when openThreadPanelRows exist', () => {
