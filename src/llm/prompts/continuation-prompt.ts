@@ -56,6 +56,16 @@ Use this guidance to shape this scene while still following all writer schema re
 
 `
     : '';
+  const reconciliationRetrySection =
+    context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0
+      ? `=== RECONCILIATION FAILURE REASONS (RETRY) ===
+The prior attempt failed deterministic reconciliation. Correct these failures in this new scene:
+${context.reconciliationFailureReasons
+  .map(reason => `- [${reason.code}]${reason.field ? ` (${reason.field})` : ''} ${reason.message}`)
+  .join('\n')}
+
+`
+      : '';
 
   const pacingNudgeSection = context.accumulatedStructureState?.pacingNudge
     ? `=== PACING DIRECTIVE ===
@@ -138,7 +148,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${plannerSection}${reconciliationRetrySection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Start exactly where the previous scene ended—do NOT recap or summarize what happened

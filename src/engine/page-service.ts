@@ -5,7 +5,12 @@ import {
   generateOpeningPage,
   mergePageWriterAndReconciledStateWithAnalystResults,
 } from '../llm';
-import type { AnalystResult, WriterResult } from '../llm';
+import type {
+  AnalystResult,
+  PagePlanContext,
+  ReconciliationFailureReason,
+  WriterResult,
+} from '../llm';
 import { randomUUID } from 'node:crypto';
 import { logger } from '../logging/index.js';
 import {
@@ -26,6 +31,7 @@ import { handleDeviation, isActualDeviation } from './deviation-handler';
 import { buildContinuationPage, buildFirstPage } from './page-builder';
 import { collectParentState } from './parent-state-collector';
 import type { CollectedParentState } from './parent-state-collector';
+import { StateReconciliationError } from './state-reconciler-errors';
 import { reconcileState } from './state-reconciler';
 import type { StateReconciliationPreviousState, StateReconciliationResult } from './state-reconciler-types';
 import { applyStructureProgression, createInitialStructureState } from './structure-state';
@@ -78,6 +84,108 @@ function applyTransitionalCurrentLocationPassthrough(
   };
 }
 
+function toReconciliationFailureReasons(
+  reconciliation: StateReconciliationResult,
+): ReconciliationFailureReason[] {
+  return reconciliation.reconciliationDiagnostics.map(diagnostic => ({
+    code: diagnostic.code,
+    field: diagnostic.field,
+    message: diagnostic.message,
+  }));
+}
+
+interface ReconciliationRetryGenerationOptions {
+  mode: PagePlanContext['mode'];
+  storyId: string;
+  pageId?: number;
+  requestId: string;
+  apiKey: string;
+  previousState: StateReconciliationPreviousState;
+  buildPlanContext: (
+    failureReasons?: readonly ReconciliationFailureReason[],
+  ) => PagePlanContext;
+  generateWriter: (
+    pagePlan: Awaited<ReturnType<typeof generatePagePlan>>,
+    failureReasons?: readonly ReconciliationFailureReason[],
+  ) => Promise<WriterResult>;
+}
+
+async function generateWithReconciliationRetry({
+  mode,
+  storyId,
+  pageId,
+  requestId,
+  apiKey,
+  previousState,
+  buildPlanContext,
+  generateWriter,
+}: ReconciliationRetryGenerationOptions): Promise<{
+  writerResult: WriterResult;
+  reconciliation: StateReconciliationResult;
+}> {
+  let failureReasons: readonly ReconciliationFailureReason[] | undefined;
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const pagePlan = await generatePagePlan(
+      buildPlanContext(failureReasons),
+      {
+        apiKey,
+        observability: {
+          storyId,
+          pageId,
+          requestId,
+        },
+      },
+    );
+
+    const writerResult = await generateWriter(pagePlan, failureReasons);
+    const reconciliation = applyTransitionalCurrentLocationPassthrough(
+      writerResult,
+      reconcileState(pagePlan, writerResult, previousState),
+      previousState.currentLocation,
+    );
+
+    if (reconciliation.reconciliationDiagnostics.length === 0) {
+      return { writerResult, reconciliation };
+    }
+
+    logger.warn('State reconciliation failed during page generation attempt', {
+      mode,
+      storyId,
+      pageId,
+      requestId,
+      attempt,
+      diagnostics: reconciliation.reconciliationDiagnostics,
+    });
+    logger.error('State reconciliation diagnostics', {
+      mode,
+      storyId,
+      pageId,
+      requestId,
+      attempt,
+      diagnostics: reconciliation.reconciliationDiagnostics,
+    });
+
+    if (attempt === 2) {
+      throw new StateReconciliationError(
+        'State reconciliation failed after retry',
+        'RECONCILIATION_FAILED',
+        reconciliation.reconciliationDiagnostics,
+        false,
+      );
+    }
+
+    failureReasons = toReconciliationFailureReasons(reconciliation);
+  }
+
+  throw new StateReconciliationError(
+    'State reconciliation failed after retry',
+    'RECONCILIATION_FAILED',
+    [],
+    false,
+  );
+}
+
 export async function generateFirstPage(
   story: Story,
   apiKey: string,
@@ -85,55 +193,51 @@ export async function generateFirstPage(
   validateFirstPageStructureVersion(story);
 
   const requestId = createGenerationRequestId();
-  const pagePlan = await generatePagePlan(
-    {
-      mode: 'opening',
-      characterConcept: story.characterConcept,
-      worldbuilding: story.worldbuilding,
-      tone: story.tone,
-      npcs: story.npcs,
-      startingSituation: story.startingSituation,
-      structure: story.structure ?? undefined,
-      globalCanon: story.globalCanon,
-      globalCharacterCanon: story.globalCharacterCanon,
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: createEmptyActiveState(),
-    },
-    {
-      apiKey,
-      observability: {
-        storyId: story.id,
-        requestId,
-      },
-    },
-  );
-
-  const writerResult = await generateOpeningPage(
-    {
-      characterConcept: story.characterConcept,
-      worldbuilding: story.worldbuilding,
-      tone: story.tone,
-      npcs: story.npcs,
-      startingSituation: story.startingSituation,
-      structure: story.structure ?? undefined,
-      pagePlan,
-    },
-    {
-      apiKey,
-      observability: {
-        storyId: story.id,
-        requestId,
-      },
-    },
-  );
   const openingPreviousState = createOpeningPreviousStateSnapshot();
-  const openingReconciliation = applyTransitionalCurrentLocationPassthrough(
-    writerResult,
-    reconcileState(pagePlan, writerResult, openingPreviousState),
-    openingPreviousState.currentLocation,
-  );
+  const { writerResult, reconciliation: openingReconciliation } =
+    await generateWithReconciliationRetry({
+      mode: 'opening',
+      storyId: story.id,
+      requestId,
+      apiKey,
+      previousState: openingPreviousState,
+      buildPlanContext: failureReasons => ({
+        mode: 'opening',
+        characterConcept: story.characterConcept,
+        worldbuilding: story.worldbuilding,
+        tone: story.tone,
+        npcs: story.npcs,
+        startingSituation: story.startingSituation,
+        structure: story.structure ?? undefined,
+        globalCanon: story.globalCanon,
+        globalCharacterCanon: story.globalCharacterCanon,
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: createEmptyActiveState(),
+        reconciliationFailureReasons: failureReasons,
+      }),
+      generateWriter: async (pagePlan, failureReasons) =>
+        generateOpeningPage(
+          {
+            characterConcept: story.characterConcept,
+            worldbuilding: story.worldbuilding,
+            tone: story.tone,
+            npcs: story.npcs,
+            startingSituation: story.startingSituation,
+            structure: story.structure ?? undefined,
+            pagePlan,
+            reconciliationFailureReasons: failureReasons,
+          },
+          {
+            apiKey,
+            observability: {
+              storyId: story.id,
+              requestId,
+            },
+          },
+        ),
+    });
   const result = mergePageWriterAndReconciledStateWithAnalystResults(
     writerResult,
     openingReconciliation,
@@ -198,52 +302,48 @@ export async function generateNextPage(
     grandparentNarrative: ancestorContext.grandparentNarrative,
     ancestorSummaries: ancestorContext.ancestorSummaries,
   };
-
-  const pagePlan = await generatePagePlan(
-    {
-      ...continuationContext,
-      mode: 'continuation',
-    },
-    {
-      apiKey,
-      observability: {
-        storyId: story.id,
-        pageId: parentPage.id,
-        requestId,
-      },
-    },
-  );
-
-  // Writer call (always runs)
-  const writerResult = await generatePageWriterOutput(
-    continuationContext,
-    pagePlan,
-    {
-      apiKey,
-      observability: {
-        storyId: story.id,
-        pageId: parentPage.id,
-        requestId,
-      },
-      writerValidationContext: {
-        removableIds: {
-          threats: parentState.accumulatedActiveState.activeThreats.map(entry => entry.id),
-          constraints: parentState.accumulatedActiveState.activeConstraints.map(entry => entry.id),
-          threads: parentState.accumulatedActiveState.openThreads.map(entry => entry.id),
-          inventory: parentState.accumulatedInventory.map(entry => entry.id),
-          health: parentState.accumulatedHealth.map(entry => entry.id),
-          characterState: Object.values(parentState.accumulatedCharacterState)
-            .flatMap(entries => entries.map(entry => entry.id)),
-        },
-      },
-    },
-  );
   const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
-  const continuationReconciliation = applyTransitionalCurrentLocationPassthrough(
-    writerResult,
-    reconcileState(pagePlan, writerResult, continuationPreviousState),
-    continuationPreviousState.currentLocation,
-  );
+  const { writerResult, reconciliation: continuationReconciliation } =
+    await generateWithReconciliationRetry({
+      mode: 'continuation',
+      storyId: story.id,
+      pageId: parentPage.id,
+      requestId,
+      apiKey,
+      previousState: continuationPreviousState,
+      buildPlanContext: failureReasons => ({
+        ...continuationContext,
+        mode: 'continuation',
+        reconciliationFailureReasons: failureReasons,
+      }),
+      generateWriter: async (pagePlan, failureReasons) =>
+        generatePageWriterOutput(
+          {
+            ...continuationContext,
+            reconciliationFailureReasons: failureReasons,
+          },
+          pagePlan,
+          {
+            apiKey,
+            observability: {
+              storyId: story.id,
+              pageId: parentPage.id,
+              requestId,
+            },
+            writerValidationContext: {
+              removableIds: {
+                threats: parentState.accumulatedActiveState.activeThreats.map(entry => entry.id),
+                constraints: parentState.accumulatedActiveState.activeConstraints.map(entry => entry.id),
+                threads: parentState.accumulatedActiveState.openThreads.map(entry => entry.id),
+                inventory: parentState.accumulatedInventory.map(entry => entry.id),
+                health: parentState.accumulatedHealth.map(entry => entry.id),
+                characterState: Object.values(parentState.accumulatedCharacterState)
+                  .flatMap(entries => entries.map(entry => entry.id)),
+              },
+            },
+          },
+        ),
+    });
 
   // Analyst call (only when structure exists)
   let analystResult: AnalystResult | null = null;

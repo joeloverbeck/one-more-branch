@@ -82,6 +82,17 @@ function passthroughReconciledState(
   };
 }
 
+function reconciledStateWithDiagnostics(
+  writer: WriterResult,
+  previousLocation: string,
+  diagnostics: StateReconciliationResult['reconciliationDiagnostics'],
+): StateReconciliationResult {
+  return {
+    ...passthroughReconciledState(writer, previousLocation),
+    reconciliationDiagnostics: diagnostics,
+  };
+}
+
 function buildStructure(): StoryStructure {
   return {
     overallTheme: 'Navigate political intrigue in a city of shadows.',
@@ -338,6 +349,61 @@ describe('page-service integration', () => {
   });
 
   describe('generateFirstPage integration', () => {
+    it('retries once on reconciliation diagnostics and injects failure reasons into retry prompts', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} reconciliation-retry-opening`,
+        worldbuilding: 'A city where alarms travel faster than footsteps.',
+        tone: 'high-pressure intrigue',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const openingResult = buildOpeningResult();
+      mockedGenerateOpeningPage.mockResolvedValue(openingResult);
+      mockedReconcileState
+        .mockReturnValueOnce(
+          reconciledStateWithDiagnostics(openingResult, '', [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'threadsAdded',
+              message: 'No narrative evidence found for threadsAdded anchor "fog".',
+            },
+          ]),
+        )
+        .mockImplementation((_plan, writer, previousState) =>
+          passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+        );
+
+      await generateFirstPage(baseStory, 'test-api-key');
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(2);
+      expect(mockedReconcileState).toHaveBeenCalledTimes(2);
+      expect(mockedGeneratePagePlan.mock.calls[1]?.[0]).toEqual(
+        expect.objectContaining({
+          reconciliationFailureReasons: [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'threadsAdded',
+              message: 'No narrative evidence found for threadsAdded anchor "fog".',
+            },
+          ],
+        }),
+      );
+      expect(mockedGenerateOpeningPage.mock.calls[1]?.[0]).toEqual(
+        expect.objectContaining({
+          reconciliationFailureReasons: [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'threadsAdded',
+              message: 'No narrative evidence found for threadsAdded anchor "fog".',
+            },
+          ],
+        }),
+      );
+    });
+
     it('assembles page with correct structure state for structured stories', async () => {
       const structure = buildStructure();
       const baseStory = createStory({
@@ -495,6 +561,59 @@ describe('page-service integration', () => {
   });
 
   describe('generateNextPage integration', () => {
+    it('throws typed hard error after one reconciliation retry failure', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} reconciliation-hard-error`,
+        worldbuilding: 'A district where patrol grids tighten every minute.',
+        tone: 'tense thriller',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'You crouch under the checkpoint lanterns.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Rush the gate'), createChoice('Wait for shift change')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      await storage.savePage(baseStory.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
+        reconciledStateWithDiagnostics(
+          writer as WriterResult,
+          previousState.currentLocation,
+          [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'constraintsAdded',
+              message: 'No narrative evidence found for constraintsAdded anchor "curfew".',
+            },
+          ],
+        ),
+      );
+
+      await expect(generateNextPage(baseStory, parentPage, 0, 'test-api-key')).rejects.toMatchObject({
+        name: 'StateReconciliationError',
+        code: 'RECONCILIATION_FAILED',
+        retryable: false,
+        diagnostics: [
+          {
+            code: 'MISSING_NARRATIVE_EVIDENCE',
+            field: 'constraintsAdded',
+          },
+        ],
+      });
+      expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
+      expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
+      expect(mockedReconcileState).toHaveBeenCalledTimes(2);
+      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+    });
+
     it('collects all parent accumulated state correctly', async () => {
       const structure = buildStructure();
       const baseStory = createStory({

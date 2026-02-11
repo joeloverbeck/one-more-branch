@@ -60,6 +60,12 @@ export interface GenerationObservabilityContext {
   requestId?: string;
 }
 
+export interface ReconciliationFailureReason {
+  code: string;
+  message: string;
+  field?: string;
+}
+
 export interface WriterValidationContext {
   removableIds: {
     threats: readonly string[];
@@ -104,6 +110,7 @@ export interface ContinuationContext {
   grandparentNarrative: string | null;
   ancestorSummaries: readonly AncestorSummary[];
   pagePlan?: PagePlan;
+  reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }
 
 export interface OpeningContext {
@@ -114,6 +121,7 @@ export interface OpeningContext {
   startingSituation?: string;
   structure?: StoryStructure;
   pagePlan?: PagePlan;
+  reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }
 
 export interface ChatMessage {

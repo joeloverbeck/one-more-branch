@@ -1,4 +1,4 @@
-**Status**: Draft
+**Status**: ✅ COMPLETED
 
 # Spec 11: Deterministic State Reconciler
 
@@ -99,3 +99,13 @@ Notes:
 3. Unit: narrative evidence gate pass/fail cases.
 4. Unit: deterministic output stability across repeated runs.
 5. Integration: retry-once then hard error path.
+
+## Outcome
+- Completion date: 2026-02-11
+- Implemented in codebase:
+  - Deterministic reconciler module with normalization, validation, contradiction checks, and lexical evidence gate.
+  - Page-service integration path using reconciliation outputs as authoritative state deltas.
+  - Retry-once reconciliation handling with strict failure reason propagation and hard typed failure on repeated reconciliation diagnostics.
+  - Deterministic unit and integration tests covering core reconciler behavior and retry/hard-error engine flow.
+- Notes:
+  - Reconciliation failure semantics are enforced at `page-service` level based on non-empty deterministic diagnostics from `reconcileState`.

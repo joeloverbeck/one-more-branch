@@ -17,6 +17,7 @@ import {
 } from '../../../src/models';
 import { createInitialStructureState } from '../../../src/engine/structure-state';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
+import { StateReconciliationError } from '../../../src/engine/state-reconciler-errors';
 import { reconcileState } from '../../../src/engine/state-reconciler';
 import type { StateReconciliationResult } from '../../../src/engine/state-reconciler-types';
 import { storage } from '../../../src/persistence';
@@ -110,6 +111,17 @@ function passthroughReconciledState(
     newCanonFacts: writer.newCanonFacts,
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
+  };
+}
+
+function reconciledStateWithDiagnostics(
+  writer: WriterResult,
+  previousLocation: string,
+  diagnostics: StateReconciliationResult['reconciliationDiagnostics'],
+): StateReconciliationResult {
+  return {
+    ...passthroughReconciledState(writer, previousLocation),
+    reconciliationDiagnostics: diagnostics,
   };
 }
 
@@ -225,6 +237,94 @@ describe('page-service', () => {
   });
 
   describe('generateFirstPage', () => {
+    it('retries reconciliation once with strict failure reasons and preserves request correlation', async () => {
+      const story = buildStory();
+      const pagePlan = buildPagePlanResult();
+      const openingWriterResult: WriterResult = {
+        narrative: 'You dive behind a collapsed archway as horns echo through the square.',
+        choices: [
+          { text: 'Circle around the patrol', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Hold position and observe', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        currentLocation: 'Collapsed archway',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'urgency',
+          primaryIntensity: 'strong' as const,
+          primaryCause: 'patrol horns closing in',
+          secondaryEmotions: [],
+          dominantMotivation: 'avoid immediate capture',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      };
+      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGenerateOpeningPage.mockResolvedValue(openingWriterResult);
+      mockedReconcileState
+        .mockReturnValueOnce(
+          reconciledStateWithDiagnostics(openingWriterResult, '', [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'threadsAdded',
+              message: 'No narrative evidence found for threadsAdded anchor "archive".',
+            },
+          ]),
+        )
+        .mockImplementation((_plan, writer, previousState) =>
+          passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+        );
+
+      await generateFirstPage(story, 'test-key');
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(2);
+      expect(mockedReconcileState).toHaveBeenCalledTimes(2);
+      expect(mockedGeneratePagePlan.mock.calls[1]?.[0]).toEqual(
+        expect.objectContaining({
+          reconciliationFailureReasons: [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'threadsAdded',
+              message: 'No narrative evidence found for threadsAdded anchor "archive".',
+            },
+          ],
+        }),
+      );
+      expect(mockedGenerateOpeningPage.mock.calls[1]?.[0]).toEqual(
+        expect.objectContaining({
+          reconciliationFailureReasons: [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'threadsAdded',
+              message: 'No narrative evidence found for threadsAdded anchor "archive".',
+            },
+          ],
+        }),
+      );
+      const plannerRequestIdAttemptOne = mockedGeneratePagePlan.mock.calls[0]?.[1]?.observability?.requestId;
+      const plannerRequestIdAttemptTwo = mockedGeneratePagePlan.mock.calls[1]?.[1]?.observability?.requestId;
+      const writerRequestIdAttemptOne = mockedGenerateOpeningPage.mock.calls[0]?.[1]?.observability?.requestId;
+      const writerRequestIdAttemptTwo = mockedGenerateOpeningPage.mock.calls[1]?.[1]?.observability?.requestId;
+      expect(plannerRequestIdAttemptOne).toBeTruthy();
+      expect(plannerRequestIdAttemptOne).toBe(plannerRequestIdAttemptTwo);
+      expect(plannerRequestIdAttemptOne).toBe(writerRequestIdAttemptOne);
+      expect(writerRequestIdAttemptOne).toBe(writerRequestIdAttemptTwo);
+    });
+
     it('passes structure to opening context and uses initial structure state when present', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
@@ -551,6 +651,85 @@ describe('page-service', () => {
   });
 
   describe('generateNextPage', () => {
+    it('throws RECONCILIATION_FAILED after one retry when reconciliation keeps failing', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'You brace as the checkpoint bells begin to ring.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Push through now'), createChoice('Hide and wait')],
+        inventoryChanges: { added: ['Courier badge'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You dash between wagons while lantern light sweeps the road.',
+        choices: [
+          { text: 'Cut through the foundry', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Blend into the queue', choiceType: 'SOCIAL_MANIPULATION', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
+        currentLocation: 'Checkpoint approach',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'strain',
+          primaryIntensity: 'strong' as const,
+          primaryCause: 'checkpoint alarms',
+          secondaryEmotions: [],
+          dominantMotivation: 'slip through unseen',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
+        reconciledStateWithDiagnostics(
+          writer as WriterResult,
+          previousState.currentLocation,
+          [
+            {
+              code: 'MISSING_NARRATIVE_EVIDENCE',
+              field: 'constraintsAdded',
+              message: 'No narrative evidence found for constraintsAdded anchor "curfew".',
+            },
+          ],
+        ),
+      );
+
+      const promise = generateNextPage(story, parentPage, 0, 'test-key');
+
+      await expect(promise).rejects.toBeInstanceOf(StateReconciliationError);
+      await expect(promise).rejects.toMatchObject({
+        code: 'RECONCILIATION_FAILED',
+        retryable: false,
+        diagnostics: [
+          {
+            code: 'MISSING_NARRATIVE_EVIDENCE',
+            field: 'constraintsAdded',
+          },
+        ],
+      });
+      expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
+      expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
+      expect(mockedReconcileState).toHaveBeenCalledTimes(2);
+      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+    });
+
     it('throws INVALID_CHOICE for out-of-bounds index', async () => {
       const story = buildStory();
       const parentPage = createPage({

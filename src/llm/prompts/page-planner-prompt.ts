@@ -23,10 +23,19 @@ export function buildPagePlannerPrompt(context: PagePlanContext): ChatMessage[] 
     context.mode === 'opening'
       ? buildPlannerOpeningContextSection(context)
       : buildPlannerContinuationContextSection(context);
+  const reconciliationRetrySection =
+    context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0
+      ? `\n\n=== RECONCILIATION FAILURE REASONS (RETRY) ===
+Prior attempt failed deterministic reconciliation. You MUST correct these failures:
+${context.reconciliationFailureReasons
+  .map(reason => `- [${reason.code}]${reason.field ? ` (${reason.field})` : ''} ${reason.message}`)
+  .join('\n')}`
+      : '';
 
   const userPrompt = `Create a page plan for the writer model.
 
 ${contextSection}
+${reconciliationRetrySection}
 
 ${PLANNER_STATE_INTENT_RULES}
 

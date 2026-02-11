@@ -5,6 +5,7 @@ export type {
   StructureRewriteContext,
   StructureRewriteResult,
   GenerationOptions,
+  ReconciliationFailureReason,
   OpeningContext,
   ContinuationContext,
   ChatMessage,
