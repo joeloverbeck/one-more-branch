@@ -35,3 +35,11 @@ export {
 export { CONTINUATION_CONTINUITY_RULES as CONTINUITY_RULES } from './continuation/index.js';
 export { CONTINUATION_ACTIVE_STATE_QUALITY as ACTIVE_STATE_QUALITY } from './continuation/index.js';
 export { CONTINUATION_CANON_QUALITY as CANON_QUALITY } from './continuation/index.js';
+
+// Planner-specific sections
+export {
+  buildPlannerOpeningContextSection,
+  buildPlannerContinuationContextSection,
+  PLANNER_STATE_INTENT_RULES,
+  PLANNER_OUTPUT_SHAPE_INSTRUCTIONS,
+} from './planner/index.js';

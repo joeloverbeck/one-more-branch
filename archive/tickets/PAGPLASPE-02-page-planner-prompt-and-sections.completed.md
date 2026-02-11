@@ -1,7 +1,21 @@
 # PAGPLASPE-02: Build Planner Prompt Composition (Opening + Continuation)
 
+**Status**: ✅ COMPLETED
+
 ## Summary
 Create planner prompt builders and planner prompt sections so the planner can produce scene intent + state intents before writer prose generation.
+
+## Assumption Reassessment (2026-02-11)
+- `PagePlan`, `PagePlanContext`, and related planner types already exist in `src/llm/types.ts` (from prior work), so this ticket does not define planner types.
+- Planner prompt files and planner prompt tests listed below are not present yet; they need to be created.
+- Existing prompt tests in this repository are largely centralized in `test/unit/llm/prompts.test.ts`; adding targeted planner prompt tests in dedicated files is still appropriate for this ticket.
+- Spec 09 references planner schema/validation and engine integration, but those remain explicitly out of scope for this ticket and should not be implemented here.
+
+## Updated Scope
+- Implement planner prompt composition only (opening + continuation) with modular planner prompt sections.
+- Add planner output-shape instructions aligned with Spec 09 `PagePlan` contract.
+- Export planner prompt builder from `src/llm/prompts/index.ts`.
+- Add focused planner prompt unit tests for composition behavior and critical constraints.
 
 ## Depends on
 - PAGPLASPE-01
@@ -36,6 +50,7 @@ Create planner prompt builders and planner prompt sections so the planner can pr
 - Deterministic ID-prefix or duplicate-intent validation logic.
 - Writer prompt refactor from Spec 10.
 - Engine/service integration.
+- Changes to existing writer opening/continuation prompt behavior.
 
 ## Acceptance criteria
 
@@ -50,3 +65,21 @@ Create planner prompt builders and planner prompt sections so the planner can pr
 - Existing opening/continuation writer prompt text remains unchanged in this ticket.
 - Planner prompt includes both opening and continuation variants with explicit context-appropriate inputs.
 - Prompt instructions never ask planner to produce narrative prose, player choices, or assigned IDs.
+
+## Outcome
+- Completion date: 2026-02-11
+- What changed:
+  - Added planner prompt entrypoint `buildPagePlannerPrompt(context: PagePlanContext)` in `src/llm/prompts/page-planner-prompt.ts`.
+  - Added planner section modules in `src/llm/prompts/sections/planner/` for opening context, continuation context, and planner rules/output shape.
+  - Exported planner prompt from `src/llm/prompts/index.ts`.
+  - Exported planner section symbols from `src/llm/prompts/sections/index.ts`.
+  - Added focused unit tests for planner prompt composition and planner section modules.
+- Deviations from original plan:
+  - `src/llm/prompts/sections/index.ts` was additionally updated to expose planner section exports for consistency with existing section barrel patterns.
+  - Existing writer prompt modules/tests remained untouched as required.
+- Verification results:
+  - Passed: `npm run test:unit -- --runTestsByPath test/unit/llm/prompts/page-planner-prompt.test.ts`
+  - Passed: `npm run test:unit -- --runTestsByPath test/unit/llm/prompts/sections/planner/opening-context.test.ts`
+  - Passed: `npm run test:unit -- --runTestsByPath test/unit/llm/prompts/sections/planner/continuation-context.test.ts`
+  - Passed: `npm run test:unit -- --runTestsByPath test/unit/llm/prompts/sections/planner/state-intent-rules.test.ts`
+  - Passed: `npm run typecheck`
