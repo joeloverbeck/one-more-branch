@@ -545,6 +545,21 @@ describe('schema pipeline integration', () => {
       expect(() => WriterResultSchema.parse(input)).toThrow();
     });
 
+    it('should allow narrative longer than 15000 characters', () => {
+      const input = {
+        narrative: `${'A'.repeat(15001)} This narrative is intentionally long enough to exceed the old cap while still passing minimum-length validation.`,
+        choices: [
+          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        newCanonFacts: [],
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+      };
+
+      expect(() => WriterResultSchema.parse(input)).not.toThrow();
+    });
+
     it('should reject duplicate choices (case-insensitive)', () => {
       const input = {
         narrative: VALID_NARRATIVE,

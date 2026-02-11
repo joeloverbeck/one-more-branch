@@ -74,8 +74,7 @@ export const WriterResultSchema = z
   .object({
     narrative: z
       .string()
-      .min(50, 'Narrative must be at least 50 characters')
-      .max(15000, 'Narrative must be at most 15000 characters'),
+      .min(50, 'Narrative must be at least 50 characters'),
     choices: z.array(ChoiceObjectSchema),
     currentLocation: z.string().optional().default(''),
     threatsAdded: z.array(z.string()).optional().default([]),
