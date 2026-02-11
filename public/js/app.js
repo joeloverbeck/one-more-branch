@@ -54,6 +54,35 @@
     return name ? '/images/icons/' + name + '.png' : '';
   }
 
+  function renderThreadBadgePill(threadType, urgency) {
+    var threadTypeIconPath = getIconPath('thread_type_' + threadType);
+    var urgencyIconPath = getIconPath('thread_urgency_' + urgency);
+    var html = '<span class="thread-icon-pill" aria-hidden="true">';
+
+    html += '<span class="thread-icon-badge thread-icon-badge--type">';
+    if (threadTypeIconPath) {
+      html += '<img class="thread-icon thread-icon--type"'
+        + ' src="' + escapeHtml(threadTypeIconPath) + '"'
+        + ' alt="" title="' + escapeHtml(threadType) + '"'
+        + ' loading="lazy"'
+        + " onerror=\"this.style.display='none'\">";
+    }
+    html += '</span>';
+
+    html += '<span class="thread-icon-badge thread-icon-badge--urgency">';
+    if (urgencyIconPath) {
+      html += '<img class="thread-icon thread-icon--urgency"'
+        + ' src="' + escapeHtml(urgencyIconPath) + '"'
+        + ' alt="" title="' + escapeHtml(urgency) + '"'
+        + ' loading="lazy"'
+        + " onerror=\"this.style.display='none'\">";
+    }
+    html += '</span>';
+
+    html += '</span>';
+    return html;
+  }
+
   function initPlayPage() {
     const container = document.querySelector('.play-container');
     if (!container) {
@@ -136,8 +165,8 @@
 
       const listHtml = normalizedThreads.map(function(thread) {
         return '<li class="open-threads-item">'
-          + '(' + escapeHtml(thread.threadType) + '/' + escapeHtml(thread.urgency) + ') '
-          + escapeHtml(thread.text)
+          + renderThreadBadgePill(thread.threadType, thread.urgency)
+          + '<span class="open-threads-text">' + escapeHtml(thread.text) + '</span>'
           + '</li>';
       }).join('');
 

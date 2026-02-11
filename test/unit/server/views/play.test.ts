@@ -56,6 +56,17 @@ describe('play page template', () => {
       expect(template).toContain('<li class="open-threads-item">');
     });
 
+    it('renders thread badge pill with type and urgency icon images', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('class="thread-icon-pill"');
+      expect(template).toContain('class="thread-icon-badge thread-icon-badge--type"');
+      expect(template).toContain('class="thread-icon-badge thread-icon-badge--urgency"');
+      expect(template).toContain('/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, \'-\') %>.png');
+      expect(template).toContain('/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>.png');
+      expect(template).toContain('<span class="open-threads-text"><%= thread.text %></span>');
+    });
+
     it('renders panel conditionally when openThreadPanelRows exist', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 

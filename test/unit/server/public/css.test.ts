@@ -31,6 +31,9 @@ describe('public stylesheet', () => {
     expect(css).toContain('.modal');
     expect(css).toContain('.open-threads-panel');
     expect(css).toContain('.open-threads-list');
+    expect(css).toContain('.thread-icon-pill');
+    expect(css).toContain('.thread-icon-badge');
+    expect(css).toContain('.thread-icon');
   });
 
   it('includes mobile and spinner animation rules', () => {

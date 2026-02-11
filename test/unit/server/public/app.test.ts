@@ -51,6 +51,7 @@ describe('public client script', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
     expect(script).toContain('function renderOpenThreadsPanel(openThreads)');
+    expect(script).toContain('function renderThreadBadgePill(threadType, urgency)');
     expect(script).toContain("document.getElementById('open-threads-panel')");
     expect(script).toContain('existingPanel.remove()');
   });
@@ -60,5 +61,11 @@ describe('public client script', () => {
 
     expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads);');
     expect(script).toContain("if (!Array.isArray(openThreads) || openThreads.length === 0)");
+    expect(script).toContain("getIconPath('thread_type_' + threadType)");
+    expect(script).toContain("getIconPath('thread_urgency_' + urgency)");
+    expect(script).toContain("class=\"thread-icon-pill\"");
+    expect(script).toContain("class=\"thread-icon-badge thread-icon-badge--type\"");
+    expect(script).toContain("class=\"thread-icon-badge thread-icon-badge--urgency\"");
+    expect(script).toContain("class=\"open-threads-text\"");
   });
 });

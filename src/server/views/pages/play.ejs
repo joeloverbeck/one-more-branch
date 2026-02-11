@@ -27,7 +27,25 @@
         <ul class="open-threads-list" id="open-threads-list">
           <% openThreadPanelRows.forEach((thread) => { %>
           <li class="open-threads-item">
-            <%= thread.displayLabel %>
+            <span class="thread-icon-pill" aria-hidden="true">
+              <span class="thread-icon-badge thread-icon-badge--type">
+                <img class="thread-icon thread-icon--type"
+                     src="/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
+                     alt=""
+                     title="<%= thread.threadType %>"
+                     loading="lazy"
+                     onerror="this.style.display='none'">
+              </span>
+              <span class="thread-icon-badge thread-icon-badge--urgency">
+                <img class="thread-icon thread-icon--urgency"
+                     src="/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
+                     alt=""
+                     title="<%= thread.urgency %>"
+                     loading="lazy"
+                     onerror="this.style.display='none'">
+              </span>
+            </span>
+            <span class="open-threads-text"><%= thread.text %></span>
           </li>
           <% }) %>
         </ul>
