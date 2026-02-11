@@ -1,4 +1,5 @@
 import type { ThreadType, Urgency } from '../models/state/index.js';
+import type { KeyedEntry, ThreadEntry } from '../models/state/index.js';
 
 export interface StateReconciliationDiagnostic {
   code: string;
@@ -15,6 +16,16 @@ export interface ReconciledThreadAdd {
 export interface ReconciledCharacterStateAdd {
   characterName: string;
   states: string[];
+}
+
+export interface StateReconciliationPreviousState {
+  currentLocation: string;
+  threats: readonly KeyedEntry[];
+  constraints: readonly KeyedEntry[];
+  threads: readonly ThreadEntry[];
+  inventory: readonly KeyedEntry[];
+  health: readonly KeyedEntry[];
+  characterState: readonly KeyedEntry[];
 }
 
 export interface StateReconciliationResult {
