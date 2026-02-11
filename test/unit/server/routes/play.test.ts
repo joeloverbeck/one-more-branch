@@ -552,13 +552,13 @@ describe('playRoutes', () => {
         parentChoiceIndex: 1,
       });
       jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
-      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockImplementation(async (options) => {
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockImplementation((options) => {
         options.onGenerationStage?.({ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 });
         options.onGenerationStage?.({ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 });
-        return {
+        return Promise.resolve({
           page: resultPage,
           wasGenerated: true,
-        };
+        });
       });
 
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
@@ -578,9 +578,11 @@ describe('playRoutes', () => {
       );
       await flushPromises();
 
-      expect(makeChoiceSpy).toHaveBeenCalledWith(expect.objectContaining({
-        onGenerationStage: expect.any(Function),
-      }));
+      expect(makeChoiceSpy).toHaveBeenCalled();
+      const makeChoiceCallArg: unknown = makeChoiceSpy.mock.calls[0]?.[0];
+      expect(
+        typeof (makeChoiceCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage,
+      ).toBe('function');
       expect(progressStartSpy).toHaveBeenCalledWith('choice-success-1', 'choice');
       expect(progressStageStartedSpy).toHaveBeenCalledWith('choice-success-1', 'WRITING_CONTINUING_PAGE', 1);
       expect(progressStageCompletedSpy).toHaveBeenCalledWith('choice-success-1', 'WRITING_CONTINUING_PAGE', 1);

@@ -25,6 +25,8 @@ describe('public client script', () => {
     expect(script).toContain("const API_KEY_STORAGE_KEY = 'omb_api_key';");
     expect(script).toContain('function getApiKey()');
     expect(script).toContain('function setApiKey(key)');
+    expect(script).toContain('function createProgressId()');
+    expect(script).toContain('function createLoadingProgressController(loadingElement)');
     expect(script).toContain('function initPlayPage()');
     expect(script).toContain('function escapeHtml(text)');
     expect(script).toContain("document.addEventListener('DOMContentLoaded'");
@@ -73,5 +75,32 @@ describe('public client script', () => {
     expect(script).toContain("return 'open-threads-text--medium';");
     expect(script).toContain("return 'open-threads-text--low';");
     expect(script).toContain("class=\"open-threads-text ");
+  });
+
+  it('defines stage phrase buckets for all generation stages', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('const STAGE_PHRASE_POOLS = {');
+    expect(script).toContain('PLANNING_PAGE: [');
+    expect(script).toContain('WRITING_OPENING_PAGE: [');
+    expect(script).toContain('WRITING_CONTINUING_PAGE: [');
+    expect(script).toContain('ANALYZING_SCENE: [');
+    expect(script).toContain('RESTRUCTURING_STORY: [');
+  });
+
+  it('polls generation progress and falls back on unknown or polling failures', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain("fetch('/generation-progress/' + encodeURIComponent(progressId)");
+    expect(script).toContain("snapshot.status === 'unknown'");
+    expect(script).toContain('setFallbackText();');
+    expect(script).toContain("snapshot.status === 'completed' || snapshot.status === 'failed'");
+  });
+
+  it('sends progressId for both create-story and make-choice AJAX requests', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('progressId: createProgressId(),');
+    expect(script).toContain('progressId: progressId,');
   });
 });

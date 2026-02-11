@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { StateReconciliationError, storyEngine } from '../../engine/index.js';
+import type { GenerationStageEvent } from '../../engine/index.js';
 import { LLMError } from '../../llm/types.js';
 import { logger } from '../../logging/index.js';
 import { CHOICE_TYPE_COLORS, ChoiceType, CHOICE_TYPE_VALUES, PageId, PRIMARY_DELTA_LABELS, PrimaryDelta, PRIMARY_DELTA_VALUES, StoryId } from '../../models/index.js';
@@ -122,7 +123,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
       choiceIndex,
       apiKey: apiKey ?? undefined,
       onGenerationStage: progressId
-        ? (event) => {
+        ? (event: GenerationStageEvent): void => {
             if (event.status === 'started') {
               generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
             } else {

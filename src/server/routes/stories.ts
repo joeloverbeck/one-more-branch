@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
+import type { GenerationStageEvent } from '../../engine';
 import { LLMError } from '../../llm/types';
 import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
@@ -93,7 +94,7 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
     const result = await storyEngine.startStory({
       ...validation.trimmed,
       onGenerationStage: progressId
-        ? (event) => {
+        ? (event: GenerationStageEvent): void => {
             if (event.status === 'started') {
               generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
             } else {

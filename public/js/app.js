@@ -6,6 +6,122 @@
   'use strict';
 
   const API_KEY_STORAGE_KEY = 'omb_api_key';
+  const PROGRESS_POLL_INTERVAL_MS = 1200;
+  const PHRASE_ROTATION_MIN_MS = 1500;
+  const PHRASE_ROTATION_MAX_MS = 2500;
+
+  const STAGE_PHRASE_POOLS = {
+    PLANNING_PAGE: [
+      'Consulting the crystal flowchart...',
+      'Drawing arrows between dramatic possibilities...',
+      'Balancing destiny on a clipboard...',
+      'Whispering to the page planner gremlins...',
+      'Calling a meeting of the tiny committee in the wall...',
+      'Spinning the wheel of plausible chaos...',
+      'Asking the couch cushions for strategic advice...',
+      'Filing a permit for emotional turbulence...',
+      'Color-coding fate with suspicious confidence...',
+      'Unfolding the emergency roadmap of maybes...',
+      'Negotiating with the timeline using snacks...',
+      'Pinning red string to absolutely everything...',
+      'Rolling percentile dice for narrative nonsense...',
+      'Drafting plans in invisible ink and optimism...',
+      'Testing three plans and a backup plan for the backup...',
+      'Summoning a brainstorming thundercloud...',
+      'Aligning plot magnets to true north drama...',
+      'Cross-referencing vibes with hard evidence...',
+      'Sharpening pencils to a tactical point...',
+      'Budgeting exactly seven units of suspense...',
+    ],
+    WRITING_OPENING_PAGE: [
+      'Rolling out the opening scene carpet...',
+      'Polishing first impressions with glitter...',
+      'Cueing the cinematic entrance music...',
+      'Placing the camera at maximum drama angle...',
+      'Turning on the fog machine for ambience...',
+      'Teaching the narrator to make eye contact...',
+      'Warming up the dialogue with tongue twisters...',
+      'Deploying tasteful thunder in the distance...',
+      'Adjusting the spotlight to "mysterious but friendly"...',
+      'Setting out fresh metaphors in a neat row...',
+      'Tuning the opening line to perfect pitch...',
+      'Adding one dramatic pause for seasoning...',
+      'Sweeping confetti off the exposition runway...',
+      'Calibrating the first sentence launch sequence...',
+      'Installing mood lighting in paragraph one...',
+      'Bribing the hook to land cleanly...',
+      'Giving the protagonist a very determined eyebrow...',
+      'Pressing record on the cinematic narrator voice...',
+      'Rehearsing the first reveal with jazz hands...',
+      'Opening the curtain on controlled narrative chaos...',
+    ],
+    WRITING_CONTINUING_PAGE: [
+      'Stitching consequences into the timeline...',
+      'Keeping the plot train barely on the rails...',
+      'Handing the scene to the next narrator...',
+      'Adding one more suspiciously perfect twist...',
+      'Refueling the momentum engine with cliffhangers...',
+      'Untangling side quests from the chandelier...',
+      'Passing notes between cause and effect...',
+      'Patching continuity leaks with narrative gum...',
+      'Setting the stakes to "gently terrifying"...',
+      'Rotating the mystery box for better suspense...',
+      'Escorting loose ends toward responsible adulthood...',
+      'Threading foreshadowing through a tiny needle...',
+      'Bolting the midpoint together with dramatic screws...',
+      'Checking the subplot humidity levels...',
+      'Giving consequences room to breathe ominously...',
+      'Synchronizing character arcs with the moon phase...',
+      'Reheating tension until pleasantly unstable...',
+      'Guiding the pacing with a traffic baton...',
+      'Sliding the dominoes into place with tweezers...',
+      'Issuing plot passports for cross-scene travel...',
+    ],
+    ANALYZING_SCENE: [
+      'Checking the scene for narrative wobble...',
+      'Comparing outcomes with the prophecy chart...',
+      'Scanning for hidden cause-and-effect crumbs...',
+      'Measuring tension levels with a tiny ruler...',
+      'Dusting the clues for emotional fingerprints...',
+      'Listening for suspiciously meaningful silence...',
+      'Highlighting motifs in five shades of concern...',
+      'Interrogating the subtext under bright lights...',
+      'Charting who knows what on a corkboard...',
+      'Running diagnostics on dramatic timing...',
+      'Counting unresolved questions on both hands...',
+      'Testing each beat for maximum narrative bounce...',
+      'Inspecting dialogue for secret trapdoors...',
+      'Triangulating intent, action, and fallout...',
+      'Separating facts from very confident guesses...',
+      'Scanning the room for Chekhov objects...',
+      'Stress-testing the logic with a rubber hammer...',
+      'Weighing emotional impact on calibrated scales...',
+      'Decoding facial expressions into strategic data...',
+      'Marking potential plot potholes with neon flags...',
+    ],
+    RESTRUCTURING_STORY: [
+      'Rearranging story beams without waking dragons...',
+      'Tightening bolts on the adventure skeleton...',
+      'Re-threading plot cables behind the walls...',
+      'Deploying emergency structure duct tape...',
+      'Moving chapter furniture with narrative dollies...',
+      'Replacing squeaky scenes with reinforced tension...',
+      'Installing support arcs under weak spots...',
+      'Rerouting character traffic to reduce pileups...',
+      'Welding the midpoint to the ending frame...',
+      'Stacking stakes where they can do the most damage...',
+      'Refitting transitions with smoother gears...',
+      'Laying fresh track for the final act train...',
+      'Demolishing one wobbly beat at a safe distance...',
+      'Reinforcing the foundation with consequence cement...',
+      'Hoisting the payoff into load-bearing position...',
+      'Rebalancing the structure for emotional wind...',
+      'Rewiring callbacks to the main power grid...',
+      'Swapping in a sturdier sequence of events...',
+      'Labeling every moving part "fragile but important"...',
+      'Running final inspections with a hard hat...',
+    ],
+  };
 
   function getApiKey() {
     return sessionStorage.getItem(API_KEY_STORAGE_KEY);
@@ -13,6 +129,176 @@
 
   function setApiKey(key) {
     sessionStorage.setItem(API_KEY_STORAGE_KEY, key);
+  }
+
+  function createProgressId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+
+    return 'progress-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+  }
+
+  function getRandomInt(minInclusive, maxInclusive) {
+    return Math.floor(Math.random() * (maxInclusive - minInclusive + 1)) + minInclusive;
+  }
+
+  function pickRandomPhrase(phrases, previousPhrase) {
+    if (!Array.isArray(phrases) || phrases.length === 0) {
+      return '';
+    }
+
+    if (phrases.length === 1) {
+      return phrases[0];
+    }
+
+    var selected = phrases[getRandomInt(0, phrases.length - 1)];
+    while (selected === previousPhrase) {
+      selected = phrases[getRandomInt(0, phrases.length - 1)];
+    }
+    return selected;
+  }
+
+  function createLoadingProgressController(loadingElement) {
+    var statusTextElement = loadingElement ? loadingElement.querySelector('p') : null;
+    var fallbackText = statusTextElement && statusTextElement.textContent
+      ? statusTextElement.textContent
+      : 'Loading...';
+    var stopped = true;
+    var progressId = '';
+    var currentStage = null;
+    var currentPhrase = '';
+    var pollTimeout = null;
+    var phraseTimeout = null;
+
+    function setStatusText(text) {
+      if (statusTextElement) {
+        statusTextElement.textContent = text;
+      }
+    }
+
+    function clearTimers() {
+      if (pollTimeout !== null) {
+        clearTimeout(pollTimeout);
+        pollTimeout = null;
+      }
+      if (phraseTimeout !== null) {
+        clearTimeout(phraseTimeout);
+        phraseTimeout = null;
+      }
+    }
+
+    function setFallbackText() {
+      currentStage = null;
+      currentPhrase = '';
+      if (phraseTimeout !== null) {
+        clearTimeout(phraseTimeout);
+        phraseTimeout = null;
+      }
+      setStatusText(fallbackText);
+    }
+
+    function schedulePhraseRotation() {
+      if (stopped || !currentStage) {
+        return;
+      }
+
+      var phrases = STAGE_PHRASE_POOLS[currentStage];
+      if (!Array.isArray(phrases) || phrases.length === 0) {
+        return;
+      }
+
+      var delay = getRandomInt(PHRASE_ROTATION_MIN_MS, PHRASE_ROTATION_MAX_MS);
+      phraseTimeout = window.setTimeout(function() {
+        if (stopped || !currentStage) {
+          return;
+        }
+        currentPhrase = pickRandomPhrase(phrases, currentPhrase);
+        setStatusText(currentPhrase);
+        schedulePhraseRotation();
+      }, delay);
+    }
+
+    function applyStage(stage) {
+      var phrases = STAGE_PHRASE_POOLS[stage];
+      if (!Array.isArray(phrases) || phrases.length === 0) {
+        setFallbackText();
+        return;
+      }
+
+      if (currentStage !== stage) {
+        currentStage = stage;
+        currentPhrase = '';
+        if (phraseTimeout !== null) {
+          clearTimeout(phraseTimeout);
+          phraseTimeout = null;
+        }
+      }
+
+      currentPhrase = pickRandomPhrase(phrases, currentPhrase);
+      setStatusText(currentPhrase);
+      schedulePhraseRotation();
+    }
+
+    async function pollProgress() {
+      if (stopped || !progressId) {
+        return;
+      }
+
+      try {
+        var response = await fetch('/generation-progress/' + encodeURIComponent(progressId), {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          throw new Error('Progress polling failed');
+        }
+
+        var snapshot = await response.json();
+        if (snapshot.status === 'running') {
+          if (typeof snapshot.activeStage === 'string') {
+            applyStage(snapshot.activeStage);
+          } else {
+            setFallbackText();
+          }
+        } else if (snapshot.status === 'unknown') {
+          setFallbackText();
+        } else if (snapshot.status === 'completed' || snapshot.status === 'failed') {
+          stop();
+          return;
+        } else {
+          setFallbackText();
+        }
+      } catch (_error) {
+        setFallbackText();
+      }
+
+      if (!stopped) {
+        pollTimeout = window.setTimeout(pollProgress, PROGRESS_POLL_INTERVAL_MS);
+      }
+    }
+
+    function start(newProgressId) {
+      stop();
+      progressId = newProgressId;
+      stopped = false;
+      setFallbackText();
+      void pollProgress();
+    }
+
+    function stop() {
+      stopped = true;
+      progressId = '';
+      currentStage = null;
+      currentPhrase = '';
+      clearTimers();
+      setStatusText(fallbackText);
+    }
+
+    return {
+      start: start,
+      stop: stop,
+    };
   }
 
   function escapeHtml(text) {
@@ -100,6 +386,7 @@
     if (!storyId || !choicesSection || !choices || !narrative || !loading || !apiKeyModal) {
       return;
     }
+    const loadingProgress = createLoadingProgressController(loading);
 
     function getUrgencyPriority(urgency) {
       if (urgency === 'HIGH') {
@@ -486,10 +773,12 @@
         const body = {
           pageId: currentPageId,
           choiceIndex,
+          progressId: createProgressId(),
         };
         if (apiKey) {
           body.apiKey = apiKey;
         }
+        loadingProgress.start(body.progressId);
 
         const response = await fetch(`/play/${storyId}/choice`, {
           method: 'POST',
@@ -575,6 +864,7 @@
         alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
         setChoicesDisabled(false);
       } finally {
+        loadingProgress.stop();
         loading.style.display = 'none';
       }
     });
@@ -680,6 +970,7 @@
     if (!form || !loading || !submitBtn) {
       return;
     }
+    const loadingProgress = createLoadingProgressController(loading);
 
     initNpcControls();
 
@@ -692,6 +983,9 @@
 
       submitBtn.disabled = true;
       loading.style.display = 'flex';
+      const progressId = createProgressId();
+      loadingProgress.start(progressId);
+      var shouldReenable = false;
 
       try {
         const formData = new FormData(form);
@@ -707,6 +1001,7 @@
             npcs: npcs.length > 0 ? npcs : undefined,
             startingSituation: formData.get('startingSituation'),
             apiKey: formData.get('apiKey'),
+            progressId: progressId,
           }),
         });
 
@@ -729,8 +1024,13 @@
       } catch (error) {
         console.error('Story creation error:', error);
         showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
-        submitBtn.disabled = false;
+        shouldReenable = true;
+      } finally {
+        loadingProgress.stop();
         loading.style.display = 'none';
+        if (shouldReenable) {
+          submitBtn.disabled = false;
+        }
       }
     });
   }

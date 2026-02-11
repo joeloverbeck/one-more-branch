@@ -858,13 +858,13 @@ describe('storyRoutes', () => {
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockImplementation(async (options) => {
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockImplementation((options) => {
         options.onGenerationStage?.({ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 });
         options.onGenerationStage?.({ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 });
-        return {
+        return Promise.resolve({
           story: { ...story, id: storyId },
           page,
-        };
+        });
       });
 
       await getRouteHandler('post', '/create-ajax')(
@@ -881,9 +881,11 @@ describe('storyRoutes', () => {
         { status, json } as unknown as Response,
       );
 
-      expect(startStorySpy).toHaveBeenCalledWith(expect.objectContaining({
-        onGenerationStage: expect.any(Function),
-      }));
+      expect(startStorySpy).toHaveBeenCalled();
+      const startStoryCallArg: unknown = startStorySpy.mock.calls[0]?.[0];
+      expect(
+        typeof (startStoryCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage,
+      ).toBe('function');
       expect(progressStartSpy).toHaveBeenCalledWith('progress-success-1', 'new-story');
       expect(progressStageStartedSpy).toHaveBeenCalledWith('progress-success-1', 'RESTRUCTURING_STORY', 1);
       expect(progressStageCompletedSpy).toHaveBeenCalledWith('progress-success-1', 'RESTRUCTURING_STORY', 1);
