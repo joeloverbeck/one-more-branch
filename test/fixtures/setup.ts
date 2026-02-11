@@ -4,7 +4,11 @@
  */
 
 import { loadConfig, resetConfig } from '@/config/index';
-import { logger } from '@/logging/index';
+import { logger, resetPromptSinkForTesting, setPromptSinkForTesting } from '@/logging/index';
+
+const NOOP_PROMPT_SINK = {
+  appendPrompt: (): Promise<void> => Promise.resolve(),
+};
 
 // Increase timeout for integration tests
 jest.setTimeout(30000);
@@ -16,8 +20,14 @@ beforeAll(() => {
   loadConfig();
 });
 
+beforeEach(() => {
+  // Prevent tests from writing prompt payloads to disk.
+  setPromptSinkForTesting(NOOP_PROMPT_SINK);
+});
+
 // Clear logger entries after each test to prevent accumulation
 afterEach(() => {
+  resetPromptSinkForTesting();
   logger.clear();
 });
 
