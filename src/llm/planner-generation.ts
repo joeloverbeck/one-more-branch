@@ -37,6 +37,39 @@ function withObservabilityContext(
   });
 }
 
+function emitPlannerValidatorFailureCounters(
+  error: LLMError,
+  observability: GenerationObservabilityContext | undefined,
+): void {
+  const validationIssuesRaw = error.context?.['validationIssues'];
+  if (!Array.isArray(validationIssuesRaw)) {
+    return;
+  }
+
+  const validationIssues: unknown[] = validationIssuesRaw;
+  const countsByRule = new Map<string, number>();
+  for (const issue of validationIssues) {
+    if (typeof issue !== 'object' || issue === null) {
+      continue;
+    }
+
+    const ruleKey = (issue as Record<string, unknown>)['ruleKey'];
+    if (typeof ruleKey !== 'string') {
+      continue;
+    }
+
+    countsByRule.set(ruleKey, (countsByRule.get(ruleKey) ?? 0) + 1);
+  }
+
+  for (const [ruleKey, count] of countsByRule.entries()) {
+    logger.error('Planner validator failure counter', {
+      ruleKey,
+      count,
+      ...buildObservabilityContext(observability),
+    });
+  }
+}
+
 async function callPlannerStructured(
   messages: ChatMessage[],
   options: GenerationOptions,
@@ -95,6 +128,7 @@ async function callPlannerStructured(
     });
 
     if (error instanceof LLMError) {
+      emitPlannerValidatorFailureCounters(error, options.observability);
       throw withObservabilityContext(error, options.observability);
     }
 

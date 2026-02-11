@@ -158,5 +158,57 @@ describe('planner-generation', () => {
         requestId: 'req-abc',
       }),
     );
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'Planner validator failure counter',
+      expect.objectContaining({
+        storyId: 'story-123',
+        pageId: 10,
+        requestId: 'req-abc',
+      }),
+    );
+    const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
+    const counterCall = errorCalls.find(
+      ([message]) => message === 'Planner validator failure counter',
+    );
+    expect(counterCall).toBeDefined();
+    const counterContext =
+      counterCall && typeof counterCall[1] === 'object' && counterCall[1] !== null
+        ? (counterCall[1] as Record<string, unknown>)
+        : undefined;
+    expect(typeof counterContext?.ruleKey).toBe('string');
+    expect(typeof counterContext?.count).toBe('number');
+  });
+
+  it('emits planner validator counters with null observability identifiers when not provided', async () => {
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(
+        JSON.stringify({
+          ...validPlannerPayload,
+          stateIntents: {
+            ...validPlannerPayload.stateIntents,
+            canon: {
+              ...validPlannerPayload.stateIntents.canon,
+              worldAdd: ['Duplicate world fact', 'Duplicate world fact'],
+            },
+          },
+        }),
+      ),
+    );
+
+    await expect(
+      generatePlannerWithFallback(plannerMessages, { apiKey: 'test-key' }),
+    ).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      retryable: false,
+    });
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'Planner validator failure counter',
+      expect.objectContaining({
+        storyId: null,
+        pageId: null,
+        requestId: null,
+      }),
+    );
   });
 });
