@@ -58,6 +58,51 @@ function buildPreviousState(): StateReconciliationPreviousState {
   };
 }
 
+const THRESHOLD_PREVIOUS_TOKENS = [
+  'amber',
+  'bravo',
+  'cinder',
+  'delta',
+  'ember',
+  'fable',
+  'garnet',
+  'harbor',
+  'ivory',
+  'juniper',
+  'kepler',
+  'lumen',
+] as const;
+
+function buildThreadAddPlan(threadType: ThreadType, text: string): PagePlan {
+  return buildPlan({
+    stateIntents: {
+      ...buildPlan().stateIntents,
+      threads: {
+        add: [{ text, threadType, urgency: Urgency.HIGH }],
+        resolveIds: [],
+        replace: [],
+      },
+    },
+  });
+}
+
+function buildThreadEvidenceWriter(threadText: string): PageWriterResult {
+  return buildWriterResult({
+    narrative: `Mara keeps repeating ${threadText} while planning the next move.`,
+    sceneSummary: `The scene keeps this focus in view: ${threadText}.`,
+  });
+}
+
+function buildPreviousStateWithThread(
+  threadType: ThreadType,
+  text: string,
+): StateReconciliationPreviousState {
+  return {
+    ...buildPreviousState(),
+    threads: [{ id: 'td-threshold', text, threadType, urgency: Urgency.HIGH }],
+  };
+}
+
 describe('state-reconciler', () => {
   it('normalizes intent text deterministically with whitespace collapse and casefold dedupe', () => {
     const plan = buildPlan({
@@ -191,6 +236,108 @@ describe('state-reconciler', () => {
       },
     ]);
     expect(result.reconciliationDiagnostics).toEqual([]);
+  });
+
+  it.each([
+    {
+      label: '0.58 threshold group (RELATIONSHIP)',
+      threadType: ThreadType.RELATIONSHIP,
+      belowOverlapTokenCount: 6,
+      duplicateOverlapTokenCount: 7,
+    },
+    {
+      label: '0.62 threshold group (MYSTERY)',
+      threadType: ThreadType.MYSTERY,
+      belowOverlapTokenCount: 7,
+      duplicateOverlapTokenCount: 8,
+    },
+    {
+      label: '0.66 threshold group (QUEST)',
+      threadType: ThreadType.QUEST,
+      belowOverlapTokenCount: 7,
+      duplicateOverlapTokenCount: 8,
+    },
+  ])(
+    'enforces deterministic near-duplicate boundaries for $label',
+    ({
+      threadType,
+      belowOverlapTokenCount,
+      duplicateOverlapTokenCount,
+    }: {
+      threadType: ThreadType;
+      belowOverlapTokenCount: number;
+      duplicateOverlapTokenCount: number;
+    }) => {
+      const previousText = THRESHOLD_PREVIOUS_TOKENS.join(' ');
+      const belowThresholdText = THRESHOLD_PREVIOUS_TOKENS.slice(
+        0,
+        belowOverlapTokenCount,
+      ).join(' ');
+      const duplicateText = THRESHOLD_PREVIOUS_TOKENS.slice(
+        0,
+        duplicateOverlapTokenCount,
+      ).join(' ');
+      const previousState = buildPreviousStateWithThread(threadType, previousText);
+
+      const belowThresholdResult = reconcileState(
+        buildThreadAddPlan(threadType, belowThresholdText),
+        buildThreadEvidenceWriter(belowThresholdText),
+        previousState,
+      );
+
+      expect(belowThresholdResult.threadsAdded).toEqual([
+        { text: belowThresholdText, threadType, urgency: Urgency.HIGH },
+      ]);
+      expect(belowThresholdResult.reconciliationDiagnostics).toEqual([]);
+
+      const duplicateResult = reconcileState(
+        buildThreadAddPlan(threadType, duplicateText),
+        buildThreadEvidenceWriter(duplicateText),
+        previousState,
+      );
+
+      expect(duplicateResult.threadsAdded).toEqual([]);
+      expect(duplicateResult.reconciliationDiagnostics).toEqual([
+        {
+          code: 'THREAD_DUPLICATE_LIKE_ADD',
+          field: 'threadsAdded',
+          message:
+            `Thread add "${duplicateText}" is near-duplicate of existing thread "td-threshold".`,
+        },
+        {
+          code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+          field: 'threadsAdded',
+          message:
+            `Near-duplicate thread add "${duplicateText}" requires resolving "td-threshold" in the same payload.`,
+        },
+      ]);
+    },
+  );
+
+  it('trims filler stop-phrases before thread similarity scoring', () => {
+    const previousText = 'decode hidden ledger cipher';
+    const candidateText = 'decode hidden ledger cipher at this point currently';
+    const plan = buildThreadAddPlan(ThreadType.MYSTERY, candidateText);
+    const writer = buildThreadEvidenceWriter(candidateText);
+    const previousState = buildPreviousStateWithThread(ThreadType.MYSTERY, previousText);
+
+    const result = reconcileState(plan, writer, previousState);
+
+    expect(result.threadsAdded).toEqual([]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'THREAD_DUPLICATE_LIKE_ADD',
+        field: 'threadsAdded',
+        message:
+          `Thread add "${candidateText}" is near-duplicate of existing thread "td-threshold".`,
+      },
+      {
+        code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+        field: 'threadsAdded',
+        message:
+          `Near-duplicate thread add "${candidateText}" requires resolving "td-threshold" in the same payload.`,
+      },
+    ]);
   });
 
   it('rejects near-duplicate thread adds within the same payload deterministically', () => {
