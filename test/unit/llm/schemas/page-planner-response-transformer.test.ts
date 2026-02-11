@@ -1,0 +1,105 @@
+import { LLMError } from '../../../../src/llm/types';
+import { validatePagePlannerResponse } from '../../../../src/llm/schemas/page-planner-response-transformer';
+
+function createValidPlannerPayload(): Record<string, unknown> {
+  return {
+    sceneIntent: 'Escalate the watchtower breach into a forced commitment.',
+    continuityAnchors: ['The alarm bells are still ringing'],
+    stateIntents: {
+      threats: {
+        add: ['Archers establish crossfire from the catwalk'],
+        removeIds: [],
+        replace: [],
+      },
+      constraints: {
+        add: ['Visibility is reduced by smoke'],
+        removeIds: [],
+        replace: [],
+      },
+      threads: {
+        add: [{ text: 'Secure a fallback route through the lower gate', threadType: 'DANGER', urgency: 'HIGH' }],
+        resolveIds: [],
+        replace: [],
+      },
+      inventory: {
+        add: ['A cracked signal horn'],
+        removeIds: [],
+        replace: [],
+      },
+      health: {
+        add: ['Shallow cut on your forearm'],
+        removeIds: [],
+        replace: [],
+      },
+      characterState: {
+        add: [{ characterName: 'Captain Ives', states: ['Pinned near the eastern stair'] }],
+        removeIds: [],
+        replace: [],
+      },
+      canon: {
+        worldAdd: ['The eastern stairwell overlooks the collapsed market square.'],
+        characterAdd: [{ characterName: 'Captain Ives', facts: ['Ives served at the tower before the war.'] }],
+      },
+    },
+    writerBrief: {
+      openingLineDirective: 'Open on immediate incoming fire.',
+      mustIncludeBeats: ['Incoming volley at the parapet', 'Split-second route decision'],
+      forbiddenRecaps: ['Do not restate the full ambush setup'],
+    },
+  };
+}
+
+describe('validatePagePlannerResponse', () => {
+  it('returns normalized PagePlanGenerationResult and preserves rawResponse', () => {
+    const rawJson = createValidPlannerPayload();
+    rawJson.sceneIntent = '  Escalate the watchtower breach into a forced commitment.  ';
+    rawJson.continuityAnchors = ['  The alarm bells are still ringing  ', '   '];
+    (rawJson.stateIntents as { canon: { worldAdd: string[] } }).canon.worldAdd = [
+      '  The eastern stairwell overlooks the collapsed market square.  ',
+      '   ',
+    ];
+
+    const result = validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+
+    expect(result.sceneIntent).toBe('Escalate the watchtower breach into a forced commitment.');
+    expect(result.continuityAnchors).toEqual(['The alarm bells are still ringing']);
+    expect(result.stateIntents.canon.worldAdd).toEqual([
+      'The eastern stairwell overlooks the collapsed market square.',
+    ]);
+    expect(result.rawResponse).toBe('{"raw":"planner"}');
+  });
+
+  it('throws LLMError with machine-readable context for ID prefix mismatch', () => {
+    const rawJson = createValidPlannerPayload();
+    (rawJson.stateIntents as { threats: { removeIds: string[] } }).threats.removeIds = ['cn-9'];
+
+    try {
+      validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      expect(llmError.code).toBe('VALIDATION_ERROR');
+      expect(Array.isArray(llmError.context?.validationIssues)).toBe(true);
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(issues.some(issue => issue.ruleKey === 'state_id.id_only_field.prefix_mismatch')).toBe(
+        true,
+      );
+    }
+  });
+
+  it('throws on duplicate normalized intents in the same category', () => {
+    const rawJson = createValidPlannerPayload();
+    rawJson.continuityAnchors = ['  Active smoke cover ', 'active smoke cover'];
+
+    expect(() => validatePagePlannerResponse(rawJson, '{"raw":"planner"}')).toThrow(LLMError);
+  });
+
+  it('throws when replace payload is incomplete after trim', () => {
+    const rawJson = createValidPlannerPayload();
+    (rawJson.stateIntents as { threats: { replace: Array<{ removeId: string; addText: string }> } }).threats.replace =
+      [{ removeId: 'th-1', addText: '   ' }];
+
+    expect(() => validatePagePlannerResponse(rawJson, '{"raw":"planner"}')).toThrow(LLMError);
+  });
+});

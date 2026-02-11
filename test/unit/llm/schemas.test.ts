@@ -9,8 +9,10 @@
 import {
   WRITER_GENERATION_SCHEMA,
   STRUCTURE_GENERATION_SCHEMA,
+  PAGE_PLANNER_GENERATION_SCHEMA,
   isStructuredOutputNotSupported,
   validateWriterResponse,
+  validatePagePlannerResponse,
 } from '../../../src/llm/schemas';
 import { WriterResultSchema } from '../../../src/llm/schemas/writer-validation-schema';
 
@@ -25,6 +27,11 @@ describe('schemas barrel exports', () => {
     expect(STRUCTURE_GENERATION_SCHEMA.type).toBe('json_schema');
   });
 
+  it('should export PAGE_PLANNER_GENERATION_SCHEMA from barrel', () => {
+    expect(PAGE_PLANNER_GENERATION_SCHEMA).toBeDefined();
+    expect(PAGE_PLANNER_GENERATION_SCHEMA.type).toBe('json_schema');
+  });
+
   it('should export WriterResultSchema from writer-validation-schema', () => {
     expect(WriterResultSchema).toBeDefined();
     expect(typeof WriterResultSchema.parse).toBe('function');
@@ -33,6 +40,11 @@ describe('schemas barrel exports', () => {
   it('should export validateWriterResponse from barrel', () => {
     expect(validateWriterResponse).toBeDefined();
     expect(typeof validateWriterResponse).toBe('function');
+  });
+
+  it('should export validatePagePlannerResponse from barrel', () => {
+    expect(validatePagePlannerResponse).toBeDefined();
+    expect(typeof validatePagePlannerResponse).toBe('function');
   });
 
   it('should export isStructuredOutputNotSupported from barrel', () => {
