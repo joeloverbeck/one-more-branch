@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { generateAnalystEvaluation, generateOpeningPage, generatePagePlan, generateWriterPage } from '@/llm';
+import { generateAnalystEvaluation, generateOpeningPage, generatePagePlan, generatePageWriterOutput } from '@/llm';
 import {
   createChoice,
   createPage,
@@ -21,7 +21,7 @@ import type { AnalystResult, PagePlanGenerationResult, WriterResult } from '@/ll
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateWriterPage: jest.fn(),
+  generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -39,7 +39,7 @@ jest.mock('@/logging/index', () => ({
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
@@ -488,6 +488,7 @@ describe('page-service integration', () => {
             'Companion': expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
           }),
         }),
+        expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-api-key',
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -510,7 +511,7 @@ describe('page-service integration', () => {
           }),
         }),
       );
-      const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];
+      const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[2];
       expect(writerOptions?.observability).toEqual(
         expect.objectContaining({
           storyId: storyWithStructure.id,
@@ -572,9 +573,8 @@ describe('page-service integration', () => {
         }),
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pagePlan,
-        }),
+        expect.any(Object),
+        pagePlan,
         expect.any(Object),
       );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
@@ -618,11 +618,12 @@ describe('page-service integration', () => {
         expect.objectContaining({
           npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
         }),
+        expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-api-key',
         }),
       );
-      const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];
+      const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[2];
       expect(writerOptions?.observability).toEqual(
         expect.objectContaining({
           storyId: reloadedStory!.id,

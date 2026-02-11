@@ -1,6 +1,6 @@
 import { StoryEngine, storyEngine } from '@/engine';
 import {
-  generateWriterPage,
+  generatePageWriterOutput,
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
@@ -10,7 +10,7 @@ import { parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateWriterPage: jest.fn(),
+  generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -24,7 +24,7 @@ jest.mock('@/logging/index', () => ({
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<

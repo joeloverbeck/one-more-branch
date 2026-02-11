@@ -3,7 +3,7 @@ import {
   generateAnalystEvaluation,
   generatePagePlan,
   generateOpeningPage,
-  generateWriterPage,
+  generatePageWriterOutput,
 } from '../../../src/llm';
 import {
   createChoice,
@@ -26,7 +26,7 @@ import type { StoryStructure } from '../../../src/models/story-arc';
 
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
-  generateWriterPage: jest.fn(),
+  generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -57,7 +57,7 @@ jest.mock('../../../src/engine/structure-rewriter', () => ({
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
@@ -581,9 +581,8 @@ describe('page-service', () => {
         }),
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pagePlan,
-        }),
+        expect.any(Object),
+        pagePlan,
         expect.any(Object),
       );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
@@ -676,6 +675,7 @@ describe('page-service', () => {
 
       expect(mockedStorage.getMaxPageId).toHaveBeenCalledWith(story.id);
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+        expect.any(Object),
         expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-key',
@@ -1592,6 +1592,7 @@ describe('page-service', () => {
         expect.objectContaining({
           structure: structureV1, // Should be v1, not v2!
         }),
+        expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-key',
           observability: expect.objectContaining({

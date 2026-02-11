@@ -1,8 +1,8 @@
 import {
   generateAnalystEvaluation,
   generatePagePlan,
+  generatePageWriterOutput,
   generateOpeningPage,
-  generateWriterPage,
   mergeWriterAndAnalystResults,
 } from '../llm';
 import type { AnalystResult } from '../llm';
@@ -163,11 +163,9 @@ export async function generateNextPage(
   );
 
   // Writer call (always runs)
-  const writerResult = await generateWriterPage(
-    {
-      ...continuationContext,
-      pagePlan,
-    },
+  const writerResult = await generatePageWriterOutput(
+    continuationContext,
+    pagePlan,
     {
       apiKey,
       observability: {
