@@ -122,13 +122,13 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).toContain('CONTINUITY RULES (CONTINUATION):');
   });
 
-  it('includes explicit prohibition on state/canon mutation outputs', () => {
+  it('keeps requirements focused on scene writing and continuity', () => {
     const messages = buildContinuationPrompt(makeContext());
     const userMessage = messages.find(m => m.role === 'user');
 
-    expect(userMessage?.content).toContain('Do NOT output state/canon mutation fields');
-    expect(userMessage?.content).toContain('newCanonFacts/newCharacterCanonFacts');
-    expect(userMessage?.content).toContain('characterStateChangesAdded/characterStateChangesRemoved');
+    expect(userMessage?.content).toContain('Write a sceneSummary');
+    expect(userMessage?.content).not.toContain('Do NOT output state/canon mutation fields');
+    expect(userMessage?.content).not.toContain('newCanonFacts/newCharacterCanonFacts');
   });
 
   it('includes planner guidance fields when pagePlan is provided', () => {

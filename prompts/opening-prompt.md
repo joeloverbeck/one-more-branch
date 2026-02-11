@@ -67,13 +67,7 @@ READ-ONLY CONTINUITY INPUT:
 How to use this context:
 1. Continue from the exact situation shown by these sections.
 2. Do not contradict listed facts unless the scene clearly resolves or changes them in narrative events.
-3. Show consequences in prose and choices, not in state/canon mutation fields.
-
-DO NOT OUTPUT STATE/CANON MUTATION FIELDS:
-- currentLocation
-- threatsAdded / threatsRemoved
-- constraintsAdded / constraintsRemoved
-- threadsAdded / threadsResolved
+3. Show consequences in prose and choices.
 
 INVENTORY MANAGEMENT:
 - Treat YOUR INVENTORY as read-only context for what the protagonist currently carries.
@@ -94,15 +88,6 @@ FIELD SEPARATION:
   - isEnding
 - READ-ONLY CONTEXT:
   - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.
-- FORBIDDEN OUTPUT FIELDS:
-  - currentLocation
-  - threatsAdded / threatsRemoved
-  - constraintsAdded / constraintsRemoved
-  - threadsAdded / threadsResolved
-  - inventoryAdded / inventoryRemoved
-  - healthAdded / healthRemoved
-  - newCanonFacts / newCharacterCanonFacts
-  - characterStateChangesAdded / characterStateChangesRemoved
 
 PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):
 Track the protagonist's emotional state in the dedicated protagonistAffect field.
@@ -244,7 +229,6 @@ REQUIREMENTS (follow all):
 4. Provide 3 meaningful structured choice objects with text, choiceType, and primaryDelta - each choice MUST have a different choiceType OR primaryDelta (add a 4th only when the situation truly warrants another distinct path)
 5. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
 6. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
-7. Do NOT output state/canon mutation fields (including currentLocation, threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved, inventoryAdded/inventoryRemoved, healthAdded/healthRemoved, newCanonFacts/newCharacterCanonFacts, characterStateChangesAdded/characterStateChangesRemoved)
 
 REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
 ```

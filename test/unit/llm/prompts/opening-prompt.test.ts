@@ -2,7 +2,7 @@ import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.j
 import type { OpeningContext } from '../../../../src/llm/types.js';
 
 describe('buildOpeningPrompt with active state', () => {
-  it('includes explicit prohibition on state/canon mutation outputs', () => {
+  it('keeps requirements focused on creative output fields', () => {
     const context: OpeningContext = {
       characterConcept: 'A traveling merchant',
       worldbuilding: 'Medieval fantasy',
@@ -12,10 +12,9 @@ describe('buildOpeningPrompt with active state', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
-    expect(userMessage).toContain('Do NOT output state/canon mutation fields');
-    expect(userMessage).toContain('currentLocation');
-    expect(userMessage).toContain('threatsAdded/threatsRemoved');
-    expect(userMessage).toContain('newCanonFacts/newCharacterCanonFacts');
+    expect(userMessage).toContain('sceneSummary');
+    expect(userMessage).not.toContain('Do NOT output state/canon mutation fields');
+    expect(userMessage).not.toContain('threatsAdded/threatsRemoved');
   });
 
   it('removes opening state establishment output instructions', () => {

@@ -67,13 +67,7 @@ READ-ONLY CONTINUITY INPUT:
 How to use this context:
 1. Continue from the exact situation shown by these sections.
 2. Do not contradict listed facts unless the scene clearly resolves or changes them in narrative events.
-3. Show consequences in prose and choices, not in state/canon mutation fields.
-
-DO NOT OUTPUT STATE/CANON MUTATION FIELDS:
-- currentLocation
-- threatsAdded / threatsRemoved
-- constraintsAdded / constraintsRemoved
-- threadsAdded / threadsResolved
+3. Show consequences in prose and choices.
 
 INVENTORY MANAGEMENT:
 - Treat YOUR INVENTORY as read-only context for what the protagonist currently carries.
@@ -94,15 +88,6 @@ FIELD SEPARATION:
   - isEnding
 - READ-ONLY CONTEXT:
   - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.
-- FORBIDDEN OUTPUT FIELDS:
-  - currentLocation
-  - threatsAdded / threatsRemoved
-  - constraintsAdded / constraintsRemoved
-  - threadsAdded / threadsResolved
-  - inventoryAdded / inventoryRemoved
-  - healthAdded / healthRemoved
-  - newCanonFacts / newCharacterCanonFacts
-  - characterStateChangesAdded / characterStateChangesRemoved
 
 PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):
 Track the protagonist's emotional state in the dedicated protagonistAffect field.
@@ -134,7 +119,6 @@ DO NOT CONTRADICT:
 
 WHEN NEW FACTS EMERGE:
 - Weave them into narrative and sceneSummary naturally.
-- Do NOT output canon/state mutation fields.
 
 RETCONS ARE FORBIDDEN:
 - Do NOT change names, roles, species, or relationships already established
@@ -149,11 +133,6 @@ Before generating your response, mentally verify:
 3. Am I using inventory items the protagonist actually has?
 4. Am I respecting the protagonist's current health conditions?
 5. Am I acknowledging active threats and constraints?
-
-DO NOT OUTPUT:
-- newCanonFacts / newCharacterCanonFacts
-- characterStateChangesAdded / characterStateChangesRemoved
-- any state mutation arrays or IDs
 
 CHARACTER CANON vs CHARACTER STATE:
 Use these categories as interpretation aids for continuity, not as output fields.
@@ -381,7 +360,6 @@ REQUIREMENTS (follow all):
 6. Ensure choices are divergent via their enum tags - each must change a different dimension of the story
 7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
-9. Do NOT output state/canon mutation fields (including currentLocation, threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved, inventoryAdded/inventoryRemoved, healthAdded/healthRemoved, newCanonFacts/newCharacterCanonFacts, characterStateChangesAdded/characterStateChangesRemoved)
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 ```

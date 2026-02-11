@@ -248,7 +248,7 @@ describe('buildOpeningPrompt', () => {
     const user = getUserMessage(messages);
     expect(user).toContain('=== ACTIVE STATE TRACKING ===');
     expect(user).toContain('READ-ONLY CONTINUITY INPUT:');
-    expect(user).toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS:');
+    expect(user).toContain('Show consequences in prose and choices.');
     expect(user).not.toContain('ESTABLISHMENT RULES (OPENING)');
   });
 

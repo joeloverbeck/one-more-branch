@@ -16,7 +16,6 @@ DO NOT CONTRADICT:
 
 WHEN NEW FACTS EMERGE:
 - Weave them into narrative and sceneSummary naturally.
-- Do NOT output canon/state mutation fields.
 
 RETCONS ARE FORBIDDEN:
 - Do NOT change names, roles, species, or relationships already established
@@ -30,12 +29,7 @@ Before generating your response, mentally verify:
 2. Does my narrative contradict any CHARACTER INFORMATION?
 3. Am I using inventory items the protagonist actually has?
 4. Am I respecting the protagonist's current health conditions?
-5. Am I acknowledging active threats and constraints?
-
-DO NOT OUTPUT:
-- newCanonFacts / newCharacterCanonFacts
-- characterStateChangesAdded / characterStateChangesRemoved
-- any state mutation arrays or IDs`;
+5. Am I acknowledging active threats and constraints?`;
 
 export const CHARACTER_CANON_VS_STATE = `CHARACTER CANON vs CHARACTER STATE:
 Use these categories as interpretation aids for continuity, not as output fields.

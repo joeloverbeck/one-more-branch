@@ -34,11 +34,10 @@ describe('shared state-tracking sections', () => {
       expect(ACTIVE_STATE_TRACKING).not.toContain('CANONICAL THREAD PHRASING TEMPLATES');
     });
 
-    it('forbids state mutation output fields', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS');
-      expect(ACTIVE_STATE_TRACKING).toContain('threatsAdded / threatsRemoved');
-      expect(ACTIVE_STATE_TRACKING).toContain('constraintsAdded / constraintsRemoved');
-      expect(ACTIVE_STATE_TRACKING).toContain('threadsAdded / threadsResolved');
+    it('focuses active state usage on continuity context', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('How to use this context');
+      expect(ACTIVE_STATE_TRACKING).toContain('Show consequences in prose and choices.');
+      expect(ACTIVE_STATE_TRACKING).not.toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS');
     });
 
     it('does not mention legacy prefix format', () => {
@@ -104,13 +103,11 @@ describe('shared state-tracking sections', () => {
       expect(FIELD_SEPARATION).toContain('FIELD SEPARATION:');
     });
 
-    it('documents creative-only output and forbidden mutation fields', () => {
+    it('documents creative output fields and read-only context', () => {
       expect(FIELD_SEPARATION).toContain('CREATIVE OUTPUT FIELDS');
       expect(FIELD_SEPARATION).toContain('protagonistAffect');
-      expect(FIELD_SEPARATION).toContain('FORBIDDEN OUTPUT FIELDS');
-      expect(FIELD_SEPARATION).toContain('inventoryAdded / inventoryRemoved');
-      expect(FIELD_SEPARATION).toContain('newCanonFacts / newCharacterCanonFacts');
-      expect(FIELD_SEPARATION).toContain('characterStateChangesAdded / characterStateChangesRemoved');
+      expect(FIELD_SEPARATION).toContain('READ-ONLY CONTEXT');
+      expect(FIELD_SEPARATION).not.toContain('FORBIDDEN OUTPUT FIELDS');
     });
   });
 });

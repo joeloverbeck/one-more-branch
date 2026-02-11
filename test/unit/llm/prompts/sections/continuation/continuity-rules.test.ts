@@ -34,10 +34,10 @@ describe('continuation continuity-rules sections', () => {
       expect(CONTINUATION_CONTINUITY_RULES).toContain('RETCONS ARE FORBIDDEN');
     });
 
-    it('forbids canon/state mutation field output', () => {
-      expect(CONTINUATION_CONTINUITY_RULES).toContain('newCanonFacts');
-      expect(CONTINUATION_CONTINUITY_RULES).toContain('newCharacterCanonFacts');
-      expect(CONTINUATION_CONTINUITY_RULES).toContain('Do NOT output canon/state mutation fields');
+    it('reinforces continuity through narrative integration', () => {
+      expect(CONTINUATION_CONTINUITY_RULES).toContain('WHEN NEW FACTS EMERGE');
+      expect(CONTINUATION_CONTINUITY_RULES).toContain('Weave them into narrative and sceneSummary naturally');
+      expect(CONTINUATION_CONTINUITY_RULES).not.toContain('newCanonFacts');
     });
 
     it('includes consistency verification section', () => {

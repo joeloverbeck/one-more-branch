@@ -81,19 +81,19 @@ describe('opening data rules composition', () => {
     it('includes ACTIVE STATE TRACKING section', () => {
       const rules = composeOpeningDataRules();
       expect(rules).toContain('ACTIVE STATE TRACKING');
-      expect(rules).toContain('currentLocation');
+      expect(rules).toContain('CURRENT LOCATION');
       expect(rules).toContain('READ-ONLY CONTINUITY INPUT');
-      expect(rules).toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS');
+      expect(rules).toContain('Show consequences in prose and choices.');
       expect(rules).not.toContain('THREAT_IDENTIFIER');
       expect(rules).not.toContain('CONSTRAINT_IDENTIFIER');
       expect(rules).not.toContain('THREAD_IDENTIFIER');
     });
 
-    it('explicitly forbids state mutation arrays in output', () => {
+    it('does not include explicit forbidden-output field lists', () => {
       const rules = composeOpeningDataRules();
-      expect(rules).toContain('threatsAdded / threatsRemoved');
-      expect(rules).toContain('constraintsAdded / constraintsRemoved');
-      expect(rules).toContain('threatsRemoved');
+      expect(rules).not.toContain('threatsAdded / threatsRemoved');
+      expect(rules).not.toContain('constraintsAdded / constraintsRemoved');
+      expect(rules).not.toContain('FORBIDDEN OUTPUT FIELDS');
     });
 
     it('includes INVENTORY MANAGEMENT section', () => {
@@ -117,9 +117,9 @@ describe('opening data rules composition', () => {
       expect(rules).toContain('FIELD SEPARATION:');
       expect(rules).toContain('CREATIVE OUTPUT FIELDS');
       expect(rules).toContain('READ-ONLY CONTEXT');
-      expect(rules).toContain('FORBIDDEN OUTPUT FIELDS');
-      expect(rules).toContain('newCanonFacts / newCharacterCanonFacts');
-      expect(rules).toContain('characterStateChangesAdded / characterStateChangesRemoved');
+      expect(rules).not.toContain('FORBIDDEN OUTPUT FIELDS');
+      expect(rules).not.toContain('newCanonFacts / newCharacterCanonFacts');
+      expect(rules).not.toContain('characterStateChangesAdded / characterStateChangesRemoved');
     });
 
     it('includes PROTAGONIST AFFECT section', () => {
@@ -165,7 +165,7 @@ describe('continuation data rules composition', () => {
     it('includes ACTIVE STATE TRACKING section', () => {
       const rules = composeContinuationDataRules();
       expect(rules).toContain('ACTIVE STATE TRACKING');
-      expect(rules).toContain('currentLocation');
+      expect(rules).toContain('CURRENT LOCATION');
     });
 
     it('includes INVENTORY and HEALTH MANAGEMENT', () => {
@@ -180,7 +180,8 @@ describe('continuation data rules composition', () => {
       const rules = composeContinuationDataRules();
       expect(rules).toContain('CONTINUITY RULES (CONTINUATION):');
       expect(rules).toContain('ESTABLISHED WORLD FACTS');
-      expect(rules).toContain('Do NOT output canon/state mutation fields');
+      expect(rules).toContain('Weave them into narrative and sceneSummary naturally.');
+      expect(rules).not.toContain('Do NOT output canon/state mutation fields');
     });
 
     it('includes CHARACTER CANON vs CHARACTER STATE section', () => {

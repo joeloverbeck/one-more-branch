@@ -16,13 +16,7 @@ READ-ONLY CONTINUITY INPUT:
 How to use this context:
 1. Continue from the exact situation shown by these sections.
 2. Do not contradict listed facts unless the scene clearly resolves or changes them in narrative events.
-3. Show consequences in prose and choices, not in state/canon mutation fields.
-
-DO NOT OUTPUT STATE/CANON MUTATION FIELDS:
-- currentLocation
-- threatsAdded / threatsRemoved
-- constraintsAdded / constraintsRemoved
-- threadsAdded / threadsResolved`;
+3. Show consequences in prose and choices.`;
 
 export const INVENTORY_MANAGEMENT = `INVENTORY MANAGEMENT:
 - Treat YOUR INVENTORY as read-only context for what the protagonist currently carries.
@@ -42,13 +36,4 @@ export const FIELD_SEPARATION = `FIELD SEPARATION:
   - protagonistAffect
   - isEnding
 - READ-ONLY CONTEXT:
-  - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.
-- FORBIDDEN OUTPUT FIELDS:
-  - currentLocation
-  - threatsAdded / threatsRemoved
-  - constraintsAdded / constraintsRemoved
-  - threadsAdded / threadsResolved
-  - inventoryAdded / inventoryRemoved
-  - healthAdded / healthRemoved
-  - newCanonFacts / newCharacterCanonFacts
-  - characterStateChangesAdded / characterStateChangesRemoved`;
+  - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.`;
