@@ -112,18 +112,24 @@ interface ReconciliationRetryGenerationOptions {
 }
 
 function createSuccessPipelineMetrics(
+  plannerDurationMs: number,
+  writerDurationMs: number,
+  reconcilerDurationMs: number,
+  plannerValidationIssueCount: number,
+  writerValidationIssueCount: number,
   reconcilerIssueCount: number,
   reconcilerRetried: boolean,
+  finalStatus: 'success' | 'hard_error',
 ): GenerationPipelineMetrics {
   return {
-    plannerDurationMs: 0,
-    writerDurationMs: 0,
-    reconcilerDurationMs: 0,
-    plannerValidationIssueCount: 0,
-    writerValidationIssueCount: 0,
+    plannerDurationMs,
+    writerDurationMs,
+    reconcilerDurationMs,
+    plannerValidationIssueCount,
+    writerValidationIssueCount,
     reconcilerIssueCount,
     reconcilerRetried,
-    finalStatus: 'success',
+    finalStatus,
   };
 }
 
@@ -141,59 +147,213 @@ async function generateWithReconciliationRetry({
   reconciliation: StateReconciliationResult;
   metrics: GenerationPipelineMetrics;
 }> {
+  const baseLogContext = {
+    mode,
+    storyId,
+    pageId,
+    requestId,
+  };
+  const countValidationIssues = (error: unknown): number => {
+    if (typeof error !== 'object' || error === null || !('context' in error)) {
+      return 0;
+    }
+
+    const context = (error as { context?: Record<string, unknown> }).context;
+    const issues = context?.['validationIssues'];
+    return Array.isArray(issues) ? issues.length : 0;
+  };
+
   let failureReasons: readonly ReconciliationFailureReason[] | undefined;
+  let plannerDurationMs = 0;
+  let writerDurationMs = 0;
+  let reconcilerDurationMs = 0;
+  let plannerValidationIssueCount = 0;
+  let writerValidationIssueCount = 0;
   let reconcilerIssueCount = 0;
   let reconcilerRetried = false;
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
-    const pagePlan = await generatePagePlan(
-      buildPlanContext(failureReasons),
-      {
-        apiKey,
-        observability: {
-          storyId,
-          pageId,
-          requestId,
+    logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'planner' });
+    const plannerStart = Date.now();
+    let pagePlan: Awaited<ReturnType<typeof generatePagePlan>>;
+    try {
+      pagePlan = await generatePagePlan(
+        buildPlanContext(failureReasons),
+        {
+          apiKey,
+          observability: {
+            storyId,
+            pageId,
+            requestId,
+          },
         },
-      },
-    );
+      );
+    } catch (error) {
+      const durationMs = Date.now() - plannerStart;
+      plannerDurationMs += durationMs;
+      plannerValidationIssueCount += countValidationIssues(error);
+      const metrics = createSuccessPipelineMetrics(
+        plannerDurationMs,
+        writerDurationMs,
+        reconcilerDurationMs,
+        plannerValidationIssueCount,
+        writerValidationIssueCount,
+        reconcilerIssueCount,
+        reconcilerRetried,
+        'hard_error',
+      );
+      logger.error('Generation stage failed', {
+        ...baseLogContext,
+        attempt,
+        stage: 'planner',
+        durationMs,
+        validationIssueCount: countValidationIssues(error),
+        error,
+      });
+      logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
+      throw error;
+    }
+    const plannerDuration = Date.now() - plannerStart;
+    plannerDurationMs += plannerDuration;
+    logger.info('Generation stage completed', {
+      ...baseLogContext,
+      attempt,
+      stage: 'planner',
+      durationMs: plannerDuration,
+    });
 
-    const writerResult = await generateWriter(pagePlan, failureReasons);
-    const reconciliation = applyTransitionalCurrentLocationPassthrough(
-      writerResult,
-      reconcileState(pagePlan, writerResult, previousState),
-      previousState.currentLocation,
-    );
+    logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'writer' });
+    const writerStart = Date.now();
+    let writerResult: WriterResult;
+    try {
+      writerResult = await generateWriter(pagePlan, failureReasons);
+    } catch (error) {
+      const durationMs = Date.now() - writerStart;
+      writerDurationMs += durationMs;
+      writerValidationIssueCount += countValidationIssues(error);
+      const metrics = createSuccessPipelineMetrics(
+        plannerDurationMs,
+        writerDurationMs,
+        reconcilerDurationMs,
+        plannerValidationIssueCount,
+        writerValidationIssueCount,
+        reconcilerIssueCount,
+        reconcilerRetried,
+        'hard_error',
+      );
+      logger.error('Generation stage failed', {
+        ...baseLogContext,
+        attempt,
+        stage: 'writer',
+        durationMs,
+        validationIssueCount: countValidationIssues(error),
+        error,
+      });
+      logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
+      throw error;
+    }
+    const writerDuration = Date.now() - writerStart;
+    writerDurationMs += writerDuration;
+    logger.info('Generation stage completed', {
+      ...baseLogContext,
+      attempt,
+      stage: 'writer',
+      durationMs: writerDuration,
+    });
+
+    logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'reconciler' });
+    const reconcilerStart = Date.now();
+    let reconciliation: StateReconciliationResult;
+    try {
+      reconciliation = applyTransitionalCurrentLocationPassthrough(
+        writerResult,
+        reconcileState(pagePlan, writerResult, previousState),
+        previousState.currentLocation,
+      );
+    } catch (error) {
+      const durationMs = Date.now() - reconcilerStart;
+      reconcilerDurationMs += durationMs;
+      const metrics = createSuccessPipelineMetrics(
+        plannerDurationMs,
+        writerDurationMs,
+        reconcilerDurationMs,
+        plannerValidationIssueCount,
+        writerValidationIssueCount,
+        reconcilerIssueCount,
+        reconcilerRetried,
+        'hard_error',
+      );
+      logger.error('Generation stage failed', {
+        ...baseLogContext,
+        attempt,
+        stage: 'reconciler',
+        durationMs,
+        error,
+      });
+      logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
+      throw error;
+    }
+    const reconcilerDuration = Date.now() - reconcilerStart;
+    reconcilerDurationMs += reconcilerDuration;
 
     if (reconciliation.reconciliationDiagnostics.length === 0) {
+      logger.info('Generation stage completed', {
+        ...baseLogContext,
+        attempt,
+        stage: 'reconciler',
+        durationMs: reconcilerDuration,
+      });
+      const metrics = createSuccessPipelineMetrics(
+        plannerDurationMs,
+        writerDurationMs,
+        reconcilerDurationMs,
+        plannerValidationIssueCount,
+        writerValidationIssueCount,
+        reconcilerIssueCount,
+        reconcilerRetried,
+        'success',
+      );
+      logger.info('Generation pipeline completed', { ...baseLogContext, metrics });
       return {
         writerResult,
         reconciliation,
-        metrics: createSuccessPipelineMetrics(reconcilerIssueCount, reconcilerRetried),
+        metrics,
       };
     }
 
     reconcilerIssueCount += reconciliation.reconciliationDiagnostics.length;
     reconcilerRetried = true;
 
+    logger.error('Generation stage failed', {
+      ...baseLogContext,
+      attempt,
+      stage: 'reconciler',
+      durationMs: reconcilerDuration,
+      diagnostics: reconciliation.reconciliationDiagnostics,
+    });
     logger.warn('State reconciliation failed during page generation attempt', {
-      mode,
-      storyId,
-      pageId,
-      requestId,
+      ...baseLogContext,
       attempt,
       diagnostics: reconciliation.reconciliationDiagnostics,
     });
     logger.error('State reconciliation diagnostics', {
-      mode,
-      storyId,
-      pageId,
-      requestId,
+      ...baseLogContext,
       attempt,
       diagnostics: reconciliation.reconciliationDiagnostics,
     });
 
     if (attempt === 2) {
+      const metrics = createSuccessPipelineMetrics(
+        plannerDurationMs,
+        writerDurationMs,
+        reconcilerDurationMs,
+        plannerValidationIssueCount,
+        writerValidationIssueCount,
+        reconcilerIssueCount,
+        reconcilerRetried,
+        'hard_error',
+      );
+      logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
       throw new StateReconciliationError(
         'State reconciliation failed after retry',
         'RECONCILIATION_FAILED',
@@ -203,6 +363,11 @@ async function generateWithReconciliationRetry({
     }
 
     failureReasons = toReconciliationFailureReasons(reconciliation);
+    logger.warn('Retrying generation after reconciliation failure', {
+      ...baseLogContext,
+      attempt,
+      failureReasons,
+    });
   }
 
   throw new StateReconciliationError(

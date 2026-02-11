@@ -325,15 +325,71 @@ describe('page-service', () => {
       expect(writerRequestIdAttemptOne).toBe(writerRequestIdAttemptTwo);
       expect(metrics).toEqual(
         expect.objectContaining({
-          plannerDurationMs: 0,
-          writerDurationMs: 0,
-          reconcilerDurationMs: 0,
+          plannerDurationMs: expect.any(Number),
+          writerDurationMs: expect.any(Number),
+          reconcilerDurationMs: expect.any(Number),
           plannerValidationIssueCount: 0,
           writerValidationIssueCount: 0,
           reconcilerIssueCount: 1,
           reconcilerRetried: true,
           finalStatus: 'success',
         }),
+      );
+      expect(mockedLogger.info.mock.calls).toEqual(
+        expect.arrayContaining([
+          [
+            'Generation stage started',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: story.id,
+              requestId: expect.any(String),
+              stage: 'planner',
+              attempt: 1,
+            }),
+          ],
+          [
+            'Generation stage completed',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: story.id,
+              requestId: expect.any(String),
+              stage: 'reconciler',
+              attempt: 2,
+              durationMs: expect.any(Number),
+            }),
+          ],
+          [
+            'Generation pipeline completed',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: story.id,
+              requestId: expect.any(String),
+              metrics: expect.objectContaining({
+                finalStatus: 'success',
+              }),
+            }),
+          ],
+        ]),
+      );
+      expect(mockedLogger.warn.mock.calls).toEqual(
+        expect.arrayContaining([
+          [
+            'Retrying generation after reconciliation failure',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: story.id,
+              requestId: expect.any(String),
+              attempt: 1,
+              failureReasons: [
+                {
+                  code: 'MISSING_NARRATIVE_EVIDENCE',
+                  field: 'threadsAdded',
+                  message: 'No narrative evidence found for threadsAdded anchor "archive".',
+                },
+              ],
+            }),
+          ],
+        ]),
       );
     });
 
@@ -740,6 +796,24 @@ describe('page-service', () => {
       expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
       expect(mockedReconcileState).toHaveBeenCalledTimes(2);
       expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(mockedLogger.error.mock.calls).toEqual(
+        expect.arrayContaining([
+          [
+            'Generation pipeline failed',
+            expect.objectContaining({
+              mode: 'continuation',
+              storyId: story.id,
+              pageId: parentPage.id,
+              requestId: expect.any(String),
+              metrics: expect.objectContaining({
+                finalStatus: 'hard_error',
+                reconcilerRetried: true,
+                reconcilerIssueCount: 2,
+              }),
+            }),
+          ],
+        ]),
+      );
     });
 
     it('throws INVALID_CHOICE for out-of-bounds index', async () => {
