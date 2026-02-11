@@ -778,6 +778,72 @@ describe('storyRoutes', () => {
       });
     });
 
+    it('does not start or mutate progress lifecycle when progressId is absent', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
+      const story = createStory({
+        title: 'No Progress Story',
+        characterConcept: 'No Progress Concept',
+        worldbuilding: 'No Progress World',
+        tone: 'No Progress Tone',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'No progress page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Go left'), createChoice('Go right')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressStageStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
+      const progressStageCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+        story: { ...story, id: storyId },
+        page,
+      });
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: 'No Progress Story',
+            characterConcept: 'No Progress Concept',
+            worldbuilding: 'No Progress World',
+            tone: 'No Progress Tone',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(startStorySpy).toHaveBeenCalledWith({
+        title: 'No Progress Story',
+        characterConcept: 'No Progress Concept',
+        worldbuilding: 'No Progress World',
+        tone: 'No Progress Tone',
+        apiKey: 'valid-key-12345',
+      });
+      const startStoryCallArg = startStorySpy.mock.calls[0]?.[0] as
+        | { onGenerationStage?: unknown }
+        | undefined;
+      expect(startStoryCallArg?.onGenerationStage).toBeUndefined();
+      expect(progressStartSpy).not.toHaveBeenCalled();
+      expect(progressStageStartedSpy).not.toHaveBeenCalled();
+      expect(progressStageCompletedSpy).not.toHaveBeenCalled();
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(progressFailSpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: true,
+        storyId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+    });
+
     it('passes npcs and startingSituation through to startStory when provided', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();

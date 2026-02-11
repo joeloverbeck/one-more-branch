@@ -1,6 +1,6 @@
 # Spinner Stage Progress Spec
 
-**Status**: Proposed
+**Status**: ✅ COMPLETED
 **Date**: 2026-02-11
 **Owner**: App/Web + Engine
 
@@ -152,3 +152,19 @@ Phrase pool requirements:
 2. Persisting progress events to disk.
 3. Any prompt-content visualization.
 4. Redesign of spinner visuals beyond text behavior.
+
+## Outcome
+- Completion date: 2026-02-11
+- What was actually changed:
+  - In-memory generation progress service, read endpoint, route lifecycle wiring, and frontend spinner polling/stage phrases are implemented and covered by tests.
+  - Stage callback coverage is implemented in `test/unit/engine/page-service.test.ts` (using the existing page-service suite rather than creating a separate `page-service-progress` file).
+  - Regression hardening added for the `progressId`-absent invariant in:
+    - `test/unit/server/routes/stories.test.ts`
+    - `test/unit/server/routes/play.test.ts`
+  - Full verification passed:
+    - `npm run test:unit`
+    - `npm run test:integration`
+    - `npm run test:e2e`
+    - `npm run typecheck`
+- Deviations from the initial plan:
+  - No production code changes were necessary during this final verification ticket; implementation already matched spec behavior.

@@ -535,6 +535,61 @@ describe('playRoutes', () => {
       );
     });
 
+    it('does not start or mutate progress lifecycle when progressId is absent', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressStageStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
+      const progressStageCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(makeChoiceSpy).toHaveBeenCalledWith({
+        storyId,
+        pageId: 2,
+        choiceIndex: 1,
+        apiKey: 'valid-key-12345',
+        onGenerationStage: undefined,
+      });
+      expect(progressStartSpy).not.toHaveBeenCalled();
+      expect(progressStageStartedSpy).not.toHaveBeenCalled();
+      expect(progressStageCompletedSpy).not.toHaveBeenCalled();
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(progressFailSpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
     it('starts, updates, and completes progress when progressId is provided', async () => {
       const story = createStory({
         title: 'Test Story',
