@@ -156,6 +156,16 @@ describe('logPrompt', () => {
       expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('writer');
     });
 
+    it('should handle planner prompt type', () => {
+      const mockLogger = createMockLogger();
+      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
+
+      logPrompt(mockLogger, 'planner', messages);
+
+      expect(mockLogger.infoCalls[0]?.message).toContain('planner');
+      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('planner');
+    });
+
     it('should handle structure prompt type', () => {
       const mockLogger = createMockLogger();
       const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];

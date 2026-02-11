@@ -19,11 +19,13 @@ jest.mock('../../../src/logging/index.js', () => ({
 }));
 
 import {
+  generatePagePlan,
   generateOpeningPage,
   generateWriterPage,
   validateApiKey,
 } from '../../../src/llm/client';
 import { LLMError } from '../../../src/llm/types';
+import { ThreadType, Urgency } from '../../../src/models/state/index';
 
 const openingContext = {
   characterConcept: 'A haunted cartographer',
@@ -50,6 +52,24 @@ const continuationContext = {
   },
   grandparentNarrative: null,
   ancestorSummaries: [],
+};
+
+const plannerOpeningContext = {
+  mode: 'opening' as const,
+  characterConcept: 'A haunted cartographer',
+  worldbuilding: 'A city built atop buried catacombs',
+  tone: 'gothic mystery',
+  globalCanon: [],
+  globalCharacterCanon: {},
+  accumulatedInventory: [],
+  accumulatedHealth: [],
+  accumulatedCharacterState: {},
+  activeState: {
+    currentLocation: 'Old city gate',
+    activeThreats: [],
+    activeConstraints: [],
+    openThreads: [],
+  },
 };
 
 const validStructuredPayload = {
@@ -83,6 +103,35 @@ const validStructuredPayload = {
   },
   sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
+};
+
+const validPlannerPayload = {
+  sceneIntent: 'Push deeper into the vault despite immediate danger.',
+  continuityAnchors: ['The chanting still echoes through the vault.'],
+  stateIntents: {
+    threats: { add: ['Cult sentries close in from two sides.'], removeIds: [], replace: [] },
+    constraints: { add: ['Torchlight is flickering out.'], removeIds: [], replace: [] },
+    threads: {
+      add: [
+        {
+          text: 'Find the source of the chanting before reinforcements arrive.',
+          threadType: ThreadType.DANGER,
+          urgency: Urgency.HIGH,
+        },
+      ],
+      resolveIds: [],
+      replace: [],
+    },
+    inventory: { add: ['A cracked lantern lens'], removeIds: [], replace: [] },
+    health: { add: ['Minor smoke inhalation'], removeIds: [], replace: [] },
+    characterState: { add: [{ characterName: 'Mara', states: ['Shaken but determined'] }], removeIds: [], replace: [] },
+    canon: { worldAdd: ['The lower vault has ritual markings on every column.'], characterAdd: [] },
+  },
+  writerBrief: {
+    openingLineDirective: 'Start on immediate tactical pressure.',
+    mustIncludeBeats: ['Sentries moving in', 'A risky route choice'],
+    forbiddenRecaps: ['Do not restate the full descent sequence.'],
+  },
 };
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -682,6 +731,35 @@ describe('llm client', () => {
       code: 'VALIDATION_ERROR',
       retryable: false,
     });
+  });
+
+  it('should log planner prompts before API call', async () => {
+    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validPlannerPayload)));
+
+    await generatePagePlan(plannerOpeningContext, { apiKey: 'test-key' });
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(
+      mockLogger,
+      'planner',
+      expect.any(Array),
+    );
+  });
+
+  it('should retry planner generation for retryable errors', async () => {
+    fetchMock.mockResolvedValue(createErrorResponse(500, 'server error'));
+
+    const promise = generatePagePlan(plannerOpeningContext, { apiKey: 'test-key' });
+
+    const expectation = expect(promise).rejects.toMatchObject({
+      code: 'HTTP_500',
+      retryable: true,
+    });
+
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expectation;
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });
 

@@ -2,8 +2,9 @@ import { logger, logPrompt } from '../logging/index.js';
 import { generateAnalystWithFallback } from './analyst-generation.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
+import { generatePlannerWithFallback } from './planner-generation.js';
 import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
-import { buildContinuationPrompt, buildOpeningPrompt } from './prompts/index.js';
+import { buildContinuationPrompt, buildOpeningPrompt, buildPagePlannerPrompt } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import {
   type AnalystContext,
@@ -11,6 +12,8 @@ import {
   type ContinuationContext,
   type GenerationOptions,
   type OpeningContext,
+  type PagePlanContext,
+  type PagePlanGenerationResult,
   type WriterResult,
 } from './types.js';
 import { generateWriterWithFallback } from './writer-generation.js';
@@ -51,6 +54,17 @@ export async function generateAnalystEvaluation(
 
   const analystOptions = { ...options, temperature: 0.3, maxTokens: 1024 };
   return withRetry(() => generateAnalystWithFallback(messages, analystOptions));
+}
+
+export async function generatePagePlan(
+  context: PagePlanContext,
+  options: GenerationOptions,
+): Promise<PagePlanGenerationResult> {
+  const messages = buildPagePlannerPrompt(context);
+
+  logPrompt(logger, 'planner', messages);
+
+  return withRetry(() => generatePlannerWithFallback(messages, options));
 }
 
 export async function validateApiKey(apiKey: string): Promise<boolean> {

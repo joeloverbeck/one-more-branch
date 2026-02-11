@@ -39,6 +39,12 @@ export {
   isStructuredOutputNotSupported,
 } from './schemas/index.js';
 
-export { generateOpeningPage, generateWriterPage, generateAnalystEvaluation, validateApiKey } from './client.js';
+export {
+  generateOpeningPage,
+  generateWriterPage,
+  generateAnalystEvaluation,
+  generatePagePlan,
+  validateApiKey,
+} from './client.js';
 
 export { mergeWriterAndAnalystResults } from './result-merger.js';
