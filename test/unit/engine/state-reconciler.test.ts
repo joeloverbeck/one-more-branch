@@ -139,6 +139,40 @@ describe('state-reconciler', () => {
     ]);
   });
 
+  it('validates cross-field inventory/health/character-state remove IDs against previous-state IDs', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        inventory: { add: [], removeIds: ['inv-999'], replace: [] },
+        health: { add: [], removeIds: ['hp-999'], replace: [] },
+        characterState: { add: [], removeIds: ['cs-999'], replace: [] },
+      },
+    });
+
+    const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
+
+    expect(result.inventoryRemoved).toEqual([]);
+    expect(result.healthRemoved).toEqual([]);
+    expect(result.characterStateChangesRemoved).toEqual([]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'UNKNOWN_STATE_ID',
+        field: 'inventoryRemoved',
+        message: 'Unknown state ID "inv-999" in inventoryRemoved.',
+      },
+      {
+        code: 'UNKNOWN_STATE_ID',
+        field: 'healthRemoved',
+        message: 'Unknown state ID "hp-999" in healthRemoved.',
+      },
+      {
+        code: 'UNKNOWN_STATE_ID',
+        field: 'characterStateChangesRemoved',
+        message: 'Unknown state ID "cs-999" in characterStateChangesRemoved.',
+      },
+    ]);
+  });
+
   it('returns diagnostics for malformed replace payloads and does not apply malformed entries', () => {
     const plan = buildPlan({
       stateIntents: {
@@ -196,5 +230,44 @@ describe('state-reconciler', () => {
 
     expect(second).toEqual(first);
     expect(third).toEqual(first);
+  });
+
+  it('reports canon duplicates under reconciler normalization and keeps deterministic first-seen facts', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        canon: {
+          worldAdd: ['  Iron   gates remain sealed ', 'iron gates remain sealed'],
+          characterAdd: [
+            { characterName: 'Mara', facts: ['Keeps a hidden ledger', '  keeps   a hidden ledger '] },
+            { characterName: ' mara ', facts: ['Distrusts city watch', 'distrusts   city   watch'] },
+          ],
+        },
+      },
+    });
+
+    const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
+
+    expect(result.newCanonFacts).toEqual(['Iron gates remain sealed']);
+    expect(result.newCharacterCanonFacts).toEqual({
+      Mara: ['Keeps a hidden ledger', 'Distrusts city watch'],
+    });
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'DUPLICATE_CANON_FACT',
+        field: 'stateIntents.canon.worldAdd[1]',
+        message: 'Duplicate canon fact after normalization: "iron gates remain sealed".',
+      },
+      {
+        code: 'DUPLICATE_CANON_FACT',
+        field: 'stateIntents.canon.characterAdd[0].facts[1]',
+        message: 'Duplicate canon fact for character "Mara" after normalization: "keeps a hidden ledger".',
+      },
+      {
+        code: 'DUPLICATE_CANON_FACT',
+        field: 'stateIntents.canon.characterAdd[1].facts[1]',
+        message: 'Duplicate canon fact for character "Mara" after normalization: "distrusts city watch".',
+      },
+    ]);
   });
 });
