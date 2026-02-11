@@ -1,18 +1,23 @@
 import type {
   AnalystContext,
   AnalystResult,
+  ContinuationPagePlanContext,
   CompletedBeat,
   ContinuationContext,
   ContinuationGenerationResult,
   GenerationOptions,
   OpeningContext,
+  OpeningPagePlanContext,
+  PagePlan,
+  PagePlanContext,
+  PagePlanGenerationResult,
   StructureRewriteContext,
   StructureRewriteResult,
   WriterResult,
 } from '../../../src/llm/types';
 import { LLMError } from '../../../src/llm/types';
 import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
-import type { ActiveState, KeyedEntry } from '../../../src/models/state/index';
+import { ThreadType, Urgency, type ActiveState, type KeyedEntry } from '../../../src/models/state/index';
 
 describe('LLM types', () => {
   describe('LLMError', () => {
@@ -135,6 +140,128 @@ describe('LLM types', () => {
 
       expect(context.globalCanon[0]).toContain('siege');
       expect(context.activeState.currentLocation).toBe('Marsh edge');
+    });
+
+    it('should allow creating PagePlan with required fields', () => {
+      const plan: PagePlan = {
+        sceneIntent: 'Force a high-stakes crossing decision at the bridge.',
+        continuityAnchors: ['Stormfront still active', 'Bridge remains unstable'],
+        stateIntents: {
+          threats: {
+            add: ['Lightning strikes the eastern support cables'],
+            removeIds: [],
+            replace: [],
+          },
+          constraints: {
+            add: ['Strong crosswinds reduce visibility'],
+            removeIds: [],
+            replace: [],
+          },
+          threads: {
+            add: [{ text: 'Secure a safe path across the bridge', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }],
+            resolveIds: [],
+            replace: [],
+          },
+          inventory: {
+            add: [],
+            removeIds: [],
+            replace: [],
+          },
+          health: {
+            add: [],
+            removeIds: [],
+            replace: [],
+          },
+          characterState: {
+            add: [{ characterName: 'Scout', states: ['focused'] }],
+            removeIds: [],
+            replace: [{ removeId: 'cs-1', add: { characterName: 'Scout', states: ['resolute'] } }],
+          },
+          canon: {
+            worldAdd: ['The bridge groans audibly before each thunderclap.'],
+            characterAdd: [{ characterName: 'Scout', facts: ['The scout has crossed this bridge once before.'] }],
+          },
+        },
+        writerBrief: {
+          openingLineDirective: 'Open with an immediate physical threat.',
+          mustIncludeBeats: ['Bridge sway intensifies', 'Choice pressure escalates'],
+          forbiddenRecaps: ['Do not restate full prior scene chronology'],
+        },
+      };
+
+      expect(plan.stateIntents.threads.add[0].threadType).toBe(ThreadType.DANGER);
+      expect(plan.stateIntents.characterState.replace[0].add.states).toEqual(['resolute']);
+    });
+
+    it('should allow creating opening and continuation PagePlanContext variants', () => {
+      const openingContext: OpeningPagePlanContext = {
+        mode: 'opening',
+        characterConcept: 'A storm-chaser scout',
+        worldbuilding: 'Mountain passes split the frontier.',
+        tone: 'tense adventure',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: 'Trailhead',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+      };
+
+      const continuationContext: ContinuationPagePlanContext = {
+        mode: 'continuation',
+        characterConcept: 'A storm-chaser scout',
+        worldbuilding: 'Mountain passes split the frontier.',
+        tone: 'tense adventure',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: 'You reached the old bridge in heavy rain.',
+        selectedChoice: 'Run across before the next lightning strike.',
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: 'Old bridge',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: null,
+        ancestorSummaries: [],
+      };
+
+      const contexts: PagePlanContext[] = [openingContext, continuationContext];
+
+      expect(contexts[0].mode).toBe('opening');
+      expect(contexts[1].mode).toBe('continuation');
+    });
+
+    it('should allow creating PagePlanGenerationResult with rawResponse', () => {
+      const result: PagePlanGenerationResult = {
+        sceneIntent: 'Escalate danger and force a commitment.',
+        continuityAnchors: [],
+        stateIntents: {
+          threats: { add: [], removeIds: [], replace: [] },
+          constraints: { add: [], removeIds: [], replace: [] },
+          threads: { add: [], resolveIds: [], replace: [] },
+          inventory: { add: [], removeIds: [], replace: [] },
+          health: { add: [], removeIds: [], replace: [] },
+          characterState: { add: [], removeIds: [], replace: [] },
+          canon: { worldAdd: [], characterAdd: [] },
+        },
+        writerBrief: {
+          openingLineDirective: 'Start mid-action.',
+          mustIncludeBeats: [],
+          forbiddenRecaps: [],
+        },
+        rawResponse: '{"sceneIntent":"Escalate danger and force a commitment."}',
+      };
+
+      expect(result.rawResponse).toContain('sceneIntent');
     });
   });
 

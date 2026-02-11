@@ -12,12 +12,17 @@ import {
 import * as llm from '../../../src/llm/index';
 import type {
   ChatMessage,
+  ContinuationPagePlanContext,
   ContinuationContext,
   GenerationOptions,
   JsonSchema,
+  OpeningPagePlanContext,
   OpeningContext,
+  PagePlan,
+  PagePlanGenerationResult,
   WriterResult,
 } from '../../../src/llm/index';
+import { ThreadType, Urgency } from '../../../src/models/state/index';
 
 describe('llm barrel exports', () => {
   it('should export runtime symbols', () => {
@@ -93,6 +98,70 @@ describe('llm barrel exports', () => {
     };
     const message: ChatMessage = { role: 'user', content: 'Continue the story' };
     const schema: JsonSchema = WRITER_GENERATION_SCHEMA;
+    const pagePlan: PagePlan = {
+      sceneIntent: 'Escalate the bridge crossing into a commitment.',
+      continuityAnchors: ['Storm worsens', 'Bridge remains unstable'],
+      stateIntents: {
+        threats: { add: [], removeIds: [], replace: [] },
+        constraints: { add: [], removeIds: [], replace: [] },
+        threads: {
+          add: [{ text: 'Reach the far side before collapse', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }],
+          resolveIds: [],
+          replace: [],
+        },
+        inventory: { add: [], removeIds: [], replace: [] },
+        health: { add: [], removeIds: [], replace: [] },
+        characterState: { add: [], removeIds: [], replace: [] },
+        canon: { worldAdd: [], characterAdd: [] },
+      },
+      writerBrief: {
+        openingLineDirective: 'Open with immediate instability.',
+        mustIncludeBeats: ['Wood snaps underfoot'],
+        forbiddenRecaps: [],
+      },
+    };
+    const plannerOpeningContext: OpeningPagePlanContext = {
+      mode: 'opening',
+      characterConcept: 'A storm-chaser scout',
+      worldbuilding: 'Mountain passes split the frontier.',
+      tone: 'tense adventure',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: 'Trailhead',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+    };
+    const plannerContinuationContext: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A storm-chaser scout',
+      worldbuilding: 'Mountain passes split the frontier.',
+      tone: 'tense adventure',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'You are halfway across the swaying bridge.',
+      selectedChoice: 'Sprint to the far support tower',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: 'Old bridge',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+    };
+    const plannerResult: PagePlanGenerationResult = {
+      ...pagePlan,
+      rawResponse: '{"sceneIntent":"Escalate the bridge crossing into a commitment."}',
+    };
 
     expect(result.choices).toHaveLength(2);
     expect(options.apiKey).toBe('test-key');
@@ -100,6 +169,10 @@ describe('llm barrel exports', () => {
     expect(continuation.selectedChoice).toContain('bridge');
     expect(message.role).toBe('user');
     expect(schema.type).toBe('json_schema');
+    expect(pagePlan.stateIntents.threads.add[0].urgency).toBe(Urgency.HIGH);
+    expect(plannerOpeningContext.mode).toBe('opening');
+    expect(plannerContinuationContext.mode).toBe('continuation');
+    expect(plannerResult.rawResponse).toContain('sceneIntent');
   });
 
   it('should not export removed fallback helpers via barrel', () => {

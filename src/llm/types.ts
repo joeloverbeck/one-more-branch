@@ -176,6 +176,88 @@ export interface ThreadAdd {
   urgency: Urgency;
 }
 
+export interface TextIntentReplace {
+  removeId: string;
+  addText: string;
+}
+
+export interface TextIntentMutations {
+  add: string[];
+  removeIds: string[];
+  replace: TextIntentReplace[];
+}
+
+export interface ThreadIntentReplace {
+  resolveId: string;
+  add: ThreadAdd;
+}
+
+export interface ThreadIntentMutations {
+  add: ThreadAdd[];
+  resolveIds: string[];
+  replace: ThreadIntentReplace[];
+}
+
+export interface CharacterStateIntentAdd {
+  characterName: string;
+  states: string[];
+}
+
+export interface CharacterStateIntentReplace {
+  removeId: string;
+  add: CharacterStateIntentAdd;
+}
+
+export interface CharacterStateIntentMutations {
+  add: CharacterStateIntentAdd[];
+  removeIds: string[];
+  replace: CharacterStateIntentReplace[];
+}
+
+export interface CanonIntents {
+  worldAdd: string[];
+  characterAdd: Array<{ characterName: string; facts: string[] }>;
+}
+
+export interface PagePlan {
+  sceneIntent: string;
+  continuityAnchors: string[];
+  stateIntents: {
+    threats: TextIntentMutations;
+    constraints: TextIntentMutations;
+    threads: ThreadIntentMutations;
+    inventory: TextIntentMutations;
+    health: TextIntentMutations;
+    characterState: CharacterStateIntentMutations;
+    canon: CanonIntents;
+  };
+  writerBrief: {
+    openingLineDirective: string;
+    mustIncludeBeats: string[];
+    forbiddenRecaps: string[];
+  };
+}
+
+export interface OpeningPagePlanContext extends OpeningContext {
+  mode: 'opening';
+  globalCanon: readonly string[];
+  globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
+  accumulatedInventory: readonly KeyedEntry[];
+  accumulatedHealth: readonly KeyedEntry[];
+  accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;
+  activeState: ActiveState;
+}
+
+export interface ContinuationPagePlanContext extends ContinuationContext {
+  mode: 'continuation';
+}
+
+export type PagePlanContext = OpeningPagePlanContext | ContinuationPagePlanContext;
+
+export interface PagePlanGenerationResult extends PagePlan {
+  rawResponse: string;
+}
+
 export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
 export type SceneMomentum =
   | 'STASIS'
