@@ -28,19 +28,34 @@ BAD CONSTRAINTS (do NOT add):
 - Inventory limits: "Unarmed" - implied by inventory
 
 GOOD THREADS (threadsAdded):
-- { text: "The letter's contents remain unknown", threadType: "MYSTERY", urgency: "MEDIUM" }
-- { text: "Who was the hooded figure?", threadType: "MYSTERY", urgency: "HIGH" }
-- { text: "The artifact was not where expected", threadType: "QUEST", urgency: "HIGH" }
+- { text: "Open relationship question: Can Mara trust Iven after the checkpoint betrayal?", threadType: "RELATIONSHIP", urgency: "HIGH" }
+- { text: "Need to learn: Who ordered the checkpoint betrayal?", threadType: "INFORMATION", urgency: "HIGH" }
+- { text: "Goal: secure the relay key; success when the key is recovered from the magistrate vault", threadType: "QUEST", urgency: "HIGH" }
 
 BAD THREADS (do NOT add):
 - Resolved questions: Threads should be mysteries, not answered facts
 - Current events: "Currently in combat" - this is a threat
 - Character traits: "Protagonist is courageous" - use characterCanon
+- Duplicate relationship loop rewordings: "Can Mara trust Iven now?" when the same trust loop is already open
+- Duplicate explanation loop rewordings: "Who is behind the betrayal?" when the same unknown actor loop is already open
+- State-as-thread mistakes: "The gate is locked right now" - this is a constraint, not a thread
+
+HARD THREAD DEDUP/REFINEMENT RULES:
+- If an active thread already captures the same unresolved loop, do NOT add a reworded duplicate.
+- If you are refining an existing loop to a more specific successor, use replacement semantics only:
+  1. Resolve the prior thread by ID in threadsResolved (e.g., "td-3")
+  2. Add exactly one refined successor in threadsAdded
+- Never keep both the old loop and its refined version unresolved in the same output.
+
+THREAT VS DANGER (classification guardrail):
+- Immediate scene hazard ("gunfire in the hallway", "bridge collapsing now") => THREAT/CONSTRAINT, not DANGER thread.
+- DANGER thread is only for looming structural risk framed as prevention:
+  "Prevent risk: checkpoint alert spreads citywide; avoid by disabling alarm relays before dawn"
 
 REMOVAL QUALITY (for continuation scenes):
 - Remove threats when the danger no longer exists (guards defeated, fire extinguished)
 - Remove constraints when the limitation is overcome (healed, light found)
-- Resolve threads when the mystery is answered or hook is addressed
+- Resolve threads when the loop is answered, achieved/abandoned, decided, or rendered moot by events
 - Always use ONLY the server-assigned ID for removals/resolutions (e.g., "th-2", "cn-1", "td-3")
 
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:

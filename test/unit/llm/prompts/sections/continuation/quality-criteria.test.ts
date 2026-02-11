@@ -59,13 +59,28 @@ describe('continuation quality-criteria sections', () => {
     });
 
     it('lists good thread examples in typed object format', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('{ text: "The letter\'s contents remain unknown", threadType: "MYSTERY", urgency: "MEDIUM" }');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
+        '{ text: "Open relationship question: Can Mara trust Iven after the checkpoint betrayal?", threadType: "RELATIONSHIP", urgency: "HIGH" }',
+      );
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threadType');
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('urgency');
     });
 
     it('includes BAD THREADS section', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('BAD THREADS');
+    });
+
+    it('includes hard dedup and replacement guidance for threads', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('HARD THREAD DEDUP/REFINEMENT RULES');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('do NOT add a reworded duplicate');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('Resolve the prior thread by ID');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('Add exactly one refined successor');
+    });
+
+    it('includes threat-vs-danger classification guidance', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('THREAT VS DANGER');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('Immediate scene hazard');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('DANGER thread is only for looming structural risk');
     });
 
     it('includes REMOVAL QUALITY section for continuation', () => {
@@ -75,6 +90,12 @@ describe('continuation quality-criteria sections', () => {
     it('explains ID-based removal', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('ONLY the server-assigned ID');
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('"th-2", "cn-1", "td-3"');
+    });
+
+    it('includes explicit thread resolution triggers', () => {
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
+        'answered, achieved/abandoned, decided, or rendered moot',
+      );
     });
 
     it('includes inventory direction', () => {

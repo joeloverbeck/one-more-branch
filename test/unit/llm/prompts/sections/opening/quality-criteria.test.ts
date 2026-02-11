@@ -41,12 +41,30 @@ describe('opening quality-criteria sections', () => {
     it('lists typed thread examples and plain text threat/constraint examples', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Two guards watch the town gate"');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Must reach the city before nightfall"');
-      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('{ text: "The sealed package\'s contents are unknown", threadType: "MYSTERY", urgency: "MEDIUM" }');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
+        '{ text: "Open relationship question: Is Captain Voss protecting the protagonist or setting a trap?", threadType: "RELATIONSHIP", urgency: "HIGH" }',
+      );
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threadType');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('urgency');
       expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('THREAT_');
       expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('CONSTRAINT_');
       expect(OPENING_ACTIVE_STATE_QUALITY).not.toContain('THREAD_');
+    });
+
+    it('includes dedup and refinement guidance for opening thread setup', () => {
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('THREAD DEDUP/REFINEMENT RULES');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
+        'Do not add two threads that represent the same unresolved loop',
+      );
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('keep the most specific single version');
+    });
+
+    it('includes threat-vs-danger classification guidance', () => {
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('THREAT VS DANGER');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('Immediate hazard at story start');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
+        'DANGER thread only for prevention-oriented, longer-horizon risk',
+      );
     });
 
     it('specifies removed arrays should be empty', () => {

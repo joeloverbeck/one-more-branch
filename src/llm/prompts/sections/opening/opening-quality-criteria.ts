@@ -18,13 +18,24 @@ GOOD INITIAL CONSTRAINTS (constraintsAdded):
 
 GOOD INITIAL THREADS (threadsAdded):
 - Mysteries or hooks that create intrigue
-- { text: "The sealed package's contents are unknown", threadType: "MYSTERY", urgency: "MEDIUM" }
-- { text: "The hooded figure's motives are unclear", threadType: "MYSTERY", urgency: "HIGH" }
+- { text: "Open relationship question: Is Captain Voss protecting the protagonist or setting a trap?", threadType: "RELATIONSHIP", urgency: "HIGH" }
+- { text: "Need to learn: Why did the archive courier vanish before delivery?", threadType: "INFORMATION", urgency: "MEDIUM" }
 
 BAD INITIAL ENTRIES (do NOT add):
 - Entries that imply past events ("Enemies seek revenge for past wrongs") - if relevant, establish it in the narrative
 - Overly vague entries ("Something feels wrong") - be specific
 - Constraints that are just inventory facts ("No weapon") - implied by inventory
+- Duplicate loop variants in the same payload ("Can Voss be trusted?" and "Is Voss lying?") - keep one canonical loop
+- State-as-thread mistakes ("The guards are chasing us right now") - this is a threat, not a thread
+
+THREAD DEDUP/REFINEMENT RULES (opening payload):
+- Do not add two threads that represent the same unresolved loop with different wording.
+- If a loop can be stated more specifically, keep the most specific single version and drop weaker variants.
+
+THREAT VS DANGER (classification guardrail):
+- Immediate hazard at story start ("armed patrol entering the room now") => THREAT/CONSTRAINT.
+- DANGER thread only for prevention-oriented, longer-horizon risk:
+  "Prevent risk: city lockdown reveals the safehouse network; avoid by rotating codes before curfew."
 
 OPENING-SPECIFIC REMINDERS:
 - threatsRemoved, constraintsRemoved, threadsResolved should be empty arrays
