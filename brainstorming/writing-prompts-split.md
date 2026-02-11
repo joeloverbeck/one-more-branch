@@ -35,6 +35,31 @@ Your continuation writer currently carries the full burden of continuity + state
 
 That’s a lot of competing objectives inside one generation."
 
+## Decisions Confirmed
+
+1) This is an immediate, breaking architectural change. No phased rollout, no backwards compatibility, no legacy path.
+
+2) We will split generation into:
+- Page Planner (LLM + new response schema)
+- Page Writer (LLM + reworked response schema)
+- Deterministic post-generation State Reconciler (code, non-LLM)
+
+3) The Page Writer will receive:
+- The planner output (`PagePlan`)
+- Current structured state directly (active state, inventory, health, character state, canon)
+- Recent scene context (as currently done)
+
+4) Reconciliation scope is full-state, not partial:
+- Threads, threats, constraints
+- Inventory
+- Health
+- Character state
+- Canon
+
+5) We need explicit failure handling and metrics collection from day one.
+
+6) Prompt reports in `reports/*` are too stale and will be removed (including handling the two new prompts/schemas in source code/tests instead).
+
 ## What I’d implement (research-aligned pipelines)
 
 1) **Planner / State Intent
@@ -47,31 +72,60 @@ Output: which threads to advance/resolve, whether to time-cut, what new hook (if
 
 2) Scene Writer (creative-only)
 
-Inputs: plan + canon (global and character) + last scene(s). Likely the current state (threads/threats/constraints/NPC state) shouldn't be fed, as that's more for planning, while canon is for consistency.
+Inputs: plan + canon (global and character) + current structured state + last scene(s).
+
+Important: the Writer should still receive current structured state directly to preserve continuity. Planner guidance should steer writing, not replace access to authoritative state.
 
 Output: narrative + choices + sceneSummary + protagonistAffect.
 
 No state adds/removes here.
 
-3) State Manager / Extractor + Verifier (deterministic - likely lower temperature as for the analyst prompt (src/llm/prompts/* ))
+3) State Reconciler / Verifier (deterministic code, non-LLM)
 
 Inputs: previous structured state + the newly generated narrative.
 
 Output: deltas (threadsAdded/Resolved, threatsAdded/Removed, constraintsAdded/Removed, etc.), with strict dedupe and contradiction elimination.
 
-Do it as draft → verify → final inside this call (CoVe/Self-Refine pattern).
-
-This is the sweet spot: the writer focuses on fiction; the state manager focuses on consistency.
+This is the sweet spot: the writer focuses on fiction; deterministic reconciliation code focuses on consistency and state correctness.
 
 ## Trade-offs (so you don’t get surprised)
 
 Cost/latency increases (extra call or two).
 
-You must ensure the state manager sees the exact final narrative it’s updating from (no “nearly same” version).
+You must ensure the deterministic reconciler sees the exact final writer narrative it’s reconciling from (no “nearly same” version).
 
-You’ll want the state manager run at low temperature (because it’s extraction/logic, not creativity).
+The deterministic reconciler must stay rule-based and deterministic (no LLM fallback path).
 
 Net: in systems like yours, the quality gains usually dominate the costs.
+
+## Deterministic Reconciliation (Non-LLM) Requirements
+
+The reconciler must run after Writer output and produce/validate final state deltas deterministically.
+
+Baseline checks:
+- Validate ID/category correctness for removed/resolved arrays
+- Enforce remove-and-replace semantics when refining an existing live entry
+- Reject contradictory final-state outcomes
+- Reject exact duplicate entries (normalized text)
+- Reject near-duplicate entries using deterministic heuristics
+
+Deterministic near-duplicate approach (no embeddings/LLM):
+- Normalize text (casefold, punctuation/whitespace collapse, stop-phrase trimming)
+- Compare token overlap/Jaccard-like score with per-category thresholds
+- Apply type-aware canonicalization templates for threads/threats/constraints
+- If similarity crosses threshold and unresolved loop/event is equivalent, require replace instead of add
+
+Cross-field reconciliation checks:
+- Active state vs inventory/health/character state consistency
+- Canon vs branch-state separation (permanent fact vs situational event)
+
+Hard failure behavior:
+- If reconciliation fails, reject generation attempt
+- Retry generation once with strict machine-readable failure reasons
+- If retry fails, return hard error (no legacy fallback path)
+
+Precedence rule:
+- If `PagePlan` guidance conflicts with authoritative current structured state, structured state wins.
 
 ## Narrative Threads instructions
 
@@ -314,3 +368,21 @@ Each scene must include at least ONE of:
 (3) an irreversible change in the situation,
 (4) a new complication that forces a different choice."
 
+## Metrics To Compute
+
+Even if we do not act on every metric immediately, collect these now:
+- Duplicate-entry rate (exact + near-duplicate)
+- Contradiction count per generation
+- Stale-entry survival count (entries that should have been removed but remained)
+- Thread resolution lag (pages between add and resolve)
+- Reconciler failure rate
+- Retry-after-failure rate
+- Token/latency/cost per Planner and Writer call
+
+## Documentation Impact
+
+Current prompt reports in `reports/*` are stale and will not track the new architecture cleanly.
+
+Plan:
+- Remove the prompt reports under `reports/*`
+- Keep prompt/schema behavior documented in source prompt files, schema files, and tests as source of truth
