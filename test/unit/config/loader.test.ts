@@ -72,6 +72,9 @@ describe('config loader', () => {
         expect(config.storage.storiesDir).toBe('stories');
         expect(config.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
         expect(config.logging.level).toBe('info');
+        expect(config.logging.prompts.enabled).toBe(true);
+        expect(config.logging.prompts.baseDir).toBe('logs');
+        expect(config.logging.prompts.fileName).toBe('prompts.jsonl');
       } finally {
         fs.rmSync(fixturesDir, { recursive: true, force: true });
       }

@@ -1,5 +1,5 @@
-import { getConfig } from '../config/index.js';
 import type { ChatMessage } from '../llm/types.js';
+import { createPromptFileSinkFromConfig, type PromptSink } from './prompt-file-sink.js';
 import type { Logger } from './types.js';
 
 export type PromptType =
@@ -10,35 +10,51 @@ export type PromptType =
   | 'structure'
   | 'structure-rewrite';
 
-/**
- * Truncates text to a maximum length, adding ellipsis if needed.
- */
-function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) {
-    return text;
+const NOOP_PROMPT_SINK: PromptSink = {
+  appendPrompt: () => Promise.resolve(),
+};
+
+let promptSink: PromptSink | undefined;
+
+function getPromptSink(): PromptSink {
+  if (promptSink) {
+    return promptSink;
   }
-  return `${text.slice(0, maxLength)}...`;
+
+  try {
+    promptSink = createPromptFileSinkFromConfig();
+  } catch {
+    promptSink = NOOP_PROMPT_SINK;
+  }
+
+  return promptSink;
 }
 
 /**
- * Logs a prompt's messages to the provided logger.
- * Logs summary at 'info' level and full content at 'debug' level.
+ * Swaps the prompt sink for tests.
+ */
+export function setPromptSinkForTesting(sink: PromptSink): void {
+  promptSink = sink;
+}
+
+/**
+ * Restores the default config-backed prompt sink.
+ */
+export function resetPromptSinkForTesting(): void {
+  promptSink = undefined;
+}
+
+/**
+ * Logs a prompt to the configured prompt sink.
+ * Prompt payload is never emitted to application logger output.
  */
 export function logPrompt(logger: Logger, promptType: PromptType, messages: ChatMessage[]): void {
-  const previewLength = getConfig().logging.promptPreviewLength;
-  const messageCount = messages.length;
-  const previews = messages.map(m => `[${m.role}] ${truncate(m.content, previewLength)}`);
-
-  logger.info(`Prompt (${promptType}): ${messageCount} messages`, {
-    promptType,
-    messageCount,
-    previews,
-  });
-
-  for (const message of messages) {
-    logger.debug(`[${message.role}] ${message.content}`, {
+  void getPromptSink().appendPrompt({ promptType, messages }).catch((error: unknown) => {
+    const safeErrorMessage = error instanceof Error ? error.message : String(error);
+    logger.warn('Prompt logging failed', {
       promptType,
-      role: message.role,
+      messageCount: messages.length,
+      error: safeErrorMessage,
     });
-  }
+  });
 }

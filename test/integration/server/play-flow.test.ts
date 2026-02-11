@@ -31,7 +31,6 @@ jest.mock('@/llm', () => ({
 jest.mock('@/logging/index', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(), getEntries: jest.fn().mockReturnValue([]), clear: jest.fn() },
   logPrompt: jest.fn(),
-  generateBrowserLogScript: jest.fn().mockReturnValue(''),
 }));
 
 jest.mock('@/engine/state-reconciler', () => ({

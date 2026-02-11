@@ -15,7 +15,9 @@ describe('config schemas', () => {
       expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
       expect(result.llm.promptOptions.choiceGuidance).toBe('strict');
       expect(result.logging.level).toBe('info');
-      expect(result.logging.promptPreviewLength).toBe(100);
+      expect(result.logging.prompts.enabled).toBe(true);
+      expect(result.logging.prompts.baseDir).toBe('logs');
+      expect(result.logging.prompts.fileName).toBe('prompts.jsonl');
     });
 
     it('overrides defaults with provided values', () => {
@@ -27,7 +29,14 @@ describe('config schemas', () => {
           temperature: 0.5,
           maxTokens: 4096,
         },
-        logging: { level: 'debug' as const },
+        logging: {
+          level: 'debug' as const,
+          prompts: {
+            enabled: false,
+            baseDir: 'tmp/prompts',
+            fileName: 'prompt.log',
+          },
+        },
       };
 
       const result = AppConfigSchema.parse(input);
@@ -40,6 +49,9 @@ describe('config schemas', () => {
       // Nested defaults still apply
       expect(result.llm.retry.maxRetries).toBe(3);
       expect(result.logging.level).toBe('debug');
+      expect(result.logging.prompts.enabled).toBe(false);
+      expect(result.logging.prompts.baseDir).toBe('tmp/prompts');
+      expect(result.logging.prompts.fileName).toBe('prompt.log');
     });
 
     it('validates port range (1-65535)', () => {
@@ -97,23 +109,26 @@ describe('config schemas', () => {
       expect(valid.llm.retry.baseDelayMs).toBe(500);
     });
 
-    it('validates promptPreviewLength range (10-1000)', () => {
+    it('validates prompts logging settings', () => {
       expect(() =>
-        AppConfigSchema.parse({ logging: { promptPreviewLength: 5 } }),
+        AppConfigSchema.parse({ logging: { prompts: { baseDir: '' } } }),
       ).toThrow();
       expect(() =>
-        AppConfigSchema.parse({ logging: { promptPreviewLength: 2000 } }),
+        AppConfigSchema.parse({ logging: { prompts: { fileName: '' } } }),
       ).toThrow();
 
-      const validLow = AppConfigSchema.parse({
-        logging: { promptPreviewLength: 10 },
+      const valid = AppConfigSchema.parse({
+        logging: {
+          prompts: {
+            enabled: false,
+            baseDir: 'tmp/logs',
+            fileName: 'my-prompts.jsonl',
+          },
+        },
       });
-      expect(validLow.logging.promptPreviewLength).toBe(10);
-
-      const validHigh = AppConfigSchema.parse({
-        logging: { promptPreviewLength: 1000 },
-      });
-      expect(validHigh.logging.promptPreviewLength).toBe(1000);
+      expect(valid.logging.prompts.enabled).toBe(false);
+      expect(valid.logging.prompts.baseDir).toBe('tmp/logs');
+      expect(valid.logging.prompts.fileName).toBe('my-prompts.jsonl');
     });
 
     it('validates enum values', () => {

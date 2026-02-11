@@ -2,7 +2,7 @@ import { ConsoleLogger } from './console-logger.js';
 import { LOG_LEVEL_PRIORITY, type LogEntry, type LogLevel, type Logger } from './types.js';
 
 /**
- * In-memory logger that accumulates entries for later injection into browser.
+ * In-memory logger that accumulates entries for diagnostics and testing.
  * Supports configurable minimum log level filtering.
  */
 export class PromptLogger implements Logger {

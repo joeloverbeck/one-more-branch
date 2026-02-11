@@ -7,12 +7,16 @@ describe('entry point bootstrap', () => {
   it('does not start server when module is imported', () => {
     const loadConfig = jest.fn();
     const startServer = jest.fn();
+    const logger = { setMinLevel: jest.fn() };
 
     jest.doMock('../../src/config/index', () => ({
       loadConfig,
     }));
     jest.doMock('../../src/server/index', () => ({
       startServer,
+    }));
+    jest.doMock('../../src/logging/index', () => ({
+      logger,
     }));
 
     jest.isolateModules(() => {
@@ -26,12 +30,16 @@ describe('entry point bootstrap', () => {
   it('exports bootstrap function', () => {
     const loadConfig = jest.fn();
     const startServer = jest.fn();
+    const logger = { setMinLevel: jest.fn() };
 
     jest.doMock('../../src/config/index', () => ({
       loadConfig,
     }));
     jest.doMock('../../src/server/index', () => ({
       startServer,
+    }));
+    jest.doMock('../../src/logging/index', () => ({
+      logger,
     }));
 
     let bootstrap: (() => void) | undefined;
@@ -46,16 +54,25 @@ describe('entry point bootstrap', () => {
     const callOrder: string[] = [];
     const loadConfig = jest.fn(() => {
       callOrder.push('loadConfig');
+      return { logging: { level: 'warn' } };
     });
     const startServer = jest.fn(() => {
       callOrder.push('startServer');
     });
+    const logger = {
+      setMinLevel: jest.fn((level: string) => {
+        callOrder.push(`setMinLevel:${level}`);
+      }),
+    };
 
     jest.doMock('../../src/config/index', () => ({
       loadConfig,
     }));
     jest.doMock('../../src/server/index', () => ({
       startServer,
+    }));
+    jest.doMock('../../src/logging/index', () => ({
+      logger,
     }));
 
     jest.isolateModules(() => {
@@ -65,6 +82,7 @@ describe('entry point bootstrap', () => {
 
     expect(loadConfig).toHaveBeenCalledTimes(1);
     expect(startServer).toHaveBeenCalledTimes(1);
-    expect(callOrder).toEqual(['loadConfig', 'startServer']);
+    expect(logger.setMinLevel).toHaveBeenCalledWith('warn');
+    expect(callOrder).toEqual(['loadConfig', 'setMinLevel:warn', 'startServer']);
   });
 });

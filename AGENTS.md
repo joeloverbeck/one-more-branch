@@ -54,6 +54,8 @@ When modifying interfaces like `GenerationResult`, search all test files for moc
 ## Security & Configuration Tips
 - Requires Node.js `>=18` (see `package.json`).
 - Do not persist API keys to disk; use runtime environment variables only.
+- Prompt logging is append-only JSONL at `logs/MM-DD-YYYY/prompts.jsonl` (configurable via `logging.prompts.*`).
+- Prompt payloads must never be emitted to browser console or server terminal logs.
 
 ## Archiving Tickets and Specs
 

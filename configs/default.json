@@ -21,6 +21,10 @@
   },
   "logging": {
     "level": "debug",
-    "promptPreviewLength": 100
+    "prompts": {
+      "enabled": true,
+      "baseDir": "logs",
+      "fileName": "prompts.jsonl"
+    }
   }
 }

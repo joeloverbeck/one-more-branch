@@ -44,9 +44,15 @@ const LLMConfigSchema = z.object({
 /**
  * Logging configuration schema.
  */
+const PromptLoggingConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  baseDir: z.string().min(1).default('logs'),
+  fileName: z.string().min(1).default('prompts.jsonl'),
+});
+
 const LoggingConfigSchema = z.object({
   level: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  promptPreviewLength: z.number().int().min(10).max(1000).default(100),
+  prompts: PromptLoggingConfigSchema.optional().transform((val) => val ?? PromptLoggingConfigSchema.parse({})),
 });
 
 /**

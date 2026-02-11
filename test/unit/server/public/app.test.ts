@@ -60,6 +60,8 @@ describe('public client script', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
     expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads);');
+    expect(script).not.toContain('data.logScript');
+    expect(script).not.toContain('executeLogScript');
     expect(script).toContain("if (!Array.isArray(openThreads) || openThreads.length === 0)");
     expect(script).toContain("getIconPath('thread_type_' + threadType)");
     expect(script).toContain("getIconPath('thread_urgency_' + urgency)");

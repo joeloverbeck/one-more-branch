@@ -1,201 +1,97 @@
-import { logPrompt } from '../../../src/logging/prompt-formatter';
+import {
+  logPrompt,
+  resetPromptSinkForTesting,
+  setPromptSinkForTesting,
+  type PromptType,
+} from '../../../src/logging/prompt-formatter';
 import type { ChatMessage } from '../../../src/llm/types';
 import type { Logger } from '../../../src/logging/types';
 
-interface MockLogger extends Logger {
-  infoCalls: Array<{ message: string; context?: Record<string, unknown> }>;
-  debugCalls: Array<{ message: string; context?: Record<string, unknown> }>;
-}
-
-function createMockLogger(): MockLogger {
-  const infoCalls: Array<{ message: string; context?: Record<string, unknown> }> = [];
-  const debugCalls: Array<{ message: string; context?: Record<string, unknown> }> = [];
-
+function createMockLogger(): jest.Mocked<Logger> {
   return {
-    infoCalls,
-    debugCalls,
-    debug(message: string, context?: Record<string, unknown>): void {
-      debugCalls.push({ message, context });
-    },
-    info(message: string, context?: Record<string, unknown>): void {
-      infoCalls.push({ message, context });
-    },
-    warn(): void {
-      // Not used in prompt formatter tests
-    },
-    error(): void {
-      // Not used in prompt formatter tests
-    },
-    getEntries(): [] {
-      return [];
-    },
-    clear(): void {
-      // Not used in prompt formatter tests
-    },
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    getEntries: jest.fn().mockReturnValue([]),
+    clear: jest.fn(),
   };
 }
 
 describe('logPrompt', () => {
-  describe('info level summary', () => {
-    it('should log summary at info level', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [
-        { role: 'system', content: 'You are a storyteller.' },
-        { role: 'user', content: 'Begin the story.' },
-      ];
-
-      logPrompt(mockLogger, 'opening', messages);
-
-      expect(mockLogger.infoCalls).toHaveLength(1);
-      expect(mockLogger.infoCalls[0]?.message).toContain('Prompt (opening)');
-      expect(mockLogger.infoCalls[0]?.message).toContain('2 messages');
-    });
-
-    it('should include message count and previews in context', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [
-        { role: 'system', content: 'System content' },
-        { role: 'user', content: 'User content' },
-      ];
-
-      logPrompt(mockLogger, 'writer', messages);
-
-      const context = mockLogger.infoCalls[0]?.context;
-
-      expect(context?.promptType).toBe('writer');
-      expect(context?.messageCount).toBe(2);
-      expect(context?.previews).toHaveLength(2);
-    });
+  afterEach(() => {
+    resetPromptSinkForTesting();
   });
 
-  describe('content truncation', () => {
-    it('should truncate long content in previews', () => {
-      const mockLogger = createMockLogger();
-      const longContent = 'A'.repeat(200);
-      const messages: ChatMessage[] = [{ role: 'system', content: longContent }];
+  it('writes prompt payload to sink and bypasses logger info/debug output', async () => {
+    const appendPrompt = jest.fn().mockResolvedValue(undefined);
+    setPromptSinkForTesting({ appendPrompt });
+    const logger = createMockLogger();
+    const messages: ChatMessage[] = [
+      { role: 'system', content: 'System instruction' },
+      { role: 'user', content: 'User request' },
+    ];
 
-      logPrompt(mockLogger, 'opening', messages);
+    logPrompt(logger, 'opening', messages);
+    await Promise.resolve();
 
-      const previews = mockLogger.infoCalls[0]?.context?.previews as string[];
-
-      expect(previews[0]).toContain('...');
-      expect(previews[0]?.length).toBeLessThan(longContent.length);
-    });
-
-    it('should not truncate short content', () => {
-      const mockLogger = createMockLogger();
-      const shortContent = 'Short message';
-      const messages: ChatMessage[] = [{ role: 'user', content: shortContent }];
-
-      logPrompt(mockLogger, 'opening', messages);
-
-      const previews = mockLogger.infoCalls[0]?.context?.previews as string[];
-
-      expect(previews[0]).not.toContain('...');
-      expect(previews[0]).toContain(shortContent);
-    });
+    expect(appendPrompt).toHaveBeenCalledTimes(1);
+    expect(appendPrompt).toHaveBeenCalledWith({ promptType: 'opening', messages });
+    expect(logger.info.mock.calls).toHaveLength(0);
+    expect(logger.debug.mock.calls).toHaveLength(0);
   });
 
-  describe('debug level details', () => {
-    it('should log full content at debug level', () => {
-      const mockLogger = createMockLogger();
-      const fullContent = 'This is the complete message content.';
-      const messages: ChatMessage[] = [{ role: 'assistant', content: fullContent }];
+  it('handles all prompt types', async () => {
+    const appendPrompt = jest.fn().mockResolvedValue(undefined);
+    setPromptSinkForTesting({ appendPrompt });
+    const logger = createMockLogger();
+    const messages: ChatMessage[] = [{ role: 'user', content: 'Message' }];
+    const promptTypes: PromptType[] = [
+      'opening',
+      'writer',
+      'analyst',
+      'planner',
+      'structure',
+      'structure-rewrite',
+    ];
 
-      logPrompt(mockLogger, 'opening', messages);
+    for (const promptType of promptTypes) {
+      logPrompt(logger, promptType, messages);
+    }
+    await Promise.resolve();
 
-      expect(mockLogger.debugCalls).toHaveLength(1);
-      expect(mockLogger.debugCalls[0]?.message).toContain(fullContent);
-    });
-
-    it('should log each message separately at debug level', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [
-        { role: 'system', content: 'System' },
-        { role: 'user', content: 'User' },
-        { role: 'assistant', content: 'Assistant' },
-      ];
-
-      logPrompt(mockLogger, 'writer', messages);
-
-      expect(mockLogger.debugCalls).toHaveLength(3);
-      expect(mockLogger.debugCalls[0]?.message).toContain('[system]');
-      expect(mockLogger.debugCalls[1]?.message).toContain('[user]');
-      expect(mockLogger.debugCalls[2]?.message).toContain('[assistant]');
-    });
-
-    it('should include role in debug context', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [{ role: 'user', content: 'Test' }];
-
-      logPrompt(mockLogger, 'opening', messages);
-
-      expect(mockLogger.debugCalls[0]?.context?.role).toBe('user');
-      expect(mockLogger.debugCalls[0]?.context?.promptType).toBe('opening');
-    });
+    expect(appendPrompt).toHaveBeenCalledTimes(promptTypes.length);
+    for (const promptType of promptTypes) {
+      expect(appendPrompt).toHaveBeenCalledWith({ promptType, messages });
+    }
   });
 
-  describe('prompt types', () => {
-    it('should handle opening prompt type', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
+  it('handles sink failures without throwing and logs one safe warning', async () => {
+    const appendPrompt = jest.fn().mockRejectedValue(new Error('disk full'));
+    setPromptSinkForTesting({ appendPrompt });
+    const logger = createMockLogger();
+    const messages: ChatMessage[] = [{ role: 'user', content: 'Secret message text' }];
 
-      logPrompt(mockLogger, 'opening', messages);
+    expect(() => logPrompt(logger, 'writer', messages)).not.toThrow();
+    await Promise.resolve();
 
-      expect(mockLogger.infoCalls[0]?.message).toContain('opening');
-      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('opening');
-    });
-
-    it('should handle writer prompt type', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
-
-      logPrompt(mockLogger, 'writer', messages);
-
-      expect(mockLogger.infoCalls[0]?.message).toContain('writer');
-      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('writer');
-    });
-
-    it('should handle planner prompt type', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
-
-      logPrompt(mockLogger, 'planner', messages);
-
-      expect(mockLogger.infoCalls[0]?.message).toContain('planner');
-      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('planner');
-    });
-
-    it('should handle structure prompt type', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
-
-      logPrompt(mockLogger, 'structure', messages);
-
-      expect(mockLogger.infoCalls[0]?.message).toContain('structure');
-      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('structure');
-    });
-
-    it('should handle structure-rewrite prompt type', () => {
-      const mockLogger = createMockLogger();
-      const messages: ChatMessage[] = [{ role: 'system', content: 'Test' }];
-
-      logPrompt(mockLogger, 'structure-rewrite', messages);
-
-      expect(mockLogger.infoCalls[0]?.message).toContain('structure-rewrite');
-      expect(mockLogger.infoCalls[0]?.context?.promptType).toBe('structure-rewrite');
-    });
+    expect(logger.warn.mock.calls).toHaveLength(1);
+    expect(logger.warn.mock.calls[0]).toEqual(['Prompt logging failed', {
+      promptType: 'writer',
+      messageCount: 1,
+      error: 'disk full',
+    }]);
+    expect(JSON.stringify(logger.warn.mock.calls[0]?.[1])).not.toContain('Secret message text');
   });
 
-  describe('empty messages', () => {
-    it('should handle empty message array', () => {
-      const mockLogger = createMockLogger();
+  it('handles empty message arrays', async () => {
+    const appendPrompt = jest.fn().mockResolvedValue(undefined);
+    setPromptSinkForTesting({ appendPrompt });
+    const logger = createMockLogger();
 
-      logPrompt(mockLogger, 'opening', []);
+    logPrompt(logger, 'planner', []);
+    await Promise.resolve();
 
-      expect(mockLogger.infoCalls).toHaveLength(1);
-      expect(mockLogger.infoCalls[0]?.context?.messageCount).toBe(0);
-      expect(mockLogger.debugCalls).toHaveLength(0);
-    });
+    expect(appendPrompt).toHaveBeenCalledWith({ promptType: 'planner', messages: [] });
   });
 });

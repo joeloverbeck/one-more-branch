@@ -4,11 +4,13 @@
  */
 
 import { loadConfig } from './config/index.js';
+import { logger } from './logging/index.js';
 import { startServer } from './server/index.js';
 
 export function bootstrap(): void {
   // Load configuration first - fail fast if invalid
-  loadConfig();
+  const config = loadConfig();
+  logger.setMinLevel(config.logging.level);
 
   // Start the server
   startServer();

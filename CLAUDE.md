@@ -104,6 +104,14 @@ stories/            # Runtime story data (gitignored)
 4. **State Accumulation**: Each page's state = parent's accumulated state + own changes
 5. **Canon Management**: Global facts persist across all branches
 
+## Prompt Logging
+
+- Prompt payload logging is file-based only.
+- `logPrompt(...)` appends JSONL entries to `logs/MM-DD-YYYY/prompts.jsonl`.
+- Prompt payloads are not emitted to server terminal output.
+- Prompt payloads are not injected into browser console output.
+- Prompt logging failures are non-fatal to generation flow.
+
 ## Play Page Contract
 
 - `GET /play/:storyId?page=:n` renders `pages/play` with `openThreadPanelRows` already sorted for display.

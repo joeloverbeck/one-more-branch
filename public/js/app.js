@@ -7,23 +7,6 @@
 
   const API_KEY_STORAGE_KEY = 'omb_api_key';
 
-  /**
-   * Execute log script received from server to display LLM prompts in browser console.
-   * @param {string|undefined} scriptContent - HTML script tag with console.log calls
-   */
-  function executeLogScript(scriptContent) {
-    if (!scriptContent) return;
-    try {
-      // Extract just the script content, not the <script> tags
-      const match = scriptContent.match(/<script>([\s\S]*?)<\/script>/);
-      if (match && match[1]) {
-        new Function(match[1])();
-      }
-    } catch (e) {
-      console.error('Failed to execute log script:', e);
-    }
-  }
-
   function getApiKey() {
     return sessionStorage.getItem(API_KEY_STORAGE_KEY);
   }
@@ -542,11 +525,6 @@
         renderOpenThreadsPanel(data.page.openThreads);
         renderStateChanges(data.page.stateChanges);
         renderDeviationBanner(data.deviationInfo);
-
-        // Execute log script to display LLM prompts in browser console
-        if (data.logScript) {
-          executeLogScript(data.logScript);
-        }
 
         const pageIndicator = document.querySelector('.page-indicator');
         if (pageIndicator) {
