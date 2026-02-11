@@ -3,6 +3,7 @@ import { storyEngine } from '@/engine';
 import { LLMError } from '@/llm/types';
 import { createChoice, createPage, createStory, parseStoryId } from '@/models';
 import { storyRoutes } from '@/server/routes/stories';
+import { generationProgressService } from '@/server/services';
 
 type RouteLayer = {
   route?: {
@@ -691,6 +692,38 @@ describe('storyRoutes', () => {
         error: 'OpenRouter API key is required',
       });
     });
+
+    it('starts and fails progress when validation fails with progressId', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: '   ',
+            characterConcept: 'A long enough character concept',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+            progressId: '  progress-validation-1  ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(progressStartSpy).toHaveBeenCalledWith('progress-validation-1', 'new-story');
+      expect(progressFailSpy).toHaveBeenCalledWith('progress-validation-1', 'Story title is required');
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Story title is required',
+      });
+    });
   });
 
   describe('POST /create-ajax success', () => {
@@ -793,6 +826,70 @@ describe('storyRoutes', () => {
         startingSituation: 'You awaken in a dark cave',
         apiKey: 'valid-key-12345',
       });
+      expect(json).toHaveBeenCalledWith({
+        success: true,
+        storyId: '550e8400-e29b-41d4-a716-446655440000',
+      });
+    });
+
+    it('starts, updates, and completes progress when progressId is provided', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
+      const story = createStory({
+        title: 'Progress Story',
+        characterConcept: 'Progress Concept',
+        worldbuilding: 'Progress World',
+        tone: 'Progress Tone',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'Progress page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Go left'), createChoice('Go right')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressStageStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
+      const progressStageCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+
+      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockImplementation(async (options) => {
+        options.onGenerationStage?.({ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 });
+        options.onGenerationStage?.({ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 });
+        return {
+          story: { ...story, id: storyId },
+          page,
+        };
+      });
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: 'Progress Story',
+            characterConcept: 'Progress Concept',
+            worldbuilding: 'Progress World',
+            tone: 'Progress Tone',
+            apiKey: 'valid-key-12345',
+            progressId: ' progress-success-1 ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(startStorySpy).toHaveBeenCalledWith(expect.objectContaining({
+        onGenerationStage: expect.any(Function),
+      }));
+      expect(progressStartSpy).toHaveBeenCalledWith('progress-success-1', 'new-story');
+      expect(progressStageStartedSpy).toHaveBeenCalledWith('progress-success-1', 'RESTRUCTURING_STORY', 1);
+      expect(progressStageCompletedSpy).toHaveBeenCalledWith('progress-success-1', 'RESTRUCTURING_STORY', 1);
+      expect(progressCompleteSpy).toHaveBeenCalledWith('progress-success-1');
+      expect(progressFailSpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: true,
         storyId: '550e8400-e29b-41d4-a716-446655440000',
@@ -1038,6 +1135,38 @@ describe('storyRoutes', () => {
           contentPreview: rawContent.slice(0, 20),
           rawContent,
         },
+      });
+    });
+
+    it('fails progress when engine throws and progressId is provided', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(new Error('generation failed'));
+
+      await getRouteHandler('post', '/create-ajax')(
+        {
+          body: {
+            title: 'Test Title',
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+            progressId: 'progress-error-1',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(progressStartSpy).toHaveBeenCalledWith('progress-error-1', 'new-story');
+      expect(progressFailSpy).toHaveBeenCalledWith('progress-error-1', 'generation failed');
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'generation failed',
       });
     });
   });

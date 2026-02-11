@@ -15,6 +15,7 @@ import {
 } from '@/models';
 import type { VersionedStoryStructure, StoryStructure } from '@/models';
 import { playRoutes } from '@/server/routes/play';
+import { generationProgressService } from '@/server/services';
 
 type RouteLayer = {
   route?: {
@@ -428,6 +429,30 @@ describe('playRoutes', () => {
         }),
       );
     });
+
+    it('starts and fails progress when required choice fields are missing', async () => {
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice');
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      await getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { choiceIndex: 0, apiKey: 'valid-key-12345', progressId: '  choice-validation-1  ' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(makeChoiceSpy).not.toHaveBeenCalled();
+      expect(progressStartSpy).toHaveBeenCalledWith('choice-validation-1', 'choice');
+      expect(progressFailSpy).toHaveBeenCalledWith('choice-validation-1', 'Missing pageId or choiceIndex');
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith({ error: 'Missing pageId or choiceIndex' });
+    });
   });
 
   describe('POST /:storyId/choice success', () => {
@@ -508,6 +533,61 @@ describe('playRoutes', () => {
           wasGenerated: true,
         }),
       );
+    });
+
+    it('starts, updates, and completes progress when progressId is provided', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockImplementation(async (options) => {
+        options.onGenerationStage?.({ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 });
+        options.onGenerationStage?.({ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 });
+        return {
+          page: resultPage,
+          wasGenerated: true,
+        };
+      });
+
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressStageStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
+      const progressStageCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345', progressId: ' choice-success-1 ' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(makeChoiceSpy).toHaveBeenCalledWith(expect.objectContaining({
+        onGenerationStage: expect.any(Function),
+      }));
+      expect(progressStartSpy).toHaveBeenCalledWith('choice-success-1', 'choice');
+      expect(progressStageStartedSpy).toHaveBeenCalledWith('choice-success-1', 'WRITING_CONTINUING_PAGE', 1);
+      expect(progressStageCompletedSpy).toHaveBeenCalledWith('choice-success-1', 'WRITING_CONTINUING_PAGE', 1);
+      expect(progressCompleteSpy).toHaveBeenCalledWith('choice-success-1');
+      expect(progressFailSpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
 
     it('returns empty openThreads for pages with no active threads', async () => {
@@ -853,6 +933,42 @@ describe('playRoutes', () => {
           'THREAD_MISSING_EQUIVALENT_RESOLVE',
           'MISSING_NARRATIVE_EVIDENCE',
         ],
+      });
+    });
+
+    it('fails progress with reconciliation public message when reconciliation fails', async () => {
+      jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
+        new StateReconciliationError(
+          'State reconciliation failed after retry',
+          'RECONCILIATION_FAILED',
+          [{ code: 'THREAD_MISSING_EQUIVALENT_RESOLVE', field: 'openThreads', message: 'Missing resolve operation' }],
+          false,
+        ),
+      );
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345', progressId: 'choice-error-1' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(progressStartSpy).toHaveBeenCalledWith('choice-error-1', 'choice');
+      expect(progressFailSpy).toHaveBeenCalledWith('choice-error-1', 'Generation failed due to reconciliation issues.');
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        error: 'Generation failed due to reconciliation issues.',
+        code: 'GENERATION_RECONCILIATION_FAILED',
+        retryAttempted: true,
+        reconciliationIssueCodes: ['THREAD_MISSING_EQUIVALENT_RESOLVE'],
       });
     });
 

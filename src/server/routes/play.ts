@@ -4,6 +4,7 @@ import { LLMError } from '../../llm/types.js';
 import { logger } from '../../logging/index.js';
 import { CHOICE_TYPE_COLORS, ChoiceType, CHOICE_TYPE_VALUES, PageId, PRIMARY_DELTA_LABELS, PrimaryDelta, PRIMARY_DELTA_VALUES, StoryId } from '../../models/index.js';
 import { addChoice } from '../../persistence/index.js';
+import { generationProgressService } from '../services/index.js';
 import {
   formatLLMError,
   getActDisplayInfo,
@@ -15,6 +16,7 @@ type ChoiceBody = {
   pageId?: number;
   choiceIndex?: number;
   apiKey?: string;
+  progressId?: unknown;
 };
 
 type CustomChoiceBody = {
@@ -43,6 +45,15 @@ function parseRequestedPageId(pageQuery: unknown): number {
 }
 
 export const playRoutes = Router();
+
+function parseProgressId(input: unknown): string | undefined {
+  if (typeof input !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = input.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
 
 playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
@@ -90,9 +101,17 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
 
 playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
-  const { pageId, choiceIndex, apiKey } = req.body as ChoiceBody;
+  const { pageId, choiceIndex, apiKey, progressId: rawProgressId } = req.body as ChoiceBody;
+  const progressId = parseProgressId(rawProgressId);
+  if (progressId) {
+    generationProgressService.start(progressId, 'choice');
+  }
 
   if (pageId === undefined || choiceIndex === undefined) {
+    if (progressId) {
+      generationProgressService.fail(progressId, 'Missing pageId or choiceIndex');
+    }
+
     return res.status(400).json({ error: 'Missing pageId or choiceIndex' });
   }
 
@@ -102,12 +121,24 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
       pageId: pageId as PageId,
       choiceIndex,
       apiKey: apiKey ?? undefined,
+      onGenerationStage: progressId
+        ? (event) => {
+            if (event.status === 'started') {
+              generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
+            } else {
+              generationProgressService.markStageCompleted(progressId, event.stage, event.attempt);
+            }
+          }
+        : undefined,
     });
 
     // Load story to compute actDisplayInfo for the new page
     const story = await storyEngine.loadStory(storyId as StoryId);
     const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
     const openThreads = getOpenThreadPanelRows(result.page.accumulatedActiveState.openThreads);
+    if (progressId) {
+      generationProgressService.complete(progressId);
+    }
 
     return res.json({
       success: true,
@@ -146,12 +177,20 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     }
 
     if (error instanceof StateReconciliationError && error.code === 'RECONCILIATION_FAILED') {
+      if (progressId) {
+        generationProgressService.fail(progressId, 'Generation failed due to reconciliation issues.');
+      }
+
       return res.status(500).json({
         error: 'Generation failed due to reconciliation issues.',
         code: 'GENERATION_RECONCILIATION_FAILED',
         retryAttempted: true,
         reconciliationIssueCodes: extractReconciliationIssueCodes(error),
       });
+    }
+
+    if (progressId) {
+      generationProgressService.fail(progressId, errorMessage);
     }
 
     // Build enhanced error response

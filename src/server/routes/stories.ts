@@ -3,10 +3,20 @@ import { storyEngine } from '../../engine';
 import { LLMError } from '../../llm/types';
 import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
+import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
 import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
 
 export const storyRoutes = Router();
+
+function parseProgressId(input: unknown): string | undefined {
+  if (typeof input !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = input.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
 
 storyRoutes.get('/new', (_req: Request, res: Response) => {
   res.render('pages/new-story', {
@@ -60,10 +70,19 @@ storyRoutes.post('/create', wrapAsyncRoute(async (req: Request, res: Response) =
 }));
 
 storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Response) => {
+  const progressId = parseProgressId((req.body as { progressId?: unknown })?.progressId);
+  if (progressId) {
+    generationProgressService.start(progressId, 'new-story');
+  }
+
   const input = req.body as StoryFormInput;
   const validation = validateStoryInput(input);
 
   if (!validation.valid) {
+    if (progressId) {
+      generationProgressService.fail(progressId, validation.error);
+    }
+
     return res.status(400).json({
       success: false,
       error: validation.error,
@@ -71,7 +90,23 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
   }
 
   try {
-    const result = await storyEngine.startStory(validation.trimmed);
+    const result = await storyEngine.startStory({
+      ...validation.trimmed,
+      onGenerationStage: progressId
+        ? (event) => {
+            if (event.status === 'started') {
+              generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
+            } else {
+              generationProgressService.markStageCompleted(progressId, event.stage, event.attempt);
+            }
+          }
+        : undefined,
+    });
+
+    if (progressId) {
+      generationProgressService.complete(progressId);
+    }
+
     return res.json({
       success: true,
       storyId: result.story.id,
@@ -79,6 +114,10 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
   } catch (error) {
     if (error instanceof LLMError) {
       logLLMError(error, 'creating story (AJAX)');
+      const formattedError = formatLLMError(error);
+      if (progressId) {
+        generationProgressService.fail(progressId, formattedError);
+      }
 
       const errorResponse: {
         success: false;
@@ -96,7 +135,7 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
         };
       } = {
         success: false,
-        error: formatLLMError(error),
+        error: formattedError,
         code: error.code,
         retryable: error.retryable,
       };
@@ -117,6 +156,9 @@ storyRoutes.post('/create-ajax', wrapAsyncRoute(async (req: Request, res: Respon
     }
 
     const err = error instanceof Error ? error : new Error(String(error));
+    if (progressId) {
+      generationProgressService.fail(progressId, err.message);
+    }
     logger.error('Error creating story:', { error: err.message, stack: err.stack });
     return res.status(500).json({
       success: false,
