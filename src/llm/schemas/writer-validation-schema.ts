@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
 import { ThreadType, Urgency } from '../../models/state/index.js';
-import {
-  STATE_ID_PREFIXES,
-  validateIdOnlyField,
-  validateNoIdLikeAdditions,
-} from '../validation/state-id-prefixes.js';
 
 const CharacterCanonFactsArraySchema = z.array(
   z.object({
@@ -143,70 +138,6 @@ export const WriterResultSchema = z
       }
     }
 
-    const additionChecks = [
-      { field: 'threatsAdded', values: data.threatsAdded },
-      { field: 'constraintsAdded', values: data.constraintsAdded },
-      { field: 'inventoryAdded', values: data.inventoryAdded },
-      { field: 'healthAdded', values: data.healthAdded },
-      { field: 'threadsAdded', values: data.threadsAdded.map(thread => thread.text) },
-    ] as const;
-
-    additionChecks.forEach(check => {
-      const issues = validateNoIdLikeAdditions(check.values, check.field);
-      issues.forEach(issue => {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: issue.ruleKey,
-          path:
-            check.field === 'threadsAdded'
-              ? [check.field, issue.index, 'text']
-              : [check.field, issue.index],
-          params: {
-            ruleKey: issue.ruleKey,
-            field: issue.field,
-            value: issue.value,
-          },
-        });
-      });
-    });
-
-    const idOnlyChecks = [
-      { field: 'threatsRemoved', values: data.threatsRemoved, prefix: STATE_ID_PREFIXES.threats },
-      {
-        field: 'constraintsRemoved',
-        values: data.constraintsRemoved,
-        prefix: STATE_ID_PREFIXES.constraints,
-      },
-      { field: 'threadsResolved', values: data.threadsResolved, prefix: STATE_ID_PREFIXES.threads },
-      {
-        field: 'inventoryRemoved',
-        values: data.inventoryRemoved,
-        prefix: STATE_ID_PREFIXES.inventory,
-      },
-      { field: 'healthRemoved', values: data.healthRemoved, prefix: STATE_ID_PREFIXES.health },
-      {
-        field: 'characterStateChangesRemoved',
-        values: data.characterStateChangesRemoved,
-        prefix: STATE_ID_PREFIXES.characterState,
-      },
-    ] as const;
-
-    idOnlyChecks.forEach(check => {
-      const issues = validateIdOnlyField(check.values, check.field, check.prefix);
-      issues.forEach(issue => {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: issue.ruleKey,
-          path: [check.field, issue.index],
-          params: {
-            ruleKey: issue.ruleKey,
-            field: issue.field,
-            value: issue.value,
-            expectedPrefix: issue.expectedPrefix,
-          },
-        });
-      });
-    });
   });
 
 export type ValidatedWriterResult = z.infer<typeof WriterResultSchema>;

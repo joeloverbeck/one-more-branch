@@ -702,7 +702,7 @@ describe('llm client', () => {
     );
   });
 
-  it('does not repair unknown misplaced IDs and still fails validation', async () => {
+  it('does not repair unknown misplaced IDs and still returns validated output', async () => {
     fetchMock.mockResolvedValue(
       responseWithStructuredContent(
         JSON.stringify({
@@ -713,24 +713,22 @@ describe('llm client', () => {
       ),
     );
 
-    await expect(
-      generateWriterPage(continuationContext, {
-        apiKey: 'test-key',
-        writerValidationContext: {
-          removableIds: {
-            threats: [],
-            constraints: [],
-            threads: ['td-1'],
-            inventory: [],
-            health: [],
-            characterState: [],
-          },
+    const result = await generateWriterPage(continuationContext, {
+      apiKey: 'test-key',
+      writerValidationContext: {
+        removableIds: {
+          threats: [],
+          constraints: [],
+          threads: ['td-1'],
+          inventory: [],
+          health: [],
+          characterState: [],
         },
-      }),
-    ).rejects.toMatchObject({
-      code: 'VALIDATION_ERROR',
-      retryable: false,
+      },
     });
+
+    expect(result.threatsRemoved).toEqual(['td-999']);
+    expect(result.threadsResolved).toEqual([]);
   });
 
   it('should log planner prompts before API call', async () => {

@@ -622,7 +622,7 @@ describe('schema pipeline integration', () => {
       expect(() => WriterResultSchema.parse(input)).toThrow();
     });
 
-    it('should reject cross-category removal IDs by prefix', () => {
+    it('should allow cross-category removal IDs at writer-schema stage', () => {
       const input = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -635,9 +635,8 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      expect(() => WriterResultSchema.parse(input)).toThrow(
-        'state_id.id_only_field.prefix_mismatch',
-      );
+      const parsed = WriterResultSchema.parse(input);
+      expect(parsed.constraintsRemoved).toEqual(['th-1']);
     });
   });
 });

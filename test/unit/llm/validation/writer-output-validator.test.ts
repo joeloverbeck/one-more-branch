@@ -48,38 +48,15 @@ describe('writer-output-validator', () => {
     expect(issues).toEqual([]);
   });
 
-  it('rejects ID-like additions with deterministic field paths', () => {
+  it('does not report issues for state mutation compatibility fields', () => {
     const issues = validateDeterministicWriterOutput(
       buildWriterResult({
         threatsAdded: ['th-7'],
-      }),
-    );
-
-    expect(issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ruleKey: 'state_id.addition.must_not_be_id_like',
-          fieldPath: 'threatsAdded[0]',
-        }),
-      ]),
-    );
-  });
-
-  it('rejects cross-category IDs in id-only fields', () => {
-    const issues = validateDeterministicWriterOutput(
-      buildWriterResult({
         constraintsRemoved: ['th-2'],
       }),
     );
 
-    expect(issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ruleKey: 'state_id.id_only_field.prefix_mismatch',
-          fieldPath: 'constraintsRemoved[0]',
-        }),
-      ]),
-    );
+    expect(issues).toEqual([]);
   });
 
   it('rejects duplicate (choiceType, primaryDelta) pairs across choices', () => {

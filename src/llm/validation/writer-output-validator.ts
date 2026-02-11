@@ -1,11 +1,5 @@
 import { ZodError, type ZodIssue } from 'zod';
 import type { WriterResult } from '../types.js';
-import {
-  STATE_ID_PREFIXES,
-  STATE_ID_RULE_KEYS,
-  validateIdOnlyField,
-  validateNoIdLikeAdditions,
-} from './state-id-prefixes.js';
 
 export const WRITER_OUTPUT_RULE_KEYS = {
   DUPLICATE_CHOICE_PAIR: 'writer_output.choice_pair.duplicate',
@@ -14,8 +8,7 @@ export const WRITER_OUTPUT_RULE_KEYS = {
 } as const;
 
 export type WriterOutputRuleKey =
-  | (typeof WRITER_OUTPUT_RULE_KEYS)[keyof typeof WRITER_OUTPUT_RULE_KEYS]
-  | (typeof STATE_ID_RULE_KEYS)[keyof typeof STATE_ID_RULE_KEYS];
+  (typeof WRITER_OUTPUT_RULE_KEYS)[keyof typeof WRITER_OUTPUT_RULE_KEYS];
 
 export interface WriterOutputValidationIssue {
   readonly ruleKey: WriterOutputRuleKey;
@@ -41,24 +34,6 @@ function addIssue(
   expectedPrefix?: string,
 ): void {
   issues.push({ ruleKey, fieldPath, message, value, expectedPrefix });
-}
-
-function addPrefixedIssues(
-  issues: WriterOutputValidationIssue[],
-  field: string,
-  addPath: (index: number) => string,
-  prefixedIssues: ReturnType<typeof validateIdOnlyField>,
-): void {
-  for (const issue of prefixedIssues) {
-    addIssue(
-      issues,
-      issue.ruleKey,
-      addPath(issue.index),
-      `Validation failed for ${field}`,
-      issue.value,
-      issue.expectedPrefix,
-    );
-  }
 }
 
 function validateProtagonistAffect(result: WriterResult, issues: WriterOutputValidationIssue[]): void {
@@ -124,91 +99,6 @@ function validateChoicePairUniqueness(result: WriterResult, issues: WriterOutput
 
 export function validateDeterministicWriterOutput(result: WriterResult): WriterOutputValidationIssue[] {
   const issues: WriterOutputValidationIssue[] = [];
-
-  const additionChecks = [
-    {
-      field: 'threatsAdded',
-      values: result.threatsAdded,
-      path: (index: number): string => `threatsAdded[${index}]`,
-    },
-    {
-      field: 'constraintsAdded',
-      values: result.constraintsAdded,
-      path: (index: number): string => `constraintsAdded[${index}]`,
-    },
-    {
-      field: 'inventoryAdded',
-      values: result.inventoryAdded,
-      path: (index: number): string => `inventoryAdded[${index}]`,
-    },
-    {
-      field: 'healthAdded',
-      values: result.healthAdded,
-      path: (index: number): string => `healthAdded[${index}]`,
-    },
-    {
-      field: 'threadsAdded',
-      values: result.threadsAdded.map(thread => thread.text),
-      path: (index: number): string => `threadsAdded[${index}].text`,
-    },
-  ] as const;
-
-  for (const check of additionChecks) {
-    addPrefixedIssues(
-      issues,
-      check.field,
-      check.path,
-      validateNoIdLikeAdditions(check.values, check.field),
-    );
-  }
-
-  const idOnlyChecks = [
-    {
-      field: 'threatsRemoved',
-      values: result.threatsRemoved,
-      prefix: STATE_ID_PREFIXES.threats,
-      path: (index: number): string => `threatsRemoved[${index}]`,
-    },
-    {
-      field: 'constraintsRemoved',
-      values: result.constraintsRemoved,
-      prefix: STATE_ID_PREFIXES.constraints,
-      path: (index: number): string => `constraintsRemoved[${index}]`,
-    },
-    {
-      field: 'threadsResolved',
-      values: result.threadsResolved,
-      prefix: STATE_ID_PREFIXES.threads,
-      path: (index: number): string => `threadsResolved[${index}]`,
-    },
-    {
-      field: 'inventoryRemoved',
-      values: result.inventoryRemoved,
-      prefix: STATE_ID_PREFIXES.inventory,
-      path: (index: number): string => `inventoryRemoved[${index}]`,
-    },
-    {
-      field: 'healthRemoved',
-      values: result.healthRemoved,
-      prefix: STATE_ID_PREFIXES.health,
-      path: (index: number): string => `healthRemoved[${index}]`,
-    },
-    {
-      field: 'characterStateChangesRemoved',
-      values: result.characterStateChangesRemoved,
-      prefix: STATE_ID_PREFIXES.characterState,
-      path: (index: number): string => `characterStateChangesRemoved[${index}]`,
-    },
-  ] as const;
-
-  for (const check of idOnlyChecks) {
-    addPrefixedIssues(
-      issues,
-      check.field,
-      check.path,
-      validateIdOnlyField(check.values, check.field, check.prefix),
-    );
-  }
 
   validateChoicePairUniqueness(result, issues);
   validateProtagonistAffect(result, issues);
