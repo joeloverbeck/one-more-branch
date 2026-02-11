@@ -1,0 +1,50 @@
+{
+  "previousThreads": [
+    {
+      "id": "td-13",
+      "text": "Can Alicia and Bobby rebuild trust after the Harbor Gate betrayal?",
+      "threadType": "RELATIONSHIP",
+      "urgency": "HIGH"
+    },
+    {
+      "id": "td-14",
+      "text": "Why did Bobby hide the harbor ledger from Alicia before the raid?",
+      "threadType": "INFORMATION",
+      "urgency": "HIGH"
+    }
+  ],
+  "scenarios": {
+    "duplicateWithoutResolve": {
+      "add": [
+        {
+          "text": "Will Alicia and Bobby restore trust after the Harbor Gate betrayal?",
+          "threadType": "RELATIONSHIP",
+          "urgency": "HIGH"
+        }
+      ],
+      "resolveIds": [],
+      "expectedDuplicateOfId": "td-13"
+    },
+    "replacementWithResolve": {
+      "add": [
+        {
+          "text": "Will Alicia and Bobby restore trust after the Harbor Gate betrayal?",
+          "threadType": "RELATIONSHIP",
+          "urgency": "HIGH"
+        }
+      ],
+      "resolveIds": ["td-13"],
+      "expectedDuplicateOfId": "td-13"
+    },
+    "distinctSharedEntities": {
+      "add": [
+        {
+          "text": "Will Alicia trust Bobby's warning about her missing brother?",
+          "threadType": "RELATIONSHIP",
+          "urgency": "MEDIUM"
+        }
+      ],
+      "resolveIds": []
+    }
+  }
+}

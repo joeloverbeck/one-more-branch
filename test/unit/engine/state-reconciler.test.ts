@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { ThreadType, Urgency } from '../../../src/models/state';
 import type { PagePlan, PageWriterResult } from '../../../src/llm/types';
 import { reconcileState } from '../../../src/engine/state-reconciler';
@@ -73,6 +75,43 @@ const THRESHOLD_PREVIOUS_TOKENS = [
   'lumen',
 ] as const;
 
+interface ThreadDedupFixtureThread {
+  id: string;
+  text: string;
+  threadType: ThreadType;
+  urgency: Urgency;
+}
+
+interface ThreadDedupFixtureScenario {
+  add: {
+    text: string;
+    threadType: ThreadType;
+    urgency: Urgency;
+  }[];
+  resolveIds: string[];
+  expectedDuplicateOfId?: string;
+}
+
+interface ThreadDedupFixture {
+  previousThreads: ThreadDedupFixtureThread[];
+  scenarios: {
+    duplicateWithoutResolve: ThreadDedupFixtureScenario;
+    replacementWithResolve: ThreadDedupFixtureScenario;
+    distinctSharedEntities: ThreadDedupFixtureScenario;
+  };
+}
+
+function loadThreadDedupFixture(): ThreadDedupFixture {
+  const fixturePath = path.join(
+    __dirname,
+    '../../fixtures/reconciler/thread-dedup/alicia-bobby-duplicate-loops.json',
+  );
+  const fixtureContents = fs.readFileSync(fixturePath, 'utf8');
+  return JSON.parse(fixtureContents) as ThreadDedupFixture;
+}
+
+const THREAD_DEDUP_FIXTURE = loadThreadDedupFixture();
+
 function buildThreadAddPlan(threadType: ThreadType, text: string): PagePlan {
   return buildPlan({
     stateIntents: {
@@ -101,6 +140,28 @@ function buildPreviousStateWithThread(
     ...buildPreviousState(),
     threads: [{ id: 'td-threshold', text, threadType, urgency: Urgency.HIGH }],
   };
+}
+
+function buildPreviousStateWithThreads(
+  threads: StateReconciliationPreviousState['threads'],
+): StateReconciliationPreviousState {
+  return {
+    ...buildPreviousState(),
+    threads,
+  };
+}
+
+function buildThreadFixturePlan(scenario: ThreadDedupFixtureScenario): PagePlan {
+  return buildPlan({
+    stateIntents: {
+      ...buildPlan().stateIntents,
+      threads: {
+        add: scenario.add,
+        resolveIds: scenario.resolveIds,
+        replace: [],
+      },
+    },
+  });
 }
 
 describe('state-reconciler', () => {
@@ -235,6 +296,60 @@ describe('state-reconciler', () => {
         urgency: Urgency.HIGH,
       },
     ]);
+    expect(result.reconciliationDiagnostics).toEqual([]);
+  });
+
+  it('rejects fixture-backed duplicate relationship loop adds without explicit resolve', () => {
+    const scenario = THREAD_DEDUP_FIXTURE.scenarios.duplicateWithoutResolve;
+    const candidateText = scenario.add[0]?.text ?? '';
+    const duplicateId = scenario.expectedDuplicateOfId ?? '';
+    const result = reconcileState(
+      buildThreadFixturePlan(scenario),
+      buildThreadEvidenceWriter(candidateText),
+      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads),
+    );
+
+    expect(result.threadsAdded).toEqual([]);
+    expect(result.threadsResolved).toEqual([]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'THREAD_DUPLICATE_LIKE_ADD',
+        field: 'threadsAdded',
+        message: `Thread add "${candidateText}" is near-duplicate of existing thread "${duplicateId}".`,
+      },
+      {
+        code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+        field: 'threadsAdded',
+        message: `Near-duplicate thread add "${candidateText}" requires resolving "${duplicateId}" in the same payload.`,
+      },
+    ]);
+  });
+
+  it('accepts fixture-backed duplicate relationship refinement when matching resolve is present', () => {
+    const scenario = THREAD_DEDUP_FIXTURE.scenarios.replacementWithResolve;
+    const candidateText = scenario.add[0]?.text ?? '';
+    const result = reconcileState(
+      buildThreadFixturePlan(scenario),
+      buildThreadEvidenceWriter(candidateText),
+      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads),
+    );
+
+    expect(result.threadsAdded).toEqual(scenario.add);
+    expect(result.threadsResolved).toEqual(scenario.resolveIds);
+    expect(result.reconciliationDiagnostics).toEqual([]);
+  });
+
+  it('allows fixture-backed shared-entity loops when unresolved questions differ', () => {
+    const scenario = THREAD_DEDUP_FIXTURE.scenarios.distinctSharedEntities;
+    const candidateText = scenario.add[0]?.text ?? '';
+    const result = reconcileState(
+      buildThreadFixturePlan(scenario),
+      buildThreadEvidenceWriter(candidateText),
+      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads),
+    );
+
+    expect(result.threadsAdded).toEqual(scenario.add);
+    expect(result.threadsResolved).toEqual([]);
     expect(result.reconciliationDiagnostics).toEqual([]);
   });
 

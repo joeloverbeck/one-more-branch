@@ -1,4 +1,4 @@
-**Status**: Draft
+**Status**: ✅ COMPLETED
 
 # Spec 12: Thread Contract and Deterministic Dedup
 
@@ -82,3 +82,15 @@ Reconciler rule:
 2. Unit: near-duplicate detection thresholds.
 3. Unit: replacement enforcement (must resolve old `td-*`).
 4. Regression: fixture covering duplicate relationship and explanation loops.
+
+## Outcome
+- Completion date: 2026-02-11
+- Actual changes vs original plan:
+  - Core spec requirements were implemented incrementally through THRCONANDDEDSPE tickets, including prompt contract updates, deterministic reconciler dedup/replacement rules, danger-vs-threat rejection, and fixture-backed regression coverage.
+  - Final regression fixture work was completed in `THRCONANDDEDSPE-05` without additional production reconciler changes.
+- Deviations:
+  - Regression coverage was consolidated into `test/unit/engine/state-reconciler.test.ts` with a dedicated fixture file rather than splitting into a separate unit test file.
+- Verification results:
+  - `npm run test:unit -- --runTestsByPath test/unit/engine/state-reconciler.test.ts` passed.
+  - `npm run test:integration -- --runTestsByPath test/integration/engine/page-service.test.ts` passed.
+  - `npm run typecheck` passed.
