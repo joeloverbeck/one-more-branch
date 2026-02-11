@@ -18,6 +18,7 @@ import type {
 const UNKNOWN_STATE_ID = 'UNKNOWN_STATE_ID';
 const MALFORMED_REPLACE_PAYLOAD = 'MALFORMED_REPLACE_PAYLOAD';
 const DUPLICATE_CANON_FACT = 'DUPLICATE_CANON_FACT';
+const MISSING_NARRATIVE_EVIDENCE = 'MISSING_NARRATIVE_EVIDENCE';
 
 function normalizeIntentText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
@@ -29,6 +30,42 @@ function intentComparisonKey(value: string): string {
 
 function normalizeId(value: string): string {
   return value.trim();
+}
+
+function normalizeEvidenceText(value: string): string {
+  return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function deriveLexicalAnchors(value: string): string[] {
+  const normalized = normalizeEvidenceText(value);
+  if (!normalized) {
+    return [];
+  }
+
+  return dedupeByKey(
+    normalized.split(/\s+/).filter(token => token.length >= 3),
+    token => token,
+  );
+}
+
+function hasEvidenceForAnchor(
+  evidenceText: string,
+  anchors: readonly string[],
+): { matched: boolean; anchor: string } {
+  const fallbackAnchor = anchors[0] ?? '';
+  for (const anchor of anchors) {
+    if (evidenceText.includes(anchor)) {
+      return {
+        matched: true,
+        anchor,
+      };
+    }
+  }
+
+  return {
+    matched: false,
+    anchor: fallbackAnchor,
+  };
 }
 
 function dedupeByKey<T>(
@@ -308,12 +345,45 @@ function normalizeCanonFacts(
   return result;
 }
 
+function applyNarrativeEvidenceGate<T>(
+  values: readonly T[],
+  field: string,
+  toSourceText: (value: T) => string,
+  evidenceText: string,
+  diagnostics: StateReconciliationDiagnostic[],
+): T[] {
+  const result: T[] = [];
+
+  values.forEach(value => {
+    const sourceText = normalizeIntentText(toSourceText(value));
+    const anchors = deriveLexicalAnchors(sourceText);
+    const evidence = hasEvidenceForAnchor(evidenceText, anchors);
+
+    if (evidence.matched) {
+      result.push(value);
+      return;
+    }
+
+    diagnostics.push({
+      code: MISSING_NARRATIVE_EVIDENCE,
+      field,
+      anchor: evidence.anchor,
+      message: `No narrative evidence found for ${field} anchor "${evidence.anchor}".`,
+    });
+  });
+
+  return result;
+}
+
 export function reconcileState(
   plan: PagePlan,
-  _writerOutput: PageWriterResult,
+  writerOutput: PageWriterResult,
   previousState: StateReconciliationPreviousState,
 ): StateReconciliationResult {
   const diagnostics: StateReconciliationDiagnostic[] = [];
+  const evidenceText = normalizeEvidenceText(
+    `${writerOutput.narrative} ${writerOutput.sceneSummary}`,
+  );
 
   const textReplacementThreats = expandTextReplacements(
     plan.stateIntents.threats.replace,
@@ -391,38 +461,122 @@ export function reconcileState(
     diagnostics,
   );
 
-  return {
-    currentLocation: previousState.currentLocation,
-    threatsAdded: normalizeTextIntents([
-      ...plan.stateIntents.threats.add,
-      ...textReplacementThreats.add,
-    ]),
+  const threatsAdded = applyNarrativeEvidenceGate(
+    normalizeTextIntents([...plan.stateIntents.threats.add, ...textReplacementThreats.add]),
+    'threatsAdded',
+    value => value,
+    evidenceText,
+    diagnostics,
+  );
+
+  const threatsRemovedWithEvidence = applyNarrativeEvidenceGate(
     threatsRemoved,
-    constraintsAdded: normalizeTextIntents([
+    'threatsRemoved',
+    value => previousState.threats.find(entry => entry.id === value)?.text ?? '',
+    evidenceText,
+    diagnostics,
+  );
+
+  const constraintsAdded = applyNarrativeEvidenceGate(
+    normalizeTextIntents([
       ...plan.stateIntents.constraints.add,
       ...textReplacementConstraints.add,
     ]),
+    'constraintsAdded',
+    value => value,
+    evidenceText,
+    diagnostics,
+  );
+
+  const constraintsRemovedWithEvidence = applyNarrativeEvidenceGate(
     constraintsRemoved,
-    threadsAdded: normalizeThreadAdds([
-      ...plan.stateIntents.threads.add,
-      ...threadReplacements.add,
-    ]),
+    'constraintsRemoved',
+    value => previousState.constraints.find(entry => entry.id === value)?.text ?? '',
+    evidenceText,
+    diagnostics,
+  );
+
+  const threadsAdded = applyNarrativeEvidenceGate(
+    normalizeThreadAdds([...plan.stateIntents.threads.add, ...threadReplacements.add]),
+    'threadsAdded',
+    value => value.text,
+    evidenceText,
+    diagnostics,
+  );
+
+  const threadsResolvedWithEvidence = applyNarrativeEvidenceGate(
     threadsResolved,
-    inventoryAdded: normalizeTextIntents([
-      ...plan.stateIntents.inventory.add,
-      ...textReplacementInventory.add,
-    ]),
+    'threadsResolved',
+    value => previousState.threads.find(entry => entry.id === value)?.text ?? '',
+    evidenceText,
+    diagnostics,
+  );
+
+  const inventoryAdded = applyNarrativeEvidenceGate(
+    normalizeTextIntents([...plan.stateIntents.inventory.add, ...textReplacementInventory.add]),
+    'inventoryAdded',
+    value => value,
+    evidenceText,
+    diagnostics,
+  );
+
+  const inventoryRemovedWithEvidence = applyNarrativeEvidenceGate(
     inventoryRemoved,
-    healthAdded: normalizeTextIntents([
-      ...plan.stateIntents.health.add,
-      ...textReplacementHealth.add,
-    ]),
+    'inventoryRemoved',
+    value => previousState.inventory.find(entry => entry.id === value)?.text ?? '',
+    evidenceText,
+    diagnostics,
+  );
+
+  const healthAdded = applyNarrativeEvidenceGate(
+    normalizeTextIntents([...plan.stateIntents.health.add, ...textReplacementHealth.add]),
+    'healthAdded',
+    value => value,
+    evidenceText,
+    diagnostics,
+  );
+
+  const healthRemovedWithEvidence = applyNarrativeEvidenceGate(
     healthRemoved,
-    characterStateChangesAdded: normalizeCharacterStateAdds([
+    'healthRemoved',
+    value => previousState.health.find(entry => entry.id === value)?.text ?? '',
+    evidenceText,
+    diagnostics,
+  );
+
+  const characterStateChangesAdded = applyNarrativeEvidenceGate(
+    normalizeCharacterStateAdds([
       ...plan.stateIntents.characterState.add,
       ...characterStateReplacements.add,
     ]),
+    'characterStateChangesAdded',
+    value => `${value.characterName} ${value.states.join(' ')}`,
+    evidenceText,
+    diagnostics,
+  );
+
+  const characterStateChangesRemovedWithEvidence = applyNarrativeEvidenceGate(
     characterStateChangesRemoved,
+    'characterStateChangesRemoved',
+    value => previousState.characterState.find(entry => entry.id === value)?.text ?? '',
+    evidenceText,
+    diagnostics,
+  );
+
+  return {
+    currentLocation: previousState.currentLocation,
+    threatsAdded,
+    threatsRemoved: threatsRemovedWithEvidence,
+    constraintsAdded,
+    constraintsRemoved: constraintsRemovedWithEvidence,
+    threadsAdded,
+    threadsResolved: threadsResolvedWithEvidence,
+    inventoryAdded,
+    inventoryRemoved: inventoryRemovedWithEvidence,
+    healthAdded,
+    healthRemoved: healthRemovedWithEvidence,
+    characterStateChangesAdded,
+    characterStateChangesRemoved: characterStateChangesRemovedWithEvidence,
     newCanonFacts: normalizeCanonFacts(plan.stateIntents.canon.worldAdd, diagnostics),
     newCharacterCanonFacts: normalizeCharacterCanonFacts(
       plan.stateIntents.canon.characterAdd,

@@ -25,7 +25,7 @@ function buildPlan(overrides?: Partial<PagePlan>): PagePlan {
   };
 }
 
-function buildWriterResult(): PageWriterResult {
+function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterResult {
   return {
     narrative: 'A bell tolls as patrols fan out through the alleys.',
     choices: [
@@ -40,8 +40,9 @@ function buildWriterResult(): PageWriterResult {
       dominantMotivation: 'Avoid capture',
     },
     isEnding: false,
-    sceneSummary: 'Patrol pressure increases and routes narrow.',
+    sceneSummary: 'Patrol pressure increases, routes narrow, and Mara stays wary of informants.',
     rawResponse: '{"ok":true}',
+    ...overrides,
   };
 }
 
@@ -269,5 +270,53 @@ describe('state-reconciler', () => {
         message: 'Duplicate canon fact for character "Mara" after normalization: "distrusts city watch".',
       },
     ]);
+  });
+
+  it('drops intents with no narrative evidence and emits machine-readable diagnostics', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        constraints: {
+          add: ['Obsidian cipher fallback'],
+          removeIds: [],
+          replace: [],
+        },
+      },
+    });
+
+    const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
+
+    expect(result.constraintsAdded).toEqual([]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'MISSING_NARRATIVE_EVIDENCE',
+        field: 'constraintsAdded',
+        anchor: 'obsidian',
+        message: 'No narrative evidence found for constraintsAdded anchor "obsidian".',
+      },
+    ]);
+  });
+
+  it('matches evidence anchors deterministically across punctuation and case differences', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        inventory: {
+          add: ['IRON-GATE breach kit'],
+          removeIds: [],
+          replace: [],
+        },
+      },
+    });
+
+    const writer = buildWriterResult({
+      narrative: 'She braces as the iron gate erupts inward.',
+      sceneSummary: 'A breach opens while patrols regroup.',
+    });
+
+    const result = reconcileState(plan, writer, buildPreviousState());
+
+    expect(result.inventoryAdded).toEqual(['IRON-GATE breach kit']);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 });
