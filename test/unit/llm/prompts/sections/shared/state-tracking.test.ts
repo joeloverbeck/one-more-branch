@@ -28,31 +28,10 @@ describe('shared state-tracking sections', () => {
       expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS');
     });
 
-    it('defines the open-loop thread contract and disallowed forms', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('THREAD CONTRACT (OPEN LOOPS ONLY)');
-      expect(ACTIVE_STATE_TRACKING).toContain(
-        'THREADS = unresolved open loops, never current-state facts',
-      );
-      expect(ACTIVE_STATE_TRACKING).toContain(
-        "Question loop ('MYSTERY', 'INFORMATION', 'MORAL', 'RELATIONSHIP')",
-      );
-      expect(ACTIVE_STATE_TRACKING).toContain("Goal loop with success condition ('QUEST', 'RESOURCE')");
-      expect(ACTIVE_STATE_TRACKING).toContain("Prevention loop for long-horizon risk ('DANGER')");
-      expect(ACTIVE_STATE_TRACKING).toContain('Current events ("currently under attack")');
-      expect(ACTIVE_STATE_TRACKING).toContain('Inventory facts');
-      expect(ACTIVE_STATE_TRACKING).toContain('Emotional snapshots');
-      expect(ACTIVE_STATE_TRACKING).toContain('Completed questions/answered mysteries');
-    });
-
-    it('includes canonical phrasing templates for each thread type', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('CANONICAL THREAD PHRASING TEMPLATES');
-      expect(ACTIVE_STATE_TRACKING).toContain('MYSTERY: "Open question:');
-      expect(ACTIVE_STATE_TRACKING).toContain('INFORMATION: "Need to learn:');
-      expect(ACTIVE_STATE_TRACKING).toContain('MORAL: "Open dilemma:');
-      expect(ACTIVE_STATE_TRACKING).toContain('RELATIONSHIP: "Open relationship question:');
-      expect(ACTIVE_STATE_TRACKING).toContain('QUEST: "Goal:');
-      expect(ACTIVE_STATE_TRACKING).toContain('RESOURCE: "Need resource:');
-      expect(ACTIVE_STATE_TRACKING).toContain('DANGER: "Prevent risk:');
+    it('treats open threads as read-only continuity context', () => {
+      expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS: unresolved hooks and mysteries');
+      expect(ACTIVE_STATE_TRACKING).not.toContain('THREAD CONTRACT (OPEN LOOPS ONLY)');
+      expect(ACTIVE_STATE_TRACKING).not.toContain('CANONICAL THREAD PHRASING TEMPLATES');
     });
 
     it('forbids state mutation output fields', () => {

@@ -64,27 +64,6 @@ READ-ONLY CONTINUITY INPUT:
 - ACTIVE CONSTRAINTS: limitations currently affecting the protagonist.
 - OPEN NARRATIVE THREADS: unresolved hooks and mysteries.
 
-THREAD CONTRACT (OPEN LOOPS ONLY):
-- THREADS = unresolved open loops, never current-state facts.
-- Allowed thread forms:
-  - Question loop ('MYSTERY', 'INFORMATION', 'MORAL', 'RELATIONSHIP')
-  - Goal loop with success condition ('QUEST', 'RESOURCE')
-  - Prevention loop for long-horizon risk ('DANGER')
-- Disallowed thread forms:
-  - Current events ("currently under attack") -> put in 'THREAT' or 'CONSTRAINT'
-  - Inventory facts -> use inventory fields/context
-  - Emotional snapshots -> use narrative/protagonistAffect
-  - Completed questions/answered mysteries
-
-CANONICAL THREAD PHRASING TEMPLATES:
-- MYSTERY: "Open question: <unknown that must be answered>"
-- INFORMATION: "Need to learn: <specific missing fact>"
-- MORAL: "Open dilemma: <value conflict requiring a later decision>"
-- RELATIONSHIP: "Open relationship question: <uncertain trust/loyalty/intention>"
-- QUEST: "Goal: <objective>; success when <clear completion condition>"
-- RESOURCE: "Need resource: <item/asset>; success when <acquired or secured>"
-- DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"
-
 How to use this context:
 1. Continue from the exact situation shown by these sections.
 2. Do not contradict listed facts unless the scene clearly resolves or changes them in narrative events.

@@ -114,4 +114,18 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('"characterState"');
     expect(user).toContain('Return JSON only.');
   });
+
+  it('includes thread contract and canonical phrasing templates in planner rules', () => {
+    const messages = buildPagePlannerPrompt(openingContext);
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('THREAD CONTRACT (OPEN LOOPS ONLY):');
+    expect(user).toContain('THREADS = unresolved open loops, never current-state facts.');
+    expect(user).toContain("Question loop ('MYSTERY', 'INFORMATION', 'MORAL', 'RELATIONSHIP')");
+    expect(user).toContain('CANONICAL THREAD PHRASING TEMPLATES:');
+    expect(user).toContain('MYSTERY: "Open question: <unknown that must be answered>"');
+    expect(user).toContain(
+      'DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"',
+    );
+  });
 });
