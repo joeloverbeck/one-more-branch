@@ -1,11 +1,12 @@
 import type {
+  GenerationStage,
   MakeChoiceOptions,
   MakeChoiceResult,
   PlaySession,
   StartStoryOptions,
   StartStoryResult,
 } from '../../../src/engine/types';
-import { EngineError } from '../../../src/engine/types';
+import { EngineError, GENERATION_STAGES } from '../../../src/engine/types';
 import { createPage, createStory, parsePageId, parseStoryId } from '../../../src/models';
 
 describe('Engine types', () => {
@@ -33,6 +34,18 @@ describe('Engine types', () => {
   });
 
   describe('type compatibility (compile-time)', () => {
+    it('defines shared generation stage IDs exactly once and in order', () => {
+      const expectedStages: GenerationStage[] = [
+        'PLANNING_PAGE',
+        'WRITING_OPENING_PAGE',
+        'WRITING_CONTINUING_PAGE',
+        'ANALYZING_SCENE',
+        'RESTRUCTURING_STORY',
+      ];
+
+      expect(GENERATION_STAGES).toEqual(expectedStages);
+    });
+
     it('supports StartStoryResult and MakeChoiceResult', () => {
       const story = createStory({ title: 'Apprentice Tale', characterConcept: 'A curious apprentice' });
       const page = createPage({

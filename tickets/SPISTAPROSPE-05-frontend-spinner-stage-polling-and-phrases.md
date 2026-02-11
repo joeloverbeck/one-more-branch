@@ -30,7 +30,7 @@ Update the browser spinner workflow to poll generation progress, switch to stage
    - `WRITING_CONTINUING_PAGE`
    - `ANALYZING_SCENE`
    - `RESTRUCTURING_STORY`
-4. Provide about 20 total silly Sims-style phrases across buckets.
+4. Provide about 20 silly Sims-style phrases per bucket.
 5. Rotate phrase every 1.5s to 2.5s while current stage remains active.
 6. On stage transition, immediately switch phrase from the new stage bucket.
 7. If endpoint returns `unknown` or transient polling error, keep generic loading fallback and continue retrying.

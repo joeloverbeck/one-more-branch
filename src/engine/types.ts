@@ -1,5 +1,15 @@
 import { Npc, Page, PageId, Story, StoryId } from '../models';
 
+export const GENERATION_STAGES = [
+  'PLANNING_PAGE',
+  'WRITING_OPENING_PAGE',
+  'WRITING_CONTINUING_PAGE',
+  'ANALYZING_SCENE',
+  'RESTRUCTURING_STORY',
+] as const;
+
+export type GenerationStage = (typeof GENERATION_STAGES)[number];
+
 export interface StartStoryResult {
   readonly story: Story;
   readonly page: Page;

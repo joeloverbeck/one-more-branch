@@ -1,10 +1,15 @@
 # SPISTAPROSPE-01: Introduce progress domain service and shared stage contract
 
 ## Status
-**Status**: Proposed
+**Status**: ✅ COMPLETED
 
 ## Summary
 Create the in-memory progress tracking domain and a shared stage contract that can be reused by server and engine layers without changing generation behavior.
+
+## Assumption check (2026-02-11)
+- Confirmed: `src/server/services/generation-progress.ts` does not exist yet and must be created.
+- Confirmed: there is no shared `GenerationStage` contract in `src/engine/types.ts` yet.
+- Corrected test target: `test/unit/engine/types.test.ts` already exists and should be extended for stage-contract assertions (no separate contract test file needed).
 
 ## Depends on
 - None
@@ -18,9 +23,9 @@ Create the in-memory progress tracking domain and a shared stage contract that c
 ## File list it expects to touch
 - `src/server/services/generation-progress.ts` (new)
 - `src/server/services/index.ts`
-- `src/engine/types.ts` (or nearest shared stage contract location)
+- `src/engine/types.ts`
 - `test/unit/server/services/generation-progress.test.ts` (new)
-- `test/unit/engine/types.test.ts` (or nearest contract test)
+- `test/unit/engine/types.test.ts` (add shared stage contract assertions)
 
 ## Implementation checklist
 1. Add a shared generation-stage type/enum with exactly these stage IDs:
@@ -63,3 +68,18 @@ Create the in-memory progress tracking domain and a shared stage contract that c
 - Progress transitions are monotonic (`running` to terminal `completed|failed` only).
 - Unknown `progressId` returns `status: unknown` semantics, not thrown errors.
 - Stage identifiers remain prompt-stage-only vocabulary.
+
+## Outcome
+- Completion date: 2026-02-11
+- What changed:
+  - Added shared stage contract in `src/engine/types.ts` via `GENERATION_STAGES` and `GenerationStage`.
+  - Added in-memory progress domain service in `src/server/services/generation-progress.ts` with required lifecycle API and TTL eviction.
+  - Exported the new service/types from `src/server/services/index.ts`.
+  - Added unit coverage in `test/unit/server/services/generation-progress.test.ts` and stage-contract assertions in `test/unit/engine/types.test.ts`.
+- Deviations from original plan:
+  - No separate "nearest contract test" file was created; existing `test/unit/engine/types.test.ts` was extended instead.
+  - TTL eviction is implemented with lazy cleanup on service operations rather than a background timer, keeping behavior in-memory and deterministic for tests.
+- Verification:
+  - `npm run test:unit -- --runTestsByPath test/unit/server/services/generation-progress.test.ts`
+  - `npm run test:unit -- --runTestsByPath test/unit/engine/types.test.ts`
+  - `npm run typecheck`
