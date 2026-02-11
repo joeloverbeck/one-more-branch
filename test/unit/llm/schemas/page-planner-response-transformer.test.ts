@@ -102,4 +102,51 @@ describe('validatePagePlannerResponse', () => {
 
     expect(() => validatePagePlannerResponse(rawJson, '{"raw":"planner"}')).toThrow(LLMError);
   });
+
+  it('throws when thread text is empty after trim with deterministic rule key', () => {
+    const rawJson = createValidPlannerPayload();
+    (
+      rawJson.stateIntents as {
+        threads: { add: Array<{ text: string; threadType: string; urgency: string }> };
+      }
+    ).threads.add = [
+      { text: '   ', threadType: 'DANGER', urgency: 'HIGH' },
+    ];
+
+    try {
+      validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(
+        issues.some(issue => issue.ruleKey === 'planner.required_text.empty_after_trim'),
+      ).toBe(true);
+    }
+  });
+
+  it('maps invalid thread taxonomy enums to deterministic rule keys', () => {
+    const rawJson = createValidPlannerPayload();
+    (
+      rawJson.stateIntents as {
+        threads: { add: Array<{ text: string; threadType: unknown; urgency: string }> };
+      }
+    ).threads.add = [
+      { text: 'Maintain pressure on the eastern stair.', threadType: 'NOT_A_THREAD_TYPE', urgency: 'HIGH' },
+    ];
+
+    try {
+      validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(
+        issues.some(issue => issue.ruleKey === 'planner.thread_taxonomy.invalid_enum'),
+      ).toBe(true);
+      expect(llmError.context?.ruleKeys).toContain('planner.thread_taxonomy.invalid_enum');
+    }
+  });
 });

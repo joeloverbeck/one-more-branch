@@ -3,8 +3,43 @@ import type { PagePlanGenerationResult } from '../types.js';
 import { LLMError } from '../types.js';
 import { PagePlannerResultSchema } from './page-planner-validation-schema.js';
 
+const THREAD_TAXONOMY_RULE_KEY = 'planner.thread_taxonomy.invalid_enum';
+
 function normalizeStringArray(values: readonly string[]): string[] {
   return values.map(value => value.trim()).filter(Boolean);
+}
+
+function hasThreadTaxonomyPath(path: readonly PropertyKey[]): boolean {
+  if (path[0] !== 'stateIntents' || path[1] !== 'threads') {
+    return false;
+  }
+
+  const last = path[path.length - 1];
+  if (last !== 'threadType' && last !== 'urgency') {
+    return false;
+  }
+
+  if (path[2] === 'add') {
+    return true;
+  }
+
+  return path[2] === 'replace' && path[4] === 'add';
+}
+
+function resolvePlannerRuleKey(issue: z.ZodIssue): unknown {
+  const explicitRuleKey =
+    typeof issue === 'object' && issue !== null && 'params' in issue
+      ? (issue as { params?: Record<string, unknown> }).params?.['ruleKey']
+      : undefined;
+  if (explicitRuleKey !== undefined) {
+    return explicitRuleKey;
+  }
+
+  if (issue.code === 'invalid_value' && hasThreadTaxonomyPath(issue.path)) {
+    return THREAD_TAXONOMY_RULE_KEY;
+  }
+
+  return undefined;
 }
 
 function toValidationIssues(error: unknown): Array<{
@@ -18,10 +53,7 @@ function toValidationIssues(error: unknown): Array<{
       path: issue.path.join('.'),
       code: issue.code,
       message: issue.message,
-      ruleKey:
-        typeof issue === 'object' && issue !== null && 'params' in issue
-          ? (issue as { params?: Record<string, unknown> }).params?.['ruleKey']
-          : undefined,
+      ruleKey: resolvePlannerRuleKey(issue),
     }));
   }
 
