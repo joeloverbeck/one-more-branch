@@ -8,6 +8,7 @@ import {
   generatePageWriterOutput,
   generateOpeningPage,
   isStructuredOutputNotSupported,
+  mergePageWriterAndReconciledStateWithAnalystResults,
   validateApiKey,
   validateWriterResponse,
 } from '../../../src/llm/index';
@@ -40,6 +41,7 @@ describe('llm barrel exports', () => {
     expect(typeof generateOpeningPage).toBe('function');
     expect(typeof generatePageWriterOutput).toBe('function');
     expect(typeof generatePagePlan).toBe('function');
+    expect(typeof mergePageWriterAndReconciledStateWithAnalystResults).toBe('function');
     expect(typeof validateApiKey).toBe('function');
   });
 

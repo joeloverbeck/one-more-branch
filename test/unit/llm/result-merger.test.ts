@@ -1,5 +1,9 @@
-import { mergeWriterAndAnalystResults } from '../../../src/llm/result-merger.js';
-import type { AnalystResult, WriterResult } from '../../../src/llm/types.js';
+import {
+  mergePageWriterAndReconciledStateWithAnalystResults,
+  mergeWriterAndAnalystResults,
+} from '../../../src/llm/result-merger.js';
+import type { StateReconciliationResult } from '../../../src/engine/state-reconciler-types.js';
+import type { AnalystResult, PageWriterResult, WriterResult } from '../../../src/llm/types.js';
 
 function createWriterResult(overrides: Partial<WriterResult> = {}): WriterResult {
   return {
@@ -13,7 +17,7 @@ function createWriterResult(overrides: Partial<WriterResult> = {}): WriterResult
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
-    threadsAdded: ['THREAD_TREASURE: Golden chest spotted'],
+    threadsAdded: [{ text: 'Golden chest spotted', threadType: 'MYSTERY', urgency: 'HIGH' }],
     threadsResolved: [],
     newCanonFacts: ['The cave is ancient'],
     newCharacterCanonFacts: { Goblin: ['Afraid of fire'] },
@@ -33,6 +37,43 @@ function createWriterResult(overrides: Partial<WriterResult> = {}): WriterResult
     isEnding: false,
     sceneSummary: 'The hero enters a dark cave and encounters a hostile goblin.',
     rawResponse: 'writer raw response',
+    ...overrides,
+  };
+}
+
+function createPageWriterResult(overrides: Partial<PageWriterResult> = {}): PageWriterResult {
+  const writerResult = createWriterResult();
+  return {
+    narrative: writerResult.narrative,
+    choices: writerResult.choices,
+    sceneSummary: writerResult.sceneSummary,
+    protagonistAffect: writerResult.protagonistAffect,
+    isEnding: writerResult.isEnding,
+    rawResponse: writerResult.rawResponse,
+    ...overrides,
+  };
+}
+
+function createReconciliationResult(
+  overrides: Partial<StateReconciliationResult> = {},
+): StateReconciliationResult {
+  return {
+    currentLocation: 'Reconciled cave',
+    threatsAdded: ['THREAT_BATS_RECONCILED: Confirmed bat swarm'],
+    threatsRemoved: [],
+    constraintsAdded: [],
+    constraintsRemoved: [],
+    threadsAdded: [{ text: 'Golden chest reconciled', threadType: 'QUEST', urgency: 'MEDIUM' }],
+    threadsResolved: [],
+    newCanonFacts: ['Reconciler accepted cave continuity'],
+    newCharacterCanonFacts: { Goblin: ['Reconciler confirms goblin fear of fire'] },
+    inventoryAdded: ['Reconciled torch'],
+    inventoryRemoved: [],
+    healthAdded: [],
+    healthRemoved: [],
+    characterStateChangesAdded: [{ characterName: 'Goblin', states: ['Cautious'] }],
+    characterStateChangesRemoved: [],
+    reconciliationDiagnostics: [{ code: 'INFO', message: 'All checks passed' }],
     ...overrides,
   };
 }
@@ -228,5 +269,37 @@ describe('mergeWriterAndAnalystResults', () => {
       expect(result.pacingIssueReason).toBe('');
       expect(result.recommendedAction).toBe('none');
     });
+  });
+});
+
+describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
+  it('merges creative writer fields with reconciled deltas and analyst fields', () => {
+    const writer = createPageWriterResult();
+    const reconciliation = createReconciliationResult();
+    const analyst = createAnalystResult({
+      beatConcluded: true,
+      beatResolution: 'The scene stabilizes',
+    });
+
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(writer, reconciliation, analyst);
+
+    expect(result.narrative).toBe(writer.narrative);
+    expect(result.choices).toEqual(writer.choices);
+    expect(result.currentLocation).toBe('Reconciled cave');
+    expect(result.threatsAdded).toEqual(['THREAT_BATS_RECONCILED: Confirmed bat swarm']);
+    expect(result.beatConcluded).toBe(true);
+    expect(result.beatResolution).toBe('The scene stabilizes');
+  });
+
+  it('uses writer rawResponse and does not expose reconciliation diagnostics', () => {
+    const writer = createPageWriterResult({ rawResponse: 'writer-only-raw' });
+    const reconciliation = createReconciliationResult({
+      reconciliationDiagnostics: [{ code: 'WARN', message: 'diagnostic detail' }],
+    });
+
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(writer, reconciliation, null);
+
+    expect(result.rawResponse).toBe('writer-only-raw');
+    expect('reconciliationDiagnostics' in result).toBe(false);
   });
 });

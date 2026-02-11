@@ -13,10 +13,29 @@ import {
   parsePageId,
   StructureVersionId,
 } from '../models';
-import { WriterResult } from '../llm/types';
+import type { PageWriterResult } from '../llm/types';
+import type { StateReconciliationResult } from './state-reconciler-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
+
+type PageBuildResult = PageWriterResult &
+  Pick<
+    StateReconciliationResult,
+    | 'currentLocation'
+    | 'threatsAdded'
+    | 'threatsRemoved'
+    | 'constraintsAdded'
+    | 'constraintsRemoved'
+    | 'threadsAdded'
+    | 'threadsResolved'
+    | 'inventoryAdded'
+    | 'inventoryRemoved'
+    | 'healthAdded'
+    | 'healthRemoved'
+    | 'characterStateChangesAdded'
+    | 'characterStateChangesRemoved'
+  >;
 
 /**
  * Context for building the first page of a story.
@@ -47,7 +66,7 @@ export interface ContinuationPageBuildContext {
  * Maps WriterResult fields to ActiveStateChanges.
  * Handles the conversion from LLM output format to the typed change structure.
  */
-function mapToActiveStateChanges(result: WriterResult): ActiveStateChanges {
+function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
   return {
     newLocation: result.currentLocation || null,
     threatsAdded: result.threatsAdded,
@@ -68,7 +87,7 @@ function mapToActiveStateChanges(result: WriterResult): ActiveStateChanges {
  * Handles page assembly with initial structure state.
  */
 export function buildFirstPage(
-  result: WriterResult,
+  result: PageBuildResult,
   context: FirstPageBuildContext,
 ): Page {
   return createPage({
@@ -97,7 +116,7 @@ export function buildFirstPage(
  * Handles page assembly with parent state inheritance.
  */
 export function buildContinuationPage(
-  result: WriterResult,
+  result: PageBuildResult,
   context: ContinuationPageBuildContext,
 ): Page {
   return createPage({

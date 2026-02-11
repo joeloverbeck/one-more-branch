@@ -3,7 +3,7 @@ import {
   parsePageId,
   StructureVersionId,
 } from '@/models';
-import type { WriterResult } from '@/llm/types';
+import type { FinalPageGenerationResult } from '@/llm/types';
 import {
   buildFirstPage,
   buildContinuationPage,
@@ -12,7 +12,9 @@ import {
   ContinuationPageBuildContext,
 } from '@/engine/page-builder';
 
-function buildMockGenerationResult(overrides?: Partial<WriterResult>): WriterResult {
+function buildMockGenerationResult(
+  overrides?: Partial<FinalPageGenerationResult>,
+): FinalPageGenerationResult {
   return {
     narrative: 'You step into the shadowed corridor.',
     choices: [
@@ -44,6 +46,7 @@ function buildMockGenerationResult(overrides?: Partial<WriterResult>): WriterRes
     isEnding: false,
     sceneSummary: 'Test summary of the scene events and consequences.',
     rawResponse: 'raw-response',
+    reconciliationDiagnostics: [],
     ...overrides,
   };
 }

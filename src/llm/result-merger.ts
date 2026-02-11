@@ -1,10 +1,21 @@
 import { createBeatDeviation, createNoDeviation } from '../models/story-arc.js';
-import type { AnalystResult, ContinuationGenerationResult, WriterResult } from './types.js';
+import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
+import type {
+  AnalystResult,
+  ContinuationGenerationResult,
+  PageWriterResult,
+  WriterResult,
+} from './types.js';
 
-export function mergeWriterAndAnalystResults(
-  writer: WriterResult,
-  analyst: AnalystResult | null,
-): ContinuationGenerationResult {
+function buildAnalystFields(analyst: AnalystResult | null): Pick<
+  ContinuationGenerationResult,
+  | 'beatConcluded'
+  | 'beatResolution'
+  | 'deviation'
+  | 'pacingIssueDetected'
+  | 'pacingIssueReason'
+  | 'recommendedAction'
+> {
   const beatConcluded = analyst?.beatConcluded ?? false;
   const beatResolution = analyst?.beatResolution ?? '';
   const deviationReason = analyst?.deviationReason?.trim() ?? '';
@@ -17,13 +28,70 @@ export function mergeWriterAndAnalystResults(
       : createNoDeviation();
 
   return {
-    ...writer,
     beatConcluded,
     beatResolution,
     deviation,
     pacingIssueDetected: analyst?.pacingIssueDetected ?? false,
     pacingIssueReason: analyst?.pacingIssueReason ?? '',
     recommendedAction: analyst?.recommendedAction ?? 'none',
+  };
+}
+
+export function mergePageWriterAndReconciledStateWithAnalystResults(
+  writer: PageWriterResult,
+  reconciliation: StateReconciliationResult,
+  analyst: AnalystResult | null,
+): ContinuationGenerationResult {
+  const stateDelta = {
+    currentLocation: reconciliation.currentLocation,
+    threatsAdded: reconciliation.threatsAdded,
+    threatsRemoved: reconciliation.threatsRemoved,
+    constraintsAdded: reconciliation.constraintsAdded,
+    constraintsRemoved: reconciliation.constraintsRemoved,
+    threadsAdded: reconciliation.threadsAdded,
+    threadsResolved: reconciliation.threadsResolved,
+    inventoryAdded: reconciliation.inventoryAdded,
+    inventoryRemoved: reconciliation.inventoryRemoved,
+    healthAdded: reconciliation.healthAdded,
+    healthRemoved: reconciliation.healthRemoved,
+    characterStateChangesAdded: reconciliation.characterStateChangesAdded,
+    characterStateChangesRemoved: reconciliation.characterStateChangesRemoved,
+    newCanonFacts: reconciliation.newCanonFacts,
+    newCharacterCanonFacts: reconciliation.newCharacterCanonFacts,
+  };
+
+  return {
+    ...writer,
+    ...stateDelta,
+    ...buildAnalystFields(analyst),
     rawResponse: writer.rawResponse,
   };
+}
+
+export function mergeWriterAndAnalystResults(
+  writer: WriterResult,
+  analyst: AnalystResult | null,
+): ContinuationGenerationResult {
+  return mergePageWriterAndReconciledStateWithAnalystResults(
+    writer,
+    {
+      currentLocation: writer.currentLocation,
+      threatsAdded: writer.threatsAdded,
+      threatsRemoved: writer.threatsRemoved,
+      constraintsAdded: writer.constraintsAdded,
+      constraintsRemoved: writer.constraintsRemoved,
+      threadsAdded: writer.threadsAdded,
+      threadsResolved: writer.threadsResolved,
+      inventoryAdded: writer.inventoryAdded,
+      inventoryRemoved: writer.inventoryRemoved,
+      healthAdded: writer.healthAdded,
+      healthRemoved: writer.healthRemoved,
+      characterStateChangesAdded: writer.characterStateChangesAdded,
+      characterStateChangesRemoved: writer.characterStateChangesRemoved,
+      newCanonFacts: writer.newCanonFacts,
+      newCharacterCanonFacts: writer.newCharacterCanonFacts,
+      reconciliationDiagnostics: [],
+    },
+    analyst,
+  );
 }
