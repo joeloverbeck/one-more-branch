@@ -1,7 +1,16 @@
+**Status**: ✅ COMPLETED
+
 # FAIHANANDOBSSPE-04: Expose Deterministic User-Facing Reconciliation Hard Error Contract
 
 ## Summary
 Introduce and surface deterministic reconciliation hard-failure contract so API consumers receive `GENERATION_RECONCILIATION_FAILED` with retry flag and compact reconciliation issue codes.
+
+## Assumptions Reassessment (before implementation)
+- Confirmed: Reconciler does retry exactly once and throws `StateReconciliationError` on second failure (`src/engine/page-service.ts`).
+- Confirmed: Play route currently only has explicit JSON contract handling for `LLMError`; non-LLM errors return a generic `{ error }` payload (`src/server/routes/play.ts`).
+- Discrepancy: `EngineErrorCode` does **not** currently include `GENERATION_RECONCILIATION_FAILED` (`src/engine/types.ts`).
+- Discrepancy: No existing unit test coverage for reconciliation-specific error payload in `POST /:storyId/choice` (`test/unit/server/routes/play.test.ts`).
+- Scope correction: No behavior change is required in `src/engine/state-reconciler-errors.ts` for this ticket, because reconciliation diagnostics already provide stable issue codes consumable by route formatting.
 
 ## Depends on
 - `tickets/FAIHANANDOBSSPE-02-page-service-stage-lifecycle-and-retry-observability.md`
@@ -11,7 +20,6 @@ Introduce and surface deterministic reconciliation hard-failure contract so API 
 
 ## File list it expects to touch
 - `src/engine/types.ts`
-- `src/engine/state-reconciler-errors.ts`
 - `src/server/routes/play.ts`
 - `test/unit/server/routes/play.test.ts`
 - `test/unit/engine/types.test.ts`
@@ -45,3 +53,16 @@ Introduce and surface deterministic reconciliation hard-failure contract so API 
 - Non-reconciliation engine errors (`INVALID_CHOICE`, `PAGE_NOT_FOUND`, etc.) retain current behavior unless explicitly required for this new contract.
 - Reconciliation diagnostic details exposed to users remain compact and safe (codes only, no raw prompt/provider payload leakage).
 
+## Outcome
+- Completed on: 2026-02-11
+- What changed:
+  - Added `GENERATION_RECONCILIATION_FAILED` to `EngineErrorCode` in `src/engine/types.ts`.
+  - Added explicit reconciliation hard-failure handling in `POST /play/:storyId/choice` to return deterministic user-safe JSON contract (`code`, `retryAttempted`, compact deduplicated `reconciliationIssueCodes`) in `src/server/routes/play.ts`.
+  - Added unit coverage for reconciliation hard-failure route contract and an LLMError regression guard in `test/unit/server/routes/play.test.ts`.
+  - Added unit coverage for the new engine code in `test/unit/engine/types.test.ts`.
+- Deviations from original plan:
+  - `src/engine/state-reconciler-errors.ts` was not changed because existing diagnostics and error shape already satisfied contract needs.
+- Verification:
+  - `npm run test:unit -- --runTestsByPath test/unit/server/routes/play.test.ts`
+  - `npm run test:unit -- --runTestsByPath test/unit/engine/types.test.ts`
+  - `npm run typecheck`

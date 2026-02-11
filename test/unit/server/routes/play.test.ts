@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
-import { storyEngine } from '@/engine';
+import { StateReconciliationError, storyEngine } from '@/engine';
+import { LLMError } from '@/llm';
 import {
   CHOICE_TYPE_COLORS,
   createChoice,
@@ -816,6 +817,73 @@ describe('playRoutes', () => {
 
       expect(status).toHaveBeenCalledWith(500);
       expect(json).toHaveBeenCalledWith({ error: 'choice failed' });
+    });
+
+    it('returns deterministic reconciliation hard error contract', async () => {
+      jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
+        new StateReconciliationError(
+          'State reconciliation failed after retry',
+          'RECONCILIATION_FAILED',
+          [
+            { code: 'THREAD_MISSING_EQUIVALENT_RESOLVE', field: 'openThreads', message: 'Missing resolve operation' },
+            { code: 'MISSING_NARRATIVE_EVIDENCE', field: 'inventory', message: 'No evidence for item add' },
+            { code: 'THREAD_MISSING_EQUIVALENT_RESOLVE', field: 'openThreads', message: 'Duplicate diagnostic code' },
+          ],
+          false,
+        ),
+      );
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        error: 'Generation failed due to reconciliation issues.',
+        code: 'GENERATION_RECONCILIATION_FAILED',
+        retryAttempted: true,
+        reconciliationIssueCodes: [
+          'THREAD_MISSING_EQUIVALENT_RESOLVE',
+          'MISSING_NARRATIVE_EVIDENCE',
+        ],
+      });
+    });
+
+    it('preserves LLMError response contract', async () => {
+      const priorNodeEnv = process.env['NODE_ENV'];
+      try {
+        process.env['NODE_ENV'] = 'production';
+        jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
+          new LLMError('Provider timeout', 'HTTP_503', true, { httpStatus: 503 }),
+        );
+        const status = jest.fn().mockReturnThis();
+        const json = jest.fn();
+
+        void getRouteHandler('post', '/:storyId/choice')(
+          {
+            params: { storyId },
+            body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+          } as Request,
+          { status, json } as unknown as Response,
+        );
+        await flushPromises();
+
+        expect(status).toHaveBeenCalledWith(500);
+        expect(json).toHaveBeenCalledWith({
+          error: 'OpenRouter service is temporarily unavailable. Please try again later.',
+          code: 'HTTP_503',
+          retryable: true,
+        });
+      } finally {
+        process.env['NODE_ENV'] = priorNodeEnv;
+      }
     });
   });
 

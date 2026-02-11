@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { storyEngine } from '../../engine/index.js';
+import { StateReconciliationError, storyEngine } from '../../engine/index.js';
 import { LLMError } from '../../llm/types.js';
 import { generateBrowserLogScript, logger } from '../../logging/index.js';
 import { CHOICE_TYPE_COLORS, ChoiceType, CHOICE_TYPE_VALUES, PageId, PRIMARY_DELTA_LABELS, PrimaryDelta, PRIMARY_DELTA_VALUES, StoryId } from '../../models/index.js';
@@ -23,6 +23,14 @@ type CustomChoiceBody = {
   choiceType?: string;
   primaryDelta?: string;
 };
+
+function extractReconciliationIssueCodes(error: StateReconciliationError): string[] {
+  return [...new Set(
+    error.diagnostics
+      .map(diagnostic => diagnostic.code)
+      .filter((code): code is string => typeof code === 'string' && code.length > 0),
+  )];
+}
 
 function parseRequestedPageId(pageQuery: unknown): number {
   const pageInput = typeof pageQuery === 'string' || typeof pageQuery === 'number' ? String(pageQuery) : '';
@@ -141,6 +149,15 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     let errorMessage = err.message;
     if (error instanceof LLMError) {
       errorMessage = formatLLMError(error);
+    }
+
+    if (error instanceof StateReconciliationError && error.code === 'RECONCILIATION_FAILED') {
+      return res.status(500).json({
+        error: 'Generation failed due to reconciliation issues.',
+        code: 'GENERATION_RECONCILIATION_FAILED',
+        retryAttempted: true,
+        reconciliationIssueCodes: extractReconciliationIssueCodes(error),
+      });
     }
 
     // Build enhanced error response

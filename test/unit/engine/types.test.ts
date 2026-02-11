@@ -24,6 +24,12 @@ describe('Engine types', () => {
 
       expect(error.stack).toBeDefined();
     });
+
+    it('supports reconciliation hard-failure engine code', () => {
+      const error = new EngineError('reconciliation failed', 'GENERATION_RECONCILIATION_FAILED');
+
+      expect(error.code).toBe('GENERATION_RECONCILIATION_FAILED');
+    });
   });
 
   describe('type compatibility (compile-time)', () => {
