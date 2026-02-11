@@ -14,6 +14,7 @@ import {
   type ChatMessage,
   type GenerationObservabilityContext,
   type GenerationOptions,
+  type JsonSchema,
   type PagePlanGenerationResult,
 } from './types.js';
 
@@ -73,6 +74,7 @@ function emitPlannerValidatorFailureCounters(
 async function callPlannerStructured(
   messages: ChatMessage[],
   options: GenerationOptions,
+  responseFormat: JsonSchema = PAGE_PLANNER_GENERATION_SCHEMA,
 ): Promise<PagePlanGenerationResult> {
   const config = getConfig().llm;
   const model = options.model ?? config.defaultModel;
@@ -92,7 +94,7 @@ async function callPlannerStructured(
       messages,
       temperature,
       max_tokens: maxTokens,
-      response_format: PAGE_PLANNER_GENERATION_SCHEMA,
+      response_format: responseFormat,
     }),
   });
 
@@ -140,6 +142,34 @@ async function callPlannerStructured(
   }
 }
 
+function buildLenientPlannerSchema(): JsonSchema {
+  return {
+    ...PAGE_PLANNER_GENERATION_SCHEMA,
+    json_schema: {
+      ...PAGE_PLANNER_GENERATION_SCHEMA.json_schema,
+      strict: false,
+    },
+  };
+}
+
+function isPlannerGrammarTooLargeError(error: unknown): boolean {
+  const signalPhrases = ['compiled grammar is too large', 'reduce the number of strict tools'];
+
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : '';
+  const rawErrorBody =
+    error instanceof LLMError && typeof error.context?.['rawErrorBody'] === 'string'
+      ? error.context['rawErrorBody']
+      : '';
+
+  const combined = `${message}\n${rawErrorBody}`.toLowerCase();
+  return signalPhrases.some((phrase) => combined.includes(phrase));
+}
+
 export async function generatePlannerWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions,
@@ -147,6 +177,10 @@ export async function generatePlannerWithFallback(
   try {
     return await callPlannerStructured(messages, options);
   } catch (error) {
+    if (isPlannerGrammarTooLargeError(error)) {
+      return callPlannerStructured(messages, options, buildLenientPlannerSchema());
+    }
+
     if (isStructuredOutputNotSupported(error)) {
       const model = options.model ?? getConfig().llm.defaultModel;
       throw new LLMError(

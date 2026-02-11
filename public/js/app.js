@@ -611,6 +611,7 @@
             ${renderSelectOptions(PRIMARY_DELTAS)}
           </select>
         </div>
+        <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>
       `;
     }
 
@@ -633,6 +634,36 @@
       allButtons.forEach((button) => {
         button.disabled = disabled;
       });
+    }
+
+    function showPlayError(message) {
+      var errorBlock = choicesSection.querySelector('#play-error');
+      if (!errorBlock) {
+        errorBlock = document.createElement('div');
+        errorBlock.className = 'alert alert-error play-error';
+        errorBlock.id = 'play-error';
+        errorBlock.setAttribute('role', 'alert');
+        errorBlock.setAttribute('aria-live', 'polite');
+        const customChoiceEnums = choicesSection.querySelector('.custom-choice-enums');
+        if (customChoiceEnums) {
+          customChoiceEnums.insertAdjacentElement('afterend', errorBlock);
+        } else {
+          choicesSection.appendChild(errorBlock);
+        }
+      }
+
+      errorBlock.textContent = message;
+      errorBlock.style.display = 'block';
+    }
+
+    function clearPlayError() {
+      var errorBlock = choicesSection.querySelector('#play-error');
+      if (!errorBlock) {
+        return;
+      }
+
+      errorBlock.textContent = '';
+      errorBlock.style.display = 'none';
     }
 
     function renderStateChanges(changes) {
@@ -694,6 +725,7 @@
 
       const text = input.value.trim();
       if (!text) return;
+      clearPlayError();
 
       const addBtn = choicesSection.querySelector('.custom-choice-btn');
       if (addBtn) addBtn.disabled = true;
@@ -721,7 +753,7 @@
           rebuildChoicesSection(data.choices);
         })
         .catch(function(error) {
-          alert(error instanceof Error ? error.message : 'Failed to add custom choice');
+          showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice');
           if (addBtn) addBtn.disabled = false;
           if (input) input.disabled = false;
         });
@@ -764,6 +796,7 @@
       }
 
       try {
+        clearPlayError();
         const isExplored = button.dataset.explored === 'true';
         const apiKey = isExplored ? getApiKey() : await ensureApiKey();
 
@@ -861,7 +894,7 @@
         if (error && typeof error === 'object' && 'debug' in error) {
           console.error('Debug info:', error.debug);
         }
-        alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+        showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
         setChoicesDisabled(false);
       } finally {
         loadingProgress.stop();

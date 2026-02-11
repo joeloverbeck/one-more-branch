@@ -119,6 +119,56 @@ describe('planner-generation', () => {
     });
   });
 
+  it('retries with non-strict planner schema when provider rejects oversized compiled grammar', async () => {
+    const oversizedGrammarError = {
+      error: {
+        message: 'Provider returned error',
+        code: 400,
+        metadata: {
+          raw: JSON.stringify({
+            type: 'error',
+            error: {
+              type: 'invalid_request_error',
+              message:
+                'The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.',
+            },
+            request_id: 'req_test_grammar_too_large',
+          }),
+        },
+      },
+    };
+    fetchMock
+      .mockResolvedValueOnce(createJsonResponse(400, oversizedGrammarError))
+      .mockResolvedValueOnce(responseWithStructuredContent(JSON.stringify(validPlannerPayload)));
+
+    const result = await generatePlannerWithFallback(plannerMessages, {
+      apiKey: 'test-key',
+    });
+
+    expect(result.sceneIntent).toContain('Force the protagonist');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const firstCall = fetchMock.mock.calls[0];
+    const firstInit = firstCall?.[1];
+    const firstBody =
+      typeof firstInit?.body === 'string' ? (JSON.parse(firstInit.body) as Record<string, unknown>) : {};
+    const firstResponseFormat = firstBody['response_format'] as {
+      json_schema?: { strict?: boolean; name?: string };
+    };
+    expect(firstResponseFormat.json_schema?.name).toBe('page_planner_generation');
+    expect(firstResponseFormat.json_schema?.strict).toBe(true);
+
+    const secondCall = fetchMock.mock.calls[1];
+    const secondInit = secondCall?.[1];
+    const secondBody =
+      typeof secondInit?.body === 'string' ? (JSON.parse(secondInit.body) as Record<string, unknown>) : {};
+    const secondResponseFormat = secondBody['response_format'] as {
+      json_schema?: { strict?: boolean; name?: string };
+    };
+    expect(secondResponseFormat.json_schema?.name).toBe('page_planner_generation');
+    expect(secondResponseFormat.json_schema?.strict).toBe(false);
+  });
+
   it('adds observability identifiers to validation failures', async () => {
     fetchMock.mockResolvedValue(
       responseWithStructuredContent(

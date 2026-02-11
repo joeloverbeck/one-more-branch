@@ -103,4 +103,20 @@ describe('public client script', () => {
     expect(script).toContain('progressId: createProgressId(),');
     expect(script).toContain('progressId: progressId,');
   });
+
+  it('renders play-page errors in inline alert block instead of browser prompt alerts', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('function showPlayError(message)');
+    expect(script).toContain('function clearPlayError()');
+    expect(script).toContain("var errorBlock = choicesSection.querySelector('#play-error');");
+    expect(script).toContain("showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice');");
+    expect(script).toContain(
+      "showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');",
+    );
+    expect(script).not.toContain("alert(error instanceof Error ? error.message : 'Failed to add custom choice');");
+    expect(script).not.toContain(
+      "alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');",
+    );
+  });
 });
