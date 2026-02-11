@@ -113,6 +113,169 @@ describe('state-reconciler', () => {
     expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
+  it('rejects near-duplicate thread add intents when equivalent previous thread is not resolved', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        threads: {
+          add: [
+            {
+              text: 'Safely reach the archive',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.HIGH,
+            },
+          ],
+          resolveIds: [],
+          replace: [],
+        },
+      },
+    });
+
+    const writer = buildWriterResult({
+      narrative: 'Mara studies every route to safely reach the archive before patrols tighten.',
+      sceneSummary: 'The archive remains central to her objective.',
+    });
+
+    const result = reconcileState(plan, writer, buildPreviousState());
+
+    expect(result.threadsAdded).toEqual([]);
+    expect(result.threadsResolved).toEqual([]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'THREAD_DUPLICATE_LIKE_ADD',
+        field: 'threadsAdded',
+        message:
+          'Thread add "Safely reach the archive" is near-duplicate of existing thread "td-1".',
+      },
+      {
+        code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+        field: 'threadsAdded',
+        message:
+          'Near-duplicate thread add "Safely reach the archive" requires resolving "td-1" in the same payload.',
+      },
+    ]);
+  });
+
+  it('allows equivalent thread refinement when the previous equivalent thread is resolved', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        threads: {
+          add: [
+            {
+              text: 'Safely reach the archive and extract the ledger',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.HIGH,
+            },
+          ],
+          resolveIds: ['td-1'],
+          replace: [],
+        },
+      },
+    });
+
+    const writer = buildWriterResult({
+      narrative:
+        'Mara reaches the archive safely, then commits to extracting the hidden ledger.',
+      sceneSummary: 'The archive objective is refined with a concrete next step.',
+    });
+
+    const result = reconcileState(plan, writer, buildPreviousState());
+
+    expect(result.threadsResolved).toEqual(['td-1']);
+    expect(result.threadsAdded).toEqual([
+      {
+        text: 'Safely reach the archive and extract the ledger',
+        threadType: ThreadType.QUEST,
+        urgency: Urgency.HIGH,
+      },
+    ]);
+    expect(result.reconciliationDiagnostics).toEqual([]);
+  });
+
+  it('rejects near-duplicate thread adds within the same payload deterministically', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        threads: {
+          add: [
+            {
+              text: 'Decode the cipher ledger',
+              threadType: ThreadType.INFORMATION,
+              urgency: Urgency.MEDIUM,
+            },
+            {
+              text: 'Decode cipher ledger',
+              threadType: ThreadType.INFORMATION,
+              urgency: Urgency.MEDIUM,
+            },
+          ],
+          resolveIds: [],
+          replace: [],
+        },
+      },
+    });
+
+    const writer = buildWriterResult({
+      narrative: 'She vows to decode the cipher ledger before dawn.',
+      sceneSummary: 'The cipher ledger becomes the key open question.',
+    });
+
+    const result = reconcileState(plan, writer, buildPreviousState());
+
+    expect(result.threadsAdded).toEqual([
+      {
+        text: 'Decode the cipher ledger',
+        threadType: ThreadType.INFORMATION,
+        urgency: Urgency.MEDIUM,
+      },
+    ]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'THREAD_DUPLICATE_LIKE_ADD',
+        field: 'threadsAdded',
+        message:
+          'Thread add "Decode cipher ledger" is near-duplicate of another added thread "Decode the cipher ledger".',
+      },
+    ]);
+  });
+
+  it('rejects DANGER threads that describe immediate scene hazards', () => {
+    const plan = buildPlan({
+      stateIntents: {
+        ...buildPlan().stateIntents,
+        threads: {
+          add: [
+            {
+              text: 'The roof is collapsing right now',
+              threadType: ThreadType.DANGER,
+              urgency: Urgency.HIGH,
+            },
+          ],
+          resolveIds: [],
+          replace: [],
+        },
+      },
+    });
+
+    const writer = buildWriterResult({
+      narrative: 'Sparks shower as the roof is collapsing right now above Mara.',
+      sceneSummary: 'The tavern may fail in seconds.',
+    });
+
+    const result = reconcileState(plan, writer, buildPreviousState());
+
+    expect(result.threadsAdded).toEqual([]);
+    expect(result.reconciliationDiagnostics).toEqual([
+      {
+        code: 'THREAD_DANGER_IMMEDIATE_HAZARD',
+        field: 'threadsAdded',
+        message:
+          'DANGER thread "The roof is collapsing right now" describes an immediate scene hazard and must be tracked as a threat/constraint instead.',
+      },
+    ]);
+  });
+
   it('rejects unknown remove/resolve IDs with deterministic diagnostics', () => {
     const plan = buildPlan({
       stateIntents: {
