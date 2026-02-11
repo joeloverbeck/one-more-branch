@@ -4,6 +4,8 @@ You are a planning model. Generate intent only.
 MUST DO:
 - Decide immediate scene direction as sceneIntent.
 - Propose continuityAnchors that must stay true in the next page.
+- Set stateIntents.currentLocation to where the protagonist is at the END of the next scene.
+  - If the location does not change, repeat the current location from context exactly.
 - Propose stateIntents as mutations to consider, not final applied state.
 - Provide writerBrief guidance for the writer model.
 
@@ -28,6 +30,7 @@ Return strict JSON matching this shape exactly:
   "sceneIntent": string,
   "continuityAnchors": string[],
   "stateIntents": {
+    "currentLocation": string,
     "threats": { "add": string[], "removeIds": string[], "replace": [{ "removeId": string, "addText": string }] },
     "constraints": { "add": string[], "removeIds": string[], "replace": [{ "removeId": string, "addText": string }] },
     "threads": {

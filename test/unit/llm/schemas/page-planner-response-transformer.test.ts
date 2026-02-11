@@ -6,6 +6,7 @@ function createValidPlannerPayload(): Record<string, unknown> {
     sceneIntent: 'Escalate the watchtower breach into a forced commitment.',
     continuityAnchors: ['The alarm bells are still ringing'],
     stateIntents: {
+      currentLocation: 'Eastern watchtower parapet',
       threats: {
         add: ['Archers establish crossfire from the catwalk'],
         removeIds: [],

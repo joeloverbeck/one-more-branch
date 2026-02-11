@@ -110,6 +110,7 @@ const validPlannerPayload = {
   sceneIntent: 'Push deeper into the vault despite immediate danger.',
   continuityAnchors: ['The chanting still echoes through the vault.'],
   stateIntents: {
+    currentLocation: 'Flooded vault antechamber',
     threats: { add: ['Cult sentries close in from two sides.'], removeIds: [], replace: [] },
     constraints: { add: ['Torchlight is flickering out.'], removeIds: [], replace: [] },
     threads: {

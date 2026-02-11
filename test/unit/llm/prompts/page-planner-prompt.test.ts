@@ -108,6 +108,7 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('"sceneIntent"');
     expect(user).toContain('"continuityAnchors"');
     expect(user).toContain('"stateIntents"');
+    expect(user).toContain('"currentLocation"');
     expect(user).toContain('"writerBrief"');
     expect(user).toContain('"threads"');
     expect(user).toContain('"characterState"');

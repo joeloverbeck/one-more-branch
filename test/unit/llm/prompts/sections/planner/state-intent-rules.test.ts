@@ -32,6 +32,7 @@ describe('planner state-intent rules sections', () => {
       expect(PLANNER_OUTPUT_SHAPE_INSTRUCTIONS).toContain('"sceneIntent"');
       expect(PLANNER_OUTPUT_SHAPE_INSTRUCTIONS).toContain('"continuityAnchors"');
       expect(PLANNER_OUTPUT_SHAPE_INSTRUCTIONS).toContain('"stateIntents"');
+      expect(PLANNER_OUTPUT_SHAPE_INSTRUCTIONS).toContain('"currentLocation"');
       expect(PLANNER_OUTPUT_SHAPE_INSTRUCTIONS).toContain('"writerBrief"');
     });
 

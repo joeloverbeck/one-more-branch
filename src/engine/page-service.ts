@@ -73,18 +73,6 @@ function createContinuationPreviousStateSnapshot(
   };
 }
 
-function applyTransitionalCurrentLocationPassthrough(
-  writerResult: WriterResult,
-  reconciliation: StateReconciliationResult,
-  fallbackCurrentLocation: string,
-): StateReconciliationResult {
-  const currentLocation = writerResult.currentLocation.trim() || fallbackCurrentLocation;
-  return {
-    ...reconciliation,
-    currentLocation,
-  };
-}
-
 function toReconciliationFailureReasons(
   reconciliation: StateReconciliationResult,
 ): ReconciliationFailureReason[] {
@@ -265,11 +253,7 @@ async function generateWithReconciliationRetry({
     const reconcilerStart = Date.now();
     let reconciliation: StateReconciliationResult;
     try {
-      reconciliation = applyTransitionalCurrentLocationPassthrough(
-        writerResult,
-        reconcileState(pagePlan, writerResult, previousState),
-        previousState.currentLocation,
-      );
+      reconciliation = reconcileState(pagePlan, writerResult, previousState);
     } catch (error) {
       const durationMs = Date.now() - reconcilerStart;
       reconcilerDurationMs += durationMs;

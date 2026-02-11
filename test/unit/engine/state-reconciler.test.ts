@@ -10,6 +10,7 @@ function buildPlan(overrides?: Partial<PagePlan>): PagePlan {
     sceneIntent: 'Advance the scene with concrete consequences.',
     continuityAnchors: ['Watch patrols every bridge crossing'],
     stateIntents: {
+      currentLocation: 'South market district',
       threats: { add: [], removeIds: [], replace: [] },
       constraints: { add: [], removeIds: [], replace: [] },
       threads: { add: [], resolveIds: [], replace: [] },

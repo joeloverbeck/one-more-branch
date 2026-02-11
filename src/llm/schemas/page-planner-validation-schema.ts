@@ -164,6 +164,7 @@ export const PagePlannerResultSchema = z
     sceneIntent: z.string(),
     continuityAnchors: z.array(z.string()),
     stateIntents: z.object({
+      currentLocation: z.string(),
       threats: TextIntentMutationsSchema,
       constraints: TextIntentMutationsSchema,
       threads: ThreadIntentMutationsSchema,
@@ -180,6 +181,11 @@ export const PagePlannerResultSchema = z
   })
   .superRefine((data, ctx) => {
     addRequiredTrimmedTextIssue(data.sceneIntent, ['sceneIntent'], ctx);
+    addRequiredTrimmedTextIssue(
+      data.stateIntents.currentLocation,
+      ['stateIntents', 'currentLocation'],
+      ctx,
+    );
     addRequiredTrimmedTextIssue(
       data.writerBrief.openingLineDirective,
       ['writerBrief', 'openingLineDirective'],

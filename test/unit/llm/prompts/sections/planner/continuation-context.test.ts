@@ -9,6 +9,13 @@ describe('planner continuation context section', () => {
       characterConcept: 'A biotech smuggler',
       worldbuilding: 'A quarantined coastal megacity.',
       tone: 'gritty cyberpunk',
+      npcs: [
+        {
+          name: 'Azra',
+          description: 'Ex-military fixer with a debt to the protagonist',
+          archetype: 'Ally',
+        },
+      ],
       globalCanon: ['Drone patrols scan thermal signatures nightly'],
       globalCharacterCanon: {
         azra: ['Azra speaks in clipped military phrases'],
@@ -40,6 +47,8 @@ describe('planner continuation context section', () => {
     const result = buildPlannerContinuationContextSection(context);
 
     expect(result).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
+    expect(result).toContain('NPCS (Available Characters):');
+    expect(result).toContain('NPC: Azra');
     expect(result).toContain('ESTABLISHED WORLD FACTS:');
     expect(result).toContain('- [inv-1] Spoofed access token');
     expect(result).toContain('- [th-2] Counterintrusion daemon active');

@@ -115,6 +115,7 @@ export function validatePagePlannerResponse(
       sceneIntent: validated.sceneIntent.trim(),
       continuityAnchors: normalizeStringArray(validated.continuityAnchors),
       stateIntents: {
+        currentLocation: validated.stateIntents.currentLocation.trim(),
         threats: {
           add: normalizeStringArray(validated.stateIntents.threats.add),
           removeIds: normalizeStringArray(validated.stateIntents.threats.removeIds),

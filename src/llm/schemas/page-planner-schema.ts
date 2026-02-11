@@ -16,6 +16,7 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
         stateIntents: {
           type: 'object',
           properties: {
+            currentLocation: { type: 'string' },
             threats: {
               type: 'object',
               properties: {
@@ -232,6 +233,7 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             },
           },
           required: [
+            'currentLocation',
             'threats',
             'constraints',
             'threads',

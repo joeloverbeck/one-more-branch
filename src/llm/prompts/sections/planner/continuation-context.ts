@@ -1,3 +1,4 @@
+import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import type { ContinuationPagePlanContext } from '../../../types.js';
 
 function formatCharacterCanon(characterCanon: Readonly<Record<string, readonly string[]>>): string {
@@ -29,6 +30,13 @@ export function buildPlannerContinuationContextSection(context: ContinuationPage
   const worldSection = context.worldbuilding
     ? `WORLDBUILDING:
 ${context.worldbuilding}
+
+`
+    : '';
+
+  const npcsSection = context.npcs && context.npcs.length > 0
+    ? `NPCS (Available Characters):
+${formatNpcsForPrompt(context.npcs)}
 
 `
     : '';
@@ -93,7 +101,7 @@ ${context.ancestorSummaries.map(summary => `- [${summary.pageId}] ${summary.summ
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${structureSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}

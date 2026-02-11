@@ -252,6 +252,7 @@ export interface PagePlan {
   sceneIntent: string;
   continuityAnchors: string[];
   stateIntents: {
+    currentLocation: string;
     threats: TextIntentMutations;
     constraints: TextIntentMutations;
     threads: ThreadIntentMutations;

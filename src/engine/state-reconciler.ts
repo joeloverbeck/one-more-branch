@@ -730,8 +730,11 @@ export function reconcileState(
     diagnostics,
   );
 
+  const reconciledCurrentLocation =
+    plan.stateIntents.currentLocation?.trim() || previousState.currentLocation;
+
   return {
-    currentLocation: previousState.currentLocation,
+    currentLocation: reconciledCurrentLocation,
     threatsAdded,
     threatsRemoved: threatsRemovedWithEvidence,
     constraintsAdded,

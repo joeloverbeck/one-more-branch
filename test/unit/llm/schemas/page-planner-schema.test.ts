@@ -34,6 +34,7 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       .items;
 
     expect(stateIntents.required).toEqual([
+      'currentLocation',
       'threats',
       'constraints',
       'threads',
