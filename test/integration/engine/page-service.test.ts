@@ -534,6 +534,94 @@ describe('page-service integration', () => {
       );
     });
 
+    it('forwards hierarchical continuity context into planner and writer calls', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} ancestor-context-forwarding`,
+        worldbuilding: 'A city where old choices keep resurfacing.',
+        tone: 'tense mystery',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const page1 = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Oldest scene: you accepted the courier mark.',
+        sceneSummary: 'Accepted the courier mark and took the assignment.',
+        choices: [createChoice('Continue'), createChoice('Turn back')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const page2 = createPage({
+        id: parsePageId(2),
+        narrativeText: 'Second-oldest scene: you crossed the flooded district.',
+        sceneSummary: 'Crossed the flooded district while avoiding patrols.',
+        choices: [createChoice('Push onward'), createChoice('Find shelter')],
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+      });
+      const page3 = createPage({
+        id: parsePageId(3),
+        narrativeText: 'Grandparent scene: you bribed the checkpoint guard.',
+        sceneSummary: 'Bribed the checkpoint guard and reached the inner quarter.',
+        choices: [createChoice('Enter the archive'), createChoice('Wait and observe')],
+        isEnding: false,
+        parentPageId: parsePageId(2),
+        parentChoiceIndex: 0,
+      });
+      const parentPage = createPage({
+        id: parsePageId(4),
+        narrativeText: 'Immediate prior scene: sirens rise as you pick the lock.',
+        sceneSummary: 'Picked the lock while alarms spread through the quarter.',
+        choices: [createChoice('Slip inside the archive'), createChoice('Retreat to the alleys')],
+        isEnding: false,
+        parentPageId: parsePageId(3),
+        parentChoiceIndex: 0,
+      });
+      await storage.savePage(baseStory.id, page1);
+      await storage.savePage(baseStory.id, page2);
+      await storage.savePage(baseStory.id, page3);
+      await storage.savePage(baseStory.id, parentPage);
+
+      mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+
+      await generateNextPage(baseStory, parentPage, 0, 'test-api-key');
+
+      const expectedAncestorSummaries = [
+        {
+          pageId: parsePageId(1),
+          summary: 'Accepted the courier mark and took the assignment.',
+        },
+        {
+          pageId: parsePageId(2),
+          summary: 'Crossed the flooded district while avoiding patrols.',
+        },
+      ];
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          previousNarrative: 'Immediate prior scene: sirens rise as you pick the lock.',
+          selectedChoice: 'Slip inside the archive',
+          grandparentNarrative: 'Grandparent scene: you bribed the checkpoint guard.',
+          ancestorSummaries: expectedAncestorSummaries,
+        }),
+        expect.any(Object),
+      );
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          previousNarrative: 'Immediate prior scene: sirens rise as you pick the lock.',
+          selectedChoice: 'Slip inside the archive',
+          grandparentNarrative: 'Grandparent scene: you bribed the checkpoint guard.',
+          ancestorSummaries: expectedAncestorSummaries,
+        }),
+        expect.any(Object),
+        expect.any(Object),
+      );
+    });
+
     it('runs planner before continuation writer and forwards planner output into writer context', async () => {
       const baseStory = createStory({
         title: `${TEST_PREFIX} Title`,
