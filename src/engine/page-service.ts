@@ -3,9 +3,9 @@ import {
   generatePagePlan,
   generatePageWriterOutput,
   generateOpeningPage,
-  mergeWriterAndAnalystResults,
+  mergePageWriterAndReconciledStateWithAnalystResults,
 } from '../llm';
-import type { AnalystResult } from '../llm';
+import type { AnalystResult, WriterResult } from '../llm';
 import { randomUUID } from 'node:crypto';
 import { logger } from '../logging/index.js';
 import {
@@ -25,6 +25,9 @@ import { updateStoryWithAllCanon } from './canon-manager';
 import { handleDeviation, isActualDeviation } from './deviation-handler';
 import { buildContinuationPage, buildFirstPage } from './page-builder';
 import { collectParentState } from './parent-state-collector';
+import type { CollectedParentState } from './parent-state-collector';
+import { reconcileState } from './state-reconciler';
+import type { StateReconciliationPreviousState, StateReconciliationResult } from './state-reconciler-types';
 import { applyStructureProgression, createInitialStructureState } from './structure-state';
 import {
   resolveActiveStructureVersion,
@@ -35,6 +38,44 @@ import { DeviationInfo, EngineError } from './types';
 
 function createGenerationRequestId(): string {
   return randomUUID();
+}
+
+function createOpeningPreviousStateSnapshot(): StateReconciliationPreviousState {
+  return {
+    currentLocation: '',
+    threats: [],
+    constraints: [],
+    threads: [],
+    inventory: [],
+    health: [],
+    characterState: [],
+  };
+}
+
+function createContinuationPreviousStateSnapshot(
+  parentState: CollectedParentState,
+): StateReconciliationPreviousState {
+  return {
+    currentLocation: parentState.accumulatedActiveState.currentLocation,
+    threats: parentState.accumulatedActiveState.activeThreats,
+    constraints: parentState.accumulatedActiveState.activeConstraints,
+    threads: parentState.accumulatedActiveState.openThreads,
+    inventory: parentState.accumulatedInventory,
+    health: parentState.accumulatedHealth,
+    characterState: Object.values(parentState.accumulatedCharacterState).flatMap(entries => entries),
+  };
+}
+
+function applyTransitionalCurrentLocationPassthrough(
+  writerResult: WriterResult,
+  reconciliation: StateReconciliationResult,
+  fallbackCurrentLocation: string,
+): StateReconciliationResult {
+  const currentLocation = writerResult.currentLocation.trim() || fallbackCurrentLocation;
+  return {
+    ...reconciliation,
+    currentLocation,
+  };
 }
 
 export async function generateFirstPage(
@@ -69,7 +110,7 @@ export async function generateFirstPage(
     },
   );
 
-  const result = await generateOpeningPage(
+  const writerResult = await generateOpeningPage(
     {
       characterConcept: story.characterConcept,
       worldbuilding: story.worldbuilding,
@@ -86,6 +127,17 @@ export async function generateFirstPage(
         requestId,
       },
     },
+  );
+  const openingPreviousState = createOpeningPreviousStateSnapshot();
+  const openingReconciliation = applyTransitionalCurrentLocationPassthrough(
+    writerResult,
+    reconcileState(pagePlan, writerResult, openingPreviousState),
+    openingPreviousState.currentLocation,
+  );
+  const result = mergePageWriterAndReconciledStateWithAnalystResults(
+    writerResult,
+    openingReconciliation,
+    null,
   );
 
   const initialStructureState = story.structure
@@ -186,6 +238,12 @@ export async function generateNextPage(
       },
     },
   );
+  const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
+  const continuationReconciliation = applyTransitionalCurrentLocationPassthrough(
+    writerResult,
+    reconcileState(pagePlan, writerResult, continuationPreviousState),
+    continuationPreviousState.currentLocation,
+  );
 
   // Analyst call (only when structure exists)
   let analystResult: AnalystResult | null = null;
@@ -212,7 +270,11 @@ export async function generateNextPage(
   }
 
   // Merge into ContinuationGenerationResult
-  const result = mergeWriterAndAnalystResults(writerResult, analystResult);
+  const result = mergePageWriterAndReconciledStateWithAnalystResults(
+    writerResult,
+    continuationReconciliation,
+    analystResult,
+  );
 
   const newPageId = generatePageId(maxPageId);
 

@@ -15,6 +15,8 @@ import {
   getOrGeneratePage,
   createInitialStructureState,
 } from '@/engine';
+import { reconcileState } from '@/engine/state-reconciler';
+import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryStructure } from '@/models/story-arc';
 import { LLMError } from '@/llm/types';
 import type { AnalystResult, PagePlanGenerationResult, WriterResult } from '@/llm/types';
@@ -26,6 +28,10 @@ jest.mock('@/llm', () => ({
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  mergePageWriterAndReconciledStateWithAnalystResults:
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
 }));
 
 jest.mock('@/logging/index', () => ({
@@ -38,14 +44,43 @@ jest.mock('@/logging/index', () => ({
   logPrompt: jest.fn(),
 }));
 
+jest.mock('@/engine/state-reconciler', () => ({
+  reconcileState: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 
 const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
+
+function passthroughReconciledState(
+  writer: WriterResult,
+  previousLocation: string,
+): StateReconciliationResult {
+  return {
+    currentLocation: writer.currentLocation || previousLocation,
+    threatsAdded: writer.threatsAdded,
+    threatsRemoved: writer.threatsRemoved,
+    constraintsAdded: writer.constraintsAdded,
+    constraintsRemoved: writer.constraintsRemoved,
+    threadsAdded: writer.threadsAdded,
+    threadsResolved: writer.threadsResolved,
+    inventoryAdded: writer.inventoryAdded,
+    inventoryRemoved: writer.inventoryRemoved,
+    healthAdded: writer.healthAdded,
+    healthRemoved: writer.healthRemoved,
+    characterStateChangesAdded: writer.characterStateChangesAdded,
+    characterStateChangesRemoved: writer.characterStateChangesRemoved,
+    newCanonFacts: writer.newCanonFacts,
+    newCharacterCanonFacts: writer.newCharacterCanonFacts,
+    reconciliationDiagnostics: [],
+  };
+}
 
 function buildStructure(): StoryStructure {
   return {
@@ -272,6 +307,9 @@ describe('page-service integration', () => {
     jest.clearAllMocks();
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
     mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+    mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
+      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+    );
   });
 
   afterEach(async () => {
@@ -379,8 +417,27 @@ describe('page-service integration', () => {
         }),
         expect.any(Object),
       );
+      expect(mockedReconcileState).toHaveBeenCalledWith(
+        pagePlan,
+        expect.objectContaining({
+          narrative: expect.any(String),
+          sceneSummary: expect.any(String),
+        }),
+        expect.objectContaining({
+          currentLocation: '',
+          threats: [],
+          constraints: [],
+          threads: [],
+          inventory: [],
+          health: [],
+          characterState: [],
+        }),
+      );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
         mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
+      expect(mockedGenerateOpeningPage.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
       );
     });
 
@@ -473,6 +530,13 @@ describe('page-service integration', () => {
       mockedGenerateAnalystEvaluation.mockResolvedValue(buildAnalystResult());
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
+      expect(mockedReconcileState.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
 
       // Verify parent state was collected and passed to LLM
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -665,8 +729,27 @@ describe('page-service integration', () => {
         pagePlan,
         expect.any(Object),
       );
+      expect(mockedReconcileState).toHaveBeenCalledWith(
+        pagePlan,
+        expect.objectContaining({
+          narrative: expect.any(String),
+          sceneSummary: expect.any(String),
+        }),
+        expect.objectContaining({
+          currentLocation: expect.any(String),
+          threats: expect.any(Array),
+          constraints: expect.any(Array),
+          threads: expect.any(Array),
+          inventory: expect.any(Array),
+          health: expect.any(Array),
+          characterState: expect.any(Array),
+        }),
+      );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
         mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
+      expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
       );
     });
 

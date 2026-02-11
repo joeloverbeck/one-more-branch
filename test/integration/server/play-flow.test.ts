@@ -7,7 +7,10 @@ import {
   generatePagePlan,
   generateStoryStructure,
 } from '@/llm';
+import { reconcileState } from '@/engine/state-reconciler';
+import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryId } from '@/models';
+import type { WriterResult } from '@/llm/types';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 
@@ -18,6 +21,10 @@ jest.mock('@/llm', () => ({
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  mergePageWriterAndReconciledStateWithAnalystResults:
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
@@ -27,6 +34,10 @@ jest.mock('@/logging/index', () => ({
   generateBrowserLogScript: jest.fn().mockReturnValue(''),
 }));
 
+jest.mock('@/engine/state-reconciler', () => ({
+  reconcileState: jest.fn(),
+}));
+
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
@@ -34,6 +45,31 @@ const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof ge
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
+
+function passthroughReconciledState(
+  writer: WriterResult,
+  previousLocation: string,
+): StateReconciliationResult {
+  return {
+    currentLocation: writer.currentLocation || previousLocation,
+    threatsAdded: writer.threatsAdded,
+    threatsRemoved: writer.threatsRemoved,
+    constraintsAdded: writer.constraintsAdded,
+    constraintsRemoved: writer.constraintsRemoved,
+    threadsAdded: writer.threadsAdded,
+    threadsResolved: writer.threadsResolved,
+    inventoryAdded: writer.inventoryAdded,
+    inventoryRemoved: writer.inventoryRemoved,
+    healthAdded: writer.healthAdded,
+    healthRemoved: writer.healthRemoved,
+    characterStateChangesAdded: writer.characterStateChangesAdded,
+    characterStateChangesRemoved: writer.characterStateChangesRemoved,
+    newCanonFacts: writer.newCanonFacts,
+    newCharacterCanonFacts: writer.newCharacterCanonFacts,
+    reconciliationDiagnostics: [],
+  };
+}
 
 const TEST_PREFIX = 'TEST USEINT-010 server integration';
 const mockedStructureResult = {
@@ -176,6 +212,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       },
       rawResponse: 'page-plan',
     });
+    mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
+      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+    );
   });
 
   afterEach(async () => {

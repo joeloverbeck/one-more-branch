@@ -6,6 +6,9 @@ import {
   generatePagePlan,
   generateStoryStructure,
 } from '@/llm';
+import type { WriterResult } from '@/llm/types';
+import { reconcileState } from '@/engine/state-reconciler';
+import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
@@ -15,12 +18,20 @@ jest.mock('@/llm', () => ({
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  mergePageWriterAndReconciledStateWithAnalystResults:
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
 }));
 
 jest.mock('@/logging/index', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logPrompt: jest.fn(),
+}));
+
+jest.mock('@/engine/state-reconciler', () => ({
+  reconcileState: jest.fn(),
 }));
 
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
@@ -30,8 +41,33 @@ const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof ge
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 
 const TEST_PREFIX = 'TEST STOENG-008 replay integration';
+
+function passthroughReconciledState(
+  writer: WriterResult,
+  previousLocation: string,
+): StateReconciliationResult {
+  return {
+    currentLocation: writer.currentLocation || previousLocation,
+    threatsAdded: writer.threatsAdded,
+    threatsRemoved: writer.threatsRemoved,
+    constraintsAdded: writer.constraintsAdded,
+    constraintsRemoved: writer.constraintsRemoved,
+    threadsAdded: writer.threadsAdded,
+    threadsResolved: writer.threadsResolved,
+    inventoryAdded: writer.inventoryAdded,
+    inventoryRemoved: writer.inventoryRemoved,
+    healthAdded: writer.healthAdded,
+    healthRemoved: writer.healthRemoved,
+    characterStateChangesAdded: writer.characterStateChangesAdded,
+    characterStateChangesRemoved: writer.characterStateChangesRemoved,
+    newCanonFacts: writer.newCanonFacts,
+    newCharacterCanonFacts: writer.newCharacterCanonFacts,
+    reconciliationDiagnostics: [],
+  };
+}
 const mockedStructureResult = {
   overallTheme: 'Decode Brightwater’s reflected constellation.',
   acts: [
@@ -183,6 +219,9 @@ describe('story replay integration', () => {
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateWriterPage.mockResolvedValue(writerResult);
     mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
+    mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
+      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+    );
   });
 
   afterEach(async () => {
