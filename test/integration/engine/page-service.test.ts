@@ -1,4 +1,5 @@
-import { generateAnalystEvaluation, generateOpeningPage, generateWriterPage } from '@/llm';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { generateAnalystEvaluation, generateOpeningPage, generatePagePlan, generateWriterPage } from '@/llm';
 import {
   createChoice,
   createPage,
@@ -16,12 +17,13 @@ import {
 } from '@/engine';
 import type { StoryStructure } from '@/models/story-arc';
 import { LLMError } from '@/llm/types';
-import type { AnalystResult, WriterResult } from '@/llm/types';
+import type { AnalystResult, PagePlanGenerationResult, WriterResult } from '@/llm/types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
 }));
@@ -41,6 +43,7 @@ const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeo
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
+const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 
 const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
 
@@ -190,6 +193,31 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
   };
 }
 
+function buildPagePlanResult(
+  overrides?: Partial<PagePlanGenerationResult>,
+): PagePlanGenerationResult {
+  return {
+    sceneIntent: 'Drive the scene with direct consequences of the selected action.',
+    continuityAnchors: ['Recent patrol activity', 'Urgent mission pressure'],
+    stateIntents: {
+      threats: { add: [], removeIds: [], replace: [] },
+      constraints: { add: [], removeIds: [], replace: [] },
+      threads: { add: [], resolveIds: [], replace: [] },
+      inventory: { add: [], removeIds: [], replace: [] },
+      health: { add: [], removeIds: [], replace: [] },
+      characterState: { add: [], removeIds: [], replace: [] },
+      canon: { worldAdd: [], characterAdd: [] },
+    },
+    writerBrief: {
+      openingLineDirective: 'Begin mid-action with immediate stakes.',
+      mustIncludeBeats: ['Consequence of player choice'],
+      forbiddenRecaps: ['Do not summarize prior page'],
+    },
+    rawResponse: '{"ok":true}',
+    ...overrides,
+  };
+}
+
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Survive after betrayal.',
@@ -243,6 +271,7 @@ describe('page-service integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
+    mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
   });
 
   afterEach(async () => {
@@ -317,6 +346,42 @@ describe('page-service integration', () => {
       // Verify canon updates
       expect(updatedStory.globalCanon).toContain('The city fog carries voices of the dead');
       expect(updatedStory.globalCharacterCanon['The Watcher']).toContain('Observes from the bell tower');
+    });
+
+    it('runs planner before opening writer and forwards planner output into opening context', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} planner-opening-order`,
+        worldbuilding: 'A city where every alley has watchers.',
+        tone: 'suspense',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const pagePlan = buildPagePlanResult({ sceneIntent: 'Open with immediate pursuit pressure.' });
+      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGenerateOpeningPage.mockResolvedValue(buildOpeningResult());
+
+      await generateFirstPage(baseStory, 'test-api-key');
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          observability: expect.objectContaining({
+            storyId: baseStory.id,
+            requestId: expect.any(String),
+          }),
+        }),
+      );
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pagePlan,
+        }),
+        expect.any(Object),
+      );
+      expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
     });
 
     it('uses empty structure state for unstructured stories', async () => {
@@ -446,10 +511,13 @@ describe('page-service integration', () => {
         }),
       );
       const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];
-      expect(writerOptions?.observability).toEqual({
-        storyId: storyWithStructure.id,
-        pageId: parentPage.id,
-      });
+      expect(writerOptions?.observability).toEqual(
+        expect.objectContaining({
+          storyId: storyWithStructure.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+        }),
+      );
 
       // Verify active state accumulates correctly
       expect(page.accumulatedActiveState.currentLocation).toBe('Maze of alleys');
@@ -462,6 +530,55 @@ describe('page-service integration', () => {
       );
       expect(page.accumulatedCharacterState['Companion']).toEqual(
         expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
+      );
+    });
+
+    it('runs planner before continuation writer and forwards planner output into writer context', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} planner-continuation-order`,
+        worldbuilding: 'A city with shifting loyalties.',
+        tone: 'tense intrigue',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'You hear boots closing in from the plaza.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Run through the arcade'), createChoice('Hide in the chapel')],
+        stateChanges: { added: ['Spotted by patrol'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      await storage.savePage(baseStory.id, parentPage);
+
+      const pagePlan = buildPagePlanResult({ sceneIntent: 'Escalate with pursuit and constrained options.' });
+      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+
+      await generateNextPage(baseStory, parentPage, 0, 'test-api-key');
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          observability: expect.objectContaining({
+            storyId: baseStory.id,
+            pageId: parentPage.id,
+            requestId: expect.any(String),
+          }),
+        }),
+      );
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pagePlan,
+        }),
+        expect.any(Object),
+      );
+      expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
       );
     });
 
@@ -506,10 +623,13 @@ describe('page-service integration', () => {
         }),
       );
       const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[1];
-      expect(writerOptions?.observability).toEqual({
-        storyId: reloadedStory!.id,
-        pageId: parentPage.id,
-      });
+      expect(writerOptions?.observability).toEqual(
+        expect.objectContaining({
+          storyId: reloadedStory!.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+        }),
+      );
     });
 
     it('uses parent structureVersionId for branch isolation', async () => {

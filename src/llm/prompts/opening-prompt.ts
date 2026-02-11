@@ -54,6 +54,24 @@ Your task: Write the opening scene working toward this beat's objective.
 `
       : '';
 
+  const plannerSection = context.pagePlan
+    ? `=== PLANNER GUIDANCE ===
+Scene Intent: ${context.pagePlan.sceneIntent}
+Continuity Anchors:
+${context.pagePlan.continuityAnchors.map(anchor => `- ${anchor}`).join('\n') || '- (none)'}
+
+Writer Brief:
+- Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
+- Must include beats:
+${context.pagePlan.writerBrief.mustIncludeBeats.map(beat => `  - ${beat}`).join('\n') || '  - (none)'}
+- Forbidden recaps:
+${context.pagePlan.writerBrief.forbiddenRecaps.map(item => `  - ${item}`).join('\n') || '  - (none)'}
+
+Use this plan as guidance while still returning the required writer schema output.
+
+`
+    : '';
+
   const userPrompt = `Create the opening scene for a new interactive story.
 
 === DATA & STATE RULES ===
@@ -64,7 +82,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
-${structureSection}REQUIREMENTS (follow all):
+${structureSection}${plannerSection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in

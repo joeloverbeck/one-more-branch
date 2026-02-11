@@ -39,6 +39,24 @@ These characters are available for use in the story. Introduce or involve them w
     context.accumulatedStructureState,
   );
 
+  const plannerSection = context.pagePlan
+    ? `=== PLANNER GUIDANCE ===
+Scene Intent: ${context.pagePlan.sceneIntent}
+Continuity Anchors:
+${context.pagePlan.continuityAnchors.map(anchor => `- ${anchor}`).join('\n') || '- (none)'}
+
+Writer Brief:
+- Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
+- Must include beats:
+${context.pagePlan.writerBrief.mustIncludeBeats.map(beat => `  - ${beat}`).join('\n') || '  - (none)'}
+- Forbidden recaps:
+${context.pagePlan.writerBrief.forbiddenRecaps.map(item => `  - ${item}`).join('\n') || '  - (none)'}
+
+Use this guidance to shape this scene while still following all writer schema requirements.
+
+`
+    : '';
+
   const pacingNudgeSection = context.accumulatedStructureState?.pacingNudge
     ? `=== PACING DIRECTIVE ===
 The story analyst detected a pacing issue: ${context.accumulatedStructureState.pacingNudge}
@@ -120,7 +138,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${plannerSection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Start exactly where the previous scene ended—do NOT recap or summarize what happened

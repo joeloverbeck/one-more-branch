@@ -1,13 +1,16 @@
 import {
   generateAnalystEvaluation,
+  generatePagePlan,
   generateOpeningPage,
   generateWriterPage,
   mergeWriterAndAnalystResults,
 } from '../llm';
 import type { AnalystResult } from '../llm';
+import { randomUUID } from 'node:crypto';
 import { logger } from '../logging/index.js';
 import {
   AccumulatedStructureState,
+  createEmptyActiveState,
   createEmptyAccumulatedStructureState,
   generatePageId,
   getCurrentBeat,
@@ -30,11 +33,41 @@ import {
 } from './structure-version-validator';
 import { DeviationInfo, EngineError } from './types';
 
+function createGenerationRequestId(): string {
+  return randomUUID();
+}
+
 export async function generateFirstPage(
   story: Story,
   apiKey: string,
 ): Promise<{ page: Page; updatedStory: Story }> {
   validateFirstPageStructureVersion(story);
+
+  const requestId = createGenerationRequestId();
+  const pagePlan = await generatePagePlan(
+    {
+      mode: 'opening',
+      characterConcept: story.characterConcept,
+      worldbuilding: story.worldbuilding,
+      tone: story.tone,
+      npcs: story.npcs,
+      startingSituation: story.startingSituation,
+      structure: story.structure ?? undefined,
+      globalCanon: story.globalCanon,
+      globalCharacterCanon: story.globalCharacterCanon,
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: createEmptyActiveState(),
+    },
+    {
+      apiKey,
+      observability: {
+        storyId: story.id,
+        requestId,
+      },
+    },
+  );
 
   const result = await generateOpeningPage(
     {
@@ -44,11 +77,13 @@ export async function generateFirstPage(
       npcs: story.npcs,
       startingSituation: story.startingSituation,
       structure: story.structure ?? undefined,
+      pagePlan,
     },
     {
       apiKey,
       observability: {
         storyId: story.id,
+        requestId,
       },
     },
   );
@@ -84,6 +119,7 @@ export async function generateNextPage(
 
   validateContinuationStructureVersion(story, parentPage);
 
+  const requestId = createGenerationRequestId();
   const maxPageId = await storage.getMaxPageId(story.id);
   const parentState = collectParentState(parentPage);
   const currentStructureVersion = resolveActiveStructureVersion(story, parentPage);
@@ -91,32 +127,53 @@ export async function generateNextPage(
   // Collect hierarchical ancestor context (full text for 2 nearest, summaries for older)
   const ancestorContext = await collectAncestorContext(story.id, parentPage);
 
-  // Writer call (always runs)
-  const writerResult = await generateWriterPage(
+  const continuationContext = {
+    characterConcept: story.characterConcept,
+    worldbuilding: story.worldbuilding,
+    tone: story.tone,
+    npcs: story.npcs,
+    globalCanon: story.globalCanon,
+    globalCharacterCanon: story.globalCharacterCanon,
+    structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
+    accumulatedStructureState: parentState.structureState,
+    previousNarrative: parentPage.narrativeText,
+    selectedChoice: choice.text,
+    accumulatedInventory: parentState.accumulatedInventory,
+    accumulatedHealth: parentState.accumulatedHealth,
+    accumulatedCharacterState: parentState.accumulatedCharacterState,
+    parentProtagonistAffect: parentPage.protagonistAffect,
+    activeState: parentState.accumulatedActiveState,
+    grandparentNarrative: ancestorContext.grandparentNarrative,
+    ancestorSummaries: ancestorContext.ancestorSummaries,
+  };
+
+  const pagePlan = await generatePagePlan(
     {
-      characterConcept: story.characterConcept,
-      worldbuilding: story.worldbuilding,
-      tone: story.tone,
-      npcs: story.npcs,
-      globalCanon: story.globalCanon,
-      globalCharacterCanon: story.globalCharacterCanon,
-      structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
-      accumulatedStructureState: parentState.structureState,
-      previousNarrative: parentPage.narrativeText,
-      selectedChoice: choice.text,
-      accumulatedInventory: parentState.accumulatedInventory,
-      accumulatedHealth: parentState.accumulatedHealth,
-      accumulatedCharacterState: parentState.accumulatedCharacterState,
-      parentProtagonistAffect: parentPage.protagonistAffect,
-      activeState: parentState.accumulatedActiveState,
-      grandparentNarrative: ancestorContext.grandparentNarrative,
-      ancestorSummaries: ancestorContext.ancestorSummaries,
+      ...continuationContext,
+      mode: 'continuation',
     },
     {
       apiKey,
       observability: {
         storyId: story.id,
         pageId: parentPage.id,
+        requestId,
+      },
+    },
+  );
+
+  // Writer call (always runs)
+  const writerResult = await generateWriterPage(
+    {
+      ...continuationContext,
+      pagePlan,
+    },
+    {
+      apiKey,
+      observability: {
+        storyId: story.id,
+        pageId: parentPage.id,
+        requestId,
       },
       writerValidationContext: {
         removableIds: {

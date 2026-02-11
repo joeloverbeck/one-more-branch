@@ -102,6 +102,7 @@ export interface ContinuationContext {
 
   grandparentNarrative: string | null;
   ancestorSummaries: readonly AncestorSummary[];
+  pagePlan?: PagePlan;
 }
 
 export interface OpeningContext {
@@ -111,6 +112,7 @@ export interface OpeningContext {
   npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
+  pagePlan?: PagePlan;
 }
 
 export interface ChatMessage {

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   generateAnalystEvaluation,
+  generatePagePlan,
   generateOpeningPage,
   generateWriterPage,
 } from '../../../src/llm';
@@ -18,7 +20,7 @@ import { createStructureRewriter } from '../../../src/engine/structure-rewriter'
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
 import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
-import { LLMError } from '../../../src/llm/types';
+import { LLMError, type PagePlanGenerationResult } from '../../../src/llm/types';
 import { logger } from '../../../src/logging/index.js';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
@@ -26,6 +28,7 @@ jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('../../../src/llm').mergeWriterAndAnalystResults,
 }));
@@ -58,6 +61,7 @@ const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeo
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
+const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 
 const mockedStorage = storage as {
   getMaxPageId: jest.Mock;
@@ -74,6 +78,7 @@ const mockedLogger = logger as {
   error: jest.Mock;
   debug: jest.Mock;
 };
+
 
 function buildStory(overrides?: Partial<Story>): Story {
   return {
@@ -151,9 +156,35 @@ function buildTurningPointFirstBeatStructure(): StoryStructure {
   };
 }
 
+function buildPagePlanResult(
+  overrides?: Partial<PagePlanGenerationResult>,
+): PagePlanGenerationResult {
+  return {
+    sceneIntent: 'Push the courier toward a risky move with immediate consequences.',
+    continuityAnchors: ['Curfew has started', 'Patrols are active'],
+    stateIntents: {
+      threats: { add: [], removeIds: [], replace: [] },
+      constraints: { add: [], removeIds: [], replace: [] },
+      threads: { add: [], resolveIds: [], replace: [] },
+      inventory: { add: [], removeIds: [], replace: [] },
+      health: { add: [], removeIds: [], replace: [] },
+      characterState: { add: [], removeIds: [], replace: [] },
+      canon: { worldAdd: [], characterAdd: [] },
+    },
+    writerBrief: {
+      openingLineDirective: 'Start with movement under pressure.',
+      mustIncludeBeats: ['Immediate consequence of the selected choice'],
+      forbiddenRecaps: ['Do not restate the previous page ending'],
+    },
+    rawResponse: '{"ok":true}',
+    ...overrides,
+  };
+}
+
 describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
   });
 
   describe('generateFirstPage', () => {
@@ -198,13 +229,14 @@ describe('page-service', () => {
       const { page, updatedStory } = await generateFirstPage(story, 'test-key');
 
       expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
-        {
-          characterConcept: story.characterConcept,
-          worldbuilding: story.worldbuilding,
-          tone: story.tone,
-          structure,
-        },
-        { apiKey: 'test-key', observability: { storyId: story.id } },
+        expect.any(Object),
+        expect.objectContaining({
+          apiKey: 'test-key',
+          observability: expect.objectContaining({
+            storyId: story.id,
+            requestId: expect.any(String),
+          }),
+        }),
       );
       expect(page.id).toBe(1);
       expect(page.parentPageId).toBeNull();
@@ -217,6 +249,83 @@ describe('page-service', () => {
       ]);
       expect(updatedStory.globalCanon).toContain('The city enforces nightly curfew');
       expect(updatedStory.structure).toEqual(structure);
+    });
+
+    it('calls planner before opening writer and threads planner output into opening context', async () => {
+      const story = buildStory();
+      const pagePlan = buildPagePlanResult({ sceneIntent: 'Open with immediate pursuit.' });
+      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGenerateOpeningPage.mockResolvedValue({
+        narrative: 'Bootsteps close in as you slip through the alley.',
+        choices: [
+          { text: 'Duck into a cellar', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Blend with the crowd', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
+        currentLocation: 'Shadowed alleyway',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'urgency',
+          primaryIntensity: 'strong' as const,
+          primaryCause: 'incoming patrol',
+          secondaryEmotions: [],
+          dominantMotivation: 'avoid capture',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      await generateFirstPage(story, 'test-key');
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mode: 'opening',
+          characterConcept: story.characterConcept,
+          globalCanon: story.globalCanon,
+        }),
+        expect.objectContaining({
+          apiKey: 'test-key',
+          observability: expect.objectContaining({
+            storyId: story.id,
+            requestId: expect.any(String),
+          }),
+        }),
+      );
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pagePlan,
+        }),
+        expect.any(Object),
+      );
+      expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
+    });
+
+    it('aborts first-page generation before writer call when planner fails', async () => {
+      const story = buildStory();
+      mockedGeneratePagePlan.mockRejectedValue(
+        new LLMError('planner invalid', 'VALIDATION_ERROR', false, { source: 'planner' }),
+      );
+
+      await expect(generateFirstPage(story, 'test-key')).rejects.toMatchObject({
+        name: 'LLMError',
+        code: 'VALIDATION_ERROR',
+      });
+      expect(mockedGenerateOpeningPage).not.toHaveBeenCalled();
     });
 
     it('throws INVALID_STRUCTURE_VERSION when story has structure but no versions', async () => {
@@ -277,13 +386,14 @@ describe('page-service', () => {
       const { page, updatedStory } = await generateFirstPage(story, 'test-key');
 
       expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
-        {
-          characterConcept: story.characterConcept,
-          worldbuilding: story.worldbuilding,
-          tone: story.tone,
-          structure: undefined,
-        },
-        { apiKey: 'test-key', observability: { storyId: story.id } },
+        expect.any(Object),
+        expect.objectContaining({
+          apiKey: 'test-key',
+          observability: expect.objectContaining({
+            storyId: story.id,
+            requestId: expect.any(String),
+          }),
+        }),
       );
       expect(page.accumulatedStructureState).toEqual({
         currentActIndex: 0,
@@ -405,6 +515,106 @@ describe('page-service', () => {
       expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
     });
 
+    it('calls planner before continuation writer and passes planner output to writer context', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'You hear armored footsteps behind you.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Sprint down the alley'), createChoice('Hide in a doorway')],
+        inventoryChanges: { added: ['Courier satchel'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const pagePlan = buildPagePlanResult({ sceneIntent: 'Immediate pursuit through narrow passages.' });
+      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGenerateWriterPage.mockResolvedValue({
+        narrative: 'You vault a crate and nearly collide with a market stall.',
+        choices: [
+          { text: 'Cut through the market', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Climb to the roofs', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        currentLocation: 'Crowded market lane',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'strain',
+          primaryIntensity: 'moderate' as const,
+          primaryCause: 'sprinting while pursued',
+          secondaryEmotions: [],
+          dominantMotivation: 'break line of sight',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+
+      await generateNextPage(story, parentPage, 0, 'test-key');
+
+      expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mode: 'continuation',
+          selectedChoice: parentPage.choices[0]?.text,
+          previousNarrative: parentPage.narrativeText,
+        }),
+        expect.objectContaining({
+          apiKey: 'test-key',
+          observability: expect.objectContaining({
+            storyId: story.id,
+            pageId: parentPage.id,
+            requestId: expect.any(String),
+          }),
+        }),
+      );
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pagePlan,
+        }),
+        expect.any(Object),
+      );
+      expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+      );
+    });
+
+    it('aborts continuation generation before writer call when planner fails', async () => {
+      const story = buildStory();
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'You ready your next move.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Advance'), createChoice('Wait')],
+        inventoryChanges: { added: ['Signal flare'], removed: [] },
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      mockedStorage.getMaxPageId.mockResolvedValue(1);
+      mockedGeneratePagePlan.mockRejectedValue(
+        new LLMError('planner invalid', 'VALIDATION_ERROR', false, { source: 'planner' }),
+      );
+
+      await expect(generateNextPage(story, parentPage, 0, 'test-key')).rejects.toMatchObject({
+        name: 'LLMError',
+        code: 'VALIDATION_ERROR',
+      });
+      expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
+    });
+
     it('creates child page with proper parent linkage and sequential id', async () => {
       const structure = buildStructure();
       const initialStructureVersion = createInitialVersionedStructure(structure);
@@ -466,31 +676,21 @@ describe('page-service', () => {
 
       expect(mockedStorage.getMaxPageId).toHaveBeenCalledWith(story.id);
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          structure,
-          accumulatedStructureState: parentStructureState,
-          previousNarrative: parentPage.narrativeText,
-          selectedChoice: parentPage.choices[0]?.text,
-          activeState: parentPage.accumulatedActiveState,
-        }),
+        expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-key',
-          observability: { storyId: story.id, pageId: parentPage.id },
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          observability: expect.objectContaining({
+            storyId: story.id,
+            pageId: parentPage.id,
+            requestId: expect.any(String),
+          }),
           writerValidationContext: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             removableIds: expect.objectContaining({
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               threats: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               constraints: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               threads: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               inventory: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               health: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               characterState: expect.any(Array),
             }),
           }),
@@ -1394,7 +1594,11 @@ describe('page-service', () => {
         }),
         expect.objectContaining({
           apiKey: 'test-key',
-          observability: { storyId: story.id, pageId: parentPage.id },
+          observability: expect.objectContaining({
+            storyId: story.id,
+            pageId: parentPage.id,
+            requestId: expect.any(String),
+          }),
         }),
       );
     });

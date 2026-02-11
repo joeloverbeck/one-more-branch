@@ -1,11 +1,18 @@
 import { StoryEngine, storyEngine } from '@/engine';
-import { generateWriterPage, generateAnalystEvaluation, generateOpeningPage, generateStoryStructure } from '@/llm';
+import {
+  generateWriterPage,
+  generateAnalystEvaluation,
+  generateOpeningPage,
+  generatePagePlan,
+  generateStoryStructure,
+} from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generateWriterPage: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
+  generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergeWriterAndAnalystResults: jest.requireActual('@/llm').mergeWriterAndAnalystResults,
   generateStoryStructure: jest.fn(),
@@ -19,6 +26,7 @@ jest.mock('@/logging/index', () => ({
 const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
 const mockedGenerateWriterPage = generateWriterPage as jest.MockedFunction<typeof generateWriterPage>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -153,6 +161,25 @@ describe('story replay integration', () => {
     storyEngine.init();
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
+    mockedGeneratePagePlan.mockResolvedValue({
+      sceneIntent: 'Progress the current scene with immediate consequences.',
+      continuityAnchors: [],
+      stateIntents: {
+        threats: { add: [], removeIds: [], replace: [] },
+        constraints: { add: [], removeIds: [], replace: [] },
+        threads: { add: [], resolveIds: [], replace: [] },
+        inventory: { add: [], removeIds: [], replace: [] },
+        health: { add: [], removeIds: [], replace: [] },
+        characterState: { add: [], removeIds: [], replace: [] },
+        canon: { worldAdd: [], characterAdd: [] },
+      },
+      writerBrief: {
+        openingLineDirective: 'Start with immediate action.',
+        mustIncludeBeats: [],
+        forbiddenRecaps: [],
+      },
+      rawResponse: 'page-plan',
+    });
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateWriterPage.mockResolvedValue(writerResult);
     mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
