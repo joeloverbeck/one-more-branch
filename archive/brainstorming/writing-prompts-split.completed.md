@@ -1,3 +1,5 @@
+**Status**: ✅ COMPLETED
+
 # Feature: Split Writing Prompts
 
 We have prompts to write the opening and continuation pages in src/llm/prompts/* . The docs are in reports/* . While they work generally well, we have some issues:

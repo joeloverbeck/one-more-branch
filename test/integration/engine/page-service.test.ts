@@ -20,6 +20,7 @@ import type { StateReconciliationResult } from '@/engine/state-reconciler-types'
 import type { StoryStructure } from '@/models/story-arc';
 import { LLMError } from '@/llm/types';
 import type { AnalystResult, PagePlanGenerationResult, WriterResult } from '@/llm/types';
+import { logger } from '@/logging/index';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -55,6 +56,12 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
+const mockedLogger = logger as {
+  info: jest.Mock;
+  warn: jest.Mock;
+  error: jest.Mock;
+  debug: jest.Mock;
+};
 
 const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
 
@@ -375,11 +382,78 @@ describe('page-service integration', () => {
           passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
         );
 
-      await generateFirstPage(baseStory, 'test-api-key');
+      const { metrics } = await generateFirstPage(baseStory, 'test-api-key');
 
       expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
       expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(2);
       expect(mockedReconcileState).toHaveBeenCalledTimes(2);
+      expect(metrics).toEqual(
+        expect.objectContaining({
+          plannerDurationMs: expect.any(Number),
+          writerDurationMs: expect.any(Number),
+          reconcilerDurationMs: expect.any(Number),
+          finalStatus: 'success',
+          reconcilerRetried: true,
+          reconcilerIssueCount: 1,
+        }),
+      );
+      expect(mockedLogger.info.mock.calls).toEqual(
+        expect.arrayContaining([
+          [
+            'Generation stage started',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: baseStory.id,
+              stage: 'planner',
+              attempt: 1,
+              requestId: expect.any(String),
+            }),
+          ],
+          [
+            'Generation stage completed',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: baseStory.id,
+              stage: 'reconciler',
+              attempt: 2,
+              requestId: expect.any(String),
+              durationMs: expect.any(Number),
+            }),
+          ],
+          [
+            'Generation pipeline completed',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: baseStory.id,
+              requestId: expect.any(String),
+              metrics: expect.objectContaining({
+                finalStatus: 'success',
+                reconcilerRetried: true,
+              }),
+            }),
+          ],
+        ]),
+      );
+      expect(mockedLogger.warn.mock.calls).toEqual(
+        expect.arrayContaining([
+          [
+            'Retrying generation after reconciliation failure',
+            expect.objectContaining({
+              mode: 'opening',
+              storyId: baseStory.id,
+              attempt: 1,
+              requestId: expect.any(String),
+              failureReasons: [
+                {
+                  code: 'MISSING_NARRATIVE_EVIDENCE',
+                  field: 'threadsAdded',
+                  message: 'No narrative evidence found for threadsAdded anchor "fog".',
+                },
+              ],
+            }),
+          ],
+        ]),
+      );
       expect(mockedGeneratePagePlan.mock.calls[1]?.[0]).toEqual(
         expect.objectContaining({
           reconciliationFailureReasons: [
@@ -612,6 +686,24 @@ describe('page-service integration', () => {
       expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
       expect(mockedReconcileState).toHaveBeenCalledTimes(2);
       expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(mockedLogger.error.mock.calls).toEqual(
+        expect.arrayContaining([
+          [
+            'Generation pipeline failed',
+            expect.objectContaining({
+              mode: 'continuation',
+              storyId: baseStory.id,
+              pageId: parentPage.id,
+              requestId: expect.any(String),
+              metrics: expect.objectContaining({
+                finalStatus: 'hard_error',
+                reconcilerRetried: true,
+                reconcilerIssueCount: 2,
+              }),
+            }),
+          ],
+        ]),
+      );
     });
 
     it('collects all parent accumulated state correctly', async () => {

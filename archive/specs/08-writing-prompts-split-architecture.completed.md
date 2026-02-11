@@ -1,4 +1,4 @@
-**Status**: Draft
+**Status**: ✅ COMPLETED
 
 # Spec 08: Writing Prompt Split Architecture (Breaking Change)
 
