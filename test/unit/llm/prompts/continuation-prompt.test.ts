@@ -122,6 +122,51 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).toContain('CONTINUITY RULES (CONTINUATION):');
   });
 
+  it('includes explicit prohibition on state/canon mutation outputs', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const userMessage = messages.find(m => m.role === 'user');
+
+    expect(userMessage?.content).toContain('Do NOT output state/canon mutation fields');
+    expect(userMessage?.content).toContain('newCanonFacts/newCharacterCanonFacts');
+    expect(userMessage?.content).toContain('characterStateChangesAdded/characterStateChangesRemoved');
+  });
+
+  it('includes planner guidance fields when pagePlan is provided', () => {
+    const messages = buildContinuationPrompt(
+      makeContext({
+        pagePlan: {
+          sceneIntent: 'Escalate checkpoint pressure after the alley escape',
+          continuityAnchors: ['City curfew sirens are still sounding'],
+          stateIntents: {
+            threats: { add: [], removeIds: [], replace: [] },
+            constraints: { add: [], removeIds: [], replace: [] },
+            threads: { add: [], resolveIds: [], replace: [] },
+            inventory: { add: [], removeIds: [], replace: [] },
+            health: { add: [], removeIds: [], replace: [] },
+            characterState: { add: [], removeIds: [], replace: [] },
+            canon: { worldAdd: [], characterAdd: [] },
+          },
+          writerBrief: {
+            openingLineDirective: 'Start with boots splashing through alley runoff',
+            mustIncludeBeats: ['A searchlight sweeps the alley mouth'],
+            forbiddenRecaps: ['No replay of the prior rooftop chase'],
+          },
+        },
+      }),
+    );
+    const userMessage = messages.find(m => m.role === 'user');
+
+    expect(userMessage?.content).toContain('=== PLANNER GUIDANCE ===');
+    expect(userMessage?.content).toContain(
+      'Scene Intent: Escalate checkpoint pressure after the alley escape',
+    );
+    expect(userMessage?.content).toContain(
+      'Opening line directive: Start with boots splashing through alley runoff',
+    );
+    expect(userMessage?.content).toContain('A searchlight sweeps the alley mouth');
+    expect(userMessage?.content).toContain('No replay of the prior rooftop chase');
+  });
+
   it('does NOT include data rules in system message', () => {
     const messages = buildContinuationPrompt(makeContext());
     const systemMessage = messages.find(m => m.role === 'system');

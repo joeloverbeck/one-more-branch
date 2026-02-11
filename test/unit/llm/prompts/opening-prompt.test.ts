@@ -2,7 +2,7 @@ import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.j
 import type { OpeningContext } from '../../../../src/llm/types.js';
 
 describe('buildOpeningPrompt with active state', () => {
-  it('includes currentLocation instruction', () => {
+  it('includes explicit prohibition on state/canon mutation outputs', () => {
     const context: OpeningContext = {
       characterConcept: 'A traveling merchant',
       worldbuilding: 'Medieval fantasy',
@@ -12,25 +12,13 @@ describe('buildOpeningPrompt with active state', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
+    expect(userMessage).toContain('Do NOT output state/canon mutation fields');
     expect(userMessage).toContain('currentLocation');
+    expect(userMessage).toContain('threatsAdded/threatsRemoved');
+    expect(userMessage).toContain('newCanonFacts/newCharacterCanonFacts');
   });
 
-  it('includes threat/constraint/thread instructions', () => {
-    const context: OpeningContext = {
-      characterConcept: 'A detective',
-      worldbuilding: 'Modern noir',
-      tone: 'Mystery thriller',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
-
-    expect(userMessage).toContain('threatsAdded');
-    expect(userMessage).toContain('constraintsAdded');
-    expect(userMessage).toContain('threadsAdded');
-  });
-
-  it('instructs to leave removal arrays empty', () => {
+  it('removes opening state establishment output instructions', () => {
     const context: OpeningContext = {
       characterConcept: 'Test',
       worldbuilding: 'Test',
@@ -40,85 +28,44 @@ describe('buildOpeningPrompt with active state', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
-    expect(userMessage).toContain('threatsRemoved');
-    expect(userMessage).toContain('EMPTY');
+    expect(userMessage).not.toContain('OPENING PAGE STATE:');
+    expect(userMessage).not.toContain('Example opening state');
+    expect(userMessage).not.toContain('set the initial LOCATION clearly');
   });
 
-  it('does not mention old stateChanges format', () => {
+  it('still includes plan guidance fields when pagePlan is provided', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
-      tone: 'Test',
+      characterConcept: 'Test hero',
+      worldbuilding: 'Test world',
+      tone: 'Test tone',
+      pagePlan: {
+        sceneIntent: 'Introduce the debt collector conflict',
+        continuityAnchors: ['The debt is due by sunrise'],
+        stateIntents: {
+          threats: { add: [], removeIds: [], replace: [] },
+          constraints: { add: [], removeIds: [], replace: [] },
+          threads: { add: [], resolveIds: [], replace: [] },
+          inventory: { add: [], removeIds: [], replace: [] },
+          health: { add: [], removeIds: [], replace: [] },
+          characterState: { add: [], removeIds: [], replace: [] },
+          canon: { worldAdd: [], characterAdd: [] },
+        },
+        writerBrief: {
+          openingLineDirective: 'Start with a shouted demand at the warehouse door',
+          mustIncludeBeats: ['Collector identifies the protagonist by name'],
+          forbiddenRecaps: ['No mention of previous chapters'],
+        },
+      },
     };
 
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find(m => m.role === 'user')!.content;
 
-    expect(userMessage).not.toContain('stateChangesAdded');
-    expect(userMessage).not.toContain('stateChangesRemoved');
-  });
-
-  it('provides opening-specific example', () => {
-    const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
-      tone: 'Test',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const content = messages.map(m => m.content).join('\n');
-
-    // Should have an example showing opening state
-    expect(content).toMatch(/"currentLocation":/);
-    expect(content).toMatch(/"threadsAdded":/);
-  });
-
-  it('uses plain text for threats/constraints and typed objects for thread additions', () => {
-    const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
-      tone: 'Test',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
-
-    expect(userMessage).toContain('plain text descriptions for threatsAdded/constraintsAdded');
-    expect(userMessage).toContain('typed thread objects for threadsAdded');
-    expect(userMessage).toContain('"threadType"');
-    expect(userMessage).toContain('"urgency"');
-    expect(userMessage).not.toContain('PREFIX_ID: description');
-    expect(userMessage).not.toContain('format: "THREAT_ID: description"');
-    expect(userMessage).not.toContain('format: "CONSTRAINT_ID: description"');
-    expect(userMessage).not.toContain('format: "THREAD_ID: description"');
-  });
-
-  it('includes constraintsRemoved and threadsResolved in empty guidance', () => {
-    const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
-      tone: 'Test',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
-
-    expect(userMessage).toContain('constraintsRemoved');
-    expect(userMessage).toContain('threadsResolved');
-  });
-
-  it('explains this is the first page establishing initial state', () => {
-    const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
-      tone: 'Test',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
-
-    expect(userMessage).toContain('first page');
-    expect(userMessage).toContain('ESTABLISHING');
+    expect(userMessage).toContain('=== PLANNER GUIDANCE ===');
+    expect(userMessage).toContain('Scene Intent: Introduce the debt collector conflict');
+    expect(userMessage).toContain('Opening line directive: Start with a shouted demand at the warehouse door');
+    expect(userMessage).toContain('Collector identifies the protagonist by name');
+    expect(userMessage).toContain('No mention of previous chapters');
   });
 
   it('includes data rules in user message', () => {
@@ -134,7 +81,7 @@ describe('buildOpeningPrompt with active state', () => {
     expect(userMessage).toContain('=== DATA & STATE RULES ===');
     expect(userMessage).toContain('ACTIVE STATE TRACKING');
     expect(userMessage).toContain('INVENTORY MANAGEMENT:');
-    expect(userMessage).toContain('ESTABLISHMENT RULES (OPENING):');
+    expect(userMessage).toContain('FIELD SEPARATION:');
   });
 
   it('does NOT include data rules in system message', () => {
@@ -149,7 +96,7 @@ describe('buildOpeningPrompt with active state', () => {
 
     expect(systemMessage).not.toContain('ACTIVE STATE TRACKING');
     expect(systemMessage).not.toContain('INVENTORY MANAGEMENT:');
-    expect(systemMessage).not.toContain('ESTABLISHMENT RULES');
+    expect(systemMessage).not.toContain('FIELD SEPARATION:');
   });
 });
 

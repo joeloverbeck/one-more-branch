@@ -93,12 +93,12 @@ describe('composeOpeningDataRules', () => {
     expect(rules).toContain('PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):');
   });
 
-  it('includes opening-specific sections', () => {
+  it('does NOT include opening-specific sections', () => {
     const rules = composeOpeningDataRules();
-    expect(rules).toContain('ESTABLISHMENT RULES (OPENING):');
-    expect(rules).toContain('CHARACTER CONCEPT FIDELITY:');
-    expect(rules).toContain('OPENING ACTIVE STATE QUALITY:');
-    expect(rules).toContain('OPENING CANON QUALITY:');
+    expect(rules).not.toContain('ESTABLISHMENT RULES (OPENING):');
+    expect(rules).not.toContain('CHARACTER CONCEPT FIDELITY:');
+    expect(rules).not.toContain('OPENING ACTIVE STATE QUALITY:');
+    expect(rules).not.toContain('OPENING CANON QUALITY:');
   });
 
   it('does NOT include continuation-specific sections', () => {
@@ -134,8 +134,8 @@ describe('composeContinuationDataRules', () => {
     const rules = composeContinuationDataRules();
     expect(rules).toContain('CONTINUITY RULES (CONTINUATION):');
     expect(rules).toContain('CHARACTER CANON vs CHARACTER STATE:');
-    expect(rules).toContain('ACTIVE STATE QUALITY CRITERIA:');
-    expect(rules).toContain('CANON QUALITY CRITERIA:');
+    expect(rules).not.toContain('ACTIVE STATE QUALITY CRITERIA:');
+    expect(rules).not.toContain('CANON QUALITY CRITERIA:');
   });
 
   it('does NOT include opening-specific sections', () => {

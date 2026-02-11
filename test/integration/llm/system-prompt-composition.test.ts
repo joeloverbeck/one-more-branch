@@ -82,19 +82,17 @@ describe('opening data rules composition', () => {
       const rules = composeOpeningDataRules();
       expect(rules).toContain('ACTIVE STATE TRACKING');
       expect(rules).toContain('currentLocation');
-      expect(rules).toContain('plain text description');
-      expect(rules).toContain('"th-1"');
-      expect(rules).toContain('"cn-1"');
-      expect(rules).toContain('"td-1"');
+      expect(rules).toContain('READ-ONLY CONTINUITY INPUT');
+      expect(rules).toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS');
       expect(rules).not.toContain('THREAT_IDENTIFIER');
       expect(rules).not.toContain('CONSTRAINT_IDENTIFIER');
       expect(rules).not.toContain('THREAD_IDENTIFIER');
     });
 
-    it('explains ID-based removal protocol', () => {
+    it('explicitly forbids state mutation arrays in output', () => {
       const rules = composeOpeningDataRules();
-      expect(rules).toContain('use ONLY IDs');
-      expect(rules).not.toContain('ONLY the prefix');
+      expect(rules).toContain('threatsAdded / threatsRemoved');
+      expect(rules).toContain('constraintsAdded / constraintsRemoved');
       expect(rules).toContain('threatsRemoved');
     });
 
@@ -103,6 +101,7 @@ describe('opening data rules composition', () => {
       expect(rules).toContain('INVENTORY MANAGEMENT:');
       expect(rules).toContain('inventoryAdded');
       expect(rules).toContain('inventoryRemoved');
+      expect(rules).toContain('Do NOT output inventoryAdded or inventoryRemoved');
     });
 
     it('includes HEALTH MANAGEMENT section', () => {
@@ -110,20 +109,17 @@ describe('opening data rules composition', () => {
       expect(rules).toContain('HEALTH MANAGEMENT:');
       expect(rules).toContain('healthAdded');
       expect(rules).toContain('healthRemoved');
+      expect(rules).toContain('Do NOT output healthAdded or healthRemoved');
     });
 
     it('includes FIELD SEPARATION section', () => {
       const rules = composeOpeningDataRules();
       expect(rules).toContain('FIELD SEPARATION:');
-      expect(rules).toContain('INVENTORY');
-      expect(rules).toContain('HEALTH');
-      expect(rules).toContain('ACTIVE STATE');
-      expect(rules).toContain('Threat/constraint additions are plain text, thread additions are typed objects');
-      expect(rules).toContain('removals/resolutions use IDs');
-      expect(rules).not.toContain('PREFIX_ID: Description');
-      expect(rules).toContain('PROTAGONIST AFFECT');
-      expect(rules).toContain('WORLD FACTS');
-      expect(rules).toContain('CHARACTER CANON');
+      expect(rules).toContain('CREATIVE OUTPUT FIELDS');
+      expect(rules).toContain('READ-ONLY CONTEXT');
+      expect(rules).toContain('FORBIDDEN OUTPUT FIELDS');
+      expect(rules).toContain('newCanonFacts / newCharacterCanonFacts');
+      expect(rules).toContain('characterStateChangesAdded / characterStateChangesRemoved');
     });
 
     it('includes PROTAGONIST AFFECT section', () => {
@@ -136,16 +132,16 @@ describe('opening data rules composition', () => {
   });
 
   describe('opening-specific sections present', () => {
-    it('includes ESTABLISHMENT RULES section', () => {
+    it('does NOT include ESTABLISHMENT RULES section', () => {
       const rules = composeOpeningDataRules();
-      expect(rules).toContain('ESTABLISHMENT RULES (OPENING):');
-      expect(rules).toContain('CHARACTER CONCEPT FIDELITY:');
+      expect(rules).not.toContain('ESTABLISHMENT RULES (OPENING):');
+      expect(rules).not.toContain('CHARACTER CONCEPT FIDELITY:');
     });
 
-    it('includes opening quality criteria', () => {
+    it('does NOT include opening quality criteria sections', () => {
       const rules = composeOpeningDataRules();
-      expect(rules).toContain('OPENING ACTIVE STATE QUALITY:');
-      expect(rules).toContain('OPENING CANON QUALITY:');
+      expect(rules).not.toContain('OPENING ACTIVE STATE QUALITY:');
+      expect(rules).not.toContain('OPENING CANON QUALITY:');
     });
   });
 
@@ -184,33 +180,24 @@ describe('continuation data rules composition', () => {
       const rules = composeContinuationDataRules();
       expect(rules).toContain('CONTINUITY RULES (CONTINUATION):');
       expect(rules).toContain('ESTABLISHED WORLD FACTS');
-      expect(rules).toContain('newCanonFacts');
+      expect(rules).toContain('Do NOT output canon/state mutation fields');
     });
 
     it('includes CHARACTER CANON vs CHARACTER STATE section', () => {
       const rules = composeContinuationDataRules();
       expect(rules).toContain('CHARACTER CANON vs CHARACTER STATE:');
-      expect(rules).toContain('newCharacterCanonFacts');
-      expect(rules).toContain('characterStateChangesAdded');
+      expect(rules).toContain('read-only prompt context for the writer');
+      expect(rules).not.toContain('Use CHARACTER CANON (newCharacterCanonFacts)');
     });
 
-    it('includes ACTIVE STATE QUALITY CRITERIA section', () => {
+    it('does NOT include ACTIVE STATE QUALITY CRITERIA section', () => {
       const rules = composeContinuationDataRules();
-      expect(rules).toContain('ACTIVE STATE QUALITY CRITERIA:');
-      expect(rules).toContain('GOOD THREATS');
-      expect(rules).toContain('BAD THREATS');
-      expect(rules).toContain('GOOD CONSTRAINTS');
-      expect(rules).toContain('GOOD THREADS');
-      expect(rules).toContain('REMOVAL QUALITY');
+      expect(rules).not.toContain('ACTIVE STATE QUALITY CRITERIA:');
     });
 
-    it('includes CANON QUALITY CRITERIA section', () => {
+    it('does NOT include CANON QUALITY CRITERIA section', () => {
       const rules = composeContinuationDataRules();
-      expect(rules).toContain('CANON QUALITY CRITERIA:');
-      expect(rules).toContain('GOOD WORLD CANON');
-      expect(rules).toContain('BAD WORLD CANON');
-      expect(rules).toContain('GOOD CHARACTER CANON');
-      expect(rules).toContain('BAD CHARACTER CANON');
+      expect(rules).not.toContain('CANON QUALITY CRITERIA:');
     });
   });
 

@@ -34,9 +34,10 @@ describe('continuation continuity-rules sections', () => {
       expect(CONTINUATION_CONTINUITY_RULES).toContain('RETCONS ARE FORBIDDEN');
     });
 
-    it('requires new facts in canon fields', () => {
+    it('forbids canon/state mutation field output', () => {
       expect(CONTINUATION_CONTINUITY_RULES).toContain('newCanonFacts');
       expect(CONTINUATION_CONTINUITY_RULES).toContain('newCharacterCanonFacts');
+      expect(CONTINUATION_CONTINUITY_RULES).toContain('Do NOT output canon/state mutation fields');
     });
 
     it('includes consistency verification section', () => {
@@ -58,14 +59,14 @@ describe('continuation continuity-rules sections', () => {
 
     it('documents CHARACTER CANON usage', () => {
       expect(CHARACTER_CANON_VS_STATE).toContain('CHARACTER CANON');
-      expect(CHARACTER_CANON_VS_STATE).toContain('newCharacterCanonFacts');
-      expect(CHARACTER_CANON_VS_STATE).toContain('PERMANENT traits');
+      expect(CHARACTER_CANON_VS_STATE).toContain('permanent, cross-branch');
+      expect(CHARACTER_CANON_VS_STATE).toContain('read-only prompt context');
     });
 
     it('documents CHARACTER STATE usage', () => {
       expect(CHARACTER_CANON_VS_STATE).toContain('CHARACTER STATE');
-      expect(CHARACTER_CANON_VS_STATE).toContain('characterStateChangesAdded');
-      expect(CHARACTER_CANON_VS_STATE).toContain('SITUATIONAL events');
+      expect(CHARACTER_CANON_VS_STATE).toContain('situational, branch-specific');
+      expect(CHARACTER_CANON_VS_STATE).toContain('read-only prompt context');
     });
 
     it('includes canon examples', () => {

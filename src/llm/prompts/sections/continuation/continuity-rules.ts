@@ -14,11 +14,9 @@ DO NOT CONTRADICT:
 - YOUR HEALTH - current physical conditions
 - CURRENT LOCATION, ACTIVE THREATS, ACTIVE CONSTRAINTS, OPEN THREADS - the current situation
 
-WHEN ADDING NEW FACTS:
-- New permanent world facts → newCanonFacts
-- New permanent character traits → newCharacterCanonFacts
-- Branch-specific NPC events → characterStateChangesAdded
-- Narrative details that won't affect future scenes → leave in narrative only
+WHEN NEW FACTS EMERGE:
+- Weave them into narrative and sceneSummary naturally.
+- Do NOT output canon/state mutation fields.
 
 RETCONS ARE FORBIDDEN:
 - Do NOT change names, roles, species, or relationships already established
@@ -32,19 +30,27 @@ Before generating your response, mentally verify:
 2. Does my narrative contradict any CHARACTER INFORMATION?
 3. Am I using inventory items the protagonist actually has?
 4. Am I respecting the protagonist's current health conditions?
-5. Am I acknowledging active threats and constraints?`;
+5. Am I acknowledging active threats and constraints?
+
+DO NOT OUTPUT:
+- newCanonFacts / newCharacterCanonFacts
+- characterStateChangesAdded / characterStateChangesRemoved
+- any state mutation arrays or IDs`;
 
 export const CHARACTER_CANON_VS_STATE = `CHARACTER CANON vs CHARACTER STATE:
-Use CHARACTER CANON (newCharacterCanonFacts) for PERMANENT traits that define WHO they are:
-- Inherent abilities: "Transforms between midnight and dawn"
-- Physical traits: "Eyes turn black during transformation"
-- Background: "Runs a timber warehouse business"
-- Relationships to the world: "Sister of the Duke"
+Use these categories as interpretation aids for continuity, not as output fields.
 
-Use CHARACTER STATE (characterStateChangesAdded) for SITUATIONAL events that happened in THIS playthrough:
-- Actions taken: "Gave protagonist a sketched map"
-- Agreements made: "Proposed a 70-30 split"
-- Knowledge gained: "Knows about the three murders"
-- Branch-specific status: "Currently waiting at the docks"
+CHARACTER CANON (permanent, cross-branch):
+- Inherent abilities
+- Physical traits
+- Background
+- Persistent world relationships
 
-Rule: If it would be true in ANY playthrough, it's CANON. If it only happened because of choices made, it's STATE.`;
+CHARACTER STATE (situational, branch-specific):
+- Actions taken in this branch
+- Agreements made in this branch
+- Knowledge gained from branch events
+- Temporary status from recent scenes
+
+Rule: If it would be true in ANY playthrough, treat it as canon context. If it depends on choices in THIS run, treat it as branch-state context.
+Both are read-only prompt context for the writer.`;

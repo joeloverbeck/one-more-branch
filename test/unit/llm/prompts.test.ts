@@ -238,7 +238,7 @@ describe('buildOpeningPrompt', () => {
     expect(user).toContain('primaryDelta');
   });
 
-  it('should include ESTABLISHMENT RULES in user message for opening (data rules)', () => {
+  it('should include read-only continuity guidance for opening data rules', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',
       worldbuilding: '',
@@ -246,11 +246,10 @@ describe('buildOpeningPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    // Opening data rules include ESTABLISHMENT RULES
-    expect(user).toContain('ESTABLISHMENT RULES (OPENING)');
-    expect(user).toContain('CHARACTER CONCEPT FIDELITY:');
-    expect(user).toContain('FIRST page');
-    expect(user).toContain('newCanonFacts');
+    expect(user).toContain('=== ACTIVE STATE TRACKING ===');
+    expect(user).toContain('READ-ONLY CONTINUITY INPUT:');
+    expect(user).toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS:');
+    expect(user).not.toContain('ESTABLISHMENT RULES (OPENING)');
   });
 
   it('should NOT include CONTINUITY RULES in opening system message', () => {
@@ -683,7 +682,7 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).toContain('CURRENT LOCATION:');
+      expect(getUserMessage(messages)).toContain('\nCURRENT LOCATION:\n');
       expect(getUserMessage(messages)).toContain('A dimly lit warehouse on the docks');
     });
 
@@ -698,7 +697,7 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).not.toContain('CURRENT LOCATION:');
+      expect(getUserMessage(messages)).not.toContain('\nCURRENT LOCATION:\n');
     });
 
     it('includes ACTIVE THREATS section when threats present', () => {

@@ -17,20 +17,10 @@ import {
   PROTAGONIST_AFFECT,
 } from './sections/shared/index.js';
 
-// Opening-specific sections
-import {
-  OPENING_ESTABLISHMENT_RULES,
-  OPENING_CHARACTER_CANON_GUIDANCE,
-  OPENING_ACTIVE_STATE_QUALITY,
-  OPENING_CANON_QUALITY,
-} from './sections/opening/index.js';
-
 // Continuation-specific sections
 import {
   CONTINUATION_CONTINUITY_RULES,
   CHARACTER_CANON_VS_STATE,
-  CONTINUATION_ACTIVE_STATE_QUALITY,
-  CONTINUATION_CANON_QUALITY,
 } from './sections/continuation/index.js';
 
 /**
@@ -117,12 +107,7 @@ const SHARED_DATA_SECTIONS = [
 /**
  * Opening-specific data sections.
  */
-const OPENING_DATA_SECTIONS = [
-  OPENING_ESTABLISHMENT_RULES,
-  OPENING_CHARACTER_CANON_GUIDANCE,
-  OPENING_ACTIVE_STATE_QUALITY,
-  OPENING_CANON_QUALITY,
-] as const;
+const OPENING_DATA_SECTIONS = [] as const;
 
 /**
  * Continuation-specific data sections.
@@ -130,8 +115,6 @@ const OPENING_DATA_SECTIONS = [
 const CONTINUATION_DATA_SECTIONS = [
   CONTINUATION_CONTINUITY_RULES,
   CHARACTER_CANON_VS_STATE,
-  CONTINUATION_ACTIVE_STATE_QUALITY,
-  CONTINUATION_CANON_QUALITY,
 ] as const;
 
 /**

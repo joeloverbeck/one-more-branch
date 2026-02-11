@@ -87,34 +87,11 @@ ${structureSection}${plannerSection}REQUIREMENTS (follow all):
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in
 4. Provide 3 meaningful structured choice objects with text, choiceType, and primaryDelta - each choice MUST have a different choiceType OR primaryDelta (add a 4th only when the situation truly warrants another distinct path)
-5. Establish starting inventory based on the character concept (use inventoryAdded for items they would logically possess)
-6. If the character concept implies any starting physical conditions (old injuries, chronic ailments, exhaustion), use healthAdded to establish them
-7. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
-8. Set the initial LOCATION clearly (currentLocation field - where the protagonist is at the END of this opening scene)
-9. Establish any starting THREATS using threatsAdded (plain text descriptions of dangers present at story start)
-10. Establish any starting CONSTRAINTS using constraintsAdded (plain text descriptions of limitations the protagonist faces)
-11. Plant narrative THREADS using threadsAdded objects with text, threadType, and urgency (server assigns IDs)
-12. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
+5. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
+6. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
+7. Do NOT output state/canon mutation fields (including currentLocation, threatsAdded/threatsRemoved, constraintsAdded/constraintsRemoved, threadsAdded/threadsResolved, inventoryAdded/inventoryRemoved, healthAdded/healthRemoved, newCanonFacts/newCharacterCanonFacts, characterStateChangesAdded/characterStateChangesRemoved)
 
-OPENING PAGE STATE:
-Since this is the first page, you are ESTABLISHING the initial state, not modifying previous state:
-- threatsRemoved, constraintsRemoved, threadsResolved should all be EMPTY arrays
-- currentLocation should be set to wherever the scene ends
-- Use plain text descriptions for threatsAdded/constraintsAdded (IDs are assigned by the server)
-- Use typed thread objects for threadsAdded: { "text": string, "threadType": enum, "urgency": enum }
-
-Example opening state:
-{
-  "currentLocation": "Village marketplace at midday",
-  "threatsAdded": [],
-  "constraintsAdded": ["Must deliver the package by nightfall"],
-  "threadsAdded": [{"text": "The package's contents are unknown", "threadType": "MYSTERY", "urgency": "MEDIUM"}],
-  "threatsRemoved": [],
-  "constraintsRemoved": [],
-  "threadsResolved": []
-}
-
-REMINDER: Each choice must be something this specific character would genuinely consider. Starting inventory should reflect the character's background and profession. Starting health conditions should only be added if the character concept explicitly mentions them. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.`;
+REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildOpeningSystemPrompt() },
