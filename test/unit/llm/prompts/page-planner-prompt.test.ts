@@ -101,17 +101,13 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('(MYSTERY/HIGH)');
   });
 
-  it('includes required PagePlan output shape instructions', () => {
+  it('does not include inline output shape scaffolding', () => {
     const messages = buildPagePlannerPrompt(openingContext);
     const user = getUserMessage(messages);
 
-    expect(user).toContain('"sceneIntent"');
-    expect(user).toContain('"continuityAnchors"');
-    expect(user).toContain('"stateIntents"');
-    expect(user).toContain('"currentLocation"');
-    expect(user).toContain('"writerBrief"');
-    expect(user).toContain('"threads"');
-    expect(user).toContain('"characterState"');
+    expect(user).not.toContain('OUTPUT FORMAT:');
+    expect(user).not.toContain('"sceneIntent"');
+    expect(user).not.toContain('"stateIntents"');
     expect(user).toContain('Return JSON only.');
   });
 

@@ -213,39 +213,6 @@ QUALITY BAR:
 - Prefer minimal, meaningful mutations over speculative churn.
 - Do not duplicate equivalent intents within the same category.
 
-OUTPUT FORMAT:
-Return strict JSON matching this shape exactly:
-{
-  "sceneIntent": string,
-  "continuityAnchors": string[],
-  "stateIntents": {
-    "currentLocation": string,
-    "threats": { "add": string[], "removeIds": string[], "replace": [{ "removeId": string, "addText": string }] },
-    "constraints": { "add": string[], "removeIds": string[], "replace": [{ "removeId": string, "addText": string }] },
-    "threads": {
-      "add": [{ "text": string, "threadType": "MYSTERY|QUEST|RELATIONSHIP|DANGER|INFORMATION|RESOURCE|MORAL", "urgency": "LOW|MEDIUM|HIGH" }],
-      "resolveIds": string[],
-      "replace": [{ "resolveId": string, "add": { "text": string, "threadType": "MYSTERY|QUEST|RELATIONSHIP|DANGER|INFORMATION|RESOURCE|MORAL", "urgency": "LOW|MEDIUM|HIGH" } }]
-    },
-    "inventory": { "add": string[], "removeIds": string[], "replace": [{ "removeId": string, "addText": string }] },
-    "health": { "add": string[], "removeIds": string[], "replace": [{ "removeId": string, "addText": string }] },
-    "characterState": {
-      "add": [{ "characterName": string, "states": string[] }],
-      "removeIds": string[],
-      "replace": [{ "removeId": string, "add": { "characterName": string, "states": string[] } }]
-    },
-    "canon": {
-      "worldAdd": string[],
-      "characterAdd": [{ "characterName": string, "facts": string[] }]
-    }
-  },
-  "writerBrief": {
-    "openingLineDirective": string,
-    "mustIncludeBeats": string[],
-    "forbiddenRecaps": string[]
-  }
-}
-
 Return JSON only.
 ```
 

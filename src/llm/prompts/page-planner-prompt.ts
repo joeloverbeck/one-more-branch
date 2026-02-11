@@ -3,7 +3,6 @@ import type { ChatMessage, PagePlanContext } from '../types.js';
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
-  PLANNER_OUTPUT_SHAPE_INSTRUCTIONS,
   PLANNER_STATE_INTENT_RULES,
 } from './sections/planner/index.js';
 
@@ -38,8 +37,6 @@ ${contextSection}
 ${reconciliationRetrySection}
 
 ${PLANNER_STATE_INTENT_RULES}
-
-${PLANNER_OUTPUT_SHAPE_INSTRUCTIONS}
 
 Return JSON only.`;
 

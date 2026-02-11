@@ -41,5 +41,4 @@ export {
   buildPlannerOpeningContextSection,
   buildPlannerContinuationContextSection,
   PLANNER_STATE_INTENT_RULES,
-  PLANNER_OUTPUT_SHAPE_INSTRUCTIONS,
 } from './planner/index.js';
