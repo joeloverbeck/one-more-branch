@@ -66,6 +66,17 @@ export interface ReconciliationFailureReason {
   field?: string;
 }
 
+export interface GenerationPipelineMetrics {
+  plannerDurationMs: number;
+  writerDurationMs: number;
+  reconcilerDurationMs: number;
+  plannerValidationIssueCount: number;
+  writerValidationIssueCount: number;
+  reconcilerIssueCount: number;
+  reconcilerRetried: boolean;
+  finalStatus: 'success' | 'hard_error';
+}
+
 export interface WriterValidationContext {
   removableIds: {
     threats: readonly string[];

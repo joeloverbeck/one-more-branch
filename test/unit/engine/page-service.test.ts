@@ -288,7 +288,7 @@ describe('page-service', () => {
           passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
         );
 
-      await generateFirstPage(story, 'test-key');
+      const { metrics } = await generateFirstPage(story, 'test-key');
 
       expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
       expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(2);
@@ -323,6 +323,18 @@ describe('page-service', () => {
       expect(plannerRequestIdAttemptOne).toBe(plannerRequestIdAttemptTwo);
       expect(plannerRequestIdAttemptOne).toBe(writerRequestIdAttemptOne);
       expect(writerRequestIdAttemptOne).toBe(writerRequestIdAttemptTwo);
+      expect(metrics).toEqual(
+        expect.objectContaining({
+          plannerDurationMs: 0,
+          writerDurationMs: 0,
+          reconcilerDurationMs: 0,
+          plannerValidationIssueCount: 0,
+          writerValidationIssueCount: 0,
+          reconcilerIssueCount: 1,
+          reconcilerRetried: true,
+          finalStatus: 'success',
+        }),
+      );
     });
 
     it('passes structure to opening context and uses initial structure state when present', async () => {
@@ -925,7 +937,7 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
 
-      const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
+      const { page, updatedStory, metrics } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(mockedStorage.getMaxPageId).toHaveBeenCalledWith(story.id);
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
@@ -962,6 +974,13 @@ describe('page-service', () => {
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
       expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
       expect(updatedStory.globalCanon).toContain('Clocktower guards rotate every ten minutes');
+      expect(metrics).toEqual(
+        expect.objectContaining({
+          reconcilerRetried: false,
+          reconcilerIssueCount: 0,
+          finalStatus: 'success',
+        }),
+      );
     });
 
     it('throws INVALID_STRUCTURE_VERSION when story has structure but no versions', async () => {
@@ -2594,6 +2613,7 @@ describe('page-service', () => {
       const result = await getOrGeneratePage(story, parentPage, 0, 'test-key');
 
       expect(result.wasGenerated).toBe(false);
+      expect(result.metrics).toBeUndefined();
       expect(result.page).toBe(existingPage);
       expect(result.story).toBe(story);
       expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
@@ -2672,6 +2692,11 @@ describe('page-service', () => {
       const result = await getOrGeneratePage(story, parentPage, 0, 'test-key');
 
       expect(result.wasGenerated).toBe(true);
+      expect(result.metrics).toEqual(
+        expect.objectContaining({
+          finalStatus: 'success',
+        }),
+      );
       expect(result.page.id).toBe(2);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, result.page);
       expect(mockedStorage.updateChoiceLink).toHaveBeenCalledWith(story.id, parentPage.id, 0, result.page.id);

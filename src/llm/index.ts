@@ -5,6 +5,7 @@ export type {
   StructureRewriteContext,
   StructureRewriteResult,
   GenerationOptions,
+  GenerationPipelineMetrics,
   ReconciliationFailureReason,
   OpeningContext,
   ContinuationContext,

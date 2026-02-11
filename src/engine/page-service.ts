@@ -7,6 +7,7 @@ import {
 } from '../llm';
 import type {
   AnalystResult,
+  GenerationPipelineMetrics,
   PagePlanContext,
   ReconciliationFailureReason,
   WriterResult,
@@ -110,6 +111,22 @@ interface ReconciliationRetryGenerationOptions {
   ) => Promise<WriterResult>;
 }
 
+function createSuccessPipelineMetrics(
+  reconcilerIssueCount: number,
+  reconcilerRetried: boolean,
+): GenerationPipelineMetrics {
+  return {
+    plannerDurationMs: 0,
+    writerDurationMs: 0,
+    reconcilerDurationMs: 0,
+    plannerValidationIssueCount: 0,
+    writerValidationIssueCount: 0,
+    reconcilerIssueCount,
+    reconcilerRetried,
+    finalStatus: 'success',
+  };
+}
+
 async function generateWithReconciliationRetry({
   mode,
   storyId,
@@ -122,8 +139,11 @@ async function generateWithReconciliationRetry({
 }: ReconciliationRetryGenerationOptions): Promise<{
   writerResult: WriterResult;
   reconciliation: StateReconciliationResult;
+  metrics: GenerationPipelineMetrics;
 }> {
   let failureReasons: readonly ReconciliationFailureReason[] | undefined;
+  let reconcilerIssueCount = 0;
+  let reconcilerRetried = false;
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     const pagePlan = await generatePagePlan(
@@ -146,8 +166,15 @@ async function generateWithReconciliationRetry({
     );
 
     if (reconciliation.reconciliationDiagnostics.length === 0) {
-      return { writerResult, reconciliation };
+      return {
+        writerResult,
+        reconciliation,
+        metrics: createSuccessPipelineMetrics(reconcilerIssueCount, reconcilerRetried),
+      };
     }
+
+    reconcilerIssueCount += reconciliation.reconciliationDiagnostics.length;
+    reconcilerRetried = true;
 
     logger.warn('State reconciliation failed during page generation attempt', {
       mode,
@@ -189,12 +216,12 @@ async function generateWithReconciliationRetry({
 export async function generateFirstPage(
   story: Story,
   apiKey: string,
-): Promise<{ page: Page; updatedStory: Story }> {
+): Promise<{ page: Page; updatedStory: Story; metrics: GenerationPipelineMetrics }> {
   validateFirstPageStructureVersion(story);
 
   const requestId = createGenerationRequestId();
   const openingPreviousState = createOpeningPreviousStateSnapshot();
-  const { writerResult, reconciliation: openingReconciliation } =
+  const { writerResult, reconciliation: openingReconciliation, metrics } =
     await generateWithReconciliationRetry({
       mode: 'opening',
       storyId: story.id,
@@ -256,7 +283,7 @@ export async function generateFirstPage(
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
 
-  return { page, updatedStory };
+  return { page, updatedStory, metrics };
 }
 
 export async function generateNextPage(
@@ -264,7 +291,12 @@ export async function generateNextPage(
   parentPage: Page,
   choiceIndex: number,
   apiKey: string,
-): Promise<{ page: Page; updatedStory: Story; deviationInfo?: DeviationInfo }> {
+): Promise<{
+  page: Page;
+  updatedStory: Story;
+  metrics: GenerationPipelineMetrics;
+  deviationInfo?: DeviationInfo;
+}> {
   const choice = parentPage.choices[choiceIndex];
   if (!choice) {
     throw new EngineError(
@@ -303,7 +335,7 @@ export async function generateNextPage(
     ancestorSummaries: ancestorContext.ancestorSummaries,
   };
   const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
-  const { writerResult, reconciliation: continuationReconciliation } =
+  const { writerResult, reconciliation: continuationReconciliation, metrics } =
     await generateWithReconciliationRetry({
       mode: 'continuation',
       storyId: story.id,
@@ -482,7 +514,7 @@ export async function generateNextPage(
     result.newCharacterCanonFacts,
   );
 
-  return { page, updatedStory, deviationInfo };
+  return { page, updatedStory, metrics, deviationInfo };
 }
 
 export async function getOrGeneratePage(
@@ -490,7 +522,13 @@ export async function getOrGeneratePage(
   parentPage: Page,
   choiceIndex: number,
   apiKey?: string,
-): Promise<{ page: Page; story: Story; wasGenerated: boolean; deviationInfo?: DeviationInfo }> {
+): Promise<{
+  page: Page;
+  story: Story;
+  wasGenerated: boolean;
+  metrics?: GenerationPipelineMetrics;
+  deviationInfo?: DeviationInfo;
+}> {
   const choice = parentPage.choices[choiceIndex];
   if (!choice) {
     throw new EngineError(
@@ -518,7 +556,12 @@ export async function getOrGeneratePage(
     );
   }
 
-  const { page, updatedStory, deviationInfo } = await generateNextPage(story, parentPage, choiceIndex, apiKey);
+  const { page, updatedStory, metrics, deviationInfo } = await generateNextPage(
+    story,
+    parentPage,
+    choiceIndex,
+    apiKey,
+  );
 
   await storage.savePage(story.id, page);
   await storage.updateChoiceLink(story.id, parentPage.id, choiceIndex, page.id);
@@ -531,6 +574,7 @@ export async function getOrGeneratePage(
     page,
     story: updatedStory,
     wasGenerated: true,
+    metrics,
     deviationInfo,
   };
 }

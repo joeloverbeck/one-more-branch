@@ -5,6 +5,7 @@ import type {
   CompletedBeat,
   ContinuationContext,
   ContinuationGenerationResult,
+  GenerationPipelineMetrics,
   GenerationOptions,
   OpeningContext,
   OpeningPagePlanContext,
@@ -59,6 +60,22 @@ describe('LLM types', () => {
   });
 
   describe('type compatibility (compile-time)', () => {
+    it('should allow creating GenerationPipelineMetrics with required fields', () => {
+      const metrics: GenerationPipelineMetrics = {
+        plannerDurationMs: 12,
+        writerDurationMs: 34,
+        reconcilerDurationMs: 5,
+        plannerValidationIssueCount: 0,
+        writerValidationIssueCount: 1,
+        reconcilerIssueCount: 2,
+        reconcilerRetried: true,
+        finalStatus: 'success',
+      };
+
+      expect(metrics.reconcilerRetried).toBe(true);
+      expect(metrics.finalStatus).toBe('success');
+    });
+
     it('should allow creating WriterResult with all required fields', () => {
       const result: WriterResult = {
         narrative: 'You arrive at a crossroads.',
