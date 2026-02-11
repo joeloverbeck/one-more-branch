@@ -25,6 +25,35 @@ function openRouterBodyFromContent(content: string): Response {
   });
 }
 
+function isPayloadCompatibleWithWriterSchema(payload: unknown): boolean {
+  const schema = WRITER_GENERATION_SCHEMA.json_schema.schema as {
+    required: string[];
+    properties: Record<string, unknown>;
+    additionalProperties: boolean;
+  };
+
+  if (typeof payload !== 'object' || payload === null) {
+    return false;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const allowedKeys = new Set(Object.keys(schema.properties));
+
+  const hasAllRequiredFields = schema.required.every((field) => field in record);
+  if (!hasAllRequiredFields) {
+    return false;
+  }
+
+  if (schema.additionalProperties === false) {
+    const hasUnknownFields = Object.keys(record).some((key) => !allowedKeys.has(key));
+    if (hasUnknownFields) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 describe('schema pipeline integration', () => {
   const fetchMock = jest.fn();
   const originalFetch = global.fetch;
@@ -44,7 +73,7 @@ describe('schema pipeline integration', () => {
   });
 
   describe('full generation flow', () => {
-    it('should validate structured output with all fields', () => {
+    it('should validate creative-only structured output and preserve legacy defaults downstream', () => {
       // Test the schema structure matches expected format
       const schemaProps = WRITER_GENERATION_SCHEMA.json_schema.schema as {
         required: string[];
@@ -53,13 +82,12 @@ describe('schema pipeline integration', () => {
 
       expect(schemaProps.required).toContain('narrative');
       expect(schemaProps.required).toContain('choices');
-      expect(schemaProps.required).toContain('newCanonFacts');
-      expect(schemaProps.required).toContain('newCharacterCanonFacts');
-      expect(schemaProps.required).toContain('inventoryAdded');
-      expect(schemaProps.required).toContain('inventoryRemoved');
-      expect(schemaProps.required).toContain('healthAdded');
-      expect(schemaProps.required).toContain('healthRemoved');
+      expect(schemaProps.required).toContain('protagonistAffect');
+      expect(schemaProps.required).toContain('sceneSummary');
       expect(schemaProps.required).toContain('isEnding');
+      expect(schemaProps.required).not.toContain('newCanonFacts');
+      expect(schemaProps.required).not.toContain('currentLocation');
+      expect(schemaProps.required).not.toContain('threatsAdded');
 
       // Validate a response through the full pipeline
       const rawJson = {
@@ -68,23 +96,6 @@ describe('schema pipeline integration', () => {
           { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
           { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
         ],
-        currentLocation: 'The ruined keep entrance',
-        threatsAdded: ['Unstable stone ceiling'],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [
-          { text: 'The plague archives mystery', threadType: 'MYSTERY', urgency: 'HIGH' },
-        ],
-        threadsResolved: [],
-        newCanonFacts: ['The keep was abandoned after the plague'],
-        newCharacterCanonFacts: [],
-        inventoryAdded: ['Rusty key'],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
-        characterStateChangesAdded: [],
-        characterStateChangesRemoved: [],
         protagonistAffect: {
           primaryEmotion: 'apprehension',
           primaryIntensity: 'moderate',
@@ -100,18 +111,38 @@ describe('schema pipeline integration', () => {
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toHaveLength(2);
-      expect(result.currentLocation).toEqual('The ruined keep entrance');
-      expect(result.threatsAdded).toEqual(['Unstable stone ceiling']);
-      expect(result.threadsAdded).toEqual([
-        { text: 'The plague archives mystery', threadType: 'MYSTERY', urgency: 'HIGH' },
-      ]);
-      expect(result.newCanonFacts).toEqual(['The keep was abandoned after the plague']);
-      expect(result.inventoryAdded).toEqual(['Rusty key']);
+      expect(result.currentLocation).toEqual('');
+      expect(result.threatsAdded).toEqual([]);
+      expect(result.threadsAdded).toEqual([]);
+      expect(result.newCanonFacts).toEqual([]);
+      expect(result.inventoryAdded).toEqual([]);
       expect(result.inventoryRemoved).toEqual([]);
       expect(result.healthAdded).toEqual([]);
       expect(result.healthRemoved).toEqual([]);
       expect(result.isEnding).toBe(false);
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
+    });
+
+    it('should reject payloads with legacy state fields at strict schema boundary', () => {
+      const payloadWithLegacyStateField = {
+        narrative: VALID_NARRATIVE,
+        choices: [
+          { text: 'Move fast', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Move quietly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'EXPOSURE_CHANGE' },
+        ],
+        protagonistAffect: {
+          primaryEmotion: 'focus',
+          primaryIntensity: 'strong',
+          primaryCause: 'The mission window is closing',
+          secondaryEmotions: [],
+          dominantMotivation: 'Get inside before guards rotate',
+        },
+        sceneSummary: 'You choose a stealthy route while watching guard patterns at the gate.',
+        isEnding: false,
+        threatsAdded: ['Legacy field should be rejected by strict schema'],
+      };
+
+      expect(isPayloadCompatibleWithWriterSchema(payloadWithLegacyStateField)).toBe(false);
     });
 
     it('should transform character canon facts array to record through full flow', () => {
@@ -503,7 +534,6 @@ describe('schema pipeline integration', () => {
           { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
           { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
         ],
-        newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       };
@@ -518,6 +548,7 @@ describe('schema pipeline integration', () => {
       expect(result.constraintsRemoved).toEqual([]);
       expect(result.threadsAdded).toEqual([]);
       expect(result.threadsResolved).toEqual([]);
+      expect(result.newCanonFacts).toEqual([]);
       expect(result.inventoryAdded).toEqual([]);
       expect(result.inventoryRemoved).toEqual([]);
       expect(result.newCharacterCanonFacts).toEqual({});

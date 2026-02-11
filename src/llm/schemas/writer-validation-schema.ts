@@ -83,7 +83,7 @@ export const WriterResultSchema = z
     constraintsRemoved: z.array(z.string()).optional().default([]),
     threadsAdded: z.array(ThreadAddSchema).optional().default([]),
     threadsResolved: z.array(z.string()).optional().default([]),
-    newCanonFacts: z.array(z.string()),
+    newCanonFacts: z.array(z.string()).optional().default([]),
     newCharacterCanonFacts: CharacterCanonFactsArraySchema.optional()
       .default([])
       .transform(transformCharacterCanonFactsToRecord),
