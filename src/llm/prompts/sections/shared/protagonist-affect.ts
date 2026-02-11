@@ -13,8 +13,4 @@ Fields:
 - secondaryEmotions: Optional background feelings with their causes
 - dominantMotivation: What the protagonist most wants right now
 
-Emotional states belong in protagonistAffect, not in active state fields.
-❌ threatsAdded: ["You feel attracted to Marla"] (emotions are NOT threats)
-✅ protagonistAffect: { primaryEmotion: "attraction", primaryIntensity: "strong", ... }
-
 The protagonistAffect is for the PROTAGONIST only. NPC emotional states should be described in the narrative, not tracked as data.`;

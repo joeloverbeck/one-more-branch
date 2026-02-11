@@ -72,12 +72,10 @@ How to use this context:
 INVENTORY MANAGEMENT:
 - Treat YOUR INVENTORY as read-only context for what the protagonist currently carries.
 - Use inventory details naturally in narrative and choice design.
-- Do NOT output inventoryAdded or inventoryRemoved.
 
 HEALTH MANAGEMENT:
 - Treat YOUR HEALTH as read-only context for current physical condition.
 - Reflect physical limitations in narrative and choices when relevant.
-- Do NOT output healthAdded or healthRemoved.
 
 FIELD SEPARATION:
 - CREATIVE OUTPUT FIELDS:
@@ -99,10 +97,6 @@ Fields:
 - primaryCause: What's causing this emotion (brief, specific to this scene)
 - secondaryEmotions: Optional background feelings with their causes
 - dominantMotivation: What the protagonist most wants right now
-
-Emotional states belong in protagonistAffect, not in active state fields.
-❌ threatsAdded: ["You feel attracted to Marla"] (emotions are NOT threats)
-✅ protagonistAffect: { primaryEmotion: "attraction", primaryIntensity: "strong", ... }
 
 The protagonistAffect is for the PROTAGONIST only. NPC emotional states should be described in the narrative, not tracked as data.
 
@@ -350,9 +344,11 @@ PREVIOUS SCENE (full text for style continuity):
 PLAYER'S CHOICE: "{{selectedChoice}}"
 
 REQUIREMENTS (follow all):
-1. Start exactly where the previous scene ended-do NOT recap or summarize what happened
-   - Do NOT repeat or rephrase the last sentence of the previous scene
-   - Begin with an action, dialogue, or reaction within the next 1-2 beats
+1. Choose the scene opening based on what matters next
+   - Option A (immediate continuation): Start exactly where the previous scene ended with an action, dialogue, or reaction in the next 1-2 beats
+   - Option B (time cut): If nothing meaningful happens for a while (travel, waiting, resting, routine), SKIP time and open at the next scene where the choice's consequences matter
+   - In both options: do NOT recap or summarize what happened, and do NOT repeat or rephrase the last sentence of the previous scene
+   - For Option B, signal the skip with a brief time cue ("Minutes later...", "That night...", "Two days later..."), then jump straight into action or dialogue
 2. Show the direct, immediate consequences of the player's choice - the story must react
 3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
 4. Maintain consistency with all established facts and the current state

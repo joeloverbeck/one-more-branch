@@ -20,13 +20,11 @@ How to use this context:
 
 export const INVENTORY_MANAGEMENT = `INVENTORY MANAGEMENT:
 - Treat YOUR INVENTORY as read-only context for what the protagonist currently carries.
-- Use inventory details naturally in narrative and choice design.
-- Do NOT output inventoryAdded or inventoryRemoved.`;
+- Use inventory details naturally in narrative and choice design.`;
 
 export const HEALTH_MANAGEMENT = `HEALTH MANAGEMENT:
 - Treat YOUR HEALTH as read-only context for current physical condition.
-- Reflect physical limitations in narrative and choices when relevant.
-- Do NOT output healthAdded or healthRemoved.`;
+- Reflect physical limitations in narrative and choices when relevant.`;
 
 export const FIELD_SEPARATION = `FIELD SEPARATION:
 - CREATIVE OUTPUT FIELDS:

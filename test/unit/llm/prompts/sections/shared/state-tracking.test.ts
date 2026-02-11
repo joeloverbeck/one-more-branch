@@ -61,14 +61,15 @@ describe('shared state-tracking sections', () => {
       expect(INVENTORY_MANAGEMENT).toContain('INVENTORY MANAGEMENT:');
     });
 
-    it('documents inventory fields', () => {
-      expect(INVENTORY_MANAGEMENT).toContain('inventoryAdded');
-      expect(INVENTORY_MANAGEMENT).toContain('inventoryRemoved');
+    it('describes inventory continuity usage', () => {
+      expect(INVENTORY_MANAGEMENT).toContain('read-only context');
+      expect(INVENTORY_MANAGEMENT).toContain('Use inventory details naturally');
+      expect(INVENTORY_MANAGEMENT).not.toContain('inventoryAdded');
+      expect(INVENTORY_MANAGEMENT).not.toContain('inventoryRemoved');
     });
 
     it('marks inventory as read-only output context', () => {
       expect(INVENTORY_MANAGEMENT).toContain('read-only context');
-      expect(INVENTORY_MANAGEMENT).toContain('Do NOT output inventoryAdded or inventoryRemoved');
     });
   });
 
@@ -82,14 +83,15 @@ describe('shared state-tracking sections', () => {
       expect(HEALTH_MANAGEMENT).toContain('HEALTH MANAGEMENT:');
     });
 
-    it('documents health fields', () => {
-      expect(HEALTH_MANAGEMENT).toContain('healthAdded');
-      expect(HEALTH_MANAGEMENT).toContain('healthRemoved');
+    it('describes health continuity usage', () => {
+      expect(HEALTH_MANAGEMENT).toContain('read-only context');
+      expect(HEALTH_MANAGEMENT).toContain('Reflect physical limitations');
+      expect(HEALTH_MANAGEMENT).not.toContain('healthAdded');
+      expect(HEALTH_MANAGEMENT).not.toContain('healthRemoved');
     });
 
     it('marks health as read-only output context', () => {
       expect(HEALTH_MANAGEMENT).toContain('read-only context');
-      expect(HEALTH_MANAGEMENT).toContain('Do NOT output healthAdded or healthRemoved');
     });
   });
 

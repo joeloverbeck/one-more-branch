@@ -99,17 +99,19 @@ describe('opening data rules composition', () => {
     it('includes INVENTORY MANAGEMENT section', () => {
       const rules = composeOpeningDataRules();
       expect(rules).toContain('INVENTORY MANAGEMENT:');
-      expect(rules).toContain('inventoryAdded');
-      expect(rules).toContain('inventoryRemoved');
-      expect(rules).toContain('Do NOT output inventoryAdded or inventoryRemoved');
+      expect(rules).toContain('read-only context');
+      expect(rules).toContain('Use inventory details naturally');
+      expect(rules).not.toContain('inventoryAdded');
+      expect(rules).not.toContain('inventoryRemoved');
     });
 
     it('includes HEALTH MANAGEMENT section', () => {
       const rules = composeOpeningDataRules();
       expect(rules).toContain('HEALTH MANAGEMENT:');
-      expect(rules).toContain('healthAdded');
-      expect(rules).toContain('healthRemoved');
-      expect(rules).toContain('Do NOT output healthAdded or healthRemoved');
+      expect(rules).toContain('read-only context');
+      expect(rules).toContain('Reflect physical limitations');
+      expect(rules).not.toContain('healthAdded');
+      expect(rules).not.toContain('healthRemoved');
     });
 
     it('includes FIELD SEPARATION section', () => {

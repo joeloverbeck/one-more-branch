@@ -72,12 +72,10 @@ How to use this context:
 INVENTORY MANAGEMENT:
 - Treat YOUR INVENTORY as read-only context for what the protagonist currently carries.
 - Use inventory details naturally in narrative and choice design.
-- Do NOT output inventoryAdded or inventoryRemoved.
 
 HEALTH MANAGEMENT:
 - Treat YOUR HEALTH as read-only context for current physical condition.
 - Reflect physical limitations in narrative and choices when relevant.
-- Do NOT output healthAdded or healthRemoved.
 
 FIELD SEPARATION:
 - CREATIVE OUTPUT FIELDS:
@@ -99,10 +97,6 @@ Fields:
 - primaryCause: What's causing this emotion (brief, specific to this scene)
 - secondaryEmotions: Optional background feelings with their causes
 - dominantMotivation: What the protagonist most wants right now
-
-Emotional states belong in protagonistAffect, not in active state fields.
-❌ threatsAdded: ["You feel attracted to Marla"] (emotions are NOT threats)
-✅ protagonistAffect: { primaryEmotion: "attraction", primaryIntensity: "strong", ... }
 
 The protagonistAffect is for the PROTAGONIST only. NPC emotional states should be described in the narrative, not tracked as data.
 

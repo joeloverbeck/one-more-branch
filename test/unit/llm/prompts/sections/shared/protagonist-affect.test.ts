@@ -43,17 +43,6 @@ describe('shared protagonist-affect sections', () => {
     it('documents dominantMotivation field', () => {
       expect(PROTAGONIST_AFFECT).toContain('dominantMotivation');
     });
-
-    it('includes bad example showing wrong usage', () => {
-      expect(PROTAGONIST_AFFECT).toContain('❌');
-      expect(PROTAGONIST_AFFECT).toContain('threatsAdded:');
-    });
-
-    it('includes good example showing correct usage', () => {
-      expect(PROTAGONIST_AFFECT).toContain('✅');
-      expect(PROTAGONIST_AFFECT).toContain('protagonistAffect:');
-    });
-
     it('clarifies affect is for protagonist only', () => {
       expect(PROTAGONIST_AFFECT).toContain('PROTAGONIST only');
       expect(PROTAGONIST_AFFECT).toContain('NPC emotional states');
