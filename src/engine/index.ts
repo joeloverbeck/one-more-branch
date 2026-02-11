@@ -64,6 +64,21 @@ export {
 } from './structure-rewriter';
 export type { StructureRewriter, StructureRewriteGenerator } from './structure-rewriter';
 
+// State reconciler contracts
+export type {
+  StateReconciliationDiagnostic,
+  ReconciledThreadAdd,
+  ReconciledCharacterStateAdd,
+  StateReconciliationResult,
+} from './state-reconciler-types';
+export {
+  StateReconciliationError,
+} from './state-reconciler-errors';
+export type {
+  StateReconciliationErrorCode,
+  StateReconciliationFailure,
+} from './state-reconciler-errors';
+
 
 export {
   updateStoryWithNewCanon,

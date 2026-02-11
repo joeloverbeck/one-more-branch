@@ -22,6 +22,7 @@ import {
   formatCanonForPrompt,
   mightContradictCanon,
   validateNewFacts,
+  StateReconciliationError,
   EngineError,
 } from '../../../src/engine';
 import * as engineBarrel from '../../../src/engine';
@@ -32,7 +33,10 @@ import type {
   StartStoryOptions,
   MakeChoiceOptions,
   EngineErrorCode,
+  StateReconciliationResult,
+  StateReconciliationFailure,
 } from '../../../src/engine';
+import { ThreadType, Urgency } from '../../../src/models/state/index';
 import { createPage, createStory, parsePageId, parseStoryId } from '../../../src/models';
 
 describe('engine barrel export', () => {
@@ -64,6 +68,7 @@ describe('engine barrel export', () => {
     expect(formatCanonForPrompt).toBeDefined();
     expect(mightContradictCanon).toBeDefined();
     expect(validateNewFacts).toBeDefined();
+    expect(StateReconciliationError).toBeDefined();
 
     expect(EngineError).toBeDefined();
   });
@@ -99,12 +104,55 @@ describe('engine barrel export', () => {
       apiKey: 'test-key',
     };
     const engineErrorCode: EngineErrorCode = 'INVALID_CHOICE';
+    const reconciliationResult: StateReconciliationResult = {
+      currentLocation: 'Collapsed bridge',
+      threatsAdded: ['Aftershock tremors'],
+      threatsRemoved: ['Unstable planks'],
+      constraintsAdded: ['Limited visibility from dust'],
+      constraintsRemoved: [],
+      threadsAdded: [{ text: 'Find stable route', threadType: ThreadType.MYSTERY, urgency: Urgency.MEDIUM }],
+      threadsResolved: [],
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      characterStateChangesAdded: [{ characterName: 'Scout', states: ['focused'] }],
+      characterStateChangesRemoved: [],
+      newCanonFacts: ['The bridge collapsed after the crossing.'],
+      newCharacterCanonFacts: {},
+      reconciliationDiagnostics: [],
+    };
+    const reconciliationFailure: StateReconciliationFailure = {
+      code: 'RECONCILIATION_FAILED',
+      message: 'Missing evidence for thread resolution',
+      diagnostics: [{ code: 'MISSING_EVIDENCE', message: 'No lexical evidence found', field: 'threadsResolved' }],
+      retryable: true,
+    };
 
     expect(startResult.story.id).toBe(story.id);
     expect(makeChoiceResult.wasGenerated).toBe(false);
     expect(playSession.storyId).toBe(makeChoiceOptions.storyId);
     expect(startOptions.characterConcept.length).toBeGreaterThan(10);
     expect(engineErrorCode).toBe('INVALID_CHOICE');
+    expect(reconciliationResult.threadsAdded[0].urgency).toBe(Urgency.MEDIUM);
+    expect(reconciliationFailure.retryable).toBe(true);
+  });
+
+  it('exposes StateReconciliationError failure serialization', () => {
+    const error = new StateReconciliationError(
+      'Evidence gate failed',
+      'EVIDENCE_GATE_FAILED',
+      [{ code: 'MISSING_EVIDENCE', message: 'Scene summary lacks thread anchor', field: 'threadsResolved' }],
+      true,
+    );
+
+    expect(error.name).toBe('StateReconciliationError');
+    expect(error.toFailure()).toEqual({
+      code: 'EVIDENCE_GATE_FAILED',
+      message: 'Evidence gate failed',
+      diagnostics: [{ code: 'MISSING_EVIDENCE', message: 'Scene summary lacks thread anchor', field: 'threadsResolved' }],
+      retryable: true,
+    });
   });
 
   it('does not export internal canon helper utilities', () => {

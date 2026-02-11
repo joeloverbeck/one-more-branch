@@ -4,6 +4,7 @@ import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { ActiveState, KeyedEntry, ThreadType, Urgency } from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
+import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 
 export interface AncestorSummary {
   readonly pageId: PageId;
@@ -176,6 +177,8 @@ export interface WriterResult extends PageWriterResult {
   characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
   characterStateChangesRemoved: string[];
 }
+
+export type FinalPageGenerationResult = PageWriterResult & StateReconciliationResult;
 
 export interface ThreadAdd {
   text: string;

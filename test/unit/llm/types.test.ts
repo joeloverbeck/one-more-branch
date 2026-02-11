@@ -8,6 +8,7 @@ import type {
   GenerationOptions,
   OpeningContext,
   OpeningPagePlanContext,
+  FinalPageGenerationResult,
   PageWriterResult,
   PagePlan,
   PagePlanContext,
@@ -573,6 +574,45 @@ describe('LLM types', () => {
       expect(result.narrative).toContain('forest');
       expect(result.choices).toHaveLength(2);
       expect(result.currentLocation).toBe('Dark forest path');
+    });
+
+    it('should allow creating FinalPageGenerationResult from creative output and reconciled deltas', () => {
+      const result: FinalPageGenerationResult = {
+        narrative: 'The storm breaks as you reach the eastern tower.',
+        choices: [
+          { text: 'Signal allies with the flare', choiceType: 'ALLIANCE_REINFORCEMENT', primaryDelta: 'RELATIONSHIP_CHANGE' },
+          { text: 'Secure the tower doors', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+        ],
+        protagonistAffect: {
+          primaryEmotion: 'relief',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Reached shelter before collapse',
+          secondaryEmotions: [],
+          dominantMotivation: 'Stabilize the situation',
+        },
+        isEnding: false,
+        sceneSummary: 'The protagonist reaches the tower and regains temporary control.',
+        rawResponse: '{"narrative":"..."}',
+        currentLocation: 'Eastern tower',
+        threatsAdded: ['Aftershock from bridge collapse'],
+        threatsRemoved: [],
+        constraintsAdded: ['Visibility reduced by storm spray'],
+        constraintsRemoved: [],
+        threadsAdded: [{ text: 'Coordinate with defenders', threadType: ThreadType.QUEST, urgency: Urgency.HIGH }],
+        threadsResolved: [],
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [{ characterName: 'Elara', states: ['determined'] }],
+        characterStateChangesRemoved: [],
+        newCanonFacts: ['The eastern tower survived the initial collapse.'],
+        newCharacterCanonFacts: { Elara: ['Elara reached the tower ahead of the squad.'] },
+        reconciliationDiagnostics: [],
+      };
+
+      expect(result.currentLocation).toBe('Eastern tower');
+      expect(result.reconciliationDiagnostics).toHaveLength(0);
     });
 
     it('should not allow state/canon-only fields on PageWriterResult', () => {

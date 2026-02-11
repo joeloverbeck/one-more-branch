@@ -23,6 +23,7 @@ import type {
   PagePlan,
   PagePlanGenerationResult,
   PageWriterResult,
+  FinalPageGenerationResult,
   WriterResult,
 } from '../../../src/llm/index';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
@@ -77,6 +78,25 @@ describe('llm barrel exports', () => {
       healthRemoved: [],
       characterStateChangesAdded: [],
       characterStateChangesRemoved: [],
+    };
+    const finalResult: FinalPageGenerationResult = {
+      ...pageWriterResult,
+      currentLocation: 'The Old Bridge',
+      threatsAdded: [],
+      threatsRemoved: [],
+      constraintsAdded: [],
+      constraintsRemoved: [],
+      threadsAdded: [],
+      threadsResolved: [],
+      inventoryAdded: [],
+      inventoryRemoved: [],
+      healthAdded: [],
+      healthRemoved: [],
+      characterStateChangesAdded: [],
+      characterStateChangesRemoved: [],
+      newCanonFacts: ['The ravine bridge is unstable'],
+      newCharacterCanonFacts: {},
+      reconciliationDiagnostics: [],
     };
     const options: GenerationOptions = { apiKey: 'test-key' };
     const opening: OpeningContext = {
@@ -172,6 +192,7 @@ describe('llm barrel exports', () => {
     };
 
     expect(result.choices).toHaveLength(2);
+    expect(finalResult.reconciliationDiagnostics).toHaveLength(0);
     expect(pageWriterResult.choices).toHaveLength(2);
     expect(options.apiKey).toBe('test-key');
     expect(opening.tone).toBe('tense adventure');
