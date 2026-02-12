@@ -178,7 +178,14 @@ REQUIREMENTS (follow all):
 7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
 
-REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.`;
+REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
+
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. React to the player's choice immediately and visibly
+2. Maintain consistency with established state, canon, and continuity
+3. Choices answer the scene's dramatic question with divergent tags
+4. Prose quality: character-filtered, emotionally resonant, forward-moving
+5. sceneSummary and protagonistAffect accuracy`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildContinuationSystemPrompt() },
