@@ -9,7 +9,7 @@ import { generationProgressService } from '../services/index.js';
 import {
   formatLLMError,
   getActDisplayInfo,
-  getOpenThreadPanelRows,
+  getOpenThreadPanelData,
   wrapAsyncRoute,
 } from '../utils/index.js';
 
@@ -78,7 +78,7 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
     }
 
     const actDisplayInfo = getActDisplayInfo(story, page);
-    const openThreadPanelRows = getOpenThreadPanelRows(page.accumulatedActiveState.openThreads);
+    const openThreadPanelData = getOpenThreadPanelData(page.accumulatedActiveState.openThreads);
 
     return res.render('pages/play', {
       title: `${story.title} - One More Branch`,
@@ -86,7 +86,8 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
       page,
       pageId,
       actDisplayInfo,
-      openThreadPanelRows,
+      openThreadPanelRows: openThreadPanelData.rows,
+      openThreadOverflowSummary: openThreadPanelData.overflowSummary,
       choiceTypeLabels: CHOICE_TYPE_COLORS,
       primaryDeltaLabels: PRIMARY_DELTA_LABELS,
     });
@@ -136,7 +137,7 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     // Load story to compute actDisplayInfo for the new page
     const story = await storyEngine.loadStory(storyId as StoryId);
     const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
-    const openThreads = getOpenThreadPanelRows(result.page.accumulatedActiveState.openThreads);
+    const openThreadPanelData = getOpenThreadPanelData(result.page.accumulatedActiveState.openThreads);
     if (progressId) {
       generationProgressService.complete(progressId);
     }
@@ -148,7 +149,8 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
         narrativeText: result.page.narrativeText,
         choices: result.page.choices,
         isEnding: result.page.isEnding,
-        openThreads,
+        openThreads: openThreadPanelData.rows,
+        openThreadOverflowSummary: openThreadPanelData.overflowSummary,
       },
       actDisplayInfo,
       wasGenerated: result.wasGenerated,

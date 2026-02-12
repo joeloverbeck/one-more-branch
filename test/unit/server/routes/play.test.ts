@@ -119,6 +119,7 @@ describe('playRoutes', () => {
             displayLabel: '(QUEST/MEDIUM) Medium urgency',
           },
         ],
+        openThreadOverflowSummary: null,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -529,6 +530,7 @@ describe('playRoutes', () => {
                 displayLabel: '(INFORMATION/LOW) Keep watch',
               },
             ],
+            openThreadOverflowSummary: null,
           },
           wasGenerated: true,
         }),
@@ -588,6 +590,69 @@ describe('playRoutes', () => {
       expect(progressFailSpy).not.toHaveBeenCalled();
       expect(status).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('limits openThreads to six rows and includes overflow summary', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { id: 'td-1', text: 'Low 1', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+            { id: 'td-2', text: 'High 1', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+            { id: 'td-3', text: 'Medium 1', threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM },
+            { id: 'td-4', text: 'Low 2', threadType: ThreadType.RESOURCE, urgency: Urgency.LOW },
+            { id: 'td-5', text: 'High 2', threadType: ThreadType.DANGER, urgency: Urgency.HIGH },
+            { id: 'td-6', text: 'Medium 2', threadType: ThreadType.MORAL, urgency: Urgency.MEDIUM },
+            { id: 'td-7', text: 'Low 3', threadType: ThreadType.RELATIONSHIP, urgency: Urgency.LOW },
+            { id: 'td-8', text: 'Low 4', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+          ],
+        },
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      const payload = (json.mock.calls[0] as unknown[] | undefined)?.[0] as
+        | { page?: { openThreads?: Array<{ id: string }>; openThreadOverflowSummary?: string | null } }
+        | undefined;
+      expect(payload?.page?.openThreads?.map(thread => thread.id)).toEqual([
+        'td-2',
+        'td-5',
+        'td-3',
+        'td-6',
+        'td-1',
+        'td-4',
+      ]);
+      expect(payload?.page?.openThreadOverflowSummary).toBe('Not shown: 2 (low)');
     });
 
     it('starts, updates, and completes progress when progressId is provided', async () => {

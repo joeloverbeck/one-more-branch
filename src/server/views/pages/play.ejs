@@ -49,6 +49,9 @@
           </li>
           <% }) %>
         </ul>
+        <% if (openThreadOverflowSummary) { %>
+        <div class="open-threads-overflow-summary" id="open-threads-overflow-summary"><%= openThreadOverflowSummary %></div>
+        <% } %>
       </aside>
       <% } %>
 

@@ -74,5 +74,13 @@ describe('play page template', () => {
       expect(template).toContain('<% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>');
       expect(template).toContain('openThreadPanelRows.forEach');
     });
+
+    it('renders overflow summary block conditionally', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('<% if (openThreadOverflowSummary) { %>');
+      expect(template).toContain('class="open-threads-overflow-summary"');
+      expect(template).toContain('<%= openThreadOverflowSummary %>');
+    });
   });
 });

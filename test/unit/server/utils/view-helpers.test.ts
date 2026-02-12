@@ -1,4 +1,4 @@
-import { getActDisplayInfo, getOpenThreadPanelRows } from '@/server/utils/view-helpers';
+import { getActDisplayInfo, getOpenThreadPanelData, getOpenThreadPanelRows } from '@/server/utils/view-helpers';
 import {
   createPage,
   createChoice,
@@ -318,5 +318,49 @@ describe('getOpenThreadPanelRows', () => {
     ]);
 
     expect(result.map(row => row.id)).toEqual(['td-2', 'td-1']);
+  });
+
+  it('limits rows to six entries in urgency order', () => {
+    const result = getOpenThreadPanelRows([
+      { id: 'td-1', text: 'Low 1', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+      { id: 'td-2', text: 'High 1', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+      { id: 'td-3', text: 'Medium 1', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+      { id: 'td-4', text: 'Low 2', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
+      { id: 'td-5', text: 'High 2', threadType: ThreadType.DANGER, urgency: Urgency.HIGH },
+      { id: 'td-6', text: 'Medium 2', threadType: ThreadType.MORAL, urgency: Urgency.MEDIUM },
+      { id: 'td-7', text: 'Low 3', threadType: ThreadType.RESOURCE, urgency: Urgency.LOW },
+    ]);
+
+    expect(result.map(row => row.id)).toEqual(['td-2', 'td-5', 'td-3', 'td-6', 'td-1', 'td-4']);
+  });
+});
+
+describe('getOpenThreadPanelData', () => {
+  it('returns a grouped overflow summary for hidden rows', () => {
+    const result = getOpenThreadPanelData([
+      { id: 'td-1', text: 'High 1', threadType: ThreadType.DANGER, urgency: Urgency.HIGH },
+      { id: 'td-2', text: 'High 2', threadType: ThreadType.QUEST, urgency: Urgency.HIGH },
+      { id: 'td-3', text: 'High 3', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+      { id: 'td-4', text: 'High 4', threadType: ThreadType.MORAL, urgency: Urgency.HIGH },
+      { id: 'td-5', text: 'Medium 1', threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM },
+      { id: 'td-6', text: 'Medium 2', threadType: ThreadType.RESOURCE, urgency: Urgency.MEDIUM },
+      { id: 'td-7', text: 'Medium 3', threadType: ThreadType.RELATIONSHIP, urgency: Urgency.MEDIUM },
+      { id: 'td-8', text: 'Low 1', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+      { id: 'td-9', text: 'Low 2', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+      { id: 'td-10', text: 'Low 3', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+    ]);
+
+    expect(result.rows.map(row => row.id)).toEqual(['td-1', 'td-2', 'td-3', 'td-4', 'td-5', 'td-6']);
+    expect(result.overflowSummary).toBe('Not shown: 1 (medium), 3 (low)');
+  });
+
+  it('returns null overflow summary when all rows fit', () => {
+    const result = getOpenThreadPanelData([
+      { id: 'td-1', text: 'High', threadType: ThreadType.DANGER, urgency: Urgency.HIGH },
+      { id: 'td-2', text: 'Low', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
+    ]);
+
+    expect(result.rows).toHaveLength(2);
+    expect(result.overflowSummary).toBeNull();
   });
 });

@@ -569,7 +569,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
 
-  it('returns sorted open threads on initial render and in AJAX choice responses', async () => {
+  it('returns sorted open threads limited to six with overflow summaries on initial render and in AJAX choice responses', async () => {
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'Opening scene with multiple active threads.',
       choices: [
@@ -582,8 +582,13 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       constraintsAdded: [],
       constraintsRemoved: [],
       threadsAdded: [
-        { text: 'Check the abandoned supply route', threadType: 'QUEST', urgency: 'LOW' },
         { text: 'Stop the imminent sabotage', threadType: 'DANGER', urgency: 'HIGH' },
+        { text: 'Find the compromised courier', threadType: 'MYSTERY', urgency: 'HIGH' },
+        { text: 'Secure comms fallback', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        { text: 'Identify the planted observer', threadType: 'MYSTERY', urgency: 'MEDIUM' },
+        { text: 'Check the abandoned supply route', threadType: 'QUEST', urgency: 'LOW' },
+        { text: 'Collect reserve medkits', threadType: 'RESOURCE', urgency: 'LOW' },
+        { text: 'Mark low-traffic alleys', threadType: 'QUEST', urgency: 'LOW' },
       ],
       threadsResolved: [],
       newCanonFacts: [],
@@ -635,14 +640,25 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     await waitForMock(playRes.render);
 
     const playPayload = getMockCallArg(playRes.render, 0, 1) as
-      | { openThreadPanelRows?: Array<{ id: string; urgency: string; threadType: string }> }
+      | {
+          openThreadPanelRows?: Array<{ id: string; urgency: string; threadType: string }>;
+          openThreadOverflowSummary?: string | null;
+        }
       | undefined;
-    expect(playPayload?.openThreadPanelRows?.map(row => row.id)).toEqual(['td-2', 'td-1']);
+    expect(playPayload?.openThreadPanelRows?.map(row => row.id)).toEqual([
+      'td-1',
+      'td-2',
+      'td-3',
+      'td-4',
+      'td-5',
+      'td-6',
+    ]);
     expect(playPayload?.openThreadPanelRows?.[0]).toMatchObject({
-      id: 'td-2',
+      id: 'td-1',
       threadType: 'DANGER',
       urgency: 'HIGH',
     });
+    expect(playPayload?.openThreadOverflowSummary).toBe('Not shown: 1 (low)');
 
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'Continuation updates open threads.',
@@ -655,8 +671,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Find the hidden relay', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
-      threadsResolved: ['td-2'],
+      threadsAdded: [{ text: 'Interrogate the blackout source', threadType: 'DANGER', urgency: 'HIGH' }],
+      threadsResolved: ['td-5'],
       newCanonFacts: [],
       newCharacterCanonFacts: {},
       characterStateChangesAdded: [],
@@ -708,20 +724,29 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           success?: boolean;
           page?: {
             openThreads?: Array<{ id: string; threadType: string; urgency: string; text: string }>;
+            openThreadOverflowSummary?: string | null;
           };
         }
       | undefined;
     expect(choicePayload?.success).toBe(true);
-    expect(choicePayload?.page?.openThreads?.map(row => row.id)).toEqual(['td-3', 'td-1']);
+    expect(choicePayload?.page?.openThreads?.map(row => row.id)).toEqual([
+      'td-1',
+      'td-2',
+      'td-8',
+      'td-3',
+      'td-4',
+      'td-6',
+    ]);
     expect(choicePayload?.page?.openThreads).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'td-3',
-          threadType: 'INFORMATION',
-          urgency: 'MEDIUM',
-          text: 'Find the hidden relay',
+          id: 'td-8',
+          threadType: 'DANGER',
+          urgency: 'HIGH',
+          text: 'Interrogate the blackout source',
         }),
       ]),
     );
+    expect(choicePayload?.page?.openThreadOverflowSummary).toBe('Not shown: 1 (low)');
   });
 });

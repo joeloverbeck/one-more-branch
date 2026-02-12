@@ -52,7 +52,9 @@ describe('public client script', () => {
   it('contains dedicated open-thread panel render/rebuild function', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('function renderOpenThreadsPanel(openThreads)');
+    expect(script).toContain('function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary)');
+    expect(script).toContain('const OPEN_THREADS_PANEL_LIMIT = 6;');
+    expect(script).toContain('function buildOpenThreadOverflowSummary(hiddenThreads)');
     expect(script).toContain('function renderThreadBadgePill(threadType, urgency)');
     expect(script).toContain("document.getElementById('open-threads-panel')");
     expect(script).toContain('existingPanel.remove()');
@@ -61,7 +63,7 @@ describe('public client script', () => {
   it('updates open-thread panel from AJAX choice response data', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads);');
+    expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary);');
     expect(script).not.toContain('data.logScript');
     expect(script).not.toContain('executeLogScript');
     expect(script).toContain("if (!Array.isArray(openThreads) || openThreads.length === 0)");

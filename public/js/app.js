@@ -9,6 +9,7 @@
   const PROGRESS_POLL_INTERVAL_MS = 1200;
   const PHRASE_ROTATION_MIN_MS = 3500;
   const PHRASE_ROTATION_MAX_MS = 4500;
+  const OPEN_THREADS_PANEL_LIMIT = 6;
 
   const STAGE_PHRASE_POOLS = {
     PLANNING_PAGE: [
@@ -624,7 +625,48 @@
       return 3;
     }
 
-    function renderOpenThreadsPanel(openThreads) {
+    function buildOpenThreadOverflowSummary(hiddenThreads) {
+      if (!Array.isArray(hiddenThreads) || hiddenThreads.length === 0) {
+        return null;
+      }
+
+      var highCount = 0;
+      var mediumCount = 0;
+      var lowCount = 0;
+
+      hiddenThreads.forEach(function(thread) {
+        if (thread.urgency === 'HIGH') {
+          highCount += 1;
+          return;
+        }
+        if (thread.urgency === 'MEDIUM') {
+          mediumCount += 1;
+          return;
+        }
+        if (thread.urgency === 'LOW') {
+          lowCount += 1;
+        }
+      });
+
+      var parts = [];
+      if (highCount > 0) {
+        parts.push(highCount + ' (high)');
+      }
+      if (mediumCount > 0) {
+        parts.push(mediumCount + ' (medium)');
+      }
+      if (lowCount > 0) {
+        parts.push(lowCount + ' (low)');
+      }
+
+      if (parts.length === 0) {
+        return null;
+      }
+
+      return 'Not shown: ' + parts.join(', ');
+    }
+
+    function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary) {
       const existingPanel = document.getElementById('open-threads-panel');
 
       if (!Array.isArray(openThreads) || openThreads.length === 0) {
@@ -669,7 +711,14 @@
         return;
       }
 
-      const listHtml = normalizedThreads.map(function(thread) {
+      const visibleThreads = normalizedThreads.slice(0, OPEN_THREADS_PANEL_LIMIT);
+      const hiddenThreads = normalizedThreads.slice(OPEN_THREADS_PANEL_LIMIT);
+      const normalizedOverflowSummary =
+        typeof openThreadOverflowSummary === 'string' && openThreadOverflowSummary.trim().length > 0
+          ? openThreadOverflowSummary.trim()
+          : buildOpenThreadOverflowSummary(hiddenThreads);
+
+      const listHtml = visibleThreads.map(function(thread) {
         var urgencyClass = getOpenThreadUrgencyClass(thread.urgency);
         return '<li class="open-threads-item">'
           + renderThreadBadgePill(thread.threadType, thread.urgency)
@@ -682,9 +731,28 @@
         if (list) {
           list.innerHTML = listHtml;
         }
+        const existingSummary = existingPanel.querySelector('#open-threads-overflow-summary');
+        if (normalizedOverflowSummary) {
+          if (existingSummary) {
+            existingSummary.textContent = normalizedOverflowSummary;
+          } else {
+            const summary = document.createElement('div');
+            summary.className = 'open-threads-overflow-summary';
+            summary.id = 'open-threads-overflow-summary';
+            summary.textContent = normalizedOverflowSummary;
+            existingPanel.appendChild(summary);
+          }
+        } else if (existingSummary) {
+          existingSummary.remove();
+        }
         return;
       }
 
+      const summaryHtml = normalizedOverflowSummary
+        ? '<div class="open-threads-overflow-summary" id="open-threads-overflow-summary">'
+            + escapeHtml(normalizedOverflowSummary)
+            + '</div>'
+        : '';
       const panel = document.createElement('aside');
       panel.className = 'open-threads-panel';
       panel.id = 'open-threads-panel';
@@ -692,7 +760,8 @@
       panel.innerHTML = '<h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>'
         + '<ul class="open-threads-list" id="open-threads-list">'
         + listHtml
-        + '</ul>';
+        + '</ul>'
+        + summaryHtml;
 
       narrative.before(panel);
     }
@@ -1067,7 +1136,7 @@
         history.pushState({}, '', `/play/${storyId}?page=${currentPageId}`);
 
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
-        renderOpenThreadsPanel(data.page.openThreads);
+        renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary);
         renderStateChanges(data.page.stateChanges);
         renderDeviationBanner(data.deviationInfo);
 
