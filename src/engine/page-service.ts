@@ -481,6 +481,12 @@ export async function generateNextPage(
   validateContinuationStructureVersion(story, parentPage);
 
   const requestId = createGenerationRequestId();
+  const continuationLogContext = {
+    mode: 'continuation' as const,
+    storyId: story.id,
+    pageId: parentPage.id,
+    requestId,
+  };
   const maxPageId = await storage.getMaxPageId(story.id);
   const parentState = collectParentState(parentPage);
   const currentStructureVersion = resolveActiveStructureVersion(story, parentPage);
@@ -559,8 +565,15 @@ export async function generateNextPage(
       ...parentState.structureState,
       pagesInCurrentBeat: parentState.structureState.pagesInCurrentBeat + 1,
     };
+    const analystAttempt = 1;
+    logger.info('Generation stage started', {
+      ...continuationLogContext,
+      attempt: analystAttempt,
+      stage: 'analyst',
+    });
+    const analystStart = Date.now();
     try {
-      emitGenerationStage(onGenerationStage, 'ANALYZING_SCENE', 'started', 1);
+      emitGenerationStage(onGenerationStage, 'ANALYZING_SCENE', 'started', analystAttempt);
       analystResult = await generateAnalystEvaluation(
         {
           narrative: writerResult.narrative,
@@ -570,8 +583,23 @@ export async function generateNextPage(
         },
         { apiKey },
       );
-      emitGenerationStage(onGenerationStage, 'ANALYZING_SCENE', 'completed', 1);
+      const analystDurationMs = Date.now() - analystStart;
+      emitGenerationStage(onGenerationStage, 'ANALYZING_SCENE', 'completed', analystAttempt);
+      logger.info('Generation stage completed', {
+        ...continuationLogContext,
+        attempt: analystAttempt,
+        stage: 'analyst',
+        durationMs: analystDurationMs,
+      });
     } catch (error) {
+      const analystDurationMs = Date.now() - analystStart;
+      logger.warn('Generation stage failed', {
+        ...continuationLogContext,
+        attempt: analystAttempt,
+        stage: 'analyst',
+        durationMs: analystDurationMs,
+        error,
+      });
       // Graceful degradation: log warning, continue without analyst data
       logger.warn('Analyst evaluation failed, continuing with defaults', { error });
     }
@@ -596,16 +624,45 @@ export async function generateNextPage(
     isActualDeviation(result, story, currentStructureVersion) &&
     isDeviation(result.deviation)
   ) {
-    const devResult = await handleDeviation(
-      {
-        story,
-        currentVersion: currentStructureVersion!,
-        parentStructureState: parentState.structureState,
-        deviation: result.deviation,
-        newPageId,
-      },
-      apiKey,
-    );
+    const rewriteAttempt = 1;
+    logger.info('Generation stage started', {
+      ...continuationLogContext,
+      attempt: rewriteAttempt,
+      stage: 'structure-rewrite',
+    });
+    emitGenerationStage(onGenerationStage, 'RESTRUCTURING_STORY', 'started', rewriteAttempt);
+    const rewriteStart = Date.now();
+    let devResult: Awaited<ReturnType<typeof handleDeviation>>;
+    try {
+      devResult = await handleDeviation(
+        {
+          story,
+          currentVersion: currentStructureVersion!,
+          parentStructureState: parentState.structureState,
+          deviation: result.deviation,
+          newPageId,
+        },
+        apiKey,
+      );
+    } catch (error) {
+      const rewriteDurationMs = Date.now() - rewriteStart;
+      logger.error('Generation stage failed', {
+        ...continuationLogContext,
+        attempt: rewriteAttempt,
+        stage: 'structure-rewrite',
+        durationMs: rewriteDurationMs,
+        error,
+      });
+      throw error;
+    }
+    const rewriteDurationMs = Date.now() - rewriteStart;
+    emitGenerationStage(onGenerationStage, 'RESTRUCTURING_STORY', 'completed', rewriteAttempt);
+    logger.info('Generation stage completed', {
+      ...continuationLogContext,
+      attempt: rewriteAttempt,
+      stage: 'structure-rewrite',
+      durationMs: rewriteDurationMs,
+    });
     storyForPage = devResult.updatedStory;
     activeStructureVersion = devResult.activeVersion;
     deviationInfo = devResult.deviationInfo;

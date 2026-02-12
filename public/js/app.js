@@ -32,6 +32,46 @@
       'Cross-referencing vibes with hard evidence...',
       'Sharpening pencils to a tactical point...',
       'Budgeting exactly seven units of suspense...',
+      'Interviewing three raccoons about long-term strategy...',
+      'Mapping alternate futures on a napkin atlas...',
+      'Counting plot beats with abacus-level confidence...',
+      'Assembling a task force of overqualified pigeons...',
+      'Translating chaos into bullet points and coffee rings...',
+      'Scheduling destiny in 15-minute calendar blocks...',
+      'Running a tabletop exercise for worst-case melodrama...',
+      'Tuning the risk radar to "politely catastrophic"...',
+      'Checking if the backup prophecy has a backup...',
+      'Building a tiny model of the plot out of cereal...',
+      'Holding auditions for the next big complication...',
+      'Labeling each possibility with a caution sticker...',
+      'Comparing timelines for structural squeaks...',
+      'Drafting contingency plans on the back of moonlight...',
+      'Assigning cliffhangers to their proper jurisdictions...',
+      'Sending reconnaissance balloons into chapter two...',
+      'Running cost estimates on emotional collateral...',
+      'Verifying assumptions with a dramatic checklist...',
+      'Plotting escape routes from predictable outcomes...',
+      'Stress-testing Plan A against the laws of irony...',
+      'Calculating odds with a haunted spreadsheet...',
+      'Summoning a consultant possum for tactical input...',
+      'Folding contingency plans into paper airplanes...',
+      'Checking whether destiny signed the waiver...',
+      'Setting up cones around high-risk plot zones...',
+      'Feeding strategy grapes to the idea committee...',
+      'Using divining rods to locate hidden opportunities...',
+      'Building a decision tree out of toothpicks...',
+      'Forecasting drama with a barometer and vibes...',
+      'Asking the office fern to rank our options...',
+      'Air-dropping priorities into a sandbox of chaos...',
+      'Measuring uncertainty in teaspoons and sighs...',
+      'Consulting the emergency binder labeled "yikes"...',
+      'Running a war game with tiny cardboard villains...',
+      'Assigning probability hats to every wild guess...',
+      'Negotiating timeline treaties at the snack table...',
+      'Drafting scenario maps with glitter pens only...',
+      'Shuffling strategic options like tarot cards...',
+      'Placing caution tape around suspiciously easy plans...',
+      'Checking if fate left comments on the whiteboard...',
     ],
     WRITING_OPENING_PAGE: [
       'Rolling out the opening scene carpet...',
@@ -54,6 +94,46 @@
       'Pressing record on the cinematic narrator voice...',
       'Rehearsing the first reveal with jazz hands...',
       'Opening the curtain on controlled narrative chaos...',
+      'Unboxing the very first sentence with white gloves...',
+      'Loading the intro cannon with premium intrigue...',
+      'Hanging a neon sign that says "pay attention"...',
+      'Deploying a carefully trained opening gasp...',
+      'Teaching paragraph one how to strut confidently...',
+      'Spritzing the scene with fresh-pressed atmosphere...',
+      'Dialing the narrative camera to impossible close-up...',
+      'Placing a breadcrumb trail of irresistible questions...',
+      'Testing the hook on a focus group of daydreamers...',
+      'Repainting the sky in chapter-one colors...',
+      'Priming the conflict engine for immediate ignition...',
+      'Adding velvet ropes around the first big reveal...',
+      'Handing the narrator a megaphone and a secret...',
+      'Sculpting the opening beat with dramatic chisels...',
+      'Letting the first line do one theatrical bow...',
+      'Tightening the intro knots with narrative pliers...',
+      'Positioning the stakes where everyone can trip on them...',
+      'Charging the prologue batteries to 100 percent...',
+      'Inviting curiosity to kick down the front door...',
+      'Setting the tone dial to "you are now invested"...',
+      'Sending the opening shot through a glamour filter...',
+      'Preheating the first page to cinematic temperature...',
+      'Waxing the runway for a dramatic character entrance...',
+      'Packing the intro with legally approved goosebumps...',
+      'Cueing a choir of suspiciously relevant violins...',
+      'Teaching the first paragraph to wink at the reader...',
+      'Unleashing a tiny stampede of immediate questions...',
+      'Giving the hook a cape and excellent timing...',
+      'Rolling out red carpet for the inciting incident...',
+      'Polishing the premise until it catches moonlight...',
+      'Adjusting atmosphere levels to "electric storm"...',
+      'Planting one breadcrumb and seven complications...',
+      'Sneaking tension into the room through the vents...',
+      'Ironing the opening beats until they snap...',
+      'Installing fireworks behind the first reveal...',
+      'Teaching chapter one to kick the door in politely...',
+      'Loading the scene with premium-grade anticipation...',
+      'Strapping a rocket booster to the first conflict...',
+      'Rehearsing the cold open with dramatic fanfare...',
+      'Spiking the intro punch bowl with intrigue...',
     ],
     WRITING_CONTINUING_PAGE: [
       'Stitching consequences into the timeline...',
@@ -76,6 +156,46 @@
       'Guiding the pacing with a traffic baton...',
       'Sliding the dominoes into place with tweezers...',
       'Issuing plot passports for cross-scene travel...',
+      'Escorting momentum past the valley of distractions...',
+      'Tightening cause-and-effect with a torque wrench...',
+      'Stacking fresh dilemmas like unstable pancakes...',
+      'Refilling the tension reservoir one drop at a time...',
+      'Sending character decisions through quality control...',
+      'Keeping the subplot orchestra in the same tempo...',
+      'Shoveling narrative coal into the third-act furnace...',
+      'Documenting every consequence for legal reasons...',
+      'Steering this chapter through emotional weather...',
+      'Balancing revelations on a very narrow shelf...',
+      'Adding controlled sparks to the conflict wiring...',
+      'Rotating viewpoints to prevent dramatic traffic jams...',
+      'Escalating stakes with OSHA-compliant urgency...',
+      'Fastening the next beat with industrial foreshadowing...',
+      'Checking dialogue pressure before the next release...',
+      'Threading payoffs through active construction zones...',
+      'Keeping the emotional RPMs in the red...',
+      'Redirecting loose chaos into productive chaos...',
+      'Feeding the suspense creature on a strict schedule...',
+      'Escorting every choice toward glorious consequences...',
+      'Passing the scene baton without dropping any secrets...',
+      'Inflating the conflict balloon to optimal squeak...',
+      'Splicing fresh momentum into the narrative bloodstream...',
+      'Escorting revelations through a crowded hallway...',
+      'Tightening suspense screws until they hum...',
+      'Giving the stakes a double shot of espresso...',
+      'Laying banana peels in front of bad decisions...',
+      'Sweeping emotional shrapnel into future chapters...',
+      'Keeping the tension kite aloft in crosswinds...',
+      'Threading character growth through laser grids...',
+      'Adding speed bumps before every easy answer...',
+      'Scheduling consequences for prime-time impact...',
+      'Greasing the plot gears with dramatic irony...',
+      'Rolling the next complication down a marble track...',
+      'Letting the subtext simmer on low chaos...',
+      'Installing handrails on this slippery escalation...',
+      'Routing every shortcut straight into trouble...',
+      'Pressurizing the next beat for maximum pop...',
+      'Funneling uncertainty into a very loud maybe...',
+      'Keeping this chapter one decision away from disaster...',
     ],
     ANALYZING_SCENE: [
       'Checking the scene for narrative wobble...',
@@ -98,6 +218,46 @@
       'Weighing emotional impact on calibrated scales...',
       'Decoding facial expressions into strategic data...',
       'Marking potential plot potholes with neon flags...',
+      'Running forensic tests on suspicious adverbs...',
+      'Cross-examining every beat for motive and means...',
+      'Measuring subtext depth with sonar equipment...',
+      'Cataloging narrative anomalies by timestamp...',
+      'Comparing stated goals to actual chaos produced...',
+      'Tracing dramatic footprints across the scene floor...',
+      'Stress-auditing every reaction for plausibility...',
+      'Triaging unresolved tension by urgency level...',
+      'Putting each line under a microscope of intent...',
+      'Building an evidence board out of eyebrow raises...',
+      'Searching for quiet details doing loud work...',
+      'Tagging emotional pivots with forensic tape...',
+      'Verifying that every reveal earns its oxygen...',
+      'Checking continuity seams for daylight leaks...',
+      'Profiling conflict patterns for repeat offenders...',
+      'Testing interpretation theories in a wind tunnel...',
+      'Flagging dialogue that knows too much too soon...',
+      'Auditing who changed, why, and at what cost...',
+      'Reconstructing the scene from consequence fragments...',
+      'Checking whether the silence says more than the speech...',
+      'Running motive prints through the clue database...',
+      'Timing each pause with a suspense stopwatch...',
+      'Sampling the vibe for trace amounts of foreshadowing...',
+      'Inspecting reactions for counterfeit confidence...',
+      'Charting emotional weather by line and gesture...',
+      'Testing every alibi under a hot desk lamp...',
+      'Mapping power shifts with tiny magnetic arrows...',
+      'Verifying who blinked first and why...',
+      'Sifting dialogue sediment for hidden gold...',
+      'Comparing what was said to what was swallowed...',
+      'X-raying the scene for concealed turning points...',
+      'Measuring dramatic friction with calibrated gloves...',
+      'Isolating the exact moment the room changed shape...',
+      'Tagging suspicious coincidences for lab review...',
+      'Checking whether each choice leaves a footprint...',
+      'Triangulating tension from tone, timing, and eye contact...',
+      'Profiling every beat for intent-to-impact ratio...',
+      'Stress-testing assumptions against inconvenient facts...',
+      'Pinning red yarn between questions and consequences...',
+      'Auditing the unspoken stuff for maximum significance...',
     ],
     RESTRUCTURING_STORY: [
       'Rearranging story beams without waking dragons...',
@@ -120,7 +280,54 @@
       'Swapping in a sturdier sequence of events...',
       'Labeling every moving part "fragile but important"...',
       'Running final inspections with a hard hat...',
+      'Relocating major twists to safer load-bearing chapters...',
+      'Installing seismic braces for surprise reveals...',
+      'Regrading the slope so tension flows downhill...',
+      'Replacing narrative scaffolding with permanent supports...',
+      'Cutting new doorways between disconnected scenes...',
+      'Rebalancing act breaks to avoid dramatic sinkholes...',
+      'Retrofitting the climax with reinforced cause-and-effect...',
+      'Demoting decorative detours to optional side streets...',
+      'Rerouting exposition through cleaner pipelines...',
+      'Re-centering the core conflict on solid bedrock...',
+      'Lifting sagging subplots with hydraulic jacks...',
+      'Refitting the opening so the ending actually fits...',
+      'Realigning chapter joints for smoother movement...',
+      'Bolstering weak transitions with structural callbacks...',
+      'Converting dead-end beats into through-lines...',
+      'Consolidating duplicate conflicts into one heavy hitter...',
+      'Replacing narrative bloat with precision-engineered stakes...',
+      'Moving the emotional keystone back into place...',
+      'Repainting the whole arc with clearer contrast...',
+      'Running a full structural scan before reopening...',
+      'Installing shock absorbers on every major twist...',
+      'Redistributing weight away from the saggy middle...',
+      'Replacing decorative scenes with load-bearing drama...',
+      'Threading steel cables through the act breaks...',
+      'Reinforcing weak joints with callback brackets...',
+      'Rebuilding the climax staircase to code...',
+      'Moving exposition crates off emergency exits...',
+      'Swapping brittle beats for tempered story glass...',
+      'Pouring fresh concrete under the central conflict...',
+      'Converting narrative dead space into useful corridors...',
+      'Retensioning the arc so it does not wobble...',
+      'Installing pressure valves for high-stakes moments...',
+      'Aligning every subplot gear with the master crank...',
+      'Reframing chapter walls to fit bigger payoffs...',
+      'Replacing mystery drywall with transparent intent...',
+      'Upgrading transitions from rope bridge to highway...',
+      'Hoisting delayed consequences into plain view...',
+      'Routing emotional load through stronger pillars...',
+      'Removing decorative scaffolds still pretending to be scenes...',
+      'Checking the whole structure for sequel-proof stability...',
     ],
+  };
+  const STAGE_DISPLAY_NAMES = {
+    PLANNING_PAGE: 'PLANNING',
+    WRITING_OPENING_PAGE: 'WRITING',
+    WRITING_CONTINUING_PAGE: 'WRITING',
+    ANALYZING_SCENE: 'ANALYZING',
+    RESTRUCTURING_STORY: 'RESTRUCTURING',
   };
 
   function getApiKey() {
@@ -160,7 +367,10 @@
   }
 
   function createLoadingProgressController(loadingElement) {
-    var statusTextElement = loadingElement ? loadingElement.querySelector('p') : null;
+    var stageTextElement = loadingElement ? loadingElement.querySelector('.loading-stage') : null;
+    var statusTextElement = loadingElement
+      ? loadingElement.querySelector('.loading-status') || loadingElement.querySelector('p')
+      : null;
     var fallbackText = statusTextElement && statusTextElement.textContent
       ? statusTextElement.textContent
       : 'Loading...';
@@ -174,6 +384,12 @@
     function setStatusText(text) {
       if (statusTextElement) {
         statusTextElement.textContent = text;
+      }
+    }
+
+    function setStageText(stageName) {
+      if (stageTextElement) {
+        stageTextElement.textContent = stageName || '';
       }
     }
 
@@ -195,10 +411,16 @@
         clearTimeout(phraseTimeout);
         phraseTimeout = null;
       }
+      setStageText('');
       setStatusText(fallbackText);
     }
 
     function schedulePhraseRotation() {
+      if (phraseTimeout !== null) {
+        clearTimeout(phraseTimeout);
+        phraseTimeout = null;
+      }
+
       if (stopped || !currentStage) {
         return;
       }
@@ -228,16 +450,17 @@
 
       if (currentStage !== stage) {
         currentStage = stage;
+        setStageText(STAGE_DISPLAY_NAMES[stage] || '');
         currentPhrase = '';
-        if (phraseTimeout !== null) {
-          clearTimeout(phraseTimeout);
-          phraseTimeout = null;
-        }
+        currentPhrase = pickRandomPhrase(phrases, currentPhrase);
+        setStatusText(currentPhrase);
+        schedulePhraseRotation();
+        return;
       }
 
-      currentPhrase = pickRandomPhrase(phrases, currentPhrase);
-      setStatusText(currentPhrase);
-      schedulePhraseRotation();
+      if (phraseTimeout === null) {
+        schedulePhraseRotation();
+      }
     }
 
     async function pollProgress() {

@@ -1019,6 +1019,29 @@ describe('page-service', () => {
         [{ stage: 'ANALYZING_SCENE', status: 'started', attempt: 1 }],
         [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1 }],
       ]);
+      expect(mockedLogger.info).toHaveBeenCalledWith(
+        'Generation stage started',
+        expect.objectContaining({
+          mode: 'continuation',
+          storyId: story.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+          stage: 'analyst',
+          attempt: 1,
+        }),
+      );
+      expect(mockedLogger.info).toHaveBeenCalledWith(
+        'Generation stage completed',
+        expect.objectContaining({
+          mode: 'continuation',
+          storyId: story.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+          stage: 'analyst',
+          attempt: 1,
+          durationMs: expect.any(Number),
+        }),
+      );
     });
 
     it('aborts continuation generation before writer call when planner fails', async () => {
@@ -1784,6 +1807,7 @@ describe('page-service', () => {
     });
 
     it('triggers structure rewrite and creates new version when deviation is detected', async () => {
+      const onGenerationStage = jest.fn();
       const structure = buildStructure();
       const initialStructureVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
@@ -1889,7 +1913,13 @@ describe('page-service', () => {
         rawResponse: 'raw-analyst',
       });
 
-      const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
+      const { page, updatedStory } = await generateNextPage(
+        story,
+        parentPage,
+        0,
+        'test-key',
+        onGenerationStage,
+      );
 
       expect(mockedCreateStructureRewriter).toHaveBeenCalled();
       expect(mockRewriter.rewriteStructure).toHaveBeenCalledWith(
@@ -1915,6 +1945,35 @@ describe('page-service', () => {
       );
       expect(updatedStory.structureVersions?.[1]?.createdAtPageId).toBe(page.id);
       expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
+      expect(onGenerationStage.mock.calls).toEqual(
+        expect.arrayContaining([
+          [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
+          [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 }],
+        ]),
+      );
+      expect(mockedLogger.info).toHaveBeenCalledWith(
+        'Generation stage started',
+        expect.objectContaining({
+          mode: 'continuation',
+          storyId: story.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+          stage: 'structure-rewrite',
+          attempt: 1,
+        }),
+      );
+      expect(mockedLogger.info).toHaveBeenCalledWith(
+        'Generation stage completed',
+        expect.objectContaining({
+          mode: 'continuation',
+          storyId: story.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+          stage: 'structure-rewrite',
+          attempt: 1,
+          durationMs: expect.any(Number),
+        }),
+      );
     });
 
     it('uses parent page structureVersionId for branch isolation instead of latest version', async () => {
@@ -2519,6 +2578,19 @@ describe('page-service', () => {
         pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
       });
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Generation stage failed',
+        expect.objectContaining({
+          mode: 'continuation',
+          storyId: story.id,
+          pageId: parentPage.id,
+          requestId: expect.any(String),
+          stage: 'analyst',
+          attempt: 1,
+          durationMs: expect.any(Number),
+          error: expect.any(Error),
+        }),
+      );
     });
 
     describe('pacing response', () => {
