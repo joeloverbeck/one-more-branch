@@ -20,6 +20,7 @@ import {
 // Continuation-specific sections
 import {
   CONTINUATION_CONTINUITY_RULES,
+  CONTINUATION_CONTINUITY_RULES_BIBLE,
   CHARACTER_CANON_VS_STATE,
 } from './sections/continuation/index.js';
 
@@ -111,14 +112,6 @@ const SHARED_DATA_SECTIONS = [
 const OPENING_DATA_SECTIONS = [] as const;
 
 /**
- * Continuation-specific data sections.
- */
-const CONTINUATION_DATA_SECTIONS = [
-  CONTINUATION_CONTINUITY_RULES,
-  CHARACTER_CANON_VS_STATE,
-] as const;
-
-/**
  * Composes the creative system prompt (shared by both opening and continuation).
  * Contains only persona, content policy, prose style, and ending guidelines.
  */
@@ -144,8 +137,15 @@ export function composeOpeningDataRules(options?: { choiceGuidance?: 'basic' | '
  * Composes the data rules for continuation prompts.
  * These go in the user message, not the system message.
  */
-export function composeContinuationDataRules(options?: { choiceGuidance?: 'basic' | 'strict' }): string {
-  const sections: string[] = [...SHARED_DATA_SECTIONS, ...CONTINUATION_DATA_SECTIONS];
+export function composeContinuationDataRules(options?: {
+  choiceGuidance?: 'basic' | 'strict';
+  hasStoryBible?: boolean;
+}): string {
+  const continuationSections = options?.hasStoryBible
+    ? [CONTINUATION_CONTINUITY_RULES_BIBLE]
+    : [CONTINUATION_CONTINUITY_RULES, CHARACTER_CANON_VS_STATE];
+
+  const sections: string[] = [...SHARED_DATA_SECTIONS, ...continuationSections];
 
   if (options?.choiceGuidance === 'strict') {
     sections.push(STRICT_CHOICE_GUIDELINES);

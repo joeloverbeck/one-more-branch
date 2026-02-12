@@ -155,4 +155,37 @@ describe('composeContinuationDataRules', () => {
     const rules = composeContinuationDataRules({ choiceGuidance: 'basic' });
     expect(rules).not.toContain('CHOICE REQUIREMENTS:');
   });
+
+  describe('when hasStoryBible is true', () => {
+    it('uses bible continuity rules instead of standard rules', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).toContain('RELEVANT CANON FACTS');
+      expect(rules).toContain('SCENE CHARACTERS');
+      expect(rules).toContain('CHARACTER PROFILES vs CURRENT STATE');
+    });
+
+    it('does NOT include standard continuity rule headers', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).not.toContain('ESTABLISHED WORLD FACTS');
+      expect(rules).not.toContain('CHARACTER INFORMATION');
+      expect(rules).not.toContain('NPC CURRENT STATE');
+    });
+
+    it('does NOT include CHARACTER CANON vs CHARACTER STATE section', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).not.toContain('CHARACTER CANON vs CHARACTER STATE:');
+    });
+
+    it('still includes shared data sections', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).toContain('ACTIVE STATE TRACKING');
+      expect(rules).toContain('INVENTORY MANAGEMENT:');
+      expect(rules).toContain('HEALTH MANAGEMENT:');
+    });
+
+    it('still supports strict choice guidelines', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true, choiceGuidance: 'strict' });
+      expect(rules).toContain('CHOICE REQUIREMENTS:');
+    });
+  });
 });

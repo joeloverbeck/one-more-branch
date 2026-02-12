@@ -203,6 +203,49 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).toContain('No replay of the prior rooftop chase');
   });
 
+  it('uses bible continuity rules when storyBible is present', () => {
+    const messages = buildContinuationPrompt(
+      makeContext({
+        storyBible: {
+          sceneWorldContext: 'A rain-soaked city at midnight.',
+          relevantCharacters: [
+            {
+              name: 'Vex',
+              role: 'antagonist',
+              relevantProfile: 'Cybernetic enforcer',
+              speechPatterns: 'Clipped, military jargon',
+              protagonistRelationship: 'Pursuer',
+              currentState: 'Wounded from rooftop fight',
+            },
+          ],
+          relevantCanonFacts: ['The broadcast tower is the only relay in the city.'],
+          relevantHistory: 'The protagonist escaped the safehouse two scenes ago.',
+        },
+      }),
+    );
+    const userMessage = messages.find(m => m.role === 'user');
+
+    // Bible continuity rules should reference Story Bible headers
+    expect(userMessage?.content).toContain('RELEVANT CANON FACTS');
+    expect(userMessage?.content).toContain('SCENE CHARACTERS');
+    expect(userMessage?.content).toContain('CHARACTER PROFILES vs CURRENT STATE');
+
+    // Should NOT contain the old non-bible headers in data rules
+    expect(userMessage?.content).not.toContain('CHARACTER CANON vs CHARACTER STATE:');
+  });
+
+  it('uses standard continuity rules when storyBible is absent', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const userMessage = messages.find(m => m.role === 'user');
+
+    // Standard rules should reference old headers
+    expect(userMessage?.content).toContain('ESTABLISHED WORLD FACTS');
+    expect(userMessage?.content).toContain('CHARACTER CANON vs CHARACTER STATE:');
+
+    // Should NOT contain bible-specific headers in data rules
+    expect(userMessage?.content).not.toContain('CHARACTER PROFILES vs CURRENT STATE');
+  });
+
   it('does NOT include data rules in system message', () => {
     const messages = buildContinuationPrompt(makeContext());
     const systemMessage = messages.find(m => m.role === 'system');

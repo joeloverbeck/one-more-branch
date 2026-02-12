@@ -4,6 +4,7 @@
 
 import {
   CONTINUATION_CONTINUITY_RULES,
+  CONTINUATION_CONTINUITY_RULES_BIBLE,
   CHARACTER_CANON_VS_STATE,
 } from '../../../../../../src/llm/prompts/sections/continuation/continuity-rules.js';
 
@@ -42,6 +43,43 @@ describe('continuation continuity-rules sections', () => {
 
     it('includes consistency verification section', () => {
       expect(CONTINUATION_CONTINUITY_RULES).toContain('CONSISTENCY VERIFICATION');
+    });
+  });
+
+  describe('CONTINUATION_CONTINUITY_RULES_BIBLE', () => {
+    it('is a non-empty string', () => {
+      expect(typeof CONTINUATION_CONTINUITY_RULES_BIBLE).toBe('string');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE.length).toBeGreaterThan(0);
+    });
+
+    it('includes section header with CONTINUATION marker', () => {
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('CONTINUITY RULES (CONTINUATION):');
+    });
+
+    it('references Story Bible headers instead of old headers', () => {
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('RELEVANT CANON FACTS');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('SCENE CHARACTERS');
+    });
+
+    it('does NOT reference old section headers', () => {
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).not.toContain('ESTABLISHED WORLD FACTS');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).not.toContain('CHARACTER INFORMATION');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).not.toContain('NPC CURRENT STATE');
+    });
+
+    it('includes unified character profile explanation', () => {
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('CHARACTER PROFILES vs CURRENT STATE');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('SCENE CHARACTERS section unifies');
+    });
+
+    it('prohibits retcons', () => {
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('RETCONS ARE FORBIDDEN');
+    });
+
+    it('includes updated consistency verification referencing bible headers', () => {
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('CONSISTENCY VERIFICATION');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('RELEVANT CANON FACTS');
+      expect(CONTINUATION_CONTINUITY_RULES_BIBLE).toContain('SCENE CHARACTERS profiles');
     });
   });
 

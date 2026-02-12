@@ -216,6 +216,31 @@ describe('continuation data rules composition', () => {
       expect(rules).not.toContain('CHOICE REQUIREMENTS:');
     });
   });
+
+  describe('with hasStoryBible: true', () => {
+    it('uses bible continuity rules referencing RELEVANT CANON FACTS and SCENE CHARACTERS', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).toContain('RELEVANT CANON FACTS');
+      expect(rules).toContain('SCENE CHARACTERS');
+      expect(rules).toContain('CHARACTER PROFILES vs CURRENT STATE');
+    });
+
+    it('does NOT include standard continuity headers or CHARACTER CANON vs STATE', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).not.toContain('ESTABLISHED WORLD FACTS');
+      expect(rules).not.toContain('NPC CURRENT STATE');
+      expect(rules).not.toContain('CHARACTER CANON vs CHARACTER STATE:');
+    });
+
+    it('still includes shared data sections', () => {
+      const rules = composeContinuationDataRules({ hasStoryBible: true });
+      expect(rules).toContain('ACTIVE STATE TRACKING');
+      expect(rules).toContain('INVENTORY MANAGEMENT:');
+      expect(rules).toContain('HEALTH MANAGEMENT:');
+      expect(rules).toContain('FIELD SEPARATION:');
+      expect(rules).toContain('PROTAGONIST AFFECT (EMOTIONAL STATE SNAPSHOT):');
+    });
+  });
 });
 
 describe('build system prompt options', () => {

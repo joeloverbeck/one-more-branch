@@ -31,6 +31,36 @@ Before generating your response, mentally verify:
 4. Am I respecting the protagonist's current health conditions?
 5. Am I acknowledging active threats and constraints?`;
 
+export const CONTINUATION_CONTINUITY_RULES_BIBLE = `CONTINUITY RULES (CONTINUATION):
+You are continuing an EXISTING story. Consistency with established facts is essential.
+
+DO NOT CONTRADICT:
+- RELEVANT CANON FACTS - permanent world-building truths listed in the STORY BIBLE section
+- SCENE CHARACTERS - permanent character traits and branch-specific state listed in the STORY BIBLE section
+- YOUR INVENTORY - items the protagonist currently possesses
+- YOUR HEALTH - current physical conditions
+- CURRENT LOCATION, ACTIVE THREATS, ACTIVE CONSTRAINTS, OPEN THREADS - the current situation
+
+CHARACTER PROFILES vs CURRENT STATE:
+The SCENE CHARACTERS section unifies permanent character traits (profile) and branch-specific events (current state) into a single entry per character. Treat profile facts as cross-branch canon and current state facts as branch-specific context. Both are read-only prompt context for the writer.
+
+WHEN NEW FACTS EMERGE:
+- Weave them into narrative and sceneSummary naturally.
+
+RETCONS ARE FORBIDDEN:
+- Do NOT change names, roles, species, or relationships already established
+- Do NOT contradict previously established abilities or limitations
+- Do NOT "forget" inventory items, health conditions, or active state
+- Work WITH established facts, not around them
+
+CONSISTENCY VERIFICATION:
+Before generating your response, mentally verify:
+1. Does my narrative contradict any RELEVANT CANON FACTS?
+2. Does my narrative contradict any SCENE CHARACTERS profiles or current state?
+3. Am I using inventory items the protagonist actually has?
+4. Am I respecting the protagonist's current health conditions?
+5. Am I acknowledging active threats and constraints?`;
+
 export const CHARACTER_CANON_VS_STATE = `CHARACTER CANON vs CHARACTER STATE:
 Use these categories as interpretation aids for continuity, not as output fields.
 

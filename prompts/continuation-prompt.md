@@ -15,6 +15,11 @@ When a `storyBible` is present on the context (i.e., the Lorekeeper has curated 
 - **NPC CURRENT STATE** - subsumed by `storyBible.relevantCharacters[].currentState`
 - **EARLIER SCENE SUMMARIES** - replaced by `storyBible.relevantHistory`
 
+The **DATA & STATE RULES** section also adapts when the Story Bible is present:
+
+- The continuity rules reference **RELEVANT CANON FACTS** and **SCENE CHARACTERS** (the actual Story Bible headers) instead of "ESTABLISHED WORLD FACTS", "CHARACTER INFORMATION", and "NPC CURRENT STATE".
+- The **CHARACTER CANON vs CHARACTER STATE** section is omitted entirely, because the Story Bible's SCENE CHARACTERS entries unify permanent profile and branch-specific state. A brief explanation of this unification is included in the bible-variant continuity rules.
+
 The following sections are **always included** regardless of Story Bible presence (they are small and always relevant):
 
 - Active state (location, threats, constraints, threads)

@@ -74,8 +74,11 @@ export function buildContinuationPrompt(
   context: ContinuationContext,
   options?: PromptOptions,
 ): ChatMessage[] {
-  const dataRules = composeContinuationDataRules(options);
   const hasBible = !!context.storyBible;
+  const dataRules = composeContinuationDataRules({
+    ...options,
+    hasStoryBible: hasBible,
+  });
 
   // When bible is present, these sections are replaced by the Story Bible
   const worldSection = hasBible
