@@ -52,7 +52,7 @@ describe('public client script', () => {
   it('contains dedicated open-thread panel render/rebuild function', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary)');
+    expect(script).toContain('function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, narrativeElement)');
     expect(script).toContain('const OPEN_THREADS_PANEL_LIMIT = 6;');
     expect(script).toContain('function buildOpenThreadOverflowSummary(hiddenThreads)');
     expect(script).toContain('function renderThreadBadgePill(threadType, urgency)');
@@ -63,7 +63,7 @@ describe('public client script', () => {
   it('updates open-thread panel from AJAX choice response data', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary);');
+    expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, narrative);');
     expect(script).not.toContain('data.logScript');
     expect(script).not.toContain('executeLogScript');
     expect(script).toContain("if (!Array.isArray(openThreads) || openThreads.length === 0)");
@@ -109,12 +109,12 @@ describe('public client script', () => {
   it('renders play-page errors in inline alert block instead of browser prompt alerts', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('function showPlayError(message)');
-    expect(script).toContain('function clearPlayError()');
-    expect(script).toContain("var errorBlock = choicesSection.querySelector('#play-error');");
-    expect(script).toContain("showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice');");
+    expect(script).toContain('function showPlayError(message, choicesSectionEl)');
+    expect(script).toContain('function clearPlayError(choicesSectionEl)');
+    expect(script).toContain("var errorBlock = choicesSectionEl.querySelector('#play-error');");
+    expect(script).toContain("showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);");
     expect(script).toContain(
-      "showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');",
+      "showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.', choicesSection);",
     );
     expect(script).not.toContain("alert(error instanceof Error ? error.message : 'Failed to add custom choice');");
     expect(script).not.toContain(
@@ -133,7 +133,7 @@ describe('public client script', () => {
     expect(script).toContain('const suggestedSpeechValue = data.wasGenerated === true');
     expect(script).toContain("            ? ''");
     expect(script).toContain('            : getSuggestedProtagonistSpeechInputValue();');
-    expect(script).toContain('rebuildChoicesSection(data.page.choices, suggestedSpeechValue);');
-    expect(script).toContain('rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue());');
+    expect(script).toContain('rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);');
+    expect(script).toContain('rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue(), choices, choicesSection, bindCustomChoiceEvents);');
   });
 });

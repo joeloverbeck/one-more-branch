@@ -78,4 +78,12 @@ REMOVAL SELF-CHECK (before you finalize JSON):
 
 URGENCY SELF-CHECK (before you finalize JSON):
 - For each new HIGH thread, verify concrete urgency cues in sceneIntent/continuityAnchors (deadline, active pursuit, imminent harm, or collapsing opportunity).
-- If those cues are absent, lower urgency to MEDIUM or LOW.`;
+- If those cues are absent, lower urgency to MEDIUM or LOW.
+
+CHOICE INTENT RULES:
+- Propose 2-4 choiceIntents aligned with the scene's dramatic question.
+- Each intent must have a unique (choiceType, primaryDelta) combination.
+- hook: a 1-sentence description of what the choice offers, not the final choice text.
+- choiceType and primaryDelta must be valid enum values from the schema.
+- Intents are guidance for the writer, not mandates. The writer may adjust if the narrative diverges.
+- dramaticQuestion must be a single sentence framing the core tension the choices answer.`;

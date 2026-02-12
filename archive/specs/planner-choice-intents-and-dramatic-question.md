@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Spec: Planner Choice Intents and Dramatic Question
 
 ## Overview
@@ -231,3 +233,12 @@ choiceIntents: [
 4. Manual review: planner prompt includes choice intent rules
 5. Manual review: writer prompts include choice intent section when plan provides intents
 6. Manual review: planner schema includes new fields with correct enum constraints
+
+## Outcome
+
+- **Completed**: 2026-02-12
+- **Branch**: `feature/planner-choice-intents`
+- **Files modified (source)**: `page-planner-schema.ts`, `types.ts`, `page-planner-prompt.ts`, `state-intent-rules.ts`, `page-planner-validation-schema.ts`, `page-planner-response-transformer.ts`, `opening-prompt.ts`, `continuation-prompt.ts`
+- **Files modified (tests)**: 17 test files updated with mock additions; 10 new tests added covering validation, transformer, and prompt builder behavior
+- **Deviations**: None. Implementation matches spec exactly.
+- **Verification**: `npm run typecheck` passes, `npm run lint` passes, `npm test` passes (131 suites, 1583 tests)

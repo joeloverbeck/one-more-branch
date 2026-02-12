@@ -1,21 +1,5 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/test'],
-  testMatch: ['**/*.test.ts'],
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  transform: {
-    '^.+\\.ts$': [
-      'ts-jest',
-      {
-        tsconfig: 'tsconfig.test.json',
-      },
-    ],
-  },
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
@@ -31,7 +15,48 @@ module.exports = {
       statements: 70,
     },
   },
-  setupFilesAfterEnv: ['<rootDir>/test/fixtures/setup.ts'],
   testTimeout: 10000,
   verbose: true,
+  projects: [
+    {
+      displayName: 'server',
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      roots: ['<rootDir>/test'],
+      testMatch: ['**/*.test.ts'],
+      testPathIgnorePatterns: ['/test/unit/client/'],
+      moduleNameMapper: {
+        '^(\\.{1,2}/.*)\\.js$': '$1',
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\\.ts$': [
+          'ts-jest',
+          {
+            tsconfig: 'tsconfig.test.json',
+          },
+        ],
+      },
+      setupFilesAfterEnv: ['<rootDir>/test/fixtures/setup.ts'],
+    },
+    {
+      displayName: 'client',
+      preset: 'ts-jest',
+      testEnvironment: 'jsdom',
+      roots: ['<rootDir>/test/unit/client'],
+      testMatch: ['**/*.test.ts'],
+      moduleNameMapper: {
+        '^(\\.{1,2}/.*)\\.js$': '$1',
+      },
+      transform: {
+        '^.+\\.ts$': [
+          'ts-jest',
+          {
+            tsconfig: 'tsconfig.test.json',
+          },
+        ],
+      },
+      setupFilesAfterEnv: ['<rootDir>/test/unit/client/setup.ts'],
+    },
+  ],
 };

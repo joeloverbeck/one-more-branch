@@ -41,6 +41,11 @@ function createValidPlannerPayload(): Record<string, unknown> {
       mustIncludeBeats: ['Incoming volley at the parapet', 'Split-second route decision'],
       forbiddenRecaps: ['Do not restate the full ambush setup'],
     },
+    dramaticQuestion: 'Will you hold the parapet or fall back to the stairwell?',
+    choiceIntents: [
+      { hook: 'Stand and return fire from cover', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+      { hook: 'Fall back to the lower stair', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+    ],
   };
 }
 
@@ -161,6 +166,113 @@ describe('validatePagePlannerResponse', () => {
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
       expect(
         issues.some(issue => issue.ruleKey === 'state_id.addition.must_not_be_id_like'),
+      ).toBe(true);
+    }
+  });
+
+  it('trims and includes dramaticQuestion and choiceIntents in result', () => {
+    const rawJson = createValidPlannerPayload();
+    rawJson.dramaticQuestion = '  Will you hold the parapet or fall back?  ';
+    (rawJson.choiceIntents as Array<{ hook: string }>)[0].hook = '  Stand and return fire  ';
+
+    const result = validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+
+    expect(result.dramaticQuestion).toBe('Will you hold the parapet or fall back?');
+    expect(result.choiceIntents).toHaveLength(2);
+    expect(result.choiceIntents[0].hook).toBe('Stand and return fire');
+    expect(result.choiceIntents[0].choiceType).toBe('CONFRONTATION');
+    expect(result.choiceIntents[0].primaryDelta).toBe('THREAT_SHIFT');
+    expect(result.choiceIntents[1].choiceType).toBe('AVOIDANCE_RETREAT');
+    expect(result.choiceIntents[1].primaryDelta).toBe('LOCATION_CHANGE');
+  });
+
+  it('throws when dramaticQuestion is missing', () => {
+    const rawJson = createValidPlannerPayload();
+    delete rawJson.dramaticQuestion;
+
+    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
+  });
+
+  it('throws when dramaticQuestion is empty after trim', () => {
+    const rawJson = createValidPlannerPayload();
+    rawJson.dramaticQuestion = '   ';
+
+    try {
+      validatePagePlannerResponse(rawJson, '{}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(
+        issues.some(issue => issue.ruleKey === 'planner.required_text.empty_after_trim'),
+      ).toBe(true);
+    }
+  });
+
+  it('throws when choiceIntents is missing', () => {
+    const rawJson = createValidPlannerPayload();
+    delete rawJson.choiceIntents;
+
+    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
+  });
+
+  it('throws when choiceIntents has fewer than 2 entries', () => {
+    const rawJson = createValidPlannerPayload();
+    rawJson.choiceIntents = [
+      { hook: 'Only one intent', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+    ];
+
+    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
+  });
+
+  it('throws when choiceIntents has invalid choiceType enum', () => {
+    const rawJson = createValidPlannerPayload();
+    (rawJson.choiceIntents as Array<{ choiceType: string }>)[0].choiceType = 'INVALID_TYPE';
+
+    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
+  });
+
+  it('throws when choiceIntents has invalid primaryDelta enum', () => {
+    const rawJson = createValidPlannerPayload();
+    (rawJson.choiceIntents as Array<{ primaryDelta: string }>)[0].primaryDelta = 'INVALID_DELTA';
+
+    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
+  });
+
+  it('throws when choiceIntents has duplicate (choiceType, primaryDelta) pair', () => {
+    const rawJson = createValidPlannerPayload();
+    rawJson.choiceIntents = [
+      { hook: 'Stand and fight', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+      { hook: 'Attack from the flank', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+    ];
+
+    try {
+      validatePagePlannerResponse(rawJson, '{}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(
+        issues.some(issue => issue.ruleKey === 'planner.choice_intent.duplicate_type_delta'),
+      ).toBe(true);
+    }
+  });
+
+  it('throws when choiceIntent hook is empty after trim', () => {
+    const rawJson = createValidPlannerPayload();
+    (rawJson.choiceIntents as Array<{ hook: string }>)[0].hook = '   ';
+
+    try {
+      validatePagePlannerResponse(rawJson, '{}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(
+        issues.some(issue => issue.ruleKey === 'planner.required_text.empty_after_trim'),
       ).toBe(true);
     }
   });

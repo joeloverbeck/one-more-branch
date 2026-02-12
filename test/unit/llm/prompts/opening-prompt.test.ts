@@ -1,3 +1,4 @@
+import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.js';
 import type { OpeningContext } from '../../../../src/llm/types.js';
 
@@ -54,6 +55,11 @@ describe('buildOpeningPrompt with active state', () => {
           mustIncludeBeats: ['Collector identifies the protagonist by name'],
           forbiddenRecaps: ['No mention of previous chapters'],
         },
+        dramaticQuestion: 'Will you pay the debt or confront the collector?',
+        choiceIntents: [
+          { hook: 'Pay what you owe', choiceType: ChoiceType.RESOURCE_COMMITMENT, primaryDelta: PrimaryDelta.ITEM_CONTROL },
+          { hook: 'Confront the collector', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+        ],
       },
     };
 
@@ -96,6 +102,95 @@ describe('buildOpeningPrompt with active state', () => {
     expect(systemMessage).not.toContain('ACTIVE STATE TRACKING');
     expect(systemMessage).not.toContain('INVENTORY MANAGEMENT:');
     expect(systemMessage).not.toContain('FIELD SEPARATION:');
+  });
+});
+
+describe('buildOpeningPrompt choice intent section', () => {
+  it('includes choice intent section when choiceIntents are provided', () => {
+    const context: OpeningContext = {
+      characterConcept: 'Test hero',
+      worldbuilding: 'Test world',
+      tone: 'Test tone',
+      pagePlan: {
+        sceneIntent: 'Test scene intent',
+        continuityAnchors: [],
+        stateIntents: {
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
+          threads: { add: [], resolveIds: [] },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
+          canon: { worldAdd: [], characterAdd: [] },
+        },
+        writerBrief: {
+          openingLineDirective: 'Start with action',
+          mustIncludeBeats: [],
+          forbiddenRecaps: [],
+        },
+        dramaticQuestion: 'Will you pay the debt or confront the collector?',
+        choiceIntents: [
+          { hook: 'Pay what you owe', choiceType: ChoiceType.RESOURCE_COMMITMENT, primaryDelta: PrimaryDelta.ITEM_CONTROL },
+          { hook: 'Confront the collector', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+        ],
+      },
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('=== CHOICE INTENT GUIDANCE (from planner) ===');
+    expect(userMessage).toContain('Dramatic Question: Will you pay the debt or confront the collector?');
+    expect(userMessage).toContain('[RESOURCE_COMMITMENT / ITEM_CONTROL] Pay what you owe');
+    expect(userMessage).toContain('[CONFRONTATION / THREAT_SHIFT] Confront the collector');
+    expect(userMessage).toContain('Use these choice intents as a starting blueprint');
+  });
+
+  it('omits choice intent section when choiceIntents is absent', () => {
+    const context: OpeningContext = {
+      characterConcept: 'Test hero',
+      worldbuilding: 'Test world',
+      tone: 'Test tone',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('CHOICE INTENT GUIDANCE');
+    expect(userMessage).not.toContain('Dramatic Question:');
+  });
+
+  it('omits choice intent section when choiceIntents is empty array', () => {
+    const context: OpeningContext = {
+      characterConcept: 'Test hero',
+      worldbuilding: 'Test world',
+      tone: 'Test tone',
+      pagePlan: {
+        sceneIntent: 'Test intent',
+        continuityAnchors: [],
+        stateIntents: {
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
+          threads: { add: [], resolveIds: [] },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
+          canon: { worldAdd: [], characterAdd: [] },
+        },
+        writerBrief: {
+          openingLineDirective: 'Start',
+          mustIncludeBeats: [],
+          forbiddenRecaps: [],
+        },
+        dramaticQuestion: 'Some question?',
+        choiceIntents: [],
+      },
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find(m => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('CHOICE INTENT GUIDANCE');
   });
 });
 

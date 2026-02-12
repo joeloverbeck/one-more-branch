@@ -399,6 +399,11 @@ describe('story engine e2e full playthrough', () => {
         mustIncludeBeats: [],
         forbiddenRecaps: [],
       },
+      dramaticQuestion: 'Will you confront the danger or seek another path?',
+      choiceIntents: [
+        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+      ],
       rawResponse: 'page-plan',
     });
 

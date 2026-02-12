@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
 import { ThreadType, Urgency } from '../../models/state/index.js';
 import {
   STATE_ID_PREFIXES,
@@ -7,6 +8,7 @@ import {
 } from '../validation/state-id-prefixes.js';
 
 const DUPLICATE_INTENT_RULE_KEY = 'planner.duplicate_intent';
+const DUPLICATE_CHOICE_INTENT_RULE_KEY = 'planner.choice_intent.duplicate_type_delta';
 const REQUIRED_TEXT_RULE_KEY = 'planner.required_text.empty_after_trim';
 
 function normalized(value: string): string {
@@ -106,6 +108,12 @@ function addNoIdLikeAdditionIssues(
   });
 }
 
+const ChoiceIntentSchema = z.object({
+  hook: z.string(),
+  choiceType: z.nativeEnum(ChoiceType),
+  primaryDelta: z.nativeEnum(PrimaryDelta),
+});
+
 const ThreadIntentAddSchema = z.object({
   text: z.string(),
   threadType: z.nativeEnum(ThreadType),
@@ -161,6 +169,8 @@ export const PagePlannerResultSchema = z
       mustIncludeBeats: z.array(z.string()),
       forbiddenRecaps: z.array(z.string()),
     }),
+    dramaticQuestion: z.string(),
+    choiceIntents: z.array(ChoiceIntentSchema).min(2).max(4),
   })
   .superRefine((data, ctx) => {
     addRequiredTrimmedTextIssue(data.sceneIntent, ['sceneIntent'], ctx);
@@ -298,6 +308,30 @@ export const PagePlannerResultSchema = z
         ['stateIntents', 'canon', 'characterAdd', index, 'facts'],
         ctx,
       );
+    });
+
+    addRequiredTrimmedTextIssue(data.dramaticQuestion, ['dramaticQuestion'], ctx);
+
+    data.choiceIntents.forEach((intent, index) => {
+      addRequiredTrimmedTextIssue(intent.hook, ['choiceIntents', index, 'hook'], ctx);
+    });
+
+    const seenPairs = new Set<string>();
+    data.choiceIntents.forEach((intent, index) => {
+      const key = `${intent.choiceType}:${intent.primaryDelta}`;
+      if (seenPairs.has(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: DUPLICATE_CHOICE_INTENT_RULE_KEY,
+          path: ['choiceIntents', index],
+          params: {
+            ruleKey: DUPLICATE_CHOICE_INTENT_RULE_KEY,
+            choiceType: intent.choiceType,
+            primaryDelta: intent.primaryDelta,
+          },
+        });
+      }
+      seenPairs.add(key);
     });
 
   });

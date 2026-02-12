@@ -700,6 +700,38 @@ main {
   opacity: 0.75;
 }
 
+/* Suggested protagonist speech (ghost input) */
+.suggested-protagonist-speech-container {
+  margin-top: 0.75rem;
+}
+
+.suggested-protagonist-speech-input {
+  width: 100%;
+  color: var(--color-text-muted);
+  background: rgba(14, 24, 49, 0.25);
+  border: 1px solid rgba(39, 64, 111, 0.3);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.95rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-style: italic;
+  transition: border-color var(--transition), box-shadow var(--transition), color var(--transition);
+}
+
+.suggested-protagonist-speech-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.suggested-protagonist-speech-input:focus {
+  outline: 2px solid transparent;
+  color: var(--color-text);
+  border-color: rgba(83, 52, 131, 0.5);
+  box-shadow: 0 0 0 2px rgba(83, 52, 131, 0.15);
+  font-style: normal;
+}
+
 /* Custom choice enum selects */
 .custom-choice-enums {
   display: flex;

@@ -155,7 +155,7 @@ archive/specs/      # Archived completed specifications
 
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + API key
 2. **Structure Generation**: LLM generates a StoryStructure (acts, beats, pacing budget, theme)
-3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, and writer brief
+3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents
 4. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
 5. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
 6. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, and structural position
@@ -267,6 +267,7 @@ Core specs (01-06) plus extensive post-core development:
 | spinner-stage-progress | Generation progress spinner stages | Done |
 | suggested-protagonist-speech | Player-suggested dialogue input | Done |
 | beat-conclusion-scene-signal-gating | Beat conclusion gating via analyst signals | Done |
+| planner-choice-intents-and-dramatic-question | Planner choice intents and dramatic question | Done |
 
 Completed specs are archived in `archive/specs/`.
 
@@ -276,7 +277,7 @@ Completed specs are archived in `archive/specs/`.
 - Default model: `anthropic/claude-sonnet-4.5`
 - **6-prompt architecture**: Each generation pass involves up to 6 distinct LLM calls:
   1. **Structure prompt** (`structure-generator.ts`): Generates story arc on story creation
-  2. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent and state intents
+  2. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent, state intents, dramatic question, and choice intents
   3. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
   4. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
   5. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing

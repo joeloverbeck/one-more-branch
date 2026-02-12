@@ -71,6 +71,18 @@ Use this plan as guidance while still returning the required writer schema outpu
 
 `
     : '';
+  const choiceIntentSection =
+    context.pagePlan?.choiceIntents?.length
+      ? `=== CHOICE INTENT GUIDANCE (from planner) ===
+Dramatic Question: ${context.pagePlan.dramaticQuestion}
+
+Proposed Choice Intents:
+${context.pagePlan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`).join('\n')}
+
+Use these choice intents as a starting blueprint. You may adjust if the narrative takes an unexpected turn, but aim to preserve the dramatic question framing and tag divergence.
+
+`
+      : '';
   const reconciliationRetrySection =
     context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0
       ? `=== RECONCILIATION FAILURE REASONS (RETRY) ===
@@ -92,7 +104,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
+${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in

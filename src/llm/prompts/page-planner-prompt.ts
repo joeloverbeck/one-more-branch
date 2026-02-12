@@ -13,7 +13,8 @@ ${CONTENT_POLICY}
 Plan the next page before prose generation.
 - You output machine-readable planning intents only.
 - You do not narrate the scene.
-- You do not produce player choices.
+- You propose a dramaticQuestion that the scene raises and choiceIntents as a blueprint for the writer's choices.
+- choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
 - You do not assign server IDs.
 - Keep output deterministic and concise.`;
 

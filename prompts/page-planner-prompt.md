@@ -30,7 +30,8 @@ Your primary directive is authentic character portrayal and storytelling within 
 Plan the next page before prose generation.
 - You output machine-readable planning intents only.
 - You do not narrate the scene.
-- You do not produce player choices.
+- You propose a dramaticQuestion that the scene raises and choiceIntents as a blueprint for the writer's choices.
+- choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
 - You do not assign server IDs.
 - Keep output deterministic and concise.
 ```
@@ -235,6 +236,14 @@ THREAD URGENCY RUBRIC:
 - If adding a thread that continues or refines an existing unresolved loop, keep the same urgency unless this planned scene explicitly escalates or de-escalates stakes.
 - Keep HIGH rare: add at most one new HIGH thread per page unless multiple independent crises are explicitly active.
 
+CHOICE INTENT RULES:
+- Propose 2-4 choiceIntents aligned with the scene's dramatic question.
+- Each intent must have a unique (choiceType, primaryDelta) combination.
+- hook: a 1-sentence description of what the choice offers, not the final choice text.
+- choiceType and primaryDelta must be valid enum values from the schema.
+- Intents are guidance for the writer, not mandates. The writer may adjust if the narrative diverges.
+- dramaticQuestion must be a single sentence framing the core tension the choices answer.
+
 QUALITY BAR:
 - Keep intents concrete and testable.
 - Prefer minimal, meaningful mutations over speculative churn.
@@ -298,6 +307,14 @@ Return JSON only.
     "openingLineDirective": "{{how writer should open next scene}}",
     "mustIncludeBeats": ["{{must include beat}}"],
     "forbiddenRecaps": ["{{things writer must not recap}}"]
-  }
+  },
+  "dramaticQuestion": "{{single sentence framing the core tension the choices answer}}",
+  "choiceIntents": [
+    {
+      "hook": "{{1-sentence description of what this choice offers}}",
+      "choiceType": "{{TACTICAL_APPROACH|MORAL_DILEMMA|IDENTITY_EXPRESSION|RELATIONSHIP_SHIFT|RESOURCE_COMMITMENT|INVESTIGATION|PATH_DIVERGENCE|CONFRONTATION|AVOIDANCE_RETREAT}}",
+      "primaryDelta": "{{LOCATION_CHANGE|GOAL_SHIFT|RELATIONSHIP_CHANGE|URGENCY_CHANGE|ITEM_CONTROL|EXPOSURE_CHANGE|CONDITION_CHANGE|INFORMATION_REVEALED|THREAT_SHIFT|CONSTRAINT_CHANGE}}"
+    }
+  ]
 }
 ```
