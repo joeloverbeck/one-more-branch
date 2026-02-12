@@ -18,18 +18,15 @@ describe('shared narrative-core sections', () => {
       expect(STORYTELLING_GUIDELINES).toContain('STORYTELLING GUIDELINES:');
     });
 
-    it('includes prose style guidance', () => {
-      expect(STORYTELLING_GUIDELINES).toContain('vivid, evocative prose');
+    it('includes golden rule as first directive', () => {
+      expect(STORYTELLING_GUIDELINES).toContain('GOLDEN RULE');
+      expect(STORYTELLING_GUIDELINES).toContain('vigorous verbs');
+      expect(STORYTELLING_GUIDELINES).toContain('specific nouns');
     });
 
     it('requires second person perspective', () => {
       expect(STORYTELLING_GUIDELINES).toContain('second person perspective');
       expect(STORYTELLING_GUIDELINES).toContain('"you"');
-    });
-
-    it('emphasizes meaningful choices', () => {
-      expect(STORYTELLING_GUIDELINES).toContain('meaningful choices');
-      expect(STORYTELLING_GUIDELINES).toContain('genuine consequences');
     });
 
     it('mentions player agency', () => {

@@ -28,7 +28,7 @@ describe('composeCreativeSystemPrompt', () => {
   it('includes storytelling guidelines', () => {
     const prompt = composeCreativeSystemPrompt();
     expect(prompt).toContain('STORYTELLING GUIDELINES:');
-    expect(prompt).toContain('Write vivid, evocative prose');
+    expect(prompt).toContain('GOLDEN RULE');
   });
 
   it('includes ending guidelines', () => {

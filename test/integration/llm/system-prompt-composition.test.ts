@@ -21,7 +21,7 @@ describe('creative system prompt composition', () => {
     it('includes STORYTELLING GUIDELINES section', () => {
       const prompt = composeCreativeSystemPrompt();
       expect(prompt).toContain('STORYTELLING GUIDELINES:');
-      expect(prompt).toContain('Write vivid, evocative prose');
+      expect(prompt).toContain('GOLDEN RULE');
       expect(prompt).toContain('Use second person perspective');
     });
 

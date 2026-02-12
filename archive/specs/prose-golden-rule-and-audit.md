@@ -1,5 +1,7 @@
 # Spec: Prose Golden Rule and Guidelines Audit
 
+**Status**: COMPLETED
+
 ## Overview
 
 Add a concrete prose golden rule to the shared narrative-core guidelines and audit existing directives for redundancy, tightening the set to eliminate overlap.
@@ -83,3 +85,16 @@ Add a concrete prose golden rule to the shared narrative-core guidelines and aud
 2. Confirm no two remaining directives cover the same concern
 3. Confirm removed choice-related directives are already present in `STRICT_CHOICE_GUIDELINES`
 4. Run `npm run typecheck && npm test`
+
+## Outcome
+
+- **Completion date**: 2026-02-12
+- **Changes made**:
+  - `src/llm/prompts/sections/shared/narrative-core.ts`: Rewrote STORYTELLING_GUIDELINES from 13 to 10 directives. Added golden rule as first directive. Removed directives 1 (vivid prose, superseded by golden rule), 10 (meaningful choices), 13 (react to choices), 14 (different paths). Merged directives 3+4 into single character-filtered perception directive.
+  - `test/unit/llm/prompts/sections/shared/narrative-core.test.ts`: Updated assertions for golden rule, removed "meaningful choices" test.
+  - `test/unit/llm/prompts/system-prompt.test.ts`: Updated assertion from "vivid prose" to "GOLDEN RULE".
+  - `test/integration/llm/system-prompt-composition.test.ts`: Updated assertion from "vivid prose" to "GOLDEN RULE".
+  - `prompts/opening-prompt.md`: Updated STORYTELLING GUIDELINES section to match new directives.
+  - `prompts/continuation-prompt.md`: Updated STORYTELLING GUIDELINES section to match new directives.
+- **Deviations**: None. Implementation followed spec exactly.
+- **Verification**: `npm run typecheck` clean, 131/131 test suites, 1569/1569 tests pass.
