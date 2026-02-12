@@ -701,7 +701,7 @@ describe('LLM types', () => {
         deviationDetected: false,
         deviationReason: '',
         invalidatedBeatIds: [],
-        narrativeSummary: '',
+        narrativeSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',

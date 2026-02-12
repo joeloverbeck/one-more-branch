@@ -11,11 +11,12 @@ A deviation occurs when future beats are now impossible or nonsensical because:
 
 Evaluate ONLY beats that are not concluded. Never re-evaluate concluded beats.
 
+Always provide narrativeSummary: a 1-2 sentence summary of the current narrative state (used for planner context and rewrite context).
+
 If deviation is detected, mark:
 - deviationDetected: true
 - deviationReason: concise reason
 - invalidatedBeatIds: invalid beat IDs only
-- narrativeSummary: 1-2 sentence current-state summary for rewrite context
 
 If no deviation is detected, mark deviationDetected: false.
 Be conservative. Minor variations are acceptable; only mark true deviation for genuine invalidation.

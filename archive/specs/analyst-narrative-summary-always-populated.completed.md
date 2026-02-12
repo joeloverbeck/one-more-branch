@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Spec: Analyst narrativeSummary Always Populated
 
 ## Overview
@@ -63,3 +65,10 @@ If found, update to: "Always provide a narrativeSummary of the current narrative
 2. Read the analyst prompt and confirm no contradictory "empty when no deviation" instructions exist
 3. Grep test files for `narrativeSummary: ''` or `narrativeSummary: ""` and update any that represent no-deviation cases
 4. Run `npm run typecheck && npm test`
+
+## Outcome
+
+- **Completed**: 2026-02-12
+- **Changes**: Updated analyst schema description to instruct always populating `narrativeSummary`. Updated story-structure-section prompt to remove conditional emptiness language. Updated all test mocks with empty `narrativeSummary` to non-empty values.
+- **Files changed**: `src/llm/schemas/analyst-schema.ts`, `src/llm/prompts/continuation/story-structure-section.ts`, and 11 test files.
+- **Deviations**: None from spec.

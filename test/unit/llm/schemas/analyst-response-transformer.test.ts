@@ -21,7 +21,7 @@ describe('validateAnalystResponse', () => {
       deviationDetected: false,
       deviationReason: '',
       invalidatedBeatIds: [],
-      narrativeSummary: '',
+      narrativeSummary: 'The protagonist continues the current scene.',
       ...VALID_DIAGNOSTICS,
     };
 
@@ -32,7 +32,7 @@ describe('validateAnalystResponse', () => {
     expect(result.deviationDetected).toBe(false);
     expect(result.deviationReason).toBe('');
     expect(result.invalidatedBeatIds).toEqual([]);
-    expect(result.narrativeSummary).toBe('');
+    expect(result.narrativeSummary).toBe('The protagonist continues the current scene.');
     expect(result.sceneMomentum).toBe('MAJOR_PROGRESS');
     expect(result.objectiveAnchors).toEqual(['recover key', 'unlock gate']);
     expect(result.anchorEvidence).toEqual([
@@ -130,7 +130,7 @@ describe('validateAnalystResponse', () => {
       deviationDetected: false,
       deviationReason: '',
       invalidatedBeatIds: [],
-      narrativeSummary: '',
+      narrativeSummary: 'The protagonist continues the current scene.',
     };
 
     const result = validateAnalystResponse(input, RAW_RESPONSE);
@@ -167,7 +167,7 @@ describe('validateAnalystResponse', () => {
       deviationDetected: false,
       deviationReason: '',
       invalidatedBeatIds: [],
-      narrativeSummary: '',
+      narrativeSummary: 'The protagonist continues the current scene.',
     });
 
     const result = validateAnalystResponse(jsonString, RAW_RESPONSE);
@@ -255,7 +255,7 @@ describe('validateAnalystResponse', () => {
         deviationDetected: false,
         deviationReason: '',
         invalidatedBeatIds: [],
-        narrativeSummary: '',
+        narrativeSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: true,
         pacingIssueReason: 'Beat stalled',
         recommendedAction: 'nudge',
@@ -322,7 +322,7 @@ describe('validateAnalystResponse', () => {
         deviationDetected: false,
         deviationReason: '',
         invalidatedBeatIds: [],
-        narrativeSummary: '',
+        narrativeSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: true,
         pacingIssueReason: 'Beat stalled',
         recommendedAction: 'nudge',

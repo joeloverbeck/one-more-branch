@@ -224,7 +224,7 @@ const defaultAnalystResult = {
   deviationDetected: false,
   deviationReason: '',
   invalidatedBeatIds: [] as string[],
-  narrativeSummary: '',
+  narrativeSummary: 'The protagonist continues the current scene.',
   pacingIssueDetected: false,
   pacingIssueReason: '',
   recommendedAction: 'none' as const,

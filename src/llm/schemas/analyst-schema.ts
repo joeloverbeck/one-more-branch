@@ -37,7 +37,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         narrativeSummary: {
           type: 'string',
           description:
-            'Short summary of current narrative state for rewrite context; empty when no deviation.',
+            'Short summary of current narrative state. Always populate — used for planner context compression and rewrite context.',
         },
         pacingIssueDetected: {
           type: 'boolean',
