@@ -177,20 +177,6 @@ Begin the story with this situation. This takes precedence over your creative de
 
 TONE/GENRE: {{tone}}
 
-{{#if structure.firstAct.firstBeat}}
-=== STORY STRUCTURE ===
-Overall Theme: {{structure.overallTheme}}
-
-CURRENT ACT: {{structure.acts[0].name}}
-Objective: {{structure.acts[0].objective}}
-Stakes: {{structure.acts[0].stakes}}
-
-CURRENT BEAT: {{structure.acts[0].beats[0].description}}
-Beat Objective: {{structure.acts[0].beats[0].objective}}
-
-Your task: Write the opening scene working toward this beat's objective.
-{{/if}}
-
 {{#if pagePlan}}
 === PLANNER GUIDANCE ===
 Scene Intent: {{pagePlan.sceneIntent}}

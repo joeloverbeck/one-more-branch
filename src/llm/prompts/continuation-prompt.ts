@@ -9,7 +9,6 @@ import {
   buildThreatsSection,
   buildConstraintsSection,
   buildThreadsSection,
-  buildWriterStructureContext,
 } from './continuation/index.js';
 
 function formatStoryBibleSection(bible: StoryBible): string {
@@ -100,11 +99,6 @@ These characters are available for use in the story. Introduce or involve them w
 
 `
       : '';
-
-  const structureSection = buildWriterStructureContext(
-    context.structure,
-    context.accumulatedStructureState,
-  );
 
   const plannerSection = context.pagePlan
     ? `=== PLANNER GUIDANCE ===
@@ -249,7 +243,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next

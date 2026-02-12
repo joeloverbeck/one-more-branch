@@ -121,7 +121,7 @@ describe('buildOpeningPrompt', () => {
     expect(getUserMessage(messages).toLowerCase()).not.toContain('determine the overarching goal');
   });
 
-  it('should include structure section when structure is provided', () => {
+  it('should NOT include structure section even when structure is provided', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'Character',
       worldbuilding: '',
@@ -130,27 +130,10 @@ describe('buildOpeningPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    expect(user).toContain('=== STORY STRUCTURE ===');
-    expect(user).toContain('Overall Theme: Survive the uprising and expose its true architect');
-    expect(user).toContain('CURRENT ACT: The Spark');
-    expect(user).toContain('Objective: Escape the city after the first riot');
-    expect(user).toContain('Stakes: Capture means execution as a traitor');
-    expect(user).toContain('CURRENT BEAT: The protagonist is caught between guards and rebels');
-    expect(user).toContain('Beat Objective: Reach a safe route out of the square');
-    expect(user).toContain("Your task: Write the opening scene working toward this beat's objective.");
-  });
-
-  it('should omit structure section when structure is not provided', () => {
-    const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
-      tone: 'dark fantasy',
-    });
-
-    const user = getUserMessage(messages);
     expect(user).not.toContain('=== STORY STRUCTURE ===');
     expect(user).not.toContain('CURRENT ACT:');
     expect(user).not.toContain('CURRENT BEAT:');
+    expect(user).not.toContain('Overall Theme:');
   });
 
   it('should include tone in user message', () => {
@@ -491,7 +474,7 @@ describe('buildContinuationPrompt', () => {
     expect(getUserMessage(messages)).not.toContain('STORY ARC:');
   });
 
-  it('should include structure context but NOT beat evaluation instructions (writer prompt)', () => {
+  it('should NOT include structure section even when structure context is provided', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
       structure,
@@ -499,64 +482,13 @@ describe('buildContinuationPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    // Writer prompt includes structure overview
-    expect(user).toContain('=== STORY STRUCTURE ===');
-    expect(user).toContain('Overall Theme: Stop the city purge before dawn.');
-    expect(user).toContain('CURRENT ACT: The Crackdown (Act 1 of 3)');
-    expect(user).toContain('Objective: Escape the first sweep');
-    expect(user).toContain('Stakes: Capture means public execution.');
-    expect(user).toContain(
-      '[x] CONCLUDED (setup): Reach a safehouse before patrols seal the district',
-    );
-    expect(user).toContain('Resolution: You slipped through a drainage tunnel into the safehouse.');
-    expect(user).toContain('[>] ACTIVE (escalation): Secure evidence from an informant');
-    expect(user).toContain('Objective: Protect the evidence from raiders');
-    expect(user).toContain('[ ] PENDING (turning_point): Choose who to trust for extraction');
-    expect(user).toContain('REMAINING ACTS:');
-    expect(user).toContain('Act 2: The Hunt - Cross hostile territory with the evidence');
-    expect(user).toContain('Act 3: The Broadcast - Expose the planners to the public');
-    // Writer prompt does NOT include beat evaluation or deviation sections
-    expect(user).not.toContain('=== BEAT EVALUATION ===');
-    expect(user).not.toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
-    expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
-  });
-
-  it('should omit structure section when structure context is absent', () => {
-    const messages = buildContinuationPrompt(baseContext);
-    const user = getUserMessage(messages);
-
+    // Writer prompt no longer includes structure - planner guidance is sufficient
     expect(user).not.toContain('=== STORY STRUCTURE ===');
+    expect(user).not.toContain('Overall Theme:');
+    expect(user).not.toContain('CURRENT ACT:');
+    expect(user).not.toContain('REMAINING ACTS:');
     expect(user).not.toContain('=== BEAT EVALUATION ===');
     expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
-  });
-
-  it('should NOT include remaining beats deviation list in writer prompt', () => {
-    const messages = buildContinuationPrompt({
-      ...baseContext,
-      structure,
-      accumulatedStructureState: structureState,
-    });
-
-    const user = getUserMessage(messages);
-    // Writer prompt does not include deviation evaluation sections
-    expect(user).not.toContain('REMAINING BEATS TO EVALUATE FOR DEVIATION:');
-    expect(user).not.toContain('=== BEAT DEVIATION EVALUATION ===');
-  });
-
-  it('should omit structure section when structure state points to an invalid act index', () => {
-    const messages = buildContinuationPrompt({
-      ...baseContext,
-      structure,
-      accumulatedStructureState: {
-        ...structureState,
-        currentActIndex: 9,
-      },
-    });
-
-    const user = getUserMessage(messages);
-    expect(user).not.toContain('=== STORY STRUCTURE ===');
-    expect(user).not.toContain('=== BEAT EVALUATION ===');
-    expect(user).toContain('PREVIOUS SCENE (full text for style continuity):');
   });
 
   it('should include previous narrative', () => {

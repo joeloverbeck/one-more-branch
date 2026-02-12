@@ -7,9 +7,6 @@ export function buildOpeningPrompt(
   context: OpeningContext,
   options?: PromptOptions,
 ): ChatMessage[] {
-  const firstAct = context.structure?.acts[0];
-  const firstBeat = firstAct?.beats[0];
-
   const dataRules = composeOpeningDataRules(options);
 
   const worldSection = context.worldbuilding
@@ -36,23 +33,6 @@ Begin the story with this situation. This takes precedence over your creative de
 
 `
     : '';
-
-  const structureSection =
-    context.structure && firstAct && firstBeat
-      ? `=== STORY STRUCTURE ===
-Overall Theme: ${context.structure.overallTheme}
-
-CURRENT ACT: ${firstAct.name}
-Objective: ${firstAct.objective}
-Stakes: ${firstAct.stakes}
-
-CURRENT BEAT: ${firstBeat.description}
-Beat Objective: ${firstBeat.objective}
-
-Your task: Write the opening scene working toward this beat's objective.
-
-`
-      : '';
 
   const plannerSection = context.pagePlan
     ? `=== PLANNER GUIDANCE ===
@@ -104,7 +84,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
+${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in

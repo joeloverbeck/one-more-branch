@@ -25,7 +25,6 @@ The following sections are **always included** regardless of Story Bible presenc
 - Active state (location, threats, constraints, threads)
 - Inventory and health
 - Protagonist affect
-- Story structure
 - Planner guidance and choice intents
 - Grandparent and parent full narrative (voice continuity)
 - Player's choice and suggested speech
@@ -124,6 +123,7 @@ Fields:
 
 The protagonistAffect is for the PROTAGONIST only. NPC emotional states should be described in the narrative, not tracked as data.
 
+{{#if !storyBible}}
 CONTINUITY RULES (CONTINUATION):
 You are continuing an EXISTING story. Consistency with established facts is essential.
 
@@ -169,6 +169,39 @@ CHARACTER STATE (situational, branch-specific):
 
 Rule: If it would be true in ANY playthrough, treat it as canon context. If it depends on choices in THIS run, treat it as branch-state context.
 Both are read-only prompt context for the writer.
+{{/if}}
+
+{{#if storyBible}}
+CONTINUITY RULES (CONTINUATION):
+You are continuing an EXISTING story. Consistency with established facts is essential.
+
+DO NOT CONTRADICT:
+- RELEVANT CANON FACTS - permanent world-building truths listed in the STORY BIBLE section
+- SCENE CHARACTERS - permanent character traits and branch-specific state listed in the STORY BIBLE section
+- YOUR INVENTORY - items the protagonist currently possesses
+- YOUR HEALTH - current physical conditions
+- CURRENT LOCATION, ACTIVE THREATS, ACTIVE CONSTRAINTS, OPEN THREADS - the current situation
+
+CHARACTER PROFILES vs CURRENT STATE:
+The SCENE CHARACTERS section unifies permanent character traits (profile) and branch-specific events (current state) into a single entry per character. Treat profile facts as cross-branch canon and current state facts as branch-specific context. Both are read-only prompt context for the writer.
+
+WHEN NEW FACTS EMERGE:
+- Weave them into narrative and sceneSummary naturally.
+
+RETCONS ARE FORBIDDEN:
+- Do NOT change names, roles, species, or relationships already established
+- Do NOT contradict previously established abilities or limitations
+- Do NOT "forget" inventory items, health conditions, or active state
+- Work WITH established facts, not around them
+
+CONSISTENCY VERIFICATION:
+Before generating your response, mentally verify:
+1. Does my narrative contradict any RELEVANT CANON FACTS?
+2. Does my narrative contradict any SCENE CHARACTERS profiles or current state?
+3. Am I using inventory items the protagonist actually has?
+4. Am I respecting the protagonist's current health conditions?
+5. Am I acknowledging active threats and constraints?
+{{/if}}
 
 {{#if choiceGuidance === 'strict'}}
 CHOICE REQUIREMENTS:
@@ -243,25 +276,6 @@ These characters are available for use in the story. Introduce or involve them w
 {{/if}}
 
 TONE/GENRE: {{tone}}
-
-{{#if structure && accumulatedStructureState}}
-=== STORY STRUCTURE ===
-Overall Theme: {{structure.overallTheme}}
-Premise: {{structure.premise}}
-
-CURRENT ACT: {{currentAct.name}} (Act {{accumulatedStructureState.currentActIndex + 1}} of 3)
-Objective: {{currentAct.objective}}
-Stakes: {{currentAct.stakes}}
-
-BEATS IN THIS ACT:
-{{currentAct.beats with status lines:
-  [x] CONCLUDED (role): description + Resolution
-  [>] ACTIVE (role): description + Objective
-  [ ] PENDING (role): description}}
-
-REMAINING ACTS:
-{{remaining acts bullet list or "- None"}}
-{{/if}}
 
 {{#if pagePlan}}
 === PLANNER GUIDANCE ===
