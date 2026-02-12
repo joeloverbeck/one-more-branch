@@ -39,13 +39,16 @@ export function getRemainingBeats(
   );
 }
 
-export function buildActiveStateForBeatEvaluation(activeState: ActiveState): string {
+export function buildActiveStateForBeatEvaluation(
+  activeState: ActiveState,
+  threadsResolved?: readonly string[],
+  threadAges?: Readonly<Record<string, number>>,
+): string {
   const parts: string[] = [];
   const threatTexts = activeState.activeThreats.map(threat => threat.text.trim()).filter(Boolean);
   const constraintTexts = activeState.activeConstraints
     .map(constraint => constraint.text.trim())
     .filter(Boolean);
-  const threadTexts = activeState.openThreads.map(thread => thread.text.trim()).filter(Boolean);
 
   if (activeState.currentLocation) {
     parts.push(`Location: ${activeState.currentLocation}`);
@@ -59,8 +62,17 @@ export function buildActiveStateForBeatEvaluation(activeState: ActiveState): str
     parts.push(`Constraints: ${constraintTexts.join(', ')}`);
   }
 
-  if (threadTexts.length > 0) {
-    parts.push(`Open threads: ${threadTexts.join(', ')}`);
+  if (activeState.openThreads.length > 0) {
+    const threadLines = activeState.openThreads.map(thread => {
+      const age = threadAges?.[thread.id];
+      const ageStr = age !== undefined ? `, ${age} pages old` : '';
+      return `  [${thread.id}] (${thread.threadType}/${thread.urgency}${ageStr}) ${thread.text.trim()}`;
+    });
+    parts.push(`Open threads:\n${threadLines.join('\n')}`);
+  }
+
+  if (threadsResolved && threadsResolved.length > 0) {
+    parts.push(`Threads resolved this scene: ${threadsResolved.join(', ')}`);
   }
 
   if (parts.length === 0) {
@@ -134,6 +146,8 @@ export function buildAnalystStructureEvaluation(
   structure: StoryStructure,
   accumulatedStructureState: AccumulatedStructureState,
   activeState: ActiveState,
+  threadsResolved?: readonly string[],
+  threadAges?: Readonly<Record<string, number>>,
 ): string {
   const state = accumulatedStructureState;
   const currentAct = structure.acts[state.currentActIndex];
@@ -174,7 +188,7 @@ export function buildAnalystStructureEvaluation(
           .join('\n')}`
       : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
-  const activeStateSummary = buildActiveStateForBeatEvaluation(activeState);
+  const activeStateSummary = buildActiveStateForBeatEvaluation(activeState, threadsResolved, threadAges);
 
   const hasPendingBeats =
     state.currentBeatIndex < currentAct.beats.length - 1 ||
@@ -209,6 +223,30 @@ If no pacing issue: pacingIssueDetected: false, pacingIssueReason: "", recommend
 
 `;
 
+  const foreshadowingSection = `=== FORESHADOWING DETECTION ===
+Scan the narrative for implicit promises planted with deliberate narrative emphasis.
+Only flag items that a reader would reasonably expect to pay off later:
+- Objects, locations, or abilities introduced with unusual descriptive weight (CHEKHOV_GUN)
+- Hints at future events or outcomes (FORESHADOWING)
+- Information the reader knows but characters don't (DRAMATIC_IRONY)
+- Unresolved emotional beats that demand future closure (UNRESOLVED_EMOTION)
+
+Do NOT flag incidental scene-setting details. Max 3 per page. Empty array if none detected.
+`;
+
+  const hasResolvedThreads = threadsResolved && threadsResolved.length > 0;
+  const payoffSection = hasResolvedThreads
+    ? `=== THREAD PAYOFF QUALITY ===
+Threads were resolved this scene: ${threadsResolved.join(', ')}
+For each resolved thread, assess payoff quality:
+- RUSHED: Resolved via exposition, off-screen action, or a single sentence without buildup
+- ADEQUATE: Resolved through action but without significant dramatic development
+- WELL_EARNED: Resolution developed through action, consequence, and emotional payoff
+
+Populate threadPayoffAssessments for each resolved thread.
+`
+    : '';
+
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
 Premise: ${structure.premise}
@@ -223,7 +261,8 @@ ${beatLines}
 REMAINING ACTS:
 ${remainingActs || '  - None'}
 
-${activeStateSummary}=== BEAT EVALUATION ===
+${activeStateSummary}${foreshadowingSection}
+${payoffSection}=== BEAT EVALUATION ===
 Evaluate the following narrative against this structure to determine beat completion.
 
 === SCENE SIGNAL CLASSIFICATION ===

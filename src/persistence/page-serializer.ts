@@ -13,6 +13,7 @@ import {
   parseStructureVersionId,
   parsePageId,
 } from '../models';
+import type { NarrativePromise } from '../models/state/keyed-entry';
 import type { AnalystResult, StoryBible } from '../llm/types';
 import { PageFileData, AnalystResultFileData, StoryBibleFileData } from './page-serializer-types';
 import {
@@ -101,6 +102,17 @@ function serializeAnalystResult(
     anchorEvidence: [...(analystResult.anchorEvidence ?? [])],
     completionGateSatisfied: analystResult.completionGateSatisfied ?? false,
     completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
+    narrativePromises: (analystResult.narrativePromises ?? []).map(p => ({
+      description: p.description,
+      promiseType: p.promiseType,
+      suggestedUrgency: p.suggestedUrgency,
+    })),
+    threadPayoffAssessments: (analystResult.threadPayoffAssessments ?? []).map(a => ({
+      threadId: a.threadId,
+      threadText: a.threadText,
+      satisfactionLevel: a.satisfactionLevel,
+      reasoning: a.reasoning,
+    })),
   };
 }
 
@@ -127,6 +139,17 @@ function deserializeAnalystResult(data: AnalystResultFileData | null | undefined
     anchorEvidence: [...data.anchorEvidence],
     completionGateSatisfied: data.completionGateSatisfied,
     completionGateFailureReason: data.completionGateFailureReason,
+    narrativePromises: (data.narrativePromises ?? []).map(p => ({
+      description: p.description,
+      promiseType: p.promiseType as AnalystResult['narrativePromises'][number]['promiseType'],
+      suggestedUrgency: p.suggestedUrgency as AnalystResult['narrativePromises'][number]['suggestedUrgency'],
+    })),
+    threadPayoffAssessments: (data.threadPayoffAssessments ?? []).map(a => ({
+      threadId: a.threadId,
+      threadText: a.threadText,
+      satisfactionLevel: a.satisfactionLevel as AnalystResult['threadPayoffAssessments'][number]['satisfactionLevel'],
+      reasoning: a.reasoning,
+    })),
     rawResponse: '',
   };
 }
@@ -172,6 +195,12 @@ export function serializePage(page: Page): PageFileData {
     structureVersionId: page.structureVersionId,
     storyBible: serializeStoryBible(page.storyBible),
     analystResult: serializeAnalystResult(page.analystResult),
+    threadAges: { ...page.threadAges },
+    inheritedNarrativePromises: page.inheritedNarrativePromises.map(p => ({
+      description: p.description,
+      promiseType: p.promiseType,
+      suggestedUrgency: p.suggestedUrgency,
+    })),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -244,6 +273,12 @@ export function deserializePage(data: PageFileData): Page {
     structureVersionId,
     storyBible: deserializeStoryBible(data.storyBible),
     analystResult: deserializeAnalystResult(data.analystResult),
+    threadAges: data.threadAges ?? {},
+    inheritedNarrativePromises: (data.inheritedNarrativePromises ?? []).map(p => ({
+      description: p.description,
+      promiseType: p.promiseType as NarrativePromise['promiseType'],
+      suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],
+    })),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

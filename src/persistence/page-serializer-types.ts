@@ -65,6 +65,19 @@ export interface StoryBibleFileData {
   relevantHistory: string;
 }
 
+export interface NarrativePromiseFileData {
+  description: string;
+  promiseType: string;
+  suggestedUrgency: string;
+}
+
+export interface ThreadPayoffAssessmentFileData {
+  threadId: string;
+  threadText: string;
+  satisfactionLevel: string;
+  reasoning: string;
+}
+
 export interface AnalystResultFileData {
   beatConcluded: boolean;
   beatResolution: string;
@@ -84,6 +97,8 @@ export interface AnalystResultFileData {
   anchorEvidence: string[];
   completionGateSatisfied: boolean;
   completionGateFailureReason: string;
+  narrativePromises?: NarrativePromiseFileData[];
+  threadPayoffAssessments?: ThreadPayoffAssessmentFileData[];
 }
 
 export interface PageFileData {
@@ -134,6 +149,8 @@ export interface PageFileData {
   structureVersionId?: string | null;
   storyBible?: StoryBibleFileData | null;
   analystResult?: AnalystResultFileData | null;
+  threadAges?: Record<string, number>;
+  inheritedNarrativePromises?: NarrativePromiseFileData[];
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

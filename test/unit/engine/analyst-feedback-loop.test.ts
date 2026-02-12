@@ -42,6 +42,8 @@ function buildFullAnalystResult(overrides: Partial<AnalystResult> = {}): Analyst
     anchorEvidence: ['The merchant mentioned a cache'],
     completionGateSatisfied: false,
     completionGateFailureReason: 'Insufficient evidence of beat objective progress.',
+    narrativePromises: [],
+    threadPayoffAssessments: [],
     rawResponse: '{"some":"raw"}',
     ...overrides,
   };
@@ -210,7 +212,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
         parentAccumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
+        storyBible: null,
         analystResult: ar,
+        parentThreadAges: {},
+        parentInheritedNarrativePromises: [],
+        parentAnalystNarrativePromises: [],
       };
 
       const page = buildContinuationPage(result, context);
@@ -229,7 +235,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
         parentAccumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
+        storyBible: null,
         analystResult: null,
+        parentThreadAges: {},
+        parentInheritedNarrativePromises: [],
+        parentAnalystNarrativePromises: [],
       };
 
       const page = buildContinuationPage(result, context);

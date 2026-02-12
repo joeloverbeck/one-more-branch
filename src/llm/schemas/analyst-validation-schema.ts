@@ -30,6 +30,29 @@ const EntryConditionReadinessSchema = z.enum(['NOT_READY', 'PARTIAL', 'READY']).
 
 const SafeStringArraySchema = z.array(z.string()).catch([]).default([]);
 
+const PromiseTypeSchema = z
+  .enum(['CHEKHOV_GUN', 'FORESHADOWING', 'DRAMATIC_IRONY', 'UNRESOLVED_EMOTION'])
+  .catch('FORESHADOWING');
+
+const UrgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']).catch('MEDIUM');
+
+const SatisfactionLevelSchema = z
+  .enum(['RUSHED', 'ADEQUATE', 'WELL_EARNED'])
+  .catch('ADEQUATE');
+
+const NarrativePromiseSchema = z.object({
+  description: z.string().default(''),
+  promiseType: PromiseTypeSchema,
+  suggestedUrgency: UrgencySchema,
+});
+
+const ThreadPayoffAssessmentSchema = z.object({
+  threadId: z.string().default(''),
+  threadText: z.string().default(''),
+  satisfactionLevel: SatisfactionLevelSchema,
+  reasoning: z.string().default(''),
+});
+
 export const AnalystResultSchema = z.object({
   beatConcluded: z.boolean().default(false),
   beatResolution: z.string().default(''),
@@ -49,4 +72,6 @@ export const AnalystResultSchema = z.object({
   anchorEvidence: SafeStringArraySchema,
   completionGateSatisfied: z.boolean().catch(false).default(false),
   completionGateFailureReason: z.string().catch('').default(''),
+  narrativePromises: z.array(NarrativePromiseSchema).catch([]).default([]),
+  threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),
 });

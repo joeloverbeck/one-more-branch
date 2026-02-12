@@ -24,6 +24,8 @@ export interface AnalystEvaluationContext {
   readonly activeStructure: StoryStructure;
   readonly parentStructureState: AccumulatedStructureState;
   readonly parentActiveState: ActiveState;
+  readonly threadsResolved: readonly string[];
+  readonly threadAges: Readonly<Record<string, number>>;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -51,6 +53,8 @@ export async function runAnalystEvaluation(
         structure: context.activeStructure,
         accumulatedStructureState: analystStructureState,
         activeState: context.parentActiveState,
+        threadsResolved: context.threadsResolved,
+        threadAges: context.threadAges,
       },
       { apiKey: context.apiKey },
     );

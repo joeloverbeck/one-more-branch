@@ -42,6 +42,8 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     analystResult: null,
     storyBible: null,
     protagonistAffect: createDefaultProtagonistAffect(),
+    threadAges: {},
+    inheritedNarrativePromises: [],
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,

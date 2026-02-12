@@ -30,20 +30,128 @@ Be conservative about deviation - minor variations are acceptable. Only mark tru
 ### 2) User Message
 
 ```text
-{{ANALYST_STRUCTURE_EVALUATION_SECTION}}
+=== STORY STRUCTURE ===
+Overall Theme: {{structure.overallTheme}}
+Premise: {{structure.premise}}
+
+CURRENT ACT: {{currentAct.name}} (Act {{currentActIndex + 1}} of 3)
+Objective: {{currentAct.objective}}
+Stakes: {{currentAct.stakes}}
+
+BEATS IN THIS ACT:
+  [x] CONCLUDED ({{beat.role}}): {{beat.description}}
+    Resolution: {{beatProgression.resolution}}
+  [>] ACTIVE ({{beat.role}}): {{beat.description}}
+    Objective: {{beat.objective}}
+  [ ] PENDING ({{beat.role}}): {{beat.description}}
+
+REMAINING ACTS:
+  - Act {{N}}: {{act.name}} - {{act.objective}}
+
+CURRENT STATE (for beat evaluation):
+- Location: {{activeState.currentLocation}}
+- Active threats: {{activeState.activeThreats[*].text}}
+- Constraints: {{activeState.activeConstraints[*].text}}
+- Open threads:
+  [{{thread.id}}] ({{thread.threadType}}/{{thread.urgency}}, {{threadAges[thread.id]}} pages old) {{thread.text}}
+- Threads resolved this scene: {{threadsResolved}}
+(Consider these when evaluating beat completion)
+
+=== FORESHADOWING DETECTION ===
+Scan the narrative for implicit promises planted with deliberate narrative emphasis.
+Only flag items that a reader would reasonably expect to pay off later:
+- Objects, locations, or abilities introduced with unusual descriptive weight (CHEKHOV_GUN)
+- Hints at future events or outcomes (FORESHADOWING)
+- Information the reader knows but characters don't (DRAMATIC_IRONY)
+- Unresolved emotional beats that demand future closure (UNRESOLVED_EMOTION)
+
+Do NOT flag incidental scene-setting details. Max 3 per page. Empty array if none detected.
+
+=== THREAD PAYOFF QUALITY ===
+(Only present when threads were resolved this scene)
+Threads were resolved this scene: {{threadsResolved}}
+For each resolved thread, assess payoff quality:
+- RUSHED: Resolved via exposition, off-screen action, or a single sentence without buildup
+- ADEQUATE: Resolved through action but without significant dramatic development
+- WELL_EARNED: Resolution developed through action, consequence, and emotional payoff
+
+Populate threadPayoffAssessments for each resolved thread.
+
+=== BEAT EVALUATION ===
+Evaluate the following narrative against this structure to determine beat completion.
+
+=== SCENE SIGNAL CLASSIFICATION ===
+Classify the narrative before deciding beatConcluded:
+- sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT
+- objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT
+- commitmentStrength: NONE | TENTATIVE | EXPLICIT_REVERSIBLE | EXPLICIT_IRREVERSIBLE
+- structuralPositionSignal: WITHIN_ACTIVE_BEAT | BRIDGING_TO_NEXT_BEAT | CLEARLY_IN_NEXT_BEAT
+- entryConditionReadiness: NOT_READY | PARTIAL | READY
+
+=== COMPLETION GATE ===
+Set beatConcluded: true only when the gate is satisfied.
+
+Base gate for all beat roles (must satisfy at least one):
+1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective
+2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective
+
+Additional gate for turning_point:
+- commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE
+- If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions
+
+Negative guards:
+- Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence
+- SCOPE_SHIFT alone cannot conclude a beat without objective resolution or explicit structural supersession evidence
+
+If the completion gate is not satisfied, set beatConcluded: false.
+
+PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions when classifying structuralPositionSignal. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate.
+(Only present when there are pending beats remaining.)
+
+=== BEAT DEVIATION EVALUATION ===
+After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.
+
+A deviation occurs when future beats are now impossible or nonsensical because:
+- Story direction fundamentally changed
+- Core assumptions of upcoming beats are invalid
+- Required story elements/goals no longer exist
+
+Evaluate ONLY beats that are not concluded. Never re-evaluate concluded beats.
+
+Always provide narrativeSummary: a 1-2 sentence summary of the current narrative state (used for planner context and rewrite context).
+
+If deviation is detected, mark:
+- deviationDetected: true
+- deviationReason: concise reason
+- invalidatedBeatIds: invalid beat IDs only
+
+If no deviation is detected, mark deviationDetected: false.
+Be conservative. Minor variations are acceptable; only mark true deviation for genuine invalidation.
+
+REMAINING BEATS TO EVALUATE FOR DEVIATION:
+  - {{beat.id}}: {{beat.description}}
+
+=== PACING EVALUATION ===
+Pages spent on current beat: {{state.pagesInCurrentBeat}}
+Story pacing budget: {{pacingBudget.targetPagesMin}}-{{pacingBudget.targetPagesMax}} total pages
+Total beats in structure: {{totalBeats}}
+Average pages per beat (budget-based): ~{{avgPagesPerBeat}}
+
+DETECT A PACING ISSUE (pacingIssueDetected: true) when EITHER applies:
+1. BEAT STALL: pagesInCurrentBeat exceeds {{maxPagesPerBeat}} (roughly targetPagesMax / totalBeats, rounded up + 2) AND the beat objective has not been meaningfully advanced
+2. MISSING MIDPOINT: The story has consumed more than 50% of its page budget (estimated from beat progression and pagesInCurrentBeat) without any turning_point beat being concluded
+
+If pacingIssueDetected is true:
+- pacingIssueReason: Explain what's stalling or missing
+- recommendedAction:
+  - "nudge" if a stronger directive in the next page could fix it (e.g., "this scene must deliver a reveal")
+  - "rewrite" if the remaining structure needs to be pulled closer (e.g., turning points are too far away)
+
+If no pacing issue: pacingIssueDetected: false, pacingIssueReason: "", recommendedAction: "none"
 
 NARRATIVE TO EVALUATE:
 {{narrative}}
 ```
-
-Where `{{ANALYST_STRUCTURE_EVALUATION_SECTION}}` includes:
-- Current act/beat progression and completed resolutions
-- Remaining acts/beats
-- Active state summary (location, threats, constraints, open threads)
-- Scene signal classification enums
-- Completion gate rules
-- Deviation detection rules
-- Pacing evaluation rules
 
 ## JSON Response Shape
 
@@ -66,6 +174,24 @@ Where `{{ANALYST_STRUCTURE_EVALUATION_SECTION}}` includes:
   "objectiveAnchors": ["{{anchor extracted from active beat objective}}"],
   "anchorEvidence": ["{{explicit evidence mapped to anchor}}"],
   "completionGateSatisfied": {{true|false}},
-  "completionGateFailureReason": "{{string}}"
+  "completionGateFailureReason": "{{string}}",
+  "narrativePromises": [
+    {
+      "description": "{{what was planted with emphasis}}",
+      "promiseType": "{{CHEKHOV_GUN|FORESHADOWING|DRAMATIC_IRONY|UNRESOLVED_EMOTION}}",
+      "suggestedUrgency": "{{LOW|MEDIUM|HIGH}}"
+    }
+  ],
+  "threadPayoffAssessments": [
+    {
+      "threadId": "{{td-N}}",
+      "threadText": "{{the thread text}}",
+      "satisfactionLevel": "{{RUSHED|ADEQUATE|WELL_EARNED}}",
+      "reasoning": "{{why this satisfaction level}}"
+    }
+  ]
 }
 ```
+
+- `narrativePromises`: Array of implicit foreshadowing detected in the narrative (max 3). Empty array if none detected. Only items introduced with deliberate narrative emphasis.
+- `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.

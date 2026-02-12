@@ -92,6 +92,27 @@ export function assignIds(
   return result;
 }
 
+// ── Narrative Promise types ────────────────────────────────────────
+
+export type PromiseType = 'CHEKHOV_GUN' | 'FORESHADOWING' | 'DRAMATIC_IRONY' | 'UNRESOLVED_EMOTION';
+
+export interface NarrativePromise {
+  readonly description: string;
+  readonly promiseType: PromiseType;
+  readonly suggestedUrgency: Urgency;
+}
+
+// ── Thread Payoff Assessment types ────────────────────────────────
+
+export type SatisfactionLevel = 'RUSHED' | 'ADEQUATE' | 'WELL_EARNED';
+
+export interface ThreadPayoffAssessment {
+  readonly threadId: string;
+  readonly threadText: string;
+  readonly satisfactionLevel: SatisfactionLevel;
+  readonly reasoning: string;
+}
+
 export function removeByIds<T extends KeyedEntry>(
   entries: readonly T[],
   idsToRemove: readonly string[],

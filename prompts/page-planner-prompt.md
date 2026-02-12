@@ -2,6 +2,7 @@
 
 - Source: `src/llm/prompts/page-planner-prompt.ts`
 - Planner context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts`
+- Thread pacing directives source: `src/llm/prompts/sections/planner/thread-pacing-directive.ts`
 - State intent/output instructions source: `src/llm/prompts/sections/planner/state-intent-rules.ts`
 - Output schema source: `src/llm/schemas/page-planner-schema.ts`
 
@@ -142,7 +143,29 @@ ACTIVE CONSTRAINTS:
 {{activeState.activeConstraints as "- [id] text" list or '(none)'}}
 
 OPEN NARRATIVE THREADS:
-{{activeState.openThreads as "- [id] (threadType/urgency) text" list or '(none)'}}
+{{activeState.openThreads as "- [id] (threadType/urgency, N pages old) text" list or '(none)'}}
+
+{{#if threadAgingSection (overdue threads exist)}}
+=== THREAD PACING PRESSURE ===
+The following threads are overdue and should be prioritized:
+- [td-N] (threadType/urgency, N pages old): thread text
+
+Prioritize paying off or meaningfully escalating at least one overdue thread per scene.
+{{/if}}
+
+{{#if payoffFeedbackSection (previous payoffs were RUSHED)}}
+=== PAYOFF QUALITY FEEDBACK ===
+Previous thread resolution was assessed as rushed. Ensure future resolutions develop through action and consequence, not exposition.
+Rushed payoffs: [td-N] thread text; ...
+{{/if}}
+
+{{#if narrativePromisesSection (inherited or analyst-detected promises exist)}}
+=== NARRATIVE PROMISES (implicit foreshadowing not yet captured as threads) ===
+- [CHEKHOV_GUN/HIGH] A silver dagger was introduced with emphasis
+- [FORESHADOWING/MEDIUM] The protagonist noted unusual silence from the northern watchtower
+
+Consider converting important promises to formal threads via stateIntents, or address them directly in sceneIntent.
+{{/if}}
 
 {{#if ancestorSummaries.length > 0}}
 EARLIER SCENE SUMMARIES:

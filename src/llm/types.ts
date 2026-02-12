@@ -2,7 +2,14 @@ import { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { PageId } from '../models/id.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
-import type { ActiveState, KeyedEntry, ThreadType, Urgency } from '../models/state/index.js';
+import type {
+  ActiveState,
+  KeyedEntry,
+  NarrativePromise,
+  ThreadPayoffAssessment,
+  ThreadType,
+  Urgency,
+} from '../models/state/index.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 
@@ -136,6 +143,11 @@ export interface ContinuationContext {
   parentSceneMomentum?: SceneMomentum;
   parentObjectiveEvidenceStrength?: ObjectiveEvidenceStrength;
   momentumTrajectory?: MomentumTrajectory;
+
+  threadAges?: Readonly<Record<string, number>>;
+  inheritedNarrativePromises?: readonly NarrativePromise[];
+  parentAnalystNarrativePromises?: readonly NarrativePromise[];
+  parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
@@ -334,6 +346,8 @@ export interface AnalystResult {
   anchorEvidence: string[];
   completionGateSatisfied: boolean;
   completionGateFailureReason: string;
+  narrativePromises: NarrativePromise[];
+  threadPayoffAssessments: ThreadPayoffAssessment[];
   rawResponse: string;
 }
 
@@ -342,6 +356,8 @@ export interface AnalystContext {
   structure: StoryStructure;
   accumulatedStructureState: AccumulatedStructureState;
   activeState: ActiveState;
+  threadsResolved: readonly string[];
+  threadAges: Readonly<Record<string, number>>;
 }
 
 // ── Lorekeeper types ────────────────────────────────────────────────

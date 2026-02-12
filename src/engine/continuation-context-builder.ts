@@ -41,6 +41,11 @@ export function buildContinuationContext(
     parentSceneMomentum: parentPage.analystResult?.sceneMomentum ?? undefined,
     parentObjectiveEvidenceStrength: parentPage.analystResult?.objectiveEvidenceStrength ?? undefined,
     momentumTrajectory: ancestorContext.momentumTrajectory,
+
+    threadAges: parentPage.threadAges,
+    inheritedNarrativePromises: parentPage.inheritedNarrativePromises,
+    parentAnalystNarrativePromises: parentPage.analystResult?.narrativePromises ?? [],
+    parentThreadPayoffAssessments: parentPage.analystResult?.threadPayoffAssessments ?? [],
   };
 }
 

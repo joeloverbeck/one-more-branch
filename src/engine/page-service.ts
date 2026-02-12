@@ -266,6 +266,8 @@ export async function generateNextPage(
         activeStructure: activeStructureForAnalyst,
         parentStructureState: parentState.structureState,
         parentActiveState: parentState.accumulatedActiveState,
+        threadsResolved: continuationReconciliation.threadsResolved,
+        threadAges: parentPage.threadAges,
         apiKey,
         logContext: continuationLogContext,
         onGenerationStage,
@@ -325,6 +327,8 @@ export async function generateNextPage(
     pacingIssueReason: result.pacingIssueReason ?? '',
   });
 
+  const parentAnalystPromises = parentPage.analystResult?.narrativePromises ?? [];
+
   const page = buildContinuationPage(result, {
     pageId: newPageId,
     parentPageId: parentPage.id,
@@ -337,6 +341,9 @@ export async function generateNextPage(
     structureVersionId: activeStructureVersion?.id ?? null,
     storyBible: lastStoryBible,
     analystResult,
+    parentThreadAges: parentPage.threadAges,
+    parentInheritedNarrativePromises: parentPage.inheritedNarrativePromises,
+    parentAnalystNarrativePromises: parentAnalystPromises,
   });
 
   const updatedStory = updateStoryWithAllCanon(

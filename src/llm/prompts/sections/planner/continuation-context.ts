@@ -1,5 +1,10 @@
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import type { ContinuationPagePlanContext, MomentumTrajectory } from '../../../types.js';
+import {
+  buildThreadAgingSection,
+  buildNarrativePromisesSection,
+  buildPayoffFeedbackSection,
+} from './thread-pacing-directive.js';
 
 function formatCharacterCanon(characterCanon: Readonly<Record<string, readonly string[]>>): string {
   const entries = Object.entries(characterCanon);
@@ -197,10 +202,15 @@ Current Beat Index: ${context.accumulatedStructureState.currentBeatIndex}
       ? context.activeState.activeConstraints.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')
       : '(none)';
 
+  const threadAges = context.threadAges ?? {};
   const threadsSection =
     context.activeState.openThreads.length > 0
       ? context.activeState.openThreads
-        .map(entry => `- [${entry.id}] (${entry.threadType}/${entry.urgency}) ${entry.text}`)
+        .map(entry => {
+          const age = threadAges[entry.id];
+          const ageStr = age !== undefined ? `, ${age} pages old` : '';
+          return `- [${entry.id}] (${entry.threadType}/${entry.urgency}${ageStr}) ${entry.text}`;
+        })
         .join('\n')
       : '(none)';
 
@@ -220,13 +230,27 @@ ${context.ancestorSummaries.map(summary => `- [${summary.pageId}] ${summary.summ
 
   const pacingSection = buildPacingBriefingSection(context);
 
+  const threadAgingSection = buildThreadAgingSection(
+    context.activeState.openThreads,
+    threadAges,
+  );
+
+  const narrativePromisesSection = buildNarrativePromisesSection(
+    context.inheritedNarrativePromises ?? [],
+    context.parentAnalystNarrativePromises ?? [],
+  );
+
+  const payoffFeedbackSection = buildPayoffFeedbackSection(
+    context.parentThreadPayoffAssessments ?? [],
+  );
+
   return `=== PLANNER CONTEXT: CONTINUATION ===
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${pacingSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):
@@ -253,7 +277,7 @@ ${constraintsSection}
 OPEN NARRATIVE THREADS:
 ${threadsSection}
 
-${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
+${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
 PLAYER'S CHOICE:

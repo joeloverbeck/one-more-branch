@@ -95,6 +95,62 @@ export const ANALYST_SCHEMA: JsonSchema = {
         completionGateFailureReason: {
           type: 'string',
         },
+        narrativePromises: {
+          type: 'array',
+          description:
+            'Implicit foreshadowing or Chekhov\'s guns planted in the narrative prose with notable emphasis. Only flag items introduced with deliberate narrative weight, not incidental details. Max 3 per page.',
+          items: {
+            type: 'object',
+            properties: {
+              description: {
+                type: 'string',
+                description: 'Brief description of the narrative promise or foreshadowed element.',
+              },
+              promiseType: {
+                type: 'string',
+                enum: ['CHEKHOV_GUN', 'FORESHADOWING', 'DRAMATIC_IRONY', 'UNRESOLVED_EMOTION'],
+                description: 'The type of narrative promise.',
+              },
+              suggestedUrgency: {
+                type: 'string',
+                enum: ['LOW', 'MEDIUM', 'HIGH'],
+                description: 'How urgently this promise should be addressed in upcoming pages.',
+              },
+            },
+            required: ['description', 'promiseType', 'suggestedUrgency'],
+            additionalProperties: false,
+          },
+        },
+        threadPayoffAssessments: {
+          type: 'array',
+          description:
+            'Quality assessment of thread resolutions that occurred in this scene. Only populate when threads were resolved.',
+          items: {
+            type: 'object',
+            properties: {
+              threadId: {
+                type: 'string',
+                description: 'The ID of the resolved thread (e.g., "td-3").',
+              },
+              threadText: {
+                type: 'string',
+                description: 'The text of the resolved thread.',
+              },
+              satisfactionLevel: {
+                type: 'string',
+                enum: ['RUSHED', 'ADEQUATE', 'WELL_EARNED'],
+                description:
+                  'How satisfying the thread resolution was. RUSHED = resolved via exposition or off-screen. ADEQUATE = resolved through action but without buildup. WELL_EARNED = resolution developed through action and consequence.',
+              },
+              reasoning: {
+                type: 'string',
+                description: 'Brief explanation of the satisfaction assessment.',
+              },
+            },
+            required: ['threadId', 'threadText', 'satisfactionLevel', 'reasoning'],
+            additionalProperties: false,
+          },
+        },
       },
       required: [
         'beatConcluded',
@@ -115,6 +171,8 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'anchorEvidence',
         'completionGateSatisfied',
         'completionGateFailureReason',
+        'narrativePromises',
+        'threadPayoffAssessments',
       ],
       additionalProperties: false,
     },

@@ -7,6 +7,7 @@ import {
 } from './protagonist-affect';
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
+import type { NarrativePromise } from './state/keyed-entry';
 import type { AnalystResult, StoryBible } from '../llm/types';
 import {
   ActiveState,
@@ -49,6 +50,8 @@ export interface Page {
   readonly structureVersionId: StructureVersionId | null;
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
+  readonly threadAges: Readonly<Record<string, number>>;
+  readonly inheritedNarrativePromises: readonly NarrativePromise[];
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -75,6 +78,8 @@ export interface CreatePageData {
   structureVersionId?: StructureVersionId | null;
   storyBible?: StoryBible | null;
   analystResult?: AnalystResult | null;
+  threadAges?: Readonly<Record<string, number>>;
+  inheritedNarrativePromises?: readonly NarrativePromise[];
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -123,6 +128,8 @@ export function createPage(data: CreatePageData): Page {
     structureVersionId: data.structureVersionId ?? null,
     storyBible: data.storyBible ?? null,
     analystResult: data.analystResult ?? null,
+    threadAges: data.threadAges ?? {},
+    inheritedNarrativePromises: data.inheritedNarrativePromises ?? [],
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,

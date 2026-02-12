@@ -124,7 +124,11 @@ describe('page-builder', () => {
         parentAccumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
+        storyBible: null,
         analystResult: null,
+        parentThreadAges: { 'td-1': 0 },
+        parentInheritedNarrativePromises: [],
+        parentAnalystNarrativePromises: [],
       };
 
       const page = buildContinuationPage(result, context);

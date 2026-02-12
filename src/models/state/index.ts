@@ -56,6 +56,14 @@ export {
   removeByIds,
 } from './keyed-entry.js';
 
+// Narrative promise types
+export type {
+  PromiseType,
+  NarrativePromise,
+  SatisfactionLevel,
+  ThreadPayoffAssessment,
+} from './keyed-entry.js';
+
 // Active state
 export {
   ActiveState,

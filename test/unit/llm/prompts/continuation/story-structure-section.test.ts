@@ -1,5 +1,6 @@
 import type { AccumulatedStructureState, StoryStructure } from '../../../../../src/models/story-arc';
 import type { ActiveState } from '../../../../../src/models/state';
+import { ThreadType, Urgency } from '../../../../../src/models/state/keyed-entry';
 import {
   getRemainingBeats,
   buildActiveStateForBeatEvaluation,
@@ -159,18 +160,18 @@ describe('story-structure-section', () => {
       expect(result).not.toContain('Constraints: cn-8');
     });
 
-    it('uses thread text (not IDs)', () => {
+    it('uses thread text with metadata per line', () => {
       const state: ActiveState = {
         ...emptyActiveState,
         openThreads: [
-          { id: 'td-3', text: 'Missing key - need to find it' },
+          { id: 'td-3', text: 'Missing key - need to find it', threadType: ThreadType.QUEST, urgency: Urgency.HIGH },
         ],
       };
 
       const result = buildActiveStateForBeatEvaluation(state);
 
-      expect(result).toContain('Open threads: Missing key - need to find it');
-      expect(result).not.toContain('Open threads: td-3');
+      expect(result).toContain('Open threads:');
+      expect(result).toContain('[td-3] (QUEST/HIGH) Missing key - need to find it');
     });
   });
 

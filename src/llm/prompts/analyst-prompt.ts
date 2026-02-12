@@ -31,6 +31,8 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
     context.structure,
     context.accumulatedStructureState,
     context.activeState,
+    context.threadsResolved,
+    context.threadAges,
   );
 
   const userContent = `${structureEvaluation}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;

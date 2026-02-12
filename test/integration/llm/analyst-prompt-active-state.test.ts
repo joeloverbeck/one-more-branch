@@ -74,6 +74,8 @@ describe('buildAnalystPrompt integration - active state summary', () => {
       structure,
       accumulatedStructureState: structureState,
       activeState,
+      threadsResolved: [],
+      threadAges: {},
     };
 
     const messages = buildAnalystPrompt(context);
@@ -88,7 +90,10 @@ describe('buildAnalystPrompt integration - active state summary', () => {
       'Constraints: Most exits are blocked by burned carts, The medic has only one dose of painkiller left',
     );
     expect(userContent).toContain(
-      'Open threads: Find where the detainees were moved, Get a secure line to the western cell',
+      '[td-2] (MYSTERY/HIGH) Find where the detainees were moved',
+    );
+    expect(userContent).toContain(
+      '[td-8] (QUEST/MEDIUM) Get a secure line to the western cell',
     );
 
     expect(userContent).not.toContain('Active threats: th-15, th-17');
