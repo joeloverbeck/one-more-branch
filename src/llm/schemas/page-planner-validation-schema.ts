@@ -3,6 +3,7 @@ import { ThreadType, Urgency } from '../../models/state/index.js';
 import {
   STATE_ID_PREFIXES,
   validateIdOnlyField,
+  validateNoIdLikeAdditions,
 } from '../validation/state-id-prefixes.js';
 
 const DUPLICATE_INTENT_RULE_KEY = 'planner.duplicate_intent';
@@ -78,6 +79,27 @@ function addIdPrefixIssues(
         ruleKey: issue.ruleKey,
         field: issue.field,
         expectedPrefix: issue.expectedPrefix,
+        value: issue.value,
+      },
+    });
+  });
+}
+
+function addNoIdLikeAdditionIssues(
+  values: readonly string[],
+  field: string,
+  path: (string | number)[],
+  ctx: z.RefinementCtx,
+): void {
+  const issues = validateNoIdLikeAdditions(values, field);
+  issues.forEach(issue => {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: issue.ruleKey,
+      path: [...path, issue.index],
+      params: {
+        ruleKey: issue.ruleKey,
+        field: issue.field,
         value: issue.value,
       },
     });
@@ -163,6 +185,37 @@ export const PagePlannerResultSchema = z
     addDuplicateIssues(data.stateIntents.health.add, ['stateIntents', 'health', 'add'], ctx);
     addDuplicateIssues(data.stateIntents.canon.worldAdd, ['stateIntents', 'canon', 'worldAdd'], ctx);
 
+    addNoIdLikeAdditionIssues(
+      data.stateIntents.threats.add,
+      'stateIntents.threats.add',
+      ['stateIntents', 'threats', 'add'],
+      ctx,
+    );
+    addNoIdLikeAdditionIssues(
+      data.stateIntents.constraints.add,
+      'stateIntents.constraints.add',
+      ['stateIntents', 'constraints', 'add'],
+      ctx,
+    );
+    addNoIdLikeAdditionIssues(
+      data.stateIntents.inventory.add,
+      'stateIntents.inventory.add',
+      ['stateIntents', 'inventory', 'add'],
+      ctx,
+    );
+    addNoIdLikeAdditionIssues(
+      data.stateIntents.health.add,
+      'stateIntents.health.add',
+      ['stateIntents', 'health', 'add'],
+      ctx,
+    );
+    addNoIdLikeAdditionIssues(
+      data.stateIntents.canon.worldAdd,
+      'stateIntents.canon.worldAdd',
+      ['stateIntents', 'canon', 'worldAdd'],
+      ctx,
+    );
+
     addIdPrefixIssues(
       data.stateIntents.threats.removeIds,
       'stateIntents.threats.removeIds',
@@ -208,6 +261,12 @@ export const PagePlannerResultSchema = z
 
     data.stateIntents.threads.add.forEach((entry, index) => {
       addRequiredTrimmedTextIssue(entry.text, ['stateIntents', 'threads', 'add', index, 'text'], ctx);
+      addNoIdLikeAdditionIssues(
+        [entry.text],
+        'stateIntents.threads.add[].text',
+        ['stateIntents', 'threads', 'add', index, 'text'],
+        ctx,
+      );
     });
 
     data.stateIntents.characterState.add.forEach((entry, index) => {
@@ -224,6 +283,21 @@ export const PagePlannerResultSchema = z
           params: { ruleKey: REQUIRED_TEXT_RULE_KEY },
         });
       }
+      addNoIdLikeAdditionIssues(
+        entry.states,
+        'stateIntents.characterState.add[].states',
+        ['stateIntents', 'characterState', 'add', index, 'states'],
+        ctx,
+      );
+    });
+
+    data.stateIntents.canon.characterAdd.forEach((entry, index) => {
+      addNoIdLikeAdditionIssues(
+        entry.facts,
+        'stateIntents.canon.characterAdd[].facts',
+        ['stateIntents', 'canon', 'characterAdd', index, 'facts'],
+        ctx,
+      );
     });
 
   });

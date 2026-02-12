@@ -177,6 +177,21 @@ MUST DO:
 - Propose stateIntents as mutations to consider, not final applied state.
 - Provide writerBrief guidance for the writer model.
 
+STATE PERSISTENCE CONTRACT:
+- Treat all provided state sections as persistent continuity records, not scene-only summaries.
+- Default action is to KEEP existing entries (including NPC characterState).
+- Do NOT remove an entry just because it is not foregrounded in the next scene.
+- Remove IDs only when the next scene clearly invalidates, resolves, or makes that entry impossible.
+- If uncertain whether a state still holds, keep it.
+- Prefer minimal mutations: add new state when needed, and only remove with explicit contradiction/resolution.
+- constraints.removeIds: only when the planned scene explicitly lifts or invalidates that limitation.
+- threats.removeIds: only when the planned scene explicitly neutralizes, ends, or makes that danger no longer active.
+- threads.resolveIds: only when the planned scene explicitly answers/completes/prevents the open loop.
+- inventory.removeIds: only when the planned scene explicitly consumes, loses, transfers, or destroys the item.
+- health.removeIds: only when the planned scene explicitly heals or ends that condition.
+- characterState.removeIds: only when the planned scene explicitly invalidates that branch-specific state.
+- Moving to a new location or shifting scene focus does NOT by itself justify removing threats, constraints, or threads.
+
 MUST NOT:
 - Do NOT write narrative prose.
 - Do NOT provide player choices.
@@ -184,8 +199,12 @@ MUST NOT:
 - Do NOT include explanation outside the JSON object.
 
 ID RULES:
-- removeIds/resolveIds/removeId/resolveId must reference IDs from provided continuation context.
+- removeIds/resolveIds must reference IDs from provided continuation context.
 - Opening mode commonly has no removable IDs; use empty arrays when nothing should be removed.
+- characterState.removeIds must correspond to explicit invalidation/resolution in planned events.
+- Add fields must contain plain text/object content only, never ID-like strings (e.g., th-1, cn-2, td-3, inv-4, hp-5, cs-6).
+- IDs are created by the server; never prepend or embed server-style IDs in add payload text.
+- There is no replace field. To progress an existing item, remove the old ID and add the new evolved text/object in the same payload.
 
 THREAD CONTRACT (OPEN LOOPS ONLY):
 - THREADS = unresolved open loops, never current-state facts.
@@ -213,6 +232,10 @@ QUALITY BAR:
 - Prefer minimal, meaningful mutations over speculative churn.
 - Do not duplicate equivalent intents within the same category.
 
+REMOVAL SELF-CHECK (before you finalize JSON):
+- For each ID in removeIds/resolveIds, confirm the planned scene includes a concrete event that ends or invalidates that exact entry.
+- If no explicit ending/invalidation event exists in the planned scene, do not remove/resolve that ID.
+
 Return JSON only.
 ```
 
@@ -226,13 +249,11 @@ Return JSON only.
     "currentLocation": "{{where protagonist is at end of next scene}}",
     "threats": {
       "add": ["{{new threat text}}"],
-      "removeIds": ["{{thr_...}}"],
-      "replace": [{ "removeId": "{{thr_...}}", "addText": "{{replacement threat text}}" }]
+      "removeIds": ["{{th-...}}"]
     },
     "constraints": {
       "add": ["{{new constraint text}}"],
-      "removeIds": ["{{con_...}}"],
-      "replace": [{ "removeId": "{{con_...}}", "addText": "{{replacement constraint text}}" }]
+      "removeIds": ["{{cn-...}}"]
     },
     "threads": {
       "add": [
@@ -242,37 +263,19 @@ Return JSON only.
           "urgency": "{{LOW|MEDIUM|HIGH}}"
         }
       ],
-      "resolveIds": ["{{thd_...}}"],
-      "replace": [
-        {
-          "resolveId": "{{thd_...}}",
-          "add": {
-            "text": "{{replacement thread text}}",
-            "threadType": "{{MYSTERY|QUEST|RELATIONSHIP|DANGER|INFORMATION|RESOURCE|MORAL}}",
-            "urgency": "{{LOW|MEDIUM|HIGH}}"
-          }
-        }
-      ]
+      "resolveIds": ["{{td-...}}"]
     },
     "inventory": {
       "add": ["{{item text}}"],
-      "removeIds": ["{{inv_...}}"],
-      "replace": [{ "removeId": "{{inv_...}}", "addText": "{{replacement item text}}" }]
+      "removeIds": ["{{inv-...}}"]
     },
     "health": {
       "add": ["{{health text}}"],
-      "removeIds": ["{{hlt_...}}"],
-      "replace": [{ "removeId": "{{hlt_...}}", "addText": "{{replacement health text}}" }]
+      "removeIds": ["{{hp-...}}"]
     },
     "characterState": {
       "add": [{ "characterName": "{{npc name}}", "states": ["{{state text}}"] }],
-      "removeIds": ["{{npc_...}}"],
-      "replace": [
-        {
-          "removeId": "{{npc_...}}",
-          "add": { "characterName": "{{npc name}}", "states": ["{{state text}}"] }
-        }
-      ]
+      "removeIds": ["{{cs-...}}"]
     },
     "canon": {
       "worldAdd": ["{{new world canon fact}}"],

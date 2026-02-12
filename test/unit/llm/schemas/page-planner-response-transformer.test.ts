@@ -147,4 +147,21 @@ describe('validatePagePlannerResponse', () => {
       expect(llmError.context?.ruleKeys).toContain('planner.thread_taxonomy.invalid_enum');
     }
   });
+
+  it('rejects ID-like values in add payload fields', () => {
+    const rawJson = createValidPlannerPayload();
+    (rawJson.stateIntents as { constraints: { add: string[] } }).constraints.add = ['cn-7'];
+
+    try {
+      validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+      throw new Error('Expected validatePagePlannerResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
+      expect(
+        issues.some(issue => issue.ruleKey === 'state_id.addition.must_not_be_id_like'),
+      ).toBe(true);
+    }
+  });
 });
