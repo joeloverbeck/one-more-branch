@@ -454,9 +454,126 @@ describe('playRoutes', () => {
       expect(status).toHaveBeenCalledWith(400);
       expect(json).toHaveBeenCalledWith({ error: 'Missing pageId or choiceIndex' });
     });
+
+    it('returns 400 when suggestedProtagonistSpeech exceeds 500 characters', async () => {
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice');
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      await getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: {
+            pageId: 1,
+            choiceIndex: 0,
+            apiKey: 'valid-key-12345',
+            suggestedProtagonistSpeech: `  ${'a'.repeat(501)}  `,
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+
+      expect(makeChoiceSpy).not.toHaveBeenCalled();
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith({
+        error: 'suggestedProtagonistSpeech must be 500 characters or fewer',
+      });
+    });
   });
 
   describe('POST /:storyId/choice success', () => {
+    it('trims and forwards suggestedProtagonistSpeech when provided', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: {
+            pageId: 2,
+            choiceIndex: 1,
+            apiKey: 'valid-key-12345',
+            suggestedProtagonistSpeech: '  We should not split up.  ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      const makeChoiceArg = makeChoiceSpy.mock.calls[0]?.[0] as
+        | { suggestedProtagonistSpeech?: string }
+        | undefined;
+      expect(makeChoiceArg?.suggestedProtagonistSpeech).toBe('We should not split up.');
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('normalizes blank suggestedProtagonistSpeech to undefined', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: {
+            pageId: 2,
+            choiceIndex: 1,
+            apiKey: 'valid-key-12345',
+            suggestedProtagonistSpeech: '   ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      const makeChoiceArg = makeChoiceSpy.mock.calls[0]?.[0] as
+        | { suggestedProtagonistSpeech?: string }
+        | undefined;
+      expect(makeChoiceArg?.suggestedProtagonistSpeech).toBeUndefined();
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
     it('calls makeChoice with expected params and returns page payload', async () => {
       const story = createStory({
         title: 'Test Story',

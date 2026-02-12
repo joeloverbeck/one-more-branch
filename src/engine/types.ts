@@ -58,6 +58,7 @@ export interface MakeChoiceOptions {
   readonly pageId: PageId;
   readonly choiceIndex: number;
   readonly apiKey?: string;
+  readonly suggestedProtagonistSpeech?: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }
 

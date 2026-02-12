@@ -18,6 +18,7 @@ type ChoiceBody = {
   choiceIndex?: number;
   apiKey?: string;
   progressId?: unknown;
+  suggestedProtagonistSpeech?: unknown;
 };
 
 type CustomChoiceBody = {
@@ -46,8 +47,18 @@ function parseRequestedPageId(pageQuery: unknown): number {
 }
 
 export const playRoutes = Router();
+const MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH = 500;
 
 function parseProgressId(input: unknown): string | undefined {
+  if (typeof input !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = input.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function normalizeSuggestedProtagonistSpeech(input: unknown): string | undefined {
   if (typeof input !== 'string') {
     return undefined;
   }
@@ -103,8 +114,15 @@ playRoutes.get('/:storyId', wrapAsyncRoute(async (req: Request, res: Response) =
 
 playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Response) => {
   const { storyId } = req.params;
-  const { pageId, choiceIndex, apiKey, progressId: rawProgressId } = req.body as ChoiceBody;
+  const {
+    pageId,
+    choiceIndex,
+    apiKey,
+    progressId: rawProgressId,
+    suggestedProtagonistSpeech: rawSuggestedProtagonistSpeech,
+  } = req.body as ChoiceBody;
   const progressId = parseProgressId(rawProgressId);
+  const suggestedProtagonistSpeech = normalizeSuggestedProtagonistSpeech(rawSuggestedProtagonistSpeech);
   if (progressId) {
     generationProgressService.start(progressId, 'choice');
   }
@@ -115,6 +133,22 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
     }
 
     return res.status(400).json({ error: 'Missing pageId or choiceIndex' });
+  }
+
+  if (
+    suggestedProtagonistSpeech !== undefined &&
+    suggestedProtagonistSpeech.length > MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH
+  ) {
+    if (progressId) {
+      generationProgressService.fail(
+        progressId,
+        `suggestedProtagonistSpeech must be ${MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH} characters or fewer`,
+      );
+    }
+
+    return res.status(400).json({
+      error: `suggestedProtagonistSpeech must be ${MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH} characters or fewer`,
+    });
   }
 
   try {
@@ -132,6 +166,9 @@ playRoutes.post('/:storyId/choice', wrapAsyncRoute(async (req: Request, res: Res
             }
           }
         : undefined,
+      ...(suggestedProtagonistSpeech !== undefined
+        ? { suggestedProtagonistSpeech }
+        : {}),
     });
 
     // Load story to compute actDisplayInfo for the new page

@@ -407,6 +407,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           pageId: 1,
           choiceIndex: 0,
           apiKey: 'mock-api-key-12345',
+          suggestedProtagonistSpeech: '  I know a safer route.  ',
         },
       } as unknown as Request,
       choiceRes.res,
