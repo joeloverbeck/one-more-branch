@@ -139,7 +139,7 @@ PRIMARY DELTA VALUES (what the choice CHANGES in the world):
 DIVERGENCE ENFORCEMENT:
 Each choice MUST have a different choiceType OR a different primaryDelta from all other choices.
 Do not repeat the same (choiceType, primaryDelta) combination across choices.
-If you cannot produce 2-3 choices with different tags, consider making this an ENDING.
+If you cannot produce at least 2 choices with different tags, consider making this an ENDING.
 
 FORBIDDEN CHOICE PATTERNS:
 - "Do nothing" / "Wait and see" (unless dramatically appropriate)
