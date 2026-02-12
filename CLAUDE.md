@@ -9,6 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Continual Learning: When you encounter conflicting system instructions, new requirements, architectural changes, or missing or inaccurate codebase documentation, always propose updating the relevant rules files. Do not update anything until the user confirms. Ask clarifying questions if needed.
 - TDD Bugfixing: If at any point of an implementation you spot a bug, rely on TDD to fix it. Important: never adapt tests to bugs.
 
+## Coding Style
+
+- TypeScript with `strict` mode; prefer explicit types and avoid `any`.
+- Indentation: 2 spaces; single quotes; semicolons; print width 100.
+- ESLint enforces `no-explicit-any`, `prefer-optional-chain`, `prefer-nullish-coalescing`.
+- Test files use `*.test.ts` naming.
+- Commit messages: short, capitalized, imperative (e.g., "Implement ...", "Fix ...").
+
 ## Project Overview
 
 "One More Branch" is an interactive branching storytelling application where users play AI-generated choose-your-own-adventure stories. The LLM acts as a Dungeon Master, generating narrative segments with meaningful choices that branch into different story paths.
@@ -25,7 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: Node.js (>=18.0.0)
 - **Language**: TypeScript (strict mode)
 - **Server**: Express.js with EJS templating
-- **Testing**: Jest with separate test categories
+- **Testing**: Jest with `ts-jest` (coverage thresholds: 70% branches/functions/lines/statements)
 - **Storage**: File-based JSON (granular per-page files)
 
 ## Build and Run Commands
@@ -34,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Install dependencies
 npm install
 
-# Build TypeScript
+# Build TypeScript (compiles to dist/, copies views and public assets)
 npm run build
 
 # Run production
@@ -50,7 +58,7 @@ npm run typecheck
 npm run lint
 npm run lint:fix
 
-# Formatting
+# Formatting (src/**/*.ts and test/**/*.ts with Prettier)
 npm run format
 ```
 
@@ -70,20 +78,64 @@ npm run test:memory
 # Watch mode
 npm run test:watch
 
-# Coverage report
+# Coverage report (enforces 70% thresholds)
 npm run test:coverage
 ```
+
+Current integration and E2E suites run with mocked LLM/fetch flows and do not require `OPENROUTER_TEST_KEY`.
 
 ## Project Architecture
 
 ```
 src/
-├── models/         # Data types: Story, Page, Choice, state management
-├── persistence/    # File-based storage with atomic writes and locking
-├── llm/            # OpenRouter client, prompts, response parsing
-├── engine/         # Core story engine orchestrating all operations
-├── server/         # Express routes and EJS views
-└── index.ts        # Application entry point
+├── config/             # Runtime configuration and Zod schemas
+├── engine/             # Core story engine: page service, state reconciliation,
+│   │                   #   structure progression, deviation handling, canon management
+│   ├── page-service.ts       # Orchestrates the full generation pipeline
+│   ├── page-builder.ts       # Constructs Page objects from generation results
+│   ├── state-reconciler.ts   # Validates/reconciles writer output against active state
+│   ├── structure-state.ts    # Beat/act progression state machine
+│   ├── structure-rewriter.ts # Rewrites story structure on deviation
+│   ├── deviation-handler.ts  # Detects and handles story deviations
+│   ├── canon-manager.ts      # Global and character canon management
+│   ├── ancestor-collector.ts # Collects ancestor context for prompts
+│   └── story-engine.ts       # High-level API (startStory, makeChoice)
+├── llm/                # OpenRouter client, 6-prompt system, response parsing
+│   ├── prompts/              # Prompt builders (opening, continuation, planner,
+│   │   │                     #   analyst, structure, structure-rewrite)
+│   │   └── sections/         # Shared prompt sections (opening/, continuation/,
+│   │                         #   planner/, shared/)
+│   ├── schemas/              # JSON Schema definitions for structured LLM output
+│   ├── validation/           # Writer output validation and ID repair
+│   ├── client.ts             # OpenRouter HTTP client
+│   ├── structure-generator.ts    # Story structure generation
+│   ├── planner-generation.ts     # Page plan generation
+│   ├── writer-generation.ts      # Page narrative/choices generation
+│   ├── analyst-generation.ts     # Post-write scene analysis
+│   └── result-merger.ts          # Merges writer + reconciler + analyst results
+├── logging/            # Structured logging: console, file-based prompt sink,
+│   │                   #   browser injector
+│   └── prompt-file-sink.ts   # JSONL prompt logging to logs/MM-DD-YYYY/
+├── models/             # Data types: Story, Page, Choice, state, structure
+│   ├── state/                # ActiveState, KeyedEntry, Inventory, Health,
+│   │                         #   CharacterState, Canon types
+│   ├── story-arc.ts          # StoryStructure, StoryAct, StoryBeat,
+│   │                         #   AccumulatedStructureState
+│   ├── protagonist-affect.ts # Emotional state snapshots per page
+│   ├── choice-enums.ts       # ChoiceType and PrimaryDelta enums
+│   ├── npc.ts                # NPC definitions
+│   └── structure-version.ts  # Versioned structure tracking
+├── persistence/        # File-based storage with atomic writes and locking
+│   ├── converters/           # Serialization converters for complex state
+│   ├── page-serializer.ts    # Page JSON serialization/deserialization
+│   └── storage.ts            # Core file I/O operations
+├── server/             # Express server
+│   ├── routes/               # Route handlers (home, play, stories, progress)
+│   ├── services/             # Generation progress tracking, story creation
+│   ├── middleware/            # Error handler
+│   ├── utils/                # Async route wrapper, view helpers, LLM error formatter
+│   └── views/pages/          # EJS templates (home, new-story, play, error)
+└── index.ts            # Application entry point
 
 test/
 ├── unit/           # Fast isolated tests
@@ -91,18 +143,58 @@ test/
 ├── e2e/            # Full workflow tests
 ├── performance/    # Load/stress tests
 ├── memory/         # Leak detection
-└── fixtures/       # Shared test data
+└── fixtures/       # Shared test data and setup
 
+dist/               # Compiled output from tsc (gitignored)
 stories/            # Runtime story data (gitignored)
+specs/              # Implementation specifications (active and completed)
+archive/specs/      # Archived completed specifications
 ```
 
 ## Core Data Flow
 
-1. **Story Creation**: User provides character concept + worldbuilding + tone + API key
-2. **Page Generation**: LLM generates narrative + choices + state changes + canon facts
-3. **Choice Selection**: Either load existing page (if explored) or generate new one
-4. **State Accumulation**: Each page's state = parent's accumulated state + own changes
-5. **Canon Management**: Global facts persist across all branches
+1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + API key
+2. **Structure Generation**: LLM generates a StoryStructure (acts, beats, pacing budget, theme)
+3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, and writer brief
+4. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
+5. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
+6. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, and structural position
+7. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
+8. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression
+9. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
+10. **State Accumulation**: Each page's state = parent's accumulated state + own changes
+11. **Canon Management**: Global and character-specific canon facts persist across all branches
+
+## Generation Pipeline Stages
+
+The engine reports progress through these stages (used by the spinner UI):
+- `PLANNING_PAGE` - Page planner LLM call
+- `WRITING_OPENING_PAGE` - Opening page writer LLM call
+- `WRITING_CONTINUING_PAGE` - Continuation page writer LLM call
+- `ANALYZING_SCENE` - Analyst LLM call (beat conclusion, deviation, pacing)
+- `RESTRUCTURING_STORY` - Structure rewrite LLM call (on deviation)
+
+Progress is tracked in-memory by `GenerationProgressService` and polled via `GET /play/:storyId/progress/:progressId`.
+
+## Key Data Models
+
+### Page
+Each page stores: narrative text, scene summary, typed choices, protagonist affect, active state changes, accumulated state snapshots (active state, inventory, health, character state, structure state), structure version ID, and parent linkage.
+
+### ActiveState
+Tracks current truths: `currentLocation`, `activeThreats`, `activeConstraints`, `openThreads`. Each entry is a `KeyedEntry` with a server-assigned ID (e.g., `th-1`, `cn-2`). Threads are `ThreadEntry` with `threadType` (MYSTERY, QUEST, RELATIONSHIP, DANGER, INFORMATION, RESOURCE, MORAL) and `urgency` (LOW, MEDIUM, HIGH).
+
+### Choice
+Each choice has `text`, `choiceType` (9 types: TACTICAL_APPROACH, MORAL_DILEMMA, etc.), `primaryDelta` (10 types: LOCATION_CHANGE, GOAL_SHIFT, etc.), and `nextPageId`.
+
+### ProtagonistAffect
+Per-page emotional snapshot (not accumulated): `primaryEmotion`, `primaryIntensity` (mild/moderate/strong/overwhelming), `primaryCause`, `secondaryEmotions`, `dominantMotivation`.
+
+### StoryStructure
+Multi-act story arc with beats. Each act has an objective, stakes, entry condition, and beats. Each beat has a name, description, objective, and role (setup/escalation/turning_point/resolution). `AccumulatedStructureState` tracks progression through acts/beats with `BeatProgression` records.
+
+### Story
+Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Supports NPCs and starting situation.
 
 ## Prompt Logging
 
@@ -117,6 +209,7 @@ stories/            # Runtime story data (gitignored)
 - `GET /play/:storyId?page=:n` renders `pages/play` with `openThreadPanelRows` already sorted for display.
 - Open thread panel rows expose `id`, `text`, `threadType`, `urgency`, and `displayLabel`.
 - `POST /play/:storyId/choice` JSON includes `page.openThreads` with `id`, `text`, `threadType`, `urgency`, and `displayLabel`.
+- `POST /play/:storyId/choice` accepts optional `suggestedProtagonistSpeech` field for player-suggested dialogue.
 - Client-side play updates (`public/js/app.js`) must re-render the open-threads panel from AJAX response data after each successful choice without full page reload.
 
 ## Storage Structure
@@ -124,41 +217,77 @@ stories/            # Runtime story data (gitignored)
 ```
 stories/
 └── {storyId}/
-    ├── story.json      # Metadata, global canon, story arc
-    ├── page_1.json     # First page
+    ├── story.json      # Metadata, global canon, story structure, structure versions
+    ├── page_1.json     # First page (full state snapshot)
     ├── page_2.json     # Subsequent pages...
     └── page_N.json
 ```
 
+Page JSON includes serialized active state, inventory, health, character state, structure state, protagonist affect, and typed choices. Complex types use converters in `persistence/converters/`.
+
 ## Key Invariants
 
 - **Page Immutability**: Generated content never changes
-- **Deterministic Replay**: Same choice → same content
+- **Deterministic Replay**: Same choice -> same content
 - **Acyclic Graph**: No page links create cycles
 - **Branch Isolation**: State changes don't leak across branches
-- **Ending Consistency**: `isEnding === true` ⟺ `choices.length === 0`
+- **Ending Consistency**: `isEnding === true` <=> `choices.length === 0`
 - **Choice Minimum**: Non-ending pages have 2-5 choices
 - **API Key Security**: Never persisted to disk, only in browser session storage
+- **Keyed State IDs**: Server-assigned sequential IDs (e.g., `inv-1`, `hp-2`, `th-3`) - LLM never invents IDs
+- **Structure Versioning**: Structure rewrites create new versions; pages reference their version via `structureVersionId`
 
 ## Implementation Status
 
-All core specs have been implemented:
-1. `01-project-foundation` - TypeScript/Jest setup ✅
-2. `02-data-models` - Story, Page, Choice types ✅
-3. `03-persistence-layer` - File storage with locking ✅
-4. `04-llm-integration` - OpenRouter client and prompts ✅
-5. `05-story-engine` - Core orchestration logic ✅
-6. `06-user-interface` - Express server and EJS views ✅
+Core specs (01-06) plus extensive post-core development:
+
+| Spec | Description | Status |
+|------|-------------|--------|
+| 01-project-foundation | TypeScript/Jest setup | Done |
+| 02-data-models | Story, Page, Choice types | Done |
+| 03-persistence-layer | File storage with locking | Done |
+| 04-llm-integration | OpenRouter client and prompts | Done |
+| 05-story-engine | Core orchestration logic | Done |
+| 06-user-interface | Express server and EJS views | Done |
+| 07-writer-analyst-split | Separate writer and analyst LLM roles | Done |
+| 08-writing-prompts-split-architecture | 6-prompt system architecture | Done |
+| 09-page-planner-spec | Page planning LLM step | Done |
+| 10-page-writer-spec | Dedicated page writer prompt | Done |
+| 11-deterministic-state-reconciler | State reconciliation pipeline | Done |
+| 12-thread-contract-and-dedup | Thread types, urgency, deduplication | Done |
+| 13-failure-handling-and-observability | Error handling and pipeline metrics | Done |
+| 14-prompt-file-logging | JSONL prompt logging system | Done |
+| active-state-architecture | ActiveState model (location, threats, constraints, threads) | Done |
+| structured-story-arc-system | StoryStructure with acts/beats/pacing | Done |
+| structure-rewriting-system | Deviation-triggered structure rewrites | Done |
+| keyed-state-entries | Server-assigned IDs for state entries | Done |
+| open-threads-floating-panel | Open threads UI panel | Done |
+| beat-name-structure-and-play-display | Beat names in UI display | Done |
+| prompt-system-improvements | Prompt quality improvements | Done |
+| spinner-stage-progress | Generation progress spinner stages | Done |
+| suggested-protagonist-speech | Player-suggested dialogue input | Done |
+| beat-conclusion-scene-signal-gating | Beat conclusion gating via analyst signals | Done |
 
 Completed specs are archived in `archive/specs/`.
 
 ## LLM Integration Notes
 
-- Uses OpenRouter API exclusively
+- Uses OpenRouter API exclusively via `src/llm/client.ts`
 - Default model: `anthropic/claude-sonnet-4.5`
-- Prompts enforce structured output format: NARRATIVE/CHOICES/STATE_CHANGES/CANON_FACTS
-- Response parser has fallbacks for various formatting styles
+- **6-prompt architecture**: Each generation pass involves up to 6 distinct LLM calls:
+  1. **Structure prompt** (`structure-generator.ts`): Generates story arc on story creation
+  2. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent and state intents
+  3. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
+  4. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
+  5. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing
+  6. **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on deviation
+- All prompts use JSON Schema structured output via OpenRouter's `response_format`
+- Response transformers in `schemas/` convert raw LLM JSON to typed results
+- Validation pipeline in `validation/` repairs malformed writer output (e.g., ID prefix repair)
+- Few-shot examples available via `few-shot-builder.ts` and `few-shot-data.ts`
 - Retry with exponential backoff on transient failures (429, 5xx)
+- Content policy sections injected via `content-policy.ts`
+- System prompts assembled by `system-prompt-builder.ts` with shared sections
 
 ## Content Policy
 
@@ -189,10 +318,10 @@ Serena provides:
 When asked to archive a ticket, spec, or brainstorming document:
 
 1. **Edit the document** to mark its final status at the top:
-   - `**Status**: ✅ COMPLETED` - Fully implemented
-   - `**Status**: ❌ REJECTED` - Decided not to implement
-   - `**Status**: ⏸️ DEFERRED` - Postponed for later
-   - `**Status**: 🚫 NOT IMPLEMENTED` - Started but abandoned
+   - `**Status**: COMPLETED` - Fully implemented
+   - `**Status**: REJECTED` - Decided not to implement
+   - `**Status**: DEFERRED` - Postponed for later
+   - `**Status**: NOT IMPLEMENTED` - Started but abandoned
 
 2. **Add an Outcome section** at the bottom (for completed tickets):
    - Completion date
@@ -243,18 +372,46 @@ await waitForMock(redirectMock);
 
 ### Mock Object Completeness
 
-When `GenerationResult` or other LLM interfaces change, all test mocks must include every required field:
+When LLM interfaces change, all test mocks must include every required field. The generation pipeline now produces `FinalPageGenerationResult = PageWriterResult & StateReconciliationResult`. Key mock shapes:
 
 ```typescript
-// Required fields for GenerationResult mocks
-mockedGenerateOpeningPage.mockResolvedValueOnce({
+// PageWriterResult fields (from writer generation)
+{
   narrative: '...',
-  choices: ['...'],
-  stateChanges: [],
-  canonFacts: [],
-  characterCanonFacts: {},  // Required - don't forget!
+  choices: [{ text: '...', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT }],
+  sceneSummary: '...',
+  protagonistAffect: {
+    primaryEmotion: '...',
+    primaryIntensity: 'moderate',
+    primaryCause: '...',
+    secondaryEmotions: [],
+    dominantMotivation: '...',
+  },
   isEnding: false,
-  storyArc: '...',
   rawResponse: '...',
-});
+}
+
+// StateReconciliationResult fields (from state reconciler)
+{
+  currentLocation: '...',
+  threatsAdded: [],
+  threatsRemoved: [],
+  constraintsAdded: [],
+  constraintsRemoved: [],
+  threadsAdded: [],       // Array of { text, threadType, urgency }
+  threadsResolved: [],
+  inventoryAdded: [],
+  inventoryRemoved: [],
+  healthAdded: [],
+  healthRemoved: [],
+  characterStateChangesAdded: [],   // Array of { characterName, states }
+  characterStateChangesRemoved: [],
+  newCanonFacts: [],
+  newCharacterCanonFacts: {},
+  reconciliationDiagnostics: [],
+}
 ```
+
+### Interface Changes and Mock Updates
+
+When modifying interfaces like `PageWriterResult`, `StateReconciliationResult`, or `AnalystResult`, search all test files for mocks that need the new fields. Missing required fields cause runtime errors like `TypeError: Cannot convert undefined or null to object`.
