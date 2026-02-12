@@ -13,7 +13,8 @@ import {
   parseStructureVersionId,
   parsePageId,
 } from '../models';
-import { PageFileData } from './page-serializer-types';
+import type { AnalystResult } from '../llm/types';
+import { PageFileData, AnalystResultFileData } from './page-serializer-types';
 import {
   structureStateToFileData,
   fileDataToStructureState,
@@ -26,6 +27,61 @@ import {
 } from './converters';
 
 export { PageFileData } from './page-serializer-types';
+
+function serializeAnalystResult(
+  analystResult: AnalystResult | null,
+): AnalystResultFileData | null {
+  if (!analystResult) {
+    return null;
+  }
+  return {
+    beatConcluded: analystResult.beatConcluded ?? false,
+    beatResolution: analystResult.beatResolution ?? '',
+    deviationDetected: analystResult.deviationDetected ?? false,
+    deviationReason: analystResult.deviationReason ?? '',
+    invalidatedBeatIds: [...(analystResult.invalidatedBeatIds ?? [])],
+    narrativeSummary: analystResult.narrativeSummary ?? '',
+    pacingIssueDetected: analystResult.pacingIssueDetected ?? false,
+    pacingIssueReason: analystResult.pacingIssueReason ?? '',
+    recommendedAction: analystResult.recommendedAction ?? 'none',
+    sceneMomentum: analystResult.sceneMomentum ?? 'STASIS',
+    objectiveEvidenceStrength: analystResult.objectiveEvidenceStrength ?? 'NONE',
+    commitmentStrength: analystResult.commitmentStrength ?? 'NONE',
+    structuralPositionSignal: analystResult.structuralPositionSignal ?? 'WITHIN_ACTIVE_BEAT',
+    entryConditionReadiness: analystResult.entryConditionReadiness ?? 'NOT_READY',
+    objectiveAnchors: [...(analystResult.objectiveAnchors ?? [])],
+    anchorEvidence: [...(analystResult.anchorEvidence ?? [])],
+    completionGateSatisfied: analystResult.completionGateSatisfied ?? false,
+    completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
+  };
+}
+
+function deserializeAnalystResult(data: AnalystResultFileData | null | undefined): AnalystResult | null {
+  if (!data) {
+    return null;
+  }
+  return {
+    beatConcluded: data.beatConcluded,
+    beatResolution: data.beatResolution,
+    deviationDetected: data.deviationDetected,
+    deviationReason: data.deviationReason,
+    invalidatedBeatIds: [...data.invalidatedBeatIds],
+    narrativeSummary: data.narrativeSummary,
+    pacingIssueDetected: data.pacingIssueDetected,
+    pacingIssueReason: data.pacingIssueReason,
+    recommendedAction: data.recommendedAction as AnalystResult['recommendedAction'],
+    sceneMomentum: data.sceneMomentum as AnalystResult['sceneMomentum'],
+    objectiveEvidenceStrength: data.objectiveEvidenceStrength as AnalystResult['objectiveEvidenceStrength'],
+    commitmentStrength: data.commitmentStrength as AnalystResult['commitmentStrength'],
+    structuralPositionSignal: data.structuralPositionSignal as AnalystResult['structuralPositionSignal'],
+    entryConditionReadiness: data.entryConditionReadiness as AnalystResult['entryConditionReadiness'],
+    objectiveAnchors: [...data.objectiveAnchors],
+    anchorEvidence: [...data.anchorEvidence],
+    completionGateSatisfied: data.completionGateSatisfied,
+    completionGateFailureReason: data.completionGateFailureReason,
+    rawResponse: '',
+  };
+}
 
 export function serializePage(page: Page): PageFileData {
   const accumulatedCharacterState: Record<string, Array<{ id: string; text: string }>> = {};
@@ -66,6 +122,7 @@ export function serializePage(page: Page): PageFileData {
     accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
     protagonistAffect: protagonistAffectToFileData(page.protagonistAffect),
     structureVersionId: page.structureVersionId,
+    analystResult: serializeAnalystResult(page.analystResult),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -136,6 +193,7 @@ export function deserializePage(data: PageFileData): Page {
     accumulatedStructureState,
     protagonistAffect,
     structureVersionId,
+    analystResult: deserializeAnalystResult(data.analystResult),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

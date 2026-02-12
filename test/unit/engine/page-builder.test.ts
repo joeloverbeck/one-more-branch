@@ -124,6 +124,7 @@ describe('page-builder', () => {
         parentAccumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
+        analystResult: null,
       };
 
       const page = buildContinuationPage(result, context);

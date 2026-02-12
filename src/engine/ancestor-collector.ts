@@ -1,13 +1,43 @@
 import type { Page, PageId, StoryId } from '../models';
-import type { AncestorSummary } from '../llm/types';
+import type { AncestorSummary, MomentumDataPoint, MomentumTrajectory } from '../llm/types';
 import { storage } from '../persistence';
 
 const MAX_ANCESTORS = 10;
+const MAX_TRAJECTORY_PAGES = 5;
 
 export interface AncestorContext {
   readonly parentNarrative: string;
   readonly grandparentNarrative: string | null;
   readonly ancestorSummaries: readonly AncestorSummary[];
+  readonly momentumTrajectory: MomentumTrajectory;
+}
+
+/**
+ * Builds a momentum trajectory from a set of pages (parent + ancestors).
+ * Filters out pages without analyst data, caps at MAX_TRAJECTORY_PAGES,
+ * and returns in chronological (oldest-first) order.
+ */
+function buildMomentumTrajectory(parentPage: Page, ancestors: Page[]): MomentumTrajectory {
+  // Combine parent + ancestors (ancestors[0]=grandparent, ancestors[1]=great-grandparent, etc.)
+  // We want: [oldest...newest] = reversed ancestors + parent
+  const allPages = [...ancestors].reverse();
+  allPages.push(parentPage);
+
+  // Cap at most recent MAX_TRAJECTORY_PAGES
+  const recentPages = allPages.slice(-MAX_TRAJECTORY_PAGES);
+
+  const points: MomentumDataPoint[] = [];
+  for (const page of recentPages) {
+    if (page.analystResult) {
+      points.push({
+        pageId: page.id,
+        sceneMomentum: page.analystResult.sceneMomentum,
+        objectiveEvidenceStrength: page.analystResult.objectiveEvidenceStrength,
+      });
+    }
+  }
+
+  return points;
 }
 
 /**
@@ -31,6 +61,7 @@ export async function collectAncestorContext(
       parentNarrative,
       grandparentNarrative: null,
       ancestorSummaries: [],
+      momentumTrajectory: buildMomentumTrajectory(parentPage, []),
     };
   }
 
@@ -66,5 +97,6 @@ export async function collectAncestorContext(
     parentNarrative,
     grandparentNarrative,
     ancestorSummaries,
+    momentumTrajectory: buildMomentumTrajectory(parentPage, ancestors),
   };
 }

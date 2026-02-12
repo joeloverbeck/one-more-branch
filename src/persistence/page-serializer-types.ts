@@ -48,6 +48,27 @@ export interface ThreadAdditionFileData {
   urgency: Urgency;
 }
 
+export interface AnalystResultFileData {
+  beatConcluded: boolean;
+  beatResolution: string;
+  deviationDetected: boolean;
+  deviationReason: string;
+  invalidatedBeatIds: string[];
+  narrativeSummary: string;
+  pacingIssueDetected: boolean;
+  pacingIssueReason: string;
+  recommendedAction: string;
+  sceneMomentum: string;
+  objectiveEvidenceStrength: string;
+  commitmentStrength: string;
+  structuralPositionSignal: string;
+  entryConditionReadiness: string;
+  objectiveAnchors: string[];
+  anchorEvidence: string[];
+  completionGateSatisfied: boolean;
+  completionGateFailureReason: string;
+}
+
 export interface PageFileData {
   id: number;
   narrativeText: string;
@@ -94,6 +115,7 @@ export interface PageFileData {
   accumulatedStructureState: AccumulatedStructureStateFileData;
   protagonistAffect: ProtagonistAffectFileData;
   structureVersionId?: string | null;
+  analystResult?: AnalystResultFileData | null;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

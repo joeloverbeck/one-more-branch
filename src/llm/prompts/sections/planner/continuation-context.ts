@@ -1,5 +1,5 @@
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
-import type { ContinuationPagePlanContext } from '../../../types.js';
+import type { ContinuationPagePlanContext, MomentumTrajectory } from '../../../types.js';
 
 function formatCharacterCanon(characterCanon: Readonly<Record<string, readonly string[]>>): string {
   const entries = Object.entries(characterCanon);
@@ -24,6 +24,127 @@ function formatCharacterState(
         `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`,
     )
     .join('\n\n');
+}
+
+/**
+ * Counts how many consecutive entries from the end of an array match a predicate.
+ */
+export function countConsecutiveFromEnd<T>(items: readonly T[], predicate: (item: T) => boolean): number {
+  let count = 0;
+  for (let i = items.length - 1; i >= 0; i--) {
+    if (predicate(items[i]!)) {
+      count++;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
+function buildTrajectorySection(trajectory: MomentumTrajectory): string {
+  if (trajectory.length < 2) {
+    return '';
+  }
+
+  const lines: string[] = [];
+
+  const momentumTrend = trajectory.map(p => p.sceneMomentum).join(' -> ');
+  const evidenceTrend = trajectory.map(p => p.objectiveEvidenceStrength).join(' -> ');
+  lines.push(`Momentum trend (last ${trajectory.length} pages): ${momentumTrend}`);
+  lines.push(`Objective evidence trend: ${evidenceTrend}`);
+
+  const consecutiveStasis = countConsecutiveFromEnd(
+    trajectory,
+    p => p.sceneMomentum === 'STASIS',
+  );
+  if (consecutiveStasis >= 2) {
+    lines.push(
+      `WARNING: ${consecutiveStasis} consecutive pages with STASIS momentum. ` +
+        'Plan MUST include a major narrative advancement — reveal, confrontation, or irreversible change.',
+    );
+  }
+
+  const consecutiveWeakEvidence = countConsecutiveFromEnd(
+    trajectory,
+    p => p.objectiveEvidenceStrength === 'NONE' || p.objectiveEvidenceStrength === 'WEAK_IMPLICIT',
+  );
+  if (consecutiveWeakEvidence >= 3) {
+    lines.push(
+      `WARNING: ${consecutiveWeakEvidence} consecutive pages with weak/no objective evidence. ` +
+        'Plan MUST make direct progress toward the current beat objective.',
+    );
+  }
+
+  return lines.join('\n');
+}
+
+function buildPacingBriefingSection(context: ContinuationPagePlanContext): string {
+  const hasNudge = context.parentPacingNudge != null && context.parentPacingNudge.length > 0;
+  const hasMomentum = context.parentSceneMomentum != null;
+  const hasEvidence = context.parentObjectiveEvidenceStrength != null;
+  const hasIssueReason =
+    context.parentPacingIssueReason != null && context.parentPacingIssueReason.length > 0;
+  const hasTrajectory = (context.momentumTrajectory?.length ?? 0) >= 2;
+
+  if (!hasNudge && !hasMomentum && !hasEvidence && !hasIssueReason && !hasTrajectory) {
+    return '';
+  }
+
+  const lines: string[] = ['=== PACING BRIEFING (from story analyst) ==='];
+
+  if (hasNudge) {
+    lines.push(`Pacing nudge: ${context.parentPacingNudge}`);
+  }
+  if (hasIssueReason) {
+    lines.push(`Pacing issue reason: ${context.parentPacingIssueReason}`);
+  }
+  if (hasMomentum) {
+    lines.push(`Scene momentum: ${context.parentSceneMomentum}`);
+  }
+  if (hasEvidence) {
+    lines.push(`Objective evidence strength: ${context.parentObjectiveEvidenceStrength}`);
+  }
+
+  if (hasTrajectory && context.momentumTrajectory) {
+    lines.push('');
+    const trajectoryText = buildTrajectorySection(context.momentumTrajectory);
+    if (trajectoryText) {
+      lines.push(trajectoryText);
+    }
+  }
+
+  lines.push('');
+  lines.push('Pacing response rules:');
+
+  if (
+    context.parentSceneMomentum === 'STASIS' &&
+    (context.parentObjectiveEvidenceStrength === 'NONE' ||
+      context.parentObjectiveEvidenceStrength === 'WEAK_IMPLICIT')
+  ) {
+    lines.push(
+      '- CRITICAL: Previous scene showed STASIS with weak/no evidence of progress. ' +
+        'Plan MUST advance beat objective directly. No exploratory or setup scenes.',
+    );
+  }
+
+  if (hasIssueReason) {
+    lines.push(
+      '- Pacing issue flagged: plan should push forward with action, revelation, or consequence. ' +
+        'No exploratory or setup scenes.',
+    );
+  }
+
+  if (
+    context.parentSceneMomentum === 'MAJOR_PROGRESS' ||
+    context.parentSceneMomentum === 'SCOPE_SHIFT'
+  ) {
+    lines.push(
+      '- Previous scene had major progress. A breathing scene is acceptable if dramatically appropriate.',
+    );
+  }
+
+  lines.push('');
+  return lines.join('\n') + '\n';
 }
 
 export function buildPlannerContinuationContextSection(context: ContinuationPagePlanContext): string {
@@ -97,13 +218,15 @@ ${context.ancestorSummaries.map(summary => `- [${summary.pageId}] ${summary.summ
 `
     : '';
 
+  const pacingSection = buildPacingBriefingSection(context);
+
   return `=== PLANNER CONTEXT: CONTINUATION ===
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):

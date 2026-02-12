@@ -274,6 +274,7 @@ export async function generateNextPage(
     parentAccumulatedCharacterState: parentState.accumulatedCharacterState,
     structureState: newStructureState,
     structureVersionId: activeStructureVersion?.id ?? null,
+    analystResult,
   });
 
   const updatedStory = updateStoryWithAllCanon(

@@ -71,7 +71,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     };
   }
 
-  it('injects PACING DIRECTIVE when pacingNudge is non-null', () => {
+  it('does NOT inject PACING DIRECTIVE even when pacingNudge is set (pacing moved to planner)', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
       currentBeatIndex: 0,
@@ -84,13 +84,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
       makeContext({ structure: testStructure, accumulatedStructureState: state }),
     );
     const userMessage = messages.find(m => m.role === 'user');
-    expect(userMessage?.content).toContain('=== PACING DIRECTIVE ===');
-    expect(userMessage?.content).toContain(
-      'Beat 1.1 has stalled for 5 pages without advancing the objective.',
-    );
-    expect(userMessage?.content).toContain(
-      'push the story forward with action, revelation, or irreversible change',
-    );
+    expect(userMessage?.content).not.toContain('PACING DIRECTIVE');
   });
 
   it('does NOT inject PACING DIRECTIVE when pacingNudge is null', () => {

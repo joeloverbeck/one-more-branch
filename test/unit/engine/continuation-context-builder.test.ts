@@ -58,6 +58,7 @@ function makeAncestorContext(overrides: Partial<AncestorContext> = {}): Ancestor
     parentNarrative: 'Parent narrative text',
     grandparentNarrative: 'Grandparent narrative text',
     ancestorSummaries: [{ pageId: parsePageId(1), summary: 'Summary of page 1' }],
+    momentumTrajectory: [],
     ...overrides,
   };
 }

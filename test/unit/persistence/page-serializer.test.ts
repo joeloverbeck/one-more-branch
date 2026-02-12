@@ -39,6 +39,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
       pacingNudge: null,
     },
     structureVersionId: null,
+    analystResult: null,
     protagonistAffect: createDefaultProtagonistAffect(),
     isEnding: false,
     parentPageId: null,

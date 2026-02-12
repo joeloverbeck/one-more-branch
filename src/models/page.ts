@@ -7,6 +7,7 @@ import {
 } from './protagonist-affect';
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
+import type { AnalystResult } from '../llm/types';
 import {
   ActiveState,
   ActiveStateChanges,
@@ -46,6 +47,7 @@ export interface Page {
   readonly accumulatedStructureState: AccumulatedStructureState;
   readonly protagonistAffect: ProtagonistAffect;
   readonly structureVersionId: StructureVersionId | null;
+  readonly analystResult: AnalystResult | null;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -70,6 +72,7 @@ export interface CreatePageData {
   parentAccumulatedStructureState?: AccumulatedStructureState;
   protagonistAffect?: ProtagonistAffect;
   structureVersionId?: StructureVersionId | null;
+  analystResult?: AnalystResult | null;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -116,6 +119,7 @@ export function createPage(data: CreatePageData): Page {
     accumulatedStructureState: parentStructureState,
     protagonistAffect: data.protagonistAffect ?? createDefaultProtagonistAffect(),
     structureVersionId: data.structureVersionId ?? null,
+    analystResult: data.analystResult ?? null,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,

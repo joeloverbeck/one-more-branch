@@ -11,6 +11,14 @@ export interface AncestorSummary {
   readonly summary: string;
 }
 
+export interface MomentumDataPoint {
+  readonly pageId: PageId;
+  readonly sceneMomentum: SceneMomentum;
+  readonly objectiveEvidenceStrength: ObjectiveEvidenceStrength;
+}
+
+export type MomentumTrajectory = readonly MomentumDataPoint[];
+
 export interface ContinuationGenerationResult extends WriterResult {
   readonly beatConcluded: boolean;
   readonly beatResolution: string;
@@ -121,6 +129,13 @@ export interface ContinuationContext {
 
   grandparentNarrative: string | null;
   ancestorSummaries: readonly AncestorSummary[];
+
+  parentPacingNudge?: string | null;
+  parentPacingIssueReason?: string;
+  parentSceneMomentum?: SceneMomentum;
+  parentObjectiveEvidenceStrength?: ObjectiveEvidenceStrength;
+  momentumTrajectory?: MomentumTrajectory;
+
   pagePlan?: PagePlan;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }

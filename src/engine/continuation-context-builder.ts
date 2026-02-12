@@ -35,6 +35,12 @@ export function buildContinuationContext(
     activeState: parentState.accumulatedActiveState,
     grandparentNarrative: ancestorContext.grandparentNarrative,
     ancestorSummaries: ancestorContext.ancestorSummaries,
+
+    parentPacingNudge: parentState.structureState.pacingNudge,
+    parentPacingIssueReason: parentPage.analystResult?.pacingIssueReason ?? undefined,
+    parentSceneMomentum: parentPage.analystResult?.sceneMomentum ?? undefined,
+    parentObjectiveEvidenceStrength: parentPage.analystResult?.objectiveEvidenceStrength ?? undefined,
+    momentumTrajectory: ancestorContext.momentumTrajectory,
   };
 }
 

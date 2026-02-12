@@ -79,15 +79,6 @@ ${context.reconciliationFailureReasons
 `
       : '';
 
-  const pacingNudgeSection = context.accumulatedStructureState?.pacingNudge
-    ? `=== PACING DIRECTIVE ===
-The story analyst detected a pacing issue: ${context.accumulatedStructureState.pacingNudge}
-This page should advance the narrative toward resolving the current beat or deliver a meaningful story event.
-Do not repeat setup or exposition -- push the story forward with action, revelation, or irreversible change.
-
-`
-    : '';
-
   const canonSection =
     context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
@@ -174,7 +165,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next
