@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Spec: Choice Count Wording Fix
 
 ## Overview
@@ -59,3 +61,10 @@ If you cannot produce at least 2 choices with different tags, consider making th
 1. Grep for "2-3 choices" to confirm no other occurrences remain
 2. Confirm opening/continuation prompts still say "3 meaningful structured choice objects"
 3. Run `npm run typecheck && npm test`
+
+## Outcome
+
+- **Completed**: 2025-02-12
+- **Changes**: Updated wording in `src/llm/prompts/system-prompt-builder.ts:73`, `prompts/opening-prompt.md:142`, `prompts/continuation-prompt.md:188` from "2-3 choices" to "at least 2 choices"
+- **Deviations**: None - implemented exactly as specified
+- **Verification**: Typecheck passes, all 1570 tests pass across 131 suites, no remaining "2-3 choices" in source/prompt docs
