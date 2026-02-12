@@ -1,6 +1,6 @@
 # Suggested Protagonist Speech Spec
 
-**Status**: 📝 DRAFT
+**Status**: ✅ COMPLETED
 **Date**: 2026-02-12
 **Owner**: Play UI + Engine + LLM Prompting
 
@@ -152,3 +152,23 @@ If no frontend test harness exists for this behavior, document manual verificati
 2. Story model/schema changes for storing suggested speech.
 3. Applying suggested speech to opening generation.
 4. Applying suggested speech to planner generation.
+
+## Outcome
+
+- Completion date: 2026-02-12
+- What was actually changed:
+  - Added optional suggested protagonist speech input + one-turn clear/preserve behavior in play UI/client flow.
+  - Added `/play/:storyId/choice` request normalization/validation and optional forwarding.
+  - Threaded `suggestedProtagonistSpeech` through engine and continuation context.
+  - Added continuation-only writer prompt guidance block with advisory semantics (optional, adaptable, omittable when implausible).
+  - Added/updated tests across route, engine, integration, client script, and continuation prompt coverage.
+- Deviations from original plan:
+  - No persistence/schema storage was added (as intended by scope).
+  - Final prompt work was completed in the continuation prompt builder directly without helper extraction.
+- Verification results:
+  - Prompt regression suites and typecheck passed for completion ticket finalization:
+    - `test/unit/llm/prompts/continuation-prompt.test.ts`
+    - `test/unit/llm/prompts/opening-prompt.test.ts`
+    - `test/unit/llm/prompts/page-planner-prompt.test.ts`
+    - `test/unit/llm/prompts/sections/planner/continuation-context.test.ts`
+    - `npm run typecheck`

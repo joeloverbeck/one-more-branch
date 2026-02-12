@@ -137,6 +137,20 @@ ${context.accumulatedHealth.map(entry => `- [${entry.id}] ${entry.text}`).join('
     context.grandparentNarrative,
     context.ancestorSummaries,
   );
+  const suggestedProtagonistSpeech = context.suggestedProtagonistSpeech?.trim();
+  const suggestedProtagonistSpeechSection =
+    suggestedProtagonistSpeech && suggestedProtagonistSpeech.length > 0
+      ? `=== SUGGESTED PROTAGONIST SPEECH (OPTIONAL GUIDANCE) ===
+The protagonist has considered saying:
+"${suggestedProtagonistSpeech}"
+
+Treat this as optional intent, not mandatory dialogue.
+Use it only when the current circumstances make it natural.
+Adapt wording, tone, and timing naturally to fit the scene.
+If circumstances do not support it, omit it.
+
+`
+      : '';
 
   const userPrompt = `Continue the interactive story based on the player's choice.
 
@@ -148,7 +162,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${reconciliationRetrySection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${plannerSection}${reconciliationRetrySection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next
