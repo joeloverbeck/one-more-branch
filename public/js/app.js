@@ -887,8 +887,25 @@
       }).join('');
     }
 
-    function renderCustomChoiceInput() {
+    function renderCustomChoiceInput(suggestedSpeechValue) {
+      const safeSuggestedSpeechValue = typeof suggestedSpeechValue === 'string'
+        ? suggestedSpeechValue
+        : '';
+
       return `
+        <div class="suggested-protagonist-speech-container">
+          <label for="suggested-protagonist-speech-input" class="suggested-protagonist-speech-label">
+            Optional: Suggested protagonist speech
+          </label>
+          <input
+            type="text"
+            id="suggested-protagonist-speech-input"
+            class="suggested-protagonist-speech-input"
+            placeholder="Something your protagonist might say..."
+            maxlength="500"
+            value="${escapeHtml(safeSuggestedSpeechValue)}"
+          />
+        </div>
         <div class="custom-choice-container">
           <input type="text" class="custom-choice-input"
                  placeholder="Introduce your own custom choice..."
@@ -907,8 +924,12 @@
       `;
     }
 
-    function rebuildChoicesSection(choiceList) {
+    function rebuildChoicesSection(choiceList, suggestedSpeechValue) {
       choices.innerHTML = renderChoiceButtons(choiceList);
+      const existingSuggestedSpeech = choicesSection.querySelector('.suggested-protagonist-speech-container');
+      if (existingSuggestedSpeech) {
+        existingSuggestedSpeech.remove();
+      }
       const existingCustom = choicesSection.querySelector('.custom-choice-container');
       if (existingCustom) {
         existingCustom.remove();
@@ -917,8 +938,17 @@
       if (existingEnums) {
         existingEnums.remove();
       }
-      choices.insertAdjacentHTML('afterend', renderCustomChoiceInput());
+      choices.insertAdjacentHTML('afterend', renderCustomChoiceInput(suggestedSpeechValue));
       bindCustomChoiceEvents();
+    }
+
+    function getSuggestedProtagonistSpeechInputValue() {
+      const suggestedSpeechInput = choicesSection.querySelector('.suggested-protagonist-speech-input');
+      if (!(suggestedSpeechInput instanceof HTMLInputElement)) {
+        return '';
+      }
+
+      return suggestedSpeechInput.value;
     }
 
     function setChoicesDisabled(disabled) {
@@ -1042,7 +1072,7 @@
           });
         })
         .then(function(data) {
-          rebuildChoicesSection(data.choices);
+          rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue());
         })
         .catch(function(error) {
           showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice');
@@ -1100,6 +1130,10 @@
           choiceIndex,
           progressId: createProgressId(),
         };
+        const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();
+        if (suggestedProtagonistSpeech.length > 0) {
+          body.suggestedProtagonistSpeech = suggestedProtagonistSpeech;
+        }
         if (apiKey) {
           body.apiKey = apiKey;
         }
@@ -1176,7 +1210,10 @@
             </div>
           `;
         } else {
-          rebuildChoicesSection(data.page.choices);
+          const suggestedSpeechValue = data.wasGenerated === true
+            ? ''
+            : getSuggestedProtagonistSpeechInputValue();
+          rebuildChoicesSection(data.page.choices, suggestedSpeechValue);
         }
 
         narrative.scrollIntoView({ behavior: 'smooth' });

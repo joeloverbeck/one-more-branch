@@ -1,5 +1,11 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
-import { getCurrentAct, getCurrentBeat, getStructureVersion, Urgency } from '../../models/index.js';
+import {
+  getCurrentAct,
+  getCurrentBeat,
+  getStructureVersion,
+  isUrgency,
+  Urgency,
+} from '../../models/index.js';
 
 export interface ActDisplayInfo {
   readonly actNumber: number;
@@ -38,8 +44,8 @@ const URGENCY_PRIORITY: Record<Urgency, number> = {
 };
 
 function getUrgencyPriority(urgency: string): number {
-  if (urgency in URGENCY_PRIORITY) {
-    return URGENCY_PRIORITY[urgency as Urgency];
+  if (isUrgency(urgency)) {
+    return URGENCY_PRIORITY[urgency];
   }
 
   return 3;
@@ -70,15 +76,16 @@ function getOverflowSummary(hiddenThreads: readonly OpenThreadLike[]): string | 
   let hiddenLow = 0;
 
   for (const thread of hiddenThreads) {
-    if (thread.urgency === Urgency.HIGH) {
+    const urgency = isUrgency(thread.urgency) ? thread.urgency : null;
+    if (urgency === Urgency.HIGH) {
       hiddenHigh += 1;
       continue;
     }
-    if (thread.urgency === Urgency.MEDIUM) {
+    if (urgency === Urgency.MEDIUM) {
       hiddenMedium += 1;
       continue;
     }
-    if (thread.urgency === Urgency.LOW) {
+    if (urgency === Urgency.LOW) {
       hiddenLow += 1;
     }
   }

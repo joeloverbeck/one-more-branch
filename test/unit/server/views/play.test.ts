@@ -83,4 +83,17 @@ describe('play page template', () => {
       expect(template).toContain('<%= openThreadOverflowSummary %>');
     });
   });
+
+  describe('suggested protagonist speech input', () => {
+    it('renders labeled optional input in the choices section', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('class="suggested-protagonist-speech-container"');
+      expect(template).toContain('for="suggested-protagonist-speech-input"');
+      expect(template).toContain('Optional: Suggested protagonist speech');
+      expect(template).toContain('id="suggested-protagonist-speech-input"');
+      expect(template).toContain('class="suggested-protagonist-speech-input"');
+      expect(template).toContain('maxlength="500"');
+    });
+  });
 });

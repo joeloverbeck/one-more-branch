@@ -121,4 +121,19 @@ describe('public client script', () => {
       "alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');",
     );
   });
+
+  it('handles optional suggested protagonist speech payload and clear/preserve behavior', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('class="suggested-protagonist-speech-input"');
+    expect(script).toContain('function getSuggestedProtagonistSpeechInputValue()');
+    expect(script).toContain('const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();');
+    expect(script).toContain('if (suggestedProtagonistSpeech.length > 0) {');
+    expect(script).toContain('body.suggestedProtagonistSpeech = suggestedProtagonistSpeech;');
+    expect(script).toContain('const suggestedSpeechValue = data.wasGenerated === true');
+    expect(script).toContain("            ? ''");
+    expect(script).toContain('            : getSuggestedProtagonistSpeechInputValue();');
+    expect(script).toContain('rebuildChoicesSection(data.page.choices, suggestedSpeechValue);');
+    expect(script).toContain('rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue());');
+  });
 });
