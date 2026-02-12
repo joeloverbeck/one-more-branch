@@ -16,6 +16,7 @@ import {
 import { storage } from '../persistence';
 import { collectAncestorContext } from './ancestor-collector';
 import { updateStoryWithAllCanon } from './canon-manager';
+import { buildContinuationContext, buildRemovableIds } from './continuation-context-builder';
 import {
   runAnalystEvaluation,
   handleDeviationIfDetected,
@@ -26,9 +27,11 @@ import {
 } from './continuation-post-processing';
 import { generateWithReconciliationRetry } from './reconciliation-retry-pipeline';
 import { buildContinuationPage, buildFirstPage } from './page-builder';
-import { collectParentState } from './parent-state-collector';
-import type { CollectedParentState } from './parent-state-collector';
-import type { StateReconciliationPreviousState } from './state-reconciler-types';
+import {
+  collectParentState,
+  createOpeningPreviousStateSnapshot,
+  createContinuationPreviousStateSnapshot,
+} from './parent-state-collector';
 import { createInitialStructureState } from './structure-state';
 import {
   resolveActiveStructureVersion,
@@ -40,32 +43,6 @@ import { DeviationInfo, EngineError } from './types';
 
 function createGenerationRequestId(): string {
   return randomUUID();
-}
-
-function createOpeningPreviousStateSnapshot(): StateReconciliationPreviousState {
-  return {
-    currentLocation: '',
-    threats: [],
-    constraints: [],
-    threads: [],
-    inventory: [],
-    health: [],
-    characterState: [],
-  };
-}
-
-function createContinuationPreviousStateSnapshot(
-  parentState: CollectedParentState,
-): StateReconciliationPreviousState {
-  return {
-    currentLocation: parentState.accumulatedActiveState.currentLocation,
-    threats: parentState.accumulatedActiveState.activeThreats,
-    constraints: parentState.accumulatedActiveState.activeConstraints,
-    threads: parentState.accumulatedActiveState.openThreads,
-    inventory: parentState.accumulatedInventory,
-    health: parentState.accumulatedHealth,
-    characterState: Object.values(parentState.accumulatedCharacterState).flatMap(entries => entries),
-  };
 }
 
 export async function generateFirstPage(
@@ -176,31 +153,20 @@ export async function generateNextPage(
   const maxPageId = await storage.getMaxPageId(story.id);
   const parentState = collectParentState(parentPage);
   const currentStructureVersion = resolveActiveStructureVersion(story, parentPage);
-
-  // Collect hierarchical ancestor context (full text for 2 nearest, summaries for older)
   const ancestorContext = await collectAncestorContext(story.id, parentPage);
 
-  const continuationContext = {
-    characterConcept: story.characterConcept,
-    worldbuilding: story.worldbuilding,
-    tone: story.tone,
-    npcs: story.npcs,
-    globalCanon: story.globalCanon,
-    globalCharacterCanon: story.globalCharacterCanon,
-    structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
-    accumulatedStructureState: parentState.structureState,
-    previousNarrative: parentPage.narrativeText,
-    selectedChoice: choice.text,
+  const continuationContext = buildContinuationContext(
+    story,
+    parentPage,
+    choice.text,
+    parentState,
+    ancestorContext,
+    currentStructureVersion,
     suggestedProtagonistSpeech,
-    accumulatedInventory: parentState.accumulatedInventory,
-    accumulatedHealth: parentState.accumulatedHealth,
-    accumulatedCharacterState: parentState.accumulatedCharacterState,
-    parentProtagonistAffect: parentPage.protagonistAffect,
-    activeState: parentState.accumulatedActiveState,
-    grandparentNarrative: ancestorContext.grandparentNarrative,
-    ancestorSummaries: ancestorContext.ancestorSummaries,
-  };
+  );
   const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
+  const removableIds = buildRemovableIds(parentState);
+
   const { writerResult, reconciliation: continuationReconciliation, metrics } =
     await generateWithReconciliationRetry({
       mode: 'continuation',
@@ -216,10 +182,7 @@ export async function generateNextPage(
       }),
       generateWriter: async (pagePlan, failureReasons) =>
         generatePageWriterOutput(
-          {
-            ...continuationContext,
-            reconciliationFailureReasons: failureReasons,
-          },
+          { ...continuationContext, reconciliationFailureReasons: failureReasons },
           pagePlan,
           {
             apiKey,
@@ -228,17 +191,7 @@ export async function generateNextPage(
               pageId: parentPage.id,
               requestId,
             },
-            writerValidationContext: {
-              removableIds: {
-                threats: parentState.accumulatedActiveState.activeThreats.map(entry => entry.id),
-                constraints: parentState.accumulatedActiveState.activeConstraints.map(entry => entry.id),
-                threads: parentState.accumulatedActiveState.openThreads.map(entry => entry.id),
-                inventory: parentState.accumulatedInventory.map(entry => entry.id),
-                health: parentState.accumulatedHealth.map(entry => entry.id),
-                characterState: Object.values(parentState.accumulatedCharacterState)
-                  .flatMap(entries => entries.map(entry => entry.id)),
-              },
-            },
+            writerValidationContext: { removableIds },
           },
         ),
       onGenerationStage,

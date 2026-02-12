@@ -32,8 +32,15 @@ export {
 } from './structure-version-validator';
 
 // Parent state collection
-export { collectParentState } from './parent-state-collector';
+export {
+  collectParentState,
+  createOpeningPreviousStateSnapshot,
+  createContinuationPreviousStateSnapshot,
+} from './parent-state-collector';
 export type { CollectedParentState } from './parent-state-collector';
+
+// Continuation context assembly
+export { buildContinuationContext, buildRemovableIds } from './continuation-context-builder';
 
 // Deviation handling
 export { isActualDeviation, handleDeviation } from './deviation-handler';

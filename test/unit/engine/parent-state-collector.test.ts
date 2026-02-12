@@ -1,10 +1,16 @@
 import {
   createChoice,
   createEmptyAccumulatedStructureState,
+  createEmptyActiveState,
   createPage,
   parsePageId,
 } from '@/models';
-import { collectParentState, CollectedParentState } from '@/engine/parent-state-collector';
+import {
+  collectParentState,
+  CollectedParentState,
+  createOpeningPreviousStateSnapshot,
+  createContinuationPreviousStateSnapshot,
+} from '@/engine/parent-state-collector';
 
 const inv = (id: number, text: string): { id: string; text: string } => ({ id: `inv-${id}`, text });
 const hp = (id: number, text: string): { id: string; text: string } => ({ id: `hp-${id}`, text });
@@ -83,6 +89,95 @@ describe('parent-state-collector', () => {
       expect(collected.accumulatedHealth).toBeDefined();
       expect(collected.accumulatedCharacterState).toBeDefined();
       expect(collected.structureState).toBeDefined();
+    });
+  });
+
+  describe('createOpeningPreviousStateSnapshot', () => {
+    it('returns empty state for opening page', () => {
+      const snapshot = createOpeningPreviousStateSnapshot();
+
+      expect(snapshot.currentLocation).toBe('');
+      expect(snapshot.threats).toEqual([]);
+      expect(snapshot.constraints).toEqual([]);
+      expect(snapshot.threads).toEqual([]);
+      expect(snapshot.inventory).toEqual([]);
+      expect(snapshot.health).toEqual([]);
+      expect(snapshot.characterState).toEqual([]);
+    });
+  });
+
+  describe('createContinuationPreviousStateSnapshot', () => {
+    it('maps collected parent state to reconciler shape', () => {
+      const parentState: CollectedParentState = {
+        accumulatedActiveState: {
+          ...createEmptyActiveState(),
+          currentLocation: 'Forest',
+          activeThreats: [{ id: 'th-1', text: 'Wolf pack' }],
+          activeConstraints: [{ id: 'cn-1', text: 'Fog' }],
+          openThreads: [
+            { id: 'tw-1', text: 'Find path', threadType: 'QUEST', urgency: 'MEDIUM', displayLabel: 'Find path' },
+          ],
+        },
+        accumulatedInventory: [{ id: 'inv-1', text: 'Compass' }],
+        accumulatedHealth: [{ id: 'hp-1', text: 'Tired' }],
+        accumulatedCharacterState: {
+          Ranger: [{ id: 'cs-1', text: 'Cautious' }],
+        },
+        structureState: createEmptyAccumulatedStructureState(),
+      };
+
+      const snapshot = createContinuationPreviousStateSnapshot(parentState);
+
+      expect(snapshot.currentLocation).toBe('Forest');
+      expect(snapshot.threats).toEqual([{ id: 'th-1', text: 'Wolf pack' }]);
+      expect(snapshot.constraints).toEqual([{ id: 'cn-1', text: 'Fog' }]);
+      expect(snapshot.threads).toEqual([
+        { id: 'tw-1', text: 'Find path', threadType: 'QUEST', urgency: 'MEDIUM', displayLabel: 'Find path' },
+      ]);
+      expect(snapshot.inventory).toEqual([{ id: 'inv-1', text: 'Compass' }]);
+      expect(snapshot.health).toEqual([{ id: 'hp-1', text: 'Tired' }]);
+      expect(snapshot.characterState).toEqual([{ id: 'cs-1', text: 'Cautious' }]);
+    });
+
+    it('flattens character state from multiple characters', () => {
+      const parentState: CollectedParentState = {
+        accumulatedActiveState: createEmptyActiveState(),
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {
+          Guard: [{ id: 'cs-1', text: 'Alert' }],
+          Merchant: [{ id: 'cs-2', text: 'Friendly' }, { id: 'cs-3', text: 'Rich' }],
+        },
+        structureState: createEmptyAccumulatedStructureState(),
+      };
+
+      const snapshot = createContinuationPreviousStateSnapshot(parentState);
+
+      expect(snapshot.characterState).toEqual([
+        { id: 'cs-1', text: 'Alert' },
+        { id: 'cs-2', text: 'Friendly' },
+        { id: 'cs-3', text: 'Rich' },
+      ]);
+    });
+
+    it('handles empty parent state', () => {
+      const parentState: CollectedParentState = {
+        accumulatedActiveState: createEmptyActiveState(),
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+      };
+
+      const snapshot = createContinuationPreviousStateSnapshot(parentState);
+
+      expect(snapshot.currentLocation).toBe('');
+      expect(snapshot.threats).toEqual([]);
+      expect(snapshot.constraints).toEqual([]);
+      expect(snapshot.threads).toEqual([]);
+      expect(snapshot.inventory).toEqual([]);
+      expect(snapshot.health).toEqual([]);
+      expect(snapshot.characterState).toEqual([]);
     });
   });
 });
