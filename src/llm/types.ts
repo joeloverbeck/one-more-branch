@@ -110,6 +110,7 @@ export interface ContinuationContext {
   accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
   selectedChoice: string;
+  suggestedProtagonistSpeech?: string;
 
   accumulatedInventory: readonly KeyedEntry[];
   accumulatedHealth: readonly KeyedEntry[];

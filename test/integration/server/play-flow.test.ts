@@ -428,6 +428,13 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     expect(choicePayload?.page?.narrativeText).toBe('You chose wisely...');
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        suggestedProtagonistSpeech: 'I know a safer route.',
+      }),
+      expect.any(Object),
+      expect.any(Object),
+    );
   });
 
   it('replays an existing branch without a second continuation generation', async () => {

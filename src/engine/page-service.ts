@@ -464,6 +464,7 @@ export async function generateNextPage(
   choiceIndex: number,
   apiKey: string,
   onGenerationStage?: GenerationStageCallback,
+  suggestedProtagonistSpeech?: string,
 ): Promise<{
   page: Page;
   updatedStory: Story;
@@ -505,6 +506,7 @@ export async function generateNextPage(
     accumulatedStructureState: parentState.structureState,
     previousNarrative: parentPage.narrativeText,
     selectedChoice: choice.text,
+    suggestedProtagonistSpeech,
     accumulatedInventory: parentState.accumulatedInventory,
     accumulatedHealth: parentState.accumulatedHealth,
     accumulatedCharacterState: parentState.accumulatedCharacterState,
@@ -756,6 +758,7 @@ export async function getOrGeneratePage(
   choiceIndex: number,
   apiKey?: string,
   onGenerationStage?: GenerationStageCallback,
+  suggestedProtagonistSpeech?: string,
 ): Promise<{
   page: Page;
   story: Story;
@@ -796,6 +799,7 @@ export async function getOrGeneratePage(
     choiceIndex,
     apiKey,
     onGenerationStage,
+    suggestedProtagonistSpeech,
   );
 
   await storage.savePage(story.id, page);

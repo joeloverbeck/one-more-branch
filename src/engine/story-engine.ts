@@ -52,6 +52,7 @@ export class StoryEngine {
       options.choiceIndex,
       options.apiKey,
       options.onGenerationStage,
+      options.suggestedProtagonistSpeech,
     );
 
     return { page, wasGenerated, deviationInfo };

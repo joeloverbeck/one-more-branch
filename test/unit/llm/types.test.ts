@@ -143,6 +143,7 @@ describe('LLM types', () => {
         globalCharacterCanon: {},
         previousNarrative: 'You survived the ambush at dusk.',
         selectedChoice: 'Track the raiders into the marsh',
+        suggestedProtagonistSpeech: 'Hold the line and keep moving.',
 
         accumulatedInventory: [],
         accumulatedHealth: [],
@@ -159,6 +160,7 @@ describe('LLM types', () => {
 
       expect(context.globalCanon[0]).toContain('siege');
       expect(context.activeState.currentLocation).toBe('Marsh edge');
+      expect(context.suggestedProtagonistSpeech).toBe('Hold the line and keep moving.');
     });
 
     it('should allow creating PagePlan with required fields', () => {

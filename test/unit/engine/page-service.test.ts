@@ -895,13 +895,21 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
 
-      await generateNextPage(story, parentPage, 0, 'test-key');
+      await generateNextPage(
+        story,
+        parentPage,
+        0,
+        'test-key',
+        undefined,
+        'We should cut through the courtyard.',
+      );
 
       expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
         expect.objectContaining({
           mode: 'continuation',
           selectedChoice: parentPage.choices[0]?.text,
           previousNarrative: parentPage.narrativeText,
+          suggestedProtagonistSpeech: 'We should cut through the courtyard.',
         }),
         expect.objectContaining({
           apiKey: 'test-key',
@@ -913,7 +921,9 @@ describe('page-service', () => {
         }),
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
-        expect.any(Object),
+        expect.objectContaining({
+          suggestedProtagonistSpeech: 'We should cut through the courtyard.',
+        }),
         pagePlan,
         expect.any(Object),
       );
