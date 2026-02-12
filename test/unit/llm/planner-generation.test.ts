@@ -49,6 +49,11 @@ const validPlannerPayload = {
     mustIncludeBeats: ['Patrol sighting', 'Immediate tactical decision'],
     forbiddenRecaps: ['Do not recap the entire infiltration route.'],
   },
+  dramaticQuestion: 'Will you slip past the patrol or confront them before lockout?',
+  choiceIntents: [
+    { hook: 'Ghost past the patrol in shadow', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+    { hook: 'Confront the nearest sentry directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+  ],
 };
 
 function createJsonResponse(status: number, body: unknown): Response {

@@ -19,6 +19,7 @@ import type {
   WriterResult,
 } from '../../../src/llm/types';
 import { LLMError } from '../../../src/llm/types';
+import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
 import { ThreadType, Urgency, type ActiveState, type KeyedEntry } from '../../../src/models/state/index';
 
@@ -202,6 +203,11 @@ describe('LLM types', () => {
           mustIncludeBeats: ['Bridge sway intensifies', 'Choice pressure escalates'],
           forbiddenRecaps: ['Do not restate full prior scene chronology'],
         },
+        dramaticQuestion: 'Will you cross the bridge before it collapses or find another way?',
+        choiceIntents: [
+          { hook: 'Sprint across the swaying bridge', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+          { hook: 'Search for a safer crossing downstream', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+        ],
       };
 
       expect(plan.stateIntents.threads.add[0].threadType).toBe(ThreadType.DANGER);
@@ -273,6 +279,11 @@ describe('LLM types', () => {
           mustIncludeBeats: [],
           forbiddenRecaps: [],
         },
+        dramaticQuestion: 'Will you escalate the danger or retreat?',
+        choiceIntents: [
+          { hook: 'Push forward into danger', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+          { hook: 'Fall back to safety', choiceType: ChoiceType.AVOIDANCE_RETREAT, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+        ],
         rawResponse: '{"sceneIntent":"Escalate danger and force a commitment."}',
       };
 

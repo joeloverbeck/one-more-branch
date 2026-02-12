@@ -13,7 +13,10 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       additionalProperties: boolean;
     };
 
-    expect(schema.required).toEqual(['sceneIntent', 'continuityAnchors', 'stateIntents', 'writerBrief']);
+    expect(schema.required).toEqual([
+      'sceneIntent', 'continuityAnchors', 'stateIntents', 'writerBrief',
+      'dramaticQuestion', 'choiceIntents',
+    ]);
     expect(schema.additionalProperties).toBe(false);
   });
 

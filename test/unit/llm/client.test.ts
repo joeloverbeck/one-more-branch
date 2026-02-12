@@ -26,6 +26,7 @@ import {
   validateApiKey,
 } from '../../../src/llm/client';
 import { LLMError } from '../../../src/llm/types';
+import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
 
 const openingContext = {
@@ -133,6 +134,11 @@ const validPlannerPayload = {
     mustIncludeBeats: ['Sentries moving in', 'A risky route choice'],
     forbiddenRecaps: ['Do not restate the full descent sequence.'],
   },
+  dramaticQuestion: 'Will you push deeper or seal the vault behind you?',
+  choiceIntents: [
+    { hook: 'Press forward toward the chanting', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+    { hook: 'Seal the entrance and find another route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+  ],
 };
 
 function createJsonResponse(status: number, body: unknown): Response {

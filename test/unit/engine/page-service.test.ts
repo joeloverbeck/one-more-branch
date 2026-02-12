@@ -23,6 +23,7 @@ import type { StateReconciliationResult } from '../../../src/engine/state-reconc
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
 import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
+import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { LLMError, type PagePlanGenerationResult, type WriterResult } from '../../../src/llm/types';
 import { logger } from '../../../src/logging/index.js';
 import type { StoryStructure } from '../../../src/models/story-arc';
@@ -220,6 +221,11 @@ function buildPagePlanResult(
       mustIncludeBeats: ['Immediate consequence of the selected choice'],
       forbiddenRecaps: ['Do not restate the previous page ending'],
     },
+    dramaticQuestion: 'Will you confront the danger or seek another path?',
+    choiceIntents: [
+      { hook: 'Face the threat directly', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+      { hook: 'Find an alternative route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+    ],
     rawResponse: '{"ok":true}',
     ...overrides,
   };

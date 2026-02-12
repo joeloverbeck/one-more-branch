@@ -2,6 +2,7 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../../src/
 import type { ContinuationContext } from '../../../../src/llm/types';
 import type { ActiveState } from '../../../../src/models/state/active-state';
 import { buildContinuationPrompt } from '../../../../src/llm/prompts/continuation-prompt';
+import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 
 describe('buildContinuationPrompt pacing nudge injection', () => {
   const testStructure: StoryStructure = {
@@ -187,6 +188,11 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
             mustIncludeBeats: ['A searchlight sweeps the alley mouth'],
             forbiddenRecaps: ['No replay of the prior rooftop chase'],
           },
+          dramaticQuestion: 'Will you evade the checkpoint or confront the patrol?',
+          choiceIntents: [
+            { hook: 'Slip through the shadows', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+            { hook: 'Confront the patrol head-on', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+          ],
         },
       }),
     );
@@ -209,5 +215,49 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(systemMessage?.content).not.toContain('ACTIVE STATE TRACKING');
     expect(systemMessage?.content).not.toContain('CONTINUITY RULES');
     expect(systemMessage?.content).not.toContain('INVENTORY MANAGEMENT:');
+  });
+
+  it('includes choice intent section when choiceIntents are provided', () => {
+    const messages = buildContinuationPrompt(
+      makeContext({
+        pagePlan: {
+          sceneIntent: 'Test scene intent',
+          continuityAnchors: [],
+          stateIntents: {
+            threats: { add: [], removeIds: [] },
+            constraints: { add: [], removeIds: [] },
+            threads: { add: [], resolveIds: [] },
+            inventory: { add: [], removeIds: [] },
+            health: { add: [], removeIds: [] },
+            characterState: { add: [], removeIds: [] },
+            canon: { worldAdd: [], characterAdd: [] },
+          },
+          writerBrief: {
+            openingLineDirective: 'Start with action',
+            mustIncludeBeats: [],
+            forbiddenRecaps: [],
+          },
+          dramaticQuestion: 'Will you flee or fight the patrol?',
+          choiceIntents: [
+            { hook: 'Slip through the shadows', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+            { hook: 'Confront the patrol head-on', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+          ],
+        },
+      }),
+    );
+    const userMessage = messages.find(m => m.role === 'user');
+
+    expect(userMessage?.content).toContain('=== CHOICE INTENT GUIDANCE (from planner) ===');
+    expect(userMessage?.content).toContain('Dramatic Question: Will you flee or fight the patrol?');
+    expect(userMessage?.content).toContain('[TACTICAL_APPROACH / LOCATION_CHANGE] Slip through the shadows');
+    expect(userMessage?.content).toContain('[CONFRONTATION / THREAT_SHIFT] Confront the patrol head-on');
+  });
+
+  it('omits choice intent section when pagePlan has no choiceIntents', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const userMessage = messages.find(m => m.role === 'user');
+
+    expect(userMessage?.content).not.toContain('CHOICE INTENT GUIDANCE');
+    expect(userMessage?.content).not.toContain('Dramatic Question:');
   });
 });

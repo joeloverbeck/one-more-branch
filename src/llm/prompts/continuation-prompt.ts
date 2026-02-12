@@ -56,6 +56,18 @@ Use this guidance to shape this scene while still following all writer schema re
 
 `
     : '';
+  const choiceIntentSection =
+    context.pagePlan?.choiceIntents?.length
+      ? `=== CHOICE INTENT GUIDANCE (from planner) ===
+Dramatic Question: ${context.pagePlan.dramaticQuestion}
+
+Proposed Choice Intents:
+${context.pagePlan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`).join('\n')}
+
+Use these choice intents as a starting blueprint. You may adjust if the narrative takes an unexpected turn, but aim to preserve the dramatic question framing and tag divergence.
+
+`
+      : '';
   const reconciliationRetrySection =
     context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0
       ? `=== RECONCILIATION FAILURE REASONS (RETRY) ===
@@ -162,7 +174,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${reconciliationRetrySection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${pacingNudgeSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next

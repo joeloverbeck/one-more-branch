@@ -18,6 +18,7 @@ import {
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryStructure } from '@/models/story-arc';
+import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 import { LLMError } from '@/llm/types';
 import type { AnalystResult, PagePlanGenerationResult, WriterResult } from '@/llm/types';
 import { logger } from '@/logging/index';
@@ -264,6 +265,11 @@ function buildPagePlanResult(
       mustIncludeBeats: ['Consequence of player choice'],
       forbiddenRecaps: ['Do not summarize prior page'],
     },
+    dramaticQuestion: 'Will you confront the danger or seek another path?',
+    choiceIntents: [
+      { hook: 'Face the threat directly', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+      { hook: 'Find an alternative route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+    ],
     rawResponse: '{"ok":true}',
     ...overrides,
   };

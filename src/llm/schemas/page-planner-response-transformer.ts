@@ -166,6 +166,12 @@ export function validatePagePlannerResponse(
         mustIncludeBeats: normalizeStringArray(validated.writerBrief.mustIncludeBeats),
         forbiddenRecaps: normalizeStringArray(validated.writerBrief.forbiddenRecaps),
       },
+      dramaticQuestion: validated.dramaticQuestion.trim(),
+      choiceIntents: validated.choiceIntents.map((intent) => ({
+        hook: intent.hook.trim(),
+        choiceType: intent.choiceType,
+        primaryDelta: intent.primaryDelta,
+      })),
       rawResponse,
     };
   } catch (error) {

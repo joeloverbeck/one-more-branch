@@ -1,4 +1,4 @@
-import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
+import { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { PageId } from '../models/id.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
@@ -231,6 +231,12 @@ export interface CanonIntents {
   characterAdd: Array<{ characterName: string; facts: string[] }>;
 }
 
+export interface ChoiceIntent {
+  hook: string;
+  choiceType: ChoiceType;
+  primaryDelta: PrimaryDelta;
+}
+
 export interface PagePlan {
   sceneIntent: string;
   continuityAnchors: string[];
@@ -249,6 +255,8 @@ export interface PagePlan {
     mustIncludeBeats: string[];
     forbiddenRecaps: string[];
   };
+  dramaticQuestion: string;
+  choiceIntents: ChoiceIntent[];
 }
 
 export interface OpeningPagePlanContext extends OpeningContext {

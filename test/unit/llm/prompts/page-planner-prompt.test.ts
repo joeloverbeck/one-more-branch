@@ -76,7 +76,7 @@ describe('buildPagePlannerPrompt', () => {
 
     expect(system).toContain('page planner');
     expect(system).toContain('do not narrate');
-    expect(system).toContain('do not produce player choices');
+    expect(system).toContain('propose a dramaticQuestion');
     expect(system).toContain('do not assign server IDs');
   });
 

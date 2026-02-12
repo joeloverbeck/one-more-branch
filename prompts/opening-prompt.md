@@ -207,6 +207,16 @@ Writer Brief:
 Use this plan as guidance while still returning the required writer schema output.
 {{/if}}
 
+{{#if pagePlan.choiceIntents.length}}
+=== CHOICE INTENT GUIDANCE (from planner) ===
+Dramatic Question: {{pagePlan.dramaticQuestion}}
+
+Proposed Choice Intents:
+{{pagePlan.choiceIntents as numbered list: "N. [choiceType / primaryDelta] hook"}}
+
+Use these choice intents as a starting blueprint. You may adjust if the narrative takes an unexpected turn, but aim to preserve the dramatic question framing and tag divergence.
+{{/if}}
+
 {{#if reconciliationFailureReasons.length}}
 === RECONCILIATION FAILURE REASONS (RETRY) ===
 The prior attempt failed deterministic reconciliation. Correct these failures in this new scene:
