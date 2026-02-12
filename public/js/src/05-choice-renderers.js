@@ -61,14 +61,11 @@
 
     return `
         <div class="suggested-protagonist-speech-container">
-          <label for="suggested-protagonist-speech-input" class="suggested-protagonist-speech-label">
-            Optional: Suggested protagonist speech
-          </label>
           <input
             type="text"
             id="suggested-protagonist-speech-input"
             class="suggested-protagonist-speech-input"
-            placeholder="Something your protagonist might say..."
+            placeholder="Suggest something your protagonist might say..."
             maxlength="500"
             value="${escapeHtml(safeSuggestedSpeechValue)}"
           />

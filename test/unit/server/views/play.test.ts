@@ -85,15 +85,15 @@ describe('play page template', () => {
   });
 
   describe('suggested protagonist speech input', () => {
-    it('renders labeled optional input in the choices section', () => {
+    it('renders ghost input with placeholder in the choices section', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
       expect(template).toContain('class="suggested-protagonist-speech-container"');
-      expect(template).toContain('for="suggested-protagonist-speech-input"');
-      expect(template).toContain('Optional: Suggested protagonist speech');
       expect(template).toContain('id="suggested-protagonist-speech-input"');
       expect(template).toContain('class="suggested-protagonist-speech-input"');
+      expect(template).toContain('Suggest something your protagonist might say...');
       expect(template).toContain('maxlength="500"');
+      expect(template).not.toContain('suggested-protagonist-speech-label');
     });
   });
 });
