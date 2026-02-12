@@ -62,6 +62,15 @@ STARTING SITUATION:
 {{startingSituation}}
 {{/if}}
 
+{{#if initialNpcAgendas.length > 0}}
+NPC INITIAL AGENDAS (what each NPC wants at story start):
+[CharacterName]
+  Goal: {{agenda.currentGoal}}
+  Leverage: {{agenda.leverage}}
+  Fear: {{agenda.fear}}
+  Off-screen: {{agenda.offScreenBehavior}}
+{{/if}}
+
 TONE/GENRE: {{tone}}
 
 {{#if structure.firstAct.firstBeat}}
@@ -126,6 +135,15 @@ NPC CURRENT STATE (branch-specific events):
 [Character Name]
 - [id] text
 or '(none)'}}
+
+{{#if accumulatedNpcAgendas has entries}}
+NPC AGENDAS (what each NPC wants and will do):
+[CharacterName]
+  Goal: {{agenda.currentGoal}}
+  Leverage: {{agenda.leverage}}
+  Fear: {{agenda.fear}}
+  Off-screen: {{agenda.offScreenBehavior}}
+{{/if}}
 
 YOUR INVENTORY:
 {{accumulatedInventory as "- [id] text" list or '(none)'}}

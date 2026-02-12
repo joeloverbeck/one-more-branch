@@ -42,6 +42,8 @@ export function buildContinuationContext(
     parentObjectiveEvidenceStrength: parentPage.analystResult?.objectiveEvidenceStrength ?? undefined,
     momentumTrajectory: ancestorContext.momentumTrajectory,
 
+    accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
+
     threadAges: parentPage.threadAges,
     inheritedNarrativePromises: parentPage.inheritedNarrativePromises,
     parentAnalystNarrativePromises: parentPage.analystResult?.narrativePromises ?? [],

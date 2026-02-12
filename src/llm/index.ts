@@ -26,6 +26,7 @@ export type {
   StoryBibleCharacter,
   LorekeeperResult,
   LorekeeperContext,
+  AgendaResolverResult,
 } from './types.js';
 
 export { LLMError } from './types.js';
@@ -60,3 +61,5 @@ export {
 } from './client.js';
 
 export { mergePageWriterAndReconciledStateWithAnalystResults } from './result-merger.js';
+
+export { generateAgendaResolver } from './agenda-resolver-generation.js';

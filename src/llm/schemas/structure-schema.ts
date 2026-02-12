@@ -8,7 +8,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
     schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['overallTheme', 'premise', 'pacingBudget', 'acts'],
+      required: ['overallTheme', 'premise', 'pacingBudget', 'acts', 'initialNpcAgendas'],
       properties: {
         overallTheme: { type: 'string' },
         premise: {
@@ -27,6 +27,37 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
             targetPagesMax: {
               type: 'number',
               description: 'Maximum target page count for the full story (10-80).',
+            },
+          },
+        },
+        initialNpcAgendas: {
+          type: 'array',
+          description: 'Initial agendas for each NPC. Empty array if no NPCs defined.',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['npcName', 'currentGoal', 'leverage', 'fear', 'offScreenBehavior'],
+            properties: {
+              npcName: {
+                type: 'string',
+                description: 'Exact NPC name as provided in NPC definitions.',
+              },
+              currentGoal: {
+                type: 'string',
+                description: 'What this NPC is currently trying to achieve (1 sentence).',
+              },
+              leverage: {
+                type: 'string',
+                description: 'What advantage or resource this NPC holds (1 sentence).',
+              },
+              fear: {
+                type: 'string',
+                description: 'What this NPC is afraid of or trying to avoid (1 sentence).',
+              },
+              offScreenBehavior: {
+                type: 'string',
+                description: 'What this NPC is doing when not in a scene with the protagonist (1 sentence).',
+              },
             },
           },
         },

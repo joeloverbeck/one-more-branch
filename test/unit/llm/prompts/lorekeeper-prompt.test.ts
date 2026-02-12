@@ -221,6 +221,42 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).toContain('[MORAL_DILEMMA / RELATIONSHIP_CHANGE] Threaten the merchant');
   });
 
+  it('includes NPC agendas when present', () => {
+    const context = buildMinimalContext({
+      accumulatedNpcAgendas: {
+        Gareth: {
+          npcName: 'Gareth',
+          currentGoal: 'Protect the village',
+          leverage: 'Knowledge of secret paths',
+          fear: 'Losing his family',
+          offScreenBehavior: 'Fortifying the walls',
+        },
+      },
+    });
+    const messages = buildLorekeeperPrompt(context);
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).toContain('NPC AGENDAS');
+    expect(userPrompt).toContain('[Gareth]');
+    expect(userPrompt).toContain('Goal: Protect the village');
+    expect(userPrompt).toContain('Leverage: Knowledge of secret paths');
+    expect(userPrompt).toContain('Fear: Losing his family');
+    expect(userPrompt).toContain('Off-screen: Fortifying the walls');
+  });
+
+  it('includes NPC agendas curation principle in system prompt', () => {
+    const messages = buildLorekeeperPrompt(buildMinimalContext());
+    expect(messages[0]?.content).toContain('NPC AGENDAS');
+  });
+
+  it('omits NPC agendas section when no agendas exist', () => {
+    const context = buildMinimalContext({ accumulatedNpcAgendas: undefined });
+    const messages = buildLorekeeperPrompt(context);
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).not.toContain('NPC AGENDAS');
+  });
+
   it('omits optional sections when empty', () => {
     const messages = buildLorekeeperPrompt(buildMinimalContext());
     const userPrompt = messages[1]?.content ?? '';
@@ -232,5 +268,6 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).not.toContain('ACTIVE STATE');
     expect(userPrompt).not.toContain('ANCESTOR PAGE SUMMARIES');
     expect(userPrompt).not.toContain('GRANDPARENT NARRATIVE');
+    expect(userPrompt).not.toContain('NPC AGENDAS');
   });
 });

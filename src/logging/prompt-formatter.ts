@@ -9,7 +9,8 @@ export type PromptType =
   | 'planner'
   | 'lorekeeper'
   | 'structure'
-  | 'structure-rewrite';
+  | 'structure-rewrite'
+  | 'agenda-resolver';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),

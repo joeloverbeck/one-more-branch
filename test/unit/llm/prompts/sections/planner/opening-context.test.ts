@@ -82,4 +82,66 @@ describe('planner opening context section', () => {
     expect(result).toContain('Current Act: Lockdown');
     expect(result).toContain('Current Beat: Break through maintenance sectors');
   });
+
+  it('includes initial NPC agendas when present', () => {
+    const context: OpeningPagePlanContext = {
+      mode: 'opening',
+      characterConcept: 'A courier',
+      worldbuilding: 'A space station.',
+      tone: 'sci-fi',
+      initialNpcAgendas: [
+        {
+          npcName: 'Voss',
+          currentGoal: 'Sabotage the relay',
+          leverage: 'Access to security systems',
+          fear: 'Being identified',
+          offScreenBehavior: 'Planting devices in maintenance shafts',
+        },
+      ],
+      globalCanon: [],
+      globalCharacterCanon: {},
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+    };
+
+    const result = buildPlannerOpeningContextSection(context);
+
+    expect(result).toContain('NPC INITIAL AGENDAS');
+    expect(result).toContain('[Voss]');
+    expect(result).toContain('Goal: Sabotage the relay');
+    expect(result).toContain('Leverage: Access to security systems');
+    expect(result).toContain('Fear: Being identified');
+    expect(result).toContain('Off-screen: Planting devices in maintenance shafts');
+  });
+
+  it('omits NPC agendas section when no agendas exist', () => {
+    const context: OpeningPagePlanContext = {
+      mode: 'opening',
+      characterConcept: 'A courier',
+      worldbuilding: '',
+      tone: 'sci-fi',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+    };
+
+    const result = buildPlannerOpeningContextSection(context);
+
+    expect(result).not.toContain('NPC INITIAL AGENDAS');
+  });
 });

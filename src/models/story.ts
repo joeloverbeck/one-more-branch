@@ -2,6 +2,7 @@ import { StoryId, generateStoryId, isStoryId } from './id';
 import { Npc } from './npc';
 import { StoryStructure } from './story-arc';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
+import type { NpcAgenda } from './state/npc-agenda';
 import {
   StructureVersionId,
   VersionedStoryStructure,
@@ -23,6 +24,7 @@ export interface Story {
   globalCharacterCanon: GlobalCharacterCanon;
   structure: StoryStructure | null;
   readonly structureVersions?: readonly VersionedStoryStructure[];
+  readonly initialNpcAgendas?: readonly NpcAgenda[];
   readonly createdAt: Date;
   updatedAt: Date;
 }

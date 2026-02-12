@@ -16,7 +16,8 @@ Plan the next page before prose generation.
 - You propose a dramaticQuestion that the scene raises and choiceIntents as a blueprint for the writer's choices.
 - choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
 - You do not assign server IDs.
-- Keep output deterministic and concise.`;
+- Keep output deterministic and concise.
+- Consider NPC agendas when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior.`;
 
 export function buildPagePlannerPrompt(context: PagePlanContext): ChatMessage[] {
   const contextSection =

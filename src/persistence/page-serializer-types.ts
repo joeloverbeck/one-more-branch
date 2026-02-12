@@ -78,6 +78,14 @@ export interface ThreadPayoffAssessmentFileData {
   reasoning: string;
 }
 
+export interface NpcAgendaFileData {
+  npcName: string;
+  currentGoal: string;
+  leverage: string;
+  fear: string;
+  offScreenBehavior: string;
+}
+
 export interface AnalystResultFileData {
   beatConcluded: boolean;
   beatResolution: string;
@@ -151,6 +159,8 @@ export interface PageFileData {
   analystResult?: AnalystResultFileData | null;
   threadAges?: Record<string, number>;
   inheritedNarrativePromises?: NarrativePromiseFileData[];
+  npcAgendaUpdates?: NpcAgendaFileData[];
+  accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

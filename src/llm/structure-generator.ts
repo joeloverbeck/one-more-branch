@@ -6,6 +6,7 @@ import {
   readErrorDetails,
   readJsonResponse,
 } from './http-client.js';
+import type { NpcAgenda } from '../models/state/npc-agenda.js';
 import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
 import { withRetry } from './retry.js';
@@ -28,6 +29,7 @@ export interface StructureGenerationResult {
       role: string;
     }>;
   }>;
+  initialNpcAgendas?: NpcAgenda[];
   rawResponse: string;
 }
 
@@ -132,11 +134,44 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
         }
       : { targetPagesMin: 15, targetPagesMax: 50 };
 
+  const rawAgendas = data['initialNpcAgendas'];
+  const initialNpcAgendas: Array<{
+    npcName: string;
+    currentGoal: string;
+    leverage: string;
+    fear: string;
+    offScreenBehavior: string;
+  }> = [];
+
+  if (Array.isArray(rawAgendas)) {
+    for (const agenda of rawAgendas) {
+      if (typeof agenda === 'object' && agenda !== null && !Array.isArray(agenda)) {
+        const a = agenda as Record<string, unknown>;
+        if (
+          typeof a['npcName'] === 'string' &&
+          typeof a['currentGoal'] === 'string' &&
+          typeof a['leverage'] === 'string' &&
+          typeof a['fear'] === 'string' &&
+          typeof a['offScreenBehavior'] === 'string'
+        ) {
+          initialNpcAgendas.push({
+            npcName: a['npcName'],
+            currentGoal: a['currentGoal'],
+            leverage: a['leverage'],
+            fear: a['fear'],
+            offScreenBehavior: a['offScreenBehavior'],
+          });
+        }
+      }
+    }
+  }
+
   return {
     overallTheme: data['overallTheme'],
     premise,
     pacingBudget,
     acts,
+    ...(initialNpcAgendas.length > 0 ? { initialNpcAgendas } : {}),
   };
 }
 

@@ -15,6 +15,7 @@ import {
   StructureVersionId,
 } from '../models';
 import type { NarrativePromise } from '../models/state/keyed-entry';
+import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AnalystResult, PageWriterResult, StoryBible } from '../llm/types';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { createCharacterStateChanges } from './character-state-manager';
@@ -47,6 +48,7 @@ type PageBuildResult = PageWriterResult &
 export interface FirstPageBuildContext {
   readonly structureState: AccumulatedStructureState;
   readonly structureVersionId: StructureVersionId | null;
+  readonly initialNpcAgendas?: readonly NpcAgenda[];
 }
 
 /**
@@ -68,6 +70,8 @@ export interface ContinuationPageBuildContext {
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentInheritedNarrativePromises: readonly NarrativePromise[];
   readonly parentAnalystNarrativePromises: readonly NarrativePromise[];
+  readonly parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
+  readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
 
 /**
@@ -176,6 +180,14 @@ export function buildFirstPage(
 ): Page {
   const threadAges = computeFirstPageThreadAges(result.threadsAdded);
 
+  // Build initial accumulated agendas from structure-generated agendas
+  const initialAgendas = context.initialNpcAgendas ?? [];
+  const agendaRecord: Record<string, NpcAgenda> = {};
+  for (const agenda of initialAgendas) {
+    agendaRecord[agenda.npcName] = agenda;
+  }
+  const parentAccumulatedNpcAgendas: AccumulatedNpcAgendas = agendaRecord;
+
   return createPage({
     id: parsePageId(1),
     narrativeText: result.narrative,
@@ -195,6 +207,7 @@ export function buildFirstPage(
     parentAccumulatedStructureState: context.structureState,
     structureVersionId: context.structureVersionId,
     threadAges,
+    parentAccumulatedNpcAgendas,
   });
 }
 
@@ -250,6 +263,8 @@ export function buildContinuationPage(
     analystResult: context.analystResult,
     threadAges,
     inheritedNarrativePromises,
+    npcAgendaUpdates: context.npcAgendaUpdates,
+    parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
   });
 }
 

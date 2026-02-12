@@ -62,7 +62,15 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
       attempt: 1,
     });
     const structure = createStoryStructure(structureResult);
-    const storyWithStructure = updateStoryStructure(story, structure);
+    let storyWithStructure = updateStoryStructure(story, structure);
+
+    if (structureResult.initialNpcAgendas && structureResult.initialNpcAgendas.length > 0) {
+      storyWithStructure = {
+        ...storyWithStructure,
+        initialNpcAgendas: structureResult.initialNpcAgendas,
+      };
+    }
+
     await storage.updateStory(storyWithStructure);
 
     const { page, updatedStory } = await generateFirstPage(

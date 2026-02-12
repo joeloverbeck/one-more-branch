@@ -8,8 +8,10 @@ import {
   createDefaultProtagonistAffect,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
+  createEmptyAccumulatedNpcAgendas,
   parsePageId,
 } from '@/models';
+import type { NpcAgenda } from '@/models/state/npc-agenda';
 import {
   PageFileData,
   deserializePage,
@@ -44,6 +46,8 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     protagonistAffect: createDefaultProtagonistAffect(),
     threadAges: {},
     inheritedNarrativePromises: [],
+    npcAgendaUpdates: [],
+    accumulatedNpcAgendas: createEmptyAccumulatedNpcAgendas(),
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -267,6 +271,34 @@ describe('page-serializer', () => {
       });
     });
 
+    it('defaults npcAgendaUpdates and accumulatedNpcAgendas when missing (backward compat)', () => {
+      const fileData = buildTestFileData();
+      delete (fileData as Record<string, unknown>).npcAgendaUpdates;
+      delete (fileData as Record<string, unknown>).accumulatedNpcAgendas;
+
+      const page = deserializePage(fileData);
+      expect(page.npcAgendaUpdates).toEqual([]);
+      expect(page.accumulatedNpcAgendas).toEqual({});
+    });
+
+    it('deserializes npcAgendaUpdates and accumulatedNpcAgendas when present', () => {
+      const agenda: NpcAgenda = {
+        npcName: 'Garak',
+        currentGoal: 'Escape',
+        leverage: 'Codes',
+        fear: 'Exposure',
+        offScreenBehavior: 'Planning',
+      };
+      const fileData = buildTestFileData({
+        npcAgendaUpdates: [agenda],
+        accumulatedNpcAgendas: { Garak: agenda },
+      });
+
+      const page = deserializePage(fileData);
+      expect(page.npcAgendaUpdates).toEqual([agenda]);
+      expect(page.accumulatedNpcAgendas).toEqual({ Garak: agenda });
+    });
+
     it('defaults structureVersionId to null when missing', () => {
       const fileData = buildTestFileData();
       delete fileData.structureVersionId;
@@ -340,6 +372,25 @@ describe('page-serializer', () => {
       const serialized = serializePage(originalPage);
       const deserialized = deserializePage(serialized);
       expect(deserialized).toEqual(originalPage);
+    });
+
+    it('preserves NPC agenda data through serialize/deserialize cycle', () => {
+      const agenda: NpcAgenda = {
+        npcName: 'Kira',
+        currentGoal: 'Defend the station',
+        leverage: 'Military command',
+        fear: 'Losing the war',
+        offScreenBehavior: 'Coordinating defense',
+      };
+      const page = buildTestPage({
+        npcAgendaUpdates: [agenda],
+        accumulatedNpcAgendas: { Kira: agenda },
+      });
+
+      const serialized = serializePage(page);
+      const deserialized = deserializePage(serialized);
+      expect(deserialized.npcAgendaUpdates).toEqual([agenda]);
+      expect(deserialized.accumulatedNpcAgendas).toEqual({ Kira: agenda });
     });
   });
 

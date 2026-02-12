@@ -75,11 +75,19 @@ REQUIREMENTS (follow ALL):
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "resolution" for denouement
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
+11. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
 
 OUTPUT SHAPE:
 - overallTheme: string
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
+- initialNpcAgendas: array of NPC agendas (empty array if no NPCs)
+  - each agenda has:
+    - npcName: exact NPC name from definitions
+    - currentGoal: 1 sentence
+    - leverage: 1 sentence
+    - fear: 1 sentence
+    - offScreenBehavior: 1 sentence
 - acts: exactly 3 items
 - each act has:
   - name: evocative act title
@@ -104,6 +112,15 @@ OUTPUT SHAPE:
     "targetPagesMin": {{number}},
     "targetPagesMax": {{number}}
   },
+  "initialNpcAgendas": [
+    {
+      "npcName": "{{exact NPC name}}",
+      "currentGoal": "{{1 sentence goal}}",
+      "leverage": "{{1 sentence advantage}}",
+      "fear": "{{1 sentence fear}}",
+      "offScreenBehavior": "{{1 sentence off-screen action}}"
+    }
+  ],
   "acts": [
     {
       "name": "{{act title}}",

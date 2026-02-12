@@ -75,3 +75,11 @@ export {
 } from './active-state.js';
 
 export { applyActiveStateChanges } from './active-state-apply.js';
+
+// NPC agendas
+export {
+  NpcAgenda,
+  AccumulatedNpcAgendas,
+  createEmptyAccumulatedNpcAgendas,
+  applyAgendaUpdates,
+} from './npc-agenda.js';

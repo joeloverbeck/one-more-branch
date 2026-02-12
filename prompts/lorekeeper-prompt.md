@@ -9,7 +9,7 @@
 
 The Lorekeeper is a dedicated LLM call between the planner and writer (continuation pages only). It curates a compact, scene-focused "Story Bible" containing only what the writer needs, replacing the raw context dumps that would otherwise bloat the writer prompt with irrelevant information.
 
-**Pipeline position**: Planner -> **Lorekeeper** -> Writer -> Analyst
+**Pipeline position**: Planner -> **Lorekeeper** -> Writer -> Analyst -> Agenda Resolver
 
 The Lorekeeper is skipped for opening pages (where context is small and fully relevant).
 
@@ -45,6 +45,7 @@ CURATION PRINCIPLES:
 5. INTER-CHARACTER DYNAMICS: When multiple characters share a scene, describe how they relate to EACH OTHER, not just to the protagonist.
 6. CURRENT STATE: Each character's emotional state and situation as they enter the scene, derived from accumulated character state entries and recent narrative.
 7. WORLD CONTEXT: Include only the worldbuilding details that are physically, culturally, or socially relevant to THIS scene's location and events.
+8. NPC AGENDAS: For each relevant character, incorporate their current agenda (goal, leverage, fear, off-screen behavior) into the character profile. This informs how NPCs will act in the scene.
 ```
 
 ### 2) User Message
@@ -75,6 +76,15 @@ TONE/GENRE: {{tone}}
 {{#if npcs.length}}
 NPC DEFINITIONS:
 {{formattedNpcs}}
+{{/if}}
+
+{{#if accumulatedNpcAgendas has entries}}
+NPC AGENDAS (current goals and off-screen behavior):
+[CharacterName]
+  Goal: {{agenda.currentGoal}}
+  Leverage: {{agenda.leverage}}
+  Fear: {{agenda.fear}}
+  Off-screen: {{agenda.offScreenBehavior}}
 {{/if}}
 
 {{#if structure && accumulatedStructureState}}
@@ -179,6 +189,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `globalCanon` | All global canon facts |
 | `globalCharacterCanon` | All character canon facts (by character name) |
 | `accumulatedCharacterState` | All NPC state entries (by character name) |
+| `accumulatedNpcAgendas` | Current NPC agendas (by NPC name): goal, leverage, fear, off-screen behavior |
 | `activeState` | Current location, threats, constraints, threads |
 | `ancestorSummaries` | All ancestor page summaries |
 | `grandparentNarrative` | Full text of 2 pages ago (if exists) |
@@ -207,6 +218,8 @@ WRITING_CONTINUING_PAGE started
 WRITING_CONTINUING_PAGE completed
 ANALYZING_SCENE started
 ANALYZING_SCENE completed
+RESOLVING_AGENDAS started
+RESOLVING_AGENDAS completed
 ```
 
 The frontend displays this stage as "LOREKEEPING" in the spinner UI with dedicated Sims-style humor phrases.

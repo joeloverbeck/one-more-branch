@@ -14,8 +14,9 @@ import {
   parsePageId,
 } from '../models';
 import type { NarrativePromise } from '../models/state/keyed-entry';
+import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AnalystResult, StoryBible } from '../llm/types';
-import { PageFileData, AnalystResultFileData, StoryBibleFileData } from './page-serializer-types';
+import { PageFileData, AnalystResultFileData, StoryBibleFileData, NpcAgendaFileData } from './page-serializer-types';
 import {
   structureStateToFileData,
   fileDataToStructureState,
@@ -154,6 +155,36 @@ function deserializeAnalystResult(data: AnalystResultFileData | null | undefined
   };
 }
 
+function deserializeNpcAgenda(data: NpcAgendaFileData): NpcAgenda {
+  return {
+    npcName: data.npcName,
+    currentGoal: data.currentGoal,
+    leverage: data.leverage,
+    fear: data.fear,
+    offScreenBehavior: data.offScreenBehavior,
+  };
+}
+
+function deserializeNpcAgendaArray(
+  data: NpcAgendaFileData[] | undefined,
+): readonly NpcAgenda[] {
+  if (!data || data.length === 0) {
+    return [];
+  }
+  return data.map(deserializeNpcAgenda);
+}
+
+function deserializeAccumulatedNpcAgendas(
+  data: Record<string, NpcAgendaFileData> | undefined,
+): AccumulatedNpcAgendas {
+  if (!data) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(data).map(([key, a]) => [key, deserializeNpcAgenda(a)]),
+  );
+}
+
 export function serializePage(page: Page): PageFileData {
   const accumulatedCharacterState: Record<string, Array<{ id: string; text: string }>> = {};
   for (const [name, state] of Object.entries(page.accumulatedCharacterState)) {
@@ -201,6 +232,25 @@ export function serializePage(page: Page): PageFileData {
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
     })),
+    npcAgendaUpdates: page.npcAgendaUpdates.map(a => ({
+      npcName: a.npcName,
+      currentGoal: a.currentGoal,
+      leverage: a.leverage,
+      fear: a.fear,
+      offScreenBehavior: a.offScreenBehavior,
+    })),
+    accumulatedNpcAgendas: Object.fromEntries(
+      Object.entries(page.accumulatedNpcAgendas).map(([key, a]) => [
+        key,
+        {
+          npcName: a.npcName,
+          currentGoal: a.currentGoal,
+          leverage: a.leverage,
+          fear: a.fear,
+          offScreenBehavior: a.offScreenBehavior,
+        },
+      ]),
+    ),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -279,6 +329,8 @@ export function deserializePage(data: PageFileData): Page {
       promiseType: p.promiseType as NarrativePromise['promiseType'],
       suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],
     })),
+    npcAgendaUpdates: deserializeNpcAgendaArray(data.npcAgendaUpdates),
+    accumulatedNpcAgendas: deserializeAccumulatedNpcAgendas(data.accumulatedNpcAgendas),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

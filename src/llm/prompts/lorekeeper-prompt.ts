@@ -16,7 +16,8 @@ CURATION PRINCIPLES:
 4. RELATIONSHIP DYNAMICS: Capture trust levels, power dynamics, emotional tensions, and unresolved interpersonal history between characters and the protagonist.
 5. INTER-CHARACTER DYNAMICS: When multiple characters share a scene, describe how they relate to EACH OTHER, not just to the protagonist.
 6. CURRENT STATE: Each character's emotional state and situation as they enter the scene, derived from accumulated character state entries and recent narrative.
-7. WORLD CONTEXT: Include only the worldbuilding details that are physically, culturally, or socially relevant to THIS scene's location and events.`;
+7. WORLD CONTEXT: Include only the worldbuilding details that are physically, culturally, or socially relevant to THIS scene's location and events.
+8. NPC AGENDAS: For each relevant character, incorporate their current agenda (goal, leverage, fear, off-screen behavior) into the character profile. This informs how NPCs will act in the scene.`;
 
 export function buildLorekeeperPrompt(context: LorekeeperContext): ChatMessage[] {
   const plan = context.pagePlan;
@@ -53,6 +54,26 @@ ${characterCanonEntries
       ? `NPC ACCUMULATED STATE (branch-specific events):
 ${characterStateEntries
   .map(([name, states]) => `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`)
+  .join('\n\n')}
+
+`
+      : '';
+
+  const npcAgendaEntries = context.accumulatedNpcAgendas
+    ? Object.values(context.accumulatedNpcAgendas)
+    : [];
+  const npcAgendasSection =
+    npcAgendaEntries.length > 0
+      ? `NPC AGENDAS (current goals and off-screen behavior):
+${npcAgendaEntries
+  .map(
+    a =>
+      `[${a.npcName}]
+  Goal: ${a.currentGoal}
+  Leverage: ${a.leverage}
+  Fear: ${a.fear}
+  Off-screen: ${a.offScreenBehavior}`,
+  )
   .join('\n\n')}
 
 `
@@ -129,7 +150,7 @@ ${context.worldbuilding || '(none provided)'}
 
 TONE/GENRE: ${context.tone}
 
-${npcsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
+${npcsSection}${npcAgendasSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
 1. sceneWorldContext: Filter worldbuilding to what's relevant here

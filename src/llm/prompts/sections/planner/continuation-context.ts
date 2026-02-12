@@ -1,4 +1,5 @@
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
+import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
 import type { ContinuationPagePlanContext, MomentumTrajectory } from '../../../types.js';
 import {
   buildThreadAgingSection,
@@ -152,6 +153,31 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
   return lines.join('\n') + '\n';
 }
 
+function buildNpcAgendasSection(agendas?: AccumulatedNpcAgendas): string {
+  if (!agendas) {
+    return '';
+  }
+
+  const entries = Object.values(agendas);
+  if (entries.length === 0) {
+    return '';
+  }
+
+  const lines = entries.map(
+    a =>
+      `[${a.npcName}]
+  Goal: ${a.currentGoal}
+  Leverage: ${a.leverage}
+  Fear: ${a.fear}
+  Off-screen: ${a.offScreenBehavior}`,
+  );
+
+  return `NPC AGENDAS (what each NPC wants and will do):
+${lines.join('\n\n')}
+
+`;
+}
+
 export function buildPlannerContinuationContextSection(context: ContinuationPagePlanContext): string {
   const worldSection = context.worldbuilding
     ? `WORLDBUILDING:
@@ -259,7 +285,7 @@ ${formatCharacterCanon(context.globalCharacterCanon)}
 NPC CURRENT STATE (branch-specific events):
 ${formatCharacterState(context.accumulatedCharacterState)}
 
-YOUR INVENTORY:
+${buildNpcAgendasSection(context.accumulatedNpcAgendas)}YOUR INVENTORY:
 ${inventorySection}
 
 YOUR HEALTH:

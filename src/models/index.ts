@@ -63,6 +63,10 @@ export {
   createEmptyActiveStateChanges,
   isActiveState,
   isActiveStateChanges,
+  NpcAgenda,
+  AccumulatedNpcAgendas,
+  createEmptyAccumulatedNpcAgendas,
+  applyAgendaUpdates,
 } from './state/index.js';
 
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';

@@ -6,6 +6,7 @@ import {
   Inventory,
   Page,
 } from '../models';
+import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import { getParentAccumulatedCharacterState } from './character-state-manager';
 import { getParentAccumulatedHealth } from './health-manager';
 import { getParentAccumulatedInventory } from './inventory-manager';
@@ -21,6 +22,7 @@ export interface CollectedParentState {
   readonly accumulatedHealth: Health;
   readonly accumulatedCharacterState: AccumulatedCharacterState;
   readonly structureState: AccumulatedStructureState;
+  readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
 }
 
 /**
@@ -34,6 +36,7 @@ export function collectParentState(parentPage: Page): CollectedParentState {
     accumulatedHealth: getParentAccumulatedHealth(parentPage),
     accumulatedCharacterState: getParentAccumulatedCharacterState(parentPage),
     structureState: parentPage.accumulatedStructureState,
+    accumulatedNpcAgendas: parentPage.accumulatedNpcAgendas,
   };
 }
 

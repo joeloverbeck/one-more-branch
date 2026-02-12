@@ -37,11 +37,29 @@ Beat Objective: ${firstBeat.objective}
 `
       : '';
 
+  const initialAgendas = context.initialNpcAgendas ?? [];
+  const agendasSection =
+    initialAgendas.length > 0
+      ? `NPC INITIAL AGENDAS (what each NPC wants at story start):
+${initialAgendas
+  .map(
+    a =>
+      `[${a.npcName}]
+  Goal: ${a.currentGoal}
+  Leverage: ${a.leverage}
+  Fear: ${a.fear}
+  Off-screen: ${a.offScreenBehavior}`,
+  )
+  .join('\n\n')}
+
+`
+      : '';
+
   return `=== PLANNER CONTEXT: OPENING ===
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
 ${structureSection}OPENING STATE SNAPSHOT:
 - globalCanon entries: ${context.globalCanon.length}

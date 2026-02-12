@@ -94,4 +94,74 @@ describe('planner continuation context section', () => {
     expect(result).toContain('OPEN NARRATIVE THREADS:\n(none)');
     expect(result).not.toContain('SCENE BEFORE LAST (full text for style continuity):');
   });
+
+  it('includes NPC agendas section when agendas are present', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedNpcAgendas: {
+        Azra: {
+          npcName: 'Azra',
+          currentGoal: 'Ensure the smuggler escapes alive',
+          leverage: 'Knows the patrol schedule',
+          fear: 'Being captured herself',
+          offScreenBehavior: 'Disabling surveillance cameras',
+        },
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('NPC AGENDAS');
+    expect(result).toContain('[Azra]');
+    expect(result).toContain('Goal: Ensure the smuggler escapes alive');
+    expect(result).toContain('Leverage: Knows the patrol schedule');
+    expect(result).toContain('Fear: Being captured herself');
+    expect(result).toContain('Off-screen: Disabling surveillance cameras');
+  });
+
+  it('omits NPC agendas section when no agendas exist', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).not.toContain('NPC AGENDAS');
+  });
 });

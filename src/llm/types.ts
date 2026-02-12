@@ -10,6 +10,7 @@ import type {
   ThreadType,
   Urgency,
 } from '../models/state/index.js';
+import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedStructureState, DeviationResult, StoryStructure } from '../models/story-arc.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 
@@ -149,6 +150,8 @@ export interface ContinuationContext {
   parentAnalystNarrativePromises?: readonly NarrativePromise[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
+  accumulatedNpcAgendas?: AccumulatedNpcAgendas;
+
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
@@ -161,6 +164,7 @@ export interface OpeningContext {
   npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
+  initialNpcAgendas?: readonly NpcAgenda[];
   pagePlan?: PagePlan;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }
@@ -394,10 +398,18 @@ export interface LorekeeperContext {
   readonly activeState: ActiveState;
   readonly structure?: StoryStructure;
   readonly accumulatedStructureState?: AccumulatedStructureState;
+  readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly ancestorSummaries: readonly AncestorSummary[];
   readonly grandparentNarrative: string | null;
   readonly previousNarrative: string;
   readonly pagePlan: PagePlan;
+}
+
+// ── Agenda Resolver types ──────────────────────────────────────────
+
+export interface AgendaResolverResult {
+  readonly updatedAgendas: readonly NpcAgenda[];
+  readonly rawResponse: string;
 }
 
 export class LLMError extends Error {

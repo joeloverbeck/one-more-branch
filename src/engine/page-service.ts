@@ -3,8 +3,9 @@ import {
   generateOpeningPage,
   generateLorekeeperBible,
   mergePageWriterAndReconciledStateWithAnalystResults,
+  generateAgendaResolver,
 } from '../llm';
-import type { GenerationPipelineMetrics, LorekeeperContext, StoryBible } from '../llm';
+import type { AgendaResolverResult, GenerationPipelineMetrics, LorekeeperContext, StoryBible } from '../llm';
 import { logger } from '../logging/index.js';
 import { emitGenerationStage } from './generation-pipeline-helpers.js';
 import { randomUUID } from 'node:crypto';
@@ -72,6 +73,7 @@ export async function generateFirstPage(
         npcs: story.npcs,
         startingSituation: story.startingSituation,
         structure: story.structure ?? undefined,
+        initialNpcAgendas: story.initialNpcAgendas,
         globalCanon: story.globalCanon,
         globalCharacterCanon: story.globalCharacterCanon,
         accumulatedInventory: [],
@@ -89,6 +91,7 @@ export async function generateFirstPage(
             npcs: story.npcs,
             startingSituation: story.startingSituation,
             structure: story.structure ?? undefined,
+            initialNpcAgendas: story.initialNpcAgendas,
             pagePlan,
             reconciliationFailureReasons: failureReasons,
           },
@@ -116,6 +119,7 @@ export async function generateFirstPage(
   const page = buildFirstPage(result, {
     structureState: initialStructureState,
     structureVersionId: latestVersion?.id ?? null,
+    initialNpcAgendas: story.initialNpcAgendas,
   });
 
   const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
@@ -199,6 +203,7 @@ export async function generateNextPage(
           activeState: continuationContext.activeState,
           structure: continuationContext.structure,
           accumulatedStructureState: continuationContext.accumulatedStructureState,
+          accumulatedNpcAgendas: continuationContext.accumulatedNpcAgendas,
           ancestorSummaries: continuationContext.ancestorSummaries,
           grandparentNarrative: continuationContext.grandparentNarrative,
           previousNarrative: continuationContext.previousNarrative,
@@ -327,6 +332,30 @@ export async function generateNextPage(
     pacingIssueReason: result.pacingIssueReason ?? '',
   });
 
+  // Agenda resolver (only when NPCs exist)
+  let agendaResolverResult: AgendaResolverResult | null = null;
+  if (story.npcs && story.npcs.length > 0) {
+    try {
+      emitGenerationStage(onGenerationStage, 'RESOLVING_AGENDAS', 'started', 1);
+      agendaResolverResult = await generateAgendaResolver(
+        {
+          narrative: writerResult.narrative,
+          sceneSummary: writerResult.sceneSummary,
+          npcs: story.npcs,
+          currentAgendas: parentState.accumulatedNpcAgendas,
+          structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
+          accumulatedStructureState: parentState.structureState,
+          activeState: parentState.accumulatedActiveState,
+        },
+        story.npcs,
+        { apiKey },
+      );
+      emitGenerationStage(onGenerationStage, 'RESOLVING_AGENDAS', 'completed', 1);
+    } catch (error) {
+      logger.warn('Agenda resolver failed, continuing without agenda updates', { error });
+    }
+  }
+
   const parentAnalystPromises = parentPage.analystResult?.narrativePromises ?? [];
 
   const page = buildContinuationPage(result, {
@@ -344,6 +373,8 @@ export async function generateNextPage(
     parentThreadAges: parentPage.threadAges,
     parentInheritedNarrativePromises: parentPage.inheritedNarrativePromises,
     parentAnalystNarrativePromises: parentAnalystPromises,
+    parentAccumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
+    npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
   });
 
   const updatedStory = updateStoryWithAllCanon(

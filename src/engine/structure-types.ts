@@ -1,4 +1,5 @@
 import type { AccumulatedStructureState } from '../models/story-arc';
+import type { NpcAgenda } from '../models/state/npc-agenda';
 
 /**
  * Result of advancing the structure state machine.
@@ -29,5 +30,6 @@ export interface StructureGenerationResult {
       role: string;
     }>;
   }>;
+  initialNpcAgendas?: NpcAgenda[];
   rawResponse: string;
 }

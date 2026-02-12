@@ -31,6 +31,8 @@ import {
   isActiveState,
   isActiveStateChanges,
 } from './state/index.js';
+import type { NpcAgenda, AccumulatedNpcAgendas } from './state/npc-agenda';
+import { createEmptyAccumulatedNpcAgendas, applyAgendaUpdates } from './state/npc-agenda';
 
 export interface Page {
   readonly id: PageId;
@@ -52,6 +54,8 @@ export interface Page {
   readonly analystResult: AnalystResult | null;
   readonly threadAges: Readonly<Record<string, number>>;
   readonly inheritedNarrativePromises: readonly NarrativePromise[];
+  readonly npcAgendaUpdates: readonly NpcAgenda[];
+  readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -80,6 +84,8 @@ export interface CreatePageData {
   analystResult?: AnalystResult | null;
   threadAges?: Readonly<Record<string, number>>;
   inheritedNarrativePromises?: readonly NarrativePromise[];
+  npcAgendaUpdates?: readonly NpcAgenda[];
+  parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -130,6 +136,11 @@ export function createPage(data: CreatePageData): Page {
     analystResult: data.analystResult ?? null,
     threadAges: data.threadAges ?? {},
     inheritedNarrativePromises: data.inheritedNarrativePromises ?? [],
+    npcAgendaUpdates: data.npcAgendaUpdates ?? [],
+    accumulatedNpcAgendas: applyAgendaUpdates(
+      data.parentAccumulatedNpcAgendas ?? createEmptyAccumulatedNpcAgendas(),
+      data.npcAgendaUpdates ?? [],
+    ),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,
