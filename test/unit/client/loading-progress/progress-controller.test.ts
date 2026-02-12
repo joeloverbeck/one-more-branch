@@ -108,8 +108,8 @@ describe('loading progress controller', () => {
         stageValues.push(value);
         originalDescriptor!.set!.call(this, value);
       },
-      get() {
-        return originalDescriptor!.get!.call(this);
+      get(): string {
+        return originalDescriptor!.get!.call(this) as string;
       },
       configurable: true,
     });

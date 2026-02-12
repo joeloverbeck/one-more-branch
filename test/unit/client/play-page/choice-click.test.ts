@@ -46,7 +46,7 @@ describe('play page choice click handler', () => {
     button.click();
   }
 
-  function makeSuccessfulChoiceResponse(overrides: Record<string, unknown> = {}) {
+  function makeSuccessfulChoiceResponse(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     return {
       page: {
         id: 2,
@@ -79,12 +79,12 @@ describe('play page choice click handler', () => {
     await jest.runAllTimersAsync();
 
     // Find the POST call (not the progress poll)
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) => call[1]?.method === 'POST'
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => call[1]?.method === 'POST'
     );
     expect(postCall).toBeDefined();
 
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.pageId).toBe(3);
     expect(body.choiceIndex).toBe(0);
     expect(body.progressId).toBe('test-uuid-1234');
@@ -258,10 +258,10 @@ describe('play page choice click handler', () => {
     clickChoice(0);
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) => call[1]?.method === 'POST'
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => call[1]?.method === 'POST'
     );
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.suggestedProtagonistSpeech).toBe('I choose courage!');
   });
 
@@ -275,10 +275,10 @@ describe('play page choice click handler', () => {
     clickChoice(0);
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) => call[1]?.method === 'POST'
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => call[1]?.method === 'POST'
     );
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.suggestedProtagonistSpeech).toBeUndefined();
   });
 

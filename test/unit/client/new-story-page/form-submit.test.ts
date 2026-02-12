@@ -75,13 +75,12 @@ describe('new story form submit', () => {
     submitForm();
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) =>
-        typeof call[0] === 'string' && call[0].includes('create-ajax')
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
     );
     expect(postCall).toBeDefined();
 
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.title).toBe('My Test Story');
     expect(body.characterConcept).toBe('A brave warrior with a dark past');
     expect(body.worldbuilding).toBe('A fantasy realm');
@@ -199,11 +198,10 @@ describe('new story form submit', () => {
     submitForm();
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) =>
-        typeof call[0] === 'string' && call[0].includes('create-ajax')
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
     );
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.npcs).toEqual([{ name: 'Gandalf', description: 'A wise wizard' }]);
   });
 });

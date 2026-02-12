@@ -33,7 +33,7 @@ describe('open threads panel', () => {
   function makeChoiceResponseWithThreads(
     threads: Array<{ id: string; text: string; threadType: string; urgency: string }>,
     overflowSummary: string | null = null
-  ) {
+  ): Record<string, unknown> {
     return {
       page: {
         id: 2,
@@ -111,6 +111,76 @@ describe('open threads panel', () => {
     const summary = panel!.querySelector('#open-threads-overflow-summary');
     expect(summary).not.toBeNull();
     expect(summary?.textContent).toContain('Not shown:');
+  });
+
+  it('builds overflow summary with correct urgency counts', async () => {
+    document.body.innerHTML = buildPlayPageHtml();
+    loadAppAndInit();
+
+    // 9 threads: 4 HIGH, 3 MEDIUM, 2 LOW
+    // After sort: 4 HIGH, 3 MEDIUM, 2 LOW
+    // Visible: first 6 (4 HIGH + 2 MEDIUM)
+    // Hidden: 1 MEDIUM + 2 LOW
+    const threads = [
+      ...Array.from({ length: 4 }, (_, i) => ({
+        id: `th-h${i}`, text: `High ${i}`, threadType: 'DANGER', urgency: 'HIGH',
+      })),
+      ...Array.from({ length: 3 }, (_, i) => ({
+        id: `th-m${i}`, text: `Med ${i}`, threadType: 'QUEST', urgency: 'MEDIUM',
+      })),
+      ...Array.from({ length: 2 }, (_, i) => ({
+        id: `th-l${i}`, text: `Low ${i}`, threadType: 'MYSTERY', urgency: 'LOW',
+      })),
+    ];
+
+    await clickChoiceAndResolve(makeChoiceResponseWithThreads(threads));
+
+    const summary = document.getElementById('open-threads-overflow-summary');
+    expect(summary).not.toBeNull();
+    // Hidden: 1 MEDIUM + 2 LOW
+    expect(summary!.textContent).toBe('Not shown: 1 (medium), 2 (low)');
+  });
+
+  it('uses server-provided overflow summary when present', async () => {
+    document.body.innerHTML = buildPlayPageHtml();
+    loadAppAndInit();
+
+    const threads = Array.from({ length: 8 }, (_, i) => ({
+      id: `th-${i + 1}`,
+      text: `Thread ${i + 1}`,
+      threadType: 'QUEST',
+      urgency: 'HIGH',
+    }));
+
+    await clickChoiceAndResolve(
+      makeChoiceResponseWithThreads(threads, 'Custom summary from server')
+    );
+
+    const summary = document.getElementById('open-threads-overflow-summary');
+    expect(summary).not.toBeNull();
+    expect(summary!.textContent).toBe('Custom summary from server');
+  });
+
+  it('removes overflow summary when thread count drops below limit', async () => {
+    document.body.innerHTML = buildPlayPageHtml();
+    loadAppAndInit();
+
+    // First: render with overflow
+    const manyThreads = Array.from({ length: 8 }, (_, i) => ({
+      id: `th-${i + 1}`,
+      text: `Thread ${i + 1}`,
+      threadType: 'QUEST',
+      urgency: 'HIGH',
+    }));
+    await clickChoiceAndResolve(makeChoiceResponseWithThreads(manyThreads));
+    expect(document.getElementById('open-threads-overflow-summary')).not.toBeNull();
+
+    // Second: render with fewer threads (no overflow)
+    const fewThreads = [
+      { id: 'th-1', text: 'Only thread', threadType: 'QUEST', urgency: 'HIGH' },
+    ];
+    await clickChoiceAndResolve(makeChoiceResponseWithThreads(fewThreads));
+    expect(document.getElementById('open-threads-overflow-summary')).toBeNull();
   });
 
   it('removes panel when threads array is empty', async () => {

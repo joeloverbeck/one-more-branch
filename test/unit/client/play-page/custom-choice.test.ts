@@ -71,13 +71,12 @@ describe('custom choice input', () => {
     getAddButton().click();
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) =>
-        typeof call[0] === 'string' && call[0].includes('custom-choice')
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('custom-choice')
     );
     expect(postCall).toBeDefined();
 
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.pageId).toBe(3);
     expect(body.choiceText).toBe('Run away screaming');
     expect(body.choiceType).toBe('TACTICAL_APPROACH');
@@ -102,9 +101,8 @@ describe('custom choice input', () => {
     );
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) =>
-        typeof call[0] === 'string' && call[0].includes('custom-choice')
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('custom-choice')
     );
     expect(postCall).toBeDefined();
   });
@@ -202,11 +200,10 @@ describe('custom choice input', () => {
     getAddButton().click();
     await jest.runAllTimersAsync();
 
-    const postCall = fetchMock.mock.calls.find(
-      (call: [string, RequestInit?]) =>
-        typeof call[0] === 'string' && call[0].includes('custom-choice')
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('custom-choice')
     );
-    const body = JSON.parse(postCall![1]!.body as string);
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.choiceType).toBe('MORAL_DILEMMA');
     expect(body.primaryDelta).toBe('GOAL_SHIFT');
   });

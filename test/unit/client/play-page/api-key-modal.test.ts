@@ -34,7 +34,7 @@ describe('API key modal', () => {
     loadAppAndInit();
   }
 
-  function makeSuccessResponse() {
+  function makeSuccessResponse(): Response {
     return mockJsonResponse({
       page: {
         id: 2,

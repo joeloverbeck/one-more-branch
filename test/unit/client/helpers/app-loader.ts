@@ -14,6 +14,7 @@ const APP_JS_SOURCE = fs.readFileSync(
 export function loadAppAndInit(): void {
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const run = new Function(APP_JS_SOURCE);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   run();
   document.dispatchEvent(new Event('DOMContentLoaded'));
 }
@@ -25,6 +26,7 @@ export function loadAppAndInit(): void {
 export function loadAppSource(): void {
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const run = new Function(APP_JS_SOURCE);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   run();
 }
 
