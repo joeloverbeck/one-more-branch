@@ -1,5 +1,7 @@
 # Spec: Dramatic Question Guideline and Priority Stack
 
+**Status**: COMPLETED
+
 ## Overview
 
 Add DRAMATIC COHERENCE as the #0 choice guideline in STRICT_CHOICE_GUIDELINES and add a priority stack footer to writer REQUIREMENTS in both opening and continuation prompts. This gives the writer clear prioritization when constraints conflict.
@@ -104,3 +106,15 @@ Note: Item #1 differs between opening (no player choice to react to) and continu
 3. Read continuation prompt output and confirm priority stack is present with continuation-specific item #1
 4. Confirm existing choice requirements (1-7) are unchanged in content
 5. Run `npm run typecheck && npm test`
+
+## Outcome
+
+- **Completed**: 2026-02-12
+- **Changes**:
+  - `src/llm/prompts/system-prompt-builder.ts`: Added item 0 (DRAMATIC COHERENCE) to STRICT_CHOICE_GUIDELINES
+  - `src/llm/prompts/continuation-prompt.ts`: Added WHEN IN CONFLICT priority stack after REMINDER
+  - `src/llm/prompts/opening-prompt.ts`: Added WHEN IN CONFLICT priority stack after REMINDER
+  - `prompts/continuation-prompt.md`: Updated docs to match source
+  - `prompts/opening-prompt.md`: Updated docs to match source
+- **Deviations**: None
+- **Verification**: `npm run typecheck` clean, 131 test suites / 1570 tests all passing

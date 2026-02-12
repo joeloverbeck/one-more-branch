@@ -105,6 +105,7 @@ CHOICE REQUIREMENTS:
 Each choice is a structured object with text, choiceType, and primaryDelta.
 Each choice should satisfy all of the following:
 
+0. DRAMATIC COHERENCE: All choices must be natural answers to the same immediate dramatic question raised by the scene's final moment. If the planner provided a dramaticQuestion, ground your choices in it.
 1. IN-CHARACTER: The protagonist would genuinely consider this action given their personality and situation
 2. CONSEQUENTIAL: The choice meaningfully changes the story direction
 3. DIVERGENT: Each choice MUST have a different choiceType OR primaryDelta from all other choices
@@ -225,6 +226,13 @@ REQUIREMENTS (follow all):
 6. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 
 REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
+
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. Ground the protagonist in the starting situation with immediate tension
+2. Maintain consistency with established worldbuilding, tone, and character concept
+3. Choices answer the scene's dramatic question with divergent tags
+4. Prose quality: character-filtered, emotionally resonant, forward-moving
+5. sceneSummary and protagonistAffect accuracy
 ```
 
 ## JSON Response Shape

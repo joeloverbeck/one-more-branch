@@ -36,6 +36,7 @@ CHOICE REQUIREMENTS:
 Each choice is a structured object with text, choiceType, and primaryDelta.
 Each choice should satisfy all of the following:
 
+0. DRAMATIC COHERENCE: All choices must be natural answers to the same immediate dramatic question raised by the scene's final moment. If the planner provided a dramaticQuestion, ground your choices in it.
 1. IN-CHARACTER: The protagonist would genuinely consider this action given their personality and situation
 2. CONSEQUENTIAL: The choice meaningfully changes the story direction
 3. DIVERGENT: Each choice MUST have a different choiceType OR primaryDelta from all other choices

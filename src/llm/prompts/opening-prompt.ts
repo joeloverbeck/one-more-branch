@@ -100,7 +100,14 @@ ${structureSection}${plannerSection}${reconciliationRetrySection}REQUIREMENTS (f
 5. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
 6. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 
-REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.`;
+REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
+
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. Ground the protagonist in the starting situation with immediate tension
+2. Maintain consistency with established worldbuilding, tone, and character concept
+3. Choices answer the scene's dramatic question with divergent tags
+4. Prose quality: character-filtered, emotionally resonant, forward-moving
+5. sceneSummary and protagonistAffect accuracy`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildOpeningSystemPrompt() },
