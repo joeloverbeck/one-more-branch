@@ -201,10 +201,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             required: ['hook', 'choiceType', 'primaryDelta'],
             additionalProperties: false,
           },
-          minItems: 2,
-          maxItems: 4,
           description:
-            'Proposed choice intents for the writer. Each intent suggests a hook, choiceType, and primaryDelta. The writer may adjust these if the narrative takes an unexpected turn.',
+            'Array of 2-4 proposed choice intents for the writer. Each intent suggests a hook, choiceType, and primaryDelta. The writer may adjust these if the narrative takes an unexpected turn.',
         },
       },
       required: [

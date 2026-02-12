@@ -20,6 +20,13 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
     expect(schema.additionalProperties).toBe(false);
   });
 
+  it('should not use minItems > 1 or maxItems (unsupported by Anthropic)', () => {
+    const schemaStr = JSON.stringify(PAGE_PLANNER_GENERATION_SCHEMA);
+    // Anthropic only supports minItems: 0 or 1
+    expect(schemaStr).not.toMatch(/"minItems":\s*[2-9]/);
+    expect(schemaStr).not.toMatch(/"maxItems"/);
+  });
+
   it('defines required stateIntents categories and thread enums', () => {
     const schema = PAGE_PLANNER_GENERATION_SCHEMA.json_schema.schema as {
       properties: Record<string, unknown>;
