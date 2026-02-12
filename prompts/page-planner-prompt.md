@@ -227,6 +227,14 @@ CANONICAL THREAD PHRASING TEMPLATES:
 - RESOURCE: "Need resource: <item/asset>; success when <acquired or secured>"
 - DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"
 
+THREAD URGENCY RUBRIC:
+- Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH.
+- HIGH only when the loop is time-critical in the next 1-2 scenes OR failure has severe/irreversible consequences.
+- LOW only when the loop is optional, long-horizon, and delaying it this page has minimal immediate cost.
+- Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH).
+- If adding a thread that continues or refines an existing unresolved loop, keep the same urgency unless this planned scene explicitly escalates or de-escalates stakes.
+- Keep HIGH rare: add at most one new HIGH thread per page unless multiple independent crises are explicitly active.
+
 QUALITY BAR:
 - Keep intents concrete and testable.
 - Prefer minimal, meaningful mutations over speculative churn.
@@ -235,6 +243,10 @@ QUALITY BAR:
 REMOVAL SELF-CHECK (before you finalize JSON):
 - For each ID in removeIds/resolveIds, confirm the planned scene includes a concrete event that ends or invalidates that exact entry.
 - If no explicit ending/invalidation event exists in the planned scene, do not remove/resolve that ID.
+
+URGENCY SELF-CHECK (before you finalize JSON):
+- For each new HIGH thread, verify concrete urgency cues in sceneIntent/continuityAnchors (deadline, active pursuit, imminent harm, or collapsing opportunity).
+- If those cues are absent, lower urgency to MEDIUM or LOW.
 
 Return JSON only.
 ```

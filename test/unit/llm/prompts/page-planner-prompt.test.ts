@@ -124,4 +124,16 @@ describe('buildPagePlannerPrompt', () => {
       'DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"',
     );
   });
+
+  it('includes urgency rubric guidance in planner rules', () => {
+    const messages = buildPagePlannerPrompt(openingContext);
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('THREAD URGENCY RUBRIC:');
+    expect(user).toContain('Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH.');
+    expect(user).toContain(
+      'Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH).',
+    );
+    expect(user).toContain('URGENCY SELF-CHECK (before you finalize JSON):');
+  });
 });

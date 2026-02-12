@@ -45,6 +45,21 @@ describe('planner state-intent rules sections', () => {
       expect(PLANNER_STATE_INTENT_RULES).toContain('REMOVAL SELF-CHECK');
     });
 
+    it('defines an explicit urgency rubric and self-check for new threads', () => {
+      expect(PLANNER_STATE_INTENT_RULES).toContain('THREAD URGENCY RUBRIC:');
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH',
+      );
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH)',
+      );
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'Keep HIGH rare: add at most one new HIGH thread per page unless multiple independent crises are explicitly active',
+      );
+      expect(PLANNER_STATE_INTENT_RULES).toContain('URGENCY SELF-CHECK (before you finalize JSON):');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('For each new HIGH thread, verify concrete urgency cues');
+    });
+
     it('does not include inline OUTPUT FORMAT scaffolding', () => {
       expect(PLANNER_STATE_INTENT_RULES).not.toContain('OUTPUT FORMAT:');
       expect(PLANNER_STATE_INTENT_RULES).not.toContain('"sceneIntent"');
