@@ -1,9 +1,11 @@
 import { logger, logPrompt } from '../logging/index.js';
 import { generateAnalystWithFallback } from './analyst-generation.js';
+import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { resolvePromptOptions } from './options.js';
 import { generatePlannerWithFallback } from './planner-generation.js';
 import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
+import { buildLorekeeperPrompt } from './prompts/lorekeeper-prompt.js';
 import { buildContinuationPrompt, buildOpeningPrompt, buildPagePlannerPrompt } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import {
@@ -11,6 +13,8 @@ import {
   type AnalystResult,
   type ContinuationContext,
   type GenerationOptions,
+  type LorekeeperContext,
+  type LorekeeperResult,
   type OpeningContext,
   type PagePlan,
   type PagePlanContext,
@@ -74,6 +78,18 @@ export async function generatePagePlan(
   logPrompt(logger, 'planner', messages);
 
   return withRetry(() => generatePlannerWithFallback(messages, options));
+}
+
+export async function generateLorekeeperBible(
+  context: LorekeeperContext,
+  options: GenerationOptions,
+): Promise<LorekeeperResult> {
+  const messages = buildLorekeeperPrompt(context);
+
+  logPrompt(logger, 'lorekeeper', messages);
+
+  const lorekeeperOptions = { ...options, temperature: 0.3, maxTokens: 2048 };
+  return withRetry(() => generateLorekeeperWithFallback(messages, lorekeeperOptions));
 }
 
 export async function validateApiKey(apiKey: string): Promise<boolean> {

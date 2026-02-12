@@ -80,6 +80,7 @@ export async function generateWithReconciliationRetry({
       plannerValidationIssueCount += countValidationIssues(error);
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
+        0,
         writerDurationMs,
         reconcilerDurationMs,
         plannerValidationIssueCount,
@@ -122,6 +123,7 @@ export async function generateWithReconciliationRetry({
       writerValidationIssueCount += countValidationIssues(error);
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
+        0,
         writerDurationMs,
         reconcilerDurationMs,
         plannerValidationIssueCount,
@@ -161,6 +163,7 @@ export async function generateWithReconciliationRetry({
       reconcilerDurationMs += durationMs;
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
+        0,
         writerDurationMs,
         reconcilerDurationMs,
         plannerValidationIssueCount,
@@ -191,6 +194,7 @@ export async function generateWithReconciliationRetry({
       });
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
+        0,
         writerDurationMs,
         reconcilerDurationMs,
         plannerValidationIssueCount,
@@ -231,6 +235,7 @@ export async function generateWithReconciliationRetry({
     if (attempt === 2) {
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
+        0,
         writerDurationMs,
         reconcilerDurationMs,
         plannerValidationIssueCount,

@@ -4,6 +4,29 @@
 - System prompt source: `buildContinuationSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/writer-schema.ts`
 
+## Story Bible Conditional Behavior
+
+When a `storyBible` is present on the context (i.e., the Lorekeeper has curated context for this scene), the following sections are **replaced by the Story Bible section** and suppressed from the user prompt:
+
+- **WORLDBUILDING** - replaced by `storyBible.sceneWorldContext`
+- **NPCS** - replaced by `storyBible.relevantCharacters`
+- **ESTABLISHED WORLD FACTS** - replaced by `storyBible.relevantCanonFacts`
+- **CHARACTER INFORMATION** - subsumed by `storyBible.relevantCharacters[].relevantProfile`
+- **NPC CURRENT STATE** - subsumed by `storyBible.relevantCharacters[].currentState`
+- **EARLIER SCENE SUMMARIES** - replaced by `storyBible.relevantHistory`
+
+The following sections are **always included** regardless of Story Bible presence (they are small and always relevant):
+
+- Active state (location, threats, constraints, threads)
+- Inventory and health
+- Protagonist affect
+- Story structure
+- Planner guidance and choice intents
+- Grandparent and parent full narrative (voice continuity)
+- Player's choice and suggested speech
+
+When `storyBible` is absent (opening pages, pre-feature pages), all original sections appear as documented below.
+
 ## Messages Sent To Model
 
 ### 1) System Message
@@ -202,12 +225,12 @@ CHOICE FORMATTING EXAMPLE:
 CHARACTER CONCEPT:
 {{characterConcept}}
 
-{{#if worldbuilding}}
+{{#if !storyBible && worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
 {{/if}}
 
-{{#if npcs.length}}
+{{#if !storyBible && npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
 
@@ -274,12 +297,34 @@ This page should advance the narrative toward resolving the current beat or deli
 Do not repeat setup or exposition -- push the story forward with action, revelation, or irreversible change.
 {{/if}}
 
-{{#if globalCanon.length > 0}}
+{{#if storyBible}}
+=== STORY BIBLE (curated for this scene) ===
+
+SCENE WORLD CONTEXT:
+{{storyBible.sceneWorldContext}}
+
+SCENE CHARACTERS:
+{{storyBible.relevantCharacters rendered as:
+[name] (role)
+  Profile: relevantProfile
+  Speech: speechPatterns
+  Relationship to protagonist: protagonistRelationship
+  Inter-character dynamics: interCharacterDynamics (if non-empty)
+  Current state: currentState}}
+
+RELEVANT CANON FACTS:
+{{storyBible.relevantCanonFacts as bullet list}}
+
+RELEVANT HISTORY:
+{{storyBible.relevantHistory}}
+{{/if}}
+
+{{#if !storyBible && globalCanon.length > 0}}
 ESTABLISHED WORLD FACTS:
 {{globalCanon as bullet list}}
 {{/if}}
 
-{{#if globalCharacterCanon has entries}}
+{{#if !storyBible && globalCharacterCanon has entries}}
 CHARACTER INFORMATION (permanent traits):
 {{globalCharacterCanon rendered as:
 [Character Name]
@@ -287,7 +332,7 @@ CHARACTER INFORMATION (permanent traits):
 - fact}}
 {{/if}}
 
-{{#if accumulatedCharacterState has entries}}
+{{#if !storyBible && accumulatedCharacterState has entries}}
 NPC CURRENT STATE (branch-specific events):
 {{accumulatedCharacterState rendered as:
 [Character Name]
@@ -335,7 +380,7 @@ PROTAGONIST'S CURRENT EMOTIONAL STATE:
 {{formatted parentProtagonistAffect}}
 {{/if}}
 
-{{#if ancestorSummaries.length > 0}}
+{{#if !storyBible && ancestorSummaries.length > 0}}
 EARLIER SCENE SUMMARIES (for factual/thematic continuity):
 {{ancestorSummaries rendered as "[Scene n] summary" oldest-first}}
 {{/if}}

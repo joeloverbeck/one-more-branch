@@ -76,6 +76,7 @@ export interface ReconciliationFailureReason {
 
 export interface GenerationPipelineMetrics {
   plannerDurationMs: number;
+  lorekeeperDurationMs: number;
   writerDurationMs: number;
   reconcilerDurationMs: number;
   plannerValidationIssueCount: number;
@@ -137,6 +138,7 @@ export interface ContinuationContext {
   momentumTrajectory?: MomentumTrajectory;
 
   pagePlan?: PagePlan;
+  storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }
 
@@ -340,6 +342,46 @@ export interface AnalystContext {
   structure: StoryStructure;
   accumulatedStructureState: AccumulatedStructureState;
   activeState: ActiveState;
+}
+
+// ── Lorekeeper types ────────────────────────────────────────────────
+
+export interface StoryBibleCharacter {
+  readonly name: string;
+  readonly role: string;
+  readonly relevantProfile: string;
+  readonly speechPatterns: string;
+  readonly protagonistRelationship: string;
+  readonly interCharacterDynamics?: string;
+  readonly currentState: string;
+}
+
+export interface StoryBible {
+  readonly sceneWorldContext: string;
+  readonly relevantCharacters: readonly StoryBibleCharacter[];
+  readonly relevantCanonFacts: readonly string[];
+  readonly relevantHistory: string;
+}
+
+export interface LorekeeperResult extends StoryBible {
+  readonly rawResponse: string;
+}
+
+export interface LorekeeperContext {
+  readonly characterConcept: string;
+  readonly worldbuilding: string;
+  readonly tone: string;
+  readonly npcs?: readonly Npc[];
+  readonly globalCanon: readonly string[];
+  readonly globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
+  readonly accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;
+  readonly activeState: ActiveState;
+  readonly structure?: StoryStructure;
+  readonly accumulatedStructureState?: AccumulatedStructureState;
+  readonly ancestorSummaries: readonly AncestorSummary[];
+  readonly grandparentNarrative: string | null;
+  readonly previousNarrative: string;
+  readonly pagePlan: PagePlan;
 }
 
 export class LLMError extends Error {

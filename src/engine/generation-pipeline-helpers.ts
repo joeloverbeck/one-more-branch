@@ -40,6 +40,7 @@ export function resolveWriterStage(mode: PagePlanContext['mode']): GenerationSta
 
 export function createSuccessPipelineMetrics(
   plannerDurationMs: number,
+  lorekeeperDurationMs: number,
   writerDurationMs: number,
   reconcilerDurationMs: number,
   plannerValidationIssueCount: number,
@@ -50,6 +51,7 @@ export function createSuccessPipelineMetrics(
 ): GenerationPipelineMetrics {
   return {
     plannerDurationMs,
+    lorekeeperDurationMs,
     writerDurationMs,
     reconcilerDurationMs,
     plannerValidationIssueCount,

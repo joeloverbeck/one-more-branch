@@ -13,7 +13,7 @@ import {
   parsePageId,
   StructureVersionId,
 } from '../models';
-import type { AnalystResult, PageWriterResult } from '../llm/types';
+import type { AnalystResult, PageWriterResult, StoryBible } from '../llm/types';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
@@ -60,6 +60,7 @@ export interface ContinuationPageBuildContext {
   readonly parentAccumulatedCharacterState: AccumulatedCharacterState;
   readonly structureState: AccumulatedStructureState;
   readonly structureVersionId: StructureVersionId | null;
+  readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
 }
 
@@ -142,6 +143,7 @@ export function buildContinuationPage(
     parentAccumulatedCharacterState: context.parentAccumulatedCharacterState,
     parentAccumulatedStructureState: context.structureState,
     structureVersionId: context.structureVersionId,
+    storyBible: context.storyBible,
     analystResult: context.analystResult,
   });
 }

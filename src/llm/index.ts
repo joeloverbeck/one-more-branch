@@ -22,6 +22,10 @@ export type {
   WriterResult,
   AnalystResult,
   AnalystContext,
+  StoryBible,
+  StoryBibleCharacter,
+  LorekeeperResult,
+  LorekeeperContext,
 } from './types.js';
 
 export { LLMError } from './types.js';
@@ -38,8 +42,10 @@ export type { StructureGenerationResult } from './structure-generator.js';
 export {
   WRITER_GENERATION_SCHEMA,
   ANALYST_SCHEMA,
+  LOREKEEPER_SCHEMA,
   validateWriterResponse,
   validateAnalystResponse,
+  validateLorekeeperResponse,
   isStructuredOutputNotSupported,
 } from './schemas/index.js';
 
@@ -48,6 +54,7 @@ export {
   generatePageWriterOutput,
   generateWriterPage,
   generateAnalystEvaluation,
+  generateLorekeeperBible,
   generatePagePlan,
   validateApiKey,
 } from './client.js';

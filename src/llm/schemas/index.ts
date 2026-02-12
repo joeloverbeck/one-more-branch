@@ -5,4 +5,6 @@ export { PAGE_PLANNER_GENERATION_SCHEMA } from './page-planner-schema.js';
 export { validateWriterResponse } from './writer-response-transformer.js';
 export { validateAnalystResponse } from './analyst-response-transformer.js';
 export { validatePagePlannerResponse } from './page-planner-response-transformer.js';
+export { LOREKEEPER_SCHEMA } from './lorekeeper-schema.js';
+export { validateLorekeeperResponse } from './lorekeeper-response-transformer.js';
 export { isStructuredOutputNotSupported } from './error-detection.js';

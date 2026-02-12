@@ -1,9 +1,12 @@
 import {
   generatePageWriterOutput,
   generateOpeningPage,
+  generateLorekeeperBible,
   mergePageWriterAndReconciledStateWithAnalystResults,
 } from '../llm';
-import type { GenerationPipelineMetrics } from '../llm';
+import type { GenerationPipelineMetrics, LorekeeperContext, StoryBible } from '../llm';
+import { logger } from '../logging/index.js';
+import { emitGenerationStage } from './generation-pipeline-helpers.js';
 import { randomUUID } from 'node:crypto';
 import {
   createEmptyActiveState,
@@ -167,6 +170,8 @@ export async function generateNextPage(
   const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
   const removableIds = buildRemovableIds(parentState);
 
+  let lastStoryBible: StoryBible | null = null;
+
   const { writerResult, reconciliation: continuationReconciliation, metrics } =
     await generateWithReconciliationRetry({
       mode: 'continuation',
@@ -180,9 +185,64 @@ export async function generateNextPage(
         mode: 'continuation',
         reconciliationFailureReasons: failureReasons,
       }),
-      generateWriter: async (pagePlan, failureReasons) =>
-        generatePageWriterOutput(
-          { ...continuationContext, reconciliationFailureReasons: failureReasons },
+      generateWriter: async (pagePlan, failureReasons) => {
+        // Lorekeeper: curate context between planner and writer
+        emitGenerationStage(onGenerationStage, 'CURATING_CONTEXT', 'started', 1);
+        const lorekeeperContext: LorekeeperContext = {
+          characterConcept: continuationContext.characterConcept,
+          worldbuilding: continuationContext.worldbuilding,
+          tone: continuationContext.tone,
+          npcs: continuationContext.npcs,
+          globalCanon: continuationContext.globalCanon,
+          globalCharacterCanon: continuationContext.globalCharacterCanon,
+          accumulatedCharacterState: continuationContext.accumulatedCharacterState,
+          activeState: continuationContext.activeState,
+          structure: continuationContext.structure,
+          accumulatedStructureState: continuationContext.accumulatedStructureState,
+          ancestorSummaries: continuationContext.ancestorSummaries,
+          grandparentNarrative: continuationContext.grandparentNarrative,
+          previousNarrative: continuationContext.previousNarrative,
+          pagePlan,
+        };
+
+        let storyBible: StoryBible | null = null;
+        try {
+          const lorekeeperResult = await generateLorekeeperBible(lorekeeperContext, {
+            apiKey,
+            observability: {
+              storyId: story.id,
+              pageId: parentPage.id,
+              requestId,
+            },
+          });
+          storyBible = {
+            sceneWorldContext: lorekeeperResult.sceneWorldContext,
+            relevantCharacters: lorekeeperResult.relevantCharacters,
+            relevantCanonFacts: lorekeeperResult.relevantCanonFacts,
+            relevantHistory: lorekeeperResult.relevantHistory,
+          };
+          lastStoryBible = storyBible;
+          logger.info('Lorekeeper bible generated', {
+            storyId: story.id,
+            pageId: parentPage.id,
+            characterCount: storyBible.relevantCharacters.length,
+            canonFactCount: storyBible.relevantCanonFacts.length,
+          });
+        } catch (error) {
+          logger.warn('Lorekeeper failed, proceeding without story bible', {
+            storyId: story.id,
+            pageId: parentPage.id,
+            error,
+          });
+        }
+        emitGenerationStage(onGenerationStage, 'CURATING_CONTEXT', 'completed', 1);
+
+        return generatePageWriterOutput(
+          {
+            ...continuationContext,
+            storyBible: storyBible ?? undefined,
+            reconciliationFailureReasons: failureReasons,
+          },
           pagePlan,
           {
             apiKey,
@@ -193,7 +253,8 @@ export async function generateNextPage(
             },
             writerValidationContext: { removableIds },
           },
-        ),
+        );
+      },
       onGenerationStage,
     });
 
@@ -274,6 +335,7 @@ export async function generateNextPage(
     parentAccumulatedCharacterState: parentState.accumulatedCharacterState,
     structureState: newStructureState,
     structureVersionId: activeStructureVersion?.id ?? null,
+    storyBible: lastStoryBible,
     analystResult,
   });
 

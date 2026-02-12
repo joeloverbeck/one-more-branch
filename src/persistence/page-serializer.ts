@@ -13,8 +13,8 @@ import {
   parseStructureVersionId,
   parsePageId,
 } from '../models';
-import type { AnalystResult } from '../llm/types';
-import { PageFileData, AnalystResultFileData } from './page-serializer-types';
+import type { AnalystResult, StoryBible } from '../llm/types';
+import { PageFileData, AnalystResultFileData, StoryBibleFileData } from './page-serializer-types';
 import {
   structureStateToFileData,
   fileDataToStructureState,
@@ -27,6 +27,54 @@ import {
 } from './converters';
 
 export { PageFileData } from './page-serializer-types';
+
+function serializeStoryBible(
+  storyBible: StoryBible | null,
+): StoryBibleFileData | null {
+  if (!storyBible) {
+    return null;
+  }
+  return {
+    sceneWorldContext: storyBible.sceneWorldContext,
+    relevantCharacters: storyBible.relevantCharacters.map(c => ({
+      name: c.name,
+      role: c.role,
+      relevantProfile: c.relevantProfile,
+      speechPatterns: c.speechPatterns,
+      protagonistRelationship: c.protagonistRelationship,
+      ...(c.interCharacterDynamics !== undefined
+        ? { interCharacterDynamics: c.interCharacterDynamics }
+        : {}),
+      currentState: c.currentState,
+    })),
+    relevantCanonFacts: [...storyBible.relevantCanonFacts],
+    relevantHistory: storyBible.relevantHistory,
+  };
+}
+
+function deserializeStoryBible(
+  data: StoryBibleFileData | null | undefined,
+): StoryBible | null {
+  if (!data) {
+    return null;
+  }
+  return {
+    sceneWorldContext: data.sceneWorldContext,
+    relevantCharacters: data.relevantCharacters.map(c => ({
+      name: c.name,
+      role: c.role,
+      relevantProfile: c.relevantProfile,
+      speechPatterns: c.speechPatterns,
+      protagonistRelationship: c.protagonistRelationship,
+      ...(c.interCharacterDynamics !== undefined
+        ? { interCharacterDynamics: c.interCharacterDynamics }
+        : {}),
+      currentState: c.currentState,
+    })),
+    relevantCanonFacts: [...data.relevantCanonFacts],
+    relevantHistory: data.relevantHistory,
+  };
+}
 
 function serializeAnalystResult(
   analystResult: AnalystResult | null,
@@ -122,6 +170,7 @@ export function serializePage(page: Page): PageFileData {
     accumulatedStructureState: structureStateToFileData(page.accumulatedStructureState),
     protagonistAffect: protagonistAffectToFileData(page.protagonistAffect),
     structureVersionId: page.structureVersionId,
+    storyBible: serializeStoryBible(page.storyBible),
     analystResult: serializeAnalystResult(page.analystResult),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
@@ -193,6 +242,7 @@ export function deserializePage(data: PageFileData): Page {
     accumulatedStructureState,
     protagonistAffect,
     structureVersionId,
+    storyBible: deserializeStoryBible(data.storyBible),
     analystResult: deserializeAnalystResult(data.analystResult),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),

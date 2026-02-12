@@ -40,6 +40,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     },
     structureVersionId: null,
     analystResult: null,
+    storyBible: null,
     protagonistAffect: createDefaultProtagonistAffect(),
     isEnding: false,
     parentPageId: null,

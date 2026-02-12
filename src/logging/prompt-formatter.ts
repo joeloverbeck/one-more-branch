@@ -7,6 +7,7 @@ export type PromptType =
   | 'writer'
   | 'analyst'
   | 'planner'
+  | 'lorekeeper'
   | 'structure'
   | 'structure-rewrite';
 

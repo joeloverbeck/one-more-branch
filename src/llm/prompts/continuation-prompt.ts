@@ -1,6 +1,6 @@
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import { buildFewShotMessages } from '../examples.js';
-import type { ChatMessage, ContinuationContext, PromptOptions } from '../types.js';
+import type { ChatMessage, ContinuationContext, PromptOptions, StoryBible } from '../types.js';
 import { buildContinuationSystemPrompt, composeContinuationDataRules } from './system-prompt.js';
 import {
   buildProtagonistAffectSection,
@@ -12,27 +12,91 @@ import {
   buildWriterStructureContext,
 } from './continuation/index.js';
 
+function formatStoryBibleSection(bible: StoryBible): string {
+  let result = '=== STORY BIBLE (curated for this scene) ===\n\n';
+
+  if (bible.sceneWorldContext) {
+    result += `SCENE WORLD CONTEXT:\n${bible.sceneWorldContext}\n\n`;
+  }
+
+  if (bible.relevantCharacters.length > 0) {
+    result += 'SCENE CHARACTERS:\n';
+    for (const char of bible.relevantCharacters) {
+      result += `[${char.name}] (${char.role})\n`;
+      result += `  Profile: ${char.relevantProfile}\n`;
+      result += `  Speech: ${char.speechPatterns}\n`;
+      result += `  Relationship to protagonist: ${char.protagonistRelationship}\n`;
+      if (char.interCharacterDynamics) {
+        result += `  Inter-character dynamics: ${char.interCharacterDynamics}\n`;
+      }
+      result += `  Current state: ${char.currentState}\n\n`;
+    }
+  }
+
+  if (bible.relevantCanonFacts.length > 0) {
+    result += `RELEVANT CANON FACTS:\n${bible.relevantCanonFacts.map(f => `- ${f}`).join('\n')}\n\n`;
+  }
+
+  if (bible.relevantHistory) {
+    result += `RELEVANT HISTORY:\n${bible.relevantHistory}\n\n`;
+  }
+
+  return result;
+}
+
+/**
+ * Builds the scene context section for writer prompts when a Story Bible is present.
+ * Replaces ancestor summaries with the bible's relevantHistory, but keeps
+ * grandparent and parent full narrative for voice continuity.
+ */
+function buildSceneContextWithBible(
+  previousNarrative: string,
+  grandparentNarrative: string | null,
+): string {
+  let result = '';
+
+  if (grandparentNarrative) {
+    result += `SCENE BEFORE LAST (full text for style continuity):
+${grandparentNarrative}
+
+`;
+  }
+
+  result += `PREVIOUS SCENE (full text for style continuity):
+${previousNarrative}
+
+`;
+
+  return result;
+}
+
 export function buildContinuationPrompt(
   context: ContinuationContext,
   options?: PromptOptions,
 ): ChatMessage[] {
   const dataRules = composeContinuationDataRules(options);
+  const hasBible = !!context.storyBible;
 
-  const worldSection = context.worldbuilding
-    ? `WORLDBUILDING:
+  // When bible is present, these sections are replaced by the Story Bible
+  const worldSection = hasBible
+    ? ''
+    : context.worldbuilding
+      ? `WORLDBUILDING:
 ${context.worldbuilding}
 
 `
-    : '';
+      : '';
 
-  const npcsSection = context.npcs && context.npcs.length > 0
-    ? `NPCS (Available Characters):
+  const npcsSection = hasBible
+    ? ''
+    : context.npcs && context.npcs.length > 0
+      ? `NPCS (Available Characters):
 ${formatNpcsForPrompt(context.npcs)}
 
 These characters are available for use in the story. Introduce or involve them when narratively appropriate.
 
 `
-    : '';
+      : '';
 
   const structureSection = buildWriterStructureContext(
     context.structure,
@@ -79,36 +143,45 @@ ${context.reconciliationFailureReasons
 `
       : '';
 
-  const canonSection =
-    context.globalCanon.length > 0
+  // When bible is present, canon/characterCanon/characterState are subsumed
+  const canonSection = hasBible
+    ? ''
+    : context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
 ${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
 
 `
       : '';
 
-  const characterCanonEntries = Object.entries(context.globalCharacterCanon);
-  const characterCanonSection =
-    characterCanonEntries.length > 0
-      ? `CHARACTER INFORMATION (permanent traits):
-${characterCanonEntries
+  const characterCanonSection = hasBible
+    ? ''
+    : ((): string => {
+        const entries = Object.entries(context.globalCharacterCanon);
+        return entries.length > 0
+          ? `CHARACTER INFORMATION (permanent traits):
+${entries
   .map(([name, facts]) => `[${name}]\n${facts.map(fact => `- ${fact}`).join('\n')}`)
   .join('\n\n')}
 
 `
-      : '';
+          : '';
+      })();
 
-  const characterStateEntries = Object.entries(context.accumulatedCharacterState);
-  const characterStateSection =
-    characterStateEntries.length > 0
-      ? `NPC CURRENT STATE (branch-specific events):
-${characterStateEntries
+  const characterStateSection = hasBible
+    ? ''
+    : ((): string => {
+        const entries = Object.entries(context.accumulatedCharacterState);
+        return entries.length > 0
+          ? `NPC CURRENT STATE (branch-specific events):
+${entries
   .map(([name, states]) => `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`)
   .join('\n\n')}
 
 `
-      : '';
+          : '';
+      })();
 
+  // Active state is always included (small, always relevant)
   const locationSection = buildLocationSection(context.activeState);
   const threatsSection = buildThreatsSection(context.activeState);
   const constraintsSection = buildConstraintsSection(context.activeState);
@@ -135,11 +208,19 @@ ${context.accumulatedHealth.map(entry => `- [${entry.id}] ${entry.text}`).join('
 
   const protagonistAffectSection = buildProtagonistAffectSection(context.parentProtagonistAffect);
 
-  const sceneContextSection = buildSceneContextSection(
-    context.previousNarrative,
-    context.grandparentNarrative,
-    context.ancestorSummaries,
-  );
+  // When bible is present, use bible's relevantHistory instead of ancestor summaries
+  const sceneContextSection = hasBible
+    ? buildSceneContextWithBible(context.previousNarrative, context.grandparentNarrative)
+    : buildSceneContextSection(
+        context.previousNarrative,
+        context.grandparentNarrative,
+        context.ancestorSummaries,
+      );
+
+  const storyBibleSection = context.storyBible
+    ? formatStoryBibleSection(context.storyBible)
+    : '';
+
   const suggestedProtagonistSpeech = context.suggestedProtagonistSpeech?.trim();
   const suggestedProtagonistSpeechSection =
     suggestedProtagonistSpeech && suggestedProtagonistSpeech.length > 0
@@ -165,7 +246,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${structureSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next

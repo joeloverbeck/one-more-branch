@@ -2,6 +2,7 @@ import { Npc, Page, PageId, Story, StoryId } from '../models';
 
 export const GENERATION_STAGES = [
   'PLANNING_PAGE',
+  'CURATING_CONTEXT',
   'WRITING_OPENING_PAGE',
   'WRITING_CONTINUING_PAGE',
   'ANALYZING_SCENE',

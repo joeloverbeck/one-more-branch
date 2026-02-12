@@ -4,6 +4,7 @@ import {
   generatePagePlan,
   generateOpeningPage,
   generatePageWriterOutput,
+  generateLorekeeperBible,
 } from '../../../src/llm';
 import {
   createChoice,
@@ -33,6 +34,7 @@ jest.mock('../../../src/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateLorekeeperBible: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     jest.requireActual('../../../src/llm').mergePageWriterAndReconciledStateWithAnalystResults, // eslint-disable-line @typescript-eslint/no-unsafe-member-access
@@ -71,6 +73,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<
+  typeof generateLorekeeperBible
+>;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 
 const mockedStorage = storage as {
@@ -235,6 +240,13 @@ describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+    mockedGenerateLorekeeperBible.mockResolvedValue({
+      sceneWorldContext: 'Test world context',
+      relevantCharacters: [],
+      relevantCanonFacts: [],
+      relevantHistory: 'Test history',
+      rawResponse: 'raw-lorekeeper',
+    });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
       passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
     );
@@ -1029,6 +1041,8 @@ describe('page-service', () => {
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'ANALYZING_SCENE', status: 'started', attempt: 1 }],
         [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1 }],
