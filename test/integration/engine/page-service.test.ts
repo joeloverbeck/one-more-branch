@@ -1384,6 +1384,228 @@ describe('page-service integration', () => {
         expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
       );
     });
+
+    it('degrades gracefully when analyst evaluation throws', async () => {
+      const structure = buildStructure();
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} analyst-graceful-degrade`,
+        worldbuilding: 'A city of volatile magic.',
+        tone: 'dark fantasy',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The ritual circle pulses with unstable energy.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Channel the energy'), createChoice('Disrupt the circle')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockRejectedValue(new Error('Analyst API timeout'));
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      // Page is still generated despite analyst failure
+      expect(page.narrativeText).toBe('The whispers lead you deeper into the maze of alleys.');
+      expect(page.choices).toHaveLength(2);
+
+      // Beat should NOT be concluded (no analyst data)
+      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'active',
+      });
+      expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
+        expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
+      );
+
+      // No structure rewrite should occur
+      expect(page.structureVersionId).toBe(storyWithStructure.structureVersions?.[0]?.id);
+
+      // Graceful degradation should log a warning
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Analyst evaluation failed, continuing with defaults',
+        expect.objectContaining({ error: expect.any(Error) }),
+      );
+    });
+
+    it('applies pacing nudge from analyst recommendation', async () => {
+      const structure = buildStructure();
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} pacing-nudge`,
+        worldbuilding: 'A city of slow revelations.',
+        tone: 'deliberate mystery',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The investigation drags through another uneventful alley.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Check the next alley'), createChoice('Return to the plaza')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          recommendedAction: 'nudge',
+          pacingIssueDetected: true,
+          pacingIssueReason: 'scene dragging',
+        }),
+      );
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      expect(page.accumulatedStructureState.pacingNudge).toBe('scene dragging');
+    });
+
+    it('defers pacing rewrite and logs warning instead of rewriting', async () => {
+      const structure = buildStructure();
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} pacing-rewrite-deferred`,
+        worldbuilding: 'A city of overextended arcs.',
+        tone: 'epic saga',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Another exhausting day of negotiations.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Push through'), createChoice('Take a break')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          recommendedAction: 'rewrite',
+          pacingIssueDetected: true,
+          pacingIssueReason: 'over budget',
+        }),
+      );
+
+      const { page, updatedStory } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      // Pacing nudge should be null (rewrite is deferred, not applied)
+      expect(page.accumulatedStructureState.pacingNudge).toBeNull();
+
+      // No structure rewrite should occur (only deviation triggers rewrite)
+      expect(updatedStory.structureVersions).toHaveLength(1);
+
+      // Should log a warning about deferred rewrite
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Pacing issue detected: rewrite recommended (deferred)',
+        expect.objectContaining({
+          pacingIssueReason: 'over budget',
+        }),
+      );
+    });
+
+    it('skips pacing logic when deviation is detected', async () => {
+      const structure = buildStructure();
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} pacing-skipped-on-deviation`,
+        worldbuilding: 'A world of betrayal.',
+        tone: 'dramatic',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The alliance fractures.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Betray the group'), createChoice('Stay loyal')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          deviationDetected: true,
+          deviationReason: 'Betrayal breaks trust arc.',
+          invalidatedBeatIds: ['1.2'],
+          narrativeSummary: 'The protagonist betrayed the group.',
+          recommendedAction: 'nudge',
+          pacingIssueDetected: true,
+          pacingIssueReason: 'scene moving too slowly',
+        }),
+      );
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      // Pacing nudge should be null because deviation takes priority
+      // (pacing logic is skipped when deviationInfo is present)
+      expect(page.accumulatedStructureState.pacingNudge).toBeNull();
+    });
+  });
+
+  describe('generateFirstPage integration', () => {
+    it('propagates planner failure with pipeline metrics logging', async () => {
+      const baseStory = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} planner-failure-propagation`,
+        worldbuilding: 'A world of failed plans.',
+        tone: 'grim',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const plannerError = new LLMError('Planner schema validation failed', 'VALIDATION_ERROR', false, {
+        ruleKeys: ['planner.invalid_schema'],
+        validationIssues: [{ ruleKey: 'planner.invalid_schema', fieldPath: 'stateIntents' }],
+      });
+      mockedGeneratePagePlan.mockRejectedValue(plannerError);
+
+      await expect(generateFirstPage(baseStory, 'test-api-key')).rejects.toBe(plannerError);
+
+      // Should log pipeline failure with hard_error status
+      expect(mockedLogger.error).toHaveBeenCalledWith(
+        'Generation pipeline failed',
+        expect.objectContaining({
+          metrics: expect.objectContaining({
+            finalStatus: 'hard_error',
+          }),
+        }),
+      );
+
+      // Writer should never have been called
+      expect(mockedGenerateOpeningPage).not.toHaveBeenCalled();
+    });
   });
 
   describe('getOrGeneratePage integration', () => {
