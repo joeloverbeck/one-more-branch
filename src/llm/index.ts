@@ -52,7 +52,4 @@ export {
   validateApiKey,
 } from './client.js';
 
-export {
-  mergePageWriterAndReconciledStateWithAnalystResults,
-  mergeWriterAndAnalystResults,
-} from './result-merger.js';
+export { mergePageWriterAndReconciledStateWithAnalystResults } from './result-merger.js';

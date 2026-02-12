@@ -33,8 +33,6 @@ jest.mock('../../../src/llm', () => ({
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  mergeWriterAndAnalystResults: jest.requireActual('../../../src/llm').mergeWriterAndAnalystResults,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     jest.requireActual('../../../src/llm').mergePageWriterAndReconciledStateWithAnalystResults, // eslint-disable-line @typescript-eslint/no-unsafe-member-access
 }));

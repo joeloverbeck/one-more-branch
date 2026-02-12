@@ -179,8 +179,8 @@ export interface PageWriterResult {
 }
 
 export interface WriterResult extends PageWriterResult {
-  // Compatibility fields retained during writer contract migration.
-  // These state/canon fields remain on WriterResult until downstream migration completes.
+  // State and canon fields produced by the writer LLM.
+  // The reconciler derives final state from plan intents, not these fields.
   currentLocation: string;
   threatsAdded: string[];
   threatsRemoved: string[];

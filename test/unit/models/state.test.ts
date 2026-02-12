@@ -67,7 +67,7 @@ describe('State utilities', () => {
       ).toBe(true);
     });
 
-    it('returns false for legacy tagged entry shape', () => {
+    it('returns false for non-keyed entry shape', () => {
       expect(
         isActiveState({
           currentLocation: 'x',

@@ -4,7 +4,6 @@ import type {
   AnalystResult,
   ContinuationGenerationResult,
   PageWriterResult,
-  WriterResult,
 } from './types.js';
 
 function buildAnalystFields(analyst: AnalystResult | null): Pick<
@@ -68,30 +67,3 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
   };
 }
 
-export function mergeWriterAndAnalystResults(
-  writer: WriterResult,
-  analyst: AnalystResult | null,
-): ContinuationGenerationResult {
-  return mergePageWriterAndReconciledStateWithAnalystResults(
-    writer,
-    {
-      currentLocation: writer.currentLocation,
-      threatsAdded: writer.threatsAdded,
-      threatsRemoved: writer.threatsRemoved,
-      constraintsAdded: writer.constraintsAdded,
-      constraintsRemoved: writer.constraintsRemoved,
-      threadsAdded: writer.threadsAdded,
-      threadsResolved: writer.threadsResolved,
-      inventoryAdded: writer.inventoryAdded,
-      inventoryRemoved: writer.inventoryRemoved,
-      healthAdded: writer.healthAdded,
-      healthRemoved: writer.healthRemoved,
-      characterStateChangesAdded: writer.characterStateChangesAdded,
-      characterStateChangesRemoved: writer.characterStateChangesRemoved,
-      newCanonFacts: writer.newCanonFacts,
-      newCharacterCanonFacts: writer.newCharacterCanonFacts,
-      reconciliationDiagnostics: [],
-    },
-    analyst,
-  );
-}
