@@ -73,8 +73,8 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
                   dialogueSamples: {
                     type: 'array',
                     description:
-                      'Write 2-3 example lines this character would say, ' +
-                      'showing their unique voice in action. These are invented examples, not quotes.',
+                      'Write 5-10 example lines this character would say, showing their unique voice in action. ' +
+                      'These can be invented or extracted from provided character descriptions/dialogue.',
                     items: { type: 'string' },
                   },
                 },

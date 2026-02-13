@@ -31,7 +31,7 @@ DECOMPOSITION PRINCIPLES:
    - Vocabulary profile: Formality level, word preferences, jargon usage, archaic vs modern
    - Sentence patterns: Short/terse vs ornate, questions vs declarations, imperative vs passive
    - Verbal tics: Filler words, interjections, habitual speech markers
-   - Dialogue samples: Write 2-3 invented example lines showing their unique voice in action
+   - Dialogue samples: Write 5-10 example lines showing their unique voice in action (invented or extracted from provided descriptions/dialogue)
 
 2. TRAIT DECOMPOSITION: Extract 3-5 core personality traits as concise labels. These should be the traits that most influence behavior and dialogue.
 
