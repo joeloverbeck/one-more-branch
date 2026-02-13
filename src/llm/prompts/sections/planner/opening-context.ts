@@ -3,7 +3,9 @@ import {
 } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
+import { createInitialStructureState } from '../../../../models/story-arc.js';
 import type { OpeningPagePlanContext } from '../../../context-types.js';
+import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 
 export function buildPlannerOpeningContextSection(context: OpeningPagePlanContext): string {
   const hasDecomposed =
@@ -24,7 +26,7 @@ ${context.worldbuilding}
 
   const npcsSection = hasDecomposed
     ? `CHARACTERS (structured profiles):
-${context.decomposedCharacters!.map((c) => formatDecomposedCharacterForPrompt(c)).join('\n\n')}
+${context.decomposedCharacters!.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
     : context.npcs && context.npcs.length > 0
@@ -41,19 +43,9 @@ ${context.startingSituation}
 `
     : '';
 
-  const firstAct = context.structure?.acts[0];
-  const firstBeat = firstAct?.beats[0];
-  const structureSection =
-    context.structure && firstAct && firstBeat
-      ? `=== STORY STRUCTURE (if provided) ===
-Overall Theme: ${context.structure.overallTheme}
-Current Act: ${firstAct.name}
-Act Objective: ${firstAct.objective}
-Current Beat: ${firstBeat.description}
-Beat Objective: ${firstBeat.objective}
-
-`
-      : '';
+  const structureSection = context.structure
+    ? buildWriterStructureContext(context.structure, createInitialStructureState(context.structure))
+    : '';
 
   const initialAgendas = context.initialNpcAgendas ?? [];
   const agendasSection =
@@ -82,11 +74,15 @@ ${initialAgendas
       ? `\nTone avoid: ${context.toneAntiKeywords.join(', ')}`
       : '';
 
-  return `=== PLANNER CONTEXT: OPENING ===
-CHARACTER CONCEPT:
+  const characterConceptSection = hasDecomposed
+    ? ''
+    : `CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}
+`;
+
+  return `=== PLANNER CONTEXT: OPENING ===
+${characterConceptSection}${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}
 
 ${structureSection}Plan the first page intent and state intents using this opening setup.`;
 }

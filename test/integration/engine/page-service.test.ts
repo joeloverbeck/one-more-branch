@@ -18,10 +18,10 @@ import {
   generateFirstPage,
   generateNextPage,
   getOrGeneratePage,
-  createInitialStructureState,
 } from '@/engine';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
+import { createInitialStructureState } from '@/models/story-arc';
 import type { StoryStructure } from '@/models/story-arc';
 import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 import { LLMError } from '@/llm/llm-client-types';

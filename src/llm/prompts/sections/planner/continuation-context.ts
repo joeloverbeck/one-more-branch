@@ -7,6 +7,7 @@ import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
 import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
+import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 import {
   buildThreadAgingSection,
   buildNarrativePromisesSection,
@@ -210,7 +211,7 @@ ${context.worldbuilding}
 
   const npcsSection = hasDecomposed
     ? `CHARACTERS (structured profiles):
-${context.decomposedCharacters!.map((c) => formatDecomposedCharacterForPrompt(c)).join('\n\n')}
+${context.decomposedCharacters!.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
     : context.npcs && context.npcs.length > 0
@@ -220,15 +221,10 @@ ${formatNpcsForPrompt(context.npcs)}
 `
       : '';
 
-  const structureSection =
-    context.structure && context.accumulatedStructureState
-      ? `=== STORY STRUCTURE (if provided) ===
-Overall Theme: ${context.structure.overallTheme}
-Current Act Index: ${context.accumulatedStructureState.currentActIndex}
-Current Beat Index: ${context.accumulatedStructureState.currentBeatIndex}
-
-`
-      : '';
+  const structureSection = buildWriterStructureContext(
+    context.structure,
+    context.accumulatedStructureState
+  );
 
   const globalCanonSection =
     context.globalCanon.length > 0
@@ -310,11 +306,15 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
       ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
       : '';
 
-  return `=== PLANNER CONTEXT: CONTINUATION ===
-CHARACTER CONCEPT:
+  const characterConceptSection = hasDecomposed
+    ? ''
+    : `CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}${toneDriftLine}
+`;
+
+  return `=== PLANNER CONTEXT: CONTINUATION ===
+${characterConceptSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}${toneDriftLine}
 
 ${structureSection}${pacingSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}

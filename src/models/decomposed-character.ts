@@ -17,14 +17,22 @@ export interface DecomposedCharacter {
   readonly rawDescription: string;
 }
 
-export function formatDecomposedCharacterForPrompt(char: DecomposedCharacter): string {
+export function formatDecomposedCharacterForPrompt(
+  char: DecomposedCharacter,
+  isProtagonist?: boolean
+): string {
   const fingerprint = char.speechFingerprint;
-  const lines: string[] = [
-    `CHARACTER: ${char.name}`,
+  const lines: string[] = [`CHARACTER: ${char.name}`];
+
+  if (isProtagonist) {
+    lines.push('PROTAGONIST');
+  }
+
+  lines.push(
     `Core Traits: ${char.coreTraits.join(', ')}`,
     `Motivations: ${char.motivations}`,
-    `Appearance: ${char.appearance}`,
-  ];
+    `Appearance: ${char.appearance}`
+  );
 
   if (char.relationships.length > 0) {
     lines.push(`Relationships:\n${char.relationships.map((r) => `  - ${r}`).join('\n')}`);

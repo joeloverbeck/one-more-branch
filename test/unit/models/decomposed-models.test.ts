@@ -37,6 +37,18 @@ describe('formatDecomposedCharacterForPrompt', () => {
     expect(result).toContain('Motivations: Seeks redemption');
   });
 
+  it('adds PROTAGONIST label when requested', () => {
+    const result = formatDecomposedCharacterForPrompt(createCharacter(), true);
+    expect(result).toContain('CHARACTER: Kael\nPROTAGONIST\nCore Traits: stoic, loyal');
+  });
+
+  it('does not add PROTAGONIST label when false or omitted', () => {
+    const omitted = formatDecomposedCharacterForPrompt(createCharacter());
+    const explicitFalse = formatDecomposedCharacterForPrompt(createCharacter(), false);
+    expect(omitted).not.toContain('PROTAGONIST');
+    expect(explicitFalse).not.toContain('PROTAGONIST');
+  });
+
   it('includes speech fingerprint details', () => {
     const result = formatDecomposedCharacterForPrompt(createCharacter());
     expect(result).toContain('SPEECH FINGERPRINT:');

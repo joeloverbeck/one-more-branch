@@ -5,11 +5,10 @@ import {
   getPreservedBeatIds,
   validatePreservedBeats,
 } from '../../../src/engine/structure-rewrite-support';
-import { createInitialStructureState } from '../../../src/engine/structure-state';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
-import { createBeatDeviation } from '../../../src/models/story-arc';
+import { createBeatDeviation, createInitialStructureState } from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 
 function createGenerationResult(): StructureGenerationResult {

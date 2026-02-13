@@ -67,7 +67,6 @@ export { createStoryStructure } from './structure-factory';
 
 // Structure state machine
 export {
-  createInitialStructureState,
   advanceStructureState,
   applyStructureProgression,
 } from './structure-state';

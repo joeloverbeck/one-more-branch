@@ -13,6 +13,7 @@ import {
   parsePageId,
   Story,
 } from '../models';
+import { createInitialStructureState } from '../models/story-arc';
 import type { NpcAgenda } from '../models/state/npc-agenda';
 import { storage } from '../persistence';
 import { collectAncestorContext } from './ancestor-collector';
@@ -35,7 +36,6 @@ import {
   createOpeningPreviousStateSnapshot,
   createContinuationPreviousStateSnapshot,
 } from './parent-state-collector';
-import { createInitialStructureState } from './structure-state';
 import {
   resolveActiveStructureVersion,
   validateContinuationStructureVersion,

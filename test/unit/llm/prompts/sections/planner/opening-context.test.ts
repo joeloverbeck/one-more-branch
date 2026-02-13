@@ -2,7 +2,7 @@ import type { OpeningPagePlanContext } from '../../../../../../src/llm/context-t
 import { buildPlannerOpeningContextSection } from '../../../../../../src/llm/prompts/sections/planner/opening-context.js';
 
 describe('planner opening context section', () => {
-  it('includes required opening fields', () => {
+  it('includes character concept when structured decomposition is absent', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
       characterConcept: 'A stranded deep-space courier',
@@ -19,7 +19,57 @@ describe('planner opening context section', () => {
     expect(result).toContain('TONE/GENRE: sci-fi suspense');
   });
 
-  it('includes optional starting situation and structure details when present', () => {
+  it('omits character concept and marks the first decomposed character as PROTAGONIST', () => {
+    const context: OpeningPagePlanContext = {
+      mode: 'opening',
+      characterConcept: 'Should not render when structured characters exist',
+      worldbuilding: '',
+      tone: 'sci-fi suspense',
+      decomposedCharacters: [
+        {
+          name: 'Rin',
+          coreTraits: ['resourceful', 'stubborn'],
+          motivations: 'Expose station sabotage',
+          relationships: ['Former mentor: Voss'],
+          knowledgeBoundaries: 'Knows courier routes, not reactor internals',
+          appearance: 'Lean, grease-stained uniform',
+          rawDescription: 'A courier',
+          speechFingerprint: {
+            catchphrases: [],
+            vocabularyProfile: 'Direct and technical',
+            sentencePatterns: 'Short directives',
+            verbalTics: [],
+            dialogueSamples: [],
+          },
+        },
+        {
+          name: 'Voss',
+          coreTraits: ['secretive'],
+          motivations: 'Contain evidence leak',
+          relationships: [],
+          knowledgeBoundaries: 'Knows internal security systems',
+          appearance: 'Tall in officer coat',
+          rawDescription: 'A station officer',
+          speechFingerprint: {
+            catchphrases: [],
+            vocabularyProfile: 'Formal command language',
+            sentencePatterns: 'Measured statements',
+            verbalTics: [],
+            dialogueSamples: [],
+          },
+        },
+      ],
+    };
+
+    const result = buildPlannerOpeningContextSection(context);
+
+    expect(result).not.toContain('CHARACTER CONCEPT:');
+    expect(result).toContain('CHARACTERS (structured profiles):');
+    expect(result).toContain('CHARACTER: Rin\nPROTAGONIST');
+    expect(result).not.toContain('CHARACTER: Voss\nPROTAGONIST');
+  });
+
+  it('renders rich structure context with active and pending beats', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
       characterConcept: 'A stranded deep-space courier',
@@ -45,6 +95,27 @@ describe('planner opening context section', () => {
                 objective: 'Get to a functioning uplink',
                 role: 'setup',
               },
+              {
+                id: '1.2',
+                description: 'Escape patrol dragnet',
+                objective: 'Reach the relay corridor',
+                role: 'escalation',
+              },
+            ],
+          },
+          {
+            id: '2',
+            name: 'Broadcast',
+            objective: 'Transmit evidence',
+            stakes: 'Conspiracy survives if transmission fails.',
+            entryCondition: 'Courier reaches relay core',
+            beats: [
+              {
+                id: '2.1',
+                description: 'Fight signal jamming',
+                objective: 'Stabilize transmission',
+                role: 'turning_point',
+              },
             ],
           },
         ],
@@ -54,10 +125,11 @@ describe('planner opening context section', () => {
     const result = buildPlannerOpeningContextSection(context);
 
     expect(result).toContain('STARTING SITUATION:');
-    expect(result).toContain('airlock alarm');
-    expect(result).toContain('=== STORY STRUCTURE (if provided) ===');
-    expect(result).toContain('Current Act: Lockdown');
-    expect(result).toContain('Current Beat: Break through maintenance sectors');
+    expect(result).toContain('=== STORY STRUCTURE ===');
+    expect(result).toContain('CURRENT ACT: Lockdown (Act 1 of 3)');
+    expect(result).toContain('[>] ACTIVE (setup): Break through maintenance sectors');
+    expect(result).toContain('[ ] PENDING (escalation): Escape patrol dragnet');
+    expect(result).toContain('REMAINING ACTS:');
   });
 
   it('includes initial NPC agendas when present', () => {

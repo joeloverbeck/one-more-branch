@@ -12,7 +12,6 @@ import {
 import {
   advanceStructureState,
   applyStructureProgression,
-  createInitialStructureState,
 } from '../../../src/engine/structure-state';
 import {
   getBeatOrThrow,
@@ -22,7 +21,7 @@ import {
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
-import { createBeatDeviation } from '../../../src/models/story-arc';
+import { createBeatDeviation, createInitialStructureState } from '../../../src/models/story-arc';
 
 function createGenerationResult(): StructureGenerationResult {
   return {

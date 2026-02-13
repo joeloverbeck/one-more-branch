@@ -2,9 +2,11 @@ import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
   advanceStructureState,
   applyStructureProgression,
-  createInitialStructureState,
 } from '../../../src/engine/structure-state';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
+import {
+  createInitialStructureState,
+} from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 
 function createGenerationResult(): StructureGenerationResult {

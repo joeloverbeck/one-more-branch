@@ -47,6 +47,7 @@ describe('planner continuation context section', () => {
     const result = buildPlannerContinuationContextSection(context);
 
     expect(result).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
+    expect(result).toContain('CHARACTER CONCEPT:');
     expect(result).toContain('NPCS (Available Characters):');
     expect(result).toContain('NPC: Azra');
     expect(result).toContain('ESTABLISHED WORLD FACTS:');
@@ -57,6 +58,168 @@ describe('planner continuation context section', () => {
     expect(result).toContain('SCENE BEFORE LAST (full text for style continuity):');
     expect(result).toContain("PLAYER'S CHOICE:");
     expect(result).toContain('Trigger the blackout relay');
+  });
+
+  it('omits character concept and marks protagonist when structured characters are present', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'Should not render when structured characters exist',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      decomposedCharacters: [
+        {
+          name: 'Rin',
+          coreTraits: ['resourceful', 'stubborn'],
+          motivations: 'Expose station sabotage',
+          relationships: ['Former mentor: Voss'],
+          knowledgeBoundaries: 'Knows courier routes, not reactor internals',
+          appearance: 'Lean, grease-stained uniform',
+          rawDescription: 'A courier',
+          speechFingerprint: {
+            catchphrases: [],
+            vocabularyProfile: 'Direct and technical',
+            sentencePatterns: 'Short directives',
+            verbalTics: [],
+            dialogueSamples: [],
+          },
+        },
+        {
+          name: 'Voss',
+          coreTraits: ['secretive'],
+          motivations: 'Contain evidence leak',
+          relationships: [],
+          knowledgeBoundaries: 'Knows internal security systems',
+          appearance: 'Tall in officer coat',
+          rawDescription: 'A station officer',
+          speechFingerprint: {
+            catchphrases: [],
+            vocabularyProfile: 'Formal command language',
+            sentencePatterns: 'Measured statements',
+            verbalTics: [],
+            dialogueSamples: [],
+          },
+        },
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).not.toContain('CHARACTER CONCEPT:');
+    expect(result).toContain('CHARACTERS (structured profiles):');
+    expect(result).toContain('CHARACTER: Rin\nPROTAGONIST');
+    expect(result).not.toContain('CHARACTER: Voss\nPROTAGONIST');
+  });
+
+  it('renders rich structure context from accumulated structure state', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      structure: {
+        overallTheme: 'Loyalty under impossible pressure',
+        premise: 'A smuggler must expose corruption before a citywide purge.',
+        pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'Containment',
+            objective: 'Escape initial crackdown',
+            stakes: 'Capture means execution.',
+            entryCondition: 'Purge starts',
+            beats: [
+              {
+                id: '1.1',
+                description: 'Secure route through lockdown',
+                objective: 'Reach safe passage',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                description: 'Confront compromised ally',
+                objective: 'Prevent betrayal',
+                role: 'escalation',
+              },
+              {
+                id: '1.3',
+                description: 'Expose the city directive',
+                objective: 'Broadcast proof',
+                role: 'turning_point',
+              },
+            ],
+          },
+          {
+            id: '2',
+            name: 'Counterstrike',
+            objective: 'Take down purge command',
+            stakes: 'City falls if command survives.',
+            entryCondition: 'Proof reaches resistance',
+            beats: [
+              {
+                id: '2.1',
+                description: 'Raid central command',
+                objective: 'Neutralize command hub',
+                role: 'resolution',
+              },
+            ],
+          },
+        ],
+      },
+      accumulatedStructureState: {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
+          { beatId: '1.2', status: 'active' },
+          { beatId: '1.3', status: 'pending' },
+          { beatId: '2.1', status: 'pending' },
+        ],
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== STORY STRUCTURE ===');
+    expect(result).toContain('CURRENT ACT: Containment (Act 1 of 3)');
+    expect(result).toContain('[x] CONCLUDED (setup): Secure route through lockdown');
+    expect(result).toContain('[>] ACTIVE (escalation): Confront compromised ally');
+    expect(result).toContain('[ ] PENDING (turning_point): Expose the city directive');
+    expect(result).toContain('REMAINING ACTS:');
+    expect(result).not.toContain('Current Act Index:');
+    expect(result).not.toContain('Current Beat Index:');
   });
 
   it('renders optional sections as (none) when state is empty', () => {

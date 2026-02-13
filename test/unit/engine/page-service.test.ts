@@ -16,7 +16,6 @@ import {
   StructureVersionId,
   VersionedStoryStructure,
 } from '../../../src/models';
-import { createInitialStructureState } from '../../../src/engine/structure-state';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
 import { StateReconciliationError } from '../../../src/engine/state-reconciler-errors';
 import { reconcileState } from '../../../src/engine/state-reconciler';
@@ -33,6 +32,7 @@ import { LLMError } from '../../../src/llm/llm-client-types';
 import type { PagePlanGenerationResult } from '../../../src/llm/planner-types';
 import type { WriterResult } from '../../../src/llm/writer-types';
 import { logger } from '../../../src/logging/index.js';
+import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
 jest.mock('../../../src/llm', () => ({

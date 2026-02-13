@@ -13,7 +13,6 @@ import {
   generateNextPage,
   getOrGeneratePage,
   createStoryStructure,
-  createInitialStructureState,
   advanceStructureState,
   applyStructureProgression,
   createStructureRewriter,
@@ -58,7 +57,6 @@ describe('engine barrel export', () => {
     expect(generateNextPage).toBeDefined();
     expect(getOrGeneratePage).toBeDefined();
     expect(createStoryStructure).toBeDefined();
-    expect(createInitialStructureState).toBeDefined();
     expect(advanceStructureState).toBeDefined();
     expect(applyStructureProgression).toBeDefined();
     expect(createStructureRewriter).toBeDefined();

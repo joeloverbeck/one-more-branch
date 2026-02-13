@@ -4,6 +4,7 @@ import {
   PacingBudget,
   StoryBeat,
   createBeatDeviation,
+  createInitialStructureState,
   createNoDeviation,
   StoryStructure,
   isDeviation,
@@ -158,6 +159,40 @@ describe('story-arc model utilities', () => {
   describe('createEmptyAccumulatedStructureState', () => {
     it('creates an initial empty state', () => {
       expect(createEmptyAccumulatedStructureState()).toEqual({
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      });
+    });
+  });
+
+  describe('createInitialStructureState', () => {
+    it('sets the first beat active and all remaining beats pending', () => {
+      const structure = createTestStructure();
+      const result = createInitialStructureState(structure);
+
+      expect(result.currentActIndex).toBe(0);
+      expect(result.currentBeatIndex).toBe(0);
+      expect(result.pagesInCurrentBeat).toBe(0);
+      expect(result.pacingNudge).toBeNull();
+      expect(result.beatProgressions).toEqual([
+        { beatId: '1.1', status: 'active' },
+        { beatId: '1.2', status: 'pending' },
+        { beatId: '2.1', status: 'pending' },
+        { beatId: '2.2', status: 'pending' },
+        { beatId: '3.1', status: 'pending' },
+      ]);
+    });
+
+    it('returns a valid zeroed state when there are no acts/beats', () => {
+      const structure: StoryStructure = {
+        ...createTestStructure(),
+        acts: [],
+      };
+
+      expect(createInitialStructureState(structure)).toEqual({
         currentActIndex: 0,
         currentBeatIndex: 0,
         beatProgressions: [],

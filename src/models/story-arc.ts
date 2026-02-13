@@ -56,6 +56,32 @@ export function createEmptyAccumulatedStructureState(): AccumulatedStructureStat
   };
 }
 
+/**
+ * Creates initial AccumulatedStructureState for first page.
+ * Sets first beat of first act as 'active', all others 'pending'.
+ */
+export function createInitialStructureState(structure: StoryStructure): AccumulatedStructureState {
+  const beatProgressions: BeatProgression[] = [];
+
+  structure.acts.forEach((act, actIdx) => {
+    act.beats.forEach((beat, beatIdx) => {
+      const isFirst = actIdx === 0 && beatIdx === 0;
+      beatProgressions.push({
+        beatId: beat.id,
+        status: isFirst ? 'active' : 'pending',
+      });
+    });
+  });
+
+  return {
+    currentActIndex: 0,
+    currentBeatIndex: 0,
+    beatProgressions,
+    pagesInCurrentBeat: 0,
+    pacingNudge: null,
+  };
+}
+
 export function getCurrentAct(
   structure: StoryStructure,
   state: AccumulatedStructureState
