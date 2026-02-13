@@ -66,31 +66,3 @@ When the protagonist is wounded, poisoned, exhausted, or healed:
 ✅ Use healthAdded/healthRemoved
 ❌ Do NOT put physical conditions in threatsAdded or constraintsAdded`;
 
-export const CONTINUATION_CANON_QUALITY = `CANON QUALITY CRITERIA:
-Canon facts should be PERMANENT world-building or character elements likely to matter across MULTIPLE scenes.
-Before adding any canon, ask: "Would this fact constrain or inform future scenes in ANY branch?"
-
-GOOD WORLD CANON (newCanonFacts) - add these:
-- Locations: "The Drowned Anchor is a tavern in the port district"
-- Factions: "The Iron Brotherhood controls the smuggling routes"
-- Laws/customs: "Magic use is punishable by death in the capital"
-- Geography: "The river divides the noble quarter from the slums"
-
-BAD WORLD CANON (do NOT add these):
-- Single-scene details: "The room smelled of stale beer" - not reusable
-- Trivial observations: "The guard was wearing blue" - no story impact
-- Plot-specific events: "Vane offered a contract" - use threadsAdded for unresolved hooks
-- Branch-dependent facts: "The protagonist killed the guard" - use characterStateChangesAdded
-
-GOOD CHARACTER CANON (newCharacterCanonFacts) - add these:
-- Inherent traits: "Has a nervous habit of adjusting his ring"
-- Abilities: "Can see in complete darkness"
-- Background: "Grew up in the mining camps"
-- Relationships: "Sister of the Duke"
-
-BAD CHARACTER CANON (do NOT add these):
-- Actions taken this scene: "Revealed the target's name" - use characterStateChangesAdded
-- Temporary states: "Is waiting at the docks" - use characterStateChangesAdded
-- Scene-specific reactions: "Seemed nervous about the question" - leave in narrative
-
-Rule: If it would be true regardless of player choices, it might be CANON. If it only happened because of this specific playthrough, use STATE fields instead.`;

@@ -80,6 +80,54 @@ URGENCY SELF-CHECK (before you finalize JSON):
 - For each new HIGH thread, verify concrete urgency cues in sceneIntent/continuityAnchors (deadline, active pursuit, imminent harm, or collapsing opportunity).
 - If those cues are absent, lower urgency to MEDIUM or LOW.
 
+CANON INTENT RULES:
+Canon facts are PERMANENT and BRANCH-INDEPENDENT. They persist across ALL branches of the story.
+Canon is RARE. Most pages should add ZERO canon entries. Only add canon when genuinely new permanent information is established.
+
+THREE GATES - a fact must pass ALL three to be canon:
+1. PERMANENCE: Would this be true regardless of which choices the player made?
+2. NOVELTY: Does the ESTABLISHED WORLD FACTS / CHARACTER INFORMATION section above already cover this concept? If a similar fact exists, do NOT add a variant.
+3. REUSABILITY: Would a future scene in a DIFFERENT branch actually need this fact to maintain consistency?
+
+If a fact fails ANY gate, do not add it.
+
+GOOD character canon (canon.characterAdd):
+- Inherent traits revealed for the first time: "Has a nervous habit of adjusting his ring"
+- Abilities not previously established: "Can see in complete darkness"
+- Background facts: "Grew up in the mining camps"
+- Permanent relationships: "Sister of the Duke"
+
+BAD character canon (do NOT add - use characterState.add instead):
+- Actions taken this scene: "Revealed the target's name"
+- Branch-specific decisions: "Chose to stay and face investigation"
+- Temporary states: "Is waiting at the docks"
+- Scene-specific reactions: "Seemed nervous about the question"
+- Consequences of player choices: "His admission is being used against him"
+- Refinements of existing canon: if "Uses crude humor as a coping mechanism" exists, do NOT add "Uses sexual humor to bond with strangers"
+
+GOOD world canon (canon.worldAdd):
+- Named locations: "The Drowned Anchor is a tavern in the port district"
+- Factions: "The Iron Brotherhood controls the smuggling routes"
+- Laws/customs: "Magic use is punishable by death in the capital"
+
+BAD world canon (do NOT add):
+- Single-scene details that won't recur
+- Plot-specific events from this playthrough
+- Consequences of player choices
+- Granular elaborations of existing facts: if "Palace investigations use psychological pressure tactics" exists, do NOT add separate entries for each tactic (isolation, silence, document-everything, etc.)
+- Narrative observations: "Conditional cooperation is interpreted as manipulation" is scene commentary, not a world rule
+
+QUANTITY DISCIPLINE:
+- Aim for 0 canon entries on most pages. Canon is for genuine discoveries, not scene-by-scene documentation.
+- One broad fact is better than multiple narrow variants. Prefer "Palace interrogations use psychological pressure" over five separate entries about specific interrogation techniques.
+- Read the existing canon carefully. If the concept is already there in any form, skip it.
+
+CANON SELF-CHECK (before you finalize JSON):
+- For each canon.characterAdd: Would this be true even if the player had made completely different choices? Is this genuinely new - not a variant of existing character canon?
+- For each canon.worldAdd: Does this describe a permanent world feature? Is there already a similar fact in ESTABLISHED WORLD FACTS?
+- If a fact describes something that happened THIS playthrough, move it to characterState.add instead.
+- If a fact elaborates on existing canon rather than establishing something new, drop it entirely.
+
 CHOICE INTENT RULES:
 - Propose 2-4 choiceIntents aligned with the scene's dramatic question.
 - Each intent must have a unique (choiceType, primaryDelta) combination.

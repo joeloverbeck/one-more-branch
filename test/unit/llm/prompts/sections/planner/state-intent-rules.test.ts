@@ -60,6 +60,46 @@ describe('planner state-intent rules sections', () => {
       expect(PLANNER_STATE_INTENT_RULES).toContain('For each new HIGH thread, verify concrete urgency cues');
     });
 
+    it('includes canon intent rules distinguishing permanent vs branch-specific facts', () => {
+      expect(PLANNER_STATE_INTENT_RULES).toContain('CANON INTENT RULES:');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('PERMANENT and BRANCH-INDEPENDENT');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('GOOD character canon (canon.characterAdd)');
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'BAD character canon (do NOT add - use characterState.add instead)',
+      );
+      expect(PLANNER_STATE_INTENT_RULES).toContain('GOOD world canon (canon.worldAdd)');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('BAD world canon (do NOT add)');
+    });
+
+    it('requires three gates for canon admission: permanence, novelty, reusability', () => {
+      expect(PLANNER_STATE_INTENT_RULES).toContain('THREE GATES');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('PERMANENCE');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('NOVELTY');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('REUSABILITY');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('fails ANY gate, do not add it');
+    });
+
+    it('enforces quantity discipline and deduplication against existing canon', () => {
+      expect(PLANNER_STATE_INTENT_RULES).toContain('QUANTITY DISCIPLINE:');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('0 canon entries on most pages');
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'One broad fact is better than multiple narrow variants',
+      );
+    });
+
+    it('includes canon self-check before JSON finalization', () => {
+      expect(PLANNER_STATE_INTENT_RULES).toContain('CANON SELF-CHECK (before you finalize JSON):');
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'not a variant of existing character canon',
+      );
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'move it to characterState.add instead',
+      );
+      expect(PLANNER_STATE_INTENT_RULES).toContain(
+        'elaborates on existing canon rather than establishing something new, drop it entirely',
+      );
+    });
+
     it('does not include inline OUTPUT FORMAT scaffolding', () => {
       expect(PLANNER_STATE_INTENT_RULES).not.toContain('OUTPUT FORMAT:');
       expect(PLANNER_STATE_INTENT_RULES).not.toContain('"sceneIntent"');

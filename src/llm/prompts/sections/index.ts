@@ -28,7 +28,6 @@ export {
   CONTINUATION_CONTINUITY_RULES_BIBLE,
   CHARACTER_CANON_VS_STATE,
   CONTINUATION_ACTIVE_STATE_QUALITY,
-  CONTINUATION_CANON_QUALITY,
 } from './continuation/index.js';
 
 // Planner-specific sections

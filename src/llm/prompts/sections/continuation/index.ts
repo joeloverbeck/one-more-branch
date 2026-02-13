@@ -9,7 +9,4 @@ export {
   CHARACTER_CANON_VS_STATE,
 } from './continuity-rules.js';
 
-export {
-  CONTINUATION_ACTIVE_STATE_QUALITY,
-  CONTINUATION_CANON_QUALITY,
-} from './continuation-quality-criteria.js';
+export { CONTINUATION_ACTIVE_STATE_QUALITY } from './continuation-quality-criteria.js';
