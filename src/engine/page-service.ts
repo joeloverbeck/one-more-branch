@@ -241,6 +241,7 @@ export async function generateNextPage(
           });
         }
         emitGenerationStage(onGenerationStage, 'CURATING_CONTEXT', 'completed', 1);
+        emitGenerationStage(onGenerationStage, 'WRITING_CONTINUING_PAGE', 'started', 1);
 
         return generatePageWriterOutput(
           {

@@ -193,8 +193,8 @@ export async function generateStoryStructure(
   const promptOptions = resolvePromptOptions(resolvedOptions);
   const config = getConfig().llm;
   const model = options?.model ?? config.defaultModel;
-  const temperature = options?.temperature ?? 0.8;
-  const maxTokens = options?.maxTokens ?? 2000;
+  const temperature = options?.temperature ?? config.temperature;
+  const maxTokens = options?.maxTokens ?? config.maxTokens;
 
   const messages = buildStructurePrompt(context, promptOptions);
   logPrompt(logger, 'structure', messages);

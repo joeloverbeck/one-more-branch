@@ -1043,6 +1043,7 @@ describe('page-service', () => {
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'ANALYZING_SCENE', status: 'started', attempt: 1 }],
         [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1 }],
