@@ -163,6 +163,15 @@ ACTIVE CONSTRAINTS:
 OPEN NARRATIVE THREADS:
 {{activeState.openThreads as "- [id] (threadType/urgency, N pages old) text" list or '(none)'}}
 
+{{#if parentProtagonistAffect}}
+PROTAGONIST'S CURRENT EMOTIONAL STATE:
+Primary: {{primaryEmotion | uppercase}} ({{primaryIntensity}}) - {{primaryCause}}
+{{#each secondaryEmotions}}
+Secondary: {{emotion | uppercase}} - {{cause}}
+{{/each}}
+Motivation: {{dominantMotivation}}
+{{/if}}
+
 {{#if threadAgingSection (overdue threads exist)}}
 === THREAD PACING PRESSURE ===
 The following threads are overdue and should be prioritized:

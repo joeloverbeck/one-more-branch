@@ -137,6 +137,72 @@ describe('planner continuation context section', () => {
     expect(result).toContain('Off-screen: Disabling surveillance cameras');
   });
 
+  it('includes protagonist affect section when parentProtagonistAffect is provided', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      parentProtagonistAffect: {
+        primaryEmotion: 'dread',
+        primaryIntensity: 'strong',
+        primaryCause: 'The sound of boots echoing closer',
+        secondaryEmotions: [{ emotion: 'resolve', cause: 'No other option left' }],
+        dominantMotivation: 'Survival at any cost',
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain("PROTAGONIST'S CURRENT EMOTIONAL STATE:");
+    expect(result).toContain('DREAD');
+    expect(result).toContain('strong');
+    expect(result).toContain('Survival at any cost');
+  });
+
+  it('omits protagonist affect section when parentProtagonistAffect is undefined', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).not.toContain("PROTAGONIST'S CURRENT EMOTIONAL STATE:");
+  });
+
   it('omits NPC agendas section when no agendas exist', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

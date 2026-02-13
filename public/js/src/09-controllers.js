@@ -258,7 +258,12 @@
           rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);
         }
 
-        narrative.scrollIntoView({ behavior: 'smooth' });
+        var storyHeader = document.getElementById('story-header');
+        if (storyHeader) {
+          storyHeader.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          narrative.scrollIntoView({ behavior: 'smooth' });
+        }
       } catch (error) {
         console.error('Error:', error);
         // Log additional debug info if available

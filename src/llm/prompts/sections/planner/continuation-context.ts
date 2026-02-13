@@ -2,6 +2,7 @@ import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
+import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
 import {
   buildThreadAgingSection,
   buildNarrativePromisesSection,
@@ -312,7 +313,7 @@ ${constraintsSection}
 OPEN NARRATIVE THREADS:
 ${threadsSection}
 
-${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
+${buildProtagonistAffectSection(context.parentProtagonistAffect)}${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
 PLAYER'S CHOICE:

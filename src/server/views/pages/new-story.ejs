@@ -88,6 +88,16 @@
         </div>
 
         <div class="form-group">
+          <label for="tone">Tone/Genre (Optional)</label>
+          <textarea
+            id="tone"
+            name="tone"
+            rows="3"
+            placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
+          ><%= values.tone || '' %></textarea>
+        </div>
+
+        <div class="form-group">
           <label for="startingSituation">Starting Situation (Optional)</label>
           <textarea
             id="startingSituation"
@@ -95,17 +105,6 @@
             rows="3"
             placeholder="Describe how you want the story to begin: the scene, circumstances, or specific events for the opening."
           ><%= values.startingSituation || '' %></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="tone">Tone/Genre (Optional)</label>
-          <input
-            type="text"
-            id="tone"
-            name="tone"
-            placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
-            value="<%= values.tone || '' %>"
-          >
         </div>
 
         <div class="form-group">
