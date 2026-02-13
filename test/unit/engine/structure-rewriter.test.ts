@@ -293,7 +293,7 @@ describe('structure-rewriter', () => {
         .fn<ReturnType<StructureRewriteGenerator>, Parameters<StructureRewriteGenerator>>()
         .mockRejectedValue(
           new LLMError(
-            'Structure response must include exactly 3 acts (received: 2)',
+            'Structure response must include 3-5 acts (received: 2)',
             'STRUCTURE_PARSE_ERROR',
             true,
             { rawContent }
@@ -482,20 +482,28 @@ describe('structure-rewriter', () => {
             objective: 'Objective 2',
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
+            beats: [],
+          },
+          {
+            id: '3',
+            name: 'Act Three',
+            objective: 'Objective 3',
+            stakes: 'Stakes 3',
+            entryCondition: 'Entry 3',
             beats: [
               {
-                id: '2.1',
-                name: 'Beat Name 2.1',
-                description: 'Beat 2.1',
-                objective: 'Goal 2.1',
-                role: 'escalation',
+                id: '3.1',
+                name: 'Beat Name 3.1',
+                description: 'Beat 3.1',
+                objective: 'Goal 3.1',
+                role: 'turning_point',
               },
               {
-                id: '2.2',
-                name: 'Beat Name 2.2',
-                description: 'Beat 2.2',
-                objective: 'Goal 2.2',
-                role: 'turning_point',
+                id: '3.2',
+                name: 'Beat Name 3.2',
+                description: 'Beat 3.2',
+                objective: 'Goal 3.2',
+                role: 'resolution',
               },
             ],
           },
@@ -503,7 +511,7 @@ describe('structure-rewriter', () => {
       });
 
       expect(() => mergePreservedWithRegenerated([], regenerated, 'Original theme')).toThrow(
-        'Merged structure is missing beats for act 3'
+        'Merged structure is missing beats for act 2'
       );
     });
   });

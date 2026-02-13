@@ -105,7 +105,7 @@ export function mergePreservedWithRegenerated(
 
   const mergedActs: StoryAct[] = [];
 
-  for (let actIndex = 0; actIndex < 3; actIndex += 1) {
+  for (let actIndex = 0; actIndex < regeneratedStructure.acts.length; actIndex += 1) {
     const regeneratedAct = regeneratedStructure.acts[actIndex];
     const preservedInAct = (preservedByAct.get(actIndex) ?? []).slice().sort((a, b) => {
       return a.beatIndex - b.beatIndex;
@@ -190,10 +190,10 @@ function parseStructureResponse(
     throw new LLMError('Structure response missing overallTheme', 'STRUCTURE_PARSE_ERROR', true);
   }
 
-  if (!Array.isArray(data['acts']) || data['acts'].length !== 3) {
+  if (!Array.isArray(data['acts']) || data['acts'].length < 3 || data['acts'].length > 5) {
     const received = Array.isArray(data['acts']) ? data['acts'].length : typeof data['acts'];
     throw new LLMError(
-      `Structure response must include exactly 3 acts (received: ${received})`,
+      `Structure response must include 3-5 acts (received: ${received})`,
       'STRUCTURE_PARSE_ERROR',
       true
     );

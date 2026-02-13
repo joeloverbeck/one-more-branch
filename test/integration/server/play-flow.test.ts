@@ -9,9 +9,7 @@ import {
   generateStoryStructure,
 } from '@/llm';
 import { reconcileState } from '@/engine/state-reconciler';
-import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryId } from '@/models';
-import type { PageWriterResult } from '@/llm/writer-types';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 
@@ -66,35 +64,8 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
   typeof generateStoryStructure
 >;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
-
-type ReconciliationWriterPayload = PageWriterResult &
-  Omit<StateReconciliationResult, 'currentLocation' | 'reconciliationDiagnostics'> & {
-    currentLocation?: string | null;
-  };
-
-function passthroughReconciledState(
-  writer: ReconciliationWriterPayload,
-  previousLocation: string
-): StateReconciliationResult {
-  return {
-    currentLocation: writer.currentLocation ?? previousLocation,
-    threatsAdded: [...writer.threatsAdded],
-    threatsRemoved: [...writer.threatsRemoved],
-    constraintsAdded: [...writer.constraintsAdded],
-    constraintsRemoved: [...writer.constraintsRemoved],
-    threadsAdded: [...writer.threadsAdded],
-    threadsResolved: [...writer.threadsResolved],
-    inventoryAdded: [...writer.inventoryAdded],
-    inventoryRemoved: [...writer.inventoryRemoved],
-    healthAdded: [...writer.healthAdded],
-    healthRemoved: [...writer.healthRemoved],
-    characterStateChangesAdded: [...writer.characterStateChangesAdded],
-    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
-    newCanonFacts: [...writer.newCanonFacts],
-    newCharacterCanonFacts: writer.newCharacterCanonFacts,
-    reconciliationDiagnostics: [],
-  };
-}
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+const actualReconcileState: typeof reconcileState = jest.requireActual('@/engine/state-reconciler').reconcileState;
 
 const TEST_PREFIX = 'TEST USEINT-010 server integration';
 const mockedStructureResult = {
@@ -211,6 +182,7 @@ async function waitForMock(mock: jest.Mock, timeout = 1000): Promise<void> {
 describe('Play Flow Integration (Mocked LLM)', () => {
   const createdStoryIds = new Set<StoryId>();
   const createStoryHandler = getRouteHandler(storyRoutes, 'post', '/create');
+  const beginStoryHandler = getRouteHandler(playRoutes, 'post', '/:storyId/begin');
   const getPlayHandler = getRouteHandler(playRoutes, 'get', '/:storyId');
   const chooseHandler = getRouteHandler(playRoutes, 'post', '/:storyId/choice');
 
@@ -254,9 +226,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       },
       rawResponse: 'accountant',
     });
-    mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
-    );
+    mockedReconcileState.mockImplementation(actualReconcileState);
   });
 
   afterEach(async () => {
@@ -345,7 +315,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     const storyId = parseStoryIdFromRedirect(getMockCallArg(redirect, 0, 0));
     createdStoryIds.add(storyId);
 
-    expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateOpeningPage).not.toHaveBeenCalled();
     expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
   });
 
@@ -400,6 +370,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
+
+    const beginRes = createMockResponse();
+    void beginStoryHandler(
+      {
+        params: { storyId },
+        body: { apiKey: 'mock-api-key-12345' },
+      } as unknown as Request,
+      beginRes.res
+    );
+    await waitForMock(beginRes.json);
 
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'You chose wisely...',
@@ -540,6 +520,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
 
+    const beginRes = createMockResponse();
+    void beginStoryHandler(
+      {
+        params: { storyId },
+        body: { apiKey: 'mock-api-key-12345' },
+      } as unknown as Request,
+      beginRes.res
+    );
+    await waitForMock(beginRes.json);
+
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'Page 2 content...',
       choices: [
@@ -629,6 +619,50 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   });
 
   it('returns sorted open threads limited to six with overflow summaries on initial render and in AJAX choice responses', async () => {
+    mockedGenerateStateAccountant
+      .mockResolvedValueOnce({
+        stateIntents: {
+          currentLocation: 'City outskirts',
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
+          threads: {
+            add: [
+              { text: 'Stop the imminent sabotage', threadType: 'DANGER', urgency: 'HIGH' },
+              { text: 'Find the compromised courier', threadType: 'MYSTERY', urgency: 'HIGH' },
+              { text: 'Secure comms fallback', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+              { text: 'Identify the planted observer', threadType: 'MYSTERY', urgency: 'MEDIUM' },
+              { text: 'Check the abandoned supply route', threadType: 'QUEST', urgency: 'LOW' },
+              { text: 'Collect reserve medkits', threadType: 'RESOURCE', urgency: 'LOW' },
+              { text: 'Mark low-traffic alleys', threadType: 'QUEST', urgency: 'LOW' },
+            ],
+            resolveIds: [],
+          },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
+          canon: { worldAdd: [], characterAdd: [] },
+        },
+        rawResponse: 'accountant-opening-threads',
+      })
+      .mockResolvedValueOnce({
+        stateIntents: {
+          currentLocation: 'Inside the city',
+          threats: { add: [], removeIds: [] },
+          constraints: { add: [], removeIds: [] },
+          threads: {
+            add: [
+              { text: 'Interrogate the blackout source', threadType: 'DANGER', urgency: 'HIGH' },
+            ],
+            resolveIds: ['td-5'],
+          },
+          inventory: { add: [], removeIds: [] },
+          health: { add: [], removeIds: [] },
+          characterState: { add: [], removeIds: [] },
+          canon: { worldAdd: [], characterAdd: [] },
+        },
+        rawResponse: 'accountant-continuation-threads',
+      });
+
     mockedGenerateOpeningPage.mockResolvedValueOnce({
       narrative: 'Opening scene with multiple active threads.',
       choices: [
@@ -687,6 +721,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
     createdStoryIds.add(storyId);
+
+    const beginRes = createMockResponse();
+    void beginStoryHandler(
+      {
+        params: { storyId },
+        body: { apiKey: 'mock-api-key-12345' },
+      } as unknown as Request,
+      beginRes.res
+    );
+    await waitForMock(beginRes.json);
 
     const playRes = createMockResponse();
     void getPlayHandler(

@@ -37,11 +37,11 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain(`TONE/GENRE: ${baseContext.tone}`);
   });
 
-  it('requests exactly 3 acts and 2-4 beats per act', () => {
+  it('requests 3-5 acts and 2-4 beats per act', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
-    expect(lastUser).toContain('exactly 3 acts');
+    expect(lastUser).toContain('3-5 acts');
     expect(lastUser).toContain('2-4 beats');
   });
 

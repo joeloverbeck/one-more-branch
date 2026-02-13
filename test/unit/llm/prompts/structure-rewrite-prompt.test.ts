@@ -126,7 +126,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('pacingBudget:');
     expect(user).toContain('targetPagesMin');
     expect(user).toContain('targetPagesMax');
-    expect(user).toContain('acts: exactly 3 items');
+    expect(user).toContain('acts: 3-5 items');
     expect(user).toContain('name: evocative act title');
     expect(user).toContain('objective: main goal for the act');
     expect(user).toContain('stakes: consequence of failure');

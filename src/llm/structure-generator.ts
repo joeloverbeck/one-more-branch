@@ -46,10 +46,10 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
     throw new LLMError('Structure response missing overallTheme', 'STRUCTURE_PARSE_ERROR', true);
   }
 
-  if (!Array.isArray(data['acts']) || data['acts'].length !== 3) {
+  if (!Array.isArray(data['acts']) || data['acts'].length < 3 || data['acts'].length > 5) {
     const received = Array.isArray(data['acts']) ? data['acts'].length : typeof data['acts'];
     throw new LLMError(
-      `Structure response must include exactly 3 acts (received: ${received})`,
+      `Structure response must include 3-5 acts (received: ${received})`,
       'STRUCTURE_PARSE_ERROR',
       true
     );

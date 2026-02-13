@@ -207,7 +207,7 @@ OUTPUT SHAPE (same as original structure):
 - overallTheme: string (may evolve slightly from original, or stay the same)
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
-- acts: exactly 3 items
+- acts: 3-5 items
 - each act has:
   - name: evocative act title
   - objective: main goal for the act

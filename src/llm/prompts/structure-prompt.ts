@@ -114,7 +114,7 @@ ${context.characterConcept}
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
-1. Return exactly 3 acts following setup, confrontation, and resolution.
+1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.
 2. For each act, include 2-4 beats that function as flexible milestones, not rigid gates.
 3. Ensure beats are branching-aware so different player choices can still plausibly satisfy them.
 4. Reflect the character concept in the protagonist's journey, conflicts, and opportunities.
@@ -149,7 +149,7 @@ OUTPUT SHAPE:
     - leverage: 1 sentence
     - fear: 1 sentence
     - offScreenBehavior: 1 sentence
-- acts: exactly 3 items
+- acts: 3-5 items
 - each act has:
   - name: evocative act title
   - objective: main goal for the act

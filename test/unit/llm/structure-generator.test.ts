@@ -272,7 +272,7 @@ describe('structure-generator', () => {
     await expectation;
   });
 
-  it('throws STRUCTURE_PARSE_ERROR when acts count is not exactly 3', async () => {
+  it('throws STRUCTURE_PARSE_ERROR when acts count is below 3', async () => {
     const payload = createValidStructurePayload();
     const invalid = { ...payload, acts: payload.acts.slice(0, 2) };
     const rawContent = JSON.stringify(invalid);
@@ -290,10 +290,13 @@ describe('structure-generator', () => {
     await expectation;
   });
 
-  it('throws STRUCTURE_PARSE_ERROR with count when 4 acts are returned', async () => {
+  it('throws STRUCTURE_PARSE_ERROR when acts count exceeds 5', async () => {
     const payload = createValidStructurePayload();
-    const extraAct = { ...payload.acts[0]!, name: 'Act IV' };
-    const invalid = { ...payload, acts: [...payload.acts, extraAct] };
+    const extraActs = Array.from({ length: 3 }, (_, i) => ({
+      ...payload.acts[0]!,
+      name: `Act ${4 + i}`,
+    }));
+    const invalid = { ...payload, acts: [...payload.acts, ...extraActs] };
     const rawContent = JSON.stringify(invalid);
     fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
 
@@ -301,12 +304,46 @@ describe('structure-generator', () => {
     const expectation = expect(pending).rejects.toMatchObject({
       code: 'STRUCTURE_PARSE_ERROR',
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('received: 4'),
+      message: expect.stringContaining('received: 6'),
       context: { rawContent },
     });
 
     await advanceRetryDelays();
     await expectation;
+  });
+
+  it('accepts 4 acts as a valid structure', async () => {
+    const payload = createValidStructurePayload();
+    const extraAct = {
+      name: 'Act IV',
+      objective: 'Wrap up loose ends.',
+      stakes: 'Failure leaves threads dangling.',
+      entryCondition: 'The main conflict is resolved.',
+      beats: [
+        {
+          name: 'Aftermath',
+          description: 'Survey the aftermath.',
+          objective: 'Understand consequences.',
+          role: 'setup',
+        },
+        {
+          name: 'New equilibrium',
+          description: 'Establish a new normal.',
+          objective: 'Close the story.',
+          role: 'resolution',
+        },
+      ],
+    };
+    const valid = { ...payload, acts: [...payload.acts, extraAct] };
+    const rawContent = JSON.stringify(valid);
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+
+    const result = await generateStoryStructure(context, 'test-api-key', {
+      promptOptions: {},
+    });
+
+    expect(result.acts).toHaveLength(4);
+    expect(result.acts[3]!.name).toBe('Act IV');
   });
 
   it('throws STRUCTURE_PARSE_ERROR with type info when acts is not an array', async () => {
