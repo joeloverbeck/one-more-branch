@@ -3,6 +3,7 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generatePageWriterOutput,
 } from '@/llm';
 import {
@@ -28,15 +29,20 @@ import type { StoryStructure } from '@/models/story-arc';
 import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 import { LLMError } from '@/llm/llm-client-types';
 import type { AnalystResult } from '@/llm/analyst-types';
-import type { PagePlanGenerationResult } from '@/llm/planner-types';
+import type {
+  PagePlanGenerationResult,
+  ReducedPagePlanGenerationResult,
+} from '@/llm/planner-types';
 import type { PageWriterResult } from '@/llm/writer-types';
 import { logger } from '@/logging/index';
+import type { StateAccountantGenerationResult } from '@/llm/accountant-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -67,6 +73,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 const mockedLogger = logger as {
   info: jest.Mock;
@@ -344,6 +353,32 @@ function buildPagePlanResult(
   };
 }
 
+function buildReducedPagePlanResult(
+  overrides?: Partial<ReducedPagePlanGenerationResult>
+): ReducedPagePlanGenerationResult {
+  const base = buildPagePlanResult();
+  return {
+    sceneIntent: base.sceneIntent,
+    continuityAnchors: base.continuityAnchors,
+    writerBrief: base.writerBrief,
+    dramaticQuestion: base.dramaticQuestion,
+    choiceIntents: base.choiceIntents,
+    rawResponse: base.rawResponse,
+    ...overrides,
+  };
+}
+
+function buildStateAccountantResult(
+  overrides?: Partial<StateAccountantGenerationResult>
+): StateAccountantGenerationResult {
+  const base = buildPagePlanResult();
+  return {
+    stateIntents: base.stateIntents,
+    rawResponse: '{"ok":true}',
+    ...overrides,
+  };
+}
+
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Survive after betrayal.',
@@ -413,7 +448,8 @@ describe('page-service integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
-    mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+    mockedGeneratePagePlan.mockResolvedValue(buildReducedPagePlanResult());
+    mockedGenerateStateAccountant.mockResolvedValue(buildStateAccountantResult());
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
       passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
@@ -630,7 +666,20 @@ describe('page-service integration', () => {
       const pagePlan = buildPagePlanResult({
         sceneIntent: 'Open with immediate pursuit pressure.',
       });
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedGenerateOpeningPage.mockResolvedValue(buildOpeningResult());
 
       await generateFirstPage(baseStory, 'test-api-key');
@@ -646,12 +695,26 @@ describe('page-service integration', () => {
       );
       expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          pagePlan,
+          pagePlan: expect.objectContaining({
+            sceneIntent: pagePlan.sceneIntent,
+            continuityAnchors: pagePlan.continuityAnchors,
+            stateIntents: pagePlan.stateIntents,
+            writerBrief: pagePlan.writerBrief,
+            dramaticQuestion: pagePlan.dramaticQuestion,
+            choiceIntents: pagePlan.choiceIntents,
+          }),
         }),
         expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.objectContaining({
           narrative: expect.any(String),
           sceneSummary: expect.any(String),
@@ -955,7 +1018,7 @@ describe('page-service integration', () => {
       await storage.savePage(baseStory.id, page3);
       await storage.savePage(baseStory.id, parentPage);
 
-      mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+      mockedGeneratePagePlan.mockResolvedValue(buildReducedPagePlanResult());
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
 
       await generateNextPage(baseStory, parentPage, 0, 'test-api-key');
@@ -1017,7 +1080,20 @@ describe('page-service integration', () => {
       const pagePlan = buildPagePlanResult({
         sceneIntent: 'Escalate with pursuit and constrained options.',
       });
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
 
       await generateNextPage(baseStory, parentPage, 0, 'test-api-key');
@@ -1034,11 +1110,25 @@ describe('page-service integration', () => {
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.any(Object),
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.objectContaining({
           narrative: expect.any(String),
           sceneSummary: expect.any(String),

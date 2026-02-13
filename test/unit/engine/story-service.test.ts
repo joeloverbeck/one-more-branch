@@ -179,10 +179,11 @@ describe('story-service', () => {
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
       mockedGeneratePage.mockResolvedValue({ page, updatedStory, metrics: {
         plannerDurationMs: 0,
-        lorekeeperDurationMs: 0,
+        accountantDurationMs: 0,
         writerDurationMs: 0,
         reconcilerDurationMs: 0,
         plannerValidationIssueCount: 0,
+        accountantValidationIssueCount: 0,
         writerValidationIssueCount: 0,
         reconcilerIssueCount: 0,
         reconcilerRetried: false,

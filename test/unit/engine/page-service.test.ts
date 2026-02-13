@@ -2,6 +2,7 @@
 import {
   generateAnalystEvaluation,
   generatePagePlan,
+  generateStateAccountant,
   generateOpeningPage,
   generatePageWriterOutput,
   generateLorekeeperBible,
@@ -31,17 +32,22 @@ import {
 } from '../../../src/engine/page-service';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { LLMError } from '../../../src/llm/llm-client-types';
-import type { PagePlanGenerationResult } from '../../../src/llm/planner-types';
+import type {
+  PagePlanGenerationResult,
+  ReducedPagePlanGenerationResult,
+} from '../../../src/llm/planner-types';
 import type { PageWriterResult } from '../../../src/llm/writer-types';
 import { logger } from '../../../src/logging/index.js';
 import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { StoryStructure } from '../../../src/models/story-arc';
+import type { StateAccountantGenerationResult } from '../../../src/llm/accountant-types';
 
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
@@ -85,6 +91,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<
   typeof generateLorekeeperBible
 >;
@@ -284,10 +293,37 @@ function buildPagePlanResult(
   };
 }
 
+function buildReducedPagePlanResult(
+  overrides?: Partial<ReducedPagePlanGenerationResult>
+): ReducedPagePlanGenerationResult {
+  const base = buildPagePlanResult();
+  return {
+    sceneIntent: base.sceneIntent,
+    continuityAnchors: base.continuityAnchors,
+    writerBrief: base.writerBrief,
+    dramaticQuestion: base.dramaticQuestion,
+    choiceIntents: base.choiceIntents,
+    rawResponse: base.rawResponse,
+    ...overrides,
+  };
+}
+
+function buildStateAccountantResult(
+  overrides?: Partial<StateAccountantGenerationResult>
+): StateAccountantGenerationResult {
+  const base = buildPagePlanResult();
+  return {
+    stateIntents: base.stateIntents,
+    rawResponse: '{"ok":true}',
+    ...overrides,
+  };
+}
+
 describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+    mockedGeneratePagePlan.mockResolvedValue(buildReducedPagePlanResult());
+    mockedGenerateStateAccountant.mockResolvedValue(buildStateAccountantResult());
     mockedGenerateLorekeeperBible.mockResolvedValue({
       sceneWorldContext: 'Test world context',
       relevantCharacters: [],
@@ -345,7 +381,20 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       };
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedGenerateOpeningPage.mockResolvedValue(openingWriterResult);
       mockedReconcileState
         .mockReturnValueOnce(
@@ -471,6 +520,8 @@ describe('page-service', () => {
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
@@ -478,6 +529,8 @@ describe('page-service', () => {
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 2 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 2 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
@@ -565,7 +618,20 @@ describe('page-service', () => {
     it('calls planner before opening writer and threads planner output into opening context', async () => {
       const story = buildStory();
       const pagePlan = buildPagePlanResult({ sceneIntent: 'Open with immediate pursuit.' });
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'Bootsteps close in as you slip through the alley.',
         choices: [
@@ -624,12 +690,26 @@ describe('page-service', () => {
       );
       expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          pagePlan,
+          pagePlan: expect.objectContaining({
+            sceneIntent: pagePlan.sceneIntent,
+            continuityAnchors: pagePlan.continuityAnchors,
+            stateIntents: pagePlan.stateIntents,
+            writerBrief: pagePlan.writerBrief,
+            dramaticQuestion: pagePlan.dramaticQuestion,
+            choiceIntents: pagePlan.choiceIntents,
+          }),
         }),
         expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.objectContaining({
           narrative: expect.any(String),
           sceneSummary: expect.any(String),
@@ -863,7 +943,7 @@ describe('page-service', () => {
         parentChoiceIndex: null,
       });
       mockedStorage.getMaxPageId.mockResolvedValue(1);
-      mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+      mockedGeneratePagePlan.mockResolvedValue(buildReducedPagePlanResult());
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You dash between wagons while lantern light sweeps the road.',
         choices: [
@@ -986,7 +1066,20 @@ describe('page-service', () => {
       const pagePlan = buildPagePlanResult({
         sceneIntent: 'Immediate pursuit through narrow passages.',
       });
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You vault a crate and nearly collide with a market stall.',
@@ -1058,11 +1151,25 @@ describe('page-service', () => {
         expect.objectContaining({
           suggestedProtagonistSpeech: 'We should cut through the courtyard.',
         }),
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.objectContaining({
           narrative: expect.any(String),
           sceneSummary: expect.any(String),
@@ -1158,6 +1265,8 @@ describe('page-service', () => {
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],

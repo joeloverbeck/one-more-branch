@@ -88,6 +88,7 @@ describe('public client script', () => {
 
     expect(script).toContain('const STAGE_PHRASE_POOLS = {');
     expect(script).toContain('PLANNING_PAGE: [');
+    expect(script).toContain('ACCOUNTING_STATE: [');
     expect(script).toContain('WRITING_OPENING_PAGE: [');
     expect(script).toContain('WRITING_CONTINUING_PAGE: [');
     expect(script).toContain('ANALYZING_SCENE: [');

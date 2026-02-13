@@ -52,6 +52,22 @@ export interface ChoiceIntent {
   primaryDelta: PrimaryDelta;
 }
 
+export interface ReducedPagePlanResult {
+  sceneIntent: string;
+  continuityAnchors: string[];
+  writerBrief: {
+    openingLineDirective: string;
+    mustIncludeBeats: string[];
+    forbiddenRecaps: string[];
+  };
+  dramaticQuestion: string;
+  choiceIntents: ChoiceIntent[];
+}
+
+export interface ReducedPagePlanGenerationResult extends ReducedPagePlanResult {
+  rawResponse: string;
+}
+
 export interface PagePlan {
   sceneIntent: string;
   continuityAnchors: string[];

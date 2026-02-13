@@ -51,10 +51,11 @@ export interface ReconciliationFailureReason {
 
 export interface GenerationPipelineMetrics {
   plannerDurationMs: number;
-  lorekeeperDurationMs: number;
+  accountantDurationMs: number;
   writerDurationMs: number;
   reconcilerDurationMs: number;
   plannerValidationIssueCount: number;
+  accountantValidationIssueCount: number;
   writerValidationIssueCount: number;
   reconcilerIssueCount: number;
   reconcilerRetried: boolean;

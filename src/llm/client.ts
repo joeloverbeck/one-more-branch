@@ -1,4 +1,5 @@
 import { logger, logPrompt } from '../logging/index.js';
+import { generateAccountantWithFallback } from './accountant-generation.js';
 import { generateAnalystWithFallback } from './analyst-generation.js';
 import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
 import { OPENROUTER_API_URL } from './http-client.js';
@@ -10,8 +11,10 @@ import {
   buildContinuationPrompt,
   buildOpeningPrompt,
   buildPagePlannerPrompt,
+  buildStateAccountantPrompt,
 } from './prompts/index.js';
 import { withRetry } from './retry.js';
+import type { StateAccountantGenerationResult } from './accountant-types.js';
 import type { AnalystContext, AnalystResult } from './analyst-types.js';
 import type {
   ContinuationContext,
@@ -21,7 +24,11 @@ import type {
 } from './context-types.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import type { LorekeeperResult } from './lorekeeper-types.js';
-import type { PagePlan, PagePlanGenerationResult } from './planner-types.js';
+import type {
+  PagePlan,
+  ReducedPagePlanGenerationResult,
+  ReducedPagePlanResult,
+} from './planner-types.js';
 import type { PageWriterResult } from './writer-types.js';
 import { generateWriterWithFallback } from './writer-generation.js';
 
@@ -74,12 +81,24 @@ export async function generateAnalystEvaluation(
 export async function generatePagePlan(
   context: PagePlanContext,
   options: GenerationOptions
-): Promise<PagePlanGenerationResult> {
+): Promise<ReducedPagePlanGenerationResult> {
   const messages = buildPagePlannerPrompt(context);
 
   logPrompt(logger, 'planner', messages);
 
   return withRetry(() => generatePlannerWithFallback(messages, options));
+}
+
+export async function generateStateAccountant(
+  context: PagePlanContext,
+  reducedPlan: ReducedPagePlanResult,
+  options: GenerationOptions
+): Promise<StateAccountantGenerationResult> {
+  const messages = buildStateAccountantPrompt(context, reducedPlan);
+
+  logPrompt(logger, 'accountant', messages);
+
+  return withRetry(() => generateAccountantWithFallback(messages, options));
 }
 
 export async function generateLorekeeperBible(

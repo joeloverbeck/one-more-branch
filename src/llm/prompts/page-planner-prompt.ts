@@ -1,11 +1,9 @@
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { PagePlanContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
-import { CONTINUATION_ACTIVE_STATE_QUALITY } from './sections/continuation/index.js';
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
-  PLANNER_STATE_INTENT_RULES,
 } from './sections/planner/index.js';
 import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
@@ -16,7 +14,7 @@ const PLANNER_RULES = `Plan the next page before prose generation.
 - You do not narrate the scene.
 - You propose a dramaticQuestion that the scene raises and choiceIntents as a blueprint for the writer's choices.
 - choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
-- You do not assign server IDs.
+- You do not produce stateIntents. State accounting is handled in a separate stage.
 - Keep output deterministic and concise.
 - Consider NPC agendas when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior.`;
 
@@ -59,16 +57,11 @@ ${context.reconciliationFailureReasons
     context.toneAntiKeywords
   );
 
-  const qualityCriteriaSection =
-    context.mode === 'continuation' ? `\n${CONTINUATION_ACTIVE_STATE_QUALITY}\n` : '';
-
   const userPrompt = `Create a page plan for the writer model.
 
 ${contextSection}
 ${reconciliationRetrySection}
 
-${PLANNER_STATE_INTENT_RULES}
-${qualityCriteriaSection}
 ${toneReminderLine}
 
 Return JSON only.`;

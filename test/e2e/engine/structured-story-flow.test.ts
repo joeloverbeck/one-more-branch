@@ -4,6 +4,7 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
 import { StoryId } from '@/models';
@@ -15,6 +16,7 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -42,6 +44,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -358,15 +363,6 @@ describe('Structured Story E2E', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Drive the current branch with immediate outcomes.',
       continuityAnchors: [],
-      stateIntents: {
-        threats: { add: [], removeIds: [] },
-        constraints: { add: [], removeIds: [] },
-        threads: { add: [], resolveIds: [] },
-        inventory: { add: [], removeIds: [] },
-        health: { add: [], removeIds: [] },
-        characterState: { add: [], removeIds: [] },
-        canon: { worldAdd: [], characterAdd: [] },
-      },
       writerBrief: {
         openingLineDirective: 'Begin with direct consequence.',
         mustIncludeBeats: [],
@@ -386,6 +382,19 @@ describe('Structured Story E2E', () => {
         },
       ],
       rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
+      stateIntents: {
+        currentLocation: '',
+        threats: { add: [], removeIds: [] },
+        constraints: { add: [], removeIds: [] },
+        threads: { add: [], resolveIds: [] },
+        inventory: { add: [], removeIds: [] },
+        health: { add: [], removeIds: [] },
+        characterState: { add: [], removeIds: [] },
+        canon: { worldAdd: [], characterAdd: [] },
+      },
+      rawResponse: 'accountant',
     });
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);

@@ -5,6 +5,7 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
 import { reconcileState } from '@/engine/state-reconciler';
@@ -19,6 +20,7 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -57,6 +59,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -216,15 +221,6 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Advance scene via immediate consequence.',
       continuityAnchors: [],
-      stateIntents: {
-        threats: { add: [], removeIds: [] },
-        constraints: { add: [], removeIds: [] },
-        threads: { add: [], resolveIds: [] },
-        inventory: { add: [], removeIds: [] },
-        health: { add: [], removeIds: [] },
-        characterState: { add: [], removeIds: [] },
-        canon: { worldAdd: [], characterAdd: [] },
-      },
       writerBrief: {
         openingLineDirective: 'Begin with action.',
         mustIncludeBeats: [],
@@ -244,6 +240,19 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         },
       ],
       rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
+      stateIntents: {
+        currentLocation: '',
+        threats: { add: [], removeIds: [] },
+        constraints: { add: [], removeIds: [] },
+        threads: { add: [], resolveIds: [] },
+        inventory: { add: [], removeIds: [] },
+        health: { add: [], removeIds: [] },
+        characterState: { add: [], removeIds: [] },
+        canon: { worldAdd: [], characterAdd: [] },
+      },
+      rawResponse: 'accountant',
     });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
       passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)

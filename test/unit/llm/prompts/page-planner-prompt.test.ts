@@ -71,14 +71,14 @@ describe('buildPagePlannerPrompt', () => {
     expect(messages[1]?.role).toBe('user');
   });
 
-  it('includes planner safety constraints in the system message', () => {
+  it('includes planner constraints in the system message', () => {
     const messages = buildPagePlannerPrompt(openingContext);
     const system = getSystemMessage(messages);
 
     expect(system).toContain('page planner');
     expect(system).toContain('do not narrate');
     expect(system).toContain('propose a dramaticQuestion');
-    expect(system).toContain('do not assign server IDs');
+    expect(system).toContain('do not produce stateIntents');
   });
 
   it('uses opening context section for opening mode', () => {
@@ -87,7 +87,6 @@ describe('buildPagePlannerPrompt', () => {
 
     expect(user).toContain('=== PLANNER CONTEXT: OPENING ===');
     expect(user).toContain('A fugitive radio operator');
-    expect(user).not.toContain('OPENING STATE SNAPSHOT');
     expect(user).not.toContain('=== PLANNER CONTEXT: CONTINUATION ===');
   });
 
@@ -102,60 +101,13 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('(MYSTERY/HIGH)');
   });
 
-  it('does not include inline output shape scaffolding', () => {
+  it('does not include state-intent rules in planner prompt', () => {
     const messages = buildPagePlannerPrompt(openingContext);
     const user = getUserMessage(messages);
 
-    expect(user).not.toContain('OUTPUT FORMAT:');
-    expect(user).not.toContain('"sceneIntent"');
-    expect(user).not.toContain('"stateIntents"');
+    expect(user).not.toContain('PLANNER RULES:');
+    expect(user).not.toContain('STATE PERSISTENCE CONTRACT:');
+    expect(user).not.toContain('THREAT TYPE CONTRACT:');
     expect(user).toContain('Return JSON only.');
-  });
-
-  it('includes thread contract and canonical phrasing templates in planner rules', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
-    const user = getUserMessage(messages);
-
-    expect(user).toContain('THREAD CONTRACT (OPEN LOOPS ONLY):');
-    expect(user).toContain('THREADS = unresolved open loops, never current-state facts.');
-    expect(user).toContain("Question loop ('MYSTERY', 'INFORMATION', 'MORAL', 'RELATIONSHIP')");
-    expect(user).toContain('CANONICAL THREAD PHRASING TEMPLATES:');
-    expect(user).toContain('MYSTERY: "Open question: <unknown that must be answered>"');
-    expect(user).toContain(
-      'DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"'
-    );
-  });
-
-  it('includes urgency rubric guidance in planner rules', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
-    const user = getUserMessage(messages);
-
-    expect(user).toContain('THREAD URGENCY RUBRIC:');
-    expect(user).toContain(
-      'Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH.'
-    );
-    expect(user).toContain(
-      'Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH).'
-    );
-    expect(user).toContain('URGENCY SELF-CHECK (before you finalize JSON):');
-  });
-
-  it('includes active state quality criteria in continuation mode', () => {
-    const messages = buildPagePlannerPrompt(continuationContext);
-    const user = getUserMessage(messages);
-
-    expect(user).toContain('ACTIVE STATE QUALITY CRITERIA:');
-    expect(user).toContain('HARD THREAT/CONSTRAINT DEDUP RULES');
-    expect(user).toContain('THREAT CLASSIFICATION (stricter)');
-    expect(user).toContain('THREAT/CONSTRAINT QUANTITY DISCIPLINE');
-    expect(user).toContain('THREAT/CONSTRAINT SELF-CHECK');
-  });
-
-  it('does not include active state quality criteria in opening mode', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
-    const user = getUserMessage(messages);
-
-    expect(user).not.toContain('ACTIVE STATE QUALITY CRITERIA:');
-    expect(user).not.toContain('HARD THREAT/CONSTRAINT DEDUP RULES');
   });
 });

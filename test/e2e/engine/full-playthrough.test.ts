@@ -4,6 +4,7 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
@@ -14,6 +15,7 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -41,6 +43,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -478,15 +483,6 @@ describe('story engine e2e full playthrough', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Advance the story with immediate consequences.',
       continuityAnchors: [],
-      stateIntents: {
-        threats: { add: [], removeIds: [] },
-        constraints: { add: [], removeIds: [] },
-        threads: { add: [], resolveIds: [] },
-        inventory: { add: [], removeIds: [] },
-        health: { add: [], removeIds: [] },
-        characterState: { add: [], removeIds: [] },
-        canon: { worldAdd: [], characterAdd: [] },
-      },
       writerBrief: {
         openingLineDirective: 'Start in motion.',
         mustIncludeBeats: [],
@@ -506,6 +502,19 @@ describe('story engine e2e full playthrough', () => {
         },
       ],
       rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
+      stateIntents: {
+        currentLocation: '',
+        threats: { add: [], removeIds: [] },
+        constraints: { add: [], removeIds: [] },
+        threads: { add: [], resolveIds: [] },
+        inventory: { add: [], removeIds: [] },
+        health: { add: [], removeIds: [] },
+        characterState: { add: [], removeIds: [] },
+        canon: { worldAdd: [], characterAdd: [] },
+      },
+      rawResponse: 'accountant',
     });
 
     mockedGenerateOpeningPage.mockImplementation((context) => {

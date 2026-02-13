@@ -4,6 +4,7 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
   generateLorekeeperBible,
 } from '@/llm';
@@ -16,6 +17,7 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
@@ -44,6 +46,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<
   typeof generateLorekeeperBible
 >;
@@ -347,15 +352,6 @@ describe('story-engine integration', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Drive the scene with direct consequences.',
       continuityAnchors: [],
-      stateIntents: {
-        threats: { add: [], removeIds: [] },
-        constraints: { add: [], removeIds: [] },
-        threads: { add: [], resolveIds: [] },
-        inventory: { add: [], removeIds: [] },
-        health: { add: [], removeIds: [] },
-        characterState: { add: [], removeIds: [] },
-        canon: { worldAdd: [], characterAdd: [] },
-      },
       writerBrief: {
         openingLineDirective: 'Begin in motion.',
         mustIncludeBeats: [],
@@ -375,6 +371,19 @@ describe('story-engine integration', () => {
         },
       ],
       rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
+      stateIntents: {
+        currentLocation: '',
+        threats: { add: [], removeIds: [] },
+        constraints: { add: [], removeIds: [] },
+        threads: { add: [], resolveIds: [] },
+        inventory: { add: [], removeIds: [] },
+        health: { add: [], removeIds: [] },
+        characterState: { add: [], removeIds: [] },
+        canon: { worldAdd: [], characterAdd: [] },
+      },
+      rawResponse: 'accountant',
     });
     mockedGenerateLorekeeperBible.mockResolvedValue({
       sceneWorldContext: 'Test world context',

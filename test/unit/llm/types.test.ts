@@ -77,9 +77,11 @@ describe('LLM types', () => {
     it('should allow creating GenerationPipelineMetrics with required fields', () => {
       const metrics: GenerationPipelineMetrics = {
         plannerDurationMs: 12,
+        accountantDurationMs: 7,
         writerDurationMs: 34,
         reconcilerDurationMs: 5,
         plannerValidationIssueCount: 0,
+        accountantValidationIssueCount: 0,
         writerValidationIssueCount: 1,
         reconcilerIssueCount: 2,
         reconcilerRetried: true,

@@ -114,6 +114,28 @@ const STAGE_PHRASE_POOLS = {
     'Asking a suspicious crow to forecast outcomes...',
     'Running long-term projections on short-term chaos...'
   ],
+  ACCOUNTING_STATE: [
+    'Opening the ledger of consequences...',
+    'Filing state changes in triplicate...',
+    'Auditing active threats against current reality...',
+    'Reconciling inventory with narrative receipts...',
+    'Balancing the books of cause and effect...',
+    'Stamping forms with the seal of inevitability...',
+    'Checking thread IDs against the registry...',
+    'Reviewing constraints for compliance...',
+    'Verifying canon entries with the records office...',
+    'Processing character-state updates through HR...',
+    'Issuing a formal notice of escalation...',
+    'Logging health updates in the permanent file...',
+    'Cross-referencing urgency with actual danger...',
+    'Reviewing removals for proper justification...',
+    'Archiving resolved loops in the closed-cases drawer...',
+    'Stamping this transition APPROVED...',
+    'Running the final consistency audit...',
+    'Reconciling ambition with available resources...',
+    'Validating IDs with stern bureaucratic focus...',
+    'Closing the books on this scene...'
+  ],
   CURATING_CONTEXT: [
     'Consulting the ancient tomes...',
     'Cross-referencing character grudges...',
@@ -847,6 +869,7 @@ const STAGE_PHRASE_POOLS = {
 };
 const STAGE_DISPLAY_NAMES = {
   PLANNING_PAGE: 'PLANNING',
+  ACCOUNTING_STATE: 'ACCOUNTING',
   CURATING_CONTEXT: 'LOREKEEPING',
   WRITING_OPENING_PAGE: 'WRITING',
   WRITING_CONTINUING_PAGE: 'WRITING',
@@ -889,7 +912,6 @@ CHOICE_TYPES.forEach(function (ct) { CHOICE_TYPE_LABEL_MAP[ct.value] = ct.label;
 
 var PRIMARY_DELTA_LABEL_MAP = {};
 PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.label; });
-
 
   // ── Utility functions ──────────────────────────────────────────────
 

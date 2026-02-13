@@ -1,10 +1,10 @@
 import type {
   GenerationPipelineMetrics,
+  PagePlanGenerationResult,
   PagePlanContext,
   PageWriterResult,
   ReconciliationFailureReason,
 } from '../llm';
-import type { generatePagePlan } from '../llm';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import type { GenerationStage, GenerationStageCallback } from './types';
 
@@ -17,7 +17,7 @@ export interface ReconciliationRetryGenerationOptions {
   previousState: import('./state-reconciler-types').StateReconciliationPreviousState;
   buildPlanContext: (failureReasons?: readonly ReconciliationFailureReason[]) => PagePlanContext;
   generateWriter: (
-    pagePlan: Awaited<ReturnType<typeof generatePagePlan>>,
+    pagePlan: PagePlanGenerationResult,
     failureReasons?: readonly ReconciliationFailureReason[]
   ) => Promise<PageWriterResult>;
   onGenerationStage?: GenerationStageCallback;
@@ -38,10 +38,11 @@ export function resolveWriterStage(mode: PagePlanContext['mode']): GenerationSta
 
 export function createSuccessPipelineMetrics(
   plannerDurationMs: number,
-  lorekeeperDurationMs: number,
+  accountantDurationMs: number,
   writerDurationMs: number,
   reconcilerDurationMs: number,
   plannerValidationIssueCount: number,
+  accountantValidationIssueCount: number,
   writerValidationIssueCount: number,
   reconcilerIssueCount: number,
   reconcilerRetried: boolean,
@@ -49,10 +50,11 @@ export function createSuccessPipelineMetrics(
 ): GenerationPipelineMetrics {
   return {
     plannerDurationMs,
-    lorekeeperDurationMs,
+    accountantDurationMs,
     writerDurationMs,
     reconcilerDurationMs,
     plannerValidationIssueCount,
+    accountantValidationIssueCount,
     writerValidationIssueCount,
     reconcilerIssueCount,
     reconcilerRetried,

@@ -7,14 +7,14 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
-import { PAGE_PLANNER_GENERATION_SCHEMA } from './schemas/page-planner-schema.js';
-import { validatePagePlannerResponse } from './schemas/page-planner-response-transformer.js';
+import { STATE_ACCOUNTANT_SCHEMA } from './schemas/state-accountant-schema.js';
+import { validateStateAccountantResponse } from './schemas/state-accountant-response-transformer.js';
 import type {
   GenerationObservabilityContext,
   GenerationOptions,
 } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage, type JsonSchema } from './llm-client-types.js';
-import type { ReducedPagePlanGenerationResult } from './planner-types.js';
+import type { StateAccountantGenerationResult } from './accountant-types.js';
 
 function buildObservabilityContext(
   context: GenerationObservabilityContext | undefined
@@ -36,7 +36,7 @@ function withObservabilityContext(
   });
 }
 
-function emitPlannerValidatorFailureCounters(
+function emitAccountantValidatorFailureCounters(
   error: LLMError,
   observability: GenerationObservabilityContext | undefined
 ): void {
@@ -61,7 +61,7 @@ function emitPlannerValidatorFailureCounters(
   }
 
   for (const [ruleKey, count] of countsByRule.entries()) {
-    logger.error('Planner validator failure counter', {
+    logger.error('Accountant validator failure counter', {
       ruleKey,
       count,
       ...buildObservabilityContext(observability),
@@ -69,11 +69,11 @@ function emitPlannerValidatorFailureCounters(
   }
 }
 
-async function callPlannerStructured(
+async function callAccountantStructured(
   messages: ChatMessage[],
   options: GenerationOptions,
-  responseFormat: JsonSchema = PAGE_PLANNER_GENERATION_SCHEMA
-): Promise<ReducedPagePlanGenerationResult> {
+  responseFormat: JsonSchema = STATE_ACCOUNTANT_SCHEMA
+): Promise<StateAccountantGenerationResult> {
   const config = getConfig().llm;
   const model = options.model ?? config.defaultModel;
   const temperature = options.temperature ?? config.temperature;
@@ -120,15 +120,15 @@ async function callPlannerStructured(
   const rawContent = parsedMessage.rawText;
 
   try {
-    return validatePagePlannerResponse(parsed, rawContent);
+    return validateStateAccountantResponse(parsed, rawContent);
   } catch (error) {
-    logger.error('Page planner structured response validation failed', {
+    logger.error('State accountant structured response validation failed', {
       rawResponse: rawContent,
       ...buildObservabilityContext(options.observability),
     });
 
     if (error instanceof LLMError) {
-      emitPlannerValidatorFailureCounters(error, options.observability);
+      emitAccountantValidatorFailureCounters(error, options.observability);
       throw withObservabilityContext(error, options.observability);
     }
 
@@ -141,17 +141,17 @@ async function callPlannerStructured(
   }
 }
 
-function buildLenientPlannerSchema(): JsonSchema {
+function buildLenientAccountantSchema(): JsonSchema {
   return {
-    ...PAGE_PLANNER_GENERATION_SCHEMA,
+    ...STATE_ACCOUNTANT_SCHEMA,
     json_schema: {
-      ...PAGE_PLANNER_GENERATION_SCHEMA.json_schema,
+      ...STATE_ACCOUNTANT_SCHEMA.json_schema,
       strict: false,
     },
   };
 }
 
-function isPlannerGrammarTooLargeError(error: unknown): boolean {
+function isAccountantGrammarTooLargeError(error: unknown): boolean {
   const signalPhrases = ['compiled grammar is too large', 'reduce the number of strict tools'];
 
   const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
@@ -164,15 +164,15 @@ function isPlannerGrammarTooLargeError(error: unknown): boolean {
   return signalPhrases.some((phrase) => combined.includes(phrase));
 }
 
-export async function generatePlannerWithFallback(
+export async function generateAccountantWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<ReducedPagePlanGenerationResult> {
+): Promise<StateAccountantGenerationResult> {
   try {
-    return await callPlannerStructured(messages, options);
+    return await callAccountantStructured(messages, options);
   } catch (error) {
-    if (isPlannerGrammarTooLargeError(error)) {
-      return callPlannerStructured(messages, options, buildLenientPlannerSchema());
+    if (isAccountantGrammarTooLargeError(error)) {
+      return callAccountantStructured(messages, options, buildLenientAccountantSchema());
     }
 
     if (isStructuredOutputNotSupported(error)) {

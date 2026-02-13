@@ -84,5 +84,5 @@ ${context.characterConcept}
   return `=== PLANNER CONTEXT: OPENING ===
 ${characterConceptSection}${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}
 
-${structureSection}Plan the first page intent and state intents using this opening setup.`;
+${structureSection}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
 }

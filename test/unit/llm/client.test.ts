@@ -20,6 +20,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import {
   generatePagePlan,
+  generateStateAccountant,
   generatePageWriterOutput,
   generateOpeningPage,
   generateWriterPage,
@@ -164,6 +165,18 @@ const validPlannerPayload = {
       primaryDelta: PrimaryDelta.LOCATION_CHANGE,
     },
   ],
+};
+
+const validReducedPlannerPayload = {
+  sceneIntent: validPlannerPayload.sceneIntent,
+  continuityAnchors: validPlannerPayload.continuityAnchors,
+  writerBrief: validPlannerPayload.writerBrief,
+  dramaticQuestion: validPlannerPayload.dramaticQuestion,
+  choiceIntents: validPlannerPayload.choiceIntents,
+};
+
+const validAccountantPayload = {
+  stateIntents: validPlannerPayload.stateIntents,
 };
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -808,7 +821,9 @@ describe('llm client', () => {
   });
 
   it('should log planner prompts before API call', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validPlannerPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validReducedPlannerPayload))
+    );
 
     await generatePagePlan(plannerOpeningContext, { apiKey: 'test-key' });
 
@@ -830,6 +845,16 @@ describe('llm client', () => {
 
     await expectation;
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('should log accountant prompts before API call', async () => {
+    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validAccountantPayload)));
+
+    await generateStateAccountant(plannerOpeningContext, validReducedPlannerPayload, {
+      apiKey: 'test-key',
+    });
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'accountant', expect.any(Array));
   });
 });
 

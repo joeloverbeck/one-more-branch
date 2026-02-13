@@ -40,6 +40,7 @@ describe('Engine types', () => {
     it('defines shared generation stage IDs exactly once and in order', () => {
       const expectedStages: GenerationStage[] = [
         'PLANNING_PAGE',
+        'ACCOUNTING_STATE',
         'CURATING_CONTEXT',
         'WRITING_OPENING_PAGE',
         'WRITING_CONTINUING_PAGE',

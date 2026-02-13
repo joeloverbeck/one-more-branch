@@ -23,7 +23,13 @@ export type {
   LorekeeperResult,
   AgendaResolverResult,
 } from './lorekeeper-types.js';
-export type { PagePlan, PagePlanGenerationResult } from './planner-types.js';
+export type {
+  PagePlan,
+  PagePlanGenerationResult,
+  ReducedPagePlanResult,
+  ReducedPagePlanGenerationResult,
+} from './planner-types.js';
+export type { StateAccountantResult, StateAccountantGenerationResult } from './accountant-types.js';
 export type {
   CompletedBeat,
   StructureRewriteContext,
@@ -57,6 +63,7 @@ export {
   generateAnalystEvaluation,
   generateLorekeeperBible,
   generatePagePlan,
+  generateStateAccountant,
   validateApiKey,
 } from './client.js';
 
