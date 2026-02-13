@@ -280,11 +280,24 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
     context.parentThreadPayoffAssessments ?? []
   );
 
+  const toneKeywordsLine =
+    context.toneKeywords && context.toneKeywords.length > 0
+      ? `\nTone target feel: ${context.toneKeywords.join(', ')}`
+      : '';
+  const toneAntiKeywordsLine =
+    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
+      ? `\nTone avoid: ${context.toneAntiKeywords.join(', ')}`
+      : '';
+  const toneDriftLine =
+    context.parentToneDriftDescription && context.parentToneDriftDescription.length > 0
+      ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
+      : '';
+
   return `=== PLANNER CONTEXT: CONTINUATION ===
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}${toneDriftLine}
 
 ${structureSection}${pacingSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}

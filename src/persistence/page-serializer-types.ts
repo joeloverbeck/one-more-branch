@@ -105,6 +105,8 @@ export interface AnalystResultFileData {
   anchorEvidence: string[];
   completionGateSatisfied: boolean;
   completionGateFailureReason: string;
+  toneAdherent?: boolean;
+  toneDriftDescription?: string;
   narrativePromises?: NarrativePromiseFileData[];
   threadPayoffAssessments?: ThreadPayoffAssessmentFileData[];
 }

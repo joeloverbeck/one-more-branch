@@ -2,6 +2,7 @@ import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
+import { buildToneReminder } from './sections/shared/tone-block.js';
 
 function getActsToRegenerate(currentActIndex: number): string {
   if (currentActIndex === 0) {
@@ -153,6 +154,15 @@ export function buildStructureRewritePrompt(
 
   const worldSection = context.worldbuilding ? `World: ${context.worldbuilding}\n` : '';
 
+  const toneKeywordsLine =
+    context.toneKeywords && context.toneKeywords.length > 0
+      ? `Tone target feel: ${context.toneKeywords.join(', ')}\n`
+      : '';
+  const toneAntiKeywordsLine =
+    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
+      ? `Tone avoid: ${context.toneAntiKeywords.join(', ')}\n`
+      : '';
+
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
@@ -160,7 +170,7 @@ The story has deviated from its original plan. Generate replacement beats for in
 ## STORY CONTEXT
 Character: ${context.characterConcept}
 ${worldSection}Tone: ${context.tone}
-Original Theme: ${context.originalTheme}
+${toneKeywordsLine}${toneAntiKeywordsLine}Original Theme: ${context.originalTheme}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
@@ -179,7 +189,7 @@ Generate NEW beats to replace invalidated ones. You are regenerating: ${getActsT
 
 REQUIREMENTS (follow ALL):
 1. Preserve completed beats exactly—include them in the output with unchanged names, descriptions, objectives, and roles
-2. Maintain thematic coherence with: "${context.originalTheme}"
+2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "${context.tone}" in naming, stakes, and emotional register. Do not drift toward generic dark fantasy.
 3. Build naturally from the current narrative state
 4. Follow three-act structure principles (setup, confrontation, resolution)
 5. Keep 2-4 beats per act total (including preserved beats)
@@ -190,6 +200,8 @@ REQUIREMENTS (follow ALL):
    - Preserve beat roles from completed beats unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
+
+${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 OUTPUT SHAPE (same as original structure):
 - overallTheme: string (may evolve slightly from original, or stay the same)
@@ -208,7 +220,9 @@ OUTPUT SHAPE (same as original structure):
       - objective: specific protagonist goal for the beat
       - role: "setup" | "escalation" | "turning_point" | "resolution"`;
 
-  const messages: ChatMessage[] = [{ role: 'system', content: buildStructureSystemPrompt() }];
+  const messages: ChatMessage[] = [
+    { role: 'system', content: buildStructureSystemPrompt(context.tone) },
+  ];
 
   // Add few-shot example for structure rewrite
   if (options?.fewShotMode && options.fewShotMode !== 'none') {

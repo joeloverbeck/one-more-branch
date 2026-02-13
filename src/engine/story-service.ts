@@ -64,6 +64,18 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
     const structure = createStoryStructure(structureResult);
     let storyWithStructure = updateStoryStructure(story, structure);
 
+    if (structureResult.toneKeywords && structureResult.toneKeywords.length > 0) {
+      storyWithStructure = {
+        ...storyWithStructure,
+        toneKeywords: structureResult.toneKeywords,
+      };
+    }
+    if (structureResult.toneAntiKeywords && structureResult.toneAntiKeywords.length > 0) {
+      storyWithStructure = {
+        ...storyWithStructure,
+        toneAntiKeywords: structureResult.toneAntiKeywords,
+      };
+    }
     if (structureResult.initialNpcAgendas && structureResult.initialNpcAgendas.length > 0) {
       storyWithStructure = {
         ...storyWithStructure,

@@ -5,6 +5,7 @@ import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { StoryBible } from '../lorekeeper-types.js';
 import { buildContinuationSystemPrompt, composeContinuationDataRules } from './system-prompt.js';
+import { buildToneReminder } from './sections/shared/tone-block.js';
 import {
   buildProtagonistAffectSection,
   buildSceneContextSection,
@@ -266,6 +267,8 @@ REQUIREMENTS (follow all):
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
+${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
+
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly
 2. Maintain consistency with established state, canon, and continuity
@@ -273,7 +276,14 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 4. Prose quality: character-filtered, emotionally resonant, forward-moving
 5. sceneSummary and protagonistAffect accuracy`;
 
-  const messages: ChatMessage[] = [{ role: 'system', content: buildContinuationSystemPrompt() }];
+  const toneParams = {
+    tone: context.tone,
+    toneKeywords: context.toneKeywords,
+    toneAntiKeywords: context.toneAntiKeywords,
+  };
+  const messages: ChatMessage[] = [
+    { role: 'system', content: buildContinuationSystemPrompt(toneParams) },
+  ];
 
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(...buildFewShotMessages('continuation', options.fewShotMode));

@@ -27,6 +27,9 @@ export interface AnalystEvaluationContext {
   readonly parentActiveState: ActiveState;
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
+  readonly tone: string;
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -56,6 +59,9 @@ export async function runAnalystEvaluation(
         activeState: context.parentActiveState,
         threadsResolved: context.threadsResolved,
         threadAges: context.threadAges,
+        tone: context.tone,
+        toneKeywords: context.toneKeywords,
+        toneAntiKeywords: context.toneAntiKeywords,
       },
       { apiKey: context.apiKey }
     );

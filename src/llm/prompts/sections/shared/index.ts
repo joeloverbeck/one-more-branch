@@ -13,3 +13,5 @@ export {
 } from './state-tracking.js';
 
 export { PROTAGONIST_AFFECT } from './protagonist-affect.js';
+
+export { buildToneBlock, buildToneReminder } from './tone-block.js';

@@ -15,6 +15,8 @@ export interface StructureRewriteContext {
   readonly characterConcept: string;
   readonly worldbuilding: string;
   readonly tone: string;
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
   readonly completedBeats: readonly CompletedBeat[];
   readonly narrativeSummary: string;
   readonly currentActIndex: number;

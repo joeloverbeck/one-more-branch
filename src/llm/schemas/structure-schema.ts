@@ -8,7 +8,15 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
     schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['overallTheme', 'premise', 'pacingBudget', 'acts', 'initialNpcAgendas'],
+      required: [
+        'overallTheme',
+        'premise',
+        'pacingBudget',
+        'acts',
+        'initialNpcAgendas',
+        'toneKeywords',
+        'toneAntiKeywords',
+      ],
       properties: {
         overallTheme: { type: 'string' },
         premise: {
@@ -29,6 +37,18 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               description: 'Maximum target page count for the full story (10-80).',
             },
           },
+        },
+        toneKeywords: {
+          type: 'array',
+          description:
+            '3-5 words capturing the target feel of the tone (e.g., ["irreverent", "bawdy", "slapstick", "warm-hearted"]).',
+          items: { type: 'string' },
+        },
+        toneAntiKeywords: {
+          type: 'array',
+          description:
+            '3-5 words describing what the tone should NOT be (e.g., ["grimdark", "portentous", "tragic", "grim"]).',
+          items: { type: 'string' },
         },
         initialNpcAgendas: {
           type: 'array',

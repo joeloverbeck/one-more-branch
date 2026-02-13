@@ -67,6 +67,8 @@ export const AnalystResultSchema = z.object({
   anchorEvidence: SafeStringArraySchema,
   completionGateSatisfied: z.boolean().catch(false).default(false),
   completionGateFailureReason: z.string().catch('').default(''),
+  toneAdherent: z.boolean().catch(true).default(true),
+  toneDriftDescription: z.string().catch('').default(''),
   narrativePromises: z.array(NarrativePromiseSchema).catch([]).default([]),
   threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),
 });

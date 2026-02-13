@@ -4,6 +4,7 @@ import type { OpeningContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildOpeningSystemPrompt, composeOpeningDataRules } from './system-prompt.js';
+import { buildToneReminder } from './sections/shared/tone-block.js';
 
 export function buildOpeningPrompt(
   context: OpeningContext,
@@ -98,6 +99,8 @@ ${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS
 
 REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
 
+${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
+
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. Ground the protagonist in the starting situation with immediate tension
 2. Maintain consistency with established worldbuilding, tone, and character concept
@@ -105,7 +108,12 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 4. Prose quality: character-filtered, emotionally resonant, forward-moving
 5. sceneSummary and protagonistAffect accuracy`;
 
-  const messages: ChatMessage[] = [{ role: 'system', content: buildOpeningSystemPrompt() }];
+  const toneParams = {
+    tone: context.tone,
+    toneKeywords: context.toneKeywords,
+    toneAntiKeywords: context.toneAntiKeywords,
+  };
+  const messages: ChatMessage[] = [{ role: 'system', content: buildOpeningSystemPrompt(toneParams) }];
 
   // Add few-shot examples if requested
   if (options?.fewShotMode && options.fewShotMode !== 'none') {

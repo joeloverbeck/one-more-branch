@@ -84,6 +84,8 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     anchorEvidence,
     completionGateSatisfied,
     completionGateFailureReason,
+    toneAdherent: validated.toneAdherent,
+    toneDriftDescription: validated.toneDriftDescription.trim(),
     narrativePromises: normalizeNarrativePromises(validated.narrativePromises),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
     rawResponse,

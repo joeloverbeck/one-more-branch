@@ -21,6 +21,8 @@ export interface OpeningContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  toneKeywords?: readonly string[];
+  toneAntiKeywords?: readonly string[];
   npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
@@ -33,6 +35,8 @@ export interface ContinuationContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  toneKeywords?: readonly string[];
+  toneAntiKeywords?: readonly string[];
   npcs?: readonly Npc[];
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
@@ -53,6 +57,7 @@ export interface ContinuationContext {
   grandparentNarrative: string | null;
   ancestorSummaries: readonly AncestorSummary[];
 
+  parentToneDriftDescription?: string;
   parentPacingNudge?: string | null;
   parentPacingIssueReason?: string;
   parentSceneMomentum?: SceneMomentum;
@@ -91,6 +96,8 @@ export interface LorekeeperContext {
   readonly characterConcept: string;
   readonly worldbuilding: string;
   readonly tone: string;
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
   readonly npcs?: readonly Npc[];
   readonly globalCanon: readonly string[];
   readonly globalCharacterCanon: Readonly<Record<string, readonly string[]>>;

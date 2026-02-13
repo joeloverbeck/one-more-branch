@@ -11,7 +11,6 @@ import {
   composeOpeningDataRules,
   composeContinuationDataRules,
   buildStructureSystemPrompt,
-  STRUCTURE_SYSTEM_PROMPT,
   STRICT_CHOICE_GUIDELINES,
 } from '../../../src/llm/prompts/system-prompt.js';
 import { CONTENT_POLICY } from '../../../src/llm/content-policy.js';
@@ -301,9 +300,16 @@ describe('buildStructureSystemPrompt composition', () => {
     });
   });
 
-  describe('exported constants', () => {
-    it('exports STRUCTURE_SYSTEM_PROMPT constant matching buildStructureSystemPrompt()', () => {
-      expect(STRUCTURE_SYSTEM_PROMPT).toBe(buildStructureSystemPrompt());
+  describe('tone injection', () => {
+    it('includes tone block when tone is provided', () => {
+      const prompt = buildStructureSystemPrompt('comedic fantasy');
+      expect(prompt).toContain('TONE/GENRE IDENTITY:');
+      expect(prompt).toContain('Tone: comedic fantasy');
+    });
+
+    it('omits tone block when no tone is provided', () => {
+      const prompt = buildStructureSystemPrompt();
+      expect(prompt).not.toContain('TONE/GENRE IDENTITY:');
     });
   });
 });

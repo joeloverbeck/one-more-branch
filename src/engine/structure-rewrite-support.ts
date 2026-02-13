@@ -71,6 +71,8 @@ export function buildRewriteContext(
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
+    toneKeywords: story.toneKeywords,
+    toneAntiKeywords: story.toneAntiKeywords,
     completedBeats,
     narrativeSummary: deviation.narrativeSummary,
     currentActIndex: structureState.currentActIndex,

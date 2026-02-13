@@ -103,6 +103,8 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
     anchorEvidence: [...(analystResult.anchorEvidence ?? [])],
     completionGateSatisfied: analystResult.completionGateSatisfied ?? false,
     completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
+    toneAdherent: analystResult.toneAdherent ?? true,
+    toneDriftDescription: analystResult.toneDriftDescription ?? '',
     narrativePromises: (analystResult.narrativePromises ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
@@ -145,6 +147,8 @@ function deserializeAnalystResult(
     anchorEvidence: [...data.anchorEvidence],
     completionGateSatisfied: data.completionGateSatisfied,
     completionGateFailureReason: data.completionGateFailureReason,
+    toneAdherent: data.toneAdherent ?? true,
+    toneDriftDescription: data.toneDriftDescription ?? '',
     narrativePromises: (data.narrativePromises ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType as AnalystResult['narrativePromises'][number]['promiseType'],

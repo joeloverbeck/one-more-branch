@@ -12,20 +12,35 @@
 You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
 1. Whether the current story beat has been concluded
 2. Whether the narrative has deviated from the planned beats
+3. Whether the narrative adheres to the target tone
 
-You analyze ONLY structure progression and deviation. You do NOT write narrative or make creative decisions.
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+
+You analyze structure progression, deviation, and tone adherence. You do NOT write narrative or make creative decisions.
 
 Use this strict sequence:
 Step A: Classify scene signals using the provided enums.
 Step B: Apply the completion gate against the active beat objective before deciding beatConcluded.
+Step C: Evaluate whether the narrative prose matches the target TONE/GENRE.
 
 Before setting beatConcluded, extract 1-3 objective anchors from activeBeat.objective and map each anchor to concrete evidence.
 Evidence is cumulative across the current narrative and active state.
 If no anchor has explicit evidence, beatConcluded must be false.
 
+TONE EVALUATION:
+- Set toneAdherent to true if the narrative's mood, vocabulary, and emotional register match the target tone.
+- Set toneAdherent to false if the narrative drifts toward a different genre feel (e.g., grimdark when tone should be comedic).
+- When toneAdherent is false, write a brief toneDriftDescription explaining what feels off and what the tone should be instead.
+- When toneAdherent is true, set toneDriftDescription to an empty string.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
+
+The tone block is injected between the role intro and the analysis rules. When tone is not available (shouldn't happen in practice), the tone block is omitted.
 
 ### 2) User Message
 
@@ -175,6 +190,8 @@ NARRATIVE TO EVALUATE:
   "anchorEvidence": ["{{explicit evidence mapped to anchor}}"],
   "completionGateSatisfied": {{true|false}},
   "completionGateFailureReason": "{{string}}",
+  "toneAdherent": {{true|false}},
+  "toneDriftDescription": "{{string, empty when toneAdherent is true}}",
   "narrativePromises": [
     {
       "description": "{{what was planted with emphasis}}",
@@ -193,5 +210,7 @@ NARRATIVE TO EVALUATE:
 }
 ```
 
+- `toneAdherent`: Whether the narrative matches the target tone's mood, vocabulary, and emotional register. Defaults to `true`.
+- `toneDriftDescription`: When `toneAdherent` is `false`, describes what feels off and what the tone should be. Empty string when adherent. This feedback propagates to the planner's continuation context for course correction.
 - `narrativePromises`: Array of implicit foreshadowing detected in the narrative (max 3). Empty array if none detected. Only items introduced with deliberate narrative emphasis.
 - `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.

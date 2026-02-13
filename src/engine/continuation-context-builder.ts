@@ -21,6 +21,8 @@ export function buildContinuationContext(
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
+    toneKeywords: story.toneKeywords,
+    toneAntiKeywords: story.toneAntiKeywords,
     npcs: story.npcs,
     globalCanon: story.globalCanon,
     globalCharacterCanon: story.globalCharacterCanon,
@@ -37,6 +39,7 @@ export function buildContinuationContext(
     grandparentNarrative: ancestorContext.grandparentNarrative,
     ancestorSummaries: ancestorContext.ancestorSummaries,
 
+    parentToneDriftDescription: parentPage.analystResult?.toneDriftDescription ?? undefined,
     parentPacingNudge: parentState.structureState.pacingNudge,
     parentPacingIssueReason: parentPage.analystResult?.pacingIssueReason ?? undefined,
     parentSceneMomentum: parentPage.analystResult?.sceneMomentum ?? undefined,

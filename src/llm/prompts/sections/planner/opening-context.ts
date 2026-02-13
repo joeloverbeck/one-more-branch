@@ -56,11 +56,20 @@ ${initialAgendas
 `
       : '';
 
+  const toneKeywordsLine =
+    context.toneKeywords && context.toneKeywords.length > 0
+      ? `\nTone target feel: ${context.toneKeywords.join(', ')}`
+      : '';
+  const toneAntiKeywordsLine =
+    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
+      ? `\nTone avoid: ${context.toneAntiKeywords.join(', ')}`
+      : '';
+
   return `=== PLANNER CONTEXT: OPENING ===
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}
 
 ${structureSection}OPENING STATE SNAPSHOT:
 - globalCanon entries: ${context.globalCanon.length}

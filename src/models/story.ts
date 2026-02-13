@@ -24,6 +24,8 @@ export interface Story {
   globalCharacterCanon: GlobalCharacterCanon;
   structure: StoryStructure | null;
   readonly structureVersions?: readonly VersionedStoryStructure[];
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
   readonly initialNpcAgendas?: readonly NpcAgenda[];
   readonly createdAt: Date;
   updatedAt: Date;

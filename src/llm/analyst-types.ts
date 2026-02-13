@@ -43,6 +43,8 @@ export interface AnalystResult {
   anchorEvidence: string[];
   completionGateSatisfied: boolean;
   completionGateFailureReason: string;
+  toneAdherent: boolean;
+  toneDriftDescription: string;
   narrativePromises: NarrativePromise[];
   threadPayoffAssessments: ThreadPayoffAssessment[];
   rawResponse: string;
@@ -55,4 +57,7 @@ export interface AnalystContext {
   activeState: ActiveState;
   threadsResolved: readonly string[];
   threadAges: Readonly<Record<string, number>>;
+  tone: string;
+  toneKeywords?: readonly string[];
+  toneAntiKeywords?: readonly string[];
 }

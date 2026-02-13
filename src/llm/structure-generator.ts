@@ -30,6 +30,8 @@ export interface StructureGenerationResult {
       role: string;
     }>;
   }>;
+  toneKeywords?: string[];
+  toneAntiKeywords?: string[];
   initialNpcAgendas?: NpcAgenda[];
   rawResponse: string;
 }
@@ -180,11 +182,27 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
     }
   }
 
+  const toneKeywords = Array.isArray(data['toneKeywords'])
+    ? (data['toneKeywords'] as unknown[])
+        .filter((item): item is string => typeof item === 'string')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : undefined;
+
+  const toneAntiKeywords = Array.isArray(data['toneAntiKeywords'])
+    ? (data['toneAntiKeywords'] as unknown[])
+        .filter((item): item is string => typeof item === 'string')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : undefined;
+
   return {
     overallTheme: data['overallTheme'],
     premise,
     pacingBudget,
     acts,
+    ...(toneKeywords && toneKeywords.length > 0 ? { toneKeywords } : {}),
+    ...(toneAntiKeywords && toneAntiKeywords.length > 0 ? { toneAntiKeywords } : {}),
     ...(initialNpcAgendas.length > 0 ? { initialNpcAgendas } : {}),
   };
 }
