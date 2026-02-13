@@ -14,7 +14,11 @@ import {
   applyStructureProgression,
   createInitialStructureState,
 } from '../../../src/engine/structure-state';
-import { getBeatOrThrow, parseBeatIndices, upsertBeatProgression } from '../../../src/engine/beat-utils';
+import {
+  getBeatOrThrow,
+  parseBeatIndices,
+  upsertBeatProgression,
+} from '../../../src/engine/beat-utils';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
@@ -23,7 +27,8 @@ import { createBeatDeviation } from '../../../src/models/story-arc';
 function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'A hero rises to save the realm',
-    premise: 'A reluctant guardian must unify fractured allies before an ancient force consumes the realm.',
+    premise:
+      'A reluctant guardian must unify fractured allies before an ancient force consumes the realm.',
     pacingBudget: { targetPagesMin: 16, targetPagesMax: 38 },
     acts: [
       {
@@ -109,7 +114,9 @@ describe('structure modules integration', () => {
       for (const progression of state.beatProgressions) {
         const indices = parseBeatIndices(progression.beatId);
         expect(indices).not.toBeNull();
-        expect(() => getBeatOrThrow(structure, indices!.actIndex, indices!.beatIndex)).not.toThrow();
+        expect(() =>
+          getBeatOrThrow(structure, indices!.actIndex, indices!.beatIndex)
+        ).not.toThrow();
       }
     });
   });
@@ -140,7 +147,7 @@ describe('structure modules integration', () => {
       const deviation = createBeatDeviation(
         'Unexpected plot twist',
         ['2.1', '2.2', '3.1'],
-        'The ally turns out to be the villain in disguise.',
+        'The ally turns out to be the villain in disguise.'
       );
 
       const context = buildRewriteContext(story, structureVersion, state, deviation);
@@ -189,20 +196,15 @@ describe('structure modules integration', () => {
         structure,
         parentState,
         true,
-        'The omens were heeded.',
+        'The omens were heeded.'
       );
 
       expect(childState).not.toBe(parentState);
       expect(childState.currentBeatIndex).toBe(1);
-      expect(childState.beatProgressions.find(p => p.beatId === '1.1')?.status).toBe('concluded');
+      expect(childState.beatProgressions.find((p) => p.beatId === '1.1')?.status).toBe('concluded');
 
       // Grandchild page without beat conclusion inherits state
-      const grandchildState = applyStructureProgression(
-        structure,
-        childState,
-        false,
-        '',
-      );
+      const grandchildState = applyStructureProgression(structure, childState, false, '');
 
       expect(grandchildState).toEqual({
         ...childState,
@@ -217,10 +219,11 @@ describe('structure modules integration', () => {
       const initialState = createInitialStructureState(structure);
 
       // Manually update a progression
-      const updatedProgressions = upsertBeatProgression(
-        initialState.beatProgressions,
-        { beatId: '1.1', status: 'concluded', resolution: 'Manual resolution.' },
-      );
+      const updatedProgressions = upsertBeatProgression(initialState.beatProgressions, {
+        beatId: '1.1',
+        status: 'concluded',
+        resolution: 'Manual resolution.',
+      });
 
       // The updated progressions should work with advanceStructureState
       const manualState = {
@@ -230,7 +233,9 @@ describe('structure modules integration', () => {
 
       // Can still advance from this state (though 1.1 is already concluded)
       // The next beat should become active
-      expect(manualState.beatProgressions.find(p => p.beatId === '1.1')?.status).toBe('concluded');
+      expect(manualState.beatProgressions.find((p) => p.beatId === '1.1')?.status).toBe(
+        'concluded'
+      );
     });
 
     it('parseBeatIndices correctly parses IDs created by factory', () => {
@@ -278,7 +283,7 @@ describe('structure modules integration', () => {
       // Extract all completed beats
       const completedBeats = extractCompletedBeats(structure, state);
       expect(completedBeats).toHaveLength(5);
-      expect(completedBeats.map(b => b.resolution)).toEqual(resolutions);
+      expect(completedBeats.map((b) => b.resolution)).toEqual(resolutions);
     });
   });
 });

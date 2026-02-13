@@ -20,7 +20,7 @@ describe('models barrel exports', () => {
     expect(models.createStory).toBe(createStoryDirect);
     expect(models.validateStory).toBe(validateStoryDirect);
     expect(models.createEmptyAccumulatedStructureState).toBe(
-      createEmptyAccumulatedStructureStateDirect,
+      createEmptyAccumulatedStructureStateDirect
     );
   });
 

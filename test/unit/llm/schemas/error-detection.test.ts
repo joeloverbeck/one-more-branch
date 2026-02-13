@@ -4,93 +4,89 @@ describe('isStructuredOutputNotSupported', () => {
   describe('should return true for explicit unsupported feature errors', () => {
     it('response_format is not supported', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('response_format is not supported by this model')),
+        isStructuredOutputNotSupported(new Error('response_format is not supported by this model'))
       ).toBe(true);
     });
 
     it('json_schema is not supported', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('json_schema is not supported')),
-      ).toBe(true);
+      expect(isStructuredOutputNotSupported(new Error('json_schema is not supported'))).toBe(true);
     });
 
     it('structured output is not supported', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('structured output is not supported')),
-      ).toBe(true);
+      expect(isStructuredOutputNotSupported(new Error('structured output is not supported'))).toBe(
+        true
+      );
     });
 
     it('does not support response_format', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('This model does not support response_format')),
+        isStructuredOutputNotSupported(new Error('This model does not support response_format'))
       ).toBe(true);
     });
 
     it('does not support json_schema', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('Provider does not support json_schema')),
+        isStructuredOutputNotSupported(new Error('Provider does not support json_schema'))
       ).toBe(true);
     });
 
     it('does not support structured', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('This model does not support structured outputs')),
+        isStructuredOutputNotSupported(new Error('This model does not support structured outputs'))
       ).toBe(true);
     });
 
     it('unsupported parameter: response_format', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('unsupported parameter: response_format')),
+        isStructuredOutputNotSupported(new Error('unsupported parameter: response_format'))
       ).toBe(true);
     });
 
     it('unsupported parameter: json_schema', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('unsupported parameter: json_schema')),
-      ).toBe(true);
+      expect(isStructuredOutputNotSupported(new Error('unsupported parameter: json_schema'))).toBe(
+        true
+      );
     });
 
     it('invalid parameter: response_format', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('invalid parameter: response_format')),
-      ).toBe(true);
+      expect(isStructuredOutputNotSupported(new Error('invalid parameter: response_format'))).toBe(
+        true
+      );
     });
 
     it('model does not support', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('model does not support this feature')),
-      ).toBe(true);
+      expect(isStructuredOutputNotSupported(new Error('model does not support this feature'))).toBe(
+        true
+      );
     });
 
     it('provider does not support', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('provider does not support this operation')),
+        isStructuredOutputNotSupported(new Error('provider does not support this operation'))
       ).toBe(true);
     });
   });
 
   describe('should return false for validation errors (model supports feature)', () => {
     it('generic invalid schema error', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('Invalid schema format')),
-      ).toBe(false);
+      expect(isStructuredOutputNotSupported(new Error('Invalid schema format'))).toBe(false);
     });
 
     it('strict mode validation failed', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('Strict mode validation failed')),
-      ).toBe(false);
+      expect(isStructuredOutputNotSupported(new Error('Strict mode validation failed'))).toBe(
+        false
+      );
     });
 
     it('additionalProperties violation', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('additionalProperties not allowed')),
-      ).toBe(false);
+      expect(isStructuredOutputNotSupported(new Error('additionalProperties not allowed'))).toBe(
+        false
+      );
     });
 
     it('provider returned error (generic)', () => {
       expect(
-        isStructuredOutputNotSupported(new Error('Provider returned error: validation failed')),
+        isStructuredOutputNotSupported(new Error('Provider returned error: validation failed'))
       ).toBe(false);
     });
   });
@@ -98,7 +94,7 @@ describe('isStructuredOutputNotSupported', () => {
   describe('should return false for unrelated errors', () => {
     it('network timeout', () => {
       expect(isStructuredOutputNotSupported(new Error('Network timeout while connecting'))).toBe(
-        false,
+        false
       );
     });
 
@@ -133,9 +129,9 @@ describe('isStructuredOutputNotSupported', () => {
     });
 
     it('case insensitive matching', () => {
-      expect(
-        isStructuredOutputNotSupported(new Error('RESPONSE_FORMAT IS NOT SUPPORTED')),
-      ).toBe(true);
+      expect(isStructuredOutputNotSupported(new Error('RESPONSE_FORMAT IS NOT SUPPORTED'))).toBe(
+        true
+      );
     });
   });
 });

@@ -80,7 +80,6 @@ describe('buildContinuationSystemPrompt', () => {
     expect(prompt).not.toContain('CONTINUITY RULES');
     expect(prompt).not.toContain('CANON QUALITY CRITERIA:');
   });
-
 });
 
 describe('composeOpeningDataRules', () => {

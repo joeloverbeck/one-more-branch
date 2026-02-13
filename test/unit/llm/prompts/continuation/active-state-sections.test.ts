@@ -63,9 +63,7 @@ describe('active-state-sections', () => {
     it('formats constraints with header and raw text', () => {
       const state: ActiveState = {
         ...emptyState,
-        activeConstraints: [
-          { id: 'cn-1', text: 'Injured leg limits mobility' },
-        ],
+        activeConstraints: [{ id: 'cn-1', text: 'Injured leg limits mobility' }],
       };
 
       const result = buildConstraintsSection(state);

@@ -1,12 +1,14 @@
-import type { WriterResult } from '../types.js';
+import type { WriterResult } from '../writer-types.js';
 import { WriterResultSchema } from './writer-validation-schema.js';
 
 function hasPlainStringChoices(choices: unknown): boolean {
   if (!Array.isArray(choices)) return false;
-  return choices.length > 0 && choices.every(item => typeof item === 'string');
+  return choices.length > 0 && choices.every((item) => typeof item === 'string');
 }
 
-function upgradeStringChoicesToObjects(choices: string[]): Array<{ text: string; choiceType: string; primaryDelta: string }> {
+function upgradeStringChoicesToObjects(
+  choices: string[]
+): Array<{ text: string; choiceType: string; primaryDelta: string }> {
   const defaultTypes = [
     'TACTICAL_APPROACH',
     'PATH_DIVERGENCE',
@@ -101,7 +103,7 @@ function normalizeRawResponse(rawJson: unknown): unknown {
 
       if (extractedChoices.length >= 2) {
         console.warn(
-          `[writer-response-transformer] Recovered ${extractedChoices.length} choices from malformed single-string array`,
+          `[writer-response-transformer] Recovered ${extractedChoices.length} choices from malformed single-string array`
         );
         return {
           ...obj,
@@ -109,14 +111,14 @@ function normalizeRawResponse(rawJson: unknown): unknown {
         };
       }
       console.warn(
-        '[writer-response-transformer] Failed to recover choices from malformed string, proceeding with original',
+        '[writer-response-transformer] Failed to recover choices from malformed string, proceeding with original'
       );
     }
   }
 
   if (hasPlainStringChoices(choices)) {
     console.warn(
-      '[writer-response-transformer] Upgrading plain string choices to structured objects',
+      '[writer-response-transformer] Upgrading plain string choices to structured objects'
     );
     return {
       ...obj,
@@ -128,7 +130,11 @@ function normalizeRawResponse(rawJson: unknown): unknown {
 }
 
 function normalizeThreadsAdded(
-  threadsAdded: Array<{ text: string; threadType: WriterResult['threadsAdded'][number]['threadType']; urgency: WriterResult['threadsAdded'][number]['urgency'] }>,
+  threadsAdded: Array<{
+    text: string;
+    threadType: WriterResult['threadsAdded'][number]['threadType'];
+    urgency: WriterResult['threadsAdded'][number]['urgency'];
+  }>
 ): WriterResult['threadsAdded'] {
   return threadsAdded.map((thread, index) => {
     const text = thread.text.trim();
@@ -163,8 +169,8 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): W
     .filter((entry) => entry.characterName && entry.states.length > 0);
 
   const characterStateChangesRemoved = validated.characterStateChangesRemoved
-    .map(id => id.trim())
-    .filter(id => id);
+    .map((id) => id.trim())
+    .filter((id) => id);
 
   return {
     narrative: validated.narrative.trim(),

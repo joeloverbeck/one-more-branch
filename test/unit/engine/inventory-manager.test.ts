@@ -68,7 +68,11 @@ describe('inventory-manager', () => {
     });
 
     it('should remove only the matching ID when text is duplicated', () => {
-      const inventory: Inventory = [inv(1, 'Health Potion'), inv(2, 'Shield'), inv(3, 'Health Potion')];
+      const inventory: Inventory = [
+        inv(1, 'Health Potion'),
+        inv(2, 'Shield'),
+        inv(3, 'Health Potion'),
+      ];
       const result = removeInventoryItem(inventory, 'inv-3');
       expect(result).toEqual([inv(1, 'Health Potion'), inv(2, 'Shield')]);
     });

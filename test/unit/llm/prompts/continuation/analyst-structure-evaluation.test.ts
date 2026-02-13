@@ -1,11 +1,15 @@
-import type { AccumulatedStructureState, StoryStructure } from '../../../../../src/models/story-arc';
+import type {
+  AccumulatedStructureState,
+  StoryStructure,
+} from '../../../../../src/models/story-arc';
 import type { ActiveState } from '../../../../../src/models/state/active-state';
 import { buildAnalystStructureEvaluation } from '../../../../../src/llm/prompts/continuation/story-structure-section';
 
 describe('buildAnalystStructureEvaluation', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
-    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    premise:
+      'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -17,8 +21,18 @@ describe('buildAnalystStructureEvaluation', () => {
         entryCondition: 'Emergency law declared.',
         beats: [
           { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
-          { id: '1.2', description: 'Secure evidence', objective: 'Protect evidence', role: 'escalation' },
-          { id: '1.3', description: 'Choose ally', objective: 'Commit to ally', role: 'turning_point' },
+          {
+            id: '1.2',
+            description: 'Secure evidence',
+            objective: 'Protect evidence',
+            role: 'escalation',
+          },
+          {
+            id: '1.3',
+            description: 'Choose ally',
+            objective: 'Commit to ally',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -28,8 +42,18 @@ describe('buildAnalystStructureEvaluation', () => {
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find route north', role: 'escalation' },
-          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
+          {
+            id: '2.1',
+            description: 'Break through checkpoints',
+            objective: 'Find route north',
+            role: 'escalation',
+          },
+          {
+            id: '2.2',
+            description: 'Defend witnesses',
+            objective: 'Keep witnesses alive',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -39,8 +63,18 @@ describe('buildAnalystStructureEvaluation', () => {
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
         beats: [
-          { id: '3.1', description: 'Reach relay core', objective: 'Seize control room', role: 'escalation' },
-          { id: '3.2', description: 'Deliver proof', objective: 'Transmit evidence', role: 'resolution' },
+          {
+            id: '3.1',
+            description: 'Reach relay core',
+            objective: 'Seize control room',
+            role: 'escalation',
+          },
+          {
+            id: '3.2',
+            description: 'Deliver proof',
+            objective: 'Transmit evidence',
+            role: 'resolution',
+          },
         ],
       },
     ],
@@ -141,11 +175,15 @@ describe('buildAnalystStructureEvaluation', () => {
 
     const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
     expect(result).toContain('=== SCENE SIGNAL CLASSIFICATION ===');
-    expect(result).toContain('sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT');
-    expect(result).toContain('objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT');
-    expect(result).toContain('commitmentStrength: NONE | TENTATIVE | EXPLICIT_REVERSIBLE | EXPLICIT_IRREVERSIBLE');
     expect(result).toContain(
-      'structuralPositionSignal: WITHIN_ACTIVE_BEAT | BRIDGING_TO_NEXT_BEAT | CLEARLY_IN_NEXT_BEAT',
+      'sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT'
+    );
+    expect(result).toContain('objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT');
+    expect(result).toContain(
+      'commitmentStrength: NONE | TENTATIVE | EXPLICIT_REVERSIBLE | EXPLICIT_IRREVERSIBLE'
+    );
+    expect(result).toContain(
+      'structuralPositionSignal: WITHIN_ACTIVE_BEAT | BRIDGING_TO_NEXT_BEAT | CLEARLY_IN_NEXT_BEAT'
     );
     expect(result).toContain('entryConditionReadiness: NOT_READY | PARTIAL | READY');
   });
@@ -163,23 +201,23 @@ describe('buildAnalystStructureEvaluation', () => {
     expect(result).toContain('=== COMPLETION GATE ===');
     expect(result).toContain('Base gate for all beat roles (must satisfy at least one):');
     expect(result).toContain(
-      'objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective',
+      'objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective'
     );
     expect(result).toContain(
-      'structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective',
+      'structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective'
     );
     expect(result).toContain('Additional gate for turning_point:');
     expect(result).toContain(
-      'commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE',
+      'commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE'
     );
     expect(result).toContain(
-      'If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions',
+      'If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions'
     );
     expect(result).toContain(
-      'Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence',
+      'Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence'
     );
     expect(result).toContain(
-      'SCOPE_SHIFT alone cannot conclude a beat without objective resolution or explicit structural supersession evidence',
+      'SCOPE_SHIFT alone cannot conclude a beat without objective resolution or explicit structural supersession evidence'
     );
   });
 

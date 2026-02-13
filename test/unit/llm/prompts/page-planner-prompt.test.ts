@@ -1,14 +1,17 @@
 import { ThreadType, Urgency } from '../../../../src/models/state/index';
-import type { ContinuationPagePlanContext, OpeningPagePlanContext } from '../../../../src/llm/types';
+import type {
+  ContinuationPagePlanContext,
+  OpeningPagePlanContext,
+} from '../../../../src/llm/context-types';
 import { buildPagePlannerPrompt } from '../../../../src/llm/prompts/page-planner-prompt';
 import { buildPagePlannerPrompt as buildPagePlannerPromptFromBarrel } from '../../../../src/llm/prompts';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'system')?.content ?? '';
+  return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'user')?.content ?? '';
+  return messages.find((message) => message.role === 'user')?.content ?? '';
 }
 
 describe('buildPagePlannerPrompt', () => {
@@ -121,7 +124,7 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('CANONICAL THREAD PHRASING TEMPLATES:');
     expect(user).toContain('MYSTERY: "Open question: <unknown that must be answered>"');
     expect(user).toContain(
-      'DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"',
+      'DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"'
     );
   });
 
@@ -130,9 +133,11 @@ describe('buildPagePlannerPrompt', () => {
     const user = getUserMessage(messages);
 
     expect(user).toContain('THREAD URGENCY RUBRIC:');
-    expect(user).toContain('Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH.');
     expect(user).toContain(
-      'Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH).',
+      'Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH.'
+    );
+    expect(user).toContain(
+      'Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH).'
     );
     expect(user).toContain('URGENCY SELF-CHECK (before you finalize JSON):');
   });

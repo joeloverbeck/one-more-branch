@@ -1,4 +1,11 @@
-import { createChoice, createPage, createStory, parsePageId, Story, StoryMetadata } from '../../../src/models';
+import {
+  createChoice,
+  createPage,
+  createStory,
+  parsePageId,
+  Story,
+  StoryMetadata,
+} from '../../../src/models';
 import * as models from '../../../src/models';
 import { generateStoryStructure } from '../../../src/llm';
 import { storage } from '../../../src/persistence';
@@ -113,7 +120,7 @@ describe('story-service', () => {
           title: '   ',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
@@ -126,7 +133,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'too short',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
@@ -139,7 +146,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: '   ',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
@@ -191,7 +198,7 @@ describe('story-service', () => {
           worldbuilding: story.worldbuilding,
           tone: story.tone,
         },
-        'test-key',
+        'test-key'
       );
       expect(mockedStorage.updateStory).toHaveBeenCalled();
       const firstPageCall = mockedGenerateFirstPage.mock.calls[0];
@@ -208,7 +215,8 @@ describe('story-service', () => {
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
       expect(result).toEqual({ story: updatedStory, page });
 
-      const structureCallOrder = mockedGenerateStoryStructure.mock.invocationCallOrder[0] ?? Infinity;
+      const structureCallOrder =
+        mockedGenerateStoryStructure.mock.invocationCallOrder[0] ?? Infinity;
       const firstPageCallOrder = mockedGenerateFirstPage.mock.invocationCallOrder[0] ?? -Infinity;
       expect(structureCallOrder).toBeLessThan(firstPageCallOrder);
     });
@@ -229,7 +237,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toBe(generationError);
 
       expect(mockedStorage.deleteStory).toHaveBeenCalledWith(story.id);
@@ -250,7 +258,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toBe(structureError);
 
       expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
@@ -273,7 +281,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toBe(generationError);
     });
   });
@@ -383,7 +391,7 @@ describe('story-service', () => {
           [page1.id, page1],
           [page2.id, page2],
           [page3.id, page3],
-        ]),
+        ])
       );
 
       await expect(getStoryStats(story.id)).resolves.toEqual({

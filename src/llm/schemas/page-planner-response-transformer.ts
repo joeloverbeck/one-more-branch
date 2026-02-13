@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import type { PagePlanGenerationResult } from '../types.js';
-import { LLMError } from '../types.js';
+import type { PagePlanGenerationResult } from '../planner-types.js';
+import { LLMError } from '../llm-client-types.js';
 import { PagePlannerResultSchema } from './page-planner-validation-schema.js';
 
 const THREAD_TAXONOMY_RULE_KEY = 'planner.thread_taxonomy.invalid_enum';
 
 function normalizeStringArray(values: readonly string[]): string[] {
-  return values.map(value => value.trim()).filter(Boolean);
+  return values.map((value) => value.trim()).filter(Boolean);
 }
 
 function hasThreadTaxonomyPath(path: readonly PropertyKey[]): boolean {
@@ -49,7 +49,7 @@ function toValidationIssues(error: unknown): Array<{
   ruleKey?: unknown;
 }> {
   if (error instanceof z.ZodError) {
-    return error.issues.map(issue => ({
+    return error.issues.map((issue) => ({
       path: issue.path.join('.'),
       code: issue.code,
       message: issue.message,
@@ -84,13 +84,13 @@ function toPlannerValidationError(error: unknown, rawResponse: string): LLMError
   return new LLMError(message, 'VALIDATION_ERROR', false, {
     rawResponse,
     validationIssues,
-    ruleKeys: [...new Set(validationIssues.map(issue => issue.ruleKey).filter(Boolean))],
+    ruleKeys: [...new Set(validationIssues.map((issue) => issue.ruleKey).filter(Boolean))],
   });
 }
 
 export function validatePagePlannerResponse(
   rawJson: unknown,
-  rawResponse: string,
+  rawResponse: string
 ): PagePlanGenerationResult {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {
@@ -131,7 +131,7 @@ export function validatePagePlannerResponse(
               threadType: entry.threadType,
               urgency: entry.urgency,
             }))
-            .filter(entry => entry.text),
+            .filter((entry) => entry.text),
           resolveIds: normalizeStringArray(validated.stateIntents.threads.resolveIds),
         },
         inventory: {
@@ -148,7 +148,7 @@ export function validatePagePlannerResponse(
               characterName: entry.characterName.trim(),
               states: normalizeStringArray(entry.states),
             }))
-            .filter(entry => entry.characterName && entry.states.length > 0),
+            .filter((entry) => entry.characterName && entry.states.length > 0),
           removeIds: normalizeStringArray(validated.stateIntents.characterState.removeIds),
         },
         canon: {
@@ -158,7 +158,7 @@ export function validatePagePlannerResponse(
               characterName: entry.characterName.trim(),
               facts: normalizeStringArray(entry.facts),
             }))
-            .filter(entry => entry.characterName && entry.facts.length > 0),
+            .filter((entry) => entry.characterName && entry.facts.length > 0),
         },
       },
       writerBrief: {

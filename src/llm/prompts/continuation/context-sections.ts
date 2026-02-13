@@ -1,5 +1,8 @@
-import { formatProtagonistAffect, type ProtagonistAffect } from '../../../models/protagonist-affect.js';
-import type { AncestorSummary } from '../../types.js';
+import {
+  formatProtagonistAffect,
+  type ProtagonistAffect,
+} from '../../../models/protagonist-affect.js';
+import type { AncestorSummary } from '../../generation-pipeline-types.js';
 
 /**
  * Builds the protagonist's current emotional state section for continuation prompts.
@@ -25,7 +28,7 @@ ${formatProtagonistAffect(affect)}
 export function buildSceneContextSection(
   previousNarrative: string,
   grandparentNarrative: string | null,
-  ancestorSummaries: readonly AncestorSummary[],
+  ancestorSummaries: readonly AncestorSummary[]
 ): string {
   let result = '';
 

@@ -10,12 +10,9 @@ type RouteLayer = {
   };
 };
 
-function getRouteHandler(
-  method: 'get',
-  path: string,
-): (req: Request, res: Response) => void {
+function getRouteHandler(method: 'get', path: string): (req: Request, res: Response) => void {
   const layer = (progressRoutes.stack as unknown as RouteLayer[]).find(
-    item => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -44,7 +41,7 @@ describe('progressRoutes', () => {
 
     getRouteHandler('get', '/:progressId')(
       { params: { progressId: 'missing-id' } } as unknown as Request,
-      { json, status } as unknown as Response,
+      { json, status } as unknown as Response
     );
 
     expect(status).not.toHaveBeenCalled();
@@ -69,7 +66,7 @@ describe('progressRoutes', () => {
 
     getRouteHandler('get', '/:progressId')(
       { params: { progressId: 'known-id' } } as unknown as Request,
-      { json } as unknown as Response,
+      { json } as unknown as Response
     );
 
     expect(json).toHaveBeenCalledWith({
@@ -95,11 +92,11 @@ describe('progressRoutes', () => {
 
     getRouteHandler('get', '/:progressId')(
       { params: { progressId: 'sanitization-id' } } as unknown as Request,
-      { json } as unknown as Response,
+      { json } as unknown as Response
     );
 
     const [firstCall] = json.mock.calls as unknown[][];
-    const payload = ((firstCall?.[0] as Record<string, unknown> | undefined) ?? null);
+    const payload = (firstCall?.[0] as Record<string, unknown> | undefined) ?? null;
     expect(payload).not.toBeNull();
     expect(Object.keys(payload ?? {}).sort()).toEqual([
       'activeStage',

@@ -30,12 +30,14 @@ describe('errorHandler middleware', () => {
       error,
       {} as Request,
       res as unknown as Response,
-      jest.fn() as unknown as NextFunction,
+      jest.fn() as unknown as NextFunction
     );
 
     // Verify error was logged via logger
     const entries = logger.getEntries();
-    const errorEntry = entries.find(e => e.level === 'error' && e.message.includes('Unhandled error'));
+    const errorEntry = entries.find(
+      (e) => e.level === 'error' && e.message.includes('Unhandled error')
+    );
     expect(errorEntry).toBeDefined();
     expect(errorEntry?.context?.['error']).toBe('database password is hunter2');
 

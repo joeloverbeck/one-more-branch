@@ -1,9 +1,5 @@
-import {
-  createEmptyAccumulatedStructureState,
-  parsePageId,
-  StructureVersionId,
-} from '@/models';
-import type { FinalPageGenerationResult } from '@/llm/types';
+import { createEmptyAccumulatedStructureState, parsePageId, StructureVersionId } from '@/models';
+import type { FinalPageGenerationResult } from '@/llm/writer-types';
 import {
   buildFirstPage,
   buildContinuationPage,
@@ -13,7 +9,7 @@ import {
 } from '@/engine/page-builder';
 
 function buildMockGenerationResult(
-  overrides?: Partial<FinalPageGenerationResult>,
+  overrides?: Partial<FinalPageGenerationResult>
 ): FinalPageGenerationResult {
   return {
     narrative: 'You step into the shadowed corridor.',
@@ -73,8 +69,13 @@ describe('page-builder', () => {
 
       expect(page.id).toBe(1);
       expect(page.accumulatedActiveState.currentLocation).toBe('Ancient treasury');
-      expect(page.accumulatedActiveState.activeThreats).toEqual([{ id: 'th-1', text: 'Guardian awakened' }]);
-      expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Sword' }, { id: 'inv-2', text: 'Shield' }]);
+      expect(page.accumulatedActiveState.activeThreats).toEqual([
+        { id: 'th-1', text: 'Guardian awakened' },
+      ]);
+      expect(page.accumulatedInventory).toEqual([
+        { id: 'inv-1', text: 'Sword' },
+        { id: 'inv-2', text: 'Shield' },
+      ]);
       expect(page.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'Minor wound' }]);
       expect(page.accumulatedCharacterState['Ally']).toEqual([{ id: 'cs-1', text: 'Trusting' }]);
       expect(page.characterStateChanges.removed).toEqual(['cs-7']);
@@ -106,7 +107,9 @@ describe('page-builder', () => {
       const result = buildMockGenerationResult({
         currentLocation: 'Hidden chamber',
         threatsAdded: ['Trap triggered'],
-        threadsAdded: [{ text: 'Ancient secret revealed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'Ancient secret revealed', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         characterStateChangesRemoved: ['cs-1'],
       });
       const context: ContinuationPageBuildContext = {
@@ -137,15 +140,18 @@ describe('page-builder', () => {
       expect(page.parentPageId).toBe(1);
       expect(page.parentChoiceIndex).toBe(0);
       expect(page.accumulatedActiveState.currentLocation).toBe('Hidden chamber');
-      expect(page.accumulatedActiveState.activeThreats.map(t => t.text)).toEqual([
+      expect(page.accumulatedActiveState.activeThreats.map((t) => t.text)).toEqual([
         'Guardian patrol',
         'Trap triggered',
       ]);
-      expect(page.accumulatedActiveState.openThreads.map(t => t.text)).toEqual([
+      expect(page.accumulatedActiveState.openThreads.map((t) => t.text)).toEqual([
         'Missing key',
         'Ancient secret revealed',
       ]);
-      expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Map' }, { id: 'inv-2', text: 'Rusty key' }]);
+      expect(page.accumulatedInventory).toEqual([
+        { id: 'inv-1', text: 'Map' },
+        { id: 'inv-2', text: 'Rusty key' },
+      ]);
       expect(page.characterStateChanges.removed).toEqual(['cs-1']);
     });
   });

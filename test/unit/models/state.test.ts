@@ -63,7 +63,7 @@ describe('State utilities', () => {
           activeThreats: [{ id: 'th-1', text: 'y' }],
           activeConstraints: [],
           openThreads: [],
-        }),
+        })
       ).toBe(true);
     });
 
@@ -74,7 +74,7 @@ describe('State utilities', () => {
           activeThreats: [{ prefix: 'THREAT_X', description: 'y', raw: 'THREAT_X: y' }],
           activeConstraints: [],
           openThreads: [],
-        }),
+        })
       ).toBe(false);
     });
 
@@ -85,7 +85,7 @@ describe('State utilities', () => {
           activeThreats: [],
           activeConstraints: [],
           openThreads: [{ id: 'td-1', text: 'Missing metadata' }],
-        }),
+        })
       ).toBe(false);
     });
   });
@@ -101,7 +101,7 @@ describe('State utilities', () => {
           constraintsRemoved: [],
           threadsAdded: [],
           threadsResolved: [],
-        }),
+        })
       ).toBe(true);
     });
 
@@ -115,17 +115,17 @@ describe('State utilities', () => {
           constraintsRemoved: [],
           threadsAdded: [],
           threadsResolved: [],
-        }),
+        })
       ).toBe(false);
     });
   });
 
   describe('applyInventoryChanges', () => {
     it('applies remove by ID then add with next sequential ID', () => {
-      const result = applyInventoryChanges(
-        [{ id: 'inv-1', text: 'Sword' }],
-        { added: ['Shield'], removed: ['inv-1'] },
-      );
+      const result = applyInventoryChanges([{ id: 'inv-1', text: 'Sword' }], {
+        added: ['Shield'],
+        removed: ['inv-1'],
+      });
       expect(result).toEqual([{ id: 'inv-2', text: 'Shield' }]);
     });
 
@@ -137,7 +137,7 @@ describe('State utilities', () => {
       expect(result).toEqual(current);
       const warning = logger
         .getEntries()
-        .find(e => e.level === 'warn' && e.message.includes('removeByIds: ID "inv-9"'));
+        .find((e) => e.level === 'warn' && e.message.includes('removeByIds: ID "inv-9"'));
       expect(warning).toBeDefined();
     });
 
@@ -156,10 +156,10 @@ describe('State utilities', () => {
 
   describe('applyHealthChanges', () => {
     it('applies remove by ID then add with next sequential ID', () => {
-      const result = applyHealthChanges(
-        [{ id: 'hp-1', text: 'Bruised arm' }],
-        { added: ['Poisoned'], removed: ['hp-1'] },
-      );
+      const result = applyHealthChanges([{ id: 'hp-1', text: 'Bruised arm' }], {
+        added: ['Poisoned'],
+        removed: ['hp-1'],
+      });
       expect(result).toEqual([{ id: 'hp-2', text: 'Poisoned' }]);
     });
 
@@ -178,13 +178,16 @@ describe('State utilities', () => {
 
   describe('applyCharacterStateChanges', () => {
     it('assigns globally sequential cs IDs across characters', () => {
-      const result = applyCharacterStateChanges({}, {
-        added: [
-          { characterName: 'Greaves', states: ['Gave map'] },
-          { characterName: 'Elena', states: ['Agreed to help'] },
-        ],
-        removed: [],
-      });
+      const result = applyCharacterStateChanges(
+        {},
+        {
+          added: [
+            { characterName: 'Greaves', states: ['Gave map'] },
+            { characterName: 'Elena', states: ['Agreed to help'] },
+          ],
+          removed: [],
+        }
+      );
 
       expect(result).toEqual({
         Greaves: [{ id: 'cs-1', text: 'Gave map' }],
@@ -204,7 +207,7 @@ describe('State utilities', () => {
         {
           added: [],
           removed: ['cs-1', 'cs-3'],
-        },
+        }
       );
 
       expect(result).toEqual({
@@ -220,7 +223,7 @@ describe('State utilities', () => {
         {
           added: [{ characterName: 'Greaves', states: ['New'] }],
           removed: [],
-        },
+        }
       );
 
       expect(result).toEqual({
@@ -239,7 +242,7 @@ describe('State utilities', () => {
         {
           added: [],
           removed: ['cs-1'],
-        },
+        }
       );
 
       expect(result).toEqual({});
@@ -297,7 +300,7 @@ describe('State utilities', () => {
           constraintsRemoved: [],
           threadsAdded: [],
           threadsResolved: [],
-        },
+        }
       );
 
       expect(result.activeThreats).toEqual([]);
@@ -326,7 +329,7 @@ describe('State utilities', () => {
           constraintsRemoved: ['cn-1'],
           threadsAdded: ['New thread'],
           threadsResolved: ['td-1'],
-        },
+        }
       );
 
       expect(result).toEqual({

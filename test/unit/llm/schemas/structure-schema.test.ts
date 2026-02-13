@@ -43,7 +43,13 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       additionalProperties: boolean;
     };
 
-    expect(schema.required).toEqual(['overallTheme', 'premise', 'pacingBudget', 'acts', 'initialNpcAgendas']);
+    expect(schema.required).toEqual([
+      'overallTheme',
+      'premise',
+      'pacingBudget',
+      'acts',
+      'initialNpcAgendas',
+    ]);
     expect(schema.properties.acts.items.required).toEqual([
       'name',
       'objective',

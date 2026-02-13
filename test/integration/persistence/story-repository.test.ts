@@ -231,7 +231,7 @@ describe('story-repository integration', () => {
       rewrittenStructure,
       ['1.1'],
       'Deviation invalidated infiltration path.',
-      parsePageId(3),
+      parsePageId(3)
     );
 
     const story = buildStory({
@@ -250,7 +250,7 @@ describe('story-repository integration', () => {
     expect(loaded?.structureVersions?.[1]?.previousVersionId).toBe(initialVersion.id);
     expect(loaded?.structureVersions?.[1]?.createdAtPageId).toBe(3);
     expect(loaded?.structureVersions?.[1]?.rewriteReason).toBe(
-      'Deviation invalidated infiltration path.',
+      'Deviation invalidated infiltration path.'
     );
     expect(loaded?.structureVersions?.[1]?.preservedBeatIds).toEqual(['1.1']);
   });
@@ -302,7 +302,7 @@ describe('story-repository integration', () => {
     await saveStory(newer);
 
     const stories = (await listStories()).filter((story) =>
-      story.characterConcept.startsWith(TEST_PREFIX),
+      story.characterConcept.startsWith(TEST_PREFIX)
     );
 
     expect(stories.length).toBeGreaterThanOrEqual(2);
@@ -356,7 +356,7 @@ describe('story-repository integration', () => {
     const stories = Array.from({ length: 5 }, (_, index) =>
       buildStory({
         characterConcept: `${TEST_PREFIX} concurrent ${index + 1}`,
-      }),
+      })
     );
 
     for (const story of stories) {

@@ -33,9 +33,7 @@ export function accumulatedActiveStateToFileData(
   };
 }
 
-export function fileDataToActiveStateChanges(
-  data: ActiveStateChangesFileData
-): ActiveStateChanges {
+export function fileDataToActiveStateChanges(data: ActiveStateChangesFileData): ActiveStateChanges {
   return {
     newLocation: data.newLocation,
     threatsAdded: [...data.threatsAdded],

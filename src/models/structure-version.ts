@@ -43,7 +43,7 @@ export function parseStructureVersionId(value: string): StructureVersionId {
 }
 
 export function createInitialVersionedStructure(
-  structure: StoryStructure,
+  structure: StoryStructure
 ): VersionedStoryStructure {
   return {
     id: createStructureVersionId(),
@@ -61,7 +61,7 @@ export function createRewrittenVersionedStructure(
   newStructure: StoryStructure,
   preservedBeatIds: readonly string[],
   rewriteReason: string,
-  createdAtPageId: PageId,
+  createdAtPageId: PageId
 ): VersionedStoryStructure {
   return {
     id: createStructureVersionId(),
@@ -105,7 +105,7 @@ export function isVersionedStoryStructure(value: unknown): value is VersionedSto
     (createdAtPageId === null || isPageId(createdAtPageId)) &&
     (rewriteReason === null || typeof rewriteReason === 'string') &&
     Array.isArray(preservedBeatIds) &&
-    preservedBeatIds.every(beatId => typeof beatId === 'string') &&
+    preservedBeatIds.every((beatId) => typeof beatId === 'string') &&
     versioned['createdAt'] instanceof Date
   );
 }

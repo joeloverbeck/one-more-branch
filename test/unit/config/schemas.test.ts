@@ -89,18 +89,10 @@ describe('config schemas', () => {
     });
 
     it('validates retry configuration', () => {
-      expect(() =>
-        AppConfigSchema.parse({ llm: { retry: { maxRetries: -1 } } }),
-      ).toThrow();
-      expect(() =>
-        AppConfigSchema.parse({ llm: { retry: { maxRetries: 15 } } }),
-      ).toThrow();
-      expect(() =>
-        AppConfigSchema.parse({ llm: { retry: { baseDelayMs: 50 } } }),
-      ).toThrow();
-      expect(() =>
-        AppConfigSchema.parse({ llm: { retry: { baseDelayMs: 50000 } } }),
-      ).toThrow();
+      expect(() => AppConfigSchema.parse({ llm: { retry: { maxRetries: -1 } } })).toThrow();
+      expect(() => AppConfigSchema.parse({ llm: { retry: { maxRetries: 15 } } })).toThrow();
+      expect(() => AppConfigSchema.parse({ llm: { retry: { baseDelayMs: 50 } } })).toThrow();
+      expect(() => AppConfigSchema.parse({ llm: { retry: { baseDelayMs: 50000 } } })).toThrow();
 
       const valid = AppConfigSchema.parse({
         llm: { retry: { maxRetries: 5, baseDelayMs: 500 } },
@@ -110,12 +102,8 @@ describe('config schemas', () => {
     });
 
     it('validates prompts logging settings', () => {
-      expect(() =>
-        AppConfigSchema.parse({ logging: { prompts: { baseDir: '' } } }),
-      ).toThrow();
-      expect(() =>
-        AppConfigSchema.parse({ logging: { prompts: { fileName: '' } } }),
-      ).toThrow();
+      expect(() => AppConfigSchema.parse({ logging: { prompts: { baseDir: '' } } })).toThrow();
+      expect(() => AppConfigSchema.parse({ logging: { prompts: { fileName: '' } } })).toThrow();
 
       const valid = AppConfigSchema.parse({
         logging: {
@@ -133,14 +121,12 @@ describe('config schemas', () => {
 
     it('validates enum values', () => {
       expect(() =>
-        AppConfigSchema.parse({ llm: { promptOptions: { fewShotMode: 'invalid' } } }),
+        AppConfigSchema.parse({ llm: { promptOptions: { fewShotMode: 'invalid' } } })
       ).toThrow();
       expect(() =>
-        AppConfigSchema.parse({ llm: { promptOptions: { choiceGuidance: 'invalid' } } }),
+        AppConfigSchema.parse({ llm: { promptOptions: { choiceGuidance: 'invalid' } } })
       ).toThrow();
-      expect(() =>
-        AppConfigSchema.parse({ logging: { level: 'invalid' } }),
-      ).toThrow();
+      expect(() => AppConfigSchema.parse({ logging: { level: 'invalid' } })).toThrow();
 
       const valid = AppConfigSchema.parse({
         llm: {
@@ -158,12 +144,8 @@ describe('config schemas', () => {
     });
 
     it('requires non-empty strings for model and storiesDir', () => {
-      expect(() =>
-        AppConfigSchema.parse({ llm: { defaultModel: '' } }),
-      ).toThrow();
-      expect(() =>
-        AppConfigSchema.parse({ storage: { storiesDir: '' } }),
-      ).toThrow();
+      expect(() => AppConfigSchema.parse({ llm: { defaultModel: '' } })).toThrow();
+      expect(() => AppConfigSchema.parse({ storage: { storiesDir: '' } })).toThrow();
     });
 
     it('handles partial nested overrides', () => {

@@ -7,12 +7,7 @@
  * indicate the model supports structured output but the response failed validation.
  */
 export function isStructuredOutputNotSupported(error: unknown): boolean {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : '';
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
 
   if (!message) {
     return false;
@@ -38,5 +33,5 @@ export function isStructuredOutputNotSupported(error: unknown): boolean {
     'provider does not support',
   ];
 
-  return unsupportedPatterns.some(pattern => normalized.includes(pattern));
+  return unsupportedPatterns.some((pattern) => normalized.includes(pattern));
 }

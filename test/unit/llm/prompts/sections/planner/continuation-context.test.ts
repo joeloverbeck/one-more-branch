@@ -1,5 +1,5 @@
 import { ThreadType, Urgency } from '../../../../../../src/models/state/index.js';
-import type { ContinuationPagePlanContext } from '../../../../../../src/llm/types.js';
+import type { ContinuationPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import { buildPlannerContinuationContextSection } from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
 
 describe('planner continuation context section', () => {

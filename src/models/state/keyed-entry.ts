@@ -52,10 +52,7 @@ export function extractIdNumber(id: string): number {
   return parseInt(match[1], 10);
 }
 
-export function getMaxIdNumber(
-  entries: readonly KeyedEntry[],
-  prefix: StateIdPrefix,
-): number {
+export function getMaxIdNumber(entries: readonly KeyedEntry[], prefix: StateIdPrefix): number {
   let max = 0;
   const prefixDash = `${prefix}-`;
   for (const entry of entries) {
@@ -76,7 +73,7 @@ export function nextId(prefix: StateIdPrefix, currentMax: number): string {
 export function assignIds(
   existing: readonly KeyedEntry[],
   newTexts: readonly string[],
-  prefix: StateIdPrefix,
+  prefix: StateIdPrefix
 ): readonly KeyedEntry[] {
   let currentMax = getMaxIdNumber(existing, prefix);
   const result: KeyedEntry[] = [];
@@ -115,7 +112,7 @@ export interface ThreadPayoffAssessment {
 
 export function removeByIds<T extends KeyedEntry>(
   entries: readonly T[],
-  idsToRemove: readonly string[],
+  idsToRemove: readonly string[]
 ): readonly T[] {
   const removeSet = new Set(idsToRemove);
   const matched = new Set<string>();

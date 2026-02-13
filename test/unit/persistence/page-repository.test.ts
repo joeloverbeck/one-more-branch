@@ -172,7 +172,7 @@ describe('page-repository', () => {
       buildChildPage({
         id: parsePageId(3),
         parentPageId: parsePageId(1),
-      }),
+      })
     );
 
     await expect(getMaxPageId(story.id)).resolves.toBe(3);
@@ -202,14 +202,14 @@ describe('page-repository', () => {
     const page = buildRootPage();
     await savePage(story.id, page);
 
-    await expect(
-      updateChoiceLink(story.id, parsePageId(99), 0, parsePageId(2)),
-    ).rejects.toThrow(`Page 99 not found in story ${story.id}`);
+    await expect(updateChoiceLink(story.id, parsePageId(99), 0, parsePageId(2))).rejects.toThrow(
+      `Page 99 not found in story ${story.id}`
+    );
     await expect(updateChoiceLink(story.id, page.id, -1, parsePageId(2))).rejects.toThrow(
-      `Invalid choice index -1 for page ${page.id}`,
+      `Invalid choice index -1 for page ${page.id}`
     );
     await expect(updateChoiceLink(story.id, page.id, 2, parsePageId(2))).rejects.toThrow(
-      `Invalid choice index 2 for page ${page.id}`,
+      `Invalid choice index 2 for page ${page.id}`
     );
   });
 
@@ -300,7 +300,7 @@ describe('page-repository', () => {
     });
 
     await expect(loadPage(story.id, expectedPageId)).rejects.toThrow(
-      `Page ID mismatch: expected ${expectedPageId}, found ${mismatchedPageId}`,
+      `Page ID mismatch: expected ${expectedPageId}, found ${mismatchedPageId}`
     );
   });
 

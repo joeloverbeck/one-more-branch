@@ -29,7 +29,9 @@ describe('shared state-tracking sections', () => {
     });
 
     it('treats open threads as read-only continuity context', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS: unresolved hooks and mysteries');
+      expect(ACTIVE_STATE_TRACKING).toContain(
+        'OPEN NARRATIVE THREADS: unresolved hooks and mysteries'
+      );
       expect(ACTIVE_STATE_TRACKING).not.toContain('THREAD CONTRACT (OPEN LOOPS ONLY)');
       expect(ACTIVE_STATE_TRACKING).not.toContain('CANONICAL THREAD PHRASING TEMPLATES');
     });

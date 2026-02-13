@@ -1,8 +1,5 @@
-import {
-  isCanonicalIdForPrefix,
-  STATE_ID_PREFIXES,
-} from './state-id-prefixes.js';
-import type { WriterValidationContext } from '../types.js';
+import { isCanonicalIdForPrefix, STATE_ID_PREFIXES } from './state-id-prefixes.js';
+import type { WriterValidationContext } from '../generation-pipeline-types.js';
 
 const REMOVAL_FIELDS = [
   'threatsRemoved',
@@ -94,7 +91,7 @@ function normalizeStringArray(input: unknown): string[] {
 
 export function repairWriterRemovalIdFieldMismatches(
   rawJson: unknown,
-  context: WriterValidationContext | undefined,
+  context: WriterValidationContext | undefined
 ): WriterIdRepairResult {
   if (!context || typeof rawJson !== 'object' || rawJson === null || Array.isArray(rawJson)) {
     return { repairedJson: rawJson, repairs: [] };

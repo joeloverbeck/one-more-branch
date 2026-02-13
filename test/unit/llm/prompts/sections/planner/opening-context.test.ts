@@ -1,4 +1,4 @@
-import type { OpeningPagePlanContext } from '../../../../../../src/llm/types.js';
+import type { OpeningPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import { buildPlannerOpeningContextSection } from '../../../../../../src/llm/prompts/sections/planner/opening-context.js';
 
 describe('planner opening context section', () => {

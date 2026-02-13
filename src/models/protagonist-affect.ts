@@ -106,7 +106,7 @@ export function formatProtagonistAffect(affect: ProtagonistAffect): string {
   const secondaryLine =
     affect.secondaryEmotions.length > 0
       ? `Secondary: ${affect.secondaryEmotions
-          .map(se => `${se.emotion.toUpperCase()} - ${se.cause}`)
+          .map((se) => `${se.emotion.toUpperCase()} - ${se.cause}`)
           .join('; ')}`
       : null;
 

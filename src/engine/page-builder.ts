@@ -16,7 +16,9 @@ import {
 } from '../models';
 import type { NarrativePromise } from '../models/state/keyed-entry';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
-import type { AnalystResult, PageWriterResult, StoryBible } from '../llm/types';
+import type { AnalystResult } from '../llm/analyst-types';
+import type { StoryBible } from '../llm/lorekeeper-types';
+import type { PageWriterResult } from '../llm/writer-types';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
@@ -79,7 +81,7 @@ export interface ContinuationPageBuildContext {
  * All threads are new on the opening page, so all get age 0.
  */
 function computeFirstPageThreadAges(
-  threadsAdded: readonly { text: string }[],
+  threadsAdded: readonly { text: string }[]
 ): Readonly<Record<string, number>> {
   const ages: Record<string, number> = {};
   for (let i = 0; i < threadsAdded.length; i++) {
@@ -97,7 +99,7 @@ export function computeContinuationThreadAges(
   parentOpenThreadIds: readonly string[],
   threadsAdded: readonly { text: string }[],
   threadsResolved: readonly string[],
-  newThreadStartId: number,
+  newThreadStartId: number
 ): Readonly<Record<string, number>> {
   const ages: Record<string, number> = {};
   const resolvedSet = new Set(threadsResolved);
@@ -127,21 +129,21 @@ export function computeContinuationThreadAges(
 export function computeInheritedNarrativePromises(
   parentInherited: readonly NarrativePromise[],
   parentAnalystDetected: readonly NarrativePromise[],
-  threadsAddedTexts: readonly string[],
+  threadsAddedTexts: readonly string[]
 ): readonly NarrativePromise[] {
   // Combine parent's inherited + parent's analyst-detected
   const combined = [...parentInherited, ...parentAnalystDetected];
 
   // Simple heuristic to detect if a promise "became" a thread:
   // if any newly added thread text contains substantial overlap with a promise description
-  const threadTextsLower = threadsAddedTexts.map(t => t.toLowerCase());
-  const filtered = combined.filter(promise => {
+  const threadTextsLower = threadsAddedTexts.map((t) => t.toLowerCase());
+  const filtered = combined.filter((promise) => {
     const descLower = promise.description.toLowerCase();
     // Check if any new thread text has significant word overlap
-    return !threadTextsLower.some(threadText => {
-      const promiseWords = descLower.split(/\s+/).filter(w => w.length > 3);
+    return !threadTextsLower.some((threadText) => {
+      const promiseWords = descLower.split(/\s+/).filter((w) => w.length > 3);
       if (promiseWords.length === 0) return false;
-      const matchCount = promiseWords.filter(word => threadText.includes(word)).length;
+      const matchCount = promiseWords.filter((word) => threadText.includes(word)).length;
       return matchCount / promiseWords.length >= 0.3;
     });
   });
@@ -161,7 +163,7 @@ function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
     threatsRemoved: result.threatsRemoved,
     constraintsAdded: result.constraintsAdded,
     constraintsRemoved: result.constraintsRemoved,
-    threadsAdded: result.threadsAdded.map(thread => ({
+    threadsAdded: result.threadsAdded.map((thread) => ({
       text: thread.text,
       threadType: thread.threadType,
       urgency: thread.urgency,
@@ -174,10 +176,7 @@ function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
  * Builds the first page of a story from LLM generation result.
  * Handles page assembly with initial structure state.
  */
-export function buildFirstPage(
-  result: PageBuildResult,
-  context: FirstPageBuildContext,
-): Page {
+export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildContext): Page {
   const threadAges = computeFirstPageThreadAges(result.threadsAdded);
 
   // Build initial accumulated agendas from structure-generated agendas
@@ -192,13 +191,13 @@ export function buildFirstPage(
     id: parsePageId(1),
     narrativeText: result.narrative,
     sceneSummary: result.sceneSummary,
-    choices: result.choices.map(c => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
+    choices: result.choices.map((c) => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
     activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     characterStateChanges: createCharacterStateChanges(
       result.characterStateChangesAdded,
-      result.characterStateChangesRemoved,
+      result.characterStateChangesRemoved
     ),
     protagonistAffect: result.protagonistAffect,
     isEnding: result.isEnding,
@@ -217,10 +216,10 @@ export function buildFirstPage(
  */
 export function buildContinuationPage(
   result: PageBuildResult,
-  context: ContinuationPageBuildContext,
+  context: ContinuationPageBuildContext
 ): Page {
   const parentOpenThreads = context.parentAccumulatedActiveState.openThreads;
-  const parentOpenThreadIds = parentOpenThreads.map(t => t.id);
+  const parentOpenThreadIds = parentOpenThreads.map((t) => t.id);
   const newThreadStartId = getMaxIdNumber(parentOpenThreads, 'td');
 
   const threadAges = computeContinuationThreadAges(
@@ -228,26 +227,26 @@ export function buildContinuationPage(
     parentOpenThreadIds,
     result.threadsAdded,
     result.threadsResolved,
-    newThreadStartId,
+    newThreadStartId
   );
 
   const inheritedNarrativePromises = computeInheritedNarrativePromises(
     context.parentInheritedNarrativePromises,
     context.parentAnalystNarrativePromises,
-    result.threadsAdded.map(t => t.text),
+    result.threadsAdded.map((t) => t.text)
   );
 
   return createPage({
     id: context.pageId,
     narrativeText: result.narrative,
     sceneSummary: result.sceneSummary,
-    choices: result.choices.map(c => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
+    choices: result.choices.map((c) => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
     activeStateChanges: mapToActiveStateChanges(result),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     characterStateChanges: createCharacterStateChanges(
       result.characterStateChangesAdded,
-      result.characterStateChangesRemoved,
+      result.characterStateChangesRemoved
     ),
     protagonistAffect: result.protagonistAffect,
     isEnding: result.isEnding,

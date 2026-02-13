@@ -1,9 +1,9 @@
-import type { LorekeeperResult } from '../types.js';
+import type { LorekeeperResult } from '../lorekeeper-types.js';
 import { LorekeeperResultSchema } from './lorekeeper-validation-schema.js';
 
 export function validateLorekeeperResponse(
   rawJson: unknown,
-  rawResponse: string,
+  rawResponse: string
 ): LorekeeperResult {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {
@@ -14,7 +14,7 @@ export function validateLorekeeperResponse(
 
   return {
     sceneWorldContext: validated.sceneWorldContext.trim(),
-    relevantCharacters: validated.relevantCharacters.map(c => ({
+    relevantCharacters: validated.relevantCharacters.map((c) => ({
       name: c.name.trim(),
       role: c.role.trim(),
       relevantProfile: c.relevantProfile.trim(),
@@ -26,8 +26,8 @@ export function validateLorekeeperResponse(
       currentState: c.currentState.trim(),
     })),
     relevantCanonFacts: validated.relevantCanonFacts
-      .map(f => f.trim())
-      .filter(f => f.length > 0),
+      .map((f) => f.trim())
+      .filter((f) => f.length > 0),
     relevantHistory: validated.relevantHistory.trim(),
     rawResponse,
   };

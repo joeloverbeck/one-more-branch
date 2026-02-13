@@ -1,4 +1,4 @@
-import { LLMError } from '../../../../src/llm/types';
+import { LLMError } from '../../../../src/llm/llm-client-types';
 import { validatePagePlannerResponse } from '../../../../src/llm/schemas/page-planner-response-transformer';
 
 function createValidPlannerPayload(): Record<string, unknown> {
@@ -16,7 +16,13 @@ function createValidPlannerPayload(): Record<string, unknown> {
         removeIds: [],
       },
       threads: {
-        add: [{ text: 'Secure a fallback route through the lower gate', threadType: 'DANGER', urgency: 'HIGH' }],
+        add: [
+          {
+            text: 'Secure a fallback route through the lower gate',
+            threadType: 'DANGER',
+            urgency: 'HIGH',
+          },
+        ],
         resolveIds: [],
       },
       inventory: {
@@ -33,7 +39,9 @@ function createValidPlannerPayload(): Record<string, unknown> {
       },
       canon: {
         worldAdd: ['The eastern stairwell overlooks the collapsed market square.'],
-        characterAdd: [{ characterName: 'Captain Ives', facts: ['Ives served at the tower before the war.'] }],
+        characterAdd: [
+          { characterName: 'Captain Ives', facts: ['Ives served at the tower before the war.'] },
+        ],
       },
     },
     writerBrief: {
@@ -43,8 +51,16 @@ function createValidPlannerPayload(): Record<string, unknown> {
     },
     dramaticQuestion: 'Will you hold the parapet or fall back to the stairwell?',
     choiceIntents: [
-      { hook: 'Stand and return fire from cover', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-      { hook: 'Fall back to the lower stair', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+      {
+        hook: 'Stand and return fire from cover',
+        choiceType: 'CONFRONTATION',
+        primaryDelta: 'THREAT_SHIFT',
+      },
+      {
+        hook: 'Fall back to the lower stair',
+        choiceType: 'AVOIDANCE_RETREAT',
+        primaryDelta: 'LOCATION_CHANGE',
+      },
     ],
   };
 }
@@ -82,9 +98,9 @@ describe('validatePagePlannerResponse', () => {
       expect(llmError.code).toBe('VALIDATION_ERROR');
       expect(Array.isArray(llmError.context?.validationIssues)).toBe(true);
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
-      expect(issues.some(issue => issue.ruleKey === 'state_id.id_only_field.prefix_mismatch')).toBe(
-        true,
-      );
+      expect(
+        issues.some((issue) => issue.ruleKey === 'state_id.id_only_field.prefix_mismatch')
+      ).toBe(true);
     }
   });
 
@@ -112,9 +128,7 @@ describe('validatePagePlannerResponse', () => {
       rawJson.stateIntents as {
         threads: { add: Array<{ text: string; threadType: string; urgency: string }> };
       }
-    ).threads.add = [
-      { text: '   ', threadType: 'DANGER', urgency: 'HIGH' },
-    ];
+    ).threads.add = [{ text: '   ', threadType: 'DANGER', urgency: 'HIGH' }];
 
     try {
       validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
@@ -124,7 +138,7 @@ describe('validatePagePlannerResponse', () => {
       const llmError = error as LLMError;
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
       expect(
-        issues.some(issue => issue.ruleKey === 'planner.required_text.empty_after_trim'),
+        issues.some((issue) => issue.ruleKey === 'planner.required_text.empty_after_trim')
       ).toBe(true);
     }
   });
@@ -136,7 +150,11 @@ describe('validatePagePlannerResponse', () => {
         threads: { add: Array<{ text: string; threadType: unknown; urgency: string }> };
       }
     ).threads.add = [
-      { text: 'Maintain pressure on the eastern stair.', threadType: 'NOT_A_THREAD_TYPE', urgency: 'HIGH' },
+      {
+        text: 'Maintain pressure on the eastern stair.',
+        threadType: 'NOT_A_THREAD_TYPE',
+        urgency: 'HIGH',
+      },
     ];
 
     try {
@@ -146,9 +164,9 @@ describe('validatePagePlannerResponse', () => {
       expect(error).toBeInstanceOf(LLMError);
       const llmError = error as LLMError;
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
-      expect(
-        issues.some(issue => issue.ruleKey === 'planner.thread_taxonomy.invalid_enum'),
-      ).toBe(true);
+      expect(issues.some((issue) => issue.ruleKey === 'planner.thread_taxonomy.invalid_enum')).toBe(
+        true
+      );
       expect(llmError.context?.ruleKeys).toContain('planner.thread_taxonomy.invalid_enum');
     }
   });
@@ -165,7 +183,7 @@ describe('validatePagePlannerResponse', () => {
       const llmError = error as LLMError;
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
       expect(
-        issues.some(issue => issue.ruleKey === 'state_id.addition.must_not_be_id_like'),
+        issues.some((issue) => issue.ruleKey === 'state_id.addition.must_not_be_id_like')
       ).toBe(true);
     }
   });
@@ -205,7 +223,7 @@ describe('validatePagePlannerResponse', () => {
       const llmError = error as LLMError;
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
       expect(
-        issues.some(issue => issue.ruleKey === 'planner.required_text.empty_after_trim'),
+        issues.some((issue) => issue.ruleKey === 'planner.required_text.empty_after_trim')
       ).toBe(true);
     }
   });
@@ -255,7 +273,7 @@ describe('validatePagePlannerResponse', () => {
       const llmError = error as LLMError;
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
       expect(
-        issues.some(issue => issue.ruleKey === 'planner.choice_intent.duplicate_type_delta'),
+        issues.some((issue) => issue.ruleKey === 'planner.choice_intent.duplicate_type_delta')
       ).toBe(true);
     }
   });
@@ -272,7 +290,7 @@ describe('validatePagePlannerResponse', () => {
       const llmError = error as LLMError;
       const issues = llmError.context?.validationIssues as Array<{ ruleKey?: string }>;
       expect(
-        issues.some(issue => issue.ruleKey === 'planner.required_text.empty_after_trim'),
+        issues.some((issue) => issue.ruleKey === 'planner.required_text.empty_after_trim')
       ).toBe(true);
     }
   });

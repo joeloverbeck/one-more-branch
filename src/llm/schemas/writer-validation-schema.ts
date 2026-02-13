@@ -6,11 +6,11 @@ const CharacterCanonFactsArraySchema = z.array(
   z.object({
     characterName: z.string(),
     facts: z.array(z.string()),
-  }),
+  })
 );
 
 function transformCharacterCanonFactsToRecord(
-  input: z.infer<typeof CharacterCanonFactsArraySchema>,
+  input: z.infer<typeof CharacterCanonFactsArraySchema>
 ): Record<string, string[]> {
   const result: Record<string, string[]> = {};
   for (const entry of input) {
@@ -24,7 +24,7 @@ const CharacterStateChangesArraySchema = z.array(
   z.object({
     characterName: z.string(),
     states: z.array(z.string()),
-  }),
+  })
 );
 
 const EmotionIntensitySchema = z.enum(['mild', 'moderate', 'strong', 'overwhelming']);
@@ -67,9 +67,7 @@ const ThreadAddSchema = z.object({
 
 export const WriterResultSchema = z
   .object({
-    narrative: z
-      .string()
-      .min(50, 'Narrative must be at least 50 characters'),
+    narrative: z.string().min(50, 'Narrative must be at least 50 characters'),
     choices: z.array(ChoiceObjectSchema),
     currentLocation: z.string().optional().default(''),
     threatsAdded: z.array(z.string()).optional().default([]),
@@ -117,7 +115,7 @@ export const WriterResultSchema = z
       });
     }
 
-    const normalizedChoices = data.choices.map(choice => choice.text.toLowerCase().trim());
+    const normalizedChoices = data.choices.map((choice) => choice.text.toLowerCase().trim());
     if (new Set(normalizedChoices).size !== normalizedChoices.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -127,8 +125,8 @@ export const WriterResultSchema = z
     }
 
     if (data.choices.length >= 2) {
-      const types = new Set(data.choices.map(c => c.choiceType));
-      const deltas = new Set(data.choices.map(c => c.primaryDelta));
+      const types = new Set(data.choices.map((c) => c.choiceType));
+      const deltas = new Set(data.choices.map((c) => c.primaryDelta));
       if (types.size === 1 && deltas.size === 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -137,7 +135,6 @@ export const WriterResultSchema = z
         });
       }
     }
-
   });
 
 export type ValidatedWriterResult = z.infer<typeof WriterResultSchema>;

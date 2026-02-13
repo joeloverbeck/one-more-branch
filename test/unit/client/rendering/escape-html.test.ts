@@ -41,9 +41,7 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
           page: {
             id: 2,
             narrativeText,
-            choices: [
-              { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-            ],
+            choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
             isEnding: false,
             openThreads: [],
             openThreadOverflowSummary: null,
@@ -100,9 +98,7 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
           page: {
             id: 2,
             narrativeText: 'Story.',
-            choices: [
-              { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-            ],
+            choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
             isEnding: false,
             openThreads: [],
             openThreadOverflowSummary: null,

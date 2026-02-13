@@ -17,16 +17,16 @@ export const normalizeCharacterNameForState = normalizeCharacterName;
  */
 export function createCharacterStateChanges(
   added: Array<{ characterName: string; states: readonly string[] }>,
-  removed: readonly string[],
+  removed: readonly string[]
 ): CharacterStateChanges {
   const normalizedAdded = added
-    .map(entry => ({
+    .map((entry) => ({
       characterName: normalizeCharacterNameForState(entry.characterName),
-      states: entry.states.map(s => s.trim()).filter(s => s),
+      states: entry.states.map((s) => s.trim()).filter((s) => s),
     }))
-    .filter(entry => entry.characterName && entry.states.length > 0);
+    .filter((entry) => entry.characterName && entry.states.length > 0);
 
-  const normalizedRemoved = removed.map(id => id.trim()).filter(id => id);
+  const normalizedRemoved = removed.map((id) => id.trim()).filter((id) => id);
 
   return {
     added: normalizedAdded,
@@ -40,7 +40,7 @@ export function createCharacterStateChanges(
  */
 export function applyCharacterStateChanges(
   current: AccumulatedCharacterState,
-  changes: CharacterStateChanges,
+  changes: CharacterStateChanges
 ): AccumulatedCharacterState {
   return applyChanges(current, changes);
 }
@@ -58,7 +58,7 @@ export function formatCharacterStateForPrompt(state: AccumulatedCharacterState):
 
   const formattedEntries = entries
     .map(([name, states]) => {
-      const stateLines = states.map(s => `- [${s.id}] ${s.text}`).join('\n');
+      const stateLines = states.map((s) => `- [${s.id}] ${s.text}`).join('\n');
       return `[${name}]\n${stateLines}`;
     })
     .join('\n\n');
@@ -73,7 +73,7 @@ export function formatCharacterStateForPrompt(state: AccumulatedCharacterState):
  */
 export function getCharacterState(
   state: AccumulatedCharacterState,
-  characterName: string,
+  characterName: string
 ): AccumulatedCharacterState[string] {
   const cleanedName = normalizeCharacterNameForState(characterName);
   const lookupKey = normalizeForComparison(cleanedName);
@@ -93,19 +93,19 @@ export function getCharacterState(
 export function hasCharacterState(
   state: AccumulatedCharacterState,
   characterName: string,
-  stateEntry: string,
+  stateEntry: string
 ): boolean {
   const characterState = getCharacterState(state, characterName);
   const normalizedEntry = stateEntry.trim().toLowerCase();
-  return characterState.some(s => s.text.trim().toLowerCase() === normalizedEntry);
+  return characterState.some((s) => s.text.trim().toLowerCase() === normalizedEntry);
 }
 
 /**
  * Gets parent accumulated character state from a page.
  */
-export function getParentAccumulatedCharacterState(
-  parentPage: { accumulatedCharacterState: AccumulatedCharacterState },
-): AccumulatedCharacterState {
+export function getParentAccumulatedCharacterState(parentPage: {
+  accumulatedCharacterState: AccumulatedCharacterState;
+}): AccumulatedCharacterState {
   return parentPage.accumulatedCharacterState;
 }
 

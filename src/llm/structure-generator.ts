@@ -11,7 +11,8 @@ import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
 import { withRetry } from './retry.js';
 import { STRUCTURE_GENERATION_SCHEMA } from './schemas/structure-schema.js';
-import { type GenerationOptions, LLMError } from './types.js';
+import type { GenerationOptions } from './generation-pipeline-types.js';
+import { LLMError } from './llm-client-types.js';
 
 export interface StructureGenerationResult {
   overallTheme: string;
@@ -34,7 +35,6 @@ export interface StructureGenerationResult {
 }
 
 function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult, 'rawResponse'> {
-
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError('Structure response must be an object', 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -49,7 +49,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
     throw new LLMError(
       `Structure response must include exactly 3 acts (received: ${received})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -58,7 +58,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
       throw new LLMError(
         `Structure act ${actIndex + 1} must be an object`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
 
@@ -72,16 +72,22 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
       throw new LLMError(
         `Structure act ${actIndex + 1} is missing required fields`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
 
-    if (!Array.isArray(actData['beats']) || actData['beats'].length < 2 || actData['beats'].length > 4) {
-      const received = Array.isArray(actData['beats']) ? actData['beats'].length : typeof actData['beats'];
+    if (
+      !Array.isArray(actData['beats']) ||
+      actData['beats'].length < 2 ||
+      actData['beats'].length > 4
+    ) {
+      const received = Array.isArray(actData['beats'])
+        ? actData['beats'].length
+        : typeof actData['beats'];
       throw new LLMError(
         `Structure act ${actIndex + 1} must have 2-4 beats (received: ${received})`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
 
@@ -90,7 +96,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
         throw new LLMError(
           `Structure beat ${actIndex + 1}.${beatIndex + 1} must be an object`,
           'STRUCTURE_PARSE_ERROR',
-          true,
+          true
         );
       }
 
@@ -103,7 +109,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
         throw new LLMError(
           `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
           'STRUCTURE_PARSE_ERROR',
-          true,
+          true
         );
       }
 
@@ -131,12 +137,14 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
   const pacingBudget =
     typeof rawBudget === 'object' && rawBudget !== null
       ? {
-          targetPagesMin: typeof (rawBudget as Record<string, unknown>)['targetPagesMin'] === 'number'
-            ? ((rawBudget as Record<string, unknown>)['targetPagesMin'] as number)
-            : 15,
-          targetPagesMax: typeof (rawBudget as Record<string, unknown>)['targetPagesMax'] === 'number'
-            ? ((rawBudget as Record<string, unknown>)['targetPagesMax'] as number)
-            : 50,
+          targetPagesMin:
+            typeof (rawBudget as Record<string, unknown>)['targetPagesMin'] === 'number'
+              ? ((rawBudget as Record<string, unknown>)['targetPagesMin'] as number)
+              : 15,
+          targetPagesMax:
+            typeof (rawBudget as Record<string, unknown>)['targetPagesMax'] === 'number'
+              ? ((rawBudget as Record<string, unknown>)['targetPagesMax'] as number)
+              : 50,
         }
       : { targetPagesMin: 15, targetPagesMax: 50 };
 
@@ -184,7 +192,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
 export async function generateStoryStructure(
   context: StructureContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<StructureGenerationResult> {
   const resolvedOptions: GenerationOptions = {
     apiKey,

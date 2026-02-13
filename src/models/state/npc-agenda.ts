@@ -21,7 +21,7 @@ export function createEmptyAccumulatedNpcAgendas(): AccumulatedNpcAgendas {
  */
 export function applyAgendaUpdates(
   current: AccumulatedNpcAgendas,
-  updates: readonly NpcAgenda[],
+  updates: readonly NpcAgenda[]
 ): AccumulatedNpcAgendas {
   if (updates.length === 0) {
     return current;

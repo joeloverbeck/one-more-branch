@@ -12,7 +12,7 @@ export function createChoice(
   text: string,
   nextPageId: PageId | null = null,
   choiceType: ChoiceType = ChoiceType.TACTICAL_APPROACH,
-  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT,
+  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT
 ): Choice {
   const trimmedText = text.trim();
   if (trimmedText.length === 0) {

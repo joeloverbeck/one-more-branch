@@ -7,7 +7,8 @@ import {
   generateStoryStructure,
 } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
-import type { AnalystResult, WriterResult } from '@/llm/types';
+import type { AnalystResult } from '@/llm/analyst-types';
+import type { WriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -26,9 +27,15 @@ jest.mock('@/logging/index', () => ({
   logPrompt: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
+>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
@@ -76,15 +83,25 @@ const openingResult = {
   narrative:
     'You step into Lanternport as the harbor lights ignite in impossible colors and every captain in the bay turns to watch your arrival in uneasy silence.',
   choices: [
-    { text: 'Investigate the ember trail', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Question the ferryman', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    {
+      text: 'Investigate the ember trail',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Question the ferryman',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
   ],
   currentLocation: 'Lanternport harbor district',
   threatsAdded: ['Unwelcome attention from harbor captains'],
   threatsRemoved: [],
   constraintsAdded: [],
   constraintsRemoved: [],
-  threadsAdded: [{ text: 'The crimson fog phenomenon', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+  threadsAdded: [
+    { text: 'The crimson fog phenomenon', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+  ],
   threadsResolved: [],
   newCanonFacts: ['Lanternport fog glows crimson at sunset'],
   newCharacterCanonFacts: {},
@@ -114,8 +131,16 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       narrative:
         'You follow embers down alleys of wet stone, where shuttered windows open just enough for whispered warnings and the ash forms a map beneath your boots.',
       choices: [
-        { text: 'Enter the ash-marked chapel', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Return to the docks with proof', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Enter the ash-marked chapel',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Return to the docks with proof',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Chapel district alleys',
       threatsAdded: ['Whispered warnings from hidden watchers'],
@@ -149,15 +174,25 @@ function buildWriterResult(selectedChoice: string): WriterResult {
     narrative:
       'The ferryman speaks in a voice like scraped iron and admits he has rowed passengers to a pier that does not exist on any map, then offers you passage.',
     choices: [
-      { text: 'Accept passage to the hidden pier', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Accept passage to the hidden pier',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Detain the ferryman for answers',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'Lanternport docks',
     threatsAdded: [],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
-    threadsAdded: [{ text: 'The hidden pier mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+    threadsAdded: [
+      { text: 'The hidden pier mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+    ],
     threadsResolved: [],
     newCanonFacts: ['A hidden pier appears only during red fog'],
     newCharacterCanonFacts: {},
@@ -171,7 +206,9 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       primaryEmotion: 'intrigue',
       primaryIntensity: 'moderate' as const,
       primaryCause: 'The ferryman knows secrets about an unmapped pier',
-      secondaryEmotions: [{ emotion: 'suspicion', cause: 'The ferryman seems too willing to share' }],
+      secondaryEmotions: [
+        { emotion: 'suspicion', cause: 'The ferryman seems too willing to share' },
+      ],
       dominantMotivation: 'Learn what the ferryman knows',
     },
     sceneSummary: 'Test summary of the scene events and consequences.',
@@ -276,14 +313,14 @@ function createRewriteFetchResponse(): Response {
     status: 200,
     json: () =>
       Promise.resolve({
-      choices: [
-        {
-          message: {
-            content: JSON.stringify(rewrittenStructure),
+        choices: [
+          {
+            message: {
+              content: JSON.stringify(rewrittenStructure),
+            },
           },
-        },
-      ],
-    }),
+        ],
+      }),
   } as Response;
 }
 
@@ -316,17 +353,25 @@ describe('story-engine integration', () => {
       },
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       choiceIntents: [
-        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+        {
+          hook: 'Face the threat directly',
+          choiceType: 'CONFRONTATION',
+          primaryDelta: 'THREAT_SHIFT',
+        },
+        {
+          hook: 'Find an alternative route',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
       ],
       rawResponse: 'page-plan',
     });
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateWriterPage.mockImplementation((context) =>
-      Promise.resolve(buildWriterResult(context.selectedChoice)),
+      Promise.resolve(buildWriterResult(context.selectedChoice))
     );
     mockedGenerateAnalystEvaluation.mockImplementation((context) =>
-      Promise.resolve(buildAnalystResult(context.narrative)),
+      Promise.resolve(buildAnalystResult(context.narrative))
     );
   });
 
@@ -632,7 +677,7 @@ describe('story-engine integration', () => {
     expect(rewrittenVersion?.previousVersionId).toBe(initialVersion?.id);
     expect(rewrittenVersion?.createdAtPageId).toBe(page3.page.id);
     expect(rewrittenVersion?.rewriteReason).toBe(
-      'The protagonist publicly defects, invalidating infiltration beats.',
+      'The protagonist publicly defects, invalidating infiltration beats.'
     );
 
     expect(page2.page.structureVersionId).toBe(initialVersion?.id ?? null);

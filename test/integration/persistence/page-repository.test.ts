@@ -301,7 +301,10 @@ describe('page-repository integration', () => {
 
     const activeStateChanges: ActiveStateChanges = {
       newLocation: 'Abandoned temple',
-      threatsAdded: ['THREAT_GUARDIAN: Stone guardian awakened', 'THREAT_TRAP: Pressure plates detected'],
+      threatsAdded: [
+        'THREAT_GUARDIAN: Stone guardian awakened',
+        'THREAT_TRAP: Pressure plates detected',
+      ],
       threatsRemoved: ['th-1'],
       constraintsAdded: ['CONSTRAINT_DARKNESS: No natural light'],
       constraintsRemoved: [],
@@ -315,9 +318,7 @@ describe('page-repository integration', () => {
         { id: 'th-2', text: 'THREAT_GUARDIAN: Stone guardian awakened' },
         { id: 'th-3', text: 'THREAT_TRAP: Pressure plates detected' },
       ],
-      activeConstraints: [
-        { id: 'cn-1', text: 'CONSTRAINT_DARKNESS: No natural light' },
-      ],
+      activeConstraints: [{ id: 'cn-1', text: 'CONSTRAINT_DARKNESS: No natural light' }],
       openThreads: [
         {
           id: 'td-2',
@@ -373,7 +374,9 @@ describe('page-repository integration', () => {
   });
 
   it('save/load preserves branch-divergent active state across sibling pages', async () => {
-    const story = buildStory({ characterConcept: `${TEST_PREFIX} divergent active state branches` });
+    const story = buildStory({
+      characterConcept: `${TEST_PREFIX} divergent active state branches`,
+    });
     createdStoryIds.add(story.id);
     await saveStory(story);
 

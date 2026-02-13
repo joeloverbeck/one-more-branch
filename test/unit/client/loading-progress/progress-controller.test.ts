@@ -100,9 +100,7 @@ describe('loading progress controller', () => {
     // Track all values written to the .loading-stage element
     const stageValues: string[] = [];
     const stageEl = document.querySelector('.loading-stage') as HTMLElement;
-    const originalDescriptor = Object.getOwnPropertyDescriptor(
-      Node.prototype, 'textContent'
-    );
+    const originalDescriptor = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
     Object.defineProperty(stageEl, 'textContent', {
       set(value: string) {
         stageValues.push(value);
@@ -288,32 +286,29 @@ describe('loading progress controller', () => {
   it('resets stage text after stop', async () => {
     setupPage();
 
-    fetchMock
-      .mockImplementation((url: string) => {
-        if (typeof url === 'string' && url.includes('generation-progress')) {
-          return Promise.resolve(
-            mockJsonResponse({ status: 'running', activeStage: 'ANALYZING_SCENE' })
-          );
-        }
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(
-          mockJsonResponse({
-            page: {
-              id: 2,
-              narrativeText: 'Done.',
-              choices: [
-                { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-              ],
-              isEnding: false,
-              openThreads: [],
-              openThreadOverflowSummary: null,
-              stateChanges: [],
-            },
-            wasGenerated: true,
-            actDisplayInfo: null,
-            deviationInfo: null,
-          })
+          mockJsonResponse({ status: 'running', activeStage: 'ANALYZING_SCENE' })
         );
-      });
+      }
+      return Promise.resolve(
+        mockJsonResponse({
+          page: {
+            id: 2,
+            narrativeText: 'Done.',
+            choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            isEnding: false,
+            openThreads: [],
+            openThreadOverflowSummary: null,
+            stateChanges: [],
+          },
+          wasGenerated: true,
+          actDisplayInfo: null,
+          deviationInfo: null,
+        })
+      );
+    });
 
     const button = document.querySelector('.choice-btn') as HTMLButtonElement;
     button.click();

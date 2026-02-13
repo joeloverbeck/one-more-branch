@@ -38,7 +38,9 @@ const LLMConfigSchema = z.object({
   temperature: z.number().min(0).max(2).default(0.8),
   maxTokens: z.number().int().min(256).max(32768).default(8192),
   retry: RetryConfigSchema.optional().transform((val) => val ?? RetryConfigSchema.parse({})),
-  promptOptions: PromptOptionsConfigSchema.optional().transform((val) => val ?? PromptOptionsConfigSchema.parse({})),
+  promptOptions: PromptOptionsConfigSchema.optional().transform(
+    (val) => val ?? PromptOptionsConfigSchema.parse({})
+  ),
 });
 
 /**
@@ -52,7 +54,9 @@ const PromptLoggingConfigSchema = z.object({
 
 const LoggingConfigSchema = z.object({
   level: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  prompts: PromptLoggingConfigSchema.optional().transform((val) => val ?? PromptLoggingConfigSchema.parse({})),
+  prompts: PromptLoggingConfigSchema.optional().transform(
+    (val) => val ?? PromptLoggingConfigSchema.parse({})
+  ),
 });
 
 /**

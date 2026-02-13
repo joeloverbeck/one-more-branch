@@ -1,6 +1,7 @@
 import { ThreadType, Urgency } from '../../../src/models/state';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
-import type { PagePlan, PageWriterResult } from '../../../src/llm/types';
+import type { PageWriterResult } from '../../../src/llm/writer-types';
+import type { PagePlan } from '../../../src/llm/planner-types';
 import { reconcileState } from '../../../src/engine/state-reconciler';
 import type { StateReconciliationPreviousState } from '../../../src/engine/state-reconciler-types';
 
@@ -30,7 +31,11 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
   return {
     narrative: 'The patrol sweeps the bridge crossing while Mara ducks into an alley.',
     choices: [
-      { text: 'Hide deeper', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+      {
+        text: 'Hide deeper',
+        choiceType: ChoiceType.TACTICAL_APPROACH,
+        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+      },
     ],
     protagonistAffect: {
       primaryEmotion: 'fear',
@@ -201,13 +206,13 @@ describe('state-reconciler integration', () => {
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
     const hazardDiags = result.reconciliationDiagnostics.filter(
-      d => d.code === 'THREAD_DANGER_IMMEDIATE_HAZARD',
+      (d) => d.code === 'THREAD_DANGER_IMMEDIATE_HAZARD'
     );
     expect(hazardDiags).toHaveLength(1);
     expect(hazardDiags[0].message).toContain('collapsing right now');
 
     const dupDiags = result.reconciliationDiagnostics.filter(
-      d => d.code === 'THREAD_DUPLICATE_LIKE_ADD',
+      (d) => d.code === 'THREAD_DUPLICATE_LIKE_ADD'
     );
     expect(dupDiags).toHaveLength(1);
     expect(dupDiags[0].message).toContain('Reach the archive before dawn breaks');
@@ -221,7 +226,7 @@ describe('state-reconciler integration', () => {
     ]);
   });
 
-  it('applies evidence gating across all field types simultaneously', () => {
+  it('accepts all field type additions without narrative evidence gating', () => {
     const plan: PagePlan = {
       ...buildBasePlan(),
       stateIntents: {
@@ -258,24 +263,14 @@ describe('state-reconciler integration', () => {
 
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
-    expect(result.threatsAdded).toEqual([]);
+    expect(result.threatsAdded).toEqual(['Xylocarpa toxin infiltrating groundwater']);
     expect(result.constraintsAdded).toEqual(['Bridge crossing is blocked by patrol']);
-    expect(result.inventoryAdded).toEqual([]);
+    expect(result.inventoryAdded).toEqual(['Zyzzogeton gemstone amulet']);
     expect(result.healthAdded).toEqual(['Fatigue from the alley chase']);
     expect(result.characterStateChangesAdded).toEqual([
       { characterName: 'Mara', states: ['Determined after the alley escape'] },
     ]);
-
-    const evidenceDiags = result.reconciliationDiagnostics.filter(
-      d => d.code === 'MISSING_NARRATIVE_EVIDENCE',
-    );
-    expect(evidenceDiags.length).toBeGreaterThanOrEqual(2);
-
-    const xylocarpaEvidence = evidenceDiags.find(d => d.field === 'threatsAdded');
-    expect(xylocarpaEvidence).toBeDefined();
-
-    const zyzzEvidence = evidenceDiags.find(d => d.field === 'inventoryAdded');
-    expect(zyzzEvidence).toBeDefined();
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
   it('normalizes canon facts and detects cross-character duplicate overlap', () => {
@@ -314,21 +309,25 @@ describe('state-reconciler integration', () => {
       'The old archive holds forbidden texts',
     ]);
     expect(result.newCharacterCanonFacts).toEqual({
-      Mara: ['Born in the bridge district', 'Trained by the archive keeper', 'Speaks three languages'],
+      Mara: [
+        'Born in the bridge district',
+        'Trained by the archive keeper',
+        'Speaks three languages',
+      ],
     });
 
     const worldDuplicates = result.reconciliationDiagnostics.filter(
-      d => d.code === 'DUPLICATE_CANON_FACT' && d.field?.includes('worldAdd'),
+      (d) => d.code === 'DUPLICATE_CANON_FACT' && d.field?.includes('worldAdd')
     );
     expect(worldDuplicates).toHaveLength(1);
 
     const charDuplicates = result.reconciliationDiagnostics.filter(
-      d => d.code === 'DUPLICATE_CANON_FACT' && d.field?.includes('characterAdd'),
+      (d) => d.code === 'DUPLICATE_CANON_FACT' && d.field?.includes('characterAdd')
     );
     expect(charDuplicates).toHaveLength(2);
   });
 
-  it('validates remove IDs then applies evidence gating to valid removals', () => {
+  it('validates remove IDs and accepts valid removals directly', () => {
     const plan: PagePlan = {
       ...buildBasePlan(),
       stateIntents: {
@@ -344,40 +343,33 @@ describe('state-reconciler integration', () => {
       },
     };
 
-    const writer = buildWriterResult({
-      narrative:
-        'The armed patrol that was sweeping the bridge crossing has moved on. The curfew is no longer being enforced.',
-      sceneSummary:
-        'The patrol that was sweeping the bridge crossing departs. Curfew enforcement stops.',
-    });
-
-    const result = reconcileState(plan, writer, buildPopulatedPreviousState());
+    const result = reconcileState(plan, buildWriterResult(), buildPopulatedPreviousState());
 
     const unknownIdDiag = result.reconciliationDiagnostics.find(
-      d => d.code === 'UNKNOWN_STATE_ID' && d.message.includes('th-999'),
+      (d) => d.code === 'UNKNOWN_STATE_ID' && d.message.includes('th-999')
     );
     expect(unknownIdDiag).toBeDefined();
 
     expect(result.threatsRemoved).toEqual(['th-1']);
-
-    expect(result.constraintsRemoved).toContain('cn-1');
-
-    const cn2Evidence = result.reconciliationDiagnostics.find(
-      d =>
-        d.code === 'MISSING_NARRATIVE_EVIDENCE' &&
-        d.field === 'constraintsRemoved',
-    );
-    if (result.constraintsRemoved.includes('cn-2')) {
-      expect(cn2Evidence).toBeUndefined();
-    } else {
-      expect(cn2Evidence).toBeDefined();
-    }
+    expect(result.constraintsRemoved).toEqual(['cn-1', 'cn-2']);
+    expect(result.reconciliationDiagnostics).toHaveLength(1);
+    expect(result.reconciliationDiagnostics[0].code).toBe('UNKNOWN_STATE_ID');
   });
 
   it('enforces per-type Jaccard thresholds for QUEST, RELATIONSHIP, and MYSTERY in batch', () => {
     const tokens = [
-      'amber', 'bravo', 'cinder', 'delta', 'ember', 'fable',
-      'garnet', 'harbor', 'ivory', 'juniper', 'kepler', 'lumen',
+      'amber',
+      'bravo',
+      'cinder',
+      'delta',
+      'ember',
+      'fable',
+      'garnet',
+      'harbor',
+      'ivory',
+      'juniper',
+      'kepler',
+      'lumen',
     ];
     const previousText = tokens.join(' ');
 
@@ -418,7 +410,9 @@ describe('state-reconciler integration', () => {
         stateIntents: {
           ...buildBasePlan().stateIntents,
           threads: {
-            add: [{ text: belowRelText, threadType: ThreadType.RELATIONSHIP, urgency: Urgency.HIGH }],
+            add: [
+              { text: belowRelText, threadType: ThreadType.RELATIONSHIP, urgency: Urgency.HIGH },
+            ],
             resolveIds: [],
           },
         },
@@ -427,7 +421,7 @@ describe('state-reconciler integration', () => {
         narrative: `Mara considers ${belowRelText} while reflecting.`,
         sceneSummary: `Focus on: ${belowRelText}.`,
       }),
-      previousState,
+      previousState
     );
     expect(belowRelResult.threadsAdded).toHaveLength(1);
 
@@ -446,10 +440,12 @@ describe('state-reconciler integration', () => {
         narrative: `Mara considers ${dupRelText} while reflecting.`,
         sceneSummary: `Focus on: ${dupRelText}.`,
       }),
-      previousState,
+      previousState
     );
     expect(dupRelResult.threadsAdded).toHaveLength(0);
-    expect(dupRelResult.reconciliationDiagnostics.some(d => d.code === 'THREAD_DUPLICATE_LIKE_ADD')).toBe(true);
+    expect(
+      dupRelResult.reconciliationDiagnostics.some((d) => d.code === 'THREAD_DUPLICATE_LIKE_ADD')
+    ).toBe(true);
 
     const belowQuestResult = reconcileState(
       {
@@ -466,7 +462,7 @@ describe('state-reconciler integration', () => {
         narrative: `Mara considers ${belowQuestText} while planning.`,
         sceneSummary: `Focus on: ${belowQuestText}.`,
       }),
-      previousState,
+      previousState
     );
     expect(belowQuestResult.threadsAdded).toHaveLength(1);
 
@@ -485,7 +481,7 @@ describe('state-reconciler integration', () => {
         narrative: `Mara considers ${dupQuestText} while planning.`,
         sceneSummary: `Focus on: ${dupQuestText}.`,
       }),
-      previousState,
+      previousState
     );
     expect(dupQuestResult.threadsAdded).toHaveLength(0);
 
@@ -504,7 +500,7 @@ describe('state-reconciler integration', () => {
         narrative: `Mara considers ${belowMysText} while investigating.`,
         sceneSummary: `Focus on: ${belowMysText}.`,
       }),
-      previousState,
+      previousState
     );
     expect(belowMysResult.threadsAdded).toHaveLength(1);
 
@@ -523,7 +519,7 @@ describe('state-reconciler integration', () => {
         narrative: `Mara considers ${dupMysText} while investigating.`,
         sceneSummary: `Focus on: ${dupMysText}.`,
       }),
-      previousState,
+      previousState
     );
     expect(dupMysResult.threadsAdded).toHaveLength(0);
   });
@@ -605,7 +601,7 @@ describe('state-reconciler integration', () => {
     });
 
     const criticalDiags = result.reconciliationDiagnostics.filter(
-      d => d.code === 'UNKNOWN_STATE_ID',
+      (d) => d.code === 'UNKNOWN_STATE_ID'
     );
     expect(criticalDiags).toHaveLength(0);
   });
@@ -670,9 +666,7 @@ describe('state-reconciler integration', () => {
         },
         canon: {
           worldAdd: ['The sewer junction connects three districts'],
-          characterAdd: [
-            { characterName: 'Mara', facts: ['Remembers the valve location'] },
-          ],
+          characterAdd: [{ characterName: 'Mara', facts: ['Remembers the valve location'] }],
         },
       },
     };

@@ -46,7 +46,7 @@ export function addInventoryItem(inventory: Inventory, item: string): Inventory 
  */
 export function removeInventoryItem(inventory: Inventory, itemId: string): Inventory {
   const result = [...inventory];
-  const index = result.findIndex(i => i.id === itemId);
+  const index = result.findIndex((i) => i.id === itemId);
   if (index !== -1) {
     result.splice(index, 1);
   }
@@ -70,7 +70,7 @@ export function formatInventoryForPrompt(inventory: Inventory): string {
     return '';
   }
 
-  const formattedItems = inventory.map(item => `- [${item.id}] ${item.text}`).join('\n');
+  const formattedItems = inventory.map((item) => `- [${item.id}] ${item.text}`).join('\n');
   return `YOUR INVENTORY:\n${formattedItems}\n`;
 }
 
@@ -79,11 +79,11 @@ export function formatInventoryForPrompt(inventory: Inventory): string {
  */
 export function createInventoryChanges(
   added: readonly string[],
-  removed: readonly string[],
+  removed: readonly string[]
 ): InventoryChanges {
   return {
-    added: added.map(item => item.trim()).filter(item => item),
-    removed: removed.map(item => item.trim()).filter(item => item),
+    added: added.map((item) => item.trim()).filter((item) => item),
+    removed: removed.map((item) => item.trim()).filter((item) => item),
   };
 }
 
@@ -92,7 +92,7 @@ export function createInventoryChanges(
  */
 export function hasInventoryItem(inventory: Inventory, item: string): boolean {
   const normalizedItem = normalizeItemName(item);
-  return inventory.some(i => normalizeItemName(i.text) === normalizedItem);
+  return inventory.some((i) => normalizeItemName(i.text) === normalizedItem);
 }
 
 /**
@@ -100,15 +100,15 @@ export function hasInventoryItem(inventory: Inventory, item: string): boolean {
  */
 export function countInventoryItem(inventory: Inventory, item: string): number {
   const normalizedItem = normalizeItemName(item);
-  return inventory.filter(i => normalizeItemName(i.text) === normalizedItem).length;
+  return inventory.filter((i) => normalizeItemName(i.text) === normalizedItem).length;
 }
 
 /**
  * Gets parent accumulated inventory from a page.
  */
-export function getParentAccumulatedInventory(
-  parentPage: { accumulatedInventory: Inventory },
-): Inventory {
+export function getParentAccumulatedInventory(parentPage: {
+  accumulatedInventory: Inventory;
+}): Inventory {
   return parentPage.accumulatedInventory;
 }
 

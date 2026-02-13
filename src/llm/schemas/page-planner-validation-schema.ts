@@ -18,7 +18,7 @@ function normalized(value: string): string {
 function addDuplicateIssues(
   values: readonly string[],
   path: (string | number)[],
-  ctx: z.RefinementCtx,
+  ctx: z.RefinementCtx
 ): void {
   const seen = new Map<string, number>();
   values.forEach((value, index) => {
@@ -48,7 +48,7 @@ function addDuplicateIssues(
 function addRequiredTrimmedTextIssue(
   value: string,
   path: (string | number)[],
-  ctx: z.RefinementCtx,
+  ctx: z.RefinementCtx
 ): void {
   if (value.trim()) {
     return;
@@ -69,10 +69,10 @@ function addIdPrefixIssues(
   field: string,
   prefix: (typeof STATE_ID_PREFIXES)[keyof typeof STATE_ID_PREFIXES],
   path: (string | number)[],
-  ctx: z.RefinementCtx,
+  ctx: z.RefinementCtx
 ): void {
   const issues = validateIdOnlyField(values, field, prefix);
-  issues.forEach(issue => {
+  issues.forEach((issue) => {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: issue.ruleKey,
@@ -91,10 +91,10 @@ function addNoIdLikeAdditionIssues(
   values: readonly string[],
   field: string,
   path: (string | number)[],
-  ctx: z.RefinementCtx,
+  ctx: z.RefinementCtx
 ): void {
   const issues = validateNoIdLikeAdditions(values, field);
-  issues.forEach(issue => {
+  issues.forEach((issue) => {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: issue.ruleKey,
@@ -146,7 +146,7 @@ const CanonIntentsSchema = z.object({
     z.object({
       characterName: z.string(),
       facts: z.array(z.string()),
-    }),
+    })
   ),
 });
 
@@ -177,12 +177,12 @@ export const PagePlannerResultSchema = z
     addRequiredTrimmedTextIssue(
       data.stateIntents.currentLocation,
       ['stateIntents', 'currentLocation'],
-      ctx,
+      ctx
     );
     addRequiredTrimmedTextIssue(
       data.writerBrief.openingLineDirective,
       ['writerBrief', 'openingLineDirective'],
-      ctx,
+      ctx
     );
 
     addDuplicateIssues(data.continuityAnchors, ['continuityAnchors'], ctx);
@@ -190,40 +190,48 @@ export const PagePlannerResultSchema = z
     addDuplicateIssues(data.writerBrief.forbiddenRecaps, ['writerBrief', 'forbiddenRecaps'], ctx);
 
     addDuplicateIssues(data.stateIntents.threats.add, ['stateIntents', 'threats', 'add'], ctx);
-    addDuplicateIssues(data.stateIntents.constraints.add, ['stateIntents', 'constraints', 'add'], ctx);
+    addDuplicateIssues(
+      data.stateIntents.constraints.add,
+      ['stateIntents', 'constraints', 'add'],
+      ctx
+    );
     addDuplicateIssues(data.stateIntents.inventory.add, ['stateIntents', 'inventory', 'add'], ctx);
     addDuplicateIssues(data.stateIntents.health.add, ['stateIntents', 'health', 'add'], ctx);
-    addDuplicateIssues(data.stateIntents.canon.worldAdd, ['stateIntents', 'canon', 'worldAdd'], ctx);
+    addDuplicateIssues(
+      data.stateIntents.canon.worldAdd,
+      ['stateIntents', 'canon', 'worldAdd'],
+      ctx
+    );
 
     addNoIdLikeAdditionIssues(
       data.stateIntents.threats.add,
       'stateIntents.threats.add',
       ['stateIntents', 'threats', 'add'],
-      ctx,
+      ctx
     );
     addNoIdLikeAdditionIssues(
       data.stateIntents.constraints.add,
       'stateIntents.constraints.add',
       ['stateIntents', 'constraints', 'add'],
-      ctx,
+      ctx
     );
     addNoIdLikeAdditionIssues(
       data.stateIntents.inventory.add,
       'stateIntents.inventory.add',
       ['stateIntents', 'inventory', 'add'],
-      ctx,
+      ctx
     );
     addNoIdLikeAdditionIssues(
       data.stateIntents.health.add,
       'stateIntents.health.add',
       ['stateIntents', 'health', 'add'],
-      ctx,
+      ctx
     );
     addNoIdLikeAdditionIssues(
       data.stateIntents.canon.worldAdd,
       'stateIntents.canon.worldAdd',
       ['stateIntents', 'canon', 'worldAdd'],
-      ctx,
+      ctx
     );
 
     addIdPrefixIssues(
@@ -231,51 +239,55 @@ export const PagePlannerResultSchema = z
       'stateIntents.threats.removeIds',
       STATE_ID_PREFIXES.threats,
       ['stateIntents', 'threats', 'removeIds'],
-      ctx,
+      ctx
     );
     addIdPrefixIssues(
       data.stateIntents.constraints.removeIds,
       'stateIntents.constraints.removeIds',
       STATE_ID_PREFIXES.constraints,
       ['stateIntents', 'constraints', 'removeIds'],
-      ctx,
+      ctx
     );
     addIdPrefixIssues(
       data.stateIntents.threads.resolveIds,
       'stateIntents.threads.resolveIds',
       STATE_ID_PREFIXES.threads,
       ['stateIntents', 'threads', 'resolveIds'],
-      ctx,
+      ctx
     );
     addIdPrefixIssues(
       data.stateIntents.inventory.removeIds,
       'stateIntents.inventory.removeIds',
       STATE_ID_PREFIXES.inventory,
       ['stateIntents', 'inventory', 'removeIds'],
-      ctx,
+      ctx
     );
     addIdPrefixIssues(
       data.stateIntents.health.removeIds,
       'stateIntents.health.removeIds',
       STATE_ID_PREFIXES.health,
       ['stateIntents', 'health', 'removeIds'],
-      ctx,
+      ctx
     );
     addIdPrefixIssues(
       data.stateIntents.characterState.removeIds,
       'stateIntents.characterState.removeIds',
       STATE_ID_PREFIXES.characterState,
       ['stateIntents', 'characterState', 'removeIds'],
-      ctx,
+      ctx
     );
 
     data.stateIntents.threads.add.forEach((entry, index) => {
-      addRequiredTrimmedTextIssue(entry.text, ['stateIntents', 'threads', 'add', index, 'text'], ctx);
+      addRequiredTrimmedTextIssue(
+        entry.text,
+        ['stateIntents', 'threads', 'add', index, 'text'],
+        ctx
+      );
       addNoIdLikeAdditionIssues(
         [entry.text],
         'stateIntents.threads.add[].text',
         ['stateIntents', 'threads', 'add', index, 'text'],
-        ctx,
+        ctx
       );
     });
 
@@ -283,9 +295,9 @@ export const PagePlannerResultSchema = z
       addRequiredTrimmedTextIssue(
         entry.characterName,
         ['stateIntents', 'characterState', 'add', index, 'characterName'],
-        ctx,
+        ctx
       );
-      if (entry.states.map(state => state.trim()).filter(Boolean).length === 0) {
+      if (entry.states.map((state) => state.trim()).filter(Boolean).length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: REQUIRED_TEXT_RULE_KEY,
@@ -297,7 +309,7 @@ export const PagePlannerResultSchema = z
         entry.states,
         'stateIntents.characterState.add[].states',
         ['stateIntents', 'characterState', 'add', index, 'states'],
-        ctx,
+        ctx
       );
     });
 
@@ -306,7 +318,7 @@ export const PagePlannerResultSchema = z
         entry.facts,
         'stateIntents.canon.characterAdd[].facts',
         ['stateIntents', 'canon', 'characterAdd', index, 'facts'],
-        ctx,
+        ctx
       );
     });
 
@@ -333,7 +345,6 @@ export const PagePlannerResultSchema = z
       }
       seenPairs.add(key);
     });
-
   });
 
 export type ValidatedPagePlannerResult = z.infer<typeof PagePlannerResultSchema>;

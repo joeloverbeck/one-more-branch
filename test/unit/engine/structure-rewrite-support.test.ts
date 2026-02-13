@@ -15,7 +15,8 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../src/mod
 function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'Restore the broken kingdom',
-    premise: 'A reluctant hero must leave home to save a crumbling kingdom before it falls to ruin.',
+    premise:
+      'A reluctant hero must leave home to save a crumbling kingdom before it falls to ruin.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
@@ -24,8 +25,18 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
         beats: [
-          { name: 'Messenger arrives', description: 'A warning arrives', objective: 'Hear the warning', role: 'setup' },
-          { name: 'Choose departure', description: 'A difficult choice', objective: 'Leave home', role: 'turning_point' },
+          {
+            name: 'Messenger arrives',
+            description: 'A warning arrives',
+            objective: 'Hear the warning',
+            role: 'setup',
+          },
+          {
+            name: 'Choose departure',
+            description: 'A difficult choice',
+            objective: 'Leave home',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -33,7 +44,14 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [{ name: 'First setback', description: 'First major setback', objective: 'Recover from loss', role: 'escalation' }],
+        beats: [
+          {
+            name: 'First setback',
+            description: 'First major setback',
+            objective: 'Recover from loss',
+            role: 'escalation',
+          },
+        ],
       },
     ],
     rawResponse: '{"mock":true}',
@@ -173,7 +191,7 @@ describe('structure-rewrite-support', () => {
       const deviation = createBeatDeviation(
         'The protagonist switched allegiance.',
         ['1.2', '2.1'],
-        'Now aligned with the rival faction.',
+        'Now aligned with the rival faction.'
       );
 
       const context = buildRewriteContext(story, structureVersion, state, deviation);
@@ -258,10 +276,7 @@ describe('structure-rewrite-support', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
-        acts: [
-          original.acts[0]!,
-          { ...original.acts[1]!, beats: [] },
-        ],
+        acts: [original.acts[0]!, { ...original.acts[1]!, beats: [] }],
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
@@ -387,7 +402,12 @@ describe('structure-rewrite-support', () => {
             ...original.acts[0]!,
             beats: [
               ...original.acts[0]!.beats,
-              { id: '1.3', description: 'Additional beat', objective: 'New objective', role: 'escalation' as const },
+              {
+                id: '1.3',
+                description: 'Additional beat',
+                objective: 'New objective',
+                role: 'escalation' as const,
+              },
             ],
           },
           original.acts[1]!,

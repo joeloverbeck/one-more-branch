@@ -43,16 +43,18 @@ describe('public client script', () => {
   it('escapes dynamic content before innerHTML updates', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('escapeHtmlWithBreaks(data.page.narrativeText || \'\')');
+    expect(script).toContain("escapeHtmlWithBreaks(data.page.narrativeText || '')");
     expect(script).toContain('changes.map((change) => `<li>${escapeHtml(change)}</li>`)');
-    expect(script).toContain("escapeHtml(choiceText)");
-    expect(script).toContain("escapeHtml(thread.text)");
+    expect(script).toContain('escapeHtml(choiceText)');
+    expect(script).toContain('escapeHtml(thread.text)');
   });
 
   it('contains dedicated open-thread panel render/rebuild function', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, narrativeElement)');
+    expect(script).toContain(
+      'function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, narrativeElement)'
+    );
     expect(script).toContain('const OPEN_THREADS_PANEL_LIMIT = 6;');
     expect(script).toContain('function buildOpenThreadOverflowSummary(hiddenThreads)');
     expect(script).toContain('function renderThreadBadgePill(threadType, urgency)');
@@ -63,20 +65,22 @@ describe('public client script', () => {
   it('updates open-thread panel from AJAX choice response data', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, narrative);');
+    expect(script).toContain(
+      'renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, narrative);'
+    );
     expect(script).not.toContain('data.logScript');
     expect(script).not.toContain('executeLogScript');
-    expect(script).toContain("if (!Array.isArray(openThreads) || openThreads.length === 0)");
+    expect(script).toContain('if (!Array.isArray(openThreads) || openThreads.length === 0)');
     expect(script).toContain("getIconPath('thread_type_' + threadType)");
     expect(script).toContain("getIconPath('thread_urgency_' + urgency)");
-    expect(script).toContain("class=\"thread-icon-pill\"");
-    expect(script).toContain("class=\"thread-icon-badge thread-icon-badge--type\"");
-    expect(script).toContain("class=\"thread-icon-badge thread-icon-badge--urgency\"");
+    expect(script).toContain('class="thread-icon-pill"');
+    expect(script).toContain('class="thread-icon-badge thread-icon-badge--type"');
+    expect(script).toContain('class="thread-icon-badge thread-icon-badge--urgency"');
     expect(script).toContain('function getOpenThreadUrgencyClass(urgency)');
     expect(script).toContain("return 'open-threads-text--high';");
     expect(script).toContain("return 'open-threads-text--medium';");
     expect(script).toContain("return 'open-threads-text--low';");
-    expect(script).toContain("class=\"open-threads-text ");
+    expect(script).toContain('class="open-threads-text ');
   });
 
   it('defines stage phrase buckets for all generation stages', () => {
@@ -112,13 +116,17 @@ describe('public client script', () => {
     expect(script).toContain('function showPlayError(message, choicesSectionEl)');
     expect(script).toContain('function clearPlayError(choicesSectionEl)');
     expect(script).toContain("var errorBlock = choicesSectionEl.querySelector('#play-error');");
-    expect(script).toContain("showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);");
     expect(script).toContain(
-      "showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.', choicesSection);",
+      "showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);"
     );
-    expect(script).not.toContain("alert(error instanceof Error ? error.message : 'Failed to add custom choice');");
+    expect(script).toContain(
+      "showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.', choicesSection);"
+    );
     expect(script).not.toContain(
-      "alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');",
+      "alert(error instanceof Error ? error.message : 'Failed to add custom choice');"
+    );
+    expect(script).not.toContain(
+      "alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.');"
     );
   });
 
@@ -127,13 +135,19 @@ describe('public client script', () => {
 
     expect(script).toContain('class="suggested-protagonist-speech-input"');
     expect(script).toContain('function getSuggestedProtagonistSpeechInputValue()');
-    expect(script).toContain('const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();');
+    expect(script).toContain(
+      'const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();'
+    );
     expect(script).toContain('if (suggestedProtagonistSpeech.length > 0) {');
     expect(script).toContain('body.suggestedProtagonistSpeech = suggestedProtagonistSpeech;');
     expect(script).toContain('const suggestedSpeechValue = data.wasGenerated === true');
     expect(script).toContain("            ? ''");
     expect(script).toContain('            : getSuggestedProtagonistSpeechInputValue();');
-    expect(script).toContain('rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);');
-    expect(script).toContain('rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue(), choices, choicesSection, bindCustomChoiceEvents);');
+    expect(script).toContain(
+      'rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);'
+    );
+    expect(script).toContain(
+      'rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue(), choices, choicesSection, bindCustomChoiceEvents);'
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { LLMError } from '@/llm/types';
+import { LLMError } from '@/llm/llm-client-types';
 import { logger } from '@/logging';
 import { logLLMError, validateStoryInput } from '@/server/services/story-creation-service';
 

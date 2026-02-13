@@ -1,7 +1,4 @@
-import {
-  generateOpeningPage,
-  mergePageWriterAndReconciledStateWithAnalystResults,
-} from '../llm';
+import { generateOpeningPage, mergePageWriterAndReconciledStateWithAnalystResults } from '../llm';
 import type { GenerationPipelineMetrics } from '../llm';
 import { randomUUID } from 'node:crypto';
 import {
@@ -49,63 +46,66 @@ function createGenerationRequestId(): string {
 export async function generateFirstPage(
   story: Story,
   apiKey: string,
-  onGenerationStage?: GenerationStageCallback,
+  onGenerationStage?: GenerationStageCallback
 ): Promise<{ page: Page; updatedStory: Story; metrics: GenerationPipelineMetrics }> {
   validateFirstPageStructureVersion(story);
 
   const requestId = createGenerationRequestId();
   const openingPreviousState = createOpeningPreviousStateSnapshot();
-  const { writerResult, reconciliation: openingReconciliation, metrics } =
-    await generateWithReconciliationRetry({
+  const {
+    writerResult,
+    reconciliation: openingReconciliation,
+    metrics,
+  } = await generateWithReconciliationRetry({
+    mode: 'opening',
+    storyId: story.id,
+    requestId,
+    apiKey,
+    previousState: openingPreviousState,
+    buildPlanContext: (failureReasons) => ({
       mode: 'opening',
-      storyId: story.id,
-      requestId,
-      apiKey,
-      previousState: openingPreviousState,
-      buildPlanContext: failureReasons => ({
-        mode: 'opening',
-        characterConcept: story.characterConcept,
-        worldbuilding: story.worldbuilding,
-        tone: story.tone,
-        npcs: story.npcs,
-        startingSituation: story.startingSituation,
-        structure: story.structure ?? undefined,
-        initialNpcAgendas: story.initialNpcAgendas,
-        globalCanon: story.globalCanon,
-        globalCharacterCanon: story.globalCharacterCanon,
-        accumulatedInventory: [],
-        accumulatedHealth: [],
-        accumulatedCharacterState: {},
-        activeState: createEmptyActiveState(),
-        reconciliationFailureReasons: failureReasons,
-      }),
-      generateWriter: async (pagePlan, failureReasons) =>
-        generateOpeningPage(
-          {
-            characterConcept: story.characterConcept,
-            worldbuilding: story.worldbuilding,
-            tone: story.tone,
-            npcs: story.npcs,
-            startingSituation: story.startingSituation,
-            structure: story.structure ?? undefined,
-            initialNpcAgendas: story.initialNpcAgendas,
-            pagePlan,
-            reconciliationFailureReasons: failureReasons,
+      characterConcept: story.characterConcept,
+      worldbuilding: story.worldbuilding,
+      tone: story.tone,
+      npcs: story.npcs,
+      startingSituation: story.startingSituation,
+      structure: story.structure ?? undefined,
+      initialNpcAgendas: story.initialNpcAgendas,
+      globalCanon: story.globalCanon,
+      globalCharacterCanon: story.globalCharacterCanon,
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: createEmptyActiveState(),
+      reconciliationFailureReasons: failureReasons,
+    }),
+    generateWriter: async (pagePlan, failureReasons) =>
+      generateOpeningPage(
+        {
+          characterConcept: story.characterConcept,
+          worldbuilding: story.worldbuilding,
+          tone: story.tone,
+          npcs: story.npcs,
+          startingSituation: story.startingSituation,
+          structure: story.structure ?? undefined,
+          initialNpcAgendas: story.initialNpcAgendas,
+          pagePlan,
+          reconciliationFailureReasons: failureReasons,
+        },
+        {
+          apiKey,
+          observability: {
+            storyId: story.id,
+            requestId,
           },
-          {
-            apiKey,
-            observability: {
-              storyId: story.id,
-              requestId,
-            },
-          },
-        ),
-      onGenerationStage,
-    });
+        }
+      ),
+    onGenerationStage,
+  });
   const result = mergePageWriterAndReconciledStateWithAnalystResults(
     writerResult,
     openingReconciliation,
-    null,
+    null
   );
 
   const initialStructureState = story.structure
@@ -119,7 +119,11 @@ export async function generateFirstPage(
     initialNpcAgendas: story.initialNpcAgendas,
   });
 
-  const updatedStory = updateStoryWithAllCanon(story, result.newCanonFacts, result.newCharacterCanonFacts);
+  const updatedStory = updateStoryWithAllCanon(
+    story,
+    result.newCanonFacts,
+    result.newCharacterCanonFacts
+  );
 
   return { page, updatedStory, metrics };
 }
@@ -130,7 +134,7 @@ export async function generateNextPage(
   choiceIndex: number,
   apiKey: string,
   onGenerationStage?: GenerationStageCallback,
-  suggestedProtagonistSpeech?: string,
+  suggestedProtagonistSpeech?: string
 ): Promise<{
   page: Page;
   updatedStory: Story;
@@ -141,7 +145,7 @@ export async function generateNextPage(
   if (!choice) {
     throw new EngineError(
       `Invalid choice index ${choiceIndex} on page ${parentPage.id}`,
-      'INVALID_CHOICE',
+      'INVALID_CHOICE'
     );
   }
 
@@ -166,7 +170,7 @@ export async function generateNextPage(
     parentState,
     ancestorContext,
     currentStructureVersion,
-    suggestedProtagonistSpeech,
+    suggestedProtagonistSpeech
   );
   const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
   const removableIds = buildRemovableIds(parentState);
@@ -181,66 +185,69 @@ export async function generateNextPage(
     onGenerationStage,
   });
 
-  const { writerResult, reconciliation: continuationReconciliation, metrics } =
-    await generateWithReconciliationRetry({
+  const {
+    writerResult,
+    reconciliation: continuationReconciliation,
+    metrics,
+  } = await generateWithReconciliationRetry({
+    mode: 'continuation',
+    storyId: story.id,
+    pageId: parentPage.id,
+    requestId,
+    apiKey,
+    previousState: continuationPreviousState,
+    buildPlanContext: (failureReasons) => ({
+      ...continuationContext,
       mode: 'continuation',
-      storyId: story.id,
-      pageId: parentPage.id,
-      requestId,
-      apiKey,
-      previousState: continuationPreviousState,
-      buildPlanContext: failureReasons => ({
-        ...continuationContext,
-        mode: 'continuation',
-        reconciliationFailureReasons: failureReasons,
-      }),
-      generateWriter,
-      onGenerationStage,
-    });
+      reconciliationFailureReasons: failureReasons,
+    }),
+    generateWriter,
+    onGenerationStage,
+  });
 
   // Analyst call (only when structure exists)
   const activeStructureForAnalyst = currentStructureVersion?.structure ?? story.structure;
-  const analystResult = activeStructureForAnalyst && parentState.structureState
-    ? await runAnalystEvaluation({
-        writerNarrative: writerResult.narrative,
-        activeStructure: activeStructureForAnalyst,
-        parentStructureState: parentState.structureState,
-        parentActiveState: parentState.accumulatedActiveState,
-        threadsResolved: continuationReconciliation.threadsResolved,
-        threadAges: parentPage.threadAges,
-        apiKey,
-        logContext: continuationLogContext,
-        onGenerationStage,
-      })
-    : null;
+  const analystResult =
+    activeStructureForAnalyst && parentState.structureState
+      ? await runAnalystEvaluation({
+          writerNarrative: writerResult.narrative,
+          activeStructure: activeStructureForAnalyst,
+          parentStructureState: parentState.structureState,
+          parentActiveState: parentState.accumulatedActiveState,
+          threadsResolved: continuationReconciliation.threadsResolved,
+          threadAges: parentPage.threadAges,
+          apiKey,
+          logContext: continuationLogContext,
+          onGenerationStage,
+        })
+      : null;
 
   // Merge into ContinuationGenerationResult
   const result = mergePageWriterAndReconciledStateWithAnalystResults(
     writerResult,
     continuationReconciliation,
-    analystResult,
+    analystResult
   );
 
   const newPageId = generatePageId(maxPageId);
 
   // Handle deviation if detected - triggers structure rewrite
-  const { storyForPage, activeStructureVersion, deviationInfo } =
-    await handleDeviationIfDetected({
-      result,
-      story,
-      currentStructureVersion,
-      parentStructureState: parentState.structureState,
-      newPageId,
-      apiKey,
-      logContext: continuationLogContext,
-      onGenerationStage,
-    });
+  const { storyForPage, activeStructureVersion, deviationInfo } = await handleDeviationIfDetected({
+    result,
+    story,
+    currentStructureVersion,
+    parentStructureState: parentState.structureState,
+    newPageId,
+    apiKey,
+    logContext: continuationLogContext,
+    onGenerationStage,
+  });
 
   // Resolve beat conclusion with turning point gate logic
   const activeBeat = resolveActiveBeat(
     activeStructureVersion,
     story.structure,
-    parentState.structureState,
+    parentState.structureState
   );
   const { beatConcluded, beatResolution } = resolveBeatConclusion({
     result,
@@ -304,7 +311,7 @@ export async function generateNextPage(
   const updatedStory = updateStoryWithAllCanon(
     storyForPage,
     result.newCanonFacts,
-    result.newCharacterCanonFacts,
+    result.newCharacterCanonFacts
   );
 
   return { page, updatedStory, metrics, deviationInfo };
@@ -316,7 +323,7 @@ export async function getOrGeneratePage(
   choiceIndex: number,
   apiKey?: string,
   onGenerationStage?: GenerationStageCallback,
-  suggestedProtagonistSpeech?: string,
+  suggestedProtagonistSpeech?: string
 ): Promise<{
   page: Page;
   story: Story;
@@ -328,7 +335,7 @@ export async function getOrGeneratePage(
   if (!choice) {
     throw new EngineError(
       `Invalid choice index ${choiceIndex} on page ${parentPage.id}`,
-      'INVALID_CHOICE',
+      'INVALID_CHOICE'
     );
   }
 
@@ -337,7 +344,7 @@ export async function getOrGeneratePage(
     if (!page) {
       throw new EngineError(
         `Page ${choice.nextPageId} referenced by choice but not found`,
-        'PAGE_NOT_FOUND',
+        'PAGE_NOT_FOUND'
       );
     }
 
@@ -345,10 +352,7 @@ export async function getOrGeneratePage(
   }
 
   if (!apiKey) {
-    throw new EngineError(
-      'API key is required to generate new pages',
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError('API key is required to generate new pages', 'VALIDATION_FAILED');
   }
 
   const { page, updatedStory, metrics, deviationInfo } = await generateNextPage(
@@ -357,7 +361,7 @@ export async function getOrGeneratePage(
     choiceIndex,
     apiKey,
     onGenerationStage,
-    suggestedProtagonistSpeech,
+    suggestedProtagonistSpeech
   );
 
   await storage.savePage(story.id, page);

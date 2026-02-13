@@ -93,8 +93,16 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: [
-          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Open the iron door',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Climb the collapsed tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         protagonistAffect: {
           primaryEmotion: 'apprehension',
@@ -128,7 +136,11 @@ describe('schema pipeline integration', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Move fast', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Move quietly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Move quietly',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         protagonistAffect: {
           primaryEmotion: 'focus',
@@ -149,19 +161,32 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: [
-          { text: 'Speak to the elder', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Wait in silence', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Speak to the elder',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Wait in silence',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: 'The elder council chamber',
         threatsAdded: [],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'Elder Varn encounter', threadType: 'RELATIONSHIP', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'Elder Varn encounter', threadType: 'RELATIONSHIP', urgency: 'MEDIUM' },
+        ],
         threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [
-          { characterName: 'Elder Varn', facts: ['She is the last of her order', 'She carries an obsidian staff'] },
+          {
+            characterName: 'Elder Varn',
+            facts: ['She is the last of her order', 'She carries an obsidian staff'],
+          },
           { characterName: 'Brother Kael', facts: ['He betrayed the order'] },
         ],
         inventoryAdded: [],
@@ -195,7 +220,7 @@ describe('schema pipeline integration', () => {
           { text: 'Follow the clue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
           { text: 'Ignore it', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
         ],
-        currentLocation: 'Detective Shaw\'s office',
+        currentLocation: "Detective Shaw's office",
         threatsAdded: [],
         threatsRemoved: [],
         constraintsAdded: [],
@@ -241,7 +266,9 @@ describe('schema pipeline integration', () => {
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'The hidden cache discovery', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'The hidden cache discovery', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: [],
@@ -264,10 +291,9 @@ describe('schema pipeline integration', () => {
 
       fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
 
-      const result = await generateWriterWithFallback(
-        [{ role: 'user', content: 'Test prompt' }],
-        { apiKey: 'test-key' },
-      );
+      const result = await generateWriterWithFallback([{ role: 'user', content: 'Test prompt' }], {
+        apiKey: 'test-key',
+      });
 
       expect(result.inventoryAdded).toEqual(['Ancient map', 'Gold coins (50)']);
       expect(result.inventoryRemoved).toEqual(['inv-1']);
@@ -377,15 +403,15 @@ describe('schema pipeline integration', () => {
       fetchMock.mockResolvedValue(
         createJsonResponse(400, {
           error: { message: 'response_format is not supported by this model' },
-        }),
+        })
       );
 
       // Attach rejection handler early to prevent unhandled rejection detection
       // 400 errors are non-retryable so no timer advancement needed
-      const promise = generateWriterWithFallback(
-        [{ role: 'user', content: 'Test prompt' }],
-        { apiKey: 'test-key', model: 'unsupported-model' },
-      );
+      const promise = generateWriterWithFallback([{ role: 'user', content: 'Test prompt' }], {
+        apiKey: 'test-key',
+        model: 'unsupported-model',
+      });
 
       await expect(promise).rejects.toMatchObject({
         code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
@@ -422,8 +448,16 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: `   ${VALID_NARRATIVE}   `,
         choices: [
-          { text: '  Open the door  ', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: '  Climb the tower  ', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: '  Open the door  ',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: '  Climb the tower  ',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: '  The haunted keep  ',
         threatsAdded: ['  Ghostly presence  '],
@@ -433,9 +467,7 @@ describe('schema pipeline integration', () => {
         threadsAdded: [{ text: '  The encoded ledger  ', threadType: 'MYSTERY', urgency: 'HIGH' }],
         threadsResolved: [],
         newCanonFacts: ['  The keep is haunted  '],
-        newCharacterCanonFacts: [
-          { characterName: '  Elder Varn  ', facts: ['  She is wise  '] },
-        ],
+        newCharacterCanonFacts: [{ characterName: '  Elder Varn  ', facts: ['  She is wise  '] }],
         inventoryAdded: ['  Ancient key  '],
         inventoryRemoved: ['  inv-9  '],
         healthAdded: ['  Minor wound on left arm  '],
@@ -456,7 +488,11 @@ describe('schema pipeline integration', () => {
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toEqual([
         { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Climb the tower',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ]);
       expect(result.currentLocation).toEqual('The haunted keep');
       expect(result.threatsAdded).toEqual(['Ghostly presence']);
@@ -479,7 +515,11 @@ describe('schema pipeline integration', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Climb the tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: 'The keep entrance',
         threatsAdded: ['', '  ', 'Ghostly watcher', '\n'],
@@ -596,7 +636,11 @@ describe('schema pipeline integration', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'OPEN THE DOOR', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'OPEN THE DOOR',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
@@ -611,7 +655,11 @@ describe('schema pipeline integration', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Climb the tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         threadsAdded: ['legacy-thread-shape'],
         newCanonFacts: [],
@@ -627,7 +675,11 @@ describe('schema pipeline integration', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the tower', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Climb the tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         constraintsRemoved: ['th-1'],
         newCanonFacts: [],

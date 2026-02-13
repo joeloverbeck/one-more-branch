@@ -8,7 +8,4 @@ export {
   OPENING_CHARACTER_CANON_GUIDANCE,
 } from './establishment-rules.js';
 
-export {
-  OPENING_ACTIVE_STATE_QUALITY,
-  OPENING_CANON_QUALITY,
-} from './opening-quality-criteria.js';
+export { OPENING_ACTIVE_STATE_QUALITY, OPENING_CANON_QUALITY } from './opening-quality-criteria.js';

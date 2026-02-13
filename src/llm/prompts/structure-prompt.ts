@@ -1,6 +1,7 @@
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
-import type { ChatMessage, PromptOptions } from '../types.js';
+import type { PromptOptions } from '../generation-pipeline-types.js';
+import type { ChatMessage } from '../llm-client-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 
 export interface StructureContext {
@@ -91,15 +92,14 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
 
 export function buildStructurePrompt(
   context: StructureContext,
-  options?: PromptOptions,
+  options?: PromptOptions
 ): ChatMessage[] {
-  const worldSection = context.worldbuilding
-    ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
-    : '';
+  const worldSection = context.worldbuilding ? `WORLDBUILDING:\n${context.worldbuilding}\n\n` : '';
 
-  const npcsSection = context.npcs && context.npcs.length > 0
-    ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
-    : '';
+  const npcsSection =
+    context.npcs && context.npcs.length > 0
+      ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
+      : '';
 
   const startingSituationSection = context.startingSituation
     ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
@@ -158,7 +158,7 @@ OUTPUT SHAPE:
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(
       { role: 'user', content: STRUCTURE_FEW_SHOT_USER },
-      { role: 'assistant', content: STRUCTURE_FEW_SHOT_ASSISTANT },
+      { role: 'assistant', content: STRUCTURE_FEW_SHOT_ASSISTANT }
     );
   }
 

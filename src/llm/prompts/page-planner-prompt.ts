@@ -1,5 +1,6 @@
 import { CONTENT_POLICY } from '../content-policy.js';
-import type { ChatMessage, PagePlanContext } from '../types.js';
+import type { PagePlanContext } from '../context-types.js';
+import type { ChatMessage } from '../llm-client-types.js';
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
@@ -29,7 +30,9 @@ export function buildPagePlannerPrompt(context: PagePlanContext): ChatMessage[] 
       ? `\n\n=== RECONCILIATION FAILURE REASONS (RETRY) ===
 Prior attempt failed deterministic reconciliation. You MUST correct these failures:
 ${context.reconciliationFailureReasons
-  .map(reason => `- [${reason.code}]${reason.field ? ` (${reason.field})` : ''} ${reason.message}`)
+  .map(
+    (reason) => `- [${reason.code}]${reason.field ? ` (${reason.field})` : ''} ${reason.message}`
+  )
   .join('\n')}`
       : '';
 

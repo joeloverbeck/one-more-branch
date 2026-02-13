@@ -9,8 +9,16 @@ describe('validateWriterResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: [
-          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Open the iron door',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Climb the collapsed tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'The ruined keep',
         threatsAdded: ['THREAT_RUBBLE: Unstable ceiling'],
@@ -22,16 +30,12 @@ describe('validateWriterResponse', () => {
         ],
         threadsResolved: [],
         newCanonFacts: ['The keep is haunted by old wardens'],
-        newCharacterCanonFacts: [
-          { characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] },
-        ],
+        newCharacterCanonFacts: [{ characterName: 'Dr. Cohen', facts: ['He is a psychiatrist'] }],
         inventoryAdded: ['Rusty key'],
         inventoryRemoved: [],
         healthAdded: ['Minor wound on left arm'],
         healthRemoved: [],
-        characterStateChangesAdded: [
-          { characterName: 'Guard', states: ['Suspicious'] },
-        ],
+        characterStateChangesAdded: [{ characterName: 'Guard', states: ['Suspicious'] }],
         characterStateChangesRemoved: [],
         protagonistAffect: {
           primaryEmotion: 'fear',
@@ -43,13 +47,17 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.narrative).toBe(VALID_NARRATIVE);
     expect(result.choices).toEqual([
       { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+      {
+        text: 'Climb the collapsed tower',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'LOCATION_CHANGE',
+      },
     ]);
     expect(result.currentLocation).toBe('The ruined keep');
     expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
@@ -77,8 +85,16 @@ describe('validateWriterResponse', () => {
       {
         narrative: `  ${VALID_NARRATIVE}  `,
         choices: [
-          { text: '  Open the iron door  ', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: '  Climb the collapsed tower  ', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: '  Open the iron door  ',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: '  Climb the collapsed tower  ',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: '  The ruined keep  ',
         threatsAdded: ['  THREAT_RUBBLE: Unstable ceiling  '],
@@ -97,9 +113,7 @@ describe('validateWriterResponse', () => {
         inventoryRemoved: [],
         healthAdded: ['  Minor wound  '],
         healthRemoved: [],
-        characterStateChangesAdded: [
-          { characterName: '  Guard  ', states: ['  Suspicious  '] },
-        ],
+        characterStateChangesAdded: [{ characterName: '  Guard  ', states: ['  Suspicious  '] }],
         characterStateChangesRemoved: [],
         protagonistAffect: {
           primaryEmotion: '  fear  ',
@@ -111,13 +125,17 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.narrative).toBe(VALID_NARRATIVE);
     expect(result.choices).toEqual([
       { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+      {
+        text: 'Climb the collapsed tower',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'LOCATION_CHANGE',
+      },
     ]);
     expect(result.currentLocation).toBe('The ruined keep');
     expect(result.threatsAdded).toEqual(['THREAT_RUBBLE: Unstable ceiling']);
@@ -147,8 +165,16 @@ describe('validateWriterResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         choices: [
-          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Open the iron door',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Climb the collapsed tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         threatsAdded: ['  ', '', 'THREAT_FIRE: Fire spreading'],
         newCanonFacts: ['\n', 'The moon well is beneath the keep'],
@@ -159,7 +185,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.threatsAdded).toEqual(['THREAT_FIRE: Fire spreading']);
@@ -174,20 +200,28 @@ describe('validateWriterResponse', () => {
     const longSceneSummary =
       'After securing the relic, you navigate a collapsed hallway while the fortress trembles from distant bombardment, then coordinate a risky evacuation through a flooded service tunnel as rival scouts close in from two flanks. ' +
       'You choose to abandon heavy supplies to preserve speed, mark safe anchor points for allies, and redirect the group toward a concealed maintenance shaft that leads to an old observatory where a backup signal system can be restored. ' +
-      'By the time you emerge, two allies are injured but stable, one rival tracker defects after witnessing the sabotage order, and your team commits to broadcasting proof of the commander\'s betrayal before dawn despite the near certainty of retaliation.';
+      "By the time you emerge, two allies are injured but stable, one rival tracker defects after witnessing the sabotage order, and your team commits to broadcasting proof of the commander's betrayal before dawn despite the near certainty of retaliation.";
 
     const result = validateWriterResponse(
       {
         narrative: VALID_NARRATIVE,
         choices: [
-          { text: 'Open the iron door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Climb the collapsed tower', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Open the iron door',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Climb the collapsed tower',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         newCanonFacts: [],
         sceneSummary: longSceneSummary,
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.sceneSummary).toBe(longSceneSummary);
@@ -207,7 +241,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     // Malformed string choices are recovered and upgraded to structured objects
@@ -234,8 +268,8 @@ describe('validateWriterResponse', () => {
           newCanonFacts: [],
           isEnding: false,
         },
-        'raw json response',
-      ),
+        'raw json response'
+      )
     ).toThrow();
   });
 
@@ -245,14 +279,18 @@ describe('validateWriterResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: [
-            { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+            {
+              text: 'Only one choice',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'GOAL_SHIFT',
+            },
           ],
           newCanonFacts: [],
           sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
         },
-        'raw json response',
-      ),
+        'raw json response'
+      )
     ).toThrow();
   });
 
@@ -265,7 +303,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: true,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.isEnding).toBe(true);
@@ -284,7 +322,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.currentLocation).toBe('');
@@ -323,7 +361,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      rawResponse,
+      rawResponse
     );
 
     expect(result.rawResponse).toBe(rawResponse);
@@ -341,7 +379,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     ) as unknown as Record<string, unknown>;
 
     expect(result['beatConcluded']).toBeUndefined();
@@ -359,7 +397,11 @@ describe('validateWriterResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Go back the way you came', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Go back the way you came',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         newCanonFacts: [],
         newCharacterCanonFacts: [
@@ -374,7 +416,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.newCharacterCanonFacts).toEqual({
@@ -392,14 +434,18 @@ describe('validateWriterResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Retreat and regroup',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         newCanonFacts: [],
         characterStateChangesRemoved: ['cs-1', 'cs-3'],
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.characterStateChangesRemoved).toEqual(['cs-1', 'cs-3']);
@@ -411,16 +457,24 @@ describe('validateWriterResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: [
-            { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-            { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+            {
+              text: 'Continue forward',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'GOAL_SHIFT',
+            },
+            {
+              text: 'Retreat and regroup',
+              choiceType: 'AVOIDANCE_RETREAT',
+              primaryDelta: 'LOCATION_CHANGE',
+            },
           ],
           threadsAdded: ['Legacy thread shape'],
           newCanonFacts: [],
           sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
         },
-        'raw json response',
-      ),
+        'raw json response'
+      )
     ).toThrow();
   });
 
@@ -430,16 +484,24 @@ describe('validateWriterResponse', () => {
         {
           narrative: VALID_NARRATIVE,
           choices: [
-            { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-            { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+            {
+              text: 'Continue forward',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'GOAL_SHIFT',
+            },
+            {
+              text: 'Retreat and regroup',
+              choiceType: 'AVOIDANCE_RETREAT',
+              primaryDelta: 'LOCATION_CHANGE',
+            },
           ],
           threadsAdded: [{ text: '   ', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
           newCanonFacts: [],
           sceneSummary: 'Test summary of the scene events and consequences.',
           isEnding: false,
         },
-        'raw json response',
-      ),
+        'raw json response'
+      )
     ).toThrow('threadsAdded[0].text must not be empty after trim');
   });
 
@@ -449,7 +511,11 @@ describe('validateWriterResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: [
           { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Retreat and regroup',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         threatsAdded: ['th-1'],
         constraintsRemoved: ['th-3'],
@@ -457,7 +523,7 @@ describe('validateWriterResponse', () => {
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
       },
-      'raw json response',
+      'raw json response'
     );
 
     expect(result.threatsAdded).toEqual(['th-1']);

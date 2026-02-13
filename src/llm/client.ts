@@ -6,26 +6,28 @@ import { resolvePromptOptions } from './options.js';
 import { generatePlannerWithFallback } from './planner-generation.js';
 import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
 import { buildLorekeeperPrompt } from './prompts/lorekeeper-prompt.js';
-import { buildContinuationPrompt, buildOpeningPrompt, buildPagePlannerPrompt } from './prompts/index.js';
-import { withRetry } from './retry.js';
 import {
-  type AnalystContext,
-  type AnalystResult,
-  type ContinuationContext,
-  type GenerationOptions,
-  type LorekeeperContext,
-  type LorekeeperResult,
-  type OpeningContext,
-  type PagePlan,
-  type PagePlanContext,
-  type PagePlanGenerationResult,
-  type WriterResult,
-} from './types.js';
+  buildContinuationPrompt,
+  buildOpeningPrompt,
+  buildPagePlannerPrompt,
+} from './prompts/index.js';
+import { withRetry } from './retry.js';
+import type { AnalystContext, AnalystResult } from './analyst-types.js';
+import type {
+  ContinuationContext,
+  LorekeeperContext,
+  OpeningContext,
+  PagePlanContext,
+} from './context-types.js';
+import type { GenerationOptions } from './generation-pipeline-types.js';
+import type { LorekeeperResult } from './lorekeeper-types.js';
+import type { PagePlan, PagePlanGenerationResult } from './planner-types.js';
+import type { WriterResult } from './writer-types.js';
 import { generateWriterWithFallback } from './writer-generation.js';
 
 export async function generateOpeningPage(
   context: OpeningContext,
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<WriterResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildOpeningPrompt(context, promptOptions);
@@ -38,7 +40,7 @@ export async function generateOpeningPage(
 
 export async function generateWriterPage(
   context: ContinuationContext,
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<WriterResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildContinuationPrompt(context, promptOptions);
@@ -52,14 +54,14 @@ export async function generateWriterPage(
 export async function generatePageWriterOutput(
   context: ContinuationContext,
   plan: PagePlan,
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<WriterResult> {
   return generateWriterPage({ ...context, pagePlan: plan }, options);
 }
 
 export async function generateAnalystEvaluation(
   context: AnalystContext,
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<AnalystResult> {
   const messages = buildAnalystPrompt(context);
 
@@ -71,7 +73,7 @@ export async function generateAnalystEvaluation(
 
 export async function generatePagePlan(
   context: PagePlanContext,
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<PagePlanGenerationResult> {
   const messages = buildPagePlannerPrompt(context);
 
@@ -82,7 +84,7 @@ export async function generatePagePlan(
 
 export async function generateLorekeeperBible(
   context: LorekeeperContext,
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<LorekeeperResult> {
   const messages = buildLorekeeperPrompt(context);
 

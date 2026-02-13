@@ -61,7 +61,7 @@ export function validatePage(page: unknown): ValidationResult {
     errors.push('Ending pages must have no choices');
   }
 
-  const choiceTexts = page.choices.map(choice => choice.text.toLowerCase());
+  const choiceTexts = page.choices.map((choice) => choice.text.toLowerCase());
   if (new Set(choiceTexts).size !== choiceTexts.length) {
     errors.push('Duplicate choice texts detected');
   }
@@ -102,10 +102,7 @@ export function validateNoCycle(
   };
 }
 
-export function validateStoryIntegrity(
-  _story: Story,
-  pages: Map<PageId, Page>
-): ValidationResult {
+export function validateStoryIntegrity(_story: Story, pages: Map<PageId, Page>): ValidationResult {
   const errors: string[] = [];
 
   const page1 = pages.get(1 as PageId);
@@ -127,7 +124,9 @@ export function validateStoryIntegrity(
 
     page.choices.forEach((choice, index) => {
       if (choice.nextPageId !== null && !pages.has(choice.nextPageId)) {
-        errors.push(`Page ${pageId} choice ${index} references non-existent page ${choice.nextPageId}`);
+        errors.push(
+          `Page ${pageId} choice ${index} references non-existent page ${choice.nextPageId}`
+        );
       }
     });
   });

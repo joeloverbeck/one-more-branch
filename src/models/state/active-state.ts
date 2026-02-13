@@ -2,7 +2,14 @@
  * Active-state types and guards for tracking truths that are true right now.
  */
 
-import { KeyedEntry, ThreadEntry, ThreadType, Urgency, isThreadType, isUrgency } from './keyed-entry.js';
+import {
+  KeyedEntry,
+  ThreadEntry,
+  ThreadType,
+  Urgency,
+  isThreadType,
+  isUrgency,
+} from './keyed-entry.js';
 
 export interface ActiveState {
   readonly currentLocation: string;
@@ -67,7 +74,7 @@ function isThreadEntry(value: unknown): value is ThreadEntry {
 }
 
 function isStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.every(item => typeof item === 'string');
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
 function isThreadAddition(value: unknown): value is ThreadAddition {
@@ -77,14 +84,15 @@ function isThreadAddition(value: unknown): value is ThreadAddition {
 
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj['text'] === 'string' &&
-    isThreadType(obj['threadType']) &&
-    isUrgency(obj['urgency'])
+    typeof obj['text'] === 'string' && isThreadType(obj['threadType']) && isUrgency(obj['urgency'])
   );
 }
 
 function isThreadAddedArray(value: unknown): value is readonly (string | ThreadAddition)[] {
-  return Array.isArray(value) && value.every(item => typeof item === 'string' || isThreadAddition(item));
+  return (
+    Array.isArray(value) &&
+    value.every((item) => typeof item === 'string' || isThreadAddition(item))
+  );
 }
 
 export function isActiveState(value: unknown): value is ActiveState {

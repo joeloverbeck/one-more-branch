@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const WRITER_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -20,7 +20,8 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
             properties: {
               text: {
                 type: 'string',
-                description: 'The choice text the player sees. Start with a verb. 3-300 characters.',
+                description:
+                  'The choice text the player sees. Start with a verb. 3-300 characters.',
               },
               choiceType: {
                 type: 'string',
@@ -67,7 +68,8 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           properties: {
             primaryEmotion: {
               type: 'string',
-              description: 'The dominant feeling driving the protagonist at the END of this scene (e.g., "fear", "attraction", "guilt", "determination").',
+              description:
+                'The dominant feeling driving the protagonist at the END of this scene (e.g., "fear", "attraction", "guilt", "determination").',
             },
             primaryIntensity: {
               type: 'string',
@@ -96,9 +98,16 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
               description: 'What the protagonist most wants right now.',
             },
           },
-          required: ['primaryEmotion', 'primaryIntensity', 'primaryCause', 'secondaryEmotions', 'dominantMotivation'],
+          required: [
+            'primaryEmotion',
+            'primaryIntensity',
+            'primaryCause',
+            'secondaryEmotions',
+            'dominantMotivation',
+          ],
           additionalProperties: false,
-          description: 'Snapshot of protagonist emotional state at END of this scene. NOT accumulated - fresh snapshot each page.',
+          description:
+            'Snapshot of protagonist emotional state at END of this scene. NOT accumulated - fresh snapshot each page.',
         },
         sceneSummary: {
           type: 'string',

@@ -16,7 +16,7 @@ function applyKeyedChanges(
   current: readonly KeyedEntry[],
   added: readonly string[],
   removed: readonly string[],
-  prefix: StateIdPrefix,
+  prefix: StateIdPrefix
 ): readonly KeyedEntry[] {
   const afterRemoval = removeByIds(current, removed);
   const additions = assignIds(current, added, prefix);
@@ -26,7 +26,7 @@ function applyKeyedChanges(
 function applyThreadChanges(
   current: readonly ThreadEntry[],
   added: readonly (string | ThreadAddition)[],
-  removed: readonly string[],
+  removed: readonly string[]
 ): readonly ThreadEntry[] {
   const afterRemoval = removeByIds(current, removed);
   let nextIdNumber = getMaxIdNumber(current, 'td');
@@ -60,25 +60,35 @@ function applyThreadChanges(
       threadType: isThreadType(addedThread.threadType)
         ? addedThread.threadType
         : ThreadType.INFORMATION,
-      urgency: isUrgency(addedThread.urgency)
-        ? addedThread.urgency
-        : Urgency.MEDIUM,
+      urgency: isUrgency(addedThread.urgency) ? addedThread.urgency : Urgency.MEDIUM,
     });
   }
 
   return [...afterRemoval, ...typedAdditions];
 }
 
-export function applyActiveStateChanges(current: ActiveState, changes: ActiveStateChanges): ActiveState {
+export function applyActiveStateChanges(
+  current: ActiveState,
+  changes: ActiveStateChanges
+): ActiveState {
   return {
     currentLocation: changes.newLocation ?? current.currentLocation,
-    activeThreats: applyKeyedChanges(current.activeThreats, changes.threatsAdded, changes.threatsRemoved, 'th'),
+    activeThreats: applyKeyedChanges(
+      current.activeThreats,
+      changes.threatsAdded,
+      changes.threatsRemoved,
+      'th'
+    ),
     activeConstraints: applyKeyedChanges(
       current.activeConstraints,
       changes.constraintsAdded,
       changes.constraintsRemoved,
-      'cn',
+      'cn'
     ),
-    openThreads: applyThreadChanges(current.openThreads, changes.threadsAdded, changes.threadsResolved),
+    openThreads: applyThreadChanges(
+      current.openThreads,
+      changes.threadsAdded,
+      changes.threadsResolved
+    ),
   };
 }

@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const LOREKEEPER_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -50,7 +50,7 @@ export const LOREKEEPER_SCHEMA: JsonSchema = {
               currentState: {
                 type: 'string',
                 description:
-                  'This character\'s situation and emotional state entering this scene, based on accumulated character state and recent narrative.',
+                  "This character's situation and emotional state entering this scene, based on accumulated character state and recent narrative.",
               },
             },
             required: [

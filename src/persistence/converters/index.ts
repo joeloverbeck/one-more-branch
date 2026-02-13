@@ -3,10 +3,7 @@
  * Each converter handles transformation between domain models and file format.
  */
 
-export {
-  structureStateToFileData,
-  fileDataToStructureState,
-} from './structure-state-converter';
+export { structureStateToFileData, fileDataToStructureState } from './structure-state-converter';
 
 export {
   protagonistAffectToFileData,

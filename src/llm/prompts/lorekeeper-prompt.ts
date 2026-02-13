@@ -1,6 +1,7 @@
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import { CONTENT_POLICY } from '../content-policy.js';
-import type { ChatMessage, LorekeeperContext } from '../types.js';
+import type { LorekeeperContext } from '../context-types.js';
+import type { ChatMessage } from '../llm-client-types.js';
 import { buildWriterStructureContext } from './continuation/index.js';
 
 const LOREKEEPER_SYSTEM_PROMPT = `You are the Lorekeeper for an interactive branching story. Your role is to curate a compact, scene-focused "Story Bible" containing ONLY what the writer needs for the upcoming scene.
@@ -22,17 +23,18 @@ CURATION PRINCIPLES:
 export function buildLorekeeperPrompt(context: LorekeeperContext): ChatMessage[] {
   const plan = context.pagePlan;
 
-  const npcsSection = context.npcs && context.npcs.length > 0
-    ? `NPC DEFINITIONS:
+  const npcsSection =
+    context.npcs && context.npcs.length > 0
+      ? `NPC DEFINITIONS:
 ${formatNpcsForPrompt(context.npcs)}
 
 `
-    : '';
+      : '';
 
   const canonSection =
     context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
-${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
+${context.globalCanon.map((fact) => `- ${fact}`).join('\n')}
 
 `
       : '';
@@ -42,7 +44,7 @@ ${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
     characterCanonEntries.length > 0
       ? `CHARACTER CANON (permanent traits):
 ${characterCanonEntries
-  .map(([name, facts]) => `[${name}]\n${facts.map(fact => `- ${fact}`).join('\n')}`)
+  .map(([name, facts]) => `[${name}]\n${facts.map((fact) => `- ${fact}`).join('\n')}`)
   .join('\n\n')}
 
 `
@@ -53,7 +55,10 @@ ${characterCanonEntries
     characterStateEntries.length > 0
       ? `NPC ACCUMULATED STATE (branch-specific events):
 ${characterStateEntries
-  .map(([name, states]) => `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`)
+  .map(
+    ([name, states]) =>
+      `[${name}]\n${states.map((state) => `- [${state.id}] ${state.text}`).join('\n')}`
+  )
   .join('\n\n')}
 
 `
@@ -67,12 +72,12 @@ ${characterStateEntries
       ? `NPC AGENDAS (current goals and off-screen behavior):
 ${npcAgendaEntries
   .map(
-    a =>
+    (a) =>
       `[${a.npcName}]
   Goal: ${a.currentGoal}
   Leverage: ${a.leverage}
   Fear: ${a.fear}
-  Off-screen: ${a.offScreenBehavior}`,
+  Off-screen: ${a.offScreenBehavior}`
   )
   .join('\n\n')}
 
@@ -83,31 +88,35 @@ ${npcAgendaEntries
   const locationLine = activeState.currentLocation
     ? `Current Location: ${activeState.currentLocation}\n`
     : '';
-  const threatsLine = activeState.activeThreats.length > 0
-    ? `Active Threats: ${activeState.activeThreats.map(t => t.text).join(', ')}\n`
-    : '';
-  const constraintsLine = activeState.activeConstraints.length > 0
-    ? `Active Constraints: ${activeState.activeConstraints.map(c => c.text).join(', ')}\n`
-    : '';
-  const threadsLine = activeState.openThreads.length > 0
-    ? `Open Threads: ${activeState.openThreads.map(t => `${t.text} [${t.threadType}/${t.urgency}]`).join(', ')}\n`
-    : '';
+  const threatsLine =
+    activeState.activeThreats.length > 0
+      ? `Active Threats: ${activeState.activeThreats.map((t) => t.text).join(', ')}\n`
+      : '';
+  const constraintsLine =
+    activeState.activeConstraints.length > 0
+      ? `Active Constraints: ${activeState.activeConstraints.map((c) => c.text).join(', ')}\n`
+      : '';
+  const threadsLine =
+    activeState.openThreads.length > 0
+      ? `Open Threads: ${activeState.openThreads.map((t) => `${t.text} [${t.threadType}/${t.urgency}]`).join(', ')}\n`
+      : '';
 
-  const activeStateSection = (locationLine || threatsLine || constraintsLine || threadsLine)
-    ? `ACTIVE STATE:
+  const activeStateSection =
+    locationLine || threatsLine || constraintsLine || threadsLine
+      ? `ACTIVE STATE:
 ${locationLine}${threatsLine}${constraintsLine}${threadsLine}
 `
-    : '';
+      : '';
 
   const structureSection = buildWriterStructureContext(
     context.structure,
-    context.accumulatedStructureState,
+    context.accumulatedStructureState
   );
 
   const ancestorSummarySection =
     context.ancestorSummaries.length > 0
       ? `ANCESTOR PAGE SUMMARIES (oldest first):
-${context.ancestorSummaries.map(s => `- Page ${s.pageId}: ${s.summary}`).join('\n')}
+${context.ancestorSummaries.map((s) => `- Page ${s.pageId}: ${s.summary}`).join('\n')}
 
 `
       : '';
@@ -138,7 +147,7 @@ ${plan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${int
 Scene Intent: ${plan.sceneIntent}
 Dramatic Question: ${plan.dramaticQuestion}
 Continuity Anchors:
-${plan.continuityAnchors.map(anchor => `- ${anchor}`).join('\n') || '- (none)'}
+${plan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'}
 ${choiceIntentSection}
 === FULL STORY CONTEXT ===
 

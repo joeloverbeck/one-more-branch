@@ -1,4 +1,4 @@
-import type { LLMError } from '../../llm/types.js';
+import type { LLMError } from '../../llm/llm-client-types.js';
 import { logger } from '../../logging/index.js';
 import type { Npc } from '../../models/npc.js';
 
@@ -48,11 +48,11 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
   }
 
   const validNpcs = input.npcs
-    ?.map(npc => ({
+    ?.map((npc) => ({
       name: (npc.name ?? '').trim(),
       description: (npc.description ?? '').trim(),
     }))
-    .filter(npc => npc.name.length > 0 && npc.description.length > 0);
+    .filter((npc) => npc.name.length > 0 && npc.description.length > 0);
 
   return {
     valid: true,

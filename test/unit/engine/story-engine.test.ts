@@ -1,4 +1,11 @@
-import { createChoice, createPage, createStory, parsePageId, parseStoryId, StoryMetadata } from '../../../src/models';
+import {
+  createChoice,
+  createPage,
+  createStory,
+  parsePageId,
+  parseStoryId,
+  StoryMetadata,
+} from '../../../src/models';
 import { storage } from '../../../src/persistence';
 import { getOrGeneratePage } from '../../../src/engine/page-service';
 import {
@@ -62,7 +69,9 @@ function buildStory(): ReturnType<typeof createStory> {
   });
 }
 
-function buildPage(overrides?: Partial<ReturnType<typeof createPage>>): ReturnType<typeof createPage> {
+function buildPage(
+  overrides?: Partial<ReturnType<typeof createPage>>
+): ReturnType<typeof createPage> {
   return createPage({
     id: PAGE_1,
     narrativeText: 'Rain needles the harbor while the bell tower glows blue.',
@@ -123,7 +132,7 @@ describe('story-engine', () => {
           pageId: PAGE_1,
           choiceIndex: 0,
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'STORY_NOT_FOUND' });
 
       expect(mockedGetPage).not.toHaveBeenCalled();
@@ -141,7 +150,7 @@ describe('story-engine', () => {
           pageId: PAGE_1,
           choiceIndex: 0,
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'PAGE_NOT_FOUND' });
 
       expect(mockedGetOrGeneratePage).not.toHaveBeenCalled();
@@ -159,7 +168,7 @@ describe('story-engine', () => {
           pageId: PAGE_1,
           choiceIndex: 2,
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'INVALID_CHOICE' });
 
       expect(mockedGetOrGeneratePage).not.toHaveBeenCalled();
@@ -177,7 +186,7 @@ describe('story-engine', () => {
           pageId: PAGE_1,
           choiceIndex: 0,
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'INVALID_CHOICE' });
 
       expect(mockedGetOrGeneratePage).not.toHaveBeenCalled();
@@ -210,7 +219,7 @@ describe('story-engine', () => {
           apiKey: 'test-key',
           suggestedProtagonistSpeech: 'We should stay quiet.',
           onGenerationStage: jest.fn(),
-        }),
+        })
       ).resolves.toEqual({ page: nextPage, wasGenerated: true });
 
       expect(mockedGetOrGeneratePage).toHaveBeenCalledWith(
@@ -219,7 +228,7 @@ describe('story-engine', () => {
         0,
         'test-key',
         expect.any(Function),
-        'We should stay quiet.',
+        'We should stay quiet.'
       );
     });
   });

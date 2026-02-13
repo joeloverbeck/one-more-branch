@@ -42,7 +42,8 @@ interface StructurePayload {
 function createValidStructurePayload(): StructurePayload {
   return {
     overallTheme: 'Expose the tribunal and reclaim your honor.',
-    premise: 'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
+    premise:
+      'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     acts: [
       {
@@ -51,8 +52,18 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure means execution.',
         entryCondition: 'A public murder is pinned on the protagonist.',
         beats: [
-          { name: 'Witness contact', description: 'Find a hidden witness.', objective: 'Obtain credible evidence.', role: 'setup' },
-          { name: 'Archive theft', description: 'Steal archive records.', objective: 'Secure proof before it burns.', role: 'turning_point' },
+          {
+            name: 'Witness contact',
+            description: 'Find a hidden witness.',
+            objective: 'Obtain credible evidence.',
+            role: 'setup',
+          },
+          {
+            name: 'Archive theft',
+            description: 'Steal archive records.',
+            objective: 'Secure proof before it burns.',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -61,8 +72,18 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure locks the city under martial rule.',
         entryCondition: 'The records name powerful conspirators.',
         beats: [
-          { name: 'Rival negotiation', description: 'Negotiate with rivals.', objective: 'Gain reluctant allies.', role: 'escalation' },
-          { name: 'Rigged hearing', description: 'Survive a rigged hearing.', objective: 'Force evidence into the open.', role: 'turning_point' },
+          {
+            name: 'Rival negotiation',
+            description: 'Negotiate with rivals.',
+            objective: 'Gain reluctant allies.',
+            role: 'escalation',
+          },
+          {
+            name: 'Rigged hearing',
+            description: 'Survive a rigged hearing.',
+            objective: 'Force evidence into the open.',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -71,8 +92,18 @@ function createValidStructurePayload(): StructurePayload {
         stakes: 'Failure cements permanent authoritarian control.',
         entryCondition: 'Conspirators are identified and vulnerable.',
         beats: [
-          { name: 'Alliance split', description: 'Alliance fractures.', objective: 'Choose justice over revenge.', role: 'turning_point' },
-          { name: 'Tribunal reckoning', description: 'Confront tribunal leaders.', objective: 'Resolve the central conflict.', role: 'resolution' },
+          {
+            name: 'Alliance split',
+            description: 'Alliance fractures.',
+            objective: 'Choose justice over revenge.',
+            role: 'turning_point',
+          },
+          {
+            name: 'Tribunal reckoning',
+            description: 'Confront tribunal leaders.',
+            objective: 'Resolve the central conflict.',
+            role: 'resolution',
+          },
         ],
       },
     ],
@@ -300,7 +331,14 @@ describe('structure-generator', () => {
     const payload = createValidStructurePayload();
     payload.acts[1] = {
       ...payload.acts[1],
-      beats: [{ name: 'Single beat', description: 'Only one beat', objective: 'Insufficient beats.', role: 'escalation' }],
+      beats: [
+        {
+          name: 'Single beat',
+          description: 'Only one beat',
+          objective: 'Insufficient beats.',
+          role: 'escalation',
+        },
+      ],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
@@ -331,8 +369,18 @@ describe('structure-generator', () => {
     payload.acts[2] = {
       ...payload.acts[2],
       beats: [
-        { name: 'Climax confrontation', description: 'Complete the confrontation.', objective: 'Resolve climax.', role: 'turning_point' },
-        { name: 'Invalid objective', description: 'Missing objective', objective: undefined as unknown as string, role: 'resolution' },
+        {
+          name: 'Climax confrontation',
+          description: 'Complete the confrontation.',
+          objective: 'Resolve climax.',
+          role: 'turning_point',
+        },
+        {
+          name: 'Invalid objective',
+          description: 'Missing objective',
+          objective: undefined as unknown as string,
+          role: 'resolution',
+        },
       ],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
@@ -372,7 +420,7 @@ describe('structure-generator', () => {
       createJsonResponse(200, {
         id: 'or-structure-empty',
         choices: [],
-      }),
+      })
     );
 
     const pending = generateStoryStructure(context, 'test-api-key');
@@ -386,7 +434,10 @@ describe('structure-generator', () => {
     fetchMock.mockResolvedValue(createErrorResponse(500, 'server error'));
 
     const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'HTTP_500', retryable: true });
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'HTTP_500',
+      retryable: true,
+    });
 
     await advanceRetryDelays();
     await expectation;
@@ -435,7 +486,7 @@ describe('structure-generator', () => {
     const payload = createValidStructurePayload();
     const withoutRoles = {
       ...payload,
-      acts: payload.acts.map(act => ({
+      acts: payload.acts.map((act) => ({
         ...act,
         beats: act.beats.map(({ role: _role, ...beat }) => beat),
       })),
@@ -457,9 +508,9 @@ describe('structure-generator', () => {
     const payload = createValidStructurePayload();
     const withInvalidRoles = {
       ...payload,
-      acts: payload.acts.map(act => ({
+      acts: payload.acts.map((act) => ({
         ...act,
-        beats: act.beats.map(beat => ({ ...beat, role: 'invalid_role' })),
+        beats: act.beats.map((beat) => ({ ...beat, role: 'invalid_role' })),
       })),
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withInvalidRoles)));

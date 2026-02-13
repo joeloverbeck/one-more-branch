@@ -25,11 +25,7 @@ export { collectAncestorContext } from './ancestor-collector';
 export type { AncestorContext } from './ancestor-collector';
 
 // Page building
-export {
-  buildFirstPage,
-  buildContinuationPage,
-  createEmptyStructureContext,
-} from './page-builder';
+export { buildFirstPage, buildContinuationPage, createEmptyStructureContext } from './page-builder';
 export type { FirstPageBuildContext, ContinuationPageBuildContext } from './page-builder';
 
 // Structure version validation
@@ -64,7 +60,11 @@ export { parseBeatIndices, getBeatOrThrow, upsertBeatProgression } from './beat-
 export { createStoryStructure } from './structure-factory';
 
 // Structure state machine
-export { createInitialStructureState, advanceStructureState, applyStructureProgression } from './structure-state';
+export {
+  createInitialStructureState,
+  advanceStructureState,
+  applyStructureProgression,
+} from './structure-state';
 
 // Structure rewrite support
 export {
@@ -73,10 +73,7 @@ export {
   getPreservedBeatIds,
   validatePreservedBeats,
 } from './structure-rewrite-support';
-export {
-  createStructureRewriter,
-  mergePreservedWithRegenerated,
-} from './structure-rewriter';
+export { createStructureRewriter, mergePreservedWithRegenerated } from './structure-rewriter';
 export type { StructureRewriter, StructureRewriteGenerator } from './structure-rewriter';
 
 // State reconciler contracts
@@ -86,14 +83,11 @@ export type {
   ReconciledCharacterStateAdd,
   StateReconciliationResult,
 } from './state-reconciler-types';
-export {
-  StateReconciliationError,
-} from './state-reconciler-errors';
+export { StateReconciliationError } from './state-reconciler-errors';
 export type {
   StateReconciliationErrorCode,
   StateReconciliationFailure,
 } from './state-reconciler-errors';
-
 
 export {
   updateStoryWithNewCanon,

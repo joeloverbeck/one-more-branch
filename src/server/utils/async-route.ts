@@ -6,7 +6,7 @@ import type { Request, Response } from 'express';
  * the promise to prevent unhandled rejection warnings.
  */
 export function wrapAsyncRoute(
-  handler: (req: Request, res: Response) => Promise<unknown>,
+  handler: (req: Request, res: Response) => Promise<unknown>
 ): (req: Request, res: Response) => void {
   return (req: Request, res: Response) => {
     void handler(req, res);

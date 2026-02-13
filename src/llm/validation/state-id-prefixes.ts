@@ -7,8 +7,7 @@ export const STATE_ID_PREFIXES = {
   characterState: 'cs-',
 } as const;
 
-export type CanonicalStateIdPrefix =
-  (typeof STATE_ID_PREFIXES)[keyof typeof STATE_ID_PREFIXES];
+export type CanonicalStateIdPrefix = (typeof STATE_ID_PREFIXES)[keyof typeof STATE_ID_PREFIXES];
 
 export const STATE_ID_RULE_KEYS = {
   ADDITION_MUST_NOT_BE_ID_LIKE: 'state_id.addition.must_not_be_id_like',
@@ -34,12 +33,12 @@ function escapeRegex(value: string): string {
 
 export function isIdLikeValue(value: string): boolean {
   const trimmed = value.trim();
-  return Object.values(STATE_ID_PREFIXES).some(prefix => trimmed.startsWith(prefix));
+  return Object.values(STATE_ID_PREFIXES).some((prefix) => trimmed.startsWith(prefix));
 }
 
 export function isCanonicalIdForPrefix(
   value: string,
-  expectedPrefix: CanonicalStateIdPrefix,
+  expectedPrefix: CanonicalStateIdPrefix
 ): boolean {
   const trimmed = value.trim();
   const idPattern = new RegExp(`^${escapeRegex(expectedPrefix)}\\d+$`);
@@ -48,7 +47,7 @@ export function isCanonicalIdForPrefix(
 
 export function validateNoIdLikeAdditions(
   values: readonly string[],
-  field: string,
+  field: string
 ): PrefixValidationIssue[] {
   const issues: PrefixValidationIssue[] = [];
   values.forEach((value, index) => {
@@ -67,7 +66,7 @@ export function validateNoIdLikeAdditions(
 export function validateIdOnlyField(
   values: readonly string[],
   field: string,
-  expectedPrefix: CanonicalStateIdPrefix,
+  expectedPrefix: CanonicalStateIdPrefix
 ): PrefixValidationIssue[] {
   const issues: PrefixValidationIssue[] = [];
   values.forEach((value, index) => {

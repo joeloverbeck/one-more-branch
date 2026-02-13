@@ -8,12 +8,8 @@ import {
   updateStoryStructure,
 } from '@/models';
 import type { StoryStructure } from '@/models/story-arc';
-import type { ContinuationGenerationResult } from '@/llm/types';
-import {
-  isActualDeviation,
-  handleDeviation,
-  DeviationContext,
-} from '@/engine/deviation-handler';
+import type { ContinuationGenerationResult } from '@/llm/generation-pipeline-types';
+import { isActualDeviation, handleDeviation, DeviationContext } from '@/engine/deviation-handler';
 import { createStructureRewriter } from '@/engine/structure-rewriter';
 
 // Mock the structure rewriter
@@ -166,7 +162,7 @@ describe('deviation-handler', () => {
         expect.objectContaining({
           deviationReason: 'Test deviation',
         }),
-        'test-api-key',
+        'test-api-key'
       );
     });
 

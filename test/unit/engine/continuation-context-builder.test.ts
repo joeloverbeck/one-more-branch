@@ -1,7 +1,4 @@
-import {
-  buildContinuationContext,
-  buildRemovableIds,
-} from '@/engine/continuation-context-builder';
+import { buildContinuationContext, buildRemovableIds } from '@/engine/continuation-context-builder';
 import type { CollectedParentState } from '@/engine/parent-state-collector';
 import type { AncestorContext } from '@/engine/ancestor-collector';
 import {
@@ -40,7 +37,13 @@ function makeParentState(overrides: Partial<CollectedParentState> = {}): Collect
       activeThreats: [{ id: 'th-1', text: 'Goblin patrol' }],
       activeConstraints: [{ id: 'cn-1', text: 'Locked door' }],
       openThreads: [
-        { id: 'tw-1', text: 'Find exit', threadType: 'QUEST', urgency: 'HIGH', displayLabel: 'Find exit' },
+        {
+          id: 'tw-1',
+          text: 'Find exit',
+          threadType: 'QUEST',
+          urgency: 'HIGH',
+          displayLabel: 'Find exit',
+        },
       ],
     },
     accumulatedInventory: [{ id: 'inv-1', text: 'Torch' }],
@@ -86,7 +89,7 @@ describe('continuation-context-builder', () => {
         parentState,
         ancestorContext,
         null,
-        'I demand you release me!',
+        'I demand you release me!'
       );
 
       expect(result.characterConcept).toBe('A brave warrior');
@@ -100,7 +103,9 @@ describe('continuation-context-builder', () => {
       expect(result.suggestedProtagonistSpeech).toBe('I demand you release me!');
       expect(result.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Torch' }]);
       expect(result.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'Minor wound' }]);
-      expect(result.accumulatedCharacterState).toEqual({ Guide: [{ id: 'cs-1', text: 'Nervous' }] });
+      expect(result.accumulatedCharacterState).toEqual({
+        Guide: [{ id: 'cs-1', text: 'Nervous' }],
+      });
       expect(result.activeState).toBe(parentState.accumulatedActiveState);
       expect(result.grandparentNarrative).toBe('Grandparent narrative text');
       expect(result.ancestorSummaries).toEqual(ancestorContext.ancestorSummaries);
@@ -136,7 +141,7 @@ describe('continuation-context-builder', () => {
         'A',
         makeParentState(),
         makeAncestorContext(),
-        structureVersion,
+        structureVersion
       );
 
       expect(result.structure).toBe(versionStructure);
@@ -165,7 +170,7 @@ describe('continuation-context-builder', () => {
         'A',
         makeParentState(),
         makeAncestorContext(),
-        null,
+        null
       );
 
       expect(result.structure).toBe(storyStructure);
@@ -189,7 +194,7 @@ describe('continuation-context-builder', () => {
         'A',
         makeParentState(),
         makeAncestorContext(),
-        null,
+        null
       );
 
       expect(result.suggestedProtagonistSpeech).toBeUndefined();
@@ -232,7 +237,10 @@ describe('continuation-context-builder', () => {
     it('flattens character state IDs across multiple characters', () => {
       const parentState = makeParentState({
         accumulatedCharacterState: {
-          Guard: [{ id: 'cs-1', text: 'Alert' }, { id: 'cs-2', text: 'Armed' }],
+          Guard: [
+            { id: 'cs-1', text: 'Alert' },
+            { id: 'cs-2', text: 'Armed' },
+          ],
           Merchant: [{ id: 'cs-3', text: 'Friendly' }],
         },
       });

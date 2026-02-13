@@ -65,4 +65,3 @@ When the protagonist picks up a sword, gains gold, loses a key, or breaks an ite
 When the protagonist is wounded, poisoned, exhausted, or healed:
 ✅ Use healthAdded/healthRemoved
 ❌ Do NOT put physical conditions in threatsAdded or constraintsAdded`;
-

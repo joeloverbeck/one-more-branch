@@ -19,8 +19,18 @@ function createGenerationResult(): StructureGenerationResult {
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
         beats: [
-          { name: 'Messenger arrives', description: 'A warning arrives', objective: 'Hear the warning', role: 'setup' },
-          { name: 'Choose departure', description: 'A difficult choice', objective: 'Leave home', role: 'turning_point' },
+          {
+            name: 'Messenger arrives',
+            description: 'A warning arrives',
+            objective: 'Hear the warning',
+            role: 'setup',
+          },
+          {
+            name: 'Choose departure',
+            description: 'A difficult choice',
+            objective: 'Leave home',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -28,7 +38,14 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [{ name: 'First setback', description: 'First major setback', objective: 'Recover from loss', role: 'escalation' }],
+        beats: [
+          {
+            name: 'First setback',
+            description: 'First major setback',
+            objective: 'Recover from loss',
+            role: 'escalation',
+          },
+        ],
       },
     ],
     rawResponse: '{"mock":true}',
@@ -123,7 +140,11 @@ describe('structure-state', () => {
         pacingNudge: null,
       };
 
-      const result = advanceStructureState(structure, currentState, 'The hero recovers and rallies.');
+      const result = advanceStructureState(
+        structure,
+        currentState,
+        'The hero recovers and rallies.'
+      );
 
       expect(result.isComplete).toBe(true);
       expect(result.actAdvanced).toBe(false);
@@ -154,7 +175,7 @@ describe('structure-state', () => {
       const state = createInitialStructureState(structure);
 
       expect(() => advanceStructureState(structure, state, '')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution',
+        'Cannot advance structure without a non-empty beat resolution'
       );
     });
 
@@ -163,7 +184,7 @@ describe('structure-state', () => {
       const state = createInitialStructureState(structure);
 
       expect(() => advanceStructureState(structure, state, '   ')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution',
+        'Cannot advance structure without a non-empty beat resolution'
       );
     });
   });
@@ -190,7 +211,7 @@ describe('structure-state', () => {
         structure,
         parentState,
         true,
-        'The warning is accepted.',
+        'The warning is accepted.'
       );
 
       expect(result.currentActIndex).toBe(0);
@@ -207,7 +228,7 @@ describe('structure-state', () => {
       const parentState = createInitialStructureState(structure);
 
       expect(() => applyStructureProgression(structure, parentState, true, '   ')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution',
+        'Cannot advance structure without a non-empty beat resolution'
       );
     });
 

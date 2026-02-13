@@ -34,14 +34,14 @@ const STOP_WORDS = new Set([
 ]);
 
 function hasNegationPattern(fact: string): boolean {
-  return NEGATION_PATTERNS.some(pattern => fact.includes(pattern));
+  return NEGATION_PATTERNS.some((pattern) => fact.includes(pattern));
 }
 
 function extractEntityTokens(fact: string): Set<string> {
   const normalized = fact.toLowerCase();
   const tokens = normalized.match(/[a-z0-9']+/g) ?? [];
 
-  return new Set(tokens.filter(token => token.length > 3 && !STOP_WORDS.has(token)));
+  return new Set(tokens.filter((token) => token.length > 3 && !STOP_WORDS.has(token)));
 }
 
 export function updateStoryWithNewCanon(story: Story, newFacts: readonly string[]): Story {
@@ -67,7 +67,7 @@ export function updateStoryWithNewCanon(story: Story, newFacts: readonly string[
  */
 export function updateStoryWithNewCharacterCanon(
   story: Story,
-  newCharacterFacts: Record<string, readonly string[]>,
+  newCharacterFacts: Record<string, readonly string[]>
 ): Story {
   if (Object.keys(newCharacterFacts).length === 0) {
     return story;
@@ -75,7 +75,7 @@ export function updateStoryWithNewCharacterCanon(
 
   const updatedCharacterCanon = mergeCharacterCanonFacts(
     story.globalCharacterCanon,
-    newCharacterFacts,
+    newCharacterFacts
   );
 
   if (updatedCharacterCanon === story.globalCharacterCanon) {
@@ -96,7 +96,7 @@ export function updateStoryWithNewCharacterCanon(
 export function updateStoryWithAllCanon(
   story: Story,
   worldFacts: readonly string[],
-  characterFacts: Record<string, readonly string[]>,
+  characterFacts: Record<string, readonly string[]>
 ): Story {
   let updatedStory = updateStoryWithNewCanon(story, worldFacts);
   updatedStory = updateStoryWithNewCharacterCanon(updatedStory, characterFacts);
@@ -108,7 +108,7 @@ export function formatCanonForPrompt(canon: GlobalCanon): string {
     return '';
   }
 
-  return canon.map(fact => `• ${fact}`).join('\n');
+  return canon.map((fact) => `• ${fact}`).join('\n');
 }
 
 export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string): boolean {
@@ -125,7 +125,7 @@ export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string
     }
 
     const existingFactTokens = extractEntityTokens(normalizedExistingFact);
-    const hasSharedContext = [...newFactTokens].some(token => existingFactTokens.has(token));
+    const hasSharedContext = [...newFactTokens].some((token) => existingFactTokens.has(token));
 
     if (hasSharedContext) {
       return true;
@@ -135,6 +135,9 @@ export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string
   return false;
 }
 
-export function validateNewFacts(existingCanon: GlobalCanon, newFacts: readonly string[]): string[] {
-  return newFacts.filter(fact => mightContradictCanon(existingCanon, fact));
+export function validateNewFacts(
+  existingCanon: GlobalCanon,
+  newFacts: readonly string[]
+): string[] {
+  return newFacts.filter((fact) => mightContradictCanon(existingCanon, fact));
 }

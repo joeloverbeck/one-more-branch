@@ -101,7 +101,7 @@ function createStoryWithVersions(versionCount: number): Story {
       createLargeStructure(),
       ['1.1', '1.2'],
       `Rewrite ${i}`,
-      parsePageId(i + 1),
+      parsePageId(i + 1)
     );
 
     current = addStructureVersion(current, next);
@@ -146,7 +146,7 @@ describe('Structure Rewriting Performance', () => {
           structure,
           ['1.1', '1.2', '2.1'],
           'Synthetic rewrite',
-          parsePageId(99),
+          parsePageId(99)
         );
       });
 
@@ -166,7 +166,10 @@ describe('Structure Rewriting Performance', () => {
       }
 
       const singleLookupAvgMs = measureAverageMs(6000, () => {
-        getStructureVersion(oneVersionStory, oneVersionStory.structureVersions?.[0]?.id ?? targetId);
+        getStructureVersion(
+          oneVersionStory,
+          oneVersionStory.structureVersions?.[0]?.id ?? targetId
+        );
       });
       const manyLookupAvgMs = measureAverageMs(6000, () => {
         getStructureVersion(manyVersionStory, targetId);
@@ -195,7 +198,7 @@ describe('Structure Rewriting Performance', () => {
       const deviation = createBeatDeviation(
         'The hero allied with the former enemy',
         ['2.2', '2.3', '2.4', '3.1', '3.2', '3.3', '3.4'],
-        'Alliance politics now drive the conflict',
+        'Alliance politics now drive the conflict'
       );
 
       const extractAvgMs = measureAverageMs(2500, () => {
@@ -214,7 +217,7 @@ describe('Structure Rewriting Performance', () => {
       const merged = mergePreservedWithRegenerated(
         preserved,
         createLargeStructure(),
-        structure.overallTheme,
+        structure.overallTheme
       );
 
       expect(extractAvgMs).toBeLessThan(0.5);

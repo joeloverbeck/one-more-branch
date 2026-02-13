@@ -57,7 +57,7 @@ describe('continuation quality-criteria sections', () => {
 
     it('lists good thread examples in typed object format', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
-        '{ text: "Open relationship question: Can Mara trust Iven after the checkpoint betrayal?", threadType: "RELATIONSHIP", urgency: "HIGH" }',
+        '{ text: "Open relationship question: Can Mara trust Iven after the checkpoint betrayal?", threadType: "RELATIONSHIP", urgency: "HIGH" }'
       );
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threadType');
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('urgency');
@@ -77,7 +77,9 @@ describe('continuation quality-criteria sections', () => {
     it('includes threat-vs-danger classification guidance', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('THREAT VS DANGER');
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('Immediate scene hazard');
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('DANGER thread is only for looming structural risk');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
+        'DANGER thread is only for looming structural risk'
+      );
     });
 
     it('includes REMOVAL QUALITY section for continuation', () => {
@@ -91,7 +93,7 @@ describe('continuation quality-criteria sections', () => {
 
     it('includes explicit thread resolution triggers', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
-        'answered, achieved/abandoned, decided, or rendered moot',
+        'answered, achieved/abandoned, decided, or rendered moot'
       );
     });
 
@@ -104,5 +106,4 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('healthAdded/healthRemoved');
     });
   });
-
 });

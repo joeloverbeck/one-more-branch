@@ -38,7 +38,7 @@ describe('state-id-prefixes validation', () => {
     const issues = validateIdOnlyField(
       ['plain text', 'th-2'],
       'constraintsRemoved',
-      STATE_ID_PREFIXES.constraints,
+      STATE_ID_PREFIXES.constraints
     );
 
     expect(issues).toEqual([

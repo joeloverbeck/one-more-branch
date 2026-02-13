@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { generateAnalystEvaluation, generateOpeningPage, generatePagePlan, generatePageWriterOutput } from '@/llm';
+import {
+  generateAnalystEvaluation,
+  generateOpeningPage,
+  generatePagePlan,
+  generatePageWriterOutput,
+} from '@/llm';
 import {
   createChoice,
   createPage,
@@ -19,8 +24,10 @@ import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryStructure } from '@/models/story-arc';
 import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
-import { LLMError } from '@/llm/types';
-import type { AnalystResult, PagePlanGenerationResult, WriterResult } from '@/llm/types';
+import { LLMError } from '@/llm/llm-client-types';
+import type { AnalystResult } from '@/llm/analyst-types';
+import type { PagePlanGenerationResult } from '@/llm/planner-types';
+import type { WriterResult } from '@/llm/writer-types';
 import { logger } from '@/logging/index';
 
 jest.mock('@/llm', () => ({
@@ -48,8 +55,12 @@ jest.mock('@/engine/state-reconciler', () => ({
   reconcileState: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
@@ -66,7 +77,7 @@ const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
 
 function passthroughReconciledState(
   writer: WriterResult,
-  previousLocation: string,
+  previousLocation: string
 ): StateReconciliationResult {
   return {
     currentLocation: writer.currentLocation || previousLocation,
@@ -91,7 +102,7 @@ function passthroughReconciledState(
 function reconciledStateWithDiagnostics(
   writer: WriterResult,
   previousLocation: string,
-  diagnostics: StateReconciliationResult['reconciliationDiagnostics'],
+  diagnostics: StateReconciliationResult['reconciliationDiagnostics']
 ): StateReconciliationResult {
   return {
     ...passthroughReconciledState(writer, previousLocation),
@@ -154,14 +165,24 @@ function buildOpeningResult(): WriterResult {
     narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
     choices: [
       { text: 'Follow the whispers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Seek shelter in the tavern', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Seek shelter in the tavern',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'The fog-shrouded city entrance',
     threatsAdded: ['THREAT_whispers: The whispers seem to know your name'],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
-    threadsAdded: [{ text: 'THREAD_fog: The mystery of the whispering fog', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+    threadsAdded: [
+      {
+        text: 'THREAD_fog: The mystery of the whispering fog',
+        threadType: 'INFORMATION',
+        urgency: 'MEDIUM',
+      },
+    ],
     threadsResolved: [],
     newCanonFacts: ['The city fog carries voices of the dead'],
     newCharacterCanonFacts: { 'The Watcher': ['Observes from the bell tower'] },
@@ -188,15 +209,29 @@ function buildContinuationResult(overrides?: Partial<WriterResult>): WriterResul
   return {
     narrative: 'The whispers lead you deeper into the maze of alleys.',
     choices: [
-      { text: 'Enter the marked door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Double back to the square', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Enter the marked door',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Double back to the square',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'Maze of alleys',
     threatsAdded: ['THREAT_shadows: Shadows move with purpose in the alleyways'],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
-    threadsAdded: [{ text: 'THREAD_door: The marked door mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+    threadsAdded: [
+      {
+        text: 'THREAD_door: The marked door mystery',
+        threadType: 'INFORMATION',
+        urgency: 'MEDIUM',
+      },
+    ],
     threadsResolved: [],
     newCanonFacts: ['Marked doors hide resistance cells'],
     newCharacterCanonFacts: {},
@@ -246,7 +281,7 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
 }
 
 function buildPagePlanResult(
-  overrides?: Partial<PagePlanGenerationResult>,
+  overrides?: Partial<PagePlanGenerationResult>
 ): PagePlanGenerationResult {
   return {
     sceneIntent: 'Drive the scene with direct consequences of the selected action.',
@@ -267,8 +302,16 @@ function buildPagePlanResult(
     },
     dramaticQuestion: 'Will you confront the danger or seek another path?',
     choiceIntents: [
-      { hook: 'Face the threat directly', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-      { hook: 'Find an alternative route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+      {
+        hook: 'Face the threat directly',
+        choiceType: ChoiceType.CONFRONTATION,
+        primaryDelta: PrimaryDelta.THREAT_SHIFT,
+      },
+      {
+        hook: 'Find an alternative route',
+        choiceType: ChoiceType.TACTICAL_APPROACH,
+        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+      },
     ],
     rawResponse: '{"ok":true}',
     ...overrides,
@@ -285,8 +328,16 @@ function createRewriteFetchResponse(): Response {
         stakes: 'Capture means execution.',
         entryCondition: 'Cover blown.',
         beats: [
-          { name: 'Emergency shelter', description: 'Find emergency shelter', objective: 'Avoid immediate capture.' },
-          { name: 'New identity', description: 'Establish new identity', objective: 'Move freely again.' },
+          {
+            name: 'Emergency shelter',
+            description: 'Find emergency shelter',
+            objective: 'Avoid immediate capture.',
+          },
+          {
+            name: 'New identity',
+            description: 'Establish new identity',
+            objective: 'Move freely again.',
+          },
         ],
       },
       {
@@ -295,7 +346,11 @@ function createRewriteFetchResponse(): Response {
         stakes: 'Isolation means death.',
         entryCondition: 'New identity secured.',
         beats: [
-          { name: 'Underground contact', description: 'Find underground contact', objective: 'Access resistance.' },
+          {
+            name: 'Underground contact',
+            description: 'Find underground contact',
+            objective: 'Access resistance.',
+          },
           { name: 'Loyalty proof', description: 'Prove loyalty', objective: 'Gain trust.' },
         ],
       },
@@ -306,7 +361,11 @@ function createRewriteFetchResponse(): Response {
         entryCondition: 'Network ready.',
         beats: [
           { name: 'Plan execution', description: 'Execute plan', objective: 'Destroy evidence.' },
-          { name: 'Escape route', description: 'Escape or die', objective: 'Survive the aftermath.' },
+          {
+            name: 'Escape route',
+            description: 'Escape or die',
+            objective: 'Survive the aftermath.',
+          },
         ],
       },
     ],
@@ -330,7 +389,7 @@ describe('page-service integration', () => {
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
     mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+      passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
     );
   });
 
@@ -376,14 +435,14 @@ describe('page-service integration', () => {
         .mockReturnValueOnce(
           reconciledStateWithDiagnostics(openingResult, '', [
             {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
+              code: 'THREAD_DUPLICATE_LIKE_ADD',
               field: 'threadsAdded',
-              message: 'No narrative evidence found for threadsAdded anchor "fog".',
+              message: 'Thread add "Fog" is near-duplicate of existing thread "td-1".',
             },
-          ]),
+          ])
         )
         .mockImplementation((_plan, writer, previousState) =>
-          passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+          passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
         );
 
       const { metrics } = await generateFirstPage(baseStory, 'test-api-key');
@@ -399,7 +458,7 @@ describe('page-service integration', () => {
           finalStatus: 'success',
           reconcilerRetried: true,
           reconcilerIssueCount: 1,
-        }),
+        })
       );
       expect(mockedLogger.info.mock.calls).toEqual(
         expect.arrayContaining([
@@ -436,7 +495,7 @@ describe('page-service integration', () => {
               }),
             }),
           ],
-        ]),
+        ])
       );
       expect(mockedLogger.warn.mock.calls).toEqual(
         expect.arrayContaining([
@@ -449,36 +508,36 @@ describe('page-service integration', () => {
               requestId: expect.any(String),
               failureReasons: [
                 {
-                  code: 'MISSING_NARRATIVE_EVIDENCE',
+                  code: 'THREAD_DUPLICATE_LIKE_ADD',
                   field: 'threadsAdded',
-                  message: 'No narrative evidence found for threadsAdded anchor "fog".',
+                  message: 'Thread add "Fog" is near-duplicate of existing thread "td-1".',
                 },
               ],
             }),
           ],
-        ]),
+        ])
       );
       expect(mockedGeneratePagePlan.mock.calls[1]?.[0]).toEqual(
         expect.objectContaining({
           reconciliationFailureReasons: [
             {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
+              code: 'THREAD_DUPLICATE_LIKE_ADD',
               field: 'threadsAdded',
-              message: 'No narrative evidence found for threadsAdded anchor "fog".',
+              message: 'Thread add "Fog" is near-duplicate of existing thread "td-1".',
             },
           ],
-        }),
+        })
       );
       expect(mockedGenerateOpeningPage.mock.calls[1]?.[0]).toEqual(
         expect.objectContaining({
           reconciliationFailureReasons: [
             {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
+              code: 'THREAD_DUPLICATE_LIKE_ADD',
               field: 'threadsAdded',
-              message: 'No narrative evidence found for threadsAdded anchor "fog".',
+              message: 'Thread add "Fog" is near-duplicate of existing thread "td-1".',
             },
           ],
-        }),
+        })
       );
     });
 
@@ -527,7 +586,9 @@ describe('page-service integration', () => {
 
       // Verify canon updates
       expect(updatedStory.globalCanon).toContain('The city fog carries voices of the dead');
-      expect(updatedStory.globalCharacterCanon['The Watcher']).toContain('Observes from the bell tower');
+      expect(updatedStory.globalCharacterCanon['The Watcher']).toContain(
+        'Observes from the bell tower'
+      );
     });
 
     it('runs planner before opening writer and forwards planner output into opening context', async () => {
@@ -540,7 +601,9 @@ describe('page-service integration', () => {
       await storage.saveStory(baseStory);
       createdStoryIds.add(baseStory.id);
 
-      const pagePlan = buildPagePlanResult({ sceneIntent: 'Open with immediate pursuit pressure.' });
+      const pagePlan = buildPagePlanResult({
+        sceneIntent: 'Open with immediate pursuit pressure.',
+      });
       mockedGeneratePagePlan.mockResolvedValue(pagePlan);
       mockedGenerateOpeningPage.mockResolvedValue(buildOpeningResult());
 
@@ -553,13 +616,13 @@ describe('page-service integration', () => {
             storyId: baseStory.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
       expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
         expect.objectContaining({
           pagePlan,
         }),
-        expect.any(Object),
+        expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
         pagePlan,
@@ -575,13 +638,13 @@ describe('page-service integration', () => {
           inventory: [],
           health: [],
           characterState: [],
-        }),
+        })
       );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedGenerateOpeningPage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
     });
 
@@ -624,8 +687,8 @@ describe('page-service integration', () => {
         ...buildOpeningResult(),
         newCanonFacts: ['Fact One', 'Fact Two'],
         newCharacterCanonFacts: {
-          'Hero': ['Has a scar'],
-          'Villain': ['Wears a mask'],
+          Hero: ['Has a scar'],
+          Villain: ['Wears a mask'],
         },
       });
 
@@ -662,27 +725,25 @@ describe('page-service integration', () => {
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
       mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-        reconciledStateWithDiagnostics(
-          writer as WriterResult,
-          previousState.currentLocation,
-          [
-            {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
-              field: 'constraintsAdded',
-              message: 'No narrative evidence found for constraintsAdded anchor "curfew".',
-            },
-          ],
-        ),
+        reconciledStateWithDiagnostics(writer as WriterResult, previousState.currentLocation, [
+          {
+            code: 'UNKNOWN_STATE_ID',
+            field: 'constraintsRemoved',
+            message: 'Unknown state ID "cn-999" in constraintsRemoved.',
+          },
+        ])
       );
 
-      await expect(generateNextPage(baseStory, parentPage, 0, 'test-api-key')).rejects.toMatchObject({
+      await expect(
+        generateNextPage(baseStory, parentPage, 0, 'test-api-key')
+      ).rejects.toMatchObject({
         name: 'StateReconciliationError',
         code: 'RECONCILIATION_FAILED',
         retryable: false,
         diagnostics: [
           {
-            code: 'MISSING_NARRATIVE_EVIDENCE',
-            field: 'constraintsAdded',
+            code: 'UNKNOWN_STATE_ID',
+            field: 'constraintsRemoved',
           },
         ],
       });
@@ -706,7 +767,7 @@ describe('page-service integration', () => {
               }),
             }),
           ],
-        ]),
+        ])
       );
     });
 
@@ -747,10 +808,10 @@ describe('page-service integration', () => {
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
       expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedReconcileState.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
 
       // Verify parent state was collected and passed to LLM
@@ -758,13 +819,17 @@ describe('page-service integration', () => {
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          accumulatedInventory: expect.arrayContaining([expect.objectContaining({ text: 'Torch' })]),
+          accumulatedInventory: expect.arrayContaining([
+            expect.objectContaining({ text: 'Torch' }),
+          ]),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          accumulatedHealth: expect.arrayContaining([expect.objectContaining({ text: 'Minor fatigue' })]),
+          accumulatedHealth: expect.arrayContaining([
+            expect.objectContaining({ text: 'Minor fatigue' }),
+          ]),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           accumulatedCharacterState: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            'Companion': expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
+            Companion: expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
           }),
         }),
         expect.any(Object),
@@ -788,7 +853,7 @@ describe('page-service integration', () => {
               characterState: expect.any(Array),
             }),
           }),
-        }),
+        })
       );
       const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[2];
       expect(writerOptions?.observability).toEqual(
@@ -796,20 +861,20 @@ describe('page-service integration', () => {
           storyId: storyWithStructure.id,
           pageId: parentPage.id,
           requestId: expect.any(String),
-        }),
+        })
       );
 
       // Verify active state accumulates correctly
       expect(page.accumulatedActiveState.currentLocation).toBe('Maze of alleys');
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
       expect(page.accumulatedInventory).toEqual(
-        expect.arrayContaining([expect.objectContaining({ text: 'Torch' })]),
+        expect.arrayContaining([expect.objectContaining({ text: 'Torch' })])
       );
       expect(page.accumulatedHealth).toEqual(
-        expect.arrayContaining([expect.objectContaining({ text: 'Minor fatigue' })]),
+        expect.arrayContaining([expect.objectContaining({ text: 'Minor fatigue' })])
       );
       expect(page.accumulatedCharacterState['Companion']).toEqual(
-        expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
+        expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })])
       );
     });
 
@@ -887,7 +952,7 @@ describe('page-service integration', () => {
           grandparentNarrative: 'Grandparent scene: you bribed the checkpoint guard.',
           ancestorSummaries: expectedAncestorSummaries,
         }),
-        expect.any(Object),
+        expect.any(Object)
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -897,7 +962,7 @@ describe('page-service integration', () => {
           ancestorSummaries: expectedAncestorSummaries,
         }),
         expect.any(Object),
-        expect.any(Object),
+        expect.any(Object)
       );
     });
 
@@ -923,7 +988,9 @@ describe('page-service integration', () => {
       });
       await storage.savePage(baseStory.id, parentPage);
 
-      const pagePlan = buildPagePlanResult({ sceneIntent: 'Escalate with pursuit and constrained options.' });
+      const pagePlan = buildPagePlanResult({
+        sceneIntent: 'Escalate with pursuit and constrained options.',
+      });
       mockedGeneratePagePlan.mockResolvedValue(pagePlan);
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
 
@@ -937,12 +1004,12 @@ describe('page-service integration', () => {
             pageId: parentPage.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.any(Object),
         pagePlan,
-        expect.any(Object),
+        expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
         pagePlan,
@@ -958,13 +1025,13 @@ describe('page-service integration', () => {
           inventory: expect.any(Array),
           health: expect.any(Array),
           characterState: expect.any(Array),
-        }),
+        })
       );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
     });
 
@@ -982,7 +1049,9 @@ describe('page-service integration', () => {
       // Reload from disk to prove persistence roundtrip
       const reloadedStory = await storage.loadStory(baseStory.id);
       expect(reloadedStory).not.toBeNull();
-      expect(reloadedStory!.npcs).toEqual([{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }]);
+      expect(reloadedStory!.npcs).toEqual([
+        { name: 'Holt', description: 'Grizzled barkeep who knows everyone' },
+      ]);
 
       const parentPage = createPage({
         id: parsePageId(1),
@@ -1007,7 +1076,7 @@ describe('page-service integration', () => {
         expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-api-key',
-        }),
+        })
       );
       const writerOptions = mockedGenerateWriterPage.mock.calls[0]?.[2];
       expect(writerOptions?.observability).toEqual(
@@ -1015,7 +1084,7 @@ describe('page-service integration', () => {
           storyId: reloadedStory!.id,
           pageId: parentPage.id,
           requestId: expect.any(String),
-        }),
+        })
       );
     });
 
@@ -1089,14 +1158,14 @@ describe('page-service integration', () => {
           deviationReason: 'Betrayal invalidates trust-based beats.',
           invalidatedBeatIds: ['1.2', '2.1'],
           narrativeSummary: 'The protagonist chose betrayal.',
-        }),
+        })
       );
 
       const { page, updatedStory, deviationInfo } = await generateNextPage(
         storyWithStructure,
         parentPage,
         0,
-        'test-api-key',
+        'test-api-key'
       );
 
       // Verify new structure version was created
@@ -1152,7 +1221,7 @@ describe('page-service integration', () => {
           completionGateSatisfied: true,
           objectiveAnchors: ['Establish the mystery'],
           anchorEvidence: ['The first clue was found successfully.'],
-        }),
+        })
       );
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
@@ -1200,7 +1269,7 @@ describe('page-service integration', () => {
         buildContinuationResult({
           narrative:
             'Gunfire tears across the boulevard as the team sprints between burning vehicles and collapsing barricades.',
-        }),
+        })
       );
       mockedGenerateAnalystEvaluation.mockResolvedValue(
         buildAnalystResult({
@@ -1213,8 +1282,9 @@ describe('page-service integration', () => {
           objectiveAnchors: ['Establish the mystery'],
           anchorEvidence: [''],
           completionGateSatisfied: false,
-          completionGateFailureReason: 'Action escalation occurred without explicit objective completion.',
-        }),
+          completionGateFailureReason:
+            'Action escalation occurred without explicit objective completion.',
+        })
       );
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
@@ -1226,7 +1296,7 @@ describe('page-service integration', () => {
         status: 'active',
       });
       expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
-        expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
+        expect.objectContaining({ beatId: '1.1', status: 'concluded' })
       );
     });
 
@@ -1263,7 +1333,10 @@ describe('page-service integration', () => {
         id: parsePageId(1),
         narrativeText: 'The council chamber waits in tense silence.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Make the accusation publicly'), createChoice('Delay and gather more proof')],
+        choices: [
+          createChoice('Make the accusation publicly'),
+          createChoice('Delay and gather more proof'),
+        ],
         stateChanges: { added: ['Conspiracy evidence prepared'], removed: [] },
         isEnding: false,
         parentPageId: null,
@@ -1277,21 +1350,24 @@ describe('page-service integration', () => {
         buildContinuationResult({
           narrative:
             'Before the full council, you name the conspirators and swear to release the ledgers, accepting exile if you fail.',
-        }),
+        })
       );
       mockedGenerateAnalystEvaluation.mockResolvedValue(
         buildAnalystResult({
           beatConcluded: true,
-          beatResolution: 'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
+          beatResolution:
+            'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
           sceneMomentum: 'MAJOR_PROGRESS',
           objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
           commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
           structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
           entryConditionReadiness: 'READY',
           objectiveAnchors: ['Publicly commit to exposing the conspiracy'],
-          anchorEvidence: ['You publicly accuse the conspirators and swear to release the ledgers.'],
+          anchorEvidence: [
+            'You publicly accuse the conspirators and swear to release the ledgers.',
+          ],
           completionGateSatisfied: true,
-        }),
+        })
       );
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
@@ -1334,60 +1410,69 @@ describe('page-service integration', () => {
         narrative:
           'The reunion erupts into confessions and confrontation, but neither character makes an explicit commitment to rebuild trust.',
       },
-    ])('applies the same completion-gate semantics for $label domain scenarios', async scenario => {
-      const structure = buildStructure();
-      const baseStory = createStory({
-        title: `${TEST_PREFIX} Title`,
-        characterConcept: `${TEST_PREFIX} cross-domain-${scenario.label}`,
-        worldbuilding: scenario.worldbuilding,
-        tone: scenario.tone,
-      });
-      const storyWithStructure = updateStoryStructure(baseStory, structure);
-      await storage.saveStory(storyWithStructure);
-      createdStoryIds.add(storyWithStructure.id);
+    ])(
+      'applies the same completion-gate semantics for $label domain scenarios',
+      async (scenario) => {
+        const structure = buildStructure();
+        const baseStory = createStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} cross-domain-${scenario.label}`,
+          worldbuilding: scenario.worldbuilding,
+          tone: scenario.tone,
+        });
+        const storyWithStructure = updateStoryStructure(baseStory, structure);
+        await storage.saveStory(storyWithStructure);
+        createdStoryIds.add(storyWithStructure.id);
 
-      const parentPage = createPage({
-        id: parsePageId(1),
-        narrativeText: scenario.concept,
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Push forward under pressure'), createChoice('Hold position and reassess')],
-        stateChanges: { added: ['Pressure escalates'], removed: [] },
-        isEnding: false,
-        parentPageId: null,
-        parentChoiceIndex: null,
-        parentAccumulatedStructureState: createInitialStructureState(structure),
-        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
-      });
-      await storage.savePage(storyWithStructure.id, parentPage);
+        const parentPage = createPage({
+          id: parsePageId(1),
+          narrativeText: scenario.concept,
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          choices: [
+            createChoice('Push forward under pressure'),
+            createChoice('Hold position and reassess'),
+          ],
+          stateChanges: { added: ['Pressure escalates'], removed: [] },
+          isEnding: false,
+          parentPageId: null,
+          parentChoiceIndex: null,
+          parentAccumulatedStructureState: createInitialStructureState(structure),
+          structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+        });
+        await storage.savePage(storyWithStructure.id, parentPage);
 
-      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult({ narrative: scenario.narrative }));
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
-          beatConcluded: false,
-          sceneMomentum: 'MAJOR_PROGRESS',
-          objectiveEvidenceStrength: 'WEAK_IMPLICIT',
-          commitmentStrength: 'TENTATIVE',
-          structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
-          entryConditionReadiness: 'PARTIAL',
-          objectiveAnchors: ['Establish the mystery'],
-          anchorEvidence: [''],
-          completionGateSatisfied: false,
-          completionGateFailureReason: 'Escalation alone is insufficient without explicit objective evidence.',
-        }),
-      );
+        mockedGenerateWriterPage.mockResolvedValue(
+          buildContinuationResult({ narrative: scenario.narrative })
+        );
+        mockedGenerateAnalystEvaluation.mockResolvedValue(
+          buildAnalystResult({
+            beatConcluded: false,
+            sceneMomentum: 'MAJOR_PROGRESS',
+            objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+            commitmentStrength: 'TENTATIVE',
+            structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+            entryConditionReadiness: 'PARTIAL',
+            objectiveAnchors: ['Establish the mystery'],
+            anchorEvidence: [''],
+            completionGateSatisfied: false,
+            completionGateFailureReason:
+              'Escalation alone is insufficient without explicit objective evidence.',
+          })
+        );
 
-      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+        const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
-      expect(page.accumulatedStructureState.currentActIndex).toBe(0);
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
-        status: 'active',
-      });
-      expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
-        expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
-      );
-    });
+        expect(page.accumulatedStructureState.currentActIndex).toBe(0);
+        expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
+        expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
+          beatId: '1.1',
+          status: 'active',
+        });
+        expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
+          expect.objectContaining({ beatId: '1.1', status: 'concluded' })
+        );
+      }
+    );
 
     it('degrades gracefully when analyst evaluation throws', async () => {
       const structure = buildStructure();
@@ -1429,7 +1514,7 @@ describe('page-service integration', () => {
         status: 'active',
       });
       expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
-        expect.objectContaining({ beatId: '1.1', status: 'concluded' }),
+        expect.objectContaining({ beatId: '1.1', status: 'concluded' })
       );
 
       // No structure rewrite should occur
@@ -1438,7 +1523,7 @@ describe('page-service integration', () => {
       // Graceful degradation should log a warning
       expect(mockedLogger.warn).toHaveBeenCalledWith(
         'Analyst evaluation failed, continuing with defaults',
-        expect.objectContaining({ error: expect.any(Error) }),
+        expect.objectContaining({ error: expect.any(Error) })
       );
     });
 
@@ -1473,7 +1558,7 @@ describe('page-service integration', () => {
           recommendedAction: 'nudge',
           pacingIssueDetected: true,
           pacingIssueReason: 'scene dragging',
-        }),
+        })
       );
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
@@ -1512,10 +1597,15 @@ describe('page-service integration', () => {
           recommendedAction: 'rewrite',
           pacingIssueDetected: true,
           pacingIssueReason: 'over budget',
-        }),
+        })
       );
 
-      const { page, updatedStory } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+      const { page, updatedStory } = await generateNextPage(
+        storyWithStructure,
+        parentPage,
+        0,
+        'test-api-key'
+      );
 
       // Pacing nudge should be null (rewrite is deferred, not applied)
       expect(page.accumulatedStructureState.pacingNudge).toBeNull();
@@ -1528,7 +1618,7 @@ describe('page-service integration', () => {
         'Pacing issue detected: rewrite recommended (deferred)',
         expect.objectContaining({
           pacingIssueReason: 'over budget',
-        }),
+        })
       );
     });
 
@@ -1567,7 +1657,7 @@ describe('page-service integration', () => {
           recommendedAction: 'nudge',
           pacingIssueDetected: true,
           pacingIssueReason: 'scene moving too slowly',
-        }),
+        })
       );
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
@@ -1589,10 +1679,15 @@ describe('page-service integration', () => {
       await storage.saveStory(baseStory);
       createdStoryIds.add(baseStory.id);
 
-      const plannerError = new LLMError('Planner schema validation failed', 'VALIDATION_ERROR', false, {
-        ruleKeys: ['planner.invalid_schema'],
-        validationIssues: [{ ruleKey: 'planner.invalid_schema', fieldPath: 'stateIntents' }],
-      });
+      const plannerError = new LLMError(
+        'Planner schema validation failed',
+        'VALIDATION_ERROR',
+        false,
+        {
+          ruleKeys: ['planner.invalid_schema'],
+          validationIssues: [{ ruleKey: 'planner.invalid_schema', fieldPath: 'stateIntents' }],
+        }
+      );
       mockedGeneratePagePlan.mockRejectedValue(plannerError);
 
       await expect(generateFirstPage(baseStory, 'test-api-key')).rejects.toBe(plannerError);
@@ -1604,7 +1699,7 @@ describe('page-service integration', () => {
           metrics: expect.objectContaining({
             finalStatus: 'hard_error',
           }),
-        }),
+        })
       );
 
       // Writer should never have been called
@@ -1724,7 +1819,7 @@ describe('page-service integration', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         ...buildContinuationResult(),
         newCanonFacts: ['A new world fact discovered'],
-        newCharacterCanonFacts: { 'Sage': ['Knows ancient secrets'] },
+        newCharacterCanonFacts: { Sage: ['Knows ancient secrets'] },
       });
 
       const result = await getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key');
@@ -1770,10 +1865,12 @@ describe('page-service integration', () => {
               fieldPath: 'choices[1]',
             },
           ],
-        }),
+        })
       );
 
-      await expect(getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key')).rejects.toMatchObject({
+      await expect(
+        getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key')
+      ).rejects.toMatchObject({
         code: 'VALIDATION_ERROR',
       });
 

@@ -66,7 +66,10 @@ function createTestStructure(): StoryStructure {
 describe('Story', () => {
   describe('createStory', () => {
     it('creates story with required title and characterConcept', () => {
-      const story = createStory({ title: 'The Knights Quest', characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({
+        title: 'The Knights Quest',
+        characterConcept: 'A brave knight seeking adventure',
+      });
 
       expect(isStoryId(story.id)).toBe(true);
       expect(story.title).toBe('The Knights Quest');
@@ -192,19 +195,27 @@ describe('Story', () => {
     });
 
     it("throws 'Title is required' for empty string", () => {
-      expect(() => createStory({ title: '', characterConcept: 'Hero' })).toThrow('Title is required');
+      expect(() => createStory({ title: '', characterConcept: 'Hero' })).toThrow(
+        'Title is required'
+      );
     });
 
     it("throws 'Title is required' for whitespace-only string", () => {
-      expect(() => createStory({ title: '   ', characterConcept: 'Hero' })).toThrow('Title is required');
+      expect(() => createStory({ title: '   ', characterConcept: 'Hero' })).toThrow(
+        'Title is required'
+      );
     });
 
     it("throws 'Character concept is required' for empty string", () => {
-      expect(() => createStory({ title: 'Test', characterConcept: '' })).toThrow('Character concept is required');
+      expect(() => createStory({ title: 'Test', characterConcept: '' })).toThrow(
+        'Character concept is required'
+      );
     });
 
     it("throws 'Character concept is required' for whitespace-only string", () => {
-      expect(() => createStory({ title: 'Test', characterConcept: '   ' })).toThrow('Character concept is required');
+      expect(() => createStory({ title: 'Test', characterConcept: '   ' })).toThrow(
+        'Character concept is required'
+      );
     });
 
     it('sets createdAt and updatedAt to current time and equal initially', () => {
@@ -260,7 +271,7 @@ describe('Story', () => {
         isStory({
           ...story,
           structure: { acts: [], overallTheme: 'A', generatedAt: 'not a date' },
-        }),
+        })
       ).toBe(false);
     });
 
@@ -453,7 +464,7 @@ describe('Story', () => {
           acts: {},
           overallTheme: 42,
           generatedAt: '2026-01-01',
-        }),
+        })
       ).toBe(false);
     });
   });

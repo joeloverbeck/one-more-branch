@@ -1,5 +1,9 @@
 import type { Page, PageId, StoryId } from '../models';
-import type { AncestorSummary, MomentumDataPoint, MomentumTrajectory } from '../llm/types';
+import type {
+  AncestorSummary,
+  MomentumDataPoint,
+  MomentumTrajectory,
+} from '../llm/generation-pipeline-types';
 import { storage } from '../persistence';
 
 const MAX_ANCESTORS = 10;
@@ -52,7 +56,7 @@ function buildMomentumTrajectory(parentPage: Page, ancestors: Page[]): MomentumT
  */
 export async function collectAncestorContext(
   storyId: StoryId,
-  parentPage: Page,
+  parentPage: Page
 ): Promise<AncestorContext> {
   const parentNarrative = parentPage.narrativeText;
 

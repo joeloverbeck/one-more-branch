@@ -1,4 +1,4 @@
-import type { LLMError } from '../../llm/types.js';
+import type { LLMError } from '../../llm/llm-client-types.js';
 
 /**
  * Formats an LLMError into a user-friendly message based on HTTP status and context.
@@ -6,7 +6,9 @@ import type { LLMError } from '../../llm/types.js';
  */
 export function formatLLMError(error: LLMError): string {
   const httpStatus = error.context?.['httpStatus'] as number | undefined;
-  const parsedError = error.context?.['parsedError'] as { message?: string; code?: string } | undefined;
+  const parsedError = error.context?.['parsedError'] as
+    | { message?: string; code?: string }
+    | undefined;
   const rawErrorBody = error.context?.['rawErrorBody'] as string | undefined;
   const parseStage = error.context?.['parseStage'] as string | undefined;
   const contentShape = error.context?.['contentShape'] as string | undefined;

@@ -51,8 +51,8 @@ describe('getMaxIdNumber', () => {
           { id: 'inv-3', text: 'x' },
           { id: 'inv-1', text: 'y' },
         ],
-        'inv',
-      ),
+        'inv'
+      )
     ).toBe(3);
   });
 
@@ -98,17 +98,15 @@ describe('removeByIds', () => {
           { id: 'inv-1', text: 'Sword' },
           { id: 'inv-2', text: 'Shield' },
         ],
-        ['inv-1'],
-      ),
+        ['inv-1']
+      )
     ).toEqual([{ id: 'inv-2', text: 'Shield' }]);
   });
 
   it('logs warning for non-matching IDs and returns unchanged entries', () => {
     const result = removeByIds([{ id: 'th-1', text: 'Fire' }], ['th-99']);
     expect(result).toEqual([{ id: 'th-1', text: 'Fire' }]);
-    expect(mockedModelWarn).toHaveBeenCalledWith(
-      'removeByIds: ID "th-99" did not match any entry',
-    );
+    expect(mockedModelWarn).toHaveBeenCalledWith('removeByIds: ID "th-99" did not match any entry');
   });
 });
 

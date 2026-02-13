@@ -137,16 +137,14 @@ describe('NPC controls', () => {
 
     const remainingEntries = document.querySelectorAll('#npc-entries .npc-entry');
     expect(remainingEntries.length).toBe(1);
-    expect(
-      remainingEntries[0].querySelector('.npc-entry-header strong')?.textContent
-    ).toBe('Sauron');
+    expect(remainingEntries[0].querySelector('.npc-entry-header strong')?.textContent).toBe(
+      'Sauron'
+    );
   });
 
   it('removes server-rendered NPC entries', () => {
     setupPage({
-      npcs: [
-        { name: 'Pre-existing NPC', description: 'Already here' },
-      ],
+      npcs: [{ name: 'Pre-existing NPC', description: 'Already here' }],
     });
 
     const entries = document.querySelectorAll('#npc-entries .npc-entry');

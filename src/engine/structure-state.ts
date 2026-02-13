@@ -1,4 +1,8 @@
-import type { AccumulatedStructureState, BeatProgression, StoryStructure } from '../models/story-arc';
+import type {
+  AccumulatedStructureState,
+  BeatProgression,
+  StoryStructure,
+} from '../models/story-arc';
 import { getBeatOrThrow, upsertBeatProgression } from './beat-utils';
 import type { StructureProgressionResult } from './structure-types';
 
@@ -35,7 +39,7 @@ export function createInitialStructureState(structure: StoryStructure): Accumula
 export function advanceStructureState(
   structure: StoryStructure,
   currentState: AccumulatedStructureState,
-  beatResolution: string,
+  beatResolution: string
 ): StructureProgressionResult {
   const resolution = beatResolution.trim();
   if (!resolution) {
@@ -45,7 +49,7 @@ export function advanceStructureState(
   const currentBeat = getBeatOrThrow(
     structure,
     currentState.currentActIndex,
-    currentState.currentBeatIndex,
+    currentState.currentBeatIndex
   );
 
   const concludedProgressions = upsertBeatProgression(currentState.beatProgressions, {
@@ -77,7 +81,9 @@ export function advanceStructureState(
     };
   }
 
-  const nextActIndex = isLastBeatOfAct ? currentState.currentActIndex + 1 : currentState.currentActIndex;
+  const nextActIndex = isLastBeatOfAct
+    ? currentState.currentActIndex + 1
+    : currentState.currentActIndex;
   const nextBeatIndex = isLastBeatOfAct ? 0 : currentState.currentBeatIndex + 1;
   const nextBeat = getBeatOrThrow(structure, nextActIndex, nextBeatIndex);
 
@@ -108,7 +114,7 @@ export function applyStructureProgression(
   structure: StoryStructure,
   parentState: AccumulatedStructureState,
   beatConcluded: boolean,
-  beatResolution: string,
+  beatResolution: string
 ): AccumulatedStructureState {
   if (!beatConcluded) {
     return {

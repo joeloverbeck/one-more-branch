@@ -1,27 +1,40 @@
+import type { AnalystContext, AnalystResult } from '../../../src/llm/analyst-types';
 import type {
-  AnalystContext,
-  AnalystResult,
   ContinuationPagePlanContext,
-  CompletedBeat,
   ContinuationContext,
+  OpeningContext,
+  OpeningPagePlanContext,
+  PagePlanContext,
+} from '../../../src/llm/context-types';
+import type {
+  CompletedBeat,
+  StructureRewriteContext,
+  StructureRewriteResult,
+} from '../../../src/llm/structure-rewrite-types';
+import type {
   ContinuationGenerationResult,
   GenerationPipelineMetrics,
   GenerationOptions,
-  OpeningContext,
-  OpeningPagePlanContext,
+} from '../../../src/llm/generation-pipeline-types';
+import type {
   FinalPageGenerationResult,
   PageWriterResult,
-  PagePlan,
-  PagePlanContext,
-  PagePlanGenerationResult,
-  StructureRewriteContext,
-  StructureRewriteResult,
   WriterResult,
-} from '../../../src/llm/types';
-import { LLMError } from '../../../src/llm/types';
+} from '../../../src/llm/writer-types';
+import type { PagePlan, PagePlanGenerationResult } from '../../../src/llm/planner-types';
+import { LLMError } from '../../../src/llm/llm-client-types';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
-import { createBeatDeviation, createNoDeviation, type StoryStructure } from '../../../src/models/story-arc';
-import { ThreadType, Urgency, type ActiveState, type KeyedEntry } from '../../../src/models/state/index';
+import {
+  createBeatDeviation,
+  createNoDeviation,
+  type StoryStructure,
+} from '../../../src/models/story-arc';
+import {
+  ThreadType,
+  Urgency,
+  type ActiveState,
+  type KeyedEntry,
+} from '../../../src/models/state/index';
 
 describe('LLM types', () => {
   describe('LLMError', () => {
@@ -81,8 +94,16 @@ describe('LLM types', () => {
       const result: WriterResult = {
         narrative: 'You arrive at a crossroads.',
         choices: [
-          { text: 'Take the left path', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Take the right path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          {
+            text: 'Take the left path',
+            choiceType: 'PATH_DIVERGENCE',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Take the right path',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
         ],
         currentLocation: 'Forest crossroads',
         threatsAdded: ['THREAT_WOLVES: Wolves spotted nearby'],
@@ -178,7 +199,13 @@ describe('LLM types', () => {
             removeIds: [],
           },
           threads: {
-            add: [{ text: 'Secure a safe path across the bridge', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }],
+            add: [
+              {
+                text: 'Secure a safe path across the bridge',
+                threadType: ThreadType.DANGER,
+                urgency: Urgency.HIGH,
+              },
+            ],
             resolveIds: [],
           },
           inventory: {
@@ -195,7 +222,9 @@ describe('LLM types', () => {
           },
           canon: {
             worldAdd: ['The bridge groans audibly before each thunderclap.'],
-            characterAdd: [{ characterName: 'Scout', facts: ['The scout has crossed this bridge once before.'] }],
+            characterAdd: [
+              { characterName: 'Scout', facts: ['The scout has crossed this bridge once before.'] },
+            ],
           },
         },
         writerBrief: {
@@ -205,8 +234,16 @@ describe('LLM types', () => {
         },
         dramaticQuestion: 'Will you cross the bridge before it collapses or find another way?',
         choiceIntents: [
-          { hook: 'Sprint across the swaying bridge', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-          { hook: 'Search for a safer crossing downstream', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+          {
+            hook: 'Sprint across the swaying bridge',
+            choiceType: ChoiceType.CONFRONTATION,
+            primaryDelta: PrimaryDelta.THREAT_SHIFT,
+          },
+          {
+            hook: 'Search for a safer crossing downstream',
+            choiceType: ChoiceType.TACTICAL_APPROACH,
+            primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+          },
         ],
       };
 
@@ -281,8 +318,16 @@ describe('LLM types', () => {
         },
         dramaticQuestion: 'Will you escalate the danger or retreat?',
         choiceIntents: [
-          { hook: 'Push forward into danger', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-          { hook: 'Fall back to safety', choiceType: ChoiceType.AVOIDANCE_RETREAT, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+          {
+            hook: 'Push forward into danger',
+            choiceType: ChoiceType.CONFRONTATION,
+            primaryDelta: PrimaryDelta.THREAT_SHIFT,
+          },
+          {
+            hook: 'Fall back to safety',
+            choiceType: ChoiceType.AVOIDANCE_RETREAT,
+            primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+          },
         ],
         rawResponse: '{"sceneIntent":"Escalate danger and force a commitment."}',
       };
@@ -426,15 +471,9 @@ describe('LLM types', () => {
     it('allows active state with populated fields', () => {
       const activeState: ActiveState = {
         currentLocation: 'Dark forest clearing',
-        activeThreats: [
-          { id: 'th-1', text: 'Pack of wolves circling' },
-        ],
-        activeConstraints: [
-          { id: 'cn-1', text: 'Twisted ankle limits speed' },
-        ],
-        openThreads: [
-          { id: 'td-1', text: 'Map destination unknown' },
-        ],
+        activeThreats: [{ id: 'th-1', text: 'Pack of wolves circling' }],
+        activeConstraints: [{ id: 'cn-1', text: 'Twisted ankle limits speed' }],
+        openThreads: [{ id: 'td-1', text: 'Map destination unknown' }],
       };
 
       const accumulatedInventory: readonly KeyedEntry[] = [
@@ -473,8 +512,16 @@ describe('LLM types', () => {
       return {
         narrative: 'The lantern flickers as footsteps approach.',
         choices: [
-          { text: 'Hide behind the crates', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'EXPOSURE_CHANGE' },
-          { text: 'Call out to the footsteps', choiceType: 'CONFRONTATION', primaryDelta: 'RELATIONSHIP_CHANGE' },
+          {
+            text: 'Hide behind the crates',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
+          {
+            text: 'Call out to the footsteps',
+            choiceType: 'CONFRONTATION',
+            primaryDelta: 'RELATIONSHIP_CHANGE',
+          },
         ],
         currentLocation: 'Dimly lit warehouse',
         threatsAdded: [],
@@ -523,7 +570,11 @@ describe('LLM types', () => {
         ...buildBaseWriterResult(),
         beatConcluded: true,
         beatResolution: 'The allies turned against each other',
-        deviation: createBeatDeviation('Future beats no longer fit', ['2.2', '2.3'], 'Allies joined enemy'),
+        deviation: createBeatDeviation(
+          'Future beats no longer fit',
+          ['2.2', '2.3'],
+          'Allies joined enemy'
+        ),
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',
@@ -542,7 +593,11 @@ describe('LLM types', () => {
         narrative: 'The forest darkens as you step forward.',
         choices: [
           { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-          { text: 'Retreat quietly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Retreat quietly',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         protagonistAffect: {
           primaryEmotion: 'apprehension',
@@ -566,14 +621,20 @@ describe('LLM types', () => {
         narrative: 'The forest darkens as you step forward.',
         choices: [
           { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-          { text: 'Retreat quietly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Retreat quietly',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Dark forest path',
         threatsAdded: ['THREAT_BANDITS: Bandits ahead'],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'THREAD_LOST: Lost the trail', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'THREAD_LOST: Lost the trail', threadType: 'MYSTERY', urgency: 'MEDIUM' },
+        ],
         threadsResolved: [],
         newCanonFacts: ['The forest is cursed.'],
         newCharacterCanonFacts: { Elara: ['Elara fears the dark'] },
@@ -604,8 +665,16 @@ describe('LLM types', () => {
       const result: FinalPageGenerationResult = {
         narrative: 'The storm breaks as you reach the eastern tower.',
         choices: [
-          { text: 'Signal allies with the flare', choiceType: 'ALLIANCE_REINFORCEMENT', primaryDelta: 'RELATIONSHIP_CHANGE' },
-          { text: 'Secure the tower doors', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+          {
+            text: 'Signal allies with the flare',
+            choiceType: 'ALLIANCE_REINFORCEMENT',
+            primaryDelta: 'RELATIONSHIP_CHANGE',
+          },
+          {
+            text: 'Secure the tower doors',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'THREAT_SHIFT',
+          },
         ],
         protagonistAffect: {
           primaryEmotion: 'relief',
@@ -622,7 +691,13 @@ describe('LLM types', () => {
         threatsRemoved: [],
         constraintsAdded: ['Visibility reduced by storm spray'],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'Coordinate with defenders', threadType: ThreadType.QUEST, urgency: Urgency.HIGH }],
+        threadsAdded: [
+          {
+            text: 'Coordinate with defenders',
+            threadType: ThreadType.QUEST,
+            urgency: Urgency.HIGH,
+          },
+        ],
         threadsResolved: [],
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -774,7 +849,15 @@ describe('LLM types', () => {
               objective: 'Reach the gate',
               stakes: 'Failure means capture',
               entryCondition: 'Story begins',
-              beats: [{ id: '1.1', name: 'Gate approach', description: 'Approach', objective: 'Reach the gate', role: 'setup' }],
+              beats: [
+                {
+                  id: '1.1',
+                  name: 'Gate approach',
+                  description: 'Approach',
+                  objective: 'Reach the gate',
+                  role: 'setup',
+                },
+              ],
             },
           ],
           overallTheme: 'Courage under pressure',
@@ -814,8 +897,18 @@ describe('LLM types', () => {
           stakes: 'Failure means immediate danger',
           entryCondition: 'Story begins',
           beats: [
-            { id: '1.1', description: 'Inciting incident', objective: 'Respond to threat', role: 'setup' },
-            { id: '1.2', description: 'Decision point', objective: 'Choose direction', role: 'turning_point' },
+            {
+              id: '1.1',
+              description: 'Inciting incident',
+              objective: 'Respond to threat',
+              role: 'setup',
+            },
+            {
+              id: '1.2',
+              description: 'Decision point',
+              objective: 'Choose direction',
+              role: 'turning_point',
+            },
           ],
         },
         {
@@ -825,8 +918,20 @@ describe('LLM types', () => {
           stakes: 'Failure means loss of allies',
           entryCondition: 'Protagonist commits',
           beats: [
-            { id: '2.1', name: 'Complication', description: 'Complication', objective: 'Adapt plan', role: 'escalation' },
-            { id: '2.2', name: 'Setback', description: 'Setback', objective: 'Recover momentum', role: 'escalation' },
+            {
+              id: '2.1',
+              name: 'Complication',
+              description: 'Complication',
+              objective: 'Adapt plan',
+              role: 'escalation',
+            },
+            {
+              id: '2.2',
+              name: 'Setback',
+              description: 'Setback',
+              objective: 'Recover momentum',
+              role: 'escalation',
+            },
           ],
         },
         {
@@ -836,8 +941,20 @@ describe('LLM types', () => {
           stakes: 'Failure means catastrophe',
           entryCondition: 'Final confrontation begins',
           beats: [
-            { id: '3.1', name: 'Climax', description: 'Climax', objective: 'Confront antagonist', role: 'turning_point' },
-            { id: '3.2', name: 'Aftermath', description: 'Aftermath', objective: 'Secure outcome', role: 'resolution' },
+            {
+              id: '3.1',
+              name: 'Climax',
+              description: 'Climax',
+              objective: 'Confront antagonist',
+              role: 'turning_point',
+            },
+            {
+              id: '3.2',
+              name: 'Aftermath',
+              description: 'Aftermath',
+              objective: 'Secure outcome',
+              role: 'resolution',
+            },
           ],
         },
       ],

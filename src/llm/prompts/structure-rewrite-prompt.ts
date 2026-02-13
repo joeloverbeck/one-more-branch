@@ -1,4 +1,6 @@
-import type { ChatMessage, PromptOptions, StructureRewriteContext } from '../types.js';
+import type { PromptOptions } from '../generation-pipeline-types.js';
+import type { ChatMessage } from '../llm-client-types.js';
+import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 
 function getActsToRegenerate(currentActIndex: number): string {
@@ -20,9 +22,11 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
 
   return completedBeats
     .map(
-      beat => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
+      (
+        beat
+      ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
     Objective: ${beat.objective}
-    Resolution: ${beat.resolution}`,
+    Resolution: ${beat.resolution}`
     )
     .join('\n');
 }
@@ -143,13 +147,11 @@ const STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT = `{
 
 export function buildStructureRewritePrompt(
   context: StructureRewriteContext,
-  options?: PromptOptions,
+  options?: PromptOptions
 ): ChatMessage[] {
   const completedBeatsSection = formatCompletedBeats(context.completedBeats);
 
-  const worldSection = context.worldbuilding
-    ? `World: ${context.worldbuilding}\n`
-    : '';
+  const worldSection = context.worldbuilding ? `World: ${context.worldbuilding}\n` : '';
 
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
@@ -212,7 +214,7 @@ OUTPUT SHAPE (same as original structure):
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(
       { role: 'user', content: STRUCTURE_REWRITE_FEW_SHOT_USER },
-      { role: 'assistant', content: STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT },
+      { role: 'assistant', content: STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT }
     );
   }
 

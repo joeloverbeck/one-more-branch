@@ -116,7 +116,7 @@ describe('story-arc model utilities', () => {
     it('includes premise on StoryStructure', () => {
       const structure = createTestStructure();
       expect(structure.premise).toBe(
-        'A lone wanderer must unite warring clans before an ancient threat consumes the land.',
+        'A lone wanderer must unite warring clans before an ancient threat consumes the land.'
       );
     });
 
@@ -344,7 +344,7 @@ describe('story-arc model utilities', () => {
         const result = createBeatDeviation(
           'Player choice contradicted remaining beats',
           ['2.2', '3.1'],
-          'The protagonist switched allegiances',
+          'The protagonist switched allegiances'
         );
 
         expect(isDeviation(result)).toBe(true);
@@ -366,7 +366,7 @@ describe('story-arc model utilities', () => {
         const result = createBeatDeviation(
           'Branch no longer aligns with planned infiltration beat',
           ['2.2'],
-          'The protagonist accepted command from the enemy',
+          'The protagonist accepted command from the enemy'
         );
 
         expect(isNoDeviation(result)).toBe(false);
@@ -378,7 +378,7 @@ describe('story-arc model utilities', () => {
         const result = createBeatDeviation(
           'Narrative shifted to alliance with antagonist',
           ['2.2', '3.1'],
-          'The team split after a betrayal',
+          'The team split after a betrayal'
         );
 
         expect(result).toEqual({
@@ -391,7 +391,7 @@ describe('story-arc model utilities', () => {
 
       it('throws if invalidatedBeatIds is empty', () => {
         expect(() => createBeatDeviation('No invalidated beats provided', [], 'Summary')).toThrow(
-          'BeatDeviation must have at least one invalidated beat ID',
+          'BeatDeviation must have at least one invalidated beat ID'
         );
       });
 
@@ -428,7 +428,11 @@ describe('story-arc model utilities', () => {
       });
 
       it('returns false when a concluded beat is invalidated', () => {
-        const deviation = createBeatDeviation('Invalidation includes completed beat', ['1.2'], 'Summary');
+        const deviation = createBeatDeviation(
+          'Invalidation includes completed beat',
+          ['1.2'],
+          'Summary'
+        );
         const structureState: AccumulatedStructureState = {
           currentActIndex: 1,
           currentBeatIndex: 0,

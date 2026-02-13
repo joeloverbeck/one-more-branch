@@ -4,7 +4,7 @@ export interface Npc {
 }
 
 export function formatNpcsForPrompt(npcs: readonly Npc[]): string {
-  return npcs.map(npc => `NPC: ${npc.name}\n${npc.description}`).join('\n\n');
+  return npcs.map((npc) => `NPC: ${npc.name}\n${npc.description}`).join('\n\n');
 }
 
 export function isNpcArray(value: unknown): value is Npc[] {
@@ -13,10 +13,10 @@ export function isNpcArray(value: unknown): value is Npc[] {
   }
 
   return value.every(
-    item =>
+    (item) =>
       typeof item === 'object' &&
       item !== null &&
       typeof (item as Record<string, unknown>)['name'] === 'string' &&
-      typeof (item as Record<string, unknown>)['description'] === 'string',
+      typeof (item as Record<string, unknown>)['description'] === 'string'
   );
 }

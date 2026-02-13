@@ -74,7 +74,10 @@ describe('engine barrel export', () => {
   });
 
   it('supports type exports for engine public contracts', () => {
-    const story = createStory({ title: 'Test Story', characterConcept: 'A courier in a city of mirrored alleys' });
+    const story = createStory({
+      title: 'Test Story',
+      characterConcept: 'A courier in a city of mirrored alleys',
+    });
     const page = createPage({
       id: parsePageId(1),
       narrativeText: 'Night rain fractures every lantern into twins.',
@@ -110,7 +113,9 @@ describe('engine barrel export', () => {
       threatsRemoved: ['Unstable planks'],
       constraintsAdded: ['Limited visibility from dust'],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Find stable route', threadType: ThreadType.MYSTERY, urgency: Urgency.MEDIUM }],
+      threadsAdded: [
+        { text: 'Find stable route', threadType: ThreadType.MYSTERY, urgency: Urgency.MEDIUM },
+      ],
       threadsResolved: [],
       inventoryAdded: [],
       inventoryRemoved: [],
@@ -125,7 +130,13 @@ describe('engine barrel export', () => {
     const reconciliationFailure: StateReconciliationFailure = {
       code: 'RECONCILIATION_FAILED',
       message: 'Missing evidence for thread resolution',
-      diagnostics: [{ code: 'MISSING_EVIDENCE', message: 'No lexical evidence found', field: 'threadsResolved' }],
+      diagnostics: [
+        {
+          code: 'MISSING_EVIDENCE',
+          message: 'No lexical evidence found',
+          field: 'threadsResolved',
+        },
+      ],
       retryable: true,
     };
 
@@ -140,17 +151,29 @@ describe('engine barrel export', () => {
 
   it('exposes StateReconciliationError failure serialization', () => {
     const error = new StateReconciliationError(
-      'Evidence gate failed',
-      'EVIDENCE_GATE_FAILED',
-      [{ code: 'MISSING_EVIDENCE', message: 'Scene summary lacks thread anchor', field: 'threadsResolved' }],
-      true,
+      'Reconciliation failed',
+      'RECONCILIATION_FAILED',
+      [
+        {
+          code: 'UNKNOWN_STATE_ID',
+          message: 'Unknown state ID "th-999" in threatsRemoved.',
+          field: 'threatsRemoved',
+        },
+      ],
+      true
     );
 
     expect(error.name).toBe('StateReconciliationError');
     expect(error.toFailure()).toEqual({
-      code: 'EVIDENCE_GATE_FAILED',
-      message: 'Evidence gate failed',
-      diagnostics: [{ code: 'MISSING_EVIDENCE', message: 'Scene summary lacks thread anchor', field: 'threadsResolved' }],
+      code: 'RECONCILIATION_FAILED',
+      message: 'Reconciliation failed',
+      diagnostics: [
+        {
+          code: 'UNKNOWN_STATE_ID',
+          message: 'Unknown state ID "th-999" in threatsRemoved.',
+          field: 'threatsRemoved',
+        },
+      ],
       retryable: true,
     });
   });

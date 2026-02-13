@@ -5,7 +5,6 @@ export interface StateReconciliationDiagnostic {
   code: string;
   message: string;
   field?: string;
-  anchor?: string;
 }
 
 export interface ReconciledThreadAdd {

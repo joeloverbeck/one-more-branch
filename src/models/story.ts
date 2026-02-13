@@ -62,7 +62,7 @@ export function createStory(data: CreateStoryData): Story {
   const now = new Date();
 
   const validNpcs = data.npcs?.filter(
-    npc => npc.name.trim().length > 0 && npc.description.trim().length > 0,
+    (npc) => npc.name.trim().length > 0 && npc.description.trim().length > 0
   );
   const npcs = validNpcs && validNpcs.length > 0 ? validNpcs : undefined;
   const startingSituation = data.startingSituation?.trim();
@@ -74,7 +74,8 @@ export function createStory(data: CreateStoryData): Story {
     worldbuilding: data.worldbuilding?.trim() ?? '',
     tone: data.tone?.trim() ?? 'fantasy adventure',
     npcs,
-    startingSituation: startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
+    startingSituation:
+      startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
     globalCanon: [],
     globalCharacterCanon: {},
     structure: null,
@@ -108,7 +109,7 @@ function isGlobalCharacterCanon(value: unknown): value is GlobalCharacterCanon {
       return false;
     }
     const arr = obj[key] as unknown[];
-    if (!arr.every(item => typeof item === 'string')) {
+    if (!arr.every((item) => typeof item === 'string')) {
       return false;
     }
   }
@@ -140,7 +141,7 @@ export function isStory(value: unknown): value is Story {
     (structure === null || isStoryStructure(structure)) &&
     (structureVersions === undefined ||
       (Array.isArray(structureVersions) &&
-        structureVersions.every(version => isVersionedStoryStructure(version)))) &&
+        structureVersions.every((version) => isVersionedStoryStructure(version)))) &&
     obj['createdAt'] instanceof Date &&
     obj['updatedAt'] instanceof Date
   );
@@ -157,10 +158,10 @@ export function getLatestStructureVersion(story: Story): VersionedStoryStructure
 
 export function getStructureVersion(
   story: Story,
-  versionId: StructureVersionId,
+  versionId: StructureVersionId
 ): VersionedStoryStructure | null {
   const versions = story.structureVersions ?? [];
-  return versions.find(version => version.id === versionId) ?? null;
+  return versions.find((version) => version.id === versionId) ?? null;
 }
 
 export function addStructureVersion(story: Story, version: VersionedStoryStructure): Story {

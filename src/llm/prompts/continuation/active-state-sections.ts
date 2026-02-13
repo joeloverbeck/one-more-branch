@@ -15,7 +15,7 @@ export function buildThreatsSection(activeState: ActiveState): string {
     return '';
   }
   return `ACTIVE THREATS (dangers that exist NOW):
-${activeState.activeThreats.map(t => `- [${t.id}] ${t.text}`).join('\n')}
+${activeState.activeThreats.map((t) => `- [${t.id}] ${t.text}`).join('\n')}
 
 `;
 }
@@ -25,7 +25,7 @@ export function buildConstraintsSection(activeState: ActiveState): string {
     return '';
   }
   return `ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):
-${activeState.activeConstraints.map(c => `- [${c.id}] ${c.text}`).join('\n')}
+${activeState.activeConstraints.map((c) => `- [${c.id}] ${c.text}`).join('\n')}
 
 `;
 }
@@ -35,7 +35,7 @@ export function buildThreadsSection(activeState: ActiveState): string {
     return '';
   }
   return `OPEN NARRATIVE THREADS (unresolved hooks):
-${activeState.openThreads.map(t => `- [${t.id}] (${t.threadType}/${t.urgency}) ${t.text}`).join('\n')}
+${activeState.openThreads.map((t) => `- [${t.id}] (${t.threadType}/${t.urgency}) ${t.text}`).join('\n')}
 
 `;
 }

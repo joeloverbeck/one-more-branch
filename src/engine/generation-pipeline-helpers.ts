@@ -15,12 +15,10 @@ export interface ReconciliationRetryGenerationOptions {
   requestId: string;
   apiKey: string;
   previousState: import('./state-reconciler-types').StateReconciliationPreviousState;
-  buildPlanContext: (
-    failureReasons?: readonly ReconciliationFailureReason[],
-  ) => PagePlanContext;
+  buildPlanContext: (failureReasons?: readonly ReconciliationFailureReason[]) => PagePlanContext;
   generateWriter: (
     pagePlan: Awaited<ReturnType<typeof generatePagePlan>>,
-    failureReasons?: readonly ReconciliationFailureReason[],
+    failureReasons?: readonly ReconciliationFailureReason[]
   ) => Promise<WriterResult>;
   onGenerationStage?: GenerationStageCallback;
 }
@@ -29,7 +27,7 @@ export function emitGenerationStage(
   onGenerationStage: GenerationStageCallback | undefined,
   stage: GenerationStage,
   status: 'started' | 'completed',
-  attempt: number,
+  attempt: number
 ): void {
   onGenerationStage?.({ stage, status, attempt });
 }
@@ -47,7 +45,7 @@ export function createSuccessPipelineMetrics(
   writerValidationIssueCount: number,
   reconcilerIssueCount: number,
   reconcilerRetried: boolean,
-  finalStatus: 'success' | 'hard_error',
+  finalStatus: 'success' | 'hard_error'
 ): GenerationPipelineMetrics {
   return {
     plannerDurationMs,
@@ -63,9 +61,9 @@ export function createSuccessPipelineMetrics(
 }
 
 export function toReconciliationFailureReasons(
-  reconciliation: StateReconciliationResult,
+  reconciliation: StateReconciliationResult
 ): ReconciliationFailureReason[] {
-  return reconciliation.reconciliationDiagnostics.map(diagnostic => ({
+  return reconciliation.reconciliationDiagnostics.map((diagnostic) => ({
     code: diagnostic.code,
     field: diagnostic.field,
     message: diagnostic.message,

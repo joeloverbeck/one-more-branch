@@ -1,12 +1,12 @@
 import { createBeatDeviation, createNoDeviation } from '../models/story-arc.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
-import type {
-  AnalystResult,
-  ContinuationGenerationResult,
-  PageWriterResult,
-} from './types.js';
+import type { AnalystResult } from './analyst-types.js';
+import type { ContinuationGenerationResult } from './generation-pipeline-types.js';
+import type { PageWriterResult } from './writer-types.js';
 
-function buildAnalystFields(analyst: AnalystResult | null): Pick<
+function buildAnalystFields(
+  analyst: AnalystResult | null
+): Pick<
   ContinuationGenerationResult,
   | 'beatConcluded'
   | 'beatResolution'
@@ -22,7 +22,10 @@ function buildAnalystFields(analyst: AnalystResult | null): Pick<
   const invalidatedBeatIds = analyst?.invalidatedBeatIds ?? [];
 
   const deviation =
-    analyst?.deviationDetected && deviationReason && narrativeSummary && invalidatedBeatIds.length > 0
+    analyst?.deviationDetected &&
+    deviationReason &&
+    narrativeSummary &&
+    invalidatedBeatIds.length > 0
       ? createBeatDeviation(deviationReason, invalidatedBeatIds, narrativeSummary)
       : createNoDeviation();
 
@@ -39,7 +42,7 @@ function buildAnalystFields(analyst: AnalystResult | null): Pick<
 export function mergePageWriterAndReconciledStateWithAnalystResults(
   writer: PageWriterResult,
   reconciliation: StateReconciliationResult,
-  analyst: AnalystResult | null,
+  analyst: AnalystResult | null
 ): ContinuationGenerationResult {
   const stateDelta = {
     currentLocation: reconciliation.currentLocation,
@@ -66,4 +69,3 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
     rawResponse: writer.rawResponse,
   };
 }
-

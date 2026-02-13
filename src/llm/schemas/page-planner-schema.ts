@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -163,8 +163,7 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             properties: {
               hook: {
                 type: 'string',
-                description:
-                  'A 1-sentence description of what this choice offers the protagonist.',
+                description: 'A 1-sentence description of what this choice offers the protagonist.',
               },
               choiceType: {
                 type: 'string',

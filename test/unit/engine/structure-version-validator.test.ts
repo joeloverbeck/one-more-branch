@@ -79,7 +79,7 @@ describe('structure-version-validator', () => {
 
       expect(() => validateFirstPageStructureVersion(storyWithNoVersions)).toThrow(EngineError);
       expect(() => validateFirstPageStructureVersion(storyWithNoVersions)).toThrow(
-        'Story has structure but no structure versions',
+        'Story has structure but no structure versions'
       );
     });
   });
@@ -117,7 +117,7 @@ describe('structure-version-validator', () => {
       });
 
       expect(() => validateContinuationStructureVersion(storyWithNoVersions, parentPage)).toThrow(
-        'Story has structure but no structure versions',
+        'Story has structure but no structure versions'
       );
     });
 
@@ -135,7 +135,7 @@ describe('structure-version-validator', () => {
       });
 
       expect(() => validateContinuationStructureVersion(story, parentPage)).toThrow(
-        'has null structureVersionId but story has structure',
+        'has null structureVersionId but story has structure'
       );
     });
 
@@ -226,7 +226,7 @@ describe('structure-version-validator', () => {
         createTestStructure(),
         ['1.1', '2.1', '3.1'],
         'Test rewrite',
-        parsePageId(2),
+        parsePageId(2)
       );
       const storyWithTwoVersions: Story = {
         ...story,

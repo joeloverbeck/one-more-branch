@@ -14,13 +14,14 @@ import {
   createPage,
   parsePageId,
 } from '@/models';
-import type { AnalystResult, MomentumTrajectory } from '@/llm/types';
+import type { AnalystResult } from '@/llm/analyst-types';
+import type { MomentumTrajectory } from '@/llm/generation-pipeline-types';
 import { serializePage, deserializePage } from '@/persistence/page-serializer';
 import { buildContinuationPage, ContinuationPageBuildContext } from '@/engine/page-builder';
 import { buildPlannerContinuationContextSection } from '@/llm/prompts/sections/planner/continuation-context';
 import { countConsecutiveFromEnd } from '@/llm/prompts/sections/planner/continuation-context';
-import type { ContinuationPagePlanContext } from '@/llm/types';
-import type { FinalPageGenerationResult } from '@/llm/types';
+import type { ContinuationPagePlanContext } from '@/llm/context-types';
+import type { FinalPageGenerationResult } from '@/llm/writer-types';
 
 function buildFullAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
   return {
@@ -49,7 +50,9 @@ function buildFullAnalystResult(overrides: Partial<AnalystResult> = {}): Analyst
   };
 }
 
-function buildMockResult(overrides: Partial<FinalPageGenerationResult> = {}): FinalPageGenerationResult {
+function buildMockResult(
+  overrides: Partial<FinalPageGenerationResult> = {}
+): FinalPageGenerationResult {
   return {
     narrative: 'You step into the corridor.',
     choices: [
@@ -86,7 +89,9 @@ function buildMockResult(overrides: Partial<FinalPageGenerationResult> = {}): Fi
   };
 }
 
-function makeBasePlannerContext(overrides: Partial<ContinuationPagePlanContext> = {}): ContinuationPagePlanContext {
+function makeBasePlannerContext(
+  overrides: Partial<ContinuationPagePlanContext> = {}
+): ContinuationPagePlanContext {
   return {
     mode: 'continuation',
     characterConcept: 'A rogue agent',
@@ -159,7 +164,7 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       expect(deserialized.analystResult?.sceneMomentum).toBe('STASIS');
       expect(deserialized.analystResult?.objectiveEvidenceStrength).toBe('WEAK_IMPLICIT');
       expect(deserialized.analystResult?.pacingIssueReason).toBe(
-        'Beat 1.1 stalled for 4 pages without advancing objective.',
+        'Beat 1.1 stalled for 4 pages without advancing objective.'
       );
       // rawResponse is excluded during serialization
       expect(deserialized.analystResult?.rawResponse).toBe('');
@@ -307,7 +312,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     it('renders trajectory when 2+ entries present', () => {
       const trajectory: MomentumTrajectory = [
         { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
-        { pageId: parsePageId(2), sceneMomentum: 'INCREMENTAL_PROGRESS', objectiveEvidenceStrength: 'WEAK_IMPLICIT' },
+        {
+          pageId: parsePageId(2),
+          sceneMomentum: 'INCREMENTAL_PROGRESS',
+          objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+        },
       ];
 
       const context = makeBasePlannerContext({
@@ -337,9 +346,17 @@ describe('Analyst-to-Planner Feedback Loop', () => {
 
     it('emits STASIS warning at 2+ consecutive', () => {
       const trajectory: MomentumTrajectory = [
-        { pageId: parsePageId(1), sceneMomentum: 'INCREMENTAL_PROGRESS', objectiveEvidenceStrength: 'CLEAR_EXPLICIT' },
+        {
+          pageId: parsePageId(1),
+          sceneMomentum: 'INCREMENTAL_PROGRESS',
+          objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+        },
         { pageId: parsePageId(2), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
-        { pageId: parsePageId(3), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'WEAK_IMPLICIT' },
+        {
+          pageId: parsePageId(3),
+          sceneMomentum: 'STASIS',
+          objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+        },
       ];
 
       const context = makeBasePlannerContext({
@@ -355,8 +372,16 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     it('emits weak evidence warning at 3+ consecutive', () => {
       const trajectory: MomentumTrajectory = [
         { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
-        { pageId: parsePageId(2), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'WEAK_IMPLICIT' },
-        { pageId: parsePageId(3), sceneMomentum: 'INCREMENTAL_PROGRESS', objectiveEvidenceStrength: 'NONE' },
+        {
+          pageId: parsePageId(2),
+          sceneMomentum: 'STASIS',
+          objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+        },
+        {
+          pageId: parsePageId(3),
+          sceneMomentum: 'INCREMENTAL_PROGRESS',
+          objectiveEvidenceStrength: 'NONE',
+        },
       ];
 
       const context = makeBasePlannerContext({
@@ -373,7 +398,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       const trajectory: MomentumTrajectory = [
         { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
         { pageId: parsePageId(2), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
-        { pageId: parsePageId(3), sceneMomentum: 'MAJOR_PROGRESS', objectiveEvidenceStrength: 'CLEAR_EXPLICIT' },
+        {
+          pageId: parsePageId(3),
+          sceneMomentum: 'MAJOR_PROGRESS',
+          objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+        },
       ];
 
       const context = makeBasePlannerContext({
@@ -389,11 +418,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
 
   describe('countConsecutiveFromEnd', () => {
     it('counts consecutive matching items from end', () => {
-      expect(countConsecutiveFromEnd([1, 2, 3, 3, 3], x => x === 3)).toBe(3);
+      expect(countConsecutiveFromEnd([1, 2, 3, 3, 3], (x) => x === 3)).toBe(3);
     });
 
     it('returns 0 when last item does not match', () => {
-      expect(countConsecutiveFromEnd([3, 3, 1], x => x === 3)).toBe(0);
+      expect(countConsecutiveFromEnd([3, 3, 1], (x) => x === 3)).toBe(0);
     });
 
     it('handles empty array', () => {
@@ -401,11 +430,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     });
 
     it('counts all when all match', () => {
-      expect(countConsecutiveFromEnd([1, 1, 1], x => x === 1)).toBe(3);
+      expect(countConsecutiveFromEnd([1, 1, 1], (x) => x === 1)).toBe(3);
     });
 
     it('counts 1 when only last matches', () => {
-      expect(countConsecutiveFromEnd([2, 2, 1], x => x === 1)).toBe(1);
+      expect(countConsecutiveFromEnd([2, 2, 1], (x) => x === 1)).toBe(1);
     });
   });
 });

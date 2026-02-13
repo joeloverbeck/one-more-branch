@@ -73,13 +73,13 @@ interface StoryStructureFileData {
 
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
   return {
-    acts: structure.acts.map(act => ({
+    acts: structure.acts.map((act) => ({
       id: act.id,
       name: act.name,
       objective: act.objective,
       stakes: act.stakes,
       entryCondition: act.entryCondition,
-      beats: act.beats.map(beat => ({
+      beats: act.beats.map((beat) => ({
         id: beat.id,
         name: beat.name,
         description: beat.description,
@@ -96,13 +96,13 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
 
 function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
   return {
-    acts: data.acts.map(act => ({
+    acts: data.acts.map((act) => ({
       id: act.id,
       name: act.name,
       objective: act.objective,
       stakes: act.stakes,
       entryCondition: act.entryCondition,
-      beats: act.beats.map(beat => ({
+      beats: act.beats.map((beat) => ({
         id: beat.id,
         name: beat.name,
         description: beat.description,
@@ -118,7 +118,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
 }
 
 function versionedStructureToFileData(
-  version: VersionedStoryStructure,
+  version: VersionedStoryStructure
 ): VersionedStoryStructureFileData {
   return {
     id: version.id,
@@ -132,15 +132,13 @@ function versionedStructureToFileData(
 }
 
 function fileDataToVersionedStructure(
-  data: VersionedStoryStructureFileData,
+  data: VersionedStoryStructureFileData
 ): VersionedStoryStructure {
   return {
     id: parseStructureVersionId(data.id),
     structure: fileDataToStructure(data.structure),
     previousVersionId:
-      data.previousVersionId === null
-        ? null
-        : parseStructureVersionId(data.previousVersionId),
+      data.previousVersionId === null ? null : parseStructureVersionId(data.previousVersionId),
     createdAtPageId: data.createdAtPageId === null ? null : parsePageId(data.createdAtPageId),
     rewriteReason: data.rewriteReason,
     preservedBeatIds: [...data.preservedBeatIds],
@@ -160,7 +158,9 @@ function storyToFileData(story: Story): StoryFileData {
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
-    npcs: story.npcs ? story.npcs.map(npc => ({ name: npc.name, description: npc.description })) : null,
+    npcs: story.npcs
+      ? story.npcs.map((npc) => ({ name: npc.name, description: npc.description }))
+      : null,
     startingSituation: story.startingSituation ?? null,
     globalCanon: [...story.globalCanon],
     globalCharacterCanon,
@@ -191,7 +191,7 @@ function fileDataToStory(data: StoryFileData): Story {
     worldbuilding: data.worldbuilding,
     tone: data.tone,
     ...(data.npcs !== null && data.npcs.length > 0
-      ? { npcs: data.npcs.map(npc => ({ name: npc.name, description: npc.description })) }
+      ? { npcs: data.npcs.map((npc) => ({ name: npc.name, description: npc.description })) }
       : {}),
     ...(data.startingSituation !== null ? { startingSituation: data.startingSituation } : {}),
     globalCanon: [...data.globalCanon],

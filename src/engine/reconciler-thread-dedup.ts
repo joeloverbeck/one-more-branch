@@ -1,4 +1,4 @@
-import type { ThreadAdd } from '../llm/types.js';
+import type { ThreadAdd } from '../llm/writer-types.js';
 import { ThreadType } from '../models/state/index.js';
 import type {
   ReconciledThreadAdd,
@@ -26,23 +26,18 @@ export const THREAD_JACCARD_THRESHOLDS: Record<ThreadType, number> = {
   [ThreadType.DANGER]: 0.66,
 };
 
-const THREAD_STOP_PHRASES = [
-  'currently',
-  'right now',
-  'at this point',
-  'for now',
-] as const;
+const THREAD_STOP_PHRASES = ['currently', 'right now', 'at this point', 'for now'] as const;
 
 export function normalizeThreadAdds(additions: readonly ThreadAdd[]): ReconciledThreadAdd[] {
   return dedupeByKey(
     additions
-      .map(entry => ({
+      .map((entry) => ({
         text: normalizeIntentText(entry.text),
         threadType: entry.threadType,
         urgency: entry.urgency,
       }))
-      .filter(entry => entry.text),
-    entry => `${intentComparisonKey(entry.text)}|${entry.threadType}|${entry.urgency}`,
+      .filter((entry) => entry.text),
+    (entry) => `${intentComparisonKey(entry.text)}|${entry.threadType}|${entry.urgency}`
   );
 }
 
@@ -63,12 +58,12 @@ function tokenizeThreadSimilarityText(value: string): ReadonlySet<string> {
     return new Set();
   }
 
-  return new Set(normalized.split(/\s+/).filter(token => token.length >= 2));
+  return new Set(normalized.split(/\s+/).filter((token) => token.length >= 2));
 }
 
 function jaccardSimilarity(
   leftTokens: ReadonlySet<string>,
-  rightTokens: ReadonlySet<string>,
+  rightTokens: ReadonlySet<string>
 ): number {
   if (leftTokens.size === 0 || rightTokens.size === 0) {
     return 0;
@@ -94,28 +89,23 @@ function isImmediateDangerHazardText(value: string): boolean {
     return false;
   }
 
-  if (
-    /\b(right now|currently|immediately|this scene|this moment|at once)\b/.test(normalized)
-  ) {
+  if (/\b(right now|currently|immediately|this scene|this moment|at once)\b/.test(normalized)) {
     return true;
   }
 
   return /\b(is|are)\b.*\b(burning|collapsing|flooding|exploding|attacking|choking|spreading)\b/.test(
-    normalized,
+    normalized
   );
 }
 
 function rejectImmediateHazards(
   candidates: readonly ReconciledThreadAdd[],
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): ReconciledThreadAdd[] {
   const accepted: ReconciledThreadAdd[] = [];
 
   for (const candidate of candidates) {
-    if (
-      candidate.threadType === ThreadType.DANGER &&
-      isImmediateDangerHazardText(candidate.text)
-    ) {
+    if (candidate.threadType === ThreadType.DANGER && isImmediateDangerHazardText(candidate.text)) {
       diagnostics.push({
         code: THREAD_DANGER_IMMEDIATE_HAZARD,
         field: 'threadsAdded',
@@ -133,7 +123,7 @@ function dedupAgainstPreviousThreads(
   candidates: readonly ReconciledThreadAdd[],
   previousThreads: StateReconciliationPreviousState['threads'],
   resolvedThreadIds: readonly string[],
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): ReconciledThreadAdd[] {
   const resolvedThreadIdSet = new Set(resolvedThreadIds);
   const accepted: ReconciledThreadAdd[] = [];
@@ -141,20 +131,20 @@ function dedupAgainstPreviousThreads(
   for (const candidate of candidates) {
     const threshold = THREAD_JACCARD_THRESHOLDS[candidate.threadType];
     const candidateTokens = tokenizeThreadSimilarityText(candidate.text);
-    const equivalentPreviousThreads = previousThreads.filter(previousThread => {
+    const equivalentPreviousThreads = previousThreads.filter((previousThread) => {
       if (previousThread.threadType !== candidate.threadType) {
         return false;
       }
       const similarity = jaccardSimilarity(
         candidateTokens,
-        tokenizeThreadSimilarityText(previousThread.text),
+        tokenizeThreadSimilarityText(previousThread.text)
       );
       return similarity >= threshold;
     });
 
     if (equivalentPreviousThreads.length > 0) {
       const unresolvedEquivalentThread = equivalentPreviousThreads.find(
-        previousThread => !resolvedThreadIdSet.has(previousThread.id),
+        (previousThread) => !resolvedThreadIdSet.has(previousThread.id)
       );
 
       if (unresolvedEquivalentThread) {
@@ -180,7 +170,7 @@ function dedupAgainstPreviousThreads(
 
 function dedupWithinBatch(
   candidates: readonly ReconciledThreadAdd[],
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): ReconciledThreadAdd[] {
   const accepted: ReconciledThreadAdd[] = [];
 
@@ -188,14 +178,14 @@ function dedupWithinBatch(
     const threshold = THREAD_JACCARD_THRESHOLDS[candidate.threadType];
     const candidateTokens = tokenizeThreadSimilarityText(candidate.text);
 
-    const duplicateAcceptedThread = accepted.find(existing => {
+    const duplicateAcceptedThread = accepted.find((existing) => {
       if (existing.threadType !== candidate.threadType) {
         return false;
       }
 
       const similarity = jaccardSimilarity(
         candidateTokens,
-        tokenizeThreadSimilarityText(existing.text),
+        tokenizeThreadSimilarityText(existing.text)
       );
       return similarity >= threshold;
     });
@@ -219,14 +209,14 @@ export function applyThreadDedupAndContradictionRules(
   candidateAdds: readonly ReconciledThreadAdd[],
   previousThreads: StateReconciliationPreviousState['threads'],
   resolvedThreadIds: readonly string[],
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): ReconciledThreadAdd[] {
   const afterHazards = rejectImmediateHazards(candidateAdds, diagnostics);
   const afterPrevious = dedupAgainstPreviousThreads(
     afterHazards,
     previousThreads,
     resolvedThreadIds,
-    diagnostics,
+    diagnostics
   );
   return dedupWithinBatch(afterPrevious, diagnostics);
 }

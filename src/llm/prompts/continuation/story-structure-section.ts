@@ -24,30 +24,30 @@ Be conservative. Minor variations are acceptable; only mark true deviation for g
 
 export function getRemainingBeats(
   structure: StoryStructure,
-  state: AccumulatedStructureState,
+  state: AccumulatedStructureState
 ): Array<{ id: string; description: string }> {
   const concludedBeatIds = new Set(
     state.beatProgressions
-      .filter(progression => progression.status === 'concluded')
-      .map(progression => progression.beatId),
+      .filter((progression) => progression.status === 'concluded')
+      .map((progression) => progression.beatId)
   );
 
-  return structure.acts.flatMap(act =>
+  return structure.acts.flatMap((act) =>
     act.beats
-      .filter(beat => !concludedBeatIds.has(beat.id))
-      .map(beat => ({ id: beat.id, description: beat.description })),
+      .filter((beat) => !concludedBeatIds.has(beat.id))
+      .map((beat) => ({ id: beat.id, description: beat.description }))
   );
 }
 
 export function buildActiveStateForBeatEvaluation(
   activeState: ActiveState,
   threadsResolved?: readonly string[],
-  threadAges?: Readonly<Record<string, number>>,
+  threadAges?: Readonly<Record<string, number>>
 ): string {
   const parts: string[] = [];
-  const threatTexts = activeState.activeThreats.map(threat => threat.text.trim()).filter(Boolean);
+  const threatTexts = activeState.activeThreats.map((threat) => threat.text.trim()).filter(Boolean);
   const constraintTexts = activeState.activeConstraints
-    .map(constraint => constraint.text.trim())
+    .map((constraint) => constraint.text.trim())
     .filter(Boolean);
 
   if (activeState.currentLocation) {
@@ -63,7 +63,7 @@ export function buildActiveStateForBeatEvaluation(
   }
 
   if (activeState.openThreads.length > 0) {
-    const threadLines = activeState.openThreads.map(thread => {
+    const threadLines = activeState.openThreads.map((thread) => {
       const age = threadAges?.[thread.id];
       const ageStr = age !== undefined ? `, ${age} pages old` : '';
       return `  [${thread.id}] (${thread.threadType}/${thread.urgency}${ageStr}) ${thread.text.trim()}`;
@@ -80,7 +80,7 @@ export function buildActiveStateForBeatEvaluation(
   }
 
   return `CURRENT STATE (for beat evaluation):
-${parts.map(p => `- ${p}`).join('\n')}
+${parts.map((p) => `- ${p}`).join('\n')}
 (Consider these when evaluating beat completion)
 
 `;
@@ -88,7 +88,7 @@ ${parts.map(p => `- ${p}`).join('\n')}
 
 export function buildWriterStructureContext(
   structure: StoryStructure | undefined,
-  accumulatedStructureState: AccumulatedStructureState | undefined,
+  accumulatedStructureState: AccumulatedStructureState | undefined
 ): string {
   if (!structure || !accumulatedStructureState) {
     return '';
@@ -102,8 +102,8 @@ export function buildWriterStructureContext(
   }
 
   const beatLines = currentAct.beats
-    .map(beat => {
-      const progression = state.beatProgressions.find(item => item.beatId === beat.id);
+    .map((beat) => {
+      const progression = state.beatProgressions.find((item) => item.beatId === beat.id);
       if (progression?.status === 'concluded') {
         const resolution =
           progression.resolution && progression.resolution.trim().length > 0
@@ -122,7 +122,9 @@ export function buildWriterStructureContext(
 
   const remainingActs = structure.acts
     .slice(state.currentActIndex + 1)
-    .map((act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`)
+    .map(
+      (act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`
+    )
     .join('\n');
 
   return `=== STORY STRUCTURE ===
@@ -147,7 +149,7 @@ export function buildAnalystStructureEvaluation(
   accumulatedStructureState: AccumulatedStructureState,
   activeState: ActiveState,
   threadsResolved?: readonly string[],
-  threadAges?: Readonly<Record<string, number>>,
+  threadAges?: Readonly<Record<string, number>>
 ): string {
   const state = accumulatedStructureState;
   const currentAct = structure.acts[state.currentActIndex];
@@ -157,8 +159,8 @@ export function buildAnalystStructureEvaluation(
   }
 
   const beatLines = currentAct.beats
-    .map(beat => {
-      const progression = state.beatProgressions.find(item => item.beatId === beat.id);
+    .map((beat) => {
+      const progression = state.beatProgressions.find((item) => item.beatId === beat.id);
       if (progression?.status === 'concluded') {
         const resolution =
           progression.resolution && progression.resolution.trim().length > 0
@@ -177,18 +179,24 @@ export function buildAnalystStructureEvaluation(
 
   const remainingActs = structure.acts
     .slice(state.currentActIndex + 1)
-    .map((act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`)
+    .map(
+      (act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`
+    )
     .join('\n');
 
   const remainingBeats = getRemainingBeats(structure, state);
   const remainingBeatsSection =
     remainingBeats.length > 0
       ? `REMAINING BEATS TO EVALUATE FOR DEVIATION:\n${remainingBeats
-          .map(beat => `  - ${beat.id}: ${beat.description}`)
+          .map((beat) => `  - ${beat.id}: ${beat.description}`)
           .join('\n')}`
       : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
-  const activeStateSummary = buildActiveStateForBeatEvaluation(activeState, threadsResolved, threadAges);
+  const activeStateSummary = buildActiveStateForBeatEvaluation(
+    activeState,
+    threadsResolved,
+    threadAges
+  );
 
   const hasPendingBeats =
     state.currentBeatIndex < currentAct.beats.length - 1 ||

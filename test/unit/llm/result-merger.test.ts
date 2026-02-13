@@ -1,6 +1,7 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../../../src/llm/result-merger.js';
 import type { StateReconciliationResult } from '../../../src/engine/state-reconciler-types.js';
-import type { AnalystResult, PageWriterResult } from '../../../src/llm/types.js';
+import type { AnalystResult } from '../../../src/llm/analyst-types.js';
+import type { PageWriterResult } from '../../../src/llm/writer-types.js';
 
 function createPageWriterResult(overrides: Partial<PageWriterResult> = {}): PageWriterResult {
   return {
@@ -24,7 +25,7 @@ function createPageWriterResult(overrides: Partial<PageWriterResult> = {}): Page
 }
 
 function createReconciliationResult(
-  overrides: Partial<StateReconciliationResult> = {},
+  overrides: Partial<StateReconciliationResult> = {}
 ): StateReconciliationResult {
   return {
     currentLocation: 'Reconciled cave',
@@ -81,7 +82,11 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       beatResolution: 'The scene stabilizes',
     });
 
-    const result = mergePageWriterAndReconciledStateWithAnalystResults(writer, reconciliation, analyst);
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(
+      writer,
+      reconciliation,
+      analyst
+    );
 
     expect(result.narrative).toBe(writer.narrative);
     expect(result.choices).toEqual(writer.choices);
@@ -97,7 +102,11 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       reconciliationDiagnostics: [{ code: 'WARN', message: 'diagnostic detail' }],
     });
 
-    const result = mergePageWriterAndReconciledStateWithAnalystResults(writer, reconciliation, null);
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(
+      writer,
+      reconciliation,
+      null
+    );
 
     expect(result.rawResponse).toBe('writer-only-raw');
     expect('reconciliationDiagnostics' in result).toBe(false);

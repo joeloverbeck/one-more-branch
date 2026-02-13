@@ -14,8 +14,12 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
     };
 
     expect(schema.required).toEqual([
-      'sceneIntent', 'continuityAnchors', 'stateIntents', 'writerBrief',
-      'dramaticQuestion', 'choiceIntents',
+      'sceneIntent',
+      'continuityAnchors',
+      'stateIntents',
+      'writerBrief',
+      'dramaticQuestion',
+      'choiceIntents',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });
@@ -40,8 +44,9 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       properties: Record<string, unknown>;
       required: string[];
     };
-    const threadAddItems = (threads.properties.add as { items: { properties: Record<string, { enum?: string[] }> } })
-      .items;
+    const threadAddItems = (
+      threads.properties.add as { items: { properties: Record<string, { enum?: string[] }> } }
+    ).items;
 
     expect(stateIntents.required).toEqual([
       'currentLocation',

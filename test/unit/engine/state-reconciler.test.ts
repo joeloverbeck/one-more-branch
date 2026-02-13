@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state';
-import type { PagePlan, PageWriterResult } from '../../../src/llm/types';
+import type { PageWriterResult } from '../../../src/llm/writer-types';
+import type { PagePlan } from '../../../src/llm/planner-types';
 import { reconcileState } from '../../../src/engine/state-reconciler';
 import type { StateReconciliationPreviousState } from '../../../src/engine/state-reconciler-types';
 
@@ -27,8 +28,16 @@ function buildPlan(overrides?: Partial<PagePlan>): PagePlan {
     },
     dramaticQuestion: 'Will you confront the danger or seek another path?',
     choiceIntents: [
-      { hook: 'Face the threat directly', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-      { hook: 'Find an alternative route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+      {
+        hook: 'Face the threat directly',
+        choiceType: ChoiceType.CONFRONTATION,
+        primaryDelta: PrimaryDelta.THREAT_SHIFT,
+      },
+      {
+        hook: 'Find an alternative route',
+        choiceType: ChoiceType.TACTICAL_APPROACH,
+        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+      },
     ],
     ...overrides,
   };
@@ -38,8 +47,16 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
   return {
     narrative: 'A bell tolls as patrols fan out through the alleys.',
     choices: [
-      { text: 'Slip into the market crowd', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-      { text: 'Confront the nearest sentry', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+      {
+        text: 'Slip into the market crowd',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'LOCATION_CHANGE',
+      },
+      {
+        text: 'Confront the nearest sentry',
+        choiceType: 'CONFRONTATION',
+        primaryDelta: 'THREAT_SHIFT',
+      },
     ],
     protagonistAffect: {
       primaryEmotion: 'alertness',
@@ -60,7 +77,14 @@ function buildPreviousState(): StateReconciliationPreviousState {
     currentLocation: 'South market district',
     threats: [{ id: 'th-1', text: 'City patrols sweep the district' }],
     constraints: [{ id: 'cn-1', text: 'Curfew sirens close side streets' }],
-    threads: [{ id: 'td-1', text: 'Reach the archive safely', threadType: ThreadType.QUEST, urgency: Urgency.HIGH }],
+    threads: [
+      {
+        id: 'td-1',
+        text: 'Reach the archive safely',
+        threadType: ThreadType.QUEST,
+        urgency: Urgency.HIGH,
+      },
+    ],
     inventory: [{ id: 'inv-1', text: 'Forged gate pass' }],
     health: [{ id: 'hp-1', text: 'Bruised ribs' }],
     characterState: [{ id: 'cs-1', text: 'Mara is wary of informants' }],
@@ -111,7 +135,7 @@ interface ThreadDedupFixture {
 function loadThreadDedupFixture(): ThreadDedupFixture {
   const fixturePath = path.join(
     __dirname,
-    '../../fixtures/reconciler/thread-dedup/alicia-bobby-duplicate-loops.json',
+    '../../fixtures/reconciler/thread-dedup/alicia-bobby-duplicate-loops.json'
   );
   const fixtureContents = fs.readFileSync(fixturePath, 'utf8');
   return JSON.parse(fixtureContents) as ThreadDedupFixture;
@@ -140,7 +164,7 @@ function buildThreadEvidenceWriter(threadText: string): PageWriterResult {
 
 function buildPreviousStateWithThread(
   threadType: ThreadType,
-  text: string,
+  text: string
 ): StateReconciliationPreviousState {
   return {
     ...buildPreviousState(),
@@ -149,7 +173,7 @@ function buildPreviousStateWithThread(
 }
 
 function buildPreviousStateWithThreads(
-  threads: StateReconciliationPreviousState['threads'],
+  threads: StateReconciliationPreviousState['threads']
 ): StateReconciliationPreviousState {
   return {
     ...buildPreviousState(),
@@ -195,7 +219,9 @@ describe('state-reconciler', () => {
           removeIds: ['th-1'],
         },
         threads: {
-          add: [{ text: 'Find a hidden route', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM }],
+          add: [
+            { text: 'Find a hidden route', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+          ],
           resolveIds: ['td-1'],
         },
         characterState: {
@@ -280,8 +306,7 @@ describe('state-reconciler', () => {
     });
 
     const writer = buildWriterResult({
-      narrative:
-        'Mara reaches the archive safely, then commits to extracting the hidden ledger.',
+      narrative: 'Mara reaches the archive safely, then commits to extracting the hidden ledger.',
       sceneSummary: 'The archive objective is refined with a concrete next step.',
     });
 
@@ -305,7 +330,7 @@ describe('state-reconciler', () => {
     const result = reconcileState(
       buildThreadFixturePlan(scenario),
       buildThreadEvidenceWriter(candidateText),
-      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads),
+      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads)
     );
 
     expect(result.threadsAdded).toEqual([]);
@@ -330,7 +355,7 @@ describe('state-reconciler', () => {
     const result = reconcileState(
       buildThreadFixturePlan(scenario),
       buildThreadEvidenceWriter(candidateText),
-      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads),
+      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads)
     );
 
     expect(result.threadsAdded).toEqual(scenario.add);
@@ -344,7 +369,7 @@ describe('state-reconciler', () => {
     const result = reconcileState(
       buildThreadFixturePlan(scenario),
       buildThreadEvidenceWriter(candidateText),
-      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads),
+      buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads)
     );
 
     expect(result.threadsAdded).toEqual(scenario.add);
@@ -383,20 +408,18 @@ describe('state-reconciler', () => {
       duplicateOverlapTokenCount: number;
     }) => {
       const previousText = THRESHOLD_PREVIOUS_TOKENS.join(' ');
-      const belowThresholdText = THRESHOLD_PREVIOUS_TOKENS.slice(
-        0,
-        belowOverlapTokenCount,
-      ).join(' ');
-      const duplicateText = THRESHOLD_PREVIOUS_TOKENS.slice(
-        0,
-        duplicateOverlapTokenCount,
-      ).join(' ');
+      const belowThresholdText = THRESHOLD_PREVIOUS_TOKENS.slice(0, belowOverlapTokenCount).join(
+        ' '
+      );
+      const duplicateText = THRESHOLD_PREVIOUS_TOKENS.slice(0, duplicateOverlapTokenCount).join(
+        ' '
+      );
       const previousState = buildPreviousStateWithThread(threadType, previousText);
 
       const belowThresholdResult = reconcileState(
         buildThreadAddPlan(threadType, belowThresholdText),
         buildThreadEvidenceWriter(belowThresholdText),
-        previousState,
+        previousState
       );
 
       expect(belowThresholdResult.threadsAdded).toEqual([
@@ -407,7 +430,7 @@ describe('state-reconciler', () => {
       const duplicateResult = reconcileState(
         buildThreadAddPlan(threadType, duplicateText),
         buildThreadEvidenceWriter(duplicateText),
-        previousState,
+        previousState
       );
 
       expect(duplicateResult.threadsAdded).toEqual([]);
@@ -415,17 +438,15 @@ describe('state-reconciler', () => {
         {
           code: 'THREAD_DUPLICATE_LIKE_ADD',
           field: 'threadsAdded',
-          message:
-            `Thread add "${duplicateText}" is near-duplicate of existing thread "td-threshold".`,
+          message: `Thread add "${duplicateText}" is near-duplicate of existing thread "td-threshold".`,
         },
         {
           code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
           field: 'threadsAdded',
-          message:
-            `Near-duplicate thread add "${duplicateText}" requires resolving "td-threshold" in the same payload.`,
+          message: `Near-duplicate thread add "${duplicateText}" requires resolving "td-threshold" in the same payload.`,
         },
       ]);
-    },
+    }
   );
 
   it('trims filler stop-phrases before thread similarity scoring', () => {
@@ -442,14 +463,12 @@ describe('state-reconciler', () => {
       {
         code: 'THREAD_DUPLICATE_LIKE_ADD',
         field: 'threadsAdded',
-        message:
-          `Thread add "${candidateText}" is near-duplicate of existing thread "td-threshold".`,
+        message: `Thread add "${candidateText}" is near-duplicate of existing thread "td-threshold".`,
       },
       {
         code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
         field: 'threadsAdded',
-        message:
-          `Near-duplicate thread add "${candidateText}" requires resolving "td-threshold" in the same payload.`,
+        message: `Near-duplicate thread add "${candidateText}" requires resolving "td-threshold" in the same payload.`,
       },
     ]);
   });
@@ -644,8 +663,14 @@ describe('state-reconciler', () => {
         canon: {
           worldAdd: ['  Iron   gates remain sealed ', 'iron gates remain sealed'],
           characterAdd: [
-            { characterName: 'Mara', facts: ['Keeps a hidden ledger', '  keeps   a hidden ledger '] },
-            { characterName: ' mara ', facts: ['Distrusts city watch', 'distrusts   city   watch'] },
+            {
+              characterName: 'Mara',
+              facts: ['Keeps a hidden ledger', '  keeps   a hidden ledger '],
+            },
+            {
+              characterName: ' mara ',
+              facts: ['Distrusts city watch', 'distrusts   city   watch'],
+            },
           ],
         },
       },
@@ -666,17 +691,19 @@ describe('state-reconciler', () => {
       {
         code: 'DUPLICATE_CANON_FACT',
         field: 'stateIntents.canon.characterAdd[0].facts[1]',
-        message: 'Duplicate canon fact for character "Mara" after normalization: "keeps a hidden ledger".',
+        message:
+          'Duplicate canon fact for character "Mara" after normalization: "keeps a hidden ledger".',
       },
       {
         code: 'DUPLICATE_CANON_FACT',
         field: 'stateIntents.canon.characterAdd[1].facts[1]',
-        message: 'Duplicate canon fact for character "Mara" after normalization: "distrusts city watch".',
+        message:
+          'Duplicate canon fact for character "Mara" after normalization: "distrusts city watch".',
       },
     ]);
   });
 
-  it('drops intents with no narrative evidence and emits machine-readable diagnostics', () => {
+  it('accepts constraints regardless of narrative wording differences', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
@@ -689,18 +716,11 @@ describe('state-reconciler', () => {
 
     const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
 
-    expect(result.constraintsAdded).toEqual([]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'MISSING_NARRATIVE_EVIDENCE',
-        field: 'constraintsAdded',
-        anchor: 'obsidian',
-        message: 'No narrative evidence found for constraintsAdded anchor "obsidian".',
-      },
-    ]);
+    expect(result.constraintsAdded).toEqual(['Obsidian cipher fallback']);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
-  it('matches evidence anchors deterministically across punctuation and case differences', () => {
+  it('accepts inventory additions without requiring lexical narrative overlap', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,

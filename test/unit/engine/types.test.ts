@@ -68,7 +68,10 @@ describe('Engine types', () => {
     });
 
     it('supports StartStoryResult and MakeChoiceResult', () => {
-      const story = createStory({ title: 'Apprentice Tale', characterConcept: 'A curious apprentice' });
+      const story = createStory({
+        title: 'Apprentice Tale',
+        characterConcept: 'A curious apprentice',
+      });
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'The tower door creaks open.',

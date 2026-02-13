@@ -14,7 +14,7 @@ export type GlobalCanon = readonly CanonFact[];
 export function addCanonFact(canon: GlobalCanon, fact: CanonFact): GlobalCanon {
   const normalizedFact = normalizeForComparison(fact);
   const exists = canon.some(
-    existingFact => normalizeForComparison(existingFact) === normalizedFact
+    (existingFact) => normalizeForComparison(existingFact) === normalizedFact
   );
 
   if (exists) {

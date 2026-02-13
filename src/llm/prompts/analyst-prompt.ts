@@ -1,4 +1,5 @@
-import type { AnalystContext, ChatMessage } from '../types.js';
+import type { AnalystContext } from '../analyst-types.js';
+import type { ChatMessage } from '../llm-client-types.js';
 import { buildAnalystStructureEvaluation } from './continuation/story-structure-section.js';
 
 const ANALYST_SYSTEM_PROMPT = `You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
@@ -32,7 +33,7 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
     context.accumulatedStructureState,
     context.activeState,
     context.threadsResolved,
-    context.threadAges,
+    context.threadAges
   );
 
   const userContent = `${structureEvaluation}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;

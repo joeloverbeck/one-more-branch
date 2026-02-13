@@ -136,7 +136,13 @@ describe('llm barrel exports', () => {
         threats: { add: [], removeIds: [] },
         constraints: { add: [], removeIds: [] },
         threads: {
-          add: [{ text: 'Reach the far side before collapse', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }],
+          add: [
+            {
+              text: 'Reach the far side before collapse',
+              threadType: ThreadType.DANGER,
+              urgency: Urgency.HIGH,
+            },
+          ],
           resolveIds: [],
         },
         inventory: { add: [], removeIds: [] },
@@ -151,8 +157,16 @@ describe('llm barrel exports', () => {
       },
       dramaticQuestion: 'Will you cross the bridge before it collapses?',
       choiceIntents: [
-        { hook: 'Sprint across the swaying bridge', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-        { hook: 'Search for a safer crossing', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+        {
+          hook: 'Sprint across the swaying bridge',
+          choiceType: ChoiceType.CONFRONTATION,
+          primaryDelta: PrimaryDelta.THREAT_SHIFT,
+        },
+        {
+          hook: 'Search for a safer crossing',
+          choiceType: ChoiceType.TACTICAL_APPROACH,
+          primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+        },
       ],
     };
     const plannerOpeningContext: OpeningPagePlanContext = {

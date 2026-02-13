@@ -8,7 +8,8 @@ import {
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import type { NarrativePromise } from './state/keyed-entry';
-import type { AnalystResult, StoryBible } from '../llm/types';
+import type { AnalystResult } from '../llm/analyst-types';
+import type { StoryBible } from '../llm/lorekeeper-types';
 import {
   ActiveState,
   ActiveStateChanges,
@@ -108,7 +109,8 @@ export function createPage(data: CreatePageData): Page {
   const parentActiveState = data.parentAccumulatedActiveState ?? createEmptyActiveState();
   const parentInventory = data.parentAccumulatedInventory ?? [];
   const parentHealth = data.parentAccumulatedHealth ?? [];
-  const parentCharacterState = data.parentAccumulatedCharacterState ?? createEmptyAccumulatedCharacterState();
+  const parentCharacterState =
+    data.parentAccumulatedCharacterState ?? createEmptyAccumulatedCharacterState();
   const parentStructureState =
     data.parentAccumulatedStructureState ?? createEmptyAccumulatedStructureState();
   const activeStateChanges = data.activeStateChanges ?? createEmptyActiveStateChanges();
@@ -128,7 +130,10 @@ export function createPage(data: CreatePageData): Page {
     healthChanges,
     accumulatedHealth: applyHealthChanges(parentHealth, healthChanges),
     characterStateChanges,
-    accumulatedCharacterState: applyCharacterStateChanges(parentCharacterState, characterStateChanges),
+    accumulatedCharacterState: applyCharacterStateChanges(
+      parentCharacterState,
+      characterStateChanges
+    ),
     accumulatedStructureState: parentStructureState,
     protagonistAffect: data.protagonistAffect ?? createDefaultProtagonistAffect(),
     structureVersionId: data.structureVersionId ?? null,
@@ -139,7 +144,7 @@ export function createPage(data: CreatePageData): Page {
     npcAgendaUpdates: data.npcAgendaUpdates ?? [],
     accumulatedNpcAgendas: applyAgendaUpdates(
       data.parentAccumulatedNpcAgendas ?? createEmptyAccumulatedNpcAgendas(),
-      data.npcAgendaUpdates ?? [],
+      data.npcAgendaUpdates ?? []
     ),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
@@ -196,11 +201,11 @@ export function isPage(value: unknown): value is Page {
 }
 
 export function isPageFullyExplored(page: Page): boolean {
-  return page.choices.every(choice => choice.nextPageId !== null);
+  return page.choices.every((choice) => choice.nextPageId !== null);
 }
 
 export function getUnexploredChoiceIndices(page: Page): number[] {
   return page.choices
     .map((choice, index) => (choice.nextPageId === null ? index : -1))
-    .filter(index => index !== -1);
+    .filter((index) => index !== -1);
 }

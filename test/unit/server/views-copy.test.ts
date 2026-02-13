@@ -43,13 +43,10 @@ describeIfBuilt('EJS Views Availability', () => {
     expect(fs.existsSync(distViewsDir)).toBe(true);
   });
 
-  it.each(requiredViews)(
-    'should have %s view file in dist/server/views',
-    (viewFile) => {
-      const viewPath = path.join(distViewsDir, viewFile);
-      expect(fs.existsSync(viewPath)).toBe(true);
-    }
-  );
+  it.each(requiredViews)('should have %s view file in dist/server/views', (viewFile) => {
+    const viewPath = path.join(distViewsDir, viewFile);
+    expect(fs.existsSync(viewPath)).toBe(true);
+  });
 
   it('should have matching content between src and dist views', () => {
     const srcViewsDir = path.join(__dirname, '../../../src/server/views');
@@ -75,7 +72,7 @@ describeIfBuilt('EJS Views Availability', () => {
 
     if (staleViews.length > 0) {
       console.warn(
-        `Skipping src/dist parity checks for stale views: ${staleViews.join(', ')}. Run npm run build to refresh dist/.`,
+        `Skipping src/dist parity checks for stale views: ${staleViews.join(', ')}. Run npm run build to refresh dist/.`
       );
     }
   });

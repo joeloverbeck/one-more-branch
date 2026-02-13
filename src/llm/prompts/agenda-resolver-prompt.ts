@@ -3,7 +3,7 @@ import type { Npc } from '../../models/npc.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';
 import type { ActiveState } from '../../models/state/active-state.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../models/story-arc.js';
-import type { ChatMessage } from '../types.js';
+import type { ChatMessage } from '../llm-client-types.js';
 
 const AGENDA_RESOLVER_SYSTEM_PROMPT = `You are the NPC Agenda Resolver for an interactive branching story. After each scene, you evaluate how events affect each NPC's agenda and update their goals, leverage, fears, and off-screen behavior accordingly.
 
@@ -39,7 +39,7 @@ function formatCurrentAgendas(agendas: AccumulatedNpcAgendas): string {
   Goal: ${a.currentGoal}
   Leverage: ${a.leverage}
   Fear: ${a.fear}
-  Off-screen: ${a.offScreenBehavior}`,
+  Off-screen: ${a.offScreenBehavior}`
     )
     .join('\n\n');
 }
@@ -60,7 +60,7 @@ Overall Theme: ${context.structure.overallTheme}
     : '';
   const threatsLine =
     context.activeState.activeThreats.length > 0
-      ? `Active Threats: ${context.activeState.activeThreats.map(t => t.text).join(', ')}\n`
+      ? `Active Threats: ${context.activeState.activeThreats.map((t) => t.text).join(', ')}\n`
       : '';
 
   const userPrompt = `Evaluate NPC agenda changes after the following scene.

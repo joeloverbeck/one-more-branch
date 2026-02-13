@@ -1,10 +1,4 @@
-import {
-  StoryMetadata,
-  createChoice,
-  createPage,
-  createStory,
-  parsePageId,
-} from '@/models';
+import { StoryMetadata, createChoice, createPage, createStory, parsePageId } from '@/models';
 
 jest.mock('@/persistence/file-utils', (): { ensureStoriesDir: jest.Mock } => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -89,9 +83,9 @@ describe('storage facade', () => {
   it('delegates story operations to story-repository', async () => {
     const facade = new Storage();
 
-    (storyRepository.loadStory as jest.MockedFunction<typeof storyRepository.loadStory>).mockResolvedValue(
-      story
-    );
+    (
+      storyRepository.loadStory as jest.MockedFunction<typeof storyRepository.loadStory>
+    ).mockResolvedValue(story);
     (
       storyRepository.storyExists as jest.MockedFunction<typeof storyRepository.storyExists>
     ).mockResolvedValue(true);
@@ -122,12 +116,12 @@ describe('storage facade', () => {
   it('delegates page operations to page-repository', async () => {
     const facade = new Storage();
 
-    (pageRepository.loadPage as jest.MockedFunction<typeof pageRepository.loadPage>).mockResolvedValue(
-      page
-    );
-    (pageRepository.pageExists as jest.MockedFunction<typeof pageRepository.pageExists>).mockResolvedValue(
-      true
-    );
+    (
+      pageRepository.loadPage as jest.MockedFunction<typeof pageRepository.loadPage>
+    ).mockResolvedValue(page);
+    (
+      pageRepository.pageExists as jest.MockedFunction<typeof pageRepository.pageExists>
+    ).mockResolvedValue(true);
     (
       pageRepository.loadAllPages as jest.MockedFunction<typeof pageRepository.loadAllPages>
     ).mockResolvedValue(loadedPages);

@@ -6,7 +6,7 @@ import {
   generatePagePlan,
   generateStoryStructure,
 } from '@/llm';
-import type { WriterResult } from '@/llm/types';
+import type { WriterResult } from '@/llm/writer-types';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { parsePageId, StoryId } from '@/models';
@@ -32,9 +32,15 @@ jest.mock('@/engine/state-reconciler', () => ({
   reconcileState: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
+>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
@@ -45,7 +51,7 @@ const TEST_PREFIX = 'TEST STOENG-008 replay integration';
 
 function passthroughReconciledState(
   writer: WriterResult,
-  previousLocation: string,
+  previousLocation: string
 ): StateReconciliationResult {
   return {
     currentLocation: writer.currentLocation || previousLocation,
@@ -107,8 +113,16 @@ const openingResult = {
   narrative:
     'At first bell you cross the bridge into Brightwater and the river mirrors an unfamiliar constellation that shifts whenever you speak your own name.',
   choices: [
-    { text: 'Follow the mirrored stars', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Consult the archivist', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    {
+      text: 'Follow the mirrored stars',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Consult the archivist',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
   ],
   // New active state fields
   currentLocation: 'Brightwater bridge',
@@ -116,7 +130,13 @@ const openingResult = {
   threatsRemoved: [],
   constraintsAdded: [],
   constraintsRemoved: [],
-  threadsAdded: [{ text: 'THREAD_CONSTELLATION: Investigate the mirrored constellation', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+  threadsAdded: [
+    {
+      text: 'THREAD_CONSTELLATION: Investigate the mirrored constellation',
+      threadType: 'INFORMATION',
+      urgency: 'MEDIUM',
+    },
+  ],
   threadsResolved: [],
   newCanonFacts: ['Brightwater river reflects impossible constellations'],
   newCharacterCanonFacts: {},
@@ -145,14 +165,20 @@ const writerResult = {
     'You pursue the mirrored stars along the embankment until engraved mile markers begin counting backward and a hidden gate rises from the riverbank.',
   choices: [
     { text: 'Open the hidden gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Mark the location and retreat', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    {
+      text: 'Mark the location and retreat',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
   ],
   currentLocation: 'Riverside embankment',
   threatsAdded: [],
   threatsRemoved: [],
   constraintsAdded: [],
   constraintsRemoved: [],
-  threadsAdded: [{ text: 'THREAD_GATE: Explore the hidden gate', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+  threadsAdded: [
+    { text: 'THREAD_GATE: Explore the hidden gate', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+  ],
   threadsResolved: [],
   newCanonFacts: ['Brightwater has a hidden gate beneath the embankment'],
   newCharacterCanonFacts: {},
@@ -214,8 +240,16 @@ describe('story replay integration', () => {
       },
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       choiceIntents: [
-        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+        {
+          hook: 'Face the threat directly',
+          choiceType: 'CONFRONTATION',
+          primaryDelta: 'THREAT_SHIFT',
+        },
+        {
+          hook: 'Find an alternative route',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
       ],
       rawResponse: 'page-plan',
     });
@@ -223,7 +257,7 @@ describe('story replay integration', () => {
     mockedGenerateWriterPage.mockResolvedValue(writerResult);
     mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+      passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
     );
   });
 

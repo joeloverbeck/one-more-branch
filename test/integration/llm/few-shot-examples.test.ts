@@ -10,7 +10,7 @@ import { buildOpeningPrompt } from '../../../src/llm/prompts/opening-prompt';
 import { buildContinuationPrompt } from '../../../src/llm/prompts/continuation-prompt';
 import { validateWriterResponse } from '../../../src/llm/schemas/writer-response-transformer';
 import { buildFewShotMessages } from '../../../src/llm/examples';
-import type { OpeningContext, ContinuationContext } from '../../../src/llm/types';
+import type { OpeningContext, ContinuationContext } from '../../../src/llm/context-types';
 
 describe('Few-Shot Examples Integration', () => {
   const openingContext: OpeningContext = {
@@ -91,7 +91,7 @@ describe('Few-Shot Examples Integration', () => {
       expect(endingAssistant?.role).toBe('assistant');
 
       const parsed = JSON.parse(endingAssistant?.content ?? '{}') as {
-        sceneSummary: 'Test summary of the scene events and consequences.',
+        sceneSummary: 'Test summary of the scene events and consequences.';
         isEnding: boolean;
         choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
       };

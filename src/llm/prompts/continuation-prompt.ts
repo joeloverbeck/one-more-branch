@@ -1,6 +1,9 @@
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import { buildFewShotMessages } from '../examples.js';
-import type { ChatMessage, ContinuationContext, PromptOptions, StoryBible } from '../types.js';
+import type { ContinuationContext } from '../context-types.js';
+import type { PromptOptions } from '../generation-pipeline-types.js';
+import type { ChatMessage } from '../llm-client-types.js';
+import type { StoryBible } from '../lorekeeper-types.js';
 import { buildContinuationSystemPrompt, composeContinuationDataRules } from './system-prompt.js';
 import {
   buildProtagonistAffectSection,
@@ -33,7 +36,7 @@ function formatStoryBibleSection(bible: StoryBible): string {
   }
 
   if (bible.relevantCanonFacts.length > 0) {
-    result += `RELEVANT CANON FACTS:\n${bible.relevantCanonFacts.map(f => `- ${f}`).join('\n')}\n\n`;
+    result += `RELEVANT CANON FACTS:\n${bible.relevantCanonFacts.map((f) => `- ${f}`).join('\n')}\n\n`;
   }
 
   if (bible.relevantHistory) {
@@ -50,7 +53,7 @@ function formatStoryBibleSection(bible: StoryBible): string {
  */
 function buildSceneContextWithBible(
   previousNarrative: string,
-  grandparentNarrative: string | null,
+  grandparentNarrative: string | null
 ): string {
   let result = '';
 
@@ -71,7 +74,7 @@ ${previousNarrative}
 
 export function buildContinuationPrompt(
   context: ContinuationContext,
-  options?: PromptOptions,
+  options?: PromptOptions
 ): ChatMessage[] {
   const hasBible = !!context.storyBible;
   const dataRules = composeContinuationDataRules({
@@ -104,22 +107,21 @@ These characters are available for use in the story. Introduce or involve them w
     ? `=== PLANNER GUIDANCE ===
 Scene Intent: ${context.pagePlan.sceneIntent}
 Continuity Anchors:
-${context.pagePlan.continuityAnchors.map(anchor => `- ${anchor}`).join('\n') || '- (none)'}
+${context.pagePlan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'}
 
 Writer Brief:
 - Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
 - Must include beats:
-${context.pagePlan.writerBrief.mustIncludeBeats.map(beat => `  - ${beat}`).join('\n') || '  - (none)'}
+${context.pagePlan.writerBrief.mustIncludeBeats.map((beat) => `  - ${beat}`).join('\n') || '  - (none)'}
 - Forbidden recaps:
-${context.pagePlan.writerBrief.forbiddenRecaps.map(item => `  - ${item}`).join('\n') || '  - (none)'}
+${context.pagePlan.writerBrief.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
 
 Use this guidance to shape this scene while still following all writer schema requirements.
 
 `
     : '';
-  const choiceIntentSection =
-    context.pagePlan?.choiceIntents?.length
-      ? `=== CHOICE INTENT GUIDANCE (from planner) ===
+  const choiceIntentSection = context.pagePlan?.choiceIntents?.length
+    ? `=== CHOICE INTENT GUIDANCE (from planner) ===
 Dramatic Question: ${context.pagePlan.dramaticQuestion}
 
 Proposed Choice Intents:
@@ -128,13 +130,15 @@ ${context.pagePlan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceT
 Use these choice intents as a starting blueprint. You may adjust if the narrative takes an unexpected turn, but aim to preserve the dramatic question framing and tag divergence.
 
 `
-      : '';
+    : '';
   const reconciliationRetrySection =
     context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0
       ? `=== RECONCILIATION FAILURE REASONS (RETRY) ===
 The prior attempt failed deterministic reconciliation. Correct these failures in this new scene:
 ${context.reconciliationFailureReasons
-  .map(reason => `- [${reason.code}]${reason.field ? ` (${reason.field})` : ''} ${reason.message}`)
+  .map(
+    (reason) => `- [${reason.code}]${reason.field ? ` (${reason.field})` : ''} ${reason.message}`
+  )
   .join('\n')}
 
 `
@@ -145,7 +149,7 @@ ${context.reconciliationFailureReasons
     ? ''
     : context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
-${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
+${context.globalCanon.map((fact) => `- ${fact}`).join('\n')}
 
 `
       : '';
@@ -157,7 +161,7 @@ ${context.globalCanon.map(fact => `- ${fact}`).join('\n')}
         return entries.length > 0
           ? `CHARACTER INFORMATION (permanent traits):
 ${entries
-  .map(([name, facts]) => `[${name}]\n${facts.map(fact => `- ${fact}`).join('\n')}`)
+  .map(([name, facts]) => `[${name}]\n${facts.map((fact) => `- ${fact}`).join('\n')}`)
   .join('\n\n')}
 
 `
@@ -171,7 +175,10 @@ ${entries
         return entries.length > 0
           ? `NPC CURRENT STATE (branch-specific events):
 ${entries
-  .map(([name, states]) => `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`)
+  .map(
+    ([name, states]) =>
+      `[${name}]\n${states.map((state) => `- [${state.id}] ${state.text}`).join('\n')}`
+  )
   .join('\n\n')}
 
 `
@@ -187,7 +194,7 @@ ${entries
   const inventorySection =
     context.accumulatedInventory.length > 0
       ? `YOUR INVENTORY:
-${context.accumulatedInventory.map(item => `- [${item.id}] ${item.text}`).join('\n')}
+${context.accumulatedInventory.map((item) => `- [${item.id}] ${item.text}`).join('\n')}
 
 `
       : '';
@@ -195,7 +202,7 @@ ${context.accumulatedInventory.map(item => `- [${item.id}] ${item.text}`).join('
   const healthSection =
     context.accumulatedHealth.length > 0
       ? `YOUR HEALTH:
-${context.accumulatedHealth.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')}
+${context.accumulatedHealth.map((entry) => `- [${entry.id}] ${entry.text}`).join('\n')}
 
 `
       : `YOUR HEALTH:
@@ -211,12 +218,10 @@ ${context.accumulatedHealth.map(entry => `- [${entry.id}] ${entry.text}`).join('
     : buildSceneContextSection(
         context.previousNarrative,
         context.grandparentNarrative,
-        context.ancestorSummaries,
+        context.ancestorSummaries
       );
 
-  const storyBibleSection = context.storyBible
-    ? formatStoryBibleSection(context.storyBible)
-    : '';
+  const storyBibleSection = context.storyBible ? formatStoryBibleSection(context.storyBible) : '';
 
   const suggestedProtagonistSpeech = context.suggestedProtagonistSpeech?.trim();
   const suggestedProtagonistSpeechSection =
@@ -268,9 +273,7 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 4. Prose quality: character-filtered, emotionally resonant, forward-moving
 5. sceneSummary and protagonistAffect accuracy`;
 
-  const messages: ChatMessage[] = [
-    { role: 'system', content: buildContinuationSystemPrompt() },
-  ];
+  const messages: ChatMessage[] = [{ role: 'system', content: buildContinuationSystemPrompt() }];
 
   if (options?.fewShotMode && options.fewShotMode !== 'none') {
     messages.push(...buildFewShotMessages('continuation', options.fewShotMode));

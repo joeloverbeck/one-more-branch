@@ -53,7 +53,7 @@ describe('health-manager', () => {
   describe('formatHealthForPrompt', () => {
     it('formats keyed health lines', () => {
       expect(formatHealthForPrompt([hp(1, 'Bruised ribs'), hp(2, 'Headache')])).toBe(
-        'YOUR HEALTH:\n- [hp-1] Bruised ribs\n- [hp-2] Headache\n',
+        'YOUR HEALTH:\n- [hp-1] Bruised ribs\n- [hp-2] Headache\n'
       );
     });
   });

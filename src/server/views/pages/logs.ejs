@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container">
+    <section class="logs-section">
+      <h1>Prompt Logs</h1>
+      <p class="logs-date"><%= dateDisplay %></p>
+
+      <% if (entries.length === 0) { %>
+      <div class="empty-state">
+        <p>No logs recorded today.</p>
+      </div>
+      <% } else { %>
+      <p class="logs-count"><%= entries.length %> log entries</p>
+
+      <% entries.forEach((entry, i) => { %>
+      <details class="log-entry">
+        <summary>
+          <strong><%= entry.promptType %></strong>
+          <span class="log-meta">
+            <%= new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) %>
+            &middot; <%= entry.messageCount %> messages
+          </span>
+        </summary>
+        <div class="log-entry-body">
+          <% entry.messages.forEach((msg, j) => { %>
+          <details class="log-message">
+            <summary>
+              <span class="log-role"><%= msg.role %></span>
+              <span class="log-meta"><%= msg.content.length.toLocaleString() %> chars</span>
+            </summary>
+            <pre class="log-content"><%= msg.content %></pre>
+          </details>
+          <% }) %>
+        </div>
+      </details>
+      <% }) %>
+      <% } %>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

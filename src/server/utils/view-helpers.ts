@@ -118,7 +118,7 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
 
   const currentAct: StoryAct | undefined = getCurrentAct(
     structureVersion.structure,
-    page.accumulatedStructureState,
+    page.accumulatedStructureState
   );
   if (!currentAct) return null;
 
@@ -135,8 +135,12 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
   };
 }
 
-export function getOpenThreadPanelRows(openThreads: readonly OpenThreadLike[]): OpenThreadPanelRow[] {
-  return getSortedThreads(openThreads).slice(0, OPEN_THREAD_PANEL_LIMIT).map(thread => ({
+export function getOpenThreadPanelRows(
+  openThreads: readonly OpenThreadLike[]
+): OpenThreadPanelRow[] {
+  return getSortedThreads(openThreads)
+    .slice(0, OPEN_THREAD_PANEL_LIMIT)
+    .map((thread) => ({
       id: thread.id,
       text: thread.text,
       threadType: thread.threadType,
@@ -145,9 +149,11 @@ export function getOpenThreadPanelRows(openThreads: readonly OpenThreadLike[]): 
     }));
 }
 
-export function getOpenThreadPanelData(openThreads: readonly OpenThreadLike[]): OpenThreadPanelData {
+export function getOpenThreadPanelData(
+  openThreads: readonly OpenThreadLike[]
+): OpenThreadPanelData {
   const sortedThreads = getSortedThreads(openThreads);
-  const visibleRows = sortedThreads.slice(0, OPEN_THREAD_PANEL_LIMIT).map(thread => ({
+  const visibleRows = sortedThreads.slice(0, OPEN_THREAD_PANEL_LIMIT).map((thread) => ({
     id: thread.id,
     text: thread.text,
     threadType: thread.threadType,

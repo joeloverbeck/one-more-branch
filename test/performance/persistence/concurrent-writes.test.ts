@@ -81,7 +81,7 @@ describe('Concurrent Write Performance', () => {
           parentPageId: parsePageId(1),
           parentChoiceIndex: index % 4,
           parentAccumulatedInventory: root.accumulatedInventory,
-        }),
+        })
       );
     });
 
@@ -93,8 +93,10 @@ describe('Concurrent Write Performance', () => {
     for (let pageNumber = 2; pageNumber <= 11; pageNumber += 1) {
       const page = pages.get(parsePageId(pageNumber));
       expect(page?.narrativeText).toBe(`Page ${pageNumber} content`);
-      expect(page?.accumulatedInventory.map(entry => entry.text)).toContain('root-item');
-      expect(page?.accumulatedInventory.map(entry => entry.text)).toContain(`event-${pageNumber}`);
+      expect(page?.accumulatedInventory.map((entry) => entry.text)).toContain('root-item');
+      expect(page?.accumulatedInventory.map((entry) => entry.text)).toContain(
+        `event-${pageNumber}`
+      );
     }
   }, 30000);
 
@@ -105,7 +107,7 @@ describe('Concurrent Write Performance', () => {
         characterConcept: `PERF TEST: Concurrent story ${index + 1}`,
         worldbuilding: `world-${index + 1}`,
         tone: `tone-${index + 1}`,
-      }),
+      })
     );
 
     for (const story of stories) {
@@ -173,7 +175,7 @@ describe('Concurrent Write Performance', () => {
           parentPageId: parsePageId(1),
           parentChoiceIndex: index % 4,
           parentAccumulatedInventory: root.accumulatedInventory,
-        }),
+        })
       );
     });
 
@@ -225,7 +227,7 @@ describe('Concurrent Write Performance', () => {
     const nextPageIds = Array.from({ length: 20 }, (_, index) => parsePageId(index + 2));
 
     const contentionWrites = nextPageIds.map((nextPageId) =>
-      storage.updateChoiceLink(story.id, parsePageId(1), 0, nextPageId),
+      storage.updateChoiceLink(story.id, parsePageId(1), 0, nextPageId)
     );
 
     await Promise.all(contentionWrites);

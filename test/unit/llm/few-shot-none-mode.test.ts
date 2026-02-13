@@ -1,6 +1,7 @@
 import { buildOpeningPrompt } from '../../../src/llm/prompts/opening-prompt';
 import { buildContinuationPrompt } from '../../../src/llm/prompts/continuation-prompt';
-import type { OpeningContext, ContinuationContext, PromptOptions } from '../../../src/llm/types';
+import type { OpeningContext, ContinuationContext } from '../../../src/llm/context-types';
+import type { PromptOptions } from '../../../src/llm/generation-pipeline-types';
 import {
   OPENING_EXAMPLE_USER,
   OPENING_EXAMPLE_RESPONSE,
@@ -54,7 +55,7 @@ describe('fewShotMode: none', () => {
 
     it('should not include any few-shot example content', () => {
       const messages = buildOpeningPrompt(openingContext, noneOptions);
-      const allContent = messages.map(m => m.content).join('\n');
+      const allContent = messages.map((m) => m.content).join('\n');
 
       expect(allContent).not.toContain(OPENING_EXAMPLE_USER);
       expect(allContent).not.toContain(OPENING_EXAMPLE_RESPONSE);
@@ -62,7 +63,7 @@ describe('fewShotMode: none', () => {
 
     it('should include the actual user prompt content', () => {
       const messages = buildOpeningPrompt(openingContext, noneOptions);
-      const userMessage = messages.find(m => m.role === 'user');
+      const userMessage = messages.find((m) => m.role === 'user');
 
       expect(userMessage?.content).toContain('Create the opening scene');
       expect(userMessage?.content).toContain('A wandering bard seeking lost songs');
@@ -80,7 +81,7 @@ describe('fewShotMode: none', () => {
 
     it('should not include any few-shot example content', () => {
       const messages = buildContinuationPrompt(continuationContext, noneOptions);
-      const allContent = messages.map(m => m.content).join('\n');
+      const allContent = messages.map((m) => m.content).join('\n');
 
       expect(allContent).not.toContain(CONTINUATION_EXAMPLE_USER);
       expect(allContent).not.toContain(CONTINUATION_EXAMPLE_RESPONSE);
@@ -88,7 +89,7 @@ describe('fewShotMode: none', () => {
 
     it('should include the actual user prompt content', () => {
       const messages = buildContinuationPrompt(continuationContext, noneOptions);
-      const userMessage = messages.find(m => m.role === 'user');
+      const userMessage = messages.find((m) => m.role === 'user');
 
       expect(userMessage?.content).toContain('Continue the interactive story');
       expect(userMessage?.content).toContain('Play the forbidden melody');

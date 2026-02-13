@@ -1,15 +1,18 @@
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildStructureRewritePrompt } from '../../../../src/llm/prompts/structure-rewrite-prompt';
-import { buildContinuationSystemPrompt, composeContinuationDataRules } from '../../../../src/llm/prompts/system-prompt';
-import type { StructureRewriteContext } from '../../../../src/llm/types';
+import {
+  buildContinuationSystemPrompt,
+  composeContinuationDataRules,
+} from '../../../../src/llm/prompts/system-prompt';
+import type { StructureRewriteContext } from '../../../../src/llm/structure-rewrite-types';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'system')?.content ?? '';
+  return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
   // Get the last user message (in case few-shot examples are included)
-  const userMessages = messages.filter(message => message.role === 'user');
+  const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages[userMessages.length - 1]?.content ?? '';
 }
 
@@ -69,7 +72,9 @@ describe('buildStructureRewritePrompt', () => {
 
     expect(user).toContain('CANON - DO NOT CHANGE');
     expect(user).toContain('Act 1, Beat 1 (1.1) [setup] "Sluice Flight"');
-    expect(user).toContain('Resolution: You escaped through maintenance sluices with the ledger intact.');
+    expect(user).toContain(
+      'Resolution: You escaped through maintenance sluices with the ledger intact.'
+    );
   });
 
   it('shows explicit None text when no completed beats exist', () => {
@@ -77,7 +82,7 @@ describe('buildStructureRewritePrompt', () => {
       buildStructureRewritePrompt({
         ...baseContext,
         completedBeats: [],
-      }),
+      })
     );
 
     expect(user).toContain('None (story is at the beginning)');
@@ -88,7 +93,7 @@ describe('buildStructureRewritePrompt', () => {
       buildStructureRewritePrompt({
         ...baseContext,
         currentActIndex: 0,
-      }),
+      })
     );
 
     expect(user).toContain('remaining beats in Act 1, plus all of Acts 2 and 3');
@@ -105,7 +110,7 @@ describe('buildStructureRewritePrompt', () => {
       buildStructureRewritePrompt({
         ...baseContext,
         currentActIndex: 2,
-      }),
+      })
     );
 
     expect(user).toContain('remaining beats in Act 3');
@@ -137,7 +142,7 @@ describe('buildStructureRewritePrompt', () => {
       buildStructureRewritePrompt({
         ...baseContext,
         currentActIndex: 0,
-      }),
+      })
     );
 
     expect(user).toContain('Preserve completed beats exactly');

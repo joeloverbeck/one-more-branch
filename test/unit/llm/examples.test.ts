@@ -175,7 +175,9 @@ describe('buildFewShotMessages', () => {
     it('should not include deprecated storyArc field in any assistant example', () => {
       const opening = buildFewShotMessages('opening', 'standard');
       const continuation = buildFewShotMessages('continuation', 'standard');
-      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
+      const assistantMessages = [...opening, ...continuation].filter(
+        (message) => message.role === 'assistant'
+      );
 
       for (const message of assistantMessages) {
         const parsed = JSON.parse(message.content) as Record<string, unknown>;
@@ -186,7 +188,9 @@ describe('buildFewShotMessages', () => {
     it('should not include deprecated stateChangesAdded/Removed in any example', () => {
       const opening = buildFewShotMessages('opening', 'standard');
       const continuation = buildFewShotMessages('continuation', 'standard');
-      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
+      const assistantMessages = [...opening, ...continuation].filter(
+        (message) => message.role === 'assistant'
+      );
 
       for (const message of assistantMessages) {
         const parsed = JSON.parse(message.content) as Record<string, unknown>;
@@ -295,7 +299,9 @@ describe('buildFewShotMessages', () => {
     it('should include currentLocation in all examples', () => {
       const opening = buildFewShotMessages('opening', 'minimal');
       const continuation = buildFewShotMessages('continuation', 'standard');
-      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
+      const assistantMessages = [...opening, ...continuation].filter(
+        (message) => message.role === 'assistant'
+      );
 
       for (const message of assistantMessages) {
         const parsed = JSON.parse(message.content) as { currentLocation: string };

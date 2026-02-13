@@ -22,15 +22,18 @@ describe('Validation', () => {
       expect(result.errors).toEqual([]);
     });
 
-    it("returns valid=false with short-length error for < 10 chars", () => {
-      const story = { ...createStory({ title: 'Test Story', characterConcept: 'Valid enough' }), characterConcept: 'short' };
+    it('returns valid=false with short-length error for < 10 chars', () => {
+      const story = {
+        ...createStory({ title: 'Test Story', characterConcept: 'Valid enough' }),
+        characterConcept: 'short',
+      };
 
       const result = validateStory(story);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Character concept is too short (minimum 10 characters)');
     });
 
-    it("returns valid=false with long-length error for > 5000 chars", () => {
+    it('returns valid=false with long-length error for > 5000 chars', () => {
       const story = {
         ...createStory({ title: 'Test Story', characterConcept: 'Valid enough' }),
         characterConcept: 'a'.repeat(5001),
@@ -41,7 +44,7 @@ describe('Validation', () => {
       expect(result.errors).toContain('Character concept is too long (maximum 5000 characters)');
     });
 
-    it("returns valid=false with structure error for non-Story input", () => {
+    it('returns valid=false with structure error for non-Story input', () => {
       const result = validateStory({ characterConcept: 'missing required fields' });
 
       expect(result.valid).toBe(false);
@@ -66,7 +69,7 @@ describe('Validation', () => {
       expect(result.errors).toEqual([]);
     });
 
-    it("returns valid=false with short narrative error for < 50 chars", () => {
+    it('returns valid=false with short narrative error for < 50 chars', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(49),
@@ -82,7 +85,7 @@ describe('Validation', () => {
       expect(result.errors).toContain('Narrative text is too short (minimum 50 characters)');
     });
 
-    it("returns valid=false with long narrative error for > 10000 chars", () => {
+    it('returns valid=false with long narrative error for > 10000 chars', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(10001),
@@ -98,7 +101,7 @@ describe('Validation', () => {
       expect(result.errors).toContain('Narrative text is too long (maximum 10000 characters)');
     });
 
-    it("returns valid=false with min-choice error for non-ending with 1 choice", () => {
+    it('returns valid=false with min-choice error for non-ending with 1 choice', () => {
       // Create a valid non-ending page first
       const basePage = createPage({
         id: 2 as PageId,
@@ -121,7 +124,7 @@ describe('Validation', () => {
       expect(result.errors).toContain('Non-ending pages must have at least 2 choices');
     });
 
-    it("returns valid=false with max-choice error for non-ending with 6 choices", () => {
+    it('returns valid=false with max-choice error for non-ending with 6 choices', () => {
       // Create a valid non-ending page first
       const basePage = createPage({
         id: 2 as PageId,
@@ -151,7 +154,7 @@ describe('Validation', () => {
       expect(result.errors).toContain('Too many choices (maximum 5)');
     });
 
-    it("returns valid=false with ending-choice error for ending page with choices", () => {
+    it('returns valid=false with ending-choice error for ending page with choices', () => {
       // Create a valid non-ending page first, then modify to test the invariant
       const basePage = createPage({
         id: 2 as PageId,
@@ -175,7 +178,7 @@ describe('Validation', () => {
       expect(result.errors).toContain('Ending pages must have no choices');
     });
 
-    it("returns valid=false with duplicate-choice error for duplicate choices", () => {
+    it('returns valid=false with duplicate-choice error for duplicate choices', () => {
       const page = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),
@@ -228,7 +231,7 @@ describe('Validation', () => {
         [page3.id, page3],
       ]);
 
-      const result = validateNoCycle(page3, id => pages.get(id));
+      const result = validateNoCycle(page3, (id) => pages.get(id));
       expect(result.valid).toBe(true);
       expect(result.errors).toEqual([]);
     });
@@ -268,7 +271,7 @@ describe('Validation', () => {
         [page3.id, page3],
       ]);
 
-      const result = validateNoCycle(page3, id => pages.get(id));
+      const result = validateNoCycle(page3, (id) => pages.get(id));
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('Choice 0 creates a cycle by pointing to ancestor page 1');
     });
@@ -276,7 +279,10 @@ describe('Validation', () => {
 
   describe('validateStoryIntegrity', () => {
     it('returns valid=true for story with page 1 and valid references', () => {
-      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A brave knight seeking adventure',
+      });
       const page1 = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),
@@ -306,7 +312,10 @@ describe('Validation', () => {
     });
 
     it("returns valid=false with 'Story must have page 1' when pages map is empty", () => {
-      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A brave knight seeking adventure',
+      });
       const pages = new Map<PageId, ReturnType<typeof createPage>>();
 
       const result = validateStoryIntegrity(story, pages);
@@ -315,7 +324,10 @@ describe('Validation', () => {
     });
 
     it('returns valid=false when parent references non-existent page', () => {
-      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A brave knight seeking adventure',
+      });
       const page1 = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),
@@ -345,7 +357,10 @@ describe('Validation', () => {
     });
 
     it('returns valid=false when choice references non-existent page', () => {
-      const story = createStory({ title: 'Test Story', characterConcept: 'A brave knight seeking adventure' });
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A brave knight seeking adventure',
+      });
       const page1 = createPage({
         id: 1 as PageId,
         narrativeText: 'A'.repeat(60),

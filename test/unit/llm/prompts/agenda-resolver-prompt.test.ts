@@ -3,7 +3,9 @@ import type { AgendaResolverPromptContext } from '../../../../src/llm/prompts/ag
 import { createEmptyActiveState } from '../../../../src/models';
 import { createEmptyAccumulatedNpcAgendas } from '../../../../src/models/state/npc-agenda';
 
-function buildMinimalContext(overrides?: Partial<AgendaResolverPromptContext>): AgendaResolverPromptContext {
+function buildMinimalContext(
+  overrides?: Partial<AgendaResolverPromptContext>
+): AgendaResolverPromptContext {
   return {
     narrative: 'The smuggler confronted Azra in the hallway.',
     sceneSummary: 'A tense confrontation between the protagonist and Azra.',

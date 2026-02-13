@@ -5,7 +5,7 @@ export const DUPLICATE_CANON_FACT = 'DUPLICATE_CANON_FACT';
 
 export function normalizeCanonFacts(
   values: readonly string[],
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
@@ -36,7 +36,7 @@ export function normalizeCanonFacts(
 
 export function normalizeCharacterCanonFacts(
   entries: readonly { characterName: string; facts: string[] }[],
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): Record<string, string[]> {
   const byCharacter = new Map<string, { characterName: string; facts: string[] }>();
   const seenFactsByCharacter = new Map<string, Set<string>>();
@@ -81,6 +81,6 @@ export function normalizeCharacterCanonFacts(
   });
 
   return Object.fromEntries(
-    [...byCharacter.values()].map(entry => [entry.characterName, entry.facts]),
+    [...byCharacter.values()].map((entry) => [entry.characterName, entry.facts])
   );
 }

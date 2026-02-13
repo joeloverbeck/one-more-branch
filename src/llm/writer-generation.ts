@@ -16,16 +16,15 @@ import {
   type WriterOutputValidationIssue,
 } from './validation/writer-output-validator.js';
 import { repairWriterRemovalIdFieldMismatches } from './validation/writer-id-repair.js';
-import {
-  LLMError,
-  type ChatMessage,
-  type GenerationOptions,
-  type GenerationObservabilityContext,
-  type WriterResult,
-} from './types.js';
+import type {
+  GenerationObservabilityContext,
+  GenerationOptions,
+} from './generation-pipeline-types.js';
+import { LLMError, type ChatMessage } from './llm-client-types.js';
+import type { WriterResult } from './writer-types.js';
 
 function buildObservabilityContext(
-  context: GenerationObservabilityContext | undefined,
+  context: GenerationObservabilityContext | undefined
 ): Record<string, unknown> {
   return {
     storyId: context?.storyId ?? null,
@@ -36,7 +35,7 @@ function buildObservabilityContext(
 
 function emitValidatorFailureCounters(
   issues: readonly WriterOutputValidationIssue[],
-  observability: GenerationObservabilityContext | undefined,
+  observability: GenerationObservabilityContext | undefined
 ): void {
   const countsByRule = new Map<string, number>();
   for (const issue of issues) {
@@ -54,7 +53,7 @@ function emitValidatorFailureCounters(
 
 async function callWriterStructured(
   messages: ChatMessage[],
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<WriterResult> {
   const config = getConfig().llm;
   const model = options.model ?? config.defaultModel;
@@ -101,7 +100,7 @@ async function callWriterStructured(
   const rawContent = parsedMessage.rawText;
   const repairResult = repairWriterRemovalIdFieldMismatches(
     parsed,
-    options.writerValidationContext,
+    options.writerValidationContext
   );
   if (repairResult.repairs.length > 0) {
     logger.info('Writer removal ID field mismatch repaired', {
@@ -131,11 +130,12 @@ async function callWriterStructured(
       throw error;
     }
 
-    const message = error instanceof Error ? error.message : 'Failed to validate structured response';
+    const message =
+      error instanceof Error ? error.message : 'Failed to validate structured response';
     throw new LLMError(message, 'VALIDATION_ERROR', false, {
       rawResponse: rawContent,
       validationIssues: issues,
-      ruleKeys: [...new Set(issues.map(issue => issue.ruleKey))],
+      ruleKeys: [...new Set(issues.map((issue) => issue.ruleKey))],
       ...buildObservabilityContext(options.observability),
     });
   }
@@ -143,7 +143,7 @@ async function callWriterStructured(
 
 export async function generateWriterWithFallback(
   messages: ChatMessage[],
-  options: GenerationOptions,
+  options: GenerationOptions
 ): Promise<WriterResult> {
   try {
     return await callWriterStructured(messages, options);
@@ -154,7 +154,7 @@ export async function generateWriterWithFallback(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',
         false,
-        { model },
+        { model }
       );
     }
 

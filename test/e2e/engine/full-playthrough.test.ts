@@ -7,7 +7,7 @@ import {
   generateStoryStructure,
 } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
-import type { WriterResult } from '@/llm/types';
+import type { WriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -26,9 +26,15 @@ jest.mock('@/logging/index', () => ({
   logPrompt: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
+>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
@@ -40,16 +46,34 @@ const openingResult = {
   narrative:
     'The time fractures shimmer at the district boundary as you check your sibling is still hidden in the cellar. Patrol searchlights sweep the fog-choked streets.',
   choices: [
-    { text: 'Scout the beacon tower before midnight', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Check the patrol schedules at the border checkpoint', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-    { text: 'Search for a safer hiding spot deeper in the stalled district', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+    {
+      text: 'Scout the beacon tower before midnight',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Check the patrol schedules at the border checkpoint',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
+    {
+      text: 'Search for a safer hiding spot deeper in the stalled district',
+      choiceType: 'PATH_DIVERGENCE',
+      primaryDelta: 'LOCATION_CHANGE',
+    },
   ],
   currentLocation: 'District boundary near cellar hideout',
   threatsAdded: ['Patrol searchlights sweeping fog'],
   threatsRemoved: [],
   constraintsAdded: ['Sibling hidden in cellar'],
   constraintsRemoved: [],
-  threadsAdded: [{ text: 'Time fractures detected at district boundary', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+  threadsAdded: [
+    {
+      text: 'Time fractures detected at district boundary',
+      threadType: 'INFORMATION',
+      urgency: 'MEDIUM',
+    },
+  ],
   threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'anxiety',
@@ -58,7 +82,10 @@ const openingResult = {
     secondaryEmotions: ['vigilance', 'determination'],
     dominantMotivation: 'Keep sibling safe while navigating fractured districts',
   },
-  newCanonFacts: ['Districts shift at midnight based on beacon towers', 'Patrols use searchlights in fog'],
+  newCanonFacts: [
+    'Districts shift at midnight based on beacon towers',
+    'Patrols use searchlights in fog',
+  ],
   newCharacterCanonFacts: {},
   characterStateChangesAdded: [],
   characterStateChangesRemoved: [],
@@ -79,15 +106,29 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       narrative:
         'You reach the beacon tower as the last light fades. The machinery hums with temporal energy, and you spot a patrol approaching from the east.',
       choices: [
-        { text: 'Climb the tower to disable the beacon', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Hide and observe the patrol pattern', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Climb the tower to disable the beacon',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Hide and observe the patrol pattern',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Beacon tower base',
       threatsAdded: ['Patrol approaching from the east'],
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Beacon machinery humming with temporal energy', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        {
+          text: 'Beacon machinery humming with temporal energy',
+          threadType: 'INFORMATION',
+          urgency: 'MEDIUM',
+        },
+      ],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'tension',
@@ -115,8 +156,16 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       narrative:
         'The checkpoint guard is distracted by a commotion. You slip past and find the schedule board, memorizing the patrol routes.',
       choices: [
-        { text: 'Copy the full schedule and escape', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Sabotage the schedule board', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Copy the full schedule and escape',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Sabotage the schedule board',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Border checkpoint interior',
       threatsAdded: [],
@@ -151,15 +200,25 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
       narrative:
         'The stalled district is eerily quiet—time moves slowly here. You find an abandoned warehouse where clocks tick once per hour.',
       choices: [
-        { text: 'Set up a long-term hideout', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Use the time dilation to plan your next move', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Set up a long-term hideout',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Use the time dilation to plan your next move',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Time-dilated warehouse in stalled district',
       threatsAdded: [],
       threatsRemoved: ['Immediate patrol threat'],
       constraintsAdded: ['Time moves slowly here'],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Abandoned warehouse discovered', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        { text: 'Abandoned warehouse discovered', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+      ],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'relief',
@@ -187,8 +246,16 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): WriterRes
     narrative:
       'Your actions draw attention. A patrol closes in, and you must make a critical decision that will determine your fate.',
     choices: [
-      { text: 'Surrender to protect your sibling', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Make a desperate escape attempt', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Surrender to protect your sibling',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Make a desperate escape attempt',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'Exposed position near patrol route',
     threatsAdded: ['Patrol closing in'],
@@ -235,8 +302,16 @@ const replayOpeningResult = {
   narrative:
     'The canal waters rise as the dawn siren sounds. You clutch the testimony documents, watching political agents argue on the bridge above.',
   choices: [
-    { text: 'Swim under the bridge while they argue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Wait for the water level to change', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    {
+      text: 'Swim under the bridge while they argue',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Wait for the water level to change',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
   ],
   currentLocation: 'Canal waterway beneath bridge',
   threatsAdded: ['Political agents on bridge above'],
@@ -252,7 +327,10 @@ const replayOpeningResult = {
     secondaryEmotions: ['wariness', 'resolve'],
     dominantMotivation: 'Transport documents past political agents',
   },
-  newCanonFacts: ['Canals respond to civic votes at dawn sirens', 'Political factions alter street reality'],
+  newCanonFacts: [
+    'Canals respond to civic votes at dawn sirens',
+    'Political factions alter street reality',
+  ],
   newCharacterCanonFacts: {},
   characterStateChangesAdded: [],
   characterStateChangesRemoved: [],
@@ -272,8 +350,16 @@ function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
     narrative:
       'You slip beneath the murky water, the documents sealed in waterproof wrapping. The agents never notice your passage.',
     choices: [
-      { text: 'Surface at the safe house dock', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Continue underwater to the testimony hall', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Surface at the safe house dock',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Continue underwater to the testimony hall',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'Underwater passage beneath bridge',
     threatsAdded: [],
@@ -304,9 +390,11 @@ function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
 }
 
 function expectAccumulatedInventoryPrefix(parent: Page, child: Page): void {
-  expect(child.accumulatedInventory.length).toBeGreaterThanOrEqual(parent.accumulatedInventory.length);
+  expect(child.accumulatedInventory.length).toBeGreaterThanOrEqual(
+    parent.accumulatedInventory.length
+  );
   expect(child.accumulatedInventory.slice(0, parent.accumulatedInventory.length)).toEqual(
-    parent.accumulatedInventory,
+    parent.accumulatedInventory
   );
 }
 
@@ -401,8 +489,16 @@ describe('story engine e2e full playthrough', () => {
       },
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       choiceIntents: [
-        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+        {
+          hook: 'Face the threat directly',
+          choiceType: 'CONFRONTATION',
+          primaryDelta: 'THREAT_SHIFT',
+        },
+        {
+          hook: 'Find an alternative route',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
       ],
       rawResponse: 'page-plan',
     });

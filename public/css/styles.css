@@ -985,3 +985,114 @@ main {
     height: 1.3rem;
   }
 }
+
+/* ── Prompt Log Viewer ───────────────────────────────────── */
+
+.logs-section h1 {
+  margin-bottom: 0.25rem;
+}
+
+.logs-date {
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.logs-count {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.log-entry {
+  background: var(--color-bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+}
+
+.log-entry > summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+}
+
+.log-entry > summary::-webkit-details-marker {
+  display: none;
+}
+
+.log-entry > summary::before {
+  content: '\25b6';
+  margin-right: 0.5rem;
+  font-size: 0.7rem;
+  transition: transform var(--transition);
+}
+
+.log-entry[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.log-entry-body {
+  padding: 0 1rem 0.75rem;
+}
+
+.log-message {
+  background: var(--color-bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: calc(var(--radius) / 2);
+  margin-bottom: 0.35rem;
+}
+
+.log-message > summary {
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  list-style: none;
+}
+
+.log-message > summary::-webkit-details-marker {
+  display: none;
+}
+
+.log-message > summary::before {
+  content: '\25b6';
+  margin-right: 0.4rem;
+  font-size: 0.6rem;
+  transition: transform var(--transition);
+}
+
+.log-message[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.log-role {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.log-meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.log-content {
+  margin: 0;
+  padding: 0.75rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--color-bg);
+  border-top: 1px solid var(--border-color);
+}

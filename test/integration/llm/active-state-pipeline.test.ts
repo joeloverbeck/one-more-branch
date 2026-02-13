@@ -8,21 +8,42 @@ import { buildFirstPage, createEmptyStructureContext } from '../../../src/engine
  */
 describe('Active state pipeline integration', () => {
   const rawLlmResponse = {
-    narrative: 'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
+    narrative:
+      'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
     choices: [
-      { text: 'Rush to save the innkeeper', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Flee through the back door', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
-      { text: 'Search for water', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Rush to save the innkeeper',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Flee through the back door',
+        choiceType: 'AVOIDANCE_RETREAT',
+        primaryDelta: 'LOCATION_CHANGE',
+      },
+      {
+        text: 'Search for water',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'Burning tavern',
     threatsAdded: ['The tavern is engulfed in flames and could collapse at any moment'],
     threatsRemoved: [],
     constraintsAdded: ['Thick smoke limits visibility to a few feet'],
     constraintsRemoved: [],
-    threadsAdded: [{ text: 'The innkeeper is trapped behind the bar', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+    threadsAdded: [
+      {
+        text: 'The innkeeper is trapped behind the bar',
+        threadType: 'INFORMATION',
+        urgency: 'MEDIUM',
+      },
+    ],
     threadsResolved: [],
     newCanonFacts: ['The Golden Flagon tavern is the oldest building in Millhaven'],
-    newCharacterCanonFacts: [{ characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] }],
+    newCharacterCanonFacts: [
+      { characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] },
+    ],
     inventoryAdded: [],
     inventoryRemoved: [],
     healthAdded: ['Your lungs burn from smoke inhalation'],
@@ -53,7 +74,11 @@ describe('Active state pipeline integration', () => {
       'Thick smoke limits visibility to a few feet',
     ]);
     expect(generationResult.threadsAdded).toEqual([
-      { text: 'The innkeeper is trapped behind the bar', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+      {
+        text: 'The innkeeper is trapped behind the bar',
+        threadType: 'INFORMATION',
+        urgency: 'MEDIUM',
+      },
     ]);
 
     // Step 2: Build page via page-builder
@@ -81,35 +106,50 @@ describe('Active state pipeline integration', () => {
     expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
     expect(page.accumulatedActiveState.activeThreats[0]?.id).toBe('th-1');
     expect(page.accumulatedActiveState.activeThreats[0]?.text).toBe(
-      'The tavern is engulfed in flames and could collapse at any moment',
+      'The tavern is engulfed in flames and could collapse at any moment'
     );
     expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
     expect(page.accumulatedActiveState.activeConstraints[0]?.id).toBe('cn-1');
     expect(page.accumulatedActiveState.activeConstraints[0]?.text).toBe(
-      'Thick smoke limits visibility to a few feet',
+      'Thick smoke limits visibility to a few feet'
     );
     expect(page.accumulatedActiveState.openThreads).toHaveLength(1);
     expect(page.accumulatedActiveState.openThreads[0]?.id).toBe('td-1');
     expect(page.accumulatedActiveState.openThreads[0]?.text).toBe(
-      'The innkeeper is trapped behind the bar',
+      'The innkeeper is trapped behind the bar'
     );
   });
 
   it('should populate active state through the writer pipeline', () => {
     // Writer responses don't include beat/deviation fields
     const writerLlmResponse = {
-      narrative: 'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
+      narrative:
+        'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
       choices: [
-        { text: 'Rush to save the innkeeper', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Flee through the back door', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
-        { text: 'Search for water', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Rush to save the innkeeper',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Flee through the back door',
+          choiceType: 'AVOIDANCE_RETREAT',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
+        {
+          text: 'Search for water',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Burning tavern',
       threatsAdded: ['The tavern is engulfed in flames'],
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'The innkeeper is trapped', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        { text: 'The innkeeper is trapped', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+      ],
       threadsResolved: [],
       newCanonFacts: [],
       newCharacterCanonFacts: [],
@@ -130,7 +170,10 @@ describe('Active state pipeline integration', () => {
       isEnding: false,
     };
 
-    const writerResult = validateWriterResponse(writerLlmResponse, JSON.stringify(writerLlmResponse));
+    const writerResult = validateWriterResponse(
+      writerLlmResponse,
+      JSON.stringify(writerLlmResponse)
+    );
 
     expect(writerResult.currentLocation).toBe('Burning tavern');
     expect(writerResult.threatsAdded).toEqual(['The tavern is engulfed in flames']);
@@ -153,7 +196,7 @@ describe('Active state pipeline integration', () => {
 
     const generationResult = validateWriterResponse(
       emptyActiveStateResponse,
-      JSON.stringify(emptyActiveStateResponse),
+      JSON.stringify(emptyActiveStateResponse)
     );
 
     const context = createEmptyStructureContext();

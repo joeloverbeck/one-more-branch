@@ -23,7 +23,7 @@ export interface NpcAgendaContext {
 }
 
 export async function resolveNpcAgendas(
-  context: NpcAgendaContext,
+  context: NpcAgendaContext
 ): Promise<AgendaResolverResult | null> {
   if (!context.npcs || context.npcs.length === 0) {
     return null;
@@ -43,7 +43,7 @@ export async function resolveNpcAgendas(
         activeState: context.parentActiveState,
       },
       context.npcs,
-      { apiKey: context.apiKey },
+      { apiKey: context.apiKey }
     );
     emitGenerationStage(context.onGenerationStage, 'RESOLVING_AGENDAS', 'completed', 1);
     return result;

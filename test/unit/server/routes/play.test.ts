@@ -27,10 +27,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (playRoutes.stack as unknown as RouteLayer[]).find(
-    item => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -43,7 +43,7 @@ function getRouteHandler(
 
 // Helper to wait for async route handler to complete
 function flushPromises(): Promise<void> {
-  return new Promise(resolve => setImmediate(resolve));
+  return new Promise((resolve) => setImmediate(resolve));
 }
 
 describe('playRoutes', () => {
@@ -57,7 +57,8 @@ describe('playRoutes', () => {
     it('renders pages/play with story, page, and pageId for valid inputs', async () => {
       const story = createStory({
         title: 'Epic Adventure',
-        characterConcept: 'A very long character concept that should be truncated for page title checks',
+        characterConcept:
+          'A very long character concept that should be truncated for page title checks',
         worldbuilding: 'World',
         tone: 'Epic',
       });
@@ -74,8 +75,18 @@ describe('playRoutes', () => {
           activeThreats: [],
           activeConstraints: [],
           openThreads: [
-            { id: 'td-1', text: 'Medium urgency', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
-            { id: 'td-2', text: 'High urgency', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+            {
+              id: 'td-1',
+              text: 'Medium urgency',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.MEDIUM,
+            },
+            {
+              id: 'td-2',
+              text: 'High urgency',
+              threadType: ThreadType.MYSTERY,
+              urgency: Urgency.HIGH,
+            },
           ],
         },
       });
@@ -90,7 +101,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '2' } } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -133,7 +144,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '1' } } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -160,7 +171,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '99' } } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -195,7 +206,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: {} } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -205,7 +216,7 @@ describe('playRoutes', () => {
         'pages/play',
         expect.objectContaining({
           pageId: 1,
-        }),
+        })
       );
     });
 
@@ -232,7 +243,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '0' } } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -242,7 +253,7 @@ describe('playRoutes', () => {
         'pages/play',
         expect.objectContaining({
           pageId: 1,
-        }),
+        })
       );
     });
 
@@ -316,7 +327,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '1' } } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -330,7 +341,7 @@ describe('playRoutes', () => {
             beatName: 'The Setup',
             displayString: 'Act 1: The Beginning - Beat 1.1: The Setup',
           },
-        }),
+        })
       );
     });
 
@@ -358,7 +369,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('get', '/:storyId')(
         { params: { storyId }, query: { page: '1' } } as unknown as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
       await flushPromises();
 
@@ -366,7 +377,7 @@ describe('playRoutes', () => {
         'pages/play',
         expect.objectContaining({
           actDisplayInfo: null,
-        }),
+        })
       );
     });
   });
@@ -379,7 +390,7 @@ describe('playRoutes', () => {
 
       await getRouteHandler('post', '/:storyId/choice')(
         { params: { storyId }, body: { choiceIndex: 0, apiKey: 'valid-key-12345' } } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(makeChoiceSpy).not.toHaveBeenCalled();
@@ -413,7 +424,7 @@ describe('playRoutes', () => {
 
       void getRouteHandler('post', '/:storyId/choice')(
         { params: { storyId }, body: { pageId: 1, choiceIndex: 0 } } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -427,7 +438,7 @@ describe('playRoutes', () => {
         expect.objectContaining({
           success: true,
           wasGenerated: false,
-        }),
+        })
       );
     });
 
@@ -442,14 +453,21 @@ describe('playRoutes', () => {
       await getRouteHandler('post', '/:storyId/choice')(
         {
           params: { storyId },
-          body: { choiceIndex: 0, apiKey: 'valid-key-12345', progressId: '  choice-validation-1  ' },
+          body: {
+            choiceIndex: 0,
+            apiKey: 'valid-key-12345',
+            progressId: '  choice-validation-1  ',
+          },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(makeChoiceSpy).not.toHaveBeenCalled();
       expect(progressStartSpy).toHaveBeenCalledWith('choice-validation-1', 'choice');
-      expect(progressFailSpy).toHaveBeenCalledWith('choice-validation-1', 'Missing pageId or choiceIndex');
+      expect(progressFailSpy).toHaveBeenCalledWith(
+        'choice-validation-1',
+        'Missing pageId or choiceIndex'
+      );
       expect(progressCompleteSpy).not.toHaveBeenCalled();
       expect(status).toHaveBeenCalledWith(400);
       expect(json).toHaveBeenCalledWith({ error: 'Missing pageId or choiceIndex' });
@@ -470,7 +488,7 @@ describe('playRoutes', () => {
             suggestedProtagonistSpeech: `  ${'a'.repeat(501)}  `,
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(makeChoiceSpy).not.toHaveBeenCalled();
@@ -516,7 +534,7 @@ describe('playRoutes', () => {
             suggestedProtagonistSpeech: '  We should not split up.  ',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -562,7 +580,7 @@ describe('playRoutes', () => {
             suggestedProtagonistSpeech: '   ',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -594,8 +612,18 @@ describe('playRoutes', () => {
           activeThreats: [],
           activeConstraints: [],
           openThreads: [
-            { id: 'td-1', text: 'Keep watch', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
-            { id: 'td-2', text: 'Find the witness', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+            {
+              id: 'td-1',
+              text: 'Keep watch',
+              threadType: ThreadType.INFORMATION,
+              urgency: Urgency.LOW,
+            },
+            {
+              id: 'td-2',
+              text: 'Find the witness',
+              threadType: ThreadType.MYSTERY,
+              urgency: Urgency.HIGH,
+            },
           ],
         },
       });
@@ -612,7 +640,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -650,7 +678,7 @@ describe('playRoutes', () => {
             openThreadOverflowSummary: null,
           },
           wasGenerated: true,
-        }),
+        })
       );
     });
 
@@ -689,7 +717,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -731,11 +759,21 @@ describe('playRoutes', () => {
           openThreads: [
             { id: 'td-1', text: 'Low 1', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
             { id: 'td-2', text: 'High 1', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
-            { id: 'td-3', text: 'Medium 1', threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM },
+            {
+              id: 'td-3',
+              text: 'Medium 1',
+              threadType: ThreadType.INFORMATION,
+              urgency: Urgency.MEDIUM,
+            },
             { id: 'td-4', text: 'Low 2', threadType: ThreadType.RESOURCE, urgency: Urgency.LOW },
             { id: 'td-5', text: 'High 2', threadType: ThreadType.DANGER, urgency: Urgency.HIGH },
             { id: 'td-6', text: 'Medium 2', threadType: ThreadType.MORAL, urgency: Urgency.MEDIUM },
-            { id: 'td-7', text: 'Low 3', threadType: ThreadType.RELATIONSHIP, urgency: Urgency.LOW },
+            {
+              id: 'td-7',
+              text: 'Low 3',
+              threadType: ThreadType.RELATIONSHIP,
+              urgency: Urgency.LOW,
+            },
             { id: 'td-8', text: 'Low 4', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
           ],
         },
@@ -753,15 +791,20 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
       const payload = (json.mock.calls[0] as unknown[] | undefined)?.[0] as
-        | { page?: { openThreads?: Array<{ id: string }>; openThreadOverflowSummary?: string | null } }
+        | {
+            page?: {
+              openThreads?: Array<{ id: string }>;
+              openThreadOverflowSummary?: string | null;
+            };
+          }
         | undefined;
-      expect(payload?.page?.openThreads?.map(thread => thread.id)).toEqual([
+      expect(payload?.page?.openThreads?.map((thread) => thread.id)).toEqual([
         'td-2',
         'td-5',
         'td-3',
@@ -790,8 +833,16 @@ describe('playRoutes', () => {
       });
       jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       const makeChoiceSpy = jest.spyOn(storyEngine, 'makeChoice').mockImplementation((options) => {
-        options.onGenerationStage?.({ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 });
-        options.onGenerationStage?.({ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 });
+        options.onGenerationStage?.({
+          stage: 'WRITING_CONTINUING_PAGE',
+          status: 'started',
+          attempt: 1,
+        });
+        options.onGenerationStage?.({
+          stage: 'WRITING_CONTINUING_PAGE',
+          status: 'completed',
+          attempt: 1,
+        });
         return Promise.resolve({
           page: resultPage,
           wasGenerated: true,
@@ -809,20 +860,33 @@ describe('playRoutes', () => {
       void getRouteHandler('post', '/:storyId/choice')(
         {
           params: { storyId },
-          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345', progressId: ' choice-success-1 ' },
+          body: {
+            pageId: 2,
+            choiceIndex: 1,
+            apiKey: 'valid-key-12345',
+            progressId: ' choice-success-1 ',
+          },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
       expect(makeChoiceSpy).toHaveBeenCalled();
       const makeChoiceCallArg: unknown = makeChoiceSpy.mock.calls[0]?.[0];
       expect(
-        typeof (makeChoiceCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage,
+        typeof (makeChoiceCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage
       ).toBe('function');
       expect(progressStartSpy).toHaveBeenCalledWith('choice-success-1', 'choice');
-      expect(progressStageStartedSpy).toHaveBeenCalledWith('choice-success-1', 'WRITING_CONTINUING_PAGE', 1);
-      expect(progressStageCompletedSpy).toHaveBeenCalledWith('choice-success-1', 'WRITING_CONTINUING_PAGE', 1);
+      expect(progressStageStartedSpy).toHaveBeenCalledWith(
+        'choice-success-1',
+        'WRITING_CONTINUING_PAGE',
+        1
+      );
+      expect(progressStageCompletedSpy).toHaveBeenCalledWith(
+        'choice-success-1',
+        'WRITING_CONTINUING_PAGE',
+        1
+      );
       expect(progressCompleteSpy).toHaveBeenCalledWith('choice-success-1');
       expect(progressFailSpy).not.toHaveBeenCalled();
       expect(status).not.toHaveBeenCalled();
@@ -858,7 +922,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -905,7 +969,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -918,7 +982,7 @@ describe('playRoutes', () => {
             reason: 'Player action invalidated planned story beats.',
             beatsInvalidated: 2,
           },
-        }),
+        })
       );
     });
 
@@ -952,7 +1016,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -960,7 +1024,7 @@ describe('playRoutes', () => {
         expect.objectContaining({
           success: true,
           deviationInfo: undefined,
-        }),
+        })
       );
     });
 
@@ -1057,7 +1121,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -1072,7 +1136,7 @@ describe('playRoutes', () => {
             beatName: 'Rising Pressure',
             displayString: 'Act 2: Act Two - Beat 2.1: Rising Pressure',
           },
-        }),
+        })
       );
     });
 
@@ -1107,7 +1171,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -1115,7 +1179,7 @@ describe('playRoutes', () => {
         expect.objectContaining({
           success: true,
           actDisplayInfo: null,
-        }),
+        })
       );
     });
   });
@@ -1131,7 +1195,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1144,12 +1208,24 @@ describe('playRoutes', () => {
           'State reconciliation failed after retry',
           'RECONCILIATION_FAILED',
           [
-            { code: 'THREAD_MISSING_EQUIVALENT_RESOLVE', field: 'openThreads', message: 'Missing resolve operation' },
-            { code: 'MISSING_NARRATIVE_EVIDENCE', field: 'inventory', message: 'No evidence for item add' },
-            { code: 'THREAD_MISSING_EQUIVALENT_RESOLVE', field: 'openThreads', message: 'Duplicate diagnostic code' },
+            {
+              code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+              field: 'openThreads',
+              message: 'Missing resolve operation',
+            },
+            {
+              code: 'UNKNOWN_STATE_ID',
+              field: 'inventory',
+              message: 'Unknown state ID "inv-999" in inventoryRemoved.',
+            },
+            {
+              code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+              field: 'openThreads',
+              message: 'Duplicate diagnostic code',
+            },
           ],
-          false,
-        ),
+          false
+        )
       );
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
@@ -1159,7 +1235,7 @@ describe('playRoutes', () => {
           params: { storyId },
           body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
@@ -1170,20 +1246,28 @@ describe('playRoutes', () => {
         retryAttempted: true,
         reconciliationIssueCodes: [
           'THREAD_MISSING_EQUIVALENT_RESOLVE',
-          'MISSING_NARRATIVE_EVIDENCE',
+          'UNKNOWN_STATE_ID',
         ],
       });
     });
 
     it('fails progress with reconciliation public message when reconciliation fails', async () => {
-      jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
-        new StateReconciliationError(
-          'State reconciliation failed after retry',
-          'RECONCILIATION_FAILED',
-          [{ code: 'THREAD_MISSING_EQUIVALENT_RESOLVE', field: 'openThreads', message: 'Missing resolve operation' }],
-          false,
-        ),
-      );
+      jest
+        .spyOn(storyEngine, 'makeChoice')
+        .mockRejectedValue(
+          new StateReconciliationError(
+            'State reconciliation failed after retry',
+            'RECONCILIATION_FAILED',
+            [
+              {
+                code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+                field: 'openThreads',
+                message: 'Missing resolve operation',
+              },
+            ],
+            false
+          )
+        );
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
@@ -1193,14 +1277,22 @@ describe('playRoutes', () => {
       void getRouteHandler('post', '/:storyId/choice')(
         {
           params: { storyId },
-          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345', progressId: 'choice-error-1' },
+          body: {
+            pageId: 2,
+            choiceIndex: 1,
+            apiKey: 'valid-key-12345',
+            progressId: 'choice-error-1',
+          },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
       await flushPromises();
 
       expect(progressStartSpy).toHaveBeenCalledWith('choice-error-1', 'choice');
-      expect(progressFailSpy).toHaveBeenCalledWith('choice-error-1', 'Generation failed due to reconciliation issues.');
+      expect(progressFailSpy).toHaveBeenCalledWith(
+        'choice-error-1',
+        'Generation failed due to reconciliation issues.'
+      );
       expect(progressCompleteSpy).not.toHaveBeenCalled();
       expect(status).toHaveBeenCalledWith(500);
       expect(json).toHaveBeenCalledWith({
@@ -1215,9 +1307,11 @@ describe('playRoutes', () => {
       const priorNodeEnv = process.env['NODE_ENV'];
       try {
         process.env['NODE_ENV'] = 'production';
-        jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
-          new LLMError('Provider timeout', 'HTTP_503', true, { httpStatus: 503 }),
-        );
+        jest
+          .spyOn(storyEngine, 'makeChoice')
+          .mockRejectedValue(
+            new LLMError('Provider timeout', 'HTTP_503', true, { httpStatus: 503 })
+          );
         const status = jest.fn().mockReturnThis();
         const json = jest.fn();
 
@@ -1226,7 +1320,7 @@ describe('playRoutes', () => {
             params: { storyId },
             body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
           } as Request,
-          { status, json } as unknown as Response,
+          { status, json } as unknown as Response
         );
         await flushPromises();
 
@@ -1249,7 +1343,7 @@ describe('playRoutes', () => {
 
       await getRouteHandler('get', '/:storyId/restart')(
         { params: { storyId } } as unknown as Request,
-        { status, redirect } as unknown as Response,
+        { status, redirect } as unknown as Response
       );
 
       expect(status).not.toHaveBeenCalled();

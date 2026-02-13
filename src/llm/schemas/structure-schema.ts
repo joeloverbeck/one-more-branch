@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -56,7 +56,8 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               },
               offScreenBehavior: {
                 type: 'string',
-                description: 'What this NPC is doing when not in a scene with the protagonist (1 sentence).',
+                description:
+                  'What this NPC is doing when not in a scene with the protagonist (1 sentence).',
               },
             },
           },

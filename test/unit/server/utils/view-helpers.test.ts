@@ -1,4 +1,8 @@
-import { getActDisplayInfo, getOpenThreadPanelData, getOpenThreadPanelRows } from '@/server/utils/view-helpers';
+import {
+  getActDisplayInfo,
+  getOpenThreadPanelData,
+  getOpenThreadPanelRows,
+} from '@/server/utils/view-helpers';
 import {
   createPage,
   createChoice,
@@ -8,7 +12,13 @@ import {
   ThreadType,
   Urgency,
 } from '@/models';
-import type { Story, Page, VersionedStoryStructure, StoryStructure, StructureVersionId } from '@/models';
+import type {
+  Story,
+  Page,
+  VersionedStoryStructure,
+  StoryStructure,
+  StructureVersionId,
+} from '@/models';
 
 function createTestStructure(acts: Array<{ id: string; name: string }>): StoryStructure {
   return {
@@ -45,7 +55,7 @@ function createTestVersionId(suffix: string): StructureVersionId {
 
 function createTestVersionedStructure(
   versionId: StructureVersionId,
-  structure: StoryStructure,
+  structure: StoryStructure
 ): VersionedStoryStructure {
   return {
     id: versionId,
@@ -285,12 +295,27 @@ describe('getActDisplayInfo', () => {
 describe('getOpenThreadPanelRows', () => {
   it('sorts by urgency in HIGH, MEDIUM, LOW order', () => {
     const result = getOpenThreadPanelRows([
-      { id: 'td-1', text: 'Low urgency thread', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
-      { id: 'td-2', text: 'High urgency thread', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
-      { id: 'td-3', text: 'Medium urgency thread', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+      {
+        id: 'td-1',
+        text: 'Low urgency thread',
+        threadType: ThreadType.INFORMATION,
+        urgency: Urgency.LOW,
+      },
+      {
+        id: 'td-2',
+        text: 'High urgency thread',
+        threadType: ThreadType.MYSTERY,
+        urgency: Urgency.HIGH,
+      },
+      {
+        id: 'td-3',
+        text: 'Medium urgency thread',
+        threadType: ThreadType.QUEST,
+        urgency: Urgency.MEDIUM,
+      },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-2', 'td-3', 'td-1']);
+    expect(result.map((row) => row.id)).toEqual(['td-2', 'td-3', 'td-1']);
   });
 
   it('preserves source order for matching urgencies', () => {
@@ -300,12 +325,17 @@ describe('getOpenThreadPanelRows', () => {
       { id: 'td-3', text: 'Third', threadType: ThreadType.MORAL, urgency: Urgency.MEDIUM },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-1', 'td-2', 'td-3']);
+    expect(result.map((row) => row.id)).toEqual(['td-1', 'td-2', 'td-3']);
   });
 
   it('builds display labels using (<TYPE>/<URGENCY>) <text> format', () => {
     const result = getOpenThreadPanelRows([
-      { id: 'td-1', text: 'Unknown force in the city', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+      {
+        id: 'td-1',
+        text: 'Unknown force in the city',
+        threadType: ThreadType.MYSTERY,
+        urgency: Urgency.HIGH,
+      },
     ]);
 
     expect(result[0]?.displayLabel).toBe('(MYSTERY/HIGH) Unknown force in the city');
@@ -317,7 +347,7 @@ describe('getOpenThreadPanelRows', () => {
       { id: 'td-2', text: 'Known urgency', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-2', 'td-1']);
+    expect(result.map((row) => row.id)).toEqual(['td-2', 'td-1']);
   });
 
   it('limits rows to six entries in urgency order', () => {
@@ -331,7 +361,7 @@ describe('getOpenThreadPanelRows', () => {
       { id: 'td-7', text: 'Low 3', threadType: ThreadType.RESOURCE, urgency: Urgency.LOW },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-2', 'td-5', 'td-3', 'td-6', 'td-1', 'td-4']);
+    expect(result.map((row) => row.id)).toEqual(['td-2', 'td-5', 'td-3', 'td-6', 'td-1', 'td-4']);
   });
 });
 
@@ -344,13 +374,25 @@ describe('getOpenThreadPanelData', () => {
       { id: 'td-4', text: 'High 4', threadType: ThreadType.MORAL, urgency: Urgency.HIGH },
       { id: 'td-5', text: 'Medium 1', threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM },
       { id: 'td-6', text: 'Medium 2', threadType: ThreadType.RESOURCE, urgency: Urgency.MEDIUM },
-      { id: 'td-7', text: 'Medium 3', threadType: ThreadType.RELATIONSHIP, urgency: Urgency.MEDIUM },
+      {
+        id: 'td-7',
+        text: 'Medium 3',
+        threadType: ThreadType.RELATIONSHIP,
+        urgency: Urgency.MEDIUM,
+      },
       { id: 'td-8', text: 'Low 1', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
       { id: 'td-9', text: 'Low 2', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
       { id: 'td-10', text: 'Low 3', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
     ]);
 
-    expect(result.rows.map(row => row.id)).toEqual(['td-1', 'td-2', 'td-3', 'td-4', 'td-5', 'td-6']);
+    expect(result.rows.map((row) => row.id)).toEqual([
+      'td-1',
+      'td-2',
+      'td-3',
+      'td-4',
+      'td-5',
+      'td-6',
+    ]);
     expect(result.overflowSummary).toBe('Not shown: 1 (medium), 3 (low)');
   });
 

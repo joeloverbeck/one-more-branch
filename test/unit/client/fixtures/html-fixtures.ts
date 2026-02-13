@@ -41,32 +41,39 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const stateChanges = options.stateChanges ?? [];
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
 
-  const threadsHtml = openThreads.length > 0
-    ? `<aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
+  const threadsHtml =
+    openThreads.length > 0
+      ? `<aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
         <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
         <ul class="open-threads-list" id="open-threads-list">
-          ${openThreads.map((t) => `<li class="open-threads-item">
+          ${openThreads
+            .map(
+              (t) => `<li class="open-threads-item">
             <span class="thread-icon-pill" aria-hidden="true">
               <span class="thread-icon-badge thread-icon-badge--type"></span>
               <span class="thread-icon-badge thread-icon-badge--urgency"></span>
             </span>
             <span class="open-threads-text">${t.text}</span>
-          </li>`).join('')}
+          </li>`
+            )
+            .join('')}
         </ul>
         ${options.openThreadOverflowSummary ? `<div class="open-threads-overflow-summary" id="open-threads-overflow-summary">${options.openThreadOverflowSummary}</div>` : ''}
       </aside>`
-    : '';
+      : '';
 
-  const stateChangesHtml = stateChanges.length > 0
-    ? `<aside class="state-changes" id="state-changes">
+  const stateChangesHtml =
+    stateChanges.length > 0
+      ? `<aside class="state-changes" id="state-changes">
         <h4>What happened:</h4>
         <ul>${stateChanges.map((c) => `<li>${c}</li>`).join('')}</ul>
       </aside>`
-    : '';
+      : '';
 
-  const choiceButtonsHtml = choices.map((choice, index) => {
-    const isExplored = Boolean(choice.nextPageId);
-    return `<div class="choice-row">
+  const choiceButtonsHtml = choices
+    .map((choice, index) => {
+      const isExplored = Boolean(choice.nextPageId);
+      return `<div class="choice-row">
       <span class="choice-icon-pill" aria-hidden="true">
         <img class="choice-icon choice-icon--type" src="/images/icons/${(choice.choiceType ?? 'tactical-approach').toLowerCase().replace(/_/g, '-')}.png" alt="" width="32" height="32" loading="lazy">
         <img class="choice-icon choice-icon--delta" src="/images/icons/${(choice.primaryDelta ?? 'goal-shift').toLowerCase().replace(/_/g, '-')}.png" alt="" width="32" height="32" loading="lazy">
@@ -76,9 +83,11 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </button>
       ${isExplored ? '<span class="explored-marker" title="Previously explored">&#8617;</span>' : ''}
     </div>`;
-  }).join('');
+    })
+    .join('');
 
-  const customChoiceHtml = hasCustomChoiceInput ? `
+  const customChoiceHtml = hasCustomChoiceInput
+    ? `
     <div class="suggested-protagonist-speech-container">
       <label for="suggested-protagonist-speech-input" class="suggested-protagonist-speech-label">
         Optional: Suggested protagonist speech
@@ -101,7 +110,8 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </select>
     </div>
     <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>
-  ` : '';
+  `
+    : '';
 
   const choicesSectionHtml = isEnding
     ? `<div class="ending-banner">
@@ -161,11 +171,11 @@ export interface NewStoryPageOptions {
 
 export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string {
   const npcs = options.npcs ?? [];
-  const errorHtml = options.error
-    ? `<div class="alert alert-error">${options.error}</div>`
-    : '';
+  const errorHtml = options.error ? `<div class="alert alert-error">${options.error}</div>` : '';
 
-  const npcEntriesHtml = npcs.map((npc, i) => `
+  const npcEntriesHtml = npcs
+    .map(
+      (npc, i) => `
     <div class="npc-entry" data-index="${i}">
       <div class="npc-entry-header">
         <strong>${npc.name}</strong>
@@ -173,7 +183,9 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
       </div>
       <p class="npc-entry-description">${npc.description}</p>
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 
   return `
     <main class="container">

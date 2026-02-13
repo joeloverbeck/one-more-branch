@@ -1,7 +1,7 @@
 import { generateAgendaResolver } from '@/llm';
 import { resolveNpcAgendas } from '@/engine/npc-agenda-pipeline';
 import type { NpcAgendaContext } from '@/engine/npc-agenda-pipeline';
-import type { AgendaResolverResult } from '@/llm/types';
+import type { AgendaResolverResult } from '@/llm/lorekeeper-types';
 import type { ActiveState } from '@/models/state/active-state';
 import type { AccumulatedStructureState } from '@/models/story-arc';
 import { createEmptyAccumulatedNpcAgendas } from '@/models/state/npc-agenda';
@@ -55,9 +55,7 @@ function createBaseContext(overrides: Partial<NpcAgendaContext> = {}): NpcAgenda
   };
 }
 
-const testNpcs: readonly Npc[] = [
-  { name: 'Bartender', concept: 'A gruff bartender' },
-];
+const testNpcs: readonly Npc[] = [{ name: 'Bartender', concept: 'A gruff bartender' }];
 
 const mockAgendaResult: AgendaResolverResult = {
   updatedAgendas: {
@@ -109,7 +107,7 @@ describe('resolveNpcAgendas', () => {
         npcs: testNpcs,
       }),
       testNpcs,
-      { apiKey: 'test-key' },
+      { apiKey: 'test-key' }
     );
   });
 

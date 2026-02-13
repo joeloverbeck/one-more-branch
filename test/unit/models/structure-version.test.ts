@@ -156,7 +156,7 @@ describe('StructureVersion', () => {
         newStructure,
         preservedBeatIds,
         'Player joined the enemy',
-        pageId,
+        pageId
       );
       const after = Date.now();
 
@@ -180,7 +180,7 @@ describe('StructureVersion', () => {
         createTestStructure(),
         preservedBeatIds,
         'Rewrite',
-        parsePageId(2),
+        parsePageId(2)
       );
 
       preservedBeatIds.push('2.1');
@@ -203,7 +203,7 @@ describe('StructureVersion', () => {
           rewriteReason: null,
           preservedBeatIds: [],
           createdAt: new Date(),
-        }),
+        })
       ).toBe(false);
     });
 
@@ -219,7 +219,7 @@ describe('StructureVersion', () => {
           rewriteReason: null,
           preservedBeatIds: [],
           createdAt: new Date(),
-        }),
+        })
       ).toBe(false);
       expect(
         isVersionedStoryStructure({
@@ -230,7 +230,7 @@ describe('StructureVersion', () => {
           rewriteReason: 123,
           preservedBeatIds: [],
           createdAt: new Date(),
-        }),
+        })
       ).toBe(false);
       expect(
         isVersionedStoryStructure({
@@ -241,7 +241,7 @@ describe('StructureVersion', () => {
           rewriteReason: null,
           preservedBeatIds: ['1.1', 2],
           createdAt: new Date(),
-        }),
+        })
       ).toBe(false);
     });
   });

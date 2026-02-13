@@ -268,7 +268,7 @@ describe('story-repository', () => {
     const missingStory = buildTestStory({ id: MISSING_STORY_ID });
 
     await expect(updateStory(missingStory)).rejects.toThrow(
-      `Story ${MISSING_STORY_ID} does not exist`,
+      `Story ${MISSING_STORY_ID} does not exist`
     );
   });
 
@@ -312,25 +312,13 @@ describe('story-repository', () => {
     await saveStory(olderStory);
     await saveStory(newerStory);
 
-    await fsPromises.writeFile(
-      `${getStoryDir(newerStory.id)}/page_1.json`,
-      '{"id":1}',
-      'utf-8',
-    );
-    await fsPromises.writeFile(
-      `${getStoryDir(newerStory.id)}/page_2.json`,
-      '{"id":2}',
-      'utf-8',
-    );
-    await fsPromises.writeFile(
-      `${getStoryDir(olderStory.id)}/page_1.json`,
-      '{"id":1}',
-      'utf-8',
-    );
+    await fsPromises.writeFile(`${getStoryDir(newerStory.id)}/page_1.json`, '{"id":1}', 'utf-8');
+    await fsPromises.writeFile(`${getStoryDir(newerStory.id)}/page_2.json`, '{"id":2}', 'utf-8');
+    await fsPromises.writeFile(`${getStoryDir(olderStory.id)}/page_1.json`, '{"id":1}', 'utf-8');
 
     const listedStories = await listStories();
     const listedTestStories = listedStories.filter((story) =>
-      story.characterConcept.startsWith(TEST_PREFIX),
+      story.characterConcept.startsWith(TEST_PREFIX)
     );
 
     expect(listedTestStories.length).toBeGreaterThanOrEqual(2);
@@ -364,7 +352,7 @@ describe('story-repository', () => {
     });
 
     await expect(loadStory(MISMATCH_REQUEST_ID)).rejects.toThrow(
-      `Story ID mismatch: expected ${MISMATCH_REQUEST_ID}, found ${MISMATCH_FILE_ID}`,
+      `Story ID mismatch: expected ${MISMATCH_REQUEST_ID}, found ${MISMATCH_FILE_ID}`
     );
   });
 
@@ -378,7 +366,9 @@ describe('story-repository', () => {
     const loaded = await loadStory(story.id);
 
     expect(loaded).not.toBeNull();
-    expect(loaded?.npcs).toEqual([{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }]);
+    expect(loaded?.npcs).toEqual([
+      { name: 'Holt', description: 'Grizzled barkeep who knows everyone' },
+    ]);
   });
 
   it('saveStory/loadStory preserves startingSituation field', async () => {

@@ -3,12 +3,12 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../src/mod
 import { buildContinuationPrompt, buildOpeningPrompt } from '../../../src/llm/prompts';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'system')?.content ?? '';
+  return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
   // Get the last user message (after any few-shot examples)
-  const userMessages = messages.filter(message => message.role === 'user');
+  const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages[userMessages.length - 1]?.content ?? '';
 }
 
@@ -47,8 +47,18 @@ describe('buildOpeningPrompt', () => {
         stakes: 'Losing evidence lets the conflict spiral',
         entryCondition: 'The protagonist leaves the capital',
         beats: [
-          { id: '2.1', description: 'First chase beat', objective: 'Evade pursuit', role: 'escalation' },
-          { id: '2.2', description: 'Second chase beat', objective: 'Protect the evidence', role: 'turning_point' },
+          {
+            id: '2.1',
+            description: 'First chase beat',
+            objective: 'Evade pursuit',
+            role: 'escalation',
+          },
+          {
+            id: '2.2',
+            description: 'Second chase beat',
+            objective: 'Protect the evidence',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -58,8 +68,18 @@ describe('buildOpeningPrompt', () => {
         stakes: 'Failure secures permanent authoritarian rule',
         entryCondition: 'Allies gather for final confrontation',
         beats: [
-          { id: '3.1', description: 'Final entry beat', objective: 'Force a confession', role: 'escalation' },
-          { id: '3.2', description: 'Final resolution beat', objective: 'Stabilize the city', role: 'resolution' },
+          {
+            id: '3.1',
+            description: 'Final entry beat',
+            objective: 'Force a confession',
+            role: 'escalation',
+          },
+          {
+            id: '3.2',
+            description: 'Final resolution beat',
+            objective: 'Stabilize the city',
+            role: 'resolution',
+          },
         ],
       },
     ],
@@ -165,7 +185,7 @@ describe('buildOpeningPrompt', () => {
         worldbuilding: '',
         tone: 'dark fantasy',
       },
-      { fewShotMode: 'none' },
+      { fewShotMode: 'none' }
     );
 
     expect(messages).toHaveLength(2);
@@ -178,7 +198,7 @@ describe('buildOpeningPrompt', () => {
         worldbuilding: '',
         tone: 'dark fantasy',
       },
-      { fewShotMode: 'minimal' },
+      { fewShotMode: 'minimal' }
     );
 
     expect(messages).toHaveLength(4);
@@ -195,7 +215,7 @@ describe('buildOpeningPrompt', () => {
         worldbuilding: '',
         tone: 'dark fantasy',
       },
-      { choiceGuidance: 'strict' },
+      { choiceGuidance: 'strict' }
     );
 
     const user = getUserMessage(messages);
@@ -212,7 +232,7 @@ describe('buildOpeningPrompt', () => {
         worldbuilding: '',
         tone: 'dark fantasy',
       },
-      { choiceGuidance: 'strict' },
+      { choiceGuidance: 'strict' }
     );
 
     const user = getUserMessage(messages);
@@ -267,7 +287,7 @@ describe('buildOpeningPrompt', () => {
         worldbuilding: '',
         tone: 'dark fantasy',
       },
-      { choiceGuidance: 'basic' },
+      { choiceGuidance: 'basic' }
     );
 
     const user = getUserMessage(messages);
@@ -294,7 +314,8 @@ describe('buildOpeningPrompt', () => {
 describe('buildContinuationPrompt', () => {
   const structure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
-    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    premise:
+      'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -332,8 +353,18 @@ describe('buildContinuationPrompt', () => {
         stakes: 'If lost, the purge becomes permanent.',
         entryCondition: 'You leave the capital perimeter.',
         beats: [
-          { id: '2.1', description: 'Break through checkpoints', objective: 'Find a route north', role: 'escalation' },
-          { id: '2.2', description: 'Defend witnesses', objective: 'Keep witnesses alive', role: 'turning_point' },
+          {
+            id: '2.1',
+            description: 'Break through checkpoints',
+            objective: 'Find a route north',
+            role: 'escalation',
+          },
+          {
+            id: '2.2',
+            description: 'Defend witnesses',
+            objective: 'Keep witnesses alive',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -343,8 +374,18 @@ describe('buildContinuationPrompt', () => {
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'You gain access to the relay tower.',
         beats: [
-          { id: '3.1', description: 'Reach the relay core', objective: 'Seize control room access', role: 'escalation' },
-          { id: '3.2', description: 'Deliver the proof', objective: 'Transmit unedited evidence', role: 'resolution' },
+          {
+            id: '3.1',
+            description: 'Reach the relay core',
+            objective: 'Seize control room access',
+            role: 'escalation',
+          },
+          {
+            id: '3.2',
+            description: 'Deliver the proof',
+            objective: 'Transmit unedited evidence',
+            role: 'resolution',
+          },
         ],
       },
     ],
@@ -563,7 +604,9 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('Option B (time cut)');
     expect(user).toContain('do NOT recap or summarize what happened');
     expect(user).toContain('Start exactly where the previous scene ended');
-    expect(user).toContain('SKIP time and open at the next scene where the choice\'s consequences matter');
+    expect(user).toContain(
+      "SKIP time and open at the next scene where the choice's consequences matter"
+    );
     expect(user).toContain('For Option B, signal the skip with a brief time cue');
   });
 
@@ -587,7 +630,9 @@ describe('buildContinuationPrompt', () => {
     });
 
     const previousSceneLine =
-      getUserMessage(messages).split('PREVIOUS SCENE (full text for style continuity):\n')[1]?.split('\n\nPLAYER')[0] ?? '';
+      getUserMessage(messages)
+        .split('PREVIOUS SCENE (full text for style continuity):\n')[1]
+        ?.split('\n\nPLAYER')[0] ?? '';
 
     expect(previousSceneLine).toBe(narrative);
   });
@@ -600,7 +645,9 @@ describe('buildContinuationPrompt', () => {
     });
 
     const previousSceneLine =
-      getUserMessage(messages).split('PREVIOUS SCENE (full text for style continuity):\n')[1]?.split('\n\nPLAYER')[0] ?? '';
+      getUserMessage(messages)
+        .split('PREVIOUS SCENE (full text for style continuity):\n')[1]
+        ?.split('\n\nPLAYER')[0] ?? '';
 
     expect(previousSceneLine.length).toBe(2500);
     expect(previousSceneLine).not.toContain('...');
@@ -684,7 +731,9 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
+      expect(getUserMessage(messages)).toContain(
+        'ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):'
+      );
       expect(getUserMessage(messages)).toContain('- [cn-1] Injured leg limits mobility');
       expect(getUserMessage(messages)).toContain('- [cn-2] No weapon - currently unarmed');
     });
@@ -700,7 +749,9 @@ describe('buildContinuationPrompt', () => {
         },
       });
 
-      expect(getUserMessage(messages)).not.toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
+      expect(getUserMessage(messages)).not.toContain(
+        'ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):'
+      );
     });
 
     it('includes OPEN THREADS section when threads present', () => {
@@ -711,15 +762,29 @@ describe('buildContinuationPrompt', () => {
           activeThreats: [],
           activeConstraints: [],
           openThreads: [
-            { id: 'td-1', text: 'Missing witness - whereabouts unknown', threadType: 'MYSTERY', urgency: 'HIGH' },
-            { id: 'td-2', text: 'Encrypted files need decryption key', threadType: 'QUEST', urgency: 'MEDIUM' },
+            {
+              id: 'td-1',
+              text: 'Missing witness - whereabouts unknown',
+              threadType: 'MYSTERY',
+              urgency: 'HIGH',
+            },
+            {
+              id: 'td-2',
+              text: 'Encrypted files need decryption key',
+              threadType: 'QUEST',
+              urgency: 'MEDIUM',
+            },
           ],
         },
       });
 
       expect(getUserMessage(messages)).toContain('OPEN NARRATIVE THREADS (unresolved hooks):');
-      expect(getUserMessage(messages)).toContain('- [td-1] (MYSTERY/HIGH) Missing witness - whereabouts unknown');
-      expect(getUserMessage(messages)).toContain('- [td-2] (QUEST/MEDIUM) Encrypted files need decryption key');
+      expect(getUserMessage(messages)).toContain(
+        '- [td-1] (MYSTERY/HIGH) Missing witness - whereabouts unknown'
+      );
+      expect(getUserMessage(messages)).toContain(
+        '- [td-2] (QUEST/MEDIUM) Encrypted files need decryption key'
+      );
     });
 
     it('omits OPEN THREADS section when no threads', () => {
@@ -745,7 +810,14 @@ describe('buildContinuationPrompt', () => {
           currentLocation: 'The rooftop',
           activeThreats: [{ id: 'th-1', text: 'Sniper on adjacent building' }],
           activeConstraints: [{ id: 'cn-1', text: 'Low ammo - only 2 rounds left' }],
-          openThreads: [{ id: 'td-1', text: 'Contact awaiting signal', threadType: 'INFORMATION', urgency: 'LOW' }],
+          openThreads: [
+            {
+              id: 'td-1',
+              text: 'Contact awaiting signal',
+              threadType: 'INFORMATION',
+              urgency: 'LOW',
+            },
+          ],
         },
       });
 
@@ -754,7 +826,9 @@ describe('buildContinuationPrompt', () => {
       // the data rules text which also mentions these terms in a different context
       const locationIdx = content.indexOf('CURRENT LOCATION:\nThe rooftop');
       const threatsIdx = content.indexOf('ACTIVE THREATS (dangers that exist NOW):');
-      const constraintsIdx = content.indexOf('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
+      const constraintsIdx = content.indexOf(
+        'ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):'
+      );
       const threadsIdx = content.indexOf('OPEN NARRATIVE THREADS (unresolved hooks):');
 
       // All should be present
@@ -780,9 +854,15 @@ describe('buildContinuationPrompt', () => {
         ancestorSummaries: [],
       });
 
-      expect(getUserMessage(messages)).toContain('SCENE BEFORE LAST (full text for style continuity):');
-      expect(getUserMessage(messages)).toContain('Earlier that night, a mysterious phone call came.');
-      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE (full text for style continuity):');
+      expect(getUserMessage(messages)).toContain(
+        'SCENE BEFORE LAST (full text for style continuity):'
+      );
+      expect(getUserMessage(messages)).toContain(
+        'Earlier that night, a mysterious phone call came.'
+      );
+      expect(getUserMessage(messages)).toContain(
+        'PREVIOUS SCENE (full text for style continuity):'
+      );
       expect(getUserMessage(messages)).toContain('The detective entered the warehouse.');
     });
 
@@ -794,8 +874,12 @@ describe('buildContinuationPrompt', () => {
         ancestorSummaries: [],
       });
 
-      expect(getUserMessage(messages)).not.toContain('SCENE BEFORE LAST (full text for style continuity):');
-      expect(getUserMessage(messages)).toContain('PREVIOUS SCENE (full text for style continuity):');
+      expect(getUserMessage(messages)).not.toContain(
+        'SCENE BEFORE LAST (full text for style continuity):'
+      );
+      expect(getUserMessage(messages)).toContain(
+        'PREVIOUS SCENE (full text for style continuity):'
+      );
     });
 
     it('passes through long grandparent narrative without truncation', () => {
@@ -807,7 +891,10 @@ describe('buildContinuationPrompt', () => {
       });
 
       const content = getUserMessage(messages);
-      const sceneBeforeLastSection = content.split('SCENE BEFORE LAST (full text for style continuity):\n')[1]?.split('\n\nPREVIOUS SCENE (full text for style continuity):')[0] ?? '';
+      const sceneBeforeLastSection =
+        content
+          .split('SCENE BEFORE LAST (full text for style continuity):\n')[1]
+          ?.split('\n\nPREVIOUS SCENE (full text for style continuity):')[0] ?? '';
 
       expect(sceneBeforeLastSection).toBe(longNarrative);
     });
@@ -898,12 +985,8 @@ describe('buildContinuationPrompt', () => {
             { id: 'th-10', text: 'Guard patrolling the area' },
             { id: 'th-11', text: 'Dog trained to attack' },
           ],
-          activeConstraints: [
-            { id: 'cn-9', text: 'Broken arm - cannot climb' },
-          ],
-          openThreads: [
-            { id: 'td-5', text: 'Missing key - need to find it' },
-          ],
+          activeConstraints: [{ id: 'cn-9', text: 'Broken arm - cannot climb' }],
+          openThreads: [{ id: 'td-5', text: 'Missing key - need to find it' }],
         },
       });
 

@@ -54,7 +54,7 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
         npcs: story.npcs,
         startingSituation: story.startingSituation,
       },
-      options.apiKey,
+      options.apiKey
     );
     options.onGenerationStage?.({
       stage: 'RESTRUCTURING_STORY',
@@ -76,7 +76,7 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
     const { page, updatedStory } = await generateFirstPage(
       storyWithStructure,
       options.apiKey,
-      options.onGenerationStage,
+      options.onGenerationStage
     );
 
     await storage.savePage(story.id, page);

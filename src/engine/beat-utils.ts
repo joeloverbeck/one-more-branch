@@ -23,7 +23,11 @@ export function parseBeatIndices(beatId: string): { actIndex: number; beatIndex:
 /**
  * Gets a beat from structure, throwing if indices are invalid.
  */
-export function getBeatOrThrow(structure: StoryStructure, actIndex: number, beatIndex: number): StoryBeat {
+export function getBeatOrThrow(
+  structure: StoryStructure,
+  actIndex: number,
+  beatIndex: number
+): StoryBeat {
   const act = structure.acts[actIndex];
   if (!act) {
     throw new Error(`Invalid currentActIndex: ${actIndex}`);
@@ -43,10 +47,10 @@ export function getBeatOrThrow(structure: StoryStructure, actIndex: number, beat
  */
 export function upsertBeatProgression(
   beatProgressions: readonly BeatProgression[],
-  nextProgression: BeatProgression,
+  nextProgression: BeatProgression
 ): BeatProgression[] {
   let found = false;
-  const updated = beatProgressions.map(progression => {
+  const updated = beatProgressions.map((progression) => {
     if (progression.beatId !== nextProgression.beatId) {
       return { ...progression };
     }

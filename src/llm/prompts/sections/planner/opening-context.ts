@@ -1,5 +1,5 @@
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
-import type { OpeningPagePlanContext } from '../../../types.js';
+import type { OpeningPagePlanContext } from '../../../context-types.js';
 
 export function buildPlannerOpeningContextSection(context: OpeningPagePlanContext): string {
   const worldSection = context.worldbuilding
@@ -9,12 +9,13 @@ ${context.worldbuilding}
 `
     : '';
 
-  const npcsSection = context.npcs && context.npcs.length > 0
-    ? `NPCS (Available Characters):
+  const npcsSection =
+    context.npcs && context.npcs.length > 0
+      ? `NPCS (Available Characters):
 ${formatNpcsForPrompt(context.npcs)}
 
 `
-    : '';
+      : '';
 
   const startingSituationSection = context.startingSituation
     ? `STARTING SITUATION:
@@ -43,12 +44,12 @@ Beat Objective: ${firstBeat.objective}
       ? `NPC INITIAL AGENDAS (what each NPC wants at story start):
 ${initialAgendas
   .map(
-    a =>
+    (a) =>
       `[${a.npcName}]
   Goal: ${a.currentGoal}
   Leverage: ${a.leverage}
   Fear: ${a.fear}
-  Off-screen: ${a.offScreenBehavior}`,
+  Off-screen: ${a.offScreenBehavior}`
   )
   .join('\n\n')}
 
