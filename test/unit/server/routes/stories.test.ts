@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { storyEngine } from '@/engine';
-import { LLMError } from '@/llm/types';
+import { LLMError } from '@/llm/llm-client-types';
 import { createChoice, createPage, createStory, parseStoryId } from '@/models';
 import { storyRoutes } from '@/server/routes/stories';
 import { generationProgressService } from '@/server/services';
@@ -15,10 +15,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (storyRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -39,7 +39,10 @@ describe('storyRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
-      await getRouteHandler('get', '/new')({} as Request, { status, render } as unknown as Response);
+      await getRouteHandler('get', '/new')(
+        {} as Request,
+        { status, render } as unknown as Response
+      );
 
       expect(status).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
@@ -58,9 +61,15 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create')(
         {
-          body: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
+          body: {
+            title: 'Test Title',
+            characterConcept: '',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
         } as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -68,7 +77,14 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
-        values: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
+        values: {
+          title: 'Test Title',
+          characterConcept: '',
+          worldbuilding: 'World',
+          tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
+        },
       });
     });
 
@@ -87,7 +103,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -95,7 +111,14 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
-        values: { title: 'Test Title', characterConcept: '   too short   ', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
+        values: {
+          title: 'Test Title',
+          characterConcept: '   too short   ',
+          worldbuilding: 'World',
+          tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
+        },
       });
     });
 
@@ -106,9 +129,14 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create')(
         {
-          body: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+          body: {
+            title: 'Test Title',
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+          },
         } as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -116,7 +144,14 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
-        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
+        values: {
+          title: 'Test Title',
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
+        },
       });
     });
 
@@ -135,7 +170,7 @@ describe('storyRoutes', () => {
             apiKey: '    short    ',
           },
         } as Request,
-        { status, render } as unknown as Response,
+        { status, render } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -143,11 +178,20 @@ describe('storyRoutes', () => {
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
-        values: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic', npcs: [], startingSituation: undefined },
+        values: {
+          title: 'Test Title',
+          characterConcept: 'A long enough character concept',
+          worldbuilding: 'World',
+          tone: 'Epic',
+          npcs: [],
+          startingSituation: undefined,
+        },
       });
 
       const renderCalls = render.mock.calls as unknown[][];
-      const firstRenderPayload = renderCalls[0]?.[1] as { values?: Record<string, unknown> } | undefined;
+      const firstRenderPayload = renderCalls[0]?.[1] as
+        | { values?: Record<string, unknown> }
+        | undefined;
       expect(firstRenderPayload?.values).toBeDefined();
       expect(firstRenderPayload?.values?.apiKey).toBeUndefined();
     });
@@ -189,7 +233,7 @@ describe('storyRoutes', () => {
             apiKey: '  valid-key-12345  ',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).not.toHaveBeenCalled();
@@ -201,7 +245,9 @@ describe('storyRoutes', () => {
         tone: 'Trimmed Tone',
         apiKey: 'valid-key-12345',
       });
-      expect(redirect).toHaveBeenCalledWith('/play/550e8400-e29b-41d4-a716-446655440000?page=1&newStory=true');
+      expect(redirect).toHaveBeenCalledWith(
+        '/play/550e8400-e29b-41d4-a716-446655440000?page=1&newStory=true'
+      );
     });
   });
 
@@ -222,7 +268,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(redirect).not.toHaveBeenCalled();
@@ -262,7 +308,7 @@ describe('storyRoutes', () => {
             apiKey: 'invalid-key',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -300,7 +346,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -338,7 +384,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -377,7 +423,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -403,7 +449,7 @@ describe('storyRoutes', () => {
         "output_format.schema: For 'object' type, 'additionalProperties: object' is not supported",
         'HTTP_400',
         false,
-        { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' },
+        { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' }
       );
       jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
 
@@ -417,13 +463,14 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
-        error: 'Story generation failed due to a configuration error. Please try again or report this issue.',
+        error:
+          'Story generation failed due to a configuration error. Please try again or report this issue.',
         values: {
           title: 'Test Title',
           characterConcept: 'A long enough character concept',
@@ -443,7 +490,7 @@ describe('storyRoutes', () => {
         'output_format.json_schema: Invalid schema definition',
         'HTTP_400',
         false,
-        { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' },
+        { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' }
       );
       jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
 
@@ -457,13 +504,14 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
-        error: 'Story generation failed due to a configuration error. Please try again or report this issue.',
+        error:
+          'Story generation failed due to a configuration error. Please try again or report this issue.',
         values: {
           title: 'Test Title',
           characterConcept: 'A long enough character concept',
@@ -495,7 +543,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -530,7 +578,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -564,7 +612,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -590,7 +638,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -608,9 +656,15 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create-ajax')(
         {
-          body: { title: 'Test Title', characterConcept: '', worldbuilding: 'World', tone: 'Epic', apiKey: 'valid-key-12345' },
+          body: {
+            title: 'Test Title',
+            characterConcept: '',
+            worldbuilding: 'World',
+            tone: 'Epic',
+            apiKey: 'valid-key-12345',
+          },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -636,7 +690,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -654,9 +708,14 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/create-ajax')(
         {
-          body: { title: 'Test Title', characterConcept: 'A long enough character concept', worldbuilding: 'World', tone: 'Epic' },
+          body: {
+            title: 'Test Title',
+            characterConcept: 'A long enough character concept',
+            worldbuilding: 'World',
+            tone: 'Epic',
+          },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -682,7 +741,7 @@ describe('storyRoutes', () => {
             apiKey: '    short    ',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(400);
@@ -711,12 +770,15 @@ describe('storyRoutes', () => {
             progressId: '  progress-validation-1  ',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(startStorySpy).not.toHaveBeenCalled();
       expect(progressStartSpy).toHaveBeenCalledWith('progress-validation-1', 'new-story');
-      expect(progressFailSpy).toHaveBeenCalledWith('progress-validation-1', 'Story title is required');
+      expect(progressFailSpy).toHaveBeenCalledWith(
+        'progress-validation-1',
+        'Story title is required'
+      );
       expect(progressCompleteSpy).not.toHaveBeenCalled();
       expect(status).toHaveBeenCalledWith(400);
       expect(json).toHaveBeenCalledWith({
@@ -761,7 +823,7 @@ describe('storyRoutes', () => {
             apiKey: '  valid-key-12345  ',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).not.toHaveBeenCalled();
@@ -818,7 +880,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(startStorySpy).toHaveBeenCalledWith({
@@ -880,7 +942,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(startStorySpy).toHaveBeenCalledWith({
@@ -925,8 +987,16 @@ describe('storyRoutes', () => {
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
       const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockImplementation((options) => {
-        options.onGenerationStage?.({ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 });
-        options.onGenerationStage?.({ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 });
+        options.onGenerationStage?.({
+          stage: 'RESTRUCTURING_STORY',
+          status: 'started',
+          attempt: 1,
+        });
+        options.onGenerationStage?.({
+          stage: 'RESTRUCTURING_STORY',
+          status: 'completed',
+          attempt: 1,
+        });
         return Promise.resolve({
           story: { ...story, id: storyId },
           page,
@@ -944,17 +1014,25 @@ describe('storyRoutes', () => {
             progressId: ' progress-success-1 ',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(startStorySpy).toHaveBeenCalled();
       const startStoryCallArg: unknown = startStorySpy.mock.calls[0]?.[0];
       expect(
-        typeof (startStoryCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage,
+        typeof (startStoryCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage
       ).toBe('function');
       expect(progressStartSpy).toHaveBeenCalledWith('progress-success-1', 'new-story');
-      expect(progressStageStartedSpy).toHaveBeenCalledWith('progress-success-1', 'RESTRUCTURING_STORY', 1);
-      expect(progressStageCompletedSpy).toHaveBeenCalledWith('progress-success-1', 'RESTRUCTURING_STORY', 1);
+      expect(progressStageStartedSpy).toHaveBeenCalledWith(
+        'progress-success-1',
+        'RESTRUCTURING_STORY',
+        1
+      );
+      expect(progressStageCompletedSpy).toHaveBeenCalledWith(
+        'progress-success-1',
+        'RESTRUCTURING_STORY',
+        1
+      );
       expect(progressCompleteSpy).toHaveBeenCalledWith('progress-success-1');
       expect(progressFailSpy).not.toHaveBeenCalled();
       expect(status).not.toHaveBeenCalled();
@@ -981,7 +1059,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1011,7 +1089,7 @@ describe('storyRoutes', () => {
             apiKey: 'invalid-key',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1021,7 +1099,7 @@ describe('storyRoutes', () => {
           error: 'Invalid API key. Please check your OpenRouter API key.',
           code: 'HTTP_401',
           retryable: false,
-        }),
+        })
       );
     });
 
@@ -1044,7 +1122,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1054,7 +1132,7 @@ describe('storyRoutes', () => {
           error: 'Insufficient credits. Please add credits to your OpenRouter account.',
           code: 'HTTP_402',
           retryable: false,
-        }),
+        })
       );
     });
 
@@ -1077,7 +1155,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1087,7 +1165,7 @@ describe('storyRoutes', () => {
           error: 'Rate limit exceeded. Please wait a moment and try again.',
           code: 'HTTP_429',
           retryable: true,
-        }),
+        })
       );
     });
 
@@ -1110,7 +1188,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1120,7 +1198,7 @@ describe('storyRoutes', () => {
           error: 'OpenRouter service is temporarily unavailable. Please try again later.',
           code: 'HTTP_503',
           retryable: true,
-        }),
+        })
       );
     });
 
@@ -1140,7 +1218,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1150,7 +1228,7 @@ describe('storyRoutes', () => {
           error: 'API error: Some parsing error',
           code: 'PARSE_ERROR',
           retryable: false,
-        }),
+        })
       );
     });
 
@@ -1176,7 +1254,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(status).toHaveBeenCalledWith(500);
@@ -1184,15 +1262,15 @@ describe('storyRoutes', () => {
       const jsonMock = json as jest.Mock<void, [unknown]>;
       const responseBody = jsonMock.mock.calls[0]?.[0] as
         | {
-          success: boolean;
-          code: string;
-          debug?: {
-            parseStage?: string;
-            contentShape?: string;
-            contentPreview?: string;
-            rawContent?: string;
-          };
-        }
+            success: boolean;
+            code: string;
+            debug?: {
+              parseStage?: string;
+              contentShape?: string;
+              contentPreview?: string;
+              rawContent?: string;
+            };
+          }
         | undefined;
       expect(responseBody).toMatchObject({
         success: false,
@@ -1225,7 +1303,7 @@ describe('storyRoutes', () => {
             progressId: 'progress-error-1',
           },
         } as Request,
-        { status, json } as unknown as Response,
+        { status, json } as unknown as Response
       );
 
       expect(progressStartSpy).toHaveBeenCalledWith('progress-error-1', 'new-story');
@@ -1248,7 +1326,7 @@ describe('storyRoutes', () => {
 
       await getRouteHandler('post', '/:storyId/delete')(
         { params: { storyId: '550e8400-e29b-41d4-a716-446655440000' } } as unknown as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).not.toHaveBeenCalled();
@@ -1261,11 +1339,13 @@ describe('storyRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
       const redirect = jest.fn();
-      const deleteStorySpy = jest.spyOn(storyEngine, 'deleteStory').mockRejectedValue(new Error('boom'));
+      const deleteStorySpy = jest
+        .spyOn(storyEngine, 'deleteStory')
+        .mockRejectedValue(new Error('boom'));
 
       await getRouteHandler('post', '/:storyId/delete')(
         { params: { storyId: '550e8400-e29b-41d4-a716-446655440000' } } as unknown as Request,
-        { status, render, redirect } as unknown as Response,
+        { status, render, redirect } as unknown as Response
       );
 
       expect(status).not.toHaveBeenCalled();

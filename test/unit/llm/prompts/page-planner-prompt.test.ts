@@ -1,14 +1,22 @@
-import { ThreadType, Urgency } from '../../../../src/models/state/index';
-import type { ContinuationPagePlanContext, OpeningPagePlanContext } from '../../../../src/llm/types';
+import {
+  ConstraintType,
+  ThreatType,
+  ThreadType,
+  Urgency,
+} from '../../../../src/models/state/index';
+import type {
+  ContinuationPagePlanContext,
+  OpeningPagePlanContext,
+} from '../../../../src/llm/context-types';
 import { buildPagePlannerPrompt } from '../../../../src/llm/prompts/page-planner-prompt';
 import { buildPagePlannerPrompt as buildPagePlannerPromptFromBarrel } from '../../../../src/llm/prompts';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'system')?.content ?? '';
+  return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'user')?.content ?? '';
+  return messages.find((message) => message.role === 'user')?.content ?? '';
 }
 
 describe('buildPagePlannerPrompt', () => {
@@ -17,17 +25,6 @@ describe('buildPagePlannerPrompt', () => {
     characterConcept: 'A fugitive radio operator',
     worldbuilding: 'A floodlit surveillance city.',
     tone: 'paranoid thriller',
-    globalCanon: [],
-    globalCharacterCanon: {},
-    accumulatedInventory: [],
-    accumulatedHealth: [],
-    accumulatedCharacterState: {},
-    activeState: {
-      currentLocation: '',
-      activeThreats: [],
-      activeConstraints: [],
-      openThreads: [],
-    },
   };
 
   const continuationContext: ContinuationPagePlanContext = {
@@ -48,8 +45,12 @@ describe('buildPagePlannerPrompt', () => {
     },
     activeState: {
       currentLocation: 'Relay tunnel',
-      activeThreats: [{ id: 'th-1', text: 'Security teams closing in' }],
-      activeConstraints: [{ id: 'cn-1', text: 'Power grid unstable' }],
+      activeThreats: [
+        { id: 'th-1', text: 'Security teams closing in', threatType: ThreatType.HOSTILE_AGENT },
+      ],
+      activeConstraints: [
+        { id: 'cn-1', text: 'Power grid unstable', constraintType: ConstraintType.ENVIRONMENTAL },
+      ],
       openThreads: [
         {
           id: 'td-1',
@@ -70,14 +71,14 @@ describe('buildPagePlannerPrompt', () => {
     expect(messages[1]?.role).toBe('user');
   });
 
-  it('includes planner safety constraints in the system message', () => {
+  it('includes planner constraints in the system message', () => {
     const messages = buildPagePlannerPrompt(openingContext);
     const system = getSystemMessage(messages);
 
     expect(system).toContain('page planner');
     expect(system).toContain('do not narrate');
     expect(system).toContain('propose a dramaticQuestion');
-    expect(system).toContain('do not assign server IDs');
+    expect(system).toContain('do not produce stateIntents');
   });
 
   it('uses opening context section for opening mode', () => {
@@ -86,7 +87,6 @@ describe('buildPagePlannerPrompt', () => {
 
     expect(user).toContain('=== PLANNER CONTEXT: OPENING ===');
     expect(user).toContain('A fugitive radio operator');
-    expect(user).toContain('OPENING STATE SNAPSHOT');
     expect(user).not.toContain('=== PLANNER CONTEXT: CONTINUATION ===');
   });
 
@@ -97,43 +97,17 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
     expect(user).toContain("PLAYER'S CHOICE:");
     expect(user).toContain('- [inv-1] Signal scrambler');
-    expect(user).toContain('- [th-1] Security teams closing in');
+    expect(user).toContain('- [th-1] (HOSTILE_AGENT) Security teams closing in');
     expect(user).toContain('(MYSTERY/HIGH)');
   });
 
-  it('does not include inline output shape scaffolding', () => {
+  it('does not include state-intent rules in planner prompt', () => {
     const messages = buildPagePlannerPrompt(openingContext);
     const user = getUserMessage(messages);
 
-    expect(user).not.toContain('OUTPUT FORMAT:');
-    expect(user).not.toContain('"sceneIntent"');
-    expect(user).not.toContain('"stateIntents"');
+    expect(user).not.toContain('PLANNER RULES:');
+    expect(user).not.toContain('STATE PERSISTENCE CONTRACT:');
+    expect(user).not.toContain('THREAT TYPE CONTRACT:');
     expect(user).toContain('Return JSON only.');
-  });
-
-  it('includes thread contract and canonical phrasing templates in planner rules', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
-    const user = getUserMessage(messages);
-
-    expect(user).toContain('THREAD CONTRACT (OPEN LOOPS ONLY):');
-    expect(user).toContain('THREADS = unresolved open loops, never current-state facts.');
-    expect(user).toContain("Question loop ('MYSTERY', 'INFORMATION', 'MORAL', 'RELATIONSHIP')");
-    expect(user).toContain('CANONICAL THREAD PHRASING TEMPLATES:');
-    expect(user).toContain('MYSTERY: "Open question: <unknown that must be answered>"');
-    expect(user).toContain(
-      'DANGER: "Prevent risk: <looming harm>; avoid by <preventive action/condition>"',
-    );
-  });
-
-  it('includes urgency rubric guidance in planner rules', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
-    const user = getUserMessage(messages);
-
-    expect(user).toContain('THREAD URGENCY RUBRIC:');
-    expect(user).toContain('Default urgency to MEDIUM unless there is clear evidence for LOW or HIGH.');
-    expect(user).toContain(
-      'Do NOT map threadType to fixed urgency (e.g., DANGER is not automatically HIGH).',
-    );
-    expect(user).toContain('URGENCY SELF-CHECK (before you finalize JSON):');
   });
 });

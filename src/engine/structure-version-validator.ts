@@ -15,7 +15,7 @@ export function validateFirstPageStructureVersion(story: Story): void {
   if (story.structure && !getLatestStructureVersion(story)) {
     throw new EngineError(
       'Story has structure but no structure versions. This is an invalid state.',
-      'INVALID_STRUCTURE_VERSION',
+      'INVALID_STRUCTURE_VERSION'
     );
   }
 }
@@ -33,7 +33,7 @@ export function validateContinuationStructureVersion(story: Story, parentPage: P
   if (!latestVersion) {
     throw new EngineError(
       'Story has structure but no structure versions. This is an invalid state.',
-      'INVALID_STRUCTURE_VERSION',
+      'INVALID_STRUCTURE_VERSION'
     );
   }
 
@@ -41,7 +41,7 @@ export function validateContinuationStructureVersion(story: Story, parentPage: P
     throw new EngineError(
       `Parent page ${parentPage.id} has null structureVersionId but story has structure. ` +
         'All pages in structured stories must have a valid structureVersionId.',
-      'INVALID_STRUCTURE_VERSION',
+      'INVALID_STRUCTURE_VERSION'
     );
   }
 }
@@ -52,7 +52,7 @@ export function validateContinuationStructureVersion(story: Story, parentPage: P
  */
 export function resolveActiveStructureVersion(
   story: Story,
-  parentPage: Page,
+  parentPage: Page
 ): VersionedStoryStructure | null {
   if (!parentPage.structureVersionId) {
     return null;

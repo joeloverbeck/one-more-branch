@@ -69,7 +69,7 @@ describe('Character canon manager', () => {
       const result = addCharacterFact({}, 'Margaret', '  Margaret is the intake nurse  ');
 
       expect(result).toEqual({
-        'Margaret': ['Margaret is the intake nurse'],
+        Margaret: ['Margaret is the intake nurse'],
       });
     });
 
@@ -137,18 +137,15 @@ describe('Character canon manager', () => {
     });
 
     it('handles multiple facts per character with preserved casing', () => {
-      const result = mergeCharacterCanonFacts({}, {
-        'The Kid': [
-          'The Kid is an eidolon',
-          'The Kid appears with unnerving clarity',
-        ],
-      });
+      const result = mergeCharacterCanonFacts(
+        {},
+        {
+          'The Kid': ['The Kid is an eidolon', 'The Kid appears with unnerving clarity'],
+        }
+      );
 
       expect(result).toEqual({
-        'The Kid': [
-          'The Kid is an eidolon',
-          'The Kid appears with unnerving clarity',
-        ],
+        'The Kid': ['The Kid is an eidolon', 'The Kid appears with unnerving clarity'],
       });
     });
 
@@ -215,7 +212,7 @@ describe('Character canon manager', () => {
     it('separates characters with blank lines', () => {
       const canon = {
         'Bobby Western': ['Fact A'],
-        'Margaret': ['Fact B'],
+        Margaret: ['Fact B'],
       };
 
       const formatted = formatCharacterCanonForPrompt(canon);

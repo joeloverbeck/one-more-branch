@@ -1,7 +1,9 @@
 import type { StateReconciliationDiagnostic } from './state-reconciler-types.js';
+import { isConstraintType, isThreatType } from '../models/state/index.js';
+import type { ConstraintAdd, ThreatAdd } from '../llm/planner-types.js';
+import type { ConstraintAddition, ThreatAddition } from '../models/state/index.js';
 
 export const UNKNOWN_STATE_ID = 'UNKNOWN_STATE_ID';
-export const MISSING_NARRATIVE_EVIDENCE = 'MISSING_NARRATIVE_EVIDENCE';
 
 export function normalizeIntentText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
@@ -16,45 +18,13 @@ export function normalizeId(value: string): string {
 }
 
 export function normalizeEvidenceText(value: string): string {
-  return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
-export function deriveLexicalAnchors(value: string): string[] {
-  const normalized = normalizeEvidenceText(value);
-  if (!normalized) {
-    return [];
-  }
-
-  return dedupeByKey(
-    normalized.split(/\s+/).filter(token => token.length >= 3),
-    token => token,
-  );
-}
-
-export function hasEvidenceForAnchor(
-  evidenceText: string,
-  anchors: readonly string[],
-): { matched: boolean; anchor: string } {
-  const fallbackAnchor = anchors[0] ?? '';
-  for (const anchor of anchors) {
-    if (evidenceText.includes(anchor)) {
-      return {
-        matched: true,
-        anchor,
-      };
-    }
-  }
-
-  return {
-    matched: false,
-    anchor: fallbackAnchor,
-  };
-}
-
-export function dedupeByKey<T>(
-  values: readonly T[],
-  keyFn: (value: T) => string,
-): T[] {
+export function dedupeByKey<T>(values: readonly T[], keyFn: (value: T) => string): T[] {
   const seen = new Set<string>();
   const result: T[] = [];
 
@@ -71,11 +41,42 @@ export function dedupeByKey<T>(
 }
 
 export function normalizeTextIntents(values: readonly string[]): string[] {
+  return dedupeByKey(values.map(normalizeIntentText).filter(Boolean), intentComparisonKey);
+}
+
+export function normalizeThreatAdds(values: readonly ThreatAdd[]): ThreatAddition[] {
   return dedupeByKey(
     values
-      .map(normalizeIntentText)
-      .filter(Boolean),
-    intentComparisonKey,
+      .map((value) => {
+        if (!isThreatType(value.threatType)) {
+          return null;
+        }
+        return {
+          text: normalizeIntentText(value.text),
+          threatType: value.threatType,
+        };
+      })
+      .filter((value): value is ThreatAddition => value !== null)
+      .filter((value) => value.text.length > 0),
+    (value) => `${intentComparisonKey(value.text)}|${value.threatType}`
+  );
+}
+
+export function normalizeConstraintAdds(values: readonly ConstraintAdd[]): ConstraintAddition[] {
+  return dedupeByKey(
+    values
+      .map((value) => {
+        if (!isConstraintType(value.constraintType)) {
+          return null;
+        }
+        return {
+          text: normalizeIntentText(value.text),
+          constraintType: value.constraintType,
+        };
+      })
+      .filter((value): value is ConstraintAddition => value !== null)
+      .filter((value) => value.text.length > 0),
+    (value) => `${intentComparisonKey(value.text)}|${value.constraintType}`
   );
 }
 
@@ -83,11 +84,11 @@ export function normalizeAndValidateRemoveIds(
   ids: readonly string[],
   knownIds: ReadonlySet<string>,
   field: string,
-  diagnostics: StateReconciliationDiagnostic[],
+  diagnostics: StateReconciliationDiagnostic[]
 ): string[] {
   const result: string[] = [];
 
-  for (const id of dedupeByKey(ids.map(normalizeId).filter(Boolean), value => value)) {
+  for (const id of dedupeByKey(ids.map(normalizeId).filter(Boolean), (value) => value)) {
     if (!knownIds.has(id)) {
       diagnostics.push({
         code: UNKNOWN_STATE_ID,
@@ -99,36 +100,6 @@ export function normalizeAndValidateRemoveIds(
 
     result.push(id);
   }
-
-  return result;
-}
-
-export function applyNarrativeEvidenceGate<T>(
-  values: readonly T[],
-  field: string,
-  toSourceText: (value: T) => string,
-  evidenceText: string,
-  diagnostics: StateReconciliationDiagnostic[],
-): T[] {
-  const result: T[] = [];
-
-  values.forEach(value => {
-    const sourceText = normalizeIntentText(toSourceText(value));
-    const anchors = deriveLexicalAnchors(sourceText);
-    const evidence = hasEvidenceForAnchor(evidenceText, anchors);
-
-    if (evidence.matched) {
-      result.push(value);
-      return;
-    }
-
-    diagnostics.push({
-      code: MISSING_NARRATIVE_EVIDENCE,
-      field,
-      anchor: evidence.anchor,
-      message: `No narrative evidence found for ${field} anchor "${evidence.anchor}".`,
-    });
-  });
 
   return result;
 }

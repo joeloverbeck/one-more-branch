@@ -46,7 +46,9 @@ describe('play page choice click handler', () => {
     button.click();
   }
 
-  function makeSuccessfulChoiceResponse(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  function makeSuccessfulChoiceResponse(
+    overrides: Record<string, unknown> = {}
+  ): Record<string, unknown> {
     return {
       page: {
         id: 2,
@@ -176,9 +178,7 @@ describe('play page choice click handler', () => {
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
-      .mockResolvedValueOnce(
-        mockJsonResponse({ error: 'Server exploded' }, 500)
-      );
+      .mockResolvedValueOnce(mockJsonResponse({ error: 'Server exploded' }, 500));
 
     clickChoice(0);
     await jest.runAllTimersAsync();
@@ -227,7 +227,12 @@ describe('play page choice click handler', () => {
   it('does not show API key modal for explored choices', async () => {
     setupAndInit({
       choices: [
-        { text: 'Explored path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 5 },
+        {
+          text: 'Explored path',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+          nextPageId: 5,
+        },
         { text: 'New path', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
       ],
     });

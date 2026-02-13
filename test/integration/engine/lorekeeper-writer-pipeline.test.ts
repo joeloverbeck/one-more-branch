@@ -1,8 +1,10 @@
 import { generateLorekeeperBible, generatePageWriterOutput } from '@/llm';
 import { createContinuationWriterWithLorekeeper } from '@/engine/lorekeeper-writer-pipeline';
 import type { LorekeeperWriterContext } from '@/engine/lorekeeper-writer-pipeline';
-import type { ContinuationContext, LorekeeperResult, WriterResult } from '@/llm/types';
-import type { PagePlanGenerationResult } from '@/llm/types';
+import type { ContinuationContext } from '@/llm/context-types';
+import type { LorekeeperResult } from '@/llm/lorekeeper-types';
+import type { PageWriterResult } from '@/llm/writer-types';
+import type { PagePlanGenerationResult } from '@/llm/planner-types';
 import type { GenerationStageCallback } from '@/engine/types';
 import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 
@@ -53,7 +55,20 @@ const mockPagePlan: PagePlanGenerationResult = {
   sceneIntent: 'Enter throne room',
   writerBrief: 'Write the throne room scene',
   continuityAnchors: [],
-  stateIntents: { threatsToAdd: [], threatsToRemove: [], constraintsToAdd: [], constraintsToRemove: [], threadsToAdd: [], threadsToResolve: [], inventoryToAdd: [], inventoryToRemove: [], healthToAdd: [], healthToRemove: [], characterStateChanges: [], locationChange: null },
+  stateIntents: {
+    threatsToAdd: [],
+    threatsToRemove: [],
+    constraintsToAdd: [],
+    constraintsToRemove: [],
+    threadsToAdd: [],
+    threadsToResolve: [],
+    inventoryToAdd: [],
+    inventoryToRemove: [],
+    healthToAdd: [],
+    healthToRemove: [],
+    characterStateChanges: [],
+    locationChange: null,
+  },
   dramaticQuestion: 'Will the knight survive?',
   choiceIntents: [],
   rawResponse: '{}',
@@ -62,16 +77,29 @@ const mockPagePlan: PagePlanGenerationResult = {
 const mockLorekeeperResult: LorekeeperResult = {
   sceneWorldContext: 'A grand throne room',
   relevantCharacters: [
-    { name: 'King', role: 'ruler', relevantProfile: 'The king', speechPatterns: 'formal', protagonistRelationship: 'sovereign', currentState: 'seated' },
+    {
+      name: 'King',
+      role: 'ruler',
+      relevantProfile: 'The king',
+      speechPatterns: 'formal',
+      protagonistRelationship: 'sovereign',
+      currentState: 'seated',
+    },
   ],
   relevantCanonFacts: ['The castle was built 500 years ago'],
   relevantHistory: 'The knight has served the king for years',
   rawResponse: '{}',
 };
 
-const mockWriterResult: WriterResult = {
+const mockWriterResult: PageWriterResult = {
   narrative: 'The knight knelt before the throne.',
-  choices: [{ text: 'Speak', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT }],
+  choices: [
+    {
+      text: 'Speak',
+      choiceType: ChoiceType.TACTICAL_APPROACH,
+      primaryDelta: PrimaryDelta.GOAL_SHIFT,
+    },
+  ],
   sceneSummary: 'Knight meets king',
   protagonistAffect: {
     primaryEmotion: 'awe',
@@ -99,7 +127,9 @@ const mockWriterResult: WriterResult = {
   characterStateChangesRemoved: [],
 };
 
-function createBaseContext(overrides: Partial<LorekeeperWriterContext> = {}): LorekeeperWriterContext {
+function createBaseContext(
+  overrides: Partial<LorekeeperWriterContext> = {}
+): LorekeeperWriterContext {
   return {
     continuationContext: mockContinuationContext,
     storyId: 'test-story',
@@ -142,7 +172,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
         },
       }),
       mockPagePlan,
-      expect.any(Object),
+      expect.any(Object)
     );
     expect(result).toEqual(mockWriterResult);
   });
@@ -159,7 +189,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
         storyBible: undefined,
       }),
       mockPagePlan,
-      expect.any(Object),
+      expect.any(Object)
     );
     expect(result).toEqual(mockWriterResult);
   });
@@ -168,7 +198,8 @@ describe('createContinuationWriterWithLorekeeper', () => {
     mockedGenerateLorekeeperBible.mockResolvedValue(mockLorekeeperResult);
     mockedGeneratePageWriterOutput.mockResolvedValue(mockWriterResult);
 
-    const { generateWriter, getLastStoryBible } = createContinuationWriterWithLorekeeper(createBaseContext());
+    const { generateWriter, getLastStoryBible } =
+      createContinuationWriterWithLorekeeper(createBaseContext());
 
     expect(getLastStoryBible()).toBeNull();
 
@@ -184,7 +215,8 @@ describe('createContinuationWriterWithLorekeeper', () => {
     mockedGenerateLorekeeperBible.mockRejectedValue(new Error('LLM timeout'));
     mockedGeneratePageWriterOutput.mockResolvedValue(mockWriterResult);
 
-    const { generateWriter, getLastStoryBible } = createContinuationWriterWithLorekeeper(createBaseContext());
+    const { generateWriter, getLastStoryBible } =
+      createContinuationWriterWithLorekeeper(createBaseContext());
     await generateWriter(mockPagePlan);
 
     expect(getLastStoryBible()).toBeNull();
@@ -196,7 +228,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
     const stageCallback: GenerationStageCallback = jest.fn();
 
     const { generateWriter } = createContinuationWriterWithLorekeeper(
-      createBaseContext({ onGenerationStage: stageCallback }),
+      createBaseContext({ onGenerationStage: stageCallback })
     );
     await generateWriter(mockPagePlan);
 

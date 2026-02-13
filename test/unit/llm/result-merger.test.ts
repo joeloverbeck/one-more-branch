@@ -1,6 +1,8 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../../../src/llm/result-merger.js';
 import type { StateReconciliationResult } from '../../../src/engine/state-reconciler-types.js';
-import type { AnalystResult, PageWriterResult } from '../../../src/llm/types.js';
+import type { AnalystResult } from '../../../src/llm/analyst-types.js';
+import type { PageWriterResult } from '../../../src/llm/writer-types.js';
+import { ThreatType } from '../../../src/models/index.js';
 
 function createPageWriterResult(overrides: Partial<PageWriterResult> = {}): PageWriterResult {
   return {
@@ -24,11 +26,16 @@ function createPageWriterResult(overrides: Partial<PageWriterResult> = {}): Page
 }
 
 function createReconciliationResult(
-  overrides: Partial<StateReconciliationResult> = {},
+  overrides: Partial<StateReconciliationResult> = {}
 ): StateReconciliationResult {
   return {
     currentLocation: 'Reconciled cave',
-    threatsAdded: ['THREAT_BATS_RECONCILED: Confirmed bat swarm'],
+    threatsAdded: [
+      {
+        text: 'THREAT_BATS_RECONCILED: Confirmed bat swarm',
+        threatType: ThreatType.ENVIRONMENTAL,
+      },
+    ],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
@@ -81,25 +88,40 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       beatResolution: 'The scene stabilizes',
     });
 
-    const result = mergePageWriterAndReconciledStateWithAnalystResults(writer, reconciliation, analyst);
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(
+      writer,
+      reconciliation,
+      analyst
+    );
 
     expect(result.narrative).toBe(writer.narrative);
     expect(result.choices).toEqual(writer.choices);
     expect(result.currentLocation).toBe('Reconciled cave');
-    expect(result.threatsAdded).toEqual(['THREAT_BATS_RECONCILED: Confirmed bat swarm']);
+    expect(result.threatsAdded).toEqual([
+      {
+        text: 'THREAT_BATS_RECONCILED: Confirmed bat swarm',
+        threatType: ThreatType.ENVIRONMENTAL,
+      },
+    ]);
     expect(result.beatConcluded).toBe(true);
     expect(result.beatResolution).toBe('The scene stabilizes');
   });
 
-  it('uses writer rawResponse and does not expose reconciliation diagnostics', () => {
+  it('uses writer rawResponse and preserves reconciliation diagnostics', () => {
     const writer = createPageWriterResult({ rawResponse: 'writer-only-raw' });
     const reconciliation = createReconciliationResult({
       reconciliationDiagnostics: [{ code: 'WARN', message: 'diagnostic detail' }],
     });
 
-    const result = mergePageWriterAndReconciledStateWithAnalystResults(writer, reconciliation, null);
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(
+      writer,
+      reconciliation,
+      null
+    );
 
     expect(result.rawResponse).toBe('writer-only-raw');
-    expect('reconciliationDiagnostics' in result).toBe(false);
+    expect(result.reconciliationDiagnostics).toEqual([
+      { code: 'WARN', message: 'diagnostic detail' },
+    ]);
   });
 });

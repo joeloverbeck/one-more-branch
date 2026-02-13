@@ -3,6 +3,27 @@
 - Source: `src/llm/prompts/opening-prompt.ts`
 - System prompt source: `buildOpeningSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/writer-schema.ts`
+- Protagonist speech formatter: `formatSpeechFingerprintForWriter()` from `src/models/decomposed-character.ts`
+
+## Story Bible Conditional Behavior
+
+When a `storyBible` is present on the context (i.e., the Lorekeeper has curated context for this scene), the following sections are **replaced by the Story Bible section** and suppressed from the user prompt:
+
+- **WORLDBUILDING** - replaced by `storyBible.sceneWorldContext`
+- **NPCS** - replaced by `storyBible.relevantCharacters`
+
+The following sections are **always included** regardless of Story Bible presence:
+
+- Starting situation (user-provided grounding, independent of the story bible)
+- Protagonist speech fingerprint (when decomposed characters are available)
+- Planner guidance and choice intents
+- Reconciliation failure reasons (if retry)
+
+## Protagonist Speech Fingerprint
+
+When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST SPEECH FINGERPRINT` section is inserted immediately after CHARACTER CONCEPT. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence, since the Story Bible covers NPC speech but not the protagonist's.
+
+When `storyBible` is absent (lorekeeper failure), all original sections appear as documented below.
 
 ## Messages Sent To Model
 
@@ -10,6 +31,11 @@
 
 ```text
 You are an expert interactive fiction storyteller and Dungeon Master. Your role is to craft immersive, engaging narratives that respond to player choices while maintaining consistency with established world facts and character traits.
+
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 
 CONTENT GUIDELINES:
 RATING: NC-21 (ADULTS ONLY)
@@ -44,15 +70,17 @@ When writing endings (character death, victory, conclusion):
 - Leave no choices when the story concludes.
 ```
 
+The tone block is injected between the role intro and content policy. When tone keywords are available (from the structure generator), the `Target feel` and `Avoid` lines are included; otherwise only the `Tone` line appears.
+
 ### 2) User Message
 
 ```text
 Create the opening scene for a new interactive story.
 
 === DATA & STATE RULES ===
-=== ACTIVE STATE TRACKING ===
+=== CONTINUITY CONTEXT USAGE ===
 
-Use the state sections in the prompt as authoritative continuity context. These represent what is TRUE RIGHT NOW.
+Use the continuity context sections in the prompt as authoritative scene context. These represent what is TRUE RIGHT NOW.
 
 READ-ONLY CONTINUITY INPUT:
 - CURRENT LOCATION: where the protagonist is right now.
@@ -156,12 +184,23 @@ CHOICE FORMATTING EXAMPLE:
 CHARACTER CONCEPT:
 {{characterConcept}}
 
-{{#if worldbuilding}}
+{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
+Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
+Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
+{{#if catchphrases}}Catchphrases: "phrase1", "phrase2"{{/if}}
+{{#if verbalTics}}Verbal tics: tic1, tic2{{/if}}
+{{#if dialogueSamples}}Example lines:
+  "sample line 1"
+  "sample line 2"{{/if}}
+{{/if}}
+
+{{#if !storyBible && worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
 {{/if}}
 
-{{#if npcs.length}}
+{{#if !storyBible && npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
 
@@ -176,6 +215,28 @@ Begin the story with this situation. This takes precedence over your creative de
 {{/if}}
 
 TONE/GENRE: {{tone}}
+
+{{#if storyBible}}
+=== STORY BIBLE (curated for this scene) ===
+
+SCENE WORLD CONTEXT:
+{{storyBible.sceneWorldContext}}
+
+SCENE CHARACTERS:
+{{storyBible.relevantCharacters rendered as:
+[name] (role)
+  Profile: relevantProfile
+  Speech: speechPatterns
+  Relationship to protagonist: protagonistRelationship
+  Inter-character dynamics: interCharacterDynamics (if non-empty)
+  Current state: currentState}}
+
+RELEVANT CANON FACTS:
+{{storyBible.relevantCanonFacts as bullet list}}
+
+RELEVANT HISTORY:
+{{storyBible.relevantHistory}}
+{{/if}}
 
 {{#if pagePlan}}
 === PLANNER GUIDANCE ===
@@ -218,6 +279,8 @@ REQUIREMENTS (follow all):
 6. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 
 REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
+
+TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. Ground the protagonist in the starting situation with immediate tension

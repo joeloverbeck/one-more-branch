@@ -1,5 +1,6 @@
 import type { Story, Page, VersionedStoryStructure } from '../models';
-import type { ContinuationContext, WriterValidationContext } from '../llm/types';
+import type { ContinuationContext } from '../llm/context-types';
+import type { WriterValidationContext } from '../llm/generation-pipeline-types';
 import type { AncestorContext } from './ancestor-collector';
 import type { CollectedParentState } from './parent-state-collector';
 
@@ -14,13 +15,17 @@ export function buildContinuationContext(
   parentState: CollectedParentState,
   ancestorContext: AncestorContext,
   currentStructureVersion: VersionedStoryStructure | null,
-  suggestedProtagonistSpeech?: string,
+  suggestedProtagonistSpeech?: string
 ): ContinuationContext {
   return {
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
+    toneKeywords: story.toneKeywords,
+    toneAntiKeywords: story.toneAntiKeywords,
     npcs: story.npcs,
+    decomposedCharacters: story.decomposedCharacters,
+    decomposedWorld: story.decomposedWorld,
     globalCanon: story.globalCanon,
     globalCharacterCanon: story.globalCharacterCanon,
     structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
@@ -36,10 +41,12 @@ export function buildContinuationContext(
     grandparentNarrative: ancestorContext.grandparentNarrative,
     ancestorSummaries: ancestorContext.ancestorSummaries,
 
+    parentToneDriftDescription: parentPage.analystResult?.toneDriftDescription ?? undefined,
     parentPacingNudge: parentState.structureState.pacingNudge,
     parentPacingIssueReason: parentPage.analystResult?.pacingIssueReason ?? undefined,
     parentSceneMomentum: parentPage.analystResult?.sceneMomentum ?? undefined,
-    parentObjectiveEvidenceStrength: parentPage.analystResult?.objectiveEvidenceStrength ?? undefined,
+    parentObjectiveEvidenceStrength:
+      parentPage.analystResult?.objectiveEvidenceStrength ?? undefined,
     momentumTrajectory: ancestorContext.momentumTrajectory,
 
     accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
@@ -56,15 +63,16 @@ export function buildContinuationContext(
  * Used to tell the writer which IDs are valid for removal operations.
  */
 export function buildRemovableIds(
-  parentState: CollectedParentState,
+  parentState: CollectedParentState
 ): WriterValidationContext['removableIds'] {
   return {
-    threats: parentState.accumulatedActiveState.activeThreats.map(entry => entry.id),
-    constraints: parentState.accumulatedActiveState.activeConstraints.map(entry => entry.id),
-    threads: parentState.accumulatedActiveState.openThreads.map(entry => entry.id),
-    inventory: parentState.accumulatedInventory.map(entry => entry.id),
-    health: parentState.accumulatedHealth.map(entry => entry.id),
-    characterState: Object.values(parentState.accumulatedCharacterState)
-      .flatMap(entries => entries.map(entry => entry.id)),
+    threats: parentState.accumulatedActiveState.activeThreats.map((entry) => entry.id),
+    constraints: parentState.accumulatedActiveState.activeConstraints.map((entry) => entry.id),
+    threads: parentState.accumulatedActiveState.openThreads.map((entry) => entry.id),
+    inventory: parentState.accumulatedInventory.map((entry) => entry.id),
+    health: parentState.accumulatedHealth.map((entry) => entry.id),
+    characterState: Object.values(parentState.accumulatedCharacterState).flatMap((entries) =>
+      entries.map((entry) => entry.id)
+    ),
   };
 }

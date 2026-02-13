@@ -1,31 +1,5 @@
 import { z } from 'zod';
 import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
-import { ThreadType, Urgency } from '../../models/state/index.js';
-
-const CharacterCanonFactsArraySchema = z.array(
-  z.object({
-    characterName: z.string(),
-    facts: z.array(z.string()),
-  }),
-);
-
-function transformCharacterCanonFactsToRecord(
-  input: z.infer<typeof CharacterCanonFactsArraySchema>,
-): Record<string, string[]> {
-  const result: Record<string, string[]> = {};
-  for (const entry of input) {
-    const existing = result[entry.characterName] ?? [];
-    result[entry.characterName] = [...existing, ...entry.facts];
-  }
-  return result;
-}
-
-const CharacterStateChangesArraySchema = z.array(
-  z.object({
-    characterName: z.string(),
-    states: z.array(z.string()),
-  }),
-);
 
 const EmotionIntensitySchema = z.enum(['mild', 'moderate', 'strong', 'overwhelming']);
 
@@ -59,35 +33,10 @@ const ChoiceObjectSchema = z.object({
   primaryDelta: z.nativeEnum(PrimaryDelta),
 });
 
-const ThreadAddSchema = z.object({
-  text: z.string(),
-  threadType: z.nativeEnum(ThreadType),
-  urgency: z.nativeEnum(Urgency),
-});
-
 export const WriterResultSchema = z
   .object({
-    narrative: z
-      .string()
-      .min(50, 'Narrative must be at least 50 characters'),
+    narrative: z.string().min(50, 'Narrative must be at least 50 characters'),
     choices: z.array(ChoiceObjectSchema),
-    currentLocation: z.string().optional().default(''),
-    threatsAdded: z.array(z.string()).optional().default([]),
-    threatsRemoved: z.array(z.string()).optional().default([]),
-    constraintsAdded: z.array(z.string()).optional().default([]),
-    constraintsRemoved: z.array(z.string()).optional().default([]),
-    threadsAdded: z.array(ThreadAddSchema).optional().default([]),
-    threadsResolved: z.array(z.string()).optional().default([]),
-    newCanonFacts: z.array(z.string()).optional().default([]),
-    newCharacterCanonFacts: CharacterCanonFactsArraySchema.optional()
-      .default([])
-      .transform(transformCharacterCanonFactsToRecord),
-    inventoryAdded: z.array(z.string()).optional().default([]),
-    inventoryRemoved: z.array(z.string()).optional().default([]),
-    healthAdded: z.array(z.string()).optional().default([]),
-    healthRemoved: z.array(z.string()).optional().default([]),
-    characterStateChangesAdded: CharacterStateChangesArraySchema.optional().default([]),
-    characterStateChangesRemoved: z.array(z.string()).optional().default([]),
     protagonistAffect: ProtagonistAffectSchema.optional().default(defaultProtagonistAffect),
     sceneSummary: z.string().min(20),
     isEnding: z.boolean(),
@@ -117,7 +66,7 @@ export const WriterResultSchema = z
       });
     }
 
-    const normalizedChoices = data.choices.map(choice => choice.text.toLowerCase().trim());
+    const normalizedChoices = data.choices.map((choice) => choice.text.toLowerCase().trim());
     if (new Set(normalizedChoices).size !== normalizedChoices.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -127,8 +76,8 @@ export const WriterResultSchema = z
     }
 
     if (data.choices.length >= 2) {
-      const types = new Set(data.choices.map(c => c.choiceType));
-      const deltas = new Set(data.choices.map(c => c.primaryDelta));
+      const types = new Set(data.choices.map((c) => c.choiceType));
+      const deltas = new Set(data.choices.map((c) => c.primaryDelta));
       if (types.size === 1 && deltas.size === 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -137,7 +86,6 @@ export const WriterResultSchema = z
         });
       }
     }
-
   });
 
 export type ValidatedWriterResult = z.infer<typeof WriterResultSchema>;

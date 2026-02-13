@@ -12,7 +12,7 @@ type RouteLayer = {
 
 function getHomeHandler(): (req: Request, res: Response) => Promise<void> | void {
   const layer = (homeRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === '/' && item.route?.methods?.get,
+    (item) => item.route?.path === '/' && item.route?.methods?.get
   );
 
   const handler = layer?.route?.stack?.[0]?.handle;

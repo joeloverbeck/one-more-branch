@@ -16,10 +16,12 @@ type RouterLayer = {
   name?: string;
 };
 
-function findGetRootHandler(layers: RouterLayer[]): ((req: Request, res: Response) => unknown) | null {
+function findGetRootHandler(
+  layers: RouterLayer[]
+): ((req: Request, res: Response) => unknown) | null {
   for (const layer of layers) {
     const route = layer.handle?.stack?.find(
-      (stackLayer) => stackLayer.route?.path === '/' && stackLayer.route?.methods?.get,
+      (stackLayer) => stackLayer.route?.path === '/' && stackLayer.route?.methods?.get
     );
     const handler = route?.route?.stack?.[0]?.handle;
     if (handler) {
@@ -133,10 +135,13 @@ describe('server app setup', () => {
     const status = jest.fn().mockReturnThis();
     const render = jest.fn();
 
-    homeHandler?.({} as Request, {
-      status,
-      render,
-    } as unknown as Response);
+    homeHandler?.(
+      {} as Request,
+      {
+        status,
+        render,
+      } as unknown as Response
+    );
     await flushPromises();
 
     expect(homeHandler).toBeDefined();

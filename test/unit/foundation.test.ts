@@ -12,13 +12,7 @@ describe('Project Foundation', () => {
   });
 
   it('should have required source directories', () => {
-    const requiredDirs = [
-      'src/models',
-      'src/persistence',
-      'src/llm',
-      'src/engine',
-      'src/server',
-    ];
+    const requiredDirs = ['src/models', 'src/persistence', 'src/llm', 'src/engine', 'src/server'];
 
     requiredDirs.forEach((dir) => {
       const fullPath = path.join(__dirname, '../..', dir);

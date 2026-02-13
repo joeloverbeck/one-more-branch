@@ -1,4 +1,4 @@
-import { generateStoryStructure } from '../llm';
+import { decomposeEntities, generateStoryStructure } from '../llm';
 import {
   createStory,
   Page,
@@ -10,7 +10,7 @@ import {
   updateStoryStructure,
 } from '../models';
 import { storage } from '../persistence';
-import { generateFirstPage } from './page-service';
+import { generatePage } from './page-service';
 import { createStoryStructure } from './structure-factory';
 import { EngineError, StartStoryOptions, StartStoryResult } from './types';
 
@@ -42,7 +42,7 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
     await storage.saveStory(story);
 
     options.onGenerationStage?.({
-      stage: 'RESTRUCTURING_STORY',
+      stage: 'STRUCTURING_STORY',
       status: 'started',
       attempt: 1,
     });
@@ -54,16 +54,28 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
         npcs: story.npcs,
         startingSituation: story.startingSituation,
       },
-      options.apiKey,
+      options.apiKey
     );
     options.onGenerationStage?.({
-      stage: 'RESTRUCTURING_STORY',
+      stage: 'STRUCTURING_STORY',
       status: 'completed',
       attempt: 1,
     });
     const structure = createStoryStructure(structureResult);
     let storyWithStructure = updateStoryStructure(story, structure);
 
+    if (structureResult.toneKeywords && structureResult.toneKeywords.length > 0) {
+      storyWithStructure = {
+        ...storyWithStructure,
+        toneKeywords: structureResult.toneKeywords,
+      };
+    }
+    if (structureResult.toneAntiKeywords && structureResult.toneAntiKeywords.length > 0) {
+      storyWithStructure = {
+        ...storyWithStructure,
+        toneAntiKeywords: structureResult.toneAntiKeywords,
+      };
+    }
     if (structureResult.initialNpcAgendas && structureResult.initialNpcAgendas.length > 0) {
       storyWithStructure = {
         ...storyWithStructure,
@@ -73,10 +85,38 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
 
     await storage.updateStory(storyWithStructure);
 
-    const { page, updatedStory } = await generateFirstPage(
+    options.onGenerationStage?.({
+      stage: 'DECOMPOSING_ENTITIES',
+      status: 'started',
+      attempt: 1,
+    });
+    const decompositionResult = await decomposeEntities(
+      {
+        characterConcept: story.characterConcept,
+        worldbuilding: story.worldbuilding,
+        tone: story.tone,
+        npcs: story.npcs,
+      },
+      options.apiKey
+    );
+    options.onGenerationStage?.({
+      stage: 'DECOMPOSING_ENTITIES',
+      status: 'completed',
+      attempt: 1,
+    });
+    storyWithStructure = {
+      ...storyWithStructure,
+      decomposedCharacters: decompositionResult.decomposedCharacters,
+      decomposedWorld: decompositionResult.decomposedWorld,
+    };
+    await storage.updateStory(storyWithStructure);
+
+    const { page, updatedStory } = await generatePage(
+      'opening',
       storyWithStructure,
       options.apiKey,
-      options.onGenerationStage,
+      undefined,
+      options.onGenerationStage
     );
 
     await storage.savePage(story.id, page);

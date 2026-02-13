@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const ANALYST_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -25,14 +25,12 @@ export const ANALYST_SCHEMA: JsonSchema = {
         },
         deviationReason: {
           type: 'string',
-          description:
-            'Concise explanation for detected deviation; empty when no deviation.',
+          description: 'Concise explanation for detected deviation; empty when no deviation.',
         },
         invalidatedBeatIds: {
           type: 'array',
           items: { type: 'string' },
-          description:
-            'Beat IDs invalidated by deviation (format: X.Y); empty when no deviation.',
+          description: 'Beat IDs invalidated by deviation (format: X.Y); empty when no deviation.',
         },
         narrativeSummary: {
           type: 'string',
@@ -95,10 +93,20 @@ export const ANALYST_SCHEMA: JsonSchema = {
         completionGateFailureReason: {
           type: 'string',
         },
+        toneAdherent: {
+          type: 'boolean',
+          description:
+            'True if the narrative prose matches the target tone in mood, vocabulary, and emotional register. False if it drifts toward a different genre feel.',
+        },
+        toneDriftDescription: {
+          type: 'string',
+          description:
+            'If toneAdherent is false, briefly describes what feels off and what the tone should be. Empty string when toneAdherent is true.',
+        },
         narrativePromises: {
           type: 'array',
           description:
-            'Implicit foreshadowing or Chekhov\'s guns planted in the narrative prose with notable emphasis. Only flag items introduced with deliberate narrative weight, not incidental details. Max 3 per page.',
+            "Implicit foreshadowing or Chekhov's guns planted in the narrative prose with notable emphasis. Only flag items introduced with deliberate narrative weight, not incidental details. Max 3 per page.",
           items: {
             type: 'object',
             properties: {
@@ -171,6 +179,8 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'anchorEvidence',
         'completionGateSatisfied',
         'completionGateFailureReason',
+        'toneAdherent',
+        'toneDriftDescription',
         'narrativePromises',
         'threadPayoffAssessments',
       ],

@@ -146,7 +146,8 @@ describe('validateAnalystResponse', () => {
       deviationDetected: true,
       deviationReason: 'The protagonist chose to ally with the antagonist',
       invalidatedBeatIds: ['2.1', '2.2', '3.1'],
-      narrativeSummary: 'The hero has joined forces with the villain, invalidating the planned conflict arc',
+      narrativeSummary:
+        'The hero has joined forces with the villain, invalidating the planned conflict arc',
     };
 
     const result = validateAnalystResponse(input, RAW_RESPONSE);
@@ -155,7 +156,7 @@ describe('validateAnalystResponse', () => {
     expect(result.deviationReason).toBe('The protagonist chose to ally with the antagonist');
     expect(result.invalidatedBeatIds).toEqual(['2.1', '2.2', '3.1']);
     expect(result.narrativeSummary).toBe(
-      'The hero has joined forces with the villain, invalidating the planned conflict arc',
+      'The hero has joined forces with the villain, invalidating the planned conflict arc'
     );
   });
 

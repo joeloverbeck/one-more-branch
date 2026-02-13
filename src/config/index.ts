@@ -29,7 +29,7 @@ function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial
     ) {
       result[key] = deepMerge(
         targetValue as Record<string, unknown>,
-        sourceValue as Record<string, unknown>,
+        sourceValue as Record<string, unknown>
       ) as T[keyof T];
     } else if (sourceValue !== undefined) {
       result[key] = sourceValue as T[keyof T];
@@ -154,4 +154,10 @@ function deepFreeze<T>(obj: T): Readonly<T> {
 }
 
 // Re-export types for convenience
-export type { AppConfig, ServerConfig, StorageConfig, LLMConfig, LoggingConfig } from './schemas.js';
+export type {
+  AppConfig,
+  ServerConfig,
+  StorageConfig,
+  LLMConfig,
+  LoggingConfig,
+} from './schemas.js';

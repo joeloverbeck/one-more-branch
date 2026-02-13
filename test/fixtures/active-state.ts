@@ -7,7 +7,9 @@
 import {
   ActiveState,
   ActiveStateChanges,
+  ConstraintType,
   KeyedEntry,
+  ThreatType,
   ThreadEntry,
   ThreadType,
   Urgency,
@@ -18,10 +20,22 @@ import {
 /**
  * Creates a mock keyed state entry for testing.
  */
-export function createMockKeyedEntry(prefix: 'th' | 'cn' | 'td', id: number, text: string): KeyedEntry {
+export function createMockKeyedEntry(
+  prefix: 'th' | 'cn' | 'td',
+  id: number,
+  text: string
+): KeyedEntry {
+  const metadata =
+    prefix === 'th'
+      ? { threatType: ThreatType.ENVIRONMENTAL }
+      : prefix === 'cn'
+        ? { constraintType: ConstraintType.PHYSICAL }
+        : { threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM };
+
   return {
     id: `${prefix}-${id}`,
     text,
+    ...metadata,
   };
 }
 
@@ -32,7 +46,7 @@ export function createMockThreadEntry(
   id: number,
   text: string,
   threadType: ThreadType = ThreadType.INFORMATION,
-  urgency: Urgency = Urgency.MEDIUM,
+  urgency: Urgency = Urgency.MEDIUM
 ): ThreadEntry {
   return {
     id: `td-${id}`,
@@ -107,17 +121,20 @@ export const FIXTURES = {
       createMockKeyedEntry('th', 1, 'A wolf pack is hunting nearby'),
       createMockKeyedEntry('th', 2, 'A violent storm is approaching'),
     ],
-    activeConstraints: [
-      createMockKeyedEntry('cn', 1, 'Injured leg limits mobility'),
-    ],
+    activeConstraints: [createMockKeyedEntry('cn', 1, 'Injured leg limits mobility')],
     openThreads: [
-      createMockThreadEntry(1, "The map's destination remains unclear", ThreadType.MYSTERY, Urgency.HIGH),
+      createMockThreadEntry(
+        1,
+        "The map's destination remains unclear",
+        ThreadType.MYSTERY,
+        Urgency.HIGH
+      ),
     ],
   } as ActiveState,
 
   changesAddingThreat: {
     newLocation: null,
-    threatsAdded: ['Fire spreading from the east wing'],
+    threatsAdded: [{ text: 'Fire spreading from the east wing', threatType: ThreatType.ENVIRONMENTAL }],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
@@ -147,11 +164,15 @@ export const FIXTURES = {
 
   complexChanges: {
     newLocation: 'Underground passage',
-    threatsAdded: ['The tunnel is unstable'],
+    threatsAdded: [{ text: 'The tunnel is unstable', threatType: ThreatType.ENVIRONMENTAL }],
     threatsRemoved: ['th-1'],
-    constraintsAdded: ['Complete darkness requires careful movement'],
+    constraintsAdded: [
+      { text: 'Complete darkness requires careful movement', constraintType: ConstraintType.ENVIRONMENTAL },
+    ],
     constraintsRemoved: [],
-    threadsAdded: ['Strange sounds echo from below'],
+    threadsAdded: [
+      { text: 'Strange sounds echo from below', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+    ],
     threadsResolved: ['td-1'],
   } as ActiveStateChanges,
 } as const;

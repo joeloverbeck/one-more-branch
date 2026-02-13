@@ -120,7 +120,7 @@ export async function addChoice(
   pageId: PageId,
   choiceText: string,
   choiceType: ChoiceType = ChoiceType.TACTICAL_APPROACH,
-  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT,
+  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT
 ): Promise<Page> {
   return withLock(storyId, async () => {
     const page = await loadPage(storyId, pageId);

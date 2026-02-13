@@ -1,4 +1,4 @@
-import { ThreadType, Urgency } from '../../../../../src/models/state';
+import { ConstraintType, ThreatType, ThreadType, Urgency } from '../../../../../src/models/state';
 import type { ActiveState } from '../../../../../src/models/state';
 import {
   buildLocationSection,
@@ -42,16 +42,20 @@ describe('active-state-sections', () => {
       const state: ActiveState = {
         ...emptyState,
         activeThreats: [
-          { id: 'th-1', text: 'Guard patrolling the area' },
-          { id: 'th-2', text: 'Alarm system is active' },
+          {
+            id: 'th-1',
+            text: 'Guard patrolling the area',
+            threatType: ThreatType.HOSTILE_AGENT,
+          },
+          { id: 'th-2', text: 'Alarm system is active', threatType: ThreatType.ENVIRONMENTAL },
         ],
       };
 
       const result = buildThreatsSection(state);
 
       expect(result).toContain('ACTIVE THREATS (dangers that exist NOW):');
-      expect(result).toContain('- [th-1] Guard patrolling the area');
-      expect(result).toContain('- [th-2] Alarm system is active');
+      expect(result).toContain('- [th-1] (HOSTILE_AGENT) Guard patrolling the area');
+      expect(result).toContain('- [th-2] (ENVIRONMENTAL) Alarm system is active');
     });
   });
 
@@ -64,14 +68,18 @@ describe('active-state-sections', () => {
       const state: ActiveState = {
         ...emptyState,
         activeConstraints: [
-          { id: 'cn-1', text: 'Injured leg limits mobility' },
+          {
+            id: 'cn-1',
+            text: 'Injured leg limits mobility',
+            constraintType: ConstraintType.PHYSICAL,
+          },
         ],
       };
 
       const result = buildConstraintsSection(state);
 
       expect(result).toContain('ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):');
-      expect(result).toContain('- [cn-1] Injured leg limits mobility');
+      expect(result).toContain('- [cn-1] (PHYSICAL) Injured leg limits mobility');
     });
   });
 

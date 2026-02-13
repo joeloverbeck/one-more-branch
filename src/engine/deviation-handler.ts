@@ -8,7 +8,7 @@ import {
   Story,
   VersionedStoryStructure,
 } from '../models';
-import { ContinuationGenerationResult } from '../llm/types';
+import { ContinuationGenerationResult } from '../llm/generation-pipeline-types';
 import { buildRewriteContext } from './structure-rewrite-support';
 import { createStructureRewriter } from './structure-rewriter';
 import { DeviationInfo } from './types';
@@ -39,7 +39,7 @@ export interface DeviationHandlingResult {
 export function isActualDeviation(
   result: ContinuationGenerationResult,
   story: Story,
-  currentVersion: VersionedStoryStructure | null,
+  currentVersion: VersionedStoryStructure | null
 ): boolean {
   return (
     story.structure !== null &&
@@ -55,13 +55,13 @@ export function isActualDeviation(
  */
 export async function handleDeviation(
   context: DeviationContext,
-  apiKey: string,
+  apiKey: string
 ): Promise<DeviationHandlingResult> {
   const rewriteContext = buildRewriteContext(
     context.story,
     context.currentVersion,
     context.parentStructureState,
-    context.deviation,
+    context.deviation
   );
 
   const rewriter = createStructureRewriter();
@@ -72,7 +72,7 @@ export async function handleDeviation(
     rewriteResult.structure,
     rewriteResult.preservedBeatIds,
     context.deviation.reason,
-    context.newPageId,
+    context.newPageId
   );
 
   const updatedStory = addStructureVersion(context.story, newVersion);

@@ -5,9 +5,7 @@
 import { ProtagonistAffect } from '../../models';
 import { ProtagonistAffectFileData } from '../page-serializer-types';
 
-export function protagonistAffectToFileData(
-  affect: ProtagonistAffect
-): ProtagonistAffectFileData {
+export function protagonistAffectToFileData(affect: ProtagonistAffect): ProtagonistAffectFileData {
   return {
     primaryEmotion: affect.primaryEmotion,
     primaryIntensity: affect.primaryIntensity,
@@ -20,9 +18,7 @@ export function protagonistAffectToFileData(
   };
 }
 
-export function fileDataToProtagonistAffect(
-  data: ProtagonistAffectFileData
-): ProtagonistAffect {
+export function fileDataToProtagonistAffect(data: ProtagonistAffectFileData): ProtagonistAffect {
   return {
     primaryEmotion: data.primaryEmotion,
     primaryIntensity: data.primaryIntensity,

@@ -67,9 +67,7 @@ describe('new story form submit', () => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, storyId: 'new-story-42' })
-      );
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'new-story-42' }));
     });
 
     submitForm();
@@ -98,9 +96,7 @@ describe('new story form submit', () => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, storyId: 'story-1' })
-      );
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
     });
 
     submitForm();
@@ -139,17 +135,13 @@ describe('new story form submit', () => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
-      return Promise.resolve(
-        mockJsonResponse({ success: false, error: 'Error' }, 500)
-      );
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Error' }, 500));
     });
 
     submitForm();
     await jest.runAllTimersAsync();
 
-    const submitBtn = document.querySelector(
-      'button[type="submit"]'
-    ) as HTMLButtonElement;
+    const submitBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
     expect(submitBtn.disabled).toBe(false);
   });
 
@@ -161,9 +153,7 @@ describe('new story form submit', () => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, storyId: 'story-1' })
-      );
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
     });
 
     submitForm();
@@ -190,9 +180,7 @@ describe('new story form submit', () => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, storyId: 'story-npc' })
-      );
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-npc' }));
     });
 
     submitForm();

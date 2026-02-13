@@ -33,14 +33,12 @@ export function accumulatedActiveStateToFileData(
   };
 }
 
-export function fileDataToActiveStateChanges(
-  data: ActiveStateChangesFileData
-): ActiveStateChanges {
+export function fileDataToActiveStateChanges(data: ActiveStateChangesFileData): ActiveStateChanges {
   return {
     newLocation: data.newLocation,
-    threatsAdded: [...data.threatsAdded],
+    threatsAdded: data.threatsAdded.map((entry) => ({ ...entry })),
     threatsRemoved: [...data.threatsRemoved],
-    constraintsAdded: [...data.constraintsAdded],
+    constraintsAdded: data.constraintsAdded.map((entry) => ({ ...entry })),
     constraintsRemoved: [...data.constraintsRemoved],
     threadsAdded: [...data.threadsAdded],
     threadsResolved: [...data.threadsResolved],

@@ -12,16 +12,18 @@ describe('main layout template', () => {
     const template = fs.readFileSync(layoutPath, 'utf8');
 
     expect(template).toContain('<!DOCTYPE html>');
-    expect(template).toContain('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
+    expect(template).toContain(
+      '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+    );
     expect(template).toContain('<title><%= title %></title>');
     expect(template).toContain(
-      '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">',
+      '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">'
     );
     expect(template).toContain(
-      '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">',
+      '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">'
     );
     expect(template).toContain(
-      '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">',
+      '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">'
     );
     expect(template).toContain('<link rel="manifest" href="/site.webmanifest">');
     expect(template).toContain('<link rel="stylesheet" href="/css/styles.css">');

@@ -88,10 +88,7 @@ describe('config loader', () => {
 
       try {
         // Write invalid config
-        fs.writeFileSync(
-          defaultPath,
-          JSON.stringify({ server: { port: 70000 } }),
-        );
+        fs.writeFileSync(defaultPath, JSON.stringify({ server: { port: 70000 } }));
 
         expect(() => loadConfig()).toThrow('Invalid configuration');
       } finally {
@@ -132,7 +129,7 @@ describe('config loader', () => {
               temperature: 0.8,
               retry: { maxRetries: 3, baseDelayMs: 1000 },
             },
-          }),
+          })
         );
 
         // Write partial override
@@ -141,7 +138,7 @@ describe('config loader', () => {
           JSON.stringify({
             server: { port: 8080 },
             llm: { retry: { maxRetries: 5 } },
-          }),
+          })
         );
 
         const config = loadConfig();

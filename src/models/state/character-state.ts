@@ -60,7 +60,7 @@ function getGlobalCharacterStateMaxId(current: AccumulatedCharacterState): numbe
  */
 export function applyCharacterStateChanges(
   current: AccumulatedCharacterState,
-  changes: CharacterStateChanges,
+  changes: CharacterStateChanges
 ): AccumulatedCharacterState {
   const result: Record<string, KeyedEntry[]> = {};
 
@@ -79,7 +79,7 @@ export function applyCharacterStateChanges(
   if (removals.size > 0) {
     const matched = new Set<string>();
     for (const [name, states] of Object.entries(result)) {
-      const kept = states.filter(state => {
+      const kept = states.filter((state) => {
         if (removals.has(state.id)) {
           matched.add(state.id);
           return false;

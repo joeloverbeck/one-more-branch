@@ -1,6 +1,13 @@
+import {
+  formatDecomposedCharacterForPrompt,
+} from '../../../../models/decomposed-character.js';
+import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
-import type { ContinuationPagePlanContext, MomentumTrajectory } from '../../../types.js';
+import type { ContinuationPagePlanContext } from '../../../context-types.js';
+import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
+import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
+import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 import {
   buildThreadAgingSection,
   buildNarrativePromisesSection,
@@ -13,11 +20,13 @@ function formatCharacterCanon(characterCanon: Readonly<Record<string, readonly s
     return '(none)';
   }
 
-  return entries.map(([name, facts]) => `[${name}]\n${facts.map(fact => `- ${fact}`).join('\n')}`).join('\n\n');
+  return entries
+    .map(([name, facts]) => `[${name}]\n${facts.map((fact) => `- ${fact}`).join('\n')}`)
+    .join('\n\n');
 }
 
 function formatCharacterState(
-  characterState: Readonly<Record<string, readonly { id: string; text: string }[]>>,
+  characterState: Readonly<Record<string, readonly { id: string; text: string }[]>>
 ): string {
   const entries = Object.entries(characterState);
   if (entries.length === 0) {
@@ -27,7 +36,7 @@ function formatCharacterState(
   return entries
     .map(
       ([name, states]) =>
-        `[${name}]\n${states.map(state => `- [${state.id}] ${state.text}`).join('\n')}`,
+        `[${name}]\n${states.map((state) => `- [${state.id}] ${state.text}`).join('\n')}`
     )
     .join('\n\n');
 }
@@ -35,7 +44,10 @@ function formatCharacterState(
 /**
  * Counts how many consecutive entries from the end of an array match a predicate.
  */
-export function countConsecutiveFromEnd<T>(items: readonly T[], predicate: (item: T) => boolean): number {
+export function countConsecutiveFromEnd<T>(
+  items: readonly T[],
+  predicate: (item: T) => boolean
+): number {
   let count = 0;
   for (let i = items.length - 1; i >= 0; i--) {
     if (predicate(items[i]!)) {
@@ -54,30 +66,30 @@ function buildTrajectorySection(trajectory: MomentumTrajectory): string {
 
   const lines: string[] = [];
 
-  const momentumTrend = trajectory.map(p => p.sceneMomentum).join(' -> ');
-  const evidenceTrend = trajectory.map(p => p.objectiveEvidenceStrength).join(' -> ');
+  const momentumTrend = trajectory.map((p) => p.sceneMomentum).join(' -> ');
+  const evidenceTrend = trajectory.map((p) => p.objectiveEvidenceStrength).join(' -> ');
   lines.push(`Momentum trend (last ${trajectory.length} pages): ${momentumTrend}`);
   lines.push(`Objective evidence trend: ${evidenceTrend}`);
 
   const consecutiveStasis = countConsecutiveFromEnd(
     trajectory,
-    p => p.sceneMomentum === 'STASIS',
+    (p) => p.sceneMomentum === 'STASIS'
   );
   if (consecutiveStasis >= 2) {
     lines.push(
       `WARNING: ${consecutiveStasis} consecutive pages with STASIS momentum. ` +
-        'Plan MUST include a major narrative advancement — reveal, confrontation, or irreversible change.',
+        'Plan MUST include a major narrative advancement — reveal, confrontation, or irreversible change.'
     );
   }
 
   const consecutiveWeakEvidence = countConsecutiveFromEnd(
     trajectory,
-    p => p.objectiveEvidenceStrength === 'NONE' || p.objectiveEvidenceStrength === 'WEAK_IMPLICIT',
+    (p) => p.objectiveEvidenceStrength === 'NONE' || p.objectiveEvidenceStrength === 'WEAK_IMPLICIT'
   );
   if (consecutiveWeakEvidence >= 3) {
     lines.push(
       `WARNING: ${consecutiveWeakEvidence} consecutive pages with weak/no objective evidence. ` +
-        'Plan MUST make direct progress toward the current beat objective.',
+        'Plan MUST make direct progress toward the current beat objective.'
     );
   }
 
@@ -129,14 +141,14 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
   ) {
     lines.push(
       '- CRITICAL: Previous scene showed STASIS with weak/no evidence of progress. ' +
-        'Plan MUST advance beat objective directly. No exploratory or setup scenes.',
+        'Plan MUST advance beat objective directly. No exploratory or setup scenes.'
     );
   }
 
   if (hasIssueReason) {
     lines.push(
       '- Pacing issue flagged: plan should push forward with action, revelation, or consequence. ' +
-        'No exploratory or setup scenes.',
+        'No exploratory or setup scenes.'
     );
   }
 
@@ -145,7 +157,7 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
     context.parentSceneMomentum === 'SCOPE_SHIFT'
   ) {
     lines.push(
-      '- Previous scene had major progress. A breathing scene is acceptable if dramatically appropriate.',
+      '- Previous scene had major progress. A breathing scene is acceptable if dramatically appropriate.'
     );
   }
 
@@ -164,12 +176,12 @@ function buildNpcAgendasSection(agendas?: AccumulatedNpcAgendas): string {
   }
 
   const lines = entries.map(
-    a =>
+    (a) =>
       `[${a.npcName}]
   Goal: ${a.currentGoal}
   Leverage: ${a.leverage}
   Fear: ${a.fear}
-  Off-screen: ${a.offScreenBehavior}`,
+  Off-screen: ${a.offScreenBehavior}`
   );
 
   return `NPC AGENDAS (what each NPC wants and will do):
@@ -178,66 +190,81 @@ ${lines.join('\n\n')}
 `;
 }
 
-export function buildPlannerContinuationContextSection(context: ContinuationPagePlanContext): string {
-  const worldSection = context.worldbuilding
-    ? `WORLDBUILDING:
+export function buildPlannerContinuationContextSection(
+  context: ContinuationPagePlanContext
+): string {
+  const hasDecomposed =
+    context.decomposedCharacters && context.decomposedCharacters.length > 0;
+  const hasDecomposedWorld =
+    context.decomposedWorld && context.decomposedWorld.facts.length > 0;
+
+  const worldSection = hasDecomposedWorld
+    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld!)}
+
+`
+    : context.worldbuilding
+      ? `WORLDBUILDING:
 ${context.worldbuilding}
-
-`
-    : '';
-
-  const npcsSection = context.npcs && context.npcs.length > 0
-    ? `NPCS (Available Characters):
-${formatNpcsForPrompt(context.npcs)}
-
-`
-    : '';
-
-  const structureSection =
-    context.structure && context.accumulatedStructureState
-      ? `=== STORY STRUCTURE (if provided) ===
-Overall Theme: ${context.structure.overallTheme}
-Current Act Index: ${context.accumulatedStructureState.currentActIndex}
-Current Beat Index: ${context.accumulatedStructureState.currentBeatIndex}
 
 `
       : '';
 
+  const npcsSection = hasDecomposed
+    ? `CHARACTERS (structured profiles):
+${context.decomposedCharacters!.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
+
+`
+    : context.npcs && context.npcs.length > 0
+      ? `NPCS (Available Characters):
+${formatNpcsForPrompt(context.npcs)}
+
+`
+      : '';
+
+  const structureSection = buildWriterStructureContext(
+    context.structure,
+    context.accumulatedStructureState
+  );
+
   const globalCanonSection =
     context.globalCanon.length > 0
-      ? context.globalCanon.map(fact => `- ${fact}`).join('\n')
+      ? context.globalCanon.map((fact) => `- ${fact}`).join('\n')
       : '(none)';
 
   const inventorySection =
     context.accumulatedInventory.length > 0
-      ? context.accumulatedInventory.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')
+      ? context.accumulatedInventory.map((entry) => `- [${entry.id}] ${entry.text}`).join('\n')
       : '(none)';
 
   const healthSection =
     context.accumulatedHealth.length > 0
-      ? context.accumulatedHealth.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')
+      ? context.accumulatedHealth.map((entry) => `- [${entry.id}] ${entry.text}`).join('\n')
       : '(none)';
 
   const threatsSection =
     context.activeState.activeThreats.length > 0
-      ? context.activeState.activeThreats.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')
+      ? context.activeState.activeThreats
+          .map((entry) => `- [${entry.id}] (${entry.threatType}) ${entry.text}`)
+          .join('\n')
       : '(none)';
 
   const constraintsSection =
     context.activeState.activeConstraints.length > 0
-      ? context.activeState.activeConstraints.map(entry => `- [${entry.id}] ${entry.text}`).join('\n')
+      ? context.activeState.activeConstraints
+          .map((entry) => `- [${entry.id}] (${entry.constraintType}) ${entry.text}`)
+          .join('\n')
       : '(none)';
 
   const threadAges = context.threadAges ?? {};
   const threadsSection =
     context.activeState.openThreads.length > 0
       ? context.activeState.openThreads
-        .map(entry => {
-          const age = threadAges[entry.id];
-          const ageStr = age !== undefined ? `, ${age} pages old` : '';
-          return `- [${entry.id}] (${entry.threadType}/${entry.urgency}${ageStr}) ${entry.text}`;
-        })
-        .join('\n')
+          .map((entry) => {
+            const age = threadAges[entry.id];
+            const ageStr = age !== undefined ? `, ${age} pages old` : '';
+            return `- [${entry.id}] (${entry.threadType}/${entry.urgency}${ageStr}) ${entry.text}`;
+          })
+          .join('\n')
       : '(none)';
 
   const grandparentSection = context.grandparentNarrative
@@ -247,34 +274,49 @@ ${context.grandparentNarrative}
 `
     : '';
 
-  const summariesSection = context.ancestorSummaries.length > 0
-    ? `EARLIER SCENE SUMMARIES:
-${context.ancestorSummaries.map(summary => `- [${summary.pageId}] ${summary.summary}`).join('\n')}
+  const summariesSection =
+    context.ancestorSummaries.length > 0
+      ? `EARLIER SCENE SUMMARIES:
+${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.summary}`).join('\n')}
 
 `
-    : '';
+      : '';
 
   const pacingSection = buildPacingBriefingSection(context);
 
-  const threadAgingSection = buildThreadAgingSection(
-    context.activeState.openThreads,
-    threadAges,
-  );
+  const threadAgingSection = buildThreadAgingSection(context.activeState.openThreads, threadAges);
 
   const narrativePromisesSection = buildNarrativePromisesSection(
     context.inheritedNarrativePromises ?? [],
-    context.parentAnalystNarrativePromises ?? [],
+    context.parentAnalystNarrativePromises ?? []
   );
 
   const payoffFeedbackSection = buildPayoffFeedbackSection(
-    context.parentThreadPayoffAssessments ?? [],
+    context.parentThreadPayoffAssessments ?? []
   );
 
-  return `=== PLANNER CONTEXT: CONTINUATION ===
-CHARACTER CONCEPT:
+  const toneKeywordsLine =
+    context.toneKeywords && context.toneKeywords.length > 0
+      ? `\nTone target feel: ${context.toneKeywords.join(', ')}`
+      : '';
+  const toneAntiKeywordsLine =
+    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
+      ? `\nTone avoid: ${context.toneAntiKeywords.join(', ')}`
+      : '';
+  const toneDriftLine =
+    context.parentToneDriftDescription && context.parentToneDriftDescription.length > 0
+      ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
+      : '';
+
+  const characterConceptSection = hasDecomposed
+    ? ''
+    : `CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
+`;
+
+  return `=== PLANNER CONTEXT: CONTINUATION ===
+${characterConceptSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}${toneDriftLine}
 
 ${structureSection}${pacingSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
@@ -303,7 +345,7 @@ ${constraintsSection}
 OPEN NARRATIVE THREADS:
 ${threadsSection}
 
-${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
+${buildProtagonistAffectSection(context.parentProtagonistAffect)}${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
 PLAYER'S CHOICE:

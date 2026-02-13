@@ -5,7 +5,7 @@
  * Data is imported from few-shot-data.ts to maintain single responsibility.
  */
 
-import type { ChatMessage } from './types.js';
+import type { ChatMessage } from './llm-client-types.js';
 import {
   OPENING_EXAMPLE_USER,
   OPENING_EXAMPLE_RESPONSE,
@@ -24,7 +24,7 @@ import {
  */
 export function buildFewShotMessages(
   type: 'opening' | 'continuation',
-  mode: 'minimal' | 'standard',
+  mode: 'minimal' | 'standard'
 ): ChatMessage[] {
   const messages: ChatMessage[] = [];
 
@@ -32,20 +32,20 @@ export function buildFewShotMessages(
     // Opening always includes the opening example
     messages.push(
       { role: 'user', content: OPENING_EXAMPLE_USER },
-      { role: 'assistant', content: OPENING_EXAMPLE_RESPONSE },
+      { role: 'assistant', content: OPENING_EXAMPLE_RESPONSE }
     );
   } else {
     // Continuation includes continuation example
     messages.push(
       { role: 'user', content: CONTINUATION_EXAMPLE_USER },
-      { role: 'assistant', content: CONTINUATION_EXAMPLE_RESPONSE },
+      { role: 'assistant', content: CONTINUATION_EXAMPLE_RESPONSE }
     );
 
     // Standard mode also includes ending example to show proper endings
     if (mode === 'standard') {
       messages.push(
         { role: 'user', content: ENDING_EXAMPLE_USER },
-        { role: 'assistant', content: ENDING_EXAMPLE_RESPONSE },
+        { role: 'assistant', content: ENDING_EXAMPLE_RESPONSE }
       );
     }
   }

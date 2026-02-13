@@ -1,5 +1,9 @@
-import { parseMessageJsonContent, readErrorDetails, readJsonResponse } from '../../../src/llm/http-client';
-import { LLMError } from '../../../src/llm/types';
+import {
+  parseMessageJsonContent,
+  readErrorDetails,
+  readJsonResponse,
+} from '../../../src/llm/http-client';
+import { LLMError } from '../../../src/llm/llm-client-types';
 
 describe('http-client', () => {
   describe('parseMessageJsonContent', () => {
@@ -9,9 +13,7 @@ describe('http-client', () => {
     });
 
     it('parses content arrays with text parts', () => {
-      const result = parseMessageJsonContent([
-        { type: 'text', text: '{"ok":true,"count":2}' },
-      ]);
+      const result = parseMessageJsonContent([{ type: 'text', text: '{"ok":true,"count":2}' }]);
       expect(result.parsed).toEqual({ ok: true, count: 2 });
     });
 

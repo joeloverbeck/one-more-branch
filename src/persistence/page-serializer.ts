@@ -15,8 +15,14 @@ import {
 } from '../models';
 import type { NarrativePromise } from '../models/state/keyed-entry';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
-import type { AnalystResult, StoryBible } from '../llm/types';
-import { PageFileData, AnalystResultFileData, StoryBibleFileData, NpcAgendaFileData } from './page-serializer-types';
+import type { AnalystResult } from '../llm/analyst-types';
+import type { StoryBible } from '../llm/lorekeeper-types';
+import {
+  PageFileData,
+  AnalystResultFileData,
+  StoryBibleFileData,
+  NpcAgendaFileData,
+} from './page-serializer-types';
 import {
   structureStateToFileData,
   fileDataToStructureState,
@@ -30,15 +36,13 @@ import {
 
 export { PageFileData } from './page-serializer-types';
 
-function serializeStoryBible(
-  storyBible: StoryBible | null,
-): StoryBibleFileData | null {
+function serializeStoryBible(storyBible: StoryBible | null): StoryBibleFileData | null {
   if (!storyBible) {
     return null;
   }
   return {
     sceneWorldContext: storyBible.sceneWorldContext,
-    relevantCharacters: storyBible.relevantCharacters.map(c => ({
+    relevantCharacters: storyBible.relevantCharacters.map((c) => ({
       name: c.name,
       role: c.role,
       relevantProfile: c.relevantProfile,
@@ -54,15 +58,13 @@ function serializeStoryBible(
   };
 }
 
-function deserializeStoryBible(
-  data: StoryBibleFileData | null | undefined,
-): StoryBible | null {
+function deserializeStoryBible(data: StoryBibleFileData | null | undefined): StoryBible | null {
   if (!data) {
     return null;
   }
   return {
     sceneWorldContext: data.sceneWorldContext,
-    relevantCharacters: data.relevantCharacters.map(c => ({
+    relevantCharacters: data.relevantCharacters.map((c) => ({
       name: c.name,
       role: c.role,
       relevantProfile: c.relevantProfile,
@@ -78,9 +80,7 @@ function deserializeStoryBible(
   };
 }
 
-function serializeAnalystResult(
-  analystResult: AnalystResult | null,
-): AnalystResultFileData | null {
+function serializeAnalystResult(analystResult: AnalystResult | null): AnalystResultFileData | null {
   if (!analystResult) {
     return null;
   }
@@ -103,12 +103,14 @@ function serializeAnalystResult(
     anchorEvidence: [...(analystResult.anchorEvidence ?? [])],
     completionGateSatisfied: analystResult.completionGateSatisfied ?? false,
     completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
-    narrativePromises: (analystResult.narrativePromises ?? []).map(p => ({
+    toneAdherent: analystResult.toneAdherent ?? true,
+    toneDriftDescription: analystResult.toneDriftDescription ?? '',
+    narrativePromises: (analystResult.narrativePromises ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
     })),
-    threadPayoffAssessments: (analystResult.threadPayoffAssessments ?? []).map(a => ({
+    threadPayoffAssessments: (analystResult.threadPayoffAssessments ?? []).map((a) => ({
       threadId: a.threadId,
       threadText: a.threadText,
       satisfactionLevel: a.satisfactionLevel,
@@ -117,7 +119,9 @@ function serializeAnalystResult(
   };
 }
 
-function deserializeAnalystResult(data: AnalystResultFileData | null | undefined): AnalystResult | null {
+function deserializeAnalystResult(
+  data: AnalystResultFileData | null | undefined
+): AnalystResult | null {
   if (!data) {
     return null;
   }
@@ -132,23 +136,30 @@ function deserializeAnalystResult(data: AnalystResultFileData | null | undefined
     pacingIssueReason: data.pacingIssueReason,
     recommendedAction: data.recommendedAction as AnalystResult['recommendedAction'],
     sceneMomentum: data.sceneMomentum as AnalystResult['sceneMomentum'],
-    objectiveEvidenceStrength: data.objectiveEvidenceStrength as AnalystResult['objectiveEvidenceStrength'],
+    objectiveEvidenceStrength:
+      data.objectiveEvidenceStrength as AnalystResult['objectiveEvidenceStrength'],
     commitmentStrength: data.commitmentStrength as AnalystResult['commitmentStrength'],
-    structuralPositionSignal: data.structuralPositionSignal as AnalystResult['structuralPositionSignal'],
-    entryConditionReadiness: data.entryConditionReadiness as AnalystResult['entryConditionReadiness'],
+    structuralPositionSignal:
+      data.structuralPositionSignal as AnalystResult['structuralPositionSignal'],
+    entryConditionReadiness:
+      data.entryConditionReadiness as AnalystResult['entryConditionReadiness'],
     objectiveAnchors: [...data.objectiveAnchors],
     anchorEvidence: [...data.anchorEvidence],
     completionGateSatisfied: data.completionGateSatisfied,
     completionGateFailureReason: data.completionGateFailureReason,
-    narrativePromises: (data.narrativePromises ?? []).map(p => ({
+    toneAdherent: data.toneAdherent ?? true,
+    toneDriftDescription: data.toneDriftDescription ?? '',
+    narrativePromises: (data.narrativePromises ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType as AnalystResult['narrativePromises'][number]['promiseType'],
-      suggestedUrgency: p.suggestedUrgency as AnalystResult['narrativePromises'][number]['suggestedUrgency'],
+      suggestedUrgency:
+        p.suggestedUrgency as AnalystResult['narrativePromises'][number]['suggestedUrgency'],
     })),
-    threadPayoffAssessments: (data.threadPayoffAssessments ?? []).map(a => ({
+    threadPayoffAssessments: (data.threadPayoffAssessments ?? []).map((a) => ({
       threadId: a.threadId,
       threadText: a.threadText,
-      satisfactionLevel: a.satisfactionLevel as AnalystResult['threadPayoffAssessments'][number]['satisfactionLevel'],
+      satisfactionLevel:
+        a.satisfactionLevel as AnalystResult['threadPayoffAssessments'][number]['satisfactionLevel'],
       reasoning: a.reasoning,
     })),
     rawResponse: '',
@@ -165,9 +176,7 @@ function deserializeNpcAgenda(data: NpcAgendaFileData): NpcAgenda {
   };
 }
 
-function deserializeNpcAgendaArray(
-  data: NpcAgendaFileData[] | undefined,
-): readonly NpcAgenda[] {
+function deserializeNpcAgendaArray(data: NpcAgendaFileData[] | undefined): readonly NpcAgenda[] {
   if (!data || data.length === 0) {
     return [];
   }
@@ -175,20 +184,18 @@ function deserializeNpcAgendaArray(
 }
 
 function deserializeAccumulatedNpcAgendas(
-  data: Record<string, NpcAgendaFileData> | undefined,
+  data: Record<string, NpcAgendaFileData> | undefined
 ): AccumulatedNpcAgendas {
   if (!data) {
     return {};
   }
-  return Object.fromEntries(
-    Object.entries(data).map(([key, a]) => [key, deserializeNpcAgenda(a)]),
-  );
+  return Object.fromEntries(Object.entries(data).map(([key, a]) => [key, deserializeNpcAgenda(a)]));
 }
 
 export function serializePage(page: Page): PageFileData {
   const accumulatedCharacterState: Record<string, Array<{ id: string; text: string }>> = {};
   for (const [name, state] of Object.entries(page.accumulatedCharacterState)) {
-    accumulatedCharacterState[name] = state.map(entry => ({ ...entry }));
+    accumulatedCharacterState[name] = state.map((entry) => ({ ...entry }));
   }
 
   return {
@@ -207,14 +214,14 @@ export function serializePage(page: Page): PageFileData {
       added: [...page.inventoryChanges.added],
       removed: [...page.inventoryChanges.removed],
     },
-    accumulatedInventory: page.accumulatedInventory.map(entry => ({ ...entry })),
+    accumulatedInventory: page.accumulatedInventory.map((entry) => ({ ...entry })),
     healthChanges: {
       added: [...page.healthChanges.added],
       removed: [...page.healthChanges.removed],
     },
-    accumulatedHealth: page.accumulatedHealth.map(entry => ({ ...entry })),
+    accumulatedHealth: page.accumulatedHealth.map((entry) => ({ ...entry })),
     characterStateChanges: {
-      added: page.characterStateChanges.added.map(change => ({
+      added: page.characterStateChanges.added.map((change) => ({
         characterName: change.characterName,
         states: [...change.states],
       })),
@@ -227,12 +234,12 @@ export function serializePage(page: Page): PageFileData {
     storyBible: serializeStoryBible(page.storyBible),
     analystResult: serializeAnalystResult(page.analystResult),
     threadAges: { ...page.threadAges },
-    inheritedNarrativePromises: page.inheritedNarrativePromises.map(p => ({
+    inheritedNarrativePromises: page.inheritedNarrativePromises.map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
     })),
-    npcAgendaUpdates: page.npcAgendaUpdates.map(a => ({
+    npcAgendaUpdates: page.npcAgendaUpdates.map((a) => ({
       npcName: a.npcName,
       currentGoal: a.currentGoal,
       leverage: a.leverage,
@@ -249,7 +256,7 @@ export function serializePage(page: Page): PageFileData {
           fear: a.fear,
           offScreenBehavior: a.offScreenBehavior,
         },
-      ]),
+      ])
     ),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
@@ -263,17 +270,17 @@ export function deserializePage(data: PageFileData): Page {
     removed: [...data.inventoryChanges.removed],
   };
 
-  const accumulatedInventory: Inventory = data.accumulatedInventory.map(entry => ({ ...entry }));
+  const accumulatedInventory: Inventory = data.accumulatedInventory.map((entry) => ({ ...entry }));
 
   const healthChanges: HealthChanges = {
     added: [...data.healthChanges.added],
     removed: [...data.healthChanges.removed],
   };
 
-  const accumulatedHealth: Health = data.accumulatedHealth.map(entry => ({ ...entry }));
+  const accumulatedHealth: Health = data.accumulatedHealth.map((entry) => ({ ...entry }));
 
   const characterStateChanges: CharacterStateChanges = {
-    added: data.characterStateChanges.added.map(change => ({
+    added: data.characterStateChanges.added.map((change) => ({
       characterName: change.characterName,
       states: [...change.states],
     })),
@@ -283,12 +290,12 @@ export function deserializePage(data: PageFileData): Page {
   const accumulatedCharacterState: AccumulatedCharacterState = Object.fromEntries(
     Object.entries(data.accumulatedCharacterState).map(([name, state]) => [
       name,
-      state.map(entry => ({ ...entry })),
-    ]),
+      state.map((entry) => ({ ...entry })),
+    ])
   );
 
   const accumulatedStructureState: AccumulatedStructureState = fileDataToStructureState(
-    data.accumulatedStructureState,
+    data.accumulatedStructureState
   );
   const structureVersionId =
     data.structureVersionId === undefined || data.structureVersionId === null
@@ -324,7 +331,7 @@ export function deserializePage(data: PageFileData): Page {
     storyBible: deserializeStoryBible(data.storyBible),
     analystResult: deserializeAnalystResult(data.analystResult),
     threadAges: data.threadAges ?? {},
-    inheritedNarrativePromises: (data.inheritedNarrativePromises ?? []).map(p => ({
+    inheritedNarrativePromises: (data.inheritedNarrativePromises ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType as NarrativePromise['promiseType'],
       suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],

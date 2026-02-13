@@ -3,6 +3,7 @@
 - Source: `src/llm/prompts/continuation-prompt.ts`
 - System prompt source: `buildContinuationSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/writer-schema.ts`
+- Protagonist speech formatter: `formatSpeechFingerprintForWriter()` from `src/models/decomposed-character.ts`
 
 ## Story Bible Conditional Behavior
 
@@ -25,11 +26,16 @@ The following sections are **always included** regardless of Story Bible presenc
 - Active state (location, threats, constraints, threads)
 - Inventory and health
 - Protagonist affect
+- Protagonist speech fingerprint (when decomposed characters are available)
 - Planner guidance and choice intents
 - Grandparent and parent full narrative (voice continuity)
 - Player's choice and suggested speech
 
-When `storyBible` is absent (opening pages, pre-feature pages), all original sections appear as documented below.
+## Protagonist Speech Fingerprint
+
+When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST SPEECH FINGERPRINT` section is inserted immediately after CHARACTER CONCEPT. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence, since the Story Bible covers NPC speech but not the protagonist's.
+
+When `storyBible` is absent (lorekeeper failure or pre-feature pages), all original sections appear as documented below.
 
 ## Messages Sent To Model
 
@@ -37,6 +43,11 @@ When `storyBible` is absent (opening pages, pre-feature pages), all original sec
 
 ```text
 You are an expert interactive fiction storyteller and Dungeon Master. Your role is to craft immersive, engaging narratives that respond to player choices while maintaining consistency with established world facts and character traits.
+
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 
 CONTENT GUIDELINES:
 RATING: NC-21 (ADULTS ONLY)
@@ -71,15 +82,17 @@ When writing endings (character death, victory, conclusion):
 - Leave no choices when the story concludes.
 ```
 
+The tone block is injected between the role intro and content policy. When tone keywords are available (from the structure generator), the `Target feel` and `Avoid` lines are included; otherwise only the `Tone` line appears.
+
 ### 2) User Message
 
 ```text
 Continue the interactive story based on the player's choice.
 
 === DATA & STATE RULES ===
-=== ACTIVE STATE TRACKING ===
+=== CONTINUITY CONTEXT USAGE ===
 
-Use the state sections in the prompt as authoritative continuity context. These represent what is TRUE RIGHT NOW.
+Use the continuity context sections in the prompt as authoritative scene context. These represent what is TRUE RIGHT NOW.
 
 READ-ONLY CONTINUITY INPUT:
 - CURRENT LOCATION: where the protagonist is right now.
@@ -263,6 +276,17 @@ CHOICE FORMATTING EXAMPLE:
 CHARACTER CONCEPT:
 {{characterConcept}}
 
+{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
+Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
+Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
+{{#if catchphrases}}Catchphrases: "phrase1", "phrase2"{{/if}}
+{{#if verbalTics}}Verbal tics: tic1, tic2{{/if}}
+{{#if dialogueSamples}}Example lines:
+  "sample line 1"
+  "sample line 2"{{/if}}
+{{/if}}
+
 {{#if !storyBible && worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
@@ -307,13 +331,6 @@ Use these choice intents as a starting blueprint. You may adjust if the narrativ
 === RECONCILIATION FAILURE REASONS (RETRY) ===
 The prior attempt failed deterministic reconciliation. Correct these failures in this new scene:
 {{reconciliationFailureReasons as bullet list with [code] (field) message}}
-{{/if}}
-
-{{#if pacingNudge}}
-=== PACING DIRECTIVE ===
-The story analyst detected a pacing issue: {{pacingNudge}}
-This page should advance the narrative toward resolving the current beat or deliver a meaningful story event.
-Do not repeat setup or exposition -- push the story forward with action, revelation, or irreversible change.
 {{/if}}
 
 {{#if storyBible}}
@@ -440,6 +457,8 @@ REQUIREMENTS (follow all):
 8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
+
+TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly

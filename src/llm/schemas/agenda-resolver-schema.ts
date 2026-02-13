@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const AGENDA_RESOLVER_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -37,8 +37,7 @@ export const AGENDA_RESOLVER_SCHEMA: JsonSchema = {
               },
               offScreenBehavior: {
                 type: 'string',
-                description:
-                  'What this NPC is doing off-screen after this scene (1-2 sentences).',
+                description: 'What this NPC is doing off-screen after this scene (1-2 sentences).',
               },
             },
           },

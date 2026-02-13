@@ -1,9 +1,8 @@
 import { generateAgendaResolver } from '@/llm';
 import { resolveNpcAgendas } from '@/engine/npc-agenda-pipeline';
 import type { NpcAgendaContext } from '@/engine/npc-agenda-pipeline';
-import type { AgendaResolverResult } from '@/llm/types';
+import type { AgendaResolverResult } from '@/llm/lorekeeper-types';
 import type { ActiveState } from '@/models/state/active-state';
-import type { AccumulatedStructureState } from '@/models/story-arc';
 import { createEmptyAccumulatedNpcAgendas } from '@/models/state/npc-agenda';
 import type { Npc } from '@/models/npc';
 import type { GenerationStageCallback } from '@/engine/types';
@@ -33,13 +32,6 @@ function createBaseContext(overrides: Partial<NpcAgendaContext> = {}): NpcAgenda
     activeConstraints: [],
     openThreads: [],
   };
-  const emptyStructureState: AccumulatedStructureState = {
-    currentActIndex: 0,
-    currentBeatIndex: 0,
-    beatProgressions: [],
-    pacingBudgetRemaining: 10,
-    pacingNudge: null,
-  };
 
   return {
     npcs: undefined,
@@ -48,16 +40,13 @@ function createBaseContext(overrides: Partial<NpcAgendaContext> = {}): NpcAgenda
     parentAccumulatedNpcAgendas: createEmptyAccumulatedNpcAgendas(),
     currentStructureVersion: null,
     storyStructure: null,
-    parentStructureState: emptyStructureState,
     parentActiveState: emptyActiveState,
     apiKey: 'test-key',
     ...overrides,
   };
 }
 
-const testNpcs: readonly Npc[] = [
-  { name: 'Bartender', concept: 'A gruff bartender' },
-];
+const testNpcs: readonly Npc[] = [{ name: 'Bartender', concept: 'A gruff bartender' }];
 
 const mockAgendaResult: AgendaResolverResult = {
   updatedAgendas: {
@@ -109,7 +98,7 @@ describe('resolveNpcAgendas', () => {
         npcs: testNpcs,
       }),
       testNpcs,
-      { apiKey: 'test-key' },
+      { apiKey: 'test-key' }
     );
   });
 

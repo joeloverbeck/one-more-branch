@@ -1,9 +1,11 @@
 import {
+  ConstraintType,
   createChoice,
   createEmptyAccumulatedStructureState,
   createEmptyActiveState,
   createPage,
   parsePageId,
+  ThreatType,
 } from '@/models';
 import {
   collectParentState,
@@ -46,7 +48,7 @@ describe('parent-state-collector', () => {
         choices: [createChoice('Option A'), createChoice('Option B')],
         activeStateChanges: {
           newLocation: 'Quest start location',
-          threatsAdded: ['Storm front'],
+          threatsAdded: [{ text: 'Storm front', threatType: ThreatType.ENVIRONMENTAL }],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -112,10 +114,18 @@ describe('parent-state-collector', () => {
         accumulatedActiveState: {
           ...createEmptyActiveState(),
           currentLocation: 'Forest',
-          activeThreats: [{ id: 'th-1', text: 'Wolf pack' }],
-          activeConstraints: [{ id: 'cn-1', text: 'Fog' }],
+          activeThreats: [{ id: 'th-1', text: 'Wolf pack', threatType: ThreatType.CREATURE }],
+          activeConstraints: [
+            { id: 'cn-1', text: 'Fog', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
           openThreads: [
-            { id: 'tw-1', text: 'Find path', threadType: 'QUEST', urgency: 'MEDIUM', displayLabel: 'Find path' },
+            {
+              id: 'tw-1',
+              text: 'Find path',
+              threadType: 'QUEST',
+              urgency: 'MEDIUM',
+              displayLabel: 'Find path',
+            },
           ],
         },
         accumulatedInventory: [{ id: 'inv-1', text: 'Compass' }],
@@ -129,10 +139,20 @@ describe('parent-state-collector', () => {
       const snapshot = createContinuationPreviousStateSnapshot(parentState);
 
       expect(snapshot.currentLocation).toBe('Forest');
-      expect(snapshot.threats).toEqual([{ id: 'th-1', text: 'Wolf pack' }]);
-      expect(snapshot.constraints).toEqual([{ id: 'cn-1', text: 'Fog' }]);
+      expect(snapshot.threats).toEqual([
+        { id: 'th-1', text: 'Wolf pack', threatType: ThreatType.CREATURE },
+      ]);
+      expect(snapshot.constraints).toEqual([
+        { id: 'cn-1', text: 'Fog', constraintType: ConstraintType.ENVIRONMENTAL },
+      ]);
       expect(snapshot.threads).toEqual([
-        { id: 'tw-1', text: 'Find path', threadType: 'QUEST', urgency: 'MEDIUM', displayLabel: 'Find path' },
+        {
+          id: 'tw-1',
+          text: 'Find path',
+          threadType: 'QUEST',
+          urgency: 'MEDIUM',
+          displayLabel: 'Find path',
+        },
       ]);
       expect(snapshot.inventory).toEqual([{ id: 'inv-1', text: 'Compass' }]);
       expect(snapshot.health).toEqual([{ id: 'hp-1', text: 'Tired' }]);
@@ -146,7 +166,10 @@ describe('parent-state-collector', () => {
         accumulatedHealth: [],
         accumulatedCharacterState: {
           Guard: [{ id: 'cs-1', text: 'Alert' }],
-          Merchant: [{ id: 'cs-2', text: 'Friendly' }, { id: 'cs-3', text: 'Rich' }],
+          Merchant: [
+            { id: 'cs-2', text: 'Friendly' },
+            { id: 'cs-3', text: 'Rich' },
+          ],
         },
         structureState: createEmptyAccumulatedStructureState(),
       };

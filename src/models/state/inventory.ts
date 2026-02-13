@@ -25,10 +25,7 @@ export function createEmptyInventoryChanges(): InventoryChanges {
  * Applies inventory changes (additions and removals) to current inventory.
  * Removals are ID-based and processed before additions.
  */
-export function applyInventoryChanges(
-  current: Inventory,
-  changes: InventoryChanges,
-): Inventory {
+export function applyInventoryChanges(current: Inventory, changes: InventoryChanges): Inventory {
   const afterRemoval = removeByIds(current, changes.removed);
   const additions = assignIds(current, changes.added, 'inv');
   return [...afterRemoval, ...additions];

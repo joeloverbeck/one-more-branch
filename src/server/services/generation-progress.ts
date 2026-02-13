@@ -148,7 +148,7 @@ class InMemoryGenerationProgressService implements GenerationProgressService {
 }
 
 export function createGenerationProgressService(
-  options: GenerationProgressServiceOptions = {},
+  options: GenerationProgressServiceOptions = {}
 ): GenerationProgressService {
   return new InMemoryGenerationProgressService(options);
 }

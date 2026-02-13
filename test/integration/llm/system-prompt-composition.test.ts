@@ -11,7 +11,6 @@ import {
   composeOpeningDataRules,
   composeContinuationDataRules,
   buildStructureSystemPrompt,
-  STRUCTURE_SYSTEM_PROMPT,
   STRICT_CHOICE_GUIDELINES,
 } from '../../../src/llm/prompts/system-prompt.js';
 import { CONTENT_POLICY } from '../../../src/llm/content-policy.js';
@@ -49,7 +48,7 @@ describe('creative system prompt composition', () => {
   describe('section exclusions from system prompt', () => {
     it('does NOT include data-schema sections', () => {
       const prompt = composeCreativeSystemPrompt();
-      expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+      expect(prompt).not.toContain('CONTINUITY CONTEXT USAGE');
       expect(prompt).not.toContain('INVENTORY MANAGEMENT:');
       expect(prompt).not.toContain('HEALTH MANAGEMENT:');
       expect(prompt).not.toContain('FIELD SEPARATION:');
@@ -78,9 +77,9 @@ describe('creative system prompt composition', () => {
 
 describe('opening data rules composition', () => {
   describe('shared sections present', () => {
-    it('includes ACTIVE STATE TRACKING section', () => {
+    it('includes CONTINUITY CONTEXT USAGE section', () => {
       const rules = composeOpeningDataRules();
-      expect(rules).toContain('ACTIVE STATE TRACKING');
+      expect(rules).toContain('CONTINUITY CONTEXT USAGE');
       expect(rules).toContain('CURRENT LOCATION');
       expect(rules).toContain('READ-ONLY CONTINUITY INPUT');
       expect(rules).toContain('Show consequences in prose and choices.');
@@ -164,9 +163,9 @@ describe('opening data rules composition', () => {
 
 describe('continuation data rules composition', () => {
   describe('shared sections present', () => {
-    it('includes ACTIVE STATE TRACKING section', () => {
+    it('includes CONTINUITY CONTEXT USAGE section', () => {
       const rules = composeContinuationDataRules();
-      expect(rules).toContain('ACTIVE STATE TRACKING');
+      expect(rules).toContain('CONTINUITY CONTEXT USAGE');
       expect(rules).toContain('CURRENT LOCATION');
     });
 
@@ -234,7 +233,7 @@ describe('continuation data rules composition', () => {
 
     it('still includes shared data sections', () => {
       const rules = composeContinuationDataRules({ hasStoryBible: true });
-      expect(rules).toContain('ACTIVE STATE TRACKING');
+      expect(rules).toContain('CONTINUITY CONTEXT USAGE');
       expect(rules).toContain('INVENTORY MANAGEMENT:');
       expect(rules).toContain('HEALTH MANAGEMENT:');
       expect(rules).toContain('FIELD SEPARATION:');
@@ -281,7 +280,7 @@ describe('buildStructureSystemPrompt composition', () => {
   describe('section exclusions', () => {
     it('does NOT include active state tracking sections', () => {
       const prompt = buildStructureSystemPrompt();
-      expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+      expect(prompt).not.toContain('CONTINUITY CONTEXT USAGE');
       expect(prompt).not.toContain('threatsAdded');
     });
 
@@ -301,9 +300,16 @@ describe('buildStructureSystemPrompt composition', () => {
     });
   });
 
-  describe('exported constants', () => {
-    it('exports STRUCTURE_SYSTEM_PROMPT constant matching buildStructureSystemPrompt()', () => {
-      expect(STRUCTURE_SYSTEM_PROMPT).toBe(buildStructureSystemPrompt());
+  describe('tone injection', () => {
+    it('includes tone block when tone is provided', () => {
+      const prompt = buildStructureSystemPrompt('comedic fantasy');
+      expect(prompt).toContain('TONE/GENRE IDENTITY:');
+      expect(prompt).toContain('Tone: comedic fantasy');
+    });
+
+    it('omits tone block when no tone is provided', () => {
+      const prompt = buildStructureSystemPrompt();
+      expect(prompt).not.toContain('TONE/GENRE IDENTITY:');
     });
   });
 });

@@ -1,13 +1,16 @@
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildStructurePrompt } from '../../../../src/llm/prompts/structure-prompt';
-import { buildContinuationSystemPrompt, composeContinuationDataRules } from '../../../../src/llm/prompts/system-prompt';
+import {
+  buildContinuationSystemPrompt,
+  composeContinuationDataRules,
+} from '../../../../src/llm/prompts/system-prompt';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
-  return messages.find(message => message.role === 'system')?.content ?? '';
+  return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessages(messages: { role: string; content: string }[]): string[] {
-  return messages.filter(message => message.role === 'user').map(message => message.content);
+  return messages.filter((message) => message.role === 'user').map((message) => message.content);
 }
 
 describe('buildStructurePrompt', () => {
@@ -22,7 +25,7 @@ describe('buildStructurePrompt', () => {
 
     expect(messages.length).toBeGreaterThanOrEqual(2);
     expect(messages[0]?.role).toBe('system');
-    expect(messages.some(message => message.role === 'user')).toBe(true);
+    expect(messages.some((message) => message.role === 'user')).toBe(true);
   });
 
   it('includes character concept, worldbuilding, and tone', () => {
@@ -74,7 +77,7 @@ describe('buildStructurePrompt', () => {
 
   it('few-shot assistant message includes premise, pacingBudget, beat name, and role fields', () => {
     const messages = buildStructurePrompt(baseContext, { fewShotMode: 'standard' });
-    const assistantMessage = messages.find(m => m.role === 'assistant')?.content ?? '';
+    const assistantMessage = messages.find((m) => m.role === 'assistant')?.content ?? '';
 
     expect(assistantMessage).toContain('"premise"');
     expect(assistantMessage).toContain('"pacingBudget"');

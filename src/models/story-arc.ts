@@ -56,28 +56,57 @@ export function createEmptyAccumulatedStructureState(): AccumulatedStructureStat
   };
 }
 
+/**
+ * Creates initial AccumulatedStructureState for first page.
+ * Sets first beat of first act as 'active', all others 'pending'.
+ */
+export function createInitialStructureState(structure: StoryStructure): AccumulatedStructureState {
+  const beatProgressions: BeatProgression[] = [];
+
+  structure.acts.forEach((act, actIdx) => {
+    act.beats.forEach((beat, beatIdx) => {
+      const isFirst = actIdx === 0 && beatIdx === 0;
+      beatProgressions.push({
+        beatId: beat.id,
+        status: isFirst ? 'active' : 'pending',
+      });
+    });
+  });
+
+  return {
+    currentActIndex: 0,
+    currentBeatIndex: 0,
+    beatProgressions,
+    pagesInCurrentBeat: 0,
+    pacingNudge: null,
+  };
+}
+
 export function getCurrentAct(
   structure: StoryStructure,
-  state: AccumulatedStructureState,
+  state: AccumulatedStructureState
 ): StoryAct | undefined {
   return structure.acts[state.currentActIndex];
 }
 
 export function getCurrentBeat(
   structure: StoryStructure,
-  state: AccumulatedStructureState,
+  state: AccumulatedStructureState
 ): StoryBeat | undefined {
   return getCurrentAct(structure, state)?.beats[state.currentBeatIndex];
 }
 
 export function getBeatProgression(
   state: AccumulatedStructureState,
-  beatId: string,
+  beatId: string
 ): BeatProgression | undefined {
-  return state.beatProgressions.find(beatProgression => beatProgression.beatId === beatId);
+  return state.beatProgressions.find((beatProgression) => beatProgression.beatId === beatId);
 }
 
-export function isLastBeatOfAct(structure: StoryStructure, state: AccumulatedStructureState): boolean {
+export function isLastBeatOfAct(
+  structure: StoryStructure,
+  state: AccumulatedStructureState
+): boolean {
   const currentAct = getCurrentAct(structure, state);
   if (!currentAct || currentAct.beats.length === 0) {
     return false;
@@ -118,7 +147,7 @@ export function isNoDeviation(result: DeviationResult): result is NoDeviation {
 export function createBeatDeviation(
   reason: string,
   invalidatedBeatIds: readonly string[],
-  narrativeSummary: string,
+  narrativeSummary: string
 ): BeatDeviation {
   if (invalidatedBeatIds.length === 0) {
     throw new Error('BeatDeviation must have at least one invalidated beat ID');
@@ -138,13 +167,13 @@ export function createNoDeviation(): NoDeviation {
 
 export function validateDeviationTargets(
   deviation: BeatDeviation,
-  structureState: AccumulatedStructureState,
+  structureState: AccumulatedStructureState
 ): boolean {
   const concludedIds = new Set(
     structureState.beatProgressions
-      .filter(beatProgression => beatProgression.status === 'concluded')
-      .map(beatProgression => beatProgression.beatId),
+      .filter((beatProgression) => beatProgression.status === 'concluded')
+      .map((beatProgression) => beatProgression.beatId)
   );
 
-  return deviation.invalidatedBeatIds.every(beatId => !concludedIds.has(beatId));
+  return deviation.invalidatedBeatIds.every((beatId) => !concludedIds.has(beatId));
 }

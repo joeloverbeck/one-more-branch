@@ -41,8 +41,16 @@ describe('llm client integration (mocked fetch)', () => {
       narrative:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
       choices: [
-        { text: 'Consult the brass star map', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Climb to the highest platform', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Consult the brass star map',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Climb to the highest platform',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'The abandoned observatory',
       threatsAdded: [],
@@ -78,7 +86,7 @@ describe('llm client integration (mocked fetch)', () => {
         worldbuilding: 'A city where the night sky has stopped moving',
         tone: 'mythic science fantasy',
       },
-      { apiKey: 'test-key' },
+      { apiKey: 'test-key' }
     );
 
     expect(result.narrative.length).toBeGreaterThan(100);
@@ -92,8 +100,16 @@ describe('llm client integration (mocked fetch)', () => {
       narrative:
         'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
       choices: [
-        { text: 'Consult the brass star map', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'consult the brass star map', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Consult the brass star map',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'consult the brass star map',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'The abandoned observatory',
       threatsAdded: [],
@@ -129,7 +145,7 @@ describe('llm client integration (mocked fetch)', () => {
         worldbuilding: 'A city where the night sky has stopped moving',
         tone: 'mythic science fantasy',
       },
-      { apiKey: 'test-key' },
+      { apiKey: 'test-key' }
     );
 
     // Attach rejection handler early to prevent unhandled rejection detection
@@ -147,8 +163,16 @@ describe('llm client integration (mocked fetch)', () => {
       narrative:
         'You crouch behind the brass orrery as gears grind alive and the dome shutters begin to close above you.',
       choices: [
-        { text: 'Jam the nearest gear with your wrench', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'CONSTRAINT_CHANGE' },
-        { text: 'Follow the moving starlight pattern', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Jam the nearest gear with your wrench',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'CONSTRAINT_CHANGE',
+        },
+        {
+          text: 'Follow the moving starlight pattern',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'The observatory lower ring',
       threatsAdded: [],
@@ -227,11 +251,19 @@ describe('llm client integration (mocked fetch)', () => {
         },
         dramaticQuestion: 'Can you escape the observatory before the dome seals?',
         choiceIntents: [
-          { hook: 'Jam the nearest gear with your wrench', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.CONSTRAINT_CHANGE },
-          { hook: 'Follow the moving starlight pattern', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+          {
+            hook: 'Jam the nearest gear with your wrench',
+            choiceType: ChoiceType.TACTICAL_APPROACH,
+            primaryDelta: PrimaryDelta.CONSTRAINT_CHANGE,
+          },
+          {
+            hook: 'Follow the moving starlight pattern',
+            choiceType: ChoiceType.INVESTIGATION,
+            primaryDelta: PrimaryDelta.INFORMATION_REVEALED,
+          },
         ],
       },
-      { apiKey: 'test-key' },
+      { apiKey: 'test-key' }
     );
 
     expect(result.narrative.length).toBeGreaterThan(80);

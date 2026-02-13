@@ -2,11 +2,13 @@
 import {
   generateAnalystEvaluation,
   generatePagePlan,
+  generateStateAccountant,
   generateOpeningPage,
   generatePageWriterOutput,
   generateLorekeeperBible,
 } from '../../../src/llm';
 import {
+  ConstraintType,
   createChoice,
   createInitialVersionedStructure,
   createPage,
@@ -14,26 +16,38 @@ import {
   parsePageId,
   Story,
   StructureVersionId,
+  ThreatType,
   VersionedStoryStructure,
 } from '../../../src/models';
-import { createInitialStructureState } from '../../../src/engine/structure-state';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
 import { StateReconciliationError } from '../../../src/engine/state-reconciler-errors';
 import { reconcileState } from '../../../src/engine/state-reconciler';
 import type { StateReconciliationResult } from '../../../src/engine/state-reconciler-types';
 import { storage } from '../../../src/persistence';
 import { EngineError } from '../../../src/engine/types';
-import { generateFirstPage, generateNextPage, getOrGeneratePage } from '../../../src/engine/page-service';
+import {
+  generateFirstPage,
+  generateNextPage,
+  getOrGeneratePage,
+} from '../../../src/engine/page-service';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
-import { LLMError, type PagePlanGenerationResult, type WriterResult } from '../../../src/llm/types';
+import { LLMError } from '../../../src/llm/llm-client-types';
+import type {
+  PagePlanGenerationResult,
+  ReducedPagePlanGenerationResult,
+} from '../../../src/llm/planner-types';
+import type { PageWriterResult } from '../../../src/llm/writer-types';
 import { logger } from '../../../src/logging/index.js';
+import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { StoryStructure } from '../../../src/models/story-arc';
+import type { StateAccountantGenerationResult } from '../../../src/llm/accountant-types';
 
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
@@ -67,12 +81,19 @@ jest.mock('../../../src/engine/state-reconciler', () => ({
   reconcileState: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
 const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<
   typeof generateLorekeeperBible
 >;
@@ -86,7 +107,9 @@ const mockedStorage = storage as {
   updateStory: jest.Mock;
 };
 
-const mockedCreateStructureRewriter = createStructureRewriter as jest.MockedFunction<typeof createStructureRewriter>;
+const mockedCreateStructureRewriter = createStructureRewriter as jest.MockedFunction<
+  typeof createStructureRewriter
+>;
 const mockedLogger = logger as {
   info: jest.Mock;
   warn: jest.Mock;
@@ -95,40 +118,66 @@ const mockedLogger = logger as {
 };
 
 function passthroughReconciledState(
-  writer: WriterResult,
-  previousLocation: string,
+  writer: PageWriterResult & {
+    currentLocation?: string | null;
+    threatsAdded: readonly (string | { text: string; threatType: ThreatType })[];
+    threatsRemoved: readonly string[];
+    constraintsAdded: readonly (string | { text: string; constraintType: ConstraintType })[];
+    constraintsRemoved: readonly string[];
+    threadsAdded: StateReconciliationResult['threadsAdded'];
+    threadsResolved: readonly string[];
+    inventoryAdded: readonly string[];
+    inventoryRemoved: readonly string[];
+    healthAdded: readonly string[];
+    healthRemoved: readonly string[];
+    characterStateChangesAdded: StateReconciliationResult['characterStateChangesAdded'];
+    characterStateChangesRemoved: readonly string[];
+    newCanonFacts: readonly string[];
+    newCharacterCanonFacts: Record<string, string[]>;
+  },
+  previousLocation: string
 ): StateReconciliationResult {
+  const normalizedThreatsAdded = writer.threatsAdded.map((addedThreat) =>
+    typeof addedThreat === 'string'
+      ? { text: addedThreat, threatType: ThreatType.ENVIRONMENTAL }
+      : addedThreat
+  );
+  const normalizedConstraintsAdded = writer.constraintsAdded.map((addedConstraint) =>
+    typeof addedConstraint === 'string'
+      ? { text: addedConstraint, constraintType: ConstraintType.ENVIRONMENTAL }
+      : addedConstraint
+  );
+
   return {
-    currentLocation: writer.currentLocation || previousLocation,
-    threatsAdded: writer.threatsAdded,
-    threatsRemoved: writer.threatsRemoved,
-    constraintsAdded: writer.constraintsAdded,
-    constraintsRemoved: writer.constraintsRemoved,
-    threadsAdded: writer.threadsAdded,
-    threadsResolved: writer.threadsResolved,
-    inventoryAdded: writer.inventoryAdded,
-    inventoryRemoved: writer.inventoryRemoved,
-    healthAdded: writer.healthAdded,
-    healthRemoved: writer.healthRemoved,
-    characterStateChangesAdded: writer.characterStateChangesAdded,
-    characterStateChangesRemoved: writer.characterStateChangesRemoved,
-    newCanonFacts: writer.newCanonFacts,
+    currentLocation: writer.currentLocation ?? previousLocation,
+    threatsAdded: normalizedThreatsAdded,
+    threatsRemoved: [...writer.threatsRemoved],
+    constraintsAdded: normalizedConstraintsAdded,
+    constraintsRemoved: [...writer.constraintsRemoved],
+    threadsAdded: [...writer.threadsAdded],
+    threadsResolved: [...writer.threadsResolved],
+    inventoryAdded: [...writer.inventoryAdded],
+    inventoryRemoved: [...writer.inventoryRemoved],
+    healthAdded: [...writer.healthAdded],
+    healthRemoved: [...writer.healthRemoved],
+    characterStateChangesAdded: [...writer.characterStateChangesAdded],
+    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
+    newCanonFacts: [...writer.newCanonFacts],
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
   };
 }
 
 function reconciledStateWithDiagnostics(
-  writer: WriterResult,
+  writer: PageWriterResult,
   previousLocation: string,
-  diagnostics: StateReconciliationResult['reconciliationDiagnostics'],
+  diagnostics: StateReconciliationResult['reconciliationDiagnostics']
 ): StateReconciliationResult {
   return {
     ...passthroughReconciledState(writer, previousLocation),
     reconciliationDiagnostics: diagnostics,
   };
 }
-
 
 function buildStory(overrides?: Partial<Story>): Story {
   return {
@@ -207,7 +256,7 @@ function buildTurningPointFirstBeatStructure(): StoryStructure {
 }
 
 function buildPagePlanResult(
-  overrides?: Partial<PagePlanGenerationResult>,
+  overrides?: Partial<PagePlanGenerationResult>
 ): PagePlanGenerationResult {
   return {
     sceneIntent: 'Push the courier toward a risky move with immediate consequences.',
@@ -228,9 +277,43 @@ function buildPagePlanResult(
     },
     dramaticQuestion: 'Will you confront the danger or seek another path?',
     choiceIntents: [
-      { hook: 'Face the threat directly', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-      { hook: 'Find an alternative route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+      {
+        hook: 'Face the threat directly',
+        choiceType: ChoiceType.CONFRONTATION,
+        primaryDelta: PrimaryDelta.THREAT_SHIFT,
+      },
+      {
+        hook: 'Find an alternative route',
+        choiceType: ChoiceType.TACTICAL_APPROACH,
+        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+      },
     ],
+    rawResponse: '{"ok":true}',
+    ...overrides,
+  };
+}
+
+function buildReducedPagePlanResult(
+  overrides?: Partial<ReducedPagePlanGenerationResult>
+): ReducedPagePlanGenerationResult {
+  const base = buildPagePlanResult();
+  return {
+    sceneIntent: base.sceneIntent,
+    continuityAnchors: base.continuityAnchors,
+    writerBrief: base.writerBrief,
+    dramaticQuestion: base.dramaticQuestion,
+    choiceIntents: base.choiceIntents,
+    rawResponse: base.rawResponse,
+    ...overrides,
+  };
+}
+
+function buildStateAccountantResult(
+  overrides?: Partial<StateAccountantGenerationResult>
+): StateAccountantGenerationResult {
+  const base = buildPagePlanResult();
+  return {
+    stateIntents: base.stateIntents,
     rawResponse: '{"ok":true}',
     ...overrides,
   };
@@ -239,7 +322,8 @@ function buildPagePlanResult(
 describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+    mockedGeneratePagePlan.mockResolvedValue(buildReducedPagePlanResult());
+    mockedGenerateStateAccountant.mockResolvedValue(buildStateAccountantResult());
     mockedGenerateLorekeeperBible.mockResolvedValue({
       sceneWorldContext: 'Test world context',
       relevantCharacters: [],
@@ -248,7 +332,7 @@ describe('page-service', () => {
       rawResponse: 'raw-lorekeeper',
     });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
   });
 
@@ -257,11 +341,19 @@ describe('page-service', () => {
       const story = buildStory();
       const onGenerationStage = jest.fn();
       const pagePlan = buildPagePlanResult();
-      const openingWriterResult: WriterResult = {
+      const openingWriterResult: PageWriterResult = {
         narrative: 'You dive behind a collapsed archway as horns echo through the square.',
         choices: [
-          { text: 'Circle around the patrol', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Hold position and observe', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Circle around the patrol',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Hold position and observe',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: 'Collapsed archway',
         threatsAdded: [],
@@ -289,20 +381,33 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       };
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedGenerateOpeningPage.mockResolvedValue(openingWriterResult);
       mockedReconcileState
         .mockReturnValueOnce(
           reconciledStateWithDiagnostics(openingWriterResult, '', [
             {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
+              code: 'THREAD_DUPLICATE_LIKE_ADD',
               field: 'threadsAdded',
-              message: 'No narrative evidence found for threadsAdded anchor "archive".',
+              message: 'Thread add "Reach the archive" is near-duplicate of existing thread "td-1".',
             },
-          ]),
+          ])
         )
         .mockImplementation((_plan, writer, previousState) =>
-          passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+          passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
         );
 
       const { metrics } = await generateFirstPage(story, 'test-key', onGenerationStage);
@@ -314,28 +419,32 @@ describe('page-service', () => {
         expect.objectContaining({
           reconciliationFailureReasons: [
             {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
+              code: 'THREAD_DUPLICATE_LIKE_ADD',
               field: 'threadsAdded',
-              message: 'No narrative evidence found for threadsAdded anchor "archive".',
+              message: 'Thread add "Reach the archive" is near-duplicate of existing thread "td-1".',
             },
           ],
-        }),
+        })
       );
       expect(mockedGenerateOpeningPage.mock.calls[1]?.[0]).toEqual(
         expect.objectContaining({
           reconciliationFailureReasons: [
             {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
+              code: 'THREAD_DUPLICATE_LIKE_ADD',
               field: 'threadsAdded',
-              message: 'No narrative evidence found for threadsAdded anchor "archive".',
+              message: 'Thread add "Reach the archive" is near-duplicate of existing thread "td-1".',
             },
           ],
-        }),
+        })
       );
-      const plannerRequestIdAttemptOne = mockedGeneratePagePlan.mock.calls[0]?.[1]?.observability?.requestId;
-      const plannerRequestIdAttemptTwo = mockedGeneratePagePlan.mock.calls[1]?.[1]?.observability?.requestId;
-      const writerRequestIdAttemptOne = mockedGenerateOpeningPage.mock.calls[0]?.[1]?.observability?.requestId;
-      const writerRequestIdAttemptTwo = mockedGenerateOpeningPage.mock.calls[1]?.[1]?.observability?.requestId;
+      const plannerRequestIdAttemptOne =
+        mockedGeneratePagePlan.mock.calls[0]?.[1]?.observability?.requestId;
+      const plannerRequestIdAttemptTwo =
+        mockedGeneratePagePlan.mock.calls[1]?.[1]?.observability?.requestId;
+      const writerRequestIdAttemptOne =
+        mockedGenerateOpeningPage.mock.calls[0]?.[1]?.observability?.requestId;
+      const writerRequestIdAttemptTwo =
+        mockedGenerateOpeningPage.mock.calls[1]?.[1]?.observability?.requestId;
       expect(plannerRequestIdAttemptOne).toBeTruthy();
       expect(plannerRequestIdAttemptOne).toBe(plannerRequestIdAttemptTwo);
       expect(plannerRequestIdAttemptOne).toBe(writerRequestIdAttemptOne);
@@ -350,7 +459,7 @@ describe('page-service', () => {
           reconcilerIssueCount: 1,
           reconcilerRetried: true,
           finalStatus: 'success',
-        }),
+        })
       );
       expect(mockedLogger.info.mock.calls).toEqual(
         expect.arrayContaining([
@@ -386,7 +495,7 @@ describe('page-service', () => {
               }),
             }),
           ],
-        ]),
+        ])
       );
       expect(mockedLogger.warn.mock.calls).toEqual(
         expect.arrayContaining([
@@ -399,23 +508,33 @@ describe('page-service', () => {
               attempt: 1,
               failureReasons: [
                 {
-                  code: 'MISSING_NARRATIVE_EVIDENCE',
+                  code: 'THREAD_DUPLICATE_LIKE_ADD',
                   field: 'threadsAdded',
-                  message: 'No narrative evidence found for threadsAdded anchor "archive".',
+                  message: 'Thread add "Reach the archive" is near-duplicate of existing thread "td-1".',
                 },
               ],
             }),
           ],
-        ]),
+        ])
       );
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 2 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 2 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2 }],
       ]);
     });
@@ -428,13 +547,23 @@ describe('page-service', () => {
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You arrive under curfew bells as paper ash drifts across the square.',
         choices: [
-          { text: 'Hide in the print shop', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Bribe a gate sergeant', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Hide in the print shop',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Bribe a gate sergeant',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         currentLocation: 'The capital square at dusk',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['Curfew in effect'],
+        constraintsAdded: [
+          { text: 'Curfew in effect', constraintType: ConstraintType.ENVIRONMENTAL },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -468,14 +597,17 @@ describe('page-service', () => {
             storyId: story.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
       expect(page.id).toBe(1);
       expect(page.parentPageId).toBeNull();
       expect(page.parentChoiceIndex).toBeNull();
-      expect(page.accumulatedStructureState).toEqual(createInitialStructureState(structure));
+      expect(page.accumulatedStructureState).toEqual({
+        ...createInitialStructureState(structure),
+        pagesInCurrentBeat: 1,
+      });
       expect(page.structureVersionId).toBe(initialVersion.id);
-      expect(page.choices.map(choice => choice.text)).toEqual([
+      expect(page.choices.map((choice) => choice.text)).toEqual([
         'Hide in the print shop',
         'Bribe a gate sergeant',
       ]);
@@ -486,12 +618,33 @@ describe('page-service', () => {
     it('calls planner before opening writer and threads planner output into opening context', async () => {
       const story = buildStory();
       const pagePlan = buildPagePlanResult({ sceneIntent: 'Open with immediate pursuit.' });
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'Bootsteps close in as you slip through the alley.',
         choices: [
-          { text: 'Duck into a cellar', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Blend with the crowd', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Duck into a cellar',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Blend with the crowd',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         currentLocation: 'Shadowed alleyway',
         threatsAdded: [],
@@ -526,7 +679,6 @@ describe('page-service', () => {
         expect.objectContaining({
           mode: 'opening',
           characterConcept: story.characterConcept,
-          globalCanon: story.globalCanon,
         }),
         expect.objectContaining({
           apiKey: 'test-key',
@@ -534,16 +686,30 @@ describe('page-service', () => {
             storyId: story.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
       expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          pagePlan,
+          pagePlan: expect.objectContaining({
+            sceneIntent: pagePlan.sceneIntent,
+            continuityAnchors: pagePlan.continuityAnchors,
+            stateIntents: pagePlan.stateIntents,
+            writerBrief: pagePlan.writerBrief,
+            dramaticQuestion: pagePlan.dramaticQuestion,
+            choiceIntents: pagePlan.choiceIntents,
+          }),
         }),
-        expect.any(Object),
+        expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.objectContaining({
           narrative: expect.any(String),
           sceneSummary: expect.any(String),
@@ -556,20 +722,20 @@ describe('page-service', () => {
           inventory: [],
           health: [],
           characterState: [],
-        }),
+        })
       );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedGenerateOpeningPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedGenerateOpeningPage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
     });
 
     it('aborts first-page generation before writer call when planner fails', async () => {
       const story = buildStory();
       mockedGeneratePagePlan.mockRejectedValue(
-        new LLMError('planner invalid', 'VALIDATION_ERROR', false, { source: 'planner' }),
+        new LLMError('planner invalid', 'VALIDATION_ERROR', false, { source: 'planner' })
       );
 
       await expect(generateFirstPage(story, 'test-key')).rejects.toMatchObject({
@@ -604,13 +770,23 @@ describe('page-service', () => {
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You arrive under curfew bells as paper ash drifts across the square.',
         choices: [
-          { text: 'Hide in the print shop', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Bribe a gate sergeant', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Hide in the print shop',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Bribe a gate sergeant',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         currentLocation: 'The capital square at dusk',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['Curfew in effect'],
+        constraintsAdded: [
+          { text: 'Curfew in effect', constraintType: ConstraintType.ENVIRONMENTAL },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -644,7 +820,7 @@ describe('page-service', () => {
             storyId: story.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
       expect(page.accumulatedStructureState).toEqual({
         currentActIndex: 0,
@@ -667,8 +843,16 @@ describe('page-service', () => {
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You slip through the checkpoint as dusk falls.',
         choices: [
-          { text: 'Head to the safe house', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Scout the perimeter', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Head to the safe house',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Scout the perimeter',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: 'Inside the city walls',
         threatsAdded: [],
@@ -759,12 +943,20 @@ describe('page-service', () => {
         parentChoiceIndex: null,
       });
       mockedStorage.getMaxPageId.mockResolvedValue(1);
-      mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
+      mockedGeneratePagePlan.mockResolvedValue(buildReducedPagePlanResult());
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You dash between wagons while lantern light sweeps the road.',
         choices: [
-          { text: 'Cut through the foundry', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Blend into the queue', choiceType: 'SOCIAL_MANIPULATION', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Cut through the foundry',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Blend into the queue',
+            choiceType: 'SOCIAL_MANIPULATION',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         currentLocation: 'Checkpoint approach',
         threatsAdded: [],
@@ -793,17 +985,13 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-        reconciledStateWithDiagnostics(
-          writer as WriterResult,
-          previousState.currentLocation,
-          [
-            {
-              code: 'MISSING_NARRATIVE_EVIDENCE',
-              field: 'constraintsAdded',
-              message: 'No narrative evidence found for constraintsAdded anchor "curfew".',
-            },
-          ],
-        ),
+        reconciledStateWithDiagnostics(writer as PageWriterResult, previousState.currentLocation, [
+          {
+            code: 'UNKNOWN_STATE_ID',
+            field: 'constraintsRemoved',
+            message: 'Unknown state ID "cn-999" in constraintsRemoved.',
+          },
+        ])
       );
 
       const promise = generateNextPage(story, parentPage, 0, 'test-key');
@@ -814,8 +1002,8 @@ describe('page-service', () => {
         retryable: false,
         diagnostics: [
           {
-            code: 'MISSING_NARRATIVE_EVIDENCE',
-            field: 'constraintsAdded',
+            code: 'UNKNOWN_STATE_ID',
+            field: 'constraintsRemoved',
           },
         ],
       });
@@ -839,7 +1027,7 @@ describe('page-service', () => {
               }),
             }),
           ],
-        ]),
+        ])
       );
     });
 
@@ -875,14 +1063,37 @@ describe('page-service', () => {
         parentPageId: null,
         parentChoiceIndex: null,
       });
-      const pagePlan = buildPagePlanResult({ sceneIntent: 'Immediate pursuit through narrow passages.' });
-      mockedGeneratePagePlan.mockResolvedValue(pagePlan);
+      const pagePlan = buildPagePlanResult({
+        sceneIntent: 'Immediate pursuit through narrow passages.',
+      });
+      mockedGeneratePagePlan.mockResolvedValue(
+        buildReducedPagePlanResult({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+          rawResponse: pagePlan.rawResponse,
+        })
+      );
+      mockedGenerateStateAccountant.mockResolvedValue({
+        stateIntents: pagePlan.stateIntents,
+        rawResponse: pagePlan.rawResponse,
+      });
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You vault a crate and nearly collide with a market stall.',
         choices: [
-          { text: 'Cut through the market', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Climb to the roofs', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Cut through the market',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Climb to the roofs',
+            choiceType: 'PATH_DIVERGENCE',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Crowded market lane',
         threatsAdded: [],
@@ -917,7 +1128,7 @@ describe('page-service', () => {
         0,
         'test-key',
         undefined,
-        'We should cut through the courtyard.',
+        'We should cut through the courtyard.'
       );
 
       expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
@@ -934,17 +1145,31 @@ describe('page-service', () => {
             pageId: parentPage.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
           suggestedProtagonistSpeech: 'We should cut through the courtyard.',
         }),
-        pagePlan,
-        expect.any(Object),
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
+        expect.any(Object)
       );
       expect(mockedReconcileState).toHaveBeenCalledWith(
-        pagePlan,
+        expect.objectContaining({
+          sceneIntent: pagePlan.sceneIntent,
+          continuityAnchors: pagePlan.continuityAnchors,
+          stateIntents: pagePlan.stateIntents,
+          writerBrief: pagePlan.writerBrief,
+          dramaticQuestion: pagePlan.dramaticQuestion,
+          choiceIntents: pagePlan.choiceIntents,
+        }),
         expect.objectContaining({
           narrative: expect.any(String),
           sceneSummary: expect.any(String),
@@ -957,13 +1182,13 @@ describe('page-service', () => {
           inventory: expect.any(Array),
           health: expect.any(Array),
           characterState: expect.any(Array),
-        }),
+        })
       );
       expect(mockedGeneratePagePlan.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedGenerateWriterPage.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
     });
 
@@ -1040,6 +1265,8 @@ describe('page-service', () => {
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
@@ -1057,7 +1284,7 @@ describe('page-service', () => {
           requestId: expect.any(String),
           stage: 'analyst',
           attempt: 1,
-        }),
+        })
       );
       expect(mockedLogger.info).toHaveBeenCalledWith(
         'Generation stage completed',
@@ -1069,7 +1296,7 @@ describe('page-service', () => {
           stage: 'analyst',
           attempt: 1,
           durationMs: expect.any(Number),
-        }),
+        })
       );
     });
 
@@ -1087,7 +1314,7 @@ describe('page-service', () => {
       });
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGeneratePagePlan.mockRejectedValue(
-        new LLMError('planner invalid', 'VALIDATION_ERROR', false, { source: 'planner' }),
+        new LLMError('planner invalid', 'VALIDATION_ERROR', false, { source: 'planner' })
       );
 
       await expect(generateNextPage(story, parentPage, 0, 'test-key')).rejects.toMatchObject({
@@ -1124,13 +1351,31 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You move across wet tiles while patrol torches sweep below.',
         choices: [
-          { text: 'Leap to the clocktower', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Drop into the market canopy', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Leap to the clocktower',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Drop into the market canopy',
+            choiceType: 'PATH_DIVERGENCE',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Rooftops above the market district',
-        threatsAdded: ['Patrol torches are scanning the rooftops below'],
+        threatsAdded: [
+          {
+            text: 'Patrol torches are scanning the rooftops below',
+            threatType: ThreatType.ENVIRONMENTAL,
+          },
+        ],
         threatsRemoved: [],
-        constraintsAdded: ['Must move quietly to avoid detection'],
+        constraintsAdded: [
+          {
+            text: 'Must move quietly to avoid detection',
+            constraintType: ConstraintType.ENVIRONMENTAL,
+          },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -1154,7 +1399,12 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
 
-      const { page, updatedStory, metrics } = await generateNextPage(story, parentPage, 0, 'test-key');
+      const { page, updatedStory, metrics } = await generateNextPage(
+        story,
+        parentPage,
+        0,
+        'test-key'
+      );
 
       expect(mockedStorage.getMaxPageId).toHaveBeenCalledWith(story.id);
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
@@ -1177,7 +1427,7 @@ describe('page-service', () => {
               characterState: expect.any(Array),
             }),
           }),
-        }),
+        })
       );
       expect(page.id).toBe(8);
       expect(page.parentPageId).toBe(parentPage.id);
@@ -1186,7 +1436,9 @@ describe('page-service', () => {
       // Accumulated inventory inherits parent state plus own additions
       expect(page.accumulatedInventory).toEqual(parentPage.accumulatedInventory);
       // New active state is in accumulatedActiveState
-      expect(page.accumulatedActiveState.currentLocation).toBe('Rooftops above the market district');
+      expect(page.accumulatedActiveState.currentLocation).toBe(
+        'Rooftops above the market district'
+      );
       // Active state stores keyed entries ({ id, text }) in accumulated state
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
       expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
@@ -1196,7 +1448,7 @@ describe('page-service', () => {
           reconcilerRetried: false,
           reconcilerIssueCount: 0,
           finalStatus: 'success',
-        }),
+        })
       );
     });
 
@@ -1239,7 +1491,10 @@ describe('page-service', () => {
         id: parsePageId(2),
         narrativeText: 'You secure forged papers in a shuttered print cellar.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Approach the archive checkpoint'), createChoice('Scout the sewer hatch')],
+        choices: [
+          createChoice('Approach the archive checkpoint'),
+          createChoice('Scout the sewer hatch'),
+        ],
         inventoryChanges: { added: ['Acquired forged transit seal'], removed: [] },
         isEnding: false,
         parentPageId: parsePageId(1),
@@ -1252,15 +1507,25 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'The checkpoint captain stamps your seal and waves you through.',
         choices: [
-          { text: 'Enter the archive corridor', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Detour to the guard locker', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Enter the archive corridor',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Detour to the guard locker',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: 'Inside the censors bureau',
         threatsAdded: [],
         threatsRemoved: ['Checkpoint security'],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'Access the records archive', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'Access the records archive', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: {},
@@ -1318,7 +1583,10 @@ describe('page-service', () => {
         id: parsePageId(2),
         narrativeText: 'You stand before the full council with ledgers in hand.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Accuse the minister publicly'), createChoice('Delay and gather one more witness')],
+        choices: [
+          createChoice('Accuse the minister publicly'),
+          createChoice('Delay and gather one more witness'),
+        ],
         inventoryChanges: { added: ['Council hearing scheduled'], removed: [] },
         isEnding: false,
         parentPageId: parsePageId(1),
@@ -1332,7 +1600,11 @@ describe('page-service', () => {
         narrative: 'The chamber erupts, but your accusation remains ambiguous and contestable.',
         choices: [
           { text: 'Name names now', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Retreat and regroup', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Retreat and regroup',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Council chamber',
         threatsAdded: [],
@@ -1397,7 +1669,7 @@ describe('page-service', () => {
           beatId: '1.1',
           beatRole: 'turning_point',
           completionGateFailureReason: 'No explicit irrevocable commitment was made.',
-        }),
+        })
       );
     });
 
@@ -1423,8 +1695,16 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You slip through the gate and secure access.',
         choices: [
-          { text: 'Proceed to archive wing', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Hold position', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Proceed to archive wing',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Hold position',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
         ],
         currentLocation: 'Archive threshold',
         threatsAdded: [],
@@ -1479,7 +1759,7 @@ describe('page-service', () => {
       expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
       expect(mockedLogger.warn).not.toHaveBeenCalledWith(
         'Turning point completion gate mismatch; forcing beatConcluded=false',
-        expect.anything(),
+        expect.anything()
       );
     });
 
@@ -1505,8 +1785,16 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly name the conspirators and bind yourself to the prosecution.',
         choices: [
-          { text: 'Face retaliation head-on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
-          { text: 'Seek immediate sanctuary', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Face retaliation head-on',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'THREAT_SHIFT',
+          },
+          {
+            text: 'Seek immediate sanctuary',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Council chamber',
         threatsAdded: [],
@@ -1588,15 +1876,25 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You stay hidden and gather more intel from passing clerks.',
         choices: [
-          { text: 'Keep watching', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-          { text: 'Create a distraction', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+          {
+            text: 'Keep watching',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
+          {
+            text: 'Create a distraction',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'THREAT_SHIFT',
+          },
         ],
         currentLocation: 'Hidden near the archive gate',
         threatsAdded: [],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'Mapped sentry rotation patterns', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'Mapped sentry rotation patterns', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         threadsResolved: [],
         newCanonFacts: [],
         newCharacterCanonFacts: {},
@@ -1647,7 +1945,10 @@ describe('page-service', () => {
         id: parsePageId(2),
         narrativeText: 'At the bureau wall, you choose speed or caution.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Force a checkpoint pass'), createChoice('Gather more evidence first')],
+        choices: [
+          createChoice('Force a checkpoint pass'),
+          createChoice('Gather more evidence first'),
+        ],
         inventoryChanges: { added: ['Reached bureau perimeter'], removed: [] },
         isEnding: false,
         parentPageId: parsePageId(1),
@@ -1661,8 +1962,16 @@ describe('page-service', () => {
         .mockResolvedValueOnce({
           narrative: 'A forged seal gets you inside.',
           choices: [
-            { text: 'Head for ledger room', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-            { text: 'Plant false records', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+            {
+              text: 'Head for ledger room',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'LOCATION_CHANGE',
+            },
+            {
+              text: 'Plant false records',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'EXPOSURE_CHANGE',
+            },
           ],
           currentLocation: 'Inside the bureau',
           threatsAdded: [],
@@ -1693,7 +2002,11 @@ describe('page-service', () => {
         .mockResolvedValueOnce({
           narrative: 'You hold position and log patrol timing.',
           choices: [
-            { text: 'Create diversion', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'THREAT_SHIFT' },
+            {
+              text: 'Create diversion',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'THREAT_SHIFT',
+            },
             { text: 'Withdraw', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
           ],
           currentLocation: 'Hidden observation post',
@@ -1701,7 +2014,9 @@ describe('page-service', () => {
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
-          threadsAdded: [{ text: 'Patrol schedule documented', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+          threadsAdded: [
+            { text: 'Patrol schedule documented', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+          ],
           threadsResolved: [],
           newCanonFacts: [],
           newCharacterCanonFacts: {},
@@ -1785,8 +2100,16 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You move carefully through the shadows.',
         choices: [
-          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Take alternate route', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Continue forward',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Take alternate route',
+            choiceType: 'PATH_DIVERGENCE',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Shadow corridor',
         threatsAdded: [],
@@ -1900,15 +2223,25 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly defect and swear service to the empire.',
         choices: [
-          { text: 'Take command posting', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Return as double agent', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Take command posting',
+            choiceType: 'IDENTITY_EXPRESSION',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Return as double agent',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         currentLocation: 'Imperial command hall',
-        threatsAdded: ['Resistance hunting you'],
+        threatsAdded: [{ text: 'Resistance hunting you', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: ['Imperial suspicion'],
-        constraintsAdded: ['Must prove loyalty'],
+        constraintsAdded: [{ text: 'Must prove loyalty', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'Serve imperial command', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'Serve imperial command', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         threadsResolved: ['Infiltrate the empire'],
         newCanonFacts: ['Resistance branded you a traitor'],
         newCharacterCanonFacts: {},
@@ -1947,7 +2280,7 @@ describe('page-service', () => {
         parentPage,
         0,
         'test-key',
-        onGenerationStage,
+        onGenerationStage
       );
 
       expect(mockedCreateStructureRewriter).toHaveBeenCalled();
@@ -1959,7 +2292,7 @@ describe('page-service', () => {
           deviationReason: 'Current infiltration beats are invalid after defection.',
           narrativeSummary: 'Protagonist joined imperial command hierarchy.',
         }),
-        'test-key',
+        'test-key'
       );
 
       expect(page.id).toBe(3);
@@ -1968,9 +2301,11 @@ describe('page-service', () => {
       expect(page.structureVersionId).not.toBeNull();
 
       expect(updatedStory.structureVersions).toHaveLength(2);
-      expect(updatedStory.structureVersions?.[1]?.previousVersionId).toBe(initialStructureVersion.id);
+      expect(updatedStory.structureVersions?.[1]?.previousVersionId).toBe(
+        initialStructureVersion.id
+      );
       expect(updatedStory.structureVersions?.[1]?.rewriteReason).toBe(
-        'Current infiltration beats are invalid after defection.',
+        'Current infiltration beats are invalid after defection.'
       );
       expect(updatedStory.structureVersions?.[1]?.createdAtPageId).toBe(page.id);
       expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
@@ -1978,7 +2313,7 @@ describe('page-service', () => {
         expect.arrayContaining([
           [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
           [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 }],
-        ]),
+        ])
       );
       expect(mockedLogger.info).toHaveBeenCalledWith(
         'Generation stage started',
@@ -1989,7 +2324,7 @@ describe('page-service', () => {
           requestId: expect.any(String),
           stage: 'structure-rewrite',
           attempt: 1,
-        }),
+        })
       );
       expect(mockedLogger.info).toHaveBeenCalledWith(
         'Generation stage completed',
@@ -2001,7 +2336,7 @@ describe('page-service', () => {
           stage: 'structure-rewrite',
           attempt: 1,
           durationMs: expect.any(Number),
-        }),
+        })
       );
     });
 
@@ -2025,8 +2360,18 @@ describe('page-service', () => {
             stakes: 'Different stakes',
             entryCondition: 'Different entry',
             beats: [
-              { id: '1.1', description: 'Different beat 1', objective: 'Different obj 1', role: 'setup' as const },
-              { id: '1.2', description: 'Different beat 2', objective: 'Different obj 2', role: 'escalation' as const },
+              {
+                id: '1.1',
+                description: 'Different beat 1',
+                objective: 'Different obj 1',
+                role: 'setup' as const,
+              },
+              {
+                id: '1.2',
+                description: 'Different beat 2',
+                objective: 'Different obj 2',
+                role: 'escalation' as const,
+              },
             ],
           },
         ],
@@ -2066,7 +2411,11 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You proceed down the left passage.',
         choices: [
-          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Continue forward',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
           { text: 'Turn back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
         ],
         currentLocation: 'Left passage in the archive',
@@ -2126,7 +2475,7 @@ describe('page-service', () => {
             pageId: parentPage.id,
             requestId: expect.any(String),
           }),
-        }),
+        })
       );
     });
 
@@ -2188,13 +2537,21 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You publicly defect and swear service to the empire.',
         choices: [
-          { text: 'Take command posting', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Return as double agent', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
+          {
+            text: 'Take command posting',
+            choiceType: 'IDENTITY_EXPRESSION',
+            primaryDelta: 'GOAL_SHIFT',
+          },
+          {
+            text: 'Return as double agent',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'EXPOSURE_CHANGE',
+          },
         ],
         currentLocation: 'Imperial command hall',
-        threatsAdded: ['Resistance hunters'],
+        threatsAdded: [{ text: 'Resistance hunters', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: [],
-        constraintsAdded: ['Prove loyalty'],
+        constraintsAdded: [{ text: 'Prove loyalty', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -2261,7 +2618,12 @@ describe('page-service', () => {
             stakes: 'Everything',
             entryCondition: 'After betrayal',
             beats: [
-              { id: '1.1', description: 'Accept new role', objective: 'Establish new identity', role: 'setup' as const },
+              {
+                id: '1.1',
+                description: 'Accept new role',
+                objective: 'Establish new identity',
+                role: 'setup' as const,
+              },
             ],
           },
         ],
@@ -2280,13 +2642,19 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You betray your allies.',
         choices: [
-          { text: 'Embrace new life', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
+          {
+            text: 'Embrace new life',
+            choiceType: 'IDENTITY_EXPRESSION',
+            primaryDelta: 'GOAL_SHIFT',
+          },
           { text: 'Second thoughts', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
         ],
         currentLocation: 'The aftermath of betrayal',
-        threatsAdded: ['Former allies seek revenge'],
+        threatsAdded: [
+          { text: 'Former allies seek revenge', threatType: ThreatType.ENVIRONMENTAL },
+        ],
         threatsRemoved: [],
-        constraintsAdded: ['Trust broken'],
+        constraintsAdded: [{ text: 'Trust broken', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: ['Alliance with companions'],
@@ -2326,7 +2694,9 @@ describe('page-service', () => {
 
       expect(deviationInfo).toBeDefined();
       expect(deviationInfo?.detected).toBe(true);
-      expect(deviationInfo?.reason).toBe('Player chose to betray allies, invalidating trust-based beats.');
+      expect(deviationInfo?.reason).toBe(
+        'Player chose to betray allies, invalidating trust-based beats.'
+      );
       expect(deviationInfo?.beatsInvalidated).toBe(2);
     });
 
@@ -2472,10 +2842,10 @@ describe('page-service', () => {
       await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(mockedGenerateWriterPage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedReconcileState.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER,
+        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
 
       const firstAnalystCall = mockedGenerateAnalystEvaluation.mock.calls[0];
@@ -2486,7 +2856,7 @@ describe('page-service', () => {
 
       const [analystInput, analystOptions] = firstAnalystCall;
       expect(analystInput.accumulatedStructureState.pagesInCurrentBeat).toBe(
-        parentStructureState.pagesInCurrentBeat + 1,
+        parentStructureState.pagesInCurrentBeat + 1
       );
       expect(analystOptions).toEqual({ apiKey: 'test-key' });
     });
@@ -2508,8 +2878,16 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You follow the dusty road toward the distant village.',
         choices: [
-          { text: 'Approach the gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Camp outside', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Approach the gate',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+          {
+            text: 'Camp outside',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'Village outskirts',
         threatsAdded: [],
@@ -2567,7 +2945,11 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You burst through the door into the darkened room.',
         choices: [
-          { text: 'Search the desk', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          {
+            text: 'Search the desk',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
           { text: 'Check the safe', choiceType: 'INVESTIGATION', primaryDelta: 'ITEM_CONTROL' },
         ],
         currentLocation: 'Inside the warehouse office',
@@ -2618,7 +3000,7 @@ describe('page-service', () => {
           attempt: 1,
           durationMs: expect.any(Number),
           error: expect.any(Error),
-        }),
+        })
       );
     });
 
@@ -2645,7 +3027,11 @@ describe('page-service', () => {
         mockedGenerateWriterPage.mockResolvedValue({
           narrative: 'You creep through the corridor.',
           choices: [
-            { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+            {
+              text: 'Open the door',
+              choiceType: 'TACTICAL_APPROACH',
+              primaryDelta: 'LOCATION_CHANGE',
+            },
             { text: 'Turn back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
           ],
           currentLocation: 'A dim corridor',
@@ -2798,11 +3184,21 @@ describe('page-service', () => {
         mockedGenerateWriterPage.mockResolvedValue({
           narrative: 'You defect to the other side.',
           choices: [
-            { text: 'Accept posting', choiceType: 'IDENTITY_EXPRESSION', primaryDelta: 'GOAL_SHIFT' },
-            { text: 'Go underground', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+            {
+              text: 'Accept posting',
+              choiceType: 'IDENTITY_EXPRESSION',
+              primaryDelta: 'GOAL_SHIFT',
+            },
+            {
+              text: 'Go underground',
+              choiceType: 'AVOIDANCE_RETREAT',
+              primaryDelta: 'LOCATION_CHANGE',
+            },
           ],
           currentLocation: 'The defection point',
-          threatsAdded: ['Hunted by former allies'],
+          threatsAdded: [
+            { text: 'Hunted by former allies', threatType: ThreatType.ENVIRONMENTAL },
+          ],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -2925,15 +3321,25 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'A coded anthem drifts from the tavern cellar.',
         choices: [
-          { text: 'Signal the contact', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'RELATIONSHIP_CHANGE' },
-          { text: 'Circle back to the docks', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          {
+            text: 'Signal the contact',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'RELATIONSHIP_CHANGE',
+          },
+          {
+            text: 'Circle back to the docks',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
         ],
         currentLocation: 'The tavern cellar entrance',
         threatsAdded: [],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
-        threadsAdded: [{ text: 'Contact the resistance', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threadsAdded: [
+          { text: 'Contact the resistance', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         threadsResolved: [],
         newCanonFacts: ['Resistance uses songs as ciphers'],
         newCharacterCanonFacts: {},
@@ -2961,14 +3367,19 @@ describe('page-service', () => {
       expect(result.metrics).toEqual(
         expect.objectContaining({
           finalStatus: 'success',
-        }),
+        })
       );
       expect(result.page.id).toBe(2);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, result.page);
-      expect(mockedStorage.updateChoiceLink).toHaveBeenCalledWith(story.id, parentPage.id, 0, result.page.id);
+      expect(mockedStorage.updateChoiceLink).toHaveBeenCalledWith(
+        story.id,
+        parentPage.id,
+        0,
+        result.page.id
+      );
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(result.story);
       expect(mockedStorage.savePage.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedStorage.updateChoiceLink.mock.invocationCallOrder[0],
+        mockedStorage.updateChoiceLink.mock.invocationCallOrder[0]
       );
     });
 
@@ -2986,20 +3397,15 @@ describe('page-service', () => {
 
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockRejectedValue(
-        new LLMError(
-          'Deterministic writer output validation failed',
-          'VALIDATION_ERROR',
-          false,
-          {
-            ruleKeys: ['writer_output.choice_pair.duplicate'],
-            validationIssues: [
-              {
-                ruleKey: 'writer_output.choice_pair.duplicate',
-                fieldPath: 'choices[1]',
-              },
-            ],
-          },
-        ),
+        new LLMError('Writer output validation failed', 'VALIDATION_ERROR', false, {
+          ruleKeys: ['writer_output.choice_pair.duplicate'],
+          validationIssues: [
+            {
+              ruleKey: 'writer_output.choice_pair.duplicate',
+              fieldPath: 'choices[1]',
+            },
+          ],
+        })
       );
 
       await expect(getOrGeneratePage(story, parentPage, 0, 'test-key')).rejects.toMatchObject({
@@ -3027,12 +3433,16 @@ describe('page-service', () => {
         narrative: 'You wait in silence until the patrol passes.',
         choices: [
           { text: 'Move now', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'URGENCY_CHANGE' },
-          { text: 'Wait longer', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'CONDITION_CHANGE' },
+          {
+            text: 'Wait longer',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'CONDITION_CHANGE',
+          },
         ],
         currentLocation: 'Hidden in the shadows',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['Time pressure'],
+        constraintsAdded: [{ text: 'Time pressure', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -3076,7 +3486,7 @@ describe('page-service', () => {
       await expect(getOrGeneratePage(story, parentPage, -1, 'test-key')).rejects.toEqual(
         expect.objectContaining({
           code: 'INVALID_CHOICE',
-        } as Partial<EngineError>),
+        } as Partial<EngineError>)
       );
       expect(mockedStorage.loadPage).not.toHaveBeenCalled();
       expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
@@ -3196,7 +3606,14 @@ describe('page-service', () => {
             objective: 'New direction',
             stakes: 'High',
             entryCondition: 'After deviation',
-            beats: [{ id: '1.1', description: 'New beat', objective: 'New objective', role: 'setup' as const }],
+            beats: [
+              {
+                id: '1.1',
+                description: 'New beat',
+                objective: 'New objective',
+                role: 'setup' as const,
+              },
+            ],
           },
         ],
       };
@@ -3218,7 +3635,7 @@ describe('page-service', () => {
           { text: 'New choice 2', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
         ],
         currentLocation: 'An unexpected path',
-        threatsAdded: ['Unknown consequences'],
+        threatsAdded: [{ text: 'Unknown consequences', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],

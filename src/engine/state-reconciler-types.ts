@@ -1,11 +1,17 @@
-import type { ThreadType, Urgency } from '../models/state/index.js';
+import type {
+  ConstraintAddition,
+  ConstraintEntry,
+  ThreatAddition,
+  ThreatEntry,
+  ThreadType,
+  Urgency,
+} from '../models/state/index.js';
 import type { KeyedEntry, ThreadEntry } from '../models/state/index.js';
 
 export interface StateReconciliationDiagnostic {
   code: string;
   message: string;
   field?: string;
-  anchor?: string;
 }
 
 export interface ReconciledThreadAdd {
@@ -21,8 +27,8 @@ export interface ReconciledCharacterStateAdd {
 
 export interface StateReconciliationPreviousState {
   currentLocation: string;
-  threats: readonly KeyedEntry[];
-  constraints: readonly KeyedEntry[];
+  threats: readonly ThreatEntry[];
+  constraints: readonly ConstraintEntry[];
   threads: readonly ThreadEntry[];
   inventory: readonly KeyedEntry[];
   health: readonly KeyedEntry[];
@@ -31,9 +37,9 @@ export interface StateReconciliationPreviousState {
 
 export interface StateReconciliationResult {
   currentLocation: string;
-  threatsAdded: string[];
+  threatsAdded: ThreatAddition[];
   threatsRemoved: string[];
-  constraintsAdded: string[];
+  constraintsAdded: ConstraintAddition[];
   constraintsRemoved: string[];
   threadsAdded: ReconciledThreadAdd[];
   threadsResolved: string[];

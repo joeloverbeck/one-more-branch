@@ -4,7 +4,7 @@ import {
   setPromptSinkForTesting,
   type PromptType,
 } from '../../../src/logging/prompt-formatter';
-import type { ChatMessage } from '../../../src/llm/types';
+import type { ChatMessage } from '../../../src/llm/llm-client-types';
 import type { Logger } from '../../../src/logging/types';
 
 function createMockLogger(): jest.Mocked<Logger> {
@@ -76,11 +76,14 @@ describe('logPrompt', () => {
     await Promise.resolve();
 
     expect(logger.warn.mock.calls).toHaveLength(1);
-    expect(logger.warn.mock.calls[0]).toEqual(['Prompt logging failed', {
-      promptType: 'writer',
-      messageCount: 1,
-      error: 'disk full',
-    }]);
+    expect(logger.warn.mock.calls[0]).toEqual([
+      'Prompt logging failed',
+      {
+        promptType: 'writer',
+        messageCount: 1,
+        error: 'disk full',
+      },
+    ]);
     expect(JSON.stringify(logger.warn.mock.calls[0]?.[1])).not.toContain('Secret message text');
   });
 

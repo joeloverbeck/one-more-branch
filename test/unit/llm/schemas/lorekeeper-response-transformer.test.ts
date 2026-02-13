@@ -28,10 +28,10 @@ describe('validateLorekeeperResponse', () => {
     expect(result.relevantCharacters[0]?.name).toBe('Mira');
     expect(result.relevantCharacters[0]?.role).toBe('ally');
     expect(result.relevantCharacters[0]?.speechPatterns).toBe(
-      'Formal, measured, uses medical terminology',
+      'Formal, measured, uses medical terminology'
     );
     expect(result.relevantCharacters[0]?.interCharacterDynamics).toBe(
-      'Distrusts Gareth since the betrayal',
+      'Distrusts Gareth since the betrayal'
     );
     expect(result.relevantCanonFacts).toEqual([
       'The eastern gate is sealed',

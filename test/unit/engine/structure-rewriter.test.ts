@@ -22,12 +22,14 @@ import {
   mergePreservedWithRegenerated,
   StructureRewriteGenerator,
 } from '../../../src/engine/structure-rewriter';
-import { LLMError } from '../../../src/llm/types';
-import type { StructureRewriteContext } from '../../../src/llm/types';
+import { LLMError } from '../../../src/llm/llm-client-types';
+import type { StructureRewriteContext } from '../../../src/llm/structure-rewrite-types';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
-function createRewriteContext(overrides?: Partial<StructureRewriteContext>): StructureRewriteContext {
+function createRewriteContext(
+  overrides?: Partial<StructureRewriteContext>
+): StructureRewriteContext {
   return {
     characterConcept: 'A disgraced captain seeking absolution',
     worldbuilding: 'A chain of storm-bound islands governed by rival guilds',
@@ -53,10 +55,13 @@ function createRewriteContext(overrides?: Partial<StructureRewriteContext>): Str
   };
 }
 
-function createGeneratedStructure(overrides?: Partial<StructureGenerationResult>): StructureGenerationResult {
+function createGeneratedStructure(
+  overrides?: Partial<StructureGenerationResult>
+): StructureGenerationResult {
   return {
     overallTheme: 'Rewritten theme candidate',
-    premise: 'A disgraced captain must unite rival fleets before storm season destroys the archipelago.',
+    premise:
+      'A disgraced captain must unite rival fleets before storm season destroys the archipelago.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
@@ -139,8 +144,20 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 1',
         entryCondition: 'Entry 1',
         beats: [
-          { id: '1.1', name: 'Beat Name 1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
-          { id: '1.2', name: 'Beat Name 1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
+          {
+            id: '1.1',
+            name: 'Beat Name 1.1',
+            description: 'Beat 1.1',
+            objective: 'Goal 1.1',
+            role: 'setup',
+          },
+          {
+            id: '1.2',
+            name: 'Beat Name 1.2',
+            description: 'Beat 1.2',
+            objective: 'Goal 1.2',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -150,8 +167,20 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 2',
         entryCondition: 'Entry 2',
         beats: [
-          { id: '2.1', name: 'Beat Name 2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
-          { id: '2.2', name: 'Beat Name 2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
+          {
+            id: '2.1',
+            name: 'Beat Name 2.1',
+            description: 'Beat 2.1',
+            objective: 'Goal 2.1',
+            role: 'escalation',
+          },
+          {
+            id: '2.2',
+            name: 'Beat Name 2.2',
+            description: 'Beat 2.2',
+            objective: 'Goal 2.2',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -161,8 +190,20 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         stakes: 'Stakes 3',
         entryCondition: 'Entry 3',
         beats: [
-          { id: '3.1', name: 'Beat Name 3.1', description: 'Beat 3.1', objective: 'Goal 3.1', role: 'turning_point' },
-          { id: '3.2', name: 'Beat Name 3.2', description: 'Beat 3.2', objective: 'Goal 3.2', role: 'resolution' },
+          {
+            id: '3.1',
+            name: 'Beat Name 3.1',
+            description: 'Beat 3.1',
+            objective: 'Goal 3.1',
+            role: 'turning_point',
+          },
+          {
+            id: '3.2',
+            name: 'Beat Name 3.2',
+            description: 'Beat 3.2',
+            objective: 'Goal 3.2',
+            role: 'resolution',
+          },
         ],
       },
     ],
@@ -188,13 +229,14 @@ describe('structure-rewriter', () => {
 
       expect(generator).toHaveBeenCalledTimes(1);
       expect(generator).toHaveBeenCalledWith(
-        [
-          expect.objectContaining({ role: 'system' }),
-          expect.objectContaining({ role: 'user' }),
-        ],
-        'test-api-key',
+        [expect.objectContaining({ role: 'system' }), expect.objectContaining({ role: 'user' })],
+        'test-api-key'
       );
-      expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'structure-rewrite', expect.any(Array));
+      expect(mockLogPrompt).toHaveBeenCalledWith(
+        mockLogger,
+        'structure-rewrite',
+        expect.any(Array)
+      );
       expect(mockLogPrompt).toHaveBeenCalledTimes(1);
       expect(result.preservedBeatIds).toEqual(['1.1']);
       expect(result.rawResponse).toBe('{"mock":true}');
@@ -254,8 +296,8 @@ describe('structure-rewriter', () => {
             'Structure response must include exactly 3 acts (received: 2)',
             'STRUCTURE_PARSE_ERROR',
             true,
-            { rawContent },
-          ),
+            { rawContent }
+          )
         );
 
       const rewriter = createStructureRewriter(generator);
@@ -286,7 +328,7 @@ describe('structure-rewriter', () => {
           },
         ],
         regenerated,
-        'Original theme',
+        'Original theme'
       );
 
       expect(merged.overallTheme).toBe('Original theme');
@@ -316,8 +358,20 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
             beats: [
-              { id: '1.1', name: 'Beat Name 1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
-              { id: '1.2', name: 'Beat Name 1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
+              {
+                id: '1.1',
+                name: 'Beat Name 1.1',
+                description: 'Beat 1.1',
+                objective: 'Goal 1.1',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                name: 'Beat Name 1.2',
+                description: 'Beat 1.2',
+                objective: 'Goal 1.2',
+                role: 'turning_point',
+              },
             ],
           },
           {
@@ -327,8 +381,20 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
             beats: [
-              { id: '2.1', name: 'Beat Name 2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
-              { id: '2.2', name: 'Beat Name 2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
+              {
+                id: '2.1',
+                name: 'Beat Name 2.1',
+                description: 'Beat 2.1',
+                objective: 'Goal 2.1',
+                role: 'escalation',
+              },
+              {
+                id: '2.2',
+                name: 'Beat Name 2.2',
+                description: 'Beat 2.2',
+                objective: 'Goal 2.2',
+                role: 'turning_point',
+              },
             ],
           },
           {
@@ -338,8 +404,20 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 3',
             entryCondition: 'Entry 3',
             beats: [
-              { id: '3.1', name: 'Beat Name 3.1', description: 'Beat 3.1', objective: 'Goal 3.1', role: 'turning_point' },
-              { id: '3.2', name: 'Beat Name 3.2', description: 'Beat 3.2', objective: 'Goal 3.2', role: 'resolution' },
+              {
+                id: '3.1',
+                name: 'Beat Name 3.1',
+                description: 'Beat 3.1',
+                objective: 'Goal 3.1',
+                role: 'turning_point',
+              },
+              {
+                id: '3.2',
+                name: 'Beat Name 3.2',
+                description: 'Beat 3.2',
+                objective: 'Goal 3.2',
+                role: 'resolution',
+              },
             ],
           },
         ],
@@ -359,7 +437,7 @@ describe('structure-rewriter', () => {
           },
         ],
         regenerated,
-        'Original theme',
+        'Original theme'
       );
 
       expect(merged.acts[0]?.beats[0]).toEqual({
@@ -382,8 +460,20 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
             beats: [
-              { id: '1.1', name: 'Beat Name 1.1', description: 'Beat 1.1', objective: 'Goal 1.1', role: 'setup' },
-              { id: '1.2', name: 'Beat Name 1.2', description: 'Beat 1.2', objective: 'Goal 1.2', role: 'turning_point' },
+              {
+                id: '1.1',
+                name: 'Beat Name 1.1',
+                description: 'Beat 1.1',
+                objective: 'Goal 1.1',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                name: 'Beat Name 1.2',
+                description: 'Beat 1.2',
+                objective: 'Goal 1.2',
+                role: 'turning_point',
+              },
             ],
           },
           {
@@ -393,15 +483,27 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
             beats: [
-              { id: '2.1', name: 'Beat Name 2.1', description: 'Beat 2.1', objective: 'Goal 2.1', role: 'escalation' },
-              { id: '2.2', name: 'Beat Name 2.2', description: 'Beat 2.2', objective: 'Goal 2.2', role: 'turning_point' },
+              {
+                id: '2.1',
+                name: 'Beat Name 2.1',
+                description: 'Beat 2.1',
+                objective: 'Goal 2.1',
+                role: 'escalation',
+              },
+              {
+                id: '2.2',
+                name: 'Beat Name 2.2',
+                description: 'Beat 2.2',
+                objective: 'Goal 2.2',
+                role: 'turning_point',
+              },
             ],
           },
         ],
       });
 
       expect(() => mergePreservedWithRegenerated([], regenerated, 'Original theme')).toThrow(
-        'Merged structure is missing beats for act 3',
+        'Merged structure is missing beats for act 3'
       );
     });
   });

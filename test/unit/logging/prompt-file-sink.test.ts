@@ -52,10 +52,7 @@ describe('PromptFileSink', () => {
       messages: [{ role: 'user', content: 'Second' }],
     });
 
-    const lines = fs
-      .readFileSync(logPathFor('02-11-2026'), 'utf8')
-      .trim()
-      .split('\n');
+    const lines = fs.readFileSync(logPathFor('02-11-2026'), 'utf8').trim().split('\n');
 
     expect(lines).toHaveLength(2);
 
@@ -90,10 +87,7 @@ describe('PromptFileSink', () => {
       }),
     ]);
 
-    const lines = fs
-      .readFileSync(logPathFor('02-11-2026'), 'utf8')
-      .trim()
-      .split('\n');
+    const lines = fs.readFileSync(logPathFor('02-11-2026'), 'utf8').trim().split('\n');
 
     expect(lines).toHaveLength(3);
     expect((JSON.parse(lines[0] ?? '') as { promptType: string }).promptType).toBe('opening');

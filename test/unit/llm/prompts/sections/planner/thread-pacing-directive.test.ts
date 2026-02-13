@@ -66,7 +66,7 @@ describe('buildThreadAgingSection', () => {
 describe('buildNarrativePromisesSection', () => {
   const makePromise = (
     desc: string,
-    type: NarrativePromise['promiseType'] = 'FORESHADOWING',
+    type: NarrativePromise['promiseType'] = 'FORESHADOWING'
   ): NarrativePromise => ({
     description: desc,
     promiseType: type,

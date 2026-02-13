@@ -1,5 +1,5 @@
 import { buildAnalystPrompt } from '../../../src/llm/prompts/analyst-prompt';
-import type { AnalystContext } from '../../../src/llm/types';
+import type { AnalystContext } from '../../../src/llm/analyst-types';
 import type { StoryStructure, AccumulatedStructureState } from '../../../src/models/story-arc';
 import type { ActiveState } from '../../../src/models/state/active-state';
 
@@ -17,8 +17,18 @@ describe('buildAnalystPrompt integration - active state summary', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Occupation forces seal the district.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get off the street', role: 'setup' },
-          { id: '1.2', description: 'Secure courier route', objective: 'Reopen communications', role: 'escalation' },
+          {
+            id: '1.1',
+            description: 'Reach safehouse',
+            objective: 'Get off the street',
+            role: 'setup',
+          },
+          {
+            id: '1.2',
+            description: 'Secure courier route',
+            objective: 'Reopen communications',
+            role: 'escalation',
+          },
         ],
       },
       {
@@ -28,7 +38,12 @@ describe('buildAnalystPrompt integration - active state summary', () => {
         stakes: 'If cells are exposed, the rebellion collapses.',
         entryCondition: 'Safehouse network is partially restored.',
         beats: [
-          { id: '2.1', description: 'Bait the patrols', objective: 'Create a diversion', role: 'turning_point' },
+          {
+            id: '2.1',
+            description: 'Bait the patrols',
+            objective: 'Create a diversion',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -38,7 +53,12 @@ describe('buildAnalystPrompt integration - active state summary', () => {
         stakes: 'Failure cements permanent military rule.',
         entryCondition: 'Cells can move without immediate interception.',
         beats: [
-          { id: '3.1', description: 'Broadcast proof', objective: 'Turn public opinion', role: 'resolution' },
+          {
+            id: '3.1',
+            description: 'Broadcast proof',
+            objective: 'Turn public opinion',
+            role: 'resolution',
+          },
         ],
       },
     ],
@@ -64,8 +84,18 @@ describe('buildAnalystPrompt integration - active state summary', () => {
         { id: 'cn-9', text: 'The medic has only one dose of painkiller left' },
       ],
       openThreads: [
-        { id: 'td-2', text: 'Find where the detainees were moved', threadType: 'MYSTERY', urgency: 'HIGH' },
-        { id: 'td-8', text: 'Get a secure line to the western cell', threadType: 'QUEST', urgency: 'MEDIUM' },
+        {
+          id: 'td-2',
+          text: 'Find where the detainees were moved',
+          threadType: 'MYSTERY',
+          urgency: 'HIGH',
+        },
+        {
+          id: 'td-8',
+          text: 'Get a secure line to the western cell',
+          threadType: 'QUEST',
+          urgency: 'MEDIUM',
+        },
       ],
     };
 
@@ -84,17 +114,13 @@ describe('buildAnalystPrompt integration - active state summary', () => {
     expect(userContent).toContain('CURRENT STATE (for beat evaluation)');
     expect(userContent).toContain('Location: Village square triage area');
     expect(userContent).toContain(
-      'Active threats: Militia spotters are marking anyone who helps the wounded, A drone sweep will begin in under five minutes',
+      'Active threats: Militia spotters are marking anyone who helps the wounded, A drone sweep will begin in under five minutes'
     );
     expect(userContent).toContain(
-      'Constraints: Most exits are blocked by burned carts, The medic has only one dose of painkiller left',
+      'Constraints: Most exits are blocked by burned carts, The medic has only one dose of painkiller left'
     );
-    expect(userContent).toContain(
-      '[td-2] (MYSTERY/HIGH) Find where the detainees were moved',
-    );
-    expect(userContent).toContain(
-      '[td-8] (QUEST/MEDIUM) Get a secure line to the western cell',
-    );
+    expect(userContent).toContain('[td-2] (MYSTERY/HIGH) Find where the detainees were moved');
+    expect(userContent).toContain('[td-8] (QUEST/MEDIUM) Get a secure line to the western cell');
 
     expect(userContent).not.toContain('Active threats: th-15, th-17');
     expect(userContent).not.toContain('Constraints: cn-8, cn-9');

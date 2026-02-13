@@ -1,6 +1,6 @@
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.js';
-import type { OpeningContext } from '../../../../src/llm/types.js';
+import type { OpeningContext } from '../../../../src/llm/context-types.js';
 
 describe('buildOpeningPrompt with active state', () => {
   it('keeps requirements focused on creative output fields', () => {
@@ -11,7 +11,7 @@ describe('buildOpeningPrompt with active state', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('sceneSummary');
     expect(userMessage).not.toContain('Do NOT output state/canon mutation fields');
@@ -26,7 +26,7 @@ describe('buildOpeningPrompt with active state', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).not.toContain('OPENING PAGE STATE:');
     expect(userMessage).not.toContain('Example opening state');
@@ -57,18 +57,28 @@ describe('buildOpeningPrompt with active state', () => {
         },
         dramaticQuestion: 'Will you pay the debt or confront the collector?',
         choiceIntents: [
-          { hook: 'Pay what you owe', choiceType: ChoiceType.RESOURCE_COMMITMENT, primaryDelta: PrimaryDelta.ITEM_CONTROL },
-          { hook: 'Confront the collector', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+          {
+            hook: 'Pay what you owe',
+            choiceType: ChoiceType.RESOURCE_COMMITMENT,
+            primaryDelta: PrimaryDelta.ITEM_CONTROL,
+          },
+          {
+            hook: 'Confront the collector',
+            choiceType: ChoiceType.CONFRONTATION,
+            primaryDelta: PrimaryDelta.THREAT_SHIFT,
+          },
         ],
       },
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('=== PLANNER GUIDANCE ===');
     expect(userMessage).toContain('Scene Intent: Introduce the debt collector conflict');
-    expect(userMessage).toContain('Opening line directive: Start with a shouted demand at the warehouse door');
+    expect(userMessage).toContain(
+      'Opening line directive: Start with a shouted demand at the warehouse door'
+    );
     expect(userMessage).toContain('Collector identifies the protagonist by name');
     expect(userMessage).toContain('No mention of previous chapters');
   });
@@ -81,10 +91,10 @@ describe('buildOpeningPrompt with active state', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('=== DATA & STATE RULES ===');
-    expect(userMessage).toContain('ACTIVE STATE TRACKING');
+    expect(userMessage).toContain('CONTINUITY CONTEXT USAGE');
     expect(userMessage).toContain('INVENTORY MANAGEMENT:');
     expect(userMessage).toContain('FIELD SEPARATION:');
   });
@@ -97,9 +107,9 @@ describe('buildOpeningPrompt with active state', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const systemMessage = messages.find(m => m.role === 'system')!.content;
+    const systemMessage = messages.find((m) => m.role === 'system')!.content;
 
-    expect(systemMessage).not.toContain('ACTIVE STATE TRACKING');
+    expect(systemMessage).not.toContain('CONTINUITY CONTEXT USAGE');
     expect(systemMessage).not.toContain('INVENTORY MANAGEMENT:');
     expect(systemMessage).not.toContain('FIELD SEPARATION:');
   });
@@ -130,17 +140,27 @@ describe('buildOpeningPrompt choice intent section', () => {
         },
         dramaticQuestion: 'Will you pay the debt or confront the collector?',
         choiceIntents: [
-          { hook: 'Pay what you owe', choiceType: ChoiceType.RESOURCE_COMMITMENT, primaryDelta: PrimaryDelta.ITEM_CONTROL },
-          { hook: 'Confront the collector', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
+          {
+            hook: 'Pay what you owe',
+            choiceType: ChoiceType.RESOURCE_COMMITMENT,
+            primaryDelta: PrimaryDelta.ITEM_CONTROL,
+          },
+          {
+            hook: 'Confront the collector',
+            choiceType: ChoiceType.CONFRONTATION,
+            primaryDelta: PrimaryDelta.THREAT_SHIFT,
+          },
         ],
       },
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('=== CHOICE INTENT GUIDANCE (from planner) ===');
-    expect(userMessage).toContain('Dramatic Question: Will you pay the debt or confront the collector?');
+    expect(userMessage).toContain(
+      'Dramatic Question: Will you pay the debt or confront the collector?'
+    );
     expect(userMessage).toContain('[RESOURCE_COMMITMENT / ITEM_CONTROL] Pay what you owe');
     expect(userMessage).toContain('[CONFRONTATION / THREAT_SHIFT] Confront the collector');
     expect(userMessage).toContain('Use these choice intents as a starting blueprint');
@@ -154,7 +174,7 @@ describe('buildOpeningPrompt choice intent section', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).not.toContain('CHOICE INTENT GUIDANCE');
     expect(userMessage).not.toContain('Dramatic Question:');
@@ -188,7 +208,7 @@ describe('buildOpeningPrompt choice intent section', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).not.toContain('CHOICE INTENT GUIDANCE');
   });
@@ -204,12 +224,12 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('NPCS (Available Characters)');
     expect(userMessage).toContain('NPC: Gandalf');
     expect(userMessage).toContain('A wise mentor');
-    expect(userMessage).toContain('you don\'t need to include all of them');
+    expect(userMessage).toContain("you don't need to include all of them");
   });
 
   it('omits NPC section when npcs is not provided', () => {
@@ -220,7 +240,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).not.toContain('NPCS (Available Characters)');
   });
@@ -234,7 +254,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('STARTING SITUATION:');
     expect(userMessage).toContain('You wake up in a dungeon cell');
@@ -249,7 +269,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).not.toContain('STARTING SITUATION:\n');
   });
@@ -264,7 +284,7 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     };
 
     const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find(m => m.role === 'user')!.content;
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     const npcIndex = userMessage.indexOf('NPCS (Available Characters)');
     const situationIndex = userMessage.indexOf('STARTING SITUATION:');

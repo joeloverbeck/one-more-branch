@@ -32,12 +32,40 @@ export interface ThreadEntry extends KeyedEntry {
   readonly urgency: Urgency;
 }
 
+export enum ThreatType {
+  HOSTILE_AGENT = 'HOSTILE_AGENT',
+  ENVIRONMENTAL = 'ENVIRONMENTAL',
+  CREATURE = 'CREATURE',
+}
+
+export enum ConstraintType {
+  PHYSICAL = 'PHYSICAL',
+  ENVIRONMENTAL = 'ENVIRONMENTAL',
+  TEMPORAL = 'TEMPORAL',
+}
+
+export interface ThreatEntry extends KeyedEntry {
+  readonly threatType: ThreatType;
+}
+
+export interface ConstraintEntry extends KeyedEntry {
+  readonly constraintType: ConstraintType;
+}
+
 export function isThreadType(value: unknown): value is ThreadType {
   return typeof value === 'string' && Object.values(ThreadType).includes(value as ThreadType);
 }
 
 export function isUrgency(value: unknown): value is Urgency {
   return typeof value === 'string' && Object.values(Urgency).includes(value as Urgency);
+}
+
+export function isThreatType(value: unknown): value is ThreatType {
+  return typeof value === 'string' && Object.values(ThreatType).includes(value as ThreatType);
+}
+
+export function isConstraintType(value: unknown): value is ConstraintType {
+  return typeof value === 'string' && Object.values(ConstraintType).includes(value as ConstraintType);
 }
 
 export type StateIdPrefix = 'inv' | 'hp' | 'cs' | 'th' | 'cn' | 'td';
@@ -52,10 +80,7 @@ export function extractIdNumber(id: string): number {
   return parseInt(match[1], 10);
 }
 
-export function getMaxIdNumber(
-  entries: readonly KeyedEntry[],
-  prefix: StateIdPrefix,
-): number {
+export function getMaxIdNumber(entries: readonly KeyedEntry[], prefix: StateIdPrefix): number {
   let max = 0;
   const prefixDash = `${prefix}-`;
   for (const entry of entries) {
@@ -76,7 +101,7 @@ export function nextId(prefix: StateIdPrefix, currentMax: number): string {
 export function assignIds(
   existing: readonly KeyedEntry[],
   newTexts: readonly string[],
-  prefix: StateIdPrefix,
+  prefix: StateIdPrefix
 ): readonly KeyedEntry[] {
   let currentMax = getMaxIdNumber(existing, prefix);
   const result: KeyedEntry[] = [];
@@ -115,7 +140,7 @@ export interface ThreadPayoffAssessment {
 
 export function removeByIds<T extends KeyedEntry>(
   entries: readonly T[],
-  idsToRemove: readonly string[],
+  idsToRemove: readonly string[]
 ): readonly T[] {
   const removeSet = new Set(idsToRemove);
   const matched = new Set<string>();

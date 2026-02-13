@@ -9,17 +9,15 @@ import {
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
 import { PAGE_PLANNER_GENERATION_SCHEMA } from './schemas/page-planner-schema.js';
 import { validatePagePlannerResponse } from './schemas/page-planner-response-transformer.js';
-import {
-  LLMError,
-  type ChatMessage,
-  type GenerationObservabilityContext,
-  type GenerationOptions,
-  type JsonSchema,
-  type PagePlanGenerationResult,
-} from './types.js';
+import type {
+  GenerationObservabilityContext,
+  GenerationOptions,
+} from './generation-pipeline-types.js';
+import { LLMError, type ChatMessage, type JsonSchema } from './llm-client-types.js';
+import type { ReducedPagePlanGenerationResult } from './planner-types.js';
 
 function buildObservabilityContext(
-  context: GenerationObservabilityContext | undefined,
+  context: GenerationObservabilityContext | undefined
 ): Record<string, unknown> {
   return {
     storyId: context?.storyId ?? null,
@@ -30,7 +28,7 @@ function buildObservabilityContext(
 
 function withObservabilityContext(
   error: LLMError,
-  observability: GenerationObservabilityContext | undefined,
+  observability: GenerationObservabilityContext | undefined
 ): LLMError {
   return new LLMError(error.message, error.code, error.retryable, {
     ...(error.context ?? {}),
@@ -40,7 +38,7 @@ function withObservabilityContext(
 
 function emitPlannerValidatorFailureCounters(
   error: LLMError,
-  observability: GenerationObservabilityContext | undefined,
+  observability: GenerationObservabilityContext | undefined
 ): void {
   const validationIssuesRaw = error.context?.['validationIssues'];
   if (!Array.isArray(validationIssuesRaw)) {
@@ -74,8 +72,8 @@ function emitPlannerValidatorFailureCounters(
 async function callPlannerStructured(
   messages: ChatMessage[],
   options: GenerationOptions,
-  responseFormat: JsonSchema = PAGE_PLANNER_GENERATION_SCHEMA,
-): Promise<PagePlanGenerationResult> {
+  responseFormat: JsonSchema = PAGE_PLANNER_GENERATION_SCHEMA
+): Promise<ReducedPagePlanGenerationResult> {
   const config = getConfig().llm;
   const model = options.model ?? config.defaultModel;
   const temperature = options.temperature ?? config.temperature;
@@ -134,7 +132,8 @@ async function callPlannerStructured(
       throw withObservabilityContext(error, options.observability);
     }
 
-    const message = error instanceof Error ? error.message : 'Failed to validate structured response';
+    const message =
+      error instanceof Error ? error.message : 'Failed to validate structured response';
     throw new LLMError(message, 'VALIDATION_ERROR', false, {
       rawResponse: rawContent,
       ...buildObservabilityContext(options.observability),
@@ -155,12 +154,7 @@ function buildLenientPlannerSchema(): JsonSchema {
 function isPlannerGrammarTooLargeError(error: unknown): boolean {
   const signalPhrases = ['compiled grammar is too large', 'reduce the number of strict tools'];
 
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : '';
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
   const rawErrorBody =
     error instanceof LLMError && typeof error.context?.['rawErrorBody'] === 'string'
       ? error.context['rawErrorBody']
@@ -172,8 +166,8 @@ function isPlannerGrammarTooLargeError(error: unknown): boolean {
 
 export async function generatePlannerWithFallback(
   messages: ChatMessage[],
-  options: GenerationOptions,
-): Promise<PagePlanGenerationResult> {
+  options: GenerationOptions
+): Promise<ReducedPagePlanGenerationResult> {
   try {
     return await callPlannerStructured(messages, options);
   } catch (error) {
@@ -187,7 +181,7 @@ export async function generatePlannerWithFallback(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',
         false,
-        { model },
+        { model }
       );
     }
 

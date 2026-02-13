@@ -8,9 +8,11 @@ describe('custom choice input', () => {
   beforeEach(() => {
     jest.useFakeTimers();
 
-    fetchMock = jest.fn().mockImplementation(() =>
-      Promise.resolve(mockJsonResponse({ error: 'No mock configured' }, 500))
-    );
+    fetchMock = jest
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(mockJsonResponse({ error: 'No mock configured' }, 500))
+      );
     global.fetch = fetchMock;
 
     jest.spyOn(window.history, 'pushState').mockImplementation(() => {});
@@ -64,7 +66,11 @@ describe('custom choice input', () => {
     mockCustomChoiceResponse({
       choices: [
         { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Run away screaming', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        {
+          text: 'Run away screaming',
+          choiceType: 'AVOIDANCE_RETREAT',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
       ],
     });
 
@@ -92,7 +98,11 @@ describe('custom choice input', () => {
     mockCustomChoiceResponse({
       choices: [
         { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Negotiate peacefully', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'RELATIONSHIP_CHANGE' },
+        {
+          text: 'Negotiate peacefully',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'RELATIONSHIP_CHANGE',
+        },
       ],
     });
 
@@ -173,8 +183,7 @@ describe('custom choice input', () => {
 
     // No fetch call should have been made to custom-choice endpoint
     const customChoiceCalls = fetchMock.mock.calls.filter(
-      (call: [string]) =>
-        typeof call[0] === 'string' && call[0].includes('custom-choice')
+      (call: [string]) => typeof call[0] === 'string' && call[0].includes('custom-choice')
     );
     expect(customChoiceCalls.length).toBe(0);
   });
@@ -192,9 +201,7 @@ describe('custom choice input', () => {
     deltaSelect.value = 'GOAL_SHIFT';
 
     mockCustomChoiceResponse({
-      choices: [
-        { text: 'Custom action', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
-      ],
+      choices: [{ text: 'Custom action', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' }],
     });
 
     getAddButton().click();

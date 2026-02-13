@@ -117,7 +117,12 @@ describe('validateAgendaResolverResponse', () => {
 
   it('skips non-object entries in the array', () => {
     const raw = {
-      updatedAgendas: [null, 42, 'string', { npcName: 'Garak', currentGoal: 'G', leverage: 'L', fear: 'F', offScreenBehavior: 'B' }],
+      updatedAgendas: [
+        null,
+        42,
+        'string',
+        { npcName: 'Garak', currentGoal: 'G', leverage: 'L', fear: 'F', offScreenBehavior: 'B' },
+      ],
     };
 
     const result = validateAgendaResolverResponse(raw, '{}', storyNpcs);
@@ -130,7 +135,7 @@ describe('validateAgendaResolverResponse', () => {
 
   it('throws when updatedAgendas is not an array', () => {
     expect(() =>
-      validateAgendaResolverResponse({ updatedAgendas: 'not an array' }, '{}', storyNpcs),
+      validateAgendaResolverResponse({ updatedAgendas: 'not an array' }, '{}', storyNpcs)
     ).toThrow();
   });
 

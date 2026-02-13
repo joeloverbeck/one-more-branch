@@ -36,10 +36,16 @@ export {
   CharacterStateChanges,
   AccumulatedCharacterState,
   KeyedEntry,
+  ThreatEntry,
+  ConstraintEntry,
   ThreadEntry,
+  ThreatType,
+  ConstraintType,
   ThreadType,
   Urgency,
   StateIdPrefix,
+  isThreatType,
+  isConstraintType,
   isThreadType,
   isUrgency,
   extractIdNumber,
@@ -49,6 +55,8 @@ export {
   removeByIds,
   ActiveState,
   ActiveStateChanges,
+  ThreatAddition,
+  ConstraintAddition,
   addCanonFact,
   mergeCanonFacts,
   createEmptyInventoryChanges,
@@ -153,3 +161,12 @@ export {
 export { Npc, formatNpcsForPrompt, isNpcArray } from './npc';
 
 export { setModelLogger, getModelLogger, modelWarn } from './model-logger';
+
+export type { SpeechFingerprint, DecomposedCharacter } from './decomposed-character';
+export {
+  formatDecomposedCharacterForPrompt,
+  formatSpeechFingerprintForWriter,
+} from './decomposed-character';
+
+export type { WorldFactDomain, WorldFact, DecomposedWorld } from './decomposed-world';
+export { formatDecomposedWorldForPrompt } from './decomposed-world';

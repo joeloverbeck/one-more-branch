@@ -1,5 +1,5 @@
 import { getConfig } from '../config/index.js';
-import type { GenerationOptions, PromptOptions } from './types.js';
+import type { GenerationOptions, PromptOptions } from './generation-pipeline-types.js';
 
 /**
  * Returns default prompt options from configuration.

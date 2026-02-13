@@ -1,4 +1,4 @@
-import type { JsonSchema } from '../types.js';
+import type { JsonSchema } from '../llm-client-types.js';
 
 export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -8,7 +8,15 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
     schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['overallTheme', 'premise', 'pacingBudget', 'acts', 'initialNpcAgendas'],
+      required: [
+        'overallTheme',
+        'premise',
+        'pacingBudget',
+        'acts',
+        'initialNpcAgendas',
+        'toneKeywords',
+        'toneAntiKeywords',
+      ],
       properties: {
         overallTheme: { type: 'string' },
         premise: {
@@ -29,6 +37,18 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               description: 'Maximum target page count for the full story (10-80).',
             },
           },
+        },
+        toneKeywords: {
+          type: 'array',
+          description:
+            '3-5 words capturing the target feel of the tone (e.g., ["irreverent", "bawdy", "slapstick", "warm-hearted"]).',
+          items: { type: 'string' },
+        },
+        toneAntiKeywords: {
+          type: 'array',
+          description:
+            '3-5 words describing what the tone should NOT be (e.g., ["grimdark", "portentous", "tragic", "grim"]).',
+          items: { type: 'string' },
         },
         initialNpcAgendas: {
           type: 'array',
@@ -56,7 +76,8 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               },
               offScreenBehavior: {
                 type: 'string',
-                description: 'What this NPC is doing when not in a scene with the protagonist (1 sentence).',
+                description:
+                  'What this NPC is doing when not in a scene with the protagonist (1 sentence).',
               },
             },
           },

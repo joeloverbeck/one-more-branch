@@ -1,4 +1,4 @@
-import { LLMError, type OpenRouterResponse } from './types.js';
+import { LLMError, type OpenRouterResponse } from './llm-client-types.js';
 
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -103,7 +103,9 @@ function parseJsonWithFallbacks(jsonText: string): JsonRoot | null {
     stripMarkdownCodeFence(jsonText),
     extractLikelyJsonSubstring(stripMarkdownCodeFence(jsonText)) ?? '',
     repaired ?? '',
-  ].filter((candidate, index, all) => candidate.trim().length > 0 && all.indexOf(candidate) === index);
+  ].filter(
+    (candidate, index, all) => candidate.trim().length > 0 && all.indexOf(candidate) === index
+  );
 
   for (const candidate of candidates) {
     try {

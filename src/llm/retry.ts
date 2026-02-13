@@ -1,10 +1,10 @@
 import { getConfig } from '../config/index.js';
-import { LLMError } from './types.js';
+import { LLMError } from './llm-client-types.js';
 
 export async function withRetry<T>(
   fn: () => Promise<T>,
   maxRetries?: number,
-  baseDelay?: number,
+  baseDelay?: number
 ): Promise<T> {
   const config = getConfig().llm.retry;
   const retries = maxRetries ?? config.maxRetries;
@@ -23,7 +23,7 @@ export async function withRetry<T>(
 
       if (attempt < retries - 1) {
         const waitTime = baseDelayMs * 2 ** attempt;
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
   }

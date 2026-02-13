@@ -4,21 +4,29 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
 import { StoryId } from '@/models';
-import type { AnalystResult, WriterResult } from '@/llm/types';
+import type { AnalystResult } from '@/llm/analyst-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
+  decomposeEntities: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 jest.mock('@/logging/index', () => ({
@@ -26,10 +34,19 @@ jest.mock('@/logging/index', () => ({
   logPrompt: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
+>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -101,15 +118,25 @@ const openingResult = {
   narrative:
     'You step onto the flooded parliament steps and swear temporary loyalty so you can track who is rewriting emergency laws overnight.',
   choices: [
-    { text: 'Commit to the alliance publicly', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Refuse and go underground', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    {
+      text: 'Commit to the alliance publicly',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Refuse and go underground',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
   ],
   currentLocation: 'Flooded parliament steps',
   threatsAdded: ['Regime surveillance on parliament grounds'],
   threatsRemoved: [],
   constraintsAdded: ['Sworn temporary loyalty to alliance'],
   constraintsRemoved: [],
-  threadsAdded: [{ text: 'Tracking emergency law rewrites', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+  threadsAdded: [
+    { text: 'Tracking emergency law rewrites', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+  ],
   threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'determination',
@@ -199,32 +226,42 @@ function createRewriteFetchResponse(): Response {
     status: 200,
     json: () =>
       Promise.resolve({
-      choices: [
-        {
-          message: {
-            content: JSON.stringify(rewrittenStructure),
+        choices: [
+          {
+            message: {
+              content: JSON.stringify(rewrittenStructure),
+            },
           },
-        },
-      ],
-    }),
+        ],
+      }),
   } as Response;
 }
 
-function buildWriterResult(selectedChoice: string): WriterResult {
+function buildWriterResult(selectedChoice: string): PageWriterResult {
   if (selectedChoice === 'Commit to the alliance publicly') {
     return {
       narrative:
         'Inside the alliance chamber you copy sealed dispatches proving law edits are synchronized to private signal towers.',
       choices: [
-        { text: 'Leak your true intent to a dockworker ally', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Double down publicly to gain rank', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Leak your true intent to a dockworker ally',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Double down publicly to gain rank',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Alliance chamber interior',
       threatsAdded: [],
       threatsRemoved: [],
       constraintsAdded: ['Copied dispatches as evidence'],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Signal tower coordination exposed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        { text: 'Signal tower coordination exposed', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+      ],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'triumph',
@@ -252,15 +289,29 @@ function buildWriterResult(selectedChoice: string): WriterResult {
       narrative:
         'Your covert leak is exposed, and the alliance recasts you as a loyal enforcer, invalidating the original infiltration route.',
       choices: [
-        { text: 'Rebuild trust with dockworkers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Attempt immediate forum confrontation', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Rebuild trust with dockworkers',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Attempt immediate forum confrontation',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Alliance controlled territory',
       threatsAdded: ['Alliance propaganda targeting protagonist'],
       threatsRemoved: [],
       constraintsAdded: ['Cover identity compromised'],
       constraintsRemoved: ['Infiltration route access'],
-      threadsAdded: [{ text: 'Public perception inverted by propaganda', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        {
+          text: 'Public perception inverted by propaganda',
+          threadType: 'INFORMATION',
+          urgency: 'MEDIUM',
+        },
+      ],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'dismay',
@@ -336,7 +387,8 @@ function buildAnalystResult(narrative: string): AnalystResult {
       beatConcluded: false,
       beatResolution: '',
       deviationDetected: true,
-      deviationReason: 'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
+      deviationReason:
+        'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
       invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
       narrativeSummary: 'Public perception now places the protagonist inside alliance leadership.',
       pacingIssueDetected: false,
@@ -374,7 +426,29 @@ describe('Structure Rewriting Journey E2E', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Advance the rewritten branch with concrete outcomes.',
       continuityAnchors: [],
+      writerBrief: {
+        openingLineDirective: 'Start with decisive action.',
+        mustIncludeBeats: [],
+        forbiddenRecaps: [],
+      },
+      dramaticQuestion: 'Will you confront the danger or seek another path?',
+      choiceIntents: [
+        {
+          hook: 'Face the threat directly',
+          choiceType: 'CONFRONTATION',
+          primaryDelta: 'THREAT_SHIFT',
+        },
+        {
+          hook: 'Find an alternative route',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
+      ],
+      rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
       stateIntents: {
+        currentLocation: '',
         threats: { add: [], removeIds: [] },
         constraints: { add: [], removeIds: [] },
         threads: { add: [], resolveIds: [] },
@@ -383,26 +457,16 @@ describe('Structure Rewriting Journey E2E', () => {
         characterState: { add: [], removeIds: [] },
         canon: { worldAdd: [], characterAdd: [] },
       },
-      writerBrief: {
-        openingLineDirective: 'Start with decisive action.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
-      dramaticQuestion: 'Will you confront the danger or seek another path?',
-      choiceIntents: [
-        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-      ],
-      rawResponse: 'page-plan',
+      rawResponse: 'accountant',
     });
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateWriterPage.mockImplementation((context) =>
-      Promise.resolve(buildWriterResult(context.selectedChoice)),
+      Promise.resolve(buildWriterResult(context.selectedChoice))
     );
     mockedGenerateAnalystEvaluation.mockImplementation((context) =>
-      Promise.resolve(buildAnalystResult(context.narrative)),
+      Promise.resolve(buildAnalystResult(context.narrative))
     );
 
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
@@ -461,7 +525,7 @@ describe('Structure Rewriting Journey E2E', () => {
     expect(rewrittenVersion?.previousVersionId).toBe(initialVersion?.id);
     expect(rewrittenVersion?.createdAtPageId).toBe(page3.page.id);
     expect(rewrittenVersion?.rewriteReason).toBe(
-      'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
+      'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.'
     );
     expect(rewrittenVersion?.preservedBeatIds).toContain('1.1');
     expect(page2.page.structureVersionId).toBe(initialVersion?.id ?? null);
@@ -513,7 +577,9 @@ describe('Structure Rewriting Journey E2E', () => {
     expect(firstRewritePath.wasGenerated).toBe(true);
     expect(replayRewritePath.wasGenerated).toBe(false);
     expect(replayRewritePath.page.id).toBe(firstRewritePath.page.id);
-    expect(replayRewritePath.page.structureVersionId).toBe(firstRewritePath.page.structureVersionId);
+    expect(replayRewritePath.page.structureVersionId).toBe(
+      firstRewritePath.page.structureVersionId
+    );
 
     const secondEngine = new StoryEngine();
     secondEngine.init();

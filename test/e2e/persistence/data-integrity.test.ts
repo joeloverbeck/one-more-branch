@@ -103,11 +103,11 @@ describe('Data Integrity E2E', () => {
 
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
     expect(loadedPage1?.choices[1]?.nextPageId).toBe(parsePageId(3));
-    expect(loadedPage2?.accumulatedInventory.map(entry => entry.text)).toEqual([
+    expect(loadedPage2?.accumulatedInventory.map((entry) => entry.text)).toEqual([
       'root-event',
       'branch-a-event',
     ]);
-    expect(loadedPage3?.accumulatedInventory.map(entry => entry.text)).toEqual([
+    expect(loadedPage3?.accumulatedInventory.map((entry) => entry.text)).toEqual([
       'root-event',
       'branch-b-event',
     ]);
@@ -184,8 +184,8 @@ describe('Data Integrity E2E', () => {
     const loadedBranchInventory = await Promise.all(
       branchPages.map(async (branch) => {
         const loaded = await storage.loadPage(story.id, branch.id);
-        return loaded?.accumulatedInventory.map(entry => entry.text);
-      }),
+        return loaded?.accumulatedInventory.map((entry) => entry.text);
+      })
     );
 
     expect(loadedBranchInventory).toEqual([
@@ -252,7 +252,7 @@ describe('Data Integrity E2E', () => {
     expect(loadedStory?.updatedAt).toEqual(story.updatedAt);
     expect(loadedStory?.structureVersions).toEqual(story.structureVersions ?? []);
     expect(loadedPage1?.choices[0]?.nextPageId).toBe(parsePageId(2));
-    expect(loadedPage2?.accumulatedInventory.map(entry => entry.text)).toEqual([
+    expect(loadedPage2?.accumulatedInventory.map((entry) => entry.text)).toEqual([
       'reload-root',
       'reload-ending',
     ]);

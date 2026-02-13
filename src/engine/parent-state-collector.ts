@@ -60,7 +60,7 @@ export function createOpeningPreviousStateSnapshot(): StateReconciliationPreviou
  * Maps collected parent state into the shape expected by the state reconciler.
  */
 export function createContinuationPreviousStateSnapshot(
-  parentState: CollectedParentState,
+  parentState: CollectedParentState
 ): StateReconciliationPreviousState {
   return {
     currentLocation: parentState.accumulatedActiveState.currentLocation,
@@ -69,6 +69,8 @@ export function createContinuationPreviousStateSnapshot(
     threads: parentState.accumulatedActiveState.openThreads,
     inventory: parentState.accumulatedInventory,
     health: parentState.accumulatedHealth,
-    characterState: Object.values(parentState.accumulatedCharacterState).flatMap(entries => entries),
+    characterState: Object.values(parentState.accumulatedCharacterState).flatMap(
+      (entries) => entries
+    ),
   };
 }

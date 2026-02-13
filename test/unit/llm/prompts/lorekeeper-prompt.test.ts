@@ -1,6 +1,12 @@
 import { buildLorekeeperPrompt } from '../../../../src/llm/prompts/lorekeeper-prompt';
-import { ChoiceType, PrimaryDelta, createEmptyActiveState, parsePageId } from '../../../../src/models';
-import type { LorekeeperContext, PagePlan } from '../../../../src/llm/types';
+import {
+  ChoiceType,
+  PrimaryDelta,
+  createEmptyActiveState,
+  parsePageId,
+} from '../../../../src/models';
+import type { LorekeeperContext } from '../../../../src/llm/context-types';
+import type { PagePlan } from '../../../../src/llm/planner-types';
 
 function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
   return {
@@ -73,9 +79,7 @@ describe('buildLorekeeperPrompt', () => {
     const userPrompt = messages[1]?.content ?? '';
 
     expect(userPrompt).toContain('Scene Intent: Protagonist confronts the merchant');
-    expect(userPrompt).toContain(
-      'Dramatic Question: Will the protagonist get the key peacefully?',
-    );
+    expect(userPrompt).toContain('Dramatic Question: Will the protagonist get the key peacefully?');
     expect(userPrompt).toContain('The merchant holds the key');
   });
 

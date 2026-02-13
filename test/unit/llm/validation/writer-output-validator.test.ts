@@ -1,17 +1,25 @@
-import type { WriterResult } from '../../../../src/llm/types';
+import type { PageWriterResult } from '../../../../src/llm/writer-types';
 import {
   extractWriterValidationIssues,
-  validateDeterministicWriterOutput,
+  validateWriterOutput,
   WRITER_OUTPUT_RULE_KEYS,
 } from '../../../../src/llm/validation/writer-output-validator';
 
-function buildWriterResult(overrides?: Partial<WriterResult>): WriterResult {
+function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterResult {
   return {
     narrative:
       'You move through the rain-dark alley and hear the patrol bells close in as the rooftops rattle above.',
     choices: [
-      { text: 'Move toward the bell tower', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Hide under the bridge', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+      {
+        text: 'Move toward the bell tower',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Hide under the bridge',
+        choiceType: 'AVOIDANCE_RETREAT',
+        primaryDelta: 'LOCATION_CHANGE',
+      },
     ],
     currentLocation: 'Rain-dark alley',
     threatsAdded: [],
@@ -44,29 +52,33 @@ function buildWriterResult(overrides?: Partial<WriterResult>): WriterResult {
 
 describe('writer-output-validator', () => {
   it('returns no issues for valid deterministic output', () => {
-    const issues = validateDeterministicWriterOutput(buildWriterResult());
+    const issues = validateWriterOutput(buildWriterResult());
     expect(issues).toEqual([]);
   });
 
   it('does not report issues for state mutation compatibility fields', () => {
-    const issues = validateDeterministicWriterOutput(
+    const issues = validateWriterOutput(
       buildWriterResult({
         threatsAdded: ['th-7'],
         constraintsRemoved: ['th-2'],
-      }),
+      })
     );
 
     expect(issues).toEqual([]);
   });
 
   it('rejects duplicate (choiceType, primaryDelta) pairs across choices', () => {
-    const issues = validateDeterministicWriterOutput(
+    const issues = validateWriterOutput(
       buildWriterResult({
         choices: [
           { text: 'Hold position', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Signal from cover', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          {
+            text: 'Signal from cover',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'GOAL_SHIFT',
+          },
         ],
-      }),
+      })
     );
 
     expect(issues).toEqual(
@@ -75,12 +87,12 @@ describe('writer-output-validator', () => {
           ruleKey: WRITER_OUTPUT_RULE_KEYS.DUPLICATE_CHOICE_PAIR,
           fieldPath: 'choices[1]',
         }),
-      ]),
+      ])
     );
   });
 
   it('rejects protagonistAffect required fields when empty after trim', () => {
-    const issues = validateDeterministicWriterOutput(
+    const issues = validateWriterOutput(
       buildWriterResult({
         protagonistAffect: {
           primaryEmotion: '   ',
@@ -89,7 +101,7 @@ describe('writer-output-validator', () => {
           secondaryEmotions: [{ emotion: 'fear', cause: '   ' }],
           dominantMotivation: '   ',
         },
-      }),
+      })
     );
 
     expect(issues).toEqual(
@@ -110,7 +122,7 @@ describe('writer-output-validator', () => {
           ruleKey: WRITER_OUTPUT_RULE_KEYS.PROTAGONIST_AFFECT_REQUIRED,
           fieldPath: 'protagonistAffect.secondaryEmotions[0].cause',
         }),
-      ]),
+      ])
     );
   });
 

@@ -24,7 +24,13 @@ describe('computeContinuationThreadAges', () => {
     const parentAges = { 'td-1': 1 };
     const parentOpenThreadIds = ['td-1'];
     const threadsAdded = [{ text: 'New quest' }, { text: 'Another thread' }];
-    const result = computeContinuationThreadAges(parentAges, parentOpenThreadIds, threadsAdded, [], 1);
+    const result = computeContinuationThreadAges(
+      parentAges,
+      parentOpenThreadIds,
+      threadsAdded,
+      [],
+      1
+    );
     expect(result).toEqual({ 'td-1': 2, 'td-2': 0, 'td-3': 0 });
   });
 
@@ -37,7 +43,7 @@ describe('computeContinuationThreadAges', () => {
       parentOpenThreadIds,
       threadsAdded,
       ['td-1'],
-      2,
+      2
     );
     expect(result).toEqual({ 'td-2': 4, 'td-3': 0 });
   });
@@ -56,7 +62,10 @@ describe('computeContinuationThreadAges', () => {
 });
 
 describe('computeInheritedNarrativePromises', () => {
-  const makePromise = (desc: string, type: NarrativePromise['promiseType'] = 'FORESHADOWING'): NarrativePromise => ({
+  const makePromise = (
+    desc: string,
+    type: NarrativePromise['promiseType'] = 'FORESHADOWING'
+  ): NarrativePromise => ({
     description: desc,
     promiseType: type,
     suggestedUrgency: Urgency.MEDIUM,

@@ -3,51 +3,53 @@
  */
 
 import {
-  ACTIVE_STATE_TRACKING,
+  CONTINUITY_CONTEXT_USAGE,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
 } from '../../../../../../src/llm/prompts/sections/shared/state-tracking.js';
 
 describe('shared state-tracking sections', () => {
-  describe('ACTIVE_STATE_TRACKING', () => {
+  describe('CONTINUITY_CONTEXT_USAGE', () => {
     it('is a non-empty string', () => {
-      expect(typeof ACTIVE_STATE_TRACKING).toBe('string');
-      expect(ACTIVE_STATE_TRACKING.length).toBeGreaterThan(0);
+      expect(typeof CONTINUITY_CONTEXT_USAGE).toBe('string');
+      expect(CONTINUITY_CONTEXT_USAGE.length).toBeGreaterThan(0);
     });
 
     it('includes section header', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('ACTIVE STATE TRACKING');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('CONTINUITY CONTEXT USAGE');
     });
 
     it('lists read-only continuity context fields', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('READ-ONLY CONTINUITY INPUT');
-      expect(ACTIVE_STATE_TRACKING).toContain('CURRENT LOCATION');
-      expect(ACTIVE_STATE_TRACKING).toContain('ACTIVE THREATS');
-      expect(ACTIVE_STATE_TRACKING).toContain('ACTIVE CONSTRAINTS');
-      expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('READ-ONLY CONTINUITY INPUT');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('CURRENT LOCATION');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('ACTIVE THREATS');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('ACTIVE CONSTRAINTS');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('OPEN NARRATIVE THREADS');
     });
 
     it('treats open threads as read-only continuity context', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('OPEN NARRATIVE THREADS: unresolved hooks and mysteries');
-      expect(ACTIVE_STATE_TRACKING).not.toContain('THREAD CONTRACT (OPEN LOOPS ONLY)');
-      expect(ACTIVE_STATE_TRACKING).not.toContain('CANONICAL THREAD PHRASING TEMPLATES');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain(
+        'OPEN NARRATIVE THREADS: unresolved hooks and mysteries'
+      );
+      expect(CONTINUITY_CONTEXT_USAGE).not.toContain('THREAD CONTRACT (OPEN LOOPS ONLY)');
+      expect(CONTINUITY_CONTEXT_USAGE).not.toContain('CANONICAL THREAD PHRASING TEMPLATES');
     });
 
     it('focuses active state usage on continuity context', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('How to use this context');
-      expect(ACTIVE_STATE_TRACKING).toContain('Show consequences in prose and choices.');
-      expect(ACTIVE_STATE_TRACKING).not.toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('How to use this context');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('Show consequences in prose and choices.');
+      expect(CONTINUITY_CONTEXT_USAGE).not.toContain('DO NOT OUTPUT STATE/CANON MUTATION FIELDS');
     });
 
     it('does not mention legacy prefix format', () => {
-      expect(ACTIVE_STATE_TRACKING).not.toContain('THREAT_IDENTIFIER');
-      expect(ACTIVE_STATE_TRACKING).not.toContain('PREFIX_ID');
+      expect(CONTINUITY_CONTEXT_USAGE).not.toContain('THREAT_IDENTIFIER');
+      expect(CONTINUITY_CONTEXT_USAGE).not.toContain('PREFIX_ID');
     });
 
     it('clarifies state represents current truth', () => {
-      expect(ACTIVE_STATE_TRACKING).toContain('TRUE RIGHT NOW');
-      expect(ACTIVE_STATE_TRACKING).toContain('authoritative continuity context');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('TRUE RIGHT NOW');
+      expect(CONTINUITY_CONTEXT_USAGE).toContain('authoritative scene context');
     });
   });
 

@@ -1,9 +1,11 @@
 import {
+  ConstraintType,
   createEmptyAccumulatedStructureState,
   parsePageId,
   StructureVersionId,
+  ThreatType,
 } from '@/models';
-import type { FinalPageGenerationResult } from '@/llm/types';
+import type { FinalPageGenerationResult } from '@/llm/writer-types';
 import {
   buildFirstPage,
   buildContinuationPage,
@@ -13,7 +15,7 @@ import {
 } from '@/engine/page-builder';
 
 function buildMockGenerationResult(
-  overrides?: Partial<FinalPageGenerationResult>,
+  overrides?: Partial<FinalPageGenerationResult>
 ): FinalPageGenerationResult {
   return {
     narrative: 'You step into the shadowed corridor.',
@@ -56,8 +58,8 @@ describe('page-builder', () => {
     it('creates first page with keyed accumulated state', () => {
       const result = buildMockGenerationResult({
         currentLocation: 'Ancient treasury',
-        threatsAdded: ['Guardian awakened'],
-        constraintsAdded: ['Must remain silent'],
+        threatsAdded: [{ text: 'Guardian awakened', threatType: ThreatType.CREATURE }],
+        constraintsAdded: [{ text: 'Must remain silent', constraintType: ConstraintType.PHYSICAL }],
         threadsAdded: [{ text: 'Mystery of the vault', threadType: 'MYSTERY', urgency: 'HIGH' }],
         inventoryAdded: ['Sword', 'Shield'],
         healthAdded: ['Minor wound'],
@@ -73,8 +75,13 @@ describe('page-builder', () => {
 
       expect(page.id).toBe(1);
       expect(page.accumulatedActiveState.currentLocation).toBe('Ancient treasury');
-      expect(page.accumulatedActiveState.activeThreats).toEqual([{ id: 'th-1', text: 'Guardian awakened' }]);
-      expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Sword' }, { id: 'inv-2', text: 'Shield' }]);
+      expect(page.accumulatedActiveState.activeThreats).toEqual([
+        { id: 'th-1', text: 'Guardian awakened', threatType: ThreatType.CREATURE },
+      ]);
+      expect(page.accumulatedInventory).toEqual([
+        { id: 'inv-1', text: 'Sword' },
+        { id: 'inv-2', text: 'Shield' },
+      ]);
       expect(page.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'Minor wound' }]);
       expect(page.accumulatedCharacterState['Ally']).toEqual([{ id: 'cs-1', text: 'Trusting' }]);
       expect(page.characterStateChanges.removed).toEqual(['cs-7']);
@@ -105,8 +112,10 @@ describe('page-builder', () => {
     it('creates continuation page and accumulates parent keyed state', () => {
       const result = buildMockGenerationResult({
         currentLocation: 'Hidden chamber',
-        threatsAdded: ['Trap triggered'],
-        threadsAdded: [{ text: 'Ancient secret revealed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+        threatsAdded: [{ text: 'Trap triggered', threatType: ThreatType.ENVIRONMENTAL }],
+        threadsAdded: [
+          { text: 'Ancient secret revealed', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+        ],
         characterStateChangesRemoved: ['cs-1'],
       });
       const context: ContinuationPageBuildContext = {
@@ -115,8 +124,12 @@ describe('page-builder', () => {
         parentChoiceIndex: 0,
         parentAccumulatedActiveState: {
           currentLocation: 'Entrance hall',
-          activeThreats: [{ id: 'th-1', text: 'Guardian patrol' }],
-          activeConstraints: [{ id: 'cn-1', text: 'Noise attracts guards' }],
+          activeThreats: [
+            { id: 'th-1', text: 'Guardian patrol', threatType: ThreatType.HOSTILE_AGENT },
+          ],
+          activeConstraints: [
+            { id: 'cn-1', text: 'Noise attracts guards', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
           openThreads: [{ id: 'td-1', text: 'Missing key' }],
         },
         parentAccumulatedInventory: [{ id: 'inv-1', text: 'Map' }],
@@ -137,15 +150,18 @@ describe('page-builder', () => {
       expect(page.parentPageId).toBe(1);
       expect(page.parentChoiceIndex).toBe(0);
       expect(page.accumulatedActiveState.currentLocation).toBe('Hidden chamber');
-      expect(page.accumulatedActiveState.activeThreats.map(t => t.text)).toEqual([
+      expect(page.accumulatedActiveState.activeThreats.map((t) => t.text)).toEqual([
         'Guardian patrol',
         'Trap triggered',
       ]);
-      expect(page.accumulatedActiveState.openThreads.map(t => t.text)).toEqual([
+      expect(page.accumulatedActiveState.openThreads.map((t) => t.text)).toEqual([
         'Missing key',
         'Ancient secret revealed',
       ]);
-      expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Map' }, { id: 'inv-2', text: 'Rusty key' }]);
+      expect(page.accumulatedInventory).toEqual([
+        { id: 'inv-1', text: 'Map' },
+        { id: 'inv-2', text: 'Rusty key' },
+      ]);
       expect(page.characterStateChanges.removed).toEqual(['cs-1']);
     });
   });

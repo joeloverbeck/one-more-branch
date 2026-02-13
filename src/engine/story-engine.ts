@@ -10,7 +10,13 @@ import {
   loadStory,
   startNewStory,
 } from './story-service';
-import { EngineError, MakeChoiceOptions, MakeChoiceResult, StartStoryOptions, StartStoryResult } from './types';
+import {
+  EngineError,
+  MakeChoiceOptions,
+  MakeChoiceResult,
+  StartStoryOptions,
+  StartStoryResult,
+} from './types';
 
 export class StoryEngine {
   init(): void {
@@ -31,7 +37,7 @@ export class StoryEngine {
     if (!currentPage) {
       throw new EngineError(
         `Page ${options.pageId} not found in story ${options.storyId}`,
-        'PAGE_NOT_FOUND',
+        'PAGE_NOT_FOUND'
       );
     }
 
@@ -42,7 +48,7 @@ export class StoryEngine {
     if (options.choiceIndex < 0 || options.choiceIndex >= currentPage.choices.length) {
       throw new EngineError(
         `Invalid choice index ${options.choiceIndex}. Page has ${currentPage.choices.length} choices.`,
-        'INVALID_CHOICE',
+        'INVALID_CHOICE'
       );
     }
 
@@ -52,7 +58,7 @@ export class StoryEngine {
       options.choiceIndex,
       options.apiKey,
       options.onGenerationStage,
-      options.suggestedProtagonistSpeech,
+      options.suggestedProtagonistSpeech
     );
 
     return { page, wasGenerated, deviationInfo };

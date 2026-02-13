@@ -1,5 +1,5 @@
 import type { AccumulatedStructureState, BeatDeviation, StoryStructure } from '../models/story-arc';
-import type { CompletedBeat, StructureRewriteContext } from '../llm/types';
+import type { CompletedBeat, StructureRewriteContext } from '../llm/structure-rewrite-types';
 import type { Story } from '../models/story';
 import type { VersionedStoryStructure } from '../models/structure-version';
 import { parseBeatIndices } from './beat-utils';
@@ -9,12 +9,12 @@ import { parseBeatIndices } from './beat-utils';
  */
 export function extractCompletedBeats(
   structure: StoryStructure,
-  structureState: AccumulatedStructureState,
+  structureState: AccumulatedStructureState
 ): readonly CompletedBeat[] {
   const completedBeats: CompletedBeat[] = [];
 
   const concludedProgressions = structureState.beatProgressions.filter(
-    beatProgression => beatProgression.status === 'concluded',
+    (beatProgression) => beatProgression.status === 'concluded'
   );
 
   for (const progression of concludedProgressions) {
@@ -62,7 +62,7 @@ export function buildRewriteContext(
   story: Story,
   structureVersion: VersionedStoryStructure,
   structureState: AccumulatedStructureState,
-  deviation: BeatDeviation,
+  deviation: BeatDeviation
 ): StructureRewriteContext {
   const structure = structureVersion.structure;
   const completedBeats = extractCompletedBeats(structure, structureState);
@@ -71,6 +71,8 @@ export function buildRewriteContext(
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
+    toneKeywords: story.toneKeywords,
+    toneAntiKeywords: story.toneAntiKeywords,
     completedBeats,
     narrativeSummary: deviation.narrativeSummary,
     currentActIndex: structureState.currentActIndex,
@@ -83,12 +85,10 @@ export function buildRewriteContext(
 /**
  * Gets beat IDs that should be preserved (concluded beats).
  */
-export function getPreservedBeatIds(
-  structureState: AccumulatedStructureState,
-): readonly string[] {
+export function getPreservedBeatIds(structureState: AccumulatedStructureState): readonly string[] {
   return structureState.beatProgressions
-    .filter(beatProgression => beatProgression.status === 'concluded')
-    .map(beatProgression => beatProgression.beatId);
+    .filter((beatProgression) => beatProgression.status === 'concluded')
+    .map((beatProgression) => beatProgression.beatId);
 }
 
 /**
@@ -98,10 +98,10 @@ export function getPreservedBeatIds(
 export function validatePreservedBeats(
   originalStructure: StoryStructure,
   newStructure: StoryStructure,
-  structureState: AccumulatedStructureState,
+  structureState: AccumulatedStructureState
 ): boolean {
   const concludedProgressions = structureState.beatProgressions.filter(
-    beatProgression => beatProgression.status === 'concluded',
+    (beatProgression) => beatProgression.status === 'concluded'
   );
 
   for (const progression of concludedProgressions) {

@@ -1,4 +1,4 @@
-import type { ChatMessage } from '../llm/types.js';
+import type { ChatMessage } from '../llm/llm-client-types.js';
 import { createPromptFileSinkFromConfig, type PromptSink } from './prompt-file-sink.js';
 import type { Logger } from './types.js';
 
@@ -7,10 +7,12 @@ export type PromptType =
   | 'writer'
   | 'analyst'
   | 'planner'
+  | 'accountant'
   | 'lorekeeper'
   | 'structure'
   | 'structure-rewrite'
-  | 'agenda-resolver';
+  | 'agenda-resolver'
+  | 'entity-decomposer';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),
@@ -51,12 +53,14 @@ export function resetPromptSinkForTesting(): void {
  * Prompt payload is never emitted to application logger output.
  */
 export function logPrompt(logger: Logger, promptType: PromptType, messages: ChatMessage[]): void {
-  void getPromptSink().appendPrompt({ promptType, messages }).catch((error: unknown) => {
-    const safeErrorMessage = error instanceof Error ? error.message : String(error);
-    logger.warn('Prompt logging failed', {
-      promptType,
-      messageCount: messages.length,
-      error: safeErrorMessage,
+  void getPromptSink()
+    .appendPrompt({ promptType, messages })
+    .catch((error: unknown) => {
+      const safeErrorMessage = error instanceof Error ? error.message : String(error);
+      logger.warn('Prompt logging failed', {
+        promptType,
+        messageCount: messages.length,
+        error: safeErrorMessage,
+      });
     });
-  });
 }

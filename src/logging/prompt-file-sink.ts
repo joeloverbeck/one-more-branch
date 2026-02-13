@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { getConfig } from '../config/index.js';
-import type { ChatMessage } from '../llm/types.js';
+import type { ChatMessage } from '../llm/llm-client-types.js';
 
 export interface PromptLogPayload {
   promptType: string;

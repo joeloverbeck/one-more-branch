@@ -1,32 +1,9 @@
-import type { AccumulatedStructureState, BeatProgression, StoryStructure } from '../models/story-arc';
+import type {
+  AccumulatedStructureState,
+  StoryStructure,
+} from '../models/story-arc';
 import { getBeatOrThrow, upsertBeatProgression } from './beat-utils';
 import type { StructureProgressionResult } from './structure-types';
-
-/**
- * Creates initial AccumulatedStructureState for first page.
- * Sets first beat of first act as 'active', all others 'pending'.
- */
-export function createInitialStructureState(structure: StoryStructure): AccumulatedStructureState {
-  const beatProgressions: BeatProgression[] = [];
-
-  structure.acts.forEach((act, actIdx) => {
-    act.beats.forEach((beat, beatIdx) => {
-      const isFirst = actIdx === 0 && beatIdx === 0;
-      beatProgressions.push({
-        beatId: beat.id,
-        status: isFirst ? 'active' : 'pending',
-      });
-    });
-  });
-
-  return {
-    currentActIndex: 0,
-    currentBeatIndex: 0,
-    beatProgressions,
-    pagesInCurrentBeat: 0,
-    pacingNudge: null,
-  };
-}
 
 /**
  * Advances the structure state when a beat is concluded.
@@ -35,7 +12,7 @@ export function createInitialStructureState(structure: StoryStructure): Accumula
 export function advanceStructureState(
   structure: StoryStructure,
   currentState: AccumulatedStructureState,
-  beatResolution: string,
+  beatResolution: string
 ): StructureProgressionResult {
   const resolution = beatResolution.trim();
   if (!resolution) {
@@ -45,7 +22,7 @@ export function advanceStructureState(
   const currentBeat = getBeatOrThrow(
     structure,
     currentState.currentActIndex,
-    currentState.currentBeatIndex,
+    currentState.currentBeatIndex
   );
 
   const concludedProgressions = upsertBeatProgression(currentState.beatProgressions, {
@@ -77,7 +54,9 @@ export function advanceStructureState(
     };
   }
 
-  const nextActIndex = isLastBeatOfAct ? currentState.currentActIndex + 1 : currentState.currentActIndex;
+  const nextActIndex = isLastBeatOfAct
+    ? currentState.currentActIndex + 1
+    : currentState.currentActIndex;
   const nextBeatIndex = isLastBeatOfAct ? 0 : currentState.currentBeatIndex + 1;
   const nextBeat = getBeatOrThrow(structure, nextActIndex, nextBeatIndex);
 
@@ -108,7 +87,7 @@ export function applyStructureProgression(
   structure: StoryStructure,
   parentState: AccumulatedStructureState,
   beatConcluded: boolean,
-  beatResolution: string,
+  beatResolution: string
 ): AccumulatedStructureState {
   if (!beatConcluded) {
     return {

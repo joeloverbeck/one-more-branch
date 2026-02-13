@@ -21,7 +21,7 @@ describe('character-state-manager', () => {
     it('creates keyed change object', () => {
       const result = createCharacterStateChanges(
         [{ characterName: 'Greaves', states: ['Gave protagonist a map'] }],
-        ['cs-1', 'cs-2'],
+        ['cs-1', 'cs-2']
       );
       expect(result).toEqual({
         added: [{ characterName: 'Greaves', states: ['Gave protagonist a map'] }],
@@ -35,7 +35,9 @@ describe('character-state-manager', () => {
       const state: AccumulatedCharacterState = {
         greaves: [cs(1, 'Gave protagonist a map')],
       };
-      expect(formatCharacterStateForPrompt(state)).toBe('[greaves]\n- [cs-1] Gave protagonist a map');
+      expect(formatCharacterStateForPrompt(state)).toBe(
+        '[greaves]\n- [cs-1] Gave protagonist a map'
+      );
     });
   });
 
@@ -57,7 +59,9 @@ describe('character-state-manager', () => {
   describe('getParentAccumulatedCharacterState', () => {
     it('returns parent state untouched', () => {
       const parentPage = {
-        accumulatedCharacterState: { greaves: [cs(1, 'Previous state')] } as AccumulatedCharacterState,
+        accumulatedCharacterState: {
+          greaves: [cs(1, 'Previous state')],
+        } as AccumulatedCharacterState,
       };
       expect(getParentAccumulatedCharacterState(parentPage)).toEqual({
         greaves: [cs(1, 'Previous state')],

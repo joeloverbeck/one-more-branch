@@ -1,6 +1,4 @@
-import {
-  repairWriterRemovalIdFieldMismatches,
-} from '../../../../src/llm/validation/writer-id-repair';
+import { repairWriterRemovalIdFieldMismatches } from '../../../../src/llm/validation/writer-id-repair';
 
 const context = {
   removableIds: {

@@ -82,10 +82,13 @@ describe('state-modules integration', () => {
         { id: 'hp-2', text: 'Well-rested' },
       ]);
 
-      const charState1 = applyCharacterStateChanges({}, {
-        added: [{ characterName: 'Greaves', states: ['Gave protagonist a map'] }],
-        removed: [],
-      });
+      const charState1 = applyCharacterStateChanges(
+        {},
+        {
+          added: [{ characterName: 'Greaves', states: ['Gave protagonist a map'] }],
+          removed: [],
+        }
+      );
       expect(charState1).toEqual({
         Greaves: [{ id: 'cs-1', text: 'Gave protagonist a map' }],
       });
@@ -128,7 +131,7 @@ describe('state-modules integration', () => {
         {
           added: [{ characterName: 'Greaves', states: ['Suspicious'] }],
           removed: ['cs-2'],
-        },
+        }
       );
       expect(charState).toEqual({
         greaves: [
@@ -199,13 +202,13 @@ describe('state-modules integration', () => {
         parentChoiceIndex: null,
       });
 
-      expect(page1.accumulatedInventory.map(entry => entry.text)).toEqual(['Backpack', 'Torch']);
-      expect(page1.accumulatedHealth.map(entry => entry.text)).toEqual(['Healthy']);
-      expect(page1.accumulatedCharacterState['Mentor']?.map(entry => entry.text)).toEqual([
+      expect(page1.accumulatedInventory.map((entry) => entry.text)).toEqual(['Backpack', 'Torch']);
+      expect(page1.accumulatedHealth.map((entry) => entry.text)).toEqual(['Healthy']);
+      expect(page1.accumulatedCharacterState['Mentor']?.map((entry) => entry.text)).toEqual([
         'Gave advice',
       ]);
 
-      const torchId = page1.accumulatedInventory.find(item => item.text === 'Torch')?.id;
+      const torchId = page1.accumulatedInventory.find((item) => item.text === 'Torch')?.id;
       expect(torchId).toBeDefined();
 
       const page2 = createPage({
@@ -230,19 +233,19 @@ describe('state-modules integration', () => {
         parentAccumulatedCharacterState: page1.accumulatedCharacterState,
       });
 
-      expect(page2.accumulatedInventory.map(entry => entry.text)).toEqual(['Backpack', 'Map']);
-      expect(page2.accumulatedHealth.map(entry => entry.text)).toEqual(['Healthy', 'Tired']);
-      expect(page2.accumulatedCharacterState['Mentor']?.map(entry => entry.text)).toEqual([
+      expect(page2.accumulatedInventory.map((entry) => entry.text)).toEqual(['Backpack', 'Map']);
+      expect(page2.accumulatedHealth.map((entry) => entry.text)).toEqual(['Healthy', 'Tired']);
+      expect(page2.accumulatedCharacterState['Mentor']?.map((entry) => entry.text)).toEqual([
         'Gave advice',
         'Worried',
       ]);
-      expect(page2.accumulatedCharacterState['Greaves']?.map(entry => entry.text)).toEqual([
+      expect(page2.accumulatedCharacterState['Greaves']?.map((entry) => entry.text)).toEqual([
         'First encounter',
       ]);
 
-      const healthyId = page2.accumulatedHealth.find(entry => entry.text === 'Healthy')?.id;
+      const healthyId = page2.accumulatedHealth.find((entry) => entry.text === 'Healthy')?.id;
       const firstEncounterId = page2.accumulatedCharacterState['Greaves']?.find(
-        entry => entry.text === 'First encounter',
+        (entry) => entry.text === 'First encounter'
       )?.id;
       expect(healthyId).toBeDefined();
       expect(firstEncounterId).toBeDefined();
@@ -266,17 +269,17 @@ describe('state-modules integration', () => {
         parentAccumulatedCharacterState: page2.accumulatedCharacterState,
       });
 
-      expect(page3.accumulatedInventory.map(entry => entry.text)).toEqual([
+      expect(page3.accumulatedInventory.map((entry) => entry.text)).toEqual([
         'Map',
         'Gold coins',
         'Ruby',
       ]);
-      expect(page3.accumulatedHealth.map(entry => entry.text)).toEqual(['Tired', 'Injured']);
-      expect(page3.accumulatedCharacterState['Mentor']?.map(entry => entry.text)).toEqual([
+      expect(page3.accumulatedHealth.map((entry) => entry.text)).toEqual(['Tired', 'Injured']);
+      expect(page3.accumulatedCharacterState['Mentor']?.map((entry) => entry.text)).toEqual([
         'Gave advice',
         'Worried',
       ]);
-      expect(page3.accumulatedCharacterState['Greaves']?.map(entry => entry.text)).toEqual([
+      expect(page3.accumulatedCharacterState['Greaves']?.map((entry) => entry.text)).toEqual([
         'Helped find cave',
       ]);
     });
@@ -300,9 +303,9 @@ describe('state-modules integration', () => {
 
       expect(endingPage.isEnding).toBe(true);
       expect(endingPage.choices).toHaveLength(0);
-      expect(endingPage.accumulatedInventory.map(entry => entry.text)).toEqual(['Final reward']);
-      expect(endingPage.accumulatedHealth.map(entry => entry.text)).toEqual(['Victorious']);
-      expect(endingPage.accumulatedCharacterState['Hero']?.map(entry => entry.text)).toEqual([
+      expect(endingPage.accumulatedInventory.map((entry) => entry.text)).toEqual(['Final reward']);
+      expect(endingPage.accumulatedHealth.map((entry) => entry.text)).toEqual(['Victorious']);
+      expect(endingPage.accumulatedCharacterState['Hero']?.map((entry) => entry.text)).toEqual([
         'Completed quest',
       ]);
     });

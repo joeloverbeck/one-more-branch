@@ -46,7 +46,7 @@ export function addHealthEntry(health: Health, entry: string): Health {
  */
 export function removeHealthEntry(health: Health, entryId: string): Health {
   const result = [...health];
-  const index = result.findIndex(e => e.id === entryId);
+  const index = result.findIndex((e) => e.id === entryId);
   if (index !== -1) {
     result.splice(index, 1);
   }
@@ -70,7 +70,7 @@ export function formatHealthForPrompt(health: Health): string {
     return 'YOUR HEALTH:\n- You feel fine.\n';
   }
 
-  const formattedEntries = health.map(entry => `- [${entry.id}] ${entry.text}`).join('\n');
+  const formattedEntries = health.map((entry) => `- [${entry.id}] ${entry.text}`).join('\n');
   return `YOUR HEALTH:\n${formattedEntries}\n`;
 }
 
@@ -79,11 +79,11 @@ export function formatHealthForPrompt(health: Health): string {
  */
 export function createHealthChanges(
   added: readonly string[],
-  removed: readonly string[],
+  removed: readonly string[]
 ): HealthChanges {
   return {
-    added: added.map(entry => entry.trim()).filter(entry => entry),
-    removed: removed.map(entry => entry.trim()).filter(entry => entry),
+    added: added.map((entry) => entry.trim()).filter((entry) => entry),
+    removed: removed.map((entry) => entry.trim()).filter((entry) => entry),
   };
 }
 
@@ -92,15 +92,13 @@ export function createHealthChanges(
  */
 export function hasHealthCondition(health: Health, condition: string): boolean {
   const normalizedCondition = normalizeHealthEntry(condition);
-  return health.some(e => normalizeHealthEntry(e.text) === normalizedCondition);
+  return health.some((e) => normalizeHealthEntry(e.text) === normalizedCondition);
 }
 
 /**
  * Gets parent accumulated health from a page.
  */
-export function getParentAccumulatedHealth(
-  parentPage: { accumulatedHealth: Health },
-): Health {
+export function getParentAccumulatedHealth(parentPage: { accumulatedHealth: Health }): Health {
   return parentPage.accumulatedHealth;
 }
 

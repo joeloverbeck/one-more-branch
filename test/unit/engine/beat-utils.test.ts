@@ -1,4 +1,8 @@
-import { getBeatOrThrow, parseBeatIndices, upsertBeatProgression } from '../../../src/engine/beat-utils';
+import {
+  getBeatOrThrow,
+  parseBeatIndices,
+  upsertBeatProgression,
+} from '../../../src/engine/beat-utils';
 import type { BeatProgression, StoryStructure } from '../../../src/models/story-arc';
 
 function createStructure(): StoryStructure {
@@ -72,7 +76,9 @@ describe('beat-utils', () => {
     it('throws for invalid beat index', () => {
       const structure = createStructure();
 
-      expect(() => getBeatOrThrow(structure, 0, 10)).toThrow('Invalid currentBeatIndex: 10 for act 1');
+      expect(() => getBeatOrThrow(structure, 0, 10)).toThrow(
+        'Invalid currentBeatIndex: 10 for act 1'
+      );
     });
   });
 
@@ -111,7 +117,11 @@ describe('beat-utils', () => {
     it('returns new array (immutable)', () => {
       const progressions: BeatProgression[] = [{ beatId: '1.1', status: 'active' }];
 
-      const result = upsertBeatProgression(progressions, { beatId: '1.1', status: 'concluded', resolution: 'Done.' });
+      const result = upsertBeatProgression(progressions, {
+        beatId: '1.1',
+        status: 'concluded',
+        resolution: 'Done.',
+      });
 
       expect(result).not.toBe(progressions);
     });

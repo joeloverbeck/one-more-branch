@@ -10,11 +10,12 @@ import { CONTENT_POLICY } from '../content-policy.js';
 import {
   STORYTELLING_GUIDELINES,
   ENDING_GUIDELINES,
-  ACTIVE_STATE_TRACKING,
+  CONTINUITY_CONTEXT_USAGE,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
   PROTAGONIST_AFFECT,
+  buildToneBlock,
 } from './sections/shared/index.js';
 
 // Continuation-specific sections
@@ -99,7 +100,7 @@ const CREATIVE_SECTIONS = [STORYTELLING_GUIDELINES, ENDING_GUIDELINES] as const;
  * These define state tracking, inventory, health, and field separation rules.
  */
 const SHARED_DATA_SECTIONS = [
-  ACTIVE_STATE_TRACKING,
+  CONTINUITY_CONTEXT_USAGE,
   INVENTORY_MANAGEMENT,
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
@@ -111,12 +112,26 @@ const SHARED_DATA_SECTIONS = [
  */
 const OPENING_DATA_SECTIONS = [] as const;
 
+export interface ToneParams {
+  tone: string;
+  toneKeywords?: readonly string[];
+  toneAntiKeywords?: readonly string[];
+}
+
 /**
  * Composes the creative system prompt (shared by both opening and continuation).
- * Contains only persona, content policy, prose style, and ending guidelines.
+ * Contains persona, tone block (first position after intro), content policy,
+ * prose style, and ending guidelines.
  */
-export function composeCreativeSystemPrompt(): string {
-  return [SYSTEM_INTRO, CONTENT_POLICY, ...CREATIVE_SECTIONS].join('\n\n');
+export function composeCreativeSystemPrompt(toneParams?: ToneParams): string {
+  const sections: string[] = [SYSTEM_INTRO];
+
+  if (toneParams) {
+    sections.push(buildToneBlock(toneParams.tone, toneParams.toneKeywords, toneParams.toneAntiKeywords));
+  }
+
+  sections.push(CONTENT_POLICY, ...CREATIVE_SECTIONS);
+  return sections.join('\n\n');
 }
 
 /**
@@ -158,14 +173,14 @@ export function composeContinuationDataRules(options?: {
  * Builds the complete opening system prompt.
  * Contains creative persona only — data rules are in the user message.
  */
-export function buildOpeningSystemPrompt(): string {
-  return composeCreativeSystemPrompt();
+export function buildOpeningSystemPrompt(toneParams?: ToneParams): string {
+  return composeCreativeSystemPrompt(toneParams);
 }
 
 /**
  * Builds the complete continuation system prompt.
  * Contains creative persona only — data rules are in the user message.
  */
-export function buildContinuationSystemPrompt(): string {
-  return composeCreativeSystemPrompt();
+export function buildContinuationSystemPrompt(toneParams?: ToneParams): string {
+  return composeCreativeSystemPrompt(toneParams);
 }

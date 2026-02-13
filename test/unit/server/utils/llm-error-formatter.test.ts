@@ -1,4 +1,4 @@
-import { LLMError } from '../../../../src/llm/types';
+import { LLMError } from '../../../../src/llm/llm-client-types';
 import { formatLLMError } from '../../../../src/server/utils/llm-error-formatter';
 
 describe('formatLLMError', () => {
@@ -8,7 +8,7 @@ describe('formatLLMError', () => {
     });
 
     expect(formatLLMError(error)).toBe(
-      'API error: OpenRouter returned a non-JSON HTTP response. Please try again.',
+      'API error: OpenRouter returned a non-JSON HTTP response. Please try again.'
     );
   });
 
@@ -19,7 +19,7 @@ describe('formatLLMError', () => {
     });
 
     expect(formatLLMError(error)).toBe(
-      'API error: Model returned malformed JSON content (array). Please retry.',
+      'API error: Model returned malformed JSON content (array). Please retry.'
     );
   });
 });

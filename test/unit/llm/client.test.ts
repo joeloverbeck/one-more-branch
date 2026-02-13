@@ -20,12 +20,13 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import {
   generatePagePlan,
+  generateStateAccountant,
   generatePageWriterOutput,
   generateOpeningPage,
   generateWriterPage,
   validateApiKey,
 } from '../../../src/llm/client';
-import { LLMError } from '../../../src/llm/types';
+import { LLMError } from '../../../src/llm/llm-client-types';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
 
@@ -78,8 +79,16 @@ const validStructuredPayload = {
   narrative:
     'You descend into the vault with water up to your knees and the lantern shaking in your grip while distant chanting rises from the stone arches above you.',
   choices: [
-    { text: 'Advance toward the chanting', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Retreat and seal the grate', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+    {
+      text: 'Advance toward the chanting',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Retreat and seal the grate',
+      choiceType: 'AVOIDANCE_RETREAT',
+      primaryDelta: 'LOCATION_CHANGE',
+    },
   ],
   currentLocation: 'The drowned vault',
   threatsAdded: [],
@@ -112,8 +121,14 @@ const validPlannerPayload = {
   continuityAnchors: ['The chanting still echoes through the vault.'],
   stateIntents: {
     currentLocation: 'Flooded vault antechamber',
-    threats: { add: ['Cult sentries close in from two sides.'], removeIds: [] },
-    constraints: { add: ['Torchlight is flickering out.'], removeIds: [] },
+    threats: {
+      add: [{ text: 'Cult sentries close in from two sides.', threatType: 'HOSTILE_AGENT' }],
+      removeIds: [],
+    },
+    constraints: {
+      add: [{ text: 'Torchlight is flickering out.', constraintType: 'ENVIRONMENTAL' }],
+      removeIds: [],
+    },
     threads: {
       add: [
         {
@@ -126,7 +141,10 @@ const validPlannerPayload = {
     },
     inventory: { add: ['A cracked lantern lens'], removeIds: [] },
     health: { add: ['Minor smoke inhalation'], removeIds: [] },
-    characterState: { add: [{ characterName: 'Mara', states: ['Shaken but determined'] }], removeIds: [] },
+    characterState: {
+      add: [{ characterName: 'Mara', states: ['Shaken but determined'] }],
+      removeIds: [],
+    },
     canon: { worldAdd: ['The lower vault has ritual markings on every column.'], characterAdd: [] },
   },
   writerBrief: {
@@ -136,9 +154,29 @@ const validPlannerPayload = {
   },
   dramaticQuestion: 'Will you push deeper or seal the vault behind you?',
   choiceIntents: [
-    { hook: 'Press forward toward the chanting', choiceType: ChoiceType.CONFRONTATION, primaryDelta: PrimaryDelta.THREAT_SHIFT },
-    { hook: 'Seal the entrance and find another route', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+    {
+      hook: 'Press forward toward the chanting',
+      choiceType: ChoiceType.CONFRONTATION,
+      primaryDelta: PrimaryDelta.THREAT_SHIFT,
+    },
+    {
+      hook: 'Seal the entrance and find another route',
+      choiceType: ChoiceType.TACTICAL_APPROACH,
+      primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+    },
   ],
+};
+
+const validReducedPlannerPayload = {
+  sceneIntent: validPlannerPayload.sceneIntent,
+  continuityAnchors: validPlannerPayload.continuityAnchors,
+  writerBrief: validPlannerPayload.writerBrief,
+  dramaticQuestion: validPlannerPayload.dramaticQuestion,
+  choiceIntents: validPlannerPayload.choiceIntents,
+};
+
+const validAccountantPayload = {
+  stateIntents: validPlannerPayload.stateIntents,
 };
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -207,7 +245,9 @@ describe('llm client', () => {
   }
 
   it('should call OpenRouter with correct headers', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
@@ -221,7 +261,9 @@ describe('llm client', () => {
   });
 
   it('should include response_format for structured output', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
@@ -230,7 +272,9 @@ describe('llm client', () => {
   });
 
   it('should use DEFAULT_MODEL when not specified', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
@@ -239,7 +283,9 @@ describe('llm client', () => {
   });
 
   it('should use custom model when provided', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, {
       apiKey: 'test-key',
@@ -251,7 +297,9 @@ describe('llm client', () => {
   });
 
   it('should use default temperature 0.8', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
@@ -260,7 +308,9 @@ describe('llm client', () => {
   });
 
   it('should use default maxTokens 8192', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
@@ -307,10 +357,12 @@ describe('llm client', () => {
   it('should throw LLMError with retryable=false for 401', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(401, 'invalid key'));
 
-    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
-      code: 'HTTP_401',
-      retryable: false,
-    });
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject(
+      {
+        code: 'HTTP_401',
+        retryable: false,
+      }
+    );
   });
 
   it('should throw LLMError for empty response', async () => {
@@ -318,7 +370,7 @@ describe('llm client', () => {
       createJsonResponse(200, {
         id: 'or-1',
         choices: [],
-      }),
+      })
     );
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -364,7 +416,7 @@ describe('llm client', () => {
             finish_reason: 'stop',
           },
         ],
-      }),
+      })
     );
 
     const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -376,12 +428,14 @@ describe('llm client', () => {
   it('should throw clear error when structured output not supported', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(400, 'response_format is not supported'));
 
-    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
-      code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
-      retryable: false,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('does not support structured outputs'),
-    });
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject(
+      {
+        code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
+        retryable: false,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        message: expect.stringContaining('does not support structured outputs'),
+      }
+    );
   });
 
   it('should retry up to maxRetries times for retryable errors', async () => {
@@ -404,9 +458,9 @@ describe('llm client', () => {
   it('should not retry non-retryable errors', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(401, 'invalid key'));
 
-    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toBeInstanceOf(
-      LLMError,
-    );
+    await expect(
+      generateOpeningPage(openingContext, { apiKey: 'test-key' })
+    ).rejects.toBeInstanceOf(LLMError);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -444,7 +498,7 @@ describe('llm client', () => {
     };
 
     fetchMock.mockResolvedValue(
-      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload)),
+      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload))
     );
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -460,15 +514,13 @@ describe('llm client', () => {
   });
 
   it('should log opening prompts before API call', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'opening',
-      expect.any(Array),
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'opening', expect.any(Array));
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
@@ -478,16 +530,18 @@ describe('llm client', () => {
         400,
         JSON.stringify({
           error: { message: 'model does not support response_format' },
-        }),
-      ),
+        })
+      )
     );
 
-    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
-      code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
-      retryable: false,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('does not support structured outputs'),
-    });
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject(
+      {
+        code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
+        retryable: false,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        message: expect.stringContaining('does not support structured outputs'),
+      }
+    );
   });
 
   it('should NOT fall back for generic validation errors (model supports structured output)', async () => {
@@ -498,8 +552,8 @@ describe('llm client', () => {
         400,
         JSON.stringify({
           error: { message: 'Strict mode validation failed for additionalProperties' },
-        }),
-      ),
+        })
+      )
     );
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -518,30 +572,34 @@ describe('llm client', () => {
     // Should not have called warn about fallback
     expect(mockLogger.warn).not.toHaveBeenCalledWith(
       'Model lacks structured output support, using text parsing fallback',
-      expect.anything(),
+      expect.anything()
     );
   });
 
   it('should throw clear error for provider does not support json_schema', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(400, 'provider does not support json_schema'));
 
-    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
-      code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
-      retryable: false,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('does not support structured outputs'),
-    });
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject(
+      {
+        code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
+        retryable: false,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        message: expect.stringContaining('does not support structured outputs'),
+      }
+    );
   });
 
   it('should log API error details before throwing', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(401, 'Invalid API key provided'));
 
-    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject({
-      code: 'HTTP_401',
-    });
+    await expect(generateOpeningPage(openingContext, { apiKey: 'test-key' })).rejects.toMatchObject(
+      {
+        code: 'HTTP_401',
+      }
+    );
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'OpenRouter API error [401]: Invalid API key provided',
+      'OpenRouter API error [401]: Invalid API key provided'
     );
   });
 
@@ -578,7 +636,7 @@ describe('llm client', () => {
     };
 
     fetchMock.mockResolvedValue(
-      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload)),
+      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload))
     );
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -590,17 +648,14 @@ describe('llm client', () => {
 
     const rejectedError = await promise.catch((error: unknown): unknown => error);
     expect(rejectedError).toBeInstanceOf(LLMError);
-    const errorContext =
-      rejectedError instanceof LLMError
-        ? rejectedError.context
-        : undefined;
+    const errorContext = rejectedError instanceof LLMError ? rejectedError.context : undefined;
     expect(Array.isArray(errorContext?.validationIssues)).toBe(true);
     expect(Array.isArray(errorContext?.ruleKeys)).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const validationErrorCall = errorCalls.find(
-      ([message]) => message === 'Writer structured response validation failed',
+      ([message]) => message === 'Writer structured response validation failed'
     );
     expect(validationErrorCall).toBeDefined();
     const validationErrorMetadata =
@@ -629,7 +684,7 @@ describe('llm client', () => {
     };
 
     fetchMock.mockResolvedValue(
-      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload)),
+      responseWithStructuredContent(JSON.stringify(invalidStructuredPayload))
     );
 
     await expect(
@@ -640,7 +695,7 @@ describe('llm client', () => {
           pageId: 7,
           requestId: 'req-abc',
         },
-      }),
+      })
     ).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
       retryable: false,
@@ -652,11 +707,11 @@ describe('llm client', () => {
         storyId: 'story-123',
         pageId: 7,
         requestId: 'req-abc',
-      }),
+      })
     );
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const counterCall = errorCalls.find(
-      ([message]) => message === 'Writer validator failure counter',
+      ([message]) => message === 'Writer validator failure counter'
     );
     expect(counterCall).toBeDefined();
     const counterContext =
@@ -674,8 +729,8 @@ describe('llm client', () => {
           ...validStructuredPayload,
           threatsRemoved: ['td-1'],
           threadsResolved: [],
-        }),
-      ),
+        })
+      )
     );
 
     const result = await generateWriterPage(continuationContext, {
@@ -692,8 +747,7 @@ describe('llm client', () => {
       },
     });
 
-    expect(result.threatsRemoved).toEqual([]);
-    expect(result.threadsResolved).toEqual(['td-1']);
+    expect(result.narrative).toBe(validStructuredPayload.narrative);
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Writer removal ID field mismatch repaired',
       expect.objectContaining({
@@ -705,7 +759,7 @@ describe('llm client', () => {
             toField: 'threadsResolved',
           }),
         ]),
-      }),
+      })
     );
   });
 
@@ -716,8 +770,8 @@ describe('llm client', () => {
           ...validStructuredPayload,
           threatsRemoved: ['td-999'],
           threadsResolved: [],
-        }),
-      ),
+        })
+      )
     );
 
     const result = await generateWriterPage(continuationContext, {
@@ -734,44 +788,46 @@ describe('llm client', () => {
       },
     });
 
-    expect(result.threatsRemoved).toEqual(['td-999']);
-    expect(result.threadsResolved).toEqual([]);
+    expect(result.narrative).toBe(validStructuredPayload.narrative);
+    expect(mockLogger.info).not.toHaveBeenCalledWith(
+      'Writer removal ID field mismatch repaired',
+      expect.any(Object)
+    );
   });
 
   it('should support generatePageWriterOutput by forwarding plan into writer prompt context', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validStructuredPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validStructuredPayload))
+    );
 
-    await generatePageWriterOutput(continuationContext, validPlannerPayload, { apiKey: 'test-key' });
+    await generatePageWriterOutput(continuationContext, validPlannerPayload, {
+      apiKey: 'test-key',
+    });
 
     const body = getRequestBody();
-    const messages =
-      Array.isArray(body.messages) ? (body.messages as Array<{ content?: string }>) : [];
+    const messages = Array.isArray(body.messages)
+      ? (body.messages as Array<{ content?: string }>)
+      : [];
     const userPrompt =
       messages.find(
-        message =>
+        (message) =>
           typeof message.content === 'string' &&
-          message.content.includes('Continue the interactive story based on the player\'s choice.'),
+          message.content.includes("Continue the interactive story based on the player's choice.")
       )?.content ?? '';
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'writer',
-      expect.any(Array),
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'writer', expect.any(Array));
     expect(userPrompt).toContain(`Scene Intent: ${validPlannerPayload.sceneIntent}`);
     expect(userPrompt).toContain(validPlannerPayload.writerBrief.openingLineDirective);
   });
 
   it('should log planner prompts before API call', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validPlannerPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validReducedPlannerPayload))
+    );
 
     await generatePagePlan(plannerOpeningContext, { apiKey: 'test-key' });
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'planner',
-      expect.any(Array),
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'planner', expect.any(Array));
   });
 
   it('should retry planner generation for retryable errors', async () => {
@@ -789,6 +845,16 @@ describe('llm client', () => {
 
     await expectation;
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('should log accountant prompts before API call', async () => {
+    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validAccountantPayload)));
+
+    await generateStateAccountant(plannerOpeningContext, validReducedPlannerPayload, {
+      apiKey: 'test-key',
+    });
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'accountant', expect.any(Array));
   });
 });
 

@@ -40,11 +40,14 @@ describe('Engine types', () => {
     it('defines shared generation stage IDs exactly once and in order', () => {
       const expectedStages: GenerationStage[] = [
         'PLANNING_PAGE',
+        'ACCOUNTING_STATE',
         'CURATING_CONTEXT',
         'WRITING_OPENING_PAGE',
         'WRITING_CONTINUING_PAGE',
         'ANALYZING_SCENE',
         'RESOLVING_AGENDAS',
+        'STRUCTURING_STORY',
+        'DECOMPOSING_ENTITIES',
         'RESTRUCTURING_STORY',
       ];
 
@@ -68,7 +71,10 @@ describe('Engine types', () => {
     });
 
     it('supports StartStoryResult and MakeChoiceResult', () => {
-      const story = createStory({ title: 'Apprentice Tale', characterConcept: 'A curious apprentice' });
+      const story = createStory({
+        title: 'Apprentice Tale',
+        characterConcept: 'A curious apprentice',
+      });
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'The tower door creaks open.',

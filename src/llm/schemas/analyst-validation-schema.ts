@@ -1,13 +1,7 @@
 import { z } from 'zod';
 
 const SceneMomentumSchema = z
-  .enum([
-    'STASIS',
-    'INCREMENTAL_PROGRESS',
-    'MAJOR_PROGRESS',
-    'REVERSAL_OR_SETBACK',
-    'SCOPE_SHIFT',
-  ])
+  .enum(['STASIS', 'INCREMENTAL_PROGRESS', 'MAJOR_PROGRESS', 'REVERSAL_OR_SETBACK', 'SCOPE_SHIFT'])
   .catch('STASIS')
   .default('STASIS');
 
@@ -26,7 +20,10 @@ const StructuralPositionSignalSchema = z
   .catch('WITHIN_ACTIVE_BEAT')
   .default('WITHIN_ACTIVE_BEAT');
 
-const EntryConditionReadinessSchema = z.enum(['NOT_READY', 'PARTIAL', 'READY']).catch('NOT_READY').default('NOT_READY');
+const EntryConditionReadinessSchema = z
+  .enum(['NOT_READY', 'PARTIAL', 'READY'])
+  .catch('NOT_READY')
+  .default('NOT_READY');
 
 const SafeStringArraySchema = z.array(z.string()).catch([]).default([]);
 
@@ -36,9 +33,7 @@ const PromiseTypeSchema = z
 
 const UrgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']).catch('MEDIUM');
 
-const SatisfactionLevelSchema = z
-  .enum(['RUSHED', 'ADEQUATE', 'WELL_EARNED'])
-  .catch('ADEQUATE');
+const SatisfactionLevelSchema = z.enum(['RUSHED', 'ADEQUATE', 'WELL_EARNED']).catch('ADEQUATE');
 
 const NarrativePromiseSchema = z.object({
   description: z.string().default(''),
@@ -72,6 +67,8 @@ export const AnalystResultSchema = z.object({
   anchorEvidence: SafeStringArraySchema,
   completionGateSatisfied: z.boolean().catch(false).default(false),
   completionGateFailureReason: z.string().catch('').default(''),
+  toneAdherent: z.boolean().catch(true).default(true),
+  toneDriftDescription: z.string().catch('').default(''),
   narrativePromises: z.array(NarrativePromiseSchema).catch([]).default([]),
   threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),
 });

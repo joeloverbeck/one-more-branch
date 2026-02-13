@@ -4,21 +4,29 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
 import { StoryId } from '@/models';
-import type { AnalystResult, WriterResult } from '@/llm/types';
+import type { AnalystResult } from '@/llm/analyst-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
+  decomposeEntities: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 jest.mock('@/logging/index', () => ({
@@ -26,10 +34,19 @@ jest.mock('@/logging/index', () => ({
   logPrompt: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
+>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -101,15 +118,25 @@ const openingResult = {
   narrative:
     'You arrive in the rain-soaked capital square as the city clocks skip thirteen seconds in unison and every guard looks toward the archives.',
   choices: [
-    { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    {
+      text: 'Pursue the masked courier through the archive tunnels',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'GOAL_SHIFT',
+    },
+    {
+      text: 'Hide in the crowd and decode the clock anomaly first',
+      choiceType: 'INVESTIGATION',
+      primaryDelta: 'INFORMATION_REVEALED',
+    },
   ],
   currentLocation: 'Rain-soaked capital square',
   threatsAdded: ['Guards alerted by clock anomaly'],
   threatsRemoved: [],
   constraintsAdded: [],
   constraintsRemoved: [],
-  threadsAdded: [{ text: 'Clock anomaly synchronization mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+  threadsAdded: [
+    { text: 'Clock anomaly synchronization mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+  ],
   threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'intrigue',
@@ -133,21 +160,35 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string, pageNumber: number): WriterResult {
+function buildWriterResult(selectedChoice: string, pageNumber: number): PageWriterResult {
   if (selectedChoice.includes('Pursue')) {
     return {
       narrative:
         'You catch the courier in a submerged tunnel and recover encoded route slips linking the archive signal to regime patrol schedules.',
       choices: [
-        { text: 'Press deeper toward the signal source', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Press deeper toward the signal source',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Retreat and brief your contact',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Submerged archive tunnel',
       threatsAdded: [],
       threatsRemoved: ['Masked courier'],
       constraintsAdded: [`Courier evidence secured on page ${pageNumber}`],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Archive signal linked to patrol schedules', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        {
+          text: 'Archive signal linked to patrol schedules',
+          threadType: 'INFORMATION',
+          urgency: 'MEDIUM',
+        },
+      ],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'determination',
@@ -175,15 +216,29 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
       narrative:
         'At the signal chamber you copy command logs that prove the archive clocks are weaponized for mass disinformation.',
       choices: [
-        { text: 'Exfiltrate with the logs', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Exfiltrate with the logs',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Trigger a distraction in the chamber',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Signal chamber deep in archive',
       threatsAdded: ['Chamber security systems'],
       threatsRemoved: [],
       constraintsAdded: [`Signal chamber logs copied on page ${pageNumber}`],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Clock weaponization for disinformation confirmed', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
+      threadsAdded: [
+        {
+          text: 'Clock weaponization for disinformation confirmed',
+          threadType: 'INFORMATION',
+          urgency: 'MEDIUM',
+        },
+      ],
       threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'triumph',
@@ -210,8 +265,16 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): WriterRe
     narrative:
       'You stay hidden and map guard rotations from the crowd, gaining context but no decisive breakthrough yet.',
     choices: [
-      { text: 'Follow a rotation change to the east gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Wait for a second anomaly cycle', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      {
+        text: 'Follow a rotation change to the east gate',
+        choiceType: 'TACTICAL_APPROACH',
+        primaryDelta: 'GOAL_SHIFT',
+      },
+      {
+        text: 'Wait for a second anomaly cycle',
+        choiceType: 'INVESTIGATION',
+        primaryDelta: 'INFORMATION_REVEALED',
+      },
     ],
     currentLocation: 'Hidden in capital square crowd',
     threatsAdded: [],
@@ -300,7 +363,29 @@ describe('Structured Story E2E', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Drive the current branch with immediate outcomes.',
       continuityAnchors: [],
+      writerBrief: {
+        openingLineDirective: 'Begin with direct consequence.',
+        mustIncludeBeats: [],
+        forbiddenRecaps: [],
+      },
+      dramaticQuestion: 'Will you confront the danger or seek another path?',
+      choiceIntents: [
+        {
+          hook: 'Face the threat directly',
+          choiceType: 'CONFRONTATION',
+          primaryDelta: 'THREAT_SHIFT',
+        },
+        {
+          hook: 'Find an alternative route',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
+      ],
+      rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
       stateIntents: {
+        currentLocation: '',
         threats: { add: [], removeIds: [] },
         constraints: { add: [], removeIds: [] },
         threads: { add: [], resolveIds: [] },
@@ -309,17 +394,7 @@ describe('Structured Story E2E', () => {
         characterState: { add: [], removeIds: [] },
         canon: { worldAdd: [], characterAdd: [] },
       },
-      writerBrief: {
-        openingLineDirective: 'Begin with direct consequence.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
-      dramaticQuestion: 'Will you confront the danger or seek another path?',
-      choiceIntents: [
-        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-      ],
-      rawResponse: 'page-plan',
+      rawResponse: 'accountant',
     });
 
     mockedGenerateStoryStructure.mockResolvedValue(mockedStructureResult);
@@ -416,7 +491,7 @@ describe('Structured Story E2E', () => {
     expect(page2.accumulatedStructureState.currentActIndex).toBe(0);
     expect(page2.accumulatedStructureState.currentBeatIndex).toBe(1);
     const concludedBeatOne = page2.accumulatedStructureState.beatProgressions.find(
-      progression => progression.beatId === '1.1',
+      (progression) => progression.beatId === '1.1'
     );
     expect(concludedBeatOne).toMatchObject({
       beatId: '1.1',
@@ -434,7 +509,7 @@ describe('Structured Story E2E', () => {
     expect(page3.accumulatedStructureState.currentActIndex).toBe(1);
     expect(page3.accumulatedStructureState.currentBeatIndex).toBe(0);
     const concludedBeatTwo = page3.accumulatedStructureState.beatProgressions.find(
-      progression => progression.beatId === '1.2',
+      (progression) => progression.beatId === '1.2'
     );
     expect(concludedBeatTwo).toMatchObject({
       beatId: '1.2',
@@ -442,7 +517,7 @@ describe('Structured Story E2E', () => {
     });
     expect(concludedBeatTwo?.resolution).toContain('Copied chamber logs');
     const activeBeat = page3.accumulatedStructureState.beatProgressions.find(
-      progression => progression.beatId === '2.1',
+      (progression) => progression.beatId === '2.1'
     );
     expect(activeBeat).toMatchObject({
       beatId: '2.1',
@@ -478,10 +553,10 @@ describe('Structured Story E2E', () => {
     expect(branchSlow.accumulatedStructureState.currentBeatIndex).toBe(0);
 
     const fastConcluded = branchFast.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '1.1',
+      (progression) => progression.beatId === '1.1'
     );
     const slowConcluded = branchSlow.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '1.1',
+      (progression) => progression.beatId === '1.1'
     );
 
     expect(fastConcluded?.status).toBe('concluded');

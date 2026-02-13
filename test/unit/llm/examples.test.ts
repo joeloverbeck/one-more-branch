@@ -30,52 +30,18 @@ describe('buildFewShotMessages', () => {
       expect(userContent).toContain('CHARACTER CONCEPT');
     });
 
-    it('should have valid JSON in assistant response', () => {
+    it('should have valid creative-only JSON in assistant response', () => {
       const messages = buildFewShotMessages('opening', 'minimal');
       const assistantContent = messages[1]?.content ?? '';
 
       expect(() => parseJsonSafely(assistantContent)).not.toThrow();
 
-      interface OpeningExample {
-        narrative: string;
-        choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
-        currentLocation: string;
-        threatsAdded: string[];
-        threatsRemoved: string[];
-        constraintsAdded: string[];
-        constraintsRemoved: string[];
-        threadsAdded: Array<{ text: string; threadType: string; urgency: string }>;
-        threadsResolved: string[];
-        healthAdded: string[];
-        healthRemoved: string[];
-        characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
-        characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
-        isEnding: boolean;
-        beatConcluded: boolean;
-        beatResolution: string;
-        storyArc?: string;
-      }
-
-      const parsed: OpeningExample = JSON.parse(assistantContent) as OpeningExample;
-
-      expect(parsed.narrative).toBeDefined();
-      expect(parsed.choices).toBeInstanceOf(Array);
-      expect(parsed.choices.length).toBeGreaterThanOrEqual(2);
-      // Active state fields
-      expect(parsed.currentLocation).toBeDefined();
-      expect(parsed.threatsAdded).toBeInstanceOf(Array);
-      expect(parsed.threatsRemoved).toBeInstanceOf(Array);
-      expect(parsed.constraintsAdded).toBeInstanceOf(Array);
-      expect(parsed.constraintsRemoved).toBeInstanceOf(Array);
-      expect(parsed.threadsAdded).toBeInstanceOf(Array);
-      expect(parsed.threadsResolved).toBeInstanceOf(Array);
-      // Other fields
-      expect(parsed.healthAdded).toBeInstanceOf(Array);
-      expect(parsed.healthRemoved).toBeInstanceOf(Array);
-      expect(parsed.characterStateChangesAdded).toBeInstanceOf(Array);
-      expect(parsed.characterStateChangesRemoved).toBeInstanceOf(Array);
-      expect(parsed.isEnding).toBe(false);
-      expect(parsed.storyArc).toBeUndefined();
+      const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
+      expect(parsed['narrative']).toBeDefined();
+      expect(parsed['choices']).toBeInstanceOf(Array);
+      expect(parsed['protagonistAffect']).toBeDefined();
+      expect(parsed['sceneSummary']).toBeDefined();
+      expect(parsed['isEnding']).toBe(false);
     });
   });
 
@@ -106,76 +72,41 @@ describe('buildFewShotMessages', () => {
       expect(userContent).toContain("PLAYER'S CHOICE");
     });
 
-    it('should have valid JSON in assistant response', () => {
+    it('should have valid creative-only JSON in assistant response', () => {
       const messages = buildFewShotMessages('continuation', 'minimal');
       const assistantContent = messages[1]?.content ?? '';
 
       expect(() => parseJsonSafely(assistantContent)).not.toThrow();
 
-      interface ContinuationExample {
-        narrative: string;
-        choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
-        currentLocation: string;
-        threatsAdded: string[];
-        threatsRemoved: string[];
-        constraintsAdded: string[];
-        constraintsRemoved: string[];
-        threadsAdded: Array<{ text: string; threadType: string; urgency: string }>;
-        threadsResolved: string[];
-        newCanonFacts: string[];
-        healthAdded: string[];
-        healthRemoved: string[];
-        characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
-        characterStateChangesRemoved: Array<{ characterName: string; states: string[] }>;
-        isEnding: boolean;
-        beatConcluded: boolean;
-        beatResolution: string;
-        storyArc?: string;
-      }
-
-      const parsed: ContinuationExample = JSON.parse(assistantContent) as ContinuationExample;
-
-      expect(parsed.narrative).toBeDefined();
-      expect(parsed.choices).toBeInstanceOf(Array);
-      // Active state fields
-      expect(parsed.currentLocation).toBeDefined();
-      expect(parsed.threatsAdded).toBeInstanceOf(Array);
-      expect(parsed.threatsRemoved).toBeInstanceOf(Array);
-      expect(parsed.constraintsAdded).toBeInstanceOf(Array);
-      expect(parsed.constraintsRemoved).toBeInstanceOf(Array);
-      expect(parsed.threadsAdded).toBeInstanceOf(Array);
-      expect(parsed.threadsResolved).toBeInstanceOf(Array);
-      // Other fields
-      expect(parsed.newCanonFacts).toBeInstanceOf(Array);
-      expect(parsed.healthAdded).toBeInstanceOf(Array);
-      expect(parsed.healthRemoved).toBeInstanceOf(Array);
-      expect(parsed.characterStateChangesAdded).toBeInstanceOf(Array);
-      expect(parsed.characterStateChangesRemoved).toBeInstanceOf(Array);
-      expect(parsed.isEnding).toBe(false);
-      expect(parsed.storyArc).toBeUndefined();
+      const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
+      expect(parsed['narrative']).toBeDefined();
+      expect(parsed['choices']).toBeInstanceOf(Array);
+      expect(parsed['protagonistAffect']).toBeDefined();
+      expect(parsed['sceneSummary']).toBeDefined();
+      expect(parsed['isEnding']).toBe(false);
     });
 
     it('should include ending example in standard mode with isEnding: true', () => {
       const messages = buildFewShotMessages('continuation', 'standard');
       const endingAssistantContent = messages[3]?.content ?? '';
 
-      interface EndingExample {
+      const parsed = JSON.parse(endingAssistantContent) as {
         choices: Array<{ text: string; choiceType: string; primaryDelta: string }>;
         isEnding: boolean;
-      }
-
-      const parsed: EndingExample = JSON.parse(endingAssistantContent) as EndingExample;
+      };
 
       expect(parsed.isEnding).toBe(true);
       expect(parsed.choices).toHaveLength(0);
     });
   });
 
-  describe('active state format', () => {
+  describe('creative-only contract', () => {
     it('should not include deprecated storyArc field in any assistant example', () => {
       const opening = buildFewShotMessages('opening', 'standard');
       const continuation = buildFewShotMessages('continuation', 'standard');
-      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
+      const assistantMessages = [...opening, ...continuation].filter(
+        (message) => message.role === 'assistant'
+      );
 
       for (const message of assistantMessages) {
         const parsed = JSON.parse(message.content) as Record<string, unknown>;
@@ -183,125 +114,23 @@ describe('buildFewShotMessages', () => {
       }
     });
 
-    it('should not include deprecated stateChangesAdded/Removed in any example', () => {
+    it('should not include deterministic state/canon fields in any assistant example', () => {
       const opening = buildFewShotMessages('opening', 'standard');
       const continuation = buildFewShotMessages('continuation', 'standard');
-      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
+      const assistantMessages = [...opening, ...continuation].filter(
+        (message) => message.role === 'assistant'
+      );
 
       for (const message of assistantMessages) {
         const parsed = JSON.parse(message.content) as Record<string, unknown>;
+        expect(parsed['currentLocation']).toBeUndefined();
+        expect(parsed['threatsAdded']).toBeUndefined();
+        expect(parsed['constraintsAdded']).toBeUndefined();
+        expect(parsed['threadsAdded']).toBeUndefined();
+        expect(parsed['newCanonFacts']).toBeUndefined();
+        expect(parsed['newCharacterCanonFacts']).toBeUndefined();
         expect(parsed['stateChangesAdded']).toBeUndefined();
         expect(parsed['stateChangesRemoved']).toBeUndefined();
-      }
-    });
-
-    it('should use plain text format for threat additions', () => {
-      const messages = buildFewShotMessages('opening', 'minimal');
-      const assistantContent = messages[1]?.content ?? '';
-
-      interface ExampleResponse {
-        threatsAdded: string[];
-      }
-
-      const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
-
-      expect(parsed.threatsAdded.length).toBeGreaterThan(0);
-      for (const threat of parsed.threatsAdded) {
-        expect(threat).not.toContain(':');
-        expect(threat).not.toMatch(/^THREAT_/);
-      }
-    });
-
-    it('should use plain text format for constraint additions', () => {
-      const messages = buildFewShotMessages('opening', 'minimal');
-      const assistantContent = messages[1]?.content ?? '';
-
-      interface ExampleResponse {
-        constraintsAdded: string[];
-      }
-
-      const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
-
-      expect(parsed.constraintsAdded.length).toBeGreaterThan(0);
-      for (const constraint of parsed.constraintsAdded) {
-        expect(constraint).not.toContain(':');
-        expect(constraint).not.toMatch(/^CONSTRAINT_/);
-      }
-    });
-
-    it('should use typed object format for thread additions', () => {
-      const messages = buildFewShotMessages('opening', 'minimal');
-      const assistantContent = messages[1]?.content ?? '';
-
-      interface ExampleResponse {
-        threadsAdded: Array<{
-          text: string;
-          threadType: string;
-          urgency: string;
-        }>;
-      }
-
-      const parsed: ExampleResponse = JSON.parse(assistantContent) as ExampleResponse;
-
-      expect(parsed.threadsAdded.length).toBeGreaterThan(0);
-      for (const thread of parsed.threadsAdded) {
-        expect(thread.text).not.toContain(':');
-        expect(thread.text).not.toMatch(/^THREAD_/);
-        expect([
-          'MYSTERY',
-          'QUEST',
-          'RELATIONSHIP',
-          'DANGER',
-          'INFORMATION',
-          'RESOURCE',
-          'MORAL',
-        ]).toContain(thread.threadType);
-        expect(['LOW', 'MEDIUM', 'HIGH']).toContain(thread.urgency);
-      }
-    });
-
-    it('should use keyed ID format for removals (no colon)', () => {
-      const messages = buildFewShotMessages('continuation', 'standard');
-      const endingAssistantContent = messages[3]?.content ?? '';
-
-      interface ExampleResponse {
-        threatsRemoved: string[];
-        constraintsRemoved: string[];
-        threadsResolved: string[];
-      }
-
-      const parsed: ExampleResponse = JSON.parse(endingAssistantContent) as ExampleResponse;
-
-      // Ending example should have removals
-      expect(parsed.threatsRemoved.length).toBeGreaterThan(0);
-      for (const removal of parsed.threatsRemoved) {
-        expect(removal).toMatch(/^th-\d+$/);
-        expect(removal).not.toContain(':');
-      }
-
-      expect(parsed.constraintsRemoved.length).toBeGreaterThan(0);
-      for (const removal of parsed.constraintsRemoved) {
-        expect(removal).toMatch(/^cn-\d+$/);
-        expect(removal).not.toContain(':');
-      }
-
-      expect(parsed.threadsResolved.length).toBeGreaterThan(0);
-      for (const resolution of parsed.threadsResolved) {
-        expect(resolution).toMatch(/^td-\d+$/);
-        expect(resolution).not.toContain(':');
-      }
-    });
-
-    it('should include currentLocation in all examples', () => {
-      const opening = buildFewShotMessages('opening', 'minimal');
-      const continuation = buildFewShotMessages('continuation', 'standard');
-      const assistantMessages = [...opening, ...continuation].filter(message => message.role === 'assistant');
-
-      for (const message of assistantMessages) {
-        const parsed = JSON.parse(message.content) as { currentLocation: string };
-        expect(parsed.currentLocation).toBeDefined();
-        expect(typeof parsed.currentLocation).toBe('string');
-        expect(parsed.currentLocation.length).toBeGreaterThan(0);
       }
     });
   });

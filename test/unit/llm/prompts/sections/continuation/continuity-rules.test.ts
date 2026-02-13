@@ -37,7 +37,9 @@ describe('continuation continuity-rules sections', () => {
 
     it('reinforces continuity through narrative integration', () => {
       expect(CONTINUATION_CONTINUITY_RULES).toContain('WHEN NEW FACTS EMERGE');
-      expect(CONTINUATION_CONTINUITY_RULES).toContain('Weave them into narrative and sceneSummary naturally');
+      expect(CONTINUATION_CONTINUITY_RULES).toContain(
+        'Weave them into narrative and sceneSummary naturally'
+      );
       expect(CONTINUATION_CONTINUITY_RULES).not.toContain('newCanonFacts');
     });
 
@@ -90,9 +92,7 @@ describe('continuation continuity-rules sections', () => {
     });
 
     it('includes section header', () => {
-      expect(CHARACTER_CANON_VS_STATE).toContain(
-        'CHARACTER CANON vs CHARACTER STATE:',
-      );
+      expect(CHARACTER_CANON_VS_STATE).toContain('CHARACTER CANON vs CHARACTER STATE:');
     });
 
     it('documents CHARACTER CANON usage', () => {

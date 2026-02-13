@@ -1,7 +1,7 @@
 # Structure Rewrite Prompt (Production Template)
 
 - Source: `src/llm/prompts/structure-rewrite-prompt.ts`
-- System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt.ts`
+- System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/structure-schema.ts`
 
 ## Messages Sent To Model
@@ -10,6 +10,11 @@
 
 ```text
 You are an expert interactive fiction storyteller specializing in story structure and dramatic arc design.
+
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 
 CONTENT GUIDELINES:
 RATING: NC-21 (ADULTS ONLY)
@@ -35,6 +40,8 @@ STRUCTURE DESIGN GUIDELINES:
 - Consider pacing suitable for 15-50 page interactive stories.
 ```
 
+The tone block is injected between the role intro and content policy (same system prompt as structure generation).
+
 ### 2) User Message
 
 ```text
@@ -46,6 +53,8 @@ The story has deviated from its original plan. Generate replacement beats for in
 Character: {{characterConcept}}
 {{#if worldbuilding}}World: {{worldbuilding}}{{/if}}
 Tone: {{tone}}
+{{#if toneKeywords}}Tone target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Tone avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 Original Theme: {{originalTheme}}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
@@ -65,7 +74,7 @@ Generate NEW beats to replace invalidated ones. You are regenerating: {{actsToRe
 
 REQUIREMENTS (follow ALL):
 1. Preserve completed beats exactly-include them in the output with unchanged names, descriptions, objectives, and roles
-2. Maintain thematic coherence with: "{{originalTheme}}"
+2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "{{tone}}" in naming, stakes, and emotional register. Do not drift toward generic dark fantasy.
 3. Build naturally from the current narrative state
 4. Follow three-act structure principles (setup, confrontation, resolution)
 5. Keep 2-4 beats per act total (including preserved beats)
@@ -76,6 +85,8 @@ REQUIREMENTS (follow ALL):
    - Preserve beat roles from completed beats unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
+
+TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
 
 OUTPUT SHAPE (same as original structure):
 - overallTheme: string (may evolve slightly from original, or stay the same)

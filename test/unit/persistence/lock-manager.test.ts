@@ -55,7 +55,7 @@ describe('lock-manager', () => {
     await expect(
       withLock(key, () => {
         throw new Error('boom');
-      }),
+      })
     ).rejects.toThrow('boom');
 
     expect(lockManager.isLocked(key)).toBe(false);

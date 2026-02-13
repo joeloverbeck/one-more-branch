@@ -7,11 +7,7 @@
 export { CanonFact, GlobalCanon, addCanonFact, mergeCanonFacts } from './canon.js';
 
 // Character canon
-export {
-  CharacterCanonFact,
-  CharacterCanon,
-  GlobalCharacterCanon,
-} from './character-canon.js';
+export { CharacterCanonFact, CharacterCanon, GlobalCharacterCanon } from './character-canon.js';
 
 // Inventory
 export {
@@ -22,12 +18,7 @@ export {
 } from './inventory.js';
 
 // Health
-export {
-  Health,
-  HealthChanges,
-  createEmptyHealthChanges,
-  applyHealthChanges,
-} from './health.js';
+export { Health, HealthChanges, createEmptyHealthChanges, applyHealthChanges } from './health.js';
 
 // Character state
 export {
@@ -43,10 +34,16 @@ export {
 // Keyed state entries
 export {
   KeyedEntry,
+  ThreatEntry,
+  ConstraintEntry,
   ThreadEntry,
+  ThreatType,
+  ConstraintType,
   ThreadType,
   Urgency,
   StateIdPrefix,
+  isThreatType,
+  isConstraintType,
   isThreadType,
   isUrgency,
   extractIdNumber,
@@ -68,6 +65,8 @@ export type {
 export {
   ActiveState,
   ActiveStateChanges,
+  ThreatAddition,
+  ConstraintAddition,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
   isActiveState,

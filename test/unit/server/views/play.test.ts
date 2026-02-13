@@ -11,9 +11,11 @@ describe('play page template', () => {
 
     expect(template).toContain('<form id="api-key-form" class="api-key-form">');
     expect(template).toContain('<input type="password" id="modal-api-key"');
-    expect(template).toContain('<button class="btn btn-primary" id="save-api-key" type="submit">Continue</button>');
+    expect(template).toContain(
+      '<button class="btn btn-primary" id="save-api-key" type="submit">Continue</button>'
+    );
     expect(template).toMatch(
-      /<form id="api-key-form" class="api-key-form">[\s\S]*<input type="password" id="modal-api-key"/,
+      /<form id="api-key-form" class="api-key-form">[\s\S]*<input type="password" id="modal-api-key"/
     );
   });
 
@@ -36,7 +38,7 @@ describe('play page template', () => {
 
       expect(template).toContain('class="story-title-section"');
       expect(template).toMatch(
-        /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>[\s\S]*<span class="act-indicator">/,
+        /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>[\s\S]*<span class="act-indicator">/
       );
     });
   });
@@ -62,16 +64,24 @@ describe('play page template', () => {
       expect(template).toContain('class="thread-icon-pill"');
       expect(template).toContain('class="thread-icon-badge thread-icon-badge--type"');
       expect(template).toContain('class="thread-icon-badge thread-icon-badge--urgency"');
-      expect(template).toContain('/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, \'-\') %>.png');
-      expect(template).toContain('/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>.png');
-      expect(template).toContain('class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>"');
+      expect(template).toContain(
+        "/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
+      );
+      expect(template).toContain(
+        "/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
+      );
+      expect(template).toContain(
+        'class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>"'
+      );
       expect(template).toContain('<%= thread.text %></span>');
     });
 
     it('renders panel conditionally when openThreadPanelRows exist', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
-      expect(template).toContain('<% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>');
+      expect(template).toContain(
+        '<% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>'
+      );
       expect(template).toContain('openThreadPanelRows.forEach');
     });
 

@@ -22,6 +22,10 @@ export interface PlayPageOptions {
     urgency: string;
   }>;
   openThreadOverflowSummary?: string;
+  activeThreats?: Array<{ id: string; text: string }>;
+  threatsOverflowSummary?: string;
+  activeConstraints?: Array<{ id: string; text: string }>;
+  constraintsOverflowSummary?: string;
   actDisplayInfo?: { displayString: string } | null;
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
@@ -37,36 +41,69 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   ];
   const isEnding = options.isEnding ?? false;
   const openThreads = options.openThreads ?? [];
+  const activeThreats = options.activeThreats ?? [];
+  const activeConstraints = options.activeConstraints ?? [];
   const actDisplayInfo = options.actDisplayInfo ?? null;
   const stateChanges = options.stateChanges ?? [];
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
 
-  const threadsHtml = openThreads.length > 0
-    ? `<aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
+  const threadsHtml =
+    openThreads.length > 0
+      ? `<aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
         <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
         <ul class="open-threads-list" id="open-threads-list">
-          ${openThreads.map((t) => `<li class="open-threads-item">
+          ${openThreads
+            .map(
+              (t) => `<li class="open-threads-item">
             <span class="thread-icon-pill" aria-hidden="true">
               <span class="thread-icon-badge thread-icon-badge--type"></span>
               <span class="thread-icon-badge thread-icon-badge--urgency"></span>
             </span>
             <span class="open-threads-text">${t.text}</span>
-          </li>`).join('')}
+          </li>`
+            )
+            .join('')}
         </ul>
         ${options.openThreadOverflowSummary ? `<div class="open-threads-overflow-summary" id="open-threads-overflow-summary">${options.openThreadOverflowSummary}</div>` : ''}
       </aside>`
-    : '';
+      : '';
 
-  const stateChangesHtml = stateChanges.length > 0
-    ? `<aside class="state-changes" id="state-changes">
+  const threatsHtml =
+    activeThreats.length > 0
+      ? `<aside class="active-threats-panel" id="active-threats-panel" aria-labelledby="active-threats-title">
+        <h3 class="active-threats-title" id="active-threats-title">Active Threats</h3>
+        <ul class="active-threats-list" id="active-threats-list">
+          ${activeThreats.map((t) => `<li class="active-threats-item">${t.text}</li>`).join('')}
+        </ul>
+        ${options.threatsOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="active-threats-overflow">${options.threatsOverflowSummary}</div>` : ''}
+      </aside>`
+      : '';
+
+  const constraintsHtml =
+    activeConstraints.length > 0
+      ? `<aside class="active-constraints-panel" id="active-constraints-panel" aria-labelledby="active-constraints-title">
+        <h3 class="active-constraints-title" id="active-constraints-title">Active Constraints</h3>
+        <ul class="active-constraints-list" id="active-constraints-list">
+          ${activeConstraints.map((c) => `<li class="active-constraints-item">${c.text}</li>`).join('')}
+        </ul>
+        ${options.constraintsOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="active-constraints-overflow">${options.constraintsOverflowSummary}</div>` : ''}
+      </aside>`
+      : '';
+
+  const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}</div>`;
+
+  const stateChangesHtml =
+    stateChanges.length > 0
+      ? `<aside class="state-changes" id="state-changes">
         <h4>What happened:</h4>
         <ul>${stateChanges.map((c) => `<li>${c}</li>`).join('')}</ul>
       </aside>`
-    : '';
+      : '';
 
-  const choiceButtonsHtml = choices.map((choice, index) => {
-    const isExplored = Boolean(choice.nextPageId);
-    return `<div class="choice-row">
+  const choiceButtonsHtml = choices
+    .map((choice, index) => {
+      const isExplored = Boolean(choice.nextPageId);
+      return `<div class="choice-row">
       <span class="choice-icon-pill" aria-hidden="true">
         <img class="choice-icon choice-icon--type" src="/images/icons/${(choice.choiceType ?? 'tactical-approach').toLowerCase().replace(/_/g, '-')}.png" alt="" width="32" height="32" loading="lazy">
         <img class="choice-icon choice-icon--delta" src="/images/icons/${(choice.primaryDelta ?? 'goal-shift').toLowerCase().replace(/_/g, '-')}.png" alt="" width="32" height="32" loading="lazy">
@@ -76,9 +113,11 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </button>
       ${isExplored ? '<span class="explored-marker" title="Previously explored">&#8617;</span>' : ''}
     </div>`;
-  }).join('');
+    })
+    .join('');
 
-  const customChoiceHtml = hasCustomChoiceInput ? `
+  const customChoiceHtml = hasCustomChoiceInput
+    ? `
     <div class="suggested-protagonist-speech-container">
       <label for="suggested-protagonist-speech-input" class="suggested-protagonist-speech-label">
         Optional: Suggested protagonist speech
@@ -101,7 +140,8 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </select>
     </div>
     <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>
-  ` : '';
+  `
+    : '';
 
   const choicesSectionHtml = isEnding
     ? `<div class="ending-banner">
@@ -118,21 +158,26 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </section>`;
 
   return `
-    <main class="container">
+    <main>
       <div class="play-container" data-story-id="${storyId}" data-page-id="${pageId}">
-        <div class="story-header">
-          <div class="story-title-section">
-            <h2>Test Story</h2>
-            ${actDisplayInfo ? `<span class="act-indicator">${actDisplayInfo.displayString}</span>` : ''}
+        <div class="play-layout">
+          <div class="left-sidebar-widgets" id="left-sidebar-widgets"></div>
+          <div class="play-content">
+            <div class="story-header">
+              <div class="story-title-section">
+                <h2>Test Story</h2>
+                ${actDisplayInfo ? `<span class="act-indicator">${actDisplayInfo.displayString}</span>` : ''}
+              </div>
+              <span class="page-indicator">Page ${pageId}</span>
+            </div>
+            <article class="narrative" id="narrative">
+              <div class="narrative-text">${narrativeText}</div>
+            </article>
+            ${stateChangesHtml}
+            ${choicesSectionHtml}
           </div>
-          <span class="page-indicator">Page ${pageId}</span>
+          ${sidebarHtml}
         </div>
-        ${threadsHtml}
-        <article class="narrative" id="narrative">
-          <div class="narrative-text">${narrativeText}</div>
-        </article>
-        ${stateChangesHtml}
-        ${choicesSectionHtml}
         <div class="loading-overlay" id="loading" style="display: none;">
           <div class="loading-stage" aria-live="polite"></div>
           <div class="loading-spinner"></div>
@@ -161,11 +206,11 @@ export interface NewStoryPageOptions {
 
 export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string {
   const npcs = options.npcs ?? [];
-  const errorHtml = options.error
-    ? `<div class="alert alert-error">${options.error}</div>`
-    : '';
+  const errorHtml = options.error ? `<div class="alert alert-error">${options.error}</div>` : '';
 
-  const npcEntriesHtml = npcs.map((npc, i) => `
+  const npcEntriesHtml = npcs
+    .map(
+      (npc, i) => `
     <div class="npc-entry" data-index="${i}">
       <div class="npc-entry-header">
         <strong>${npc.name}</strong>
@@ -173,7 +218,9 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
       </div>
       <p class="npc-entry-description">${npc.description}</p>
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 
   return `
     <main class="container">

@@ -1,5 +1,5 @@
 import type { NarrativePromise, ThreadPayoffAssessment } from '../../models/state/index.js';
-import type { AnalystResult } from '../types.js';
+import type { AnalystResult } from '../analyst-types.js';
 import { AnalystResultSchema } from './analyst-validation-schema.js';
 
 const BEAT_ID_PATTERN = /^\d+\.\d+$/;
@@ -14,12 +14,12 @@ function normalizeAnchors(value: readonly string[]): string[] {
 }
 
 function normalizeNarrativePromises(
-  value: readonly { description: string; promiseType: string; suggestedUrgency: string }[],
+  value: readonly { description: string; promiseType: string; suggestedUrgency: string }[]
 ): NarrativePromise[] {
   return value
-    .filter(p => p.description.trim().length > 0)
+    .filter((p) => p.description.trim().length > 0)
     .slice(0, MAX_NARRATIVE_PROMISES)
-    .map(p => ({
+    .map((p) => ({
       description: p.description.trim(),
       promiseType: p.promiseType as NarrativePromise['promiseType'],
       suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],
@@ -32,11 +32,11 @@ function normalizeThreadPayoffAssessments(
     threadText: string;
     satisfactionLevel: string;
     reasoning: string;
-  }[],
+  }[]
 ): ThreadPayoffAssessment[] {
   return value
-    .filter(a => a.threadId.trim().length > 0)
-    .map(a => ({
+    .filter((a) => a.threadId.trim().length > 0)
+    .map((a) => ({
       threadId: a.threadId.trim(),
       threadText: a.threadText.trim(),
       satisfactionLevel: a.satisfactionLevel as ThreadPayoffAssessment['satisfactionLevel'],
@@ -58,7 +58,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
   const objectiveAnchors = normalizeAnchors(validated.objectiveAnchors);
   const rawAnchorEvidence = normalizeAnchorEvidence(validated.anchorEvidence);
   const anchorEvidence = objectiveAnchors.map(
-    (_anchor: string, index: number) => rawAnchorEvidence[index] ?? '',
+    (_anchor: string, index: number) => rawAnchorEvidence[index] ?? ''
   );
   const completionGateFailureReason = validated.completionGateFailureReason.trim();
   const completionGateSatisfied = validated.completionGateSatisfied;
@@ -84,6 +84,8 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     anchorEvidence,
     completionGateSatisfied,
     completionGateFailureReason,
+    toneAdherent: validated.toneAdherent,
+    toneDriftDescription: validated.toneDriftDescription.trim(),
     narrativePromises: normalizeNarrativePromises(validated.narrativePromises),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
     rawResponse,

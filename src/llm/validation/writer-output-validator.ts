@@ -1,5 +1,5 @@
 import { ZodError, type ZodIssue } from 'zod';
-import type { WriterResult } from '../types.js';
+import type { PageWriterResult } from '../writer-types.js';
 
 export const WRITER_OUTPUT_RULE_KEYS = {
   DUPLICATE_CHOICE_PAIR: 'writer_output.choice_pair.duplicate',
@@ -20,7 +20,7 @@ export interface WriterOutputValidationIssue {
 
 export class WriterOutputValidationError extends Error {
   constructor(public readonly issues: readonly WriterOutputValidationIssue[]) {
-    super(`Deterministic writer output validation failed (${issues.length} issue(s))`);
+    super(`Writer output validation failed (${issues.length} issue(s))`);
     this.name = 'WriterOutputValidationError';
   }
 }
@@ -31,12 +31,15 @@ function addIssue(
   fieldPath: string,
   message: string,
   value?: string,
-  expectedPrefix?: string,
+  expectedPrefix?: string
 ): void {
   issues.push({ ruleKey, fieldPath, message, value, expectedPrefix });
 }
 
-function validateProtagonistAffect(result: WriterResult, issues: WriterOutputValidationIssue[]): void {
+function validateProtagonistAffect(
+  result: PageWriterResult,
+  issues: WriterOutputValidationIssue[]
+): void {
   const requiredFields = [
     { key: 'primaryEmotion', value: result.protagonistAffect.primaryEmotion },
     { key: 'primaryCause', value: result.protagonistAffect.primaryCause },
@@ -50,7 +53,7 @@ function validateProtagonistAffect(result: WriterResult, issues: WriterOutputVal
         WRITER_OUTPUT_RULE_KEYS.PROTAGONIST_AFFECT_REQUIRED,
         `protagonistAffect.${field.key}`,
         `${field.key} must not be empty`,
-        field.value,
+        field.value
       );
     }
   }
@@ -62,7 +65,7 @@ function validateProtagonistAffect(result: WriterResult, issues: WriterOutputVal
         WRITER_OUTPUT_RULE_KEYS.PROTAGONIST_AFFECT_REQUIRED,
         `protagonistAffect.secondaryEmotions[${index}].emotion`,
         'secondaryEmotions emotion must not be empty',
-        secondary.emotion,
+        secondary.emotion
       );
     }
     if (!secondary.cause.trim()) {
@@ -71,13 +74,16 @@ function validateProtagonistAffect(result: WriterResult, issues: WriterOutputVal
         WRITER_OUTPUT_RULE_KEYS.PROTAGONIST_AFFECT_REQUIRED,
         `protagonistAffect.secondaryEmotions[${index}].cause`,
         'secondaryEmotions cause must not be empty',
-        secondary.cause,
+        secondary.cause
       );
     }
   }
 }
 
-function validateChoicePairUniqueness(result: WriterResult, issues: WriterOutputValidationIssue[]): void {
+function validateChoicePairUniqueness(
+  result: PageWriterResult,
+  issues: WriterOutputValidationIssue[]
+): void {
   const seenPairs = new Map<string, number>();
 
   result.choices.forEach((choice, index) => {
@@ -89,7 +95,7 @@ function validateChoicePairUniqueness(result: WriterResult, issues: WriterOutput
         WRITER_OUTPUT_RULE_KEYS.DUPLICATE_CHOICE_PAIR,
         `choices[${index}]`,
         `Duplicate (choiceType, primaryDelta) pair also seen at choices[${firstSeenIndex}]`,
-        pairKey,
+        pairKey
       );
       return;
     }
@@ -97,7 +103,7 @@ function validateChoicePairUniqueness(result: WriterResult, issues: WriterOutput
   });
 }
 
-export function validateDeterministicWriterOutput(result: WriterResult): WriterOutputValidationIssue[] {
+export function validateWriterOutput(result: PageWriterResult): WriterOutputValidationIssue[] {
   const issues: WriterOutputValidationIssue[] = [];
 
   validateChoicePairUniqueness(result, issues);

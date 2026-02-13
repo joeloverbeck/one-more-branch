@@ -1,7 +1,7 @@
 import type { Npc } from '../../models/npc.js';
 import { normalizeForComparison } from '../../models/normalize.js';
 import type { NpcAgenda } from '../../models/state/npc-agenda.js';
-import { LLMError } from '../types.js';
+import { LLMError } from '../llm-client-types.js';
 
 export interface AgendaResolverRawResponse {
   readonly updatedAgendas: readonly NpcAgenda[];
@@ -15,7 +15,7 @@ export interface AgendaResolverRawResponse {
 export function validateAgendaResolverResponse(
   rawJson: unknown,
   rawResponse: string,
-  storyNpcs: readonly Npc[],
+  storyNpcs: readonly Npc[]
 ): AgendaResolverRawResponse {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {
@@ -26,7 +26,7 @@ export function validateAgendaResolverResponse(
     throw new LLMError(
       'Agenda resolver response must be an object',
       'AGENDA_RESOLVER_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -37,12 +37,12 @@ export function validateAgendaResolverResponse(
     throw new LLMError(
       'Agenda resolver response must contain updatedAgendas array',
       'AGENDA_RESOLVER_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   // Build a set of valid NPC names (normalized) for filtering
-  const validNpcNames = new Set(storyNpcs.map(npc => normalizeForComparison(npc.name)));
+  const validNpcNames = new Set(storyNpcs.map((npc) => normalizeForComparison(npc.name)));
 
   const updatedAgendas: NpcAgenda[] = [];
 

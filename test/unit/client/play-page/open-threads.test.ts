@@ -38,9 +38,7 @@ describe('open threads panel', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [
-          { text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        ],
+        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
         isEnding: false,
         openThreads: threads,
         openThreadOverflowSummary: overflowSummary,
@@ -123,13 +121,22 @@ describe('open threads panel', () => {
     // Hidden: 1 MEDIUM + 2 LOW
     const threads = [
       ...Array.from({ length: 4 }, (_, i) => ({
-        id: `th-h${i}`, text: `High ${i}`, threadType: 'DANGER', urgency: 'HIGH',
+        id: `th-h${i}`,
+        text: `High ${i}`,
+        threadType: 'DANGER',
+        urgency: 'HIGH',
       })),
       ...Array.from({ length: 3 }, (_, i) => ({
-        id: `th-m${i}`, text: `Med ${i}`, threadType: 'QUEST', urgency: 'MEDIUM',
+        id: `th-m${i}`,
+        text: `Med ${i}`,
+        threadType: 'QUEST',
+        urgency: 'MEDIUM',
       })),
       ...Array.from({ length: 2 }, (_, i) => ({
-        id: `th-l${i}`, text: `Low ${i}`, threadType: 'MYSTERY', urgency: 'LOW',
+        id: `th-l${i}`,
+        text: `Low ${i}`,
+        threadType: 'MYSTERY',
+        urgency: 'LOW',
       })),
     ];
 
@@ -176,9 +183,7 @@ describe('open threads panel', () => {
     expect(document.getElementById('open-threads-overflow-summary')).not.toBeNull();
 
     // Second: render with fewer threads (no overflow)
-    const fewThreads = [
-      { id: 'th-1', text: 'Only thread', threadType: 'QUEST', urgency: 'HIGH' },
-    ];
+    const fewThreads = [{ id: 'th-1', text: 'Only thread', threadType: 'QUEST', urgency: 'HIGH' }];
     await clickChoiceAndResolve(makeChoiceResponseWithThreads(fewThreads));
     expect(document.getElementById('open-threads-overflow-summary')).toBeNull();
   });
@@ -186,9 +191,7 @@ describe('open threads panel', () => {
   it('removes panel when threads array is empty', async () => {
     // Start with threads
     document.body.innerHTML = buildPlayPageHtml({
-      openThreads: [
-        { id: 'th-1', text: 'Existing thread', threadType: 'QUEST', urgency: 'HIGH' },
-      ],
+      openThreads: [{ id: 'th-1', text: 'Existing thread', threadType: 'QUEST', urgency: 'HIGH' }],
     });
     loadAppAndInit();
 
@@ -203,9 +206,7 @@ describe('open threads panel', () => {
     document.body.innerHTML = buildPlayPageHtml();
     loadAppAndInit();
 
-    const threads1 = [
-      { id: 'th-1', text: 'First thread', threadType: 'QUEST', urgency: 'HIGH' },
-    ];
+    const threads1 = [{ id: 'th-1', text: 'First thread', threadType: 'QUEST', urgency: 'HIGH' }];
 
     await clickChoiceAndResolve(makeChoiceResponseWithThreads(threads1));
 
@@ -270,9 +271,7 @@ describe('open threads panel', () => {
     document.body.innerHTML = buildPlayPageHtml();
     loadAppAndInit();
 
-    const threads = [
-      { id: 'th-1', text: 'A quest thread', threadType: 'QUEST', urgency: 'HIGH' },
-    ];
+    const threads = [{ id: 'th-1', text: 'A quest thread', threadType: 'QUEST', urgency: 'HIGH' }];
 
     await clickChoiceAndResolve(makeChoiceResponseWithThreads(threads));
 

@@ -1,8 +1,15 @@
-import { createChoice, createPage, createStory, parsePageId, Story, StoryMetadata } from '../../../src/models';
+import {
+  createChoice,
+  createPage,
+  createStory,
+  parsePageId,
+  Story,
+  StoryMetadata,
+} from '../../../src/models';
 import * as models from '../../../src/models';
 import { generateStoryStructure } from '../../../src/llm';
 import { storage } from '../../../src/persistence';
-import { generateFirstPage } from '../../../src/engine/page-service';
+import { generatePage } from '../../../src/engine/page-service';
 import {
   deleteStory,
   getPage,
@@ -27,11 +34,16 @@ jest.mock('../../../src/persistence', () => ({
 }));
 
 jest.mock('../../../src/engine/page-service', () => ({
-  generateFirstPage: jest.fn(),
+  generatePage: jest.fn(),
 }));
 
 jest.mock('../../../src/llm', () => ({
   generateStoryStructure: jest.fn(),
+  decomposeEntities: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 const mockedStorage = storage as {
@@ -45,7 +57,7 @@ const mockedStorage = storage as {
   loadAllPages: jest.Mock;
 };
 
-const mockedGenerateFirstPage = generateFirstPage as jest.MockedFunction<typeof generateFirstPage>;
+const mockedGeneratePage = generatePage as jest.MockedFunction<typeof generatePage>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -113,11 +125,11 @@ describe('story-service', () => {
           title: '   ',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
     it('throws VALIDATION_FAILED for short characterConcept', async () => {
@@ -126,11 +138,11 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'too short',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
     it('throws VALIDATION_FAILED for missing apiKey', async () => {
@@ -139,11 +151,11 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: '   ',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
     it('generates structure before first page and passes structured story forward', async () => {
@@ -165,7 +177,18 @@ describe('story-service', () => {
       createStorySpy.mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedGenerateFirstPage.mockResolvedValue({ page, updatedStory });
+      mockedGeneratePage.mockResolvedValue({ page, updatedStory, metrics: {
+        plannerDurationMs: 0,
+        accountantDurationMs: 0,
+        writerDurationMs: 0,
+        reconcilerDurationMs: 0,
+        plannerValidationIssueCount: 0,
+        accountantValidationIssueCount: 0,
+        writerValidationIssueCount: 0,
+        reconcilerIssueCount: 0,
+        reconcilerRetried: false,
+        finalStatus: 'success',
+      }});
       mockedStorage.savePage.mockResolvedValue(undefined);
       mockedStorage.updateStory.mockResolvedValue(undefined);
 
@@ -191,25 +214,29 @@ describe('story-service', () => {
           worldbuilding: story.worldbuilding,
           tone: story.tone,
         },
-        'test-key',
+        'test-key'
       );
       expect(mockedStorage.updateStory).toHaveBeenCalled();
-      const firstPageCall = mockedGenerateFirstPage.mock.calls[0];
-      expect(firstPageCall?.[1]).toBe('test-key');
-      expect(firstPageCall?.[2]).toBe(onGenerationStage);
-      const structuredStory = firstPageCall?.[0];
+      const firstPageCall = mockedGeneratePage.mock.calls[0];
+      expect(firstPageCall?.[0]).toBe('opening');
+      expect(firstPageCall?.[2]).toBe('test-key');
+      expect(firstPageCall?.[4]).toBe(onGenerationStage);
+      const structuredStory = firstPageCall?.[1];
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
       expect(onGenerationStage.mock.calls).toEqual([
-        [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
-        [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 }],
+        [{ stage: 'STRUCTURING_STORY', status: 'started', attempt: 1 }],
+        [{ stage: 'STRUCTURING_STORY', status: 'completed', attempt: 1 }],
+        [{ stage: 'DECOMPOSING_ENTITIES', status: 'started', attempt: 1 }],
+        [{ stage: 'DECOMPOSING_ENTITIES', status: 'completed', attempt: 1 }],
       ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
       expect(result).toEqual({ story: updatedStory, page });
 
-      const structureCallOrder = mockedGenerateStoryStructure.mock.invocationCallOrder[0] ?? Infinity;
-      const firstPageCallOrder = mockedGenerateFirstPage.mock.invocationCallOrder[0] ?? -Infinity;
+      const structureCallOrder =
+        mockedGenerateStoryStructure.mock.invocationCallOrder[0] ?? Infinity;
+      const firstPageCallOrder = mockedGeneratePage.mock.invocationCallOrder[0] ?? -Infinity;
       expect(structureCallOrder).toBeLessThan(firstPageCallOrder);
     });
 
@@ -221,7 +248,7 @@ describe('story-service', () => {
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedGenerateFirstPage.mockRejectedValue(generationError);
+      mockedGeneratePage.mockRejectedValue(generationError);
       mockedStorage.deleteStory.mockResolvedValue(undefined);
 
       await expect(
@@ -229,7 +256,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toBe(generationError);
 
       expect(mockedStorage.deleteStory).toHaveBeenCalledWith(story.id);
@@ -250,10 +277,10 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toBe(structureError);
 
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
       expect(mockedStorage.deleteStory).toHaveBeenCalledWith(story.id);
     });
 
@@ -265,7 +292,7 @@ describe('story-service', () => {
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedGenerateFirstPage.mockRejectedValue(generationError);
+      mockedGeneratePage.mockRejectedValue(generationError);
       mockedStorage.deleteStory.mockRejectedValue(new Error('cleanup failed'));
 
       await expect(
@@ -273,7 +300,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
-        }),
+        })
       ).rejects.toBe(generationError);
     });
   });
@@ -383,7 +410,7 @@ describe('story-service', () => {
           [page1.id, page1],
           [page2.id, page2],
           [page3.id, page3],
-        ]),
+        ])
       );
 
       await expect(getStoryStats(story.id)).resolves.toEqual({

@@ -1,5 +1,6 @@
 import { generateAnalystEvaluation } from '../llm';
-import type { AnalystResult, ContinuationGenerationResult, PacingRecommendedAction } from '../llm/types';
+import type { AnalystResult, PacingRecommendedAction } from '../llm/analyst-types';
+import type { ContinuationGenerationResult } from '../llm/generation-pipeline-types';
 import { logger } from '../logging/index.js';
 import type {
   AccumulatedStructureState,
@@ -26,13 +27,16 @@ export interface AnalystEvaluationContext {
   readonly parentActiveState: ActiveState;
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
+  readonly tone: string;
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
   readonly onGenerationStage?: GenerationStageCallback;
 }
 
 export async function runAnalystEvaluation(
-  context: AnalystEvaluationContext,
+  context: AnalystEvaluationContext
 ): Promise<AnalystResult | null> {
   const analystStructureState: AccumulatedStructureState = {
     ...context.parentStructureState,
@@ -55,8 +59,11 @@ export async function runAnalystEvaluation(
         activeState: context.parentActiveState,
         threadsResolved: context.threadsResolved,
         threadAges: context.threadAges,
+        tone: context.tone,
+        toneKeywords: context.toneKeywords,
+        toneAntiKeywords: context.toneAntiKeywords,
       },
-      { apiKey: context.apiKey },
+      { apiKey: context.apiKey }
     );
     const analystDurationMs = Date.now() - analystStart;
     emitGenerationStage(context.onGenerationStage, 'ANALYZING_SCENE', 'completed', analystAttempt);
@@ -101,7 +108,7 @@ export interface DeviationProcessingResult {
 }
 
 export async function handleDeviationIfDetected(
-  context: DeviationProcessingContext,
+  context: DeviationProcessingContext
 ): Promise<DeviationProcessingResult> {
   if (
     !isActualDeviation(context.result, context.story, context.currentStructureVersion) ||
@@ -132,7 +139,7 @@ export async function handleDeviationIfDetected(
         deviation,
         newPageId: context.newPageId,
       },
-      context.apiKey,
+      context.apiKey
     );
   } catch (error) {
     const rewriteDurationMs = Date.now() - rewriteStart;
@@ -146,7 +153,12 @@ export async function handleDeviationIfDetected(
     throw error;
   }
   const rewriteDurationMs = Date.now() - rewriteStart;
-  emitGenerationStage(context.onGenerationStage, 'RESTRUCTURING_STORY', 'completed', rewriteAttempt);
+  emitGenerationStage(
+    context.onGenerationStage,
+    'RESTRUCTURING_STORY',
+    'completed',
+    rewriteAttempt
+  );
   logger.info('Generation stage completed', {
     ...context.logContext,
     attempt: rewriteAttempt,
@@ -250,7 +262,7 @@ export interface StructureProgressionContext {
 }
 
 export function resolveStructureProgression(
-  context: StructureProgressionContext,
+  context: StructureProgressionContext
 ): AccumulatedStructureState {
   const activeStructure = context.activeStructureVersion?.structure ?? context.storyStructure;
   if (!activeStructure) {
@@ -260,14 +272,14 @@ export function resolveStructureProgression(
     activeStructure,
     context.parentStructureState,
     context.beatConcluded,
-    context.beatResolution,
+    context.beatResolution
   );
 }
 
 export function resolveActiveBeat(
   activeStructureVersion: VersionedStoryStructure | null,
   storyStructure: StoryStructure | null,
-  parentStructureState: AccumulatedStructureState,
+  parentStructureState: AccumulatedStructureState
 ): StoryBeat | undefined {
   const activeStructure = activeStructureVersion?.structure ?? storyStructure;
   if (!activeStructure || !parentStructureState) {

@@ -1,8 +1,10 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
 import {
+  ConstraintType,
   getCurrentAct,
   getCurrentBeat,
   getStructureVersion,
+  ThreatType,
   isUrgency,
   Urgency,
 } from '../../models/index.js';
@@ -118,7 +120,7 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
 
   const currentAct: StoryAct | undefined = getCurrentAct(
     structureVersion.structure,
-    page.accumulatedStructureState,
+    page.accumulatedStructureState
   );
   if (!currentAct) return null;
 
@@ -135,8 +137,12 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
   };
 }
 
-export function getOpenThreadPanelRows(openThreads: readonly OpenThreadLike[]): OpenThreadPanelRow[] {
-  return getSortedThreads(openThreads).slice(0, OPEN_THREAD_PANEL_LIMIT).map(thread => ({
+export function getOpenThreadPanelRows(
+  openThreads: readonly OpenThreadLike[]
+): OpenThreadPanelRow[] {
+  return getSortedThreads(openThreads)
+    .slice(0, OPEN_THREAD_PANEL_LIMIT)
+    .map((thread) => ({
       id: thread.id,
       text: thread.text,
       threadType: thread.threadType,
@@ -145,9 +151,96 @@ export function getOpenThreadPanelRows(openThreads: readonly OpenThreadLike[]): 
     }));
 }
 
-export function getOpenThreadPanelData(openThreads: readonly OpenThreadLike[]): OpenThreadPanelData {
+export interface KeyedEntryPanelRow {
+  readonly id: string;
+  readonly text: string;
+}
+
+export interface KeyedEntryPanelData {
+  readonly rows: readonly KeyedEntryPanelRow[];
+  readonly overflowSummary: string | null;
+}
+
+export interface ThreatPanelRow extends KeyedEntryPanelRow {
+  readonly threatType: ThreatType;
+  readonly displayLabel: string;
+}
+
+export interface ThreatPanelData {
+  readonly rows: readonly ThreatPanelRow[];
+  readonly overflowSummary: string | null;
+}
+
+export interface ConstraintPanelRow extends KeyedEntryPanelRow {
+  readonly constraintType: ConstraintType;
+  readonly displayLabel: string;
+}
+
+export interface ConstraintPanelData {
+  readonly rows: readonly ConstraintPanelRow[];
+  readonly overflowSummary: string | null;
+}
+
+const KEYED_ENTRY_PANEL_LIMIT = 6;
+
+export function getKeyedEntryPanelData(
+  entries: readonly { readonly id: string; readonly text: string }[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
+): KeyedEntryPanelData {
+  const visibleRows: KeyedEntryPanelRow[] = entries.slice(0, limit).map((entry) => ({
+    id: entry.id,
+    text: entry.text,
+  }));
+  const hiddenCount = entries.length - limit;
+  return {
+    rows: visibleRows,
+    overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,
+  };
+}
+
+export function getThreatPanelData(
+  entries: readonly { readonly id: string; readonly text: string; readonly threatType: ThreatType }[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
+): ThreatPanelData {
+  const visibleRows: ThreatPanelRow[] = entries.slice(0, limit).map((entry) => ({
+    id: entry.id,
+    text: entry.text,
+    threatType: entry.threatType,
+    displayLabel: `(${entry.threatType}) ${entry.text}`,
+  }));
+  const hiddenCount = entries.length - limit;
+  return {
+    rows: visibleRows,
+    overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,
+  };
+}
+
+export function getConstraintPanelData(
+  entries: readonly {
+    readonly id: string;
+    readonly text: string;
+    readonly constraintType: ConstraintType;
+  }[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
+): ConstraintPanelData {
+  const visibleRows: ConstraintPanelRow[] = entries.slice(0, limit).map((entry) => ({
+    id: entry.id,
+    text: entry.text,
+    constraintType: entry.constraintType,
+    displayLabel: `(${entry.constraintType}) ${entry.text}`,
+  }));
+  const hiddenCount = entries.length - limit;
+  return {
+    rows: visibleRows,
+    overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,
+  };
+}
+
+export function getOpenThreadPanelData(
+  openThreads: readonly OpenThreadLike[]
+): OpenThreadPanelData {
   const sortedThreads = getSortedThreads(openThreads);
-  const visibleRows = sortedThreads.slice(0, OPEN_THREAD_PANEL_LIMIT).map(thread => ({
+  const visibleRows = sortedThreads.slice(0, OPEN_THREAD_PANEL_LIMIT).map((thread) => ({
     id: thread.id,
     text: thread.text,
     threadType: thread.threadType,

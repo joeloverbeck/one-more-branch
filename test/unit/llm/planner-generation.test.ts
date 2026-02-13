@@ -14,8 +14,8 @@ jest.mock('../../../src/logging/index.js', () => ({
 }));
 
 import { generatePlannerWithFallback } from '../../../src/llm/planner-generation';
-import { LLMError, type ChatMessage } from '../../../src/llm/types';
-import { ThreadType, Urgency } from '../../../src/models/state/index';
+import { LLMError } from '../../../src/llm/llm-client-types';
+import type { ChatMessage } from '../../../src/llm/llm-client-types';
 
 const plannerMessages: ChatMessage[] = [
   {
@@ -31,19 +31,6 @@ const plannerMessages: ChatMessage[] = [
 const validPlannerPayload = {
   sceneIntent: 'Force the protagonist to choose between stealth and speed.',
   continuityAnchors: ['The bell tower remains occupied by sentries.'],
-  stateIntents: {
-    currentLocation: 'Archive access corridor',
-    threats: { add: ['A patrol rounds the corridor.'], removeIds: [] },
-    constraints: { add: ['Lantern oil is almost gone.'], removeIds: [] },
-    threads: {
-      add: [{ text: 'Reach the archive door before lockout.', threadType: ThreadType.QUEST, urgency: Urgency.HIGH }],
-      resolveIds: [],
-    },
-    inventory: { add: ['A bent lockpick'], removeIds: [] },
-    health: { add: ['A fresh bruise on the shoulder'], removeIds: [] },
-    characterState: { add: [{ characterName: 'Mara', states: ['Focused under pressure'] }], removeIds: [] },
-    canon: { worldAdd: ['The archive lockout triggers at moonset.'], characterAdd: [] },
-  },
   writerBrief: {
     openingLineDirective: 'Open at the moment the patrol appears.',
     mustIncludeBeats: ['Patrol sighting', 'Immediate tactical decision'],
@@ -51,8 +38,16 @@ const validPlannerPayload = {
   },
   dramaticQuestion: 'Will you slip past the patrol or confront them before lockout?',
   choiceIntents: [
-    { hook: 'Ghost past the patrol in shadow', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'EXPOSURE_CHANGE' },
-    { hook: 'Confront the nearest sentry directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+    {
+      hook: 'Ghost past the patrol in shadow',
+      choiceType: 'TACTICAL_APPROACH',
+      primaryDelta: 'EXPOSURE_CHANGE',
+    },
+    {
+      hook: 'Confront the nearest sentry directly',
+      choiceType: 'CONFRONTATION',
+      primaryDelta: 'THREAT_SHIFT',
+    },
   ],
 };
 
@@ -95,7 +90,7 @@ describe('planner-generation', () => {
     });
   }
 
-  it('calls OpenRouter with planner response format and returns a validated plan', async () => {
+  it('calls OpenRouter with planner response format and returns a validated reduced plan', async () => {
     fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validPlannerPayload)));
 
     const result = await generatePlannerWithFallback(plannerMessages, {
@@ -103,11 +98,12 @@ describe('planner-generation', () => {
     });
 
     expect(result.sceneIntent).toContain('Force the protagonist');
-    expect(result.stateIntents.threads.add).toHaveLength(1);
     expect(result.rawResponse).toContain('sceneIntent');
+    expect('stateIntents' in result).toBe(false);
     const firstCall = fetchMock.mock.calls[0];
     const init = firstCall?.[1];
-    const body = typeof init?.body === 'string' ? (JSON.parse(init.body) as Record<string, unknown>) : {};
+    const body =
+      typeof init?.body === 'string' ? (JSON.parse(init.body) as Record<string, unknown>) : {};
     const responseFormat = body['response_format'] as { json_schema?: { name?: string } };
     expect(responseFormat.json_schema?.name).toBe('page_planner_generation');
   });
@@ -116,7 +112,7 @@ describe('planner-generation', () => {
     fetchMock.mockResolvedValue(createErrorResponse(400, 'provider does not support json_schema'));
 
     await expect(
-      generatePlannerWithFallback(plannerMessages, { apiKey: 'test-key' }),
+      generatePlannerWithFallback(plannerMessages, { apiKey: 'test-key' })
     ).rejects.toMatchObject({
       code: 'STRUCTURED_OUTPUT_NOT_SUPPORTED',
       retryable: false,
@@ -155,7 +151,9 @@ describe('planner-generation', () => {
     const firstCall = fetchMock.mock.calls[0];
     const firstInit = firstCall?.[1];
     const firstBody =
-      typeof firstInit?.body === 'string' ? (JSON.parse(firstInit.body) as Record<string, unknown>) : {};
+      typeof firstInit?.body === 'string'
+        ? (JSON.parse(firstInit.body) as Record<string, unknown>)
+        : {};
     const firstResponseFormat = firstBody['response_format'] as {
       json_schema?: { strict?: boolean; name?: string };
     };
@@ -165,7 +163,9 @@ describe('planner-generation', () => {
     const secondCall = fetchMock.mock.calls[1];
     const secondInit = secondCall?.[1];
     const secondBody =
-      typeof secondInit?.body === 'string' ? (JSON.parse(secondInit.body) as Record<string, unknown>) : {};
+      typeof secondInit?.body === 'string'
+        ? (JSON.parse(secondInit.body) as Record<string, unknown>)
+        : {};
     const secondResponseFormat = secondBody['response_format'] as {
       json_schema?: { strict?: boolean; name?: string };
     };
@@ -178,15 +178,20 @@ describe('planner-generation', () => {
       responseWithStructuredContent(
         JSON.stringify({
           ...validPlannerPayload,
-          stateIntents: {
-            ...validPlannerPayload.stateIntents,
-            threats: {
-              ...validPlannerPayload.stateIntents.threats,
-              removeIds: ['cn-1'],
+          choiceIntents: [
+            {
+              hook: 'Duplicate intent A',
+              choiceType: 'CONFRONTATION',
+              primaryDelta: 'THREAT_SHIFT',
             },
-          },
-        }),
-      ),
+            {
+              hook: 'Duplicate intent B',
+              choiceType: 'CONFRONTATION',
+              primaryDelta: 'THREAT_SHIFT',
+            },
+          ],
+        })
+      )
     );
 
     const rejectedError = await generatePlannerWithFallback(plannerMessages, {
@@ -211,7 +216,7 @@ describe('planner-generation', () => {
         storyId: 'story-123',
         pageId: 10,
         requestId: 'req-abc',
-      }),
+      })
     );
     expect(mockLogger.error).toHaveBeenCalledWith(
       'Planner validator failure counter',
@@ -219,51 +224,7 @@ describe('planner-generation', () => {
         storyId: 'story-123',
         pageId: 10,
         requestId: 'req-abc',
-      }),
-    );
-    const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
-    const counterCall = errorCalls.find(
-      ([message]) => message === 'Planner validator failure counter',
-    );
-    expect(counterCall).toBeDefined();
-    const counterContext =
-      counterCall && typeof counterCall[1] === 'object' && counterCall[1] !== null
-        ? (counterCall[1] as Record<string, unknown>)
-        : undefined;
-    expect(typeof counterContext?.ruleKey).toBe('string');
-    expect(typeof counterContext?.count).toBe('number');
-  });
-
-  it('emits planner validator counters with null observability identifiers when not provided', async () => {
-    fetchMock.mockResolvedValue(
-      responseWithStructuredContent(
-        JSON.stringify({
-          ...validPlannerPayload,
-          stateIntents: {
-            ...validPlannerPayload.stateIntents,
-            canon: {
-              ...validPlannerPayload.stateIntents.canon,
-              worldAdd: ['Duplicate world fact', 'Duplicate world fact'],
-            },
-          },
-        }),
-      ),
-    );
-
-    await expect(
-      generatePlannerWithFallback(plannerMessages, { apiKey: 'test-key' }),
-    ).rejects.toMatchObject({
-      code: 'VALIDATION_ERROR',
-      retryable: false,
-    });
-
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      'Planner validator failure counter',
-      expect.objectContaining({
-        storyId: null,
-        pageId: null,
-        requestId: null,
-      }),
+      })
     );
   });
 });

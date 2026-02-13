@@ -34,7 +34,7 @@ describe('protagonist-affect', () => {
     it('returns true for valid secondary emotion objects', () => {
       const validEmotion: SecondaryEmotion = {
         emotion: 'guilt',
-        cause: "awareness that Leire is watching",
+        cause: 'awareness that Leire is watching',
       };
       expect(isSecondaryEmotion(validEmotion)).toBe(true);
     });
@@ -71,9 +71,7 @@ describe('protagonist-affect', () => {
         primaryEmotion: 'attraction',
         primaryIntensity: 'strong',
         primaryCause: "Marla's unexpected attention",
-        secondaryEmotions: [
-          { emotion: 'guilt', cause: 'awareness that Leire is watching' },
-        ],
+        secondaryEmotions: [{ emotion: 'guilt', cause: 'awareness that Leire is watching' }],
         dominantMotivation: 'Navigate this encounter without damaging relationship with Leire',
       };
       expect(isProtagonistAffect(validAffect)).toBe(true);
@@ -108,40 +106,48 @@ describe('protagonist-affect', () => {
     it('returns false for missing required properties', () => {
       expect(isProtagonistAffect({ primaryEmotion: 'fear' })).toBe(false);
       expect(isProtagonistAffect({ primaryIntensity: 'strong' })).toBe(false);
-      expect(isProtagonistAffect({
-        primaryEmotion: 'fear',
-        primaryIntensity: 'strong',
-        primaryCause: 'danger',
-        // missing secondaryEmotions and dominantMotivation
-      })).toBe(false);
+      expect(
+        isProtagonistAffect({
+          primaryEmotion: 'fear',
+          primaryIntensity: 'strong',
+          primaryCause: 'danger',
+          // missing secondaryEmotions and dominantMotivation
+        })
+      ).toBe(false);
     });
 
     it('returns false for invalid primaryIntensity', () => {
-      expect(isProtagonistAffect({
-        primaryEmotion: 'fear',
-        primaryIntensity: 'extreme', // invalid
-        primaryCause: 'danger',
-        secondaryEmotions: [],
-        dominantMotivation: 'survive',
-      })).toBe(false);
+      expect(
+        isProtagonistAffect({
+          primaryEmotion: 'fear',
+          primaryIntensity: 'extreme', // invalid
+          primaryCause: 'danger',
+          secondaryEmotions: [],
+          dominantMotivation: 'survive',
+        })
+      ).toBe(false);
     });
 
     it('returns false for invalid secondaryEmotions array', () => {
-      expect(isProtagonistAffect({
-        primaryEmotion: 'fear',
-        primaryIntensity: 'strong',
-        primaryCause: 'danger',
-        secondaryEmotions: 'not an array',
-        dominantMotivation: 'survive',
-      })).toBe(false);
+      expect(
+        isProtagonistAffect({
+          primaryEmotion: 'fear',
+          primaryIntensity: 'strong',
+          primaryCause: 'danger',
+          secondaryEmotions: 'not an array',
+          dominantMotivation: 'survive',
+        })
+      ).toBe(false);
 
-      expect(isProtagonistAffect({
-        primaryEmotion: 'fear',
-        primaryIntensity: 'strong',
-        primaryCause: 'danger',
-        secondaryEmotions: [{ invalid: 'structure' }],
-        dominantMotivation: 'survive',
-      })).toBe(false);
+      expect(
+        isProtagonistAffect({
+          primaryEmotion: 'fear',
+          primaryIntensity: 'strong',
+          primaryCause: 'danger',
+          secondaryEmotions: [{ invalid: 'structure' }],
+          dominantMotivation: 'survive',
+        })
+      ).toBe(false);
     });
 
     it('returns false for non-object values', () => {
@@ -229,9 +235,7 @@ describe('protagonist-affect', () => {
         primaryEmotion: 'overwhelming dread',
         primaryIntensity: 'overwhelming',
         primaryCause: 'approaching storm',
-        secondaryEmotions: [
-          { emotion: 'helplessness', cause: 'nowhere to run' },
-        ],
+        secondaryEmotions: [{ emotion: 'helplessness', cause: 'nowhere to run' }],
         dominantMotivation: 'Find shelter',
       };
 

@@ -54,7 +54,9 @@ describe('opening establishment-rules sections', () => {
     });
 
     it('includes section header with OPENING marker', () => {
-      expect(OPENING_CHARACTER_CANON_GUIDANCE).toContain('CHARACTER CANON ESTABLISHMENT (OPENING):');
+      expect(OPENING_CHARACTER_CANON_GUIDANCE).toContain(
+        'CHARACTER CANON ESTABLISHMENT (OPENING):'
+      );
     });
 
     it('emphasizes defining characters, not referencing', () => {

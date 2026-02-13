@@ -94,9 +94,9 @@ describe('addChoice', () => {
     createdStoryIds.add(story.id);
     await saveStory(story);
 
-    await expect(
-      addChoice(story.id, parsePageId(99), 'Nope'),
-    ).rejects.toThrow(`Page 99 not found in story ${story.id}`);
+    await expect(addChoice(story.id, parsePageId(99), 'Nope')).rejects.toThrow(
+      `Page 99 not found in story ${story.id}`
+    );
   });
 
   it('throws for ending pages', async () => {
@@ -115,9 +115,9 @@ describe('addChoice', () => {
     });
     await savePage(story.id, endingPage);
 
-    await expect(
-      addChoice(story.id, endingPage.id, 'Should fail'),
-    ).rejects.toThrow(`Cannot add choices to ending page ${endingPage.id}`);
+    await expect(addChoice(story.id, endingPage.id, 'Should fail')).rejects.toThrow(
+      `Cannot add choices to ending page ${endingPage.id}`
+    );
   });
 
   it('allows adding multiple custom choices', async () => {

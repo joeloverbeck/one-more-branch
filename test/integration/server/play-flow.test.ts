@@ -5,12 +5,13 @@ import {
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
+  generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryId } from '@/models';
-import type { WriterResult } from '@/llm/types';
+import type { PageWriterResult } from '@/llm/writer-types';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 
@@ -19,15 +20,28 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
+  decomposeEntities: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 jest.mock('@/logging/index', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(), getEntries: jest.fn().mockReturnValue([]), clear: jest.fn() },
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    getEntries: jest.fn().mockReturnValue([]),
+    clear: jest.fn(),
+  },
   logPrompt: jest.fn(),
 }));
 
@@ -35,34 +49,48 @@ jest.mock('@/engine/state-reconciler', () => ({
   reconcileState: jest.fn(),
 }));
 
-const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<typeof generateOpeningPage>;
-const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<typeof generatePageWriterOutput>;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<typeof generateAnalystEvaluation>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
+const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
+  typeof generatePageWriterOutput
+>;
+const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
+  typeof generateAnalystEvaluation
+>;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
+  typeof generateStateAccountant
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 
+type ReconciliationWriterPayload = PageWriterResult &
+  Omit<StateReconciliationResult, 'currentLocation' | 'reconciliationDiagnostics'> & {
+    currentLocation?: string | null;
+  };
+
 function passthroughReconciledState(
-  writer: WriterResult,
-  previousLocation: string,
+  writer: ReconciliationWriterPayload,
+  previousLocation: string
 ): StateReconciliationResult {
   return {
-    currentLocation: writer.currentLocation || previousLocation,
-    threatsAdded: writer.threatsAdded,
-    threatsRemoved: writer.threatsRemoved,
-    constraintsAdded: writer.constraintsAdded,
-    constraintsRemoved: writer.constraintsRemoved,
-    threadsAdded: writer.threadsAdded,
-    threadsResolved: writer.threadsResolved,
-    inventoryAdded: writer.inventoryAdded,
-    inventoryRemoved: writer.inventoryRemoved,
-    healthAdded: writer.healthAdded,
-    healthRemoved: writer.healthRemoved,
-    characterStateChangesAdded: writer.characterStateChangesAdded,
-    characterStateChangesRemoved: writer.characterStateChangesRemoved,
-    newCanonFacts: writer.newCanonFacts,
+    currentLocation: writer.currentLocation ?? previousLocation,
+    threatsAdded: [...writer.threatsAdded],
+    threatsRemoved: [...writer.threatsRemoved],
+    constraintsAdded: [...writer.constraintsAdded],
+    constraintsRemoved: [...writer.constraintsRemoved],
+    threadsAdded: [...writer.threadsAdded],
+    threadsResolved: [...writer.threadsResolved],
+    inventoryAdded: [...writer.inventoryAdded],
+    inventoryRemoved: [...writer.inventoryRemoved],
+    healthAdded: [...writer.healthAdded],
+    healthRemoved: [...writer.healthRemoved],
+    characterStateChangesAdded: [...writer.characterStateChangesAdded],
+    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
+    newCanonFacts: [...writer.newCanonFacts],
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
   };
@@ -125,10 +153,10 @@ type ResMocks = {
 function getRouteHandler(
   router: Router,
   method: 'get' | 'post',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (router.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -193,7 +221,29 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Advance scene via immediate consequence.',
       continuityAnchors: [],
+      writerBrief: {
+        openingLineDirective: 'Begin with action.',
+        mustIncludeBeats: [],
+        forbiddenRecaps: [],
+      },
+      dramaticQuestion: 'Will you confront the danger or seek another path?',
+      choiceIntents: [
+        {
+          hook: 'Face the threat directly',
+          choiceType: 'CONFRONTATION',
+          primaryDelta: 'THREAT_SHIFT',
+        },
+        {
+          hook: 'Find an alternative route',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'LOCATION_CHANGE',
+        },
+      ],
+      rawResponse: 'page-plan',
+    });
+    mockedGenerateStateAccountant.mockResolvedValue({
       stateIntents: {
+        currentLocation: '',
         threats: { add: [], removeIds: [] },
         constraints: { add: [], removeIds: [] },
         threads: { add: [], resolveIds: [] },
@@ -202,20 +252,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         characterState: { add: [], removeIds: [] },
         canon: { worldAdd: [], characterAdd: [] },
       },
-      writerBrief: {
-        openingLineDirective: 'Begin with action.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
-      dramaticQuestion: 'Will you confront the danger or seek another path?',
-      choiceIntents: [
-        { hook: 'Face the threat directly', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-        { hook: 'Find an alternative route', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-      ],
-      rawResponse: 'page-plan',
+      rawResponse: 'accountant',
     });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation),
+      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
   });
 
@@ -247,7 +287,11 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       narrative: 'You find yourself in a dark forest...',
       choices: [
         { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Follow the path', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Follow the path',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
         { text: 'Climb a tree', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
       ],
       currentLocation: 'Dark forest',
@@ -290,7 +334,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as Request,
-      res,
+      res
     );
     await waitForMock(redirect);
 
@@ -350,7 +394,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as Request,
-      createRes.res,
+      createRes.res
     );
     await waitForMock(createRes.redirect);
 
@@ -361,7 +405,11 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       narrative: 'You chose wisely...',
       choices: [
         { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Inspect surroundings', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        {
+          text: 'Inspect surroundings',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
       ],
       currentLocation: 'Next location',
       threatsAdded: [],
@@ -413,7 +461,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           suggestedProtagonistSpeech: '  I know a safer route.  ',
         },
       } as unknown as Request,
-      choiceRes.res,
+      choiceRes.res
     );
     await waitForMock(choiceRes.json);
 
@@ -436,7 +484,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         suggestedProtagonistSpeech: 'I know a safer route.',
       }),
       expect.any(Object),
-      expect.any(Object),
+      expect.any(Object)
     );
   });
 
@@ -485,7 +533,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as Request,
-      createRes.res,
+      createRes.res
     );
     await waitForMock(createRes.redirect);
 
@@ -547,7 +595,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as unknown as Request,
-      firstChoiceRes.res,
+      firstChoiceRes.res
     );
     await waitForMock(firstChoiceRes.json);
 
@@ -561,7 +609,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as unknown as Request,
-      replayChoiceRes.res,
+      replayChoiceRes.res
     );
     await waitForMock(replayChoiceRes.json);
 
@@ -569,13 +617,13 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       expect.objectContaining({
         success: true,
         wasGenerated: true,
-      }),
+      })
     );
     expect(replayChoiceRes.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: true,
         wasGenerated: false,
-      }),
+      })
     );
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
@@ -633,7 +681,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as Request,
-      createRes.res,
+      createRes.res
     );
     await waitForMock(createRes.redirect);
 
@@ -646,7 +694,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         params: { storyId },
         query: { page: '1' },
       } as unknown as Request,
-      playRes.res,
+      playRes.res
     );
     await waitForMock(playRes.render);
 
@@ -654,9 +702,13 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       | {
           openThreadPanelRows?: Array<{ id: string; urgency: string; threadType: string }>;
           openThreadOverflowSummary?: string | null;
+          threatsPanelRows?: Array<{ id: string; text: string }>;
+          threatsOverflowSummary?: string | null;
+          constraintsPanelRows?: Array<{ id: string; text: string }>;
+          constraintsOverflowSummary?: string | null;
         }
       | undefined;
-    expect(playPayload?.openThreadPanelRows?.map(row => row.id)).toEqual([
+    expect(playPayload?.openThreadPanelRows?.map((row) => row.id)).toEqual([
       'td-1',
       'td-2',
       'td-3',
@@ -670,6 +722,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       urgency: 'HIGH',
     });
     expect(playPayload?.openThreadOverflowSummary).toBe('Not shown: 1 (low)');
+    expect(playPayload?.threatsPanelRows).toBeDefined();
+    expect(Array.isArray(playPayload?.threatsPanelRows)).toBe(true);
+    expect(playPayload?.constraintsPanelRows).toBeDefined();
+    expect(Array.isArray(playPayload?.constraintsPanelRows)).toBe(true);
 
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'Continuation updates open threads.',
@@ -682,7 +738,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       threatsRemoved: [],
       constraintsAdded: [],
       constraintsRemoved: [],
-      threadsAdded: [{ text: 'Interrogate the blackout source', threadType: 'DANGER', urgency: 'HIGH' }],
+      threadsAdded: [
+        { text: 'Interrogate the blackout source', threadType: 'DANGER', urgency: 'HIGH' },
+      ],
       threadsResolved: ['td-5'],
       newCanonFacts: [],
       newCharacterCanonFacts: {},
@@ -726,7 +784,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           apiKey: 'mock-api-key-12345',
         },
       } as unknown as Request,
-      choiceRes.res,
+      choiceRes.res
     );
     await waitForMock(choiceRes.json);
 
@@ -736,11 +794,15 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           page?: {
             openThreads?: Array<{ id: string; threadType: string; urgency: string; text: string }>;
             openThreadOverflowSummary?: string | null;
+            activeThreats?: Array<{ id: string; text: string }>;
+            threatsOverflowSummary?: string | null;
+            activeConstraints?: Array<{ id: string; text: string }>;
+            constraintsOverflowSummary?: string | null;
           };
         }
       | undefined;
     expect(choicePayload?.success).toBe(true);
-    expect(choicePayload?.page?.openThreads?.map(row => row.id)).toEqual([
+    expect(choicePayload?.page?.openThreads?.map((row) => row.id)).toEqual([
       'td-1',
       'td-2',
       'td-8',
@@ -756,8 +818,12 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           urgency: 'HIGH',
           text: 'Interrogate the blackout source',
         }),
-      ]),
+      ])
     );
     expect(choicePayload?.page?.openThreadOverflowSummary).toBe('Not shown: 1 (low)');
+    expect(choicePayload?.page?.activeThreats).toBeDefined();
+    expect(Array.isArray(choicePayload?.page?.activeThreats)).toBe(true);
+    expect(choicePayload?.page?.activeConstraints).toBeDefined();
+    expect(Array.isArray(choicePayload?.page?.activeConstraints)).toBe(true);
   });
 });

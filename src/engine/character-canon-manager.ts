@@ -1,4 +1,9 @@
-import { GlobalCharacterCanon, CharacterCanon, normalizeCharacterName, normalizeForComparison } from '../models';
+import {
+  GlobalCharacterCanon,
+  CharacterCanon,
+  normalizeCharacterName,
+  normalizeForComparison,
+} from '../models';
 
 export { normalizeCharacterName };
 
@@ -25,7 +30,7 @@ function findExistingCanonKey(canon: GlobalCharacterCanon, cleanedName: string):
 export function addCharacterFact(
   canon: GlobalCharacterCanon,
   characterName: string,
-  fact: string,
+  fact: string
 ): GlobalCharacterCanon {
   const cleanedName = normalizeCharacterName(characterName);
   const trimmedFact = fact.trim();
@@ -42,7 +47,7 @@ export function addCharacterFact(
 
   // Check if fact already exists (case-insensitive)
   const exists = existingFacts.some(
-    existingFact => normalizeForComparison(existingFact) === normalizedFact,
+    (existingFact) => normalizeForComparison(existingFact) === normalizedFact
   );
 
   if (exists) {
@@ -64,7 +69,7 @@ export function addCharacterFact(
  */
 export function mergeCharacterCanonFacts(
   canon: GlobalCharacterCanon,
-  newFacts: Record<string, readonly string[]>,
+  newFacts: Record<string, readonly string[]>
 ): GlobalCharacterCanon {
   let result = canon;
 
@@ -84,7 +89,7 @@ export function mergeCharacterCanonFacts(
  */
 export function getCharacterFacts(
   canon: GlobalCharacterCanon,
-  characterName: string,
+  characterName: string
 ): CharacterCanon {
   const cleanedName = normalizeCharacterName(characterName);
   const existingKey = findExistingCanonKey(canon, cleanedName);
@@ -115,7 +120,7 @@ export function formatCharacterCanonForPrompt(canon: GlobalCharacterCanon): stri
 
   return entries
     .map(([name, facts]) => {
-      const factLines = facts.map(fact => `- ${fact}`).join('\n');
+      const factLines = facts.map((fact) => `- ${fact}`).join('\n');
       return `[${name}]\n${factLines}`;
     })
     .join('\n\n');

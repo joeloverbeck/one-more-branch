@@ -42,7 +42,11 @@ describe('WRITER_GENERATION_SCHEMA', () => {
     expect(schema.properties.narrative.type).toBe('string');
     expect(schema.properties.choices.type).toBe('array');
     expect(schema.properties.choices.items?.type).toBe('object');
-    expect(schema.properties.choices.items?.required).toEqual(['text', 'choiceType', 'primaryDelta']);
+    expect(schema.properties.choices.items?.required).toEqual([
+      'text',
+      'choiceType',
+      'primaryDelta',
+    ]);
     expect(schema.properties.protagonistAffect.type).toBe('object');
     expect(schema.properties.sceneSummary.type).toBe('string');
     expect(schema.properties.isEnding.type).toBe('boolean');

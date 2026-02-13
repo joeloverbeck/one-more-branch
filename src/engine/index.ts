@@ -10,27 +10,29 @@ export {
   getStoryStats,
 } from './story-service';
 
-export { generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
+export { generatePage, generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
+export type { GeneratePageContinuationParams } from './page-service';
 
 // NPC agenda resolution pipeline
 export { resolveNpcAgendas } from './npc-agenda-pipeline';
 export type { NpcAgendaContext } from './npc-agenda-pipeline';
 
 // Lorekeeper + writer pipeline
-export { createContinuationWriterWithLorekeeper } from './lorekeeper-writer-pipeline';
-export type { LorekeeperWriterContext } from './lorekeeper-writer-pipeline';
+export { createWriterWithLorekeeper, createContinuationWriterWithLorekeeper } from './lorekeeper-writer-pipeline';
+export type {
+  WriterWithLorekeeperContext,
+  OpeningWriterContext,
+  ContinuationWriterContext,
+  LorekeeperWriterContext,
+} from './lorekeeper-writer-pipeline';
 
 // Ancestor context collection
 export { collectAncestorContext } from './ancestor-collector';
 export type { AncestorContext } from './ancestor-collector';
 
 // Page building
-export {
-  buildFirstPage,
-  buildContinuationPage,
-  createEmptyStructureContext,
-} from './page-builder';
-export type { FirstPageBuildContext, ContinuationPageBuildContext } from './page-builder';
+export { buildPage, buildFirstPage, buildContinuationPage, createEmptyStructureContext } from './page-builder';
+export type { PageBuildContext, FirstPageBuildContext, ContinuationPageBuildContext } from './page-builder';
 
 // Structure version validation
 export {
@@ -64,7 +66,10 @@ export { parseBeatIndices, getBeatOrThrow, upsertBeatProgression } from './beat-
 export { createStoryStructure } from './structure-factory';
 
 // Structure state machine
-export { createInitialStructureState, advanceStructureState, applyStructureProgression } from './structure-state';
+export {
+  advanceStructureState,
+  applyStructureProgression,
+} from './structure-state';
 
 // Structure rewrite support
 export {
@@ -73,10 +78,7 @@ export {
   getPreservedBeatIds,
   validatePreservedBeats,
 } from './structure-rewrite-support';
-export {
-  createStructureRewriter,
-  mergePreservedWithRegenerated,
-} from './structure-rewriter';
+export { createStructureRewriter, mergePreservedWithRegenerated } from './structure-rewriter';
 export type { StructureRewriter, StructureRewriteGenerator } from './structure-rewriter';
 
 // State reconciler contracts
@@ -86,14 +88,11 @@ export type {
   ReconciledCharacterStateAdd,
   StateReconciliationResult,
 } from './state-reconciler-types';
-export {
-  StateReconciliationError,
-} from './state-reconciler-errors';
+export { StateReconciliationError } from './state-reconciler-errors';
 export type {
   StateReconciliationErrorCode,
   StateReconciliationFailure,
 } from './state-reconciler-errors';
-
 
 export {
   updateStoryWithNewCanon,

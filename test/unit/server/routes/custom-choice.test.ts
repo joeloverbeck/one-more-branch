@@ -20,10 +20,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (playRoutes.stack as unknown as RouteLayer[]).find(
-    item => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -35,7 +35,7 @@ function getRouteHandler(
 }
 
 function flushPromises(): Promise<void> {
-  return new Promise(resolve => setImmediate(resolve));
+  return new Promise((resolve) => setImmediate(resolve));
 }
 
 describe('POST /:storyId/custom-choice', () => {
@@ -51,7 +51,7 @@ describe('POST /:storyId/custom-choice', () => {
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { choiceText: 'hello' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -65,7 +65,7 @@ describe('POST /:storyId/custom-choice', () => {
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 1 } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -79,7 +79,7 @@ describe('POST /:storyId/custom-choice', () => {
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 1, choiceText: '   ' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -94,7 +94,7 @@ describe('POST /:storyId/custom-choice', () => {
     const longText = 'x'.repeat(501);
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 1, choiceText: longText } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -116,7 +116,12 @@ describe('POST /:storyId/custom-choice', () => {
       ...page,
       choices: [
         ...page.choices,
-        { text: 'Custom choice', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
+        {
+          text: 'Custom choice',
+          choiceType: ChoiceType.TACTICAL_APPROACH,
+          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          nextPageId: null,
+        },
       ],
     };
 
@@ -126,33 +131,57 @@ describe('POST /:storyId/custom-choice', () => {
     const json = jest.fn();
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
-      { params: { storyId }, body: { pageId: 1, choiceText: 'Custom choice' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      {
+        params: { storyId },
+        body: { pageId: 1, choiceText: 'Custom choice' },
+      } as unknown as Request,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
-    expect(addChoiceSpy).toHaveBeenCalledWith(storyId, 1, 'Custom choice', ChoiceType.TACTICAL_APPROACH, PrimaryDelta.GOAL_SHIFT);
+    expect(addChoiceSpy).toHaveBeenCalledWith(
+      storyId,
+      1,
+      'Custom choice',
+      ChoiceType.TACTICAL_APPROACH,
+      PrimaryDelta.GOAL_SHIFT
+    );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith({
       choices: [
-        { text: 'Choice A', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
-        { text: 'Choice B', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
-        { text: 'Custom choice', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null },
+        {
+          text: 'Choice A',
+          choiceType: ChoiceType.TACTICAL_APPROACH,
+          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          nextPageId: null,
+        },
+        {
+          text: 'Choice B',
+          choiceType: ChoiceType.TACTICAL_APPROACH,
+          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          nextPageId: null,
+        },
+        {
+          text: 'Custom choice',
+          choiceType: ChoiceType.TACTICAL_APPROACH,
+          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          nextPageId: null,
+        },
       ],
     });
   });
 
   it('returns 404 when page is not found', async () => {
-    jest.spyOn(pageRepository, 'addChoice').mockRejectedValue(
-      new Error('Page 99 not found in story test-id'),
-    );
+    jest
+      .spyOn(pageRepository, 'addChoice')
+      .mockRejectedValue(new Error('Page 99 not found in story test-id'));
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn();
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 99, choiceText: 'Nope' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -161,16 +190,16 @@ describe('POST /:storyId/custom-choice', () => {
   });
 
   it('returns 409 when page is an ending', async () => {
-    jest.spyOn(pageRepository, 'addChoice').mockRejectedValue(
-      new Error('Cannot add choices to ending page 1'),
-    );
+    jest
+      .spyOn(pageRepository, 'addChoice')
+      .mockRejectedValue(new Error('Cannot add choices to ending page 1'));
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn();
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 1, choiceText: 'Should fail' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -179,16 +208,14 @@ describe('POST /:storyId/custom-choice', () => {
   });
 
   it('returns 500 for unexpected errors', async () => {
-    jest.spyOn(pageRepository, 'addChoice').mockRejectedValue(
-      new Error('Disk failure'),
-    );
+    jest.spyOn(pageRepository, 'addChoice').mockRejectedValue(new Error('Disk failure'));
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn();
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 1, choiceText: 'Hello' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -209,7 +236,15 @@ describe('POST /:storyId/custom-choice', () => {
     const text500 = 'x'.repeat(500);
     const updatedPage = {
       ...page,
-      choices: [...page.choices, { text: text500, choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT, nextPageId: null }],
+      choices: [
+        ...page.choices,
+        {
+          text: text500,
+          choiceType: ChoiceType.TACTICAL_APPROACH,
+          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          nextPageId: null,
+        },
+      ],
     };
 
     jest.spyOn(pageRepository, 'addChoice').mockResolvedValue(updatedPage);
@@ -219,7 +254,7 @@ describe('POST /:storyId/custom-choice', () => {
 
     void getRouteHandler('post', '/:storyId/custom-choice')(
       { params: { storyId }, body: { pageId: 1, choiceText: text500 } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 

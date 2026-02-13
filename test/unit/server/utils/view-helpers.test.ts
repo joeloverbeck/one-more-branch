@@ -1,4 +1,9 @@
-import { getActDisplayInfo, getOpenThreadPanelData, getOpenThreadPanelRows } from '@/server/utils/view-helpers';
+import {
+  getActDisplayInfo,
+  getKeyedEntryPanelData,
+  getOpenThreadPanelData,
+  getOpenThreadPanelRows,
+} from '@/server/utils/view-helpers';
 import {
   createPage,
   createChoice,
@@ -8,7 +13,13 @@ import {
   ThreadType,
   Urgency,
 } from '@/models';
-import type { Story, Page, VersionedStoryStructure, StoryStructure, StructureVersionId } from '@/models';
+import type {
+  Story,
+  Page,
+  VersionedStoryStructure,
+  StoryStructure,
+  StructureVersionId,
+} from '@/models';
 
 function createTestStructure(acts: Array<{ id: string; name: string }>): StoryStructure {
   return {
@@ -45,7 +56,7 @@ function createTestVersionId(suffix: string): StructureVersionId {
 
 function createTestVersionedStructure(
   versionId: StructureVersionId,
-  structure: StoryStructure,
+  structure: StoryStructure
 ): VersionedStoryStructure {
   return {
     id: versionId,
@@ -285,12 +296,27 @@ describe('getActDisplayInfo', () => {
 describe('getOpenThreadPanelRows', () => {
   it('sorts by urgency in HIGH, MEDIUM, LOW order', () => {
     const result = getOpenThreadPanelRows([
-      { id: 'td-1', text: 'Low urgency thread', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
-      { id: 'td-2', text: 'High urgency thread', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
-      { id: 'td-3', text: 'Medium urgency thread', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+      {
+        id: 'td-1',
+        text: 'Low urgency thread',
+        threadType: ThreadType.INFORMATION,
+        urgency: Urgency.LOW,
+      },
+      {
+        id: 'td-2',
+        text: 'High urgency thread',
+        threadType: ThreadType.MYSTERY,
+        urgency: Urgency.HIGH,
+      },
+      {
+        id: 'td-3',
+        text: 'Medium urgency thread',
+        threadType: ThreadType.QUEST,
+        urgency: Urgency.MEDIUM,
+      },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-2', 'td-3', 'td-1']);
+    expect(result.map((row) => row.id)).toEqual(['td-2', 'td-3', 'td-1']);
   });
 
   it('preserves source order for matching urgencies', () => {
@@ -300,12 +326,17 @@ describe('getOpenThreadPanelRows', () => {
       { id: 'td-3', text: 'Third', threadType: ThreadType.MORAL, urgency: Urgency.MEDIUM },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-1', 'td-2', 'td-3']);
+    expect(result.map((row) => row.id)).toEqual(['td-1', 'td-2', 'td-3']);
   });
 
   it('builds display labels using (<TYPE>/<URGENCY>) <text> format', () => {
     const result = getOpenThreadPanelRows([
-      { id: 'td-1', text: 'Unknown force in the city', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+      {
+        id: 'td-1',
+        text: 'Unknown force in the city',
+        threadType: ThreadType.MYSTERY,
+        urgency: Urgency.HIGH,
+      },
     ]);
 
     expect(result[0]?.displayLabel).toBe('(MYSTERY/HIGH) Unknown force in the city');
@@ -317,7 +348,7 @@ describe('getOpenThreadPanelRows', () => {
       { id: 'td-2', text: 'Known urgency', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-2', 'td-1']);
+    expect(result.map((row) => row.id)).toEqual(['td-2', 'td-1']);
   });
 
   it('limits rows to six entries in urgency order', () => {
@@ -331,7 +362,7 @@ describe('getOpenThreadPanelRows', () => {
       { id: 'td-7', text: 'Low 3', threadType: ThreadType.RESOURCE, urgency: Urgency.LOW },
     ]);
 
-    expect(result.map(row => row.id)).toEqual(['td-2', 'td-5', 'td-3', 'td-6', 'td-1', 'td-4']);
+    expect(result.map((row) => row.id)).toEqual(['td-2', 'td-5', 'td-3', 'td-6', 'td-1', 'td-4']);
   });
 });
 
@@ -344,13 +375,25 @@ describe('getOpenThreadPanelData', () => {
       { id: 'td-4', text: 'High 4', threadType: ThreadType.MORAL, urgency: Urgency.HIGH },
       { id: 'td-5', text: 'Medium 1', threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM },
       { id: 'td-6', text: 'Medium 2', threadType: ThreadType.RESOURCE, urgency: Urgency.MEDIUM },
-      { id: 'td-7', text: 'Medium 3', threadType: ThreadType.RELATIONSHIP, urgency: Urgency.MEDIUM },
+      {
+        id: 'td-7',
+        text: 'Medium 3',
+        threadType: ThreadType.RELATIONSHIP,
+        urgency: Urgency.MEDIUM,
+      },
       { id: 'td-8', text: 'Low 1', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
       { id: 'td-9', text: 'Low 2', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
       { id: 'td-10', text: 'Low 3', threadType: ThreadType.QUEST, urgency: Urgency.LOW },
     ]);
 
-    expect(result.rows.map(row => row.id)).toEqual(['td-1', 'td-2', 'td-3', 'td-4', 'td-5', 'td-6']);
+    expect(result.rows.map((row) => row.id)).toEqual([
+      'td-1',
+      'td-2',
+      'td-3',
+      'td-4',
+      'td-5',
+      'td-6',
+    ]);
     expect(result.overflowSummary).toBe('Not shown: 1 (medium), 3 (low)');
   });
 
@@ -362,5 +405,98 @@ describe('getOpenThreadPanelData', () => {
 
     expect(result.rows).toHaveLength(2);
     expect(result.overflowSummary).toBeNull();
+  });
+});
+
+describe('getKeyedEntryPanelData', () => {
+  it('returns all entries when count <= 6', () => {
+    const entries = [
+      { id: 'at-1', text: 'Threat one' },
+      { id: 'at-2', text: 'Threat two' },
+      { id: 'at-3', text: 'Threat three' },
+    ];
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows.map((r) => r.id)).toEqual(['at-1', 'at-2', 'at-3']);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('limits to 6 entries when count > 6', () => {
+    const entries = Array.from({ length: 9 }, (_, i) => ({
+      id: `at-${i + 1}`,
+      text: `Threat ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.rows.map((r) => r.id)).toEqual(['at-1', 'at-2', 'at-3', 'at-4', 'at-5', 'at-6']);
+  });
+
+  it('returns correct overflow summary format', () => {
+    const entries = Array.from({ length: 10 }, (_, i) => ({
+      id: `cn-${i + 1}`,
+      text: `Constraint ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.overflowSummary).toBe('+4 more not shown');
+  });
+
+  it('returns null overflow summary when all fit', () => {
+    const entries = [
+      { id: 'at-1', text: 'One' },
+      { id: 'at-2', text: 'Two' },
+    ];
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('handles empty array', () => {
+    const result = getKeyedEntryPanelData([]);
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('preserves entry order (no sorting)', () => {
+    const entries = [
+      { id: 'at-3', text: 'Third' },
+      { id: 'at-1', text: 'First' },
+      { id: 'at-2', text: 'Second' },
+    ];
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows.map((r) => r.text)).toEqual(['Third', 'First', 'Second']);
+  });
+
+  it('returns exactly 6 entries at the boundary', () => {
+    const entries = Array.from({ length: 6 }, (_, i) => ({
+      id: `at-${i + 1}`,
+      text: `Entry ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('returns overflow summary for exactly 7 entries', () => {
+    const entries = Array.from({ length: 7 }, (_, i) => ({
+      id: `at-${i + 1}`,
+      text: `Entry ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.overflowSummary).toBe('+1 more not shown');
   });
 });

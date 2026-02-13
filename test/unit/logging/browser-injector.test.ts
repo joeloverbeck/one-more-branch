@@ -4,7 +4,7 @@ import type { LogEntry } from '../../../src/logging/types';
 function createEntry(
   level: LogEntry['level'],
   message: string,
-  context?: Record<string, unknown>,
+  context?: Record<string, unknown>
 ): LogEntry {
   return {
     level,

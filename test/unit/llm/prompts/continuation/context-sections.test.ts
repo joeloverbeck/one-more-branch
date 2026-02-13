@@ -41,7 +41,7 @@ describe('context-sections', () => {
       const result = buildSceneContextSection(
         'The detective arrived.',
         'Earlier that morning, a call came.',
-        [],
+        []
       );
 
       expect(result).toContain('SCENE BEFORE LAST');
@@ -51,11 +51,7 @@ describe('context-sections', () => {
     });
 
     it('places grandparent section before previous scene', () => {
-      const result = buildSceneContextSection(
-        'Previous content.',
-        'Grandparent content.',
-        [],
-      );
+      const result = buildSceneContextSection('Previous content.', 'Grandparent content.', []);
 
       const grandparentIdx = result.indexOf('SCENE BEFORE LAST');
       const previousIdx = result.indexOf('PREVIOUS SCENE');
@@ -67,14 +63,23 @@ describe('context-sections', () => {
       const longNarrative = 'A'.repeat(5000);
       const result = buildSceneContextSection('Short.', longNarrative, []);
 
-      const section = result.split('SCENE BEFORE LAST (full text for style continuity):\n')[1]?.split('\n\nPREVIOUS SCENE')[0] ?? '';
+      const section =
+        result
+          .split('SCENE BEFORE LAST (full text for style continuity):\n')[1]
+          ?.split('\n\nPREVIOUS SCENE')[0] ?? '';
       expect(section).toBe(longNarrative);
     });
 
     it('includes ancestor summaries section when summaries provided', () => {
       const summaries = [
-        { pageId: 1 as import('../../../../../src/models/id').PageId, summary: 'The hero arrived at the village.' },
-        { pageId: 2 as import('../../../../../src/models/id').PageId, summary: 'A mysterious stranger appeared.' },
+        {
+          pageId: 1 as import('../../../../../src/models/id').PageId,
+          summary: 'The hero arrived at the village.',
+        },
+        {
+          pageId: 2 as import('../../../../../src/models/id').PageId,
+          summary: 'A mysterious stranger appeared.',
+        },
       ];
 
       const result = buildSceneContextSection('Current scene.', 'Grandparent scene.', summaries);
@@ -92,7 +97,10 @@ describe('context-sections', () => {
 
     it('orders sections chronologically: summaries -> grandparent -> parent', () => {
       const summaries = [
-        { pageId: 1 as import('../../../../../src/models/id').PageId, summary: 'Oldest scene summary.' },
+        {
+          pageId: 1 as import('../../../../../src/models/id').PageId,
+          summary: 'Oldest scene summary.',
+        },
       ];
 
       const result = buildSceneContextSection('Parent scene.', 'Grandparent scene.', summaries);

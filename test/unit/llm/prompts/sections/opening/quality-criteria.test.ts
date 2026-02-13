@@ -42,7 +42,7 @@ describe('opening quality-criteria sections', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Two guards watch the town gate"');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('"Must reach the city before nightfall"');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
-        '{ text: "Open relationship question: Is Captain Voss protecting the protagonist or setting a trap?", threadType: "RELATIONSHIP", urgency: "HIGH" }',
+        '{ text: "Open relationship question: Is Captain Voss protecting the protagonist or setting a trap?", threadType: "RELATIONSHIP", urgency: "HIGH" }'
       );
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threadType');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('urgency');
@@ -54,7 +54,7 @@ describe('opening quality-criteria sections', () => {
     it('includes dedup and refinement guidance for opening thread setup', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('THREAD DEDUP/REFINEMENT RULES');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
-        'Do not add two threads that represent the same unresolved loop',
+        'Do not add two threads that represent the same unresolved loop'
       );
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('keep the most specific single version');
     });
@@ -63,12 +63,14 @@ describe('opening quality-criteria sections', () => {
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('THREAT VS DANGER');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain('Immediate hazard at story start');
       expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
-        'DANGER thread only for prevention-oriented, longer-horizon risk',
+        'DANGER thread only for prevention-oriented, longer-horizon risk'
       );
     });
 
     it('specifies removed arrays should be empty', () => {
-      expect(OPENING_ACTIVE_STATE_QUALITY).toContain('threatsRemoved, constraintsRemoved, threadsResolved should be empty');
+      expect(OPENING_ACTIVE_STATE_QUALITY).toContain(
+        'threatsRemoved, constraintsRemoved, threadsResolved should be empty'
+      );
     });
 
     it('does NOT include REMOVAL QUALITY section', () => {

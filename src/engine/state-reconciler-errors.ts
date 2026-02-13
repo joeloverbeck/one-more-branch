@@ -2,7 +2,6 @@ import type { StateReconciliationDiagnostic } from './state-reconciler-types.js'
 
 export type StateReconciliationErrorCode =
   | 'RECONCILIATION_FAILED'
-  | 'EVIDENCE_GATE_FAILED'
   | 'INVALID_STATE_REFERENCE'
   | 'CONTRADICTORY_INTENT';
 
@@ -18,7 +17,7 @@ export class StateReconciliationError extends Error {
     message: string,
     public readonly code: StateReconciliationErrorCode,
     public readonly diagnostics: StateReconciliationDiagnostic[] = [],
-    public readonly retryable: boolean = false,
+    public readonly retryable: boolean = false
   ) {
     super(message);
     this.name = 'StateReconciliationError';

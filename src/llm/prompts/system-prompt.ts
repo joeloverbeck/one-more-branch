@@ -4,6 +4,7 @@
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
+import { buildToneBlock } from './sections/shared/tone-block.js';
 
 export {
   buildOpeningSystemPrompt,
@@ -14,16 +15,9 @@ export {
   STRICT_CHOICE_GUIDELINES,
 } from './system-prompt-builder.js';
 
-/**
- * Minimal system prompt for structure generation.
- * Does NOT include state/inventory/health management or choice guidelines
- * since structure generation only produces story arcs, not narrative pages.
- */
-export const STRUCTURE_SYSTEM_PROMPT = `You are an expert interactive fiction storyteller specializing in story structure and dramatic arc design.
+const STRUCTURE_ROLE_INTRO = `You are an expert interactive fiction storyteller specializing in story structure and dramatic arc design.`;
 
-${CONTENT_POLICY}
-
-STRUCTURE DESIGN GUIDELINES:
+const STRUCTURE_DESIGN_GUIDELINES = `STRUCTURE DESIGN GUIDELINES:
 - Create compelling three-act dramatic structures.
 - Design beats as flexible milestones that allow branching paths.
 - Ensure stakes escalate naturally through the narrative.
@@ -33,8 +27,17 @@ STRUCTURE DESIGN GUIDELINES:
 
 /**
  * Builds the system prompt for structure generation.
- * Uses a minimal prompt focused only on structure design.
+ * Accepts tone to inject a tone block at the top of the prompt.
  */
-export function buildStructureSystemPrompt(): string {
-  return STRUCTURE_SYSTEM_PROMPT;
+export function buildStructureSystemPrompt(tone?: string): string {
+  const sections: string[] = [STRUCTURE_ROLE_INTRO];
+
+  if (tone) {
+    sections.push(buildToneBlock(tone));
+  }
+
+  sections.push(CONTENT_POLICY);
+  sections.push(STRUCTURE_DESIGN_GUIDELINES);
+
+  return sections.join('\n\n');
 }
