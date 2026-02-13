@@ -204,7 +204,11 @@
         history.pushState({}, '', `/play/${storyId}?page=${currentPageId}`);
 
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
-        renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, narrative);
+        var sidebarContainer = ensureSidebarContainer(narrative);
+        renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
+        renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
+        renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
+        cleanupEmptySidebar(sidebarContainer);
         renderStateChanges(data.page.stateChanges, narrative);
         renderDeviationBanner(data.deviationInfo, choicesSection);
 

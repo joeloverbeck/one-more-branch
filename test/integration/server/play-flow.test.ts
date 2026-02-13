@@ -683,6 +683,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       | {
           openThreadPanelRows?: Array<{ id: string; urgency: string; threadType: string }>;
           openThreadOverflowSummary?: string | null;
+          threatsPanelRows?: Array<{ id: string; text: string }>;
+          threatsOverflowSummary?: string | null;
+          constraintsPanelRows?: Array<{ id: string; text: string }>;
+          constraintsOverflowSummary?: string | null;
         }
       | undefined;
     expect(playPayload?.openThreadPanelRows?.map((row) => row.id)).toEqual([
@@ -699,6 +703,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       urgency: 'HIGH',
     });
     expect(playPayload?.openThreadOverflowSummary).toBe('Not shown: 1 (low)');
+    expect(playPayload?.threatsPanelRows).toBeDefined();
+    expect(Array.isArray(playPayload?.threatsPanelRows)).toBe(true);
+    expect(playPayload?.constraintsPanelRows).toBeDefined();
+    expect(Array.isArray(playPayload?.constraintsPanelRows)).toBe(true);
 
     mockedGenerateWriterPage.mockResolvedValueOnce({
       narrative: 'Continuation updates open threads.',
@@ -767,6 +775,10 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           page?: {
             openThreads?: Array<{ id: string; threadType: string; urgency: string; text: string }>;
             openThreadOverflowSummary?: string | null;
+            activeThreats?: Array<{ id: string; text: string }>;
+            threatsOverflowSummary?: string | null;
+            activeConstraints?: Array<{ id: string; text: string }>;
+            constraintsOverflowSummary?: string | null;
           };
         }
       | undefined;
@@ -790,5 +802,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       ])
     );
     expect(choicePayload?.page?.openThreadOverflowSummary).toBe('Not shown: 1 (low)');
+    expect(choicePayload?.page?.activeThreats).toBeDefined();
+    expect(Array.isArray(choicePayload?.page?.activeThreats)).toBe(true);
+    expect(choicePayload?.page?.activeConstraints).toBeDefined();
+    expect(Array.isArray(choicePayload?.page?.activeConstraints)).toBe(true);
   });
 });

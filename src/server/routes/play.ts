@@ -18,6 +18,7 @@ import { generationProgressService } from '../services/index.js';
 import {
   formatLLMError,
   getActDisplayInfo,
+  getKeyedEntryPanelData,
   getOpenThreadPanelData,
   wrapAsyncRoute,
 } from '../utils/index.js';
@@ -104,6 +105,12 @@ playRoutes.get(
 
       const actDisplayInfo = getActDisplayInfo(story, page);
       const openThreadPanelData = getOpenThreadPanelData(page.accumulatedActiveState.openThreads);
+      const threatsPanelData = getKeyedEntryPanelData(
+        page.accumulatedActiveState.activeThreats
+      );
+      const constraintsPanelData = getKeyedEntryPanelData(
+        page.accumulatedActiveState.activeConstraints
+      );
 
       return res.render('pages/play', {
         title: `${story.title} - One More Branch`,
@@ -113,6 +120,10 @@ playRoutes.get(
         actDisplayInfo,
         openThreadPanelRows: openThreadPanelData.rows,
         openThreadOverflowSummary: openThreadPanelData.overflowSummary,
+        threatsPanelRows: threatsPanelData.rows,
+        threatsOverflowSummary: threatsPanelData.overflowSummary,
+        constraintsPanelRows: constraintsPanelData.rows,
+        constraintsOverflowSummary: constraintsPanelData.overflowSummary,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -198,6 +209,12 @@ playRoutes.post(
       const openThreadPanelData = getOpenThreadPanelData(
         result.page.accumulatedActiveState.openThreads
       );
+      const threatsPanelData = getKeyedEntryPanelData(
+        result.page.accumulatedActiveState.activeThreats
+      );
+      const constraintsPanelData = getKeyedEntryPanelData(
+        result.page.accumulatedActiveState.activeConstraints
+      );
       if (progressId) {
         generationProgressService.complete(progressId);
       }
@@ -211,6 +228,10 @@ playRoutes.post(
           isEnding: result.page.isEnding,
           openThreads: openThreadPanelData.rows,
           openThreadOverflowSummary: openThreadPanelData.overflowSummary,
+          activeThreats: threatsPanelData.rows,
+          threatsOverflowSummary: threatsPanelData.overflowSummary,
+          activeConstraints: constraintsPanelData.rows,
+          constraintsOverflowSummary: constraintsPanelData.overflowSummary,
         },
         actDisplayInfo,
         wasGenerated: result.wasGenerated,

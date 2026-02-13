@@ -131,6 +131,10 @@ describe('playRoutes', () => {
           },
         ],
         openThreadOverflowSummary: null,
+        threatsPanelRows: [],
+        threatsOverflowSummary: null,
+        constraintsPanelRows: [],
+        constraintsOverflowSummary: null,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -676,6 +680,10 @@ describe('playRoutes', () => {
               },
             ],
             openThreadOverflowSummary: null,
+            activeThreats: [],
+            threatsOverflowSummary: null,
+            activeConstraints: [],
+            constraintsOverflowSummary: null,
           },
           wasGenerated: true,
         })

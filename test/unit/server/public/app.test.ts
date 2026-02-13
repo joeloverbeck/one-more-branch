@@ -53,7 +53,7 @@ describe('public client script', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
     expect(script).toContain(
-      'function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, narrativeElement)'
+      'function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, sidebarContainer)'
     );
     expect(script).toContain('const OPEN_THREADS_PANEL_LIMIT = 6;');
     expect(script).toContain('function buildOpenThreadOverflowSummary(hiddenThreads)');
@@ -66,7 +66,7 @@ describe('public client script', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
     expect(script).toContain(
-      'renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, narrative);'
+      'renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);'
     );
     expect(script).not.toContain('data.logScript');
     expect(script).not.toContain('executeLogScript');

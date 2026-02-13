@@ -96,7 +96,29 @@
     return 'Not shown: ' + parts.join(', ');
   }
 
-  function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, narrativeElement) {
+  function ensureSidebarContainer(narrativeElement) {
+    var existing = document.getElementById('sidebar-widgets');
+    if (existing) {
+      return existing;
+    }
+    var container = document.createElement('div');
+    container.className = 'sidebar-widgets';
+    container.id = 'sidebar-widgets';
+    narrativeElement.before(container);
+    return container;
+  }
+
+  function cleanupEmptySidebar(sidebarContainer) {
+    if (!sidebarContainer) {
+      return;
+    }
+    var asides = sidebarContainer.querySelectorAll('aside');
+    if (asides.length === 0) {
+      sidebarContainer.remove();
+    }
+  }
+
+  function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, sidebarContainer) {
     const existingPanel = document.getElementById('open-threads-panel');
 
     if (!Array.isArray(openThreads) || openThreads.length === 0) {
@@ -193,6 +215,115 @@
       + '</ul>'
       + summaryHtml;
 
-    narrativeElement.before(panel);
+    sidebarContainer.appendChild(panel);
+  }
+
+  function renderKeyedEntryPanel(config) {
+    var existingPanel = document.getElementById(config.panelId);
+
+    if (!Array.isArray(config.entries) || config.entries.length === 0) {
+      if (existingPanel) {
+        existingPanel.remove();
+      }
+      return;
+    }
+
+    var normalized = config.entries
+      .filter(function(entry) {
+        return entry && typeof entry === 'object'
+          && typeof entry.id === 'string' && entry.id.length > 0
+          && typeof entry.text === 'string' && entry.text.length > 0;
+      });
+
+    if (normalized.length === 0) {
+      if (existingPanel) {
+        existingPanel.remove();
+      }
+      return;
+    }
+
+    var visible = normalized.slice(0, KEYED_ENTRY_PANEL_LIMIT);
+    var hiddenCount = normalized.length - KEYED_ENTRY_PANEL_LIMIT;
+    var overflowText = typeof config.overflowSummary === 'string' && config.overflowSummary.trim().length > 0
+      ? config.overflowSummary.trim()
+      : (hiddenCount > 0 ? '+' + hiddenCount + ' more not shown' : null);
+
+    var listHtml = visible.map(function(entry) {
+      return '<li class="' + config.itemClass + '">' + escapeHtml(entry.text) + '</li>';
+    }).join('');
+
+    if (existingPanel) {
+      var list = existingPanel.querySelector('#' + config.listId);
+      if (list) {
+        list.innerHTML = listHtml;
+      }
+      var existingSummary = existingPanel.querySelector('#' + config.overflowId);
+      if (overflowText) {
+        if (existingSummary) {
+          existingSummary.textContent = overflowText;
+        } else {
+          var summary = document.createElement('div');
+          summary.className = 'keyed-entry-overflow-summary';
+          summary.id = config.overflowId;
+          summary.textContent = overflowText;
+          existingPanel.appendChild(summary);
+        }
+      } else if (existingSummary) {
+        existingSummary.remove();
+      }
+      return;
+    }
+
+    var summaryHtml = overflowText
+      ? '<div class="keyed-entry-overflow-summary" id="' + config.overflowId + '">'
+          + escapeHtml(overflowText)
+          + '</div>'
+      : '';
+    var panel = document.createElement('aside');
+    panel.className = config.panelClass;
+    panel.id = config.panelId;
+    panel.setAttribute('aria-labelledby', config.titleId);
+    panel.innerHTML = '<h3 class="' + config.titleClass + '" id="' + config.titleId + '">'
+      + escapeHtml(config.title) + '</h3>'
+      + '<ul class="' + config.listClass + '" id="' + config.listId + '">'
+      + listHtml
+      + '</ul>'
+      + summaryHtml;
+
+    config.container.appendChild(panel);
+  }
+
+  function renderActiveThreatsPanel(threats, threatsOverflowSummary, sidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'active-threats-panel',
+      titleId: 'active-threats-title',
+      listId: 'active-threats-list',
+      overflowId: 'active-threats-overflow',
+      panelClass: 'active-threats-panel',
+      titleClass: 'active-threats-title',
+      listClass: 'active-threats-list',
+      itemClass: 'active-threats-item',
+      title: 'Active Threats',
+      entries: threats,
+      overflowSummary: threatsOverflowSummary,
+      container: sidebarContainer,
+    });
+  }
+
+  function renderActiveConstraintsPanel(constraints, constraintsOverflowSummary, sidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'active-constraints-panel',
+      titleId: 'active-constraints-title',
+      listId: 'active-constraints-list',
+      overflowId: 'active-constraints-overflow',
+      panelClass: 'active-constraints-panel',
+      titleClass: 'active-constraints-title',
+      listClass: 'active-constraints-list',
+      itemClass: 'active-constraints-item',
+      title: 'Active Constraints',
+      entries: constraints,
+      overflowSummary: constraintsOverflowSummary,
+      container: sidebarContainer,
+    });
   }
 

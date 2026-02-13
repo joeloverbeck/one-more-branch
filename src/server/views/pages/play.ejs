@@ -21,38 +21,70 @@
         <span class="page-indicator">Page <%= page.id %></span>
       </div>
 
-      <% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>
-      <aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
-        <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
-        <ul class="open-threads-list" id="open-threads-list">
-          <% openThreadPanelRows.forEach((thread) => { %>
-          <li class="open-threads-item">
-            <span class="thread-icon-pill" aria-hidden="true">
-              <span class="thread-icon-badge thread-icon-badge--type">
-                <img class="thread-icon thread-icon--type"
-                     src="/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
-                     alt=""
-                     title="<%= thread.threadType %>"
-                     loading="lazy"
-                     onerror="this.style.display='none'">
+      <% if ((openThreadPanelRows && openThreadPanelRows.length > 0) || (threatsPanelRows && threatsPanelRows.length > 0) || (constraintsPanelRows && constraintsPanelRows.length > 0)) { %>
+      <div class="sidebar-widgets" id="sidebar-widgets">
+        <% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>
+        <aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
+          <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
+          <ul class="open-threads-list" id="open-threads-list">
+            <% openThreadPanelRows.forEach((thread) => { %>
+            <li class="open-threads-item">
+              <span class="thread-icon-pill" aria-hidden="true">
+                <span class="thread-icon-badge thread-icon-badge--type">
+                  <img class="thread-icon thread-icon--type"
+                       src="/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
+                       alt=""
+                       title="<%= thread.threadType %>"
+                       loading="lazy"
+                       onerror="this.style.display='none'">
+                </span>
+                <span class="thread-icon-badge thread-icon-badge--urgency">
+                  <img class="thread-icon thread-icon--urgency"
+                       src="/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
+                       alt=""
+                       title="<%= thread.urgency %>"
+                       loading="lazy"
+                       onerror="this.style.display='none'">
+                </span>
               </span>
-              <span class="thread-icon-badge thread-icon-badge--urgency">
-                <img class="thread-icon thread-icon--urgency"
-                     src="/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
-                     alt=""
-                     title="<%= thread.urgency %>"
-                     loading="lazy"
-                     onerror="this.style.display='none'">
-              </span>
-            </span>
-            <span class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>"><%= thread.text %></span>
-          </li>
-          <% }) %>
-        </ul>
-        <% if (openThreadOverflowSummary) { %>
-        <div class="open-threads-overflow-summary" id="open-threads-overflow-summary"><%= openThreadOverflowSummary %></div>
+              <span class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>"><%= thread.text %></span>
+            </li>
+            <% }) %>
+          </ul>
+          <% if (openThreadOverflowSummary) { %>
+          <div class="open-threads-overflow-summary" id="open-threads-overflow-summary"><%= openThreadOverflowSummary %></div>
+          <% } %>
+        </aside>
         <% } %>
-      </aside>
+
+        <% if (threatsPanelRows && threatsPanelRows.length > 0) { %>
+        <aside class="active-threats-panel" id="active-threats-panel" aria-labelledby="active-threats-title">
+          <h3 class="active-threats-title" id="active-threats-title">Active Threats</h3>
+          <ul class="active-threats-list" id="active-threats-list">
+            <% threatsPanelRows.forEach((threat) => { %>
+            <li class="active-threats-item"><%= threat.text %></li>
+            <% }) %>
+          </ul>
+          <% if (threatsOverflowSummary) { %>
+          <div class="keyed-entry-overflow-summary" id="active-threats-overflow"><%= threatsOverflowSummary %></div>
+          <% } %>
+        </aside>
+        <% } %>
+
+        <% if (constraintsPanelRows && constraintsPanelRows.length > 0) { %>
+        <aside class="active-constraints-panel" id="active-constraints-panel" aria-labelledby="active-constraints-title">
+          <h3 class="active-constraints-title" id="active-constraints-title">Active Constraints</h3>
+          <ul class="active-constraints-list" id="active-constraints-list">
+            <% constraintsPanelRows.forEach((constraint) => { %>
+            <li class="active-constraints-item"><%= constraint.text %></li>
+            <% }) %>
+          </ul>
+          <% if (constraintsOverflowSummary) { %>
+          <div class="keyed-entry-overflow-summary" id="active-constraints-overflow"><%= constraintsOverflowSummary %></div>
+          <% } %>
+        </aside>
+        <% } %>
+      </div>
       <% } %>
 
       <article class="narrative" id="narrative">

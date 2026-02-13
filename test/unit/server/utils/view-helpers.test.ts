@@ -1,5 +1,6 @@
 import {
   getActDisplayInfo,
+  getKeyedEntryPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
 } from '@/server/utils/view-helpers';
@@ -404,5 +405,98 @@ describe('getOpenThreadPanelData', () => {
 
     expect(result.rows).toHaveLength(2);
     expect(result.overflowSummary).toBeNull();
+  });
+});
+
+describe('getKeyedEntryPanelData', () => {
+  it('returns all entries when count <= 6', () => {
+    const entries = [
+      { id: 'at-1', text: 'Threat one' },
+      { id: 'at-2', text: 'Threat two' },
+      { id: 'at-3', text: 'Threat three' },
+    ];
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows.map((r) => r.id)).toEqual(['at-1', 'at-2', 'at-3']);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('limits to 6 entries when count > 6', () => {
+    const entries = Array.from({ length: 9 }, (_, i) => ({
+      id: `at-${i + 1}`,
+      text: `Threat ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.rows.map((r) => r.id)).toEqual(['at-1', 'at-2', 'at-3', 'at-4', 'at-5', 'at-6']);
+  });
+
+  it('returns correct overflow summary format', () => {
+    const entries = Array.from({ length: 10 }, (_, i) => ({
+      id: `cn-${i + 1}`,
+      text: `Constraint ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.overflowSummary).toBe('+4 more not shown');
+  });
+
+  it('returns null overflow summary when all fit', () => {
+    const entries = [
+      { id: 'at-1', text: 'One' },
+      { id: 'at-2', text: 'Two' },
+    ];
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('handles empty array', () => {
+    const result = getKeyedEntryPanelData([]);
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('preserves entry order (no sorting)', () => {
+    const entries = [
+      { id: 'at-3', text: 'Third' },
+      { id: 'at-1', text: 'First' },
+      { id: 'at-2', text: 'Second' },
+    ];
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows.map((r) => r.text)).toEqual(['Third', 'First', 'Second']);
+  });
+
+  it('returns exactly 6 entries at the boundary', () => {
+    const entries = Array.from({ length: 6 }, (_, i) => ({
+      id: `at-${i + 1}`,
+      text: `Entry ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('returns overflow summary for exactly 7 entries', () => {
+    const entries = Array.from({ length: 7 }, (_, i) => ({
+      id: `at-${i + 1}`,
+      text: `Entry ${i + 1}`,
+    }));
+
+    const result = getKeyedEntryPanelData(entries);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.overflowSummary).toBe('+1 more not shown');
   });
 });

@@ -149,6 +149,32 @@ export function getOpenThreadPanelRows(
     }));
 }
 
+export interface KeyedEntryPanelRow {
+  readonly id: string;
+  readonly text: string;
+}
+
+export interface KeyedEntryPanelData {
+  readonly rows: readonly KeyedEntryPanelRow[];
+  readonly overflowSummary: string | null;
+}
+
+const KEYED_ENTRY_PANEL_LIMIT = 6;
+
+export function getKeyedEntryPanelData(
+  entries: readonly { readonly id: string; readonly text: string }[]
+): KeyedEntryPanelData {
+  const visibleRows: KeyedEntryPanelRow[] = entries.slice(0, KEYED_ENTRY_PANEL_LIMIT).map((entry) => ({
+    id: entry.id,
+    text: entry.text,
+  }));
+  const hiddenCount = entries.length - KEYED_ENTRY_PANEL_LIMIT;
+  return {
+    rows: visibleRows,
+    overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,
+  };
+}
+
 export function getOpenThreadPanelData(
   openThreads: readonly OpenThreadLike[]
 ): OpenThreadPanelData {

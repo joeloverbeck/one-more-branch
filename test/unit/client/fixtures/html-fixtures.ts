@@ -22,6 +22,10 @@ export interface PlayPageOptions {
     urgency: string;
   }>;
   openThreadOverflowSummary?: string;
+  activeThreats?: Array<{ id: string; text: string }>;
+  threatsOverflowSummary?: string;
+  activeConstraints?: Array<{ id: string; text: string }>;
+  constraintsOverflowSummary?: string;
   actDisplayInfo?: { displayString: string } | null;
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
@@ -37,6 +41,8 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   ];
   const isEnding = options.isEnding ?? false;
   const openThreads = options.openThreads ?? [];
+  const activeThreats = options.activeThreats ?? [];
+  const activeConstraints = options.activeConstraints ?? [];
   const actDisplayInfo = options.actDisplayInfo ?? null;
   const stateChanges = options.stateChanges ?? [];
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
@@ -61,6 +67,33 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         ${options.openThreadOverflowSummary ? `<div class="open-threads-overflow-summary" id="open-threads-overflow-summary">${options.openThreadOverflowSummary}</div>` : ''}
       </aside>`
       : '';
+
+  const threatsHtml =
+    activeThreats.length > 0
+      ? `<aside class="active-threats-panel" id="active-threats-panel" aria-labelledby="active-threats-title">
+        <h3 class="active-threats-title" id="active-threats-title">Active Threats</h3>
+        <ul class="active-threats-list" id="active-threats-list">
+          ${activeThreats.map((t) => `<li class="active-threats-item">${t.text}</li>`).join('')}
+        </ul>
+        ${options.threatsOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="active-threats-overflow">${options.threatsOverflowSummary}</div>` : ''}
+      </aside>`
+      : '';
+
+  const constraintsHtml =
+    activeConstraints.length > 0
+      ? `<aside class="active-constraints-panel" id="active-constraints-panel" aria-labelledby="active-constraints-title">
+        <h3 class="active-constraints-title" id="active-constraints-title">Active Constraints</h3>
+        <ul class="active-constraints-list" id="active-constraints-list">
+          ${activeConstraints.map((c) => `<li class="active-constraints-item">${c.text}</li>`).join('')}
+        </ul>
+        ${options.constraintsOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="active-constraints-overflow">${options.constraintsOverflowSummary}</div>` : ''}
+      </aside>`
+      : '';
+
+  const hasSidebarContent = openThreads.length > 0 || activeThreats.length > 0 || activeConstraints.length > 0;
+  const sidebarHtml = hasSidebarContent
+    ? `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}</div>`
+    : '';
 
   const stateChangesHtml =
     stateChanges.length > 0
@@ -137,7 +170,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
           </div>
           <span class="page-indicator">Page ${pageId}</span>
         </div>
-        ${threadsHtml}
+        ${sidebarHtml}
         <article class="narrative" id="narrative">
           <div class="narrative-text">${narrativeText}</div>
         </article>

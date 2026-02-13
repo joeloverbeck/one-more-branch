@@ -373,18 +373,48 @@ main {
   }
 }
 
-.open-threads-panel {
+.sidebar-widgets {
   position: fixed;
-  top: 120px;
+  top: 100px;
   right: max(1rem, calc((100vw - var(--container-width)) / 2 - 300px));
   width: min(550px, calc(100vw - 2rem));
-  max-height: calc(100vh - 140px);
+  max-height: calc(100vh - 130px);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 30;
+}
+
+/* Thin dark scrollbar for sidebar widgets */
+.sidebar-widgets {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(39, 64, 111, 0.5) transparent;
+}
+
+.sidebar-widgets::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-widgets::-webkit-scrollbar-track {
+  background: rgba(14, 24, 49, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar-widgets::-webkit-scrollbar-thumb {
+  background: rgba(39, 64, 111, 0.5);
+  border-radius: 3px;
+}
+
+.sidebar-widgets::-webkit-scrollbar-thumb:hover {
+  background: rgba(39, 64, 111, 0.8);
+}
+
+.open-threads-panel {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   background: rgba(14, 24, 49, 0.95);
   box-shadow: var(--shadow);
-  z-index: 30;
 }
 
 .open-threads-title {
@@ -466,6 +496,47 @@ main {
 }
 
 .open-threads-text--low {
+  color: var(--color-text-muted);
+}
+
+.active-threats-panel,
+.active-constraints-panel {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.95);
+  box-shadow: var(--shadow);
+}
+
+.active-threats-title,
+.active-constraints-title {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+.active-threats-list,
+.active-constraints-list {
+  margin: 0;
+  padding: 0.8rem 1rem 0.9rem;
+  display: grid;
+  gap: 0.55rem;
+  list-style: none;
+}
+
+.active-threats-item,
+.active-constraints-item {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.keyed-entry-overflow-summary {
+  padding: 0.15rem 1rem 0.9rem;
+  text-align: center;
+  font-size: 0.82rem;
   color: var(--color-text-muted);
 }
 
@@ -973,7 +1044,7 @@ main {
     gap: 0.4rem;
   }
 
-  .open-threads-panel {
+  .sidebar-widgets {
     position: static;
     width: 100%;
     max-height: none;
