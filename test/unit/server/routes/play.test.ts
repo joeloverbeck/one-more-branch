@@ -135,6 +135,10 @@ describe('playRoutes', () => {
         threatsOverflowSummary: null,
         constraintsPanelRows: [],
         constraintsOverflowSummary: null,
+        inventoryPanelRows: [],
+        inventoryOverflowSummary: null,
+        healthPanelRows: [],
+        healthOverflowSummary: null,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -684,6 +688,10 @@ describe('playRoutes', () => {
             threatsOverflowSummary: null,
             activeConstraints: [],
             constraintsOverflowSummary: null,
+            inventory: [],
+            inventoryOverflowSummary: null,
+            health: [],
+            healthOverflowSummary: null,
           },
           wasGenerated: true,
         })

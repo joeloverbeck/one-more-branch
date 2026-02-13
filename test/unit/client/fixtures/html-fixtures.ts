@@ -90,10 +90,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </aside>`
       : '';
 
-  const hasSidebarContent = openThreads.length > 0 || activeThreats.length > 0 || activeConstraints.length > 0;
-  const sidebarHtml = hasSidebarContent
-    ? `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}</div>`
-    : '';
+  const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}</div>`;
 
   const stateChangesHtml =
     stateChanges.length > 0
@@ -161,21 +158,26 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </section>`;
 
   return `
-    <main class="container">
+    <main>
       <div class="play-container" data-story-id="${storyId}" data-page-id="${pageId}">
-        <div class="story-header">
-          <div class="story-title-section">
-            <h2>Test Story</h2>
-            ${actDisplayInfo ? `<span class="act-indicator">${actDisplayInfo.displayString}</span>` : ''}
+        <div class="play-layout">
+          <div class="left-sidebar-widgets" id="left-sidebar-widgets"></div>
+          <div class="play-content">
+            <div class="story-header">
+              <div class="story-title-section">
+                <h2>Test Story</h2>
+                ${actDisplayInfo ? `<span class="act-indicator">${actDisplayInfo.displayString}</span>` : ''}
+              </div>
+              <span class="page-indicator">Page ${pageId}</span>
+            </div>
+            <article class="narrative" id="narrative">
+              <div class="narrative-text">${narrativeText}</div>
+            </article>
+            ${stateChangesHtml}
+            ${choicesSectionHtml}
           </div>
-          <span class="page-indicator">Page ${pageId}</span>
+          ${sidebarHtml}
         </div>
-        ${sidebarHtml}
-        <article class="narrative" id="narrative">
-          <div class="narrative-text">${narrativeText}</div>
-        </article>
-        ${stateChangesHtml}
-        ${choicesSectionHtml}
         <div class="loading-overlay" id="loading" style="display: none;">
           <div class="loading-stage" aria-live="polite"></div>
           <div class="loading-spinner"></div>

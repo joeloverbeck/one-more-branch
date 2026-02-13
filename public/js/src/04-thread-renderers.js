@@ -96,26 +96,12 @@
     return 'Not shown: ' + parts.join(', ');
   }
 
-  function ensureSidebarContainer(narrativeElement) {
-    var existing = document.getElementById('sidebar-widgets');
-    if (existing) {
-      return existing;
-    }
-    var container = document.createElement('div');
-    container.className = 'sidebar-widgets';
-    container.id = 'sidebar-widgets';
-    narrativeElement.before(container);
-    return container;
+  function ensureSidebarContainer() {
+    return document.getElementById('sidebar-widgets');
   }
 
-  function cleanupEmptySidebar(sidebarContainer) {
-    if (!sidebarContainer) {
-      return;
-    }
-    var asides = sidebarContainer.querySelectorAll('aside');
-    if (asides.length === 0) {
-      sidebarContainer.remove();
-    }
+  function cleanupEmptySidebar() {
+    // Container is a grid cell; never remove it
   }
 
   function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, sidebarContainer) {
@@ -242,8 +228,9 @@
       return;
     }
 
-    var visible = normalized.slice(0, KEYED_ENTRY_PANEL_LIMIT);
-    var hiddenCount = normalized.length - KEYED_ENTRY_PANEL_LIMIT;
+    var limit = typeof config.limit === 'number' ? config.limit : KEYED_ENTRY_PANEL_LIMIT;
+    var visible = normalized.slice(0, limit);
+    var hiddenCount = normalized.length - limit;
     var overflowText = typeof config.overflowSummary === 'string' && config.overflowSummary.trim().length > 0
       ? config.overflowSummary.trim()
       : (hiddenCount > 0 ? '+' + hiddenCount + ' more not shown' : null);
@@ -324,6 +311,50 @@
       entries: constraints,
       overflowSummary: constraintsOverflowSummary,
       container: sidebarContainer,
+    });
+  }
+
+  function ensureLeftSidebarContainer() {
+    return document.getElementById('left-sidebar-widgets');
+  }
+
+  function cleanupEmptyLeftSidebar() {
+    // Container is a grid cell; never remove it
+  }
+
+  function renderInventoryPanel(inventory, inventoryOverflowSummary, leftSidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'inventory-panel',
+      titleId: 'inventory-title',
+      listId: 'inventory-list',
+      overflowId: 'inventory-overflow',
+      panelClass: 'inventory-panel',
+      titleClass: 'inventory-title',
+      listClass: 'inventory-list',
+      itemClass: 'inventory-item',
+      title: 'Inventory',
+      entries: inventory,
+      overflowSummary: inventoryOverflowSummary,
+      container: leftSidebarContainer,
+      limit: LEFT_PANEL_LIMIT,
+    });
+  }
+
+  function renderHealthPanel(health, healthOverflowSummary, leftSidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'health-panel',
+      titleId: 'health-title',
+      listId: 'health-list',
+      overflowId: 'health-overflow',
+      panelClass: 'health-panel',
+      titleClass: 'health-title',
+      listClass: 'health-list',
+      itemClass: 'health-item',
+      title: 'Health',
+      entries: health,
+      overflowSummary: healthOverflowSummary,
+      container: leftSidebarContainer,
+      limit: LEFT_PANEL_LIMIT,
     });
   }
 

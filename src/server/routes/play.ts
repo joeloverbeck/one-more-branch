@@ -111,6 +111,8 @@ playRoutes.get(
       const constraintsPanelData = getKeyedEntryPanelData(
         page.accumulatedActiveState.activeConstraints
       );
+      const inventoryPanelData = getKeyedEntryPanelData(page.accumulatedInventory, 10);
+      const healthPanelData = getKeyedEntryPanelData(page.accumulatedHealth, 10);
 
       return res.render('pages/play', {
         title: `${story.title} - One More Branch`,
@@ -124,6 +126,10 @@ playRoutes.get(
         threatsOverflowSummary: threatsPanelData.overflowSummary,
         constraintsPanelRows: constraintsPanelData.rows,
         constraintsOverflowSummary: constraintsPanelData.overflowSummary,
+        inventoryPanelRows: inventoryPanelData.rows,
+        inventoryOverflowSummary: inventoryPanelData.overflowSummary,
+        healthPanelRows: healthPanelData.rows,
+        healthOverflowSummary: healthPanelData.overflowSummary,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -215,6 +221,8 @@ playRoutes.post(
       const constraintsPanelData = getKeyedEntryPanelData(
         result.page.accumulatedActiveState.activeConstraints
       );
+      const inventoryPanelData = getKeyedEntryPanelData(result.page.accumulatedInventory, 10);
+      const healthPanelData = getKeyedEntryPanelData(result.page.accumulatedHealth, 10);
       if (progressId) {
         generationProgressService.complete(progressId);
       }
@@ -232,6 +240,10 @@ playRoutes.post(
           threatsOverflowSummary: threatsPanelData.overflowSummary,
           activeConstraints: constraintsPanelData.rows,
           constraintsOverflowSummary: constraintsPanelData.overflowSummary,
+          inventory: inventoryPanelData.rows,
+          inventoryOverflowSummary: inventoryPanelData.overflowSummary,
+          health: healthPanelData.rows,
+          healthOverflowSummary: healthPanelData.overflowSummary,
         },
         actDisplayInfo,
         wasGenerated: result.wasGenerated,

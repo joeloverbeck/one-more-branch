@@ -81,19 +81,22 @@ describe('sidebar widgets container', () => {
     expect(sidebar!.classList.contains('sidebar-widgets')).toBe(true);
   });
 
-  it('removes sidebar container when all widgets are empty', async () => {
+  it('keeps sidebar container when all widgets are empty (grid cell)', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       activeThreats: [{ id: 'at-1', text: 'Existing threat' }],
     });
     loadAppAndInit();
 
-    // Verify sidebar exists initially
+    // Verify sidebar exists initially with content
     expect(document.getElementById('sidebar-widgets')).not.toBeNull();
+    expect(document.getElementById('active-threats-panel')).not.toBeNull();
 
     await clickChoiceAndResolve(makeChoiceResponse());
 
+    // Container persists as a grid cell but has no aside children
     const sidebar = document.getElementById('sidebar-widgets');
-    expect(sidebar).toBeNull();
+    expect(sidebar).not.toBeNull();
+    expect(sidebar!.querySelectorAll('aside').length).toBe(0);
   });
 
   it('stacks all three widgets in correct order', async () => {

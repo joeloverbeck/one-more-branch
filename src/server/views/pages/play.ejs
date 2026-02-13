@@ -9,187 +9,219 @@
 <body>
   <%- include('../partials/header') %>
 
-  <main class="container">
+  <main>
     <div class="play-container" data-story-id="<%= story.id %>" data-page-id="<%= page.id %>">
-      <div class="story-header">
-        <div class="story-title-section">
-          <h2><%= story.title %></h2>
-          <% if (actDisplayInfo) { %>
-          <span class="act-indicator"><%= actDisplayInfo.displayString %></span>
-          <% } %>
-        </div>
-        <span class="page-indicator">Page <%= page.id %></span>
-      </div>
-
-      <% if ((openThreadPanelRows && openThreadPanelRows.length > 0) || (threatsPanelRows && threatsPanelRows.length > 0) || (constraintsPanelRows && constraintsPanelRows.length > 0)) { %>
-      <div class="sidebar-widgets" id="sidebar-widgets">
-        <% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>
-        <aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
-          <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
-          <ul class="open-threads-list" id="open-threads-list">
-            <% openThreadPanelRows.forEach((thread) => { %>
-            <li class="open-threads-item">
-              <span class="thread-icon-pill" aria-hidden="true">
-                <span class="thread-icon-badge thread-icon-badge--type">
-                  <img class="thread-icon thread-icon--type"
-                       src="/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
-                       alt=""
-                       title="<%= thread.threadType %>"
-                       loading="lazy"
-                       onerror="this.style.display='none'">
-                </span>
-                <span class="thread-icon-badge thread-icon-badge--urgency">
-                  <img class="thread-icon thread-icon--urgency"
-                       src="/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
-                       alt=""
-                       title="<%= thread.urgency %>"
-                       loading="lazy"
-                       onerror="this.style.display='none'">
-                </span>
-              </span>
-              <span class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>"><%= thread.text %></span>
-            </li>
-            <% }) %>
-          </ul>
-          <% if (openThreadOverflowSummary) { %>
-          <div class="open-threads-overflow-summary" id="open-threads-overflow-summary"><%= openThreadOverflowSummary %></div>
-          <% } %>
-        </aside>
-        <% } %>
-
-        <% if (threatsPanelRows && threatsPanelRows.length > 0) { %>
-        <aside class="active-threats-panel" id="active-threats-panel" aria-labelledby="active-threats-title">
-          <h3 class="active-threats-title" id="active-threats-title">Active Threats</h3>
-          <ul class="active-threats-list" id="active-threats-list">
-            <% threatsPanelRows.forEach((threat) => { %>
-            <li class="active-threats-item"><%= threat.text %></li>
-            <% }) %>
-          </ul>
-          <% if (threatsOverflowSummary) { %>
-          <div class="keyed-entry-overflow-summary" id="active-threats-overflow"><%= threatsOverflowSummary %></div>
-          <% } %>
-        </aside>
-        <% } %>
-
-        <% if (constraintsPanelRows && constraintsPanelRows.length > 0) { %>
-        <aside class="active-constraints-panel" id="active-constraints-panel" aria-labelledby="active-constraints-title">
-          <h3 class="active-constraints-title" id="active-constraints-title">Active Constraints</h3>
-          <ul class="active-constraints-list" id="active-constraints-list">
-            <% constraintsPanelRows.forEach((constraint) => { %>
-            <li class="active-constraints-item"><%= constraint.text %></li>
-            <% }) %>
-          </ul>
-          <% if (constraintsOverflowSummary) { %>
-          <div class="keyed-entry-overflow-summary" id="active-constraints-overflow"><%= constraintsOverflowSummary %></div>
-          <% } %>
-        </aside>
-        <% } %>
-      </div>
-      <% } %>
-
-      <article class="narrative" id="narrative">
-        <div class="narrative-text">
-          <%- page.narrativeText.replace(/\n/g, '<br>') %>
-        </div>
-      </article>
-
-      <% if (page.stateChanges && page.stateChanges.length > 0) { %>
-      <aside class="state-changes" id="state-changes">
-        <h4>What happened:</h4>
-        <ul>
-          <% page.stateChanges.forEach(change => { %>
-          <li><%= change %></li>
-          <% }) %>
-        </ul>
-      </aside>
-      <% } %>
-
-      <% if (page.isEnding) { %>
-      <div class="ending-banner">
-        <h3>THE END</h3>
-        <div class="ending-actions">
-          <a href="/play/<%= story.id %>/restart" class="btn btn-primary">Play Again</a>
-          <a href="/" class="btn btn-secondary">Back to Stories</a>
-        </div>
-      </div>
-      <% } else { %>
-      <section class="choices-section" id="choices-section">
-        <h3>What do you do?</h3>
-        <div class="choices" id="choices">
-          <% page.choices.forEach((choice, index) => { %>
-          <div class="choice-row">
-            <span class="choice-icon-pill" aria-hidden="true">
-              <img class="choice-icon choice-icon--type"
-                   src="/images/icons/<%= choice.choiceType.toLowerCase().replace(/_/g, '-') %>.png"
-                   alt=""
-                   title="<%= choiceTypeLabels[choice.choiceType] ? choiceTypeLabels[choice.choiceType].label : '' %>"
-                   width="32" height="32" loading="lazy"
-                   onerror="this.style.display='none'">
-              <img class="choice-icon choice-icon--delta"
-                   src="/images/icons/<%= choice.primaryDelta.toLowerCase().replace(/_/g, '-') %>.png"
-                   alt=""
-                   title="<%= primaryDeltaLabels[choice.primaryDelta] || '' %>"
-                   width="32" height="32" loading="lazy"
-                   onerror="this.style.display='none'">
-            </span>
-            <button
-              class="choice-btn"
-              data-choice-index="<%= index %>"
-              data-choice-type="<%= choice.choiceType %>"
-              data-primary-delta="<%= choice.primaryDelta %>"
-              <%= choice.nextPageId ? 'data-explored="true"' : '' %>
-            >
-              <span class="choice-text"><%= choice.text %></span>
-            </button>
-            <% if (choice.nextPageId) { %>
-            <span class="explored-marker" title="Previously explored">↩</span>
+      <div class="play-layout">
+        <div class="left-sidebar-widgets" id="left-sidebar-widgets">
+          <% if (inventoryPanelRows && inventoryPanelRows.length > 0) { %>
+          <aside class="inventory-panel" id="inventory-panel" aria-labelledby="inventory-title">
+            <h3 class="inventory-title" id="inventory-title">Inventory</h3>
+            <ul class="inventory-list" id="inventory-list">
+              <% inventoryPanelRows.forEach((item) => { %>
+              <li class="inventory-item"><%= item.text %></li>
+              <% }) %>
+            </ul>
+            <% if (inventoryOverflowSummary) { %>
+            <div class="keyed-entry-overflow-summary" id="inventory-overflow"><%= inventoryOverflowSummary %></div>
             <% } %>
+          </aside>
+          <% } %>
+
+          <% if (healthPanelRows && healthPanelRows.length > 0) { %>
+          <aside class="health-panel" id="health-panel" aria-labelledby="health-title">
+            <h3 class="health-title" id="health-title">Health</h3>
+            <ul class="health-list" id="health-list">
+              <% healthPanelRows.forEach((item) => { %>
+              <li class="health-item"><%= item.text %></li>
+              <% }) %>
+            </ul>
+            <% if (healthOverflowSummary) { %>
+            <div class="keyed-entry-overflow-summary" id="health-overflow"><%= healthOverflowSummary %></div>
+            <% } %>
+          </aside>
+          <% } %>
+        </div>
+
+        <div class="play-content">
+          <div class="story-header">
+            <div class="story-title-section">
+              <h2><%= story.title %></h2>
+              <% if (actDisplayInfo) { %>
+              <span class="act-indicator"><%= actDisplayInfo.displayString %></span>
+              <% } %>
+            </div>
+            <span class="page-indicator">Page <%= page.id %></span>
           </div>
-          <% }) %>
+
+          <article class="narrative" id="narrative">
+            <div class="narrative-text">
+              <%- page.narrativeText.replace(/\n/g, '<br>') %>
+            </div>
+          </article>
+
+          <% if (page.stateChanges && page.stateChanges.length > 0) { %>
+          <aside class="state-changes" id="state-changes">
+            <h4>What happened:</h4>
+            <ul>
+              <% page.stateChanges.forEach(change => { %>
+              <li><%= change %></li>
+              <% }) %>
+            </ul>
+          </aside>
+          <% } %>
+
+          <% if (page.isEnding) { %>
+          <div class="ending-banner">
+            <h3>THE END</h3>
+            <div class="ending-actions">
+              <a href="/play/<%= story.id %>/restart" class="btn btn-primary">Play Again</a>
+              <a href="/" class="btn btn-secondary">Back to Stories</a>
+            </div>
+          </div>
+          <% } else { %>
+          <section class="choices-section" id="choices-section">
+            <h3>What do you do?</h3>
+            <div class="choices" id="choices">
+              <% page.choices.forEach((choice, index) => { %>
+              <div class="choice-row">
+                <span class="choice-icon-pill" aria-hidden="true">
+                  <img class="choice-icon choice-icon--type"
+                       src="/images/icons/<%= choice.choiceType.toLowerCase().replace(/_/g, '-') %>.png"
+                       alt=""
+                       title="<%= choiceTypeLabels[choice.choiceType] ? choiceTypeLabels[choice.choiceType].label : '' %>"
+                       width="32" height="32" loading="lazy"
+                       onerror="this.style.display='none'">
+                  <img class="choice-icon choice-icon--delta"
+                       src="/images/icons/<%= choice.primaryDelta.toLowerCase().replace(/_/g, '-') %>.png"
+                       alt=""
+                       title="<%= primaryDeltaLabels[choice.primaryDelta] || '' %>"
+                       width="32" height="32" loading="lazy"
+                       onerror="this.style.display='none'">
+                </span>
+                <button
+                  class="choice-btn"
+                  data-choice-index="<%= index %>"
+                  data-choice-type="<%= choice.choiceType %>"
+                  data-primary-delta="<%= choice.primaryDelta %>"
+                  <%= choice.nextPageId ? 'data-explored="true"' : '' %>
+                >
+                  <span class="choice-text"><%= choice.text %></span>
+                </button>
+                <% if (choice.nextPageId) { %>
+                <span class="explored-marker" title="Previously explored">&#8617;</span>
+                <% } %>
+              </div>
+              <% }) %>
+            </div>
+            <div class="suggested-protagonist-speech-container">
+              <input
+                type="text"
+                id="suggested-protagonist-speech-input"
+                class="suggested-protagonist-speech-input"
+                placeholder="Suggest something your protagonist might say..."
+                maxlength="500"
+              />
+            </div>
+            <div class="custom-choice-container">
+              <input type="text" class="custom-choice-input"
+                     placeholder="Introduce your own custom choice..."
+                     maxlength="500" />
+              <button type="button" class="custom-choice-btn">Add</button>
+            </div>
+            <div class="custom-choice-enums">
+              <select class="custom-choice-type">
+                <option value="TACTICAL_APPROACH">Method/Tactic</option>
+                <option value="MORAL_DILEMMA">Moral Choice</option>
+                <option value="IDENTITY_EXPRESSION">Define Yourself</option>
+                <option value="RELATIONSHIP_SHIFT">Relationship</option>
+                <option value="RESOURCE_COMMITMENT">Spend/Risk</option>
+                <option value="INVESTIGATION">Investigate</option>
+                <option value="PATH_DIVERGENCE">Change Direction</option>
+                <option value="CONFRONTATION">Confront/Fight</option>
+                <option value="AVOIDANCE_RETREAT">Avoid/Flee</option>
+              </select>
+              <select class="custom-choice-delta">
+                <option value="LOCATION_CHANGE">Location</option>
+                <option value="GOAL_SHIFT">Goal</option>
+                <option value="RELATIONSHIP_CHANGE">Relationship</option>
+                <option value="URGENCY_CHANGE">Time Pressure</option>
+                <option value="ITEM_CONTROL">Item</option>
+                <option value="EXPOSURE_CHANGE">Attention</option>
+                <option value="CONDITION_CHANGE">Condition</option>
+                <option value="INFORMATION_REVEALED">Information</option>
+                <option value="THREAT_SHIFT">Danger</option>
+                <option value="CONSTRAINT_CHANGE">Limitation</option>
+              </select>
+            </div>
+            <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>
+          </section>
+          <% } %>
         </div>
-        <div class="suggested-protagonist-speech-container">
-          <input
-            type="text"
-            id="suggested-protagonist-speech-input"
-            class="suggested-protagonist-speech-input"
-            placeholder="Suggest something your protagonist might say..."
-            maxlength="500"
-          />
+
+        <div class="sidebar-widgets" id="sidebar-widgets">
+          <% if (openThreadPanelRows && openThreadPanelRows.length > 0) { %>
+          <aside class="open-threads-panel" id="open-threads-panel" aria-labelledby="open-threads-title">
+            <h3 class="open-threads-title" id="open-threads-title">Active Threads</h3>
+            <ul class="open-threads-list" id="open-threads-list">
+              <% openThreadPanelRows.forEach((thread) => { %>
+              <li class="open-threads-item">
+                <span class="thread-icon-pill" aria-hidden="true">
+                  <span class="thread-icon-badge thread-icon-badge--type">
+                    <img class="thread-icon thread-icon--type"
+                         src="/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
+                         alt=""
+                         title="<%= thread.threadType %>"
+                         loading="lazy"
+                         onerror="this.style.display='none'">
+                  </span>
+                  <span class="thread-icon-badge thread-icon-badge--urgency">
+                    <img class="thread-icon thread-icon--urgency"
+                         src="/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
+                         alt=""
+                         title="<%= thread.urgency %>"
+                         loading="lazy"
+                         onerror="this.style.display='none'">
+                  </span>
+                </span>
+                <span class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>"><%= thread.text %></span>
+              </li>
+              <% }) %>
+            </ul>
+            <% if (openThreadOverflowSummary) { %>
+            <div class="open-threads-overflow-summary" id="open-threads-overflow-summary"><%= openThreadOverflowSummary %></div>
+            <% } %>
+          </aside>
+          <% } %>
+
+          <% if (threatsPanelRows && threatsPanelRows.length > 0) { %>
+          <aside class="active-threats-panel" id="active-threats-panel" aria-labelledby="active-threats-title">
+            <h3 class="active-threats-title" id="active-threats-title">Active Threats</h3>
+            <ul class="active-threats-list" id="active-threats-list">
+              <% threatsPanelRows.forEach((threat) => { %>
+              <li class="active-threats-item"><%= threat.text %></li>
+              <% }) %>
+            </ul>
+            <% if (threatsOverflowSummary) { %>
+            <div class="keyed-entry-overflow-summary" id="active-threats-overflow"><%= threatsOverflowSummary %></div>
+            <% } %>
+          </aside>
+          <% } %>
+
+          <% if (constraintsPanelRows && constraintsPanelRows.length > 0) { %>
+          <aside class="active-constraints-panel" id="active-constraints-panel" aria-labelledby="active-constraints-title">
+            <h3 class="active-constraints-title" id="active-constraints-title">Active Constraints</h3>
+            <ul class="active-constraints-list" id="active-constraints-list">
+              <% constraintsPanelRows.forEach((constraint) => { %>
+              <li class="active-constraints-item"><%= constraint.text %></li>
+              <% }) %>
+            </ul>
+            <% if (constraintsOverflowSummary) { %>
+            <div class="keyed-entry-overflow-summary" id="active-constraints-overflow"><%= constraintsOverflowSummary %></div>
+            <% } %>
+          </aside>
+          <% } %>
         </div>
-        <div class="custom-choice-container">
-          <input type="text" class="custom-choice-input"
-                 placeholder="Introduce your own custom choice..."
-                 maxlength="500" />
-          <button type="button" class="custom-choice-btn">Add</button>
-        </div>
-        <div class="custom-choice-enums">
-          <select class="custom-choice-type">
-            <option value="TACTICAL_APPROACH">Method/Tactic</option>
-            <option value="MORAL_DILEMMA">Moral Choice</option>
-            <option value="IDENTITY_EXPRESSION">Define Yourself</option>
-            <option value="RELATIONSHIP_SHIFT">Relationship</option>
-            <option value="RESOURCE_COMMITMENT">Spend/Risk</option>
-            <option value="INVESTIGATION">Investigate</option>
-            <option value="PATH_DIVERGENCE">Change Direction</option>
-            <option value="CONFRONTATION">Confront/Fight</option>
-            <option value="AVOIDANCE_RETREAT">Avoid/Flee</option>
-          </select>
-          <select class="custom-choice-delta">
-            <option value="LOCATION_CHANGE">Location</option>
-            <option value="GOAL_SHIFT">Goal</option>
-            <option value="RELATIONSHIP_CHANGE">Relationship</option>
-            <option value="URGENCY_CHANGE">Time Pressure</option>
-            <option value="ITEM_CONTROL">Item</option>
-            <option value="EXPOSURE_CHANGE">Attention</option>
-            <option value="CONDITION_CHANGE">Condition</option>
-            <option value="INFORMATION_REVEALED">Information</option>
-            <option value="THREAT_SHIFT">Danger</option>
-            <option value="CONSTRAINT_CHANGE">Limitation</option>
-          </select>
-        </div>
-        <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>
-      </section>
-      <% } %>
+      </div>
 
       <div class="loading-overlay" id="loading" style="display: none;">
         <div class="loading-stage" aria-live="polite"></div>

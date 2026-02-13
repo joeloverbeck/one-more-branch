@@ -162,13 +162,14 @@ export interface KeyedEntryPanelData {
 const KEYED_ENTRY_PANEL_LIMIT = 6;
 
 export function getKeyedEntryPanelData(
-  entries: readonly { readonly id: string; readonly text: string }[]
+  entries: readonly { readonly id: string; readonly text: string }[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
 ): KeyedEntryPanelData {
-  const visibleRows: KeyedEntryPanelRow[] = entries.slice(0, KEYED_ENTRY_PANEL_LIMIT).map((entry) => ({
+  const visibleRows: KeyedEntryPanelRow[] = entries.slice(0, limit).map((entry) => ({
     id: entry.id,
     text: entry.text,
   }));
-  const hiddenCount = entries.length - KEYED_ENTRY_PANEL_LIMIT;
+  const hiddenCount = entries.length - limit;
   return {
     rows: visibleRows,
     overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,

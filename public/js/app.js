@@ -14,6 +14,7 @@
   const PHRASE_ROTATION_MAX_MS = 4500;
   const OPEN_THREADS_PANEL_LIMIT = 6;
   const KEYED_ENTRY_PANEL_LIMIT = 6;
+  const LEFT_PANEL_LIMIT = 10;
 
   const STAGE_PHRASE_POOLS = {
     PLANNING_PAGE: [
@@ -814,26 +815,12 @@
     return 'Not shown: ' + parts.join(', ');
   }
 
-  function ensureSidebarContainer(narrativeElement) {
-    var existing = document.getElementById('sidebar-widgets');
-    if (existing) {
-      return existing;
-    }
-    var container = document.createElement('div');
-    container.className = 'sidebar-widgets';
-    container.id = 'sidebar-widgets';
-    narrativeElement.before(container);
-    return container;
+  function ensureSidebarContainer() {
+    return document.getElementById('sidebar-widgets');
   }
 
-  function cleanupEmptySidebar(sidebarContainer) {
-    if (!sidebarContainer) {
-      return;
-    }
-    var asides = sidebarContainer.querySelectorAll('aside');
-    if (asides.length === 0) {
-      sidebarContainer.remove();
-    }
+  function cleanupEmptySidebar() {
+    // Container is a grid cell; never remove it
   }
 
   function renderOpenThreadsPanel(openThreads, openThreadOverflowSummary, sidebarContainer) {
@@ -960,8 +947,9 @@
       return;
     }
 
-    var visible = normalized.slice(0, KEYED_ENTRY_PANEL_LIMIT);
-    var hiddenCount = normalized.length - KEYED_ENTRY_PANEL_LIMIT;
+    var limit = typeof config.limit === 'number' ? config.limit : KEYED_ENTRY_PANEL_LIMIT;
+    var visible = normalized.slice(0, limit);
+    var hiddenCount = normalized.length - limit;
     var overflowText = typeof config.overflowSummary === 'string' && config.overflowSummary.trim().length > 0
       ? config.overflowSummary.trim()
       : (hiddenCount > 0 ? '+' + hiddenCount + ' more not shown' : null);
@@ -1042,6 +1030,50 @@
       entries: constraints,
       overflowSummary: constraintsOverflowSummary,
       container: sidebarContainer,
+    });
+  }
+
+  function ensureLeftSidebarContainer() {
+    return document.getElementById('left-sidebar-widgets');
+  }
+
+  function cleanupEmptyLeftSidebar() {
+    // Container is a grid cell; never remove it
+  }
+
+  function renderInventoryPanel(inventory, inventoryOverflowSummary, leftSidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'inventory-panel',
+      titleId: 'inventory-title',
+      listId: 'inventory-list',
+      overflowId: 'inventory-overflow',
+      panelClass: 'inventory-panel',
+      titleClass: 'inventory-title',
+      listClass: 'inventory-list',
+      itemClass: 'inventory-item',
+      title: 'Inventory',
+      entries: inventory,
+      overflowSummary: inventoryOverflowSummary,
+      container: leftSidebarContainer,
+      limit: LEFT_PANEL_LIMIT,
+    });
+  }
+
+  function renderHealthPanel(health, healthOverflowSummary, leftSidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'health-panel',
+      titleId: 'health-title',
+      listId: 'health-list',
+      overflowId: 'health-overflow',
+      panelClass: 'health-panel',
+      titleClass: 'health-title',
+      listClass: 'health-list',
+      itemClass: 'health-item',
+      title: 'Health',
+      entries: health,
+      overflowSummary: healthOverflowSummary,
+      container: leftSidebarContainer,
+      limit: LEFT_PANEL_LIMIT,
     });
   }
 
@@ -1540,11 +1572,15 @@
         history.pushState({}, '', `/play/${storyId}?page=${currentPageId}`);
 
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
-        var sidebarContainer = ensureSidebarContainer(narrative);
+        var leftSidebarContainer = ensureLeftSidebarContainer();
+        renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
+        renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
+        cleanupEmptyLeftSidebar();
+        var sidebarContainer = ensureSidebarContainer();
         renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
         renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
         renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
-        cleanupEmptySidebar(sidebarContainer);
+        cleanupEmptySidebar();
         renderStateChanges(data.page.stateChanges, narrative);
         renderDeviationBanner(data.deviationInfo, choicesSection);
 
