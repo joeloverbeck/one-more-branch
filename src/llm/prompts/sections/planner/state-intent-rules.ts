@@ -14,7 +14,7 @@ STATE PERSISTENCE CONTRACT:
 - Default action is to KEEP existing entries (including NPC characterState).
 - Do NOT remove an entry just because it is not foregrounded in the next scene.
 - Remove IDs only when the next scene clearly invalidates, resolves, or makes that entry impossible.
-- If uncertain whether a state still holds, keep it.
+- If uncertain whether a state still holds, keep it — but if the entry is scene-specific and that scene context has clearly changed (character left, confrontation ended, moment passed), remove it.
 - Prefer minimal mutations: add new state when needed, and only remove with explicit contradiction/resolution.
 - constraints.removeIds: only when the planned scene explicitly lifts or invalidates that limitation.
 - threats.removeIds: only when the planned scene explicitly neutralizes, ends, or makes that danger no longer active.
@@ -70,7 +70,8 @@ THREAD URGENCY RUBRIC:
 QUALITY BAR:
 - Keep intents concrete and testable.
 - Prefer minimal, meaningful mutations over speculative churn.
-- Do not duplicate equivalent intents within the same category.
+- Do not duplicate equivalent intents within the same category. Before adding, verify no existing entry covers the same concept.
+- Prefer fewer, well-phrased entries over many overlapping ones. Aim for 3-8 threats and 3-8 constraints.
 
 REMOVAL SELF-CHECK (before you finalize JSON):
 - For each ID in removeIds/resolveIds, confirm the planned scene includes a concrete event that ends or invalidates that exact entry.

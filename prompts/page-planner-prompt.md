@@ -4,6 +4,7 @@
 - Planner context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts`
 - Thread pacing directives source: `src/llm/prompts/sections/planner/thread-pacing-directive.ts`
 - State intent/output instructions source: `src/llm/prompts/sections/planner/state-intent-rules.ts`
+- Active state quality criteria source: `src/llm/prompts/sections/continuation/continuation-quality-criteria.ts`
 - Output schema source: `src/llm/schemas/page-planner-schema.ts`
 
 ## Messages Sent To Model
@@ -176,6 +177,13 @@ Prior attempt failed deterministic reconciliation. You MUST correct these failur
 PLANNER RULES:
 {{... state intent rules, thread contract, canon intent rules, choice intent rules ...}}
 
+{{#if mode === 'continuation'}}
+ACTIVE STATE QUALITY CRITERIA:
+{{... threat/constraint dedup rules, stricter classification, quantity discipline,
+     scene-lifecycle removal triggers, threat/constraint self-check ...}}
+(Source: CONTINUATION_ACTIVE_STATE_QUALITY from continuation-quality-criteria.ts)
+{{/if}}
+
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
 
 Return JSON only.
@@ -239,3 +247,25 @@ Return JSON only.
   ]
 }
 ```
+
+## Active State Quality Criteria (Continuation Only)
+
+In continuation mode, the planner prompt includes `CONTINUATION_ACTIVE_STATE_QUALITY` from `continuation-quality-criteria.ts`. This section addresses threat/constraint accumulation problems observed in longer stories and includes:
+
+1. **Hard Threat/Constraint Dedup Rules** — Before adding a threat or constraint, scan all existing entries. If an existing entry covers the same concept (even in different words), do not add. Includes concrete bad-duplicate examples.
+
+2. **Stricter Classification** — Threats must be dangers that can physically escalate or directly harm in the current scene. Strategic concerns, institutional processes, and future plans are DANGER threads, not threats. Constraints must restrict what the protagonist can physically do — interpretation/documentation of behavior is not a constraint.
+
+3. **Quantity Discipline + Scene-Lifecycle Removal** — Soft cap of 3-8 entries per category. When count exceeds 8, prioritize removal and consolidation. Scene-lifecycle triggers: remove when source character leaves, confrontation ends, or conversational moment passes.
+
+4. **Threat/Constraint Self-Check** — Pre-finalization checklist: verify classification (physical vs strategic), check for duplicates against existing entries, and count-check against the 8-entry soft cap.
+
+This section is **not** included in opening mode (opening pages have no accumulated state to deduplicate against).
+
+## State Persistence Contract Notes
+
+The `PLANNER_STATE_INTENT_RULES` persistence contract defaults to keeping entries when uncertain, but includes a scene-lifecycle exception: if an entry is scene-specific and the scene context has clearly changed (character left, confrontation ended, moment passed), it should be removed.
+
+The QUALITY BAR section also enforces:
+- Verify no existing entry covers the same concept before adding
+- Prefer fewer, well-phrased entries: aim for 3-8 threats and 3-8 constraints

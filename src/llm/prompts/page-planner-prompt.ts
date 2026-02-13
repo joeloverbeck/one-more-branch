@@ -1,6 +1,7 @@
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { PagePlanContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTINUATION_ACTIVE_STATE_QUALITY } from './sections/continuation/index.js';
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
@@ -58,13 +59,16 @@ ${context.reconciliationFailureReasons
     context.toneAntiKeywords
   );
 
+  const qualityCriteriaSection =
+    context.mode === 'continuation' ? `\n${CONTINUATION_ACTIVE_STATE_QUALITY}\n` : '';
+
   const userPrompt = `Create a page plan for the writer model.
 
 ${contextSection}
 ${reconciliationRetrySection}
 
 ${PLANNER_STATE_INTENT_RULES}
-
+${qualityCriteriaSection}
 ${toneReminderLine}
 
 Return JSON only.`;

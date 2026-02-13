@@ -64,4 +64,57 @@ When the protagonist picks up a sword, gains gold, loses a key, or breaks an ite
 
 When the protagonist is wounded, poisoned, exhausted, or healed:
 ✅ Use healthAdded/healthRemoved
-❌ Do NOT put physical conditions in threatsAdded or constraintsAdded`;
+❌ Do NOT put physical conditions in threatsAdded or constraintsAdded
+
+HARD THREAT/CONSTRAINT DEDUP RULES:
+- Before adding a threat or constraint, scan ALL existing entries in the provided state.
+- If an existing entry already covers this concept — even in different words — do NOT add.
+- If a BROADER entry already exists, do NOT add a narrower sub-aspect of the same thing.
+- One entry per distinct concept. Rephrasings, elaborations, and sub-aspects are duplicates.
+
+BAD DUPLICATES (do NOT add when the existing entry already covers it):
+- Existing: "Crew being questioned separately, limiting coordination"
+  BAD add: "Individual interrogations prevent crew coordination" (same concept)
+  BAD add: "Captain cannot coordinate with crew during interrogation" (same concept)
+  BAD add: "Any contradiction between separated testimonies will be weaponized" (consequence of same concept)
+- Existing: "Any visible emotional reaction will be documented as evidence"
+  BAD add: "Any accusation will be documented as hostile behavior" (same pattern)
+  BAD add: "Any emotional reaction during testimony will undermine strategy" (same constraint)
+
+THREAT CLASSIFICATION (stricter):
+- A threat is a danger that can PHYSICALLY ESCALATE or DIRECTLY HARM in THIS scene.
+- If the danger is someone's STRATEGY, INSTITUTIONAL PROCESS, or FUTURE PLAN, it is a DANGER thread, NOT a threat.
+- If the danger is about how someone will INTERPRET behavior, it is NOT a threat.
+
+BAD THREATS (reclassify or reject):
+- "Investigator building case that crew staged evidence" -> This is a DANGER thread (institutional process)
+- "Palace creating psychological profile framing responses as guilt" -> This is a DANGER thread (strategy)
+- "Investigator's response will determine narrative direction" -> This is a dramatic question, not a threat
+- "Korrim may report conversation attempts" -> This is a possibility/concern, not an active threat
+
+CONSTRAINT CLASSIFICATION (stricter):
+- A constraint is a limitation that RESTRICTS what the protagonist can PHYSICALLY DO right now.
+- If the constraint describes how others will INTERPRET or DOCUMENT behavior, it is context, not a constraint.
+- If the constraint describes a CONSEQUENCE of a past action, it belongs in characterState, not constraints.
+
+BAD CONSTRAINTS (reject):
+- "Captain's acknowledgment undermines authority" -> consequence of past action, not active limitation
+- "Interrogation questions are designed with assumed answers" -> meta-commentary about style, not a constraint
+- "Captain's admission can be used as conspiracy theory" -> consequence, not limitation
+
+THREAT/CONSTRAINT QUANTITY DISCIPLINE:
+- Aim for 3-8 threats and 3-8 constraints. These are ACTIVE SCENE CONDITIONS, not a comprehensive risk register.
+- If the current count exceeds 8 in either category, prioritize REMOVAL and CONSOLIDATION before adding new entries.
+- One well-phrased entry is better than three overlapping ones.
+
+SCENE-LIFECYCLE REMOVAL TRIGGERS:
+- When a character who was the SOURCE of a threat LEAVES the scene, remove threats tied to that character's immediate presence.
+- When a confrontation DE-ESCALATES or ENDS, remove threats specific to that confrontation's peak moment.
+- When a specific CONVERSATIONAL MOMENT passes (e.g., "threatening charges if questioning continues"), remove the entry if questioning did not continue.
+- Scene-specific entries should not outlive their scene context.
+
+THREAT/CONSTRAINT SELF-CHECK (before you finalize JSON):
+- For each new threat: Is this an IMMEDIATE physical danger in the planned scene, or a strategic concern? If strategic -> DANGER thread or nothing.
+- For each new constraint: Does this RESTRICT the protagonist's physical actions, or describe how others interpret behavior? If interpretation -> nothing.
+- For each new add: Does ANY existing entry already cover this concept? If yes -> do not add.
+- Count check: Will the total threats exceed 8? Will total constraints exceed 8? If yes, identify entries to remove first.`;

@@ -141,4 +141,23 @@ describe('buildPagePlannerPrompt', () => {
     );
     expect(user).toContain('URGENCY SELF-CHECK (before you finalize JSON):');
   });
+
+  it('includes active state quality criteria in continuation mode', () => {
+    const messages = buildPagePlannerPrompt(continuationContext);
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('ACTIVE STATE QUALITY CRITERIA:');
+    expect(user).toContain('HARD THREAT/CONSTRAINT DEDUP RULES');
+    expect(user).toContain('THREAT CLASSIFICATION (stricter)');
+    expect(user).toContain('THREAT/CONSTRAINT QUANTITY DISCIPLINE');
+    expect(user).toContain('THREAT/CONSTRAINT SELF-CHECK');
+  });
+
+  it('does not include active state quality criteria in opening mode', () => {
+    const messages = buildPagePlannerPrompt(openingContext);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('ACTIVE STATE QUALITY CRITERIA:');
+    expect(user).not.toContain('HARD THREAT/CONSTRAINT DEDUP RULES');
+  });
 });
