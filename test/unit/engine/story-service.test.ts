@@ -39,6 +39,11 @@ jest.mock('../../../src/engine/page-service', () => ({
 
 jest.mock('../../../src/llm', () => ({
   generateStoryStructure: jest.fn(),
+  decomposeEntities: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 const mockedStorage = storage as {
@@ -221,6 +226,8 @@ describe('story-service', () => {
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'STRUCTURING_STORY', status: 'started', attempt: 1 }],
         [{ stage: 'STRUCTURING_STORY', status: 'completed', attempt: 1 }],
+        [{ stage: 'DECOMPOSING_ENTITIES', status: 'started', attempt: 1 }],
+        [{ stage: 'DECOMPOSING_ENTITIES', status: 'completed', attempt: 1 }],
       ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);

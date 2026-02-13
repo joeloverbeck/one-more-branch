@@ -46,6 +46,7 @@ describe('Engine types', () => {
         'ANALYZING_SCENE',
         'RESOLVING_AGENDAS',
         'STRUCTURING_STORY',
+        'DECOMPOSING_ENTITIES',
         'RESTRUCTURING_STORY',
       ];
 

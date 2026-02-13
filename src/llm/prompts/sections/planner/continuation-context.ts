@@ -1,3 +1,7 @@
+import {
+  formatDecomposedCharacterForPrompt,
+} from '../../../../models/decomposed-character.js';
+import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
@@ -188,15 +192,28 @@ ${lines.join('\n\n')}
 export function buildPlannerContinuationContextSection(
   context: ContinuationPagePlanContext
 ): string {
-  const worldSection = context.worldbuilding
-    ? `WORLDBUILDING:
+  const hasDecomposed =
+    context.decomposedCharacters && context.decomposedCharacters.length > 0;
+  const hasDecomposedWorld =
+    context.decomposedWorld && context.decomposedWorld.facts.length > 0;
+
+  const worldSection = hasDecomposedWorld
+    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld!)}
+
+`
+    : context.worldbuilding
+      ? `WORLDBUILDING:
 ${context.worldbuilding}
 
 `
-    : '';
+      : '';
 
-  const npcsSection =
-    context.npcs && context.npcs.length > 0
+  const npcsSection = hasDecomposed
+    ? `CHARACTERS (structured profiles):
+${context.decomposedCharacters!.map((c) => formatDecomposedCharacterForPrompt(c)).join('\n\n')}
+
+`
+    : context.npcs && context.npcs.length > 0
       ? `NPCS (Available Characters):
 ${formatNpcsForPrompt(context.npcs)}
 

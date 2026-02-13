@@ -1,3 +1,4 @@
+import { formatSpeechFingerprintForWriter } from '../../models/decomposed-character.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import { buildFewShotMessages } from '../examples.js';
 import type { OpeningContext } from '../context-types.js';
@@ -87,6 +88,18 @@ ${context.reconciliationFailureReasons
     ? formatStoryBibleSection(context.storyBible)
     : '';
 
+  const protagonistSpeech =
+    context.decomposedCharacters && context.decomposedCharacters.length > 0
+      ? context.decomposedCharacters[0]!
+      : null;
+  const protagonistSpeechSection = protagonistSpeech
+    ? `
+PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
+${formatSpeechFingerprintForWriter(protagonistSpeech.speechFingerprint)}
+
+`
+    : '';
+
   const userPrompt = `Create the opening scene for a new interactive story.
 
 === DATA & STATE RULES ===
@@ -94,6 +107,7 @@ ${dataRules}
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
+${protagonistSpeechSection}
 
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 

@@ -9,6 +9,8 @@ import {
   parseStoryId,
   parseStructureVersionId,
 } from '../models';
+import type { DecomposedCharacter } from '../models/decomposed-character';
+import type { DecomposedWorld, WorldFactDomain } from '../models/decomposed-world';
 import {
   deleteDirectory,
   directoryExists,
@@ -24,6 +26,36 @@ import {
 } from './file-utils';
 import { withLock } from './lock-manager';
 
+interface SpeechFingerprintFileData {
+  catchphrases: string[];
+  vocabularyProfile: string;
+  sentencePatterns: string;
+  verbalTics: string[];
+  dialogueSamples: string[];
+}
+
+interface DecomposedCharacterFileData {
+  name: string;
+  speechFingerprint: SpeechFingerprintFileData;
+  coreTraits: string[];
+  motivations: string;
+  relationships: string[];
+  knowledgeBoundaries: string;
+  appearance: string;
+  rawDescription: string;
+}
+
+interface WorldFactFileData {
+  domain: string;
+  fact: string;
+  scope: string;
+}
+
+interface DecomposedWorldFileData {
+  facts: WorldFactFileData[];
+  rawWorldbuilding: string;
+}
+
 interface StoryFileData {
   id: string;
   title: string;
@@ -36,6 +68,8 @@ interface StoryFileData {
   globalCharacterCanon: Record<string, string[]>;
   structure: StoryStructureFileData | null;
   structureVersions?: VersionedStoryStructureFileData[];
+  decomposedCharacters?: DecomposedCharacterFileData[];
+  decomposedWorld?: DecomposedWorldFileData;
   createdAt: string;
   updatedAt: string;
 }
@@ -166,6 +200,38 @@ function storyToFileData(story: Story): StoryFileData {
     globalCharacterCanon,
     structure: story.structure ? structureToFileData(story.structure) : null,
     structureVersions: (story.structureVersions ?? []).map(versionedStructureToFileData),
+    ...(story.decomposedCharacters
+      ? {
+          decomposedCharacters: story.decomposedCharacters.map((char) => ({
+            name: char.name,
+            speechFingerprint: {
+              catchphrases: [...char.speechFingerprint.catchphrases],
+              vocabularyProfile: char.speechFingerprint.vocabularyProfile,
+              sentencePatterns: char.speechFingerprint.sentencePatterns,
+              verbalTics: [...char.speechFingerprint.verbalTics],
+              dialogueSamples: [...char.speechFingerprint.dialogueSamples],
+            },
+            coreTraits: [...char.coreTraits],
+            motivations: char.motivations,
+            relationships: [...char.relationships],
+            knowledgeBoundaries: char.knowledgeBoundaries,
+            appearance: char.appearance,
+            rawDescription: char.rawDescription,
+          })),
+        }
+      : {}),
+    ...(story.decomposedWorld
+      ? {
+          decomposedWorld: {
+            facts: story.decomposedWorld.facts.map((f) => ({
+              domain: f.domain,
+              fact: f.fact,
+              scope: f.scope,
+            })),
+            rawWorldbuilding: story.decomposedWorld.rawWorldbuilding,
+          },
+        }
+      : {}),
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
   };
@@ -198,6 +264,40 @@ function fileDataToStory(data: StoryFileData): Story {
     globalCharacterCanon,
     structure: data.structure ? fileDataToStructure(data.structure) : null,
     structureVersions,
+    ...(data.decomposedCharacters
+      ? {
+          decomposedCharacters: data.decomposedCharacters.map(
+            (char): DecomposedCharacter => ({
+              name: char.name,
+              speechFingerprint: {
+                catchphrases: [...char.speechFingerprint.catchphrases],
+                vocabularyProfile: char.speechFingerprint.vocabularyProfile,
+                sentencePatterns: char.speechFingerprint.sentencePatterns,
+                verbalTics: [...char.speechFingerprint.verbalTics],
+                dialogueSamples: [...char.speechFingerprint.dialogueSamples],
+              },
+              coreTraits: [...char.coreTraits],
+              motivations: char.motivations,
+              relationships: [...char.relationships],
+              knowledgeBoundaries: char.knowledgeBoundaries,
+              appearance: char.appearance,
+              rawDescription: char.rawDescription,
+            })
+          ),
+        }
+      : {}),
+    ...(data.decomposedWorld
+      ? {
+          decomposedWorld: {
+            facts: data.decomposedWorld.facts.map((f) => ({
+              domain: f.domain as WorldFactDomain,
+              fact: f.fact,
+              scope: f.scope,
+            })),
+            rawWorldbuilding: data.decomposedWorld.rawWorldbuilding,
+          } as DecomposedWorld,
+        }
+      : {}),
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
   };

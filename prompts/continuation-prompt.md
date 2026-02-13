@@ -3,6 +3,7 @@
 - Source: `src/llm/prompts/continuation-prompt.ts`
 - System prompt source: `buildContinuationSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/writer-schema.ts`
+- Protagonist speech formatter: `formatSpeechFingerprintForWriter()` from `src/models/decomposed-character.ts`
 
 ## Story Bible Conditional Behavior
 
@@ -25,9 +26,14 @@ The following sections are **always included** regardless of Story Bible presenc
 - Active state (location, threats, constraints, threads)
 - Inventory and health
 - Protagonist affect
+- Protagonist speech fingerprint (when decomposed characters are available)
 - Planner guidance and choice intents
 - Grandparent and parent full narrative (voice continuity)
 - Player's choice and suggested speech
+
+## Protagonist Speech Fingerprint
+
+When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST SPEECH FINGERPRINT` section is inserted immediately after CHARACTER CONCEPT. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence, since the Story Bible covers NPC speech but not the protagonist's.
 
 When `storyBible` is absent (lorekeeper failure or pre-feature pages), all original sections appear as documented below.
 
@@ -269,6 +275,17 @@ CHOICE FORMATTING EXAMPLE:
 
 CHARACTER CONCEPT:
 {{characterConcept}}
+
+{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
+Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
+Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
+{{#if catchphrases}}Catchphrases: "phrase1", "phrase2"{{/if}}
+{{#if verbalTics}}Verbal tics: tic1, tic2{{/if}}
+{{#if dialogueSamples}}Example lines:
+  "sample line 1"
+  "sample line 2"{{/if}}
+{{/if}}
 
 {{#if !storyBible && worldbuilding}}
 WORLDBUILDING:

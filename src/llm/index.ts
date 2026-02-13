@@ -63,3 +63,9 @@ export {
 export { mergePageWriterAndReconciledStateWithAnalystResults } from './result-merger.js';
 
 export { generateAgendaResolver } from './agenda-resolver-generation.js';
+
+export { decomposeEntities } from './entity-decomposer.js';
+export type {
+  EntityDecomposerContext,
+  EntityDecompositionResult,
+} from './entity-decomposer-types.js';

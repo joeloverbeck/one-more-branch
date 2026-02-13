@@ -46,6 +46,37 @@ describe('buildAgendaResolverPrompt', () => {
     expect(user).toContain('Voss');
   });
 
+  it('uses decomposed character profiles when available', () => {
+    const messages = buildAgendaResolverPrompt(
+      buildMinimalContext({
+        decomposedCharacters: [
+          {
+            name: 'Azra',
+            coreTraits: ['cautious', 'calculating'],
+            motivations: 'Escape the city alive.',
+            relationships: ['Distrusts Voss'],
+            knowledgeBoundaries: 'Knows smugglers but not military plans.',
+            appearance: 'Lean, scarred, always scanning exits.',
+            rawDescription: 'Ex-military fixer',
+            speechFingerprint: {
+              catchphrases: ['Keep your head down.'],
+              vocabularyProfile: 'Clipped tactical language',
+              sentencePatterns: 'Short imperative statements',
+              verbalTics: ['Clicks tongue before disagreeing'],
+              dialogueSamples: ['We move now or we die here.'],
+            },
+          },
+        ],
+      })
+    );
+    const user = messages[1]?.content ?? '';
+
+    expect(user).toContain('CHARACTERS (structured profiles with speech fingerprints)');
+    expect(user).toContain('CHARACTER: Azra');
+    expect(user).toContain('SPEECH FINGERPRINT:');
+    expect(user).not.toContain('NPC DEFINITIONS');
+  });
+
   it('includes narrative and scene summary in user prompt', () => {
     const messages = buildAgendaResolverPrompt(buildMinimalContext());
     const user = messages[1]?.content ?? '';
@@ -96,21 +127,12 @@ describe('buildAgendaResolverPrompt', () => {
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         acts: [],
       },
-      accumulatedStructureState: {
-        currentActIndex: 1,
-        currentBeatIndex: 2,
-        beatProgressions: [],
-        pagesInCurrentBeat: 3,
-        pacingNudge: null,
-      },
     });
 
     const messages = buildAgendaResolverPrompt(context);
     const user = messages[1]?.content ?? '';
 
     expect(user).toContain('STORY STRUCTURE CONTEXT');
-    expect(user).toContain('Current Act Index: 1');
-    expect(user).toContain('Current Beat Index: 2');
     expect(user).toContain('Overall Theme: Survival at any cost');
   });
 

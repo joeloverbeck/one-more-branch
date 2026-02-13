@@ -2,6 +2,7 @@
 
 - Source: `src/llm/prompts/page-planner-prompt.ts`
 - Planner context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts`
+- Decomposed data formatters: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
 - Thread pacing directives source: `src/llm/prompts/sections/planner/thread-pacing-directive.ts`
 - State intent/output instructions source: `src/llm/prompts/sections/planner/state-intent-rules.ts`
 - Active state quality criteria source: `src/llm/prompts/sections/continuation/continuation-quality-criteria.ts`
@@ -58,12 +59,20 @@ Create a page plan for the writer model.
 CHARACTER CONCEPT:
 {{characterConcept}}
 
-{{#if worldbuilding}}
+{{#if decomposedWorld && decomposedWorld.facts.length > 0}}
+WORLDBUILDING (structured):
+[DOMAIN_NAME]
+- fact text (scope: scope text)
+...
+{{else if worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
 {{/if}}
 
-{{#if npcs.length}}
+{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+CHARACTERS (structured profiles):
+{{decomposedCharacters formatted with speech fingerprints, traits, relationships, etc.}}
+{{else if npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
 {{/if}}
@@ -103,12 +112,20 @@ Plan the first page intent and state intents using this opening setup.
 CHARACTER CONCEPT:
 {{characterConcept}}
 
-{{#if worldbuilding}}
+{{#if decomposedWorld && decomposedWorld.facts.length > 0}}
+WORLDBUILDING (structured):
+[DOMAIN_NAME]
+- fact text (scope: scope text)
+...
+{{else if worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
 {{/if}}
 
-{{#if npcs.length}}
+{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+CHARACTERS (structured profiles):
+{{decomposedCharacters formatted with speech fingerprints, traits, relationships, etc.}}
+{{else if npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
 {{/if}}

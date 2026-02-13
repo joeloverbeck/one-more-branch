@@ -1,3 +1,5 @@
+import type { DecomposedCharacter } from './decomposed-character';
+import type { DecomposedWorld } from './decomposed-world';
 import { StoryId, generateStoryId, isStoryId } from './id';
 import { Npc } from './npc';
 import { StoryStructure } from './story-arc';
@@ -27,6 +29,8 @@ export interface Story {
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
   readonly initialNpcAgendas?: readonly NpcAgenda[];
+  readonly decomposedCharacters?: readonly DecomposedCharacter[];
+  readonly decomposedWorld?: DecomposedWorld;
   readonly createdAt: Date;
   updatedAt: Date;
 }

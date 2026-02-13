@@ -153,3 +153,12 @@ export {
 export { Npc, formatNpcsForPrompt, isNpcArray } from './npc';
 
 export { setModelLogger, getModelLogger, modelWarn } from './model-logger';
+
+export type { SpeechFingerprint, DecomposedCharacter } from './decomposed-character';
+export {
+  formatDecomposedCharacterForPrompt,
+  formatSpeechFingerprintForWriter,
+} from './decomposed-character';
+
+export type { WorldFactDomain, WorldFact, DecomposedWorld } from './decomposed-world';
+export { formatDecomposedWorldForPrompt } from './decomposed-world';

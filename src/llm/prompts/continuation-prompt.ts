@@ -1,3 +1,4 @@
+import { formatSpeechFingerprintForWriter } from '../../models/decomposed-character.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import { buildFewShotMessages } from '../examples.js';
 import type { ContinuationContext } from '../context-types.js';
@@ -191,6 +192,18 @@ ${context.accumulatedHealth.map((entry) => `- [${entry.id}] ${entry.text}`).join
 
   const storyBibleSection = context.storyBible ? formatStoryBibleSection(context.storyBible) : '';
 
+  const protagonistDecomposed =
+    context.decomposedCharacters && context.decomposedCharacters.length > 0
+      ? context.decomposedCharacters[0]!
+      : null;
+  const protagonistSpeechSection = protagonistDecomposed
+    ? `
+PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
+${formatSpeechFingerprintForWriter(protagonistDecomposed.speechFingerprint)}
+
+`
+    : '';
+
   const suggestedProtagonistSpeech = context.suggestedProtagonistSpeech?.trim();
   const suggestedProtagonistSpeechSection =
     suggestedProtagonistSpeech && suggestedProtagonistSpeech.length > 0
@@ -213,8 +226,7 @@ ${dataRules}
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
-
-${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
+${protagonistSpeechSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 

@@ -29,10 +29,11 @@ RULES:
 1. Only update agendas whose situation materially changed due to the scene's events. If nothing relevant happened to an NPC, do NOT include them in updatedAgendas.
 2. Off-screen NPCs still evolve: their goals progress, leverage shifts, and off-screen behavior reflects time passing and their own pursuits.
 3. Keep each field to 1-2 sentences maximum.
-4. Respect story structure pacing: do NOT let NPCs resolve Act 3 conflicts during Act 1. NPCs should be setting up, maneuvering, and positioning — not achieving endgame goals prematurely.
+4. Respect story structure pacing: do NOT let NPCs resolve Act 3 conflicts during Act 1. NPCs should be setting up, maneuvering, and positioning - not achieving endgame goals prematurely.
 5. Off-screen behavior must be plausible given the NPC's leverage and fear. An NPC who fears exposure won't be acting boldly in public.
-6. NPC names in your output MUST exactly match the names in the NPC definitions.
-7. Return an empty updatedAgendas array if no NPC's situation changed materially.
+6. When structured character profiles are provided, treat them as the primary source for motivations, relationships, and voice-influenced behavior.
+7. NPC names in your output MUST exactly match the names in the character definitions section.
+8. Return an empty updatedAgendas array if no NPC's situation changed materially.
 ```
 
 ### 2) User Message
@@ -40,8 +41,13 @@ RULES:
 ```text
 Evaluate NPC agenda changes after the following scene.
 
+{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+CHARACTERS (structured profiles with speech fingerprints):
+{{decomposedCharacters formatted with formatDecomposedCharacterForPrompt()}}
+{{else}}
 NPC DEFINITIONS:
 {{formattedNpcs}}
+{{/if}}
 
 CURRENT NPC AGENDAS:
 {{currentAgendas rendered as:
@@ -52,10 +58,8 @@ CURRENT NPC AGENDAS:
   Off-screen: {{agenda.offScreenBehavior}}
 or '(no existing agendas)'}}
 
-{{#if structure && accumulatedStructureState}}
+{{#if structure}}
 STORY STRUCTURE CONTEXT:
-Current Act Index: {{accumulatedStructureState.currentActIndex}}
-Current Beat Index: {{accumulatedStructureState.currentBeatIndex}}
 Overall Theme: {{structure.overallTheme}}
 {{/if}}
 
@@ -108,10 +112,10 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 |---|---|
 | `narrative` | Full narrative text of the just-written page |
 | `sceneSummary` | Scene summary from the writer |
-| `npcs` | All NPC definitions (name + description) |
+| `npcs` | All NPC definitions (name + description), used as fallback when decomposition is unavailable |
+| `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred when present) |
 | `currentAgendas` | Accumulated NPC agendas from the parent page |
 | `structure` | Current story structure (optional) |
-| `accumulatedStructureState` | Current act/beat position (optional) |
 | `activeState` | Current location and active threats |
 
 ## Agenda Accumulation

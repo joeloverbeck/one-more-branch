@@ -8,22 +8,27 @@
 - TDD Bugfixing: If at any point of an implementation you spot a bug, rely on TDD to fix it. Important: never adapt tests to bugs.
 
 ## Project Structure & Module Organization
-- `src/` contains TypeScript source (Express server, story engine, LLM integration).
+- `src/` contains TypeScript source across major modules: `config/`, `engine/`, `llm/`, `logging/`, `models/`, `persistence/`, and `server/`.
 - `test/` holds Jest tests by category: `unit/`, `integration/`, `e2e/`, `performance/`, `memory/`, plus `fixtures/`.
 - `stories/` stores runtime story data (gitignored); JSON files are per story/page.
 - `specs/` tracks implementation order and spec notes.
 - `dist/` is the compiled output from `tsc`.
+- `public/js/app.js` is generated from `public/js/src/*.js`; edit source files only.
 - `CLAUDE.md` documents architecture, invariants, and data flow.
 
 ## Build, Test, and Development Commands
 - `npm install` installs dependencies.
-- `npm run build` compiles TypeScript to `dist/`.
+- `npm run build` compiles TypeScript, regenerates client JS bundle, and copies views/public assets to `dist/`.
 - `npm start` runs the compiled server.
 - `npm run dev` runs the server with hot reload via `ts-node-dev`.
 - `npm run typecheck` runs `tsc --noEmit`.
 - `npm run lint` and `npm run lint:fix` run ESLint.
 - `npm run format` formats `src/**/*.ts` and `test/**/*.ts` with Prettier.
 - `npm test` runs all Jest tests; `npm run test:coverage` enforces coverage.
+- `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`, `npm run test:performance`, `npm run test:memory` run targeted suites.
+- `npm run test:client` runs client JS tests.
+- `npm run test:watch` runs Jest in watch mode.
+- `npm run concat:js` regenerates `public/js/app.js` from `public/js/src/*.js`.
 
 ## Coding Style & Naming Conventions
 - TypeScript with `strict` mode; prefer explicit types and avoid `any`.
@@ -35,15 +40,21 @@
 - Jest + `ts-jest` with `test/**/*.test.ts` as the matcher.
 - Coverage thresholds: 70% global for branches/functions/lines/statements.
 - Current integration and E2E suites run with mocked LLM/fetch flows and do not require `OPENROUTER_TEST_KEY`.
-- Run targeted suites: `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`.
+- Run targeted suites: `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`, `npm run test:performance`, `npm run test:memory`, `npm run test:client`.
 
 ### Async Route Handler Testing
 Routes use `wrapAsyncRoute()` which fire-and-forgets via `void handler(req, res)`. **Do not use `await` on handlers** - it won't wait. Instead:
 - **Unit tests**: Call handler, then `await flushPromises()` (uses `setImmediate`)
 - **Integration tests**: Call handler, then `await waitForMock(responseMock)` (polling pattern)
 
+### Client-Side JavaScript (Critical)
+`public/js/app.js` is generated. **Do not edit it directly.**
+- Edit files in `public/js/src/` (numbered source files).
+- Regenerate bundle with `npm run concat:js` (or `node scripts/concat-client-js.js`).
+- Keep numeric filename ordering in `public/js/src/` intact because concatenation is alphabetical.
+
 ### Interface Changes and Mock Updates
-When modifying interfaces like `GenerationResult`, search all test files for mocks that need the new fields. Missing required fields cause runtime errors like `TypeError: Cannot convert undefined or null to object`.
+When modifying interfaces like `PageWriterResult`, `StateReconciliationResult`, or `AnalystResult`, search all test files for mocks that need the new fields. Missing required fields cause runtime errors like `TypeError: Cannot convert undefined or null to object`.
 
 ## Commit & Pull Request Guidelines
 - Current history uses short, capitalized, imperative messages (e.g., "Implement ...").
@@ -62,10 +73,10 @@ When modifying interfaces like `GenerationResult`, search all test files for moc
 When asked to archive a ticket, spec, or brainstorming document:
 
 1. **Edit the document** to mark its final status at the top:
-   - `**Status**: ✅ COMPLETED` - Fully implemented
-   - `**Status**: ❌ REJECTED` - Decided not to implement
-   - `**Status**: ⏸️ DEFERRED` - Postponed for later
-   - `**Status**: 🚫 NOT IMPLEMENTED` - Started but abandoned
+   - `**Status**: COMPLETED` - Fully implemented
+   - `**Status**: REJECTED` - Decided not to implement
+   - `**Status**: DEFERRED` - Postponed for later
+   - `**Status**: NOT IMPLEMENTED` - Started but abandoned
 
 2. **Add an Outcome section** at the bottom (for completed tickets):
    - Completion date

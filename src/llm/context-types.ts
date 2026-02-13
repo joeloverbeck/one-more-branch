@@ -1,3 +1,5 @@
+import type { DecomposedCharacter } from '../models/decomposed-character.js';
+import type { DecomposedWorld } from '../models/decomposed-world.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type {
@@ -27,6 +29,8 @@ export interface OpeningContext {
   startingSituation?: string;
   structure?: StoryStructure;
   initialNpcAgendas?: readonly NpcAgenda[];
+  decomposedCharacters?: readonly DecomposedCharacter[];
+  decomposedWorld?: DecomposedWorld;
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
@@ -39,6 +43,8 @@ export interface ContinuationContext {
   toneKeywords?: readonly string[];
   toneAntiKeywords?: readonly string[];
   npcs?: readonly Npc[];
+  decomposedCharacters?: readonly DecomposedCharacter[];
+  decomposedWorld?: DecomposedWorld;
   globalCanon: readonly string[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc?: string | null;
@@ -94,6 +100,8 @@ export interface LorekeeperContext {
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
   readonly npcs?: readonly Npc[];
+  readonly decomposedCharacters?: readonly DecomposedCharacter[];
+  readonly decomposedWorld?: DecomposedWorld;
   readonly globalCanon: readonly string[];
   readonly globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   readonly accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;

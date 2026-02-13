@@ -24,6 +24,8 @@ export function buildContinuationContext(
     toneKeywords: story.toneKeywords,
     toneAntiKeywords: story.toneAntiKeywords,
     npcs: story.npcs,
+    decomposedCharacters: story.decomposedCharacters,
+    decomposedWorld: story.decomposedWorld,
     globalCanon: story.globalCanon,
     globalCharacterCanon: story.globalCharacterCanon,
     structure: currentStructureVersion?.structure ?? story.structure ?? undefined,

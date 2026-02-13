@@ -1,4 +1,4 @@
-import { generateStoryStructure } from '../llm';
+import { decomposeEntities, generateStoryStructure } from '../llm';
 import {
   createStory,
   Page,
@@ -83,6 +83,32 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
       };
     }
 
+    await storage.updateStory(storyWithStructure);
+
+    options.onGenerationStage?.({
+      stage: 'DECOMPOSING_ENTITIES',
+      status: 'started',
+      attempt: 1,
+    });
+    const decompositionResult = await decomposeEntities(
+      {
+        characterConcept: story.characterConcept,
+        worldbuilding: story.worldbuilding,
+        tone: story.tone,
+        npcs: story.npcs,
+      },
+      options.apiKey
+    );
+    options.onGenerationStage?.({
+      stage: 'DECOMPOSING_ENTITIES',
+      status: 'completed',
+      attempt: 1,
+    });
+    storyWithStructure = {
+      ...storyWithStructure,
+      decomposedCharacters: decompositionResult.decomposedCharacters,
+      decomposedWorld: decompositionResult.decomposedWorld,
+    };
     await storage.updateStory(storyWithStructure);
 
     const { page, updatedStory } = await generatePage(

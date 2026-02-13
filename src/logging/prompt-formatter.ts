@@ -10,7 +10,8 @@ export type PromptType =
   | 'lorekeeper'
   | 'structure'
   | 'structure-rewrite'
-  | 'agenda-resolver';
+  | 'agenda-resolver'
+  | 'entity-decomposer';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),

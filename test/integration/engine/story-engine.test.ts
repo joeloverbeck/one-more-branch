@@ -22,6 +22,11 @@ jest.mock('@/llm', () => ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
+  decomposeEntities: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 jest.mock('@/logging/index', () => ({

@@ -130,6 +130,8 @@ export async function generatePage(
           startingSituation: story.startingSituation,
           structure: story.structure ?? undefined,
           initialNpcAgendas: story.initialNpcAgendas,
+          decomposedCharacters: story.decomposedCharacters,
+          decomposedWorld: story.decomposedWorld,
         },
         storyId: story.id,
         requestId,
@@ -173,6 +175,8 @@ export async function generatePage(
           startingSituation: story.startingSituation,
           structure: story.structure ?? undefined,
           initialNpcAgendas: story.initialNpcAgendas,
+          decomposedCharacters: story.decomposedCharacters,
+          decomposedWorld: story.decomposedWorld,
           reconciliationFailureReasons: failureReasons,
         })
     : (() => {
@@ -302,12 +306,12 @@ export async function generatePage(
 
   const agendaResolverResult = await resolveNpcAgendas({
     npcs: story.npcs,
+    decomposedCharacters: story.decomposedCharacters,
     writerNarrative: writerResult.narrative,
     writerSceneSummary: writerResult.sceneSummary,
     parentAccumulatedNpcAgendas,
     currentStructureVersion,
     storyStructure: story.structure,
-    parentStructureState,
     parentActiveState: isOpening
       ? {
           currentLocation: '',
