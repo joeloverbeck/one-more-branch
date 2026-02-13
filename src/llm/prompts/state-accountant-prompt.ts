@@ -13,6 +13,44 @@ import {
 } from './sections/planner/index.js';
 import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
+function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
+  const anchors =
+    plan.continuityAnchors.length > 0
+      ? plan.continuityAnchors.map((a) => `- ${a}`).join('\n')
+      : '- (none)';
+
+  const beats =
+    plan.writerBrief.mustIncludeBeats.length > 0
+      ? plan.writerBrief.mustIncludeBeats.map((b) => `  - ${b}`).join('\n')
+      : '  - (none)';
+
+  const recaps =
+    plan.writerBrief.forbiddenRecaps.length > 0
+      ? plan.writerBrief.forbiddenRecaps.map((r) => `  - ${r}`).join('\n')
+      : '  - (none)';
+
+  const choices = plan.choiceIntents
+    .map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`)
+    .join('\n');
+
+  return `Scene Intent: ${plan.sceneIntent}
+
+Continuity Anchors:
+${anchors}
+
+Writer Brief:
+- Opening line directive: ${plan.writerBrief.openingLineDirective}
+- Must include beats:
+${beats}
+- Forbidden recaps:
+${recaps}
+
+Dramatic Question: ${plan.dramaticQuestion}
+
+Choice Intents:
+${choices}`;
+}
+
 const ACCOUNTANT_ROLE_INTRO = `You are a state accountant for interactive fiction.`;
 
 const ACCOUNTANT_RULES = `Generate stateIntents only.
@@ -90,7 +128,7 @@ ${contextSection}
 ${reconciliationRetrySection}
 
 === REDUCED PLANNER OUTPUT ===
-${JSON.stringify(reducedPlan, null, 2)}
+${formatReducedPlanForAccountant(reducedPlan)}
 
 ${PLANNER_STATE_INTENT_RULES}
 ${qualityCriteriaSection}${threadAgingSection}${narrativePromisesSection}${payoffFeedbackSection}${toneReminderLine}
