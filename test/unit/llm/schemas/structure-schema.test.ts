@@ -7,15 +7,11 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     expect(STRUCTURE_GENERATION_SCHEMA.json_schema.strict).toBe(true);
   });
 
-  it('should enforce act count constraints via minItems and maxItems', () => {
-    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
-      properties: {
-        acts: { minItems: number; maxItems: number };
-      };
-    };
-
-    expect(schema.properties.acts.minItems).toBe(3);
-    expect(schema.properties.acts.maxItems).toBe(5);
+  it('should not use minItems > 1 or maxItems (unsupported by Anthropic)', () => {
+    const schemaStr = JSON.stringify(STRUCTURE_GENERATION_SCHEMA);
+    // Anthropic only supports minItems: 0 or 1
+    expect(schemaStr).not.toMatch(/"minItems":\s*[2-9]/);
+    expect(schemaStr).not.toMatch(/"maxItems"/);
   });
 
   it('should document array constraints in descriptions (runtime validated)', () => {

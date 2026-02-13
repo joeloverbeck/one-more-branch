@@ -85,8 +85,6 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
         acts: {
           type: 'array',
           description: '3-5 acts following setup, confrontation, and resolution.',
-          minItems: 3,
-          maxItems: 5,
           items: {
             type: 'object',
             additionalProperties: false,
