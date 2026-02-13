@@ -100,9 +100,9 @@ src/
 │   ├── canon-manager.ts      # Global and character canon management
 │   ├── ancestor-collector.ts # Collects ancestor context for prompts
 │   └── story-engine.ts       # High-level API (startStory, makeChoice)
-├── llm/                # OpenRouter client, 6-prompt system, response parsing
+├── llm/                # OpenRouter client, 8-stage prompt system, response parsing
 │   ├── prompts/              # Prompt builders (opening, continuation, planner,
-│   │   │                     #   analyst, structure, structure-rewrite)
+│   │   │                     #   lorekeeper, analyst, structure, structure-rewrite, agenda-resolver)
 │   │   └── sections/         # Shared prompt sections (opening/, continuation/,
 │   │                         #   planner/, shared/)
 │   ├── schemas/              # JSON Schema definitions for structured LLM output
@@ -156,24 +156,25 @@ archive/specs/      # Archived completed specifications
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + API key
 2. **Structure Generation**: LLM generates a StoryStructure (acts, beats, pacing budget, theme)
 3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, narrative promises (inherited + analyst-detected), and payoff quality feedback
-4. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
-5. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
-6. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, foreshadowing detection (`narrativePromises`), and payoff quality (`threadPayoffAssessments`)
-7. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
-8. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + inherited narrative promises
-9. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
-10. **State Accumulation**: Each page's state = parent's accumulated state + own changes
-11. **Canon Management**: Global and character-specific canon facts persist across all branches
+4. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
+5. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
+6. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
+7. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, foreshadowing detection (`narrativePromises`), and payoff quality (`threadPayoffAssessments`)
+8. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
+9. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + inherited narrative promises
+10. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
+11. **State Accumulation**: Each page's state = parent's accumulated state + own changes
+12. **Canon Management**: Global and character-specific canon facts persist across all branches
 
 ## Generation Pipeline Stages
 
 The engine reports progress through these stages (used by the spinner UI):
 - `PLANNING_PAGE` - Page planner LLM call
-- `CURATING_CONTEXT` - Lorekeeper story bible generation (continuation only)
+- `CURATING_CONTEXT` - Lorekeeper story bible generation
 - `WRITING_OPENING_PAGE` - Opening page writer LLM call
 - `WRITING_CONTINUING_PAGE` - Continuation page writer LLM call
 - `ANALYZING_SCENE` - Analyst LLM call (beat conclusion, deviation, pacing, foreshadowing, payoff quality)
-- `RESOLVING_AGENDAS` - NPC agenda resolver LLM call (continuation only, when NPCs exist)
+- `RESOLVING_AGENDAS` - NPC agenda resolver LLM call (when NPCs exist)
 - `RESTRUCTURING_STORY` - Structure rewrite LLM call (on deviation)
 
 Progress is tracked in-memory by `GenerationProgressService` and polled via `GET /play/:storyId/progress/:progressId`.
@@ -284,7 +285,7 @@ Core specs (01-06) plus extensive post-core development:
 | 05-story-engine | Core orchestration logic | Done |
 | 06-user-interface | Express server and EJS views | Done |
 | 07-writer-analyst-split | Separate writer and analyst LLM roles | Done |
-| 08-writing-prompts-split-architecture | 6-prompt system architecture | Done |
+| 08-writing-prompts-split-architecture | Multi-prompt system architecture | Done |
 | 09-page-planner-spec | Page planning LLM step | Done |
 | 10-page-writer-spec | Dedicated page writer prompt | Done |
 | 11-deterministic-state-reconciler | State reconciliation pipeline | Done |
@@ -309,13 +310,15 @@ Completed specs are archived in `archive/specs/`.
 
 - Uses OpenRouter API exclusively via `src/llm/client.ts`
 - Default model: `anthropic/claude-sonnet-4.5`
-- **6-prompt architecture**: Each generation pass involves up to 6 distinct LLM calls:
+- **8-stage architecture**: Each generation pass involves up to 8 stages (6 LLM calls + 2 engine-side):
   1. **Structure prompt** (`structure-generator.ts`): Generates story arc on story creation
   2. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent, state intents, dramatic question, and choice intents
-  3. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
-  4. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
-  5. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing
-  6. **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on deviation
+  3. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
+  4. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
+  5. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
+  6. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing
+  7. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas based on scene events
+  8. **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on deviation (conditional)
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
 - Response transformers in `schemas/` convert raw LLM JSON to typed results
 - Validation pipeline in `validation/` repairs malformed writer output (e.g., ID prefix repair)

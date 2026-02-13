@@ -10,7 +10,7 @@ import {
   updateStoryStructure,
 } from '../models';
 import { storage } from '../persistence';
-import { generateFirstPage } from './page-service';
+import { generatePage } from './page-service';
 import { createStoryStructure } from './structure-factory';
 import { EngineError, StartStoryOptions, StartStoryResult } from './types';
 
@@ -85,9 +85,11 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
 
     await storage.updateStory(storyWithStructure);
 
-    const { page, updatedStory } = await generateFirstPage(
+    const { page, updatedStory } = await generatePage(
+      'opening',
       storyWithStructure,
       options.apiKey,
+      undefined,
       options.onGenerationStage
     );
 

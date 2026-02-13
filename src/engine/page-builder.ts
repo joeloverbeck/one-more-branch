@@ -44,8 +44,31 @@ type PageBuildResult = PageWriterResult &
   >;
 
 /**
- * Context for building the first page of a story.
- * Contains the initial structure state and version.
+ * Unified context for building any page (opening or continuation).
+ * For opening pages: parentPageId is null, parent accumulated states are empty/defaults.
+ * For continuation pages: all parent state is inherited from parent page.
+ */
+export interface PageBuildContext {
+  readonly pageId: PageId;
+  readonly parentPageId: PageId | null;
+  readonly parentChoiceIndex: number | null;
+  readonly parentAccumulatedActiveState: ActiveState;
+  readonly parentAccumulatedInventory: Inventory;
+  readonly parentAccumulatedHealth: Health;
+  readonly parentAccumulatedCharacterState: AccumulatedCharacterState;
+  readonly structureState: AccumulatedStructureState;
+  readonly structureVersionId: StructureVersionId | null;
+  readonly storyBible: StoryBible | null;
+  readonly analystResult: AnalystResult | null;
+  readonly parentThreadAges: Readonly<Record<string, number>>;
+  readonly parentInheritedNarrativePromises: readonly NarrativePromise[];
+  readonly parentAnalystNarrativePromises: readonly NarrativePromise[];
+  readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
+  readonly npcAgendaUpdates?: readonly NpcAgenda[];
+}
+
+/**
+ * @deprecated Use PageBuildContext instead
  */
 export interface FirstPageBuildContext {
   readonly structureState: AccumulatedStructureState;
@@ -54,8 +77,7 @@ export interface FirstPageBuildContext {
 }
 
 /**
- * Context for building a continuation page.
- * Contains page ID, parent linkage, and all accumulated state from parent.
+ * @deprecated Use PageBuildContext instead
  */
 export interface ContinuationPageBuildContext {
   readonly pageId: PageId;
@@ -173,68 +195,30 @@ function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
 }
 
 /**
- * Builds the first page of a story from LLM generation result.
- * Handles page assembly with initial structure state.
+ * Builds any page (opening or continuation) from LLM generation result.
+ * For opening pages (parentPageId === null): uses first-page thread ages, empty narrative promises.
+ * For continuation pages: computes thread ages from parent, inherits narrative promises.
  */
-export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildContext): Page {
-  const threadAges = computeFirstPageThreadAges(result.threadsAdded);
+export function buildPage(result: PageBuildResult, context: PageBuildContext): Page {
+  const isOpening = context.parentPageId === null;
 
-  // Build initial accumulated agendas from structure-generated agendas
-  const initialAgendas = context.initialNpcAgendas ?? [];
-  const agendaRecord: Record<string, NpcAgenda> = {};
-  for (const agenda of initialAgendas) {
-    agendaRecord[agenda.npcName] = agenda;
-  }
-  const parentAccumulatedNpcAgendas: AccumulatedNpcAgendas = agendaRecord;
+  const threadAges = isOpening
+    ? computeFirstPageThreadAges(result.threadsAdded)
+    : computeContinuationThreadAges(
+        context.parentThreadAges,
+        context.parentAccumulatedActiveState.openThreads.map((t) => t.id),
+        result.threadsAdded,
+        result.threadsResolved,
+        getMaxIdNumber(context.parentAccumulatedActiveState.openThreads, 'td')
+      );
 
-  return createPage({
-    id: parsePageId(1),
-    narrativeText: result.narrative,
-    sceneSummary: result.sceneSummary,
-    choices: result.choices.map((c) => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
-    activeStateChanges: mapToActiveStateChanges(result),
-    inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
-    healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
-    characterStateChanges: createCharacterStateChanges(
-      result.characterStateChangesAdded,
-      result.characterStateChangesRemoved
-    ),
-    protagonistAffect: result.protagonistAffect,
-    isEnding: result.isEnding,
-    parentPageId: null,
-    parentChoiceIndex: null,
-    parentAccumulatedStructureState: context.structureState,
-    structureVersionId: context.structureVersionId,
-    threadAges,
-    parentAccumulatedNpcAgendas,
-  });
-}
-
-/**
- * Builds a continuation page from LLM generation result.
- * Handles page assembly with parent state inheritance.
- */
-export function buildContinuationPage(
-  result: PageBuildResult,
-  context: ContinuationPageBuildContext
-): Page {
-  const parentOpenThreads = context.parentAccumulatedActiveState.openThreads;
-  const parentOpenThreadIds = parentOpenThreads.map((t) => t.id);
-  const newThreadStartId = getMaxIdNumber(parentOpenThreads, 'td');
-
-  const threadAges = computeContinuationThreadAges(
-    context.parentThreadAges,
-    parentOpenThreadIds,
-    result.threadsAdded,
-    result.threadsResolved,
-    newThreadStartId
-  );
-
-  const inheritedNarrativePromises = computeInheritedNarrativePromises(
-    context.parentInheritedNarrativePromises,
-    context.parentAnalystNarrativePromises,
-    result.threadsAdded.map((t) => t.text)
-  );
+  const inheritedNarrativePromises = isOpening
+    ? []
+    : computeInheritedNarrativePromises(
+        context.parentInheritedNarrativePromises,
+        context.parentAnalystNarrativePromises,
+        result.threadsAdded.map((t) => t.text)
+      );
 
   return createPage({
     id: context.pageId,
@@ -252,10 +236,12 @@ export function buildContinuationPage(
     isEnding: result.isEnding,
     parentPageId: context.parentPageId,
     parentChoiceIndex: context.parentChoiceIndex,
-    parentAccumulatedActiveState: context.parentAccumulatedActiveState,
-    parentAccumulatedInventory: context.parentAccumulatedInventory,
-    parentAccumulatedHealth: context.parentAccumulatedHealth,
-    parentAccumulatedCharacterState: context.parentAccumulatedCharacterState,
+    parentAccumulatedActiveState: isOpening ? undefined : context.parentAccumulatedActiveState,
+    parentAccumulatedInventory: isOpening ? undefined : context.parentAccumulatedInventory,
+    parentAccumulatedHealth: isOpening ? undefined : context.parentAccumulatedHealth,
+    parentAccumulatedCharacterState: isOpening
+      ? undefined
+      : context.parentAccumulatedCharacterState,
     parentAccumulatedStructureState: context.structureState,
     structureVersionId: context.structureVersionId,
     storyBible: context.storyBible,
@@ -264,6 +250,67 @@ export function buildContinuationPage(
     inheritedNarrativePromises,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
+  });
+}
+
+/**
+ * @deprecated Use buildPage instead
+ */
+export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildContext): Page {
+  const initialAgendas = context.initialNpcAgendas ?? [];
+  const agendaRecord: Record<string, NpcAgenda> = {};
+  for (const agenda of initialAgendas) {
+    agendaRecord[agenda.npcName] = agenda;
+  }
+
+  return buildPage(result, {
+    pageId: parsePageId(1),
+    parentPageId: null,
+    parentChoiceIndex: null,
+    parentAccumulatedActiveState: {
+      currentLocation: '',
+      activeThreats: [],
+      activeConstraints: [],
+      openThreads: [],
+    },
+    parentAccumulatedInventory: [],
+    parentAccumulatedHealth: [],
+    parentAccumulatedCharacterState: {},
+    structureState: context.structureState,
+    structureVersionId: context.structureVersionId,
+    storyBible: null,
+    analystResult: null,
+    parentThreadAges: {},
+    parentInheritedNarrativePromises: [],
+    parentAnalystNarrativePromises: [],
+    parentAccumulatedNpcAgendas: agendaRecord,
+  });
+}
+
+/**
+ * @deprecated Use buildPage instead
+ */
+export function buildContinuationPage(
+  result: PageBuildResult,
+  context: ContinuationPageBuildContext
+): Page {
+  return buildPage(result, {
+    pageId: context.pageId,
+    parentPageId: context.parentPageId,
+    parentChoiceIndex: context.parentChoiceIndex,
+    parentAccumulatedActiveState: context.parentAccumulatedActiveState,
+    parentAccumulatedInventory: context.parentAccumulatedInventory,
+    parentAccumulatedHealth: context.parentAccumulatedHealth,
+    parentAccumulatedCharacterState: context.parentAccumulatedCharacterState,
+    structureState: context.structureState,
+    structureVersionId: context.structureVersionId,
+    storyBible: context.storyBible,
+    analystResult: context.analystResult,
+    parentThreadAges: context.parentThreadAges,
+    parentInheritedNarrativePromises: context.parentInheritedNarrativePromises,
+    parentAnalystNarrativePromises: context.parentAnalystNarrativePromises,
+    parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
+    npcAgendaUpdates: context.npcAgendaUpdates,
   });
 }
 

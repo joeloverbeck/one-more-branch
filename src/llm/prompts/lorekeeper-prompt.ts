@@ -128,7 +128,20 @@ ${context.grandparentNarrative}
 `
     : '';
 
-  const parentNarrativeSection = `PARENT NARRATIVE (previous page):
+  const isOpening = !!context.startingSituation;
+
+  const startingSituationSection = context.startingSituation
+    ? `STARTING SITUATION:
+This is the opening page. The starting situation below describes what the protagonist is walking into. Use it to determine which worldbuilding elements, characters, and canon facts are relevant to this first scene.
+
+${context.startingSituation}
+
+`
+    : '';
+
+  const parentNarrativeSection = isOpening
+    ? ''
+    : `PARENT NARRATIVE (previous page):
 ${context.previousNarrative}
 
 `;
@@ -159,7 +172,7 @@ ${context.worldbuilding || '(none provided)'}
 
 TONE/GENRE: ${context.tone}
 
-${npcsSection}${npcAgendasSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
+${npcsSection}${npcAgendasSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
 1. sceneWorldContext: Filter worldbuilding to what's relevant here

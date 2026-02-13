@@ -1,7 +1,7 @@
 # Structure Prompt (Production Template)
 
 - Source: `src/llm/prompts/structure-prompt.ts`
-- System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt.ts`
+- System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/structure-schema.ts`
 
 ## Messages Sent To Model

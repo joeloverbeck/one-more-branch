@@ -4,6 +4,14 @@
 - Structure evaluation section source: `src/llm/prompts/continuation/story-structure-section.ts`
 - Output schema source: `src/llm/schemas/analyst-schema.ts`
 
+## Pipeline Position
+
+The analyst runs for **both opening and continuation pages** as part of the unified generation pipeline:
+
+**Pipeline position**: Planner -> Lorekeeper -> Writer -> **Analyst** -> Agenda Resolver
+
+The analyst is conditional on the story having a structure. If no structure exists, the analyst step is skipped.
+
 ## Messages Sent To Model
 
 ### 1) System Message

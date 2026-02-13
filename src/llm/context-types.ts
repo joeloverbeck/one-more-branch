@@ -28,6 +28,7 @@ export interface OpeningContext {
   structure?: StoryStructure;
   initialNpcAgendas?: readonly NpcAgenda[];
   pagePlan?: PagePlan;
+  storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }
 
@@ -104,4 +105,5 @@ export interface LorekeeperContext {
   readonly grandparentNarrative: string | null;
   readonly previousNarrative: string;
   readonly pagePlan: PagePlan;
+  readonly startingSituation?: string;
 }

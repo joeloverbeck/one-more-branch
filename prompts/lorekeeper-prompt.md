@@ -7,11 +7,11 @@
 
 ## Purpose
 
-The Lorekeeper is a dedicated LLM call between the planner and writer (continuation pages only). It curates a compact, scene-focused "Story Bible" containing only what the writer needs, replacing the raw context dumps that would otherwise bloat the writer prompt with irrelevant information.
+The Lorekeeper is a dedicated LLM call between the planner and writer. It curates a compact, scene-focused "Story Bible" containing only what the writer needs, replacing the raw context dumps that would otherwise bloat the writer prompt with irrelevant information.
 
 **Pipeline position**: Planner -> **Lorekeeper** -> Writer -> Analyst -> Agenda Resolver
 
-The Lorekeeper is skipped for opening pages (where context is small and fully relevant).
+The Lorekeeper runs for **both opening and continuation pages**. For opening pages, it receives `startingSituation` instead of `previousNarrative` / `ancestorSummaries` / `grandparentNarrative`, using the starting situation to determine which worldbuilding elements, characters, and canon facts are relevant to the first scene.
 
 ## Messages Sent To Model
 
@@ -120,6 +120,13 @@ Active Constraints: {{activeState.activeConstraints as comma-separated text list
 Open Threads: {{activeState.openThreads as "text [threadType/urgency]" comma-separated list}}
 {{/if}}
 
+{{#if startingSituation}}
+STARTING SITUATION:
+This is the opening page. The starting situation below describes what the protagonist is walking into. Use it to determine which worldbuilding elements, characters, and canon facts are relevant to this first scene.
+
+{{startingSituation}}
+{{/if}}
+
 {{#if ancestorSummaries.length > 0}}
 ANCESTOR PAGE SUMMARIES (oldest first):
 {{ancestorSummaries as "- Page N: summary" list}}
@@ -130,8 +137,10 @@ GRANDPARENT NARRATIVE (2 pages ago):
 {{grandparentNarrative}}
 {{/if}}
 
+{{#if !startingSituation}}
 PARENT NARRATIVE (previous page):
 {{previousNarrative}}
+{{/if}}
 
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
@@ -191,30 +200,48 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `accumulatedCharacterState` | All NPC state entries (by character name) |
 | `accumulatedNpcAgendas` | Current NPC agendas (by NPC name): goal, leverage, fear, off-screen behavior |
 | `activeState` | Current location, threats, constraints, threads |
-| `ancestorSummaries` | All ancestor page summaries |
-| `grandparentNarrative` | Full text of 2 pages ago (if exists) |
-| `previousNarrative` | Full text of parent page |
+| `startingSituation` | Starting situation text (opening pages only; replaces narrative history fields) |
+| `ancestorSummaries` | All ancestor page summaries (continuation only) |
+| `grandparentNarrative` | Full text of 2 pages ago (continuation only, if exists) |
+| `previousNarrative` | Full text of parent page (continuation only) |
 
 ## Writer Integration
 
-The Story Bible produced by the Lorekeeper is stored on `ContinuationContext.storyBible` and persisted on the `Page` object as `storyBible: StoryBible | null`. When the writer prompt detects a non-null `storyBible`, it:
+The Story Bible produced by the Lorekeeper is stored on the writer context's `storyBible` field (both `OpeningContext.storyBible` and `ContinuationContext.storyBible`) and persisted on the `Page` object as `storyBible: StoryBible | null`. When either writer prompt detects a non-null `storyBible`, it:
 
 1. Inserts a `=== STORY BIBLE (curated for this scene) ===` section
 2. Suppresses: worldbuilding, NPCs, global canon, character canon, character state, ancestor summaries
-3. Keeps: active state, inventory, health, protagonist affect, structure, planner guidance, grandparent/parent narrative
+3. Keeps: active state, inventory, health, protagonist affect, structure, planner guidance, grandparent/parent narrative (continuation), starting situation (opening)
 
-See `prompts/continuation-prompt.md` for details on the conditional behavior.
+See `prompts/opening-prompt.md` and `prompts/continuation-prompt.md` for details on the conditional behavior in each mode.
 
 ## Generation Stage
 
-The Lorekeeper runs as the `CURATING_CONTEXT` generation stage, emitted inside the `WRITING_CONTINUING_PAGE` stage (because it runs within the writer's retry pipeline callback). The stage event ordering is:
+The Lorekeeper runs as the `CURATING_CONTEXT` generation stage, emitted inside the WRITING stage (because it runs within the writer's retry pipeline callback). The stage event ordering is the same for both opening and continuation:
 
+**Opening pipeline:**
+```
+PLANNING_PAGE started
+PLANNING_PAGE completed
+WRITING_OPENING_PAGE started
+  CURATING_CONTEXT started
+  CURATING_CONTEXT completed
+  WRITING_OPENING_PAGE started (inner, attempt: 1)
+WRITING_OPENING_PAGE completed
+ANALYZING_SCENE started
+ANALYZING_SCENE completed
+RESOLVING_AGENDAS started
+RESOLVING_AGENDAS completed
+```
+
+**Continuation pipeline:**
 ```
 PLANNING_PAGE started
 PLANNING_PAGE completed
 WRITING_CONTINUING_PAGE started
   CURATING_CONTEXT started
   CURATING_CONTEXT completed
+  WRITING_CONTINUING_PAGE started (inner, attempt: 1)
 WRITING_CONTINUING_PAGE completed
 ANALYZING_SCENE started
 ANALYZING_SCENE completed

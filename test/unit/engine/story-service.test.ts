@@ -9,7 +9,7 @@ import {
 import * as models from '../../../src/models';
 import { generateStoryStructure } from '../../../src/llm';
 import { storage } from '../../../src/persistence';
-import { generateFirstPage } from '../../../src/engine/page-service';
+import { generatePage } from '../../../src/engine/page-service';
 import {
   deleteStory,
   getPage,
@@ -34,7 +34,7 @@ jest.mock('../../../src/persistence', () => ({
 }));
 
 jest.mock('../../../src/engine/page-service', () => ({
-  generateFirstPage: jest.fn(),
+  generatePage: jest.fn(),
 }));
 
 jest.mock('../../../src/llm', () => ({
@@ -52,7 +52,7 @@ const mockedStorage = storage as {
   loadAllPages: jest.Mock;
 };
 
-const mockedGenerateFirstPage = generateFirstPage as jest.MockedFunction<typeof generateFirstPage>;
+const mockedGeneratePage = generatePage as jest.MockedFunction<typeof generatePage>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -124,7 +124,7 @@ describe('story-service', () => {
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
     it('throws VALIDATION_FAILED for short characterConcept', async () => {
@@ -137,7 +137,7 @@ describe('story-service', () => {
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
     it('throws VALIDATION_FAILED for missing apiKey', async () => {
@@ -150,7 +150,7 @@ describe('story-service', () => {
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
       expect(mockedStorage.saveStory).not.toHaveBeenCalled();
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
     it('generates structure before first page and passes structured story forward', async () => {
@@ -172,7 +172,17 @@ describe('story-service', () => {
       createStorySpy.mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedGenerateFirstPage.mockResolvedValue({ page, updatedStory });
+      mockedGeneratePage.mockResolvedValue({ page, updatedStory, metrics: {
+        plannerDurationMs: 0,
+        lorekeeperDurationMs: 0,
+        writerDurationMs: 0,
+        reconcilerDurationMs: 0,
+        plannerValidationIssueCount: 0,
+        writerValidationIssueCount: 0,
+        reconcilerIssueCount: 0,
+        reconcilerRetried: false,
+        finalStatus: 'success',
+      }});
       mockedStorage.savePage.mockResolvedValue(undefined);
       mockedStorage.updateStory.mockResolvedValue(undefined);
 
@@ -201,10 +211,11 @@ describe('story-service', () => {
         'test-key'
       );
       expect(mockedStorage.updateStory).toHaveBeenCalled();
-      const firstPageCall = mockedGenerateFirstPage.mock.calls[0];
-      expect(firstPageCall?.[1]).toBe('test-key');
-      expect(firstPageCall?.[2]).toBe(onGenerationStage);
-      const structuredStory = firstPageCall?.[0];
+      const firstPageCall = mockedGeneratePage.mock.calls[0];
+      expect(firstPageCall?.[0]).toBe('opening');
+      expect(firstPageCall?.[2]).toBe('test-key');
+      expect(firstPageCall?.[4]).toBe(onGenerationStage);
+      const structuredStory = firstPageCall?.[1];
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
       expect(onGenerationStage.mock.calls).toEqual([
@@ -217,7 +228,7 @@ describe('story-service', () => {
 
       const structureCallOrder =
         mockedGenerateStoryStructure.mock.invocationCallOrder[0] ?? Infinity;
-      const firstPageCallOrder = mockedGenerateFirstPage.mock.invocationCallOrder[0] ?? -Infinity;
+      const firstPageCallOrder = mockedGeneratePage.mock.invocationCallOrder[0] ?? -Infinity;
       expect(structureCallOrder).toBeLessThan(firstPageCallOrder);
     });
 
@@ -229,7 +240,7 @@ describe('story-service', () => {
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedGenerateFirstPage.mockRejectedValue(generationError);
+      mockedGeneratePage.mockRejectedValue(generationError);
       mockedStorage.deleteStory.mockResolvedValue(undefined);
 
       await expect(
@@ -261,7 +272,7 @@ describe('story-service', () => {
         })
       ).rejects.toBe(structureError);
 
-      expect(mockedGenerateFirstPage).not.toHaveBeenCalled();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
       expect(mockedStorage.deleteStory).toHaveBeenCalledWith(story.id);
     });
 
@@ -273,7 +284,7 @@ describe('story-service', () => {
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedGenerateFirstPage.mockRejectedValue(generationError);
+      mockedGeneratePage.mockRejectedValue(generationError);
       mockedStorage.deleteStory.mockRejectedValue(new Error('cleanup failed'));
 
       await expect(

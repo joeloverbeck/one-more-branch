@@ -8,6 +8,7 @@ import {
   listAllStories,
   deleteStory,
   getStoryStats,
+  generatePage,
   generateFirstPage,
   generateNextPage,
   getOrGeneratePage,
@@ -52,6 +53,7 @@ describe('engine barrel export', () => {
     expect(deleteStory).toBeDefined();
     expect(getStoryStats).toBeDefined();
 
+    expect(generatePage).toBeDefined();
     expect(generateFirstPage).toBeDefined();
     expect(generateNextPage).toBeDefined();
     expect(getOrGeneratePage).toBeDefined();

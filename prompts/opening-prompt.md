@@ -4,6 +4,21 @@
 - System prompt source: `buildOpeningSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/writer-schema.ts`
 
+## Story Bible Conditional Behavior
+
+When a `storyBible` is present on the context (i.e., the Lorekeeper has curated context for this scene), the following sections are **replaced by the Story Bible section** and suppressed from the user prompt:
+
+- **WORLDBUILDING** - replaced by `storyBible.sceneWorldContext`
+- **NPCS** - replaced by `storyBible.relevantCharacters`
+
+The following sections are **always included** regardless of Story Bible presence:
+
+- Starting situation (user-provided grounding, independent of the story bible)
+- Planner guidance and choice intents
+- Reconciliation failure reasons (if retry)
+
+When `storyBible` is absent (lorekeeper failure), all original sections appear as documented below.
+
 ## Messages Sent To Model
 
 ### 1) System Message
@@ -163,12 +178,12 @@ CHOICE FORMATTING EXAMPLE:
 CHARACTER CONCEPT:
 {{characterConcept}}
 
-{{#if worldbuilding}}
+{{#if !storyBible && worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
 {{/if}}
 
-{{#if npcs.length}}
+{{#if !storyBible && npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
 
@@ -183,6 +198,28 @@ Begin the story with this situation. This takes precedence over your creative de
 {{/if}}
 
 TONE/GENRE: {{tone}}
+
+{{#if storyBible}}
+=== STORY BIBLE (curated for this scene) ===
+
+SCENE WORLD CONTEXT:
+{{storyBible.sceneWorldContext}}
+
+SCENE CHARACTERS:
+{{storyBible.relevantCharacters rendered as:
+[name] (role)
+  Profile: relevantProfile
+  Speech: speechPatterns
+  Relationship to protagonist: protagonistRelationship
+  Inter-character dynamics: interCharacterDynamics (if non-empty)
+  Current state: currentState}}
+
+RELEVANT CANON FACTS:
+{{storyBible.relevantCanonFacts as bullet list}}
+
+RELEVANT HISTORY:
+{{storyBible.relevantHistory}}
+{{/if}}
 
 {{#if pagePlan}}
 === PLANNER GUIDANCE ===

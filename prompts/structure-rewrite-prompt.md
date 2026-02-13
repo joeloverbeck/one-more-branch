@@ -1,7 +1,7 @@
 # Structure Rewrite Prompt (Production Template)
 
 - Source: `src/llm/prompts/structure-rewrite-prompt.ts`
-- System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt.ts`
+- System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/structure-schema.ts`
 
 ## Messages Sent To Model

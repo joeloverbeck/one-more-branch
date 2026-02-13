@@ -5,6 +5,7 @@ import {
   generateOpeningPage,
   generatePagePlan,
   generateStoryStructure,
+  generateLorekeeperBible,
 } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
@@ -15,6 +16,7 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
+  generateLorekeeperBible: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -37,6 +39,9 @@ const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.Mocked
   typeof generateAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
+const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<
+  typeof generateLorekeeperBible
+>;
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
@@ -366,6 +371,13 @@ describe('story-engine integration', () => {
       ],
       rawResponse: 'page-plan',
     });
+    mockedGenerateLorekeeperBible.mockResolvedValue({
+      sceneWorldContext: 'Test world context',
+      relevantCharacters: [],
+      relevantCanonFacts: [],
+      relevantHistory: 'Test history',
+      rawResponse: 'raw-lorekeeper',
+    });
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateWriterPage.mockImplementation((context) =>
       Promise.resolve(buildWriterResult(context.selectedChoice))
@@ -616,6 +628,19 @@ describe('story-engine integration', () => {
         ...buildWriterResult('Enter the ash-marked chapel'),
       });
     mockedGenerateAnalystEvaluation
+      .mockResolvedValueOnce({
+        // Opening page analyst - no beat conclusion, no deviation
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: 'The protagonist arrives on the scene.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none' as const,
+        rawResponse: 'analyst-raw',
+      })
       .mockResolvedValueOnce({
         beatConcluded: true,
         beatResolution: 'The harbor cartel link is proven beyond doubt.',

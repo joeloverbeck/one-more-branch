@@ -29,7 +29,7 @@ The following sections are **always included** regardless of Story Bible presenc
 - Grandparent and parent full narrative (voice continuity)
 - Player's choice and suggested speech
 
-When `storyBible` is absent (opening pages, pre-feature pages), all original sections appear as documented below.
+When `storyBible` is absent (lorekeeper failure or pre-feature pages), all original sections appear as documented below.
 
 ## Messages Sent To Model
 

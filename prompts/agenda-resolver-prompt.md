@@ -7,13 +7,14 @@
 
 ## Purpose
 
-The Agenda Resolver is a dedicated LLM call that runs after the analyst on continuation pages. It evaluates how scene events affected each NPC's agenda and updates their goals, leverage, fears, and off-screen behavior accordingly. This transforms NPCs from reactive stage furniture into autonomous story drivers with their own evolving arcs.
+The Agenda Resolver is a dedicated LLM call that runs after the analyst on both opening and continuation pages. It evaluates how scene events affected each NPC's agenda and updates their goals, leverage, fears, and off-screen behavior accordingly. This transforms NPCs from reactive stage furniture into autonomous story drivers with their own evolving arcs.
 
 **Pipeline position**: Planner -> Lorekeeper -> Writer -> Analyst -> **Agenda Resolver**
 
 The Agenda Resolver is skipped when:
 - The story has no NPCs defined
-- It's the opening page (initial agendas come from the structure generator instead)
+
+For opening pages, the resolver receives `initialNpcAgendas` (from the structure generator) as the parent agendas to evolve from.
 
 Failure is **non-fatal**: if the resolver fails, parent agendas carry forward unchanged and page generation continues.
 
@@ -117,7 +118,7 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 
 Agendas are stored per-page and inherit from the parent page, similar to other accumulated state:
 
-- **First page**: Receives `initialNpcAgendas` from the structure generator. No resolver runs.
+- **First page**: Receives `initialNpcAgendas` from the structure generator as parent agendas. The resolver runs and may update them based on opening scene events.
 - **Continuation pages**: Parent agendas + resolver updates = new accumulated agendas.
 - **Branch isolation**: Different branches evolve agendas independently.
 - **Update semantics**: Updates are full replacements keyed by NPC name (case-insensitive matching). NPCs not included in `updatedAgendas` retain their existing agenda unchanged.
@@ -133,15 +134,15 @@ Updated agendas flow into the next page's planning context:
 
 ## Generation Stage
 
-The Agenda Resolver runs as the `RESOLVING_AGENDAS` generation stage, after `ANALYZING_SCENE`. The stage event ordering is:
+The Agenda Resolver runs as the `RESOLVING_AGENDAS` generation stage, after `ANALYZING_SCENE`. The stage event ordering is the same for both opening and continuation pages (with the WRITING stage name varying):
 
 ```
 PLANNING_PAGE started
 PLANNING_PAGE completed
-WRITING_CONTINUING_PAGE started
+WRITING_OPENING_PAGE / WRITING_CONTINUING_PAGE started
   CURATING_CONTEXT started
   CURATING_CONTEXT completed
-WRITING_CONTINUING_PAGE completed
+WRITING_OPENING_PAGE / WRITING_CONTINUING_PAGE completed
 ANALYZING_SCENE started
 ANALYZING_SCENE completed
 RESOLVING_AGENDAS started

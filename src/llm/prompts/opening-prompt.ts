@@ -4,23 +4,27 @@ import type { OpeningContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildOpeningSystemPrompt, composeOpeningDataRules } from './system-prompt.js';
-import { buildToneReminder } from './sections/shared/tone-block.js';
+import { buildToneReminder, formatStoryBibleSection } from './sections/shared/index.js';
 
 export function buildOpeningPrompt(
   context: OpeningContext,
   options?: PromptOptions
 ): ChatMessage[] {
+  const hasBible = !!context.storyBible;
   const dataRules = composeOpeningDataRules(options);
 
-  const worldSection = context.worldbuilding
-    ? `WORLDBUILDING:
+  const worldSection = hasBible
+    ? ''
+    : context.worldbuilding
+      ? `WORLDBUILDING:
 ${context.worldbuilding}
 
 `
-    : '';
+      : '';
 
-  const npcsSection =
-    context.npcs && context.npcs.length > 0
+  const npcsSection = hasBible
+    ? ''
+    : context.npcs && context.npcs.length > 0
       ? `NPCS (Available Characters):
 ${formatNpcsForPrompt(context.npcs)}
 
@@ -79,6 +83,10 @@ ${context.reconciliationFailureReasons
 `
       : '';
 
+  const storyBibleSection = context.storyBible
+    ? formatStoryBibleSection(context.storyBible)
+    : '';
+
   const userPrompt = `Create the opening scene for a new interactive story.
 
 === DATA & STATE RULES ===
@@ -89,7 +97,7 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
 
-${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
+${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in

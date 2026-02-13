@@ -443,10 +443,16 @@ describe('page-service', () => {
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1 }],
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
+        [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2 }],
       ]);
     });
@@ -512,7 +518,10 @@ describe('page-service', () => {
       expect(page.id).toBe(1);
       expect(page.parentPageId).toBeNull();
       expect(page.parentChoiceIndex).toBeNull();
-      expect(page.accumulatedStructureState).toEqual(createInitialStructureState(structure));
+      expect(page.accumulatedStructureState).toEqual({
+        ...createInitialStructureState(structure),
+        pagesInCurrentBeat: 1,
+      });
       expect(page.structureVersionId).toBe(initialVersion.id);
       expect(page.choices.map((choice) => choice.text)).toEqual([
         'Hide in the print shop',
