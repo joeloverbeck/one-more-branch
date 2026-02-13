@@ -22,6 +22,7 @@ import {
   mergePreservedWithRegenerated,
   StructureRewriteGenerator,
 } from '../../../src/engine/structure-rewriter';
+import { LLMError } from '../../../src/llm/types';
 import type { StructureRewriteContext } from '../../../src/llm/types';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import type { StoryStructure } from '../../../src/models/story-arc';
@@ -212,6 +213,58 @@ describe('structure-rewriter', () => {
         description: 'Negotiate safe passage with neutral captains',
         objective: 'Secure routes to contested waters',
         role: 'turning_point',
+      });
+    });
+
+    it('propagates STRUCTURE_PARSE_ERROR with rawContent when generator returns invalid structure', async () => {
+      const context = createRewriteContext();
+      const twoActPayload = {
+        overallTheme: 'Some theme',
+        premise: 'Some premise',
+        pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
+        acts: [
+          {
+            name: 'Act One',
+            objective: 'Obj 1',
+            stakes: 'Stakes 1',
+            entryCondition: 'Entry 1',
+            beats: [
+              { name: 'Beat 1', description: 'Desc 1', objective: 'Goal 1', role: 'setup' },
+              { name: 'Beat 2', description: 'Desc 2', objective: 'Goal 2', role: 'turning_point' },
+            ],
+          },
+          {
+            name: 'Act Two',
+            objective: 'Obj 2',
+            stakes: 'Stakes 2',
+            entryCondition: 'Entry 2',
+            beats: [
+              { name: 'Beat 3', description: 'Desc 3', objective: 'Goal 3', role: 'escalation' },
+              { name: 'Beat 4', description: 'Desc 4', objective: 'Goal 4', role: 'resolution' },
+            ],
+          },
+        ],
+      };
+      const rawContent = JSON.stringify(twoActPayload);
+
+      const generator: jest.MockedFunction<StructureRewriteGenerator> = jest
+        .fn<ReturnType<StructureRewriteGenerator>, Parameters<StructureRewriteGenerator>>()
+        .mockRejectedValue(
+          new LLMError(
+            'Structure response must include exactly 3 acts (received: 2)',
+            'STRUCTURE_PARSE_ERROR',
+            true,
+            { rawContent },
+          ),
+        );
+
+      const rewriter = createStructureRewriter(generator);
+
+      await expect(rewriter.rewriteStructure(context, 'test-api-key')).rejects.toMatchObject({
+        code: 'STRUCTURE_PARSE_ERROR',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        message: expect.stringContaining('received: 2'),
+        context: { rawContent },
       });
     });
   });

@@ -45,7 +45,12 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
   }
 
   if (!Array.isArray(data['acts']) || data['acts'].length !== 3) {
-    throw new LLMError('Structure response must include exactly 3 acts', 'STRUCTURE_PARSE_ERROR', true);
+    const received = Array.isArray(data['acts']) ? data['acts'].length : typeof data['acts'];
+    throw new LLMError(
+      `Structure response must include exactly 3 acts (received: ${received})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
   }
 
   const acts = data['acts'].map((act, actIndex) => {
@@ -72,8 +77,9 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
     }
 
     if (!Array.isArray(actData['beats']) || actData['beats'].length < 2 || actData['beats'].length > 4) {
+      const received = Array.isArray(actData['beats']) ? actData['beats'].length : typeof actData['beats'];
       throw new LLMError(
-        `Structure act ${actIndex + 1} must have 2-4 beats`,
+        `Structure act ${actIndex + 1} must have 2-4 beats (received: ${received})`,
         'STRUCTURE_PARSE_ERROR',
         true,
       );
@@ -230,11 +236,16 @@ export async function generateStoryStructure(
 
     const parsedMessage = parseMessageJsonContent(content);
     const responseText = parsedMessage.rawText;
-    const parsed = parseStructureResponse(parsedMessage.parsed);
-
-    return {
-      ...parsed,
-      rawResponse: responseText,
-    };
+    try {
+      const parsed = parseStructureResponse(parsedMessage.parsed);
+      return { ...parsed, rawResponse: responseText };
+    } catch (error) {
+      if (error instanceof LLMError) {
+        throw new LLMError(error.message, error.code, error.retryable, {
+          rawContent: responseText,
+        });
+      }
+      throw error;
+    }
   });
 }

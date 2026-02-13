@@ -244,10 +244,53 @@ describe('structure-generator', () => {
   it('throws STRUCTURE_PARSE_ERROR when acts count is not exactly 3', async () => {
     const payload = createValidStructurePayload();
     const invalid = { ...payload, acts: payload.acts.slice(0, 2) };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(invalid)));
+    const rawContent = JSON.stringify(invalid);
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
 
     const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'STRUCTURE_PARSE_ERROR',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: expect.stringContaining('received: 2'),
+      context: { rawContent },
+    });
+
+    await advanceRetryDelays();
+    await expectation;
+  });
+
+  it('throws STRUCTURE_PARSE_ERROR with count when 4 acts are returned', async () => {
+    const payload = createValidStructurePayload();
+    const extraAct = { ...payload.acts[0]!, name: 'Act IV' };
+    const invalid = { ...payload, acts: [...payload.acts, extraAct] };
+    const rawContent = JSON.stringify(invalid);
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+
+    const pending = generateStoryStructure(context, 'test-api-key');
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'STRUCTURE_PARSE_ERROR',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: expect.stringContaining('received: 4'),
+      context: { rawContent },
+    });
+
+    await advanceRetryDelays();
+    await expectation;
+  });
+
+  it('throws STRUCTURE_PARSE_ERROR with type info when acts is not an array', async () => {
+    const payload = createValidStructurePayload();
+    const invalid = { ...payload, acts: 'not-an-array' };
+    const rawContent = JSON.stringify(invalid);
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+
+    const pending = generateStoryStructure(context, 'test-api-key');
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'STRUCTURE_PARSE_ERROR',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: expect.stringContaining('received: string'),
+      context: { rawContent },
+    });
 
     await advanceRetryDelays();
     await expectation;
