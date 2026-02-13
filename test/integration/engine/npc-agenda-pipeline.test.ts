@@ -1,0 +1,159 @@
+import { generateAgendaResolver } from '@/llm';
+import { resolveNpcAgendas } from '@/engine/npc-agenda-pipeline';
+import type { NpcAgendaContext } from '@/engine/npc-agenda-pipeline';
+import type { AgendaResolverResult } from '@/llm/types';
+import type { ActiveState } from '@/models/state/active-state';
+import type { AccumulatedStructureState } from '@/models/story-arc';
+import { createEmptyAccumulatedNpcAgendas } from '@/models/state/npc-agenda';
+import type { Npc } from '@/models/npc';
+import type { GenerationStageCallback } from '@/engine/types';
+
+jest.mock('@/llm', () => ({
+  generateAgendaResolver: jest.fn(),
+}));
+
+jest.mock('@/logging/index', () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
+  logPrompt: jest.fn(),
+}));
+
+const mockedGenerateAgendaResolver = generateAgendaResolver as jest.MockedFunction<
+  typeof generateAgendaResolver
+>;
+
+function createBaseContext(overrides: Partial<NpcAgendaContext> = {}): NpcAgendaContext {
+  const emptyActiveState: ActiveState = {
+    currentLocation: 'tavern',
+    activeThreats: [],
+    activeConstraints: [],
+    openThreads: [],
+  };
+  const emptyStructureState: AccumulatedStructureState = {
+    currentActIndex: 0,
+    currentBeatIndex: 0,
+    beatProgressions: [],
+    pacingBudgetRemaining: 10,
+    pacingNudge: null,
+  };
+
+  return {
+    npcs: undefined,
+    writerNarrative: 'The hero entered the tavern.',
+    writerSceneSummary: 'Hero enters tavern.',
+    parentAccumulatedNpcAgendas: createEmptyAccumulatedNpcAgendas(),
+    currentStructureVersion: null,
+    storyStructure: null,
+    parentStructureState: emptyStructureState,
+    parentActiveState: emptyActiveState,
+    apiKey: 'test-key',
+    ...overrides,
+  };
+}
+
+const testNpcs: readonly Npc[] = [
+  { name: 'Bartender', concept: 'A gruff bartender' },
+];
+
+const mockAgendaResult: AgendaResolverResult = {
+  updatedAgendas: {
+    Bartender: {
+      npcName: 'Bartender',
+      currentGoal: 'Serve drinks',
+      attitudeTowardProtagonist: 'neutral',
+      nextLikelyAction: 'Pour a drink',
+      emotionalState: 'calm',
+    },
+  },
+};
+
+describe('resolveNpcAgendas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns null when story has no NPCs', async () => {
+    const context = createBaseContext({ npcs: undefined });
+
+    const result = await resolveNpcAgendas(context);
+
+    expect(result).toBeNull();
+    expect(mockedGenerateAgendaResolver).not.toHaveBeenCalled();
+  });
+
+  it('returns null when NPCs array is empty', async () => {
+    const context = createBaseContext({ npcs: [] });
+
+    const result = await resolveNpcAgendas(context);
+
+    expect(result).toBeNull();
+    expect(mockedGenerateAgendaResolver).not.toHaveBeenCalled();
+  });
+
+  it('returns agenda result on success', async () => {
+    mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
+    const context = createBaseContext({ npcs: testNpcs });
+
+    const result = await resolveNpcAgendas(context);
+
+    expect(result).toEqual(mockAgendaResult);
+    expect(mockedGenerateAgendaResolver).toHaveBeenCalledTimes(1);
+    expect(mockedGenerateAgendaResolver).toHaveBeenCalledWith(
+      expect.objectContaining({
+        narrative: 'The hero entered the tavern.',
+        sceneSummary: 'Hero enters tavern.',
+        npcs: testNpcs,
+      }),
+      testNpcs,
+      { apiKey: 'test-key' },
+    );
+  });
+
+  it('returns null and logs warning on failure', async () => {
+    mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
+    const context = createBaseContext({ npcs: testNpcs });
+
+    const result = await resolveNpcAgendas(context);
+
+    expect(result).toBeNull();
+  });
+
+  it('emits RESOLVING_AGENDAS started and completed stages on success', async () => {
+    mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
+    const stageCallback: GenerationStageCallback = jest.fn();
+    const context = createBaseContext({ npcs: testNpcs, onGenerationStage: stageCallback });
+
+    await resolveNpcAgendas(context);
+
+    expect(stageCallback).toHaveBeenCalledTimes(2);
+    expect(stageCallback).toHaveBeenNthCalledWith(1, {
+      stage: 'RESOLVING_AGENDAS',
+      status: 'started',
+      attempt: 1,
+    });
+    expect(stageCallback).toHaveBeenNthCalledWith(2, {
+      stage: 'RESOLVING_AGENDAS',
+      status: 'completed',
+      attempt: 1,
+    });
+  });
+
+  it('does not emit completed stage on failure', async () => {
+    mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
+    const stageCallback: GenerationStageCallback = jest.fn();
+    const context = createBaseContext({ npcs: testNpcs, onGenerationStage: stageCallback });
+
+    await resolveNpcAgendas(context);
+
+    expect(stageCallback).toHaveBeenCalledTimes(1);
+    expect(stageCallback).toHaveBeenCalledWith({
+      stage: 'RESOLVING_AGENDAS',
+      status: 'started',
+      attempt: 1,
+    });
+  });
+});

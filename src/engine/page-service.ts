@@ -1,13 +1,8 @@
 import {
-  generatePageWriterOutput,
   generateOpeningPage,
-  generateLorekeeperBible,
   mergePageWriterAndReconciledStateWithAnalystResults,
-  generateAgendaResolver,
 } from '../llm';
-import type { AgendaResolverResult, GenerationPipelineMetrics, LorekeeperContext, StoryBible } from '../llm';
-import { logger } from '../logging/index.js';
-import { emitGenerationStage } from './generation-pipeline-helpers.js';
+import type { GenerationPipelineMetrics } from '../llm';
 import { randomUUID } from 'node:crypto';
 import {
   createEmptyActiveState,
@@ -21,6 +16,8 @@ import { storage } from '../persistence';
 import { collectAncestorContext } from './ancestor-collector';
 import { updateStoryWithAllCanon } from './canon-manager';
 import { buildContinuationContext, buildRemovableIds } from './continuation-context-builder';
+import { createContinuationWriterWithLorekeeper } from './lorekeeper-writer-pipeline';
+import { resolveNpcAgendas } from './npc-agenda-pipeline';
 import {
   runAnalystEvaluation,
   handleDeviationIfDetected,
@@ -174,7 +171,15 @@ export async function generateNextPage(
   const continuationPreviousState = createContinuationPreviousStateSnapshot(parentState);
   const removableIds = buildRemovableIds(parentState);
 
-  let lastStoryBible: StoryBible | null = null;
+  const { generateWriter, getLastStoryBible } = createContinuationWriterWithLorekeeper({
+    continuationContext,
+    storyId: story.id,
+    parentPageId: parentPage.id,
+    requestId,
+    apiKey,
+    removableIds,
+    onGenerationStage,
+  });
 
   const { writerResult, reconciliation: continuationReconciliation, metrics } =
     await generateWithReconciliationRetry({
@@ -189,78 +194,7 @@ export async function generateNextPage(
         mode: 'continuation',
         reconciliationFailureReasons: failureReasons,
       }),
-      generateWriter: async (pagePlan, failureReasons) => {
-        // Lorekeeper: curate context between planner and writer
-        emitGenerationStage(onGenerationStage, 'CURATING_CONTEXT', 'started', 1);
-        const lorekeeperContext: LorekeeperContext = {
-          characterConcept: continuationContext.characterConcept,
-          worldbuilding: continuationContext.worldbuilding,
-          tone: continuationContext.tone,
-          npcs: continuationContext.npcs,
-          globalCanon: continuationContext.globalCanon,
-          globalCharacterCanon: continuationContext.globalCharacterCanon,
-          accumulatedCharacterState: continuationContext.accumulatedCharacterState,
-          activeState: continuationContext.activeState,
-          structure: continuationContext.structure,
-          accumulatedStructureState: continuationContext.accumulatedStructureState,
-          accumulatedNpcAgendas: continuationContext.accumulatedNpcAgendas,
-          ancestorSummaries: continuationContext.ancestorSummaries,
-          grandparentNarrative: continuationContext.grandparentNarrative,
-          previousNarrative: continuationContext.previousNarrative,
-          pagePlan,
-        };
-
-        let storyBible: StoryBible | null = null;
-        try {
-          const lorekeeperResult = await generateLorekeeperBible(lorekeeperContext, {
-            apiKey,
-            observability: {
-              storyId: story.id,
-              pageId: parentPage.id,
-              requestId,
-            },
-          });
-          storyBible = {
-            sceneWorldContext: lorekeeperResult.sceneWorldContext,
-            relevantCharacters: lorekeeperResult.relevantCharacters,
-            relevantCanonFacts: lorekeeperResult.relevantCanonFacts,
-            relevantHistory: lorekeeperResult.relevantHistory,
-          };
-          lastStoryBible = storyBible;
-          logger.info('Lorekeeper bible generated', {
-            storyId: story.id,
-            pageId: parentPage.id,
-            characterCount: storyBible.relevantCharacters.length,
-            canonFactCount: storyBible.relevantCanonFacts.length,
-          });
-        } catch (error) {
-          logger.warn('Lorekeeper failed, proceeding without story bible', {
-            storyId: story.id,
-            pageId: parentPage.id,
-            error,
-          });
-        }
-        emitGenerationStage(onGenerationStage, 'CURATING_CONTEXT', 'completed', 1);
-        emitGenerationStage(onGenerationStage, 'WRITING_CONTINUING_PAGE', 'started', 1);
-
-        return generatePageWriterOutput(
-          {
-            ...continuationContext,
-            storyBible: storyBible ?? undefined,
-            reconciliationFailureReasons: failureReasons,
-          },
-          pagePlan,
-          {
-            apiKey,
-            observability: {
-              storyId: story.id,
-              pageId: parentPage.id,
-              requestId,
-            },
-            writerValidationContext: { removableIds },
-          },
-        );
-      },
+      generateWriter,
       onGenerationStage,
     });
 
@@ -333,29 +267,18 @@ export async function generateNextPage(
     pacingIssueReason: result.pacingIssueReason ?? '',
   });
 
-  // Agenda resolver (only when NPCs exist)
-  let agendaResolverResult: AgendaResolverResult | null = null;
-  if (story.npcs && story.npcs.length > 0) {
-    try {
-      emitGenerationStage(onGenerationStage, 'RESOLVING_AGENDAS', 'started', 1);
-      agendaResolverResult = await generateAgendaResolver(
-        {
-          narrative: writerResult.narrative,
-          sceneSummary: writerResult.sceneSummary,
-          npcs: story.npcs,
-          currentAgendas: parentState.accumulatedNpcAgendas,
-          structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
-          accumulatedStructureState: parentState.structureState,
-          activeState: parentState.accumulatedActiveState,
-        },
-        story.npcs,
-        { apiKey },
-      );
-      emitGenerationStage(onGenerationStage, 'RESOLVING_AGENDAS', 'completed', 1);
-    } catch (error) {
-      logger.warn('Agenda resolver failed, continuing without agenda updates', { error });
-    }
-  }
+  const agendaResolverResult = await resolveNpcAgendas({
+    npcs: story.npcs,
+    writerNarrative: writerResult.narrative,
+    writerSceneSummary: writerResult.sceneSummary,
+    parentAccumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
+    currentStructureVersion,
+    storyStructure: story.structure,
+    parentStructureState: parentState.structureState,
+    parentActiveState: parentState.accumulatedActiveState,
+    apiKey,
+    onGenerationStage,
+  });
 
   const parentAnalystPromises = parentPage.analystResult?.narrativePromises ?? [];
 
@@ -369,7 +292,7 @@ export async function generateNextPage(
     parentAccumulatedCharacterState: parentState.accumulatedCharacterState,
     structureState: newStructureState,
     structureVersionId: activeStructureVersion?.id ?? null,
-    storyBible: lastStoryBible,
+    storyBible: getLastStoryBible(),
     analystResult,
     parentThreadAges: parentPage.threadAges,
     parentInheritedNarrativePromises: parentPage.inheritedNarrativePromises,

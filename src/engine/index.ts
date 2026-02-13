@@ -12,6 +12,14 @@ export {
 
 export { generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
 
+// NPC agenda resolution pipeline
+export { resolveNpcAgendas } from './npc-agenda-pipeline';
+export type { NpcAgendaContext } from './npc-agenda-pipeline';
+
+// Lorekeeper + writer pipeline
+export { createContinuationWriterWithLorekeeper } from './lorekeeper-writer-pipeline';
+export type { LorekeeperWriterContext } from './lorekeeper-writer-pipeline';
+
 // Ancestor context collection
 export { collectAncestorContext } from './ancestor-collector';
 export type { AncestorContext } from './ancestor-collector';
