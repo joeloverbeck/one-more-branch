@@ -54,8 +54,10 @@ Choice Intents:
 
 === FULL STORY CONTEXT ===
 
+{{#if !(decomposedCharacters && decomposedCharacters.length > 0)}}
 CHARACTER CONCEPT:
 {{characterConcept}}
+{{/if}}
 
 {{#if decomposedWorld && decomposedWorld.facts.length > 0}}
 WORLDBUILDING (structured):
@@ -71,7 +73,7 @@ TONE/GENRE: {{tone}}
 
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles with speech fingerprints):
-{{decomposedCharacters formatted as structured profiles with SPEECH FINGERPRINT blocks}}
+{{decomposedCharacters formatted as structured profiles with SPEECH FINGERPRINT blocks; index 0 marked as PROTAGONIST}}
 {{else if npcs.length}}
 NPC DEFINITIONS:
 {{formattedNpcs}}
@@ -189,7 +191,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 
 | Context Field | Description |
 |---|---|
-| `characterConcept` | Protagonist concept |
+| `characterConcept` | Protagonist concept (injected into user prompt only when decomposed characters are unavailable) |
 | `worldbuilding` | Full worldbuilding text (raw prose, fallback when no decomposed world) |
 | `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred over raw NPCs) |
 | `decomposedWorld` | Domain-tagged atomic world facts (optional, preferred over raw worldbuilding) |

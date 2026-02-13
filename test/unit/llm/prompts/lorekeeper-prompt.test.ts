@@ -92,6 +92,54 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).toContain('dark fantasy');
   });
 
+  it('omits raw character concept and marks first decomposed character as PROTAGONIST', () => {
+    const messages = buildLorekeeperPrompt(
+      buildMinimalContext({
+        decomposedCharacters: [
+          {
+            name: 'Jon Ureña',
+            coreTraits: ['introverted', 'disciplined'],
+            motivations: 'Find connection without getting betrayed again.',
+            relationships: ['Distrusts authority'],
+            knowledgeBoundaries: 'Knows city gangs but not court politics.',
+            appearance: 'Tall, stoic, scarred knuckles.',
+            rawDescription: 'A guarded former enforcer.',
+            speechFingerprint: {
+              catchphrases: ['Keep it clean.'],
+              vocabularyProfile: 'Precise and restrained',
+              sentencePatterns: 'Short declarative statements',
+              verbalTics: ['Pauses before disagreeing'],
+              dialogueSamples: ['I said no.'],
+            },
+          },
+          {
+            name: 'Captain Voss',
+            coreTraits: ['charismatic', 'calculating'],
+            motivations: 'Control the district.',
+            relationships: ['Manipulates Jon'],
+            knowledgeBoundaries: 'Knows court politics and trade routes.',
+            appearance: 'Immaculate uniform, polished boots.',
+            rawDescription: 'District commander with ambition.',
+            speechFingerprint: {
+              catchphrases: ['Order has a price.'],
+              vocabularyProfile: 'Formal political language',
+              sentencePatterns: 'Layered persuasive clauses',
+              verbalTics: ['Uses rhetorical questions'],
+              dialogueSamples: ['You understand what stability requires.'],
+            },
+          },
+        ],
+      })
+    );
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).toContain('CHARACTERS (structured profiles with speech fingerprints)');
+    expect(userPrompt).toContain('CHARACTER: Jon Ureña\nPROTAGONIST');
+    expect(userPrompt).not.toContain('CHARACTER: Captain Voss\nPROTAGONIST');
+    expect(userPrompt).not.toContain('CHARACTER CONCEPT:');
+    expect(userPrompt).not.toContain('A wandering healer');
+  });
+
   it('includes NPC definitions when present', () => {
     const context = buildMinimalContext({
       npcs: [

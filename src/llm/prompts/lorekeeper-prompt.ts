@@ -33,7 +33,7 @@ export function buildLorekeeperPrompt(context: LorekeeperContext): ChatMessage[]
 
   const npcsSection = hasDecomposed
     ? `CHARACTERS (structured profiles with speech fingerprints):
-${context.decomposedCharacters.map((c) => formatDecomposedCharacterForPrompt(c)).join('\n\n')}
+${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
     : context.npcs && context.npcs.length > 0
@@ -176,9 +176,10 @@ ${plan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'
 ${choiceIntentSection}
 === FULL STORY CONTEXT ===
 
-CHARACTER CONCEPT:
+${hasDecomposed ? '' : `CHARACTER CONCEPT:
 ${context.characterConcept}
 
+`}
 ${hasDecomposedWorld ? formatDecomposedWorldForPrompt(context.decomposedWorld) : `WORLDBUILDING:\n${context.worldbuilding || '(none provided)'}`}
 
 TONE/GENRE: ${context.tone}
