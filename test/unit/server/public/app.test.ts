@@ -91,6 +91,7 @@ describe('public client script', () => {
     expect(script).toContain('WRITING_OPENING_PAGE: [');
     expect(script).toContain('WRITING_CONTINUING_PAGE: [');
     expect(script).toContain('ANALYZING_SCENE: [');
+    expect(script).toContain('STRUCTURING_STORY: [');
     expect(script).toContain('RESTRUCTURING_STORY: [');
   });
 

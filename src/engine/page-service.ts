@@ -1,5 +1,9 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../llm';
-import type { GenerationPipelineMetrics } from '../llm';
+import type {
+  GenerationPipelineMetrics,
+  PagePlanContext,
+  ReconciliationFailureReason,
+} from '../llm';
 import { randomUUID } from 'node:crypto';
 import {
   createEmptyAccumulatedStructureState,
@@ -132,7 +136,7 @@ export async function generatePage(
         apiKey,
         onGenerationStage,
       })
-    : (() => {
+    : (() : ReturnType<typeof createWriterWithLorekeeper> => {
         const continuationContext = buildContinuationContext(
           story,
           parentPage!,
@@ -157,7 +161,7 @@ export async function generatePage(
 
   // --- Plan context builder ---
   const buildPlanContext = isOpening
-    ? (failureReasons?: readonly import('../llm').ReconciliationFailureReason[]) =>
+    ? (failureReasons?: readonly ReconciliationFailureReason[]): PagePlanContext =>
         ({
           mode: 'opening' as const,
           characterConcept: story.characterConcept,
@@ -181,7 +185,7 @@ export async function generatePage(
           currentStructureVersion,
           continuationParams!.suggestedProtagonistSpeech
         );
-        return (failureReasons?: readonly import('../llm').ReconciliationFailureReason[]) => ({
+        return (failureReasons?: readonly ReconciliationFailureReason[]): PagePlanContext => ({
           ...continuationContext,
           mode: 'continuation' as const,
           reconciliationFailureReasons: failureReasons,

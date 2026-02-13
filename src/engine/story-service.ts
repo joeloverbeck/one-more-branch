@@ -42,7 +42,7 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
     await storage.saveStory(story);
 
     options.onGenerationStage?.({
-      stage: 'RESTRUCTURING_STORY',
+      stage: 'STRUCTURING_STORY',
       status: 'started',
       attempt: 1,
     });
@@ -57,7 +57,7 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
       options.apiKey
     );
     options.onGenerationStage?.({
-      stage: 'RESTRUCTURING_STORY',
+      stage: 'STRUCTURING_STORY',
       status: 'completed',
       attempt: 1,
     });

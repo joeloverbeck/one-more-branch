@@ -219,8 +219,8 @@ describe('story-service', () => {
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
       expect(onGenerationStage.mock.calls).toEqual([
-        [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
-        [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 }],
+        [{ stage: 'STRUCTURING_STORY', status: 'started', attempt: 1 }],
+        [{ stage: 'STRUCTURING_STORY', status: 'completed', attempt: 1 }],
       ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
