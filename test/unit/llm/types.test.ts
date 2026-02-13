@@ -257,17 +257,6 @@ describe('LLM types', () => {
         characterConcept: 'A storm-chaser scout',
         worldbuilding: 'Mountain passes split the frontier.',
         tone: 'tense adventure',
-        globalCanon: [],
-        globalCharacterCanon: {},
-        accumulatedInventory: [],
-        accumulatedHealth: [],
-        accumulatedCharacterState: {},
-        activeState: {
-          currentLocation: 'Trailhead',
-          activeThreats: [],
-          activeConstraints: [],
-          openThreads: [],
-        },
       };
 
       const continuationContext: ContinuationPagePlanContext = {

@@ -8,17 +8,6 @@ describe('planner opening context section', () => {
       characterConcept: 'A stranded deep-space courier',
       worldbuilding: 'A decaying orbital trade ring.',
       tone: 'sci-fi suspense',
-      globalCanon: [],
-      globalCharacterCanon: {},
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: {
-        currentLocation: '',
-        activeThreats: [],
-        activeConstraints: [],
-        openThreads: [],
-      },
     };
 
     const result = buildPlannerOpeningContextSection(context);
@@ -28,7 +17,6 @@ describe('planner opening context section', () => {
     expect(result).toContain('A stranded deep-space courier');
     expect(result).toContain('WORLDBUILDING:');
     expect(result).toContain('TONE/GENRE: sci-fi suspense');
-    expect(result).toContain('OPENING STATE SNAPSHOT:');
   });
 
   it('includes optional starting situation and structure details when present', () => {
@@ -61,17 +49,6 @@ describe('planner opening context section', () => {
           },
         ],
       },
-      globalCanon: [],
-      globalCharacterCanon: {},
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: {
-        currentLocation: '',
-        activeThreats: [],
-        activeConstraints: [],
-        openThreads: [],
-      },
     };
 
     const result = buildPlannerOpeningContextSection(context);
@@ -98,17 +75,6 @@ describe('planner opening context section', () => {
           offScreenBehavior: 'Planting devices in maintenance shafts',
         },
       ],
-      globalCanon: [],
-      globalCharacterCanon: {},
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: {
-        currentLocation: '',
-        activeThreats: [],
-        activeConstraints: [],
-        openThreads: [],
-      },
     };
 
     const result = buildPlannerOpeningContextSection(context);
@@ -127,17 +93,6 @@ describe('planner opening context section', () => {
       characterConcept: 'A courier',
       worldbuilding: '',
       tone: 'sci-fi',
-      globalCanon: [],
-      globalCharacterCanon: {},
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: {
-        currentLocation: '',
-        activeThreats: [],
-        activeConstraints: [],
-        openThreads: [],
-      },
     };
 
     const result = buildPlannerOpeningContextSection(context);

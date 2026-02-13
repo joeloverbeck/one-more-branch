@@ -20,17 +20,6 @@ describe('buildPagePlannerPrompt', () => {
     characterConcept: 'A fugitive radio operator',
     worldbuilding: 'A floodlit surveillance city.',
     tone: 'paranoid thriller',
-    globalCanon: [],
-    globalCharacterCanon: {},
-    accumulatedInventory: [],
-    accumulatedHealth: [],
-    accumulatedCharacterState: {},
-    activeState: {
-      currentLocation: '',
-      activeThreats: [],
-      activeConstraints: [],
-      openThreads: [],
-    },
   };
 
   const continuationContext: ContinuationPagePlanContext = {
@@ -89,7 +78,7 @@ describe('buildPagePlannerPrompt', () => {
 
     expect(user).toContain('=== PLANNER CONTEXT: OPENING ===');
     expect(user).toContain('A fugitive radio operator');
-    expect(user).toContain('OPENING STATE SNAPSHOT');
+    expect(user).not.toContain('OPENING STATE SNAPSHOT');
     expect(user).not.toContain('=== PLANNER CONTEXT: CONTINUATION ===');
   });
 

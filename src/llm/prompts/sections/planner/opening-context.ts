@@ -71,16 +71,5 @@ ${context.characterConcept}
 
 ${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}
 
-${structureSection}OPENING STATE SNAPSHOT:
-- globalCanon entries: ${context.globalCanon.length}
-- globalCharacterCanon entries: ${Object.keys(context.globalCharacterCanon).length}
-- accumulatedInventory entries: ${context.accumulatedInventory.length}
-- accumulatedHealth entries: ${context.accumulatedHealth.length}
-- accumulatedCharacterState characters: ${Object.keys(context.accumulatedCharacterState).length}
-- activeState.currentLocation: ${context.activeState.currentLocation || '(empty)'}
-- activeState.activeThreats entries: ${context.activeState.activeThreats.length}
-- activeState.activeConstraints entries: ${context.activeState.activeConstraints.length}
-- activeState.openThreads entries: ${context.activeState.openThreads.length}
-
-Plan the first page intent and state intents using this opening setup.`;
+${structureSection}Plan the first page intent and state intents using this opening setup.`;
 }

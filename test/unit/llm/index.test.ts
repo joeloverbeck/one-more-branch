@@ -174,17 +174,6 @@ describe('llm barrel exports', () => {
       characterConcept: 'A storm-chaser scout',
       worldbuilding: 'Mountain passes split the frontier.',
       tone: 'tense adventure',
-      globalCanon: [],
-      globalCharacterCanon: {},
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: {
-        currentLocation: 'Trailhead',
-        activeThreats: [],
-        activeConstraints: [],
-        openThreads: [],
-      },
     };
     const plannerContinuationContext: ContinuationPagePlanContext = {
       mode: 'continuation',

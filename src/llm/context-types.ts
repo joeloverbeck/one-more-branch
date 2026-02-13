@@ -78,12 +78,6 @@ export interface ContinuationContext {
 
 export interface OpeningPagePlanContext extends OpeningContext {
   mode: 'opening';
-  globalCanon: readonly string[];
-  globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
-  accumulatedInventory: readonly KeyedEntry[];
-  accumulatedHealth: readonly KeyedEntry[];
-  accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;
-  activeState: ActiveState;
 }
 
 export interface ContinuationPagePlanContext extends ContinuationContext {

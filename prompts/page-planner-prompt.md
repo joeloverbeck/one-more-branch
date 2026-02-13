@@ -95,17 +95,6 @@ Current Beat: {{structure.acts[0].beats[0].description}}
 Beat Objective: {{structure.acts[0].beats[0].objective}}
 {{/if}}
 
-OPENING STATE SNAPSHOT:
-- globalCanon entries: {{globalCanon.length}}
-- globalCharacterCanon entries: {{Object.keys(globalCharacterCanon).length}}
-- accumulatedInventory entries: {{accumulatedInventory.length}}
-- accumulatedHealth entries: {{accumulatedHealth.length}}
-- accumulatedCharacterState characters: {{Object.keys(accumulatedCharacterState).length}}
-- activeState.currentLocation: {{activeState.currentLocation || '(empty)'}}
-- activeState.activeThreats entries: {{activeState.activeThreats.length}}
-- activeState.activeConstraints entries: {{activeState.activeConstraints.length}}
-- activeState.openThreads entries: {{activeState.openThreads.length}}
-
 Plan the first page intent and state intents using this opening setup.
 {{/if}}
 

@@ -573,7 +573,6 @@ describe('page-service', () => {
         expect.objectContaining({
           mode: 'opening',
           characterConcept: story.characterConcept,
-          globalCanon: story.globalCanon,
         }),
         expect.objectContaining({
           apiKey: 'test-key',

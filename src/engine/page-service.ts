@@ -2,7 +2,6 @@ import { generateOpeningPage, mergePageWriterAndReconciledStateWithAnalystResult
 import type { GenerationPipelineMetrics } from '../llm';
 import { randomUUID } from 'node:crypto';
 import {
-  createEmptyActiveState,
   createEmptyAccumulatedStructureState,
   generatePageId,
   getLatestStructureVersion,
@@ -73,12 +72,6 @@ export async function generateFirstPage(
       startingSituation: story.startingSituation,
       structure: story.structure ?? undefined,
       initialNpcAgendas: story.initialNpcAgendas,
-      globalCanon: story.globalCanon,
-      globalCharacterCanon: story.globalCharacterCanon,
-      accumulatedInventory: [],
-      accumulatedHealth: [],
-      accumulatedCharacterState: {},
-      activeState: createEmptyActiveState(),
       reconciliationFailureReasons: failureReasons,
     }),
     generateWriter: async (pagePlan, failureReasons) =>
