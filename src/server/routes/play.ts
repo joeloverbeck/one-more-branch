@@ -17,11 +17,14 @@ import { addChoice } from '../../persistence/index.js';
 import { generationProgressService } from '../services/index.js';
 import {
   formatLLMError,
+  extractNpcBriefings,
+  extractProtagonistBriefing,
   getActDisplayInfo,
   getConstraintPanelData,
   getKeyedEntryPanelData,
   getOpenThreadPanelData,
   getThreatPanelData,
+  groupWorldFacts,
   wrapAsyncRoute,
 } from '../utils/index.js';
 
@@ -83,6 +86,141 @@ function normalizeSuggestedProtagonistSpeech(input: unknown): string | undefined
 }
 
 playRoutes.get(
+  '/:storyId/briefing',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const { storyId } = req.params;
+
+    try {
+      const story = await storyEngine.loadStory(storyId as StoryId);
+      if (!story) {
+        return res.status(404).render('pages/error', {
+          title: 'Not Found',
+          message: 'Story not found',
+        });
+      }
+
+      if (!story.structure || !story.decomposedCharacters) {
+        return res.status(404).render('pages/error', {
+          title: 'Not Found',
+          message: 'Story is not prepared for briefing',
+        });
+      }
+
+      const firstPage = await storyEngine.getPage(storyId as StoryId, 1 as PageId);
+      if (firstPage) {
+        return res.redirect(`/play/${storyId}?page=1`);
+      }
+
+      return res.render('pages/briefing', {
+        title: `${story.title} - Mission Briefing`,
+        story: {
+          id: story.id,
+          title: story.title,
+          characterConcept: story.characterConcept,
+          worldbuilding: story.worldbuilding,
+          tone: story.tone,
+          startingSituation: story.startingSituation,
+        },
+        briefing: {
+          theme: story.structure.overallTheme,
+          premise: story.structure.premise,
+          protagonist: extractProtagonistBriefing(story.decomposedCharacters),
+          npcs: extractNpcBriefings(story.decomposedCharacters, story.initialNpcAgendas),
+          worldFacts: groupWorldFacts(story.decomposedWorld),
+          pacingBudget: story.structure.pacingBudget,
+        },
+      });
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Error loading briefing page:', { error: err.message, stack: err.stack });
+      return res.status(500).render('pages/error', {
+        title: 'Error',
+        message: 'Failed to load briefing',
+      });
+    }
+  })
+);
+
+playRoutes.post(
+  '/:storyId/begin',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const { storyId } = req.params;
+    const { apiKey, progressId: rawProgressId } = req.body as {
+      apiKey?: string;
+      progressId?: unknown;
+    };
+    const progressId = parseProgressId(rawProgressId);
+
+    if (typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      if (progressId) {
+        generationProgressService.start(progressId, 'begin-adventure');
+        generationProgressService.fail(progressId, 'OpenRouter API key is required');
+      }
+      return res.status(400).json({
+        success: false,
+        error: 'OpenRouter API key is required',
+      });
+    }
+
+    if (progressId) {
+      generationProgressService.start(progressId, 'begin-adventure');
+    }
+
+    try {
+      const result = await storyEngine.generateOpeningPage(
+        storyId as StoryId,
+        apiKey,
+        progressId
+          ? (event: GenerationStageEvent): void => {
+              if (event.status === 'started') {
+                generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
+              } else {
+                generationProgressService.markStageCompleted(
+                  progressId,
+                  event.stage,
+                  event.attempt
+                );
+              }
+            }
+          : undefined
+      );
+
+      if (progressId) {
+        generationProgressService.complete(progressId);
+      }
+
+      return res.json({
+        success: true,
+        storyId: result.story.id,
+      });
+    } catch (error) {
+      if (error instanceof LLMError) {
+        const formattedError = formatLLMError(error);
+        if (progressId) {
+          generationProgressService.fail(progressId, formattedError);
+        }
+        return res.status(500).json({
+          success: false,
+          error: formattedError,
+          code: error.code,
+          retryable: error.retryable,
+        });
+      }
+
+      const err = error instanceof Error ? error : new Error(String(error));
+      if (progressId) {
+        generationProgressService.fail(progressId, err.message);
+      }
+      logger.error('Error beginning story from briefing:', { error: err.message, stack: err.stack });
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+  })
+);
+
+playRoutes.get(
   '/:storyId',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { storyId } = req.params;
@@ -99,6 +237,15 @@ playRoutes.get(
 
       const page = await storyEngine.getPage(storyId as StoryId, pageId as PageId);
       if (!page) {
+        if (pageId !== 1) {
+          const pageOne = await storyEngine.getPage(storyId as StoryId, 1 as PageId);
+          if (!pageOne) {
+            return res.redirect(`/play/${storyId}/briefing`);
+          }
+        } else {
+          return res.redirect(`/play/${storyId}/briefing`);
+        }
+
         return res.status(404).render('pages/error', {
           title: 'Not Found',
           message: 'Page not found',

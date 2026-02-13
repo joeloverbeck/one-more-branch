@@ -12,9 +12,9 @@ import {
 import { storage } from '../persistence';
 import { generatePage } from './page-service';
 import { createStoryStructure } from './structure-factory';
-import { EngineError, StartStoryOptions, StartStoryResult } from './types';
+import { EngineError, PrepareStoryResult, StartStoryOptions, StartStoryResult } from './types';
 
-export async function startNewStory(options: StartStoryOptions): Promise<StartStoryResult> {
+function validateStartStoryOptions(options: StartStoryOptions): void {
   const title = options.title.trim();
   if (title.length === 0) {
     throw new EngineError('Title is required', 'VALIDATION_FAILED');
@@ -28,109 +28,183 @@ export async function startNewStory(options: StartStoryOptions): Promise<StartSt
   if (options.apiKey.trim().length === 0) {
     throw new EngineError('API key is required', 'VALIDATION_FAILED');
   }
+}
+
+async function buildPreparedStory(
+  options: StartStoryOptions,
+  onStoryCreated?: (story: Story) => void
+): Promise<Story> {
+  validateStartStoryOptions(options);
 
   const story = createStory({
-    title,
-    characterConcept,
+    title: options.title.trim(),
+    characterConcept: options.characterConcept.trim(),
     worldbuilding: options.worldbuilding,
     tone: options.tone,
     npcs: options.npcs,
     startingSituation: options.startingSituation,
   });
+  onStoryCreated?.(story);
 
-  try {
-    await storage.saveStory(story);
+  await storage.saveStory(story);
 
-    options.onGenerationStage?.({
-      stage: 'STRUCTURING_STORY',
-      status: 'started',
-      attempt: 1,
-    });
-    const structureResult = await generateStoryStructure(
-      {
-        characterConcept: story.characterConcept,
-        worldbuilding: story.worldbuilding,
-        tone: story.tone,
-        npcs: story.npcs,
-        startingSituation: story.startingSituation,
-      },
-      options.apiKey
-    );
-    options.onGenerationStage?.({
-      stage: 'STRUCTURING_STORY',
-      status: 'completed',
-      attempt: 1,
-    });
-    const structure = createStoryStructure(structureResult);
-    let storyWithStructure = updateStoryStructure(story, structure);
+  options.onGenerationStage?.({
+    stage: 'STRUCTURING_STORY',
+    status: 'started',
+    attempt: 1,
+  });
+  const structureResult = await generateStoryStructure(
+    {
+      characterConcept: story.characterConcept,
+      worldbuilding: story.worldbuilding,
+      tone: story.tone,
+      npcs: story.npcs,
+      startingSituation: story.startingSituation,
+    },
+    options.apiKey
+  );
+  options.onGenerationStage?.({
+    stage: 'STRUCTURING_STORY',
+    status: 'completed',
+    attempt: 1,
+  });
 
-    if (structureResult.toneKeywords && structureResult.toneKeywords.length > 0) {
-      storyWithStructure = {
-        ...storyWithStructure,
-        toneKeywords: structureResult.toneKeywords,
-      };
-    }
-    if (structureResult.toneAntiKeywords && structureResult.toneAntiKeywords.length > 0) {
-      storyWithStructure = {
-        ...storyWithStructure,
-        toneAntiKeywords: structureResult.toneAntiKeywords,
-      };
-    }
-    if (structureResult.initialNpcAgendas && structureResult.initialNpcAgendas.length > 0) {
-      storyWithStructure = {
-        ...storyWithStructure,
-        initialNpcAgendas: structureResult.initialNpcAgendas,
-      };
-    }
+  const structure = createStoryStructure(structureResult);
+  let storyWithStructure = updateStoryStructure(story, structure);
 
-    await storage.updateStory(storyWithStructure);
-
-    options.onGenerationStage?.({
-      stage: 'DECOMPOSING_ENTITIES',
-      status: 'started',
-      attempt: 1,
-    });
-    const decompositionResult = await decomposeEntities(
-      {
-        characterConcept: story.characterConcept,
-        worldbuilding: story.worldbuilding,
-        tone: story.tone,
-        npcs: story.npcs,
-      },
-      options.apiKey
-    );
-    options.onGenerationStage?.({
-      stage: 'DECOMPOSING_ENTITIES',
-      status: 'completed',
-      attempt: 1,
-    });
+  if (structureResult.toneKeywords && structureResult.toneKeywords.length > 0) {
     storyWithStructure = {
       ...storyWithStructure,
-      decomposedCharacters: decompositionResult.decomposedCharacters,
-      decomposedWorld: decompositionResult.decomposedWorld,
+      toneKeywords: structureResult.toneKeywords,
     };
-    await storage.updateStory(storyWithStructure);
+  }
+  if (structureResult.toneAntiKeywords && structureResult.toneAntiKeywords.length > 0) {
+    storyWithStructure = {
+      ...storyWithStructure,
+      toneAntiKeywords: structureResult.toneAntiKeywords,
+    };
+  }
+  if (structureResult.initialNpcAgendas && structureResult.initialNpcAgendas.length > 0) {
+    storyWithStructure = {
+      ...storyWithStructure,
+      initialNpcAgendas: structureResult.initialNpcAgendas,
+    };
+  }
 
+  await storage.updateStory(storyWithStructure);
+
+  options.onGenerationStage?.({
+    stage: 'DECOMPOSING_ENTITIES',
+    status: 'started',
+    attempt: 1,
+  });
+  const decompositionResult = await decomposeEntities(
+    {
+      characterConcept: story.characterConcept,
+      worldbuilding: story.worldbuilding,
+      tone: story.tone,
+      npcs: story.npcs,
+    },
+    options.apiKey
+  );
+  options.onGenerationStage?.({
+    stage: 'DECOMPOSING_ENTITIES',
+    status: 'completed',
+    attempt: 1,
+  });
+  storyWithStructure = {
+    ...storyWithStructure,
+    decomposedCharacters: decompositionResult.decomposedCharacters,
+    decomposedWorld: decompositionResult.decomposedWorld,
+  };
+  await storage.updateStory(storyWithStructure);
+
+  return storyWithStructure;
+}
+
+function assertStoryPrepared(story: Story): void {
+  if (!story.structure || !story.decomposedCharacters) {
+    throw new EngineError(`Story ${story.id} is not prepared`, 'STORY_NOT_PREPARED');
+  }
+}
+
+export async function prepareStory(options: StartStoryOptions): Promise<PrepareStoryResult> {
+  let storyId: StoryId | null = null;
+
+  try {
+    const preparedStory = await buildPreparedStory(options, (story) => {
+      storyId = story.id;
+    });
+    return { story: preparedStory };
+  } catch (error) {
+    if (storyId) {
+      try {
+        await storage.deleteStory(storyId);
+      } catch {
+        // Preserve the original error from creation flow.
+      }
+    }
+
+    throw error;
+  }
+}
+
+export async function generateOpeningPage(
+  storyId: StoryId,
+  apiKey: string,
+  onGenerationStage?: StartStoryOptions['onGenerationStage']
+): Promise<StartStoryResult> {
+  if (apiKey.trim().length === 0) {
+    throw new EngineError('API key is required', 'VALIDATION_FAILED');
+  }
+
+  const story = await loadStory(storyId);
+  if (!story) {
+    throw new EngineError(`Story ${storyId} not found`, 'STORY_NOT_FOUND');
+  }
+  assertStoryPrepared(story);
+
+  const existingPage = await getStartingPage(storyId);
+  if (existingPage) {
+    return { story, page: existingPage };
+  }
+
+  const { page, updatedStory } = await generatePage('opening', story, apiKey, undefined, onGenerationStage);
+
+  await storage.savePage(storyId, page);
+  if (updatedStory !== story) {
+    await storage.updateStory(updatedStory);
+  }
+
+  return { story: updatedStory, page };
+}
+
+export async function startNewStory(options: StartStoryOptions): Promise<StartStoryResult> {
+  let storyId: StoryId | null = null;
+  try {
+    const prepared = await prepareStory(options);
+    storyId = prepared.story.id;
     const { page, updatedStory } = await generatePage(
       'opening',
-      storyWithStructure,
+      prepared.story,
       options.apiKey,
       undefined,
       options.onGenerationStage
     );
 
-    await storage.savePage(story.id, page);
-
-    if (updatedStory !== storyWithStructure) {
+    await storage.savePage(storyId, page);
+    if (updatedStory !== prepared.story) {
       await storage.updateStory(updatedStory);
     }
 
     return { story: updatedStory, page };
   } catch (error) {
-    try {
-      await storage.deleteStory(story.id);
-    } catch {
-      // Preserve the original error from creation flow.
+    if (storyId) {
+      try {
+        await storage.deleteStory(storyId);
+      } catch {
+        // Preserve the original error from creation flow.
+      }
     }
 
     throw error;

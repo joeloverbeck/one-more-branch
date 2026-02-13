@@ -2,6 +2,8 @@ import {
   StoryEngine,
   storyEngine,
   startNewStory,
+  prepareStory,
+  generateOpeningPage,
   loadStory,
   getPage,
   getStartingPage,
@@ -28,6 +30,7 @@ import {
 import * as engineBarrel from '../../../src/engine';
 import type {
   StartStoryResult,
+  PrepareStoryResult,
   MakeChoiceResult,
   PlaySession,
   StartStoryOptions,
@@ -45,6 +48,8 @@ describe('engine barrel export', () => {
     expect(storyEngine).toBeInstanceOf(StoryEngine);
 
     expect(startNewStory).toBeDefined();
+    expect(prepareStory).toBeDefined();
+    expect(generateOpeningPage).toBeDefined();
     expect(loadStory).toBeDefined();
     expect(getPage).toBeDefined();
     expect(getStartingPage).toBeDefined();
@@ -89,6 +94,7 @@ describe('engine barrel export', () => {
     });
 
     const startResult: StartStoryResult = { story, page };
+    const prepareResult: PrepareStoryResult = { story };
     const makeChoiceResult: MakeChoiceResult = { page, wasGenerated: false };
     const playSession: PlaySession = {
       storyId: parseStoryId('550e8400-e29b-41d4-a716-446655440000'),
@@ -141,6 +147,7 @@ describe('engine barrel export', () => {
     };
 
     expect(startResult.story.id).toBe(story.id);
+    expect(prepareResult.story.id).toBe(story.id);
     expect(makeChoiceResult.wasGenerated).toBe(false);
     expect(playSession.storyId).toBe(makeChoiceOptions.storyId);
     expect(startOptions.characterConcept.length).toBeGreaterThan(10);

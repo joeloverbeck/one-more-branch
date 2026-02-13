@@ -57,7 +57,7 @@ describe('storyRoutes', () => {
     it('returns 400 for empty character concept', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create')(
         {
@@ -73,7 +73,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
@@ -91,7 +91,7 @@ describe('storyRoutes', () => {
     it('returns 400 for short character concept after trim', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create')(
         {
@@ -107,7 +107,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'Character concept must be at least 10 characters',
@@ -125,7 +125,7 @@ describe('storyRoutes', () => {
     it('returns 400 for missing API key', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create')(
         {
@@ -140,7 +140,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
@@ -158,7 +158,7 @@ describe('storyRoutes', () => {
     it('returns 400 for short API key after trim and preserves non-secret values only', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create')(
         {
@@ -174,7 +174,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
         error: 'OpenRouter API key is required',
@@ -198,7 +198,7 @@ describe('storyRoutes', () => {
   });
 
   describe('POST /create success', () => {
-    it('calls startStory with trimmed values and redirects to first play page', async () => {
+    it('calls prepareStory with trimmed values and redirects to first play page', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
       const redirect = jest.fn();
@@ -218,7 +218,7 @@ describe('storyRoutes', () => {
         parentPageId: null,
         parentChoiceIndex: null,
       });
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockResolvedValue({
         story: { ...story, id: storyId },
         page,
       });
@@ -238,7 +238,7 @@ describe('storyRoutes', () => {
 
       expect(status).not.toHaveBeenCalled();
       expect(render).not.toHaveBeenCalled();
-      expect(startStorySpy).toHaveBeenCalledWith({
+      expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
         worldbuilding: 'Trimmed World',
@@ -246,7 +246,7 @@ describe('storyRoutes', () => {
         apiKey: 'valid-key-12345',
       });
       expect(redirect).toHaveBeenCalledWith(
-        '/play/550e8400-e29b-41d4-a716-446655440000?page=1&newStory=true'
+        '/play/550e8400-e29b-41d4-a716-446655440000/briefing'
       );
     });
   });
@@ -256,7 +256,7 @@ describe('storyRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
       const redirect = jest.fn();
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(new Error('generation failed'));
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(new Error('generation failed'));
 
       await getRouteHandler('post', '/create')(
         {
@@ -296,7 +296,7 @@ describe('storyRoutes', () => {
         model: 'anthropic/claude-sonnet-4.5',
         rawErrorBody: '{"error":{"message":"Invalid API key"}}',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -334,7 +334,7 @@ describe('storyRoutes', () => {
         httpStatus: 402,
         model: 'anthropic/claude-sonnet-4.5',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -372,7 +372,7 @@ describe('storyRoutes', () => {
         httpStatus: 429,
         model: 'anthropic/claude-sonnet-4.5',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -411,7 +411,7 @@ describe('storyRoutes', () => {
         model: 'anthropic/claude-sonnet-4.5',
         rawErrorBody: '{"error":{"message":"Invalid request: missing required field"}}',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -451,7 +451,7 @@ describe('storyRoutes', () => {
         false,
         { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' }
       );
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -492,7 +492,7 @@ describe('storyRoutes', () => {
         false,
         { httpStatus: 400, model: 'anthropic/claude-sonnet-4.5' }
       );
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -531,7 +531,7 @@ describe('storyRoutes', () => {
         httpStatus: 503,
         model: 'anthropic/claude-sonnet-4.5',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -566,7 +566,7 @@ describe('storyRoutes', () => {
       const render = jest.fn();
       const redirect = jest.fn();
       const llmError = new LLMError('Some parsing error', 'PARSE_ERROR', false);
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create')(
         {
@@ -601,7 +601,7 @@ describe('storyRoutes', () => {
     it('returns 400 JSON for missing title', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -616,7 +616,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
         error: 'Story title is required',
@@ -626,7 +626,7 @@ describe('storyRoutes', () => {
     it('returns 400 JSON for empty title', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -642,7 +642,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
         error: 'Story title is required',
@@ -652,7 +652,7 @@ describe('storyRoutes', () => {
     it('returns 400 JSON for empty character concept', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -668,7 +668,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
         error: 'Character concept must be at least 10 characters',
@@ -678,7 +678,7 @@ describe('storyRoutes', () => {
     it('returns 400 JSON for short character concept after trim', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -694,7 +694,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
         error: 'Character concept must be at least 10 characters',
@@ -704,7 +704,7 @@ describe('storyRoutes', () => {
     it('returns 400 JSON for missing API key', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -719,7 +719,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
         error: 'OpenRouter API key is required',
@@ -729,7 +729,7 @@ describe('storyRoutes', () => {
     it('returns 400 JSON for short API key after trim', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -745,7 +745,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
         error: 'OpenRouter API key is required',
@@ -755,7 +755,7 @@ describe('storyRoutes', () => {
     it('starts and fails progress when validation fails with progressId', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory');
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
@@ -773,7 +773,7 @@ describe('storyRoutes', () => {
         { status, json } as unknown as Response
       );
 
-      expect(startStorySpy).not.toHaveBeenCalled();
+      expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(progressStartSpy).toHaveBeenCalledWith('progress-validation-1', 'new-story');
       expect(progressFailSpy).toHaveBeenCalledWith(
         'progress-validation-1',
@@ -789,7 +789,7 @@ describe('storyRoutes', () => {
   });
 
   describe('POST /create-ajax success', () => {
-    it('calls startStory with trimmed values and returns JSON with storyId', async () => {
+    it('calls prepareStory with trimmed values and returns JSON with storyId', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
@@ -808,7 +808,7 @@ describe('storyRoutes', () => {
         parentPageId: null,
         parentChoiceIndex: null,
       });
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockResolvedValue({
         story: { ...story, id: storyId },
         page,
       });
@@ -827,7 +827,7 @@ describe('storyRoutes', () => {
       );
 
       expect(status).not.toHaveBeenCalled();
-      expect(startStorySpy).toHaveBeenCalledWith({
+      expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
         worldbuilding: 'Trimmed World',
@@ -865,7 +865,7 @@ describe('storyRoutes', () => {
       const progressStageCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockResolvedValue({
         story: { ...story, id: storyId },
         page,
       });
@@ -883,17 +883,17 @@ describe('storyRoutes', () => {
         { status, json } as unknown as Response
       );
 
-      expect(startStorySpy).toHaveBeenCalledWith({
+      expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'No Progress Story',
         characterConcept: 'No Progress Concept',
         worldbuilding: 'No Progress World',
         tone: 'No Progress Tone',
         apiKey: 'valid-key-12345',
       });
-      const startStoryCallArg = startStorySpy.mock.calls[0]?.[0] as
+      const prepareStoryCallArg = prepareStorySpy.mock.calls[0]?.[0] as
         | { onGenerationStage?: unknown }
         | undefined;
-      expect(startStoryCallArg?.onGenerationStage).toBeUndefined();
+      expect(prepareStoryCallArg?.onGenerationStage).toBeUndefined();
       expect(progressStartSpy).not.toHaveBeenCalled();
       expect(progressStageStartedSpy).not.toHaveBeenCalled();
       expect(progressStageCompletedSpy).not.toHaveBeenCalled();
@@ -906,7 +906,7 @@ describe('storyRoutes', () => {
       });
     });
 
-    it('passes npcs and startingSituation through to startStory when provided', async () => {
+    it('passes npcs and startingSituation through to prepareStory when provided', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
@@ -925,7 +925,7 @@ describe('storyRoutes', () => {
         parentPageId: null,
         parentChoiceIndex: null,
       });
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockResolvedValue({
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockResolvedValue({
         story: { ...story, id: storyId },
         page,
       });
@@ -945,7 +945,7 @@ describe('storyRoutes', () => {
         { status, json } as unknown as Response
       );
 
-      expect(startStorySpy).toHaveBeenCalledWith({
+      expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Test Title',
         characterConcept: 'Test Concept Here',
         worldbuilding: 'World',
@@ -986,7 +986,7 @@ describe('storyRoutes', () => {
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
-      const startStorySpy = jest.spyOn(storyEngine, 'startStory').mockImplementation((options) => {
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockImplementation((options) => {
         options.onGenerationStage?.({
           stage: 'RESTRUCTURING_STORY',
           status: 'started',
@@ -1017,10 +1017,10 @@ describe('storyRoutes', () => {
         { status, json } as unknown as Response
       );
 
-      expect(startStorySpy).toHaveBeenCalled();
-      const startStoryCallArg: unknown = startStorySpy.mock.calls[0]?.[0];
+      expect(prepareStorySpy).toHaveBeenCalled();
+      const prepareStoryCallArg: unknown = prepareStorySpy.mock.calls[0]?.[0];
       expect(
-        typeof (startStoryCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage
+        typeof (prepareStoryCallArg as { onGenerationStage?: unknown } | undefined)?.onGenerationStage
       ).toBe('function');
       expect(progressStartSpy).toHaveBeenCalledWith('progress-success-1', 'new-story');
       expect(progressStageStartedSpy).toHaveBeenCalledWith(
@@ -1047,7 +1047,7 @@ describe('storyRoutes', () => {
     it('returns 500 JSON with error message from Error instance', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(new Error('generation failed'));
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(new Error('generation failed'));
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1077,7 +1077,7 @@ describe('storyRoutes', () => {
         model: 'anthropic/claude-sonnet-4.5',
         rawErrorBody: '{"error":{"message":"Invalid API key"}}',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1110,7 +1110,7 @@ describe('storyRoutes', () => {
         httpStatus: 402,
         model: 'anthropic/claude-sonnet-4.5',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1143,7 +1143,7 @@ describe('storyRoutes', () => {
         httpStatus: 429,
         model: 'anthropic/claude-sonnet-4.5',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1176,7 +1176,7 @@ describe('storyRoutes', () => {
         httpStatus: 503,
         model: 'anthropic/claude-sonnet-4.5',
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1206,7 +1206,7 @@ describe('storyRoutes', () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const llmError = new LLMError('Some parsing error', 'PARSE_ERROR', false);
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1242,7 +1242,7 @@ describe('storyRoutes', () => {
         contentPreview: rawContent.slice(0, 20),
         rawContent,
       });
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(llmError);
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(llmError);
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -1290,7 +1290,7 @@ describe('storyRoutes', () => {
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
-      jest.spyOn(storyEngine, 'startStory').mockRejectedValue(new Error('generation failed'));
+      jest.spyOn(storyEngine, 'prepareStory').mockRejectedValue(new Error('generation failed'));
 
       await getRouteHandler('post', '/create-ajax')(
         {

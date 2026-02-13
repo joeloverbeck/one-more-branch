@@ -1,5 +1,6 @@
 export { wrapAsyncRoute } from './async-route.js';
 export { formatLLMError } from './llm-error-formatter.js';
+export { extractNpcBriefings, extractProtagonistBriefing, groupWorldFacts } from './briefing-helpers.js';
 export {
   getActDisplayInfo,
   getConstraintPanelData,

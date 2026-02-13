@@ -342,7 +342,7 @@
 
         setApiKey(formData.get('apiKey'));
 
-        window.location.href = '/play/' + data.storyId + '?page=1&newStory=true';
+        window.location.assign('/play/' + data.storyId + '/briefing');
       } catch (error) {
         console.error('Story creation error:', error);
         showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
@@ -360,4 +360,5 @@
   document.addEventListener('DOMContentLoaded', () => {
     initPlayPage();
     initNewStoryPage();
+    initBriefingPage();
   });

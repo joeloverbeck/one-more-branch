@@ -50,8 +50,8 @@ storyRoutes.post(
     }
 
     try {
-      const result = await storyEngine.startStory(validation.trimmed);
-      return res.redirect(`/play/${result.story.id}?page=1&newStory=true`);
+      const result = await storyEngine.prepareStory(validation.trimmed);
+      return res.redirect(`/play/${result.story.id}/briefing`);
     } catch (error) {
       if (error instanceof LLMError) {
         logLLMError(error, 'creating story');
@@ -96,7 +96,7 @@ storyRoutes.post(
     }
 
     try {
-      const result = await storyEngine.startStory({
+      const result = await storyEngine.prepareStory({
         ...validation.trimmed,
         onGenerationStage: progressId
           ? (event: GenerationStageEvent): void => {

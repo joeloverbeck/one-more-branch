@@ -55,4 +55,12 @@ describe('public stylesheet', () => {
     expect(css).not.toMatch(/@import\s+url\(/i);
     expect(css).not.toMatch(/https?:\/\//i);
   });
+
+  it('keeps shared form input selector block well-formed and non-duplicated', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+    const sharedSelector = '.form-group input,\n.form-group textarea,\n.modal-content input {';
+
+    const matchCount = css.split(sharedSelector).length - 1;
+    expect(matchCount).toBe(1);
+  });
 });

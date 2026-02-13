@@ -91,3 +91,13 @@ When asked to archive a ticket, spec, or brainstorming document:
    - `archive/reports/` - Reports
 
 4. **Delete the original** from `tickets/`, `specs/`, `brainstorming/`, or `reports/`
+
+## Ticket/Spec Source of Truth
+
+When a user references a `tickets/...` path but that file is missing while a matching `specs/...` file exists:
+
+1. Create the missing ticket file in `tickets/` first.
+2. Treat the new ticket as the implementation source of truth.
+3. Use the matching spec only as reference context.
+4. Reassess and correct assumptions/scope in the ticket before changing code.
+5. If ticket and spec disagree, follow the corrected ticket and document the deviation in the ticket Outcome section.

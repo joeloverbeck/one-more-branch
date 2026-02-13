@@ -26,16 +26,24 @@
             <h3 class="story-title"><%= story.title %></h3>
             <p class="story-tone"><%= story.tone %></p>
             <div class="story-stats">
+              <% if (story.pageCount === 0) { %>
+              <span class="story-status story-status-prepared">Awaiting briefing</span>
+              <% } else { %>
               <span><%= story.pageCount %> pages</span>
               <span><%= story.exploredBranches %>/<%= story.totalBranches %> branches</span>
               <% if (story.hasEnding) { %>
               <span class="has-ending">Has endings</span>
               <% } %>
+              <% } %>
             </div>
             <p class="story-date">Created: <%= new Date(story.createdAt).toLocaleDateString() %></p>
           </div>
           <div class="story-card-actions">
+            <% if (story.pageCount === 0) { %>
+            <a href="/play/<%= story.id %>/briefing" class="btn btn-secondary">View Briefing</a>
+            <% } else { %>
             <a href="/play/<%= story.id %>?page=1" class="btn btn-secondary">Play</a>
+            <% } %>
             <form action="/stories/<%= story.id %>/delete" method="POST" class="inline-form">
               <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Delete this story? This cannot be undone.')">Delete</button>
             </form>

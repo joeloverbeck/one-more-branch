@@ -173,7 +173,19 @@ describe('playRoutes', () => {
         tone: 'Noir',
       });
       jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
-      const getPageSpy = jest.spyOn(storyEngine, 'getPage').mockResolvedValue(null);
+      const pageOne = createPage({
+        id: 1,
+        narrativeText: 'Page one exists.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Continue'), createChoice('Wait')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const getPageSpy = jest
+        .spyOn(storyEngine, 'getPage')
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(pageOne);
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
 
@@ -189,6 +201,31 @@ describe('playRoutes', () => {
         title: 'Not Found',
         message: 'Page not found',
       });
+    });
+
+    it('redirects to briefing when page 1 is missing', async () => {
+      const story = createStory({
+        title: 'Prepared Story',
+        characterConcept: 'A capable rogue',
+        worldbuilding: 'World',
+        tone: 'Noir',
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      const getPageSpy = jest.spyOn(storyEngine, 'getPage').mockResolvedValue(null);
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+      const redirect = jest.fn();
+
+      void getRouteHandler('get', '/:storyId')(
+        { params: { storyId }, query: { page: '1' } } as unknown as Request,
+        { status, render, redirect } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(getPageSpy).toHaveBeenCalledWith(storyId, 1);
+      expect(redirect).toHaveBeenCalledWith(`/play/${storyId}/briefing`);
+      expect(status).not.toHaveBeenCalled();
+      expect(render).not.toHaveBeenCalled();
     });
 
     it('defaults to page 1 when page query is missing', async () => {
@@ -387,6 +424,108 @@ describe('playRoutes', () => {
           actDisplayInfo: null,
         })
       );
+    });
+  });
+
+  describe('GET /:storyId/briefing', () => {
+    it('renders briefing template for prepared story without page 1', async () => {
+      const story = {
+        ...createStory({
+          title: 'Prepared Story',
+          characterConcept: 'A skilled diplomat with a hidden agenda',
+          worldbuilding: 'A fractured kingdom',
+          tone: 'Political intrigue',
+        }),
+        id: storyId,
+        structure: {
+          acts: [],
+          overallTheme: 'Trust is a weapon',
+          premise: 'Forge alliances before the summit collapses',
+          pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+          generatedAt: new Date(),
+        },
+        decomposedCharacters: [
+          {
+            name: 'Aria',
+            appearance: 'Tall with silver hair',
+            coreTraits: ['Cautious', 'Empathetic'],
+            motivations: 'Keep the kingdom intact',
+            relationships: ['Mentors Prince Oren'],
+            speechFingerprint: {
+              catchphrases: [],
+              vocabularyProfile: 'formal',
+              sentencePatterns: 'measured',
+              verbalTics: [],
+              dialogueSamples: [],
+            },
+            knowledgeBoundaries: 'Does not know who leaked the treaty',
+            rawDescription: 'Aria description',
+          },
+        ],
+      };
+
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue(story);
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(null);
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+
+      void getRouteHandler('get', '/:storyId/briefing')(
+        { params: { storyId } } as unknown as Request,
+        { status, render } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      expect(render).toHaveBeenCalledTimes(1);
+      const [viewName, payload] = render.mock.calls[0] as [string, Record<string, unknown>];
+      expect(viewName).toBe('pages/briefing');
+      expect(payload['title']).toBe('Prepared Story - Mission Briefing');
+      expect(payload['story']).toEqual(expect.objectContaining({ id: storyId, title: 'Prepared Story' }));
+      expect(payload['briefing']).toEqual(
+        expect.objectContaining({
+          theme: 'Trust is a weapon',
+          premise: 'Forge alliances before the summit collapses',
+        })
+      );
+    });
+  });
+
+  describe('POST /:storyId/begin', () => {
+    it('calls generateOpeningPage and returns success JSON', async () => {
+      const story = createStory({
+        title: 'Begin Story',
+        characterConcept: 'A strategist facing impossible odds',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      jest.spyOn(storyEngine, 'generateOpeningPage').mockResolvedValue({
+        story: { ...story, id: storyId },
+        page: createPage({
+          id: 1,
+          narrativeText: 'Opening page',
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          choices: [],
+          isEnding: true,
+          parentPageId: null,
+          parentChoiceIndex: null,
+        }),
+      });
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/begin')(
+        {
+          params: { storyId },
+          body: { apiKey: 'valid-key-12345', progressId: ' begin-progress-1 ' },
+        } as Request,
+        { json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(progressStartSpy).toHaveBeenCalledWith('begin-progress-1', 'begin-adventure');
+      expect(progressCompleteSpy).toHaveBeenCalledWith('begin-progress-1');
+      expect(json).toHaveBeenCalledWith({ success: true, storyId });
     });
   });
 

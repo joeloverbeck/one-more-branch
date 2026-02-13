@@ -10,11 +10,13 @@ import { storage } from '../../../src/persistence';
 import { getOrGeneratePage } from '../../../src/engine/page-service';
 import {
   deleteStory,
+  generateOpeningPage,
   getPage,
   getStartingPage,
   getStoryStats,
   listAllStories,
   loadStory,
+  prepareStory,
   startNewStory,
 } from '../../../src/engine/story-service';
 import { StoryEngine, storyEngine } from '../../../src/engine/story-engine';
@@ -29,6 +31,8 @@ jest.mock('../../../src/persistence', () => ({
 
 jest.mock('../../../src/engine/story-service', () => ({
   startNewStory: jest.fn(),
+  prepareStory: jest.fn(),
+  generateOpeningPage: jest.fn(),
   loadStory: jest.fn(),
   getPage: jest.fn(),
   getStartingPage: jest.fn(),
@@ -48,6 +52,10 @@ const mockedStorage = storage as {
 };
 
 const mockedStartNewStory = startNewStory as jest.MockedFunction<typeof startNewStory>;
+const mockedPrepareStory = prepareStory as jest.MockedFunction<typeof prepareStory>;
+const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
+  typeof generateOpeningPage
+>;
 const mockedLoadStory = loadStory as jest.MockedFunction<typeof loadStory>;
 const mockedGetPage = getPage as jest.MockedFunction<typeof getPage>;
 const mockedGetStartingPage = getStartingPage as jest.MockedFunction<typeof getStartingPage>;
@@ -119,6 +127,33 @@ describe('story-engine', () => {
 
       await expect(engine.startStory(options)).resolves.toEqual({ story, page });
       expect(mockedStartNewStory).toHaveBeenCalledWith(options);
+    });
+  });
+
+  describe('prepare/begin flow', () => {
+    it('delegates prepareStory to story service', async () => {
+      const story = buildStory();
+      mockedPrepareStory.mockResolvedValue({ story });
+
+      await expect(
+        engine.prepareStory({
+          title: 'Prepared',
+          characterConcept: 'A long enough concept for validation checks.',
+          apiKey: 'test-key',
+        })
+      ).resolves.toEqual({ story });
+    });
+
+    it('delegates generateOpeningPage to story service', async () => {
+      const story = buildStory();
+      const page = buildPage();
+      mockedGenerateOpeningPage.mockResolvedValue({ story, page });
+
+      await expect(engine.generateOpeningPage(STORY_ID, 'test-key')).resolves.toEqual({
+        story,
+        page,
+      });
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(STORY_ID, 'test-key', undefined);
     });
   });
 

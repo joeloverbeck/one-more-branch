@@ -2,6 +2,8 @@ export { StoryEngine, storyEngine } from './story-engine';
 
 export {
   startNewStory,
+  prepareStory,
+  generateOpeningPage,
   loadStory,
   getPage,
   getStartingPage,
@@ -153,6 +155,7 @@ export type {
   GenerationStageStatus,
   GenerationStageEvent,
   GenerationStageCallback,
+  PrepareStoryResult,
   StartStoryResult,
   MakeChoiceResult,
   PlaySession,

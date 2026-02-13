@@ -29,6 +29,10 @@ export interface StartStoryResult {
   readonly page: Page;
 }
 
+export interface PrepareStoryResult {
+  readonly story: Story;
+}
+
 export interface DeviationInfo {
   readonly detected: boolean;
   readonly reason: string;
@@ -69,6 +73,7 @@ export interface MakeChoiceOptions {
 
 export type EngineErrorCode =
   | 'STORY_NOT_FOUND'
+  | 'STORY_NOT_PREPARED'
   | 'PAGE_NOT_FOUND'
   | 'INVALID_CHOICE'
   | 'GENERATION_FAILED'

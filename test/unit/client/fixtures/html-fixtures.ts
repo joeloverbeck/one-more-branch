@@ -274,3 +274,39 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
     </main>
   `;
 }
+
+export interface BriefingPageOptions {
+  storyId?: string;
+}
+
+export function buildBriefingPageHtml(options: BriefingPageOptions = {}): string {
+  const storyId = options.storyId ?? 'test-story-1';
+
+  return `
+    <main class="container">
+      <div class="briefing-container" data-story-id="${storyId}">
+        <section class="briefing-action">
+          <button id="begin-adventure-btn" class="btn btn-primary btn-large">Begin Adventure</button>
+          <div class="alert alert-error briefing-error" id="briefing-error" style="display: none;" role="alert" aria-live="polite"></div>
+        </section>
+      </div>
+      <div class="loading-overlay" id="loading" style="display: none;">
+        <div class="loading-stage" aria-live="polite"></div>
+        <div class="loading-spinner"></div>
+        <p class="loading-status">Preparing your first page...</p>
+      </div>
+      <div class="modal" id="api-key-modal" style="display: none;">
+        <div class="modal-content">
+          <h3>Enter OpenRouter API Key</h3>
+          <form id="api-key-form" class="api-key-form">
+            <input type="password" id="modal-api-key" placeholder="sk-or-..." autocomplete="off">
+            <div class="modal-actions">
+              <button class="btn btn-primary" id="save-api-key" type="submit">Continue</button>
+              <button class="btn btn-secondary" id="cancel-api-key" type="button">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  `;
+}

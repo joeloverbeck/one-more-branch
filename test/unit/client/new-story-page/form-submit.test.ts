@@ -19,6 +19,7 @@ describe('new story form submit', () => {
 
     // Pin Math.random for deterministic progress phrases
     jest.spyOn(Math, 'random').mockReturnValue(0.0);
+
   });
 
   afterEach(() => {
@@ -103,6 +104,26 @@ describe('new story form submit', () => {
     await jest.runAllTimersAsync();
 
     expect(sessionStorage.getItem('omb_api_key')).toBe('sk-or-my-special-key-abc');
+  });
+
+  it('submits successful preparation response for briefing flow', async () => {
+    setupPage();
+    fillForm();
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
+    });
+
+    submitForm();
+    await jest.runAllTimersAsync();
+
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
+    );
+    expect(postCall).toBeDefined();
   });
 
   it('shows error banner on failed response', async () => {

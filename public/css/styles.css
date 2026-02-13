@@ -222,6 +222,11 @@ main {
   color: var(--color-success);
 }
 
+.story-status-prepared {
+  font-style: italic;
+  opacity: 0.85;
+}
+
 .story-card-actions {
   display: flex;
   gap: 0.65rem;
@@ -283,6 +288,133 @@ main {
 
 .form-help a {
   color: var(--color-primary);
+}
+
+.briefing-container {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(22, 33, 62, 0.88), rgba(15, 52, 96, 0.85));
+  box-shadow: var(--shadow);
+  margin: 0 auto;
+  max-width: 900px;
+  padding: 1.5rem;
+}
+
+.briefing-header {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.4rem;
+  padding-bottom: 1.1rem;
+  text-align: center;
+}
+
+.briefing-classification {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.briefing-title {
+  font-family: var(--font-heading);
+  margin: 0.4rem 0;
+}
+
+.briefing-meta {
+  color: var(--color-text-muted);
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+}
+
+.briefing-section {
+  margin-bottom: 1.5rem;
+}
+
+.briefing-section-title {
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.45rem;
+  text-transform: uppercase;
+}
+
+.briefing-field {
+  margin-bottom: 0.8rem;
+}
+
+.briefing-label {
+  color: var(--color-text-muted);
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+
+.character-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.protagonist-card {
+  border-width: 2px;
+}
+
+.briefing-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.briefing-chip-list li {
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.6rem;
+}
+
+.briefing-npc-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.briefing-world-domain {
+  margin-bottom: 1rem;
+}
+
+.briefing-intel-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.briefing-intel-table th,
+.briefing-intel-table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.45rem;
+  text-align: left;
+}
+
+.briefing-intel-table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.briefing-action {
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.6rem;
+  padding-top: 1.2rem;
+  text-align: center;
+}
+
+.briefing-error {
+  margin-top: 0.8rem;
 }
 
 /* NPC entry cards */

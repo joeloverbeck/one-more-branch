@@ -3,17 +3,20 @@ import { storage } from '../persistence';
 import { getOrGeneratePage } from './page-service';
 import {
   deleteStory,
+  generateOpeningPage,
   getPage,
   getStartingPage,
   getStoryStats,
   listAllStories,
   loadStory,
+  prepareStory,
   startNewStory,
 } from './story-service';
 import {
   EngineError,
   MakeChoiceOptions,
   MakeChoiceResult,
+  PrepareStoryResult,
   StartStoryOptions,
   StartStoryResult,
 } from './types';
@@ -25,6 +28,18 @@ export class StoryEngine {
 
   async startStory(options: StartStoryOptions): Promise<StartStoryResult> {
     return startNewStory(options);
+  }
+
+  async prepareStory(options: StartStoryOptions): Promise<PrepareStoryResult> {
+    return prepareStory(options);
+  }
+
+  async generateOpeningPage(
+    storyId: StoryId,
+    apiKey: string,
+    onGenerationStage?: StartStoryOptions['onGenerationStage']
+  ): Promise<StartStoryResult> {
+    return generateOpeningPage(storyId, apiKey, onGenerationStage);
   }
 
   async makeChoice(options: MakeChoiceOptions): Promise<MakeChoiceResult> {

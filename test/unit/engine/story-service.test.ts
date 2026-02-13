@@ -10,13 +10,16 @@ import * as models from '../../../src/models';
 import { generateStoryStructure } from '../../../src/llm';
 import { storage } from '../../../src/persistence';
 import { generatePage } from '../../../src/engine/page-service';
+import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
   deleteStory,
+  generateOpeningPage,
   getPage,
   getStartingPage,
   getStoryStats,
   listAllStories,
   loadStory,
+  prepareStory,
   startNewStory,
 } from '../../../src/engine/story-service';
 
@@ -302,6 +305,70 @@ describe('story-service', () => {
           apiKey: 'test-key',
         })
       ).rejects.toBe(generationError);
+    });
+  });
+
+  describe('prepareStory', () => {
+    it('returns prepared story without generating page 1', async () => {
+      const story = buildStory();
+      const structureResult = buildStructureGenerationResult();
+
+      jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
+      mockedStorage.saveStory.mockResolvedValue(undefined);
+      mockedGenerateStoryStructure.mockResolvedValue(structureResult);
+      mockedStorage.updateStory.mockResolvedValue(undefined);
+
+      const result = await prepareStory({
+        title: 'Prepared Story',
+        characterConcept: 'A valid concept that is definitely long enough.',
+        apiKey: 'test-key',
+      });
+
+      expect(result.story.structure).not.toBeNull();
+      expect(result.story.decomposedCharacters).toBeDefined();
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
+      expect(mockedStorage.savePage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('generateOpeningPage', () => {
+    it('returns existing page 1 without generating a duplicate page', async () => {
+      const structureResult = buildStructureGenerationResult();
+      const storyWithStructure = models.updateStoryStructure(
+        buildStory(),
+        createStoryStructure(structureResult)
+      );
+      const story = {
+        ...storyWithStructure,
+        decomposedCharacters: [],
+      };
+      const page = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Already generated.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [],
+        isEnding: true,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      mockedStorage.loadStory.mockResolvedValue(story);
+      mockedStorage.loadPage.mockResolvedValue(page);
+
+      const result = await generateOpeningPage(story.id, 'test-key');
+
+      expect(result).toEqual({ story, page });
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
+    });
+
+    it('throws STORY_NOT_PREPARED when structure/decomposition is missing', async () => {
+      const story = buildStory({ structure: null, decomposedCharacters: undefined });
+      mockedStorage.loadStory.mockResolvedValue(story);
+
+      await expect(generateOpeningPage(story.id, 'test-key')).rejects.toMatchObject({
+        code: 'STORY_NOT_PREPARED',
+      });
+      expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
   });
 

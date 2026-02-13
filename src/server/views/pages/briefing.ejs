@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container">
+    <div class="briefing-container" data-story-id="<%= story.id %>">
+      <div class="briefing-header">
+        <div class="briefing-classification">Classified - Mission Briefing</div>
+        <h1 class="briefing-title"><%= story.title %></h1>
+        <div class="briefing-meta">
+          <span><%= story.tone %></span>
+          <span>Est. <%= briefing.pacingBudget.targetPagesMin %>-<%= briefing.pacingBudget.targetPagesMax %> pages</span>
+        </div>
+      </div>
+
+      <section class="briefing-section">
+        <h2 class="briefing-section-title">Mission Overview</h2>
+        <div class="briefing-field">
+          <span class="briefing-label">Theme</span>
+          <p><%= briefing.theme %></p>
+        </div>
+        <div class="briefing-field">
+          <span class="briefing-label">Premise</span>
+          <p><%= briefing.premise %></p>
+        </div>
+        <% if (story.startingSituation) { %>
+        <div class="briefing-field">
+          <span class="briefing-label">Starting Situation</span>
+          <p><%= story.startingSituation %></p>
+        </div>
+        <% } %>
+      </section>
+
+      <section class="briefing-section">
+        <h2 class="briefing-section-title">Agent Dossier</h2>
+        <div class="character-card protagonist-card">
+          <h3><%= briefing.protagonist.name %></h3>
+          <div class="briefing-field">
+            <span class="briefing-label">Appearance</span>
+            <p><%= briefing.protagonist.appearance %></p>
+          </div>
+          <div class="briefing-field">
+            <span class="briefing-label">Core Traits</span>
+            <ul class="briefing-chip-list">
+              <% briefing.protagonist.coreTraits.forEach((trait) => { %>
+              <li><%= trait %></li>
+              <% }) %>
+            </ul>
+          </div>
+          <div class="briefing-field">
+            <span class="briefing-label">Motivations</span>
+            <p><%= briefing.protagonist.motivations %></p>
+          </div>
+          <% if (briefing.protagonist.relationships.length > 0) { %>
+          <div class="briefing-field">
+            <span class="briefing-label">Relationships</span>
+            <ul>
+              <% briefing.protagonist.relationships.forEach((relationship) => { %>
+              <li><%= relationship %></li>
+              <% }) %>
+            </ul>
+          </div>
+          <% } %>
+        </div>
+      </section>
+
+      <% if (briefing.npcs.length > 0) { %>
+      <section class="briefing-section">
+        <h2 class="briefing-section-title">Known Operatives</h2>
+        <div class="briefing-npc-grid">
+          <% briefing.npcs.forEach((npc) => { %>
+          <div class="character-card">
+            <h3><%= npc.name %></h3>
+            <div class="briefing-field">
+              <span class="briefing-label">Appearance</span>
+              <p><%= npc.appearance %></p>
+            </div>
+            <div class="briefing-field">
+              <span class="briefing-label">Core Traits</span>
+              <ul class="briefing-chip-list">
+                <% npc.coreTraits.forEach((trait) => { %>
+                <li><%= trait %></li>
+                <% }) %>
+              </ul>
+            </div>
+            <div class="briefing-field">
+              <span class="briefing-label">Motivations</span>
+              <p><%= npc.motivations %></p>
+            </div>
+            <% if (npc.relationships.length > 0) { %>
+            <div class="briefing-field">
+              <span class="briefing-label">Relationships</span>
+              <ul>
+                <% npc.relationships.forEach((relationship) => { %>
+                <li><%= relationship %></li>
+                <% }) %>
+              </ul>
+            </div>
+            <% } %>
+            <% if (npc.currentGoal) { %>
+            <div class="briefing-field">
+              <span class="briefing-label">Known Objective</span>
+              <p><%= npc.currentGoal %></p>
+            </div>
+            <% } %>
+            <% if (npc.fear) { %>
+            <div class="briefing-field">
+              <span class="briefing-label">Known Vulnerability</span>
+              <p><%= npc.fear %></p>
+            </div>
+            <% } %>
+          </div>
+          <% }) %>
+        </div>
+      </section>
+      <% } %>
+
+      <% const factDomains = Object.keys(briefing.worldFacts); %>
+      <% if (factDomains.length > 0) { %>
+      <section class="briefing-section">
+        <h2 class="briefing-section-title">Field Intelligence</h2>
+        <% factDomains.forEach((domain) => { %>
+        <div class="briefing-world-domain">
+          <h3><%= domain.charAt(0).toUpperCase() + domain.slice(1) %></h3>
+          <table class="briefing-intel-table">
+            <thead>
+              <tr>
+                <th>Intel</th>
+                <th>Scope</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% briefing.worldFacts[domain].forEach((factItem) => { %>
+              <tr>
+                <td><%= factItem.fact %></td>
+                <td><%= factItem.scope %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% }) %>
+      </section>
+      <% } %>
+
+      <section class="briefing-action">
+        <button id="begin-adventure-btn" class="btn btn-primary btn-large">Begin Adventure</button>
+        <div class="alert alert-error briefing-error" id="briefing-error" style="display: none;" role="alert" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <div class="loading-overlay" id="loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Preparing your first page...</p>
+    </div>
+
+    <div class="modal" id="api-key-modal" style="display: none;">
+      <div class="modal-content">
+        <h3>Enter OpenRouter API Key</h3>
+        <p>Your API key is needed to generate story content.</p>
+        <form id="api-key-form" class="api-key-form">
+          <input type="password" id="modal-api-key" placeholder="sk-or-..." autocomplete="off" />
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="save-api-key" type="submit">Continue</button>
+            <button class="btn btn-secondary" id="cancel-api-key" type="button">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

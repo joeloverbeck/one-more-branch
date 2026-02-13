@@ -87,4 +87,12 @@ describe('generation-progress service', () => {
     now = 1005;
     expect(service.get('progress-3').status).toBe('unknown');
   });
+
+  it('accepts begin-adventure flow type', () => {
+    const service = createGenerationProgressService();
+    service.start('progress-begin', 'begin-adventure');
+
+    const snapshot = service.get('progress-begin');
+    expect(snapshot.flowType).toBe('begin-adventure');
+  });
 });
