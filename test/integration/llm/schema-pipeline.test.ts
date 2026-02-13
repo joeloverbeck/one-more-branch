@@ -73,7 +73,7 @@ describe('schema pipeline integration', () => {
   });
 
   describe('full generation flow', () => {
-    it('should validate creative-only structured output and preserve legacy defaults downstream', () => {
+    it('should validate creative-only structured output and return only creative fields', () => {
       // Test the schema structure matches expected format
       const schemaProps = WRITER_GENERATION_SCHEMA.json_schema.schema as {
         required: string[];
@@ -119,16 +119,11 @@ describe('schema pipeline integration', () => {
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
       expect(result.choices).toHaveLength(2);
-      expect(result.currentLocation).toEqual('');
-      expect(result.threatsAdded).toEqual([]);
-      expect(result.threadsAdded).toEqual([]);
-      expect(result.newCanonFacts).toEqual([]);
-      expect(result.inventoryAdded).toEqual([]);
-      expect(result.inventoryRemoved).toEqual([]);
-      expect(result.healthAdded).toEqual([]);
-      expect(result.healthRemoved).toEqual([]);
       expect(result.isEnding).toBe(false);
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
+      expect('currentLocation' in (result as Record<string, unknown>)).toBe(false);
+      expect('threatsAdded' in (result as Record<string, unknown>)).toBe(false);
+      expect('threadsAdded' in (result as Record<string, unknown>)).toBe(false);
     });
 
     it('should reject payloads with legacy state fields at strict schema boundary', () => {
@@ -157,7 +152,7 @@ describe('schema pipeline integration', () => {
       expect(isPayloadCompatibleWithWriterSchema(payloadWithLegacyStateField)).toBe(false);
     });
 
-    it('should transform character canon facts array to record through full flow', () => {
+    it('should ignore legacy deterministic fields when present in raw payload', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -173,26 +168,10 @@ describe('schema pipeline integration', () => {
           },
         ],
         currentLocation: 'The elder council chamber',
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [
-          { text: 'Elder Varn encounter', threadType: 'RELATIONSHIP', urgency: 'MEDIUM' },
-        ],
-        threadsResolved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: [
-          {
-            characterName: 'Elder Varn',
-            facts: ['She is the last of her order', 'She carries an obsidian staff'],
-          },
-          { characterName: 'Brother Kael', facts: ['He betrayed the order'] },
-        ],
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
+        threatsAdded: ['Legacy threat'],
+        constraintsAdded: ['Legacy constraint'],
+        threadsAdded: [{ text: 'Legacy thread', threadType: 'RELATIONSHIP', urgency: 'MEDIUM' }],
+        newCanonFacts: ['Legacy canon fact'],
         protagonistAffect: {
           primaryEmotion: 'reverence',
           primaryIntensity: 'moderate',
@@ -206,55 +185,13 @@ describe('schema pipeline integration', () => {
 
       const result = validateWriterResponse(rawJson, 'raw');
 
-      // Array format should be transformed to Record format
-      expect(result.newCharacterCanonFacts).toEqual({
-        'Elder Varn': ['She is the last of her order', 'She carries an obsidian staff'],
-        'Brother Kael': ['He betrayed the order'],
-      });
+      expect(result.narrative).toBe(VALID_NARRATIVE);
+      expect(result.choices).toHaveLength(2);
+      expect('currentLocation' in (result as Record<string, unknown>)).toBe(false);
+      expect('newCanonFacts' in (result as Record<string, unknown>)).toBe(false);
     });
 
-    it('should merge duplicate character entries in canon facts', () => {
-      const rawJson = {
-        narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Follow the clue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Ignore it', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-        ],
-        currentLocation: "Detective Shaw's office",
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: [
-          { characterName: 'Detective Shaw', facts: ['She wears a trench coat'] },
-          { characterName: 'Detective Shaw', facts: ['She has a silver badge'] },
-        ],
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
-        protagonistAffect: {
-          primaryEmotion: 'intrigue',
-          primaryIntensity: 'mild',
-          primaryCause: 'The detective seems to know more than she reveals',
-          secondaryEmotions: [],
-          dominantMotivation: 'Uncover the truth',
-        },
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: false,
-      };
-
-      const result = validateWriterResponse(rawJson, 'raw');
-
-      expect(result.newCharacterCanonFacts).toEqual({
-        'Detective Shaw': ['She wears a trench coat', 'She has a silver badge'],
-      });
-    });
-
-    it('should handle inventory fields through pipeline', async () => {
+    it('should parse writer output even when deterministic legacy fields are provided', async () => {
       const structured = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -263,21 +200,11 @@ describe('schema pipeline integration', () => {
         ],
         currentLocation: 'Hidden cache chamber',
         threatsAdded: [],
-        threatsRemoved: [],
         constraintsAdded: [],
-        constraintsRemoved: [],
         threadsAdded: [
           { text: 'The hidden cache discovery', threadType: 'INFORMATION', urgency: 'MEDIUM' },
         ],
-        threadsResolved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: [],
         inventoryAdded: ['Ancient map', 'Gold coins (50)'],
-        inventoryRemoved: ['inv-1'],
-        healthAdded: [],
-        healthRemoved: [],
-        characterStateChangesAdded: [],
-        characterStateChangesRemoved: [],
         protagonistAffect: {
           primaryEmotion: 'excitement',
           primaryIntensity: 'strong',
@@ -295,8 +222,8 @@ describe('schema pipeline integration', () => {
         apiKey: 'test-key',
       });
 
-      expect(result.inventoryAdded).toEqual(['Ancient map', 'Gold coins (50)']);
-      expect(result.inventoryRemoved).toEqual(['inv-1']);
+      expect(result.choices).toHaveLength(2);
+      expect('inventoryAdded' in (result as Record<string, unknown>)).toBe(false);
     });
 
     it('should validate ending page with zero choices', () => {
@@ -459,19 +386,6 @@ describe('schema pipeline integration', () => {
             primaryDelta: 'INFORMATION_REVEALED',
           },
         ],
-        currentLocation: '  The haunted keep  ',
-        threatsAdded: ['  Ghostly presence  '],
-        threatsRemoved: [],
-        constraintsAdded: ['  Limited visibility  '],
-        constraintsRemoved: [],
-        threadsAdded: [{ text: '  The encoded ledger  ', threadType: 'MYSTERY', urgency: 'HIGH' }],
-        threadsResolved: [],
-        newCanonFacts: ['  The keep is haunted  '],
-        newCharacterCanonFacts: [{ characterName: '  Elder Varn  ', facts: ['  She is wise  '] }],
-        inventoryAdded: ['  Ancient key  '],
-        inventoryRemoved: ['  inv-9  '],
-        healthAdded: ['  Minor wound on left arm  '],
-        healthRemoved: ['  hp-5  '],
         protagonistAffect: {
           primaryEmotion: '  determination  ',
           primaryIntensity: 'strong',
@@ -494,23 +408,12 @@ describe('schema pipeline integration', () => {
           primaryDelta: 'INFORMATION_REVEALED',
         },
       ]);
-      expect(result.currentLocation).toEqual('The haunted keep');
-      expect(result.threatsAdded).toEqual(['Ghostly presence']);
-      expect(result.constraintsAdded).toEqual(['Limited visibility']);
-      expect(result.threadsAdded).toEqual([
-        { text: 'The encoded ledger', threadType: 'MYSTERY', urgency: 'HIGH' },
-      ]);
-      expect(result.newCanonFacts).toEqual(['The keep is haunted']);
-      expect(result.newCharacterCanonFacts).toEqual({
-        'Elder Varn': ['She is wise'],
-      });
-      expect(result.inventoryAdded).toEqual(['Ancient key']);
-      expect(result.inventoryRemoved).toEqual(['inv-9']);
-      expect(result.healthAdded).toEqual(['Minor wound on left arm']);
-      expect(result.healthRemoved).toEqual(['hp-5']);
+      expect(result.protagonistAffect.primaryEmotion).toBe('determination');
+      expect(result.protagonistAffect.primaryCause).toBe('Found valuable clues');
+      expect(result.protagonistAffect.dominantMotivation).toBe('Decode the ledger');
     });
 
-    it('should filter empty strings from arrays', () => {
+    it('should ignore legacy deterministic arrays while preserving creative output', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -521,22 +424,11 @@ describe('schema pipeline integration', () => {
             primaryDelta: 'INFORMATION_REVEALED',
           },
         ],
-        currentLocation: 'The keep entrance',
         threatsAdded: ['', '  ', 'Ghostly watcher', '\n'],
-        threatsRemoved: [],
         constraintsAdded: ['', 'Locked gate'],
-        constraintsRemoved: [],
         threadsAdded: [{ text: 'The mystery', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
-        threadsResolved: [],
         newCanonFacts: ['The keep is haunted', '', '   '],
-        newCharacterCanonFacts: [
-          { characterName: 'Elder Varn', facts: ['She is wise', '', '  '] },
-          { characterName: 'Empty', facts: ['', '   '] },
-        ],
         inventoryAdded: ['Key', '', '  '],
-        inventoryRemoved: ['', 'inv-4'],
-        healthAdded: ['Bruised ribs', '', '  '],
-        healthRemoved: ['', 'hp-2'],
         protagonistAffect: {
           primaryEmotion: 'caution',
           primaryIntensity: 'moderate',
@@ -550,24 +442,15 @@ describe('schema pipeline integration', () => {
 
       const result = validateWriterResponse(rawJson, 'raw');
 
-      expect(result.threatsAdded).toEqual(['Ghostly watcher']);
-      expect(result.constraintsAdded).toEqual(['Locked gate']);
-      expect(result.threadsAdded).toEqual([
-        { text: 'The mystery', threadType: 'MYSTERY', urgency: 'MEDIUM' },
-      ]);
-      expect(result.newCanonFacts).toEqual(['The keep is haunted']);
-      expect(result.newCharacterCanonFacts).toEqual({
-        'Elder Varn': ['She is wise'],
-      });
-      expect(result.inventoryAdded).toEqual(['Key']);
-      expect(result.inventoryRemoved).toEqual(['inv-4']);
-      expect(result.healthAdded).toEqual(['Bruised ribs']);
-      expect(result.healthRemoved).toEqual(['hp-2']);
+      expect(result.narrative).toBe(VALID_NARRATIVE);
+      expect(result.choices).toHaveLength(2);
+      expect(result.protagonistAffect.primaryEmotion).toBe('caution');
+      expect('threatsAdded' in (result as Record<string, unknown>)).toBe(false);
     });
   });
 
   describe('Zod schema validation', () => {
-    it('should parse valid input and apply defaults', () => {
+    it('should parse valid input and apply creative defaults', () => {
       const input = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -580,18 +463,7 @@ describe('schema pipeline integration', () => {
 
       const result = WriterResultSchema.parse(input);
 
-      // Defaults should be applied
-      expect(result.currentLocation).toEqual('');
-      expect(result.threatsAdded).toEqual([]);
-      expect(result.threatsRemoved).toEqual([]);
-      expect(result.constraintsAdded).toEqual([]);
-      expect(result.constraintsRemoved).toEqual([]);
-      expect(result.threadsAdded).toEqual([]);
-      expect(result.threadsResolved).toEqual([]);
-      expect(result.newCanonFacts).toEqual([]);
-      expect(result.inventoryAdded).toEqual([]);
-      expect(result.inventoryRemoved).toEqual([]);
-      expect(result.newCharacterCanonFacts).toEqual({});
+      // Creative defaults should be applied
       expect(result.protagonistAffect).toEqual({
         primaryEmotion: 'neutral',
         primaryIntensity: 'mild',
@@ -650,7 +522,7 @@ describe('schema pipeline integration', () => {
       expect(() => WriterResultSchema.parse(input)).toThrow('Choices must be unique');
     });
 
-    it('should reject legacy string-array threadsAdded', () => {
+    it('should ignore legacy string-array threadsAdded', () => {
       const input = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -667,10 +539,12 @@ describe('schema pipeline integration', () => {
         isEnding: false,
       };
 
-      expect(() => WriterResultSchema.parse(input)).toThrow();
+      const parsed = WriterResultSchema.parse(input);
+      expect(parsed).toBeDefined();
+      expect('threadsAdded' in (parsed as Record<string, unknown>)).toBe(false);
     });
 
-    it('should allow cross-category removal IDs at writer-schema stage', () => {
+    it('should ignore legacy removal-id fields at writer-schema stage', () => {
       const input = {
         narrative: VALID_NARRATIVE,
         choices: [
@@ -688,7 +562,8 @@ describe('schema pipeline integration', () => {
       };
 
       const parsed = WriterResultSchema.parse(input);
-      expect(parsed.constraintsRemoved).toEqual(['th-1']);
+      expect(parsed).toBeDefined();
+      expect('constraintsRemoved' in (parsed as Record<string, unknown>)).toBe(false);
     });
   });
 });

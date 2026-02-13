@@ -6,11 +6,13 @@ import {
   generatePageWriterOutput,
 } from '@/llm';
 import {
+  ConstraintType,
   createChoice,
   createPage,
   createStory,
   parsePageId,
   StoryId,
+  ThreatType,
   updateStoryStructure,
 } from '@/models';
 import { storage } from '@/persistence';
@@ -27,7 +29,7 @@ import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 import { LLMError } from '@/llm/llm-client-types';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { PagePlanGenerationResult } from '@/llm/planner-types';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 import { logger } from '@/logging/index';
 
 jest.mock('@/llm', () => ({
@@ -75,32 +77,56 @@ const mockedLogger = logger as {
 
 const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
 
+type ReconciliationWriterPayload = PageWriterResult & {
+  currentLocation?: string | null;
+  threatsAdded: readonly string[];
+  threatsRemoved: readonly string[];
+  constraintsAdded: readonly string[];
+  constraintsRemoved: readonly string[];
+  threadsAdded: StateReconciliationResult['threadsAdded'];
+  threadsResolved: readonly string[];
+  inventoryAdded: readonly string[];
+  inventoryRemoved: readonly string[];
+  healthAdded: readonly string[];
+  healthRemoved: readonly string[];
+  characterStateChangesAdded: StateReconciliationResult['characterStateChangesAdded'];
+  characterStateChangesRemoved: readonly string[];
+  newCanonFacts: readonly string[];
+  newCharacterCanonFacts: Record<string, string[]>;
+};
+
 function passthroughReconciledState(
-  writer: WriterResult,
+  writer: ReconciliationWriterPayload,
   previousLocation: string
 ): StateReconciliationResult {
   return {
-    currentLocation: writer.currentLocation || previousLocation,
-    threatsAdded: writer.threatsAdded,
-    threatsRemoved: writer.threatsRemoved,
-    constraintsAdded: writer.constraintsAdded,
-    constraintsRemoved: writer.constraintsRemoved,
-    threadsAdded: writer.threadsAdded,
-    threadsResolved: writer.threadsResolved,
-    inventoryAdded: writer.inventoryAdded,
-    inventoryRemoved: writer.inventoryRemoved,
-    healthAdded: writer.healthAdded,
-    healthRemoved: writer.healthRemoved,
-    characterStateChangesAdded: writer.characterStateChangesAdded,
-    characterStateChangesRemoved: writer.characterStateChangesRemoved,
-    newCanonFacts: writer.newCanonFacts,
+    currentLocation: writer.currentLocation ?? previousLocation,
+    threatsAdded: writer.threatsAdded.map((text) => ({
+      text,
+      threatType: ThreatType.ENVIRONMENTAL,
+    })),
+    threatsRemoved: [...writer.threatsRemoved],
+    constraintsAdded: writer.constraintsAdded.map((text) => ({
+      text,
+      constraintType: ConstraintType.ENVIRONMENTAL,
+    })),
+    constraintsRemoved: [...writer.constraintsRemoved],
+    threadsAdded: [...writer.threadsAdded],
+    threadsResolved: [...writer.threadsResolved],
+    inventoryAdded: [...writer.inventoryAdded],
+    inventoryRemoved: [...writer.inventoryRemoved],
+    healthAdded: [...writer.healthAdded],
+    healthRemoved: [...writer.healthRemoved],
+    characterStateChangesAdded: [...writer.characterStateChangesAdded],
+    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
+    newCanonFacts: [...writer.newCanonFacts],
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
   };
 }
 
 function reconciledStateWithDiagnostics(
-  writer: WriterResult,
+  writer: ReconciliationWriterPayload,
   previousLocation: string,
   diagnostics: StateReconciliationResult['reconciliationDiagnostics']
 ): StateReconciliationResult {
@@ -160,7 +186,7 @@ function buildStructure(): StoryStructure {
   };
 }
 
-function buildOpeningResult(): WriterResult {
+function buildOpeningResult(): PageWriterResult {
   return {
     narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
     choices: [
@@ -205,7 +231,7 @@ function buildOpeningResult(): WriterResult {
   };
 }
 
-function buildContinuationResult(overrides?: Partial<WriterResult>): WriterResult {
+function buildContinuationResult(overrides?: Partial<PageWriterResult>): PageWriterResult {
   return {
     narrative: 'The whispers lead you deeper into the maze of alleys.',
     choices: [
@@ -389,7 +415,7 @@ describe('page-service integration', () => {
     global.fetch = jest.fn().mockResolvedValue(createRewriteFetchResponse()) as typeof fetch;
     mockedGeneratePagePlan.mockResolvedValue(buildPagePlanResult());
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
+      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
   });
 
@@ -442,7 +468,7 @@ describe('page-service integration', () => {
           ])
         )
         .mockImplementation((_plan, writer, previousState) =>
-          passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
+          passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
         );
 
       const { metrics } = await generateFirstPage(baseStory, 'test-api-key');
@@ -725,7 +751,7 @@ describe('page-service integration', () => {
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
       mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-        reconciledStateWithDiagnostics(writer as WriterResult, previousState.currentLocation, [
+        reconciledStateWithDiagnostics(writer as PageWriterResult, previousState.currentLocation, [
           {
             code: 'UNKNOWN_STATE_ID',
             field: 'constraintsRemoved',

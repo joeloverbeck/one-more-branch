@@ -10,7 +10,7 @@ import type {
 } from '../llm/generation-pipeline-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PagePlanGenerationResult } from '../llm/planner-types';
-import type { WriterResult } from '../llm/writer-types';
+import type { PageWriterResult } from '../llm/writer-types';
 import { logger } from '../logging/index.js';
 import { emitGenerationStage } from './generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from './types';
@@ -114,7 +114,7 @@ export function createWriterWithLorekeeper(context: WriterWithLorekeeperContext)
   generateWriter: (
     pagePlan: PagePlanGenerationResult,
     failureReasons?: readonly ReconciliationFailureReason[]
-  ) => Promise<WriterResult>;
+  ) => Promise<PageWriterResult>;
   getLastStoryBible: () => StoryBible | null;
 } {
   let lastStoryBible: StoryBible | null = null;
@@ -123,7 +123,7 @@ export function createWriterWithLorekeeper(context: WriterWithLorekeeperContext)
   const generateWriter = async (
     pagePlan: PagePlanGenerationResult,
     failureReasons?: readonly ReconciliationFailureReason[]
-  ): Promise<WriterResult> => {
+  ): Promise<PageWriterResult> => {
     emitGenerationStage(context.onGenerationStage, 'CURATING_CONTEXT', 'started', 1);
 
     const lorekeeperContext = buildLorekeeperContext(context, pagePlan);
@@ -214,7 +214,7 @@ export function createContinuationWriterWithLorekeeper(context: LorekeeperWriter
   generateWriter: (
     pagePlan: PagePlanGenerationResult,
     failureReasons?: readonly ReconciliationFailureReason[]
-  ) => Promise<WriterResult>;
+  ) => Promise<PageWriterResult>;
   getLastStoryBible: () => StoryBible | null;
 } {
   return createWriterWithLorekeeper({

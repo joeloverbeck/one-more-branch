@@ -7,6 +7,7 @@ import {
   generateLorekeeperBible,
 } from '../../../src/llm';
 import {
+  ConstraintType,
   createChoice,
   createInitialVersionedStructure,
   createPage,
@@ -14,6 +15,7 @@ import {
   parsePageId,
   Story,
   StructureVersionId,
+  ThreatType,
   VersionedStoryStructure,
 } from '../../../src/models';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
@@ -30,7 +32,7 @@ import {
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import type { PagePlanGenerationResult } from '../../../src/llm/planner-types';
-import type { WriterResult } from '../../../src/llm/writer-types';
+import type { PageWriterResult } from '../../../src/llm/writer-types';
 import { logger } from '../../../src/logging/index.js';
 import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { StoryStructure } from '../../../src/models/story-arc';
@@ -107,31 +109,58 @@ const mockedLogger = logger as {
 };
 
 function passthroughReconciledState(
-  writer: WriterResult,
+  writer: PageWriterResult & {
+    currentLocation?: string | null;
+    threatsAdded: readonly (string | { text: string; threatType: ThreatType })[];
+    threatsRemoved: readonly string[];
+    constraintsAdded: readonly (string | { text: string; constraintType: ConstraintType })[];
+    constraintsRemoved: readonly string[];
+    threadsAdded: StateReconciliationResult['threadsAdded'];
+    threadsResolved: readonly string[];
+    inventoryAdded: readonly string[];
+    inventoryRemoved: readonly string[];
+    healthAdded: readonly string[];
+    healthRemoved: readonly string[];
+    characterStateChangesAdded: StateReconciliationResult['characterStateChangesAdded'];
+    characterStateChangesRemoved: readonly string[];
+    newCanonFacts: readonly string[];
+    newCharacterCanonFacts: Record<string, string[]>;
+  },
   previousLocation: string
 ): StateReconciliationResult {
+  const normalizedThreatsAdded = writer.threatsAdded.map((addedThreat) =>
+    typeof addedThreat === 'string'
+      ? { text: addedThreat, threatType: ThreatType.ENVIRONMENTAL }
+      : addedThreat
+  );
+  const normalizedConstraintsAdded = writer.constraintsAdded.map((addedConstraint) =>
+    typeof addedConstraint === 'string'
+      ? { text: addedConstraint, constraintType: ConstraintType.ENVIRONMENTAL }
+      : addedConstraint
+  );
+
   return {
-    currentLocation: writer.currentLocation || previousLocation,
-    threatsAdded: writer.threatsAdded,
-    threatsRemoved: writer.threatsRemoved,
-    constraintsAdded: writer.constraintsAdded,
-    constraintsRemoved: writer.constraintsRemoved,
-    threadsAdded: writer.threadsAdded,
-    threadsResolved: writer.threadsResolved,
-    inventoryAdded: writer.inventoryAdded,
-    inventoryRemoved: writer.inventoryRemoved,
-    healthAdded: writer.healthAdded,
-    healthRemoved: writer.healthRemoved,
-    characterStateChangesAdded: writer.characterStateChangesAdded,
-    characterStateChangesRemoved: writer.characterStateChangesRemoved,
-    newCanonFacts: writer.newCanonFacts,
+    currentLocation: writer.currentLocation ?? previousLocation,
+    threatsAdded: normalizedThreatsAdded,
+    threatsRemoved: [...writer.threatsRemoved],
+    constraintsAdded: normalizedConstraintsAdded,
+    constraintsRemoved: [...writer.constraintsRemoved],
+    threadsAdded: [...writer.threadsAdded],
+    threadsResolved: [...writer.threadsResolved],
+    inventoryAdded: [...writer.inventoryAdded],
+    inventoryRemoved: [...writer.inventoryRemoved],
+    healthAdded: [...writer.healthAdded],
+    healthRemoved: [...writer.healthRemoved],
+    characterStateChangesAdded: [...writer.characterStateChangesAdded],
+    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
+    newCanonFacts: [...writer.newCanonFacts],
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
   };
 }
 
 function reconciledStateWithDiagnostics(
-  writer: WriterResult,
+  writer: PageWriterResult,
   previousLocation: string,
   diagnostics: StateReconciliationResult['reconciliationDiagnostics']
 ): StateReconciliationResult {
@@ -267,7 +296,7 @@ describe('page-service', () => {
       rawResponse: 'raw-lorekeeper',
     });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
+      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
   });
 
@@ -276,7 +305,7 @@ describe('page-service', () => {
       const story = buildStory();
       const onGenerationStage = jest.fn();
       const pagePlan = buildPagePlanResult();
-      const openingWriterResult: WriterResult = {
+      const openingWriterResult: PageWriterResult = {
         narrative: 'You dive behind a collapsed archway as horns echo through the square.',
         choices: [
           {
@@ -329,7 +358,7 @@ describe('page-service', () => {
           ])
         )
         .mockImplementation((_plan, writer, previousState) =>
-          passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
+          passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
         );
 
       const { metrics } = await generateFirstPage(story, 'test-key', onGenerationStage);
@@ -479,7 +508,9 @@ describe('page-service', () => {
         currentLocation: 'The capital square at dusk',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['Curfew in effect'],
+        constraintsAdded: [
+          { text: 'Curfew in effect', constraintType: ConstraintType.ENVIRONMENTAL },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -673,7 +704,9 @@ describe('page-service', () => {
         currentLocation: 'The capital square at dusk',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['Curfew in effect'],
+        constraintsAdded: [
+          { text: 'Curfew in effect', constraintType: ConstraintType.ENVIRONMENTAL },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -872,7 +905,7 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-        reconciledStateWithDiagnostics(writer as WriterResult, previousState.currentLocation, [
+        reconciledStateWithDiagnostics(writer as PageWriterResult, previousState.currentLocation, [
           {
             code: 'UNKNOWN_STATE_ID',
             field: 'constraintsRemoved',
@@ -1221,9 +1254,19 @@ describe('page-service', () => {
           },
         ],
         currentLocation: 'Rooftops above the market district',
-        threatsAdded: ['Patrol torches are scanning the rooftops below'],
+        threatsAdded: [
+          {
+            text: 'Patrol torches are scanning the rooftops below',
+            threatType: ThreatType.ENVIRONMENTAL,
+          },
+        ],
         threatsRemoved: [],
-        constraintsAdded: ['Must move quietly to avoid detection'],
+        constraintsAdded: [
+          {
+            text: 'Must move quietly to avoid detection',
+            constraintType: ConstraintType.ENVIRONMENTAL,
+          },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -2083,9 +2126,9 @@ describe('page-service', () => {
           },
         ],
         currentLocation: 'Imperial command hall',
-        threatsAdded: ['Resistance hunting you'],
+        threatsAdded: [{ text: 'Resistance hunting you', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: ['Imperial suspicion'],
-        constraintsAdded: ['Must prove loyalty'],
+        constraintsAdded: [{ text: 'Must prove loyalty', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [
           { text: 'Serve imperial command', threadType: 'INFORMATION', urgency: 'MEDIUM' },
@@ -2397,9 +2440,9 @@ describe('page-service', () => {
           },
         ],
         currentLocation: 'Imperial command hall',
-        threatsAdded: ['Resistance hunters'],
+        threatsAdded: [{ text: 'Resistance hunters', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: [],
-        constraintsAdded: ['Prove loyalty'],
+        constraintsAdded: [{ text: 'Prove loyalty', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -2498,9 +2541,11 @@ describe('page-service', () => {
           { text: 'Second thoughts', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
         ],
         currentLocation: 'The aftermath of betrayal',
-        threatsAdded: ['Former allies seek revenge'],
+        threatsAdded: [
+          { text: 'Former allies seek revenge', threatType: ThreatType.ENVIRONMENTAL },
+        ],
         threatsRemoved: [],
-        constraintsAdded: ['Trust broken'],
+        constraintsAdded: [{ text: 'Trust broken', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: ['Alliance with companions'],
@@ -3042,7 +3087,9 @@ describe('page-service', () => {
             },
           ],
           currentLocation: 'The defection point',
-          threatsAdded: ['Hunted by former allies'],
+          threatsAdded: [
+            { text: 'Hunted by former allies', threatType: ThreatType.ENVIRONMENTAL },
+          ],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -3241,7 +3288,7 @@ describe('page-service', () => {
 
       mockedStorage.getMaxPageId.mockResolvedValue(1);
       mockedGenerateWriterPage.mockRejectedValue(
-        new LLMError('Deterministic writer output validation failed', 'VALIDATION_ERROR', false, {
+        new LLMError('Writer output validation failed', 'VALIDATION_ERROR', false, {
           ruleKeys: ['writer_output.choice_pair.duplicate'],
           validationIssues: [
             {
@@ -3286,7 +3333,7 @@ describe('page-service', () => {
         currentLocation: 'Hidden in the shadows',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['Time pressure'],
+        constraintsAdded: [{ text: 'Time pressure', constraintType: ConstraintType.ENVIRONMENTAL }],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
@@ -3479,7 +3526,7 @@ describe('page-service', () => {
           { text: 'New choice 2', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
         ],
         currentLocation: 'An unexpected path',
-        threatsAdded: ['Unknown consequences'],
+        threatsAdded: [{ text: 'Unknown consequences', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],

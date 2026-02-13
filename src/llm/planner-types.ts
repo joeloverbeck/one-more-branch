@@ -6,6 +6,26 @@ export interface TextIntentMutations {
   removeIds: string[];
 }
 
+export interface ThreatAdd {
+  text: string;
+  threatType: string;
+}
+
+export interface ConstraintAdd {
+  text: string;
+  constraintType: string;
+}
+
+export interface ThreatIntentMutations {
+  add: ThreatAdd[];
+  removeIds: string[];
+}
+
+export interface ConstraintIntentMutations {
+  add: ConstraintAdd[];
+  removeIds: string[];
+}
+
 export interface ThreadIntentMutations {
   add: ThreadAdd[];
   resolveIds: string[];
@@ -37,8 +57,8 @@ export interface PagePlan {
   continuityAnchors: string[];
   stateIntents: {
     currentLocation: string;
-    threats: TextIntentMutations;
-    constraints: TextIntentMutations;
+    threats: ThreatIntentMutations;
+    constraints: ConstraintIntentMutations;
     threads: ThreadIntentMutations;
     inventory: TextIntentMutations;
     health: TextIntentMutations;

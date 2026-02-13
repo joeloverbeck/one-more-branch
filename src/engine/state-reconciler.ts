@@ -1,12 +1,25 @@
-import type { PagePlan, TextIntentMutations } from '../llm/planner-types.js';
-import type { KeyedEntry } from '../models/state/index.js';
+import type {
+  ConstraintIntentMutations,
+  PagePlan,
+  TextIntentMutations,
+  ThreatIntentMutations,
+} from '../llm/planner-types.js';
+import type {
+  ConstraintAddition,
+  ConstraintEntry,
+  KeyedEntry,
+  ThreatAddition,
+  ThreatEntry,
+} from '../models/state/index.js';
 import type {
   StateReconciliationDiagnostic,
   StateReconciliationPreviousState,
   StateReconciliationResult,
 } from './state-reconciler-types.js';
 import {
+  normalizeConstraintAdds,
   normalizeTextIntents,
+  normalizeThreatAdds,
   normalizeAndValidateRemoveIds,
 } from './reconciler-text-utils.js';
 import {
@@ -37,6 +50,40 @@ function reconcileTextMutationField(
   return { added, removed };
 }
 
+function reconcileThreatMutationField(
+  mutations: ThreatIntentMutations,
+  previousEntries: readonly ThreatEntry[],
+  diagnostics: StateReconciliationDiagnostic[]
+): { added: ThreatAddition[]; removed: string[] } {
+  const removed = normalizeAndValidateRemoveIds(
+    mutations.removeIds,
+    new Set(previousEntries.map((entry) => entry.id)),
+    'threatsRemoved',
+    diagnostics
+  );
+
+  const added = normalizeThreatAdds(mutations.add);
+
+  return { added, removed };
+}
+
+function reconcileConstraintMutationField(
+  mutations: ConstraintIntentMutations,
+  previousEntries: readonly ConstraintEntry[],
+  diagnostics: StateReconciliationDiagnostic[]
+): { added: ConstraintAddition[]; removed: string[] } {
+  const removed = normalizeAndValidateRemoveIds(
+    mutations.removeIds,
+    new Set(previousEntries.map((entry) => entry.id)),
+    'constraintsRemoved',
+    diagnostics
+  );
+
+  const added = normalizeConstraintAdds(mutations.add);
+
+  return { added, removed };
+}
+
 export function reconcileState(
   plan: PagePlan,
   _writerOutput: unknown,
@@ -44,17 +91,15 @@ export function reconcileState(
 ): StateReconciliationResult {
   const diagnostics: StateReconciliationDiagnostic[] = [];
 
-  const threats = reconcileTextMutationField(
+  const threats = reconcileThreatMutationField(
     plan.stateIntents.threats,
     previousState.threats,
-    'threatsRemoved',
     diagnostics
   );
 
-  const constraints = reconcileTextMutationField(
+  const constraints = reconcileConstraintMutationField(
     plan.stateIntents.constraints,
     previousState.constraints,
-    'constraintsRemoved',
     diagnostics
   );
 

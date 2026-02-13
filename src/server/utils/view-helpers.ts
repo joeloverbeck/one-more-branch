@@ -1,8 +1,10 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
 import {
+  ConstraintType,
   getCurrentAct,
   getCurrentBeat,
   getStructureVersion,
+  ThreatType,
   isUrgency,
   Urgency,
 } from '../../models/index.js';
@@ -159,6 +161,26 @@ export interface KeyedEntryPanelData {
   readonly overflowSummary: string | null;
 }
 
+export interface ThreatPanelRow extends KeyedEntryPanelRow {
+  readonly threatType: ThreatType;
+  readonly displayLabel: string;
+}
+
+export interface ThreatPanelData {
+  readonly rows: readonly ThreatPanelRow[];
+  readonly overflowSummary: string | null;
+}
+
+export interface ConstraintPanelRow extends KeyedEntryPanelRow {
+  readonly constraintType: ConstraintType;
+  readonly displayLabel: string;
+}
+
+export interface ConstraintPanelData {
+  readonly rows: readonly ConstraintPanelRow[];
+  readonly overflowSummary: string | null;
+}
+
 const KEYED_ENTRY_PANEL_LIMIT = 6;
 
 export function getKeyedEntryPanelData(
@@ -168,6 +190,44 @@ export function getKeyedEntryPanelData(
   const visibleRows: KeyedEntryPanelRow[] = entries.slice(0, limit).map((entry) => ({
     id: entry.id,
     text: entry.text,
+  }));
+  const hiddenCount = entries.length - limit;
+  return {
+    rows: visibleRows,
+    overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,
+  };
+}
+
+export function getThreatPanelData(
+  entries: readonly { readonly id: string; readonly text: string; readonly threatType: ThreatType }[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
+): ThreatPanelData {
+  const visibleRows: ThreatPanelRow[] = entries.slice(0, limit).map((entry) => ({
+    id: entry.id,
+    text: entry.text,
+    threatType: entry.threatType,
+    displayLabel: `(${entry.threatType}) ${entry.text}`,
+  }));
+  const hiddenCount = entries.length - limit;
+  return {
+    rows: visibleRows,
+    overflowSummary: hiddenCount > 0 ? `+${hiddenCount} more not shown` : null,
+  };
+}
+
+export function getConstraintPanelData(
+  entries: readonly {
+    readonly id: string;
+    readonly text: string;
+    readonly constraintType: ConstraintType;
+  }[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
+): ConstraintPanelData {
+  const visibleRows: ConstraintPanelRow[] = entries.slice(0, limit).map((entry) => ({
+    id: entry.id,
+    text: entry.text,
+    constraintType: entry.constraintType,
+    displayLabel: `(${entry.constraintType}) ${entry.text}`,
   }));
   const hiddenCount = entries.length - limit;
   return {

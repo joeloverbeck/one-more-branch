@@ -1,9 +1,11 @@
 import {
+  ConstraintType,
   createChoice,
   createEmptyAccumulatedStructureState,
   createEmptyActiveState,
   createPage,
   parsePageId,
+  ThreatType,
 } from '@/models';
 import {
   collectParentState,
@@ -46,7 +48,7 @@ describe('parent-state-collector', () => {
         choices: [createChoice('Option A'), createChoice('Option B')],
         activeStateChanges: {
           newLocation: 'Quest start location',
-          threatsAdded: ['Storm front'],
+          threatsAdded: [{ text: 'Storm front', threatType: ThreatType.ENVIRONMENTAL }],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -112,8 +114,10 @@ describe('parent-state-collector', () => {
         accumulatedActiveState: {
           ...createEmptyActiveState(),
           currentLocation: 'Forest',
-          activeThreats: [{ id: 'th-1', text: 'Wolf pack' }],
-          activeConstraints: [{ id: 'cn-1', text: 'Fog' }],
+          activeThreats: [{ id: 'th-1', text: 'Wolf pack', threatType: ThreatType.CREATURE }],
+          activeConstraints: [
+            { id: 'cn-1', text: 'Fog', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
           openThreads: [
             {
               id: 'tw-1',
@@ -135,8 +139,12 @@ describe('parent-state-collector', () => {
       const snapshot = createContinuationPreviousStateSnapshot(parentState);
 
       expect(snapshot.currentLocation).toBe('Forest');
-      expect(snapshot.threats).toEqual([{ id: 'th-1', text: 'Wolf pack' }]);
-      expect(snapshot.constraints).toEqual([{ id: 'cn-1', text: 'Fog' }]);
+      expect(snapshot.threats).toEqual([
+        { id: 'th-1', text: 'Wolf pack', threatType: ThreatType.CREATURE },
+      ]);
+      expect(snapshot.constraints).toEqual([
+        { id: 'cn-1', text: 'Fog', constraintType: ConstraintType.ENVIRONMENTAL },
+      ]);
       expect(snapshot.threads).toEqual([
         {
           id: 'tw-1',

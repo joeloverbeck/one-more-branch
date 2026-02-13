@@ -90,9 +90,9 @@ The tone block is injected between the role intro and content policy. When tone 
 Continue the interactive story based on the player's choice.
 
 === DATA & STATE RULES ===
-=== ACTIVE STATE TRACKING ===
+=== CONTINUITY CONTEXT USAGE ===
 
-Use the state sections in the prompt as authoritative continuity context. These represent what is TRUE RIGHT NOW.
+Use the continuity context sections in the prompt as authoritative scene context. These represent what is TRUE RIGHT NOW.
 
 READ-ONLY CONTINUITY INPUT:
 - CURRENT LOCATION: where the protagonist is right now.
@@ -331,13 +331,6 @@ Use these choice intents as a starting blueprint. You may adjust if the narrativ
 === RECONCILIATION FAILURE REASONS (RETRY) ===
 The prior attempt failed deterministic reconciliation. Correct these failures in this new scene:
 {{reconciliationFailureReasons as bullet list with [code] (field) message}}
-{{/if}}
-
-{{#if pacingNudge}}
-=== PACING DIRECTIVE ===
-The story analyst detected a pacing issue: {{pacingNudge}}
-This page should advance the narrative toward resolving the current beat or deliver a meaningful story event.
-Do not repeat setup or exposition -- push the story forward with action, revelation, or irreversible change.
 {{/if}}
 
 {{#if storyBible}}

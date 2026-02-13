@@ -94,7 +94,7 @@ describe('buildOpeningPrompt with active state', () => {
     const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).toContain('=== DATA & STATE RULES ===');
-    expect(userMessage).toContain('ACTIVE STATE TRACKING');
+    expect(userMessage).toContain('CONTINUITY CONTEXT USAGE');
     expect(userMessage).toContain('INVENTORY MANAGEMENT:');
     expect(userMessage).toContain('FIELD SEPARATION:');
   });
@@ -109,7 +109,7 @@ describe('buildOpeningPrompt with active state', () => {
     const messages = buildOpeningPrompt(context);
     const systemMessage = messages.find((m) => m.role === 'system')!.content;
 
-    expect(systemMessage).not.toContain('ACTIVE STATE TRACKING');
+    expect(systemMessage).not.toContain('CONTINUITY CONTEXT USAGE');
     expect(systemMessage).not.toContain('INVENTORY MANAGEMENT:');
     expect(systemMessage).not.toContain('FIELD SEPARATION:');
   });

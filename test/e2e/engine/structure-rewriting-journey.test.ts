@@ -8,7 +8,7 @@ import {
 } from '@/llm';
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -232,7 +232,7 @@ function createRewriteFetchResponse(): Response {
   } as Response;
 }
 
-function buildWriterResult(selectedChoice: string): WriterResult {
+function buildWriterResult(selectedChoice: string): PageWriterResult {
   if (selectedChoice === 'Commit to the alliance publicly') {
     return {
       narrative:

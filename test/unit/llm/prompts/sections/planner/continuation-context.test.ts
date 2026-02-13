@@ -1,4 +1,9 @@
-import { ThreadType, Urgency } from '../../../../../../src/models/state/index.js';
+import {
+  ConstraintType,
+  ThreatType,
+  ThreadType,
+  Urgency,
+} from '../../../../../../src/models/state/index.js';
 import type { ContinuationPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import { buildPlannerContinuationContextSection } from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
 
@@ -29,8 +34,20 @@ describe('planner continuation context section', () => {
       },
       activeState: {
         currentLocation: 'Harbor datacenter',
-        activeThreats: [{ id: 'th-2', text: 'Counterintrusion daemon active' }],
-        activeConstraints: [{ id: 'cn-1', text: 'Blackout window lasts under 2 minutes' }],
+        activeThreats: [
+          {
+            id: 'th-2',
+            text: 'Counterintrusion daemon active',
+            threatType: ThreatType.ENVIRONMENTAL,
+          },
+        ],
+        activeConstraints: [
+          {
+            id: 'cn-1',
+            text: 'Blackout window lasts under 2 minutes',
+            constraintType: ConstraintType.TEMPORAL,
+          },
+        ],
         openThreads: [
           {
             id: 'td-1',
@@ -52,7 +69,7 @@ describe('planner continuation context section', () => {
     expect(result).toContain('NPC: Azra');
     expect(result).toContain('ESTABLISHED WORLD FACTS:');
     expect(result).toContain('- [inv-1] Spoofed access token');
-    expect(result).toContain('- [th-2] Counterintrusion daemon active');
+    expect(result).toContain('- [th-2] (ENVIRONMENTAL) Counterintrusion daemon active');
     expect(result).toContain('- [td-1] (MYSTERY/MEDIUM)');
     expect(result).toContain('EARLIER SCENE SUMMARIES:');
     expect(result).toContain('SCENE BEFORE LAST (full text for style continuity):');

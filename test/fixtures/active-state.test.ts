@@ -2,7 +2,7 @@
  * Tests for Active State Test Fixtures
  */
 
-import { isActiveState, isActiveStateChanges } from '../../src/models/state/index.js';
+import { ThreatType, isActiveState, isActiveStateChanges } from '../../src/models/state/index.js';
 import {
   createMockKeyedEntry,
   createMockThreadEntry,
@@ -89,7 +89,7 @@ describe('Active state fixtures', () => {
     it('produces valid ActiveStateChanges according to type guard', () => {
       const changes = createMockActiveStateChanges({
         newLocation: 'Test',
-        threatsAdded: ['A threat'],
+        threatsAdded: [{ text: 'A threat', threatType: ThreatType.ENVIRONMENTAL }],
       });
 
       expect(isActiveStateChanges(changes)).toBe(true);

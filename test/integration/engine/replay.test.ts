@@ -6,7 +6,7 @@ import {
   generatePagePlan,
   generateStoryStructure,
 } from '@/llm';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { parsePageId, StoryId } from '@/models';
@@ -54,25 +54,30 @@ const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconc
 
 const TEST_PREFIX = 'TEST STOENG-008 replay integration';
 
+type ReconciliationWriterPayload = PageWriterResult &
+  Omit<StateReconciliationResult, 'currentLocation' | 'reconciliationDiagnostics'> & {
+    currentLocation?: string | null;
+  };
+
 function passthroughReconciledState(
-  writer: WriterResult,
+  writer: ReconciliationWriterPayload,
   previousLocation: string
 ): StateReconciliationResult {
   return {
-    currentLocation: writer.currentLocation || previousLocation,
-    threatsAdded: writer.threatsAdded,
-    threatsRemoved: writer.threatsRemoved,
-    constraintsAdded: writer.constraintsAdded,
-    constraintsRemoved: writer.constraintsRemoved,
-    threadsAdded: writer.threadsAdded,
-    threadsResolved: writer.threadsResolved,
-    inventoryAdded: writer.inventoryAdded,
-    inventoryRemoved: writer.inventoryRemoved,
-    healthAdded: writer.healthAdded,
-    healthRemoved: writer.healthRemoved,
-    characterStateChangesAdded: writer.characterStateChangesAdded,
-    characterStateChangesRemoved: writer.characterStateChangesRemoved,
-    newCanonFacts: writer.newCanonFacts,
+    currentLocation: writer.currentLocation ?? previousLocation,
+    threatsAdded: [...writer.threatsAdded],
+    threatsRemoved: [...writer.threatsRemoved],
+    constraintsAdded: [...writer.constraintsAdded],
+    constraintsRemoved: [...writer.constraintsRemoved],
+    threadsAdded: [...writer.threadsAdded],
+    threadsResolved: [...writer.threadsResolved],
+    inventoryAdded: [...writer.inventoryAdded],
+    inventoryRemoved: [...writer.inventoryRemoved],
+    healthAdded: [...writer.healthAdded],
+    healthRemoved: [...writer.healthRemoved],
+    characterStateChangesAdded: [...writer.characterStateChangesAdded],
+    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
+    newCanonFacts: [...writer.newCanonFacts],
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
   };
@@ -262,7 +267,7 @@ describe('story replay integration', () => {
     mockedGenerateWriterPage.mockResolvedValue(writerResult);
     mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
+      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
   });
 

@@ -1,5 +1,5 @@
 import { ZodError, type ZodIssue } from 'zod';
-import type { WriterResult } from '../writer-types.js';
+import type { PageWriterResult } from '../writer-types.js';
 
 export const WRITER_OUTPUT_RULE_KEYS = {
   DUPLICATE_CHOICE_PAIR: 'writer_output.choice_pair.duplicate',
@@ -20,7 +20,7 @@ export interface WriterOutputValidationIssue {
 
 export class WriterOutputValidationError extends Error {
   constructor(public readonly issues: readonly WriterOutputValidationIssue[]) {
-    super(`Deterministic writer output validation failed (${issues.length} issue(s))`);
+    super(`Writer output validation failed (${issues.length} issue(s))`);
     this.name = 'WriterOutputValidationError';
   }
 }
@@ -37,7 +37,7 @@ function addIssue(
 }
 
 function validateProtagonistAffect(
-  result: WriterResult,
+  result: PageWriterResult,
   issues: WriterOutputValidationIssue[]
 ): void {
   const requiredFields = [
@@ -81,7 +81,7 @@ function validateProtagonistAffect(
 }
 
 function validateChoicePairUniqueness(
-  result: WriterResult,
+  result: PageWriterResult,
   issues: WriterOutputValidationIssue[]
 ): void {
   const seenPairs = new Map<string, number>();
@@ -103,9 +103,7 @@ function validateChoicePairUniqueness(
   });
 }
 
-export function validateDeterministicWriterOutput(
-  result: WriterResult
-): WriterOutputValidationIssue[] {
+export function validateWriterOutput(result: PageWriterResult): WriterOutputValidationIssue[] {
   const issues: WriterOutputValidationIssue[] = [];
 
   validateChoicePairUniqueness(result, issues);

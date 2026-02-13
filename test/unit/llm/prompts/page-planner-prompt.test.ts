@@ -1,4 +1,9 @@
-import { ThreadType, Urgency } from '../../../../src/models/state/index';
+import {
+  ConstraintType,
+  ThreatType,
+  ThreadType,
+  Urgency,
+} from '../../../../src/models/state/index';
 import type {
   ContinuationPagePlanContext,
   OpeningPagePlanContext,
@@ -40,8 +45,12 @@ describe('buildPagePlannerPrompt', () => {
     },
     activeState: {
       currentLocation: 'Relay tunnel',
-      activeThreats: [{ id: 'th-1', text: 'Security teams closing in' }],
-      activeConstraints: [{ id: 'cn-1', text: 'Power grid unstable' }],
+      activeThreats: [
+        { id: 'th-1', text: 'Security teams closing in', threatType: ThreatType.HOSTILE_AGENT },
+      ],
+      activeConstraints: [
+        { id: 'cn-1', text: 'Power grid unstable', constraintType: ConstraintType.ENVIRONMENTAL },
+      ],
       openThreads: [
         {
           id: 'td-1',
@@ -89,7 +98,7 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
     expect(user).toContain("PLAYER'S CHOICE:");
     expect(user).toContain('- [inv-1] Signal scrambler');
-    expect(user).toContain('- [th-1] Security teams closing in');
+    expect(user).toContain('- [th-1] (HOSTILE_AGENT) Security teams closing in');
     expect(user).toContain('(MYSTERY/HIGH)');
   });
 

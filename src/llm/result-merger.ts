@@ -60,6 +60,7 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
     characterStateChangesRemoved: reconciliation.characterStateChangesRemoved,
     newCanonFacts: reconciliation.newCanonFacts,
     newCharacterCanonFacts: reconciliation.newCharacterCanonFacts,
+    reconciliationDiagnostics: reconciliation.reconciliationDiagnostics,
   };
 
   return {

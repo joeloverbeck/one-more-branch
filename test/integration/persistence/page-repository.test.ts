@@ -1,7 +1,9 @@
 import {
   ActiveState,
   ActiveStateChanges,
+  ConstraintType,
   ThreadType,
+  ThreatType,
   Urgency,
   Page,
   Story,
@@ -302,11 +304,19 @@ describe('page-repository integration', () => {
     const activeStateChanges: ActiveStateChanges = {
       newLocation: 'Abandoned temple',
       threatsAdded: [
-        'THREAT_GUARDIAN: Stone guardian awakened',
-        'THREAT_TRAP: Pressure plates detected',
+        {
+          text: 'THREAT_GUARDIAN: Stone guardian awakened',
+          threatType: ThreatType.ENVIRONMENTAL,
+        },
+        { text: 'THREAT_TRAP: Pressure plates detected', threatType: ThreatType.ENVIRONMENTAL },
       ],
       threatsRemoved: ['th-1'],
-      constraintsAdded: ['CONSTRAINT_DARKNESS: No natural light'],
+      constraintsAdded: [
+        {
+          text: 'CONSTRAINT_DARKNESS: No natural light',
+          constraintType: ConstraintType.ENVIRONMENTAL,
+        },
+      ],
       constraintsRemoved: [],
       threadsAdded: ['THREAD_RELIC: Ancient relic rumored to be here'],
       threadsResolved: ['td-1'],
@@ -315,10 +325,24 @@ describe('page-repository integration', () => {
     const accumulatedActiveState: ActiveState = {
       currentLocation: 'Abandoned temple',
       activeThreats: [
-        { id: 'th-2', text: 'THREAT_GUARDIAN: Stone guardian awakened' },
-        { id: 'th-3', text: 'THREAT_TRAP: Pressure plates detected' },
+        {
+          id: 'th-2',
+          text: 'THREAT_GUARDIAN: Stone guardian awakened',
+          threatType: ThreatType.ENVIRONMENTAL,
+        },
+        {
+          id: 'th-3',
+          text: 'THREAT_TRAP: Pressure plates detected',
+          threatType: ThreatType.ENVIRONMENTAL,
+        },
       ],
-      activeConstraints: [{ id: 'cn-1', text: 'CONSTRAINT_DARKNESS: No natural light' }],
+      activeConstraints: [
+        {
+          id: 'cn-1',
+          text: 'CONSTRAINT_DARKNESS: No natural light',
+          constraintType: ConstraintType.ENVIRONMENTAL,
+        },
+      ],
       openThreads: [
         {
           id: 'td-2',
@@ -341,7 +365,13 @@ describe('page-repository integration', () => {
       activeStateChanges,
       parentAccumulatedActiveState: {
         currentLocation: 'Forest edge',
-        activeThreats: [{ id: 'th-1', text: 'THREAT_STORM: Storm approaching' }],
+        activeThreats: [
+          {
+            id: 'th-1',
+            text: 'THREAT_STORM: Storm approaching',
+            threatType: ThreatType.ENVIRONMENTAL,
+          },
+        ],
         activeConstraints: [],
         openThreads: [
           {
@@ -365,6 +395,7 @@ describe('page-repository integration', () => {
     expect(loaded!.accumulatedActiveState.activeThreats[0]).toEqual({
       id: 'th-2',
       text: 'THREAT_GUARDIAN: Stone guardian awakened',
+      threatType: ThreatType.ENVIRONMENTAL,
     });
 
     // Verify all arrays have correct lengths
@@ -397,14 +428,25 @@ describe('page-repository integration', () => {
         newLocation: 'Forest clearing - safe',
         threatsAdded: [],
         threatsRemoved: ['th-1'],
-        constraintsAdded: ['CONSTRAINT_TIRED: Exhausted from fight'],
+        constraintsAdded: [
+          {
+            text: 'CONSTRAINT_TIRED: Exhausted from fight',
+            constraintType: ConstraintType.ENVIRONMENTAL,
+          },
+        ],
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
       },
       parentAccumulatedActiveState: {
         currentLocation: 'Forest path',
-        activeThreats: [{ id: 'th-1', text: 'THREAT_WOLF: Hungry wolf stalking' }],
+        activeThreats: [
+          {
+            id: 'th-1',
+            text: 'THREAT_WOLF: Hungry wolf stalking',
+            threatType: ThreatType.ENVIRONMENTAL,
+          },
+        ],
         activeConstraints: [],
         openThreads: [],
       },
@@ -424,14 +466,25 @@ describe('page-repository integration', () => {
         newLocation: 'Tree canopy - elevated',
         threatsAdded: [],
         threatsRemoved: [],
-        constraintsAdded: ['CONSTRAINT_STUCK: Cannot descend safely'],
+        constraintsAdded: [
+          {
+            text: 'CONSTRAINT_STUCK: Cannot descend safely',
+            constraintType: ConstraintType.ENVIRONMENTAL,
+          },
+        ],
         constraintsRemoved: [],
         threadsAdded: ['THREAD_RESCUE: Must find another way down'],
         threadsResolved: [],
       },
       parentAccumulatedActiveState: {
         currentLocation: 'Forest path',
-        activeThreats: [{ id: 'th-1', text: 'THREAT_WOLF: Hungry wolf stalking' }],
+        activeThreats: [
+          {
+            id: 'th-1',
+            text: 'THREAT_WOLF: Hungry wolf stalking',
+            threatType: ThreatType.ENVIRONMENTAL,
+          },
+        ],
         activeConstraints: [],
         openThreads: [],
       },

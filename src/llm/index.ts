@@ -29,7 +29,7 @@ export type {
   StructureRewriteContext,
   StructureRewriteResult,
 } from './structure-rewrite-types.js';
-export type { PageWriterResult, FinalPageGenerationResult, WriterResult } from './writer-types.js';
+export type { PageWriterResult, FinalPageGenerationResult } from './writer-types.js';
 
 export { CONTENT_POLICY } from './content-policy.js';
 

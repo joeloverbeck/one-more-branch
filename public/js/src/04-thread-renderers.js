@@ -29,6 +29,42 @@
     return html;
   }
 
+  function renderThreatBadgePill(threatType) {
+    var threatTypeIconPath = getIconPath('threat_' + threatType);
+    var html = '<span class="thread-icon-pill" aria-hidden="true">';
+
+    html += '<span class="thread-icon-badge thread-icon-badge--type">';
+    if (threatTypeIconPath) {
+      html += '<img class="thread-icon thread-icon--type"'
+        + ' src="' + escapeHtml(threatTypeIconPath) + '"'
+        + ' alt="" title="' + escapeHtml(threatType) + '"'
+        + ' loading="lazy"'
+        + " onerror=\"this.style.display='none'\">";
+    }
+    html += '</span>';
+
+    html += '</span>';
+    return html;
+  }
+
+  function renderConstraintBadgePill(constraintType) {
+    var constraintTypeIconPath = getIconPath('constraint_' + constraintType);
+    var html = '<span class="thread-icon-pill" aria-hidden="true">';
+
+    html += '<span class="thread-icon-badge thread-icon-badge--type">';
+    if (constraintTypeIconPath) {
+      html += '<img class="thread-icon thread-icon--type"'
+        + ' src="' + escapeHtml(constraintTypeIconPath) + '"'
+        + ' alt="" title="' + escapeHtml(constraintType) + '"'
+        + ' loading="lazy"'
+        + " onerror=\"this.style.display='none'\">";
+    }
+    html += '</span>';
+
+    html += '</span>';
+    return html;
+  }
+
   function getOpenThreadUrgencyClass(urgency) {
     if (urgency === 'HIGH') {
       return 'open-threads-text--high';
@@ -235,9 +271,14 @@
       ? config.overflowSummary.trim()
       : (hiddenCount > 0 ? '+' + hiddenCount + ' more not shown' : null);
 
-    var listHtml = visible.map(function(entry) {
-      return '<li class="' + config.itemClass + '">' + escapeHtml(entry.text) + '</li>';
-    }).join('');
+    var listHtml = visible
+      .map(function(entry) {
+        if (typeof config.renderEntry === 'function') {
+          return '<li class="' + config.itemClass + '">' + config.renderEntry(entry) + '</li>';
+        }
+        return '<li class="' + config.itemClass + '">' + escapeHtml(entry.text) + '</li>';
+      })
+      .join('');
 
     if (existingPanel) {
       var list = existingPanel.querySelector('#' + config.listId);
@@ -294,6 +335,13 @@
       entries: threats,
       overflowSummary: threatsOverflowSummary,
       container: sidebarContainer,
+      renderEntry: function(entry) {
+        var threatType = typeof entry.threatType === 'string' ? entry.threatType : '';
+        if (!threatType) {
+          return escapeHtml(entry.text);
+        }
+        return renderThreatBadgePill(threatType) + '<span>' + escapeHtml(entry.text) + '</span>';
+      },
     });
   }
 
@@ -311,6 +359,15 @@
       entries: constraints,
       overflowSummary: constraintsOverflowSummary,
       container: sidebarContainer,
+      renderEntry: function(entry) {
+        var constraintType = typeof entry.constraintType === 'string' ? entry.constraintType : '';
+        if (!constraintType) {
+          return escapeHtml(entry.text);
+        }
+        return (
+          renderConstraintBadgePill(constraintType) + '<span>' + escapeHtml(entry.text) + '</span>'
+        );
+      },
     });
   }
 
@@ -357,4 +414,3 @@
       limit: LEFT_PANEL_LIMIT,
     });
   }
-

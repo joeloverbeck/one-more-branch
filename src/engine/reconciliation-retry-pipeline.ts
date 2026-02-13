@@ -1,5 +1,9 @@
 import { generatePagePlan } from '../llm';
-import type { GenerationPipelineMetrics, ReconciliationFailureReason, WriterResult } from '../llm';
+import type {
+  GenerationPipelineMetrics,
+  PageWriterResult,
+  ReconciliationFailureReason,
+} from '../llm';
 import { logger } from '../logging/index.js';
 import {
   emitGenerationStage,
@@ -33,7 +37,7 @@ export async function generateWithReconciliationRetry({
   generateWriter,
   onGenerationStage,
 }: ReconciliationRetryGenerationOptions): Promise<{
-  writerResult: WriterResult;
+  writerResult: PageWriterResult;
   reconciliation: StateReconciliationResult;
   metrics: GenerationPipelineMetrics;
 }> {
@@ -107,7 +111,7 @@ export async function generateWithReconciliationRetry({
     emitGenerationStage(onGenerationStage, writerStage, 'started', attempt);
     logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'writer' });
     const writerStart = Date.now();
-    let writerResult: WriterResult;
+    let writerResult: PageWriterResult;
     try {
       writerResult = await generateWriter(pagePlan, failureReasons);
     } catch (error) {

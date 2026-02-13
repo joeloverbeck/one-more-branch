@@ -32,10 +32,16 @@ const plannerMessages: ChatMessage[] = [
 const validPlannerPayload = {
   sceneIntent: 'Force the protagonist to choose between stealth and speed.',
   continuityAnchors: ['The bell tower remains occupied by sentries.'],
-  stateIntents: {
-    currentLocation: 'Archive access corridor',
-    threats: { add: ['A patrol rounds the corridor.'], removeIds: [] },
-    constraints: { add: ['Lantern oil is almost gone.'], removeIds: [] },
+    stateIntents: {
+      currentLocation: 'Archive access corridor',
+      threats: {
+        add: [{ text: 'A patrol rounds the corridor.', threatType: 'HOSTILE_AGENT' }],
+        removeIds: [],
+      },
+      constraints: {
+        add: [{ text: 'Lantern oil is almost gone.', constraintType: 'ENVIRONMENTAL' }],
+        removeIds: [],
+      },
     threads: {
       add: [
         {

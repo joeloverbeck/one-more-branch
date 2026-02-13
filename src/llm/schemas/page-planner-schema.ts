@@ -20,7 +20,21 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             threats: {
               type: 'object',
               properties: {
-                add: { type: 'array', items: { type: 'string' } },
+                add: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      text: { type: 'string' },
+                      threatType: {
+                        type: 'string',
+                        enum: ['HOSTILE_AGENT', 'ENVIRONMENTAL', 'CREATURE'],
+                      },
+                    },
+                    required: ['text', 'threatType'],
+                    additionalProperties: false,
+                  },
+                },
                 removeIds: { type: 'array', items: { type: 'string' } },
               },
               required: ['add', 'removeIds'],
@@ -29,7 +43,21 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             constraints: {
               type: 'object',
               properties: {
-                add: { type: 'array', items: { type: 'string' } },
+                add: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      text: { type: 'string' },
+                      constraintType: {
+                        type: 'string',
+                        enum: ['PHYSICAL', 'ENVIRONMENTAL', 'TEMPORAL'],
+                      },
+                    },
+                    required: ['text', 'constraintType'],
+                    additionalProperties: false,
+                  },
+                },
                 removeIds: { type: 'array', items: { type: 'string' } },
               },
               required: ['add', 'removeIds'],

@@ -1,5 +1,6 @@
 import { CONTENT_POLICY } from '../../../src/llm/content-policy';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
+import { ConstraintType, ThreatType } from '../../../src/models/state';
 import { buildContinuationPrompt, buildOpeningPrompt } from '../../../src/llm/prompts';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
@@ -249,7 +250,7 @@ describe('buildOpeningPrompt', () => {
     });
 
     const user = getUserMessage(messages);
-    expect(user).toContain('=== ACTIVE STATE TRACKING ===');
+    expect(user).toContain('=== CONTINUITY CONTEXT USAGE ===');
     expect(user).toContain('READ-ONLY CONTINUITY INPUT:');
     expect(user).toContain('Show consequences in prose and choices.');
     expect(user).not.toContain('ESTABLISHMENT RULES (OPENING)');
@@ -690,8 +691,12 @@ describe('buildContinuationPrompt', () => {
         activeState: {
           currentLocation: '',
           activeThreats: [
-            { id: 'th-1', text: 'Armed guards patrolling nearby' },
-            { id: 'th-2', text: 'Alarm system is active' },
+            {
+              id: 'th-1',
+              text: 'Armed guards patrolling nearby',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+            { id: 'th-2', text: 'Alarm system is active', threatType: ThreatType.ENVIRONMENTAL },
           ],
           activeConstraints: [],
           openThreads: [],
@@ -699,8 +704,10 @@ describe('buildContinuationPrompt', () => {
       });
 
       expect(getUserMessage(messages)).toContain('ACTIVE THREATS (dangers that exist NOW):');
-      expect(getUserMessage(messages)).toContain('- [th-1] Armed guards patrolling nearby');
-      expect(getUserMessage(messages)).toContain('- [th-2] Alarm system is active');
+      expect(getUserMessage(messages)).toContain(
+        '- [th-1] (ENVIRONMENTAL) Armed guards patrolling nearby'
+      );
+      expect(getUserMessage(messages)).toContain('- [th-2] (ENVIRONMENTAL) Alarm system is active');
     });
 
     it('omits ACTIVE THREATS section when no threats', () => {
@@ -724,8 +731,16 @@ describe('buildContinuationPrompt', () => {
           currentLocation: '',
           activeThreats: [],
           activeConstraints: [
-            { id: 'cn-1', text: 'Injured leg limits mobility' },
-            { id: 'cn-2', text: 'No weapon - currently unarmed' },
+            {
+              id: 'cn-1',
+              text: 'Injured leg limits mobility',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
+            {
+              id: 'cn-2',
+              text: 'No weapon - currently unarmed',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
           ],
           openThreads: [],
         },
@@ -734,8 +749,12 @@ describe('buildContinuationPrompt', () => {
       expect(getUserMessage(messages)).toContain(
         'ACTIVE CONSTRAINTS (limitations affecting protagonist NOW):'
       );
-      expect(getUserMessage(messages)).toContain('- [cn-1] Injured leg limits mobility');
-      expect(getUserMessage(messages)).toContain('- [cn-2] No weapon - currently unarmed');
+      expect(getUserMessage(messages)).toContain(
+        '- [cn-1] (ENVIRONMENTAL) Injured leg limits mobility'
+      );
+      expect(getUserMessage(messages)).toContain(
+        '- [cn-2] (ENVIRONMENTAL) No weapon - currently unarmed'
+      );
     });
 
     it('omits ACTIVE CONSTRAINTS section when no constraints', () => {
@@ -808,8 +827,20 @@ describe('buildContinuationPrompt', () => {
         ...baseContext,
         activeState: {
           currentLocation: 'The rooftop',
-          activeThreats: [{ id: 'th-1', text: 'Sniper on adjacent building' }],
-          activeConstraints: [{ id: 'cn-1', text: 'Low ammo - only 2 rounds left' }],
+          activeThreats: [
+            {
+              id: 'th-1',
+              text: 'Sniper on adjacent building',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+          ],
+          activeConstraints: [
+            {
+              id: 'cn-1',
+              text: 'Low ammo - only 2 rounds left',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
+          ],
           openThreads: [
             {
               id: 'td-1',
@@ -932,7 +963,13 @@ describe('buildContinuationPrompt', () => {
         },
         activeState: {
           currentLocation: 'Hidden bunker',
-          activeThreats: [{ id: 'th-4', text: 'Enemy patrol searching' }],
+          activeThreats: [
+            {
+              id: 'th-4',
+              text: 'Enemy patrol searching',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+          ],
           activeConstraints: [],
           openThreads: [],
         },
@@ -982,11 +1019,28 @@ describe('buildContinuationPrompt', () => {
         activeState: {
           currentLocation: '',
           activeThreats: [
-            { id: 'th-10', text: 'Guard patrolling the area' },
-            { id: 'th-11', text: 'Dog trained to attack' },
+            {
+              id: 'th-7',
+              text: 'Guard rotation changing',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+            {
+              id: 'th-8',
+              text: 'Searchlight sweeps every thirty seconds',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
           ],
-          activeConstraints: [{ id: 'cn-9', text: 'Broken arm - cannot climb' }],
-          openThreads: [{ id: 'td-5', text: 'Missing key - need to find it' }],
+          activeConstraints: [
+            { id: 'cn-9', text: 'Broken arm - cannot climb', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
+          openThreads: [
+            {
+              id: 'td-5',
+              text: 'Missing key - need to find it',
+              threadType: 'QUEST',
+              urgency: 'MEDIUM',
+            },
+          ],
         },
       });
 

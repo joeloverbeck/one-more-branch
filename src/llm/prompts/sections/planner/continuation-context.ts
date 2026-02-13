@@ -243,13 +243,15 @@ ${formatNpcsForPrompt(context.npcs)}
 
   const threatsSection =
     context.activeState.activeThreats.length > 0
-      ? context.activeState.activeThreats.map((entry) => `- [${entry.id}] ${entry.text}`).join('\n')
+      ? context.activeState.activeThreats
+          .map((entry) => `- [${entry.id}] (${entry.threatType}) ${entry.text}`)
+          .join('\n')
       : '(none)';
 
   const constraintsSection =
     context.activeState.activeConstraints.length > 0
       ? context.activeState.activeConstraints
-          .map((entry) => `- [${entry.id}] ${entry.text}`)
+          .map((entry) => `- [${entry.id}] (${entry.constraintType}) ${entry.text}`)
           .join('\n')
       : '(none)';
 

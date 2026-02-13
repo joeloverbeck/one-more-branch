@@ -8,9 +8,9 @@ Active state entries should track conditions that are TRUE RIGHT NOW and affect 
 Before adding any entry, ask: "Is this currently happening? Does it affect the protagonist's immediate situation?"
 
 GOOD THREATS (threatsAdded):
-- "Two guards patrol the corridor ahead"
-- "Flames spread from the east wing"
-- "Something large stalks in the darkness"
+- { text: "Two guards patrol the corridor ahead", threatType: "HOSTILE_AGENT" }
+- { text: "Flames spread from the east wing", threatType: "ENVIRONMENTAL" }
+- { text: "Something large stalks in the darkness", threatType: "CREATURE" }
 
 BAD THREATS (do NOT add):
 - Past dangers: "Was attacked earlier" - no longer active
@@ -18,9 +18,9 @@ BAD THREATS (do NOT add):
 - Non-threats: "It's dark" - use CONSTRAINT instead
 
 GOOD CONSTRAINTS (constraintsAdded):
-- "Leg wound slows movement"
-- "Complete darkness limits visibility"
-- "Must escape before dawn"
+- { text: "Leg wound slows movement", constraintType: "PHYSICAL" }
+- { text: "Complete darkness limits visibility", constraintType: "ENVIRONMENTAL" }
+- { text: "Must escape before dawn", constraintType: "TEMPORAL" }
 
 BAD CONSTRAINTS (do NOT add):
 - Emotions: "Protagonist is scared" - use protagonistAffect
@@ -115,6 +115,8 @@ SCENE-LIFECYCLE REMOVAL TRIGGERS:
 
 THREAT/CONSTRAINT SELF-CHECK (before you finalize JSON):
 - For each new threat: Is this an IMMEDIATE physical danger in the planned scene, or a strategic concern? If strategic -> DANGER thread or nothing.
+- For each new threat: Is threatType correct? HOSTILE_AGENT for people, ENVIRONMENTAL for hazards, CREATURE for non-human entities.
 - For each new constraint: Does this RESTRICT the protagonist's physical actions, or describe how others interpret behavior? If interpretation -> nothing.
+- For each new constraint: Is constraintType correct? PHYSICAL for body limits, ENVIRONMENTAL for world limits, TEMPORAL for deadlines/time pressure.
 - For each new add: Does ANY existing entry already cover this concept? If yes -> do not add.
 - Count check: Will the total threats exceed 8? Will total constraints exceed 8? If yes, identify entries to remove first.`;

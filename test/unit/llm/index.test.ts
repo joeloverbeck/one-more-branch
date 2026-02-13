@@ -25,7 +25,7 @@ import type {
   PagePlanGenerationResult,
   PageWriterResult,
   FinalPageGenerationResult,
-  WriterResult,
+  PageWriterResult,
 } from '../../../src/llm/index';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
@@ -64,7 +64,7 @@ describe('llm barrel exports', () => {
       sceneSummary: 'Thunder and wind threaten to collapse the old bridge.',
       rawResponse: '{"narrative":"..."}',
     };
-    const result: WriterResult = {
+    const result: PageWriterResult = {
       ...pageWriterResult,
       currentLocation: 'The Old Bridge',
       threatsAdded: [],

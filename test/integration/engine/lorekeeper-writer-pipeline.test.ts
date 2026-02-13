@@ -3,7 +3,7 @@ import { createContinuationWriterWithLorekeeper } from '@/engine/lorekeeper-writ
 import type { LorekeeperWriterContext } from '@/engine/lorekeeper-writer-pipeline';
 import type { ContinuationContext } from '@/llm/context-types';
 import type { LorekeeperResult } from '@/llm/lorekeeper-types';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 import type { PagePlanGenerationResult } from '@/llm/planner-types';
 import type { GenerationStageCallback } from '@/engine/types';
 import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
@@ -91,7 +91,7 @@ const mockLorekeeperResult: LorekeeperResult = {
   rawResponse: '{}',
 };
 
-const mockWriterResult: WriterResult = {
+const mockWriterResult: PageWriterResult = {
   narrative: 'The knight knelt before the throne.',
   choices: [
     {

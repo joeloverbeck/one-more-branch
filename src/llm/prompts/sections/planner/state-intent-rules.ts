@@ -67,6 +67,20 @@ THREAD URGENCY RUBRIC:
 - If adding a thread that continues or refines an existing unresolved loop, keep the same urgency unless this planned scene explicitly escalates or de-escalates stakes.
 - Keep HIGH rare: add at most one new HIGH thread per page unless multiple independent crises are explicitly active.
 
+THREAT TYPE CONTRACT:
+- Every threat in stateIntents.threats.add must be an object:
+  { text: string, threatType: HOSTILE_AGENT|ENVIRONMENTAL|CREATURE }
+- HOSTILE_AGENT: A person or group actively opposing or endangering the protagonist.
+- ENVIRONMENTAL: A non-sentient hazard (fire, collapse, flooding, toxic atmosphere, structural danger).
+- CREATURE: A non-human entity posing physical danger (beast, monster, automaton).
+
+CONSTRAINT TYPE CONTRACT:
+- Every constraint in stateIntents.constraints.add must be an object:
+  { text: string, constraintType: PHYSICAL|ENVIRONMENTAL|TEMPORAL }
+- PHYSICAL: A body-based restriction on protagonist capabilities.
+- ENVIRONMENTAL: A world-based restriction on protagonist capabilities.
+- TEMPORAL: A time-based restriction or deadline pressure.
+
 QUALITY BAR:
 - Keep intents concrete and testable.
 - Prefer minimal, meaningful mutations over speculative churn.

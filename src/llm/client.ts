@@ -22,13 +22,13 @@ import type {
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import type { LorekeeperResult } from './lorekeeper-types.js';
 import type { PagePlan, PagePlanGenerationResult } from './planner-types.js';
-import type { WriterResult } from './writer-types.js';
+import type { PageWriterResult } from './writer-types.js';
 import { generateWriterWithFallback } from './writer-generation.js';
 
 export async function generateOpeningPage(
   context: OpeningContext,
   options: GenerationOptions
-): Promise<WriterResult> {
+): Promise<PageWriterResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildOpeningPrompt(context, promptOptions);
 
@@ -41,7 +41,7 @@ export async function generateOpeningPage(
 export async function generateWriterPage(
   context: ContinuationContext,
   options: GenerationOptions
-): Promise<WriterResult> {
+): Promise<PageWriterResult> {
   const promptOptions = resolvePromptOptions(options);
   const messages = buildContinuationPrompt(context, promptOptions);
 
@@ -55,7 +55,7 @@ export async function generatePageWriterOutput(
   context: ContinuationContext,
   plan: PagePlan,
   options: GenerationOptions
-): Promise<WriterResult> {
+): Promise<PageWriterResult> {
   return generateWriterPage({ ...context, pagePlan: plan }, options);
 }
 

@@ -10,7 +10,7 @@ import {
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import type { StoryId } from '@/models';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 
@@ -62,25 +62,30 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 >;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 
+type ReconciliationWriterPayload = PageWriterResult &
+  Omit<StateReconciliationResult, 'currentLocation' | 'reconciliationDiagnostics'> & {
+    currentLocation?: string | null;
+  };
+
 function passthroughReconciledState(
-  writer: WriterResult,
+  writer: ReconciliationWriterPayload,
   previousLocation: string
 ): StateReconciliationResult {
   return {
-    currentLocation: writer.currentLocation || previousLocation,
-    threatsAdded: writer.threatsAdded,
-    threatsRemoved: writer.threatsRemoved,
-    constraintsAdded: writer.constraintsAdded,
-    constraintsRemoved: writer.constraintsRemoved,
-    threadsAdded: writer.threadsAdded,
-    threadsResolved: writer.threadsResolved,
-    inventoryAdded: writer.inventoryAdded,
-    inventoryRemoved: writer.inventoryRemoved,
-    healthAdded: writer.healthAdded,
-    healthRemoved: writer.healthRemoved,
-    characterStateChangesAdded: writer.characterStateChangesAdded,
-    characterStateChangesRemoved: writer.characterStateChangesRemoved,
-    newCanonFacts: writer.newCanonFacts,
+    currentLocation: writer.currentLocation ?? previousLocation,
+    threatsAdded: [...writer.threatsAdded],
+    threatsRemoved: [...writer.threatsRemoved],
+    constraintsAdded: [...writer.constraintsAdded],
+    constraintsRemoved: [...writer.constraintsRemoved],
+    threadsAdded: [...writer.threadsAdded],
+    threadsResolved: [...writer.threadsResolved],
+    inventoryAdded: [...writer.inventoryAdded],
+    inventoryRemoved: [...writer.inventoryRemoved],
+    healthAdded: [...writer.healthAdded],
+    healthRemoved: [...writer.healthRemoved],
+    characterStateChangesAdded: [...writer.characterStateChangesAdded],
+    characterStateChangesRemoved: [...writer.characterStateChangesRemoved],
+    newCanonFacts: [...writer.newCanonFacts],
     newCharacterCanonFacts: writer.newCharacterCanonFacts,
     reconciliationDiagnostics: [],
   };
@@ -241,7 +246,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       rawResponse: 'page-plan',
     });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
-      passthroughReconciledState(writer as WriterResult, previousState.currentLocation)
+      passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
   });
 

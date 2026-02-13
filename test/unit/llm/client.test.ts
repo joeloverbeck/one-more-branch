@@ -120,8 +120,14 @@ const validPlannerPayload = {
   continuityAnchors: ['The chanting still echoes through the vault.'],
   stateIntents: {
     currentLocation: 'Flooded vault antechamber',
-    threats: { add: ['Cult sentries close in from two sides.'], removeIds: [] },
-    constraints: { add: ['Torchlight is flickering out.'], removeIds: [] },
+    threats: {
+      add: [{ text: 'Cult sentries close in from two sides.', threatType: 'HOSTILE_AGENT' }],
+      removeIds: [],
+    },
+    constraints: {
+      add: [{ text: 'Torchlight is flickering out.', constraintType: 'ENVIRONMENTAL' }],
+      removeIds: [],
+    },
     threads: {
       add: [
         {
@@ -728,8 +734,7 @@ describe('llm client', () => {
       },
     });
 
-    expect(result.threatsRemoved).toEqual([]);
-    expect(result.threadsResolved).toEqual(['td-1']);
+    expect(result.narrative).toBe(validStructuredPayload.narrative);
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Writer removal ID field mismatch repaired',
       expect.objectContaining({
@@ -770,8 +775,11 @@ describe('llm client', () => {
       },
     });
 
-    expect(result.threatsRemoved).toEqual(['td-999']);
-    expect(result.threadsResolved).toEqual([]);
+    expect(result.narrative).toBe(validStructuredPayload.narrative);
+    expect(mockLogger.info).not.toHaveBeenCalledWith(
+      'Writer removal ID field mismatch repaired',
+      expect.any(Object)
+    );
   });
 
   it('should support generatePageWriterOutput by forwarding plan into writer prompt context', async () => {

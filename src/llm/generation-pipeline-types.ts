@@ -1,11 +1,12 @@
 import type { PageId } from '../models/id.js';
 import type { DeviationResult } from '../models/story-arc.js';
+import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 import type {
   ObjectiveEvidenceStrength,
   PacingRecommendedAction,
   SceneMomentum,
 } from './analyst-types.js';
-import type { WriterResult } from './writer-types.js';
+import type { PageWriterResult } from './writer-types.js';
 
 export interface AncestorSummary {
   readonly pageId: PageId;
@@ -20,7 +21,9 @@ export interface MomentumDataPoint {
 
 export type MomentumTrajectory = readonly MomentumDataPoint[];
 
-export interface ContinuationGenerationResult extends WriterResult {
+export interface ContinuationGenerationResult
+  extends PageWriterResult,
+    StateReconciliationResult {
   readonly beatConcluded: boolean;
   readonly beatResolution: string;
   readonly deviation: DeviationResult;

@@ -198,7 +198,19 @@
             <h3 class="active-threats-title" id="active-threats-title">Active Threats</h3>
             <ul class="active-threats-list" id="active-threats-list">
               <% threatsPanelRows.forEach((threat) => { %>
-              <li class="active-threats-item"><%= threat.text %></li>
+              <li class="active-threats-item">
+                <span class="thread-icon-pill" aria-hidden="true">
+                  <span class="thread-icon-badge thread-icon-badge--type">
+                    <img class="thread-icon thread-icon--type"
+                         src="/images/icons/threat-<%= threat.threatType.toLowerCase().replace(/_/g, '-') %>.png"
+                         alt=""
+                         title="<%= threat.threatType %>"
+                         loading="lazy"
+                         onerror="this.style.display='none'">
+                  </span>
+                </span>
+                <span><%= threat.text %></span>
+              </li>
               <% }) %>
             </ul>
             <% if (threatsOverflowSummary) { %>
@@ -212,7 +224,19 @@
             <h3 class="active-constraints-title" id="active-constraints-title">Active Constraints</h3>
             <ul class="active-constraints-list" id="active-constraints-list">
               <% constraintsPanelRows.forEach((constraint) => { %>
-              <li class="active-constraints-item"><%= constraint.text %></li>
+              <li class="active-constraints-item">
+                <span class="thread-icon-pill" aria-hidden="true">
+                  <span class="thread-icon-badge thread-icon-badge--type">
+                    <img class="thread-icon thread-icon--type"
+                         src="/images/icons/constraint-<%= constraint.constraintType.toLowerCase().replace(/_/g, '-') %>.png"
+                         alt=""
+                         title="<%= constraint.constraintType %>"
+                         loading="lazy"
+                         onerror="this.style.display='none'">
+                  </span>
+                </span>
+                <span><%= constraint.text %></span>
+              </li>
               <% }) %>
             </ul>
             <% if (constraintsOverflowSummary) { %>

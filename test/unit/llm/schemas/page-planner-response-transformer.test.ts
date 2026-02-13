@@ -8,11 +8,11 @@ function createValidPlannerPayload(): Record<string, unknown> {
     stateIntents: {
       currentLocation: 'Eastern watchtower parapet',
       threats: {
-        add: ['Archers establish crossfire from the catwalk'],
+        add: [{ text: 'Archers establish crossfire from the catwalk', threatType: 'HOSTILE_AGENT' }],
         removeIds: [],
       },
       constraints: {
-        add: ['Visibility is reduced by smoke'],
+        add: [{ text: 'Visibility is reduced by smoke', constraintType: 'ENVIRONMENTAL' }],
         removeIds: [],
       },
       threads: {
@@ -173,7 +173,11 @@ describe('validatePagePlannerResponse', () => {
 
   it('rejects ID-like values in add payload fields', () => {
     const rawJson = createValidPlannerPayload();
-    (rawJson.stateIntents as { constraints: { add: string[] } }).constraints.add = ['cn-7'];
+    (
+      rawJson.stateIntents as {
+        constraints: { add: Array<{ text: string; constraintType: string }> };
+      }
+    ).constraints.add = [{ text: 'cn-7', constraintType: 'ENVIRONMENTAL' }];
 
     try {
       validatePagePlannerResponse(rawJson, '{"raw":"planner"}');

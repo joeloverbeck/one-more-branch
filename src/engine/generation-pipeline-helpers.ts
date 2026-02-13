@@ -1,8 +1,8 @@
 import type {
   GenerationPipelineMetrics,
   PagePlanContext,
+  PageWriterResult,
   ReconciliationFailureReason,
-  WriterResult,
 } from '../llm';
 import type { generatePagePlan } from '../llm';
 import type { StateReconciliationResult } from './state-reconciler-types';
@@ -19,7 +19,7 @@ export interface ReconciliationRetryGenerationOptions {
   generateWriter: (
     pagePlan: Awaited<ReturnType<typeof generatePagePlan>>,
     failureReasons?: readonly ReconciliationFailureReason[]
-  ) => Promise<WriterResult>;
+  ) => Promise<PageWriterResult>;
   onGenerationStage?: GenerationStageCallback;
 }
 

@@ -1,4 +1,4 @@
-import { ThreadType, Urgency } from '../../../src/models/state';
+import { ConstraintType, ThreatType, ThreadType, Urgency } from '../../../src/models/state';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import type { PageWriterResult } from '../../../src/llm/writer-types';
 import type { PagePlan } from '../../../src/llm/planner-types';
@@ -55,12 +55,28 @@ function buildPopulatedPreviousState(): StateReconciliationPreviousState {
   return {
     currentLocation: 'Bridge district',
     threats: [
-      { id: 'th-1', text: 'Armed patrol sweeps the bridge crossing' },
-      { id: 'th-2', text: 'Informant network watches the market' },
+      {
+        id: 'th-1',
+        text: 'Armed patrol sweeps the bridge crossing',
+        threatType: ThreatType.HOSTILE_AGENT,
+      },
+      {
+        id: 'th-2',
+        text: 'Informant network watches the market',
+        threatType: ThreatType.HOSTILE_AGENT,
+      },
     ],
     constraints: [
-      { id: 'cn-1', text: 'Curfew restricts movement after dark' },
-      { id: 'cn-2', text: 'Bridge checkpoint requires identification' },
+      {
+        id: 'cn-1',
+        text: 'Curfew restricts movement after dark',
+        constraintType: ConstraintType.TEMPORAL,
+      },
+      {
+        id: 'cn-2',
+        text: 'Bridge checkpoint requires identification',
+        constraintType: ConstraintType.ENVIRONMENTAL,
+      },
     ],
     threads: [
       {
@@ -104,11 +120,13 @@ describe('state-reconciler integration', () => {
       stateIntents: {
         currentLocation: 'Alley behind the bridge',
         threats: {
-          add: ['Sentry dog detected Mara in the alley'],
+          add: [{ text: 'Sentry dog detected Mara in the alley', threatType: 'CREATURE' }],
           removeIds: ['th-1'],
         },
         constraints: {
-          add: ['Alley is a dead end with no escape route'],
+          add: [
+            { text: 'Alley is a dead end with no escape route', constraintType: 'ENVIRONMENTAL' },
+          ],
           removeIds: ['cn-1'],
         },
         threads: {
@@ -147,9 +165,13 @@ describe('state-reconciler integration', () => {
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
     expect(result.currentLocation).toBe('Alley behind the bridge');
-    expect(result.threatsAdded).toEqual(['Sentry dog detected Mara in the alley']);
+    expect(result.threatsAdded).toEqual([
+      { text: 'Sentry dog detected Mara in the alley', threatType: ThreatType.CREATURE },
+    ]);
     expect(result.threatsRemoved).toEqual(['th-1']);
-    expect(result.constraintsAdded).toEqual(['Alley is a dead end with no escape route']);
+    expect(result.constraintsAdded).toEqual([
+      { text: 'Alley is a dead end with no escape route', constraintType: ConstraintType.ENVIRONMENTAL },
+    ]);
     expect(result.constraintsRemoved).toEqual(['cn-1']);
     expect(result.threadsAdded).toEqual([
       {
@@ -232,11 +254,11 @@ describe('state-reconciler integration', () => {
       stateIntents: {
         ...buildBasePlan().stateIntents,
         threats: {
-          add: ['Xylocarpa toxin infiltrating groundwater'],
+          add: [{ text: 'Xylocarpa toxin infiltrating groundwater', threatType: 'ENVIRONMENTAL' }],
           removeIds: [],
         },
         constraints: {
-          add: ['Bridge crossing is blocked by patrol'],
+          add: [{ text: 'Bridge crossing is blocked by patrol', constraintType: 'ENVIRONMENTAL' }],
           removeIds: [],
         },
         inventory: {
@@ -263,8 +285,12 @@ describe('state-reconciler integration', () => {
 
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
-    expect(result.threatsAdded).toEqual(['Xylocarpa toxin infiltrating groundwater']);
-    expect(result.constraintsAdded).toEqual(['Bridge crossing is blocked by patrol']);
+    expect(result.threatsAdded).toEqual([
+      { text: 'Xylocarpa toxin infiltrating groundwater', threatType: ThreatType.ENVIRONMENTAL },
+    ]);
+    expect(result.constraintsAdded).toEqual([
+      { text: 'Bridge crossing is blocked by patrol', constraintType: ConstraintType.ENVIRONMENTAL },
+    ]);
     expect(result.inventoryAdded).toEqual(['Zyzzogeton gemstone amulet']);
     expect(result.healthAdded).toEqual(['Fatigue from the alley chase']);
     expect(result.characterStateChangesAdded).toEqual([
@@ -530,11 +556,11 @@ describe('state-reconciler integration', () => {
       stateIntents: {
         currentLocation: 'Sewer tunnel beneath the bridge',
         threats: {
-          add: ['Rats swarm the sewer tunnel'],
+          add: [{ text: 'Rats swarm the sewer tunnel', threatType: 'CREATURE' }],
           removeIds: ['th-1'],
         },
         constraints: {
-          add: ['Sewer tunnel is flooded knee-deep'],
+          add: [{ text: 'Sewer tunnel is flooded knee-deep', constraintType: 'ENVIRONMENTAL' }],
           removeIds: [],
         },
         threads: {
@@ -578,9 +604,13 @@ describe('state-reconciler integration', () => {
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
     expect(result.currentLocation).toBe('Sewer tunnel beneath the bridge');
-    expect(result.threatsAdded).toEqual(['Rats swarm the sewer tunnel']);
+    expect(result.threatsAdded).toEqual([
+      { text: 'Rats swarm the sewer tunnel', threatType: ThreatType.CREATURE },
+    ]);
     expect(result.threatsRemoved).toEqual(['th-1']);
-    expect(result.constraintsAdded).toEqual(['Sewer tunnel is flooded knee-deep']);
+    expect(result.constraintsAdded).toEqual([
+      { text: 'Sewer tunnel is flooded knee-deep', constraintType: ConstraintType.ENVIRONMENTAL },
+    ]);
     expect(result.threadsAdded).toEqual([
       {
         text: 'Find the old sewer exit that leads to the archive district',
@@ -635,11 +665,11 @@ describe('state-reconciler integration', () => {
       stateIntents: {
         currentLocation: 'Sewer junction',
         threats: {
-          add: ['Collapsing section ahead in the tunnel'],
+          add: [{ text: 'Collapsing section ahead in the tunnel', threatType: 'ENVIRONMENTAL' }],
           removeIds: ['th-2'],
         },
         constraints: {
-          add: ['Water level rising in the tunnel'],
+          add: [{ text: 'Water level rising in the tunnel', constraintType: 'ENVIRONMENTAL' }],
           removeIds: ['cn-1'],
         },
         threads: {

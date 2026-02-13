@@ -3,7 +3,7 @@
  * These interfaces define the JSON structure stored on disk.
  */
 
-import type { ThreadType, Urgency } from '../models';
+import type { ConstraintType, ThreatType, ThreadType, Urgency } from '../models';
 
 export interface BeatProgressionFileData {
   beatId: string;
@@ -40,6 +40,24 @@ export interface KeyedEntryFileData {
 export interface ThreadEntryFileData extends KeyedEntryFileData {
   threadType: ThreadType;
   urgency: Urgency;
+}
+
+export interface ThreatEntryFileData extends KeyedEntryFileData {
+  threatType: ThreatType;
+}
+
+export interface ConstraintEntryFileData extends KeyedEntryFileData {
+  constraintType: ConstraintType;
+}
+
+export interface ThreatAdditionFileData {
+  text: string;
+  threatType: ThreatType;
+}
+
+export interface ConstraintAdditionFileData {
+  text: string;
+  constraintType: ConstraintType;
 }
 
 export interface ThreadAdditionFileData {
@@ -123,17 +141,17 @@ export interface PageFileData {
   }>;
   activeStateChanges: {
     newLocation: string | null;
-    threatsAdded: string[];
+    threatsAdded: ThreatAdditionFileData[];
     threatsRemoved: string[];
-    constraintsAdded: string[];
+    constraintsAdded: ConstraintAdditionFileData[];
     constraintsRemoved: string[];
     threadsAdded: Array<string | ThreadAdditionFileData>;
     threadsResolved: string[];
   };
   accumulatedActiveState: {
     currentLocation: string;
-    activeThreats: KeyedEntryFileData[];
-    activeConstraints: KeyedEntryFileData[];
+    activeThreats: ThreatEntryFileData[];
+    activeConstraints: ConstraintEntryFileData[];
     openThreads: ThreadEntryFileData[];
   };
   inventoryChanges: {

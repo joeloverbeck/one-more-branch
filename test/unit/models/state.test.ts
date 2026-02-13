@@ -1,6 +1,8 @@
 import { logger } from '../../../src/logging/index';
 import { setModelLogger } from '../../../src/models/model-logger';
 import {
+  ConstraintType,
+  ThreatType,
   ThreadType,
   Urgency,
   addCanonFact,
@@ -60,7 +62,7 @@ describe('State utilities', () => {
       expect(
         isActiveState({
           currentLocation: 'x',
-          activeThreats: [{ id: 'th-1', text: 'y' }],
+          activeThreats: [{ id: 'th-1', text: 'y', threatType: ThreatType.ENVIRONMENTAL }],
           activeConstraints: [],
           openThreads: [],
         })
@@ -109,7 +111,7 @@ describe('State utilities', () => {
       expect(
         isActiveStateChanges({
           newLocation: null,
-          threatsAdded: [1],
+          threatsAdded: [{ text: 'x', threatType: ThreatType.ENVIRONMENTAL }, 1],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -270,10 +272,10 @@ describe('State utilities', () => {
   });
 
   describe('applyActiveStateChanges', () => {
-    it('creates keyed threat entries from plain additions', () => {
+    it('creates keyed threat entries from typed additions', () => {
       const result = applyActiveStateChanges(createEmptyActiveState(), {
         newLocation: null,
-        threatsAdded: ['Fire everywhere'],
+        threatsAdded: [{ text: 'Fire everywhere', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
@@ -281,14 +283,18 @@ describe('State utilities', () => {
         threadsResolved: [],
       });
 
-      expect(result.activeThreats).toEqual([{ id: 'th-1', text: 'Fire everywhere' }]);
+      expect(result.activeThreats).toEqual([
+        { id: 'th-1', text: 'Fire everywhere', threatType: ThreatType.ENVIRONMENTAL },
+      ]);
     });
 
     it('removes keyed threat entries by ID', () => {
       const result = applyActiveStateChanges(
         {
           currentLocation: 'Hallway',
-          activeThreats: [{ id: 'th-1', text: 'Fire everywhere' }],
+          activeThreats: [
+            { id: 'th-1', text: 'Fire everywhere', threatType: ThreatType.ENVIRONMENTAL },
+          ],
           activeConstraints: [],
           openThreads: [],
         },
@@ -310,8 +316,10 @@ describe('State utilities', () => {
       const result = applyActiveStateChanges(
         {
           currentLocation: 'Before',
-          activeThreats: [{ id: 'th-1', text: 'Old threat' }],
-          activeConstraints: [{ id: 'cn-1', text: 'Old constraint' }],
+          activeThreats: [{ id: 'th-1', text: 'Old threat', threatType: ThreatType.CREATURE }],
+          activeConstraints: [
+            { id: 'cn-1', text: 'Old constraint', constraintType: ConstraintType.PHYSICAL },
+          ],
           openThreads: [
             {
               id: 'td-1',
@@ -323,9 +331,11 @@ describe('State utilities', () => {
         },
         {
           newLocation: 'After',
-          threatsAdded: ['New threat'],
+          threatsAdded: [{ text: 'New threat', threatType: ThreatType.HOSTILE_AGENT }],
           threatsRemoved: ['th-1'],
-          constraintsAdded: ['New constraint'],
+          constraintsAdded: [
+            { text: 'New constraint', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
           constraintsRemoved: ['cn-1'],
           threadsAdded: ['New thread'],
           threadsResolved: ['td-1'],
@@ -334,8 +344,10 @@ describe('State utilities', () => {
 
       expect(result).toEqual({
         currentLocation: 'After',
-        activeThreats: [{ id: 'th-2', text: 'New threat' }],
-        activeConstraints: [{ id: 'cn-2', text: 'New constraint' }],
+        activeThreats: [{ id: 'th-2', text: 'New threat', threatType: ThreatType.HOSTILE_AGENT }],
+        activeConstraints: [
+          { id: 'cn-2', text: 'New constraint', constraintType: ConstraintType.ENVIRONMENTAL },
+        ],
         openThreads: [
           {
             id: 'td-2',
@@ -371,14 +383,14 @@ describe('State utilities', () => {
     it('is immutable', () => {
       const original = {
         currentLocation: 'Room',
-        activeThreats: [{ id: 'th-1', text: 'Old threat' }],
+        activeThreats: [{ id: 'th-1', text: 'Old threat', threatType: ThreatType.ENVIRONMENTAL }],
         activeConstraints: [],
         openThreads: [],
       } as const;
 
       const result = applyActiveStateChanges(original, {
         newLocation: 'New room',
-        threatsAdded: ['New threat'],
+        threatsAdded: [{ text: 'New threat', threatType: ThreatType.ENVIRONMENTAL }],
         threatsRemoved: [],
         constraintsAdded: [],
         constraintsRemoved: [],
@@ -388,7 +400,7 @@ describe('State utilities', () => {
 
       expect(original).toEqual({
         currentLocation: 'Room',
-        activeThreats: [{ id: 'th-1', text: 'Old threat' }],
+        activeThreats: [{ id: 'th-1', text: 'Old threat', threatType: ThreatType.ENVIRONMENTAL }],
         activeConstraints: [],
         openThreads: [],
       });

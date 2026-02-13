@@ -7,7 +7,9 @@
 import {
   ActiveState,
   ActiveStateChanges,
+  ConstraintType,
   KeyedEntry,
+  ThreatType,
   ThreadEntry,
   ThreadType,
   Urgency,
@@ -23,9 +25,17 @@ export function createMockKeyedEntry(
   id: number,
   text: string
 ): KeyedEntry {
+  const metadata =
+    prefix === 'th'
+      ? { threatType: ThreatType.ENVIRONMENTAL }
+      : prefix === 'cn'
+        ? { constraintType: ConstraintType.PHYSICAL }
+        : { threadType: ThreadType.INFORMATION, urgency: Urgency.MEDIUM };
+
   return {
     id: `${prefix}-${id}`,
     text,
+    ...metadata,
   };
 }
 
@@ -124,7 +134,7 @@ export const FIXTURES = {
 
   changesAddingThreat: {
     newLocation: null,
-    threatsAdded: ['Fire spreading from the east wing'],
+    threatsAdded: [{ text: 'Fire spreading from the east wing', threatType: ThreatType.ENVIRONMENTAL }],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
@@ -154,11 +164,15 @@ export const FIXTURES = {
 
   complexChanges: {
     newLocation: 'Underground passage',
-    threatsAdded: ['The tunnel is unstable'],
+    threatsAdded: [{ text: 'The tunnel is unstable', threatType: ThreatType.ENVIRONMENTAL }],
     threatsRemoved: ['th-1'],
-    constraintsAdded: ['Complete darkness requires careful movement'],
+    constraintsAdded: [
+      { text: 'Complete darkness requires careful movement', constraintType: ConstraintType.ENVIRONMENTAL },
+    ],
     constraintsRemoved: [],
-    threadsAdded: ['Strange sounds echo from below'],
+    threadsAdded: [
+      { text: 'Strange sounds echo from below', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+    ],
     threadsResolved: ['td-1'],
   } as ActiveStateChanges,
 } as const;

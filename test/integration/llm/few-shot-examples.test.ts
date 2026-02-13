@@ -133,21 +133,11 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
 
-      // Required fields - uses new active state format
+      // Required fields for creative-only writer output
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
-      expect(parsed).toHaveProperty('currentLocation');
-      expect(parsed).toHaveProperty('threatsAdded');
-      expect(parsed).toHaveProperty('threatsRemoved');
-      expect(parsed).toHaveProperty('constraintsAdded');
-      expect(parsed).toHaveProperty('constraintsRemoved');
-      expect(parsed).toHaveProperty('threadsAdded');
-      expect(parsed).toHaveProperty('threadsResolved');
-      expect(parsed).toHaveProperty('newCanonFacts');
+      expect(parsed).toHaveProperty('sceneSummary');
       expect(parsed).toHaveProperty('isEnding');
-      // Legacy fields should NOT be present
-      expect(parsed).not.toHaveProperty('stateChangesAdded');
-      expect(parsed).not.toHaveProperty('stateChangesRemoved');
     });
 
     it('should have all required fields in continuation example', () => {
@@ -156,21 +146,11 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(assistantContent) as Record<string, unknown>;
 
-      // Required fields - uses new active state format
+      // Required fields for creative-only writer output
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
-      expect(parsed).toHaveProperty('currentLocation');
-      expect(parsed).toHaveProperty('threatsAdded');
-      expect(parsed).toHaveProperty('threatsRemoved');
-      expect(parsed).toHaveProperty('constraintsAdded');
-      expect(parsed).toHaveProperty('constraintsRemoved');
-      expect(parsed).toHaveProperty('threadsAdded');
-      expect(parsed).toHaveProperty('threadsResolved');
-      expect(parsed).toHaveProperty('newCanonFacts');
+      expect(parsed).toHaveProperty('sceneSummary');
       expect(parsed).toHaveProperty('isEnding');
-      // Legacy fields should NOT be present
-      expect(parsed).not.toHaveProperty('stateChangesAdded');
-      expect(parsed).not.toHaveProperty('stateChangesRemoved');
     });
 
     it('should have all required fields in ending example', () => {
@@ -179,21 +159,11 @@ describe('Few-Shot Examples Integration', () => {
 
       const parsed = JSON.parse(endingAssistantContent) as Record<string, unknown>;
 
-      // Required fields - uses new active state format
+      // Required fields for creative-only writer output
       expect(parsed).toHaveProperty('narrative');
       expect(parsed).toHaveProperty('choices');
-      expect(parsed).toHaveProperty('currentLocation');
-      expect(parsed).toHaveProperty('threatsAdded');
-      expect(parsed).toHaveProperty('threatsRemoved');
-      expect(parsed).toHaveProperty('constraintsAdded');
-      expect(parsed).toHaveProperty('constraintsRemoved');
-      expect(parsed).toHaveProperty('threadsAdded');
-      expect(parsed).toHaveProperty('threadsResolved');
-      expect(parsed).toHaveProperty('newCanonFacts');
+      expect(parsed).toHaveProperty('sceneSummary');
       expect(parsed).toHaveProperty('isEnding');
-      // Legacy fields should NOT be present
-      expect(parsed).not.toHaveProperty('stateChangesAdded');
-      expect(parsed).not.toHaveProperty('stateChangesRemoved');
     });
   });
 
@@ -255,10 +225,11 @@ describe('Few-Shot Examples Integration', () => {
         const parsed = JSON.parse(example.content) as Record<string, unknown>;
         const validated = validateWriterResponse(parsed, example.content);
 
-        // Ensure key fields are preserved (examples use new active state format)
+        // Ensure key creative fields are preserved
         expect(validated.narrative.length).toBeGreaterThan(0);
-        expect(validated.newCanonFacts.length).toBeGreaterThanOrEqual(0);
-        expect(validated.currentLocation).toBeDefined();
+        expect(validated.sceneSummary.length).toBeGreaterThan(0);
+        expect(validated.protagonistAffect.primaryEmotion.length).toBeGreaterThan(0);
+        expect('currentLocation' in (validated as Record<string, unknown>)).toBe(false);
       }
     });
   });

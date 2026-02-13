@@ -11,7 +11,7 @@ import { WRITER_GENERATION_SCHEMA } from './schemas/writer-schema.js';
 import { validateWriterResponse } from './schemas/writer-response-transformer.js';
 import {
   extractWriterValidationIssues,
-  validateDeterministicWriterOutput,
+  validateWriterOutput,
   WriterOutputValidationError,
   type WriterOutputValidationIssue,
 } from './validation/writer-output-validator.js';
@@ -21,7 +21,7 @@ import type {
   GenerationOptions,
 } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
-import type { WriterResult } from './writer-types.js';
+import type { PageWriterResult } from './writer-types.js';
 
 function buildObservabilityContext(
   context: GenerationObservabilityContext | undefined
@@ -54,7 +54,7 @@ function emitValidatorFailureCounters(
 async function callWriterStructured(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<WriterResult> {
+): Promise<PageWriterResult> {
   const config = getConfig().llm;
   const model = options.model ?? config.defaultModel;
   const temperature = options.temperature ?? config.temperature;
@@ -111,9 +111,9 @@ async function callWriterStructured(
 
   try {
     const validated = validateWriterResponse(repairResult.repairedJson, rawContent);
-    const deterministicIssues = validateDeterministicWriterOutput(validated);
-    if (deterministicIssues.length > 0) {
-      throw new WriterOutputValidationError(deterministicIssues);
+    const validationIssues = validateWriterOutput(validated);
+    if (validationIssues.length > 0) {
+      throw new WriterOutputValidationError(validationIssues);
     }
 
     return validated;
@@ -144,7 +144,7 @@ async function callWriterStructured(
 export async function generateWriterWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<WriterResult> {
+): Promise<PageWriterResult> {
   try {
     return await callWriterStructured(messages, options);
   } catch (error) {

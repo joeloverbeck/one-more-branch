@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
-import { ThreadType, Urgency } from '../../models/state/index.js';
+import { ConstraintType, ThreatType, ThreadType, Urgency } from '../../models/state/index.js';
 import {
   STATE_ID_PREFIXES,
   validateIdOnlyField,
@@ -120,8 +120,28 @@ const ThreadIntentAddSchema = z.object({
   urgency: z.nativeEnum(Urgency),
 });
 
+const ThreatIntentAddSchema = z.object({
+  text: z.string(),
+  threatType: z.nativeEnum(ThreatType),
+});
+
+const ConstraintIntentAddSchema = z.object({
+  text: z.string(),
+  constraintType: z.nativeEnum(ConstraintType),
+});
+
 const TextIntentMutationsSchema = z.object({
   add: z.array(z.string()),
+  removeIds: z.array(z.string()),
+});
+
+const ThreatIntentMutationsSchema = z.object({
+  add: z.array(ThreatIntentAddSchema),
+  removeIds: z.array(z.string()),
+});
+
+const ConstraintIntentMutationsSchema = z.object({
+  add: z.array(ConstraintIntentAddSchema),
   removeIds: z.array(z.string()),
 });
 
@@ -156,8 +176,8 @@ export const PagePlannerResultSchema = z
     continuityAnchors: z.array(z.string()),
     stateIntents: z.object({
       currentLocation: z.string(),
-      threats: TextIntentMutationsSchema,
-      constraints: TextIntentMutationsSchema,
+      threats: ThreatIntentMutationsSchema,
+      constraints: ConstraintIntentMutationsSchema,
       threads: ThreadIntentMutationsSchema,
       inventory: TextIntentMutationsSchema,
       health: TextIntentMutationsSchema,
@@ -189,9 +209,13 @@ export const PagePlannerResultSchema = z
     addDuplicateIssues(data.writerBrief.mustIncludeBeats, ['writerBrief', 'mustIncludeBeats'], ctx);
     addDuplicateIssues(data.writerBrief.forbiddenRecaps, ['writerBrief', 'forbiddenRecaps'], ctx);
 
-    addDuplicateIssues(data.stateIntents.threats.add, ['stateIntents', 'threats', 'add'], ctx);
     addDuplicateIssues(
-      data.stateIntents.constraints.add,
+      data.stateIntents.threats.add.map((entry) => entry.text),
+      ['stateIntents', 'threats', 'add'],
+      ctx
+    );
+    addDuplicateIssues(
+      data.stateIntents.constraints.add.map((entry) => entry.text),
       ['stateIntents', 'constraints', 'add'],
       ctx
     );
@@ -204,13 +228,13 @@ export const PagePlannerResultSchema = z
     );
 
     addNoIdLikeAdditionIssues(
-      data.stateIntents.threats.add,
+      data.stateIntents.threats.add.map((entry) => entry.text),
       'stateIntents.threats.add',
       ['stateIntents', 'threats', 'add'],
       ctx
     );
     addNoIdLikeAdditionIssues(
-      data.stateIntents.constraints.add,
+      data.stateIntents.constraints.add.map((entry) => entry.text),
       'stateIntents.constraints.add',
       ['stateIntents', 'constraints', 'add'],
       ctx
@@ -276,6 +300,30 @@ export const PagePlannerResultSchema = z
       ['stateIntents', 'characterState', 'removeIds'],
       ctx
     );
+
+    data.stateIntents.threats.add.forEach((entry, index) => {
+      addRequiredTrimmedTextIssue(entry.text, ['stateIntents', 'threats', 'add', index, 'text'], ctx);
+      addNoIdLikeAdditionIssues(
+        [entry.text],
+        'stateIntents.threats.add[].text',
+        ['stateIntents', 'threats', 'add', index, 'text'],
+        ctx
+      );
+    });
+
+    data.stateIntents.constraints.add.forEach((entry, index) => {
+      addRequiredTrimmedTextIssue(
+        entry.text,
+        ['stateIntents', 'constraints', 'add', index, 'text'],
+        ctx
+      );
+      addNoIdLikeAdditionIssues(
+        [entry.text],
+        'stateIntents.constraints.add[].text',
+        ['stateIntents', 'constraints', 'add', index, 'text'],
+        ctx
+      );
+    });
 
     data.stateIntents.threads.add.forEach((entry, index) => {
       addRequiredTrimmedTextIssue(

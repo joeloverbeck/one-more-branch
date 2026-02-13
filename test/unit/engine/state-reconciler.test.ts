@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
-import { ThreadType, Urgency } from '../../../src/models/state';
+import { ConstraintType, ThreatType, ThreadType, Urgency } from '../../../src/models/state';
 import type { PageWriterResult } from '../../../src/llm/writer-types';
 import type { PagePlan } from '../../../src/llm/planner-types';
 import { reconcileState } from '../../../src/engine/state-reconciler';
@@ -75,8 +75,20 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
 function buildPreviousState(): StateReconciliationPreviousState {
   return {
     currentLocation: 'South market district',
-    threats: [{ id: 'th-1', text: 'City patrols sweep the district' }],
-    constraints: [{ id: 'cn-1', text: 'Curfew sirens close side streets' }],
+    threats: [
+      {
+        id: 'th-1',
+        text: 'City patrols sweep the district',
+        threatType: ThreatType.HOSTILE_AGENT,
+      },
+    ],
+    constraints: [
+      {
+        id: 'cn-1',
+        text: 'Curfew sirens close side streets',
+        constraintType: ConstraintType.TEMPORAL,
+      },
+    ],
     threads: [
       {
         id: 'td-1',
@@ -199,7 +211,10 @@ describe('state-reconciler', () => {
       stateIntents: {
         ...buildPlan().stateIntents,
         threats: {
-          add: ['  Patrol   pressure  rising  ', 'patrol pressure rising'],
+          add: [
+            { text: '  Patrol   pressure  rising  ', threatType: ThreatType.HOSTILE_AGENT },
+            { text: 'patrol pressure rising', threatType: ThreatType.HOSTILE_AGENT },
+          ],
           removeIds: [],
         },
       },
@@ -207,7 +222,9 @@ describe('state-reconciler', () => {
 
     const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
 
-    expect(result.threatsAdded).toEqual(['Patrol pressure rising']);
+    expect(result.threatsAdded).toEqual([
+      { text: 'Patrol pressure rising', threatType: ThreatType.HOSTILE_AGENT },
+    ]);
   });
 
   it('applies remove+add progression for text/thread/character-state categories', () => {
@@ -215,7 +232,12 @@ describe('state-reconciler', () => {
       stateIntents: {
         ...buildPlan().stateIntents,
         threats: {
-          add: ['   Patrols split into two search teams  '],
+          add: [
+            {
+              text: '   Patrols split into two search teams  ',
+              threatType: ThreatType.HOSTILE_AGENT,
+            },
+          ],
           removeIds: ['th-1'],
         },
         threads: {
@@ -234,7 +256,9 @@ describe('state-reconciler', () => {
     const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
 
     expect(result.threatsRemoved).toEqual(['th-1']);
-    expect(result.threatsAdded).toEqual(['Patrols split into two search teams']);
+    expect(result.threatsAdded).toEqual([
+      { text: 'Patrols split into two search teams', threatType: ThreatType.HOSTILE_AGENT },
+    ]);
     expect(result.threadsResolved).toEqual(['td-1']);
     expect(result.threadsAdded).toEqual([
       { text: 'Find a hidden route', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
@@ -708,7 +732,7 @@ describe('state-reconciler', () => {
       stateIntents: {
         ...buildPlan().stateIntents,
         constraints: {
-          add: ['Obsidian cipher fallback'],
+          add: [{ text: 'Obsidian cipher fallback', constraintType: ConstraintType.ENVIRONMENTAL }],
           removeIds: [],
         },
       },
@@ -716,7 +740,9 @@ describe('state-reconciler', () => {
 
     const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
 
-    expect(result.constraintsAdded).toEqual(['Obsidian cipher fallback']);
+    expect(result.constraintsAdded).toEqual([
+      { text: 'Obsidian cipher fallback', constraintType: ConstraintType.ENVIRONMENTAL },
+    ]);
     expect(result.reconciliationDiagnostics).toEqual([]);
   });
 

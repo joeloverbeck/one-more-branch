@@ -1,4 +1,7 @@
 import type { StateReconciliationDiagnostic } from './state-reconciler-types.js';
+import { isConstraintType, isThreatType } from '../models/state/index.js';
+import type { ConstraintAdd, ThreatAdd } from '../llm/planner-types.js';
+import type { ConstraintAddition, ThreatAddition } from '../models/state/index.js';
 
 export const UNKNOWN_STATE_ID = 'UNKNOWN_STATE_ID';
 
@@ -41,6 +44,42 @@ export function normalizeTextIntents(values: readonly string[]): string[] {
   return dedupeByKey(values.map(normalizeIntentText).filter(Boolean), intentComparisonKey);
 }
 
+export function normalizeThreatAdds(values: readonly ThreatAdd[]): ThreatAddition[] {
+  return dedupeByKey(
+    values
+      .map((value) => {
+        if (!isThreatType(value.threatType)) {
+          return null;
+        }
+        return {
+          text: normalizeIntentText(value.text),
+          threatType: value.threatType,
+        };
+      })
+      .filter((value): value is ThreatAddition => value !== null)
+      .filter((value) => value.text.length > 0),
+    (value) => `${intentComparisonKey(value.text)}|${value.threatType}`
+  );
+}
+
+export function normalizeConstraintAdds(values: readonly ConstraintAdd[]): ConstraintAddition[] {
+  return dedupeByKey(
+    values
+      .map((value) => {
+        if (!isConstraintType(value.constraintType)) {
+          return null;
+        }
+        return {
+          text: normalizeIntentText(value.text),
+          constraintType: value.constraintType,
+        };
+      })
+      .filter((value): value is ConstraintAddition => value !== null)
+      .filter((value) => value.text.length > 0),
+    (value) => `${intentComparisonKey(value.text)}|${value.constraintType}`
+  );
+}
+
 export function normalizeAndValidateRemoveIds(
   ids: readonly string[],
   knownIds: ReadonlySet<string>,
@@ -64,4 +103,3 @@ export function normalizeAndValidateRemoveIds(
 
   return result;
 }
-

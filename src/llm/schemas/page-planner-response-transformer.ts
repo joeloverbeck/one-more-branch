@@ -117,11 +117,21 @@ export function validatePagePlannerResponse(
       stateIntents: {
         currentLocation: validated.stateIntents.currentLocation.trim(),
         threats: {
-          add: normalizeStringArray(validated.stateIntents.threats.add),
+          add: validated.stateIntents.threats.add
+            .map((entry) => ({
+              text: entry.text.trim(),
+              threatType: entry.threatType,
+            }))
+            .filter((entry) => entry.text),
           removeIds: normalizeStringArray(validated.stateIntents.threats.removeIds),
         },
         constraints: {
-          add: normalizeStringArray(validated.stateIntents.constraints.add),
+          add: validated.stateIntents.constraints.add
+            .map((entry) => ({
+              text: entry.text.trim(),
+              constraintType: entry.constraintType,
+            }))
+            .filter((entry) => entry.text),
           removeIds: normalizeStringArray(validated.stateIntents.constraints.removeIds),
         },
         threads: {

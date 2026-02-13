@@ -19,7 +19,7 @@ import type {
 import type {
   FinalPageGenerationResult,
   PageWriterResult,
-  WriterResult,
+  PageWriterResult,
 } from '../../../src/llm/writer-types';
 import type { PagePlan, PagePlanGenerationResult } from '../../../src/llm/planner-types';
 import { LLMError } from '../../../src/llm/llm-client-types';
@@ -90,8 +90,8 @@ describe('LLM types', () => {
       expect(metrics.finalStatus).toBe('success');
     });
 
-    it('should allow creating WriterResult with all required fields', () => {
-      const result: WriterResult = {
+    it('should allow creating PageWriterResult with all required fields', () => {
+      const result: PageWriterResult = {
         narrative: 'You arrive at a crossroads.',
         choices: [
           {
@@ -497,7 +497,7 @@ describe('LLM types', () => {
   });
 
   describe('ContinuationGenerationResult', () => {
-    function buildBaseWriterResult(): WriterResult {
+    function buildBaseWriterResult(): PageWriterResult {
       return {
         narrative: 'The lantern flickers as footsteps approach.',
         choices: [
@@ -540,7 +540,7 @@ describe('LLM types', () => {
       };
     }
 
-    it('should extend WriterResult with analyst fields (NoDeviation)', () => {
+    it('should extend PageWriterResult with analyst fields (NoDeviation)', () => {
       const result: ContinuationGenerationResult = {
         ...buildBaseWriterResult(),
         beatConcluded: false,
@@ -554,7 +554,7 @@ describe('LLM types', () => {
       expect(result.deviation.detected).toBe(false);
     });
 
-    it('should extend WriterResult with analyst fields (BeatDeviation)', () => {
+    it('should extend PageWriterResult with analyst fields (BeatDeviation)', () => {
       const result: ContinuationGenerationResult = {
         ...buildBaseWriterResult(),
         beatConcluded: true,
@@ -576,7 +576,7 @@ describe('LLM types', () => {
     });
   });
 
-  describe('WriterResult (compile-time)', () => {
+  describe('PageWriterResult (compile-time)', () => {
     it('should allow creating PageWriterResult with creative-only fields', () => {
       const result: PageWriterResult = {
         narrative: 'The forest darkens as you step forward.',
@@ -605,8 +605,8 @@ describe('LLM types', () => {
       expect(result.sceneSummary).toContain('bandits');
     });
 
-    it('should allow creating WriterResult with all required fields', () => {
-      const result: WriterResult = {
+    it('should allow creating PageWriterResult with all required fields', () => {
+      const result: PageWriterResult = {
         narrative: 'The forest darkens as you step forward.',
         choices: [
           { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
@@ -728,7 +728,7 @@ describe('LLM types', () => {
     });
 
     it('should NOT include beatConcluded, beatResolution, or deviation fields', () => {
-      const result: WriterResult = {
+      const result: PageWriterResult = {
         narrative: 'Test',
         choices: [
           { text: 'A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
@@ -761,7 +761,7 @@ describe('LLM types', () => {
         rawResponse: '',
       };
 
-      // Verify these fields do NOT exist on WriterResult
+      // Verify these fields do NOT exist on PageWriterResult
       expect('beatConcluded' in result).toBe(false);
       expect('beatResolution' in result).toBe(false);
       expect('deviation' in result).toBe(false);

@@ -8,7 +8,7 @@ import {
 } from '@/llm';
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -155,7 +155,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string, pageNumber: number): WriterResult {
+function buildWriterResult(selectedChoice: string, pageNumber: number): PageWriterResult {
   if (selectedChoice.includes('Pursue')) {
     return {
       narrative:

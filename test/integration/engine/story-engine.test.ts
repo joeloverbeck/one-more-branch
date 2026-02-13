@@ -9,7 +9,7 @@ import {
 } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -135,7 +135,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string): WriterResult {
+function buildWriterResult(selectedChoice: string): PageWriterResult {
   if (selectedChoice === 'Investigate the ember trail') {
     return {
       narrative:

@@ -39,7 +39,7 @@ describe('composeCreativeSystemPrompt', () => {
 
   it('does NOT include data-schema sections', () => {
     const prompt = composeCreativeSystemPrompt();
-    expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+    expect(prompt).not.toContain('CONTINUITY CONTEXT USAGE');
     expect(prompt).not.toContain('INVENTORY MANAGEMENT:');
     expect(prompt).not.toContain('HEALTH MANAGEMENT:');
     expect(prompt).not.toContain('FIELD SEPARATION:');
@@ -55,7 +55,7 @@ describe('buildOpeningSystemPrompt', () => {
     const prompt = buildOpeningSystemPrompt();
     expect(prompt).toContain('STORYTELLING GUIDELINES:');
     expect(prompt).toContain('When writing endings');
-    expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+    expect(prompt).not.toContain('CONTINUITY CONTEXT USAGE');
     expect(prompt).not.toContain('INVENTORY MANAGEMENT:');
     expect(prompt).not.toContain('ESTABLISHMENT RULES');
   });
@@ -76,7 +76,7 @@ describe('buildContinuationSystemPrompt', () => {
     const prompt = buildContinuationSystemPrompt();
     expect(prompt).toContain('STORYTELLING GUIDELINES:');
     expect(prompt).toContain('When writing endings');
-    expect(prompt).not.toContain('ACTIVE STATE TRACKING');
+    expect(prompt).not.toContain('CONTINUITY CONTEXT USAGE');
     expect(prompt).not.toContain('CONTINUITY RULES');
     expect(prompt).not.toContain('CANON QUALITY CRITERIA:');
   });
@@ -85,7 +85,7 @@ describe('buildContinuationSystemPrompt', () => {
 describe('composeOpeningDataRules', () => {
   it('includes shared data sections', () => {
     const rules = composeOpeningDataRules();
-    expect(rules).toContain('ACTIVE STATE TRACKING');
+    expect(rules).toContain('CONTINUITY CONTEXT USAGE');
     expect(rules).toContain('INVENTORY MANAGEMENT:');
     expect(rules).toContain('HEALTH MANAGEMENT:');
     expect(rules).toContain('FIELD SEPARATION:');
@@ -122,7 +122,7 @@ describe('composeOpeningDataRules', () => {
 describe('composeContinuationDataRules', () => {
   it('includes shared data sections', () => {
     const rules = composeContinuationDataRules();
-    expect(rules).toContain('ACTIVE STATE TRACKING');
+    expect(rules).toContain('CONTINUITY CONTEXT USAGE');
     expect(rules).toContain('INVENTORY MANAGEMENT:');
     expect(rules).toContain('HEALTH MANAGEMENT:');
     expect(rules).toContain('FIELD SEPARATION:');
@@ -177,7 +177,7 @@ describe('composeContinuationDataRules', () => {
 
     it('still includes shared data sections', () => {
       const rules = composeContinuationDataRules({ hasStoryBible: true });
-      expect(rules).toContain('ACTIVE STATE TRACKING');
+      expect(rules).toContain('CONTINUITY CONTEXT USAGE');
       expect(rules).toContain('INVENTORY MANAGEMENT:');
       expect(rules).toContain('HEALTH MANAGEMENT:');
     });

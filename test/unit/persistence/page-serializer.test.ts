@@ -1,7 +1,9 @@
 import {
   ChoiceType,
+  ConstraintType,
   Page,
   PrimaryDelta,
+  ThreatType,
   ThreadType,
   Urgency,
   createChoice,
@@ -138,17 +140,33 @@ describe('page-serializer', () => {
       const page = buildTestPage({
         activeStateChanges: {
           newLocation: 'Forest',
-          threatsAdded: ['A hungry wolf is stalking nearby'],
+          threatsAdded: [
+            { text: 'A hungry wolf is stalking nearby', threatType: ThreatType.ENVIRONMENTAL },
+          ],
           threatsRemoved: ['th-1'],
-          constraintsAdded: ['No light source is available'],
+          constraintsAdded: [
+            { text: 'No light source is available', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
           constraintsRemoved: [],
           threadsAdded: ['Find where the torn map leads'],
           threadsResolved: [],
         },
         accumulatedActiveState: {
           currentLocation: 'Forest',
-          activeThreats: [{ id: 'th-2', text: 'A hungry wolf is stalking nearby' }],
-          activeConstraints: [{ id: 'cn-1', text: 'No light source is available' }],
+          activeThreats: [
+            {
+              id: 'th-2',
+              text: 'A hungry wolf is stalking nearby',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+          ],
+          activeConstraints: [
+            {
+              id: 'cn-1',
+              text: 'No light source is available',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
+          ],
           openThreads: [
             {
               id: 'td-1',
@@ -172,8 +190,10 @@ describe('page-serializer', () => {
         accumulatedHealth: [{ id: 'hp-1', text: 'healthy' }],
         accumulatedActiveState: {
           currentLocation: 'Watchtower',
-          activeThreats: [{ id: 'th-1', text: 'Incoming scouts' }],
-          activeConstraints: [{ id: 'cn-1', text: 'Bridge is collapsed' }],
+          activeThreats: [{ id: 'th-1', text: 'Incoming scouts', threatType: ThreatType.ENVIRONMENTAL }],
+          activeConstraints: [
+            { id: 'cn-1', text: 'Bridge is collapsed', constraintType: ConstraintType.ENVIRONMENTAL },
+          ],
           openThreads: [
             {
               id: 'td-1',
@@ -195,14 +215,18 @@ describe('page-serializer', () => {
       const fileData = serializePage(page);
       fileData.accumulatedInventory[0] = { id: 'inv-1', text: 'mutated' };
       fileData.accumulatedHealth.push({ id: 'hp-2', text: 'mutated' });
-      fileData.accumulatedActiveState.activeThreats[0] = { id: 'th-1', text: 'mutated' };
+      fileData.accumulatedActiveState.activeThreats[0] = {
+        id: 'th-1',
+        text: 'mutated',
+        threatType: ThreatType.ENVIRONMENTAL,
+      };
       fileData.characterStateChanges.added[0].states[0] = 'mutated';
       fileData.accumulatedCharacterState['Mira'] = [{ id: 'cs-4', text: 'mutated' }];
 
       expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'original' }]);
       expect(page.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'healthy' }]);
       expect(page.accumulatedActiveState.activeThreats).toEqual([
-        { id: 'th-1', text: 'Incoming scouts' },
+        { id: 'th-1', text: 'Incoming scouts', threatType: ThreatType.ENVIRONMENTAL },
       ]);
       expect(page.characterStateChanges.added[0]?.states).toEqual(['alert']);
       expect(page.accumulatedCharacterState).toEqual({
@@ -242,7 +266,7 @@ describe('page-serializer', () => {
         accumulatedInventory: [{ id: 'inv-1', text: 'item' }],
         accumulatedActiveState: {
           currentLocation: 'Cellar',
-          activeThreats: [{ id: 'th-8', text: 'Flooding water' }],
+          activeThreats: [{ id: 'th-8', text: 'Flooding water', threatType: ThreatType.ENVIRONMENTAL }],
           activeConstraints: [],
           openThreads: [],
         },
@@ -257,13 +281,17 @@ describe('page-serializer', () => {
 
       const page = deserializePage(fileData);
       fileData.accumulatedInventory[0] = { id: 'inv-1', text: 'mutated' };
-      fileData.accumulatedActiveState.activeThreats[0] = { id: 'th-8', text: 'mutated' };
+      fileData.accumulatedActiveState.activeThreats[0] = {
+        id: 'th-8',
+        text: 'mutated',
+        threatType: ThreatType.ENVIRONMENTAL,
+      };
       fileData.characterStateChanges.added[0].states[0] = 'mutated';
       fileData.accumulatedCharacterState['Greaves'] = [{ id: 'cs-10', text: 'mutated' }];
 
       expect(page.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'item' }]);
       expect(page.accumulatedActiveState.activeThreats).toEqual([
-        { id: 'th-8', text: 'Flooding water' },
+        { id: 'th-8', text: 'Flooding water', threatType: ThreatType.ENVIRONMENTAL },
       ]);
       expect(page.characterStateChanges.added[0]?.states).toEqual(['wary']);
       expect(page.accumulatedCharacterState).toEqual({
@@ -341,7 +369,12 @@ describe('page-serializer', () => {
         ],
         activeStateChanges: {
           newLocation: 'Temple',
-          threatsAdded: ['An armed guard blocks the inner doorway'],
+          threatsAdded: [
+            {
+              text: 'An armed guard blocks the inner doorway',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+          ],
           threatsRemoved: [],
           constraintsAdded: [],
           constraintsRemoved: [],
@@ -350,7 +383,13 @@ describe('page-serializer', () => {
         },
         accumulatedActiveState: {
           currentLocation: 'Temple',
-          activeThreats: [{ id: 'th-1', text: 'An armed guard blocks the inner doorway' }],
+          activeThreats: [
+            {
+              id: 'th-1',
+              text: 'An armed guard blocks the inner doorway',
+              threatType: ThreatType.ENVIRONMENTAL,
+            },
+          ],
           activeConstraints: [],
           openThreads: [],
         },

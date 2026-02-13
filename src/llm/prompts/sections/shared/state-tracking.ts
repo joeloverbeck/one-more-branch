@@ -1,11 +1,11 @@
 /**
- * State tracking guidelines shared by both opening and continuation prompts.
- * Covers inventory, health, active state, and field separation.
+ * Continuity context guidance shared by both opening and continuation prompts.
+ * Covers read-only scene context plus creative-field boundaries.
  */
 
-export const ACTIVE_STATE_TRACKING = `=== ACTIVE STATE TRACKING ===
+export const CONTINUITY_CONTEXT_USAGE = `=== CONTINUITY CONTEXT USAGE ===
 
-Use the state sections in the prompt as authoritative continuity context. These represent what is TRUE RIGHT NOW.
+Use the continuity context sections in the prompt as authoritative scene context. These represent what is TRUE RIGHT NOW.
 
 READ-ONLY CONTINUITY INPUT:
 - CURRENT LOCATION: where the protagonist is right now.

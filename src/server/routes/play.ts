@@ -18,8 +18,10 @@ import { generationProgressService } from '../services/index.js';
 import {
   formatLLMError,
   getActDisplayInfo,
+  getConstraintPanelData,
   getKeyedEntryPanelData,
   getOpenThreadPanelData,
+  getThreatPanelData,
   wrapAsyncRoute,
 } from '../utils/index.js';
 
@@ -105,10 +107,10 @@ playRoutes.get(
 
       const actDisplayInfo = getActDisplayInfo(story, page);
       const openThreadPanelData = getOpenThreadPanelData(page.accumulatedActiveState.openThreads);
-      const threatsPanelData = getKeyedEntryPanelData(
+      const threatsPanelData = getThreatPanelData(
         page.accumulatedActiveState.activeThreats
       );
-      const constraintsPanelData = getKeyedEntryPanelData(
+      const constraintsPanelData = getConstraintPanelData(
         page.accumulatedActiveState.activeConstraints
       );
       const inventoryPanelData = getKeyedEntryPanelData(page.accumulatedInventory, 10);
@@ -215,10 +217,10 @@ playRoutes.post(
       const openThreadPanelData = getOpenThreadPanelData(
         result.page.accumulatedActiveState.openThreads
       );
-      const threatsPanelData = getKeyedEntryPanelData(
+      const threatsPanelData = getThreatPanelData(
         result.page.accumulatedActiveState.activeThreats
       );
-      const constraintsPanelData = getKeyedEntryPanelData(
+      const constraintsPanelData = getConstraintPanelData(
         result.page.accumulatedActiveState.activeConstraints
       );
       const inventoryPanelData = getKeyedEntryPanelData(result.page.accumulatedInventory, 10);

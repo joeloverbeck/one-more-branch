@@ -1,11 +1,11 @@
-import type { WriterResult } from '../../../../src/llm/writer-types';
+import type { PageWriterResult } from '../../../../src/llm/writer-types';
 import {
   extractWriterValidationIssues,
-  validateDeterministicWriterOutput,
+  validateWriterOutput,
   WRITER_OUTPUT_RULE_KEYS,
 } from '../../../../src/llm/validation/writer-output-validator';
 
-function buildWriterResult(overrides?: Partial<WriterResult>): WriterResult {
+function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterResult {
   return {
     narrative:
       'You move through the rain-dark alley and hear the patrol bells close in as the rooftops rattle above.',
@@ -52,12 +52,12 @@ function buildWriterResult(overrides?: Partial<WriterResult>): WriterResult {
 
 describe('writer-output-validator', () => {
   it('returns no issues for valid deterministic output', () => {
-    const issues = validateDeterministicWriterOutput(buildWriterResult());
+    const issues = validateWriterOutput(buildWriterResult());
     expect(issues).toEqual([]);
   });
 
   it('does not report issues for state mutation compatibility fields', () => {
-    const issues = validateDeterministicWriterOutput(
+    const issues = validateWriterOutput(
       buildWriterResult({
         threatsAdded: ['th-7'],
         constraintsRemoved: ['th-2'],
@@ -68,7 +68,7 @@ describe('writer-output-validator', () => {
   });
 
   it('rejects duplicate (choiceType, primaryDelta) pairs across choices', () => {
-    const issues = validateDeterministicWriterOutput(
+    const issues = validateWriterOutput(
       buildWriterResult({
         choices: [
           { text: 'Hold position', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
@@ -92,7 +92,7 @@ describe('writer-output-validator', () => {
   });
 
   it('rejects protagonistAffect required fields when empty after trim', () => {
-    const issues = validateDeterministicWriterOutput(
+    const issues = validateWriterOutput(
       buildWriterResult({
         protagonistAffect: {
           primaryEmotion: '   ',

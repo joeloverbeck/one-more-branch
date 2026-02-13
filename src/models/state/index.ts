@@ -34,10 +34,16 @@ export {
 // Keyed state entries
 export {
   KeyedEntry,
+  ThreatEntry,
+  ConstraintEntry,
   ThreadEntry,
+  ThreatType,
+  ConstraintType,
   ThreadType,
   Urgency,
   StateIdPrefix,
+  isThreatType,
+  isConstraintType,
   isThreadType,
   isUrgency,
   extractIdNumber,
@@ -59,6 +65,8 @@ export type {
 export {
   ActiveState,
   ActiveStateChanges,
+  ThreatAddition,
+  ConstraintAddition,
   createEmptyActiveState,
   createEmptyActiveStateChanges,
   isActiveState,

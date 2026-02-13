@@ -78,9 +78,9 @@ The tone block is injected between the role intro and content policy. When tone 
 Create the opening scene for a new interactive story.
 
 === DATA & STATE RULES ===
-=== ACTIVE STATE TRACKING ===
+=== CONTINUITY CONTEXT USAGE ===
 
-Use the state sections in the prompt as authoritative continuity context. These represent what is TRUE RIGHT NOW.
+Use the continuity context sections in the prompt as authoritative scene context. These represent what is TRUE RIGHT NOW.
 
 READ-ONLY CONTINUITY INPUT:
 - CURRENT LOCATION: where the protagonist is right now.

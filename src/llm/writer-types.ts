@@ -18,24 +18,4 @@ export interface PageWriterResult {
   rawResponse: string;
 }
 
-export interface WriterResult extends PageWriterResult {
-  // State and canon fields produced by the writer LLM.
-  // The reconciler derives final state from plan intents, not these fields.
-  currentLocation: string;
-  threatsAdded: string[];
-  threatsRemoved: string[];
-  constraintsAdded: string[];
-  constraintsRemoved: string[];
-  threadsAdded: ThreadAdd[];
-  threadsResolved: string[];
-  newCanonFacts: string[];
-  newCharacterCanonFacts: Record<string, string[]>;
-  inventoryAdded: string[];
-  inventoryRemoved: string[];
-  healthAdded: string[];
-  healthRemoved: string[];
-  characterStateChangesAdded: Array<{ characterName: string; states: string[] }>;
-  characterStateChangesRemoved: string[];
-}
-
 export type FinalPageGenerationResult = PageWriterResult & StateReconciliationResult;

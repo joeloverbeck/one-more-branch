@@ -7,7 +7,7 @@ import {
   generateStoryStructure,
 } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
-import type { WriterResult } from '@/llm/writer-types';
+import type { PageWriterResult } from '@/llm/writer-types';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -105,7 +105,7 @@ const openingResult = {
   rawResponse: 'opening',
 };
 
-function buildWriterResult(selectedChoice: string, stepIndex: number): WriterResult {
+function buildWriterResult(selectedChoice: string, stepIndex: number): PageWriterResult {
   if (selectedChoice.includes('beacon tower')) {
     return {
       narrative:

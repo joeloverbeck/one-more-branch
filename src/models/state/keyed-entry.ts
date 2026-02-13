@@ -32,12 +32,40 @@ export interface ThreadEntry extends KeyedEntry {
   readonly urgency: Urgency;
 }
 
+export enum ThreatType {
+  HOSTILE_AGENT = 'HOSTILE_AGENT',
+  ENVIRONMENTAL = 'ENVIRONMENTAL',
+  CREATURE = 'CREATURE',
+}
+
+export enum ConstraintType {
+  PHYSICAL = 'PHYSICAL',
+  ENVIRONMENTAL = 'ENVIRONMENTAL',
+  TEMPORAL = 'TEMPORAL',
+}
+
+export interface ThreatEntry extends KeyedEntry {
+  readonly threatType: ThreatType;
+}
+
+export interface ConstraintEntry extends KeyedEntry {
+  readonly constraintType: ConstraintType;
+}
+
 export function isThreadType(value: unknown): value is ThreadType {
   return typeof value === 'string' && Object.values(ThreadType).includes(value as ThreadType);
 }
 
 export function isUrgency(value: unknown): value is Urgency {
   return typeof value === 'string' && Object.values(Urgency).includes(value as Urgency);
+}
+
+export function isThreatType(value: unknown): value is ThreatType {
+  return typeof value === 'string' && Object.values(ThreatType).includes(value as ThreatType);
+}
+
+export function isConstraintType(value: unknown): value is ConstraintType {
+  return typeof value === 'string' && Object.values(ConstraintType).includes(value as ConstraintType);
 }
 
 export type StateIdPrefix = 'inv' | 'hp' | 'cs' | 'th' | 'cn' | 'td';

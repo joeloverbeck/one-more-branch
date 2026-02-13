@@ -2,6 +2,7 @@
 
 - Source: `src/llm/prompts/page-planner-prompt.ts`
 - Planner context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts`
+- Story structure context builder: `src/llm/prompts/continuation/story-structure-section.ts`
 - Decomposed data formatters: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
 - Thread pacing directives source: `src/llm/prompts/sections/planner/thread-pacing-directive.ts`
 - State intent/output instructions source: `src/llm/prompts/sections/planner/state-intent-rules.ts`
@@ -56,9 +57,11 @@ Create a page plan for the writer model.
 
 {{#if mode === 'opening'}}
 === PLANNER CONTEXT: OPENING ===
+{{#unless decomposedCharacters.length > 0}}
 CHARACTER CONCEPT:
 {{characterConcept}}
 
+{{/unless}}
 {{#if decomposedWorld && decomposedWorld.facts.length > 0}}
 WORLDBUILDING (structured):
 [DOMAIN_NAME]
@@ -71,15 +74,11 @@ WORLDBUILDING:
 
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles):
-{{decomposedCharacters formatted with speech fingerprints, traits, relationships, etc.}}
+{{decomposedCharacters formatted with speech fingerprints, traits, relationships, etc.;
+  first character marked [PROTAGONIST]}}
 {{else if npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
-{{/if}}
-
-{{#if startingSituation}}
-STARTING SITUATION:
-{{startingSituation}}
 {{/if}}
 
 {{#if initialNpcAgendas.length > 0}}
@@ -91,27 +90,38 @@ NPC INITIAL AGENDAS (what each NPC wants at story start):
   Off-screen: {{agenda.offScreenBehavior}}
 {{/if}}
 
+{{#if startingSituation}}
+STARTING SITUATION:
+{{startingSituation}}
+{{/if}}
+
 TONE/GENRE: {{tone}}
 {{#if toneKeywords}}Tone target feel: {{toneKeywords joined by ', '}}{{/if}}
 {{#if toneAntiKeywords}}Tone avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 
-{{#if structure.firstAct.firstBeat}}
-=== STORY STRUCTURE (if provided) ===
-Overall Theme: {{structure.overallTheme}}
-Current Act: {{structure.acts[0].name}}
-Act Objective: {{structure.acts[0].objective}}
-Current Beat: {{structure.acts[0].beats[0].description}}
-Beat Objective: {{structure.acts[0].beats[0].objective}}
-{{/if}}
+{{buildWriterStructureContext(structure, createInitialStructureState(structure))}}
+{{! Rich structure format produces:
+    === STORY STRUCTURE ===
+    Overall Theme: ... / Premise: ...
+    CURRENT ACT: name (Act N of 3) / Objective: ... / Stakes: ...
+    BEATS IN THIS ACT:
+      [x] CONCLUDED (role): description / Resolution: ...
+      [>] ACTIVE (role): description / Objective: ...
+      [ ] PENDING (role): description
+    REMAINING ACTS:
+      - Act N: name - objective
+}}
 
 Plan the first page intent and state intents using this opening setup.
 {{/if}}
 
 {{#if mode === 'continuation'}}
 === PLANNER CONTEXT: CONTINUATION ===
+{{#unless decomposedCharacters.length > 0}}
 CHARACTER CONCEPT:
 {{characterConcept}}
 
+{{/unless}}
 {{#if decomposedWorld && decomposedWorld.facts.length > 0}}
 WORLDBUILDING (structured):
 [DOMAIN_NAME]
@@ -124,7 +134,8 @@ WORLDBUILDING:
 
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles):
-{{decomposedCharacters formatted with speech fingerprints, traits, relationships, etc.}}
+{{decomposedCharacters formatted with speech fingerprints, traits, relationships, etc.;
+  first character marked [PROTAGONIST]}}
 {{else if npcs.length}}
 NPCS (Available Characters):
 {{formattedNpcs}}
@@ -137,12 +148,9 @@ TONE/GENRE: {{tone}}
 TONE DRIFT WARNING (from analyst): {{parentToneDriftDescription}}. Correct course in this plan.
 {{/if}}
 
-{{#if structure && accumulatedStructureState}}
-=== STORY STRUCTURE (if provided) ===
-Overall Theme: {{structure.overallTheme}}
-Current Act Index: {{accumulatedStructureState.currentActIndex}}
-Current Beat Index: {{accumulatedStructureState.currentBeatIndex}}
-{{/if}}
+{{buildWriterStructureContext(structure, accumulatedStructureState)}}
+{{! Rich structure format — same as opening (see above) but uses
+    the accumulated structure state for beat progression status }}
 
 {{... pacing briefing, thread aging, payoff feedback sections ...}}
 
@@ -204,11 +212,21 @@ Return JSON only.
   "stateIntents": {
     "currentLocation": "{{where protagonist is at end of next scene}}",
     "threats": {
-      "add": ["{{new threat text}}"],
+      "add": [
+        {
+          "text": "{{new threat text}}",
+          "threatType": "{{HOSTILE_AGENT|ENVIRONMENTAL|CREATURE}}"
+        }
+      ],
       "removeIds": ["{{th-...}}"]
     },
     "constraints": {
-      "add": ["{{new constraint text}}"],
+      "add": [
+        {
+          "text": "{{new constraint text}}",
+          "constraintType": "{{PHYSICAL|ENVIRONMENTAL|TEMPORAL}}"
+        }
+      ],
       "removeIds": ["{{cn-...}}"]
     },
     "threads": {

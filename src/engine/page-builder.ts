@@ -175,7 +175,7 @@ export function computeInheritedNarrativePromises(
 }
 
 /**
- * Maps WriterResult fields to ActiveStateChanges.
+ * Maps reconciled state fields to ActiveStateChanges.
  * Handles the conversion from LLM output format to the typed change structure.
  */
 function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
