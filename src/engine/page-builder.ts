@@ -17,7 +17,7 @@ import {
 } from '../models';
 import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
-import type { AnalystResult } from '../llm/analyst-types';
+import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PageWriterResult } from '../llm/writer-types';
 import type { StateReconciliationResult } from './state-reconciler-types';
@@ -62,6 +62,8 @@ export interface PageBuildContext {
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
+  readonly analystPromisesDetected: readonly DetectedPromise[];
+  readonly analystPromisesResolved: readonly string[];
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -92,6 +94,8 @@ export interface ContinuationPageBuildContext {
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
+  readonly analystPromisesDetected: readonly DetectedPromise[];
+  readonly analystPromisesResolved: readonly string[];
   readonly parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -146,32 +150,46 @@ export function computeContinuationThreadAges(
  * Parent promises are resolved/aged and new detections are assigned IDs.
  */
 export function computeAccumulatedPromises(
-  parentAccumulated: readonly TrackedPromise[],
-  analystResult: AnalystResult | null
+  parentPromises: readonly TrackedPromise[],
+  resolvedIds: readonly string[],
+  detected: readonly DetectedPromise[],
+  maxExistingId: number
 ): readonly TrackedPromise[] {
-  const maxParentPromiseId = parentAccumulated.reduce((max, promise) => {
-    if (!promise.id.startsWith('pr-')) {
-      return max;
-    }
-    const parsed = Number.parseInt(promise.id.slice(3), 10);
-    return Number.isNaN(parsed) ? max : Math.max(max, parsed);
-  }, 0);
-
-  const resolvedPromiseIds = new Set(analystResult?.promisesResolved ?? []);
-  const survivingAgedPromises = parentAccumulated
-    .filter((promise) => !resolvedPromiseIds.has(promise.id))
+  const resolvedSet = new Set(resolvedIds);
+  const survivingAgedPromises = parentPromises
+    .filter((promise) => !resolvedSet.has(promise.id))
     .map((promise) => ({ ...promise, age: promise.age + 1 }));
 
-  const detectedPromises = analystResult?.promisesDetected ?? [];
-  const newlyTrackedPromises = detectedPromises.map((promise, index) => ({
-    id: `pr-${maxParentPromiseId + index + 1}`,
-    description: promise.description,
-    promiseType: promise.promiseType,
-    suggestedUrgency: promise.suggestedUrgency,
-    age: 0,
-  }));
+  let nextPromiseId = maxExistingId;
+  const newlyTrackedPromises = detected
+    .filter((promise) => promise.description.trim().length > 0)
+    .map((promise) => {
+      nextPromiseId += 1;
+      return {
+        id: `pr-${nextPromiseId}`,
+        description: promise.description.trim(),
+        promiseType: promise.promiseType,
+        suggestedUrgency: promise.suggestedUrgency,
+        age: 0,
+      };
+    });
 
   return [...survivingAgedPromises, ...newlyTrackedPromises];
+}
+
+export function getMaxPromiseIdNumber(promises: readonly TrackedPromise[]): number {
+  let max = 0;
+  for (const promise of promises) {
+    const match = /^pr-(\d+)$/.exec(promise.id);
+    if (!match?.[1]) {
+      continue;
+    }
+    const value = Number.parseInt(match[1], 10);
+    if (!Number.isNaN(value) && value > max) {
+      max = value;
+    }
+  }
+  return max;
 }
 
 /**
@@ -235,7 +253,9 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
 
   const accumulatedPromises = computeAccumulatedPromises(
     isOpening ? [] : context.parentAccumulatedPromises,
-    context.analystResult
+    isOpening ? [] : context.analystPromisesResolved,
+    isOpening ? [] : context.analystPromisesDetected,
+    getMaxPromiseIdNumber(isOpening ? [] : context.parentAccumulatedPromises)
   );
 
   const resolvedThreadMeta = buildResolvedThreadMeta(
@@ -306,6 +326,8 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     analystResult: null,
     parentThreadAges: {},
     parentAccumulatedPromises: [],
+    analystPromisesDetected: [],
+    analystPromisesResolved: [],
     parentAccumulatedNpcAgendas: agendaRecord,
   });
 }
@@ -331,6 +353,8 @@ export function buildContinuationPage(
     analystResult: context.analystResult,
     parentThreadAges: context.parentThreadAges,
     parentAccumulatedPromises: context.parentAccumulatedPromises,
+    analystPromisesDetected: context.analystPromisesDetected,
+    analystPromisesResolved: context.analystPromisesResolved,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
     npcAgendaUpdates: context.npcAgendaUpdates,
   });

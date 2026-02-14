@@ -1,6 +1,6 @@
 # STANARPROPLA-07: Implement computeAccumulatedPromises and update page builder context
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Depends on**: STANARPROPLA-01, STANARPROPLA-02, STANARPROPLA-03, STANARPROPLA-06
 **Blocks**: STANARPROPLA-11, STANARPROPLA-12
 
@@ -57,3 +57,22 @@ Replace `computeInheritedNarrativePromises()` (30% word-overlap filtering, hard 
 - The deprecated `buildFirstPage` and `buildContinuationPage` still work as wrappers to `buildPage`
 - Thread age computation is unchanged
 - All other page building logic (choices, state changes, inventory, health, character state, structure state, protagonist affect, NPC agendas) is unchanged
+
+## Outcome
+
+- Completion date: 2026-02-14
+- What was changed:
+  - Implemented `computeAccumulatedPromises(parentPromises, resolvedIds, detected, maxExistingId)` in `src/engine/page-builder.ts`.
+  - Added `getMaxPromiseIdNumber(promises)` helper in `src/engine/page-builder.ts`.
+  - Updated `PageBuildContext` and `ContinuationPageBuildContext` to carry `parentAccumulatedPromises`, `analystPromisesDetected`, and `analystPromisesResolved`.
+  - Updated `buildPage`, `buildFirstPage`, and `buildContinuationPage` to use the new promise accumulation flow.
+  - Added `computeAccumulatedPromises` tests to `test/unit/engine/page-builder.test.ts` (including resolve+detect same-page and empty-description filtering).
+  - Updated context fixtures in impacted engine tests.
+- Deviations from plan:
+  - Touched `src/engine/page-service.ts` to pass `analystPromisesDetected` and `analystPromisesResolved` into `buildPage` after the context contract changed.
+  - Initially placed accumulation tests in `test/unit/engine/thread-age-computation.test.ts`, then moved them into `test/unit/engine/page-builder.test.ts` to align with ticket intent.
+- Verification results:
+  - `npx jest test/unit/engine/page-builder.test.ts --testNamePattern=\"computeAccumulatedPromises\" --no-coverage` passed.
+  - `npx jest test/unit/engine/page-builder.test.ts --no-coverage` passed.
+  - `npx jest test/unit/engine/page-builder.test.ts test/unit/engine/thread-age-computation.test.ts --no-coverage` passed.
+  - `npm run typecheck` passed.

@@ -353,6 +353,8 @@ export async function generatePage(
     analystResult,
     parentThreadAges: parentPage?.threadAges ?? {},
     parentAccumulatedPromises: parentPage?.accumulatedPromises ?? [],
+    analystPromisesDetected: analystResult?.promisesDetected ?? [],
+    analystPromisesResolved: analystResult?.promisesResolved ?? [],
     parentAccumulatedNpcAgendas,
     npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
   });

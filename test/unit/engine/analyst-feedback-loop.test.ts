@@ -223,6 +223,8 @@ describe('Analyst-to-Planner Feedback Loop', () => {
         analystResult: ar,
         parentThreadAges: {},
         parentAccumulatedPromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
       };
 
       const page = buildContinuationPage(result, context);
@@ -245,6 +247,8 @@ describe('Analyst-to-Planner Feedback Loop', () => {
         analystResult: null,
         parentThreadAges: {},
         parentAccumulatedPromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
       };
 
       const page = buildContinuationPage(result, context);
