@@ -62,6 +62,7 @@ describe('buildPagePlannerPrompt', () => {
     },
     grandparentNarrative: null,
     ancestorSummaries: [],
+    accumulatedPromises: [],
   };
 
   it('returns two messages and is exported through prompts barrel', () => {

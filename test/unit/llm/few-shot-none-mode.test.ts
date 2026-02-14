@@ -24,7 +24,6 @@ describe('fewShotMode: none', () => {
     selectedChoice: 'Play the forbidden melody',
     globalCanon: [],
     globalCharacterCanon: {},
-    accumulatedState: [],
     accumulatedCharacterState: {},
     accumulatedInventory: [],
     accumulatedHealth: [],
@@ -37,6 +36,7 @@ describe('fewShotMode: none', () => {
     },
     grandparentNarrative: null,
     ancestorSummaries: [],
+    accumulatedPromises: [],
   };
 
   const noneOptions: PromptOptions = {

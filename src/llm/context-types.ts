@@ -73,7 +73,7 @@ export interface ContinuationContext {
   momentumTrajectory?: MomentumTrajectory;
 
   threadAges?: Readonly<Record<string, number>>;
-  accumulatedPromises?: readonly TrackedPromise[];
+  accumulatedPromises: readonly TrackedPromise[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

@@ -38,6 +38,7 @@ describe('Few-Shot Examples Integration', () => {
     },
     grandparentNarrative: null,
     ancestorSummaries: [],
+    accumulatedPromises: [],
   };
 
   describe('Opening prompt integration with few-shot examples', () => {

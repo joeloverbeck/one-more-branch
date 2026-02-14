@@ -10,6 +10,7 @@ import {
   Story,
 } from '@/models';
 import type { VersionedStoryStructure } from '@/models';
+import { PromiseType, Urgency } from '@/models/state';
 
 function makeStory(overrides: Partial<Story> = {}): Story {
   return {
@@ -112,6 +113,8 @@ describe('continuation-context-builder', () => {
       expect(result.grandparentNarrative).toBe('Grandparent narrative text');
       expect(result.ancestorSummaries).toEqual(ancestorContext.ancestorSummaries);
       expect(result.parentProtagonistAffect).toBe(parentPage.protagonistAffect);
+      expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
+      expect(result.parentThreadPayoffAssessments).toEqual([]);
     });
 
     it('uses structure from version when available', () => {
@@ -200,6 +203,41 @@ describe('continuation-context-builder', () => {
       );
 
       expect(result.protagonistGuidance).toBeUndefined();
+    });
+
+    it('preserves parent accumulatedPromises when present', () => {
+      const story = makeStory();
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'A glint catches your eye beneath the rubble.',
+        sceneSummary: 'The scene introduces a suspiciously polished locket.',
+        choices: [createChoice('Take the locket'), createChoice('Leave it buried')],
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        accumulatedPromises: [
+          {
+            id: 'pr-1',
+            description: 'The silver locket feels narratively significant.',
+            promiseType: PromiseType.CHEKHOV_GUN,
+            suggestedUrgency: Urgency.MEDIUM,
+            age: 2,
+          },
+        ],
+      });
+
+      const result = buildContinuationContext(
+        story,
+        parentPage,
+        'Take the locket',
+        makeParentState(),
+        makeAncestorContext(),
+        null
+      );
+
+      expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
+      expect(result.accumulatedPromises).toHaveLength(1);
+      expect(result.accumulatedPromises[0]?.id).toBe('pr-1');
     });
   });
 

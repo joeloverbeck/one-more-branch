@@ -49,6 +49,7 @@ const mockContinuationContext: ContinuationContext = {
   },
   grandparentNarrative: null,
   ancestorSummaries: [],
+    accumulatedPromises: [],
 };
 
 const mockPagePlan: PagePlanGenerationResult = {

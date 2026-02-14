@@ -98,6 +98,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       decomposedCharacters: [
         {
           name: 'Rin',
@@ -177,6 +178,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       structure: {
         overallTheme: 'Loyalty under impossible pressure',
         premise: 'A smuggler must expose corruption before a citywide purge.',
@@ -274,6 +276,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -310,6 +313,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       accumulatedNpcAgendas: {
         Azra: {
           npcName: 'Azra',
@@ -352,6 +356,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       parentProtagonistAffect: {
         primaryEmotion: 'dread',
         primaryIntensity: 'strong',
@@ -390,6 +395,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -418,6 +424,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       protagonistGuidance: {
         suggestedSpeech: 'Get lost, I never want to see you again.',
       },
@@ -452,6 +459,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -480,6 +488,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       protagonistGuidance: { suggestedSpeech: '   ' },
     };
 
@@ -509,6 +518,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
       protagonistGuidance: {
         suggestedEmotions: 'Furious but controlled.',
         suggestedThoughts: 'This deal is a setup.',
@@ -544,6 +554,7 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
+    accumulatedPromises: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);

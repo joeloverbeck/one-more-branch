@@ -182,6 +182,7 @@ describe('LLM types', () => {
         },
         grandparentNarrative: null,
         ancestorSummaries: [],
+        accumulatedPromises: [],
       };
 
       expect(context.globalCanon[0]).toContain('siege');
@@ -283,6 +284,7 @@ describe('LLM types', () => {
         },
         grandparentNarrative: null,
         ancestorSummaries: [],
+        accumulatedPromises: [],
       };
 
       const contexts: PagePlanContext[] = [openingContext, continuationContext];
@@ -351,6 +353,7 @@ describe('LLM types', () => {
         },
         grandparentNarrative: null,
         ancestorSummaries: [],
+        accumulatedPromises: [],
       };
 
       // TypeScript compile-time check - if this compiles, the type is valid
@@ -378,6 +381,7 @@ describe('LLM types', () => {
         },
         grandparentNarrative: 'Earlier scene...',
         ancestorSummaries: [],
+        accumulatedPromises: [],
       };
 
       expect(context.grandparentNarrative).toBe('Earlier scene...');
@@ -404,6 +408,7 @@ describe('LLM types', () => {
         },
         grandparentNarrative: null,
         ancestorSummaries: [],
+        accumulatedPromises: [],
       };
 
       expect(context.grandparentNarrative).toBeNull();
@@ -426,6 +431,7 @@ describe('LLM types', () => {
         accumulatedCharacterState: {},
         grandparentNarrative: null,
         ancestorSummaries: [],
+        accumulatedPromises: [],
         // Missing activeState!
       };
 
@@ -454,10 +460,37 @@ describe('LLM types', () => {
           openThreads: [],
         },
         ancestorSummaries: [],
+        accumulatedPromises: [],
         // Missing grandparentNarrative!
       };
 
       // This line exists only to use the variable (test would fail at compile time)
+      expect(invalidContext).toBeDefined();
+    });
+
+    it('requires accumulatedPromises field', () => {
+      // @ts-expect-error - Testing that accumulatedPromises is required
+      const invalidContext: ContinuationContext = {
+        characterConcept: 'Test',
+        worldbuilding: 'Test',
+        tone: 'Test',
+        globalCanon: [],
+        globalCharacterCanon: {},
+        previousNarrative: '',
+        selectedChoice: '',
+        accumulatedInventory: [],
+        accumulatedHealth: [],
+        accumulatedCharacterState: {},
+        activeState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        grandparentNarrative: null,
+        ancestorSummaries: [],
+      };
+
       expect(invalidContext).toBeDefined();
     });
 
@@ -490,6 +523,7 @@ describe('LLM types', () => {
         activeState,
         grandparentNarrative: 'You entered the forest at dawn...',
         ancestorSummaries: [],
+        accumulatedPromises: [],
       };
 
       expect(context.activeState.activeThreats).toHaveLength(1);

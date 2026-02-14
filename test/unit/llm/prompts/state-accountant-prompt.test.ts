@@ -60,6 +60,7 @@ describe('buildStateAccountantPrompt', () => {
     },
     grandparentNarrative: null,
     ancestorSummaries: [],
+    accumulatedPromises: [],
   };
 
   it('includes reduced planner output and state-intent rules', () => {
