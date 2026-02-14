@@ -438,7 +438,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           pageId: 1,
           choiceIndex: 0,
           apiKey: 'mock-api-key-12345',
-          suggestedProtagonistSpeech: '  I know a safer route.  ',
+          protagonistGuidance: {
+            suggestedSpeech: '  I know a safer route.  ',
+          },
         },
       } as unknown as Request,
       choiceRes.res
@@ -461,7 +463,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
     expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
       expect.objectContaining({
-        suggestedProtagonistSpeech: 'I know a safer route.',
+        protagonistGuidance: {
+          suggestedSpeech: 'I know a safer route.',
+        },
       }),
       expect.any(Object),
       expect.any(Object)

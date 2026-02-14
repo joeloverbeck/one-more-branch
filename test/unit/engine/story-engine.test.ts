@@ -252,7 +252,7 @@ describe('story-engine', () => {
           pageId: PAGE_1,
           choiceIndex: 0,
           apiKey: 'test-key',
-          suggestedProtagonistSpeech: 'We should stay quiet.',
+          protagonistGuidance: { suggestedSpeech: 'We should stay quiet.' },
           onGenerationStage: jest.fn(),
         })
       ).resolves.toEqual({ page: nextPage, wasGenerated: true });
@@ -263,7 +263,7 @@ describe('story-engine', () => {
         0,
         'test-key',
         expect.any(Function),
-        'We should stay quiet.'
+        { suggestedSpeech: 'We should stay quiet.' }
       );
     });
   });

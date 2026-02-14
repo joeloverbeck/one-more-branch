@@ -2,6 +2,7 @@ import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
 import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
+import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type {
   ActiveState,
   KeyedEntry,
@@ -52,7 +53,7 @@ export interface ContinuationContext {
   accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
   selectedChoice: string;
-  suggestedProtagonistSpeech?: string;
+  protagonistGuidance?: ProtagonistGuidance;
 
   accumulatedInventory: readonly KeyedEntry[];
   accumulatedHealth: readonly KeyedEntry[];

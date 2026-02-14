@@ -1,4 +1,5 @@
 import type { Story, Page, VersionedStoryStructure } from '../models';
+import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type { ContinuationContext } from '../llm/context-types';
 import type { WriterValidationContext } from '../llm/generation-pipeline-types';
 import type { AncestorContext } from './ancestor-collector';
@@ -15,7 +16,7 @@ export function buildContinuationContext(
   parentState: CollectedParentState,
   ancestorContext: AncestorContext,
   currentStructureVersion: VersionedStoryStructure | null,
-  suggestedProtagonistSpeech?: string
+  protagonistGuidance?: ProtagonistGuidance
 ): ContinuationContext {
   return {
     characterConcept: story.characterConcept,
@@ -32,7 +33,7 @@ export function buildContinuationContext(
     accumulatedStructureState: parentState.structureState,
     previousNarrative: parentPage.narrativeText,
     selectedChoice: choiceText,
-    suggestedProtagonistSpeech,
+    protagonistGuidance,
     accumulatedInventory: parentState.accumulatedInventory,
     accumulatedHealth: parentState.accumulatedHealth,
     accumulatedCharacterState: parentState.accumulatedCharacterState,

@@ -89,7 +89,7 @@ describe('continuation-context-builder', () => {
         parentState,
         ancestorContext,
         null,
-        'I demand you release me!'
+        { suggestedSpeech: 'I demand you release me!' }
       );
 
       expect(result.characterConcept).toBe('A brave warrior');
@@ -100,7 +100,9 @@ describe('continuation-context-builder', () => {
       expect(result.globalCharacterCanon).toEqual({ Guide: ['Knows the way'] });
       expect(result.previousNarrative).toBe('You see a corridor.');
       expect(result.selectedChoice).toBe('Go left');
-      expect(result.suggestedProtagonistSpeech).toBe('I demand you release me!');
+      expect(result.protagonistGuidance).toEqual({
+        suggestedSpeech: 'I demand you release me!',
+      });
       expect(result.accumulatedInventory).toEqual([{ id: 'inv-1', text: 'Torch' }]);
       expect(result.accumulatedHealth).toEqual([{ id: 'hp-1', text: 'Minor wound' }]);
       expect(result.accumulatedCharacterState).toEqual({
@@ -176,7 +178,7 @@ describe('continuation-context-builder', () => {
       expect(result.structure).toBe(storyStructure);
     });
 
-    it('omits suggestedProtagonistSpeech when undefined', () => {
+    it('omits protagonistGuidance when undefined', () => {
       const story = makeStory();
       const parentPage = createPage({
         id: parsePageId(2),
@@ -197,7 +199,7 @@ describe('continuation-context-builder', () => {
         null
       );
 
-      expect(result.suggestedProtagonistSpeech).toBeUndefined();
+      expect(result.protagonistGuidance).toBeUndefined();
     });
   });
 

@@ -248,13 +248,13 @@ describe('play page choice click handler', () => {
     expect(modal?.style.display).toBe('none');
   });
 
-  it('includes suggestedProtagonistSpeech in body when provided', async () => {
+  it('includes protagonistGuidance in body when provided', async () => {
     setupAndInit();
 
-    const speechInput = document.querySelector(
-      '.suggested-protagonist-speech-input'
-    ) as HTMLInputElement;
+    const speechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
+    const thoughtsInput = document.querySelector('#guidance-thoughts') as HTMLTextAreaElement;
     speechInput.value = 'I choose courage!';
+    thoughtsInput.value = 'I cannot freeze now.';
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -267,10 +267,13 @@ describe('play page choice click handler', () => {
       (call) => call[1]?.method === 'POST'
     );
     const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
-    expect(body.suggestedProtagonistSpeech).toBe('I choose courage!');
+    expect(body.protagonistGuidance).toEqual({
+      suggestedThoughts: 'I cannot freeze now.',
+      suggestedSpeech: 'I choose courage!',
+    });
   });
 
-  it('does not include suggestedProtagonistSpeech when empty', async () => {
+  it('does not include protagonistGuidance when all fields are empty', async () => {
     setupAndInit();
 
     fetchMock
@@ -284,16 +287,16 @@ describe('play page choice click handler', () => {
       (call) => call[1]?.method === 'POST'
     );
     const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
-    expect(body.suggestedProtagonistSpeech).toBeUndefined();
+    expect(body.protagonistGuidance).toBeUndefined();
   });
 
-  it('clears suggested speech after generated response', async () => {
+  it('clears protagonist guidance after generated response', async () => {
     setupAndInit();
 
-    const speechInput = document.querySelector(
-      '.suggested-protagonist-speech-input'
-    ) as HTMLInputElement;
+    const speechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
+    const emotionsInput = document.querySelector('#guidance-emotions') as HTMLTextAreaElement;
     speechInput.value = 'Something brave';
+    emotionsInput.value = 'Terrified';
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -304,11 +307,11 @@ describe('play page choice click handler', () => {
     clickChoice(0);
     await jest.runAllTimersAsync();
 
-    // After a generated response, the speech input value in the rebuilt section should be empty
-    const newSpeechInput = document.querySelector(
-      '.suggested-protagonist-speech-input'
-    ) as HTMLInputElement;
+    // After a generated response, guidance fields should be empty in rebuilt section
+    const newSpeechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
+    const newEmotionsInput = document.querySelector('#guidance-emotions') as HTMLTextAreaElement;
     expect(newSpeechInput?.value).toBe('');
+    expect(newEmotionsInput?.value).toBe('');
   });
 
   it('renders state changes section on successful choice', async () => {

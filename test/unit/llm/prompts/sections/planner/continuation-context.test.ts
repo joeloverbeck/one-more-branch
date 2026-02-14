@@ -383,7 +383,7 @@ describe('planner continuation context section', () => {
     expect(result).not.toContain("PROTAGONIST'S CURRENT EMOTIONAL STATE:");
   });
 
-  it('includes suggested protagonist speech section when provided', () => {
+  it('includes protagonist guidance speech subsection when provided', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
       characterConcept: 'A biotech smuggler',
@@ -404,17 +404,20 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-      suggestedProtagonistSpeech: 'Get lost, I never want to see you again.',
+      protagonistGuidance: {
+        suggestedSpeech: 'Get lost, I never want to see you again.',
+      },
     };
 
     const result = buildPlannerContinuationContextSection(context);
 
-    expect(result).toContain('SUGGESTED PROTAGONIST SPEECH (PLAYER INTENT)');
+    expect(result).toContain('PROTAGONIST GUIDANCE (PLAYER INTENT)');
+    expect(result).toContain('SPEECH the player wants the protagonist to say');
     expect(result).toContain('Get lost, I never want to see you again.');
     expect(result).toContain('do not treat it as optional');
   });
 
-  it('omits suggested protagonist speech section when not provided', () => {
+  it('omits protagonist guidance section when not provided', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
       characterConcept: 'A biotech smuggler',
@@ -439,10 +442,10 @@ describe('planner continuation context section', () => {
 
     const result = buildPlannerContinuationContextSection(context);
 
-    expect(result).not.toContain('SUGGESTED PROTAGONIST SPEECH');
+    expect(result).not.toContain('PROTAGONIST GUIDANCE');
   });
 
-  it('omits suggested protagonist speech section when blank after trim', () => {
+  it('omits protagonist guidance section when blank after trim', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
       characterConcept: 'A biotech smuggler',
@@ -463,12 +466,47 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-      suggestedProtagonistSpeech: '   ',
+      protagonistGuidance: { suggestedSpeech: '   ' },
     };
 
     const result = buildPlannerContinuationContextSection(context);
 
-    expect(result).not.toContain('SUGGESTED PROTAGONIST SPEECH');
+    expect(result).not.toContain('PROTAGONIST GUIDANCE');
+  });
+
+  it('includes all guidance subsections when all fields are present', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      protagonistGuidance: {
+        suggestedEmotions: 'Furious but controlled.',
+        suggestedThoughts: 'This deal is a setup.',
+        suggestedSpeech: 'Drop the weapon.',
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('EMOTIONAL STATE the player wants the protagonist to feel:');
+    expect(result).toContain('INNER THOUGHTS the player wants the protagonist to have:');
+    expect(result).toContain('SPEECH the player wants the protagonist to say:');
   });
 
   it('omits NPC agendas section when no agendas exist', () => {

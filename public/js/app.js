@@ -1608,22 +1608,56 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     }).join('');
   }
 
-  function renderCustomChoiceInput(suggestedSpeechValue) {
-    const safeSuggestedSpeechValue = typeof suggestedSpeechValue === 'string'
-      ? suggestedSpeechValue
+  function renderProtagonistGuidanceAndCustomChoice(guidanceValues) {
+    const safeEmotions = typeof guidanceValues.emotions === 'string'
+      ? guidanceValues.emotions
+      : '';
+    const safeThoughts = typeof guidanceValues.thoughts === 'string'
+      ? guidanceValues.thoughts
+      : '';
+    const safeSpeech = typeof guidanceValues.speech === 'string'
+      ? guidanceValues.speech
       : '';
 
     return `
-        <div class="suggested-protagonist-speech-container">
-          <input
-            type="text"
-            id="suggested-protagonist-speech-input"
-            class="suggested-protagonist-speech-input"
-            placeholder="Suggest something your protagonist might say..."
-            maxlength="500"
-            value="${escapeHtml(safeSuggestedSpeechValue)}"
-          />
-        </div>
+        <details class="protagonist-guidance">
+          <summary class="protagonist-guidance__summary">Guide Your Protagonist</summary>
+          <div class="protagonist-guidance__fields">
+            <div class="protagonist-guidance__field">
+              <label class="protagonist-guidance__label" for="guidance-emotions">Emotions</label>
+              <textarea
+                id="guidance-emotions"
+                class="protagonist-guidance__textarea"
+                name="suggestedEmotions"
+                placeholder="e.g. Furious but hiding it behind a thin smile..."
+                maxlength="500"
+                rows="2"
+              >${escapeHtml(safeEmotions)}</textarea>
+            </div>
+            <div class="protagonist-guidance__field">
+              <label class="protagonist-guidance__label" for="guidance-thoughts">Thoughts</label>
+              <textarea
+                id="guidance-thoughts"
+                class="protagonist-guidance__textarea"
+                name="suggestedThoughts"
+                placeholder="e.g. Wondering if the stranger recognized them..."
+                maxlength="500"
+                rows="2"
+              >${escapeHtml(safeThoughts)}</textarea>
+            </div>
+            <div class="protagonist-guidance__field">
+              <label class="protagonist-guidance__label" for="guidance-speech">Speech</label>
+              <textarea
+                id="guidance-speech"
+                class="protagonist-guidance__textarea"
+                name="suggestedSpeech"
+                placeholder="e.g. 'Wake up, Alicia! We don't have much time.'"
+                maxlength="500"
+                rows="2"
+              >${escapeHtml(safeSpeech)}</textarea>
+            </div>
+          </div>
+        </details>
         <div class="custom-choice-container">
           <input type="text" class="custom-choice-input"
                  placeholder="Introduce your own custom choice..."
@@ -1642,11 +1676,11 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       `;
   }
 
-  function rebuildChoicesSection(choiceList, suggestedSpeechValue, choicesEl, choicesSectionEl, bindFn) {
+  function rebuildChoicesSection(choiceList, guidanceValues, choicesEl, choicesSectionEl, bindFn) {
     choicesEl.innerHTML = renderChoiceButtons(choiceList);
-    const existingSuggestedSpeech = choicesSectionEl.querySelector('.suggested-protagonist-speech-container');
-    if (existingSuggestedSpeech) {
-      existingSuggestedSpeech.remove();
+    const existingGuidance = choicesSectionEl.querySelector('.protagonist-guidance');
+    if (existingGuidance) {
+      existingGuidance.remove();
     }
     const existingCustom = choicesSectionEl.querySelector('.custom-choice-container');
     if (existingCustom) {
@@ -1656,10 +1690,9 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     if (existingEnums) {
       existingEnums.remove();
     }
-    choicesEl.insertAdjacentHTML('afterend', renderCustomChoiceInput(suggestedSpeechValue));
+    choicesEl.insertAdjacentHTML('afterend', renderProtagonistGuidanceAndCustomChoice(guidanceValues));
     bindFn();
   }
-
 
   // ── State renderers ───────────────────────────────────────────────
 
@@ -1901,13 +1934,16 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       });
     }
 
-    function getSuggestedProtagonistSpeechInputValue() {
-      const suggestedSpeechInput = choicesSection.querySelector('.suggested-protagonist-speech-input');
-      if (!(suggestedSpeechInput instanceof HTMLInputElement)) {
-        return '';
-      }
+    function getProtagonistGuidanceValues() {
+      const emotionsEl = choicesSection.querySelector('#guidance-emotions');
+      const thoughtsEl = choicesSection.querySelector('#guidance-thoughts');
+      const speechEl = choicesSection.querySelector('#guidance-speech');
 
-      return suggestedSpeechInput.value;
+      return {
+        emotions: emotionsEl instanceof HTMLTextAreaElement ? emotionsEl.value : '',
+        thoughts: thoughtsEl instanceof HTMLTextAreaElement ? thoughtsEl.value : '',
+        speech: speechEl instanceof HTMLTextAreaElement ? speechEl.value : '',
+      };
     }
 
     function setChoicesDisabled(disabled) {
@@ -1948,7 +1984,13 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
           });
         })
         .then(function(data) {
-          rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue(), choices, choicesSection, bindCustomChoiceEvents);
+          rebuildChoicesSection(
+            data.choices,
+            getProtagonistGuidanceValues(),
+            choices,
+            choicesSection,
+            bindCustomChoiceEvents
+          );
         })
         .catch(function(error) {
           showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);
@@ -2006,9 +2048,19 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
           choiceIndex,
           progressId: createProgressId(),
         };
-        const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();
-        if (suggestedProtagonistSpeech.length > 0) {
-          body.suggestedProtagonistSpeech = suggestedProtagonistSpeech;
+        const guidanceValues = getProtagonistGuidanceValues();
+        const protagonistGuidance = {};
+        if (guidanceValues.emotions.trim().length > 0) {
+          protagonistGuidance.suggestedEmotions = guidanceValues.emotions.trim();
+        }
+        if (guidanceValues.thoughts.trim().length > 0) {
+          protagonistGuidance.suggestedThoughts = guidanceValues.thoughts.trim();
+        }
+        if (guidanceValues.speech.trim().length > 0) {
+          protagonistGuidance.suggestedSpeech = guidanceValues.speech.trim();
+        }
+        if (Object.keys(protagonistGuidance).length > 0) {
+          body.protagonistGuidance = protagonistGuidance;
         }
         if (apiKey) {
           body.apiKey = apiKey;
@@ -2094,10 +2146,16 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
             </div>
           `;
         } else {
-          const suggestedSpeechValue = data.wasGenerated === true
-            ? ''
-            : getSuggestedProtagonistSpeechInputValue();
-          rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);
+          const guidanceForRebuild = data.wasGenerated === true
+            ? { emotions: '', thoughts: '', speech: '' }
+            : getProtagonistGuidanceValues();
+          rebuildChoicesSection(
+            data.page.choices,
+            guidanceForRebuild,
+            choices,
+            choicesSection,
+            bindCustomChoiceEvents
+          );
         }
 
         var storyHeader = document.getElementById('story-header');

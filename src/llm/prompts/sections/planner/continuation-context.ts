@@ -3,6 +3,8 @@ import {
 } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { formatNpcsForPrompt } from '../../../../models/npc.js';
+import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
+import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
@@ -190,25 +192,68 @@ ${lines.join('\n\n')}
 `;
 }
 
-function buildSuggestedSpeechSection(suggestedSpeech: string | undefined): string {
-  const trimmed = suggestedSpeech?.trim();
-  if (!trimmed || trimmed.length === 0) {
+function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
+  if (isProtagonistGuidanceEmpty(guidance)) {
     return '';
   }
 
-  return `=== SUGGESTED PROTAGONIST SPEECH (PLAYER INTENT) ===
-The player wants the protagonist to say something like:
-"${trimmed}"
+  const lines: string[] = ['=== PROTAGONIST GUIDANCE (PLAYER INTENT) ==='];
+  lines.push(
+    'The player has provided guidance for the protagonist. This is meaningful player input - plan around it, do not treat it as optional.'
+  );
+  lines.push('');
 
-Incorporate this into your plan:
-- Shape the sceneIntent so the scene creates a natural moment for this speech
-- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent
-- Consider how NPCs and the situation would react to this kind of statement
-- Let the speech intent influence at least one choiceIntent's consequences
+  const suggestedEmotions = guidance?.suggestedEmotions?.trim();
+  const suggestedThoughts = guidance?.suggestedThoughts?.trim();
+  const suggestedSpeech = guidance?.suggestedSpeech?.trim();
 
-This is meaningful player input - plan around it, do not treat it as optional.
+  if (suggestedEmotions) {
+    lines.push('EMOTIONAL STATE the player wants the protagonist to feel:');
+    lines.push(`"${suggestedEmotions}"`);
+    lines.push('');
+    lines.push('Incorporate this emotion into your plan:');
+    lines.push(
+      "- Show, don't tell: plan scene elements that evoke this emotion through behavior, body language, and physical reactions rather than naming the emotion."
+    );
+    lines.push(
+      '- Create circumstances that naturally trigger this emotional state - environment, NPC actions, or consequences of the previous choice.'
+    );
+    lines.push("- Let the emotion color the protagonist's decision-making in the choiceIntents.");
+    lines.push('');
+  }
 
-`;
+  if (suggestedThoughts) {
+    lines.push('INNER THOUGHTS the player wants the protagonist to have:');
+    lines.push(`"${suggestedThoughts}"`);
+    lines.push('');
+    lines.push('Incorporate these thoughts into your plan:');
+    lines.push(
+      '- Use as motivational drivers: let these thoughts shape what the protagonist pursues or avoids in the scene.'
+    );
+    lines.push(
+      "- Create dramatic irony opportunities: plan situations where the protagonist's inner thoughts contrast with what other characters perceive."
+    );
+    lines.push(
+      '- Surface via internal monologue: include a must-include beat in writerBrief for the protagonist reflecting along these lines.'
+    );
+    lines.push('');
+  }
+
+  if (suggestedSpeech) {
+    lines.push('SPEECH the player wants the protagonist to say:');
+    lines.push(`"${suggestedSpeech}"`);
+    lines.push('');
+    lines.push('Incorporate this speech into your plan:');
+    lines.push('- Shape the sceneIntent so the scene creates a natural moment for this speech.');
+    lines.push(
+      '- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent.'
+    );
+    lines.push('- Consider how NPCs and the situation would react to this kind of statement.');
+    lines.push("- Let the speech intent influence at least one choiceIntent's consequences.");
+    lines.push('');
+  }
+
+  return lines.join('\n') + '\n';
 }
 
 export function buildPlannerContinuationContextSection(
@@ -369,6 +414,6 @@ ${threadsSection}
 ${buildProtagonistAffectSection(context.parentProtagonistAffect)}${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
-${buildSuggestedSpeechSection(context.suggestedProtagonistSpeech)}PLAYER'S CHOICE:
+${buildProtagonistGuidanceSection(context.protagonistGuidance)}PLAYER'S CHOICE:
 ${context.selectedChoice}`;
 }

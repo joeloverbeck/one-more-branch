@@ -49,7 +49,7 @@ describe('rebuildChoicesSection', () => {
     loadAppAndInit();
 
     // Verify initial custom choice containers exist
-    expect(document.querySelector('.suggested-protagonist-speech-container')).not.toBeNull();
+    expect(document.querySelector('.protagonist-guidance')).not.toBeNull();
     expect(document.querySelector('.custom-choice-container')).not.toBeNull();
     expect(document.querySelector('.custom-choice-enums')).not.toBeNull();
 
@@ -65,7 +65,7 @@ describe('rebuildChoicesSection', () => {
     await jest.runAllTimersAsync();
 
     // After rebuild, should have exactly one of each custom container
-    expect(document.querySelectorAll('.suggested-protagonist-speech-container').length).toBe(1);
+    expect(document.querySelectorAll('.protagonist-guidance').length).toBe(1);
     expect(document.querySelectorAll('.custom-choice-container').length).toBe(1);
     expect(document.querySelectorAll('.custom-choice-enums').length).toBe(1);
   });
@@ -100,14 +100,16 @@ describe('rebuildChoicesSection', () => {
     expect(updatedButtons[2].querySelector('.choice-text')?.textContent).toBe('Replaced C');
   });
 
-  it('preserves suggested speech value on custom choice rebuild', async () => {
+  it('preserves protagonist guidance values on custom choice rebuild', async () => {
     document.body.innerHTML = buildPlayPageHtml();
     loadAppAndInit();
 
     // Type something in the suggested speech input
-    const speechInput = document.querySelector(
-      '.suggested-protagonist-speech-input'
-    ) as HTMLInputElement;
+    const speechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
+    const emotionsInput = document.querySelector('#guidance-emotions') as HTMLTextAreaElement;
+    const thoughtsInput = document.querySelector('#guidance-thoughts') as HTMLTextAreaElement;
+    emotionsInput.value = 'Afraid';
+    thoughtsInput.value = 'This might be a trap.';
     speechInput.value = 'I shall speak!';
 
     mockCustomChoiceSuccess([
@@ -119,11 +121,13 @@ describe('rebuildChoicesSection', () => {
     (document.querySelector('.custom-choice-btn') as HTMLButtonElement).click();
     await jest.runAllTimersAsync();
 
-    // The suggested speech input should preserve the value
-    const newSpeechInput = document.querySelector(
-      '.suggested-protagonist-speech-input'
-    ) as HTMLInputElement;
+    // The guidance fields should preserve values
+    const newSpeechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
+    const newEmotionsInput = document.querySelector('#guidance-emotions') as HTMLTextAreaElement;
+    const newThoughtsInput = document.querySelector('#guidance-thoughts') as HTMLTextAreaElement;
     expect(newSpeechInput.value).toBe('I shall speak!');
+    expect(newEmotionsInput.value).toBe('Afraid');
+    expect(newThoughtsInput.value).toBe('This might be a trap.');
   });
 
   it('binds custom choice events after rebuild', async () => {

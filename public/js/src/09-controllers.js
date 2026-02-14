@@ -59,13 +59,16 @@
       });
     }
 
-    function getSuggestedProtagonistSpeechInputValue() {
-      const suggestedSpeechInput = choicesSection.querySelector('.suggested-protagonist-speech-input');
-      if (!(suggestedSpeechInput instanceof HTMLInputElement)) {
-        return '';
-      }
+    function getProtagonistGuidanceValues() {
+      const emotionsEl = choicesSection.querySelector('#guidance-emotions');
+      const thoughtsEl = choicesSection.querySelector('#guidance-thoughts');
+      const speechEl = choicesSection.querySelector('#guidance-speech');
 
-      return suggestedSpeechInput.value;
+      return {
+        emotions: emotionsEl instanceof HTMLTextAreaElement ? emotionsEl.value : '',
+        thoughts: thoughtsEl instanceof HTMLTextAreaElement ? thoughtsEl.value : '',
+        speech: speechEl instanceof HTMLTextAreaElement ? speechEl.value : '',
+      };
     }
 
     function setChoicesDisabled(disabled) {
@@ -106,7 +109,13 @@
           });
         })
         .then(function(data) {
-          rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue(), choices, choicesSection, bindCustomChoiceEvents);
+          rebuildChoicesSection(
+            data.choices,
+            getProtagonistGuidanceValues(),
+            choices,
+            choicesSection,
+            bindCustomChoiceEvents
+          );
         })
         .catch(function(error) {
           showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);
@@ -164,9 +173,19 @@
           choiceIndex,
           progressId: createProgressId(),
         };
-        const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();
-        if (suggestedProtagonistSpeech.length > 0) {
-          body.suggestedProtagonistSpeech = suggestedProtagonistSpeech;
+        const guidanceValues = getProtagonistGuidanceValues();
+        const protagonistGuidance = {};
+        if (guidanceValues.emotions.trim().length > 0) {
+          protagonistGuidance.suggestedEmotions = guidanceValues.emotions.trim();
+        }
+        if (guidanceValues.thoughts.trim().length > 0) {
+          protagonistGuidance.suggestedThoughts = guidanceValues.thoughts.trim();
+        }
+        if (guidanceValues.speech.trim().length > 0) {
+          protagonistGuidance.suggestedSpeech = guidanceValues.speech.trim();
+        }
+        if (Object.keys(protagonistGuidance).length > 0) {
+          body.protagonistGuidance = protagonistGuidance;
         }
         if (apiKey) {
           body.apiKey = apiKey;
@@ -252,10 +271,16 @@
             </div>
           `;
         } else {
-          const suggestedSpeechValue = data.wasGenerated === true
-            ? ''
-            : getSuggestedProtagonistSpeechInputValue();
-          rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);
+          const guidanceForRebuild = data.wasGenerated === true
+            ? { emotions: '', thoughts: '', speech: '' }
+            : getProtagonistGuidanceValues();
+          rebuildChoicesSection(
+            data.page.choices,
+            guidanceForRebuild,
+            choices,
+            choicesSection,
+            bindCustomChoiceEvents
+          );
         }
 
         var storyHeader = document.getElementById('story-header');

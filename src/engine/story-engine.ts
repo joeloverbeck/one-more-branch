@@ -73,7 +73,7 @@ export class StoryEngine {
       options.choiceIndex,
       options.apiKey,
       options.onGenerationStage,
-      options.suggestedProtagonistSpeech
+      options.protagonistGuidance
     );
 
     return { page, wasGenerated, deviationInfo };

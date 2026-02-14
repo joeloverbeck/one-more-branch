@@ -126,6 +126,8 @@ export {
   formatProtagonistAffect,
 } from './protagonist-affect';
 
+export { ProtagonistGuidance, isProtagonistGuidanceEmpty } from './protagonist-guidance';
+
 export {
   Page,
   CreatePageData,

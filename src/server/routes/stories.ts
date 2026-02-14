@@ -6,18 +6,9 @@ import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
 import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
-import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
+import { formatLLMError, parseProgressId, wrapAsyncRoute } from '../utils/index.js';
 
 export const storyRoutes = Router();
-
-function parseProgressId(input: unknown): string | undefined {
-  if (typeof input !== 'string') {
-    return undefined;
-  }
-
-  const trimmed = input.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
 
 storyRoutes.get('/new', (_req: Request, res: Response) => {
   res.render('pages/new-story', {

@@ -1,6 +1,6 @@
 # Protagonist Guidance Block
 
-**Status**: ACTIVE
+**Status**: COMPLETED
 **Priority**: Enhancement
 **Scope**: UI + pipeline threading + planner prompt
 
@@ -779,3 +779,20 @@ Manual verification:
 - No database/storage migration needed -- protagonist guidance is transient (not persisted in page JSON).
 - The old `buildSuggestedSpeechSection()` function is fully replaced (not deprecated) since it is a private function in the prompt builder.
 - The `MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH` constant is replaced by `MAX_GUIDANCE_FIELD_LENGTH` with the same value (500).
+
+## Outcome
+
+- **Completion date**: 2026-02-14
+- **What was actually changed**:
+  - Introduced `ProtagonistGuidance` domain model and helper.
+  - Replaced the single speech input with a three-field collapsible guidance block in both server-rendered and client-rebuilt UI.
+  - Threaded `protagonistGuidance` (emotions/thoughts/speech) through route, engine, continuation context, and planner prompt.
+  - Added shared request normalization utilities for route parsing and guidance normalization.
+  - Updated and expanded unit/integration/client/server tests; regenerated `public/js/app.js`.
+- **Deviations from original plan**:
+  - Removed backward compatibility/alias handling for legacy `suggestedProtagonistSpeech` to keep a single clean contract.
+  - Centralized parsing/normalization in `src/server/utils/request-normalizers.ts` for cleaner, extensible route architecture.
+- **Verification results**:
+  - `npm run typecheck` passed.
+  - `npm run lint` passed.
+  - `npm test` passed.

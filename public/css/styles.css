@@ -1019,31 +1019,69 @@ main {
   opacity: 0.75;
 }
 
-/* Suggested protagonist speech (ghost input) */
-.suggested-protagonist-speech-container {
+/* Protagonist guidance block */
+.protagonist-guidance {
   margin-top: 0.75rem;
 }
 
-.suggested-protagonist-speech-input {
+.protagonist-guidance__summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 0.4rem 0;
+  user-select: none;
+  transition: color var(--transition);
+}
+
+.protagonist-guidance__summary:hover {
+  color: var(--color-text);
+}
+
+.protagonist-guidance[open] .protagonist-guidance__summary {
+  margin-bottom: 0.5rem;
+}
+
+.protagonist-guidance__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.protagonist-guidance__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.protagonist-guidance__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.protagonist-guidance__textarea {
   width: 100%;
   color: var(--color-text-muted);
   background: rgba(14, 24, 49, 0.25);
   border: 1px solid rgba(39, 64, 111, 0.3);
   border-radius: var(--radius);
-  padding: 0.65rem 0.95rem;
+  padding: 0.5rem 0.75rem;
   font: inherit;
   font-size: 0.85rem;
   font-style: italic;
+  resize: vertical;
   transition: border-color var(--transition), box-shadow var(--transition), color var(--transition);
 }
 
-.suggested-protagonist-speech-input::placeholder {
+.protagonist-guidance__textarea::placeholder {
   color: var(--color-text-muted);
   opacity: 0.5;
   font-style: italic;
 }
 
-.suggested-protagonist-speech-input:focus {
+.protagonist-guidance__textarea:focus {
   outline: 2px solid transparent;
   color: var(--color-text);
   border-color: rgba(83, 52, 131, 0.5);

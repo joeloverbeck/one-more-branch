@@ -1,4 +1,5 @@
 import { Npc, Page, PageId, Story, StoryId } from '../models';
+import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 
 export const GENERATION_STAGES = [
   'PLANNING_PAGE',
@@ -67,7 +68,7 @@ export interface MakeChoiceOptions {
   readonly pageId: PageId;
   readonly choiceIndex: number;
   readonly apiKey?: string;
-  readonly suggestedProtagonistSpeech?: string;
+  readonly protagonistGuidance?: ProtagonistGuidance;
   readonly onGenerationStage?: GenerationStageCallback;
 }
 

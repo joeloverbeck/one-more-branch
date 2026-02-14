@@ -15,6 +15,7 @@ import {
 } from '../models';
 import { createInitialStructureState } from '../models/story-arc';
 import type { NpcAgenda } from '../models/state/npc-agenda';
+import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import { storage } from '../persistence';
 import { collectAncestorContext } from './ancestor-collector';
 import { updateStoryWithAllCanon } from './canon-manager';
@@ -51,7 +52,7 @@ function createGenerationRequestId(): string {
 export interface GeneratePageContinuationParams {
   readonly parentPage: Page;
   readonly choiceIndex: number;
-  readonly suggestedProtagonistSpeech?: string;
+  readonly protagonistGuidance?: ProtagonistGuidance;
 }
 
 export async function generatePage(
@@ -146,7 +147,7 @@ export async function generatePage(
           parentState!,
           ancestorContext!,
           currentStructureVersion,
-          continuationParams!.suggestedProtagonistSpeech
+          continuationParams!.protagonistGuidance
         );
         const removableIds = buildRemovableIds(parentState!);
         return createWriterWithLorekeeper({
@@ -187,7 +188,7 @@ export async function generatePage(
           parentState!,
           ancestorContext!,
           currentStructureVersion,
-          continuationParams!.suggestedProtagonistSpeech
+          continuationParams!.protagonistGuidance
         );
         return (failureReasons?: readonly ReconciliationFailureReason[]): PagePlanContext => ({
           ...continuationContext,
@@ -397,8 +398,7 @@ export async function generateNextPage(
   parentPage: Page,
   choiceIndex: number,
   apiKey: string,
-  onGenerationStage?: GenerationStageCallback,
-  suggestedProtagonistSpeech?: string
+  onGenerationStage?: GenerationStageCallback
 ): Promise<{
   page: Page;
   updatedStory: Story;
@@ -416,7 +416,6 @@ export async function generateNextPage(
   return generatePage('continuation', story, apiKey, {
     parentPage,
     choiceIndex,
-    suggestedProtagonistSpeech,
   }, onGenerationStage);
 }
 
@@ -426,7 +425,7 @@ export async function getOrGeneratePage(
   choiceIndex: number,
   apiKey?: string,
   onGenerationStage?: GenerationStageCallback,
-  suggestedProtagonistSpeech?: string
+  protagonistGuidance?: ProtagonistGuidance
 ): Promise<{
   page: Page;
   story: Story;
@@ -462,7 +461,7 @@ export async function getOrGeneratePage(
     'continuation',
     story,
     apiKey,
-    { parentPage, choiceIndex, suggestedProtagonistSpeech },
+    { parentPage, choiceIndex, protagonistGuidance },
     onGenerationStage
   );
 

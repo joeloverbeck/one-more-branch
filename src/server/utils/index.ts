@@ -1,5 +1,12 @@
 export { wrapAsyncRoute } from './async-route.js';
 export { formatLLMError } from './llm-error-formatter.js';
+export {
+  MAX_CUSTOM_CHOICE_TEXT_LENGTH,
+  MAX_GUIDANCE_FIELD_LENGTH,
+  parseCustomChoiceText,
+  parseProgressId,
+  normalizeProtagonistGuidance,
+} from './request-normalizers.js';
 export { extractNpcBriefings, extractProtagonistBriefing, groupWorldFacts } from './briefing-helpers.js';
 export {
   getActDisplayInfo,

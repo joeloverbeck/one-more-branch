@@ -54,22 +54,56 @@
     }).join('');
   }
 
-  function renderCustomChoiceInput(suggestedSpeechValue) {
-    const safeSuggestedSpeechValue = typeof suggestedSpeechValue === 'string'
-      ? suggestedSpeechValue
+  function renderProtagonistGuidanceAndCustomChoice(guidanceValues) {
+    const safeEmotions = typeof guidanceValues.emotions === 'string'
+      ? guidanceValues.emotions
+      : '';
+    const safeThoughts = typeof guidanceValues.thoughts === 'string'
+      ? guidanceValues.thoughts
+      : '';
+    const safeSpeech = typeof guidanceValues.speech === 'string'
+      ? guidanceValues.speech
       : '';
 
     return `
-        <div class="suggested-protagonist-speech-container">
-          <input
-            type="text"
-            id="suggested-protagonist-speech-input"
-            class="suggested-protagonist-speech-input"
-            placeholder="Suggest something your protagonist might say..."
-            maxlength="500"
-            value="${escapeHtml(safeSuggestedSpeechValue)}"
-          />
-        </div>
+        <details class="protagonist-guidance">
+          <summary class="protagonist-guidance__summary">Guide Your Protagonist</summary>
+          <div class="protagonist-guidance__fields">
+            <div class="protagonist-guidance__field">
+              <label class="protagonist-guidance__label" for="guidance-emotions">Emotions</label>
+              <textarea
+                id="guidance-emotions"
+                class="protagonist-guidance__textarea"
+                name="suggestedEmotions"
+                placeholder="e.g. Furious but hiding it behind a thin smile..."
+                maxlength="500"
+                rows="2"
+              >${escapeHtml(safeEmotions)}</textarea>
+            </div>
+            <div class="protagonist-guidance__field">
+              <label class="protagonist-guidance__label" for="guidance-thoughts">Thoughts</label>
+              <textarea
+                id="guidance-thoughts"
+                class="protagonist-guidance__textarea"
+                name="suggestedThoughts"
+                placeholder="e.g. Wondering if the stranger recognized them..."
+                maxlength="500"
+                rows="2"
+              >${escapeHtml(safeThoughts)}</textarea>
+            </div>
+            <div class="protagonist-guidance__field">
+              <label class="protagonist-guidance__label" for="guidance-speech">Speech</label>
+              <textarea
+                id="guidance-speech"
+                class="protagonist-guidance__textarea"
+                name="suggestedSpeech"
+                placeholder="e.g. 'Wake up, Alicia! We don't have much time.'"
+                maxlength="500"
+                rows="2"
+              >${escapeHtml(safeSpeech)}</textarea>
+            </div>
+          </div>
+        </details>
         <div class="custom-choice-container">
           <input type="text" class="custom-choice-input"
                  placeholder="Introduce your own custom choice..."
@@ -88,11 +122,11 @@
       `;
   }
 
-  function rebuildChoicesSection(choiceList, suggestedSpeechValue, choicesEl, choicesSectionEl, bindFn) {
+  function rebuildChoicesSection(choiceList, guidanceValues, choicesEl, choicesSectionEl, bindFn) {
     choicesEl.innerHTML = renderChoiceButtons(choiceList);
-    const existingSuggestedSpeech = choicesSectionEl.querySelector('.suggested-protagonist-speech-container');
-    if (existingSuggestedSpeech) {
-      existingSuggestedSpeech.remove();
+    const existingGuidance = choicesSectionEl.querySelector('.protagonist-guidance');
+    if (existingGuidance) {
+      existingGuidance.remove();
     }
     const existingCustom = choicesSectionEl.querySelector('.custom-choice-container');
     if (existingCustom) {
@@ -102,7 +136,6 @@
     if (existingEnums) {
       existingEnums.remove();
     }
-    choicesEl.insertAdjacentHTML('afterend', renderCustomChoiceInput(suggestedSpeechValue));
+    choicesEl.insertAdjacentHTML('afterend', renderProtagonistGuidanceAndCustomChoice(guidanceValues));
     bindFn();
   }
-

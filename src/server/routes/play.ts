@@ -16,6 +16,9 @@ import {
 import { addChoice } from '../../persistence/index.js';
 import { generationProgressService } from '../services/index.js';
 import {
+  parseCustomChoiceText,
+  parseProgressId,
+  normalizeProtagonistGuidance,
   formatLLMError,
   extractNpcBriefings,
   extractProtagonistBriefing,
@@ -33,7 +36,7 @@ type ChoiceBody = {
   choiceIndex?: number;
   apiKey?: string;
   progressId?: unknown;
-  suggestedProtagonistSpeech?: unknown;
+  protagonistGuidance?: unknown;
 };
 
 type CustomChoiceBody = {
@@ -65,25 +68,6 @@ function parseRequestedPageId(pageQuery: unknown): number {
 }
 
 export const playRoutes = Router();
-const MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH = 500;
-
-function parseProgressId(input: unknown): string | undefined {
-  if (typeof input !== 'string') {
-    return undefined;
-  }
-
-  const trimmed = input.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
-
-function normalizeSuggestedProtagonistSpeech(input: unknown): string | undefined {
-  if (typeof input !== 'string') {
-    return undefined;
-  }
-
-  const trimmed = input.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
 
 playRoutes.get(
   '/:storyId/briefing',
@@ -302,12 +286,10 @@ playRoutes.post(
       choiceIndex,
       apiKey,
       progressId: rawProgressId,
-      suggestedProtagonistSpeech: rawSuggestedProtagonistSpeech,
+      protagonistGuidance: rawGuidance,
     } = req.body as ChoiceBody;
     const progressId = parseProgressId(rawProgressId);
-    const suggestedProtagonistSpeech = normalizeSuggestedProtagonistSpeech(
-      rawSuggestedProtagonistSpeech
-    );
+    const protagonistGuidance = normalizeProtagonistGuidance(rawGuidance);
     if (progressId) {
       generationProgressService.start(progressId, 'choice');
     }
@@ -318,22 +300,6 @@ playRoutes.post(
       }
 
       return res.status(400).json({ error: 'Missing pageId or choiceIndex' });
-    }
-
-    if (
-      suggestedProtagonistSpeech !== undefined &&
-      suggestedProtagonistSpeech.length > MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH
-    ) {
-      if (progressId) {
-        generationProgressService.fail(
-          progressId,
-          `suggestedProtagonistSpeech must be ${MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH} characters or fewer`
-        );
-      }
-
-      return res.status(400).json({
-        error: `suggestedProtagonistSpeech must be ${MAX_SUGGESTED_PROTAGONIST_SPEECH_LENGTH} characters or fewer`,
-      });
     }
 
     try {
@@ -355,7 +321,7 @@ playRoutes.post(
               }
             }
           : undefined,
-        ...(suggestedProtagonistSpeech !== undefined ? { suggestedProtagonistSpeech } : {}),
+        ...(protagonistGuidance !== undefined ? { protagonistGuidance } : {}),
       });
 
       // Load story to compute actDisplayInfo for the new page
@@ -489,13 +455,13 @@ playRoutes.post(
       return res.status(400).json({ error: 'Missing pageId or choiceText' });
     }
 
-    const trimmed = choiceText.trim();
-    if (trimmed.length === 0) {
-      return res.status(400).json({ error: 'Choice text cannot be empty' });
+    const choiceTextResult = parseCustomChoiceText(choiceText);
+    if (choiceTextResult.error) {
+      return res.status(400).json({ error: choiceTextResult.error });
     }
-
-    if (trimmed.length > 500) {
-      return res.status(400).json({ error: 'Choice text must be 500 characters or fewer' });
+    const trimmedChoiceText = choiceTextResult.value;
+    if (!trimmedChoiceText) {
+      return res.status(400).json({ error: 'Missing pageId or choiceText' });
     }
 
     // Validate choiceType if provided
@@ -514,7 +480,7 @@ playRoutes.post(
       const updatedPage = await addChoice(
         storyId as StoryId,
         pageId as PageId,
-        trimmed,
+        trimmedChoiceText,
         choiceType,
         primaryDelta
       );

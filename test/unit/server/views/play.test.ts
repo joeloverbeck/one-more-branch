@@ -94,16 +94,17 @@ describe('play page template', () => {
     });
   });
 
-  describe('suggested protagonist speech input', () => {
-    it('renders ghost input with placeholder in the choices section', () => {
+  describe('protagonist guidance block', () => {
+    it('renders collapsible guidance fields in the choices section', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
-      expect(template).toContain('class="suggested-protagonist-speech-container"');
-      expect(template).toContain('id="suggested-protagonist-speech-input"');
-      expect(template).toContain('class="suggested-protagonist-speech-input"');
-      expect(template).toContain('Suggest something your protagonist might say...');
+      expect(template).toContain('class="protagonist-guidance"');
+      expect(template).toContain('class="protagonist-guidance__summary"');
+      expect(template).toContain('id="guidance-emotions"');
+      expect(template).toContain('id="guidance-thoughts"');
+      expect(template).toContain('id="guidance-speech"');
       expect(template).toContain('maxlength="500"');
-      expect(template).not.toContain('suggested-protagonist-speech-label');
+      expect(template).toContain('Guide Your Protagonist');
     });
   });
 });

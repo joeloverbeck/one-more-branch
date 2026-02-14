@@ -1126,9 +1126,7 @@ describe('page-service', () => {
         story,
         parentPage,
         0,
-        'test-key',
-        undefined,
-        'We should cut through the courtyard.'
+        'test-key'
       );
 
       expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
@@ -1136,7 +1134,7 @@ describe('page-service', () => {
           mode: 'continuation',
           selectedChoice: parentPage.choices[0]?.text,
           previousNarrative: parentPage.narrativeText,
-          suggestedProtagonistSpeech: 'We should cut through the courtyard.',
+          protagonistGuidance: undefined,
         }),
         expect.objectContaining({
           apiKey: 'test-key',
@@ -1149,7 +1147,7 @@ describe('page-service', () => {
       );
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          suggestedProtagonistSpeech: 'We should cut through the courtyard.',
+          protagonistGuidance: undefined,
         }),
         expect.objectContaining({
           sceneIntent: pagePlan.sceneIntent,

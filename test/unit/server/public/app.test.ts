@@ -132,24 +132,21 @@ describe('public client script', () => {
     );
   });
 
-  it('handles optional suggested protagonist speech payload and clear/preserve behavior', () => {
+  it('handles optional protagonist guidance payload and clear/preserve behavior', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain('class="suggested-protagonist-speech-input"');
-    expect(script).toContain('function getSuggestedProtagonistSpeechInputValue()');
+    expect(script).toContain('class="protagonist-guidance__textarea"');
+    expect(script).toContain('function getProtagonistGuidanceValues()');
+    expect(script).toContain('const protagonistGuidance = {};');
+    expect(script).toContain('body.protagonistGuidance = protagonistGuidance;');
+    expect(script).toContain('const guidanceForRebuild = data.wasGenerated === true');
+    expect(script).toContain("            ? { emotions: '', thoughts: '', speech: '' }");
+    expect(script).toContain('            : getProtagonistGuidanceValues();');
     expect(script).toContain(
-      'const suggestedProtagonistSpeech = getSuggestedProtagonistSpeechInputValue().trim();'
-    );
-    expect(script).toContain('if (suggestedProtagonistSpeech.length > 0) {');
-    expect(script).toContain('body.suggestedProtagonistSpeech = suggestedProtagonistSpeech;');
-    expect(script).toContain('const suggestedSpeechValue = data.wasGenerated === true');
-    expect(script).toContain("            ? ''");
-    expect(script).toContain('            : getSuggestedProtagonistSpeechInputValue();');
-    expect(script).toContain(
-      'rebuildChoicesSection(data.page.choices, suggestedSpeechValue, choices, choicesSection, bindCustomChoiceEvents);'
+      'rebuildChoicesSection('
     );
     expect(script).toContain(
-      'rebuildChoicesSection(data.choices, getSuggestedProtagonistSpeechInputValue(), choices, choicesSection, bindCustomChoiceEvents);'
+      'getProtagonistGuidanceValues(),'
     );
   });
 });
