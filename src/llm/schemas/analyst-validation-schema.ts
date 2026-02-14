@@ -41,7 +41,7 @@ const UrgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']).catch('MEDIUM');
 
 const SatisfactionLevelSchema = z.enum(['RUSHED', 'ADEQUATE', 'WELL_EARNED']).catch('ADEQUATE');
 
-const NarrativePromiseSchema = z.object({
+const DetectedPromiseSchema = z.object({
   description: z.string().default(''),
   promiseType: PromiseTypeSchema,
   suggestedUrgency: UrgencySchema,
@@ -82,7 +82,7 @@ export const AnalystResultSchema = z.object({
   completionGateFailureReason: z.string().catch('').default(''),
   toneAdherent: z.boolean().catch(true).default(true),
   toneDriftDescription: z.string().catch('').default(''),
-  promisesDetected: z.array(NarrativePromiseSchema).catch([]).default([]),
+  promisesDetected: z.array(DetectedPromiseSchema).catch([]).default([]),
   promisesResolved: z.array(z.string()).catch([]).default([]),
   promisePayoffAssessments: z.array(PromisePayoffAssessmentSchema).catch([]).default([]),
   threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),

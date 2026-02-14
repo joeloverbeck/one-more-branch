@@ -1,6 +1,6 @@
 # STANARPROPLA-04: Update analyst JSON Schema and Zod validation for tracked promises
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Depends on**: STANARPROPLA-03
 **Blocks**: STANARPROPLA-05
 
@@ -45,3 +45,15 @@ Update the analyst's LLM structured output schema (JSON Schema) and Zod validati
 - `promisesResolved` is a simple string array (the LLM outputs `pr-N` IDs)
 - All other analyst schema properties (beat conclusion, deviation, pacing, momentum, tone, thread payoff assessments) are unchanged
 - Zod schemas use existing pattern: `z.enum([...]).catch('DEFAULT')` for enum fields, `z.string().default('')` for strings, `z.array(...).catch([]).default([])` for arrays
+
+## Outcome
+
+- Completion date: 2026-02-14
+- What was changed:
+  - Added missing `SETUP_PAYOFF` value to `promisesDetected.items.properties.promiseType.enum` in `src/llm/schemas/analyst-schema.ts`.
+  - Renamed `NarrativePromiseSchema` to `DetectedPromiseSchema` and kept `promisesDetected` validation wired to that schema in `src/llm/schemas/analyst-validation-schema.ts`.
+- Deviations from original plan:
+  - Most STANARPROPLA-04 scope had already been implemented; only the JSON Schema enum mismatch and schema naming consistency were completed here.
+- Verification results:
+  - `npm run typecheck` passed.
+  - `npm run test:unit -- test/unit/llm/schemas/analyst-response-transformer-promises.test.ts` passed.

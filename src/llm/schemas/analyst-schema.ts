@@ -116,7 +116,13 @@ export const ANALYST_SCHEMA: JsonSchema = {
               },
               promiseType: {
                 type: 'string',
-                enum: ['CHEKHOV_GUN', 'FORESHADOWING', 'DRAMATIC_IRONY', 'UNRESOLVED_EMOTION'],
+                enum: [
+                  'CHEKHOV_GUN',
+                  'FORESHADOWING',
+                  'DRAMATIC_IRONY',
+                  'UNRESOLVED_EMOTION',
+                  'SETUP_PAYOFF',
+                ],
                 description: 'The type of narrative promise.',
               },
               suggestedUrgency: {
