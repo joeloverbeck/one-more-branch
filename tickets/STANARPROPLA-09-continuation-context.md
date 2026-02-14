@@ -13,7 +13,7 @@ Replace the promise-related fields on `ContinuationContext` (`inheritedNarrative
 - **Modify**: `src/llm/context-types.ts`
   - Add import: `TrackedPromise` from `'../models/state/keyed-entry'` (or `'../models/state/index.js'`)
   - Remove `inheritedNarrativePromises` and `parentAnalystNarrativePromises` fields from `ContinuationContext`
-  - Add `accumulatedPromises?: readonly TrackedPromise[]` to `ContinuationContext`
+  - Add `accumulatedPromises: readonly TrackedPromise[]` to `ContinuationContext`
   - Keep `parentThreadPayoffAssessments` (it's for thread payoffs, not promise payoffs)
 
 - **Modify**: `src/engine/continuation-context-builder.ts`
@@ -36,7 +36,7 @@ Replace the promise-related fields on `ContinuationContext` (`inheritedNarrative
 
 ### Invariants that must remain true
 
-- `ContinuationContext.accumulatedPromises` is optional (`?:`) to maintain compatibility with existing call sites that may not set it
+- `ContinuationContext.accumulatedPromises` is required (not optional); all call sites must be updated in the same pass
 - `parentThreadPayoffAssessments` field is unchanged (it's about thread resolution quality, not promise resolution)
 - All other `ContinuationContext` fields are unchanged (parentPage metadata, active state, structure, threads, inventory, health, character state, NPC agendas, etc.)
 - The builder reads `accumulatedPromises` from `parentPage.accumulatedPromises` (the page's accumulated tracked promises)

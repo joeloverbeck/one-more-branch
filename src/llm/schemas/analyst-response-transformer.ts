@@ -1,5 +1,5 @@
-import type { NarrativePromise, ThreadPayoffAssessment } from '../../models/state/index.js';
-import type { AnalystResult } from '../analyst-types.js';
+import type { ThreadPayoffAssessment } from '../../models/state/index.js';
+import type { AnalystResult, DetectedPromise } from '../analyst-types.js';
 import { AnalystResultSchema } from './analyst-validation-schema.js';
 
 const BEAT_ID_PATTERN = /^\d+\.\d+$/;
@@ -15,14 +15,14 @@ function normalizeAnchors(value: readonly string[]): string[] {
 
 function normalizeNarrativePromises(
   value: readonly { description: string; promiseType: string; suggestedUrgency: string }[]
-): NarrativePromise[] {
+): DetectedPromise[] {
   return value
     .filter((p) => p.description.trim().length > 0)
     .slice(0, MAX_NARRATIVE_PROMISES)
     .map((p) => ({
       description: p.description.trim(),
-      promiseType: p.promiseType as NarrativePromise['promiseType'],
-      suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],
+      promiseType: p.promiseType as DetectedPromise['promiseType'],
+      suggestedUrgency: p.suggestedUrgency as DetectedPromise['suggestedUrgency'],
     }));
 }
 

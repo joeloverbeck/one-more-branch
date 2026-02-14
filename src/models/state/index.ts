@@ -54,11 +54,17 @@ export {
 } from './keyed-entry.js';
 
 // Narrative promise types
-export type {
+export {
   PromiseType,
-  NarrativePromise,
+  PROMISE_TYPE_VALUES,
+  isPromiseType,
+} from './keyed-entry.js';
+
+export type {
+  TrackedPromise,
   SatisfactionLevel,
   ThreadPayoffAssessment,
+  PromisePayoffAssessment,
 } from './keyed-entry.js';
 
 // Active state

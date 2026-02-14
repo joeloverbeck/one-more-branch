@@ -1,7 +1,8 @@
 import type {
   ActiveState,
-  NarrativePromise,
+  PromiseType,
   ThreadPayoffAssessment,
+  Urgency,
 } from '../models/state/index.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 
@@ -24,6 +25,12 @@ export type StructuralPositionSignal =
   | 'CLEARLY_IN_NEXT_BEAT';
 export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
 
+export interface DetectedPromise {
+  readonly description: string;
+  readonly promiseType: PromiseType;
+  readonly suggestedUrgency: Urgency;
+}
+
 export interface AnalystResult {
   beatConcluded: boolean;
   beatResolution: string;
@@ -45,7 +52,7 @@ export interface AnalystResult {
   completionGateFailureReason: string;
   toneAdherent: boolean;
   toneDriftDescription: string;
-  narrativePromises: NarrativePromise[];
+  narrativePromises: DetectedPromise[];
   threadPayoffAssessments: ThreadPayoffAssessment[];
   rawResponse: string;
 }

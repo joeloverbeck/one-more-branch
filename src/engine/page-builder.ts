@@ -15,9 +15,9 @@ import {
   StructureVersionId,
   ThreadEntry,
 } from '../models';
-import type { NarrativePromise } from '../models/state/keyed-entry';
+import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
-import type { AnalystResult } from '../llm/analyst-types';
+import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PageWriterResult } from '../llm/writer-types';
 import type { StateReconciliationResult } from './state-reconciler-types';
@@ -62,8 +62,8 @@ export interface PageBuildContext {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
-  readonly parentInheritedNarrativePromises: readonly NarrativePromise[];
-  readonly parentAnalystNarrativePromises: readonly NarrativePromise[];
+  readonly parentInheritedNarrativePromises: readonly TrackedPromise[];
+  readonly parentAnalystNarrativePromises: readonly DetectedPromise[];
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -93,8 +93,8 @@ export interface ContinuationPageBuildContext {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
-  readonly parentInheritedNarrativePromises: readonly NarrativePromise[];
-  readonly parentAnalystNarrativePromises: readonly NarrativePromise[];
+  readonly parentInheritedNarrativePromises: readonly TrackedPromise[];
+  readonly parentAnalystNarrativePromises: readonly DetectedPromise[];
   readonly parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -150,12 +150,34 @@ export function computeContinuationThreadAges(
  * respecting the cap and age-out limits.
  */
 export function computeInheritedNarrativePromises(
-  parentInherited: readonly NarrativePromise[],
-  parentAnalystDetected: readonly NarrativePromise[],
+  parentInherited: readonly TrackedPromise[],
+  parentAnalystDetected: readonly DetectedPromise[],
   threadsAddedTexts: readonly string[]
-): readonly NarrativePromise[] {
+): readonly TrackedPromise[] {
+  const nextPromiseStartId =
+    parentInherited.reduce((max, promise) => {
+      if (!promise.id.startsWith('pr-')) {
+        return max;
+      }
+      const parsed = Number.parseInt(promise.id.slice(3), 10);
+      return Number.isNaN(parsed) ? max : Math.max(max, parsed);
+    }, 0) + 1;
+
+  const agedInherited = parentInherited.map((promise) => ({
+    ...promise,
+    age: promise.age + 1,
+  }));
+
+  const mappedDetected = parentAnalystDetected.map((promise, index) => ({
+    id: `pr-${nextPromiseStartId + index}`,
+    description: promise.description,
+    promiseType: promise.promiseType,
+    suggestedUrgency: promise.suggestedUrgency,
+    age: 0,
+  }));
+
   // Combine parent's inherited + parent's analyst-detected
-  const combined = [...parentInherited, ...parentAnalystDetected];
+  const combined = [...agedInherited, ...mappedDetected];
 
   // Simple heuristic to detect if a promise "became" a thread:
   // if any newly added thread text contains substantial overlap with a promise description

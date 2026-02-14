@@ -28,7 +28,7 @@ Update page serialization types and functions to handle `accumulatedPromises: Tr
 - Do NOT modify `page-builder.ts` (STANARPROPLA-07)
 - Do NOT modify `page-service.ts` (STANARPROPLA-11)
 - Do NOT modify converter files in `src/persistence/converters/`
-- Do NOT modify any test files
+- Do NOT modify any test files except strict fallout updates required to keep test suites passing after canonical field cutover
 - Do NOT add backward compatibility for old `inheritedNarrativePromises` serialization format
 
 ## Acceptance criteria
@@ -40,7 +40,7 @@ Update page serialization types and functions to handle `accumulatedPromises: Tr
 ### Invariants that must remain true
 
 - `TrackedPromiseFileData` serializes all 5 fields: `id`, `description`, `promiseType`, `suggestedUrgency`, `age`
-- Deserialization of `accumulatedPromises` defaults to `[]` when field is missing/undefined (backward compat for old page files that lack this field, though they won't load correctly otherwise)
+- `accumulatedPromises` is required in the canonical page file shape; do not add fallback logic for missing legacy fields
 - Deserialization of `promisesDetected`, `promisesResolved`, `promisePayoffAssessments` on `AnalystResultFileData` all default to `[]` when missing
 - All other serialization (choices, state changes, inventory, health, character state, structure state, protagonist affect, NPC agendas, thread ages, resolved thread meta) is unchanged
 - `parsePageIdFromFileName()` is unchanged

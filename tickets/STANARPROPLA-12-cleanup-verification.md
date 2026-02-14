@@ -10,7 +10,8 @@ Search the entire codebase for remaining references to the old promise system (`
 
 ## File list
 
-- **Modify**: `src/models/state/keyed-entry.ts` - Remove old `NarrativePromise` interface and old `PromiseType` string union (if still present after STANARPROPLA-01 left them for backward compat)
+- **Modify**: `src/models/state/keyed-entry.ts` - Verify old `NarrativePromise` interface and old `PromiseType` string union remain removed
+  - Note: this should already be complete from STANARPROPLA-01; verify and do not reintroduce aliases.
 - **Modify**: `src/models/state/index.ts` - Remove old `NarrativePromise` export
 - **Modify**: Any remaining `src/**/*.ts` files found by grep
 - **Modify**: All `test/**/*.ts` files with outdated mocks:
@@ -22,7 +23,7 @@ Search the entire codebase for remaining references to the old promise system (`
 ## Out of scope
 
 - Do NOT modify the design doc (`docs/plans/2026-02-14-stateful-narrative-promises-design.md`)
-- Do NOT modify the implementation plan (`docs/plans/2026-02-14-stateful-narrative-promises-plan.md`)
+- Do NOT modify the implementation plan (`docs/plans/2026-02-14-stateful-narrative-promises-plan.md`) except to keep it aligned with the no-backward-compatibility architecture decision
 - Do NOT add new features or change behavior - this ticket is purely cleanup
 - Do NOT modify any prompt text or schema logic
 

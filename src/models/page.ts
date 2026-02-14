@@ -7,7 +7,7 @@ import {
 } from './protagonist-affect';
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
-import type { NarrativePromise } from './state/keyed-entry';
+import type { TrackedPromise } from './state/keyed-entry';
 import type { AnalystResult } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import {
@@ -54,7 +54,7 @@ export interface Page {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly threadAges: Readonly<Record<string, number>>;
-  readonly inheritedNarrativePromises: readonly NarrativePromise[];
+  readonly inheritedNarrativePromises: readonly TrackedPromise[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
   readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
@@ -85,7 +85,7 @@ export interface CreatePageData {
   storyBible?: StoryBible | null;
   analystResult?: AnalystResult | null;
   threadAges?: Readonly<Record<string, number>>;
-  inheritedNarrativePromises?: readonly NarrativePromise[];
+  inheritedNarrativePromises?: readonly TrackedPromise[];
   resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
   npcAgendaUpdates?: readonly NpcAgenda[];
   parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;

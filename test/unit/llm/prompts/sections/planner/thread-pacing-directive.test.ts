@@ -3,12 +3,13 @@ import {
   buildNarrativePromisesSection,
   buildPayoffFeedbackSection,
 } from '../../../../../../src/llm/prompts/sections/planner/thread-pacing-directive';
-import { ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
+import { PromiseType, ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
 import type {
   ThreadEntry,
-  NarrativePromise,
+  TrackedPromise,
   ThreadPayoffAssessment,
 } from '../../../../../../src/models/state/keyed-entry';
+import type { DetectedPromise } from '../../../../../../src/llm/analyst-types';
 
 function makeThread(id: string, type: ThreadType, urgency: Urgency, text: string): ThreadEntry {
   return { id, text, threadType: type, urgency };
@@ -64,10 +65,21 @@ describe('buildThreadAgingSection', () => {
 });
 
 describe('buildNarrativePromisesSection', () => {
-  const makePromise = (
+  const makeTrackedPromise = (
     desc: string,
-    type: NarrativePromise['promiseType'] = 'FORESHADOWING'
-  ): NarrativePromise => ({
+    type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING
+  ): TrackedPromise => ({
+    id: 'pr-1',
+    age: 2,
+    description: desc,
+    promiseType: type,
+    suggestedUrgency: Urgency.MEDIUM,
+  });
+
+  const makeDetectedPromise = (
+    desc: string,
+    type: DetectedPromise['promiseType'] = PromiseType.FORESHADOWING
+  ): DetectedPromise => ({
     description: desc,
     promiseType: type,
     suggestedUrgency: Urgency.MEDIUM,
@@ -78,8 +90,8 @@ describe('buildNarrativePromisesSection', () => {
   });
 
   it('includes inherited and analyst-detected promises', () => {
-    const inherited = [makePromise('Old foreshadowing')];
-    const detected = [makePromise('New chekhov gun', 'CHEKHOV_GUN')];
+    const inherited = [makeTrackedPromise('Old foreshadowing')];
+    const detected = [makeDetectedPromise('New chekhov gun', PromiseType.CHEKHOV_GUN)];
     const result = buildNarrativePromisesSection(inherited, detected);
     expect(result).toContain('NARRATIVE PROMISES');
     expect(result).toContain('Old foreshadowing');

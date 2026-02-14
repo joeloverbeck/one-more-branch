@@ -2,8 +2,9 @@ import {
   computeContinuationThreadAges,
   computeInheritedNarrativePromises,
 } from '../../../src/engine/page-builder';
-import { Urgency } from '../../../src/models/state/keyed-entry';
-import type { NarrativePromise } from '../../../src/models/state/keyed-entry';
+import { PromiseType, Urgency } from '../../../src/models/state/keyed-entry';
+import type { TrackedPromise } from '../../../src/models/state/keyed-entry';
+import type { DetectedPromise } from '../../../src/llm/analyst-types';
 
 describe('computeContinuationThreadAges', () => {
   it('increments inherited thread ages by 1', () => {
@@ -62,27 +63,45 @@ describe('computeContinuationThreadAges', () => {
 });
 
 describe('computeInheritedNarrativePromises', () => {
-  const makePromise = (
+  const makeInheritedPromise = (
+    id: string,
     desc: string,
-    type: NarrativePromise['promiseType'] = 'FORESHADOWING'
-  ): NarrativePromise => ({
+    age: number,
+    type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING
+  ): TrackedPromise => ({
+    id,
+    age,
+    description: desc,
+    promiseType: type,
+    suggestedUrgency: Urgency.MEDIUM,
+  });
+
+  const makeDetectedPromise = (
+    desc: string,
+    type: DetectedPromise['promiseType'] = PromiseType.FORESHADOWING
+  ): DetectedPromise => ({
     description: desc,
     promiseType: type,
     suggestedUrgency: Urgency.MEDIUM,
   });
 
   it('combines parent inherited and analyst-detected promises', () => {
-    const inherited = [makePromise('Old promise')];
-    const detected = [makePromise('New foreshadowing')];
+    const inherited = [makeInheritedPromise('pr-1', 'Old promise', 2)];
+    const detected = [makeDetectedPromise('New foreshadowing')];
     const result = computeInheritedNarrativePromises(inherited, detected, []);
     expect(result).toHaveLength(2);
     expect(result[0]!.description).toBe('Old promise');
+    expect(result[0]!.age).toBe(3);
     expect(result[1]!.description).toBe('New foreshadowing');
+    expect(result[1]!.id).toBe('pr-2');
+    expect(result[1]!.age).toBe(0);
   });
 
   it('caps at MAX_INHERITED_PROMISES (5)', () => {
-    const inherited = Array.from({ length: 4 }, (_, i) => makePromise(`Inherited ${i}`));
-    const detected = Array.from({ length: 3 }, (_, i) => makePromise(`Detected ${i}`));
+    const inherited = Array.from({ length: 4 }, (_, i) =>
+      makeInheritedPromise(`pr-${i + 1}`, `Inherited ${i}`, i)
+    );
+    const detected = Array.from({ length: 3 }, (_, i) => makeDetectedPromise(`Detected ${i}`));
     const result = computeInheritedNarrativePromises(inherited, detected, []);
     expect(result).toHaveLength(5);
     // Should keep the latest 5 (drops oldest from beginning)
@@ -91,12 +110,13 @@ describe('computeInheritedNarrativePromises', () => {
 
   it('filters out promises that became threads via word overlap', () => {
     const inherited = [
-      makePromise('A silver dagger was introduced with emphasis'),
-      makePromise('Unusual silence from northern watchtower'),
+      makeInheritedPromise('pr-1', 'A silver dagger was introduced with emphasis', 1),
+      makeInheritedPromise('pr-2', 'Unusual silence from northern watchtower', 0),
     ];
     const threadsAdded = ['The silver dagger proves to be enchanted and very dangerous'];
     const result = computeInheritedNarrativePromises(inherited, [], threadsAdded);
     expect(result).toHaveLength(1);
+    expect(result[0]!.id).toBe('pr-2');
     expect(result[0]!.description).toBe('Unusual silence from northern watchtower');
   });
 

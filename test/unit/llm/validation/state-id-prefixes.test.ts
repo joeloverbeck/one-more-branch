@@ -12,11 +12,13 @@ describe('state-id-prefixes validation', () => {
     expect(isIdLikeValue('th-1')).toBe(true);
     expect(isIdLikeValue('cn-2')).toBe(true);
     expect(isIdLikeValue('inv-3')).toBe(true);
+    expect(isIdLikeValue('pr-4')).toBe(true);
     expect(isIdLikeValue('Threat text')).toBe(false);
   });
 
   it('should validate canonical IDs for a specific prefix', () => {
     expect(isCanonicalIdForPrefix('th-9', STATE_ID_PREFIXES.threats)).toBe(true);
+    expect(isCanonicalIdForPrefix('pr-9', STATE_ID_PREFIXES.promises)).toBe(true);
     expect(isCanonicalIdForPrefix('cn-9', STATE_ID_PREFIXES.threats)).toBe(false);
     expect(isCanonicalIdForPrefix('th-x', STATE_ID_PREFIXES.threats)).toBe(false);
   });

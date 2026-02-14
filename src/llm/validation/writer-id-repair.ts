@@ -12,7 +12,7 @@ const REMOVAL_FIELDS = [
 
 type RemovalField = (typeof REMOVAL_FIELDS)[number];
 
-type PrefixKey = keyof typeof STATE_ID_PREFIXES;
+type PrefixKey = Exclude<keyof typeof STATE_ID_PREFIXES, 'promises'>;
 
 const FIELD_CONFIG: ReadonlyArray<{
   field: RemovalField;
@@ -60,7 +60,10 @@ function hasOwnProperty(obj: Record<string, unknown>, key: string): boolean {
 }
 
 function getCanonicalPrefixKey(id: string): PrefixKey | null {
-  for (const prefixKey of Object.keys(STATE_ID_PREFIXES) as PrefixKey[]) {
+  for (const prefixKey of Object.keys(STATE_ID_PREFIXES) as Array<keyof typeof STATE_ID_PREFIXES>) {
+    if (prefixKey === 'promises') {
+      continue;
+    }
     if (isCanonicalIdForPrefix(id, STATE_ID_PREFIXES[prefixKey])) {
       return prefixKey;
     }
@@ -111,7 +114,10 @@ export function repairWriterRemovalIdFieldMismatches(
   }
 
   const availableByPrefix = new Map<PrefixKey, Set<string>>();
-  for (const prefixKey of Object.keys(STATE_ID_PREFIXES) as PrefixKey[]) {
+  for (const prefixKey of Object.keys(STATE_ID_PREFIXES) as Array<keyof typeof STATE_ID_PREFIXES>) {
+    if (prefixKey === 'promises') {
+      continue;
+    }
     const contextKey = CONTEXT_KEY_BY_PREFIX[prefixKey];
     availableByPrefix.set(prefixKey, new Set(context.removableIds[contextKey]));
   }

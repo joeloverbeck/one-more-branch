@@ -13,7 +13,7 @@ import {
   parseStructureVersionId,
   parsePageId,
 } from '../models';
-import type { NarrativePromise } from '../models/state/keyed-entry';
+import type { TrackedPromise } from '../models/state/keyed-entry';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AnalystResult } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
@@ -235,9 +235,11 @@ export function serializePage(page: Page): PageFileData {
     analystResult: serializeAnalystResult(page.analystResult),
     threadAges: { ...page.threadAges },
     inheritedNarrativePromises: page.inheritedNarrativePromises.map((p) => ({
+      id: p.id,
       description: p.description,
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
+      age: p.age,
     })),
     resolvedThreadMeta: Object.keys(page.resolvedThreadMeta).length > 0
       ? { ...page.resolvedThreadMeta }
@@ -335,9 +337,11 @@ export function deserializePage(data: PageFileData): Page {
     analystResult: deserializeAnalystResult(data.analystResult),
     threadAges: data.threadAges ?? {},
     inheritedNarrativePromises: (data.inheritedNarrativePromises ?? []).map((p) => ({
+      id: p.id,
       description: p.description,
-      promiseType: p.promiseType as NarrativePromise['promiseType'],
-      suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],
+      promiseType: p.promiseType as TrackedPromise['promiseType'],
+      suggestedUrgency: p.suggestedUrgency as TrackedPromise['suggestedUrgency'],
+      age: p.age,
     })),
     resolvedThreadMeta: data.resolvedThreadMeta ?? {},
     npcAgendaUpdates: deserializeNpcAgendaArray(data.npcAgendaUpdates),

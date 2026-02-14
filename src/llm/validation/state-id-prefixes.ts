@@ -4,6 +4,7 @@ export const STATE_ID_PREFIXES = {
   inventory: 'inv-',
   health: 'hp-',
   threads: 'td-',
+  promises: 'pr-',
   characterState: 'cs-',
 } as const;
 

@@ -43,11 +43,14 @@ export {
   ConstraintType,
   ThreadType,
   Urgency,
+  PromiseType,
+  PROMISE_TYPE_VALUES,
   StateIdPrefix,
   isThreatType,
   isConstraintType,
   isThreadType,
   isUrgency,
+  isPromiseType,
   extractIdNumber,
   getMaxIdNumber,
   nextId,
@@ -76,6 +79,8 @@ export {
   createEmptyAccumulatedNpcAgendas,
   applyAgendaUpdates,
 } from './state/index.js';
+
+export type { TrackedPromise, PromisePayoffAssessment } from './state/index.js';
 
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 

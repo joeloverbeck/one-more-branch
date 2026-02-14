@@ -83,10 +83,15 @@ export interface StoryBibleFileData {
   relevantHistory: string;
 }
 
-export interface NarrativePromiseFileData {
+export interface DetectedPromiseFileData {
   description: string;
   promiseType: string;
   suggestedUrgency: string;
+}
+
+export interface TrackedPromiseFileData extends DetectedPromiseFileData {
+  id: string;
+  age: number;
 }
 
 export interface ThreadPayoffAssessmentFileData {
@@ -125,7 +130,7 @@ export interface AnalystResultFileData {
   completionGateFailureReason: string;
   toneAdherent?: boolean;
   toneDriftDescription?: string;
-  narrativePromises?: NarrativePromiseFileData[];
+  narrativePromises?: DetectedPromiseFileData[];
   threadPayoffAssessments?: ThreadPayoffAssessmentFileData[];
 }
 
@@ -178,7 +183,7 @@ export interface PageFileData {
   storyBible?: StoryBibleFileData | null;
   analystResult?: AnalystResultFileData | null;
   threadAges?: Record<string, number>;
-  inheritedNarrativePromises?: NarrativePromiseFileData[];
+  inheritedNarrativePromises?: TrackedPromiseFileData[];
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   npcAgendaUpdates?: NpcAgendaFileData[];
   accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;

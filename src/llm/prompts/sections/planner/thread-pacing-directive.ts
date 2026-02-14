@@ -1,8 +1,9 @@
 import type {
   ThreadEntry,
-  NarrativePromise,
+  TrackedPromise,
   ThreadPayoffAssessment,
 } from '../../../../models/state/index.js';
+import type { DetectedPromise } from '../../../analyst-types.js';
 import { THREAD_PACING } from '../../../../config/thread-pacing-config.js';
 
 const URGENCY_THRESHOLDS: Record<string, number> = {
@@ -59,8 +60,8 @@ export function buildThreadAgingSection(
 }
 
 export function buildNarrativePromisesSection(
-  inheritedPromises: readonly NarrativePromise[],
-  parentAnalystPromises: readonly NarrativePromise[]
+  inheritedPromises: readonly TrackedPromise[],
+  parentAnalystPromises: readonly DetectedPromise[]
 ): string {
   const allPromises = [...inheritedPromises, ...parentAnalystPromises];
   if (allPromises.length === 0) {

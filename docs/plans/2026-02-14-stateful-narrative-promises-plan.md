@@ -4,7 +4,7 @@
 
 **Goal:** Replace the transitory NarrativePromise system with a stateful TrackedPromise system that has server-assigned IDs, typed taxonomy, explicit add/remove lifecycle via the analyst, and age tracking.
 
-**Architecture:** Promises are owned by the analyst (detection + resolution), accumulated on pages like threads, and presented to the planner as soft encouragement. The engine handles ID assignment and aging. No hard cap on promise count.
+**Architecture:** Promises are owned by the analyst (detection + resolution), accumulated on pages like threads, and presented to the planner as soft encouragement. The engine handles ID assignment and aging. No hard cap on promise count. No backward compatibility layer or aliasing: old promise fields/types are removed at cutover points.
 
 **Tech Stack:** TypeScript strict mode, Zod validation, JSON Schema for LLM structured output, Jest for testing.
 
@@ -84,7 +84,7 @@ export type {
 **Step 3: Run typecheck**
 
 Run: `npm run typecheck`
-Expected: Errors in files that still import `NarrativePromise` - this is expected and will be fixed in subsequent tasks.
+Expected: PASS. Do not intentionally leave intermediate type errors.
 
 **Step 4: Commit**
 

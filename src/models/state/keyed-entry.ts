@@ -68,7 +68,7 @@ export function isConstraintType(value: unknown): value is ConstraintType {
   return typeof value === 'string' && Object.values(ConstraintType).includes(value as ConstraintType);
 }
 
-export type StateIdPrefix = 'inv' | 'hp' | 'cs' | 'th' | 'cn' | 'td';
+export type StateIdPrefix = 'inv' | 'hp' | 'cs' | 'th' | 'cn' | 'td' | 'pr';
 
 const ID_PATTERN = /^[a-z]+-(\d+)$/;
 
@@ -119,12 +119,26 @@ export function assignIds(
 
 // ── Narrative Promise types ────────────────────────────────────────
 
-export type PromiseType = 'CHEKHOV_GUN' | 'FORESHADOWING' | 'DRAMATIC_IRONY' | 'UNRESOLVED_EMOTION';
+export enum PromiseType {
+  CHEKHOV_GUN = 'CHEKHOV_GUN',
+  FORESHADOWING = 'FORESHADOWING',
+  DRAMATIC_IRONY = 'DRAMATIC_IRONY',
+  UNRESOLVED_EMOTION = 'UNRESOLVED_EMOTION',
+  SETUP_PAYOFF = 'SETUP_PAYOFF',
+}
 
-export interface NarrativePromise {
+export const PROMISE_TYPE_VALUES: readonly PromiseType[] = Object.values(PromiseType);
+
+export function isPromiseType(value: unknown): value is PromiseType {
+  return typeof value === 'string' && PROMISE_TYPE_VALUES.includes(value as PromiseType);
+}
+
+export interface TrackedPromise {
+  readonly id: string;
   readonly description: string;
   readonly promiseType: PromiseType;
   readonly suggestedUrgency: Urgency;
+  readonly age: number;
 }
 
 // ── Thread Payoff Assessment types ────────────────────────────────
@@ -134,6 +148,13 @@ export type SatisfactionLevel = 'RUSHED' | 'ADEQUATE' | 'WELL_EARNED';
 export interface ThreadPayoffAssessment {
   readonly threadId: string;
   readonly threadText: string;
+  readonly satisfactionLevel: SatisfactionLevel;
+  readonly reasoning: string;
+}
+
+export interface PromisePayoffAssessment {
+  readonly promiseId: string;
+  readonly description: string;
   readonly satisfactionLevel: SatisfactionLevel;
   readonly reasoning: string;
 }

@@ -6,12 +6,13 @@ import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type {
   ActiveState,
   KeyedEntry,
-  NarrativePromise,
+  TrackedPromise,
   ThreadPayoffAssessment,
 } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.js';
+import type { DetectedPromise } from './analyst-types.js';
 import type {
   AncestorSummary,
   MomentumTrajectory,
@@ -73,8 +74,8 @@ export interface ContinuationContext {
   momentumTrajectory?: MomentumTrajectory;
 
   threadAges?: Readonly<Record<string, number>>;
-  inheritedNarrativePromises?: readonly NarrativePromise[];
-  parentAnalystNarrativePromises?: readonly NarrativePromise[];
+  inheritedNarrativePromises?: readonly TrackedPromise[];
+  parentAnalystNarrativePromises?: readonly DetectedPromise[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

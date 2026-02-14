@@ -28,7 +28,13 @@ const EntryConditionReadinessSchema = z
 const SafeStringArraySchema = z.array(z.string()).catch([]).default([]);
 
 const PromiseTypeSchema = z
-  .enum(['CHEKHOV_GUN', 'FORESHADOWING', 'DRAMATIC_IRONY', 'UNRESOLVED_EMOTION'])
+  .enum([
+    'CHEKHOV_GUN',
+    'FORESHADOWING',
+    'DRAMATIC_IRONY',
+    'UNRESOLVED_EMOTION',
+    'SETUP_PAYOFF',
+  ])
   .catch('FORESHADOWING');
 
 const UrgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']).catch('MEDIUM');

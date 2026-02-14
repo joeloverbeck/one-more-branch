@@ -6,8 +6,11 @@ import {
   removeByIds,
   isThreadType,
   isUrgency,
+  isPromiseType,
+  PROMISE_TYPE_VALUES,
   ThreadType,
   Urgency,
+  PromiseType,
 } from '../../../../src/models/state/keyed-entry.js';
 import { modelWarn } from '../../../../src/models/model-logger.js';
 
@@ -69,6 +72,10 @@ describe('nextId', () => {
   it('generates "hp-1" from ("hp", 0)', () => {
     expect(nextId('hp', 0)).toBe('hp-1');
   });
+
+  it('generates "pr-2" from ("pr", 1)', () => {
+    expect(nextId('pr', 1)).toBe('pr-2');
+  });
 });
 
 describe('assignIds', () => {
@@ -119,5 +126,11 @@ describe('thread metadata enums', () => {
   it('validates urgency values', () => {
     expect(isUrgency(Urgency.HIGH)).toBe(true);
     expect(isUrgency('CRITICAL')).toBe(false);
+  });
+
+  it('validates promise type values', () => {
+    expect(PROMISE_TYPE_VALUES).toContain(PromiseType.SETUP_PAYOFF);
+    expect(isPromiseType(PromiseType.CHEKHOV_GUN)).toBe(true);
+    expect(isPromiseType('NOT_A_PROMISE')).toBe(false);
   });
 });
