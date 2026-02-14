@@ -44,8 +44,15 @@ DECOMPOSITION PRINCIPLES:
 
 4. RELATIONSHIP MAPPING: Capture relationships WITH CONTEXT - not just "knows X" but the emotional quality and history of the relationship.
 
-5. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags and scope annotations. Each fact should be a single, self-contained proposition.
+5. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
    Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
+   Epistemic status (factType) for each fact:
+   - LAW: Fundamental world truths that simply ARE (magic rules, physics, cosmology). E.g. "Iron disrupts magical fields."
+   - NORM: Cultural or regional standard practices. E.g. "Merchants bow before entering the Exchange."
+   - BELIEF: Held as true by specific groups but may or may not be objectively true. Embed the holder in the fact text. E.g. "The northern clans believe the old gods sleep beneath the ice."
+   - DISPUTED: Multiple contradictory versions exist. E.g. "Historians disagree whether the Sundering was caused by divine wrath or arcane experimentation."
+   - RUMOR: Unverified hearsay circulating in the world. E.g. "Tavern talk claims the duke poisoned his brother."
+   - MYSTERY: Intentionally unresolved unknowns. Preserve the unknown quality. E.g. "No one knows what lies beyond the Veil."
 
 6. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
 
@@ -125,7 +132,8 @@ INSTRUCTIONS:
     {
       "domain": "{{geography|ecology|history|society|culture|religion|governance|economy|faction|technology|magic|language}}",
       "fact": "{{single atomic worldbuilding proposition}}",
-      "scope": "{{where/when this fact applies}}"
+      "scope": "{{where/when this fact applies}}",
+      "factType": "{{LAW|NORM|BELIEF|DISPUTED|RUMOR|MYSTERY}}"
     }
   ]
 }
@@ -134,6 +142,7 @@ INSTRUCTIONS:
 - `characters[0]` is always the protagonist (from CHARACTER CONCEPT); subsequent entries are NPCs in definition order.
 - `worldFacts` is an empty array when no worldbuilding is provided.
 - `domain` is a strict enum of 12 values (geography, ecology, history, society, culture, religion, governance, economy, faction, technology, magic, language); invalid values are defaulted to `'culture'` by the response transformer. The `custom` domain is no longer produced by the LLM but is still accepted when reading existing stories.
+- `factType` is a strict enum of 6 values (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY) representing the epistemic status of the fact. Required in the schema for new generations. Invalid or missing values are omitted (defaulted to `undefined`) by the response transformer for backward compatibility with existing stories.
 - World facts with empty `fact` text are filtered out by the response transformer.
 - For malformed payloads, parser normalization defaults missing/invalid arrays to `[]` and missing/invalid strings to `''` for speech and agency fields.
 
@@ -146,8 +155,9 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
    - Matching NPC description for index > 0 (matched by array order, falling back to `''`)
 2. **Speech fingerprint defaults**: Missing or undefined arrays default to `[]`.
 3. **Domain validation**: World fact domains not in the valid enum are defaulted to `'culture'`. The `custom` domain is still accepted when reading existing stories.
-4. **Empty fact filtering**: World facts with empty or whitespace-only `fact` text are removed.
-5. **Character validation**: Throws if `characters` array is empty (must include at least the protagonist) or if any character has an empty `name`.
+4. **Fact type validation**: World fact `factType` values not in the valid enum (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY) are omitted (field not set). Missing `factType` is treated as `undefined` for backward compatibility.
+5. **Empty fact filtering**: World facts with empty or whitespace-only `fact` text are removed.
+6. **Character validation**: Throws if `characters` array is empty (must include at least the protagonist) or if any character has an empty `name`.
 
 ## Contract Ownership
 
@@ -169,8 +179,8 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
 
 The decomposed output is stored on the `Story` object and propagated to downstream prompts:
 
-- **Planner** (opening + continuation): Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles)` and `DecomposedWorld` as `WORLDBUILDING (structured)` with domain-tagged facts, instead of raw prose. Falls back to raw when decomposed data is absent.
-- **Lorekeeper**: Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles with speech fingerprints)` with full speech fingerprints for voice synthesis. Falls back to raw NPC definitions when absent. Receives domain-tagged `DecomposedWorld` facts instead of raw worldbuilding. The lorekeeper's TWO-SOURCE SYNTHESIS principle guides merging decomposed structure (initial scaffold) with runtime canon facts (gameplay discoveries).
+- **Planner** (opening + continuation): Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles)` and `DecomposedWorld` as `WORLDBUILDING (structured)` with domain-tagged, epistemic-status-tagged facts (e.g., `[BELIEF] The clans believe...`), instead of raw prose. Falls back to raw when decomposed data is absent.
+- **Lorekeeper**: Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles with speech fingerprints)` with full speech fingerprints for voice synthesis. Falls back to raw NPC definitions when absent. Receives domain-tagged `DecomposedWorld` facts with epistemic status tags instead of raw worldbuilding. The lorekeeper's TWO-SOURCE SYNTHESIS principle guides merging decomposed structure (initial scaffold) with runtime canon facts (gameplay discoveries). The EPISTEMIC FIDELITY principle instructs the lorekeeper to preserve fact epistemic status in the Story Bible.
 - **Writer** (opening + continuation): Receives the protagonist's `SpeechFingerprint` as a dedicated `PROTAGONIST SPEECH FINGERPRINT` section for voice consistency. NPC speech data arrives via the Story Bible (curated by lorekeeper).
 
 ## Generation Stage

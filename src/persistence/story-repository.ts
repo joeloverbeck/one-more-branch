@@ -10,7 +10,7 @@ import {
   parseStructureVersionId,
 } from '../models';
 import type { DecomposedCharacter } from '../models/decomposed-character';
-import type { DecomposedWorld, WorldFactDomain } from '../models/decomposed-world';
+import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
 import {
   deleteDirectory,
   directoryExists,
@@ -56,6 +56,7 @@ interface WorldFactFileData {
   domain: string;
   fact: string;
   scope: string;
+  factType?: string;
 }
 
 interface DecomposedWorldFileData {
@@ -245,6 +246,7 @@ function storyToFileData(story: Story): StoryFileData {
               domain: f.domain,
               fact: f.fact,
               scope: f.scope,
+              ...(f.factType ? { factType: f.factType } : {}),
             })),
             rawWorldbuilding: story.decomposedWorld.rawWorldbuilding,
           },
@@ -320,6 +322,7 @@ function fileDataToStory(data: StoryFileData): Story {
               domain: f.domain as WorldFactDomain,
               fact: f.fact,
               scope: f.scope,
+              ...(f.factType ? { factType: f.factType as WorldFactType } : {}),
             })),
             rawWorldbuilding: data.decomposedWorld.rawWorldbuilding,
           } as DecomposedWorld,

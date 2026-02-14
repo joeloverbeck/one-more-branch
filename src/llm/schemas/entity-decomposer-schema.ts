@@ -71,7 +71,7 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['domain', 'fact', 'scope'],
+            required: ['domain', 'fact', 'scope', 'factType'],
             properties: {
               domain: {
                 type: 'string',
@@ -113,6 +113,18 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
                 description:
                   'Where/when this fact applies. ' +
                   'E.g. "Entire realm", "Northern provinces only", "During the Blood Moon".',
+              },
+              factType: {
+                type: 'string',
+                enum: ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'],
+                description:
+                  'Epistemic status of this fact. ' +
+                  'LAW: fundamental world truth (magic rules, physics, cosmology). ' +
+                  'NORM: cultural/regional standard practice. ' +
+                  'BELIEF: held as true by specific groups (embed who believes it in the fact text). ' +
+                  'DISPUTED: multiple contradictory versions exist. ' +
+                  'RUMOR: unverified hearsay. ' +
+                  'MYSTERY: intentionally unresolved.',
               },
             },
           },

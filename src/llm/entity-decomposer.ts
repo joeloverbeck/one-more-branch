@@ -1,6 +1,6 @@
 import { getConfig } from '../config/index.js';
 import type { DecomposedCharacter, SpeechFingerprint } from '../models/decomposed-character.js';
-import type { DecomposedWorld, WorldFact, WorldFactDomain } from '../models/decomposed-world.js';
+import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from '../models/decomposed-world.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
@@ -39,8 +39,21 @@ const VALID_DOMAINS: readonly WorldFactDomain[] = [
   'custom', // Retained for reading existing stories
 ];
 
+const VALID_FACT_TYPES: readonly WorldFactType[] = [
+  'LAW',
+  'NORM',
+  'BELIEF',
+  'DISPUTED',
+  'RUMOR',
+  'MYSTERY',
+];
+
 function isValidDomain(value: unknown): value is WorldFactDomain {
   return typeof value === 'string' && VALID_DOMAINS.includes(value as WorldFactDomain);
+}
+
+function isValidFactType(value: unknown): value is WorldFactType {
+  return typeof value === 'string' && VALID_FACT_TYPES.includes(value as WorldFactType);
 }
 
 function parseStringField(raw: Record<string, unknown>, key: string): string {
@@ -135,8 +148,9 @@ function parseWorldFact(raw: unknown): WorldFact | null {
 
   const domain = isValidDomain(data['domain']) ? data['domain'] : 'culture';
   const scope = typeof data['scope'] === 'string' ? data['scope'] : 'General';
+  const factType = isValidFactType(data['factType']) ? data['factType'] : undefined;
 
-  return { domain, fact: data['fact'].trim(), scope };
+  return { domain, fact: data['fact'].trim(), scope, ...(factType ? { factType } : {}) };
 }
 
 function parseDecompositionResponse(

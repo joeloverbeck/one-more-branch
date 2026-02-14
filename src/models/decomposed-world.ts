@@ -13,10 +13,19 @@ export type WorldFactDomain =
   | 'language'
   | 'custom'; // Retained for backward compatibility with existing stories
 
+export type WorldFactType =
+  | 'LAW'
+  | 'NORM'
+  | 'BELIEF'
+  | 'DISPUTED'
+  | 'RUMOR'
+  | 'MYSTERY';
+
 export interface WorldFact {
   readonly domain: WorldFactDomain;
   readonly fact: string;
   readonly scope: string;
+  readonly factType?: WorldFactType;
 }
 
 export interface DecomposedWorld {
@@ -40,7 +49,8 @@ export function formatDecomposedWorldForPrompt(world: DecomposedWorld): string {
   for (const [domain, facts] of byDomain) {
     sections.push(`[${domain.toUpperCase()}]`);
     for (const fact of facts) {
-      sections.push(`- ${fact.fact} (scope: ${fact.scope})`);
+      const typeTag = fact.factType ? `[${fact.factType}] ` : '';
+      sections.push(`- ${typeTag}${fact.fact} (scope: ${fact.scope})`);
     }
     sections.push('');
   }

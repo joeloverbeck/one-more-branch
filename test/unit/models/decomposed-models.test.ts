@@ -176,4 +176,31 @@ describe('formatDecomposedWorldForPrompt', () => {
     const world: DecomposedWorld = { facts: [], rawWorldbuilding: 'raw text' };
     expect(formatDecomposedWorldForPrompt(world)).toBe('');
   });
+
+  it('includes factType tags when present', () => {
+    const world: DecomposedWorld = {
+      facts: [
+        { domain: 'magic', fact: 'Iron disrupts magical fields', scope: 'Worldwide', factType: 'LAW' },
+        { domain: 'religion', fact: 'The clans believe the old gods sleep', scope: 'North', factType: 'BELIEF' },
+        { domain: 'society', fact: 'Tavern talk claims the duke is a fraud', scope: 'Capital', factType: 'RUMOR' },
+      ],
+      rawWorldbuilding: 'some raw text',
+    };
+    const result = formatDecomposedWorldForPrompt(world);
+    expect(result).toContain('[LAW] Iron disrupts magical fields (scope: Worldwide)');
+    expect(result).toContain('[BELIEF] The clans believe the old gods sleep (scope: North)');
+    expect(result).toContain('[RUMOR] Tavern talk claims the duke is a fraud (scope: Capital)');
+  });
+
+  it('omits factType tag when factType is undefined', () => {
+    const world: DecomposedWorld = {
+      facts: [
+        { domain: 'magic', fact: 'Magic exists in this world', scope: 'Worldwide' },
+      ],
+      rawWorldbuilding: 'some raw text',
+    };
+    const result = formatDecomposedWorldForPrompt(world);
+    expect(result).toContain('- Magic exists in this world (scope: Worldwide)');
+    expect(result).not.toMatch(/\[LAW\]|\[NORM\]|\[BELIEF\]|\[DISPUTED\]|\[RUMOR\]|\[MYSTERY\]/);
+  });
 });

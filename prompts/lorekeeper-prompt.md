@@ -36,6 +36,7 @@ CURATION PRINCIPLES:
 7. WORLD CONTEXT: When domain-tagged world facts are provided, use them as your primary worldbuilding source - they are pre-decomposed for efficient filtering by domain (geography, magic, society, etc.). Supplement with any runtime canon facts. When only raw worldbuilding text is available, extract relevant details manually. Include only what is physically, culturally, or socially relevant to THIS scene's location and events.
 8. NPC AGENDAS: For each relevant character, incorporate their current agenda (goal, leverage, fear, off-screen behavior) into the character profile. This informs how NPCs will act in the scene.
 9. TWO-SOURCE SYNTHESIS: You may receive two sources of truth: (a) structured character/world profiles (initial decomposition from story creation) and (b) runtime canon facts (discovered during gameplay). Prefer structured profiles for speech patterns, traits, relationships, and world rules. Use canon facts for runtime discoveries that supplement the initial decomposition.
+10. EPISTEMIC FIDELITY: When world facts are tagged with epistemic status (LAW, BELIEF, RUMOR, MYSTERY, etc.), preserve that status in the Story Bible. Do not present beliefs as settled truth, rumors as confirmed facts, or resolve mysteries. Characters may be wrong about the world - this ambiguity is narratively valuable.
 ```
 
 ### 2) User Message
@@ -63,7 +64,7 @@ CHARACTER CONCEPT:
 {{#if decomposedWorld && decomposedWorld.facts.length > 0}}
 WORLDBUILDING (structured):
 [DOMAIN_NAME]
-- fact text (scope: scope text)
+- [FACT_TYPE] fact text (scope: scope text)
 ...
 {{else}}
 WORLDBUILDING:
@@ -229,6 +230,8 @@ When decomposed character/world data is available, the Lorekeeper receives two c
 2. **Runtime canon facts** (`globalCanon`, `globalCharacterCanon`): Permanent facts discovered during gameplay. These accumulate across pages.
 
 The Lorekeeper is instructed (principle #9) to prefer decomposed structure for speech patterns, traits, relationships, and world rules, while using canon facts for runtime discoveries that supplement the initial decomposition. Both sources feed into the Story Bible output.
+
+When decomposed world facts include epistemic status tags (LAW, BELIEF, RUMOR, MYSTERY, etc.), the Lorekeeper preserves that status in the Story Bible (principle #10). This prevents beliefs from being flattened into settled truths and keeps intentional ambiguity intact for the writer.
 
 ## Writer Integration
 

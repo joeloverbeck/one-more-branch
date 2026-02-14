@@ -53,6 +53,7 @@ interface WorldFactPayload {
   domain: string;
   fact: string;
   scope: string;
+  factType?: string;
 }
 
 function createValidPayload(): { characters: CharacterPayload[]; worldFacts: WorldFactPayload[] } {
@@ -111,16 +112,19 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
         domain: 'society',
         fact: 'The tribunal controls all justice in the city',
         scope: 'Capital city',
+        factType: 'LAW',
       },
       {
         domain: 'magic',
         fact: 'Blood runes can bind oaths that kill the oath-breaker',
         scope: 'Worldwide',
+        factType: 'LAW',
       },
       {
         domain: 'geography',
         fact: 'The Ashfen marshes surround the eastern approach to the capital',
         scope: 'Eastern region',
+        factType: 'LAW',
       },
     ],
   };
@@ -347,6 +351,49 @@ describe('decomposeEntities', () => {
     expect(parsed.decisionPattern).toBe('');
     expect(parsed.coreBeliefs).toEqual([]);
     expect(parsed.conflictPriority).toBe('');
+  });
+
+  it('parses valid factType values from world facts', async () => {
+    const payload = createValidPayload();
+    payload.worldFacts = [
+      { domain: 'magic', fact: 'Iron disrupts magical fields', scope: 'Worldwide', factType: 'LAW' },
+      { domain: 'religion', fact: 'The northern clans believe the old gods sleep', scope: 'North', factType: 'BELIEF' },
+      { domain: 'society', fact: 'Tavern talk claims the duke poisoned his brother', scope: 'Capital', factType: 'RUMOR' },
+      { domain: 'history', fact: 'No one knows what lies beyond the Veil', scope: 'Worldwide', factType: 'MYSTERY' },
+      { domain: 'culture', fact: 'Merchants bow before entering the Exchange', scope: 'Trade district', factType: 'NORM' },
+      { domain: 'history', fact: 'Historians disagree on the Sundering cause', scope: 'Worldwide', factType: 'DISPUTED' },
+    ];
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedWorld.facts[0]!.factType).toBe('LAW');
+    expect(result.decomposedWorld.facts[1]!.factType).toBe('BELIEF');
+    expect(result.decomposedWorld.facts[2]!.factType).toBe('RUMOR');
+    expect(result.decomposedWorld.facts[3]!.factType).toBe('MYSTERY');
+    expect(result.decomposedWorld.facts[4]!.factType).toBe('NORM');
+    expect(result.decomposedWorld.facts[5]!.factType).toBe('DISPUTED');
+  });
+
+  it('omits factType when missing from LLM response (backward compat)', async () => {
+    const payload = createValidPayload();
+    payload.worldFacts = [
+      { domain: 'society', fact: 'Old fact without type', scope: 'General' },
+    ];
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedWorld.facts[0]!.factType).toBeUndefined();
+  });
+
+  it('omits factType when invalid value is returned by LLM', async () => {
+    const payload = createValidPayload();
+    payload.worldFacts = [
+      { domain: 'society', fact: 'Fact with bad type', scope: 'General', factType: 'INVALID' },
+    ];
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedWorld.facts[0]!.factType).toBeUndefined();
   });
 
   it('throws on empty characters array', async () => {
