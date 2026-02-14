@@ -206,13 +206,38 @@ describe('decomposeEntities', () => {
     expect(result.decomposedCharacters[1]!.rawDescription).toBe('A fortune teller with secrets.');
   });
 
-  it('defaults invalid world fact domains to custom', async () => {
+  it('defaults invalid world fact domains to culture', async () => {
     const payload = createValidPayload();
     payload.worldFacts[0]!.domain = 'INVALID_DOMAIN';
     globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
 
     const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedWorld.facts[0]!.domain).toBe('culture');
+  });
+
+  it('accepts custom domain from existing stories (backward compat)', async () => {
+    const payload = createValidPayload();
+    payload.worldFacts[0]!.domain = 'custom';
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
     expect(result.decomposedWorld.facts[0]!.domain).toBe('custom');
+  });
+
+  it.each([
+    'ecology',
+    'culture',
+    'religion',
+    'governance',
+    'economy',
+    'language',
+  ])('parses new domain %s correctly', async (newDomain) => {
+    const payload = createValidPayload();
+    payload.worldFacts[0]!.domain = newDomain;
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedWorld.facts[0]!.domain).toBe(newDomain);
   });
 
   it('skips world facts with empty fact text', async () => {

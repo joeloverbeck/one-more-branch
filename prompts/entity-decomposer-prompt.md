@@ -40,6 +40,7 @@ DECOMPOSITION PRINCIPLES:
 4. RELATIONSHIP MAPPING: Capture relationships WITH CONTEXT - not just "knows X" but the emotional quality and history of the relationship.
 
 5. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags and scope annotations. Each fact should be a single, self-contained proposition.
+   Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
 
 6. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
 
@@ -102,7 +103,7 @@ INSTRUCTIONS:
   ],
   "worldFacts": [
     {
-      "domain": "{{geography|magic|society|faction|history|technology|custom}}",
+      "domain": "{{geography|ecology|history|society|culture|religion|governance|economy|faction|technology|magic|language}}",
       "fact": "{{single atomic worldbuilding proposition}}",
       "scope": "{{where/when this fact applies}}"
     }
@@ -112,7 +113,7 @@ INSTRUCTIONS:
 
 - `characters[0]` is always the protagonist (from CHARACTER CONCEPT); subsequent entries are NPCs in definition order.
 - `worldFacts` is an empty array when no worldbuilding is provided.
-- `domain` is a strict enum; invalid values are defaulted to `custom` by the response transformer.
+- `domain` is a strict enum of 12 values (geography, ecology, history, society, culture, religion, governance, economy, faction, technology, magic, language); invalid values are defaulted to `'culture'` by the response transformer. The `custom` domain is no longer produced by the LLM but is still accepted when reading existing stories.
 - World facts with empty `fact` text are filtered out by the response transformer.
 - Missing optional arrays in `speechFingerprint` (catchphrases, verbalTics, dialogueSamples) default to `[]`.
 
@@ -124,7 +125,7 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
    - `characterConcept` for index 0 (protagonist)
    - Matching NPC description for index > 0 (matched by array order, falling back to `''`)
 2. **Speech fingerprint defaults**: Missing or undefined arrays default to `[]`.
-3. **Domain validation**: World fact domains not in the valid enum are defaulted to `'custom'`.
+3. **Domain validation**: World fact domains not in the valid enum are defaulted to `'culture'`. The `custom` domain is still accepted when reading existing stories.
 4. **Empty fact filtering**: World facts with empty or whitespace-only `fact` text are removed.
 5. **Character validation**: Throws if `characters` array is empty (must include at least the protagonist) or if any character has an empty `name`.
 

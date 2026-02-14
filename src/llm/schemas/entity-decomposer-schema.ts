@@ -121,8 +121,34 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
             properties: {
               domain: {
                 type: 'string',
-                enum: ['geography', 'magic', 'society', 'faction', 'history', 'technology', 'custom'],
-                description: 'Category of this worldbuilding fact.',
+                enum: [
+                  'geography',
+                  'ecology',
+                  'history',
+                  'society',
+                  'culture',
+                  'religion',
+                  'governance',
+                  'economy',
+                  'faction',
+                  'technology',
+                  'magic',
+                  'language',
+                ],
+                description:
+                  'Category of this worldbuilding fact. ' +
+                  'geography: physical terrain, locations, climate, weather, natural resources. ' +
+                  'ecology: flora, fauna, ecosystems, wildlife, agriculture. ' +
+                  'history: past events, chronology, origins, wars, eras. ' +
+                  'society: social structure, class, family, kinship, demographics, norms. ' +
+                  'culture: customs, traditions, arts, entertainment, food, clothing, daily life, education. ' +
+                  'religion: faiths, deities, spirituality, mythology, cosmology, afterlife. ' +
+                  'governance: government, law, politics, justice, military, power structures. ' +
+                  'economy: commerce, trade, currency, professions, labor, wealth. ' +
+                  'faction: organizations, guilds, secret societies, alliances. ' +
+                  'technology: inventions, engineering, infrastructure, transportation, medicine. ' +
+                  'magic: supernatural systems, spells, enchantments, magical creatures. ' +
+                  'language: languages, dialects, scripts, communication, naming conventions.',
               },
               fact: {
                 type: 'string',

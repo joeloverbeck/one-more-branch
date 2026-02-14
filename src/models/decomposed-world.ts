@@ -1,11 +1,17 @@
 export type WorldFactDomain =
   | 'geography'
-  | 'magic'
-  | 'society'
-  | 'faction'
+  | 'ecology'
   | 'history'
+  | 'society'
+  | 'culture'
+  | 'religion'
+  | 'governance'
+  | 'economy'
+  | 'faction'
   | 'technology'
-  | 'custom';
+  | 'magic'
+  | 'language'
+  | 'custom'; // Retained for backward compatibility with existing stories
 
 export interface WorldFact {
   readonly domain: WorldFactDomain;

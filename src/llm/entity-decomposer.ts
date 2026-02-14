@@ -19,12 +19,18 @@ import { ENTITY_DECOMPOSITION_SCHEMA } from './schemas/entity-decomposer-schema.
 
 const VALID_DOMAINS: readonly WorldFactDomain[] = [
   'geography',
-  'magic',
-  'society',
-  'faction',
+  'ecology',
   'history',
+  'society',
+  'culture',
+  'religion',
+  'governance',
+  'economy',
+  'faction',
   'technology',
-  'custom',
+  'magic',
+  'language',
+  'custom', // Retained for reading existing stories
 ];
 
 function isValidDomain(value: unknown): value is WorldFactDomain {
@@ -125,7 +131,7 @@ function parseWorldFact(raw: unknown): WorldFact | null {
     return null;
   }
 
-  const domain = isValidDomain(data['domain']) ? data['domain'] : 'custom';
+  const domain = isValidDomain(data['domain']) ? data['domain'] : 'culture';
   const scope = typeof data['scope'] === 'string' ? data['scope'] : 'General';
 
   return { domain, fact: data['fact'].trim(), scope };
