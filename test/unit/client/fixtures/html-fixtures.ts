@@ -31,6 +31,8 @@ export interface PlayPageOptions {
   hasCustomChoiceInput?: boolean;
   analystResult?: Record<string, unknown> | null;
   sceneSummary?: string | null;
+  worldFacts?: string[];
+  characterCanon?: Record<string, string[]>;
 }
 
 export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
@@ -50,6 +52,11 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
   const analystResult = options.analystResult ?? null;
   const sceneSummary = options.sceneSummary ?? null;
+  const worldFacts = options.worldFacts ?? [];
+  const characterCanon = options.characterCanon ?? {};
+  const loreFactCount =
+    worldFacts.length +
+    Object.values(characterCanon).reduce((sum, facts) => sum + (Array.isArray(facts) ? facts.length : 0), 0);
 
   const threadsHtml =
     openThreads.length > 0
@@ -203,7 +210,12 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
     <main>
       <div class="play-container" data-story-id="${storyId}" data-page-id="${pageId}">
         <div class="play-layout">
-          <div class="left-sidebar-widgets" id="left-sidebar-widgets"></div>
+          <div class="left-sidebar-widgets" id="left-sidebar-widgets">
+            <button type="button" class="lore-trigger-btn" id="lore-trigger-btn" aria-haspopup="dialog" aria-controls="lore-modal">
+              Story Lore
+              <span class="lore-count-badge" id="lore-count-badge">(${loreFactCount})</span>
+            </button>
+          </div>
           <div class="play-content">
             <div class="story-header" id="story-header">
               <div class="story-title-section">
@@ -248,9 +260,26 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             <div class="insights-body" id="insights-modal-body"></div>
           </div>
         </div>
+        <div class="modal lore-modal" id="lore-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="lore-modal-title">
+          <div class="modal-content lore-modal-content">
+            <div class="lore-header">
+              <h3 id="lore-modal-title">Story Lore</h3>
+              <button type="button" class="lore-close-btn" id="lore-close-btn" aria-label="Close Story Lore">&times;</button>
+            </div>
+            <div class="lore-tabs" role="tablist">
+              <button class="lore-tab lore-tab--active" role="tab" aria-selected="true" data-tab="world" id="lore-tab-world" aria-controls="lore-panel-world">World</button>
+              <button class="lore-tab" role="tab" aria-selected="false" data-tab="characters" id="lore-tab-characters" aria-controls="lore-panel-characters">Characters</button>
+            </div>
+            <div class="lore-body" id="lore-modal-body">
+              <div class="lore-tab-panel" id="lore-panel-world" role="tabpanel" aria-labelledby="lore-tab-world"></div>
+              <div class="lore-tab-panel" id="lore-panel-characters" role="tabpanel" aria-labelledby="lore-tab-characters" style="display: none;"></div>
+            </div>
+          </div>
+        </div>
       </div>
       <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
       <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary })}</script>
+      <script type="application/json" id="lore-data">${JSON.stringify({ worldFacts, characterCanon })}</script>
     </main>
   `;
 }

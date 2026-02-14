@@ -363,6 +363,8 @@ playRoutes.post(
           healthOverflowSummary: healthPanelData.overflowSummary,
           protagonistAffect: result.page.protagonistAffect,
         },
+        globalCanon: story?.globalCanon ?? [],
+        globalCharacterCanon: story?.globalCharacterCanon ?? {},
         actDisplayInfo,
         wasGenerated: result.wasGenerated,
         deviationInfo: result.deviationInfo,

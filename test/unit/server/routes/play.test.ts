@@ -881,6 +881,54 @@ describe('playRoutes', () => {
       );
     });
 
+    it('includes global canon fields in choice response', async () => {
+      const story = {
+        ...createStory({
+          title: 'Canon Story',
+          characterConcept: 'A hero',
+          worldbuilding: '',
+          tone: 'Adventure',
+        }),
+        id: storyId,
+        globalCanon: ['The citadel stands'],
+        globalCharacterCanon: { 'Bobby Western': ['Bobby is in a coma'] },
+      };
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'A new branch unfolds.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Investigate'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 1,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue(story);
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          globalCanon: ['The citadel stands'],
+          globalCharacterCanon: { 'Bobby Western': ['Bobby is in a coma'] },
+        })
+      );
+    });
+
     it('does not start or mutate progress lifecycle when progressId is absent', async () => {
       const story = createStory({
         title: 'Test Story',

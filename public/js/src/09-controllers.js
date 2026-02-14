@@ -19,6 +19,7 @@
     const apiKeyModal = document.getElementById('api-key-modal');
     const initialInsightsContext = parseInsightsContextFromDom();
     const insightsController = createAnalystInsightsController(parseAnalystDataFromDom(), initialInsightsContext);
+    const loreController = createLoreModalController(parseLoreDataFromDom());
 
     if (!storyId || !narrative || !loading || !apiKeyModal) {
       return;
@@ -252,6 +253,7 @@
         renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
         renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
         cleanupEmptyLeftSidebar();
+        loreController.update(data.globalCanon || [], data.globalCharacterCanon || {});
         var sidebarContainer = ensureSidebarContainer();
         renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
         renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
