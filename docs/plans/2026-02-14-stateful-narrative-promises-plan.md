@@ -1,4 +1,6 @@
 # Stateful Narrative Promises Implementation Plan
+**Status**: IMPLEMENTED (2026-02-14)
+**Note**: This file is an implementation plan record. Some sections intentionally describe pre-cutover migration states and temporary intermediate errors.
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 

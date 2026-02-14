@@ -7,6 +7,7 @@ import type {
   ActiveState,
   BeatDeviation,
   PageId,
+  TrackedPromise,
   Story,
   StoryBeat,
   StoryStructure,
@@ -27,6 +28,7 @@ export interface AnalystEvaluationContext {
   readonly parentActiveState: ActiveState;
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
+  readonly activeTrackedPromises: readonly TrackedPromise[];
   readonly tone: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
@@ -59,6 +61,7 @@ export async function runAnalystEvaluation(
         activeState: context.parentActiveState,
         threadsResolved: context.threadsResolved,
         threadAges: context.threadAges,
+        activeTrackedPromises: context.activeTrackedPromises,
         tone: context.tone,
         toneKeywords: context.toneKeywords,
         toneAntiKeywords: context.toneAntiKeywords,

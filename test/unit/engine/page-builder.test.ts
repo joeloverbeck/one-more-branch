@@ -140,8 +140,7 @@ describe('page-builder', () => {
         storyBible: null,
         analystResult: null,
         parentThreadAges: { 'td-1': 0 },
-        parentInheritedNarrativePromises: [],
-        parentAnalystNarrativePromises: [],
+        parentAccumulatedPromises: [],
       };
 
       const page = buildContinuationPage(result, context);
@@ -192,8 +191,7 @@ describe('page-builder', () => {
         storyBible: null,
         analystResult: null,
         parentThreadAges: { 'td-1': 2, 'td-2': 1 },
-        parentInheritedNarrativePromises: [],
-        parentAnalystNarrativePromises: [],
+        parentAccumulatedPromises: [],
       };
 
       const page = buildContinuationPage(result, context);
@@ -227,8 +225,7 @@ describe('page-builder', () => {
         storyBible: null,
         analystResult: null,
         parentThreadAges: { 'td-1': 0 },
-        parentInheritedNarrativePromises: [],
-        parentAnalystNarrativePromises: [],
+        parentAccumulatedPromises: [],
       };
 
       const page = buildContinuationPage(result, context);

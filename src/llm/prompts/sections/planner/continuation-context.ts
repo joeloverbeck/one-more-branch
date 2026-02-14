@@ -353,8 +353,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   const threadAgingSection = buildThreadAgingSection(context.activeState.openThreads, threadAges);
 
   const narrativePromisesSection = buildNarrativePromisesSection(
-    context.inheritedNarrativePromises ?? [],
-    context.parentAnalystNarrativePromises ?? []
+    context.accumulatedPromises ?? []
   );
 
   const payoffFeedbackSection = buildPayoffFeedbackSection(

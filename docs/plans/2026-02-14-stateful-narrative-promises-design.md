@@ -1,4 +1,6 @@
 # Stateful Narrative Promises
+**Status**: IMPLEMENTED (2026-02-14)
+**Note**: This design doc includes historical problem framing of the legacy system; current runtime architecture uses `accumulatedPromises` with explicit analyst detect/resolve lifecycle.
 
 ## Problem
 

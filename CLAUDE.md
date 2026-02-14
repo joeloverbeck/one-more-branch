@@ -155,13 +155,13 @@ archive/specs/      # Archived completed specifications
 
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + API key
 2. **Structure Generation**: LLM generates a StoryStructure (acts, beats, pacing budget, theme)
-3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, narrative promises (inherited + analyst-detected), and payoff quality feedback
+3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
 4. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
 5. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
 6. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
-7. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, foreshadowing detection (`narrativePromises`), and payoff quality (`threadPayoffAssessments`)
+7. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
 8. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
-9. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + inherited narrative promises
+9. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + accumulated tracked promises
 10. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
 11. **State Accumulation**: Each page's state = parent's accumulated state + own changes
 12. **Canon Management**: Global and character-specific canon facts persist across all branches
@@ -182,13 +182,13 @@ Progress is tracked in-memory by `GenerationProgressService` and polled via `GET
 ## Key Data Models
 
 ### Page
-Each page stores: narrative text, scene summary, typed choices, protagonist affect, active state changes, accumulated state snapshots (active state, inventory, health, character state, structure state), structure version ID, thread ages (`threadAges: Record<string, number>`), inherited narrative promises (`inheritedNarrativePromises: NarrativePromise[]`), and parent linkage.
+Each page stores: narrative text, scene summary, typed choices, protagonist affect, active state changes, accumulated state snapshots (active state, inventory, health, character state, structure state), structure version ID, thread ages (`threadAges: Record<string, number>`), accumulated tracked promises (`accumulatedPromises: TrackedPromise[]`), and parent linkage.
 
 ### ActiveState
 Tracks current truths: `currentLocation`, `activeThreats`, `activeConstraints`, `openThreads`. Each entry is a `KeyedEntry` with a server-assigned ID (e.g., `th-1`, `cn-2`). Threads are `ThreadEntry` with `threadType` (MYSTERY, QUEST, RELATIONSHIP, DANGER, INFORMATION, RESOURCE, MORAL) and `urgency` (LOW, MEDIUM, HIGH).
 
-### NarrativePromise & ThreadPayoffAssessment
-`NarrativePromise` represents implicit foreshadowing detected by the analyst: `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, DRAMATIC_IRONY, UNRESOLVED_EMOTION), `suggestedUrgency` (LOW, MEDIUM, HIGH). `ThreadPayoffAssessment` evaluates resolved thread quality: `threadId`, `threadText`, `satisfactionLevel` (RUSHED, ADEQUATE, WELL_EARNED), `reasoning`. Both live on `AnalystResult` and feed into the planner's continuation context. Promises are inherited across pages (capped at 5, filtered when converted to threads via word overlap).
+### TrackedPromise & Payoff Assessments
+`TrackedPromise` represents a server-owned narrative promise with lifecycle state: `id`, `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, DRAMATIC_IRONY, UNRESOLVED_EMOTION, SETUP_PAYOFF), `suggestedUrgency` (LOW, MEDIUM, HIGH), `age` (pages since detection). `ThreadPayoffAssessment` evaluates resolved thread quality: `threadId`, `threadText`, `satisfactionLevel` (RUSHED, ADEQUATE, WELL_EARNED), `reasoning`. `PromisePayoffAssessment` evaluates resolved promise quality with the same satisfaction rubric. Promises are explicitly resolved by analyst-provided IDs (no heuristic conversion and no hard cap).
 
 ### Choice
 Each choice has `text`, `choiceType` (9 types: TACTICAL_APPROACH, MORAL_DILEMMA, etc.), `primaryDelta` (10 types: LOCATION_CHANGE, GOAL_SHIFT, etc.), and `nextPageId`.

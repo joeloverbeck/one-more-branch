@@ -20,16 +20,18 @@ function buildBaseAnalystJson(): Record<string, unknown> {
     anchorEvidence: [],
     completionGateSatisfied: false,
     completionGateFailureReason: 'No progress yet',
-    narrativePromises: [],
+    promisesDetected: [],
+    promisesResolved: [],
+    promisePayoffAssessments: [],
     threadPayoffAssessments: [],
   };
 }
 
-describe('validateAnalystResponse - narrativePromises', () => {
-  it('parses narrative promises from response', () => {
+describe('validateAnalystResponse - promisesDetected', () => {
+  it('parses detected promises from response', () => {
     const json = {
       ...buildBaseAnalystJson(),
-      narrativePromises: [
+      promisesDetected: [
         {
           description: 'A silver dagger placed with emphasis',
           promiseType: 'CHEKHOV_GUN',
@@ -44,16 +46,16 @@ describe('validateAnalystResponse - narrativePromises', () => {
     };
 
     const result = validateAnalystResponse(json, 'raw');
-    expect(result.narrativePromises).toHaveLength(2);
-    expect(result.narrativePromises[0]!.description).toBe('A silver dagger placed with emphasis');
-    expect(result.narrativePromises[0]!.promiseType).toBe('CHEKHOV_GUN');
-    expect(result.narrativePromises[0]!.suggestedUrgency).toBe('HIGH');
+    expect(result.promisesDetected).toHaveLength(2);
+    expect(result.promisesDetected[0]!.description).toBe('A silver dagger placed with emphasis');
+    expect(result.promisesDetected[0]!.promiseType).toBe('CHEKHOV_GUN');
+    expect(result.promisesDetected[0]!.suggestedUrgency).toBe('HIGH');
   });
 
-  it('caps narrative promises at 3', () => {
+  it('caps detected promises at 3', () => {
     const json = {
       ...buildBaseAnalystJson(),
-      narrativePromises: [
+      promisesDetected: [
         { description: 'Promise 1', promiseType: 'CHEKHOV_GUN', suggestedUrgency: 'HIGH' },
         { description: 'Promise 2', promiseType: 'FORESHADOWING', suggestedUrgency: 'MEDIUM' },
         { description: 'Promise 3', promiseType: 'DRAMATIC_IRONY', suggestedUrgency: 'LOW' },
@@ -62,13 +64,13 @@ describe('validateAnalystResponse - narrativePromises', () => {
     };
 
     const result = validateAnalystResponse(json, 'raw');
-    expect(result.narrativePromises).toHaveLength(3);
+    expect(result.promisesDetected).toHaveLength(3);
   });
 
-  it('filters out empty description promises', () => {
+  it('filters out empty description detected promises', () => {
     const json = {
       ...buildBaseAnalystJson(),
-      narrativePromises: [
+      promisesDetected: [
         { description: '', promiseType: 'CHEKHOV_GUN', suggestedUrgency: 'HIGH' },
         { description: '  ', promiseType: 'FORESHADOWING', suggestedUrgency: 'MEDIUM' },
         { description: 'Valid promise', promiseType: 'FORESHADOWING', suggestedUrgency: 'LOW' },
@@ -76,15 +78,84 @@ describe('validateAnalystResponse - narrativePromises', () => {
     };
 
     const result = validateAnalystResponse(json, 'raw');
-    expect(result.narrativePromises).toHaveLength(1);
-    expect(result.narrativePromises[0]!.description).toBe('Valid promise');
+    expect(result.promisesDetected).toHaveLength(1);
+    expect(result.promisesDetected[0]!.description).toBe('Valid promise');
+  });
+
+  it('defaults to empty array when detected field is missing', () => {
+    const json = buildBaseAnalystJson();
+    delete json['promisesDetected'];
+    const result = validateAnalystResponse(json, 'raw');
+    expect(result.promisesDetected).toEqual([]);
+  });
+});
+
+describe('validateAnalystResponse - promisesResolved', () => {
+  it('trims and keeps non-empty resolved IDs', () => {
+    const json = {
+      ...buildBaseAnalystJson(),
+      promisesResolved: [' pr-1 ', '', '   ', 'pr-2'],
+    };
+    const result = validateAnalystResponse(json, 'raw');
+    expect(result.promisesResolved).toEqual(['pr-1', 'pr-2']);
   });
 
   it('defaults to empty array when field is missing', () => {
     const json = buildBaseAnalystJson();
-    delete json['narrativePromises'];
+    delete json['promisesResolved'];
     const result = validateAnalystResponse(json, 'raw');
-    expect(result.narrativePromises).toEqual([]);
+    expect(result.promisesResolved).toEqual([]);
+  });
+});
+
+describe('validateAnalystResponse - promisePayoffAssessments', () => {
+  it('parses promise payoff assessments', () => {
+    const json = {
+      ...buildBaseAnalystJson(),
+      promisePayoffAssessments: [
+        {
+          promiseId: 'pr-7',
+          description: 'Dagger prophecy',
+          satisfactionLevel: 'WELL_EARNED',
+          reasoning: 'Paid off through hard choices over multiple scenes.',
+        },
+      ],
+    };
+
+    const result = validateAnalystResponse(json, 'raw');
+    expect(result.promisePayoffAssessments).toHaveLength(1);
+    expect(result.promisePayoffAssessments[0]!.promiseId).toBe('pr-7');
+    expect(result.promisePayoffAssessments[0]!.satisfactionLevel).toBe('WELL_EARNED');
+  });
+
+  it('filters out assessments with empty promiseId', () => {
+    const json = {
+      ...buildBaseAnalystJson(),
+      promisePayoffAssessments: [
+        {
+          promiseId: '',
+          description: 'Bad',
+          satisfactionLevel: 'RUSHED',
+          reasoning: 'Bad',
+        },
+        {
+          promiseId: 'pr-2',
+          description: 'Valid',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'OK',
+        },
+      ],
+    };
+    const result = validateAnalystResponse(json, 'raw');
+    expect(result.promisePayoffAssessments).toHaveLength(1);
+    expect(result.promisePayoffAssessments[0]!.promiseId).toBe('pr-2');
+  });
+
+  it('defaults to empty array when field is missing', () => {
+    const json = buildBaseAnalystJson();
+    delete json['promisePayoffAssessments'];
+    const result = validateAnalystResponse(json, 'raw');
+    expect(result.promisePayoffAssessments).toEqual([]);
   });
 });
 

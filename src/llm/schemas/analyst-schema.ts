@@ -103,7 +103,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'If toneAdherent is false, briefly describes what feels off and what the tone should be. Empty string when toneAdherent is true.',
         },
-        narrativePromises: {
+        promisesDetected: {
           type: 'array',
           description:
             "Implicit foreshadowing or Chekhov's guns planted in the narrative prose with notable emphasis. Only flag items introduced with deliberate narrative weight, not incidental details. Max 3 per page.",
@@ -126,6 +126,42 @@ export const ANALYST_SCHEMA: JsonSchema = {
               },
             },
             required: ['description', 'promiseType', 'suggestedUrgency'],
+            additionalProperties: false,
+          },
+        },
+        promisesResolved: {
+          type: 'array',
+          description:
+            'IDs of active tracked promises resolved in this scene (e.g., "pr-3"). Empty when no promises are paid off.',
+          items: { type: 'string' },
+        },
+        promisePayoffAssessments: {
+          type: 'array',
+          description:
+            'Quality assessment of promise resolutions that occurred in this scene. Only include entries for resolved promises.',
+          items: {
+            type: 'object',
+            properties: {
+              promiseId: {
+                type: 'string',
+                description: 'The ID of the resolved promise (e.g., "pr-3").',
+              },
+              description: {
+                type: 'string',
+                description: 'The description of the resolved promise.',
+              },
+              satisfactionLevel: {
+                type: 'string',
+                enum: ['RUSHED', 'ADEQUATE', 'WELL_EARNED'],
+                description:
+                  'How satisfying the promise resolution was. RUSHED = resolved via exposition or off-screen. ADEQUATE = resolved through action but without buildup. WELL_EARNED = resolution developed through action and consequence.',
+              },
+              reasoning: {
+                type: 'string',
+                description: 'Brief explanation of the satisfaction assessment.',
+              },
+            },
+            required: ['promiseId', 'description', 'satisfactionLevel', 'reasoning'],
             additionalProperties: false,
           },
         },
@@ -181,7 +217,9 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'completionGateFailureReason',
         'toneAdherent',
         'toneDriftDescription',
-        'narrativePromises',
+        'promisesDetected',
+        'promisesResolved',
+        'promisePayoffAssessments',
         'threadPayoffAssessments',
       ],
       additionalProperties: false,

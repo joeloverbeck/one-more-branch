@@ -17,14 +17,13 @@ import {
 } from '../models';
 import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
-import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
+import type { AnalystResult } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PageWriterResult } from '../llm/writer-types';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
-import { THREAD_PACING } from '../config/thread-pacing-config.js';
 
 type PageBuildResult = PageWriterResult &
   Pick<
@@ -62,8 +61,7 @@ export interface PageBuildContext {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
-  readonly parentInheritedNarrativePromises: readonly TrackedPromise[];
-  readonly parentAnalystNarrativePromises: readonly DetectedPromise[];
+  readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -93,8 +91,7 @@ export interface ContinuationPageBuildContext {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
-  readonly parentInheritedNarrativePromises: readonly TrackedPromise[];
-  readonly parentAnalystNarrativePromises: readonly DetectedPromise[];
+  readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -145,56 +142,36 @@ export function computeContinuationThreadAges(
 }
 
 /**
- * Computes inherited narrative promises for a continuation page.
- * Carries forward parent's inherited + parent's analyst-detected promises,
- * respecting the cap and age-out limits.
+ * Computes accumulated tracked promises for the new page.
+ * Parent promises are resolved/aged and new detections are assigned IDs.
  */
-export function computeInheritedNarrativePromises(
-  parentInherited: readonly TrackedPromise[],
-  parentAnalystDetected: readonly DetectedPromise[],
-  threadsAddedTexts: readonly string[]
+export function computeAccumulatedPromises(
+  parentAccumulated: readonly TrackedPromise[],
+  analystResult: AnalystResult | null
 ): readonly TrackedPromise[] {
-  const nextPromiseStartId =
-    parentInherited.reduce((max, promise) => {
-      if (!promise.id.startsWith('pr-')) {
-        return max;
-      }
-      const parsed = Number.parseInt(promise.id.slice(3), 10);
-      return Number.isNaN(parsed) ? max : Math.max(max, parsed);
-    }, 0) + 1;
+  const maxParentPromiseId = parentAccumulated.reduce((max, promise) => {
+    if (!promise.id.startsWith('pr-')) {
+      return max;
+    }
+    const parsed = Number.parseInt(promise.id.slice(3), 10);
+    return Number.isNaN(parsed) ? max : Math.max(max, parsed);
+  }, 0);
 
-  const agedInherited = parentInherited.map((promise) => ({
-    ...promise,
-    age: promise.age + 1,
-  }));
+  const resolvedPromiseIds = new Set(analystResult?.promisesResolved ?? []);
+  const survivingAgedPromises = parentAccumulated
+    .filter((promise) => !resolvedPromiseIds.has(promise.id))
+    .map((promise) => ({ ...promise, age: promise.age + 1 }));
 
-  const mappedDetected = parentAnalystDetected.map((promise, index) => ({
-    id: `pr-${nextPromiseStartId + index}`,
+  const detectedPromises = analystResult?.promisesDetected ?? [];
+  const newlyTrackedPromises = detectedPromises.map((promise, index) => ({
+    id: `pr-${maxParentPromiseId + index + 1}`,
     description: promise.description,
     promiseType: promise.promiseType,
     suggestedUrgency: promise.suggestedUrgency,
     age: 0,
   }));
 
-  // Combine parent's inherited + parent's analyst-detected
-  const combined = [...agedInherited, ...mappedDetected];
-
-  // Simple heuristic to detect if a promise "became" a thread:
-  // if any newly added thread text contains substantial overlap with a promise description
-  const threadTextsLower = threadsAddedTexts.map((t) => t.toLowerCase());
-  const filtered = combined.filter((promise) => {
-    const descLower = promise.description.toLowerCase();
-    // Check if any new thread text has significant word overlap
-    return !threadTextsLower.some((threadText) => {
-      const promiseWords = descLower.split(/\s+/).filter((w) => w.length > 3);
-      if (promiseWords.length === 0) return false;
-      const matchCount = promiseWords.filter((word) => threadText.includes(word)).length;
-      return matchCount / promiseWords.length >= 0.3;
-    });
-  });
-
-  // Cap at max inherited promises (drop oldest = earliest in array)
-  return filtered.slice(-THREAD_PACING.MAX_INHERITED_PROMISES);
+  return [...survivingAgedPromises, ...newlyTrackedPromises];
 }
 
 /**
@@ -242,8 +219,6 @@ function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
 
 /**
  * Builds any page (opening or continuation) from LLM generation result.
- * For opening pages (parentPageId === null): uses first-page thread ages, empty narrative promises.
- * For continuation pages: computes thread ages from parent, inherits narrative promises.
  */
 export function buildPage(result: PageBuildResult, context: PageBuildContext): Page {
   const isOpening = context.parentPageId === null;
@@ -258,13 +233,10 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
         getMaxIdNumber(context.parentAccumulatedActiveState.openThreads, 'td')
       );
 
-  const inheritedNarrativePromises = isOpening
-    ? []
-    : computeInheritedNarrativePromises(
-        context.parentInheritedNarrativePromises,
-        context.parentAnalystNarrativePromises,
-        result.threadsAdded.map((t) => t.text)
-      );
+  const accumulatedPromises = computeAccumulatedPromises(
+    isOpening ? [] : context.parentAccumulatedPromises,
+    context.analystResult
+  );
 
   const resolvedThreadMeta = buildResolvedThreadMeta(
     result.threadsResolved,
@@ -298,7 +270,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     storyBible: context.storyBible,
     analystResult: context.analystResult,
     threadAges,
-    inheritedNarrativePromises,
+    accumulatedPromises,
     resolvedThreadMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
@@ -333,8 +305,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     storyBible: null,
     analystResult: null,
     parentThreadAges: {},
-    parentInheritedNarrativePromises: [],
-    parentAnalystNarrativePromises: [],
+    parentAccumulatedPromises: [],
     parentAccumulatedNpcAgendas: agendaRecord,
   });
 }
@@ -359,8 +330,7 @@ export function buildContinuationPage(
     storyBible: context.storyBible,
     analystResult: context.analystResult,
     parentThreadAges: context.parentThreadAges,
-    parentInheritedNarrativePromises: context.parentInheritedNarrativePromises,
-    parentAnalystNarrativePromises: context.parentAnalystNarrativePromises,
+    parentAccumulatedPromises: context.parentAccumulatedPromises,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
     npcAgendaUpdates: context.npcAgendaUpdates,
   });

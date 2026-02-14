@@ -43,6 +43,25 @@ function buildAnalystSystemPrompt(
   return sections.join('\n\n');
 }
 
+function buildActivePromisesSection(context: AnalystContext): string {
+  const activeTrackedPromises = context.activeTrackedPromises ?? [];
+  if (activeTrackedPromises.length === 0) {
+    return '';
+  }
+
+  const lines = [
+    'ACTIVE TRACKED PROMISES:',
+    ...activeTrackedPromises.map(
+      (promise) =>
+        `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages old) ${promise.description}`
+    ),
+    '',
+    'Use these IDs for promisesResolved when a promise is explicitly paid off in this scene.',
+  ];
+
+  return `${lines.join('\n')}\n`;
+}
+
 /**
  * Builds the analyst prompt messages for the analyst LLM call.
  * Returns a system message with analyst instructions and a user message
@@ -63,8 +82,9 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const toneReminder = context.tone
     ? `\n${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}\n`
     : '';
+  const activePromisesSection = buildActivePromisesSection(context);
 
-  const userContent = `${structureEvaluation}${toneReminder}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${activePromisesSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

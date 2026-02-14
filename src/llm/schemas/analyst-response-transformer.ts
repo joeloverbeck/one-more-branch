@@ -1,4 +1,4 @@
-import type { ThreadPayoffAssessment } from '../../models/state/index.js';
+import type { PromisePayoffAssessment, ThreadPayoffAssessment } from '../../models/state/index.js';
 import type { AnalystResult, DetectedPromise } from '../analyst-types.js';
 import { AnalystResultSchema } from './analyst-validation-schema.js';
 
@@ -44,6 +44,28 @@ function normalizeThreadPayoffAssessments(
     }));
 }
 
+function normalizePromisePayoffAssessments(
+  value: readonly {
+    promiseId: string;
+    description: string;
+    satisfactionLevel: string;
+    reasoning: string;
+  }[]
+): PromisePayoffAssessment[] {
+  return value
+    .filter((a) => a.promiseId.trim().length > 0)
+    .map((a) => ({
+      promiseId: a.promiseId.trim(),
+      description: a.description.trim(),
+      satisfactionLevel: a.satisfactionLevel as PromisePayoffAssessment['satisfactionLevel'],
+      reasoning: a.reasoning.trim(),
+    }));
+}
+
+function normalizeResolvedPromiseIds(value: readonly string[]): string[] {
+  return value.map((id) => id.trim()).filter((id) => id.length > 0);
+}
+
 function normalizeAnchorEvidence(value: readonly string[]): string[] {
   return value.map((item: string) => item.trim()).slice(0, MAX_OBJECTIVE_ANCHORS);
 }
@@ -86,7 +108,9 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     completionGateFailureReason,
     toneAdherent: validated.toneAdherent,
     toneDriftDescription: validated.toneDriftDescription.trim(),
-    narrativePromises: normalizeNarrativePromises(validated.narrativePromises),
+    promisesDetected: normalizeNarrativePromises(validated.promisesDetected),
+    promisesResolved: normalizeResolvedPromiseIds(validated.promisesResolved),
+    promisePayoffAssessments: normalizePromisePayoffAssessments(validated.promisePayoffAssessments),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
     rawResponse,
   };

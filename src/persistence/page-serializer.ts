@@ -105,10 +105,17 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
     completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
     toneAdherent: analystResult.toneAdherent ?? true,
     toneDriftDescription: analystResult.toneDriftDescription ?? '',
-    narrativePromises: (analystResult.narrativePromises ?? []).map((p) => ({
+    promisesDetected: (analystResult.promisesDetected ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
+    })),
+    promisesResolved: [...(analystResult.promisesResolved ?? [])],
+    promisePayoffAssessments: (analystResult.promisePayoffAssessments ?? []).map((a) => ({
+      promiseId: a.promiseId,
+      description: a.description,
+      satisfactionLevel: a.satisfactionLevel,
+      reasoning: a.reasoning,
     })),
     threadPayoffAssessments: (analystResult.threadPayoffAssessments ?? []).map((a) => ({
       threadId: a.threadId,
@@ -149,11 +156,19 @@ function deserializeAnalystResult(
     completionGateFailureReason: data.completionGateFailureReason,
     toneAdherent: data.toneAdherent ?? true,
     toneDriftDescription: data.toneDriftDescription ?? '',
-    narrativePromises: (data.narrativePromises ?? []).map((p) => ({
+    promisesDetected: (data.promisesDetected ?? []).map((p) => ({
       description: p.description,
-      promiseType: p.promiseType as AnalystResult['narrativePromises'][number]['promiseType'],
+      promiseType: p.promiseType as AnalystResult['promisesDetected'][number]['promiseType'],
       suggestedUrgency:
-        p.suggestedUrgency as AnalystResult['narrativePromises'][number]['suggestedUrgency'],
+        p.suggestedUrgency as AnalystResult['promisesDetected'][number]['suggestedUrgency'],
+    })),
+    promisesResolved: [...(data.promisesResolved ?? [])],
+    promisePayoffAssessments: (data.promisePayoffAssessments ?? []).map((a) => ({
+      promiseId: a.promiseId,
+      description: a.description,
+      satisfactionLevel:
+        a.satisfactionLevel as AnalystResult['promisePayoffAssessments'][number]['satisfactionLevel'],
+      reasoning: a.reasoning,
     })),
     threadPayoffAssessments: (data.threadPayoffAssessments ?? []).map((a) => ({
       threadId: a.threadId,
@@ -234,7 +249,7 @@ export function serializePage(page: Page): PageFileData {
     storyBible: serializeStoryBible(page.storyBible),
     analystResult: serializeAnalystResult(page.analystResult),
     threadAges: { ...page.threadAges },
-    inheritedNarrativePromises: page.inheritedNarrativePromises.map((p) => ({
+    accumulatedPromises: page.accumulatedPromises.map((p) => ({
       id: p.id,
       description: p.description,
       promiseType: p.promiseType,
@@ -336,7 +351,7 @@ export function deserializePage(data: PageFileData): Page {
     storyBible: deserializeStoryBible(data.storyBible),
     analystResult: deserializeAnalystResult(data.analystResult),
     threadAges: data.threadAges ?? {},
-    inheritedNarrativePromises: (data.inheritedNarrativePromises ?? []).map((p) => ({
+    accumulatedPromises: (data.accumulatedPromises ?? []).map((p) => ({
       id: p.id,
       description: p.description,
       promiseType: p.promiseType as TrackedPromise['promiseType'],

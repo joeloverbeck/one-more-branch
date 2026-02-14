@@ -12,7 +12,6 @@ import type {
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.js';
-import type { DetectedPromise } from './analyst-types.js';
 import type {
   AncestorSummary,
   MomentumTrajectory,
@@ -74,8 +73,7 @@ export interface ContinuationContext {
   momentumTrajectory?: MomentumTrajectory;
 
   threadAges?: Readonly<Record<string, number>>;
-  inheritedNarrativePromises?: readonly TrackedPromise[];
-  parentAnalystNarrativePromises?: readonly DetectedPromise[];
+  accumulatedPromises?: readonly TrackedPromise[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

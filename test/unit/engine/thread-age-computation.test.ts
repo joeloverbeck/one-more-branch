@@ -1,10 +1,10 @@
 import {
   computeContinuationThreadAges,
-  computeInheritedNarrativePromises,
+  computeAccumulatedPromises,
 } from '../../../src/engine/page-builder';
 import { PromiseType, Urgency } from '../../../src/models/state/keyed-entry';
 import type { TrackedPromise } from '../../../src/models/state/keyed-entry';
-import type { DetectedPromise } from '../../../src/llm/analyst-types';
+import type { AnalystResult, DetectedPromise } from '../../../src/llm/analyst-types';
 
 describe('computeContinuationThreadAges', () => {
   it('increments inherited thread ages by 1', () => {
@@ -62,8 +62,8 @@ describe('computeContinuationThreadAges', () => {
   });
 });
 
-describe('computeInheritedNarrativePromises', () => {
-  const makeInheritedPromise = (
+describe('computeAccumulatedPromises', () => {
+  const makeTrackedPromise = (
     id: string,
     desc: string,
     age: number,
@@ -85,10 +85,42 @@ describe('computeInheritedNarrativePromises', () => {
     suggestedUrgency: Urgency.MEDIUM,
   });
 
-  it('combines parent inherited and analyst-detected promises', () => {
-    const inherited = [makeInheritedPromise('pr-1', 'Old promise', 2)];
+  const makeAnalystResult = (overrides: Partial<AnalystResult> = {}): AnalystResult => ({
+    beatConcluded: false,
+    beatResolution: '',
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [],
+    narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
+    sceneMomentum: 'STASIS',
+    objectiveEvidenceStrength: 'NONE',
+    commitmentStrength: 'NONE',
+    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+    entryConditionReadiness: 'NOT_READY',
+    objectiveAnchors: [],
+    anchorEvidence: [],
+    completionGateSatisfied: false,
+    completionGateFailureReason: '',
+    toneAdherent: true,
+    toneDriftDescription: '',
+    promisesDetected: [],
+    promisesResolved: [],
+    promisePayoffAssessments: [],
+    threadPayoffAssessments: [],
+    rawResponse: '{}',
+    ...overrides,
+  });
+
+  it('ages survivors and adds analyst-detected promises with new IDs', () => {
+    const tracked = [makeTrackedPromise('pr-1', 'Old promise', 2)];
     const detected = [makeDetectedPromise('New foreshadowing')];
-    const result = computeInheritedNarrativePromises(inherited, detected, []);
+    const result = computeAccumulatedPromises(
+      tracked,
+      makeAnalystResult({ promisesDetected: detected })
+    );
     expect(result).toHaveLength(2);
     expect(result[0]!.description).toBe('Old promise');
     expect(result[0]!.age).toBe(3);
@@ -97,31 +129,37 @@ describe('computeInheritedNarrativePromises', () => {
     expect(result[1]!.age).toBe(0);
   });
 
-  it('caps at MAX_INHERITED_PROMISES (5)', () => {
-    const inherited = Array.from({ length: 4 }, (_, i) =>
-      makeInheritedPromise(`pr-${i + 1}`, `Inherited ${i}`, i)
+  it('does not cap inherited promises', () => {
+    const tracked = Array.from({ length: 4 }, (_, i) =>
+      makeTrackedPromise(`pr-${i + 1}`, `Tracked ${i}`, i)
     );
     const detected = Array.from({ length: 3 }, (_, i) => makeDetectedPromise(`Detected ${i}`));
-    const result = computeInheritedNarrativePromises(inherited, detected, []);
-    expect(result).toHaveLength(5);
-    // Should keep the latest 5 (drops oldest from beginning)
-    expect(result[0]!.description).toBe('Inherited 2');
+    const result = computeAccumulatedPromises(
+      tracked,
+      makeAnalystResult({ promisesDetected: detected })
+    );
+    expect(result).toHaveLength(7);
+    expect(result[0]!.description).toBe('Tracked 0');
+    expect(result[6]!.description).toBe('Detected 2');
   });
 
-  it('filters out promises that became threads via word overlap', () => {
-    const inherited = [
-      makeInheritedPromise('pr-1', 'A silver dagger was introduced with emphasis', 1),
-      makeInheritedPromise('pr-2', 'Unusual silence from northern watchtower', 0),
+  it('removes promises explicitly resolved by analyst', () => {
+    const tracked = [
+      makeTrackedPromise('pr-1', 'A silver dagger was introduced with emphasis', 1),
+      makeTrackedPromise('pr-2', 'Unusual silence from northern watchtower', 0),
     ];
-    const threadsAdded = ['The silver dagger proves to be enchanted and very dangerous'];
-    const result = computeInheritedNarrativePromises(inherited, [], threadsAdded);
+    const result = computeAccumulatedPromises(
+      tracked,
+      makeAnalystResult({ promisesResolved: ['pr-1'] })
+    );
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe('pr-2');
     expect(result[0]!.description).toBe('Unusual silence from northern watchtower');
+    expect(result[0]!.age).toBe(1);
   });
 
   it('returns empty when no promises exist', () => {
-    const result = computeInheritedNarrativePromises([], [], []);
+    const result = computeAccumulatedPromises([], makeAnalystResult());
     expect(result).toEqual([]);
   });
 });

@@ -3,7 +3,6 @@ import type {
   TrackedPromise,
   ThreadPayoffAssessment,
 } from '../../../../models/state/index.js';
-import type { DetectedPromise } from '../../../analyst-types.js';
 import { THREAD_PACING } from '../../../../config/thread-pacing-config.js';
 
 const URGENCY_THRESHOLDS: Record<string, number> = {
@@ -60,25 +59,26 @@ export function buildThreadAgingSection(
 }
 
 export function buildNarrativePromisesSection(
-  inheritedPromises: readonly TrackedPromise[],
-  parentAnalystPromises: readonly DetectedPromise[]
+  accumulatedPromises: readonly TrackedPromise[]
 ): string {
-  const allPromises = [...inheritedPromises, ...parentAnalystPromises];
-  if (allPromises.length === 0) {
+  if (accumulatedPromises.length === 0) {
     return '';
   }
 
+  const sortedByAge = [...accumulatedPromises].sort((a, b) => b.age - a.age);
+
   const lines = ['=== NARRATIVE PROMISES (implicit foreshadowing not yet captured as threads) ==='];
 
-  for (const promise of allPromises) {
-    lines.push(`- [${promise.promiseType}/${promise.suggestedUrgency}] ${promise.description}`);
+  for (const promise of sortedByAge) {
+    const oldTag =
+      promise.age >= THREAD_PACING.PROMISE_AGING_NOTICE_PAGES ? ', reincorporation opportunity' : '';
+    lines.push(
+      `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages old${oldTag}) ${promise.description}`
+    );
   }
 
   lines.push('');
-  lines.push(
-    'Consider converting important promises to formal threads via stateIntents, ' +
-      'or address them directly in sceneIntent.'
-  );
+  lines.push('These are opportunities for reincorporation, not mandatory beats.');
   lines.push('');
 
   return lines.join('\n') + '\n';

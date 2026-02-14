@@ -47,6 +47,13 @@ const NarrativePromiseSchema = z.object({
   suggestedUrgency: UrgencySchema,
 });
 
+const PromisePayoffAssessmentSchema = z.object({
+  promiseId: z.string().default(''),
+  description: z.string().default(''),
+  satisfactionLevel: SatisfactionLevelSchema,
+  reasoning: z.string().default(''),
+});
+
 const ThreadPayoffAssessmentSchema = z.object({
   threadId: z.string().default(''),
   threadText: z.string().default(''),
@@ -75,6 +82,8 @@ export const AnalystResultSchema = z.object({
   completionGateFailureReason: z.string().catch('').default(''),
   toneAdherent: z.boolean().catch(true).default(true),
   toneDriftDescription: z.string().catch('').default(''),
-  narrativePromises: z.array(NarrativePromiseSchema).catch([]).default([]),
+  promisesDetected: z.array(NarrativePromiseSchema).catch([]).default([]),
+  promisesResolved: z.array(z.string()).catch([]).default([]),
+  promisePayoffAssessments: z.array(PromisePayoffAssessmentSchema).catch([]).default([]),
   threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),
 });

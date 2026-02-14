@@ -101,6 +101,13 @@ export interface ThreadPayoffAssessmentFileData {
   reasoning: string;
 }
 
+export interface PromisePayoffAssessmentFileData {
+  promiseId: string;
+  description: string;
+  satisfactionLevel: string;
+  reasoning: string;
+}
+
 export interface NpcAgendaFileData {
   npcName: string;
   currentGoal: string;
@@ -130,7 +137,9 @@ export interface AnalystResultFileData {
   completionGateFailureReason: string;
   toneAdherent?: boolean;
   toneDriftDescription?: string;
-  narrativePromises?: DetectedPromiseFileData[];
+  promisesDetected?: DetectedPromiseFileData[];
+  promisesResolved?: string[];
+  promisePayoffAssessments?: PromisePayoffAssessmentFileData[];
   threadPayoffAssessments?: ThreadPayoffAssessmentFileData[];
 }
 
@@ -183,7 +192,7 @@ export interface PageFileData {
   storyBible?: StoryBibleFileData | null;
   analystResult?: AnalystResultFileData | null;
   threadAges?: Record<string, number>;
-  inheritedNarrativePromises?: TrackedPromiseFileData[];
+  accumulatedPromises?: TrackedPromiseFileData[];
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   npcAgendaUpdates?: NpcAgendaFileData[];
   accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;

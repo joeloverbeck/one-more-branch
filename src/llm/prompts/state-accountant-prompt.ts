@@ -111,10 +111,7 @@ ${context.reconciliationFailureReasons
 
   const narrativePromisesSection =
     context.mode === 'continuation'
-      ? buildNarrativePromisesSection(
-          context.inheritedNarrativePromises ?? [],
-          context.parentAnalystNarrativePromises ?? []
-        )
+      ? buildNarrativePromisesSection(context.accumulatedPromises ?? [])
       : '';
 
   const payoffFeedbackSection =

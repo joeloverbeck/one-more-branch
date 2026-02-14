@@ -238,6 +238,7 @@ export async function generatePage(
             : parentState!.accumulatedActiveState,
           threadsResolved: reconciliation.threadsResolved,
           threadAges: parentPage?.threadAges ?? {},
+          activeTrackedPromises: parentPage?.accumulatedPromises ?? [],
           tone: story.tone,
           toneKeywords: story.toneKeywords,
           toneAntiKeywords: story.toneAntiKeywords,
@@ -329,7 +330,6 @@ export async function generatePage(
   });
 
   // --- Build page ---
-  const parentAnalystPromises = parentPage?.analystResult?.narrativePromises ?? [];
   const latestVersion = getLatestStructureVersion(storyForPage);
 
   const page = buildPage(result, {
@@ -352,8 +352,7 @@ export async function generatePage(
     storyBible: writerWithLorekeeper.getLastStoryBible(),
     analystResult,
     parentThreadAges: parentPage?.threadAges ?? {},
-    parentInheritedNarrativePromises: parentPage?.inheritedNarrativePromises ?? [],
-    parentAnalystNarrativePromises: parentAnalystPromises,
+    parentAccumulatedPromises: parentPage?.accumulatedPromises ?? [],
     parentAccumulatedNpcAgendas,
     npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
   });

@@ -1,6 +1,8 @@
 import type {
   ActiveState,
+  PromisePayoffAssessment,
   PromiseType,
+  TrackedPromise,
   ThreadPayoffAssessment,
   Urgency,
 } from '../models/state/index.js';
@@ -52,7 +54,9 @@ export interface AnalystResult {
   completionGateFailureReason: string;
   toneAdherent: boolean;
   toneDriftDescription: string;
-  narrativePromises: DetectedPromise[];
+  promisesDetected: DetectedPromise[];
+  promisesResolved: string[];
+  promisePayoffAssessments: PromisePayoffAssessment[];
   threadPayoffAssessments: ThreadPayoffAssessment[];
   rawResponse: string;
 }
@@ -67,4 +71,5 @@ export interface AnalystContext {
   tone: string;
   toneKeywords?: readonly string[];
   toneAntiKeywords?: readonly string[];
+  activeTrackedPromises: readonly TrackedPromise[];
 }

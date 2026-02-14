@@ -9,7 +9,6 @@ import type {
   TrackedPromise,
   ThreadPayoffAssessment,
 } from '../../../../../../src/models/state/keyed-entry';
-import type { DetectedPromise } from '../../../../../../src/llm/analyst-types';
 
 function makeThread(id: string, type: ThreadType, urgency: Urgency, text: string): ThreadEntry {
   return { id, text, threadType: type, urgency };
@@ -66,34 +65,32 @@ describe('buildThreadAgingSection', () => {
 
 describe('buildNarrativePromisesSection', () => {
   const makeTrackedPromise = (
+    id: string,
+    age: number,
     desc: string,
     type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING
   ): TrackedPromise => ({
-    id: 'pr-1',
-    age: 2,
-    description: desc,
-    promiseType: type,
-    suggestedUrgency: Urgency.MEDIUM,
-  });
-
-  const makeDetectedPromise = (
-    desc: string,
-    type: DetectedPromise['promiseType'] = PromiseType.FORESHADOWING
-  ): DetectedPromise => ({
+    id,
+    age,
     description: desc,
     promiseType: type,
     suggestedUrgency: Urgency.MEDIUM,
   });
 
   it('returns empty string when no promises', () => {
-    expect(buildNarrativePromisesSection([], [])).toBe('');
+    expect(buildNarrativePromisesSection([])).toBe('');
   });
 
-  it('includes inherited and analyst-detected promises', () => {
-    const inherited = [makeTrackedPromise('Old foreshadowing')];
-    const detected = [makeDetectedPromise('New chekhov gun', PromiseType.CHEKHOV_GUN)];
-    const result = buildNarrativePromisesSection(inherited, detected);
+  it('includes tracked promises with age and IDs sorted oldest-first', () => {
+    const promises = [
+      makeTrackedPromise('pr-2', 1, 'New chekhov gun', PromiseType.CHEKHOV_GUN),
+      makeTrackedPromise('pr-1', 6, 'Old foreshadowing'),
+    ];
+    const result = buildNarrativePromisesSection(promises);
     expect(result).toContain('NARRATIVE PROMISES');
+    expect(result).toContain('[pr-1]');
+    expect(result).toContain('6 pages old');
+    expect(result).toContain('reincorporation opportunity');
     expect(result).toContain('Old foreshadowing');
     expect(result).toContain('New chekhov gun');
     expect(result).toContain('CHEKHOV_GUN');

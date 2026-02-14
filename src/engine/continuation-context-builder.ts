@@ -53,8 +53,7 @@ export function buildContinuationContext(
     accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
 
     threadAges: parentPage.threadAges,
-    inheritedNarrativePromises: parentPage.inheritedNarrativePromises,
-    parentAnalystNarrativePromises: parentPage.analystResult?.narrativePromises ?? [],
+    accumulatedPromises: parentPage.accumulatedPromises,
     parentThreadPayoffAssessments: parentPage.analystResult?.threadPayoffAssessments ?? [],
   };
 }

@@ -1320,7 +1320,9 @@ describe('playRoutes', () => {
         completionGateFailureReason: '',
         toneAdherent: true,
         toneDriftDescription: '',
-        narrativePromises: [],
+        promisesDetected: [],
+    promisesResolved: [],
+    promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         rawResponse: '{}',
       };
