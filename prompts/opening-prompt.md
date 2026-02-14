@@ -4,6 +4,7 @@
 - System prompt source: `buildOpeningSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/writer-schema.ts`
 - Protagonist speech formatter: `formatSpeechFingerprintForWriter()` from `src/models/decomposed-character.ts`
+- NPC voice injection: `buildSceneCharacterVoicesSection()` from `src/llm/prompts/sections/shared/scene-character-voices.ts`
 
 ## Story Bible Conditional Behavior
 
@@ -16,12 +17,22 @@ The following sections are **always included** regardless of Story Bible presenc
 
 - Starting situation (user-provided grounding, independent of the story bible)
 - Protagonist speech fingerprint (when decomposed characters are available)
+- NPC voice fingerprints (when story bible + decomposed characters are available; falls back to lorekeeper's `speechPatterns` for unmatched NPCs)
 - Planner guidance and choice intents
 - Reconciliation failure reasons (if retry)
 
 ## Protagonist Speech Fingerprint
 
-When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST SPEECH FINGERPRINT` section is inserted immediately after CHARACTER CONCEPT. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence, since the Story Bible covers NPC speech but not the protagonist's.
+When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST SPEECH FINGERPRINT` section is inserted into the user prompt. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence.
+
+## NPC Voice Fingerprints
+
+When both a `storyBible` and `decomposedCharacters` are available, an `NPC VOICE FINGERPRINTS` section is inserted immediately after the protagonist speech section. For each NPC in the lorekeeper's `relevantCharacters` (excluding the protagonist by name match):
+
+- **Matched NPC**: If the NPC name matches a `decomposedCharacters` entry (case-insensitive via `normalizeForComparison()`), the full `SpeechFingerprint` is formatted via `formatSpeechFingerprintForWriter()` — including vocabulary, catchphrases, dialogue samples, anti-examples, discourse markers, register shifts, etc.
+- **Unmatched NPC**: Falls back to the lorekeeper's compressed `speechPatterns` string.
+
+This bypasses the lossy compression that previously buried structured speech data inside a single lorekeeper string, while keeping the lorekeeper responsible for **selecting** which NPCs are scene-relevant.
 
 When `storyBible` is absent (lorekeeper failure), all original sections appear as documented below.
 
@@ -192,6 +203,14 @@ Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
   "sample line 2"{{/if}}
 {{/if}}
 
+{{#if storyBible && decomposedCharacters[0]}}
+NPC VOICE FINGERPRINTS (use these to write distinct NPC dialogue):
+{{for each storyBible.relevantCharacter (excluding protagonist by name match):
+  if matched in decomposedCharacters → full SpeechFingerprint via formatSpeechFingerprintForWriter()
+  if unmatched → "[name] Speech: speechPatterns" (lorekeeper fallback)
+}}
+{{/if}}
+
 {{#if !storyBible && worldbuilding}}
 WORLDBUILDING:
 {{worldbuilding}}
@@ -216,7 +235,6 @@ SCENE CHARACTERS:
 {{storyBible.relevantCharacters rendered as:
 [name] (role)
   Profile: relevantProfile
-  Speech: speechPatterns
   Relationship to protagonist: protagonistRelationship
   Inter-character dynamics: interCharacterDynamics (if non-empty)
   Current state: currentState}}

@@ -5,7 +5,11 @@ import type { OpeningContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildOpeningSystemPrompt, composeOpeningDataRules } from './system-prompt.js';
-import { buildToneReminder, formatStoryBibleSection } from './sections/shared/index.js';
+import {
+  buildToneReminder,
+  formatStoryBibleSection,
+  buildSceneCharacterVoicesSection,
+} from './sections/shared/index.js';
 
 export function buildOpeningPrompt(
   context: OpeningContext,
@@ -91,13 +95,21 @@ ${formatSpeechFingerprintForWriter(protagonistSpeech.speechFingerprint)}
 `
     : '';
 
+  const sceneCharacterVoicesSection =
+    context.storyBible && protagonistSpeech
+      ? buildSceneCharacterVoicesSection(
+          context.storyBible,
+          protagonistSpeech.name,
+          context.decomposedCharacters
+        )
+      : '';
+
   const userPrompt = `Create the opening scene for a new interactive story.
 
 === DATA & STATE RULES ===
 ${dataRules}
 
-${protagonistSpeechSection}
-
+${protagonistSpeechSection}${sceneCharacterVoicesSection}
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):

@@ -234,9 +234,12 @@ The Lorekeeper is instructed (principle #9) to prefer decomposed structure for s
 
 The Story Bible produced by the Lorekeeper is stored on the writer context's `storyBible` field (both `OpeningContext.storyBible` and `ContinuationContext.storyBible`) and persisted on the `Page` object as `storyBible: StoryBible | null`. When either writer prompt detects a non-null `storyBible`, it:
 
-1. Inserts a `=== STORY BIBLE (curated for this scene) ===` section
+1. Inserts a `=== STORY BIBLE (curated for this scene) ===` section (with `Speech:` line removed — NPC speech data is now injected separately)
 2. Suppresses: worldbuilding, NPCs, global canon, character canon, character state, ancestor summaries
 3. Keeps: active state, inventory, health, protagonist affect, structure, planner guidance, grandparent/parent narrative (continuation), starting situation (opening)
+4. Injects an `NPC VOICE FINGERPRINTS` section: for each NPC the lorekeeper selected as scene-relevant, the engine looks up the full `SpeechFingerprint` from `decomposedCharacters` (case-insensitive name match) and injects it directly into the writer prompt. NPCs not found in `decomposedCharacters` fall back to the lorekeeper's `speechPatterns` string.
+
+The `speechPatterns` field in the lorekeeper schema/types is **retained** as a fallback for NPCs that don't have decomposed character data (e.g., NPCs introduced mid-story without entity decomposition). However, for NPCs with decomposed profiles, the writer now receives the full 9-field fingerprint (vocabulary, catchphrases, dialogue samples, anti-examples, discourse markers, register shifts, etc.) instead of a compressed single string.
 
 See `prompts/opening-prompt.md` and `prompts/continuation-prompt.md` for details on the conditional behavior in each mode.
 

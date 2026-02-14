@@ -5,7 +5,11 @@ import type { ContinuationContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildContinuationSystemPrompt, composeContinuationDataRules } from './system-prompt.js';
-import { buildToneReminder, formatStoryBibleSection } from './sections/shared/index.js';
+import {
+  buildToneReminder,
+  formatStoryBibleSection,
+  buildSceneCharacterVoicesSection,
+} from './sections/shared/index.js';
 import {
   buildProtagonistAffectSection,
   buildSceneContextSection,
@@ -204,12 +208,21 @@ ${formatSpeechFingerprintForWriter(protagonistDecomposed.speechFingerprint)}
 `
     : '';
 
+  const sceneCharacterVoicesSection =
+    context.storyBible && protagonistDecomposed
+      ? buildSceneCharacterVoicesSection(
+          context.storyBible,
+          protagonistDecomposed.name,
+          context.decomposedCharacters
+        )
+      : '';
+
   const userPrompt = `Continue the interactive story based on the player's choice.
 
 === DATA & STATE RULES ===
 ${dataRules}
 
-${protagonistSpeechSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
+${protagonistSpeechSection}${sceneCharacterVoicesSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 

@@ -17,3 +17,5 @@ export { PROTAGONIST_AFFECT } from './protagonist-affect.js';
 export { buildToneBlock, buildToneReminder } from './tone-block.js';
 
 export { formatStoryBibleSection } from './story-bible-section.js';
+
+export { buildSceneCharacterVoicesSection } from './scene-character-voices.js';

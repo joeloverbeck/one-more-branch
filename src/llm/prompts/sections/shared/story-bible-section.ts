@@ -12,7 +12,6 @@ export function formatStoryBibleSection(bible: StoryBible): string {
     for (const char of bible.relevantCharacters) {
       result += `[${char.name}] (${char.role})\n`;
       result += `  Profile: ${char.relevantProfile}\n`;
-      result += `  Speech: ${char.speechPatterns}\n`;
       result += `  Relationship to protagonist: ${char.protagonistRelationship}\n`;
       if (char.interCharacterDynamics) {
         result += `  Inter-character dynamics: ${char.interCharacterDynamics}\n`;
