@@ -1,3 +1,5 @@
+**Status**: NOT IMPLEMENTED
+
 # Proposed improvements to entity decomposition process
 
 We provided the prompts at prompts/* to ChatGPT so that it could suggest improvements, and it said:
