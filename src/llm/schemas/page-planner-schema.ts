@@ -1,4 +1,11 @@
 import type { JsonSchema } from '../llm-client-types.js';
+import {
+  PAGE_PLANNER_CHOICE_INTENT_REQUIRED_FIELDS,
+  PAGE_PLANNER_CHOICE_TYPE_ENUM,
+  PAGE_PLANNER_PRIMARY_DELTA_ENUM,
+  PAGE_PLANNER_REQUIRED_FIELDS,
+  PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
+} from '../page-planner-contract.js';
 
 export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -20,7 +27,7 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             mustIncludeBeats: { type: 'array', items: { type: 'string' } },
             forbiddenRecaps: { type: 'array', items: { type: 'string' } },
           },
-          required: ['openingLineDirective', 'mustIncludeBeats', 'forbiddenRecaps'],
+          required: [...PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS],
           additionalProperties: false,
         },
         dramaticQuestion: {
@@ -39,50 +46,23 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
               },
               choiceType: {
                 type: 'string',
-                enum: [
-                  'TACTICAL_APPROACH',
-                  'MORAL_DILEMMA',
-                  'IDENTITY_EXPRESSION',
-                  'RELATIONSHIP_SHIFT',
-                  'RESOURCE_COMMITMENT',
-                  'INVESTIGATION',
-                  'PATH_DIVERGENCE',
-                  'CONFRONTATION',
-                  'AVOIDANCE_RETREAT',
-                ],
+                enum: PAGE_PLANNER_CHOICE_TYPE_ENUM,
                 description: 'The intended ChoiceType for this choice.',
               },
               primaryDelta: {
                 type: 'string',
-                enum: [
-                  'LOCATION_CHANGE',
-                  'GOAL_SHIFT',
-                  'RELATIONSHIP_CHANGE',
-                  'URGENCY_CHANGE',
-                  'ITEM_CONTROL',
-                  'EXPOSURE_CHANGE',
-                  'CONDITION_CHANGE',
-                  'INFORMATION_REVEALED',
-                  'THREAT_SHIFT',
-                  'CONSTRAINT_CHANGE',
-                ],
+                enum: PAGE_PLANNER_PRIMARY_DELTA_ENUM,
                 description: 'The intended PrimaryDelta for this choice.',
               },
             },
-            required: ['hook', 'choiceType', 'primaryDelta'],
+            required: [...PAGE_PLANNER_CHOICE_INTENT_REQUIRED_FIELDS],
             additionalProperties: false,
           },
           description:
             'Array of 2-4 proposed choice intents for the writer. Each intent suggests a hook, choiceType, and primaryDelta. The writer may adjust these if the narrative takes an unexpected turn.',
         },
       },
-      required: [
-        'sceneIntent',
-        'continuityAnchors',
-        'writerBrief',
-        'dramaticQuestion',
-        'choiceIntents',
-      ],
+      required: [...PAGE_PLANNER_REQUIRED_FIELDS],
       additionalProperties: false,
     },
   },

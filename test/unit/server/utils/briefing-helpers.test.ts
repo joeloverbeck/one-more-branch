@@ -20,7 +20,14 @@ function buildCharacter(overrides: Partial<DecomposedCharacter> = {}): Decompose
       sentencePatterns: 'measured',
       verbalTics: [],
       dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
     },
+    decisionPattern: '',
+    coreBeliefs: [],
+    conflictPriority: '',
     ...overrides,
   };
 }

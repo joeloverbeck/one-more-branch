@@ -1,4 +1,8 @@
 import type { JsonSchema } from '../llm-client-types.js';
+import {
+  LOREKEEPER_CHARACTER_REQUIRED_FIELDS,
+  LOREKEEPER_REQUIRED_FIELDS,
+} from '../lorekeeper-contract.js';
 
 export const LOREKEEPER_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -53,15 +57,7 @@ export const LOREKEEPER_SCHEMA: JsonSchema = {
                   "This character's situation and emotional state entering this scene, based on accumulated character state and recent narrative.",
               },
             },
-            required: [
-              'name',
-              'role',
-              'relevantProfile',
-              'speechPatterns',
-              'protagonistRelationship',
-              'interCharacterDynamics',
-              'currentState',
-            ],
+            required: [...LOREKEEPER_CHARACTER_REQUIRED_FIELDS],
             additionalProperties: false,
           },
           description:
@@ -79,12 +75,7 @@ export const LOREKEEPER_SCHEMA: JsonSchema = {
             'Synthesized narrative chronology from ancestor summaries. Preserve causality chains and temporal ordering. Focus on events that set up or influence this scene.',
         },
       },
-      required: [
-        'sceneWorldContext',
-        'relevantCharacters',
-        'relevantCanonFacts',
-        'relevantHistory',
-      ],
+      required: [...LOREKEEPER_REQUIRED_FIELDS],
       additionalProperties: false,
     },
   },

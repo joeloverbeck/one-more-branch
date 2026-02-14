@@ -1,6 +1,7 @@
 # Lorekeeper Prompt (Production Template)
 
 - Source: `src/llm/prompts/lorekeeper-prompt.ts`
+- Shared lorekeeper contract: `src/llm/lorekeeper-contract.ts`
 - Output schema source: `src/llm/schemas/lorekeeper-schema.ts`
 - Validation schema: `src/llm/schemas/lorekeeper-validation-schema.ts`
 - Response transformer: `src/llm/schemas/lorekeeper-response-transformer.ts`
@@ -189,6 +190,11 @@ The response transformer (`lorekeeper-response-transformer.ts`) applies the foll
 4. **Character validation**: Characters with empty `name` or `role` after trimming cause a validation error.
 5. **Default values**: Missing top-level fields default to empty string/array via Zod schema.
 6. **JSON string parsing**: If the input is a JSON string, it is parsed before validation.
+
+## Contract Ownership
+
+- Curation-principle text and required output field sets are centralized in `src/llm/lorekeeper-contract.ts`.
+- Prompt text, schema required arrays, and response-transformer field handling consume this contract to reduce drift.
 
 ## Context Provided
 

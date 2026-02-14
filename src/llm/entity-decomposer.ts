@@ -8,6 +8,12 @@ import {
   readErrorDetails,
   readJsonResponse,
 } from './http-client.js';
+import {
+  CHARACTER_ARRAY_FIELDS,
+  CHARACTER_STRING_FIELDS,
+  SPEECH_ARRAY_FIELDS,
+  SPEECH_STRING_FIELDS,
+} from './entity-decomposition-contract.js';
 import type {
   EntityDecomposerContext,
   EntityDecompositionResult,
@@ -37,6 +43,16 @@ function isValidDomain(value: unknown): value is WorldFactDomain {
   return typeof value === 'string' && VALID_DOMAINS.includes(value as WorldFactDomain);
 }
 
+function parseStringField(raw: Record<string, unknown>, key: string): string {
+  return typeof raw[key] === 'string' ? raw[key] : '';
+}
+
+function parseStringArrayField(raw: Record<string, unknown>, key: string): string[] {
+  return Array.isArray(raw[key])
+    ? (raw[key] as unknown[]).filter((s): s is string => typeof s === 'string')
+    : [];
+}
+
 function parseSpeechFingerprint(raw: Record<string, unknown>): SpeechFingerprint {
   const fp = raw['speechFingerprint'];
   if (typeof fp !== 'object' || fp === null || Array.isArray(fp)) {
@@ -44,26 +60,17 @@ function parseSpeechFingerprint(raw: Record<string, unknown>): SpeechFingerprint
   }
 
   const fpData = fp as Record<string, unknown>;
+  const speech = {} as Record<keyof SpeechFingerprint, string | string[]>;
 
-  const catchphrases = Array.isArray(fpData['catchphrases'])
-    ? (fpData['catchphrases'] as unknown[]).filter((s): s is string => typeof s === 'string')
-    : [];
+  for (const field of SPEECH_STRING_FIELDS) {
+    speech[field] = parseStringField(fpData, field);
+  }
 
-  const vocabularyProfile =
-    typeof fpData['vocabularyProfile'] === 'string' ? fpData['vocabularyProfile'] : '';
+  for (const field of SPEECH_ARRAY_FIELDS) {
+    speech[field] = parseStringArrayField(fpData, field);
+  }
 
-  const sentencePatterns =
-    typeof fpData['sentencePatterns'] === 'string' ? fpData['sentencePatterns'] : '';
-
-  const verbalTics = Array.isArray(fpData['verbalTics'])
-    ? (fpData['verbalTics'] as unknown[]).filter((s): s is string => typeof s === 'string')
-    : [];
-
-  const dialogueSamples = Array.isArray(fpData['dialogueSamples'])
-    ? (fpData['dialogueSamples'] as unknown[]).filter((s): s is string => typeof s === 'string')
-    : [];
-
-  return { catchphrases, vocabularyProfile, sentencePatterns, verbalTics, dialogueSamples };
+  return speech as SpeechFingerprint;
 }
 
 function parseCharacter(
@@ -90,32 +97,27 @@ function parseCharacter(
   }
 
   const speechFingerprint = parseSpeechFingerprint(data);
+  const character = {} as Record<keyof Omit<DecomposedCharacter, 'name' | 'speechFingerprint' | 'rawDescription'>, string | string[]>;
 
-  const coreTraits = Array.isArray(data['coreTraits'])
-    ? (data['coreTraits'] as unknown[]).filter((s): s is string => typeof s === 'string')
-    : [];
+  for (const field of CHARACTER_STRING_FIELDS) {
+    character[field] = parseStringField(data, field);
+  }
 
-  const motivations =
-    typeof data['motivations'] === 'string' ? data['motivations'] : '';
-
-  const relationships = Array.isArray(data['relationships'])
-    ? (data['relationships'] as unknown[]).filter((s): s is string => typeof s === 'string')
-    : [];
-
-  const knowledgeBoundaries =
-    typeof data['knowledgeBoundaries'] === 'string' ? data['knowledgeBoundaries'] : '';
-
-  const appearance =
-    typeof data['appearance'] === 'string' ? data['appearance'] : '';
+  for (const field of CHARACTER_ARRAY_FIELDS) {
+    character[field] = parseStringArrayField(data, field);
+  }
 
   return {
     name: data['name'].trim(),
     speechFingerprint,
-    coreTraits,
-    motivations,
-    relationships,
-    knowledgeBoundaries,
-    appearance,
+    coreTraits: character.coreTraits as string[],
+    motivations: character.motivations as string,
+    relationships: character.relationships as string[],
+    knowledgeBoundaries: character.knowledgeBoundaries as string,
+    decisionPattern: character.decisionPattern as string,
+    coreBeliefs: character.coreBeliefs as string[],
+    conflictPriority: character.conflictPriority as string,
+    appearance: character.appearance as string,
     rawDescription,
   };
 }

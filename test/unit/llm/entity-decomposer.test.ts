@@ -34,12 +34,19 @@ interface CharacterPayload {
     sentencePatterns: string;
     verbalTics: string[];
     dialogueSamples: string[];
+    metaphorFrames: string;
+    antiExamples: string[];
+    discourseMarkers: string[];
+    registerShifts: string;
   };
   coreTraits: string[];
   motivations: string;
   relationships: string[];
   knowledgeBoundaries: string;
   appearance: string;
+  decisionPattern: string;
+  coreBeliefs: string[];
+  conflictPriority: string;
 }
 
 interface WorldFactPayload {
@@ -59,12 +66,19 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
           sentencePatterns: 'Short declarative statements, rarely questions',
           verbalTics: ['clicks tongue when thinking'],
           dialogueSamples: ['Steel remembers what flesh forgets.', 'Move. Now.'],
+          metaphorFrames: 'Treats conflict as siegecraft where patience buys advantage.',
+          antiExamples: ['My dearest, let us muse on destiny together.'],
+          discourseMarkers: ['Look,', 'Bottom line:'],
+          registerShifts: 'Stays clipped in public, becomes blunt profanity under stress.',
         },
         coreTraits: ['stoic', 'loyal', 'haunted'],
         motivations: 'Seeks redemption for a betrayal that cost lives',
         relationships: ['Former commander of the Iron Guard', 'Distrusts the tribunal'],
         knowledgeBoundaries: 'Knows military tactics but ignorant of court politics',
         appearance: 'Tall, scarred face, missing two fingers on left hand',
+        decisionPattern: 'Delays commitment until data is sufficient, then executes decisively.',
+        coreBeliefs: ['Mercy without leverage is suicide', 'Promises outlive people'],
+        conflictPriority: 'Protect civilians over reputation.',
       },
       {
         name: 'Mirela',
@@ -77,12 +91,19 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
             'The cards never lie, darling... though they do enjoy a riddle.',
             'Oh, sweetling, you have no idea.',
           ],
+          metaphorFrames: 'Sees social life as theater and secrets as currency.',
+          antiExamples: ['Proceed to objective point alpha.'],
+          discourseMarkers: ['Anyway,', 'No, wait-'],
+          registerShifts: 'Performs in crowds, speaks quietly and directly in private.',
         },
         coreTraits: ['cunning', 'theatrical', 'compassionate'],
         motivations: 'Protect her travelling troupe from the war',
         relationships: ['Romantic tension with Kael', 'Secretly works for the resistance'],
         knowledgeBoundaries: 'Knows underground networks but not military strategy',
         appearance: 'Dark curly hair, colorful scarves, bright eyes',
+        decisionPattern: 'Runs social probes first, commits after reading room dynamics.',
+        coreBeliefs: ['Information is safer than steel', 'Debt is a leash'],
+        conflictPriority: 'Protect the troupe above political outcomes.',
       },
     ],
     worldFacts: [
@@ -175,7 +196,14 @@ describe('decomposeEntities', () => {
     expect(protagonist.speechFingerprint.vocabularyProfile).toBe(
       'Terse military vocabulary, clipped sentences'
     );
+    expect(protagonist.speechFingerprint.metaphorFrames).toContain('siegecraft');
+    expect(protagonist.speechFingerprint.antiExamples).toHaveLength(1);
+    expect(protagonist.speechFingerprint.discourseMarkers).toContain('Look,');
+    expect(protagonist.speechFingerprint.registerShifts).toContain('public');
     expect(protagonist.coreTraits).toEqual(['stoic', 'loyal', 'haunted']);
+    expect(protagonist.decisionPattern).toContain('decisively');
+    expect(protagonist.coreBeliefs).toContain('Promises outlive people');
+    expect(protagonist.conflictPriority).toContain('civilians');
 
     const npc = result.decomposedCharacters[1]!;
     expect(npc.name).toBe('Mirela');
@@ -257,6 +285,10 @@ describe('decomposeEntities', () => {
     (fp as Record<string, unknown>)['catchphrases'] = undefined;
     (fp as Record<string, unknown>)['verbalTics'] = undefined;
     (fp as Record<string, unknown>)['dialogueSamples'] = undefined;
+    (fp as Record<string, unknown>)['antiExamples'] = undefined;
+    (fp as Record<string, unknown>)['discourseMarkers'] = undefined;
+    (fp as Record<string, unknown>)['metaphorFrames'] = undefined;
+    (fp as Record<string, unknown>)['registerShifts'] = undefined;
     globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
 
     const result = await decomposeEntities(createMinimalContext(), 'test-key');
@@ -264,6 +296,57 @@ describe('decomposeEntities', () => {
     expect(speech.catchphrases).toEqual([]);
     expect(speech.verbalTics).toEqual([]);
     expect(speech.dialogueSamples).toEqual([]);
+    expect(speech.antiExamples).toEqual([]);
+    expect(speech.discourseMarkers).toEqual([]);
+    expect(speech.metaphorFrames).toBe('');
+    expect(speech.registerShifts).toBe('');
+  });
+
+  it('parses new voice and agency fields from valid payloads', async () => {
+    const payload = createValidPayload();
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    const speech = result.decomposedCharacters[0]!.speechFingerprint;
+
+    expect(speech.metaphorFrames).toBe(
+      'Treats conflict as siegecraft where patience buys advantage.'
+    );
+    expect(speech.antiExamples).toEqual(['My dearest, let us muse on destiny together.']);
+    expect(speech.discourseMarkers).toEqual(['Look,', 'Bottom line:']);
+    expect(speech.registerShifts).toBe('Stays clipped in public, becomes blunt profanity under stress.');
+    expect(result.decomposedCharacters[0]!.decisionPattern).toContain('Delays commitment');
+    expect(result.decomposedCharacters[0]!.coreBeliefs).toEqual([
+      'Mercy without leverage is suicide',
+      'Promises outlive people',
+    ]);
+    expect(result.decomposedCharacters[0]!.conflictPriority).toBe('Protect civilians over reputation.');
+  });
+
+  it('defaults new fields when malformed values are returned by the LLM', async () => {
+    const payload = createValidPayload();
+    const firstCharacter = payload.characters[0] as unknown as Record<string, unknown>;
+    const speech = firstCharacter['speechFingerprint'] as Record<string, unknown>;
+    speech['metaphorFrames'] = 99;
+    speech['antiExamples'] = 'invalid';
+    speech['discourseMarkers'] = { bad: true };
+    speech['registerShifts'] = false;
+    firstCharacter['decisionPattern'] = ['invalid'];
+    firstCharacter['coreBeliefs'] = 'invalid';
+    firstCharacter['conflictPriority'] = { nope: true };
+
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    const parsed = result.decomposedCharacters[0]!;
+
+    expect(parsed.speechFingerprint.metaphorFrames).toBe('');
+    expect(parsed.speechFingerprint.antiExamples).toEqual([]);
+    expect(parsed.speechFingerprint.discourseMarkers).toEqual([]);
+    expect(parsed.speechFingerprint.registerShifts).toBe('');
+    expect(parsed.decisionPattern).toBe('');
+    expect(parsed.coreBeliefs).toEqual([]);
+    expect(parsed.conflictPriority).toBe('');
   });
 
   it('throws on empty characters array', async () => {

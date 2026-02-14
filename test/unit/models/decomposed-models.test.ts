@@ -19,11 +19,18 @@ describe('formatDecomposedCharacterForPrompt', () => {
         sentencePatterns: 'Short declarative statements',
         verbalTics: ['clicks tongue'],
         dialogueSamples: ['Move. Now.'],
+        metaphorFrames: 'Frames conflict as siege and attrition.',
+        antiExamples: ['Permit me a delicate overture, my friend.'],
+        discourseMarkers: ['Look,'],
+        registerShifts: 'Formal around officers, crude under stress.',
       },
       coreTraits: ['stoic', 'loyal'],
       motivations: 'Seeks redemption',
       relationships: ['Former commander'],
       knowledgeBoundaries: 'Knows tactics, not politics',
+      decisionPattern: 'Calculates risk first, commits when cornered.',
+      coreBeliefs: ['Debt must be paid'],
+      conflictPriority: 'Protect civilians over status.',
       appearance: 'Tall, scarred',
       rawDescription: 'A disgraced guard.',
       ...overrides,
@@ -56,6 +63,13 @@ describe('formatDecomposedCharacterForPrompt', () => {
     expect(result).toContain('Catchphrases: "Steel remembers"');
     expect(result).toContain('Verbal tics: clicks tongue');
     expect(result).toContain('"Move. Now."');
+    expect(result).toContain('Metaphor frames: Frames conflict as siege and attrition.');
+    expect(result).toContain('Discourse markers: Look,');
+    expect(result).toContain('Register shifts: Formal around officers, crude under stress.');
+    expect(result).toContain('Anti-examples (how they do NOT sound):');
+    expect(result).toContain('Decision Pattern: Calculates risk first, commits when cornered.');
+    expect(result).toContain('Core Beliefs:');
+    expect(result).toContain('Conflict Priority: Protect civilians over status.');
   });
 
   it('includes relationships', () => {
@@ -72,12 +86,26 @@ describe('formatDecomposedCharacterForPrompt', () => {
         sentencePatterns: 'Normal',
         verbalTics: [],
         dialogueSamples: [],
+        metaphorFrames: '',
+        antiExamples: [],
+        discourseMarkers: [],
+        registerShifts: '',
       },
+      decisionPattern: '',
+      coreBeliefs: [],
+      conflictPriority: '',
     });
     const result = formatDecomposedCharacterForPrompt(char);
     expect(result).not.toContain('Catchphrases:');
     expect(result).not.toContain('Verbal tics:');
     expect(result).not.toContain('Example lines:');
+    expect(result).not.toContain('Metaphor frames:');
+    expect(result).not.toContain('Discourse markers:');
+    expect(result).not.toContain('Register shifts:');
+    expect(result).not.toContain('Anti-examples (how they do NOT sound):');
+    expect(result).not.toContain('Decision Pattern:');
+    expect(result).not.toContain('Core Beliefs:');
+    expect(result).not.toContain('Conflict Priority:');
   });
 });
 
@@ -89,11 +117,19 @@ describe('formatSpeechFingerprintForWriter', () => {
       sentencePatterns: 'Poetic inversions',
       verbalTics: ['whispers prayers'],
       dialogueSamples: ['The desert takes, the desert gives.'],
+      metaphorFrames: 'Treats fate as weather that must be read, not controlled.',
+      antiExamples: ['Proceed with standard operating protocol.'],
+      discourseMarkers: ['Listen,'],
+      registerShifts: 'Ceremonial in rituals, sparse and direct in danger.',
     };
     const result = formatSpeechFingerprintForWriter(fp);
     expect(result).toContain('Vocabulary: Desert nomad dialect');
     expect(result).toContain('Catchphrases: "Bless the Maker"');
     expect(result).toContain('"The desert takes, the desert gives."');
+    expect(result).toContain('Metaphor frames: Treats fate as weather that must be read, not controlled.');
+    expect(result).toContain('Discourse markers: Listen,');
+    expect(result).toContain('Register shifts: Ceremonial in rituals, sparse and direct in danger.');
+    expect(result).toContain('Anti-examples (how they do NOT sound):');
   });
 
   it('omits empty arrays', () => {
@@ -103,11 +139,19 @@ describe('formatSpeechFingerprintForWriter', () => {
       sentencePatterns: 'Normal',
       verbalTics: [],
       dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
     };
     const result = formatSpeechFingerprintForWriter(fp);
     expect(result).not.toContain('Catchphrases:');
     expect(result).not.toContain('Verbal tics:');
     expect(result).not.toContain('Example lines:');
+    expect(result).not.toContain('Metaphor frames:');
+    expect(result).not.toContain('Discourse markers:');
+    expect(result).not.toContain('Register shifts:');
+    expect(result).not.toContain('Anti-examples (how they do NOT sound):');
   });
 });
 

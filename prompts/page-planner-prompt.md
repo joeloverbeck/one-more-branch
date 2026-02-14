@@ -1,6 +1,7 @@
 # Page Planner Prompt (Production Template)
 
 - Source: `src/llm/prompts/page-planner-prompt.ts`
+- Shared planner contract: `src/llm/page-planner-contract.ts`
 - Planner context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts`
 - Story structure context builder: `src/llm/prompts/continuation/story-structure-section.ts`
 - Decomposed data formatters: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
@@ -114,3 +115,4 @@ This section is placed immediately before `PLAYER'S CHOICE:` in the planner cont
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
 - Planner continuation context still includes active state, canon, thread aging, pacing, and payoff feedback to inform scene and choice planning.
 - The planner and accountant intentionally share the same context builders so both stages reason over identical continuity input.
+- Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.

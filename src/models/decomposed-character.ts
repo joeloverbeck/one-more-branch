@@ -4,6 +4,10 @@ export interface SpeechFingerprint {
   readonly sentencePatterns: string;
   readonly verbalTics: readonly string[];
   readonly dialogueSamples: readonly string[];
+  readonly metaphorFrames: string;
+  readonly antiExamples: readonly string[];
+  readonly discourseMarkers: readonly string[];
+  readonly registerShifts: string;
 }
 
 export interface DecomposedCharacter {
@@ -13,6 +17,9 @@ export interface DecomposedCharacter {
   readonly motivations: string;
   readonly relationships: readonly string[];
   readonly knowledgeBoundaries: string;
+  readonly decisionPattern: string;
+  readonly coreBeliefs: readonly string[];
+  readonly conflictPriority: string;
   readonly appearance: string;
   readonly rawDescription: string;
 }
@@ -59,6 +66,37 @@ export function formatDecomposedCharacterForPrompt(
     }
   }
 
+  if (fingerprint.metaphorFrames.trim().length > 0) {
+    lines.push(`  Metaphor frames: ${fingerprint.metaphorFrames}`);
+  }
+
+  if (fingerprint.discourseMarkers.length > 0) {
+    lines.push(`  Discourse markers: ${fingerprint.discourseMarkers.join(', ')}`);
+  }
+
+  if (fingerprint.registerShifts.trim().length > 0) {
+    lines.push(`  Register shifts: ${fingerprint.registerShifts}`);
+  }
+
+  if (fingerprint.antiExamples.length > 0) {
+    lines.push('  Anti-examples (how they do NOT sound):');
+    for (const antiExample of fingerprint.antiExamples) {
+      lines.push(`    "${antiExample}"`);
+    }
+  }
+
+  if (char.decisionPattern.trim().length > 0) {
+    lines.push(`Decision Pattern: ${char.decisionPattern}`);
+  }
+
+  if (char.coreBeliefs.length > 0) {
+    lines.push(`Core Beliefs:\n${char.coreBeliefs.map((belief) => `  - ${belief}`).join('\n')}`);
+  }
+
+  if (char.conflictPriority.trim().length > 0) {
+    lines.push(`Conflict Priority: ${char.conflictPriority}`);
+  }
+
   return lines.join('\n');
 }
 
@@ -80,6 +118,25 @@ export function formatSpeechFingerprintForWriter(fingerprint: SpeechFingerprint)
     lines.push('Example lines:');
     for (const sample of fingerprint.dialogueSamples) {
       lines.push(`  "${sample}"`);
+    }
+  }
+
+  if (fingerprint.metaphorFrames.trim().length > 0) {
+    lines.push(`Metaphor frames: ${fingerprint.metaphorFrames}`);
+  }
+
+  if (fingerprint.discourseMarkers.length > 0) {
+    lines.push(`Discourse markers: ${fingerprint.discourseMarkers.join(', ')}`);
+  }
+
+  if (fingerprint.registerShifts.trim().length > 0) {
+    lines.push(`Register shifts: ${fingerprint.registerShifts}`);
+  }
+
+  if (fingerprint.antiExamples.length > 0) {
+    lines.push('Anti-examples (how they do NOT sound):');
+    for (const antiExample of fingerprint.antiExamples) {
+      lines.push(`  "${antiExample}"`);
     }
   }
 

@@ -89,25 +89,22 @@ describe('validateWriterResponse', () => {
     expect(result.sceneSummary).toBe('Test summary of the scene events and consequences.');
   });
 
-  it('handles malformed single-string choices array (recovery)', () => {
+  it('rejects malformed single-string choices array (no compatibility recovery)', () => {
     const malformedChoices = [
       '{\\"Grab the clothes and make a run for it\\",\\"Sprint back toward the village\\",\\"Stay perfectly still\\"}',
     ];
 
-    const result = validateWriterResponse(
-      {
-        narrative: VALID_NARRATIVE,
-        choices: malformedChoices,
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: false,
-      },
-      'raw json response'
-    );
-
-    expect(result.choices).toHaveLength(3);
-    expect(result.choices[0]?.text).toBe('Grab the clothes and make a run for it');
-    expect(result.choices[1]?.text).toBe('Sprint back toward the village');
-    expect(result.choices[2]?.text).toBe('Stay perfectly still');
+    expect(() =>
+      validateWriterResponse(
+        {
+          narrative: VALID_NARRATIVE,
+          choices: malformedChoices,
+          sceneSummary: 'Test summary of the scene events and consequences.',
+          isEnding: false,
+        },
+        'raw json response'
+      )
+    ).toThrow();
   });
 
   it('applies protagonistAffect defaults when omitted', () => {

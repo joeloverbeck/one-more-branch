@@ -1,4 +1,13 @@
 import type { JsonSchema } from '../llm-client-types.js';
+import {
+  WRITER_CHOICE_REQUIRED_FIELDS,
+  WRITER_CHOICE_TYPE_ENUM,
+  WRITER_EMOTION_INTENSITY_ENUM,
+  WRITER_PRIMARY_DELTA_ENUM,
+  WRITER_PROTAGONIST_AFFECT_REQUIRED_FIELDS,
+  WRITER_REQUIRED_FIELDS,
+  WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS,
+} from '../writer-contract.js';
 
 export const WRITER_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -25,39 +34,18 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
               },
               choiceType: {
                 type: 'string',
-                enum: [
-                  'TACTICAL_APPROACH',
-                  'MORAL_DILEMMA',
-                  'IDENTITY_EXPRESSION',
-                  'RELATIONSHIP_SHIFT',
-                  'RESOURCE_COMMITMENT',
-                  'INVESTIGATION',
-                  'PATH_DIVERGENCE',
-                  'CONFRONTATION',
-                  'AVOIDANCE_RETREAT',
-                ],
+                enum: WRITER_CHOICE_TYPE_ENUM,
                 description:
                   'What this choice is ABOUT. TACTICAL_APPROACH=method/tactic, MORAL_DILEMMA=value conflict, IDENTITY_EXPRESSION=self-definition, RELATIONSHIP_SHIFT=changing a relationship, RESOURCE_COMMITMENT=spending/risking something scarce, INVESTIGATION=examining/learning/revealing, PATH_DIVERGENCE=fundamentally different direction, CONFRONTATION=engaging/fighting, AVOIDANCE_RETREAT=fleeing/hiding/de-escalating.',
               },
               primaryDelta: {
                 type: 'string',
-                enum: [
-                  'LOCATION_CHANGE',
-                  'GOAL_SHIFT',
-                  'RELATIONSHIP_CHANGE',
-                  'URGENCY_CHANGE',
-                  'ITEM_CONTROL',
-                  'EXPOSURE_CHANGE',
-                  'CONDITION_CHANGE',
-                  'INFORMATION_REVEALED',
-                  'THREAT_SHIFT',
-                  'CONSTRAINT_CHANGE',
-                ],
+                enum: WRITER_PRIMARY_DELTA_ENUM,
                 description:
                   'What this choice primarily CHANGES in the world. LOCATION_CHANGE=protagonist moves, GOAL_SHIFT=objective changes, RELATIONSHIP_CHANGE=NPC stance shifts, URGENCY_CHANGE=time pressure shifts, ITEM_CONTROL=significant object changes hands, EXPOSURE_CHANGE=attention/suspicion changes, CONDITION_CHANGE=physical condition changes, INFORMATION_REVEALED=new knowledge gained, THREAT_SHIFT=danger introduced/neutralized, CONSTRAINT_CHANGE=limitation imposed/lifted.',
               },
             },
-            required: ['text', 'choiceType', 'primaryDelta'],
+            required: [...WRITER_CHOICE_REQUIRED_FIELDS],
             additionalProperties: false,
           },
           description:
@@ -73,7 +61,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
             },
             primaryIntensity: {
               type: 'string',
-              enum: ['mild', 'moderate', 'strong', 'overwhelming'],
+              enum: WRITER_EMOTION_INTENSITY_ENUM,
               description: 'How intensely the protagonist feels the primary emotion.',
             },
             primaryCause: {
@@ -88,7 +76,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
                   emotion: { type: 'string' },
                   cause: { type: 'string' },
                 },
-                required: ['emotion', 'cause'],
+                required: [...WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS],
                 additionalProperties: false,
               },
               description: 'Optional background feelings with their causes.',
@@ -98,13 +86,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
               description: 'What the protagonist most wants right now.',
             },
           },
-          required: [
-            'primaryEmotion',
-            'primaryIntensity',
-            'primaryCause',
-            'secondaryEmotions',
-            'dominantMotivation',
-          ],
+          required: [...WRITER_PROTAGONIST_AFFECT_REQUIRED_FIELDS],
           additionalProperties: false,
           description:
             'Snapshot of protagonist emotional state at END of this scene. NOT accumulated - fresh snapshot each page.',
@@ -119,7 +101,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           description: 'True only when the story concludes and choices is empty.',
         },
       },
-      required: ['narrative', 'choices', 'protagonistAffect', 'sceneSummary', 'isEnding'],
+      required: [...WRITER_REQUIRED_FIELDS],
       additionalProperties: false,
     },
   },

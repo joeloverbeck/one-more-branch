@@ -1,5 +1,17 @@
 import type { LorekeeperResult } from '../lorekeeper-types.js';
+import {
+  LOREKEEPER_CHARACTER_REQUIRED_FIELDS,
+  LOREKEEPER_REQUIRED_FIELDS,
+} from '../lorekeeper-contract.js';
 import { LorekeeperResultSchema } from './lorekeeper-validation-schema.js';
+
+function trimField<T extends Record<string, unknown>, TKey extends keyof T>(
+  source: T,
+  key: TKey
+): string {
+  const value = source[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
 
 export function validateLorekeeperResponse(
   rawJson: unknown,
@@ -11,24 +23,35 @@ export function validateLorekeeperResponse(
   }
 
   const validated = LorekeeperResultSchema.parse(parsed);
+  const [sceneWorldContextField, relevantCharactersField, relevantCanonFactsField, relevantHistoryField] =
+    LOREKEEPER_REQUIRED_FIELDS;
+  const [
+    nameField,
+    roleField,
+    relevantProfileField,
+    speechPatternsField,
+    protagonistRelationshipField,
+    interCharacterDynamicsField,
+    currentStateField,
+  ] = LOREKEEPER_CHARACTER_REQUIRED_FIELDS;
 
   return {
-    sceneWorldContext: validated.sceneWorldContext.trim(),
-    relevantCharacters: validated.relevantCharacters.map((c) => ({
-      name: c.name.trim(),
-      role: c.role.trim(),
-      relevantProfile: c.relevantProfile.trim(),
-      speechPatterns: c.speechPatterns.trim(),
-      protagonistRelationship: c.protagonistRelationship.trim(),
-      ...(c.interCharacterDynamics.trim().length > 0
-        ? { interCharacterDynamics: c.interCharacterDynamics.trim() }
+    sceneWorldContext: trimField(validated, sceneWorldContextField),
+    relevantCharacters: validated[relevantCharactersField].map((c) => ({
+      name: trimField(c, nameField),
+      role: trimField(c, roleField),
+      relevantProfile: trimField(c, relevantProfileField),
+      speechPatterns: trimField(c, speechPatternsField),
+      protagonistRelationship: trimField(c, protagonistRelationshipField),
+      ...(trimField(c, interCharacterDynamicsField).length > 0
+        ? { interCharacterDynamics: trimField(c, interCharacterDynamicsField) }
         : {}),
-      currentState: c.currentState.trim(),
+      currentState: trimField(c, currentStateField),
     })),
-    relevantCanonFacts: validated.relevantCanonFacts
+    relevantCanonFacts: validated[relevantCanonFactsField]
       .map((f) => f.trim())
       .filter((f) => f.length > 0),
-    relevantHistory: validated.relevantHistory.trim(),
+    relevantHistory: trimField(validated, relevantHistoryField),
     rawResponse,
   };
 }

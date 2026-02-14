@@ -32,6 +32,10 @@ interface SpeechFingerprintFileData {
   sentencePatterns: string;
   verbalTics: string[];
   dialogueSamples: string[];
+  metaphorFrames: string;
+  antiExamples: string[];
+  discourseMarkers: string[];
+  registerShifts: string;
 }
 
 interface DecomposedCharacterFileData {
@@ -41,6 +45,9 @@ interface DecomposedCharacterFileData {
   motivations: string;
   relationships: string[];
   knowledgeBoundaries: string;
+  decisionPattern: string;
+  coreBeliefs: string[];
+  conflictPriority: string;
   appearance: string;
   rawDescription: string;
 }
@@ -214,11 +221,18 @@ function storyToFileData(story: Story): StoryFileData {
               sentencePatterns: char.speechFingerprint.sentencePatterns,
               verbalTics: [...char.speechFingerprint.verbalTics],
               dialogueSamples: [...char.speechFingerprint.dialogueSamples],
+              metaphorFrames: char.speechFingerprint.metaphorFrames,
+              antiExamples: [...char.speechFingerprint.antiExamples],
+              discourseMarkers: [...char.speechFingerprint.discourseMarkers],
+              registerShifts: char.speechFingerprint.registerShifts,
             },
             coreTraits: [...char.coreTraits],
             motivations: char.motivations,
             relationships: [...char.relationships],
             knowledgeBoundaries: char.knowledgeBoundaries,
+            decisionPattern: char.decisionPattern,
+            coreBeliefs: [...char.coreBeliefs],
+            conflictPriority: char.conflictPriority,
             appearance: char.appearance,
             rawDescription: char.rawDescription,
           })),
@@ -281,11 +295,18 @@ function fileDataToStory(data: StoryFileData): Story {
                 sentencePatterns: char.speechFingerprint.sentencePatterns,
                 verbalTics: [...char.speechFingerprint.verbalTics],
                 dialogueSamples: [...char.speechFingerprint.dialogueSamples],
+                metaphorFrames: char.speechFingerprint.metaphorFrames,
+                antiExamples: [...char.speechFingerprint.antiExamples],
+                discourseMarkers: [...char.speechFingerprint.discourseMarkers],
+                registerShifts: char.speechFingerprint.registerShifts,
               },
               coreTraits: [...char.coreTraits],
               motivations: char.motivations,
               relationships: [...char.relationships],
               knowledgeBoundaries: char.knowledgeBoundaries,
+              decisionPattern: char.decisionPattern,
+              coreBeliefs: [...char.coreBeliefs],
+              conflictPriority: char.conflictPriority,
               appearance: char.appearance,
               rawDescription: char.rawDescription,
             })

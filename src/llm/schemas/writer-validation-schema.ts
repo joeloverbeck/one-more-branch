@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
+import {
+  WRITER_DEFAULT_PROTAGONIST_AFFECT,
+  WRITER_EMOTION_INTENSITY_ENUM,
+} from '../writer-contract.js';
 
-const EmotionIntensitySchema = z.enum(['mild', 'moderate', 'strong', 'overwhelming']);
+const EmotionIntensitySchema = z.enum(WRITER_EMOTION_INTENSITY_ENUM);
 
 const SecondaryEmotionSchema = z.object({
   emotion: z.string().min(1, 'Secondary emotion must not be empty'),
@@ -16,14 +20,6 @@ const ProtagonistAffectSchema = z.object({
   dominantMotivation: z.string().min(1, 'Dominant motivation must not be empty'),
 });
 
-const defaultProtagonistAffect = {
-  primaryEmotion: 'neutral',
-  primaryIntensity: 'mild' as const,
-  primaryCause: 'No specific emotional driver',
-  secondaryEmotions: [],
-  dominantMotivation: 'Continue forward',
-};
-
 const ChoiceObjectSchema = z.object({
   text: z
     .string()
@@ -37,7 +33,7 @@ export const WriterResultSchema = z
   .object({
     narrative: z.string().min(50, 'Narrative must be at least 50 characters'),
     choices: z.array(ChoiceObjectSchema),
-    protagonistAffect: ProtagonistAffectSchema.optional().default(defaultProtagonistAffect),
+    protagonistAffect: ProtagonistAffectSchema.optional().default(WRITER_DEFAULT_PROTAGONIST_AFFECT),
     sceneSummary: z.string().min(20),
     isEnding: z.boolean(),
   })

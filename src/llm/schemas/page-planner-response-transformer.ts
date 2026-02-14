@@ -1,10 +1,22 @@
 import { z } from 'zod';
+import {
+  PAGE_PLANNER_REQUIRED_FIELDS,
+  PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
+} from '../page-planner-contract.js';
 import type { ReducedPagePlanGenerationResult } from '../planner-types.js';
 import { LLMError } from '../llm-client-types.js';
 import { PagePlannerResultSchema } from './page-planner-validation-schema.js';
 
 function normalizeStringArray(values: readonly string[]): string[] {
   return values.map((value) => value.trim()).filter(Boolean);
+}
+
+function trimRequiredField<T extends Record<string, unknown>, TKey extends keyof T>(
+  source: T,
+  key: TKey
+): string {
+  const value = source[key];
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function toValidationIssues(error: unknown): Array<{
@@ -79,15 +91,23 @@ export function validatePagePlannerResponse(
   }
 
   try {
+    const [sceneIntentField, continuityAnchorsField, writerBriefField, dramaticQuestionField] =
+      PAGE_PLANNER_REQUIRED_FIELDS;
+    const [openingLineDirectiveField, mustIncludeBeatsField, forbiddenRecapsField] =
+      PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS;
+
     return {
-      sceneIntent: validated.sceneIntent.trim(),
-      continuityAnchors: normalizeStringArray(validated.continuityAnchors),
+      sceneIntent: trimRequiredField(validated, sceneIntentField),
+      continuityAnchors: normalizeStringArray(validated[continuityAnchorsField]),
       writerBrief: {
-        openingLineDirective: validated.writerBrief.openingLineDirective.trim(),
-        mustIncludeBeats: normalizeStringArray(validated.writerBrief.mustIncludeBeats),
-        forbiddenRecaps: normalizeStringArray(validated.writerBrief.forbiddenRecaps),
+        openingLineDirective: trimRequiredField(
+          validated[writerBriefField],
+          openingLineDirectiveField
+        ),
+        mustIncludeBeats: normalizeStringArray(validated[writerBriefField][mustIncludeBeatsField]),
+        forbiddenRecaps: normalizeStringArray(validated[writerBriefField][forbiddenRecapsField]),
       },
-      dramaticQuestion: validated.dramaticQuestion.trim(),
+      dramaticQuestion: trimRequiredField(validated, dramaticQuestionField),
       choiceIntents: validated.choiceIntents.map((intent) => ({
         hook: intent.hook.trim(),
         choiceType: intent.choiceType,

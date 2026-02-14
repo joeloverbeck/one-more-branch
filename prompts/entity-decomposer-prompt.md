@@ -4,6 +4,7 @@
 - Orchestration: `src/llm/entity-decomposer.ts`
 - Types: `src/llm/entity-decomposer-types.ts`
 - Output schema source: `src/llm/schemas/entity-decomposer-schema.ts`
+- Shared field/guidance contract: `src/llm/entity-decomposition-contract.ts`
 - Model types: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
 
 ## Purpose
@@ -32,6 +33,10 @@ DECOMPOSITION PRINCIPLES:
    - Sentence patterns: Short/terse vs ornate, questions vs declarations, imperative vs passive
    - Verbal tics: Filler words, interjections, habitual speech markers
    - Dialogue samples: Write 5-10 example lines showing their unique voice in action (invented or extracted from provided descriptions/dialogue)
+   - Metaphor frames: Conceptual metaphors that shape how they describe the world
+   - Anti-examples: 2-3 lines showing how the character does NOT sound
+   - Discourse markers: Turn openers, topic shifts, self-corrections, and closers
+   - Register shifts: How speech changes across stress, formality, and intimacy
 
 2. TRAIT DECOMPOSITION: Extract 3-5 core personality traits as concise labels. These should be the traits that most influence behavior and dialogue.
 
@@ -45,6 +50,12 @@ DECOMPOSITION PRINCIPLES:
 6. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
 
 7. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
+
+8. DECISION PATTERN: Capture how each character makes choices under pressure and uncertainty.
+
+9. CORE BELIEFS: Extract 2-3 operational beliefs the character actually acts on.
+
+10. CONFLICT PRIORITY: State what wins when this character's goals conflict.
 ```
 
 ### 2) User Message
@@ -78,6 +89,8 @@ INSTRUCTIONS:
 3. For speech fingerprints: if the description explicitly describes how someone talks, use that. If not, INFER speech patterns from their personality, background, social class, and the story's tone/genre
 4. For worldbuilding facts: decompose into atomic propositions. If no worldbuilding is provided, return an empty worldFacts array
 5. Every character MUST have a distinct speech fingerprint - no two characters should sound alike
+6. For decision patterns and core beliefs: if not explicit, infer from behavior, background, and relationship dynamics
+7. Core beliefs should read like statements the character would actually think or say
 ```
 
 ## JSON Response Shape
@@ -92,13 +105,20 @@ INSTRUCTIONS:
         "vocabularyProfile": "{{formality, word preferences, jargon}}",
         "sentencePatterns": "{{sentence structure description}}",
         "verbalTics": ["{{filler words, interjections}}"],
-        "dialogueSamples": ["{{example line in character voice}}"]
+        "dialogueSamples": ["{{example line in character voice}}"],
+        "metaphorFrames": "{{conceptual metaphor lens for this voice}}",
+        "antiExamples": ["{{line this character would never say}}"],
+        "discourseMarkers": ["{{turn opener/topic-shift/closer marker}}"],
+        "registerShifts": "{{how speech changes by context}}"
       },
       "coreTraits": ["{{trait1}}", "{{trait2}}", "{{trait3}}"],
       "motivations": "{{what drives this character}}",
       "relationships": ["{{relationship with context}}"],
       "knowledgeBoundaries": "{{what they know and don't know}}",
-      "appearance": "{{brief physical description}}"
+      "appearance": "{{brief physical description}}",
+      "decisionPattern": "{{how they decide under pressure}}",
+      "coreBeliefs": ["{{operational belief}}"],
+      "conflictPriority": "{{which value/goal wins when conflicted}}"
     }
   ],
   "worldFacts": [
@@ -115,7 +135,7 @@ INSTRUCTIONS:
 - `worldFacts` is an empty array when no worldbuilding is provided.
 - `domain` is a strict enum of 12 values (geography, ecology, history, society, culture, religion, governance, economy, faction, technology, magic, language); invalid values are defaulted to `'culture'` by the response transformer. The `custom` domain is no longer produced by the LLM but is still accepted when reading existing stories.
 - World facts with empty `fact` text are filtered out by the response transformer.
-- Missing optional arrays in `speechFingerprint` (catchphrases, verbalTics, dialogueSamples) default to `[]`.
+- For malformed payloads, parser normalization defaults missing/invalid arrays to `[]` and missing/invalid strings to `''` for speech and agency fields.
 
 ## Response Transformation
 
@@ -128,6 +148,11 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
 3. **Domain validation**: World fact domains not in the valid enum are defaulted to `'culture'`. The `custom` domain is still accepted when reading existing stories.
 4. **Empty fact filtering**: World facts with empty or whitespace-only `fact` text are removed.
 5. **Character validation**: Throws if `characters` array is empty (must include at least the protagonist) or if any character has an empty `name`.
+
+## Contract Ownership
+
+- Speech/agency field definitions, required keys, and decomposition guidance bullets are centralized in `src/llm/entity-decomposition-contract.ts`.
+- Prompt text, schema field requirements, and parser normalization consume that shared contract to prevent cross-layer drift.
 
 ## Context Provided
 
@@ -163,9 +188,8 @@ PLANNING_PAGE started
 
 The frontend displays this stage as "STUDYING" in the spinner UI with Sims-style humor phrases themed around character analysis and world study.
 
-## Backward Compatibility
+## Contract Notes
 
 - Raw fields (`characterConcept`, `worldbuilding`, `npcs`) remain untouched on the Story object.
-- `decomposedCharacters` and `decomposedWorld` are optional fields on Story.
-- All downstream prompt builders check for decomposed data first, fall back to raw.
-- Existing stories created before this feature continue to work without re-generation.
+- `decomposedCharacters` and `decomposedWorld` are optional on Story at the story level.
+- Once decomposed data is present, the expanded speech/agency fields are part of the canonical contract.

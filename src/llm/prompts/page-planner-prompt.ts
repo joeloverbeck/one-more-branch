@@ -1,6 +1,7 @@
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { PagePlanContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { PAGE_PLANNER_PROMPT_RULES, PAGE_PLANNER_TONE_RULE } from '../page-planner-contract.js';
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
@@ -10,15 +11,7 @@ import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.
 const PLANNER_ROLE_INTRO = `You are an interactive fiction page planner.`;
 
 const PLANNER_RULES = `Plan the next page before prose generation.
-- You output machine-readable planning intents only.
-- You do not narrate the scene.
-- You propose a dramaticQuestion that the scene raises and choiceIntents as a blueprint for the writer's choices.
-- choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
-- You do not produce stateIntents. State accounting is handled in a separate stage.
-- Keep output deterministic and concise.
-- Consider NPC agendas when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior.`;
-
-const PLANNER_TONE_RULE = `TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustIncludeBeats, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.`;
+${PAGE_PLANNER_PROMPT_RULES.map((rule) => `- ${rule}`).join('\n')}`;
 
 function buildPagePlannerSystemPrompt(
   tone?: string,
@@ -31,7 +24,7 @@ function buildPagePlannerSystemPrompt(
     sections.push(buildToneBlock(tone, toneKeywords, toneAntiKeywords));
   }
 
-  sections.push(CONTENT_POLICY, PLANNER_RULES, PLANNER_TONE_RULE);
+  sections.push(CONTENT_POLICY, PLANNER_RULES, PAGE_PLANNER_TONE_RULE);
   return sections.join('\n\n');
 }
 

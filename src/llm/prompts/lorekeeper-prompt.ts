@@ -4,8 +4,13 @@ import { formatNpcsForPrompt } from '../../models/npc.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { LorekeeperContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { LOREKEEPER_CURATION_PRINCIPLES } from '../lorekeeper-contract.js';
 import { buildWriterStructureContext } from './continuation/index.js';
 import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
+
+function formatNumberedLines(lines: readonly string[]): string {
+  return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
+}
 
 const LOREKEEPER_SYSTEM_PROMPT = `You are the Lorekeeper for an interactive branching story. Your role is to curate a compact, scene-focused "Story Bible" containing ONLY what the writer needs for the upcoming scene.
 
@@ -14,15 +19,7 @@ You receive the full story context and the planner's scene intent. You must filt
 ${CONTENT_POLICY}
 
 CURATION PRINCIPLES:
-1. SELECTIVE INCLUSION: Only include characters, facts, history, and world details relevant to the planner's scene intent, continuity anchors, and dramatic question. The whole point is curation, not regurgitation.
-2. SPEECH PATTERN EXTRACTION: For each relevant character, synthesize HOW they speak. When structured character profiles with speech fingerprints are provided, use those as your primary source for voice data (catchphrases, vocabulary, verbal tics, sentence patterns, dialogue samples). Enrich with character canon facts AND actual dialogue found in recent narrative text. When only raw NPC definitions are available, extract speech patterns from personality descriptions and backstory. This must be thorough - idiosyncratic speech is critical for voice consistency.
-3. NARRATIVE CHRONOLOGY: The relevantHistory field must preserve causality chains and temporal ordering from ancestor summaries. Don't extract disconnected facts - build a narrative thread that shows how events led to the current moment.
-4. RELATIONSHIP DYNAMICS: Capture trust levels, power dynamics, emotional tensions, and unresolved interpersonal history between characters and the protagonist.
-5. INTER-CHARACTER DYNAMICS: When multiple characters share a scene, describe how they relate to EACH OTHER, not just to the protagonist.
-6. CURRENT STATE: Each character's emotional state and situation as they enter the scene, derived from accumulated character state entries and recent narrative.
-7. WORLD CONTEXT: When domain-tagged world facts are provided, use them as your primary worldbuilding source - they are pre-decomposed for efficient filtering by domain (geography, magic, society, etc.). Supplement with any runtime canon facts. When only raw worldbuilding text is available, extract relevant details manually. Include only what is physically, culturally, or socially relevant to THIS scene's location and events.
-8. NPC AGENDAS: For each relevant character, incorporate their current agenda (goal, leverage, fear, off-screen behavior) into the character profile. This informs how NPCs will act in the scene.
-9. TWO-SOURCE SYNTHESIS: You may receive two sources of truth: (a) structured character/world profiles (initial decomposition from story creation) and (b) runtime canon facts (discovered during gameplay). Prefer structured profiles for speech patterns, traits, relationships, and world rules. Use canon facts for runtime discoveries that supplement the initial decomposition.`;
+${formatNumberedLines(LOREKEEPER_CURATION_PRINCIPLES)}`;
 
 export function buildLorekeeperPrompt(context: LorekeeperContext): ChatMessage[] {
   const plan = context.pagePlan;

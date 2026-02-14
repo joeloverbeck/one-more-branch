@@ -1,4 +1,37 @@
+import {
+  CHARACTER_REQUIRED_FIELDS,
+  CHARACTER_SCHEMA_FIELDS,
+  SPEECH_REQUIRED_FIELDS,
+  SPEECH_SCHEMA_FIELDS,
+} from '../entity-decomposition-contract.js';
 import type { JsonSchema } from '../llm-client-types.js';
+
+function buildSchemaProperties(
+  fields: Record<string, { type: 'string' | 'array'; description: string }>
+): Record<string, { type: string; description: string; items?: { type: 'string' } }> {
+  const properties: Record<string, { type: string; description: string; items?: { type: 'string' } }> = {};
+
+  for (const [key, field] of Object.entries(fields)) {
+    if (field.type === 'array') {
+      properties[key] = {
+        type: 'array',
+        description: field.description,
+        items: { type: 'string' },
+      };
+      continue;
+    }
+
+    properties[key] = {
+      type: 'string',
+      description: field.description,
+    };
+  }
+
+  return properties;
+}
+
+const SPEECH_PROPERTIES = buildSchemaProperties(SPEECH_SCHEMA_FIELDS);
+const CHARACTER_PROPERTIES = buildSchemaProperties(CHARACTER_SCHEMA_FIELDS);
 
 export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -18,95 +51,16 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: [
-              'name',
-              'speechFingerprint',
-              'coreTraits',
-              'motivations',
-              'relationships',
-              'knowledgeBoundaries',
-              'appearance',
-            ],
             properties: {
-              name: {
-                type: 'string',
-                description:
-                  'Character name. For the protagonist, use the name from the character concept.',
-              },
+              ...CHARACTER_PROPERTIES,
               speechFingerprint: {
                 type: 'object',
                 additionalProperties: false,
-                required: [
-                  'catchphrases',
-                  'vocabularyProfile',
-                  'sentencePatterns',
-                  'verbalTics',
-                  'dialogueSamples',
-                ],
-                properties: {
-                  catchphrases: {
-                    type: 'array',
-                    description:
-                      'Signature phrases this character would repeat. ' +
-                      'Infer from personality, background, and speech style. 1-4 phrases.',
-                    items: { type: 'string' },
-                  },
-                  vocabularyProfile: {
-                    type: 'string',
-                    description:
-                      'Formality level, word preferences, jargon. ' +
-                      'E.g. "Formal and archaic, favors multi-syllable words, avoids contractions."',
-                  },
-                  sentencePatterns: {
-                    type: 'string',
-                    description:
-                      'Typical sentence structure. ' +
-                      'E.g. "Short, clipped sentences. Rarely uses questions. Favors imperative mood."',
-                  },
-                  verbalTics: {
-                    type: 'array',
-                    description:
-                      'Filler words, interjections, habitual speech markers. ' +
-                      'E.g. ["well,", "y\'see", "hmm"]. 0-4 items.',
-                    items: { type: 'string' },
-                  },
-                  dialogueSamples: {
-                    type: 'array',
-                    description:
-                      'Write 5-10 example lines this character would say, showing their unique voice in action. ' +
-                      'These can be invented or extracted from provided character descriptions/dialogue.',
-                    items: { type: 'string' },
-                  },
-                },
-              },
-              coreTraits: {
-                type: 'array',
-                description: '3-5 defining personality traits. E.g. ["stubborn", "loyal", "sarcastic"].',
-                items: { type: 'string' },
-              },
-              motivations: {
-                type: 'string',
-                description: 'What drives this character. 1-2 sentences.',
-              },
-              relationships: {
-                type: 'array',
-                description:
-                  'Key relationships with context. ' +
-                  'E.g. ["Mistrusts Kael after the betrayal at Thornwall", "Protective of younger sister Elise"]. ' +
-                  'Empty array if no relationships mentioned.',
-                items: { type: 'string' },
-              },
-              knowledgeBoundaries: {
-                type: 'string',
-                description:
-                  'What this character knows and does NOT know. Important for preventing ' +
-                  'information leaks between characters. 1-2 sentences.',
-              },
-              appearance: {
-                type: 'string',
-                description: 'Brief physical description. 1-2 sentences.',
+                required: [...SPEECH_REQUIRED_FIELDS],
+                properties: SPEECH_PROPERTIES,
               },
             },
+            required: [...CHARACTER_REQUIRED_FIELDS, 'speechFingerprint'],
           },
         },
         worldFacts: {

@@ -1,8 +1,17 @@
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import { AGENCY_PRINCIPLES, SPEECH_EXTRACTION_BULLETS } from '../entity-decomposition-contract.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { EntityDecomposerContext } from '../entity-decomposer-types.js';
 import { buildToneBlock } from './sections/shared/tone-block.js';
+
+function formatBullets(lines: readonly string[], indent = '   - '): string {
+  return lines.map((line) => `${indent}${line}`).join('\n');
+}
+
+function formatNumbered(start: number, lines: readonly string[]): string {
+  return lines.map((line, index) => `${start + index}. ${line}`).join('\n\n');
+}
 
 const ENTITY_DECOMPOSER_SYSTEM_PROMPT = `You are an Entity Decomposer for an interactive branching story engine. Your job is to convert raw character descriptions and worldbuilding prose into structured, machine-friendly attribute objects.
 
@@ -11,11 +20,7 @@ ${CONTENT_POLICY}
 DECOMPOSITION PRINCIPLES:
 
 1. SPEECH FINGERPRINT EXTRACTION: This is the MOST IMPORTANT output. Each character must be identifiable by voice alone without dialogue attribution. Extract or infer:
-   - Catchphrases: Signature phrases they would repeat based on personality and background
-   - Vocabulary profile: Formality level, word preferences, jargon usage, archaic vs modern
-   - Sentence patterns: Short/terse vs ornate, questions vs declarations, imperative vs passive
-   - Verbal tics: Filler words, interjections, habitual speech markers
-   - Dialogue samples: Write 5-10 example lines showing their unique voice in action (invented or extracted from provided descriptions/dialogue)
+${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
 2. TRAIT DECOMPOSITION: Extract 3-5 core personality traits as concise labels. These should be the traits that most influence behavior and dialogue.
 
@@ -28,7 +33,9 @@ DECOMPOSITION PRINCIPLES:
 
 6. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
 
-7. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.`;
+7. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
+
+${formatNumbered(8, AGENCY_PRINCIPLES)}`;
 
 export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): ChatMessage[] {
   const npcsSection =
@@ -54,7 +61,9 @@ INSTRUCTIONS:
 2. Remaining characters follow in NPC definition order
 3. For speech fingerprints: if the description explicitly describes how someone talks, use that. If not, INFER speech patterns from their personality, background, social class, and the story's tone/genre
 4. For worldbuilding facts: decompose into atomic propositions. If no worldbuilding is provided, return an empty worldFacts array
-5. Every character MUST have a distinct speech fingerprint - no two characters should sound alike`;
+5. Every character MUST have a distinct speech fingerprint - no two characters should sound alike
+6. For decision patterns and core beliefs: if not explicit, infer from behavior, background, and relationship dynamics
+7. Core beliefs should read like statements the character would actually think or say`;
 
   return [
     { role: 'system', content: ENTITY_DECOMPOSER_SYSTEM_PROMPT },
