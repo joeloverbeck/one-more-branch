@@ -1974,11 +1974,11 @@ describe('page-service integration', () => {
 
       mockedGenerateWriterPage.mockRejectedValue(
         new LLMError('Deterministic validation failed', 'VALIDATION_ERROR', false, {
-          ruleKeys: ['writer_output.choice_pair.duplicate'],
+          ruleKeys: ['writer_output.protagonist_affect.required_non_empty'],
           validationIssues: [
             {
-              ruleKey: 'writer_output.choice_pair.duplicate',
-              fieldPath: 'choices[1]',
+              ruleKey: 'writer_output.protagonist_affect.required_non_empty',
+              fieldPath: 'protagonistAffect.primaryEmotion',
             },
           ],
         })

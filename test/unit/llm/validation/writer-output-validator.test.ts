@@ -67,30 +67,6 @@ describe('writer-output-validator', () => {
     expect(issues).toEqual([]);
   });
 
-  it('rejects duplicate (choiceType, primaryDelta) pairs across choices', () => {
-    const issues = validateWriterOutput(
-      buildWriterResult({
-        choices: [
-          { text: 'Hold position', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          {
-            text: 'Signal from cover',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'GOAL_SHIFT',
-          },
-        ],
-      })
-    );
-
-    expect(issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ruleKey: WRITER_OUTPUT_RULE_KEYS.DUPLICATE_CHOICE_PAIR,
-          fieldPath: 'choices[1]',
-        }),
-      ])
-    );
-  });
-
   it('rejects protagonistAffect required fields when empty after trim', () => {
     const issues = validateWriterOutput(
       buildWriterResult({

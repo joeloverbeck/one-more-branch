@@ -2,7 +2,6 @@ import { ZodError, type ZodIssue } from 'zod';
 import type { PageWriterResult } from '../writer-types.js';
 
 export const WRITER_OUTPUT_RULE_KEYS = {
-  DUPLICATE_CHOICE_PAIR: 'writer_output.choice_pair.duplicate',
   PROTAGONIST_AFFECT_REQUIRED: 'writer_output.protagonist_affect.required_non_empty',
   SCHEMA_VALIDATION_ERROR: 'writer_output.schema.validation_error',
 } as const;
@@ -80,33 +79,9 @@ function validateProtagonistAffect(
   }
 }
 
-function validateChoicePairUniqueness(
-  result: PageWriterResult,
-  issues: WriterOutputValidationIssue[]
-): void {
-  const seenPairs = new Map<string, number>();
-
-  result.choices.forEach((choice, index) => {
-    const pairKey = `${choice.choiceType}::${choice.primaryDelta}`;
-    const firstSeenIndex = seenPairs.get(pairKey);
-    if (firstSeenIndex !== undefined) {
-      addIssue(
-        issues,
-        WRITER_OUTPUT_RULE_KEYS.DUPLICATE_CHOICE_PAIR,
-        `choices[${index}]`,
-        `Duplicate (choiceType, primaryDelta) pair also seen at choices[${firstSeenIndex}]`,
-        pairKey
-      );
-      return;
-    }
-    seenPairs.set(pairKey, index);
-  });
-}
-
 export function validateWriterOutput(result: PageWriterResult): WriterOutputValidationIssue[] {
   const issues: WriterOutputValidationIssue[] = [];
 
-  validateChoicePairUniqueness(result, issues);
   validateProtagonistAffect(result, issues);
 
   return issues;
