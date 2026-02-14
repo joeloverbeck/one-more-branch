@@ -273,9 +273,6 @@ CHOICE FORMATTING EXAMPLE:
 }
 {{/if}}
 
-CHARACTER CONCEPT:
-{{characterConcept}}
-
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}

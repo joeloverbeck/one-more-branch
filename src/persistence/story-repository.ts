@@ -62,6 +62,8 @@ interface StoryFileData {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  toneKeywords?: string[];
+  toneAntiKeywords?: string[];
   npcs: Array<{ name: string; description: string }> | null;
   startingSituation: string | null;
   globalCanon: string[];
@@ -192,6 +194,8 @@ function storyToFileData(story: Story): StoryFileData {
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
+    ...(story.toneKeywords ? { toneKeywords: [...story.toneKeywords] } : {}),
+    ...(story.toneAntiKeywords ? { toneAntiKeywords: [...story.toneAntiKeywords] } : {}),
     npcs: story.npcs
       ? story.npcs.map((npc) => ({ name: npc.name, description: npc.description }))
       : null,
@@ -256,6 +260,8 @@ function fileDataToStory(data: StoryFileData): Story {
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
+    ...(data.toneKeywords ? { toneKeywords: [...data.toneKeywords] } : {}),
+    ...(data.toneAntiKeywords ? { toneAntiKeywords: [...data.toneAntiKeywords] } : {}),
     ...(data.npcs !== null && data.npcs.length > 0
       ? { npcs: data.npcs.map((npc) => ({ name: npc.name, description: npc.description })) }
       : {}),

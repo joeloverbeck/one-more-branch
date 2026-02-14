@@ -34,6 +34,13 @@ RULES:
 6. When structured character profiles are provided, treat them as the primary source for motivations, relationships, and voice-influenced behavior.
 7. NPC names in your output MUST exactly match the names in the character definitions section.
 8. Return an empty updatedAgendas array if no NPC's situation changed materially.
+
+{{#if tone}}
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{/if}}
 ```
 
 ### 2) User Message
@@ -73,7 +80,9 @@ SCENE SUMMARY:
 NARRATIVE:
 {{narrative}}
 
-Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.
+{{#if tone}}TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
+
+{{/if}}Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.
 ```
 
 ## JSON Response Shape
@@ -117,6 +126,9 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `currentAgendas` | Accumulated NPC agendas from the parent page |
 | `structure` | Current story structure (optional) |
 | `activeState` | Current location and active threats |
+| `tone` | Tone/genre string (optional) |
+| `toneKeywords` | Target feel keywords (optional, from structure generator) |
+| `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
 
 ## Agenda Accumulation
 

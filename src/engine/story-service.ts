@@ -103,6 +103,8 @@ async function buildPreparedStory(
       characterConcept: story.characterConcept,
       worldbuilding: story.worldbuilding,
       tone: story.tone,
+      toneKeywords: storyWithStructure.toneKeywords,
+      toneAntiKeywords: storyWithStructure.toneAntiKeywords,
       npcs: story.npcs,
     },
     options.apiKey

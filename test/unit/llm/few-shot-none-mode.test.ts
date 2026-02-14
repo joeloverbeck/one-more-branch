@@ -66,7 +66,8 @@ describe('fewShotMode: none', () => {
       const userMessage = messages.find((m) => m.role === 'user');
 
       expect(userMessage?.content).toContain('Create the opening scene');
-      expect(userMessage?.content).toContain('A wandering bard seeking lost songs');
+      expect(userMessage?.content).toContain('A realm where music holds magical power');
+      expect(userMessage?.content).not.toContain('A wandering bard seeking lost songs');
     });
   });
 

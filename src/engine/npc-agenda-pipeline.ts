@@ -19,6 +19,9 @@ export interface NpcAgendaContext {
   readonly currentStructureVersion: VersionedStoryStructure | null;
   readonly storyStructure: StoryStructure | null;
   readonly parentActiveState: ActiveState;
+  readonly tone?: string;
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }
@@ -42,6 +45,9 @@ export async function resolveNpcAgendas(
         structure:
           context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
         activeState: context.parentActiveState,
+        tone: context.tone,
+        toneKeywords: context.toneKeywords,
+        toneAntiKeywords: context.toneAntiKeywords,
       },
       context.npcs,
       { apiKey: context.apiKey }

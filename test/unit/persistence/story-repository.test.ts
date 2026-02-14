@@ -333,6 +333,46 @@ describe('story-repository', () => {
     await expect(getPageCount(olderStory.id)).resolves.toBe(1);
   });
 
+  it('saveStory/loadStory preserves toneKeywords and toneAntiKeywords', async () => {
+    const story = buildTestStory({
+      toneKeywords: ['gritty', 'visceral', 'tense'],
+      toneAntiKeywords: ['whimsical', 'lighthearted'],
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.toneKeywords).toEqual(['gritty', 'visceral', 'tense']);
+    expect(loaded?.toneAntiKeywords).toEqual(['whimsical', 'lighthearted']);
+  });
+
+  it('loadStory omits toneKeywords and toneAntiKeywords for legacy files without them', async () => {
+    const legacyStory = buildTestStory();
+    createdStoryIds.add(legacyStory.id);
+
+    await ensureDirectory(getStoryDir(legacyStory.id));
+    await writeJsonFile(getStoryFilePath(legacyStory.id), {
+      id: legacyStory.id,
+      title: legacyStory.title,
+      characterConcept: legacyStory.characterConcept,
+      worldbuilding: legacyStory.worldbuilding,
+      tone: legacyStory.tone,
+      globalCanon: legacyStory.globalCanon,
+      globalCharacterCanon: legacyStory.globalCharacterCanon,
+      structure: null,
+      npcs: null,
+      startingSituation: null,
+      createdAt: legacyStory.createdAt.toISOString(),
+      updatedAt: legacyStory.updatedAt.toISOString(),
+    });
+
+    const loaded = await loadStory(legacyStory.id);
+    expect(loaded?.toneKeywords).toBeUndefined();
+    expect(loaded?.toneAntiKeywords).toBeUndefined();
+  });
+
   it('loadStory throws when persisted story id does not match the directory id', async () => {
     await ensureDirectory(getStoryDir(MISMATCH_REQUEST_ID));
 

@@ -1,7 +1,7 @@
 import type { AnalystContext } from '../analyst-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildAnalystStructureEvaluation } from './continuation/story-structure-section.js';
-import { buildToneBlock } from './sections/shared/tone-block.js';
+import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
 const ANALYST_ROLE_INTRO = `You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
 1. Whether the current story beat has been concluded
@@ -60,7 +60,11 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
     context.threadAges
   );
 
-  const userContent = `${structureEvaluation}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const toneReminder = context.tone
+    ? `\n${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}\n`
+    : '';
+
+  const userContent = `${structureEvaluation}${toneReminder}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

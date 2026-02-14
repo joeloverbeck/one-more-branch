@@ -6,6 +6,7 @@ import type { NpcAgenda, AccumulatedNpcAgendas } from '../../models/state/npc-ag
 import type { ActiveState } from '../../models/state/active-state.js';
 import type { StoryStructure } from '../../models/story-arc.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
 const AGENDA_RESOLVER_SYSTEM_PROMPT = `You are the NPC Agenda Resolver for an interactive branching story. After each scene, you evaluate how events affect each NPC's agenda and update their goals, leverage, fears, and off-screen behavior accordingly.
 
@@ -27,6 +28,9 @@ export interface AgendaResolverPromptContext {
   readonly currentAgendas: AccumulatedNpcAgendas;
   readonly structure?: StoryStructure;
   readonly activeState: ActiveState;
+  readonly tone?: string;
+  readonly toneKeywords?: readonly string[];
+  readonly toneAntiKeywords?: readonly string[];
 }
 
 function formatCurrentAgendas(agendas: AccumulatedNpcAgendas): string {
@@ -45,6 +49,14 @@ function formatCurrentAgendas(agendas: AccumulatedNpcAgendas): string {
   Off-screen: ${a.offScreenBehavior}`
     )
     .join('\n\n');
+}
+
+function buildAgendaResolverSystemPrompt(context: AgendaResolverPromptContext): string {
+  const sections: string[] = [AGENDA_RESOLVER_SYSTEM_PROMPT];
+  if (context.tone) {
+    sections.push(buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords));
+  }
+  return sections.join('\n\n');
 }
 
 export function buildAgendaResolverPrompt(context: AgendaResolverPromptContext): ChatMessage[] {
@@ -88,10 +100,10 @@ ${context.sceneSummary}
 NARRATIVE:
 ${context.narrative}
 
-Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.`;
+${context.tone ? buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords) + '\n\n' : ''}Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.`;
 
   return [
-    { role: 'system', content: AGENDA_RESOLVER_SYSTEM_PROMPT },
+    { role: 'system', content: buildAgendaResolverSystemPrompt(context) },
     { role: 'user', content: userPrompt },
   ];
 }

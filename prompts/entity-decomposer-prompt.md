@@ -65,7 +65,10 @@ WORLDBUILDING:
 {{/if}}
 
 {{#if tone}}
-TONE/GENRE: {{tone}}
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 {{/if}}
 
 INSTRUCTIONS:
@@ -132,6 +135,8 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
 | `characterConcept` | Protagonist concept (raw prose) |
 | `worldbuilding` | Full worldbuilding text (raw prose, may be empty) |
 | `tone` | Tone/genre string |
+| `toneKeywords` | Target feel keywords (optional, from structure generator) |
+| `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
 | `npcs` | All NPC definitions (name + description pairs) |
 
 ## Downstream Usage

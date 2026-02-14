@@ -224,8 +224,6 @@ If circumstances do not support it, omit it.
 === DATA & STATE RULES ===
 ${dataRules}
 
-CHARACTER CONCEPT:
-${context.characterConcept}
 ${protagonistSpeechSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"

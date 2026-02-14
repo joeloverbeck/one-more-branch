@@ -34,15 +34,6 @@ These characters are available for use in the story. Introduce them when narrati
 `
       : '';
 
-  const startingSituationSection = context.startingSituation
-    ? `STARTING SITUATION:
-${context.startingSituation}
-
-Begin the story with this situation. This takes precedence over your creative decisions about how to open the narrative. Incorporate the specified scene, circumstances, or events exactly as described.
-
-`
-    : '';
-
   const plannerSection = context.pagePlan
     ? `=== PLANNER GUIDANCE ===
 Scene Intent: ${context.pagePlan.sceneIntent}
@@ -105,11 +96,9 @@ ${formatSpeechFingerprintForWriter(protagonistSpeech.speechFingerprint)}
 === DATA & STATE RULES ===
 ${dataRules}
 
-CHARACTER CONCEPT:
-${context.characterConcept}
 ${protagonistSpeechSection}
 
-${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
 ${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
@@ -124,8 +113,8 @@ REMINDER: Each choice must be something this specific character would genuinely 
 ${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
-1. Ground the protagonist in the starting situation with immediate tension
-2. Maintain consistency with established worldbuilding, tone, and character concept
+1. Open with immediate, scene-level tension tied to the current dramatic setup
+2. Maintain consistency with established worldbuilding, tone, and scene context
 3. Choices answer the scene's dramatic question with divergent tags
 4. Prose quality: character-filtered, emotionally resonant, forward-moving
 5. sceneSummary and protagonistAffect accuracy`;

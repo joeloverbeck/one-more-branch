@@ -181,9 +181,6 @@ CHOICE FORMATTING EXAMPLE:
 }
 {{/if}}
 
-CHARACTER CONCEPT:
-{{characterConcept}}
-
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
@@ -205,13 +202,6 @@ NPCS (Available Characters):
 {{formattedNpcs}}
 
 These characters are available for use in the story. Introduce them when narratively appropriate - you don't need to include all of them, and you don't need to introduce them all in the opening.
-{{/if}}
-
-{{#if startingSituation}}
-STARTING SITUATION:
-{{startingSituation}}
-
-Begin the story with this situation. This takes precedence over your creative decisions about how to open the narrative. Incorporate the specified scene, circumstances, or events exactly as described.
 {{/if}}
 
 TONE/GENRE: {{tone}}
@@ -283,8 +273,8 @@ REMINDER: Each choice must be something this specific character would genuinely 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
-1. Ground the protagonist in the starting situation with immediate tension
-2. Maintain consistency with established worldbuilding, tone, and character concept
+1. Open with immediate, scene-level tension tied to the current dramatic setup
+2. Maintain consistency with established worldbuilding, tone, and scene context
 3. Choices answer the scene's dramatic question with divergent tags
 4. Prose quality: character-filtered, emotionally resonant, forward-moving
 5. sceneSummary and protagonistAffect accuracy

@@ -69,7 +69,10 @@ WORLDBUILDING:
 {{worldbuilding || '(none provided)'}}
 {{/if}}
 
-TONE/GENRE: {{tone}}
+TONE/GENRE IDENTITY:
+Tone: {{tone}}
+{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
+{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles with speech fingerprints):
@@ -143,6 +146,8 @@ PARENT NARRATIVE (previous page):
 {{previousNarrative}}
 {{/if}}
 
+TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
+
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
 1. sceneWorldContext: Filter worldbuilding to what's relevant here
@@ -196,6 +201,8 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred over raw NPCs) |
 | `decomposedWorld` | Domain-tagged atomic world facts (optional, preferred over raw worldbuilding) |
 | `tone` | Tone/genre string |
+| `toneKeywords` | Target feel keywords (optional, from structure generator) |
+| `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
 | `npcs` | All NPC definitions (fallback when no decomposed characters) |
 | `structure` / `accumulatedStructureState` | Current story structure and act/beat position |
 | `globalCanon` | All global canon facts (runtime discoveries, supplements decomposed world) |

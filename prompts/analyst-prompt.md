@@ -172,9 +172,13 @@ If pacingIssueDetected is true:
 
 If no pacing issue: pacingIssueDetected: false, pacingIssueReason: "", recommendedAction: "none"
 
+TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
+
 NARRATIVE TO EVALUATE:
 {{narrative}}
 ```
+
+The tone reminder is injected into the user prompt (before the narrative) in addition to the tone block in the system prompt, exploiting recency attention for tone evaluation accuracy.
 
 ## JSON Response Shape
 

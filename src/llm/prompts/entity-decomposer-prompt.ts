@@ -2,6 +2,7 @@ import { formatNpcsForPrompt } from '../../models/npc.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { EntityDecomposerContext } from '../entity-decomposer-types.js';
+import { buildToneBlock } from './sections/shared/tone-block.js';
 
 const ENTITY_DECOMPOSER_SYSTEM_PROMPT = `You are an Entity Decomposer for an interactive branching story engine. Your job is to convert raw character descriptions and worldbuilding prose into structured, machine-friendly attribute objects.
 
@@ -38,7 +39,9 @@ export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): C
     ? `\n\nWORLDBUILDING:\n${context.worldbuilding}`
     : '';
 
-  const toneSection = context.tone ? `\n\nTONE/GENRE: ${context.tone}` : '';
+  const toneSection = context.tone
+    ? `\n\n${buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords)}`
+    : '';
 
   const userPrompt = `Decompose the following character descriptions and worldbuilding into structured attribute objects.
 

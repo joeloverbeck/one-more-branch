@@ -320,6 +320,9 @@ export async function generatePage(
           openThreads: [],
         }
       : parentState!.accumulatedActiveState,
+    tone: story.tone,
+    toneKeywords: story.toneKeywords,
+    toneAntiKeywords: story.toneAntiKeywords,
     apiKey,
     onGenerationStage,
   });

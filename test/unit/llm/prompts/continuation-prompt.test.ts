@@ -182,6 +182,14 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).not.toContain('newCanonFacts/newCharacterCanonFacts');
   });
 
+  it('omits raw character concept section even when characterConcept is present', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const userMessage = messages.find((m) => m.role === 'user');
+
+    expect(userMessage?.content).not.toContain('CHARACTER CONCEPT:');
+    expect(userMessage?.content).not.toContain('A rogue agent');
+  });
+
   it('includes planner guidance fields when pagePlan is provided', () => {
     const messages = buildContinuationPrompt(
       makeContext({

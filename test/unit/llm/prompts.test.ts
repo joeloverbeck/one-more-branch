@@ -86,14 +86,15 @@ describe('buildOpeningPrompt', () => {
     ],
   };
 
-  it('should include character concept in user message', () => {
+  it('should omit raw character concept from opening user message', () => {
     const messages = buildOpeningPrompt({
       characterConcept: 'An exiled knight seeking redemption',
       worldbuilding: '',
       tone: 'grim fantasy',
     });
 
-    expect(getUserMessage(messages)).toContain('An exiled knight seeking redemption');
+    expect(getUserMessage(messages)).not.toContain('CHARACTER CONCEPT:');
+    expect(getUserMessage(messages)).not.toContain('An exiled knight seeking redemption');
   });
 
   it('should include content policy in system message', () => {

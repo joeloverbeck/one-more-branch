@@ -214,7 +214,7 @@ describe('buildOpeningPrompt choice intent section', () => {
   });
 });
 
-describe('buildOpeningPrompt with npcs and startingSituation', () => {
+describe('buildOpeningPrompt with npcs and omitted raw setup fields', () => {
   it('includes NPC section when npcs is provided', () => {
     const context: OpeningContext = {
       characterConcept: 'A brave knight',
@@ -245,7 +245,21 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     expect(userMessage).not.toContain('NPCS (Available Characters)');
   });
 
-  it('includes starting situation section when startingSituation is provided', () => {
+  it('omits character concept section even when characterConcept is provided', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A brave knight',
+      worldbuilding: 'Medieval fantasy',
+      tone: 'Adventure',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('CHARACTER CONCEPT:');
+    expect(userMessage).not.toContain('A brave knight');
+  });
+
+  it('omits starting situation section when startingSituation is provided', () => {
     const context: OpeningContext = {
       characterConcept: 'A brave knight',
       worldbuilding: 'Medieval fantasy',
@@ -256,42 +270,8 @@ describe('buildOpeningPrompt with npcs and startingSituation', () => {
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find((m) => m.role === 'user')!.content;
 
-    expect(userMessage).toContain('STARTING SITUATION:');
-    expect(userMessage).toContain('You wake up in a dungeon cell');
-    expect(userMessage).toContain('Begin the story with this situation');
-  });
-
-  it('omits starting situation section when startingSituation is not provided', () => {
-    const context: OpeningContext = {
-      characterConcept: 'A brave knight',
-      worldbuilding: 'Medieval fantasy',
-      tone: 'Adventure',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find((m) => m.role === 'user')!.content;
-
-    expect(userMessage).not.toContain('STARTING SITUATION:\n');
-  });
-
-  it('includes both NPC and starting situation sections in correct order', () => {
-    const context: OpeningContext = {
-      characterConcept: 'A brave knight',
-      worldbuilding: 'Medieval fantasy',
-      tone: 'Adventure',
-      npcs: [{ name: 'Merlin', description: 'The wise wizard' }],
-      startingSituation: 'You wake up in a dungeon',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find((m) => m.role === 'user')!.content;
-
-    const npcIndex = userMessage.indexOf('NPCS (Available Characters)');
-    const situationIndex = userMessage.indexOf('STARTING SITUATION:');
-    const toneIndex = userMessage.indexOf('TONE/GENRE:');
-
-    expect(npcIndex).toBeGreaterThan(0);
-    expect(situationIndex).toBeGreaterThan(npcIndex);
-    expect(toneIndex).toBeGreaterThan(situationIndex);
+    expect(userMessage).not.toContain('STARTING SITUATION:');
+    expect(userMessage).not.toContain('You wake up in a dungeon cell');
+    expect(userMessage).not.toContain('Begin the story with this situation');
   });
 });

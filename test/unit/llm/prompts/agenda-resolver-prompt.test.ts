@@ -143,6 +143,34 @@ describe('buildAgendaResolverPrompt', () => {
     expect(user).not.toContain('STORY STRUCTURE CONTEXT');
   });
 
+  it('includes tone block in system prompt and tone reminder in user prompt when tone is provided', () => {
+    const context = buildMinimalContext({
+      tone: 'cyberpunk noir',
+      toneKeywords: ['neon', 'dystopian'],
+      toneAntiKeywords: ['pastoral', 'cozy'],
+    });
+    const messages = buildAgendaResolverPrompt(context);
+    const system = messages[0]?.content ?? '';
+    const user = messages[1]?.content ?? '';
+
+    expect(system).toContain('TONE/GENRE IDENTITY:');
+    expect(system).toContain('Tone: cyberpunk noir');
+    expect(system).toContain('Target feel: neon, dystopian');
+    expect(system).toContain('Avoid: pastoral, cozy');
+
+    expect(user).toContain('TONE REMINDER:');
+    expect(user).toContain('cyberpunk noir');
+  });
+
+  it('omits tone block and reminder when tone is absent', () => {
+    const messages = buildAgendaResolverPrompt(buildMinimalContext());
+    const system = messages[0]?.content ?? '';
+    const user = messages[1]?.content ?? '';
+
+    expect(system).not.toContain('TONE/GENRE IDENTITY:');
+    expect(user).not.toContain('TONE REMINDER:');
+  });
+
   it('includes active state location and threats when populated', () => {
     const context = buildMinimalContext({
       activeState: {

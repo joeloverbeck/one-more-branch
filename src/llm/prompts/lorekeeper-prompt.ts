@@ -5,6 +5,7 @@ import { CONTENT_POLICY } from '../content-policy.js';
 import type { LorekeeperContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildWriterStructureContext } from './continuation/index.js';
+import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
 const LOREKEEPER_SYSTEM_PROMPT = `You are the Lorekeeper for an interactive branching story. Your role is to curate a compact, scene-focused "Story Bible" containing ONLY what the writer needs for the upcoming scene.
 
@@ -182,9 +183,11 @@ ${context.characterConcept}
 `}
 ${hasDecomposedWorld ? formatDecomposedWorldForPrompt(context.decomposedWorld) : `WORLDBUILDING:\n${context.worldbuilding || '(none provided)'}`}
 
-TONE/GENRE: ${context.tone}
+${buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 ${npcsSection}${npcAgendasSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
+${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
+
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
 1. sceneWorldContext: Filter worldbuilding to what's relevant here
