@@ -125,28 +125,14 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).not.toContain('PACING DIRECTIVE');
   });
 
-  it('includes suggested protagonist speech guidance when provided', () => {
+  it('does NOT include suggested protagonist speech section even when provided', () => {
     const messages = buildContinuationPrompt(
       makeContext({ suggestedProtagonistSpeech: '  We can still leave through the north gate.  ' })
     );
     const userMessage = messages.find((m) => m.role === 'user');
 
-    expect(userMessage?.content).toContain(
-      '=== SUGGESTED PROTAGONIST SPEECH (OPTIONAL GUIDANCE) ==='
-    );
-    expect(userMessage?.content).toContain(
-      'The protagonist has considered saying:\n"We can still leave through the north gate."'
-    );
-    expect(userMessage?.content).toContain(
-      'Treat this as optional intent, not mandatory dialogue.'
-    );
-    expect(userMessage?.content).toContain(
-      'Use it only when the current circumstances make it natural.'
-    );
-    expect(userMessage?.content).toContain(
-      'Adapt wording, tone, and timing naturally to fit the scene.'
-    );
-    expect(userMessage?.content).toContain('If circumstances do not support it, omit it.');
+    expect(userMessage?.content).not.toContain('SUGGESTED PROTAGONIST SPEECH');
+    expect(userMessage?.content).not.toContain('The protagonist has considered saying');
   });
 
   it('omits suggested protagonist speech guidance when field is absent', () => {
@@ -154,7 +140,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     const userMessage = messages.find((m) => m.role === 'user');
 
     expect(userMessage?.content).not.toContain('SUGGESTED PROTAGONIST SPEECH');
-    expect(userMessage?.content).not.toContain('The protagonist has considered saying:');
+    expect(userMessage?.content).not.toContain('The protagonist has considered saying');
   });
 
   it('omits suggested protagonist speech guidance when field is blank after trim', () => {
@@ -162,7 +148,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     const userMessage = messages.find((m) => m.role === 'user');
 
     expect(userMessage?.content).not.toContain('SUGGESTED PROTAGONIST SPEECH');
-    expect(userMessage?.content).not.toContain('The protagonist has considered saying:');
+    expect(userMessage?.content).not.toContain('The protagonist has considered saying');
   });
 
   it('includes data rules in user message', () => {

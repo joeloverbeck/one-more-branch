@@ -383,6 +383,94 @@ describe('planner continuation context section', () => {
     expect(result).not.toContain("PROTAGONIST'S CURRENT EMOTIONAL STATE:");
   });
 
+  it('includes suggested protagonist speech section when provided', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      suggestedProtagonistSpeech: 'Get lost, I never want to see you again.',
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('SUGGESTED PROTAGONIST SPEECH (PLAYER INTENT)');
+    expect(result).toContain('Get lost, I never want to see you again.');
+    expect(result).toContain('do not treat it as optional');
+  });
+
+  it('omits suggested protagonist speech section when not provided', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).not.toContain('SUGGESTED PROTAGONIST SPEECH');
+  });
+
+  it('omits suggested protagonist speech section when blank after trim', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      suggestedProtagonistSpeech: '   ',
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).not.toContain('SUGGESTED PROTAGONIST SPEECH');
+  });
+
   it('omits NPC agendas section when no agendas exist', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

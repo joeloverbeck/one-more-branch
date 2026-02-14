@@ -204,21 +204,6 @@ ${formatSpeechFingerprintForWriter(protagonistDecomposed.speechFingerprint)}
 `
     : '';
 
-  const suggestedProtagonistSpeech = context.suggestedProtagonistSpeech?.trim();
-  const suggestedProtagonistSpeechSection =
-    suggestedProtagonistSpeech && suggestedProtagonistSpeech.length > 0
-      ? `=== SUGGESTED PROTAGONIST SPEECH (OPTIONAL GUIDANCE) ===
-The protagonist has considered saying:
-"${suggestedProtagonistSpeech}"
-
-Treat this as optional intent, not mandatory dialogue.
-Use it only when the current circumstances make it natural.
-Adapt wording, tone, and timing naturally to fit the scene.
-If circumstances do not support it, omit it.
-
-`
-      : '';
-
   const userPrompt = `Continue the interactive story based on the player's choice.
 
 === DATA & STATE RULES ===
@@ -226,7 +211,7 @@ ${dataRules}
 
 ${protagonistSpeechSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}${suggestedProtagonistSpeechSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next

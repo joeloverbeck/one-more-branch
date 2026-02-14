@@ -190,6 +190,27 @@ ${lines.join('\n\n')}
 `;
 }
 
+function buildSuggestedSpeechSection(suggestedSpeech: string | undefined): string {
+  const trimmed = suggestedSpeech?.trim();
+  if (!trimmed || trimmed.length === 0) {
+    return '';
+  }
+
+  return `=== SUGGESTED PROTAGONIST SPEECH (PLAYER INTENT) ===
+The player wants the protagonist to say something like:
+"${trimmed}"
+
+Incorporate this into your plan:
+- Shape the sceneIntent so the scene creates a natural moment for this speech
+- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent
+- Consider how NPCs and the situation would react to this kind of statement
+- Let the speech intent influence at least one choiceIntent's consequences
+
+This is meaningful player input - plan around it, do not treat it as optional.
+
+`;
+}
+
 export function buildPlannerContinuationContextSection(
   context: ContinuationPagePlanContext
 ): string {
@@ -348,6 +369,6 @@ ${threadsSection}
 ${buildProtagonistAffectSection(context.parentProtagonistAffect)}${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
-PLAYER'S CHOICE:
+${buildSuggestedSpeechSection(context.suggestedProtagonistSpeech)}PLAYER'S CHOICE:
 ${context.selectedChoice}`;
 }

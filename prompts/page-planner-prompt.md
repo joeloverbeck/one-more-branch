@@ -87,6 +87,28 @@ Return JSON only.
 }
 ```
 
+## Suggested Protagonist Speech
+
+When the player provides a `suggestedProtagonistSpeech` via the choice POST, the planner continuation context includes a directive section:
+
+```text
+{{#if suggestedProtagonistSpeech (trimmed, non-empty)}}
+=== SUGGESTED PROTAGONIST SPEECH (PLAYER INTENT) ===
+The player wants the protagonist to say something like:
+"{{suggestedProtagonistSpeech}}"
+
+Incorporate this into your plan:
+- Shape the sceneIntent so the scene creates a natural moment for this speech
+- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent
+- Consider how NPCs and the situation would react to this kind of statement
+- Let the speech intent influence at least one choiceIntent's consequences
+
+This is meaningful player input - plan around it, do not treat it as optional.
+{{/if}}
+```
+
+This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent`, `writerBrief.mustIncludeBeats`, and `choiceIntents` to incorporate the speech intent, and the writer follows those instructions.
+
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.

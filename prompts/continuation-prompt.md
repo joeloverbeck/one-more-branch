@@ -29,7 +29,7 @@ The following sections are **always included** regardless of Story Bible presenc
 - Protagonist speech fingerprint (when decomposed characters are available)
 - Planner guidance and choice intents
 - Grandparent and parent full narrative (voice continuity)
-- Player's choice and suggested speech
+- Player's choice
 
 ## Protagonist Speech Fingerprint
 
@@ -425,17 +425,6 @@ SCENE BEFORE LAST (full text for style continuity):
 
 PREVIOUS SCENE (full text for style continuity):
 {{previousNarrative}}
-
-{{#if suggestedProtagonistSpeech (trimmed, non-empty)}}
-=== SUGGESTED PROTAGONIST SPEECH (OPTIONAL GUIDANCE) ===
-The protagonist has considered saying:
-"{{suggestedProtagonistSpeech}}"
-
-Treat this as optional intent, not mandatory dialogue.
-Use it only when the current circumstances make it natural.
-Adapt wording, tone, and timing naturally to fit the scene.
-If circumstances do not support it, omit it.
-{{/if}}
 
 PLAYER'S CHOICE: "{{selectedChoice}}"
 
