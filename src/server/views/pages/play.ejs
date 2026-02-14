@@ -238,19 +238,11 @@
               <% openThreadPanelRows.forEach((thread) => { %>
               <li class="open-threads-item">
                 <span class="thread-icon-pill" aria-hidden="true">
-                  <span class="thread-icon-badge thread-icon-badge--type">
-                    <img class="thread-icon thread-icon--type"
-                         src="/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
+                  <span class="thread-icon-badge">
+                    <img class="thread-icon"
+                         src="/images/icons/thread-<%= thread.threadType.toLowerCase() %>-<%= thread.urgency.toLowerCase() %>.png"
                          alt=""
-                         title="<%= thread.threadType %>"
-                         loading="lazy"
-                         onerror="this.style.display='none'">
-                  </span>
-                  <span class="thread-icon-badge thread-icon-badge--urgency">
-                    <img class="thread-icon thread-icon--urgency"
-                         src="/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
-                         alt=""
-                         title="<%= thread.urgency %>"
+                         title="<%= thread.threadType %> (<%= thread.urgency %>)"
                          loading="lazy"
                          onerror="this.style.display='none'">
                   </span>
@@ -272,8 +264,8 @@
               <% threatsPanelRows.forEach((threat) => { %>
               <li class="active-threats-item">
                 <span class="thread-icon-pill" aria-hidden="true">
-                  <span class="thread-icon-badge thread-icon-badge--type">
-                    <img class="thread-icon thread-icon--type"
+                  <span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--threat">
+                    <img class="thread-icon thread-icon--type thread-icon--threat"
                          src="/images/icons/threat-<%= threat.threatType.toLowerCase().replace(/_/g, '-') %>.png"
                          alt=""
                          title="<%= threat.threatType %>"
@@ -378,7 +370,7 @@
   <%- include('../partials/footer') %>
 
   <script type="application/json" id="analyst-data"><%- JSON.stringify(page.analystResult ?? null) %></script>
-  <script type="application/json" id="insights-context"><%- JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary: page.sceneSummary ?? null }) %></script>
+  <script type="application/json" id="insights-context"><%- JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary: page.sceneSummary ?? null, resolvedThreadMeta: page.resolvedThreadMeta ?? {} }) %></script>
   <script type="application/json" id="lore-data"><%- JSON.stringify({ worldFacts: story.globalCanon, characterCanon: story.globalCharacterCanon }) %></script>
   <script src="/js/app.js"></script>
 </body>

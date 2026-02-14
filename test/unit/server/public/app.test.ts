@@ -71,11 +71,9 @@ describe('public client script', () => {
     expect(script).not.toContain('data.logScript');
     expect(script).not.toContain('executeLogScript');
     expect(script).toContain('if (!Array.isArray(openThreads) || openThreads.length === 0)');
-    expect(script).toContain("getIconPath('thread_type_' + threadType)");
-    expect(script).toContain("getIconPath('thread_urgency_' + urgency)");
+    expect(script).toContain('getThreadIconPath(threadType, urgency)');
     expect(script).toContain('class="thread-icon-pill"');
-    expect(script).toContain('class="thread-icon-badge thread-icon-badge--type"');
-    expect(script).toContain('class="thread-icon-badge thread-icon-badge--urgency"');
+    expect(script).toContain('class="thread-icon-badge"');
     expect(script).toContain('function getOpenThreadUrgencyClass(urgency)');
     expect(script).toContain("return 'open-threads-text--high';");
     expect(script).toContain("return 'open-threads-text--medium';");

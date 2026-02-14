@@ -48,6 +48,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     protagonistAffect: createDefaultProtagonistAffect(),
     threadAges: {},
     inheritedNarrativePromises: [],
+    resolvedThreadMeta: {},
     npcAgendaUpdates: [],
     accumulatedNpcAgendas: createEmptyAccumulatedNpcAgendas(),
     isEnding: false,

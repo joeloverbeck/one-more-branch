@@ -31,6 +31,7 @@ export interface PlayPageOptions {
   hasCustomChoiceInput?: boolean;
   analystResult?: Record<string, unknown> | null;
   sceneSummary?: string | null;
+  resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   worldFacts?: string[];
   characterCanon?: Record<string, string[]>;
 }
@@ -67,8 +68,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             .map(
               (t) => `<li class="open-threads-item">
             <span class="thread-icon-pill" aria-hidden="true">
-              <span class="thread-icon-badge thread-icon-badge--type"></span>
-              <span class="thread-icon-badge thread-icon-badge--urgency"></span>
+              <span class="thread-icon-badge"></span>
             </span>
             <span class="open-threads-text">${t.text}</span>
           </li>`
@@ -278,7 +278,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         </div>
       </div>
       <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
-      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary })}</script>
+      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {} })}</script>
       <script type="application/json" id="lore-data">${JSON.stringify({ worldFacts, characterCanon })}</script>
     </main>
   `;

@@ -875,6 +875,7 @@ describe('playRoutes', () => {
             healthOverflowSummary: null,
             protagonistAffect: resultPage.protagonistAffect,
             analystResult: resultPage.analystResult,
+            resolvedThreadMeta: {},
           },
           wasGenerated: true,
         })

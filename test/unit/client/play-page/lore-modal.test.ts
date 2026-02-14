@@ -138,6 +138,7 @@ describe('story lore modal', () => {
             health: [],
             healthOverflowSummary: null,
             protagonistAffect: null,
+            resolvedThreadMeta: {},
           },
           globalCanon: ['The moon is red'],
           globalCharacterCanon: { 'Captain Vale': ['Lost an eye'] },

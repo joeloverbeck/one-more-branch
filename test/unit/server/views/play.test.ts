@@ -58,17 +58,13 @@ describe('play page template', () => {
       expect(template).toContain('<li class="open-threads-item">');
     });
 
-    it('renders thread badge pill with type and urgency icon images', () => {
+    it('renders thread badge pill with combined type-urgency icon image', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
       expect(template).toContain('class="thread-icon-pill"');
-      expect(template).toContain('class="thread-icon-badge thread-icon-badge--type"');
-      expect(template).toContain('class="thread-icon-badge thread-icon-badge--urgency"');
+      expect(template).toContain('class="thread-icon-badge"');
       expect(template).toContain(
-        "/images/icons/thread-type-<%= thread.threadType.toLowerCase().replace(/_/g, '-') %>.png"
-      );
-      expect(template).toContain(
-        "/images/icons/thread-urgency-<%= thread.urgency.toLowerCase().replace(/_/g, '-') %>.png"
+        '/images/icons/thread-<%= thread.threadType.toLowerCase() %>-<%= thread.urgency.toLowerCase() %>.png'
       );
       expect(template).toContain(
         'class="open-threads-text open-threads-text--<%= thread.urgency.toLowerCase().replace(/_/g, \'-\') %>"'
@@ -116,12 +112,13 @@ describe('play page template', () => {
       expect(template).toContain('JSON.stringify(page.analystResult ?? null)');
     });
 
-    it('contains insights-context JSON element with actDisplayInfo and sceneSummary', () => {
+    it('contains insights-context JSON element with actDisplayInfo, sceneSummary, and resolvedThreadMeta', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
       expect(template).toContain('<script type="application/json" id="insights-context">');
       expect(template).toContain('actDisplayInfo');
       expect(template).toContain('sceneSummary');
+      expect(template).toContain('resolvedThreadMeta');
     });
 
     it('contains insights modal scaffold and header actions slot', () => {

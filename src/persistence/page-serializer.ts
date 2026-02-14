@@ -239,6 +239,9 @@ export function serializePage(page: Page): PageFileData {
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
     })),
+    resolvedThreadMeta: Object.keys(page.resolvedThreadMeta).length > 0
+      ? { ...page.resolvedThreadMeta }
+      : undefined,
     npcAgendaUpdates: page.npcAgendaUpdates.map((a) => ({
       npcName: a.npcName,
       currentGoal: a.currentGoal,
@@ -336,6 +339,7 @@ export function deserializePage(data: PageFileData): Page {
       promiseType: p.promiseType as NarrativePromise['promiseType'],
       suggestedUrgency: p.suggestedUrgency as NarrativePromise['suggestedUrgency'],
     })),
+    resolvedThreadMeta: data.resolvedThreadMeta ?? {},
     npcAgendaUpdates: deserializeNpcAgendaArray(data.npcAgendaUpdates),
     accumulatedNpcAgendas: deserializeAccumulatedNpcAgendas(data.accumulatedNpcAgendas),
     isEnding: data.isEnding,

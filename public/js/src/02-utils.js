@@ -58,3 +58,13 @@
     return name ? '/images/icons/' + name + '.png' : '';
   }
 
+  function getThreadIconPath(threadType, urgency) {
+    if (typeof threadType !== 'string' || threadType.length === 0) {
+      return '';
+    }
+    if (typeof urgency !== 'string' || urgency.length === 0) {
+      return '';
+    }
+    return '/images/icons/thread-' + threadType.toLowerCase() + '-' + urgency.toLowerCase() + '.png';
+  }
+

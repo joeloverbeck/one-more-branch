@@ -225,6 +225,115 @@ describe('analyst insights modal', () => {
     );
   });
 
+  it('renders completion gate as a gauge row instead of plain text', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: buildAnalystResult({
+        completionGateSatisfied: false,
+        completionGateFailureReason: 'Need stronger commitment.',
+      }),
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    // Should have a gauge row for Completion Gate
+    const gaugeRows = modalBody.querySelectorAll('.beat-gauge__row');
+    const labels = Array.from(gaugeRows).map((r) => r.querySelector('.beat-gauge__label')?.textContent);
+    expect(labels).toContain('Completion Gate');
+    // Should NOT have old completion-gate paragraph
+    expect(modalBody.querySelector('.completion-gate')).toBeNull();
+    // Should show the reason text below as italic subtitle
+    const reason = modalBody.querySelector('.completion-gate-reason');
+    expect(reason).not.toBeNull();
+    expect(reason?.textContent).toBe('Need stronger commitment.');
+  });
+
+  it('renders completion gate gauge as satisfied (100%) when gate is met', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: buildAnalystResult({
+        completionGateSatisfied: true,
+        completionGateFailureReason: '',
+      }),
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    const gaugeRows = modalBody.querySelectorAll('.beat-gauge__row');
+    const gateRow = Array.from(gaugeRows).find(
+      (r) => r.querySelector('.beat-gauge__label')?.textContent === 'Completion Gate'
+    );
+    expect(gateRow).not.toBeNull();
+    const fill = gateRow?.querySelector('.beat-gauge__fill') as HTMLElement;
+    expect(fill.style.width).toBe('100%');
+    // No reason text when satisfied with empty reason
+    expect(modalBody.querySelector('.completion-gate-reason')).toBeNull();
+  });
+
+  it('renders thread payoff badges when resolvedThreadMeta is provided', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: buildAnalystResult({
+        threadPayoffAssessments: [
+          {
+            threadId: 'td-1',
+            threadText: 'Find the artifact',
+            satisfactionLevel: 'WELL_EARNED',
+            reasoning: 'Excellent resolution.',
+          },
+        ],
+      }),
+      resolvedThreadMeta: {
+        'td-1': { threadType: 'QUEST', urgency: 'HIGH' },
+      },
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    const badge = modalBody.querySelector('.payoff-thread-badge');
+    expect(badge).not.toBeNull();
+    const img = badge?.querySelector('img.thread-icon') as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.src).toContain('thread-quest-high');
+  });
+
+  it('gracefully omits thread payoff badge when meta is missing', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: buildAnalystResult({
+        threadPayoffAssessments: [
+          {
+            threadId: 'td-1',
+            threadText: 'Find the artifact',
+            satisfactionLevel: 'ADEQUATE',
+            reasoning: 'Resolved.',
+          },
+        ],
+      }),
+      // no resolvedThreadMeta
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    const badge = modalBody.querySelector('.payoff-thread-badge');
+    expect(badge).toBeNull();
+    // But the payoff item itself should still render
+    const payoffItem = modalBody.querySelector('.payoff-item');
+    expect(payoffItem).not.toBeNull();
+  });
+
   it('updates modal content on choice response and supports ending-page initialization', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: buildAnalystResult({ sceneMomentum: 'STASIS' }),
@@ -275,6 +384,7 @@ describe('analyst insights modal', () => {
             health: [],
             healthOverflowSummary: null,
             protagonistAffect: null,
+            resolvedThreadMeta: {},
           },
           wasGenerated: true,
           actDisplayInfo: { displayString: 'Act 2: Rising Action - Beat 2.1: Confrontation' },

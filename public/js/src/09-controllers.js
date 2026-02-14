@@ -240,6 +240,7 @@
         insightsController.update(data.page.analystResult, {
           actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
           sceneSummary: data.page.sceneSummary || null,
+          resolvedThreadMeta: data.page.resolvedThreadMeta || {},
         });
 
         currentPageId = data.page.id;

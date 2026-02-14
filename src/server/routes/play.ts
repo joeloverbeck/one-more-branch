@@ -351,6 +351,7 @@ playRoutes.post(
           choices: result.page.choices,
           isEnding: result.page.isEnding,
           analystResult: result.page.analystResult,
+          resolvedThreadMeta: result.page.resolvedThreadMeta ?? {},
           openThreads: openThreadPanelData.rows,
           openThreadOverflowSummary: openThreadPanelData.overflowSummary,
           activeThreats: threatsPanelData.rows,

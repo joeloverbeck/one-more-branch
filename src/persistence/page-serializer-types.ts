@@ -179,6 +179,7 @@ export interface PageFileData {
   analystResult?: AnalystResultFileData | null;
   threadAges?: Record<string, number>;
   inheritedNarrativePromises?: NarrativePromiseFileData[];
+  resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   npcAgendaUpdates?: NpcAgendaFileData[];
   accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;
   isEnding: boolean;

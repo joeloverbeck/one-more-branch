@@ -13,6 +13,7 @@ import {
   PageId,
   parsePageId,
   StructureVersionId,
+  ThreadEntry,
 } from '../models';
 import type { NarrativePromise } from '../models/state/keyed-entry';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
@@ -175,6 +176,29 @@ export function computeInheritedNarrativePromises(
 }
 
 /**
+ * Builds a lookup of metadata for threads resolved on this page.
+ * Cross-references resolved thread IDs with the parent page's open threads
+ * to preserve threadType and urgency for display purposes (e.g. payoff card badges).
+ */
+function buildResolvedThreadMeta(
+  threadsResolved: readonly string[],
+  parentOpenThreads: readonly ThreadEntry[]
+): Readonly<Record<string, { threadType: string; urgency: string }>> {
+  if (threadsResolved.length === 0) {
+    return {};
+  }
+  const meta: Record<string, { threadType: string; urgency: string }> = {};
+  const threadMap = new Map(parentOpenThreads.map((t) => [t.id, t]));
+  for (const id of threadsResolved) {
+    const thread = threadMap.get(id);
+    if (thread) {
+      meta[id] = { threadType: thread.threadType, urgency: thread.urgency };
+    }
+  }
+  return meta;
+}
+
+/**
  * Maps reconciled state fields to ActiveStateChanges.
  * Handles the conversion from LLM output format to the typed change structure.
  */
@@ -220,6 +244,11 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
         result.threadsAdded.map((t) => t.text)
       );
 
+  const resolvedThreadMeta = buildResolvedThreadMeta(
+    result.threadsResolved,
+    context.parentAccumulatedActiveState.openThreads
+  );
+
   return createPage({
     id: context.pageId,
     narrativeText: result.narrative,
@@ -248,6 +277,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     analystResult: context.analystResult,
     threadAges,
     inheritedNarrativePromises,
+    resolvedThreadMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
   });

@@ -973,6 +973,16 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     return name ? '/images/icons/' + name + '.png' : '';
   }
 
+  function getThreadIconPath(threadType, urgency) {
+    if (typeof threadType !== 'string' || threadType.length === 0) {
+      return '';
+    }
+    if (typeof urgency !== 'string' || urgency.length === 0) {
+      return '';
+    }
+    return '/images/icons/thread-' + threadType.toLowerCase() + '-' + urgency.toLowerCase() + '.png';
+  }
+
 
   // ── Loading progress controller ────────────────────────────────────
 
@@ -1138,25 +1148,14 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
   // ── Thread renderers ──────────────────────────────────────────────
 
   function renderThreadBadgePill(threadType, urgency) {
-    var threadTypeIconPath = getIconPath('thread_type_' + threadType);
-    var urgencyIconPath = getIconPath('thread_urgency_' + urgency);
+    var iconPath = getThreadIconPath(threadType, urgency);
     var html = '<span class="thread-icon-pill" aria-hidden="true">';
 
-    html += '<span class="thread-icon-badge thread-icon-badge--type">';
-    if (threadTypeIconPath) {
-      html += '<img class="thread-icon thread-icon--type"'
-        + ' src="' + escapeHtml(threadTypeIconPath) + '"'
-        + ' alt="" title="' + escapeHtml(threadType) + '"'
-        + ' loading="lazy"'
-        + " onerror=\"this.style.display='none'\">";
-    }
-    html += '</span>';
-
-    html += '<span class="thread-icon-badge thread-icon-badge--urgency">';
-    if (urgencyIconPath) {
-      html += '<img class="thread-icon thread-icon--urgency"'
-        + ' src="' + escapeHtml(urgencyIconPath) + '"'
-        + ' alt="" title="' + escapeHtml(urgency) + '"'
+    html += '<span class="thread-icon-badge">';
+    if (iconPath) {
+      html += '<img class="thread-icon"'
+        + ' src="' + escapeHtml(iconPath) + '"'
+        + ' alt="" title="' + escapeHtml(threadType + ' (' + urgency + ')') + '"'
         + ' loading="lazy"'
         + " onerror=\"this.style.display='none'\">";
     }
@@ -1170,9 +1169,9 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     var threatTypeIconPath = getIconPath('threat_' + threatType);
     var html = '<span class="thread-icon-pill" aria-hidden="true">';
 
-    html += '<span class="thread-icon-badge thread-icon-badge--type">';
+    html += '<span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--threat">';
     if (threatTypeIconPath) {
-      html += '<img class="thread-icon thread-icon--type"'
+      html += '<img class="thread-icon thread-icon--type thread-icon--threat"'
         + ' src="' + escapeHtml(threatTypeIconPath) + '"'
         + ' alt="" title="' + escapeHtml(threatType) + '"'
         + ' loading="lazy"'
@@ -1802,6 +1801,7 @@ var MOMENTUM_META = {
   REVERSAL_OR_SETBACK: { css: 'momentum-badge--reversal', label: 'Reversal' },
   SCOPE_SHIFT: { css: 'momentum-badge--scope-shift', label: 'Scope Shift' },
 };
+var COMPLETION_GATE_FILL = { PENDING: 0, SATISFIED: 100 };
 var URGENCY_CLASS = { LOW: 'urgency-low', MEDIUM: 'urgency-medium', HIGH: 'urgency-high' };
 var PAYOFF_CLASS = {
   RUSHED: 'payoff-rushed',
@@ -1893,10 +1893,14 @@ function renderNarrativePromises(promises) {
     + '</details>';
 }
 
-function renderThreadPayoffs(assessments) {
+function renderThreadPayoffs(assessments, resolvedThreadMeta) {
   if (!Array.isArray(assessments) || assessments.length === 0) {
     return '';
   }
+
+  var metaMap = resolvedThreadMeta && typeof resolvedThreadMeta === 'object'
+    ? resolvedThreadMeta
+    : {};
 
   var items = assessments.map(function(assessment) {
     var satisfaction = typeof assessment?.satisfactionLevel === 'string'
@@ -1905,8 +1909,18 @@ function renderThreadPayoffs(assessments) {
     var payoffClass = PAYOFF_CLASS[satisfaction] || PAYOFF_CLASS.ADEQUATE;
     var threadText = typeof assessment?.threadText === 'string' ? assessment.threadText : '';
     var reasoning = typeof assessment?.reasoning === 'string' ? assessment.reasoning : '';
+    var threadId = typeof assessment?.threadId === 'string' ? assessment.threadId : '';
+
+    var badgeHtml = '';
+    var meta = threadId ? metaMap[threadId] : null;
+    if (meta && typeof meta.threadType === 'string' && typeof meta.urgency === 'string') {
+      badgeHtml = '<span class="payoff-thread-badge">'
+        + renderThreadBadgePill(meta.threadType, meta.urgency)
+        + '</span>';
+    }
 
     return '<li class="payoff-item">'
+      + badgeHtml
       + '<p class="payoff-thread-label">Thread</p>'
       + '<p class="payoff-thread-text" title="' + escapeHtml(threadText) + '">' + escapeHtml(threadText) + '</p>'
       + '<span class="payoff-satisfaction-badge payoff-satisfaction-badge--centered ' + payoffClass + '">'
@@ -1943,12 +1957,7 @@ function renderInsightsBody(analystResult, context) {
   var completionGateReason = typeof analystResult.completionGateFailureReason === 'string'
     ? analystResult.completionGateFailureReason
     : '';
-  var completionGateClass = completionGateSatisfied
-    ? 'completion-gate completion-gate--satisfied'
-    : 'completion-gate completion-gate--pending';
-  var completionGateText = completionGateSatisfied
-    ? 'Completion Gate: Satisfied ✓'
-    : 'Completion Gate: Not yet — ' + completionGateReason;
+  var completionGateValue = completionGateSatisfied ? 'SATISFIED' : 'PENDING';
 
   var pacingHtml = '';
   if (analystResult.pacingIssueDetected === true) {
@@ -1977,8 +1986,11 @@ function renderInsightsBody(analystResult, context) {
     + renderGaugeRow('Commitment', analystResult.commitmentStrength, COMMITMENT_FILL)
     + renderGaugeRow('Entry Readiness', analystResult.entryConditionReadiness, ENTRY_READINESS_FILL)
     + renderGaugeRow('Structural Position', analystResult.structuralPositionSignal, STRUCTURAL_POSITION_FILL)
+    + renderGaugeRow('Completion Gate', completionGateValue, COMPLETION_GATE_FILL)
     + '</div>'
-    + '<p class="' + completionGateClass + '">' + escapeHtml(completionGateText) + '</p>'
+    + (completionGateReason
+      ? '<p class="completion-gate-reason">' + escapeHtml(completionGateReason) + '</p>'
+      : '')
     + '</details>'
     + '<details class="insights-section" open>'
     + '<summary><h4>Momentum</h4></summary>'
@@ -1986,7 +1998,7 @@ function renderInsightsBody(analystResult, context) {
     + '</details>'
     + pacingHtml
     + renderNarrativePromises(analystResult.narrativePromises)
-    + renderThreadPayoffs(analystResult.threadPayoffAssessments)
+    + renderThreadPayoffs(analystResult.threadPayoffAssessments, ctx.resolvedThreadMeta || {})
     + toneHtml;
 }
 
@@ -2705,6 +2717,7 @@ function createLoreModalController(initialData) {
         insightsController.update(data.page.analystResult, {
           actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
           sceneSummary: data.page.sceneSummary || null,
+          resolvedThreadMeta: data.page.resolvedThreadMeta || {},
         });
 
         currentPageId = data.page.id;

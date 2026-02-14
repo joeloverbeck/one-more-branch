@@ -279,10 +279,7 @@ describe('open threads panel', () => {
     const pill = panel!.querySelector('.thread-icon-pill');
     expect(pill).not.toBeNull();
 
-    const typeImg = pill!.querySelector('.thread-icon--type') as HTMLImageElement;
-    expect(typeImg?.src).toContain('/images/icons/thread-type-quest.png');
-
-    const urgencyImg = pill!.querySelector('.thread-icon--urgency') as HTMLImageElement;
-    expect(urgencyImg?.src).toContain('/images/icons/thread-urgency-high.png');
+    const img = pill!.querySelector('.thread-icon') as HTMLImageElement;
+    expect(img?.src).toContain('/images/icons/thread-quest-high.png');
   });
 });

@@ -166,6 +166,77 @@ describe('page-builder', () => {
     });
   });
 
+  describe('resolvedThreadMeta', () => {
+    it('populates resolvedThreadMeta when threads are resolved', () => {
+      const result = buildMockGenerationResult({
+        threadsResolved: ['td-1'],
+      });
+      const context: ContinuationPageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: 'Forest',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { id: 'td-1', text: 'Find the gem', threadType: 'QUEST', urgency: 'HIGH' },
+            { id: 'td-2', text: 'Side plot', threadType: 'MYSTERY', urgency: 'LOW' },
+          ],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: { 'td-1': 2, 'td-2': 1 },
+        parentInheritedNarrativePromises: [],
+        parentAnalystNarrativePromises: [],
+      };
+
+      const page = buildContinuationPage(result, context);
+
+      expect(page.resolvedThreadMeta).toEqual({
+        'td-1': { threadType: 'QUEST', urgency: 'HIGH' },
+      });
+    });
+
+    it('returns empty resolvedThreadMeta when no threads resolved', () => {
+      const result = buildMockGenerationResult({
+        threadsResolved: [],
+      });
+      const context: ContinuationPageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: 'Forest',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { id: 'td-1', text: 'Find the gem', threadType: 'QUEST', urgency: 'HIGH' },
+          ],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: { 'td-1': 0 },
+        parentInheritedNarrativePromises: [],
+        parentAnalystNarrativePromises: [],
+      };
+
+      const page = buildContinuationPage(result, context);
+
+      expect(page.resolvedThreadMeta).toEqual({});
+    });
+  });
+
   describe('createEmptyStructureContext', () => {
     it('returns empty structure context', () => {
       expect(createEmptyStructureContext()).toEqual({

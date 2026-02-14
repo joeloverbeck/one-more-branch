@@ -1,25 +1,14 @@
   // ── Thread renderers ──────────────────────────────────────────────
 
   function renderThreadBadgePill(threadType, urgency) {
-    var threadTypeIconPath = getIconPath('thread_type_' + threadType);
-    var urgencyIconPath = getIconPath('thread_urgency_' + urgency);
+    var iconPath = getThreadIconPath(threadType, urgency);
     var html = '<span class="thread-icon-pill" aria-hidden="true">';
 
-    html += '<span class="thread-icon-badge thread-icon-badge--type">';
-    if (threadTypeIconPath) {
-      html += '<img class="thread-icon thread-icon--type"'
-        + ' src="' + escapeHtml(threadTypeIconPath) + '"'
-        + ' alt="" title="' + escapeHtml(threadType) + '"'
-        + ' loading="lazy"'
-        + " onerror=\"this.style.display='none'\">";
-    }
-    html += '</span>';
-
-    html += '<span class="thread-icon-badge thread-icon-badge--urgency">';
-    if (urgencyIconPath) {
-      html += '<img class="thread-icon thread-icon--urgency"'
-        + ' src="' + escapeHtml(urgencyIconPath) + '"'
-        + ' alt="" title="' + escapeHtml(urgency) + '"'
+    html += '<span class="thread-icon-badge">';
+    if (iconPath) {
+      html += '<img class="thread-icon"'
+        + ' src="' + escapeHtml(iconPath) + '"'
+        + ' alt="" title="' + escapeHtml(threadType + ' (' + urgency + ')') + '"'
         + ' loading="lazy"'
         + " onerror=\"this.style.display='none'\">";
     }
@@ -33,9 +22,9 @@
     var threatTypeIconPath = getIconPath('threat_' + threatType);
     var html = '<span class="thread-icon-pill" aria-hidden="true">';
 
-    html += '<span class="thread-icon-badge thread-icon-badge--type">';
+    html += '<span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--threat">';
     if (threatTypeIconPath) {
-      html += '<img class="thread-icon thread-icon--type"'
+      html += '<img class="thread-icon thread-icon--type thread-icon--threat"'
         + ' src="' + escapeHtml(threatTypeIconPath) + '"'
         + ' alt="" title="' + escapeHtml(threatType) + '"'
         + ' loading="lazy"'
