@@ -107,4 +107,30 @@ describe('play page template', () => {
       expect(template).toContain('Guide Your Protagonist');
     });
   });
+
+  describe('analyst insights wiring', () => {
+    it('contains analyst JSON script payload node', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('<script type="application/json" id="analyst-data">');
+      expect(template).toContain('JSON.stringify(page.analystResult ?? null)');
+    });
+
+    it('contains insights-context JSON element with actDisplayInfo and sceneSummary', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('<script type="application/json" id="insights-context">');
+      expect(template).toContain('actDisplayInfo');
+      expect(template).toContain('sceneSummary');
+    });
+
+    it('contains insights modal scaffold and header actions slot', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('id="story-header-actions"');
+      expect(template).toContain('id="insights-modal"');
+      expect(template).toContain('id="insights-modal-body"');
+      expect(template).toContain('id="insights-close-btn"');
+    });
+  });
 });

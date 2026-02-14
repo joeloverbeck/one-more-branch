@@ -845,6 +845,7 @@ describe('playRoutes', () => {
           page: {
             id: resultPage.id,
             narrativeText: resultPage.narrativeText,
+            sceneSummary: resultPage.sceneSummary,
             choices: resultPage.choices,
             isEnding: resultPage.isEnding,
             openThreads: [
@@ -873,6 +874,7 @@ describe('playRoutes', () => {
             health: [],
             healthOverflowSummary: null,
             protagonistAffect: resultPage.protagonistAffect,
+            analystResult: resultPage.analystResult,
           },
           wasGenerated: true,
         })
@@ -1223,6 +1225,73 @@ describe('playRoutes', () => {
           deviationInfo: undefined,
         })
       );
+    });
+
+    it('includes analystResult in response page payload', async () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A hero',
+        worldbuilding: '',
+        tone: 'Adventure',
+      });
+      const analystResult = {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: 'Summary.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'MAJOR_PROGRESS',
+        objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+        commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+        structuralPositionSignal: 'CLEARLY_IN_NEXT_BEAT',
+        entryConditionReadiness: 'READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: true,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        narrativePromises: [],
+        threadPayoffAssessments: [],
+        rawResponse: '{}',
+      };
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'Story continues.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Continue'), createChoice('Wait')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 0,
+        analystResult,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      const payload = (json.mock.calls[0] as unknown[] | undefined)?.[0] as
+        | { success?: boolean; page?: { analystResult?: unknown } }
+        | undefined;
+      expect(payload?.success).toBe(true);
+      expect(payload?.page?.analystResult).toEqual(analystResult);
     });
 
     it('includes actDisplayInfo in response when page has structure state', async () => {

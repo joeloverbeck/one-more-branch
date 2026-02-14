@@ -347,8 +347,10 @@ playRoutes.post(
         page: {
           id: result.page.id,
           narrativeText: result.page.narrativeText,
+          sceneSummary: result.page.sceneSummary,
           choices: result.page.choices,
           isEnding: result.page.isEnding,
+          analystResult: result.page.analystResult,
           openThreads: openThreadPanelData.rows,
           openThreadOverflowSummary: openThreadPanelData.overflowSummary,
           activeThreats: threatsPanelData.rows,

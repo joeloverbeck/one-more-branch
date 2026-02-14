@@ -17,10 +17,14 @@
     const narrative = document.getElementById('narrative');
     const loading = document.getElementById('loading');
     const apiKeyModal = document.getElementById('api-key-modal');
+    const initialInsightsContext = parseInsightsContextFromDom();
+    const insightsController = createAnalystInsightsController(parseAnalystDataFromDom(), initialInsightsContext);
 
-    if (!storyId || !choicesSection || !choices || !narrative || !loading || !apiKeyModal) {
+    if (!storyId || !narrative || !loading || !apiKeyModal) {
       return;
     }
+
+    const hasChoicesUi = choicesSection instanceof HTMLElement && choices instanceof HTMLElement;
     const loadingProgress = createLoadingProgressController(loading);
 
     function ensureApiKey() {
@@ -60,6 +64,10 @@
     }
 
     function getProtagonistGuidanceValues() {
+      if (!choicesSection) {
+        return { emotions: '', thoughts: '', speech: '' };
+      }
+
       const emotionsEl = choicesSection.querySelector('#guidance-emotions');
       const thoughtsEl = choicesSection.querySelector('#guidance-thoughts');
       const speechEl = choicesSection.querySelector('#guidance-speech');
@@ -72,6 +80,9 @@
     }
 
     function setChoicesDisabled(disabled) {
+      if (!choices) {
+        return;
+      }
       const allButtons = choices.querySelectorAll('.choice-btn');
       allButtons.forEach((button) => {
         button.disabled = disabled;
@@ -79,6 +90,9 @@
     }
 
     function handleCustomChoiceSubmit() {
+      if (!choicesSection || !choices) {
+        return;
+      }
       const input = choicesSection.querySelector('.custom-choice-input');
       if (!input) return;
 
@@ -125,6 +139,9 @@
     }
 
     function bindCustomChoiceEvents() {
+      if (!choicesSection) {
+        return;
+      }
       const addBtn = choicesSection.querySelector('.custom-choice-btn');
       const input = choicesSection.querySelector('.custom-choice-input');
 
@@ -141,29 +158,32 @@
       }
     }
 
-    // Bind events for the initial custom choice input rendered by the server
-    bindCustomChoiceEvents();
+    if (hasChoicesUi) {
+      // Bind events for the initial custom choice input rendered by the server
+      bindCustomChoiceEvents();
+    }
 
-    choices.addEventListener('click', async (event) => {
-      const clickedElement = event.target;
-      if (!(clickedElement instanceof HTMLElement)) {
-        return;
-      }
+    if (hasChoicesUi) {
+      choices.addEventListener('click', async (event) => {
+        const clickedElement = event.target;
+        if (!(clickedElement instanceof HTMLElement)) {
+          return;
+        }
 
-      const button = clickedElement.closest('.choice-btn');
-      if (!button || button.disabled) {
-        return;
-      }
+        const button = clickedElement.closest('.choice-btn');
+        if (!button || button.disabled) {
+          return;
+        }
 
-      const choiceIndex = Number.parseInt(button.dataset.choiceIndex || '', 10);
-      if (!Number.isFinite(choiceIndex) || choiceIndex < 0) {
-        return;
-      }
+        const choiceIndex = Number.parseInt(button.dataset.choiceIndex || '', 10);
+        if (!Number.isFinite(choiceIndex) || choiceIndex < 0) {
+          return;
+        }
 
-      try {
-        clearPlayError(choicesSection);
-        const isExplored = button.dataset.explored === 'true';
-        const apiKey = isExplored ? getApiKey() : await ensureApiKey();
+        try {
+          clearPlayError(choicesSection);
+          const isExplored = button.dataset.explored === 'true';
+          const apiKey = isExplored ? getApiKey() : await ensureApiKey();
 
         setChoicesDisabled(true);
         loading.style.display = 'flex';
@@ -216,6 +236,10 @@
         if (!data.page) {
           throw new Error('Invalid response from server');
         }
+        insightsController.update(data.page.analystResult, {
+          actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
+          sceneSummary: data.page.sceneSummary || null,
+        });
 
         currentPageId = data.page.id;
         container.dataset.pageId = String(currentPageId);
@@ -290,19 +314,25 @@
         } else {
           narrative.scrollIntoView({ behavior: 'smooth' });
         }
-      } catch (error) {
-        console.error('Error:', error);
-        // Log additional debug info if available
-        if (error && typeof error === 'object' && 'debug' in error) {
-          console.error('Debug info:', error.debug);
+        } catch (error) {
+          console.error('Error:', error);
+          // Log additional debug info if available
+          if (error && typeof error === 'object' && 'debug' in error) {
+            console.error('Debug info:', error.debug);
+          }
+          if (choicesSection) {
+            showPlayError(
+              error instanceof Error ? error.message : 'Something went wrong. Please try again.',
+              choicesSection
+            );
+          }
+          setChoicesDisabled(false);
+        } finally {
+          loadingProgress.stop();
+          loading.style.display = 'none';
         }
-        showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.', choicesSection);
-        setChoicesDisabled(false);
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-      }
-    });
+      });
+    }
 
     window.addEventListener('popstate', () => {
       location.reload();

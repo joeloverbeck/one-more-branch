@@ -1,12 +1,28 @@
 # Analyst Insights Modal
 
-**Status**: ACTIVE
+**Status**: COMPLETED
 **Priority**: Enhancement
 **Scope**: UI feature — expose analyst result data to the player via a modal on the play page
 
 ## Overview
 
 Every page generation produces an `AnalystResult` (stored on `Page.analystResult`) containing rich data about beat progress, narrative momentum, pacing, foreshadowing, and thread payoff quality. This data is currently invisible to the player. This spec adds a "Story Insights" button on the play page that opens a modal displaying curated analyst data, with the primary goal of letting players gauge how close they are to completing the current story beat.
+
+## Assumption Reassessment (2026-02-14)
+
+The original draft made several assumptions that do not match the current implementation. Scope is corrected here before implementation.
+
+1. `initPlayPage()` currently aborts when `.choices-section`/`#choices` are missing. On ending pages, those nodes are intentionally absent, so no play-page JS initializes there today.
+2. The choice flow rewrites `choicesSection.innerHTML` when a page becomes an ending. Any UI mounted inside choices content is destroyed unless re-mounted after each update.
+3. Client JS is a concatenated global script pipeline (`public/js/src/*.js`), not module imports. New behavior should be added as a focused renderer/controller helper file in sequence order.
+4. Existing automated coverage for this area is primarily unit-level (route handlers, template source assertions, jsdom client behavior), not browser E2E for modal interactions.
+
+### Scope Corrections
+
+- Introduce a dedicated analyst insights controller (`public/js/src/05c-analyst-insights.js`) that owns parsing, rendering, modal state, and updates.
+- Refactor `initPlayPage()` so insights can initialize even when a page is already ending (choice handlers still remain conditional on choices existing).
+- Mount the trigger in a stable header slot (`.story-header`) instead of inside mutable choices/ending markup. This is cleaner than re-injecting into frequently replaced sections and works for both ending and non-ending pages.
+- Keep server payload changes minimal: expose `analystResult` in choice responses and embed initial analyst JSON in the play template.
 
 ## Data Source
 
@@ -71,17 +87,16 @@ interface AnalystResult {
 
 ### Trigger Button
 
-Location: Inline with the "What do you do?" heading (`<h3>` in `.choices-section`), right-aligned.
+Location: Story header actions row (`.story-header`), right side.
 
 ```
-[What do you do?]                    [🔍 Story Insights]
+[Story title / act]                          [🔍 Story Insights]
 ```
 
-- The `<h3>` becomes a flex container with `justify-content: space-between`
 - Button uses a small icon + text label ("Story Insights")
 - On mobile (<600px): icon only, no text label
 - Only rendered when `analystResult` is non-null (opening pages may lack analyst data)
-- Also rendered on ending pages (before the ending banner), since they still have analyst results
+- Rendered for both regular pages and ending pages
 
 ### Modal Overlay
 
@@ -225,6 +240,8 @@ The client JS reads analyst data from either:
 
 When new analyst data arrives via AJAX, the stored data is updated. If the modal is currently open, its content is re-rendered with the new data.
 
+Architecture note: a single `createAnalystInsightsController()` manages parsing, event binding (open/close/escape/backdrop), trigger visibility, and rerendering. Other controllers only call `update(analystResult)`.
+
 ## File Changes
 
 ### Server-Side
@@ -232,14 +249,14 @@ When new analyst data arrives via AJAX, the stored data is updated. If the modal
 | File | Change |
 |------|--------|
 | `src/server/routes/play.ts` | Add `analystResult` to POST choice response JSON |
-| `src/server/views/pages/play.ejs` | Add analyst data script block, add insights button HTML, add modal HTML skeleton |
+| `src/server/views/pages/play.ejs` | Add analyst data script block, add story-header action slot, add modal HTML skeleton |
 
 ### Client-Side
 
 | File | Change |
 |------|--------|
-| `public/js/src/05b-analyst-modal.js` (new) | Modal rendering, show/hide, gauge logic, content updates |
-| `public/js/src/09-controllers.js` | Read initial analyst data, pass AJAX analyst data to modal module, re-render button on AJAX updates |
+| `public/js/src/05c-analyst-insights.js` (new) | Modal rendering, show/hide, gauge logic, content updates |
+| `public/js/src/09-controllers.js` | Read initial analyst data, initialize insights controller, pass AJAX analyst data to controller, support ending-page initialization |
 | `public/css/styles.css` | New styles for insights button, gauge bars, momentum badges, promise/payoff sections |
 
 After editing client JS files, regenerate `app.js`:
@@ -308,19 +325,20 @@ node scripts/concat-client-js.js
 - Conditional section visibility (pacing alert shows only when `pacingIssueDetected`)
 
 ### Integration Tests
-- POST /play/:storyId/choice response includes `analystResult`
-- GET /play/:storyId page includes analyst data script block
+- Unit route test: POST `/play/:storyId/choice` response includes `analystResult`
+- Unit template test: play template includes analyst data script block + insights modal scaffold
 
 ### Client Tests
 - Modal opens on button click
 - Modal closes on X, outside click, Escape
 - Modal content updates on AJAX page navigation
 - Button hidden when `analystResult` is null
+- Ending pages still initialize insights trigger/modal when analyst data is present
 
 ## Edge Cases
 
 - **Opening page (page 1)**: May have `analystResult: null` if it's the very first page (no analyst runs on structure generation). Button should be hidden.
-- **Ending pages**: Have analyst results but no choices section. The button should be placed in the ending banner area or above it.
+- **Ending pages**: Have analyst results but no choices section. Insights still initialize because play-page setup no longer hard-depends on choices markup.
 - **Navigating to previously explored pages**: These load existing page data (no new generation). The analyst result should still be available from the stored page JSON.
 - **Very long `completionGateFailureReason`**: Text should wrap within the modal. No truncation needed — the modal scrolls.
 - **Empty `narrativePromises` and `threadPayoffAssessments`**: Both sections hidden. Modal shows only gauge + momentum + gate status.
@@ -331,3 +349,19 @@ node scripts/concat-client-js.js
 - This spec does NOT modify the analyst prompt or result structure
 - This spec does NOT add analyst insights to the story overview/home page
 - This spec does NOT expose deviation/rewrite information (players experience this organically)
+
+## Outcome
+
+- Completed on: 2026-02-14
+- Implemented:
+  - Added analyst payload exposure in `POST /play/:storyId/choice`.
+  - Added play template analyst JSON bootstrap node, story-header trigger slot, and insights modal scaffold.
+  - Added new client controller module for insights rendering and modal interactions.
+  - Refactored play-page initialization so insights also work on ending pages without choices markup.
+  - Added/updated unit tests for route payloads, template wiring, client modal behavior, and bundle string assertions.
+- Deviations from original plan:
+  - Trigger was moved from choices heading to `story-header` for durability across DOM rewrites and ending/non-ending parity.
+  - Coverage was implemented via existing route/template/client unit layers rather than new browser integration tests.
+- Verification:
+  - `npm run test:unit` passed.
+  - `npm run lint` passed.

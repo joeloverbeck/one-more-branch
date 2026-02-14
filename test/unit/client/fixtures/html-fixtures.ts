@@ -29,6 +29,8 @@ export interface PlayPageOptions {
   actDisplayInfo?: { displayString: string } | null;
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
+  analystResult?: Record<string, unknown> | null;
+  sceneSummary?: string | null;
 }
 
 export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
@@ -46,6 +48,8 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const actDisplayInfo = options.actDisplayInfo ?? null;
   const stateChanges = options.stateChanges ?? [];
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
+  const analystResult = options.analystResult ?? null;
+  const sceneSummary = options.sceneSummary ?? null;
 
   const threadsHtml =
     openThreads.length > 0
@@ -188,18 +192,28 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         ${customChoiceHtml}
       </section>`;
 
+  const insightsButtonHtml = analystResult
+    ? `<button type="button" class="insights-btn" id="insights-btn" aria-haspopup="dialog" aria-controls="insights-modal">
+         <span class="insights-btn__icon" aria-hidden="true">🔍</span>
+         <span class="insights-btn__label">Story Insights</span>
+       </button>`
+    : '';
+
   return `
     <main>
       <div class="play-container" data-story-id="${storyId}" data-page-id="${pageId}">
         <div class="play-layout">
           <div class="left-sidebar-widgets" id="left-sidebar-widgets"></div>
           <div class="play-content">
-            <div class="story-header">
+            <div class="story-header" id="story-header">
               <div class="story-title-section">
                 <h2>Test Story</h2>
                 ${actDisplayInfo ? `<span class="act-indicator">${actDisplayInfo.displayString}</span>` : ''}
               </div>
-              <span class="page-indicator">Page ${pageId}</span>
+              <div class="story-header-actions" id="story-header-actions">
+                ${insightsButtonHtml}
+                <span class="page-indicator">Page ${pageId}</span>
+              </div>
             </div>
             <article class="narrative" id="narrative">
               <div class="narrative-text">${narrativeText}</div>
@@ -225,7 +239,18 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             </form>
           </div>
         </div>
+        <div class="modal insights-modal" id="insights-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="insights-modal-title">
+          <div class="modal-content insights-modal-content">
+            <div class="insights-header">
+              <h3 id="insights-modal-title">Story Insights</h3>
+              <button type="button" class="insights-close-btn" id="insights-close-btn" aria-label="Close Story Insights">&times;</button>
+            </div>
+            <div class="insights-body" id="insights-modal-body"></div>
+          </div>
+        </div>
       </div>
+      <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
+      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary })}</script>
     </main>
   `;
 }

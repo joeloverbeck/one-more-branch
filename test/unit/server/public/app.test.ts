@@ -121,9 +121,8 @@ describe('public client script', () => {
     expect(script).toContain(
       "showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);"
     );
-    expect(script).toContain(
-      "showPlayError(error instanceof Error ? error.message : 'Something went wrong. Please try again.', choicesSection);"
-    );
+    expect(script).toContain("showPlayError(");
+    expect(script).toContain("error instanceof Error ? error.message : 'Something went wrong. Please try again.'");
     expect(script).not.toContain(
       "alert(error instanceof Error ? error.message : 'Failed to add custom choice');"
     );

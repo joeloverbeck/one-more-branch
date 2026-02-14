@@ -77,7 +77,15 @@
               <span class="act-indicator"><%= actDisplayInfo.displayString %></span>
               <% } %>
             </div>
-            <span class="page-indicator">Page <%= page.id %></span>
+            <div class="story-header-actions" id="story-header-actions">
+              <% if (page.analystResult) { %>
+              <button type="button" class="insights-btn" id="insights-btn" aria-haspopup="dialog" aria-controls="insights-modal">
+                <span class="insights-btn__icon" aria-hidden="true">🔍</span>
+                <span class="insights-btn__label">Story Insights</span>
+              </button>
+              <% } %>
+              <span class="page-indicator">Page <%= page.id %></span>
+            </div>
           </div>
 
           <article class="narrative" id="narrative">
@@ -322,11 +330,23 @@
           </form>
         </div>
       </div>
+
+      <div class="modal insights-modal" id="insights-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="insights-modal-title">
+        <div class="modal-content insights-modal-content">
+          <div class="insights-header">
+            <h3 id="insights-modal-title">Story Insights</h3>
+            <button type="button" class="insights-close-btn" id="insights-close-btn" aria-label="Close Story Insights">&times;</button>
+          </div>
+          <div class="insights-body" id="insights-modal-body"></div>
+        </div>
+      </div>
     </div>
   </main>
 
   <%- include('../partials/footer') %>
 
+  <script type="application/json" id="analyst-data"><%- JSON.stringify(page.analystResult ?? null) %></script>
+  <script type="application/json" id="insights-context"><%- JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary: page.sceneSummary ?? null }) %></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
