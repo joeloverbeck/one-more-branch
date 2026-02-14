@@ -130,4 +130,24 @@ describe('play page template', () => {
       expect(template).toContain('id="insights-close-btn"');
     });
   });
+
+  describe('story recap wiring', () => {
+    it('contains recap trigger button in story header actions', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('id="story-header-actions"');
+      expect(template).toContain('id="recap-btn"');
+      expect(template).toContain('Story So Far');
+    });
+
+    it('contains recap modal scaffold and JSON payload node', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('id="recap-modal"');
+      expect(template).toContain('id="recap-close-btn"');
+      expect(template).toContain('id="recap-modal-body"');
+      expect(template).toContain('<script type="application/json" id="recap-data">');
+      expect(template).toContain('JSON.stringify(recapSummaries ?? [])');
+    });
+  });
 });

@@ -19,6 +19,7 @@
     const apiKeyModal = document.getElementById('api-key-modal');
     const initialInsightsContext = parseInsightsContextFromDom();
     const insightsController = createAnalystInsightsController(parseAnalystDataFromDom(), initialInsightsContext);
+    const recapController = createRecapModalController(parseRecapDataFromDom());
     const loreController = createLoreModalController(parseLoreDataFromDom());
 
     if (!storyId || !narrative || !loading || !apiKeyModal) {
@@ -242,6 +243,7 @@
           sceneSummary: data.page.sceneSummary || null,
           resolvedThreadMeta: data.page.resolvedThreadMeta || {},
         });
+        recapController.update(data.recapSummaries || []);
 
         currentPageId = data.page.id;
         container.dataset.pageId = String(currentPageId);

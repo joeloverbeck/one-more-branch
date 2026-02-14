@@ -31,6 +31,7 @@ export interface PlayPageOptions {
   hasCustomChoiceInput?: boolean;
   analystResult?: Record<string, unknown> | null;
   sceneSummary?: string | null;
+  recapSummaries?: Array<{ pageId: number; summary: string }>;
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   worldFacts?: string[];
   characterCanon?: Record<string, string[]>;
@@ -53,6 +54,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
   const analystResult = options.analystResult ?? null;
   const sceneSummary = options.sceneSummary ?? null;
+  const recapSummaries = options.recapSummaries ?? [];
   const worldFacts = options.worldFacts ?? [];
   const characterCanon = options.characterCanon ?? {};
   const loreFactCount =
@@ -223,6 +225,10 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
                 ${actDisplayInfo ? `<span class="act-indicator">${actDisplayInfo.displayString}</span>` : ''}
               </div>
               <div class="story-header-actions" id="story-header-actions">
+                <button type="button" class="recap-btn" id="recap-btn" aria-haspopup="dialog" aria-controls="recap-modal">
+                  <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
+                  <span class="recap-btn__label">Story So Far</span>
+                </button>
                 ${insightsButtonHtml}
                 <span class="page-indicator">Page ${pageId}</span>
               </div>
@@ -260,6 +266,15 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             <div class="insights-body" id="insights-modal-body"></div>
           </div>
         </div>
+        <div class="modal recap-modal" id="recap-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="recap-modal-title">
+          <div class="modal-content recap-modal-content">
+            <div class="recap-header">
+              <h3 id="recap-modal-title">The Story So Far</h3>
+              <button type="button" class="recap-close-btn" id="recap-close-btn" aria-label="Close Story Recap">&times;</button>
+            </div>
+            <div class="recap-body" id="recap-modal-body"></div>
+          </div>
+        </div>
         <div class="modal lore-modal" id="lore-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="lore-modal-title">
           <div class="modal-content lore-modal-content">
             <div class="lore-header">
@@ -279,6 +294,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </div>
       <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
       <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {} })}</script>
+      <script type="application/json" id="recap-data">${JSON.stringify(recapSummaries)}</script>
       <script type="application/json" id="lore-data">${JSON.stringify({ worldFacts, characterCanon })}</script>
     </main>
   `;

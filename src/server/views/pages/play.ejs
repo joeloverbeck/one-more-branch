@@ -86,6 +86,11 @@
               <% } %>
             </div>
             <div class="story-header-actions" id="story-header-actions">
+              <button type="button" class="recap-btn" id="recap-btn"
+                      aria-haspopup="dialog" aria-controls="recap-modal">
+                <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
+                <span class="recap-btn__label">Story So Far</span>
+              </button>
               <% if (page.analystResult) { %>
               <button type="button" class="insights-btn" id="insights-btn" aria-haspopup="dialog" aria-controls="insights-modal">
                 <span class="insights-btn__icon" aria-hidden="true">🔍</span>
@@ -341,6 +346,16 @@
         </div>
       </div>
 
+      <div class="modal recap-modal" id="recap-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="recap-modal-title">
+        <div class="modal-content recap-modal-content">
+          <div class="recap-header">
+            <h3 id="recap-modal-title">The Story So Far</h3>
+            <button type="button" class="recap-close-btn" id="recap-close-btn" aria-label="Close Story Recap">&times;</button>
+          </div>
+          <div class="recap-body" id="recap-modal-body"></div>
+        </div>
+      </div>
+
       <div class="modal lore-modal" id="lore-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="lore-modal-title">
         <div class="modal-content lore-modal-content">
           <div class="lore-header">
@@ -371,6 +386,7 @@
 
   <script type="application/json" id="analyst-data"><%- JSON.stringify(page.analystResult ?? null) %></script>
   <script type="application/json" id="insights-context"><%- JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary: page.sceneSummary ?? null, resolvedThreadMeta: page.resolvedThreadMeta ?? {} }) %></script>
+  <script type="application/json" id="recap-data"><%- JSON.stringify(recapSummaries ?? []) %></script>
   <script type="application/json" id="lore-data"><%- JSON.stringify({ worldFacts: story.globalCanon, characterCanon: story.globalCharacterCanon }) %></script>
   <script src="/js/app.js"></script>
 </body>

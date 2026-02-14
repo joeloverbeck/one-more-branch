@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import * as engine from '@/engine';
 import { StateReconciliationError, storyEngine } from '@/engine';
 import { LLMError } from '@/llm';
 import {
@@ -48,6 +49,10 @@ function flushPromises(): Promise<void> {
 
 describe('playRoutes', () => {
   const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
+
+  beforeEach(() => {
+    jest.spyOn(engine, 'collectRecapSummaries').mockResolvedValue([]);
+  });
 
   afterEach(() => {
     jest.restoreAllMocks();
@@ -108,10 +113,12 @@ describe('playRoutes', () => {
       expect(status).not.toHaveBeenCalled();
       expect(loadStorySpy).toHaveBeenCalledWith(storyId);
       expect(getPageSpy).toHaveBeenCalledWith(storyId, 2);
+      expect(engine.collectRecapSummaries).toHaveBeenCalledWith(storyId, page);
       expect(render).toHaveBeenCalledWith('pages/play', {
         title: `${story.title} - One More Branch`,
         story: { ...story, id: storyId },
         page,
+        recapSummaries: [],
         pageId: 2,
         actDisplayInfo: null,
         openThreadPanelRows: [
@@ -839,9 +846,11 @@ describe('playRoutes', () => {
         choiceIndex: 1,
         apiKey: 'valid-key-12345',
       });
+      expect(engine.collectRecapSummaries).toHaveBeenCalledWith(storyId, resultPage);
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
+          recapSummaries: [],
           page: {
             id: resultPage.id,
             narrativeText: resultPage.narrativeText,

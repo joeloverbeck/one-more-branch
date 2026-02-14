@@ -31,6 +31,8 @@ export type {
 // Ancestor context collection
 export { collectAncestorContext } from './ancestor-collector';
 export type { AncestorContext } from './ancestor-collector';
+export { collectRecapSummaries } from './recap-collector';
+export type { RecapEntry } from './recap-collector';
 
 // Page building
 export { buildPage, buildFirstPage, buildContinuationPage, createEmptyStructureContext } from './page-builder';

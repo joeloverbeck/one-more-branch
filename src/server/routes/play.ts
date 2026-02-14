@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { StateReconciliationError, storyEngine } from '../../engine/index.js';
+import { collectRecapSummaries, StateReconciliationError, storyEngine } from '../../engine/index.js';
 import type { GenerationStageEvent } from '../../engine/index.js';
 import { LLMError } from '../../llm/llm-client-types.js';
 import { logger } from '../../logging/index.js';
@@ -236,6 +236,8 @@ playRoutes.get(
         });
       }
 
+      const recapSummaries = await collectRecapSummaries(storyId as StoryId, page);
+
       const actDisplayInfo = getActDisplayInfo(story, page);
       const openThreadPanelData = getOpenThreadPanelData(page.accumulatedActiveState.openThreads);
       const threatsPanelData = getThreatPanelData(
@@ -251,6 +253,7 @@ playRoutes.get(
         title: `${story.title} - One More Branch`,
         story,
         page,
+        recapSummaries,
         pageId,
         actDisplayInfo,
         openThreadPanelRows: openThreadPanelData.rows,
@@ -327,6 +330,7 @@ playRoutes.post(
       // Load story to compute actDisplayInfo for the new page
       const story = await storyEngine.loadStory(storyId as StoryId);
       const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
+      const recapSummaries = await collectRecapSummaries(storyId as StoryId, result.page);
       const openThreadPanelData = getOpenThreadPanelData(
         result.page.accumulatedActiveState.openThreads
       );
@@ -366,6 +370,7 @@ playRoutes.post(
         },
         globalCanon: story?.globalCanon ?? [],
         globalCharacterCanon: story?.globalCharacterCanon ?? {},
+        recapSummaries,
         actDisplayInfo,
         wasGenerated: result.wasGenerated,
         deviationInfo: result.deviationInfo,
