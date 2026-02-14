@@ -141,6 +141,26 @@ export interface TrackedPromise {
   readonly age: number;
 }
 
+export function isTrackedPromise(value: unknown): value is TrackedPromise {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+
+  return (
+    typeof obj['id'] === 'string' &&
+    obj['id'].trim().length > 0 &&
+    typeof obj['description'] === 'string' &&
+    obj['description'].trim().length > 0 &&
+    isPromiseType(obj['promiseType']) &&
+    isUrgency(obj['suggestedUrgency']) &&
+    typeof obj['age'] === 'number' &&
+    Number.isInteger(obj['age']) &&
+    obj['age'] >= 0
+  );
+}
+
 // ── Thread Payoff Assessment types ────────────────────────────────
 
 export type SatisfactionLevel = 'RUSHED' | 'ADEQUATE' | 'WELL_EARNED';

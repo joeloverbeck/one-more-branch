@@ -46,6 +46,7 @@ export {
   isConstraintType,
   isThreadType,
   isUrgency,
+  isTrackedPromise,
   extractIdNumber,
   getMaxIdNumber,
   nextId,

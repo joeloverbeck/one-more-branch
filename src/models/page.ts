@@ -7,7 +7,7 @@ import {
 } from './protagonist-affect';
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
-import type { TrackedPromise } from './state/keyed-entry';
+import { isTrackedPromise, type TrackedPromise } from './state/keyed-entry';
 import type { AnalystResult } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import {
@@ -185,6 +185,9 @@ export function isPage(value: unknown): value is Page {
   const protagonistAffectValid = isProtagonistAffect(obj['protagonistAffect']);
   const activeStateChangesValid = isActiveStateChanges(obj['activeStateChanges']);
   const accumulatedActiveStateValid = isActiveState(obj['accumulatedActiveState']);
+  const accumulatedPromises = obj['accumulatedPromises'];
+  const accumulatedPromisesValid =
+    Array.isArray(accumulatedPromises) && accumulatedPromises.every(isTrackedPromise);
 
   return (
     typeof obj['id'] === 'number' &&
@@ -197,6 +200,7 @@ export function isPage(value: unknown): value is Page {
     activeStateChangesValid &&
     accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
+    accumulatedPromisesValid &&
     protagonistAffectValid &&
     structureVersionIdValid &&
     typeof obj['isEnding'] === 'boolean'

@@ -2,6 +2,7 @@ import { createChoice } from '@/models/choice';
 import { PageId } from '@/models/id';
 import { createPage, getUnexploredChoiceIndices, isPage, isPageFullyExplored } from '@/models/page';
 import type { ActiveState } from '@/models/state';
+import { PromiseType, Urgency } from '@/models/state';
 import { createEmptyAccumulatedStructureState } from '@/models/story-arc';
 import { parseStructureVersionId } from '@/models/structure-version';
 
@@ -240,6 +241,45 @@ describe('Page', () => {
 
       expect(page.structureVersionId).toBe(structureVersionId);
     });
+
+    it('defaults accumulatedPromises to empty array when not provided', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Root page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+
+      expect(page.accumulatedPromises).toEqual([]);
+    });
+
+    it('preserves provided accumulatedPromises', () => {
+      const accumulatedPromises = [
+        {
+          id: 'pr-1',
+          description: 'A cracked amulet is repeatedly mentioned.',
+          promiseType: PromiseType.FORESHADOWING,
+          suggestedUrgency: Urgency.MEDIUM,
+          age: 2,
+        },
+      ] as const;
+
+      const page = createPage({
+        id: 2 as PageId,
+        narrativeText: 'Child page',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: 1 as PageId,
+        parentChoiceIndex: 0,
+        accumulatedPromises,
+      });
+
+      expect(page.accumulatedPromises).toEqual(accumulatedPromises);
+    });
   });
 
   describe('isPage', () => {
@@ -387,6 +427,48 @@ describe('Page', () => {
         activeStateChanges: {
           newLocation: null,
         },
+      };
+
+      expect(isPage(invalidPage)).toBe(false);
+    });
+
+    it('returns false when accumulatedPromises is missing', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const invalidPage = { ...page } as Record<string, unknown>;
+      delete invalidPage.accumulatedPromises;
+
+      expect(isPage(invalidPage)).toBe(false);
+    });
+
+    it('returns false when accumulatedPromises contains invalid entries', () => {
+      const page = createPage({
+        id: 1 as PageId,
+        narrativeText: 'Valid',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('A'), createChoice('B')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const invalidPage = {
+        ...page,
+        accumulatedPromises: [
+          {
+            id: 'pr-1',
+            description: 'A promise with invalid urgency',
+            promiseType: PromiseType.FORESHADOWING,
+            suggestedUrgency: 'CRITICAL',
+            age: 2,
+          },
+        ],
       };
 
       expect(isPage(invalidPage)).toBe(false);

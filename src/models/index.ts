@@ -51,6 +51,7 @@ export {
   isThreadType,
   isUrgency,
   isPromiseType,
+  isTrackedPromise,
   extractIdNumber,
   getMaxIdNumber,
   nextId,

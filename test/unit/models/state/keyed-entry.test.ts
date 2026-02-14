@@ -7,6 +7,7 @@ import {
   isThreadType,
   isUrgency,
   isPromiseType,
+  isTrackedPromise,
   PROMISE_TYPE_VALUES,
   ThreadType,
   Urgency,
@@ -132,5 +133,35 @@ describe('thread metadata enums', () => {
     expect(PROMISE_TYPE_VALUES).toContain(PromiseType.SETUP_PAYOFF);
     expect(isPromiseType(PromiseType.CHEKHOV_GUN)).toBe(true);
     expect(isPromiseType('NOT_A_PROMISE')).toBe(false);
+  });
+
+  it('validates tracked promise entries', () => {
+    expect(
+      isTrackedPromise({
+        id: 'pr-1',
+        description: 'A distant storm is repeatedly referenced',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 2,
+      })
+    ).toBe(true);
+    expect(
+      isTrackedPromise({
+        id: 'pr-1',
+        description: 'Invalid age',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: -1,
+      })
+    ).toBe(false);
+    expect(
+      isTrackedPromise({
+        id: 'pr-1',
+        description: 'Invalid urgency',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: 'CRITICAL',
+        age: 1,
+      })
+    ).toBe(false);
   });
 });
