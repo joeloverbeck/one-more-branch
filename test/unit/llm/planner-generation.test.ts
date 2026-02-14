@@ -180,14 +180,14 @@ describe('planner-generation', () => {
           ...validPlannerPayload,
           choiceIntents: [
             {
-              hook: 'Duplicate intent A',
+              hook: '   ',
               choiceType: 'CONFRONTATION',
               primaryDelta: 'THREAT_SHIFT',
             },
             {
-              hook: 'Duplicate intent B',
-              choiceType: 'CONFRONTATION',
-              primaryDelta: 'THREAT_SHIFT',
+              hook: 'Valid intent',
+              choiceType: 'AVOIDANCE_RETREAT',
+              primaryDelta: 'LOCATION_CHANGE',
             },
           ],
         })

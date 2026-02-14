@@ -49,6 +49,8 @@ export interface StoryMetadata {
   readonly title: string;
   readonly characterConcept: string;
   readonly tone: StoryTone;
+  readonly overallTheme?: string;
+  readonly premise?: string;
   readonly createdAt: Date;
   readonly pageCount: number;
   readonly hasEnding: boolean;

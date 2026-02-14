@@ -96,13 +96,14 @@ describe('validatePagePlannerResponse', () => {
     expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
   });
 
-  it('throws when choiceIntents has duplicate (choiceType, primaryDelta) pair', () => {
+  it('accepts choiceIntents with duplicate (choiceType, primaryDelta) pair', () => {
     const rawJson = createValidPlannerPayload();
     rawJson.choiceIntents = [
       { hook: 'Stand and fight', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
       { hook: 'Attack from the flank', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
     ];
 
-    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
+    const result = validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
+    expect(result.choiceIntents).toHaveLength(2);
   });
 });

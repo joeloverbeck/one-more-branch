@@ -37,9 +37,12 @@ describe('homeRoutes GET /', () => {
     const listStoriesSpy = jest.spyOn(storyEngine, 'listStories').mockResolvedValue([
       {
         id: 'story-1',
+        title: 'Shards of Dusk',
         characterConcept: 'A careful explorer',
         worldbuilding: 'Ruined city',
         tone: 'Mystery',
+        overallTheme: 'Truth survives only with sacrifice.',
+        premise: 'An archivist races to expose a buried conspiracy.',
         createdAt: '2025-01-01T00:00:00.000Z',
         updatedAt: '2025-01-01T00:00:00.000Z',
       },
@@ -69,6 +72,8 @@ describe('homeRoutes GET /', () => {
           exploredBranches: 3,
           totalBranches: 5,
           hasEnding: true,
+          overallTheme: 'Truth survives only with sacrifice.',
+          premise: 'An archivist races to expose a buried conspiracy.',
         }),
       ],
     });

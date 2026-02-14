@@ -24,7 +24,20 @@
         <article class="story-card">
           <div class="story-card-content">
             <h3 class="story-title"><%= story.title %></h3>
-            <p class="story-tone"><%= story.tone %></p>
+            <dl class="story-details">
+              <div class="story-detail-row">
+                <dt>Premise</dt>
+                <dd><%= story.premise || 'No premise generated yet.' %></dd>
+              </div>
+              <div class="story-detail-row">
+                <dt>Theme</dt>
+                <dd><%= story.overallTheme || 'No theme generated yet.' %></dd>
+              </div>
+              <div class="story-detail-row">
+                <dt>Tone</dt>
+                <dd><%= story.tone %></dd>
+              </div>
+            </dl>
             <div class="story-stats">
               <% if (story.pageCount === 0) { %>
               <span class="story-status story-status-prepared">Awaiting briefing</span>

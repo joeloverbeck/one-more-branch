@@ -379,6 +379,8 @@ export async function listStories(): Promise<StoryMetadata[]> {
       title: story.title,
       characterConcept: story.characterConcept,
       tone: story.tone,
+      overallTheme: story.structure?.overallTheme,
+      premise: story.structure?.premise,
       createdAt: story.createdAt,
       pageCount,
       hasEnding: false,
