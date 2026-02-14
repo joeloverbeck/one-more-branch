@@ -12,7 +12,7 @@ import { buildProtagonistAffectSection } from '../../continuation/context-sectio
 import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 import {
   buildThreadAgingSection,
-  buildNarrativePromisesSection,
+  buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
 } from './thread-pacing-directive.js';
 
@@ -352,7 +352,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
 
   const threadAgingSection = buildThreadAgingSection(context.activeState.openThreads, threadAges);
 
-  const narrativePromisesSection = buildNarrativePromisesSection(
+  const trackedPromisesSection = buildTrackedPromisesSection(
     context.accumulatedPromises ?? []
   );
 
@@ -410,7 +410,7 @@ ${constraintsSection}
 OPEN NARRATIVE THREADS:
 ${threadsSection}
 
-${buildProtagonistAffectSection(context.parentProtagonistAffect)}${narrativePromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
+${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
 ${buildProtagonistGuidanceSection(context.protagonistGuidance)}PLAYER'S CHOICE:

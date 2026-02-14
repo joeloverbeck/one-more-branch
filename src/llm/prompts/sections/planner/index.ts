@@ -3,6 +3,6 @@ export { buildPlannerContinuationContextSection } from './continuation-context.j
 export { PLANNER_STATE_INTENT_RULES } from './state-intent-rules.js';
 export {
   buildThreadAgingSection,
-  buildNarrativePromisesSection,
+  buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
 } from './thread-pacing-directive.js';

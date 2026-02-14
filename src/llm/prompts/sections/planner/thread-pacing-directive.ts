@@ -58,7 +58,7 @@ export function buildThreadAgingSection(
   return lines.join('\n') + '\n';
 }
 
-export function buildNarrativePromisesSection(
+export function buildTrackedPromisesSection(
   accumulatedPromises: readonly TrackedPromise[]
 ): string {
   if (accumulatedPromises.length === 0) {
@@ -67,7 +67,7 @@ export function buildNarrativePromisesSection(
 
   const sortedByAge = [...accumulatedPromises].sort((a, b) => b.age - a.age);
 
-  const lines = ['=== NARRATIVE PROMISES (implicit foreshadowing not yet captured as threads) ==='];
+  const lines = ['=== TRACKED PROMISES (implicit foreshadowing not yet captured as threads) ==='];
 
   for (const promise of sortedByAge) {
     const oldTag =

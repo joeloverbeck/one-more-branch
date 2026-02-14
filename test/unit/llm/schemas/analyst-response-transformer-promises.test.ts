@@ -91,10 +91,10 @@ describe('validateAnalystResponse - promisesDetected', () => {
 });
 
 describe('validateAnalystResponse - promisesResolved', () => {
-  it('trims and keeps non-empty resolved IDs', () => {
+  it('keeps only canonical pr-N resolved IDs', () => {
     const json = {
       ...buildBaseAnalystJson(),
-      promisesResolved: [' pr-1 ', '', '   ', 'pr-2'],
+      promisesResolved: [' pr-1 ', '', '   ', 'pr-2', 'td-3', 'pr-abc', 'PR-5'],
     };
     const result = validateAnalystResponse(json, 'raw');
     expect(result.promisesResolved).toEqual(['pr-1', 'pr-2']);
@@ -128,7 +128,7 @@ describe('validateAnalystResponse - promisePayoffAssessments', () => {
     expect(result.promisePayoffAssessments[0]!.satisfactionLevel).toBe('WELL_EARNED');
   });
 
-  it('filters out assessments with empty promiseId', () => {
+  it('filters out assessments with non-canonical promiseId', () => {
     const json = {
       ...buildBaseAnalystJson(),
       promisePayoffAssessments: [
@@ -143,6 +143,18 @@ describe('validateAnalystResponse - promisePayoffAssessments', () => {
           description: 'Valid',
           satisfactionLevel: 'ADEQUATE',
           reasoning: 'OK',
+        },
+        {
+          promiseId: 'td-2',
+          description: 'Wrong prefix',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'Wrong prefix should be rejected.',
+        },
+        {
+          promiseId: 'pr-xyz',
+          description: 'Bad suffix',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'Invalid numeric suffix should be rejected.',
         },
       ],
     };

@@ -1,6 +1,6 @@
 import {
   buildThreadAgingSection,
-  buildNarrativePromisesSection,
+  buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
 } from '../../../../../../src/llm/prompts/sections/planner/thread-pacing-directive';
 import { PromiseType, ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
@@ -63,7 +63,7 @@ describe('buildThreadAgingSection', () => {
   });
 });
 
-describe('buildNarrativePromisesSection', () => {
+describe('buildTrackedPromisesSection', () => {
   const makeTrackedPromise = (
     id: string,
     age: number,
@@ -78,7 +78,7 @@ describe('buildNarrativePromisesSection', () => {
   });
 
   it('returns empty string when no promises', () => {
-    expect(buildNarrativePromisesSection([])).toBe('');
+    expect(buildTrackedPromisesSection([])).toBe('');
   });
 
   it('includes tracked promises with age and IDs sorted oldest-first', () => {
@@ -86,8 +86,8 @@ describe('buildNarrativePromisesSection', () => {
       makeTrackedPromise('pr-2', 1, 'New chekhov gun', PromiseType.CHEKHOV_GUN),
       makeTrackedPromise('pr-1', 6, 'Old foreshadowing'),
     ];
-    const result = buildNarrativePromisesSection(promises);
-    expect(result).toContain('NARRATIVE PROMISES');
+    const result = buildTrackedPromisesSection(promises);
+    expect(result).toContain('TRACKED PROMISES');
     expect(result).toContain('[pr-1]');
     expect(result).toContain('6 pages old');
     expect(result).toContain('reincorporation opportunity');

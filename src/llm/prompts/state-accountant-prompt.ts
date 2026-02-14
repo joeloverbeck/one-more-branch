@@ -7,7 +7,7 @@ import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
   PLANNER_STATE_INTENT_RULES,
-  buildNarrativePromisesSection,
+  buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
   buildThreadAgingSection,
 } from './sections/planner/index.js';
@@ -109,9 +109,9 @@ ${context.reconciliationFailureReasons
       ? buildThreadAgingSection(context.activeState.openThreads, context.threadAges ?? {})
       : '';
 
-  const narrativePromisesSection =
+  const trackedPromisesSection =
     context.mode === 'continuation'
-      ? buildNarrativePromisesSection(context.accumulatedPromises ?? [])
+      ? buildTrackedPromisesSection(context.accumulatedPromises ?? [])
       : '';
 
   const payoffFeedbackSection =
@@ -128,7 +128,7 @@ ${reconciliationRetrySection}
 ${formatReducedPlanForAccountant(reducedPlan)}
 
 ${PLANNER_STATE_INTENT_RULES}
-${qualityCriteriaSection}${threadAgingSection}${narrativePromisesSection}${payoffFeedbackSection}${toneReminderLine}
+${qualityCriteriaSection}${threadAgingSection}${trackedPromisesSection}${payoffFeedbackSection}${toneReminderLine}
 
 Return JSON only.`;
 

@@ -1,10 +1,11 @@
 import type { PromisePayoffAssessment, ThreadPayoffAssessment } from '../../models/state/index.js';
 import type { AnalystResult, DetectedPromise } from '../analyst-types.js';
+import { isCanonicalIdForPrefix, STATE_ID_PREFIXES } from '../validation/state-id-prefixes.js';
 import { AnalystResultSchema } from './analyst-validation-schema.js';
 
 const BEAT_ID_PATTERN = /^\d+\.\d+$/;
 const MAX_OBJECTIVE_ANCHORS = 3;
-const MAX_NARRATIVE_PROMISES = 3;
+const MAX_PROMISES_DETECTED = 3;
 
 function normalizeAnchors(value: readonly string[]): string[] {
   return value
@@ -13,17 +14,21 @@ function normalizeAnchors(value: readonly string[]): string[] {
     .slice(0, MAX_OBJECTIVE_ANCHORS);
 }
 
-function normalizeNarrativePromises(
+function normalizeDetectedPromises(
   value: readonly { description: string; promiseType: string; suggestedUrgency: string }[]
 ): DetectedPromise[] {
   return value
     .filter((p) => p.description.trim().length > 0)
-    .slice(0, MAX_NARRATIVE_PROMISES)
+    .slice(0, MAX_PROMISES_DETECTED)
     .map((p) => ({
       description: p.description.trim(),
       promiseType: p.promiseType as DetectedPromise['promiseType'],
       suggestedUrgency: p.suggestedUrgency as DetectedPromise['suggestedUrgency'],
     }));
+}
+
+function isCanonicalPromiseId(value: string): boolean {
+  return isCanonicalIdForPrefix(value, STATE_ID_PREFIXES.promises);
 }
 
 function normalizeThreadPayoffAssessments(
@@ -53,7 +58,7 @@ function normalizePromisePayoffAssessments(
   }[]
 ): PromisePayoffAssessment[] {
   return value
-    .filter((a) => a.promiseId.trim().length > 0)
+    .filter((a) => isCanonicalPromiseId(a.promiseId))
     .map((a) => ({
       promiseId: a.promiseId.trim(),
       description: a.description.trim(),
@@ -62,8 +67,8 @@ function normalizePromisePayoffAssessments(
     }));
 }
 
-function normalizeResolvedPromiseIds(value: readonly string[]): string[] {
-  return value.map((id) => id.trim()).filter((id) => id.length > 0);
+function normalizePromisesResolved(value: readonly string[]): string[] {
+  return value.map((id) => id.trim()).filter((id) => isCanonicalPromiseId(id));
 }
 
 function normalizeAnchorEvidence(value: readonly string[]): string[] {
@@ -108,8 +113,8 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     completionGateFailureReason,
     toneAdherent: validated.toneAdherent,
     toneDriftDescription: validated.toneDriftDescription.trim(),
-    promisesDetected: normalizeNarrativePromises(validated.promisesDetected),
-    promisesResolved: normalizeResolvedPromiseIds(validated.promisesResolved),
+    promisesDetected: normalizeDetectedPromises(validated.promisesDetected),
+    promisesResolved: normalizePromisesResolved(validated.promisesResolved),
     promisePayoffAssessments: normalizePromisePayoffAssessments(validated.promisePayoffAssessments),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
     rawResponse,
