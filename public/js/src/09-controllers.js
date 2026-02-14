@@ -224,6 +224,7 @@
 
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
         var leftSidebarContainer = ensureLeftSidebarContainer();
+        renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
         renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
         renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
         cleanupEmptyLeftSidebar();

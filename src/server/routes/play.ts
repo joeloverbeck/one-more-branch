@@ -359,6 +359,7 @@ playRoutes.post(
           inventoryOverflowSummary: inventoryPanelData.overflowSummary,
           health: healthPanelData.rows,
           healthOverflowSummary: healthPanelData.overflowSummary,
+          protagonistAffect: result.page.protagonistAffect,
         },
         actDisplayInfo,
         wasGenerated: result.wasGenerated,

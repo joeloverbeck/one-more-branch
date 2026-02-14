@@ -615,6 +615,127 @@ main {
   background: rgba(39, 64, 111, 0.8);
 }
 
+/* ── Protagonist Affect Panel ─────────────────────────────────── */
+
+.affect-panel {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.95);
+  box-shadow: var(--shadow);
+}
+
+.affect-title {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(100, 149, 237, 0.5);
+}
+
+.affect-panel[data-intensity="mild"] .affect-title {
+  border-bottom-color: rgba(100, 149, 237, 0.5);
+}
+
+.affect-panel[data-intensity="moderate"] .affect-title {
+  border-bottom-color: rgba(218, 165, 32, 0.5);
+}
+
+.affect-panel[data-intensity="strong"] .affect-title {
+  border-bottom-color: rgba(233, 120, 69, 0.5);
+}
+
+.affect-panel[data-intensity="overwhelming"] .affect-title {
+  border-bottom-color: rgba(233, 69, 96, 0.6);
+  text-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
+}
+
+.affect-primary {
+  padding: 0.8rem 0.9rem 0.7rem;
+}
+
+.affect-emotion {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 0.4rem;
+}
+
+.affect-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.45rem;
+}
+
+.affect-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.affect-dot--filled {
+  background: rgba(100, 149, 237, 0.7);
+}
+
+.affect-panel[data-intensity="moderate"] .affect-dot--filled {
+  background: rgba(218, 165, 32, 0.7);
+}
+
+.affect-panel[data-intensity="strong"] .affect-dot--filled {
+  background: rgba(233, 120, 69, 0.7);
+}
+
+.affect-panel[data-intensity="overwhelming"] .affect-dot--filled {
+  background: rgba(233, 69, 96, 0.8);
+  box-shadow: 0 0 4px rgba(233, 69, 96, 0.4);
+}
+
+.affect-intensity-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-left: 0.3rem;
+  text-transform: capitalize;
+}
+
+.affect-cause {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.affect-secondaries {
+  padding: 0.55rem 0.9rem 0.5rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.affect-pill {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+  cursor: default;
+}
+
+.affect-motivation {
+  padding: 0.55rem 0.9rem 0.75rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  font-size: 0.84rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
 .inventory-panel,
 .health-panel {
   border: 1px solid var(--border-color);

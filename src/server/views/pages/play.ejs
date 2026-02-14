@@ -13,6 +13,33 @@
     <div class="play-container" data-story-id="<%= story.id %>" data-page-id="<%= page.id %>">
       <div class="play-layout">
         <div class="left-sidebar-widgets" id="left-sidebar-widgets">
+          <% if (page.protagonistAffect) { %>
+          <aside class="affect-panel" id="affect-panel" aria-labelledby="affect-title"
+                 data-intensity="<%= page.protagonistAffect.primaryIntensity %>">
+            <h3 class="affect-title" id="affect-title">Protagonist</h3>
+            <div class="affect-primary">
+              <span class="affect-emotion"><%= page.protagonistAffect.primaryEmotion %></span>
+              <div class="affect-dots" aria-label="Intensity: <%= page.protagonistAffect.primaryIntensity %>">
+                <% var intensityMap = { mild: 1, moderate: 2, strong: 3, overwhelming: 4 }; %>
+                <% var filledCount = intensityMap[page.protagonistAffect.primaryIntensity] || 1; %>
+                <% for (var d = 0; d < 4; d++) { %>
+                <span class="affect-dot<%= d < filledCount ? ' affect-dot--filled' : '' %>"></span>
+                <% } %>
+                <span class="affect-intensity-label"><%= page.protagonistAffect.primaryIntensity %></span>
+              </div>
+              <span class="affect-cause"><%= page.protagonistAffect.primaryCause %></span>
+            </div>
+            <% if (page.protagonistAffect.secondaryEmotions && page.protagonistAffect.secondaryEmotions.length > 0) { %>
+            <div class="affect-secondaries">
+              <% page.protagonistAffect.secondaryEmotions.forEach(function(se) { %>
+              <span class="affect-pill" title="<%= se.cause %>"><%= se.emotion %></span>
+              <% }) %>
+            </div>
+            <% } %>
+            <div class="affect-motivation"><%= page.protagonistAffect.dominantMotivation %></div>
+          </aside>
+          <% } %>
+
           <% if (inventoryPanelRows && inventoryPanelRows.length > 0) { %>
           <aside class="inventory-panel" id="inventory-panel" aria-labelledby="inventory-title">
             <h3 class="inventory-title" id="inventory-title">Inventory</h3>

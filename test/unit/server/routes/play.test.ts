@@ -872,6 +872,7 @@ describe('playRoutes', () => {
             inventoryOverflowSummary: null,
             health: [],
             healthOverflowSummary: null,
+            protagonistAffect: resultPage.protagonistAffect,
           },
           wasGenerated: true,
         })
