@@ -192,7 +192,7 @@ export interface PageFileData {
   storyBible?: StoryBibleFileData | null;
   analystResult?: AnalystResultFileData | null;
   threadAges?: Record<string, number>;
-  accumulatedPromises?: TrackedPromiseFileData[];
+  accumulatedPromises: TrackedPromiseFileData[];
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   npcAgendaUpdates?: NpcAgendaFileData[];
   accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;

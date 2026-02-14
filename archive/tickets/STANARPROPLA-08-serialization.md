@@ -1,6 +1,6 @@
 # STANARPROPLA-08: Update serialization layer for tracked promises
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Depends on**: STANARPROPLA-01, STANARPROPLA-03, STANARPROPLA-06
 **Blocks**: STANARPROPLA-12
 
@@ -45,3 +45,16 @@ Update page serialization types and functions to handle `accumulatedPromises: Tr
 - All other serialization (choices, state changes, inventory, health, character state, structure state, protagonist affect, NPC agendas, thread ages, resolved thread meta) is unchanged
 - `parsePageIdFromFileName()` is unchanged
 - Story Bible serialization is unchanged
+
+## Outcome
+
+- Completion date: 2026-02-14
+- What was changed:
+  - `src/persistence/page-serializer-types.ts` now defines `TrackedPromiseFileData` (`id`, `description`, `promiseType`, `suggestedUrgency`, `age`) and `PromisePayoffAssessmentFileData`.
+  - `AnalystResultFileData` uses `promisesDetected`, `promisesResolved`, and `promisePayoffAssessments` (with `threadPayoffAssessments` unchanged).
+  - `PageFileData` uses canonical `accumulatedPromises: TrackedPromiseFileData[]` and no legacy `inheritedNarrativePromises`.
+  - `src/persistence/page-serializer.ts` serializes/deserializes `promisesDetected`, `promisesResolved`, `promisePayoffAssessments`, and `accumulatedPromises` (including `id` and `age`).
+- Deviations from plan:
+  - None observed.
+- Verification results:
+  - `npm run typecheck` passed (`tsc --noEmit`).

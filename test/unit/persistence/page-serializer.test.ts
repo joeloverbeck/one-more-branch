@@ -94,6 +94,7 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
       pacingNudge: null,
     },
     protagonistAffect: createDefaultProtagonistAffect(),
+    accumulatedPromises: [],
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -346,6 +347,13 @@ describe('page-serializer', () => {
       const fileData = buildTestFileData();
       const invalid = { ...fileData } as Record<string, unknown>;
       delete invalid.inventoryChanges;
+      expect(() => deserializePage(invalid as PageFileData)).toThrow();
+    });
+
+    it('throws when accumulatedPromises is missing', () => {
+      const fileData = buildTestFileData();
+      const invalid = { ...fileData } as Record<string, unknown>;
+      delete invalid.accumulatedPromises;
       expect(() => deserializePage(invalid as PageFileData)).toThrow();
     });
   });

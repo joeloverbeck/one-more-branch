@@ -351,7 +351,7 @@ export function deserializePage(data: PageFileData): Page {
     storyBible: deserializeStoryBible(data.storyBible),
     analystResult: deserializeAnalystResult(data.analystResult),
     threadAges: data.threadAges ?? {},
-    accumulatedPromises: (data.accumulatedPromises ?? []).map((p) => ({
+    accumulatedPromises: data.accumulatedPromises.map((p) => ({
       id: p.id,
       description: p.description,
       promiseType: p.promiseType as TrackedPromise['promiseType'],
