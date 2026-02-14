@@ -14,7 +14,6 @@ import {
 
 export const THREAD_DUPLICATE_LIKE_ADD = 'THREAD_DUPLICATE_LIKE_ADD';
 export const THREAD_MISSING_EQUIVALENT_RESOLVE = 'THREAD_MISSING_EQUIVALENT_RESOLVE';
-export const THREAD_DANGER_IMMEDIATE_HAZARD = 'THREAD_DANGER_IMMEDIATE_HAZARD';
 
 export const THREAD_JACCARD_THRESHOLDS: Record<ThreadType, number> = {
   [ThreadType.RELATIONSHIP]: 0.58,
@@ -81,42 +80,6 @@ function jaccardSimilarity(
 
   const unionSize = leftTokens.size + rightTokens.size - intersectionSize;
   return unionSize === 0 ? 0 : intersectionSize / unionSize;
-}
-
-function isImmediateDangerHazardText(value: string): boolean {
-  const normalized = normalizeThreadSimilarityText(value);
-  if (!normalized) {
-    return false;
-  }
-
-  if (/\b(right now|currently|immediately|this scene|this moment|at once)\b/.test(normalized)) {
-    return true;
-  }
-
-  return /\b(is|are)\b.*\b(burning|collapsing|flooding|exploding|attacking|choking|spreading)\b/.test(
-    normalized
-  );
-}
-
-function rejectImmediateHazards(
-  candidates: readonly ReconciledThreadAdd[],
-  diagnostics: StateReconciliationDiagnostic[]
-): ReconciledThreadAdd[] {
-  const accepted: ReconciledThreadAdd[] = [];
-
-  for (const candidate of candidates) {
-    if (candidate.threadType === ThreadType.DANGER && isImmediateDangerHazardText(candidate.text)) {
-      diagnostics.push({
-        code: THREAD_DANGER_IMMEDIATE_HAZARD,
-        field: 'threadsAdded',
-        message: `DANGER thread "${candidate.text}" describes an immediate scene hazard and must be tracked as a threat/constraint instead.`,
-      });
-      continue;
-    }
-    accepted.push(candidate);
-  }
-
-  return accepted;
 }
 
 function dedupAgainstPreviousThreads(
@@ -211,9 +174,8 @@ export function applyThreadDedupAndContradictionRules(
   resolvedThreadIds: readonly string[],
   diagnostics: StateReconciliationDiagnostic[]
 ): ReconciledThreadAdd[] {
-  const afterHazards = rejectImmediateHazards(candidateAdds, diagnostics);
   const afterPrevious = dedupAgainstPreviousThreads(
-    afterHazards,
+    candidateAdds,
     previousThreads,
     resolvedThreadIds,
     diagnostics

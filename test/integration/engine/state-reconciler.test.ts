@@ -190,7 +190,7 @@ describe('state-reconciler integration', () => {
     expect(result.characterStateChangesRemoved).toEqual(['cs-1']);
   });
 
-  it('exercises the full thread dedup pipeline: hazard rejection + near-duplicate rejection + valid acceptance', () => {
+  it('exercises the full thread dedup pipeline: near-duplicate rejection + valid acceptance', () => {
     const plan: PagePlan = {
       ...buildBasePlan(),
       stateIntents: {
@@ -227,12 +227,6 @@ describe('state-reconciler integration', () => {
 
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
-    const hazardDiags = result.reconciliationDiagnostics.filter(
-      (d) => d.code === 'THREAD_DANGER_IMMEDIATE_HAZARD'
-    );
-    expect(hazardDiags).toHaveLength(1);
-    expect(hazardDiags[0].message).toContain('collapsing right now');
-
     const dupDiags = result.reconciliationDiagnostics.filter(
       (d) => d.code === 'THREAD_DUPLICATE_LIKE_ADD'
     );
@@ -240,6 +234,11 @@ describe('state-reconciler integration', () => {
     expect(dupDiags[0].message).toContain('Reach the archive before dawn breaks');
 
     expect(result.threadsAdded).toEqual([
+      {
+        text: 'The building is collapsing right now around them',
+        threadType: ThreadType.DANGER,
+        urgency: Urgency.HIGH,
+      },
       {
         text: 'Locate the hidden map inside the bridge crossing tunnel',
         threadType: ThreadType.QUEST,

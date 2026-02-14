@@ -543,41 +543,6 @@ describe('state-reconciler', () => {
     ]);
   });
 
-  it('rejects DANGER threads that describe immediate scene hazards', () => {
-    const plan = buildPlan({
-      stateIntents: {
-        ...buildPlan().stateIntents,
-        threads: {
-          add: [
-            {
-              text: 'The roof is collapsing right now',
-              threadType: ThreadType.DANGER,
-              urgency: Urgency.HIGH,
-            },
-          ],
-          resolveIds: [],
-        },
-      },
-    });
-
-    const writer = buildWriterResult({
-      narrative: 'Sparks shower as the roof is collapsing right now above Mara.',
-      sceneSummary: 'The tavern may fail in seconds.',
-    });
-
-    const result = reconcileState(plan, writer, buildPreviousState());
-
-    expect(result.threadsAdded).toEqual([]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'THREAD_DANGER_IMMEDIATE_HAZARD',
-        field: 'threadsAdded',
-        message:
-          'DANGER thread "The roof is collapsing right now" describes an immediate scene hazard and must be tracked as a threat/constraint instead.',
-      },
-    ]);
-  });
-
   it('rejects unknown remove/resolve IDs with deterministic diagnostics', () => {
     const plan = buildPlan({
       stateIntents: {
