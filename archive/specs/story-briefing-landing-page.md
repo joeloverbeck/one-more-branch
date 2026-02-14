@@ -1,6 +1,6 @@
 # Story Briefing Landing Page
 
-**Status**: ACTIVE
+**Status**: COMPLETED
 **Created**: 2026-02-13
 
 ## Overview
@@ -897,3 +897,10 @@ The briefing page's loading overlay reuses the same spinner and stage phrase rot
 7. **Home page**: Template changes for 0-page stories
 8. **Integration tests**: Full flow tests
 9. **E2E tests**: Browser-level tests
+
+## Outcome
+
+- Completion date: 2026-02-14
+- Actual changes: Implemented two-phase story start flow with briefing page (`/play/:storyId/briefing`), begin endpoint (`POST /play/:storyId/begin`), play-route guard, briefing helpers, client controller, UI updates, and tests.
+- Deviations from plan: None documented.
+- Verification results: Spec includes unit, route, integration, and E2E test coverage for briefing flow and redirects.

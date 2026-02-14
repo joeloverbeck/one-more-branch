@@ -1,6 +1,6 @@
 # Move suggestedProtagonistSpeech from Writer to Planner
 
-**Status**: IN PROGRESS
+**Status**: COMPLETED
 
 ## Context
 
@@ -100,3 +100,10 @@ Update existing tests (around lines 128-166):
 2. `npm test -- --testPathPattern="continuation-context.test|continuation-prompt.test"` - all tests pass
 3. `npm run test:unit` - full unit suite passes
 4. `npm run lint` - no lint issues
+
+## Outcome
+
+- Completion date: 2026-02-14
+- Actual changes: Moved suggested protagonist speech guidance from writer prompt to planner continuation context, removed writer prompt speech section, and updated planner/writer prompt tests accordingly.
+- Deviations from plan: None documented.
+- Verification results: Spec verification checklist includes successful typecheck, focused prompt tests, unit suite, and lint.

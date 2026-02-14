@@ -28,3 +28,10 @@ Accept 3-5 acts as valid story structures.
 - The few-shot example remains a 3-act structure (within valid range)
 - Beats per act still constrained to 2-4
 - Page immutability and branch isolation unchanged
+
+## Outcome
+
+- Completion date: 2026-02-14
+- Actual changes: Enabled 3-5 act story structures across schema validation, generation/rewrite validation, merge iteration, prompt instructions, and automated tests.
+- Deviations from plan: None documented.
+- Verification results: Spec records updated assertions/fixtures plus coverage of 4-act acceptance across unit/integration/E2E/performance tests.
