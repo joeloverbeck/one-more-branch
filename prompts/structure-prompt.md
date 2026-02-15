@@ -88,7 +88,7 @@ REQUIREMENTS (follow ALL):
 11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
 12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
 
-TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
+TONE REMINDER: All output must fit the tone: {{tone}}.
 
 OUTPUT SHAPE:
 - overallTheme: string
