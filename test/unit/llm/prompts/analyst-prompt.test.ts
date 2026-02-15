@@ -65,6 +65,10 @@ describe('buildAnalystPrompt', () => {
     structure: testStructure,
     accumulatedStructureState: testState,
     activeState: testActiveState,
+    threadsResolved: [],
+    threadAges: {},
+    tone: '',
+    activeTrackedPromises: [],
   };
 
   it('returns array with 2 messages (system + user)', () => {
@@ -162,5 +166,64 @@ describe('buildAnalystPrompt', () => {
   it('omits tone reminder from user prompt when tone is absent', () => {
     const messages = buildAnalystPrompt(testContext);
     expect(messages[1].content).not.toContain('TONE REMINDER:');
+  });
+
+  it('includes active tracked promises section with IDs and metadata', () => {
+    const contextWithPromises: AnalystContext = {
+      ...testContext,
+      activeTrackedPromises: [
+        {
+          id: 'pr-2',
+          description: 'A hidden satchel under the bridge arch',
+          promiseType: 'CHEKHOV_GUN',
+          suggestedUrgency: 'HIGH',
+          age: 3,
+        },
+        {
+          id: 'pr-3',
+          description: 'The ally flinches at every bell toll',
+          promiseType: 'UNRESOLVED_EMOTION',
+          suggestedUrgency: 'MEDIUM',
+          age: 1,
+        },
+      ],
+    };
+
+    const messages = buildAnalystPrompt(contextWithPromises);
+    const userContent = messages[1].content;
+
+    expect(userContent).toContain('ACTIVE TRACKED PROMISES:');
+    expect(userContent).toContain(
+      '[pr-2] (CHEKHOV_GUN/HIGH, 3 pages old) A hidden satchel under the bridge arch'
+    );
+    expect(userContent).toContain(
+      '[pr-3] (UNRESOLVED_EMOTION/MEDIUM, 1 pages old) The ally flinches at every bell toll'
+    );
+    expect(userContent).toContain('Use these IDs for promisesResolved');
+  });
+
+  it('omits active tracked promises section when there are no active promises', () => {
+    const messages = buildAnalystPrompt(testContext);
+    const userContent = messages[1].content;
+    expect(userContent).not.toContain('ACTIVE TRACKED PROMISES:');
+  });
+
+  it('system message includes tracked promise policy instructions', () => {
+    const messages = buildAnalystPrompt(testContext);
+    const systemContent = messages[0].content;
+
+    expect(systemContent).toContain('Detect at most 3 new promises in promisesDetected.');
+    expect(systemContent).toContain(
+      'Only detect promises with deliberate narrative weight; ignore incidental details.'
+    );
+    expect(systemContent).toContain(
+      'Only include a promise in promisesResolved when it is substantively addressed, not merely referenced.'
+    );
+    expect(systemContent).toContain(
+      'Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.'
+    );
+    expect(systemContent).toContain(
+      'Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.'
+    );
   });
 });

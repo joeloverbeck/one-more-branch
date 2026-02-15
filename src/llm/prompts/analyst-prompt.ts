@@ -25,6 +25,14 @@ TONE EVALUATION:
 - When toneAdherent is false, write a brief toneDriftDescription explaining what feels off and what the tone should be instead.
 - When toneAdherent is true, set toneDriftDescription to an empty string.
 
+PROMISE EVALUATION:
+- Detect at most 3 new promises in promisesDetected.
+- Only detect promises with deliberate narrative weight; ignore incidental details.
+- Check whether any ACTIVE TRACKED PROMISES were meaningfully paid off in this scene.
+- Only include a promise in promisesResolved when it is substantively addressed, not merely referenced.
+- Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
+- Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.`;
 

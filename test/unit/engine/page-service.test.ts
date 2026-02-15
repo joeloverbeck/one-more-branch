@@ -615,6 +615,76 @@ describe('page-service', () => {
       expect(updatedStory.structure).toEqual(structure);
     });
 
+    it('passes empty activeTrackedPromises to analyst for opening pages', async () => {
+      const structure = buildStructure();
+      const initialVersion = createInitialVersionedStructure(structure);
+      const story = buildStory({ structure, structureVersions: [initialVersion] });
+
+      mockedGenerateOpeningPage.mockResolvedValue({
+        narrative: 'You enter the occupied district at dusk.',
+        choices: [
+          {
+            text: 'Shadow the patrol',
+            choiceType: 'TACTICAL_APPROACH',
+            primaryDelta: 'THREAT_SHIFT',
+          },
+          {
+            text: 'Slip into the market crowd',
+            choiceType: 'AVOIDANCE_RETREAT',
+            primaryDelta: 'LOCATION_CHANGE',
+          },
+        ],
+        currentLocation: 'Occupied district',
+        threatsAdded: [],
+        threatsRemoved: [],
+        constraintsAdded: [],
+        constraintsRemoved: [],
+        threadsAdded: [],
+        threadsResolved: [],
+        newCanonFacts: [],
+        newCharacterCanonFacts: {},
+        inventoryAdded: [],
+        inventoryRemoved: [],
+        healthAdded: [],
+        healthRemoved: [],
+        characterStateChangesAdded: [],
+        characterStateChangesRemoved: [],
+        protagonistAffect: {
+          primaryEmotion: 'focus',
+          primaryIntensity: 'moderate' as const,
+          primaryCause: 'entering hostile territory',
+          secondaryEmotions: [],
+          dominantMotivation: 'stay undetected',
+        },
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'raw',
+      });
+      mockedGenerateAnalystEvaluation.mockResolvedValue({
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: 'Opening scene establishes immediate stakes.',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        rawResponse: 'raw-analyst',
+      });
+
+      await generateFirstPage(story, 'test-key');
+
+      const firstAnalystCall = mockedGenerateAnalystEvaluation.mock.calls[0];
+      expect(firstAnalystCall).toBeDefined();
+      if (!firstAnalystCall) {
+        return;
+      }
+
+      const [analystInput] = firstAnalystCall;
+      expect(analystInput.activeTrackedPromises).toEqual([]);
+    });
+
     it('calls planner before opening writer and threads planner output into opening context', async () => {
       const story = buildStory();
       const pagePlan = buildPagePlanResult({ sceneIntent: 'Open with immediate pursuit.' });
@@ -2777,6 +2847,15 @@ describe('page-service', () => {
         ...createInitialStructureState(structure),
         pagesInCurrentBeat: 2,
       };
+      const parentAccumulatedPromises = [
+        {
+          id: 'pr-4',
+          description: 'A map corner marked with black ink',
+          promiseType: 'FORESHADOWING' as const,
+          suggestedUrgency: 'MEDIUM' as const,
+          age: 2,
+        },
+      ];
       const story = buildStory({ structure, structureVersions: [initialVersion] });
       const parentPage = createPage({
         id: parsePageId(2),
@@ -2788,6 +2867,7 @@ describe('page-service', () => {
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
         parentAccumulatedStructureState: parentStructureState,
+        accumulatedPromises: parentAccumulatedPromises,
         structureVersionId: initialVersion.id,
       });
 
@@ -2856,6 +2936,7 @@ describe('page-service', () => {
       expect(analystInput.accumulatedStructureState.pagesInCurrentBeat).toBe(
         parentStructureState.pagesInCurrentBeat + 1
       );
+      expect(analystInput.activeTrackedPromises).toEqual(parentAccumulatedPromises);
       expect(analystOptions).toEqual({ apiKey: 'test-key' });
     });
 
