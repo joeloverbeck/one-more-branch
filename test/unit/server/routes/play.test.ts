@@ -146,6 +146,8 @@ describe('playRoutes', () => {
         inventoryOverflowSummary: null,
         healthPanelRows: [],
         healthOverflowSummary: null,
+        trackedPromisesPanelRows: [],
+        trackedPromisesOverflowSummary: null,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -892,6 +894,9 @@ describe('playRoutes', () => {
             protagonistAffect: resultPage.protagonistAffect,
             analystResult: resultPage.analystResult,
             resolvedThreadMeta: {},
+            resolvedPromiseMeta: {},
+            trackedPromises: [],
+            trackedPromisesOverflowSummary: null,
           },
           wasGenerated: true,
         })

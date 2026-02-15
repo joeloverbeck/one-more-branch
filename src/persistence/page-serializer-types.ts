@@ -194,6 +194,7 @@ export interface PageFileData {
   threadAges?: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
+  resolvedPromiseMeta?: Record<string, { promiseType: string; urgency: string }>;
   npcAgendaUpdates?: NpcAgendaFileData[];
   accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;
   isEnding: boolean;

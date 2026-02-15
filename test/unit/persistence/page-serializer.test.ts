@@ -49,6 +49,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     threadAges: {},
     accumulatedPromises: [],
     resolvedThreadMeta: {},
+    resolvedPromiseMeta: {},
     npcAgendaUpdates: [],
     accumulatedNpcAgendas: createEmptyAccumulatedNpcAgendas(),
     isEnding: false,
@@ -439,6 +440,22 @@ describe('page-serializer', () => {
       const deserialized = deserializePage(serialized);
       expect(deserialized.npcAgendaUpdates).toEqual([agenda]);
       expect(deserialized.accumulatedNpcAgendas).toEqual({ Kira: agenda });
+    });
+
+    it('preserves resolvedPromiseMeta through serialize/deserialize cycle', () => {
+      const page = buildTestPage({
+        resolvedPromiseMeta: {
+          'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
+          'pr-2': { promiseType: 'FORESHADOWING', urgency: 'LOW' },
+        },
+      });
+
+      const serialized = serializePage(page);
+      const deserialized = deserializePage(serialized);
+      expect(deserialized.resolvedPromiseMeta).toEqual({
+        'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
+        'pr-2': { promiseType: 'FORESHADOWING', urgency: 'LOW' },
+      });
     });
   });
 

@@ -360,6 +360,45 @@
     });
   }
 
+  function formatPromiseType(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return 'Unknown';
+    }
+    return value.toLowerCase().split('_').map(function(part) {
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }).join(' ');
+  }
+
+  function renderTrackedPromisesPanel(promises, trackedPromisesOverflowSummary, sidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'tracked-promises-panel',
+      titleId: 'tracked-promises-title',
+      listId: 'tracked-promises-list',
+      overflowId: 'tracked-promises-overflow',
+      panelClass: 'tracked-promises-panel',
+      titleClass: 'tracked-promises-title',
+      listClass: 'tracked-promises-list',
+      itemClass: 'tracked-promises-item',
+      title: 'Tracked Promises',
+      entries: Array.isArray(promises) ? promises.map(function(p) {
+        return {
+          id: typeof p.id === 'string' ? p.id : '',
+          text: typeof p.text === 'string' ? p.text : '',
+          promiseType: typeof p.promiseType === 'string' ? p.promiseType : '',
+          age: typeof p.age === 'number' ? p.age : 0,
+        };
+      }) : [],
+      overflowSummary: trackedPromisesOverflowSummary,
+      container: sidebarContainer,
+      renderEntry: function(entry) {
+        var typeLabel = formatPromiseType(entry.promiseType);
+        return '<span class="promise-type-text-badge">' + escapeHtml(typeLabel) + '</span>'
+          + '<span class="promise-age-badge">' + entry.age + ' pg</span>'
+          + '<span>' + escapeHtml(entry.text) + '</span>';
+      },
+    });
+  }
+
   function ensureLeftSidebarContainer() {
     return document.getElementById('left-sidebar-widgets');
   }

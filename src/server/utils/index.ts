@@ -15,6 +15,7 @@ export {
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
   getThreatPanelData,
+  getTrackedPromisesPanelData,
 } from './view-helpers.js';
 export type {
   ActDisplayInfo,
@@ -26,4 +27,6 @@ export type {
   OpenThreadPanelRow,
   ThreatPanelData,
   ThreatPanelRow,
+  TrackedPromisePanelData,
+  TrackedPromisePanelRow,
 } from './view-helpers.js';

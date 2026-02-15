@@ -1507,6 +1507,45 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     });
   }
 
+  function formatPromiseType(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return 'Unknown';
+    }
+    return value.toLowerCase().split('_').map(function(part) {
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }).join(' ');
+  }
+
+  function renderTrackedPromisesPanel(promises, trackedPromisesOverflowSummary, sidebarContainer) {
+    renderKeyedEntryPanel({
+      panelId: 'tracked-promises-panel',
+      titleId: 'tracked-promises-title',
+      listId: 'tracked-promises-list',
+      overflowId: 'tracked-promises-overflow',
+      panelClass: 'tracked-promises-panel',
+      titleClass: 'tracked-promises-title',
+      listClass: 'tracked-promises-list',
+      itemClass: 'tracked-promises-item',
+      title: 'Tracked Promises',
+      entries: Array.isArray(promises) ? promises.map(function(p) {
+        return {
+          id: typeof p.id === 'string' ? p.id : '',
+          text: typeof p.text === 'string' ? p.text : '',
+          promiseType: typeof p.promiseType === 'string' ? p.promiseType : '',
+          age: typeof p.age === 'number' ? p.age : 0,
+        };
+      }) : [],
+      overflowSummary: trackedPromisesOverflowSummary,
+      container: sidebarContainer,
+      renderEntry: function(entry) {
+        var typeLabel = formatPromiseType(entry.promiseType);
+        return '<span class="promise-type-text-badge">' + escapeHtml(typeLabel) + '</span>'
+          + '<span class="promise-age-badge">' + entry.age + ' pg</span>'
+          + '<span>' + escapeHtml(entry.text) + '</span>';
+      },
+    });
+  }
+
   function ensureLeftSidebarContainer() {
     return document.getElementById('left-sidebar-widgets');
   }
@@ -1869,27 +1908,46 @@ function renderGaugeRow(label, value, fillMap) {
     + '</div>';
 }
 
-function renderNarrativePromises(promises) {
-  if (!Array.isArray(promises) || promises.length === 0) {
+function renderPromisePayoffs(assessments, resolvedPromiseMeta) {
+  if (!Array.isArray(assessments) || assessments.length === 0) {
     return '';
   }
 
-  var items = promises.map(function(promise) {
-    var urgency = typeof promise?.suggestedUrgency === 'string' ? promise.suggestedUrgency : 'LOW';
-    var urgencyClass = URGENCY_CLASS[urgency] || URGENCY_CLASS.LOW;
+  var metaMap = resolvedPromiseMeta && typeof resolvedPromiseMeta === 'object'
+    ? resolvedPromiseMeta
+    : {};
 
-    return '<li class="promise-item">'
-      + '<div class="promise-item__meta">'
-      + '<span class="promise-type-badge">' + escapeHtml(formatAnalystEnum(promise?.promiseType)) + '</span>'
-      + '<span class="promise-urgency-badge ' + urgencyClass + '">' + escapeHtml(urgency) + '</span>'
-      + '</div>'
-      + '<p class="insights-copy">' + escapeHtml(promise?.description || '') + '</p>'
+  var items = assessments.map(function(assessment) {
+    var satisfaction = typeof assessment?.satisfactionLevel === 'string'
+      ? assessment.satisfactionLevel
+      : 'ADEQUATE';
+    var payoffClass = PAYOFF_CLASS[satisfaction] || PAYOFF_CLASS.ADEQUATE;
+    var description = typeof assessment?.description === 'string' ? assessment.description : '';
+    var reasoning = typeof assessment?.reasoning === 'string' ? assessment.reasoning : '';
+    var promiseId = typeof assessment?.promiseId === 'string' ? assessment.promiseId : '';
+
+    var badgeHtml = '';
+    var meta = promiseId ? metaMap[promiseId] : null;
+    if (meta && typeof meta.promiseType === 'string') {
+      badgeHtml = '<span class="promise-payoff-badge">'
+        + '<span class="promise-type-text-badge">' + escapeHtml(formatAnalystEnum(meta.promiseType)) + '</span>'
+        + '</span>';
+    }
+
+    return '<li class="promise-payoff-item">'
+      + badgeHtml
+      + '<p class="payoff-thread-label">Promise</p>'
+      + '<p class="payoff-thread-text" title="' + escapeHtml(description) + '">' + escapeHtml(description) + '</p>'
+      + '<span class="payoff-satisfaction-badge payoff-satisfaction-badge--centered ' + payoffClass + '">'
+      + escapeHtml(satisfaction)
+      + '</span>'
+      + '<p class="insights-copy payoff-reasoning">' + escapeHtml(reasoning) + '</p>'
       + '</li>';
   }).join('');
 
   return '<details class="insights-section" open>'
-    + '<summary><h4>Narrative Promises</h4></summary>'
-    + '<ul class="promise-list">' + items + '</ul>'
+    + '<summary><h4>Promise Payoffs</h4></summary>'
+    + '<ul class="payoff-list">' + items + '</ul>'
     + '</details>';
 }
 
@@ -1997,7 +2055,7 @@ function renderInsightsBody(analystResult, context) {
     + '<span class="momentum-badge ' + momentum.css + '">' + escapeHtml(momentum.label) + '</span>'
     + '</details>'
     + pacingHtml
-    + renderNarrativePromises(analystResult.narrativePromises)
+    + renderPromisePayoffs(analystResult.promisePayoffAssessments, ctx.resolvedPromiseMeta || {})
     + renderThreadPayoffs(analystResult.threadPayoffAssessments, ctx.resolvedThreadMeta || {})
     + toneHtml;
 }
@@ -2805,6 +2863,7 @@ function createRecapModalController(initialData) {
           actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
           sceneSummary: data.page.sceneSummary || null,
           resolvedThreadMeta: data.page.resolvedThreadMeta || {},
+          resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
         });
         recapController.update(data.recapSummaries || []);
 
@@ -2824,6 +2883,7 @@ function createRecapModalController(initialData) {
         renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
         renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
         renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
+        renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
         cleanupEmptySidebar();
         renderStateChanges(data.page.stateChanges, narrative);
         renderDeviationBanner(data.deviationInfo, choicesSection);

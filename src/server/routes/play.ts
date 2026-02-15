@@ -27,6 +27,7 @@ import {
   getKeyedEntryPanelData,
   getOpenThreadPanelData,
   getThreatPanelData,
+  getTrackedPromisesPanelData,
   groupWorldFacts,
   wrapAsyncRoute,
 } from '../utils/index.js';
@@ -248,6 +249,7 @@ playRoutes.get(
       );
       const inventoryPanelData = getKeyedEntryPanelData(page.accumulatedInventory, 10);
       const healthPanelData = getKeyedEntryPanelData(page.accumulatedHealth, 10);
+      const trackedPromisesPanelData = getTrackedPromisesPanelData(page.accumulatedPromises);
 
       return res.render('pages/play', {
         title: `${story.title} - One More Branch`,
@@ -266,6 +268,8 @@ playRoutes.get(
         inventoryOverflowSummary: inventoryPanelData.overflowSummary,
         healthPanelRows: healthPanelData.rows,
         healthOverflowSummary: healthPanelData.overflowSummary,
+        trackedPromisesPanelRows: trackedPromisesPanelData.rows,
+        trackedPromisesOverflowSummary: trackedPromisesPanelData.overflowSummary,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -342,6 +346,9 @@ playRoutes.post(
       );
       const inventoryPanelData = getKeyedEntryPanelData(result.page.accumulatedInventory, 10);
       const healthPanelData = getKeyedEntryPanelData(result.page.accumulatedHealth, 10);
+      const trackedPromisesPanelData = getTrackedPromisesPanelData(
+        result.page.accumulatedPromises
+      );
       if (progressId) {
         generationProgressService.complete(progressId);
       }
@@ -356,6 +363,7 @@ playRoutes.post(
           isEnding: result.page.isEnding,
           analystResult: result.page.analystResult,
           resolvedThreadMeta: result.page.resolvedThreadMeta ?? {},
+          resolvedPromiseMeta: result.page.resolvedPromiseMeta ?? {},
           openThreads: openThreadPanelData.rows,
           openThreadOverflowSummary: openThreadPanelData.overflowSummary,
           activeThreats: threatsPanelData.rows,
@@ -366,6 +374,8 @@ playRoutes.post(
           inventoryOverflowSummary: inventoryPanelData.overflowSummary,
           health: healthPanelData.rows,
           healthOverflowSummary: healthPanelData.overflowSummary,
+          trackedPromises: trackedPromisesPanelData.rows,
+          trackedPromisesOverflowSummary: trackedPromisesPanelData.overflowSummary,
           protagonistAffect: result.page.protagonistAffect,
         },
         globalCanon: story?.globalCanon ?? [],

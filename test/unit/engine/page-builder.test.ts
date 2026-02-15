@@ -245,6 +245,131 @@ describe('page-builder', () => {
     });
   });
 
+  describe('resolvedPromiseMeta', () => {
+    it('populates resolvedPromiseMeta when promises are resolved', () => {
+      const result = buildMockGenerationResult();
+      const context: ContinuationPageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: 'Forest',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [
+          {
+            id: 'pr-1',
+            description: 'A silver dagger was introduced with emphasis',
+            promiseType: PromiseType.CHEKHOV_GUN,
+            suggestedUrgency: Urgency.HIGH,
+            age: 2,
+          },
+          {
+            id: 'pr-2',
+            description: 'Unusual silence from northern watchtower',
+            promiseType: PromiseType.FORESHADOWING,
+            suggestedUrgency: Urgency.MEDIUM,
+            age: 1,
+          },
+        ],
+        analystPromisesDetected: [],
+        analystPromisesResolved: ['pr-1'],
+      };
+
+      const page = buildContinuationPage(result, context);
+
+      expect(page.resolvedPromiseMeta).toEqual({
+        'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
+      });
+    });
+
+    it('returns empty resolvedPromiseMeta when no promises resolved', () => {
+      const result = buildMockGenerationResult();
+      const context: ContinuationPageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: 'Forest',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [
+          {
+            id: 'pr-1',
+            description: 'A silver dagger was introduced with emphasis',
+            promiseType: PromiseType.CHEKHOV_GUN,
+            suggestedUrgency: Urgency.HIGH,
+            age: 2,
+          },
+        ],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+      };
+
+      const page = buildContinuationPage(result, context);
+
+      expect(page.resolvedPromiseMeta).toEqual({});
+    });
+
+    it('ignores resolved IDs that do not match any parent promise', () => {
+      const result = buildMockGenerationResult();
+      const context: ContinuationPageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: 'Forest',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [
+          {
+            id: 'pr-1',
+            description: 'A silver dagger was introduced with emphasis',
+            promiseType: PromiseType.CHEKHOV_GUN,
+            suggestedUrgency: Urgency.HIGH,
+            age: 2,
+          },
+        ],
+        analystPromisesDetected: [],
+        analystPromisesResolved: ['pr-999'],
+      };
+
+      const page = buildContinuationPage(result, context);
+
+      expect(page.resolvedPromiseMeta).toEqual({});
+    });
+  });
+
   describe('createEmptyStructureContext', () => {
     it('returns empty structure context', () => {
       expect(createEmptyStructureContext()).toEqual({

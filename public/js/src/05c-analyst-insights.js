@@ -88,27 +88,46 @@ function renderGaugeRow(label, value, fillMap) {
     + '</div>';
 }
 
-function renderNarrativePromises(promises) {
-  if (!Array.isArray(promises) || promises.length === 0) {
+function renderPromisePayoffs(assessments, resolvedPromiseMeta) {
+  if (!Array.isArray(assessments) || assessments.length === 0) {
     return '';
   }
 
-  var items = promises.map(function(promise) {
-    var urgency = typeof promise?.suggestedUrgency === 'string' ? promise.suggestedUrgency : 'LOW';
-    var urgencyClass = URGENCY_CLASS[urgency] || URGENCY_CLASS.LOW;
+  var metaMap = resolvedPromiseMeta && typeof resolvedPromiseMeta === 'object'
+    ? resolvedPromiseMeta
+    : {};
 
-    return '<li class="promise-item">'
-      + '<div class="promise-item__meta">'
-      + '<span class="promise-type-badge">' + escapeHtml(formatAnalystEnum(promise?.promiseType)) + '</span>'
-      + '<span class="promise-urgency-badge ' + urgencyClass + '">' + escapeHtml(urgency) + '</span>'
-      + '</div>'
-      + '<p class="insights-copy">' + escapeHtml(promise?.description || '') + '</p>'
+  var items = assessments.map(function(assessment) {
+    var satisfaction = typeof assessment?.satisfactionLevel === 'string'
+      ? assessment.satisfactionLevel
+      : 'ADEQUATE';
+    var payoffClass = PAYOFF_CLASS[satisfaction] || PAYOFF_CLASS.ADEQUATE;
+    var description = typeof assessment?.description === 'string' ? assessment.description : '';
+    var reasoning = typeof assessment?.reasoning === 'string' ? assessment.reasoning : '';
+    var promiseId = typeof assessment?.promiseId === 'string' ? assessment.promiseId : '';
+
+    var badgeHtml = '';
+    var meta = promiseId ? metaMap[promiseId] : null;
+    if (meta && typeof meta.promiseType === 'string') {
+      badgeHtml = '<span class="promise-payoff-badge">'
+        + '<span class="promise-type-text-badge">' + escapeHtml(formatAnalystEnum(meta.promiseType)) + '</span>'
+        + '</span>';
+    }
+
+    return '<li class="promise-payoff-item">'
+      + badgeHtml
+      + '<p class="payoff-thread-label">Promise</p>'
+      + '<p class="payoff-thread-text" title="' + escapeHtml(description) + '">' + escapeHtml(description) + '</p>'
+      + '<span class="payoff-satisfaction-badge payoff-satisfaction-badge--centered ' + payoffClass + '">'
+      + escapeHtml(satisfaction)
+      + '</span>'
+      + '<p class="insights-copy payoff-reasoning">' + escapeHtml(reasoning) + '</p>'
       + '</li>';
   }).join('');
 
   return '<details class="insights-section" open>'
-    + '<summary><h4>Narrative Promises</h4></summary>'
-    + '<ul class="promise-list">' + items + '</ul>'
+    + '<summary><h4>Promise Payoffs</h4></summary>'
+    + '<ul class="payoff-list">' + items + '</ul>'
     + '</details>';
 }
 
@@ -216,7 +235,7 @@ function renderInsightsBody(analystResult, context) {
     + '<span class="momentum-badge ' + momentum.css + '">' + escapeHtml(momentum.label) + '</span>'
     + '</details>'
     + pacingHtml
-    + renderNarrativePromises(analystResult.narrativePromises)
+    + renderPromisePayoffs(analystResult.promisePayoffAssessments, ctx.resolvedPromiseMeta || {})
     + renderThreadPayoffs(analystResult.threadPayoffAssessments, ctx.resolvedThreadMeta || {})
     + toneHtml;
 }

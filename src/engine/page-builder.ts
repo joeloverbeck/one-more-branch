@@ -216,6 +216,29 @@ function buildResolvedThreadMeta(
 }
 
 /**
+ * Builds a lookup of metadata for promises resolved on this page.
+ * Cross-references resolved promise IDs with the parent page's accumulated promises
+ * to preserve promiseType and suggestedUrgency for display purposes (e.g. payoff card badges).
+ */
+function buildResolvedPromiseMeta(
+  resolvedIds: readonly string[],
+  parentPromises: readonly TrackedPromise[]
+): Readonly<Record<string, { promiseType: string; urgency: string }>> {
+  if (resolvedIds.length === 0) {
+    return {};
+  }
+  const meta: Record<string, { promiseType: string; urgency: string }> = {};
+  const promiseMap = new Map(parentPromises.map((p) => [p.id, p]));
+  for (const id of resolvedIds) {
+    const promise = promiseMap.get(id);
+    if (promise) {
+      meta[id] = { promiseType: promise.promiseType, urgency: promise.suggestedUrgency };
+    }
+  }
+  return meta;
+}
+
+/**
  * Maps reconciled state fields to ActiveStateChanges.
  * Handles the conversion from LLM output format to the typed change structure.
  */
@@ -263,6 +286,11 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     context.parentAccumulatedActiveState.openThreads
   );
 
+  const resolvedPromiseMeta = buildResolvedPromiseMeta(
+    isOpening ? [] : context.analystPromisesResolved,
+    isOpening ? [] : context.parentAccumulatedPromises
+  );
+
   return createPage({
     id: context.pageId,
     narrativeText: result.narrative,
@@ -292,6 +320,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     threadAges,
     accumulatedPromises,
     resolvedThreadMeta,
+    resolvedPromiseMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
   });

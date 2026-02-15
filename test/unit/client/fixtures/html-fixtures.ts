@@ -26,6 +26,8 @@ export interface PlayPageOptions {
   threatsOverflowSummary?: string;
   activeConstraints?: Array<{ id: string; text: string }>;
   constraintsOverflowSummary?: string;
+  trackedPromises?: Array<{ id: string; text: string; promiseType: string; age: number }>;
+  trackedPromisesOverflowSummary?: string;
   actDisplayInfo?: { displayString: string } | null;
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
@@ -33,6 +35,7 @@ export interface PlayPageOptions {
   sceneSummary?: string | null;
   recapSummaries?: Array<{ pageId: number; summary: string }>;
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
+  resolvedPromiseMeta?: Record<string, { promiseType: string; urgency: string }>;
   worldFacts?: string[];
   characterCanon?: Record<string, string[]>;
 }
@@ -49,6 +52,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const openThreads = options.openThreads ?? [];
   const activeThreats = options.activeThreats ?? [];
   const activeConstraints = options.activeConstraints ?? [];
+  const trackedPromises = options.trackedPromises ?? [];
   const actDisplayInfo = options.actDisplayInfo ?? null;
   const stateChanges = options.stateChanges ?? [];
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
@@ -103,7 +107,18 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       </aside>`
       : '';
 
-  const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}</div>`;
+  const trackedPromisesHtml =
+    trackedPromises.length > 0
+      ? `<aside class="tracked-promises-panel" id="tracked-promises-panel" aria-labelledby="tracked-promises-title">
+        <h3 class="tracked-promises-title" id="tracked-promises-title">Tracked Promises</h3>
+        <ul class="tracked-promises-list" id="tracked-promises-list">
+          ${trackedPromises.map((p) => `<li class="tracked-promises-item"><span class="promise-type-text-badge">${p.promiseType}</span><span class="promise-age-badge">${p.age} pg</span><span>${p.text}</span></li>`).join('')}
+        </ul>
+        ${options.trackedPromisesOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="tracked-promises-overflow">${options.trackedPromisesOverflowSummary}</div>` : ''}
+      </aside>`
+      : '';
+
+  const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}${trackedPromisesHtml}</div>`;
 
   const stateChangesHtml =
     stateChanges.length > 0
@@ -293,7 +308,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         </div>
       </div>
       <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
-      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {} })}</script>
+      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {}, resolvedPromiseMeta: options.resolvedPromiseMeta ?? {} })}</script>
       <script type="application/json" id="recap-data">${JSON.stringify(recapSummaries)}</script>
       <script type="application/json" id="lore-data">${JSON.stringify({ worldFacts, characterCanon })}</script>
     </main>

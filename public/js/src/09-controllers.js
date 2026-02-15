@@ -242,6 +242,7 @@
           actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
           sceneSummary: data.page.sceneSummary || null,
           resolvedThreadMeta: data.page.resolvedThreadMeta || {},
+          resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
         });
         recapController.update(data.recapSummaries || []);
 
@@ -261,6 +262,7 @@
         renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
         renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
         renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
+        renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
         cleanupEmptySidebar();
         renderStateChanges(data.page.stateChanges, narrative);
         renderDeviationBanner(data.deviationInfo, choicesSection);

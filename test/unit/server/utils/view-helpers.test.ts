@@ -3,6 +3,7 @@ import {
   getKeyedEntryPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
+  getTrackedPromisesPanelData,
 } from '@/server/utils/view-helpers';
 import {
   createPage,
@@ -13,6 +14,7 @@ import {
   ThreadType,
   Urgency,
 } from '@/models';
+import { PromiseType } from '@/models/state/keyed-entry';
 import type {
   Story,
   Page,
@@ -498,5 +500,150 @@ describe('getKeyedEntryPanelData', () => {
 
     expect(result.rows).toHaveLength(6);
     expect(result.overflowSummary).toBe('+1 more not shown');
+  });
+});
+
+describe('getTrackedPromisesPanelData', () => {
+  it('sorts by urgency HIGH first, then MEDIUM, then LOW', () => {
+    const result = getTrackedPromisesPanelData([
+      {
+        id: 'pr-1',
+        description: 'A low-priority clue',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.LOW,
+        age: 1,
+      },
+      {
+        id: 'pr-2',
+        description: 'A mysterious sword',
+        promiseType: PromiseType.CHEKHOV_GUN,
+        suggestedUrgency: Urgency.HIGH,
+        age: 3,
+      },
+      {
+        id: 'pr-3',
+        description: 'An unsettling silence',
+        promiseType: PromiseType.DRAMATIC_IRONY,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 0,
+      },
+    ]);
+
+    expect(result.rows.map((r) => r.id)).toEqual(['pr-2', 'pr-3', 'pr-1']);
+  });
+
+  it('limits to 6 entries by default', () => {
+    const promises = Array.from({ length: 9 }, (_, i) => ({
+      id: `pr-${i + 1}`,
+      description: `Promise ${i + 1}`,
+      promiseType: PromiseType.FORESHADOWING,
+      suggestedUrgency: Urgency.MEDIUM,
+      age: i,
+    }));
+
+    const result = getTrackedPromisesPanelData(promises);
+
+    expect(result.rows).toHaveLength(6);
+  });
+
+  it('returns proper overflow summary for hidden entries', () => {
+    const promises = [
+      {
+        id: 'pr-1',
+        description: 'High 1',
+        promiseType: PromiseType.CHEKHOV_GUN,
+        suggestedUrgency: Urgency.HIGH,
+        age: 0,
+      },
+      {
+        id: 'pr-2',
+        description: 'High 2',
+        promiseType: PromiseType.CHEKHOV_GUN,
+        suggestedUrgency: Urgency.HIGH,
+        age: 1,
+      },
+      {
+        id: 'pr-3',
+        description: 'Medium 1',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 2,
+      },
+      {
+        id: 'pr-4',
+        description: 'Medium 2',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 0,
+      },
+      {
+        id: 'pr-5',
+        description: 'Medium 3',
+        promiseType: PromiseType.DRAMATIC_IRONY,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 1,
+      },
+      {
+        id: 'pr-6',
+        description: 'Medium 4',
+        promiseType: PromiseType.SETUP_PAYOFF,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 3,
+      },
+      {
+        id: 'pr-7',
+        description: 'Medium 5',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 0,
+      },
+      {
+        id: 'pr-8',
+        description: 'Low 1',
+        promiseType: PromiseType.UNRESOLVED_EMOTION,
+        suggestedUrgency: Urgency.LOW,
+        age: 4,
+      },
+    ];
+
+    const result = getTrackedPromisesPanelData(promises);
+
+    expect(result.rows).toHaveLength(6);
+    expect(result.overflowSummary).toBe('Not shown: 1 (medium), 1 (low)');
+  });
+
+  it('handles empty array', () => {
+    const result = getTrackedPromisesPanelData([]);
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.overflowSummary).toBeNull();
+  });
+
+  it('builds correct displayLabel format', () => {
+    const result = getTrackedPromisesPanelData([
+      {
+        id: 'pr-1',
+        description: 'A mysterious sword',
+        promiseType: PromiseType.CHEKHOV_GUN,
+        suggestedUrgency: Urgency.HIGH,
+        age: 3,
+      },
+    ]);
+
+    expect(result.rows[0]?.displayLabel).toBe('(CHEKHOV_GUN/HIGH) A mysterious sword');
+  });
+
+  it('maps description to text field in rows', () => {
+    const result = getTrackedPromisesPanelData([
+      {
+        id: 'pr-1',
+        description: 'The locked door was emphasized',
+        promiseType: PromiseType.SETUP_PAYOFF,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 2,
+      },
+    ]);
+
+    expect(result.rows[0]?.text).toBe('The locked door was emphasized');
   });
 });

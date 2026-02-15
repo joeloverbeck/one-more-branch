@@ -862,7 +862,8 @@ main {
 }
 
 .active-threats-panel,
-.active-constraints-panel {
+.active-constraints-panel,
+.tracked-promises-panel {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   background: rgba(14, 24, 49, 0.95);
@@ -870,7 +871,8 @@ main {
 }
 
 .active-threats-title,
-.active-constraints-title {
+.active-constraints-title,
+.tracked-promises-title {
   margin: 0;
   padding: 0.8rem 0.9rem;
   border-bottom: 1px solid var(--border-color);
@@ -880,7 +882,8 @@ main {
 }
 
 .active-threats-list,
-.active-constraints-list {
+.active-constraints-list,
+.tracked-promises-list {
   margin: 0;
   padding: 0.8rem 1rem 0.9rem;
   display: grid;
@@ -889,10 +892,56 @@ main {
 }
 
 .active-threats-item,
-.active-constraints-item {
+.active-constraints-item,
+.tracked-promises-item {
   color: var(--color-text-muted);
   font-size: 0.88rem;
   line-height: 1.45;
+}
+
+.tracked-promises-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.promise-type-text-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.12rem 0.42rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.2);
+  color: #cfe4ff;
+  white-space: nowrap;
+}
+
+.promise-age-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.1rem 0.36rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  background: rgba(107, 114, 128, 0.2);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.promise-payoff-item {
+  position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.52rem 0.62rem;
+  background: rgba(6, 10, 24, 0.35);
+}
+
+.promise-payoff-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.3rem;
+  z-index: 1;
 }
 
 .keyed-entry-overflow-summary {

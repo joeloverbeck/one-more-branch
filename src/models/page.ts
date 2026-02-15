@@ -56,6 +56,7 @@ export interface Page {
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
+  readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
   readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly isEnding: boolean;
@@ -87,6 +88,7 @@ export interface CreatePageData {
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises?: readonly TrackedPromise[];
   resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
+  resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; urgency: string }>>;
   npcAgendaUpdates?: readonly NpcAgenda[];
   parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
 }
@@ -144,6 +146,7 @@ export function createPage(data: CreatePageData): Page {
     threadAges: data.threadAges ?? {},
     accumulatedPromises: data.accumulatedPromises ?? [],
     resolvedThreadMeta: data.resolvedThreadMeta ?? {},
+    resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
     npcAgendaUpdates: data.npcAgendaUpdates ?? [],
     accumulatedNpcAgendas: applyAgendaUpdates(
       data.parentAccumulatedNpcAgendas ?? createEmptyAccumulatedNpcAgendas(),

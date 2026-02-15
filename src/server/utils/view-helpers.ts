@@ -1,4 +1,5 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
+import type { TrackedPromise } from '../../models/state/index.js';
 import {
   ConstraintType,
   getCurrentAct,
@@ -252,5 +253,63 @@ export function getOpenThreadPanelData(
   return {
     rows: visibleRows,
     overflowSummary: getOverflowSummary(hiddenThreads),
+  };
+}
+
+export interface TrackedPromisePanelRow {
+  readonly id: string;
+  readonly text: string;
+  readonly promiseType: string;
+  readonly suggestedUrgency: string;
+  readonly age: number;
+  readonly displayLabel: string;
+}
+
+export interface TrackedPromisePanelData {
+  readonly rows: readonly TrackedPromisePanelRow[];
+  readonly overflowSummary: string | null;
+}
+
+export function getTrackedPromisesPanelData(
+  promises: readonly TrackedPromise[],
+  limit: number = KEYED_ENTRY_PANEL_LIMIT
+): TrackedPromisePanelData {
+  const sorted = [...promises]
+    .map((p, index) => ({ promise: p, index }))
+    .sort((left, right) => {
+      const urgencyDelta =
+        getUrgencyPriority(left.promise.suggestedUrgency) -
+        getUrgencyPriority(right.promise.suggestedUrgency);
+      if (urgencyDelta !== 0) {
+        return urgencyDelta;
+      }
+      return left.index - right.index;
+    })
+    .map(({ promise }) => promise);
+
+  const visible = sorted.slice(0, limit);
+  const hidden = sorted.slice(limit);
+
+  const visibleRows: TrackedPromisePanelRow[] = visible.map((p) => ({
+    id: p.id,
+    text: p.description,
+    promiseType: p.promiseType,
+    suggestedUrgency: p.suggestedUrgency,
+    age: p.age,
+    displayLabel: `(${p.promiseType}/${p.suggestedUrgency}) ${p.description}`,
+  }));
+
+  const overflowSummary = getOverflowSummary(
+    hidden.map((p) => ({
+      id: p.id,
+      text: p.description,
+      threadType: p.promiseType,
+      urgency: p.suggestedUrgency,
+    }))
+  );
+
+  return {
+    rows: visibleRows,
+    overflowSummary,
   };
 }

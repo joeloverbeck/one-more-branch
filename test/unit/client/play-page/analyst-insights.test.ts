@@ -336,6 +336,63 @@ describe('analyst insights modal', () => {
     expect(payoffItem).not.toBeNull();
   });
 
+  it('renders promise payoffs with type badge and satisfaction', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: buildAnalystResult({
+        promisePayoffAssessments: [
+          {
+            promiseId: 'pr-1',
+            description: 'The loaded gun fires',
+            satisfactionLevel: 'WELL_EARNED',
+            reasoning: 'Built up over 5 pages.',
+          },
+        ],
+      }),
+      resolvedPromiseMeta: {
+        'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
+      },
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    const payoffItem = modalBody.querySelector('.promise-payoff-item');
+    expect(payoffItem).not.toBeNull();
+    expect(payoffItem?.querySelector('.promise-type-text-badge')?.textContent).toBe('Chekhov Gun');
+    expect(payoffItem?.querySelector('.payoff-satisfaction-badge')?.textContent).toBe('WELL_EARNED');
+    expect(payoffItem?.querySelector('.payoff-reasoning')?.textContent).toBe('Built up over 5 pages.');
+  });
+
+  it('renders promise payoffs without badge when meta is missing', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: buildAnalystResult({
+        promisePayoffAssessments: [
+          {
+            promiseId: 'pr-1',
+            description: 'Something resolved',
+            satisfactionLevel: 'ADEQUATE',
+            reasoning: 'Okay.',
+          },
+        ],
+      }),
+      // no resolvedPromiseMeta
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    const payoffItem = modalBody.querySelector('.promise-payoff-item');
+    expect(payoffItem).not.toBeNull();
+    expect(payoffItem?.querySelector('.promise-payoff-badge')).toBeNull();
+    expect(payoffItem?.querySelector('.payoff-thread-text')?.textContent).toBe('Something resolved');
+  });
+
   it('updates modal content on choice response and supports ending-page initialization', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: buildAnalystResult({ sceneMomentum: 'STASIS' }),
@@ -387,6 +444,9 @@ describe('analyst insights modal', () => {
             healthOverflowSummary: null,
             protagonistAffect: null,
             resolvedThreadMeta: {},
+            resolvedPromiseMeta: {},
+            trackedPromises: [],
+            trackedPromisesOverflowSummary: null,
           },
           wasGenerated: true,
           actDisplayInfo: { displayString: 'Act 2: Rising Action - Beat 2.1: Confrontation' },

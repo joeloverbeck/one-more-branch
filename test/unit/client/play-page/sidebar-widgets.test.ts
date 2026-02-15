@@ -43,6 +43,16 @@ describe('sidebar widgets container', () => {
         threatsOverflowSummary: null,
         activeConstraints: [],
         constraintsOverflowSummary: null,
+        trackedPromises: [],
+        trackedPromisesOverflowSummary: null,
+        inventory: [],
+        inventoryOverflowSummary: null,
+        health: [],
+        healthOverflowSummary: null,
+        protagonistAffect: null,
+        analystResult: null,
+        resolvedThreadMeta: {},
+        resolvedPromiseMeta: {},
         stateChanges: [],
         ...overrides,
       },
@@ -110,6 +120,7 @@ describe('sidebar widgets container', () => {
         ],
         activeThreats: [{ id: 'at-1', text: 'A threat' }],
         activeConstraints: [{ id: 'cn-1', text: 'A constraint' }],
+        trackedPromises: [{ id: 'pr-1', text: 'A promise', promiseType: 'CHEKHOV_GUN', age: 2 }],
       })
     );
 
@@ -117,10 +128,11 @@ describe('sidebar widgets container', () => {
     expect(sidebar).not.toBeNull();
 
     const asides = sidebar!.querySelectorAll('aside');
-    expect(asides.length).toBe(3);
+    expect(asides.length).toBe(4);
     expect(asides[0].id).toBe('open-threads-panel');
     expect(asides[1].id).toBe('active-threats-panel');
     expect(asides[2].id).toBe('active-constraints-panel');
+    expect(asides[3].id).toBe('tracked-promises-panel');
   });
 
   it('handles mixed visibility (threads + constraints but no threats)', async () => {
@@ -163,5 +175,41 @@ describe('sidebar widgets container', () => {
     const asides = sidebar!.querySelectorAll('aside');
     expect(asides.length).toBe(1);
     expect(asides[0].id).toBe('active-threats-panel');
+  });
+
+  it('renders tracked promises panel with type badge and age', async () => {
+    document.body.innerHTML = buildPlayPageHtml();
+    loadAppAndInit();
+
+    await clickChoiceAndResolve(
+      makeChoiceResponse({
+        trackedPromises: [
+          { id: 'pr-1', text: 'The gun on the mantle', promiseType: 'CHEKHOV_GUN', age: 3 },
+        ],
+      })
+    );
+
+    const panel = document.getElementById('tracked-promises-panel');
+    expect(panel).not.toBeNull();
+    expect(panel!.querySelector('.tracked-promises-title')?.textContent).toBe('Tracked Promises');
+
+    const items = panel!.querySelectorAll('.tracked-promises-item');
+    expect(items.length).toBe(1);
+    expect(items[0].querySelector('.promise-type-text-badge')?.textContent).toBe('Chekhov Gun');
+    expect(items[0].querySelector('.promise-age-badge')?.textContent).toBe('3 pg');
+    expect(items[0].textContent).toContain('The gun on the mantle');
+  });
+
+  it('removes tracked promises panel when response has empty array', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', age: 1 }],
+    });
+    loadAppAndInit();
+
+    expect(document.getElementById('tracked-promises-panel')).not.toBeNull();
+
+    await clickChoiceAndResolve(makeChoiceResponse());
+
+    expect(document.getElementById('tracked-promises-panel')).toBeNull();
   });
 });
