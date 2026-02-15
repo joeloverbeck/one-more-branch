@@ -25,6 +25,7 @@ import {
   getActDisplayInfo,
   getConstraintPanelData,
   getKeyedEntryPanelData,
+  getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getThreatPanelData,
   getTrackedPromisesPanelData,
@@ -250,6 +251,9 @@ playRoutes.get(
       const inventoryPanelData = getKeyedEntryPanelData(page.accumulatedInventory, 10);
       const healthPanelData = getKeyedEntryPanelData(page.accumulatedHealth, 10);
       const trackedPromisesPanelData = getTrackedPromisesPanelData(page.accumulatedPromises);
+      const npcRelationshipPanelData = getNpcRelationshipPanelData(
+        page.accumulatedNpcRelationships
+      );
 
       return res.render('pages/play', {
         title: `${story.title} - One More Branch`,
@@ -270,6 +274,7 @@ playRoutes.get(
         healthOverflowSummary: healthPanelData.overflowSummary,
         trackedPromisesPanelRows: trackedPromisesPanelData.rows,
         trackedPromisesOverflowSummary: trackedPromisesPanelData.overflowSummary,
+        npcRelationshipRows: npcRelationshipPanelData.rows,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -349,6 +354,9 @@ playRoutes.post(
       const trackedPromisesPanelData = getTrackedPromisesPanelData(
         result.page.accumulatedPromises
       );
+      const npcRelationshipPanelData = getNpcRelationshipPanelData(
+        result.page.accumulatedNpcRelationships
+      );
       if (progressId) {
         generationProgressService.complete(progressId);
       }
@@ -376,6 +384,7 @@ playRoutes.post(
           healthOverflowSummary: healthPanelData.overflowSummary,
           trackedPromises: trackedPromisesPanelData.rows,
           trackedPromisesOverflowSummary: trackedPromisesPanelData.overflowSummary,
+          npcRelationships: npcRelationshipPanelData.rows,
           protagonistAffect: result.page.protagonistAffect,
         },
         globalCanon: story?.globalCanon ?? [],

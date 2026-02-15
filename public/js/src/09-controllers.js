@@ -26,6 +26,11 @@
       return;
     }
 
+    var initialRelPanel = document.getElementById('npc-relationships-panel');
+    if (initialRelPanel) {
+      bindNpcRelationshipCardToggles(initialRelPanel);
+    }
+
     const hasChoicesUi = choicesSection instanceof HTMLElement && choices instanceof HTMLElement;
     const loadingProgress = createLoadingProgressController(loading);
 
@@ -254,6 +259,7 @@
         narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
         var leftSidebarContainer = ensureLeftSidebarContainer();
         renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
+        renderNpcRelationshipsPanel(data.page.npcRelationships, leftSidebarContainer);
         renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
         renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
         cleanupEmptyLeftSidebar();

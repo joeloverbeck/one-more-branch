@@ -40,6 +40,32 @@
           </aside>
           <% } %>
 
+          <% if (npcRelationshipRows && npcRelationshipRows.length > 0) { %>
+          <aside class="npc-relationships-panel" id="npc-relationships-panel" aria-labelledby="npc-relationships-title">
+            <h3 class="npc-relationships-title" id="npc-relationships-title">NPC Relationships</h3>
+            <div class="npc-relationships-content" id="npc-relationships-content">
+              <% npcRelationshipRows.forEach((rel) => { %>
+              <div class="npc-rel-card" data-npc="<%= rel.npcName %>">
+                <div class="npc-rel-header">
+                  <span class="npc-rel-name"><%= rel.npcName %></span>
+                  <span class="npc-rel-dynamic-pill"><%= rel.dynamic %></span>
+                </div>
+                <div class="npc-rel-gauge">
+                  <div class="npc-rel-gauge-bar">
+                    <span class="npc-rel-gauge-marker" style="left: <%= rel.valencePercent %>%"></span>
+                  </div>
+                </div>
+                <div class="npc-rel-details" style="display: none;">
+                  <p class="npc-rel-detail"><strong>History:</strong> <%= rel.history %></p>
+                  <p class="npc-rel-detail"><strong>Tension:</strong> <%= rel.currentTension %></p>
+                  <p class="npc-rel-detail"><strong>Leverage:</strong> <%= rel.leverage %></p>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+          </aside>
+          <% } %>
+
           <% if (inventoryPanelRows && inventoryPanelRows.length > 0) { %>
           <aside class="inventory-panel" id="inventory-panel" aria-labelledby="inventory-title">
             <h3 class="inventory-title" id="inventory-title">Inventory</h3>

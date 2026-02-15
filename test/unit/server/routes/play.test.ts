@@ -148,6 +148,7 @@ describe('playRoutes', () => {
         healthOverflowSummary: null,
         trackedPromisesPanelRows: [],
         trackedPromisesOverflowSummary: null,
+        npcRelationshipRows: [],
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -897,6 +898,7 @@ describe('playRoutes', () => {
             resolvedPromiseMeta: {},
             trackedPromises: [],
             trackedPromisesOverflowSummary: null,
+            npcRelationships: [],
           },
           wasGenerated: true,
         })

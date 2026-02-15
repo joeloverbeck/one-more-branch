@@ -1,5 +1,6 @@
 import type { Page, Story, StoryAct } from '../../models/index.js';
 import type { TrackedPromise } from '../../models/state/index.js';
+import type { AccumulatedNpcRelationships } from '../../models/state/npc-relationship.js';
 import {
   ConstraintType,
   getCurrentAct,
@@ -312,4 +313,39 @@ export function getTrackedPromisesPanelData(
     rows: visibleRows,
     overflowSummary,
   };
+}
+
+export interface NpcRelationshipPanelRow {
+  readonly npcName: string;
+  readonly valence: number;
+  readonly dynamic: string;
+  readonly history: string;
+  readonly currentTension: string;
+  readonly leverage: string;
+  readonly valencePercent: number;
+}
+
+export interface NpcRelationshipPanelData {
+  readonly rows: readonly NpcRelationshipPanelRow[];
+}
+
+export function getNpcRelationshipPanelData(
+  relationships: AccumulatedNpcRelationships
+): NpcRelationshipPanelData {
+  const entries = Object.values(relationships);
+  if (entries.length === 0) {
+    return { rows: [] };
+  }
+
+  const rows: NpcRelationshipPanelRow[] = entries.map((rel) => ({
+    npcName: rel.npcName,
+    valence: rel.valence,
+    dynamic: rel.dynamic,
+    history: rel.history,
+    currentTension: rel.currentTension,
+    leverage: rel.leverage,
+    valencePercent: ((rel.valence + 5) / 10) * 100,
+  }));
+
+  return { rows };
 }

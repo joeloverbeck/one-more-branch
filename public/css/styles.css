@@ -951,6 +951,124 @@ main {
   color: var(--color-text-muted);
 }
 
+/* ── NPC Relationships Panel ──────────────────────────────────── */
+
+.npc-relationships-panel {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.95);
+  box-shadow: var(--shadow);
+}
+
+.npc-relationships-title {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid rgba(155, 89, 182, 0.4);
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+.npc-relationships-content {
+  padding: 0.6rem 0.75rem 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.npc-rel-card {
+  border: 1px solid rgba(155, 89, 182, 0.18);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.55rem 0.65rem;
+  background: rgba(6, 10, 24, 0.35);
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+.npc-rel-card:hover {
+  border-color: rgba(155, 89, 182, 0.35);
+  background: rgba(6, 10, 24, 0.5);
+}
+
+.npc-rel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.npc-rel-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.npc-rel-dynamic-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(155, 89, 182, 0.25);
+  color: #d8b4fe;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.npc-rel-gauge {
+  margin-top: 0.4rem;
+  padding: 0 0.15rem;
+}
+
+.npc-rel-gauge-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+  overflow: visible;
+}
+
+.npc-rel-gauge-marker {
+  position: absolute;
+  top: -3px;
+  width: 10px;
+  height: 12px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transform: translateX(-50%);
+}
+
+.npc-rel-details {
+  margin-top: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.npc-rel-detail {
+  margin: 0 0 0.3rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.npc-rel-detail:last-child {
+  margin-bottom: 0;
+}
+
+.npc-rel-detail strong {
+  color: var(--color-text);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .story-header {
   display: flex;
   align-items: center;

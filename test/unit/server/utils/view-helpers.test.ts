@@ -1,6 +1,7 @@
 import {
   getActDisplayInfo,
   getKeyedEntryPanelData,
+  getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
   getTrackedPromisesPanelData,
@@ -645,5 +646,114 @@ describe('getTrackedPromisesPanelData', () => {
     ]);
 
     expect(result.rows[0]?.text).toBe('The locked door was emphasized');
+  });
+});
+
+describe('getNpcRelationshipPanelData', () => {
+  it('returns empty rows for empty relationships', () => {
+    const result = getNpcRelationshipPanelData({});
+
+    expect(result.rows).toHaveLength(0);
+  });
+
+  it('returns a single NPC row with computed valencePercent', () => {
+    const result = getNpcRelationshipPanelData({
+      Mira: {
+        npcName: 'Mira',
+        valence: 2,
+        dynamic: 'ally',
+        history: 'They fought together.',
+        currentTension: 'Mira suspects betrayal.',
+        leverage: 'Knows a secret.',
+      },
+    });
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]).toEqual({
+      npcName: 'Mira',
+      valence: 2,
+      dynamic: 'ally',
+      history: 'They fought together.',
+      currentTension: 'Mira suspects betrayal.',
+      leverage: 'Knows a secret.',
+      valencePercent: 70,
+    });
+  });
+
+  it('computes valencePercent 0% for valence -5', () => {
+    const result = getNpcRelationshipPanelData({
+      Enemy: {
+        npcName: 'Enemy',
+        valence: -5,
+        dynamic: 'rival',
+        history: 'Sworn enemies.',
+        currentTension: 'Active conflict.',
+        leverage: 'None.',
+      },
+    });
+
+    expect(result.rows[0]?.valencePercent).toBe(0);
+  });
+
+  it('computes valencePercent 100% for valence +5', () => {
+    const result = getNpcRelationshipPanelData({
+      BestFriend: {
+        npcName: 'BestFriend',
+        valence: 5,
+        dynamic: 'protector',
+        history: 'Childhood friends.',
+        currentTension: 'No tension.',
+        leverage: 'Mutual trust.',
+      },
+    });
+
+    expect(result.rows[0]?.valencePercent).toBe(100);
+  });
+
+  it('computes valencePercent 50% for valence 0', () => {
+    const result = getNpcRelationshipPanelData({
+      Neutral: {
+        npcName: 'Neutral',
+        valence: 0,
+        dynamic: 'acquaintance',
+        history: 'Just met.',
+        currentTension: 'Mild unease.',
+        leverage: 'Unknown.',
+      },
+    });
+
+    expect(result.rows[0]?.valencePercent).toBe(50);
+  });
+
+  it('returns correct count for multiple NPCs', () => {
+    const result = getNpcRelationshipPanelData({
+      Alpha: {
+        npcName: 'Alpha',
+        valence: 3,
+        dynamic: 'mentor',
+        history: 'Trained the protagonist.',
+        currentTension: 'Disappointed.',
+        leverage: 'Political connections.',
+      },
+      Beta: {
+        npcName: 'Beta',
+        valence: -2,
+        dynamic: 'rival',
+        history: 'Competing for the same goal.',
+        currentTension: 'Escalating hostility.',
+        leverage: 'Knows a weakness.',
+      },
+      Gamma: {
+        npcName: 'Gamma',
+        valence: 0,
+        dynamic: 'dependency',
+        history: 'Owed a debt.',
+        currentTension: 'Debt is overdue.',
+        leverage: 'Holds the contract.',
+      },
+    });
+
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows.map((r) => r.npcName)).toEqual(['Alpha', 'Beta', 'Gamma']);
   });
 });
