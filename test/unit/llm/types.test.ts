@@ -1013,6 +1013,7 @@ describe('LLM types', () => {
         worldbuilding: 'A flooded city-state in collapse',
         tone: 'Tense and hopeful',
         completedBeats: [],
+        plannedBeats: [],
         narrativeSummary: 'The protagonist now controls a key evacuation route.',
         currentActIndex: 1,
         currentBeatIndex: 0,

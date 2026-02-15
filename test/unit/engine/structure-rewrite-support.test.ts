@@ -2,6 +2,7 @@ import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
   buildRewriteContext,
   extractCompletedBeats,
+  extractPlannedBeats,
   getPreservedBeatIds,
   validatePreservedBeats,
 } from '../../../src/engine/structure-rewrite-support';
@@ -166,6 +167,134 @@ describe('structure-rewrite-support', () => {
     });
   });
 
+  describe('extractPlannedBeats', () => {
+    it('returns empty array when all beats are concluded', () => {
+      const structure = createStructure();
+      const state: AccumulatedStructureState = {
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { beatId: '2.1', status: 'concluded', resolution: 'Done.' },
+        ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      expect(planned).toEqual([]);
+    });
+
+    it('returns beats that come after the deviation point', () => {
+      const structure = createStructure();
+      // Deviation at Act 1, Beat 2 (index 0, 1) — beat 2.1 should be planned
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'active' },
+        ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      expect(planned).toEqual([
+        {
+          actIndex: 1,
+          beatIndex: 0,
+          beatId: '2.1',
+          name: 'First setback',
+          description: 'First major setback',
+          objective: 'Recover from loss',
+          role: 'escalation',
+        },
+      ]);
+    });
+
+    it('excludes concluded beats', () => {
+      const structure = createStructure();
+      // Beat 1.1 concluded, deviation at 1.2, 2.1 is planned
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'active' },
+        ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      // 1.1 is concluded, 1.2 is current (excluded), only 2.1 remains
+      expect(planned).toHaveLength(1);
+      expect(planned[0]?.beatId).toBe('2.1');
+    });
+
+    it('excludes the currently active beat', () => {
+      const structure = createStructure();
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      // 1.1 is current (excluded), 1.2 and 2.1 are planned
+      expect(planned).toHaveLength(2);
+      expect(planned[0]?.beatId).toBe('1.2');
+      expect(planned[1]?.beatId).toBe('2.1');
+    });
+
+    it('sorts by act/beat index', () => {
+      const structure = createStructure();
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      // Should be sorted: 1.2 before 2.1
+      expect(planned[0]?.actIndex).toBe(0);
+      expect(planned[0]?.beatIndex).toBe(1);
+      expect(planned[1]?.actIndex).toBe(1);
+      expect(planned[1]?.beatIndex).toBe(0);
+    });
+
+    it('returns empty array when deviation is at the very last beat', () => {
+      const structure = createStructure();
+      // Deviation at the last beat (Act 2, Beat 1 = index 1, 0)
+      const state: AccumulatedStructureState = {
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { beatId: '2.1', status: 'active' },
+        ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      expect(planned).toEqual([]);
+    });
+  });
+
   describe('buildRewriteContext', () => {
     it('includes story fields, completed beats, deviation fields, and structure state positions', () => {
       const structure = createStructure();
@@ -213,6 +342,18 @@ describe('structure-rewrite-support', () => {
           objective: 'Hear the warning',
           role: 'setup',
           resolution: 'Accepted the call.',
+        },
+      ]);
+      // Beat 2.1 comes after deviation point (0, 1) and is not concluded
+      expect(context.plannedBeats).toEqual([
+        {
+          actIndex: 1,
+          beatIndex: 0,
+          beatId: '2.1',
+          name: 'First setback',
+          description: 'First major setback',
+          objective: 'Recover from loss',
+          role: 'escalation',
         },
       ]);
     });

@@ -46,6 +46,7 @@ function createRewriteContext(
         resolution: 'The captain escaped with proof of betrayal.',
       },
     ],
+    plannedBeats: [],
     narrativeSummary: 'The captain publicly allied with a former enemy admiral.',
     currentActIndex: 0,
     currentBeatIndex: 1,

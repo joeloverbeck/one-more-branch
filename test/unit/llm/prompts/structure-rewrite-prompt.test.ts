@@ -33,6 +33,7 @@ describe('buildStructureRewritePrompt', () => {
         resolution: 'You escaped through maintenance sluices with the ledger intact.',
       },
     ],
+    plannedBeats: [],
     narrativeSummary: 'The protagonist has publicly aligned with a rival flotilla.',
     currentActIndex: 1,
     currentBeatIndex: 0,
@@ -174,6 +175,79 @@ describe('buildStructureRewritePrompt', () => {
     expect(fewShotUser).toContain('[setup]');
     expect(fewShotUser).toContain('[turning_point]');
   });
+
+  it('includes few-shot example with planned beats section', () => {
+    const messages = buildStructureRewritePrompt(baseContext, { fewShotMode: 'minimal' });
+
+    const fewShotUser = messages[1]?.content ?? '';
+    expect(fewShotUser).toContain('ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)');
+    expect(fewShotUser).toContain('Road to the Hinterlands');
+    expect(fewShotUser).toContain('The Gilded Cage');
+    expect(fewShotUser).toContain('Last Coin Standing');
+  });
+
+  it('includes planned beats section when planned beats exist', () => {
+    const contextWithPlanned: StructureRewriteContext = {
+      ...baseContext,
+      plannedBeats: [
+        {
+          actIndex: 1,
+          beatIndex: 1,
+          beatId: '2.2',
+          name: 'Betrayal Revealed',
+          description: 'A hidden betrayal comes to light',
+          objective: 'Confront the traitor and decide their fate',
+          role: 'turning_point',
+        },
+        {
+          actIndex: 2,
+          beatIndex: 0,
+          beatId: '3.1',
+          name: 'Final Gambit',
+          description: 'The last move before everything changes',
+          objective: 'Set up the endgame',
+          role: 'escalation',
+        },
+      ],
+    };
+    const user = getUserMessage(buildStructureRewritePrompt(contextWithPlanned));
+
+    expect(user).toContain('ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)');
+    expect(user).toContain('Act 2, Beat 2 (2.2) [turning_point] "Betrayal Revealed"');
+    expect(user).toContain('Confront the traitor and decide their fate');
+    expect(user).toContain('Act 3, Beat 1 (3.1) [escalation] "Final Gambit"');
+  });
+
+  it('omits planned beats section when no planned beats exist', () => {
+    const user = getUserMessage(buildStructureRewritePrompt(baseContext));
+
+    expect(user).not.toContain('ORIGINALLY PLANNED BEATS');
+  });
+
+  it('places planned beats section between completed beats and current situation', () => {
+    const contextWithPlanned: StructureRewriteContext = {
+      ...baseContext,
+      plannedBeats: [
+        {
+          actIndex: 2,
+          beatIndex: 0,
+          beatId: '3.1',
+          name: 'Endgame',
+          description: 'The final confrontation',
+          objective: 'Resolve the conflict',
+          role: 'resolution',
+        },
+      ],
+    };
+    const user = getUserMessage(buildStructureRewritePrompt(contextWithPlanned));
+
+    const canonIndex = user.indexOf('CANON - DO NOT CHANGE');
+    const plannedIndex = user.indexOf('ORIGINALLY PLANNED BEATS');
+    const situationIndex = user.indexOf('CURRENT SITUATION');
+
+    expect(canonIndex).toBeLessThan(plannedIndex);
+    expect(plannedIndex).toBeLessThan(situationIndex);
+  });
 });
 
 describe('buildStructureRewritePrompt - minimal system prompt', () => {
@@ -182,6 +256,7 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     worldbuilding: 'A flooded republic where cities travel on chained barges.',
     tone: 'tactical political thriller',
     completedBeats: [],
+    plannedBeats: [],
     narrativeSummary: 'The protagonist has publicly aligned with a rival flotilla.',
     currentActIndex: 1,
     currentBeatIndex: 0,

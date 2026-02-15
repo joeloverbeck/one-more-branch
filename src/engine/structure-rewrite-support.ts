@@ -1,5 +1,9 @@
 import type { AccumulatedStructureState, BeatDeviation, StoryStructure } from '../models/story-arc';
-import type { CompletedBeat, StructureRewriteContext } from '../llm/structure-rewrite-types';
+import type {
+  CompletedBeat,
+  PlannedBeat,
+  StructureRewriteContext,
+} from '../llm/structure-rewrite-types';
 import type { Story } from '../models/story';
 import type { VersionedStoryStructure } from '../models/structure-version';
 import { parseBeatIndices } from './beat-utils';
@@ -56,6 +60,64 @@ export function extractCompletedBeats(
 }
 
 /**
+ * Extracts planned (not yet concluded) beats that come after the current deviation point.
+ * These are beats from the original structure that the LLM has not yet reached,
+ * provided as soft context during structure rewrites.
+ */
+export function extractPlannedBeats(
+  structure: StoryStructure,
+  structureState: AccumulatedStructureState
+): readonly PlannedBeat[] {
+  const concludedBeatIds = new Set(
+    structureState.beatProgressions
+      .filter((p) => p.status === 'concluded')
+      .map((p) => p.beatId)
+  );
+
+  const currentBeatId = `${structureState.currentActIndex + 1}.${structureState.currentBeatIndex + 1}`;
+
+  const plannedBeats: PlannedBeat[] = [];
+
+  for (let actIdx = 0; actIdx < structure.acts.length; actIdx++) {
+    const act = structure.acts[actIdx]!;
+    for (let beatIdx = 0; beatIdx < act.beats.length; beatIdx++) {
+      const beatId = `${actIdx + 1}.${beatIdx + 1}`;
+
+      // Skip concluded beats
+      if (concludedBeatIds.has(beatId)) {
+        continue;
+      }
+
+      // Skip the currently active beat (where deviation occurred)
+      if (beatId === currentBeatId) {
+        continue;
+      }
+
+      // Only include beats that come after the current position
+      if (actIdx < structureState.currentActIndex) {
+        continue;
+      }
+      if (actIdx === structureState.currentActIndex && beatIdx <= structureState.currentBeatIndex) {
+        continue;
+      }
+
+      const beat = act.beats[beatIdx]!;
+      plannedBeats.push({
+        actIndex: actIdx,
+        beatIndex: beatIdx,
+        beatId,
+        name: beat.name,
+        description: beat.description,
+        objective: beat.objective,
+        role: beat.role,
+      });
+    }
+  }
+
+  return plannedBeats;
+}
+
+/**
  * Builds context needed for structure regeneration.
  */
 export function buildRewriteContext(
@@ -66,6 +128,7 @@ export function buildRewriteContext(
 ): StructureRewriteContext {
   const structure = structureVersion.structure;
   const completedBeats = extractCompletedBeats(structure, structureState);
+  const plannedBeats = extractPlannedBeats(structure, structureState);
 
   return {
     characterConcept: story.characterConcept,
@@ -74,6 +137,7 @@ export function buildRewriteContext(
     toneKeywords: story.toneKeywords,
     toneAntiKeywords: story.toneAntiKeywords,
     completedBeats,
+    plannedBeats,
     narrativeSummary: deviation.narrativeSummary,
     currentActIndex: structureState.currentActIndex,
     currentBeatIndex: structureState.currentBeatIndex,

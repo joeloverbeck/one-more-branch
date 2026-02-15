@@ -32,6 +32,17 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
     .join('\n');
 }
 
+function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats']): string {
+  return plannedBeats
+    .map(
+      (
+        beat
+      ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
+    Objective: ${beat.objective}`
+    )
+    .join('\n');
+}
+
 const STRUCTURE_REWRITE_FEW_SHOT_USER = `Regenerate story structure for an interactive branching narrative.
 
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
@@ -49,6 +60,23 @@ Original Theme: Escape a blood-soaked past by completing one final contract
   - Act 1, Beat 2 (1.2) [turning_point]: "The true nature of the target is revealed"
     Objective: Determine if the job is worth the escalating risk
     Resolution: Vera learned the target is Lady Elowen and agreed to proceed
+
+## ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)
+The following beats were planned before the deviation occurred. Review each one:
+- If a beat remains narratively coherent given the deviation, preserve it (you may adjust wording slightly)
+- If a beat conflicts with the new story direction, replace it with something better suited
+- You are NOT required to keep any of these — use your narrative judgment
+
+  - Act 1, Beat 4 (1.4) [escalation] "Road to the Hinterlands": "The journey to the extraction point reveals rival mercenary companies closing in"
+    Objective: Evade or neutralize competitors before reaching Lady Elowen
+  - Act 2, Beat 1 (2.1) [escalation] "The Gilded Cage": "Lady Elowen's estate is more fortress than home"
+    Objective: Infiltrate the estate and make contact with the target
+  - Act 2, Beat 2 (2.2) [turning_point] "Broken Loyalties": "A former comrade from the border wars appears among the guards"
+    Objective: Decide whether to exploit or protect the old friendship
+  - Act 3, Beat 1 (3.1) [turning_point] "The Duke's Gambit": "Duke Ashford makes a counter-offer that changes the calculus entirely"
+    Objective: Choose between the original contract and a more lucrative betrayal
+  - Act 3, Beat 2 (3.2) [resolution] "Last Coin Standing": "The final reckoning determines whether retirement is earned or lost"
+    Objective: Resolve all competing obligations and secure a future
 
 ## CURRENT SITUATION
 Deviation occurred at: Act 1, Beat 3
@@ -151,6 +179,19 @@ export function buildStructureRewritePrompt(
   options?: PromptOptions
 ): ChatMessage[] {
   const completedBeatsSection = formatCompletedBeats(context.completedBeats);
+  const plannedBeatsSection =
+    context.plannedBeats.length > 0
+      ? `
+## ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)
+The following beats were planned before the deviation occurred. Review each one:
+- If a beat remains narratively coherent given the deviation, preserve it (you may adjust wording slightly)
+- If a beat conflicts with the new story direction, replace it with something better suited
+- You are NOT required to keep any of these — use your narrative judgment
+
+${formatPlannedBeats(context.plannedBeats)}
+
+`
+      : '';
 
   const worldSection = context.worldbuilding ? `World: ${context.worldbuilding}\n` : '';
 
@@ -176,8 +217,7 @@ ${toneKeywordsLine}${toneAntiKeywordsLine}Original Theme: ${context.originalThem
 The following beats have been completed. Their resolutions are permanent and must be respected.
 
 ${completedBeatsSection}
-
-## CURRENT SITUATION
+${plannedBeatsSection}## CURRENT SITUATION
 Deviation occurred at: Act ${context.currentActIndex + 1}, Beat ${context.currentBeatIndex + 1}
 Reason for deviation: ${context.deviationReason}
 

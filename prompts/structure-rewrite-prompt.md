@@ -62,6 +62,16 @@ The following beats have been completed. Their resolutions are permanent and mus
 
 {{completedBeats with act/beat/beatId/role/name/description/objective/resolution}}
 
+{{#if plannedBeats.length > 0}}
+## ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)
+The following beats were planned before the deviation occurred. Review each one:
+- If a beat remains narratively coherent given the deviation, preserve it (you may adjust wording slightly)
+- If a beat conflicts with the new story direction, replace it with something better suited
+- You are NOT required to keep any of these — use your narrative judgment
+
+{{plannedBeats with act/beat/beatId/role/name/description/objective}}
+{{/if}}
+
 ## CURRENT SITUATION
 Deviation occurred at: Act {{currentActIndex + 1}}, Beat {{currentBeatIndex + 1}}
 Reason for deviation: {{deviationReason}}
@@ -92,7 +102,7 @@ OUTPUT SHAPE (same as original structure):
 - overallTheme: string (may evolve slightly from original, or stay the same)
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
-- acts: exactly 3 items
+- acts: 3-5 items
 - each act has:
   - name: evocative act title
   - objective: main goal for the act
@@ -135,4 +145,5 @@ OUTPUT SHAPE (same as original structure):
 }
 ```
 
-- In production, this prompt may include a few-shot user/assistant example before the final user message when `fewShotMode` is enabled.
+- In production, this prompt may include a few-shot user/assistant example before the final user message when `fewShotMode` is enabled. The few-shot example includes a planned beats section demonstrating the expected format.
+- `plannedBeats` are extracted by `extractPlannedBeats()` in `src/engine/structure-rewrite-support.ts` — all beats from the structure that are not concluded and come after the deviation point, excluding the currently active beat.

@@ -11,6 +11,16 @@ export interface CompletedBeat {
   readonly resolution: string;
 }
 
+export interface PlannedBeat {
+  readonly actIndex: number;
+  readonly beatIndex: number;
+  readonly beatId: string;
+  readonly name: string;
+  readonly description: string;
+  readonly objective: string;
+  readonly role: string;
+}
+
 export interface StructureRewriteContext {
   readonly characterConcept: string;
   readonly worldbuilding: string;
@@ -18,6 +28,7 @@ export interface StructureRewriteContext {
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
   readonly completedBeats: readonly CompletedBeat[];
+  readonly plannedBeats: readonly PlannedBeat[];
   readonly narrativeSummary: string;
   readonly currentActIndex: number;
   readonly currentBeatIndex: number;
