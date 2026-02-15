@@ -35,6 +35,21 @@ Step B: Apply the completion gate against the active beat objective before decid
 Step C: Evaluate whether the narrative prose matches the target TONE/GENRE.
 
 Before setting beatConcluded, extract 1-3 objective anchors from activeBeat.objective and map each anchor to concrete evidence.
+
+An objective anchor is a distinct verifiable condition embedded in the beat objective text. Each anchor represents one thing the protagonist must accomplish for the beat to be complete. Multi-part objectives yield multiple anchors.
+
+Example 1 — Objective: "Secure evidence before the tribunal can destroy it"
+  Anchors:
+    1. "evidence is secured" — look for: protagonist physically obtains, copies, or safeguards the evidence
+    2. "tribunal has not yet destroyed it" — look for: evidence still intact at time of acquisition, no indication it was tampered with or lost
+  Evidence mapping: If the narrative shows the protagonist stealing sealed ledgers and escaping the archive, anchor 1 is satisfied. If the narrative mentions guards arriving but the ledgers are already taken, anchor 2 is satisfied. Both anchors met → beatConcluded = true.
+
+Example 2 — Objective: "Convince the rival houses to commit support without revealing all leverage"
+  Anchors:
+    1. "rival houses commit support" — look for: explicit agreement, alliance, or promise of aid from at least one house
+    2. "leverage is not fully revealed" — look for: protagonist withholds key information, negotiates selectively
+  Evidence mapping: If house leaders agree to back the protagonist but the protagonist kept the damning letters secret, both anchors are met. If the protagonist revealed everything to win support, anchor 2 fails → beatConcluded = false despite anchor 1 being met.
+
 Evidence is cumulative across the current narrative and active state.
 If no anchor has explicit evidence, beatConcluded must be false.
 

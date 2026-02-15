@@ -159,7 +159,18 @@ OUTPUT SHAPE:
     - each beat has:
       - name: short evocative beat title
       - description: what should happen in this beat
-      - objective: specific protagonist goal for the beat
+      - objective: the protagonist's specific goal for this beat. Write objectives that satisfy ALL of these criteria:
+        1. Start with a concrete action verb (decide, secure, survive, negotiate, escape, confront, choose, reveal, infiltrate, convince)
+        2. Name the obstacle or constraint that makes success non-trivial
+        3. Imply a verifiable outcome — something observable as achieved or failed
+        Good objectives:
+          "Secure evidence before the tribunal can destroy it" (action: secure, obstacle: tribunal destroying evidence, verifiable: evidence obtained or not)
+          "Convince the rival houses to commit support without revealing all leverage" (action: convince, obstacle: protecting leverage, verifiable: support gained or refused)
+          "Survive the rigged hearing and force hidden evidence into the open" (action: survive + force, obstacle: rigged hearing, verifiable: survived and evidence exposed or not)
+        Bad objectives (DO NOT write these):
+          "Deal with the situation" (no specific action, no obstacle, nothing to verify)
+          "Move the story forward" (meta-commentary, not a protagonist goal)
+          "Experience the consequences" (passive, no action verb, unverifiable)
       - role: "setup" | "escalation" | "turning_point" | "resolution"`;
 
   const messages: ChatMessage[] = [
