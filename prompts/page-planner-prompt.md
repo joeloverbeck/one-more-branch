@@ -159,6 +159,6 @@ Source: `buildNpcRelationshipsSection()` in `src/llm/prompts/sections/planner/co
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
-- Planner continuation context still includes active state, canon, thread aging, pacing, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
+- Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant intentionally share the same context builders so both stages reason over identical continuity input.
 - Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.

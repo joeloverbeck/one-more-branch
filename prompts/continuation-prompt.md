@@ -372,7 +372,7 @@ RELEVANT HISTORY:
 
 {{#if !storyBible && globalCanon.length > 0}}
 ESTABLISHED WORLD FACTS:
-{{globalCanon as bullet list}}
+{{globalCanon rendered via formatCanonForPrompt() — tagged facts show as "• [TYPE] text" (e.g., "• [LAW] The river flows north"), bare strings as "• text"}}
 {{/if}}
 
 {{#if !storyBible && globalCharacterCanon has entries}}

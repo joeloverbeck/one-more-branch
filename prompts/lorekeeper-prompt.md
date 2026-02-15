@@ -107,7 +107,7 @@ NPC-PROTAGONIST RELATIONSHIPS:
 
 {{#if globalCanon.length > 0}}
 ESTABLISHED WORLD FACTS:
-{{globalCanon as bullet list}}
+{{globalCanon rendered via formatCanonForPrompt() — tagged facts show as "• [TYPE] text" (e.g., "• [LAW] The river flows north"), bare strings as "• text"}}
 {{/if}}
 
 {{#if globalCharacterCanon has entries}}
@@ -219,7 +219,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
 | `npcs` | All NPC definitions (fallback when no decomposed characters) |
 | `structure` / `accumulatedStructureState` | Current story structure and act/beat position |
-| `globalCanon` | All global canon facts (runtime discoveries, supplements decomposed world) |
+| `globalCanon` | All global canon facts as `CanonFact[]` — may be bare strings (legacy) or `{ text, factType }` objects with epistemic tags (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). Rendered via `formatCanonForPrompt()` |
 | `globalCharacterCanon` | All character canon facts (by character name, runtime discoveries) |
 | `accumulatedCharacterState` | All NPC state entries (by character name) |
 | `accumulatedNpcAgendas` | Current NPC agendas (by NPC name): goal, leverage, fear, off-screen behavior |
