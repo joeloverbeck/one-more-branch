@@ -96,4 +96,11 @@ export const AnalystResultSchema = z.object({
   promisePayoffAssessments: z.array(PromisePayoffAssessmentSchema).catch([]).default([]),
   threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),
   relationshipShiftsDetected: z.array(DetectedRelationshipShiftSchema).catch([]).default([]),
+  spineDeviationDetected: z.boolean().catch(false).default(false),
+  spineDeviationReason: z.string().catch('').default(''),
+  spineInvalidatedElement: z
+    .enum(['dramatic_question', 'antagonistic_force', 'need_want'])
+    .nullable()
+    .catch(null)
+    .default(null),
 });

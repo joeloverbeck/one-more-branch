@@ -64,6 +64,9 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     npcCoherenceAdherent: true,
     npcCoherenceIssues: '',
     relationshipShiftsDetected: [],
+    spineDeviationDetected: false,
+    spineDeviationReason: '',
+    spineInvalidatedElement: null,
     rawResponse: '{}',
     ...overrides,
   };

@@ -7,6 +7,7 @@ import type { LorekeeperContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { LOREKEEPER_CURATION_PRINCIPLES } from '../lorekeeper-contract.js';
 import { buildWriterStructureContext } from './continuation/index.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
 function formatNumberedLines(lines: readonly string[]): string {
@@ -201,7 +202,7 @@ ${hasDecomposedWorld ? formatDecomposedWorldForPrompt(context.decomposedWorld) :
 
 ${buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
-${npcsSection}${npcAgendasSection}${npcRelationshipsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
+${buildSpineSection(context.spine)}${npcsSection}${npcAgendasSection}${npcRelationshipsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
 ${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 === INSTRUCTIONS ===

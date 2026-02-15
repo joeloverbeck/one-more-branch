@@ -9,6 +9,28 @@ const KEYED_ENTRY_PANEL_LIMIT = 6;
 const LEFT_PANEL_LIMIT = 10;
 
 const STAGE_PHRASE_POOLS = {
+  GENERATING_SPINE: [
+    'Searching for the beating heart of the story...',
+    'Asking the hard question nobody wants answered...',
+    'Discovering what the protagonist really needs...',
+    'Weighing impossible choices against each other...',
+    'Finding the lie the hero believes...',
+    'Unearthing the buried dramatic question...',
+    'Consulting the oracle of narrative structure...',
+    'Measuring the gap between want and need...',
+    'Summoning the antagonistic forces of destiny...',
+    'Sketching the skeleton of dramatic truth...',
+    'Interrogating the protagonist\'s deepest fears...',
+    'Calibrating the moral compass of the universe...',
+    'Testing which pressures crack and which temper...',
+    'Exploring the space between desire and necessity...',
+    'Drafting the contract between hero and fate...',
+    'Surveying the battlefield of inner conflict...',
+    'Tracing the fault lines of character and world...',
+    'Mapping the territory of impossible promises...',
+    'Auditing the protagonist\'s emotional debts...',
+    'Weighing the cost of every possible truth...',
+  ],
   PLANNING_PAGE: [
     'Consulting the crystal flowchart...',
     'Drawing arrows between dramatic possibilities...',
@@ -860,6 +882,7 @@ const STAGE_PHRASE_POOLS = {
   ],
 };
 const STAGE_DISPLAY_NAMES = {
+  GENERATING_SPINE: 'ENVISIONING',
   PLANNING_PAGE: 'PLANNING',
   ACCOUNTING_STATE: 'ACCOUNTING',
   CURATING_CONTEXT: 'LOREKEEPING',

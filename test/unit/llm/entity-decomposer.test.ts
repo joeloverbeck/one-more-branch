@@ -461,6 +461,54 @@ describe('decomposeEntities', () => {
     await expect(decomposeEntities(createMinimalContext(), 'test-key')).rejects.toThrow();
   });
 
+  it('parses string valence in protagonistRelationship as number', async () => {
+    const payload = createValidPayload();
+    const npcChar = payload.characters[1] as unknown as Record<string, unknown>;
+    npcChar['protagonistRelationship'] = {
+      valence: '3',
+      dynamic: 'ally',
+      history: 'Fought together.',
+      currentTension: 'None.',
+      leverage: 'Shared secrets.',
+    };
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedCharacters[1]!.protagonistRelationship?.valence).toBe(3);
+  });
+
+  it('defaults non-numeric string valence to 0', async () => {
+    const payload = createValidPayload();
+    const npcChar = payload.characters[1] as unknown as Record<string, unknown>;
+    npcChar['protagonistRelationship'] = {
+      valence: 'warm',
+      dynamic: 'ally',
+      history: 'Known each other.',
+      currentTension: 'Mild.',
+      leverage: 'None.',
+    };
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedCharacters[1]!.protagonistRelationship?.valence).toBe(0);
+  });
+
+  it('clamps valence from string outside -5..+5 range', async () => {
+    const payload = createValidPayload();
+    const npcChar = payload.characters[1] as unknown as Record<string, unknown>;
+    npcChar['protagonistRelationship'] = {
+      valence: '10',
+      dynamic: 'ally',
+      history: 'Best friends.',
+      currentTension: 'None.',
+      leverage: 'None.',
+    };
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedCharacters[1]!.protagonistRelationship?.valence).toBe(5);
+  });
+
   it('includes rawResponse in result', async () => {
     const payload = createValidPayload();
     globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));

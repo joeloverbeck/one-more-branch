@@ -133,6 +133,9 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
       suggestedValenceChange: s.suggestedValenceChange,
       suggestedNewDynamic: s.suggestedNewDynamic,
     })),
+    spineDeviationDetected: analystResult.spineDeviationDetected,
+    spineDeviationReason: analystResult.spineDeviationReason,
+    spineInvalidatedElement: analystResult.spineInvalidatedElement,
   };
 }
 
@@ -195,6 +198,10 @@ function deserializeAnalystResult(
       suggestedValenceChange: s.suggestedValenceChange,
       suggestedNewDynamic: s.suggestedNewDynamic,
     })),
+    spineDeviationDetected: data.spineDeviationDetected ?? false,
+    spineDeviationReason: data.spineDeviationReason ?? '',
+    spineInvalidatedElement:
+      (data.spineInvalidatedElement as AnalystResult['spineInvalidatedElement']) ?? null,
     rawResponse: '',
   };
 }

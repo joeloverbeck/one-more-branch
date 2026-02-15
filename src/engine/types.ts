@@ -1,7 +1,9 @@
 import { Npc, Page, PageId, Story, StoryId } from '../models';
+import type { StorySpine } from '../models/story-spine.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 
 export const GENERATION_STAGES = [
+  'GENERATING_SPINE',
   'PLANNING_PAGE',
   'ACCOUNTING_STATE',
   'CURATING_CONTEXT',
@@ -38,6 +40,8 @@ export interface DeviationInfo {
   readonly detected: boolean;
   readonly reason: string;
   readonly beatsInvalidated: number;
+  readonly spineRewritten?: boolean;
+  readonly spineInvalidatedElement?: string;
 }
 
 export interface MakeChoiceResult {
@@ -59,6 +63,7 @@ export interface StartStoryOptions {
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
   readonly startingSituation?: string;
+  readonly spine?: StorySpine;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }

@@ -53,6 +53,12 @@ TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustInclude
 ```text
 Create a page plan for the writer model.
 
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+{{spine section from buildSpineSection()}}
+Every act must advance or complicate the protagonist's relationship to the central dramatic question.
+{{/if}}
+
 === PLANNER CONTEXT: OPENING|CONTINUATION ===
 {{opening or continuation context block from planner context section builder}}
 

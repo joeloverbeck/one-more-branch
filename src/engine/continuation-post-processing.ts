@@ -13,11 +13,13 @@ import type {
   StoryStructure,
   VersionedStoryStructure,
 } from '../models';
+import type { StorySpine } from '../models/story-spine';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { getCurrentBeat, isDeviation } from '../models';
 import { handleDeviation, isActualDeviation } from './deviation-handler';
 import { emitGenerationStage } from './generation-pipeline-helpers';
+import { rewriteSpine } from './spine-rewriter';
 import { applyStructureProgression } from './structure-state';
 import type { DeviationInfo, GenerationStageCallback } from './types';
 
@@ -36,6 +38,7 @@ export interface AnalystEvaluationContext {
   readonly tone: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
+  readonly spine?: StorySpine;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -71,6 +74,7 @@ export async function runAnalystEvaluation(
         tone: context.tone,
         toneKeywords: context.toneKeywords,
         toneAntiKeywords: context.toneAntiKeywords,
+        spine: context.spine,
       },
       { apiKey: context.apiKey }
     );
@@ -180,6 +184,109 @@ export async function handleDeviationIfDetected(
     activeStructureVersion: devResult.activeVersion,
     deviationInfo: devResult.deviationInfo,
   };
+}
+
+// --- Spine Deviation Handling ---
+
+export interface SpineDeviationContext {
+  readonly analystResult: AnalystResult | null;
+  readonly story: Story;
+  readonly apiKey: string;
+  readonly logContext: Record<string, unknown>;
+}
+
+export interface SpineDeviationResult {
+  readonly updatedStory: Story;
+  readonly spineRewritten: boolean;
+  readonly spineInvalidatedElement: string | undefined;
+}
+
+/**
+ * Checks if the analyst detected a spine deviation. If so, rewrites the spine
+ * and returns an updated story. The caller is responsible for forcing a
+ * structure rewrite when the spine changes.
+ */
+export async function handleSpineDeviationIfDetected(
+  context: SpineDeviationContext
+): Promise<SpineDeviationResult> {
+  const { analystResult, story } = context;
+
+  if (
+    !analystResult?.spineDeviationDetected ||
+    !analystResult.spineInvalidatedElement ||
+    !story.spine
+  ) {
+    return { updatedStory: story, spineRewritten: false, spineInvalidatedElement: undefined };
+  }
+
+  logger.warn('Spine deviation detected — rewriting spine', {
+    ...context.logContext,
+    invalidatedElement: analystResult.spineInvalidatedElement,
+    reason: analystResult.spineDeviationReason,
+  });
+
+  try {
+    const spineResult = await rewriteSpine(
+      {
+        characterConcept: story.characterConcept,
+        worldbuilding: story.worldbuilding,
+        tone: story.tone,
+        currentSpine: story.spine,
+        invalidatedElement: analystResult.spineInvalidatedElement,
+        deviationReason: analystResult.spineDeviationReason,
+        narrativeSummary: analystResult.narrativeSummary,
+      },
+      context.apiKey
+    );
+
+    const updatedStory: Story = { ...story, spine: spineResult.spine };
+
+    logger.info('Spine rewritten successfully', {
+      ...context.logContext,
+      newSpineType: spineResult.spine.storySpineType,
+      newConflictType: spineResult.spine.conflictType,
+    });
+
+    return {
+      updatedStory,
+      spineRewritten: true,
+      spineInvalidatedElement: analystResult.spineInvalidatedElement,
+    };
+  } catch (error) {
+    logger.error('Spine rewrite failed, continuing with original spine', {
+      ...context.logContext,
+      error,
+    });
+    return { updatedStory: story, spineRewritten: false, spineInvalidatedElement: undefined };
+  }
+}
+
+/**
+ * Collects all non-concluded beat IDs from the structure. Used to force
+ * a full structure rewrite when the spine changes but the analyst didn't
+ * detect a beat-level deviation.
+ */
+export function collectRemainingBeatIds(
+  structure: StoryStructure,
+  structureState: AccumulatedStructureState
+): string[] {
+  const concludedIds = new Set(
+    structureState.beatProgressions
+      .filter((p) => p.status === 'concluded')
+      .map((p) => p.beatId)
+  );
+
+  const remainingIds: string[] = [];
+  for (let actIdx = 0; actIdx < structure.acts.length; actIdx++) {
+    const act = structure.acts[actIdx]!;
+    for (let beatIdx = 0; beatIdx < act.beats.length; beatIdx++) {
+      const beatId = `${actIdx + 1}.${beatIdx + 1}`;
+      if (!concludedIds.has(beatId)) {
+        remainingIds.push(beatId);
+      }
+    }
+  }
+  return remainingIds;
 }
 
 // --- Beat Conclusion ---

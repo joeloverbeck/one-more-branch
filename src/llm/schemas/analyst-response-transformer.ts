@@ -138,6 +138,9 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     promisePayoffAssessments: normalizePromisePayoffAssessments(validated.promisePayoffAssessments),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
     relationshipShiftsDetected: normalizeRelationshipShifts(validated.relationshipShiftsDetected),
+    spineDeviationDetected: validated.spineDeviationDetected,
+    spineDeviationReason: validated.spineDeviationReason.trim(),
+    spineInvalidatedElement: validated.spineInvalidatedElement,
     rawResponse,
   };
 }

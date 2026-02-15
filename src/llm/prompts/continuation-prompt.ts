@@ -10,6 +10,7 @@ import {
   buildToneReminder,
   formatStoryBibleSection,
   buildSceneCharacterVoicesSection,
+  buildSpineSection,
 } from './sections/shared/index.js';
 import {
   buildProtagonistAffectSection,
@@ -225,7 +226,7 @@ ${dataRules}
 
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${buildSpineSection(context.spine)}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next

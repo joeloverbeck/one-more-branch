@@ -2,6 +2,7 @@ import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneReminder } from './sections/shared/tone-block.js';
 
 function getActsToRegenerate(currentActIndex: number): string {
@@ -204,6 +205,8 @@ ${formatPlannedBeats(context.plannedBeats)}
       ? `Tone avoid: ${context.toneAntiKeywords.join(', ')}\n`
       : '';
 
+  const spineSection = buildSpineSection(context.spine);
+
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
@@ -212,6 +215,7 @@ The story has deviated from its original plan. Generate replacement beats for in
 Character: ${context.characterConcept}
 ${worldSection}Tone: ${context.tone}
 ${toneKeywordsLine}${toneAntiKeywordsLine}Original Theme: ${context.originalTheme}
+${spineSection}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
@@ -243,7 +247,7 @@ REQUIREMENTS (follow ALL):
 
 ${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
-OUTPUT SHAPE (same as original structure):
+OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }

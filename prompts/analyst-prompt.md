@@ -80,6 +80,16 @@ NPC RELATIONSHIP SHIFT DETECTION:
 - For each detected shift, provide: the NPC name, a description of what changed, a suggested valence change (-3 to +3), and a new dynamic label if the relationship dynamic itself changed (empty string if unchanged).
 - These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.
 
+SPINE INTEGRITY EVALUATION:
+- If a STORY SPINE section is present, evaluate whether any spine element has been IRREVERSIBLY invalidated by the narrative.
+- Set spineDeviationDetected to true ONLY when an element cannot be recovered or redirected. This should be extremely rare.
+- dramatic_question: The central dramatic question has been definitively and unambiguously answered. The story can no longer meaningfully explore it.
+- antagonistic_force: The primary antagonistic force has been permanently eliminated with no successor or transformation possible.
+- need_want: The protagonist's inner need has been fully satisfied OR the need-want tension has been completely resolved prematurely, leaving no room for further character development.
+- Be EXTREMELY conservative. Partial answers, temporary setbacks to the antagonist, or incremental growth do NOT constitute spine deviation. Only truly irreversible narrative events qualify.
+- When spineDeviationDetected is false, set spineDeviationReason to empty string and spineInvalidatedElement to null.
+- When no STORY SPINE section is present, always set spineDeviationDetected to false.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
@@ -252,6 +262,20 @@ NPC-PROTAGONIST RELATIONSHIPS (evaluate for shifts):
 
 TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
 
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+Story Pattern: {{spine.storySpineType}}
+Conflict Axis: {{spine.conflictType}}
+Character Arc: {{spine.characterArcType}}
+Central Dramatic Question: {{spine.centralDramaticQuestion}}
+Protagonist Need: {{spine.protagonistNeedVsWant.need}}
+Protagonist Want: {{spine.protagonistNeedVsWant.want}}
+Need–Want Dynamic: {{spine.protagonistNeedVsWant.dynamic}}
+Antagonistic Force: {{spine.primaryAntagonisticForce.description}}
+Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
+Every act must advance or complicate the protagonist's relationship to the central dramatic question.
+{{/if}}
+
 NARRATIVE TO EVALUATE:
 {{narrative}}
 ```
@@ -315,7 +339,10 @@ The tone reminder is injected into the user prompt (before the narrative) in add
       "suggestedValenceChange": "{{-3 to +3, positive=warmer, negative=colder}}",
       "suggestedNewDynamic": "{{new dynamic label if changed, empty string if unchanged}}"
     }
-  ]
+  ],
+  "spineDeviationDetected": {{true|false}},
+  "spineDeviationReason": "{{string, empty when no spine deviation}}",
+  "spineInvalidatedElement": "{{dramatic_question|antagonistic_force|need_want|null}}"
 }
 ```
 
@@ -328,3 +355,6 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 - `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
 - `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.
 - `relationshipShiftsDetected`: Array of NPC-protagonist relationship shifts observed in this scene. Empty array if no significant shifts detected. Only flag meaningful changes, not routine interactions. `suggestedValenceChange` is clamped to -3..+3 by the response transformer. These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.
+- `spineDeviationDetected`: Whether a story spine element has been irreversibly invalidated. Defaults to `false`. This is distinct from the existing beat-level `deviationDetected` field, forming a **two-tier deviation system**: beat deviation triggers structure rewrites within the existing spine, while spine deviation signals that the narrative backbone itself needs regeneration.
+- `spineDeviationReason`: When `spineDeviationDetected` is `true`, explains which element was invalidated and why. Empty string when no spine deviation.
+- `spineInvalidatedElement`: The specific spine element that was invalidated: `"dramatic_question"` (central question definitively answered), `"antagonistic_force"` (permanently eliminated with no successor), or `"need_want"` (need-want tension fully resolved prematurely). `null` when no spine deviation detected. Only one element can be flagged per evaluation.

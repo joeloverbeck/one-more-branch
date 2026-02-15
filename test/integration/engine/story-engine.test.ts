@@ -468,6 +468,9 @@ describe('story-engine integration', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -498,6 +501,9 @@ describe('story-engine integration', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'analyst-raw',
       });
 
@@ -650,6 +656,9 @@ describe('story-engine integration', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -680,6 +689,9 @@ describe('story-engine integration', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -710,6 +722,9 @@ describe('story-engine integration', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'analyst-raw',
       });
 

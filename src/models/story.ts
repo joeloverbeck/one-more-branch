@@ -3,6 +3,7 @@ import type { DecomposedWorld } from './decomposed-world';
 import { StoryId, generateStoryId, isStoryId } from './id';
 import { Npc } from './npc';
 import { StoryStructure } from './story-arc';
+import type { StorySpine } from './story-spine';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
 import type { NpcAgenda } from './state/npc-agenda';
 import type { NpcRelationship } from './state/npc-relationship';
@@ -31,6 +32,7 @@ export interface Story {
   readonly toneAntiKeywords?: readonly string[];
   readonly initialNpcAgendas?: readonly NpcAgenda[];
   readonly initialNpcRelationships?: readonly NpcRelationship[];
+  readonly spine?: StorySpine;
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;
   readonly createdAt: Date;

@@ -17,6 +17,28 @@ const KEYED_ENTRY_PANEL_LIMIT = 6;
 const LEFT_PANEL_LIMIT = 10;
 
 const STAGE_PHRASE_POOLS = {
+  GENERATING_SPINE: [
+    'Searching for the beating heart of the story...',
+    'Asking the hard question nobody wants answered...',
+    'Discovering what the protagonist really needs...',
+    'Weighing impossible choices against each other...',
+    'Finding the lie the hero believes...',
+    'Unearthing the buried dramatic question...',
+    'Consulting the oracle of narrative structure...',
+    'Measuring the gap between want and need...',
+    'Summoning the antagonistic forces of destiny...',
+    'Sketching the skeleton of dramatic truth...',
+    'Interrogating the protagonist\'s deepest fears...',
+    'Calibrating the moral compass of the universe...',
+    'Testing which pressures crack and which temper...',
+    'Exploring the space between desire and necessity...',
+    'Drafting the contract between hero and fate...',
+    'Surveying the battlefield of inner conflict...',
+    'Tracing the fault lines of character and world...',
+    'Mapping the territory of impossible promises...',
+    'Auditing the protagonist\'s emotional debts...',
+    'Weighing the cost of every possible truth...',
+  ],
   PLANNING_PAGE: [
     'Consulting the crystal flowchart...',
     'Drawing arrows between dramatic possibilities...',
@@ -868,6 +890,7 @@ const STAGE_PHRASE_POOLS = {
   ],
 };
 const STAGE_DISPLAY_NAMES = {
+  GENERATING_SPINE: 'ENVISIONING',
   PLANNING_PAGE: 'PLANNING',
   ACCOUNTING_STATE: 'ACCOUNTING',
   CURATING_CONTEXT: 'LOREKEEPING',
@@ -1588,6 +1611,149 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       container: leftSidebarContainer,
       limit: LEFT_PANEL_LIMIT,
     });
+  }
+
+  // ── Spine Renderer ──────────────────────────────────────────────────
+
+  var SPINE_TYPE_LABELS = {
+    QUEST: 'Quest',
+    SURVIVAL: 'Survival',
+    ESCAPE: 'Escape',
+    REVENGE: 'Revenge',
+    RESCUE: 'Rescue',
+    RIVALRY: 'Rivalry',
+    MYSTERY: 'Mystery',
+    TEMPTATION: 'Temptation',
+    TRANSFORMATION: 'Transformation',
+    FORBIDDEN_LOVE: 'Forbidden Love',
+    SACRIFICE: 'Sacrifice',
+    FALL_FROM_GRACE: 'Fall from Grace',
+    RISE_TO_POWER: 'Rise to Power',
+    COMING_OF_AGE: 'Coming of Age',
+    REBELLION: 'Rebellion',
+  };
+
+  var CONFLICT_TYPE_LABELS = {
+    PERSON_VS_PERSON: 'Person vs Person',
+    PERSON_VS_SELF: 'Person vs Self',
+    PERSON_VS_SOCIETY: 'Person vs Society',
+    PERSON_VS_NATURE: 'Person vs Nature',
+    PERSON_VS_TECHNOLOGY: 'Person vs Technology',
+    PERSON_VS_SUPERNATURAL: 'Person vs Supernatural',
+    PERSON_VS_FATE: 'Person vs Fate',
+  };
+
+  var ARC_TYPE_LABELS = {
+    POSITIVE_CHANGE: 'Positive Change',
+    FLAT: 'Flat Arc',
+    DISILLUSIONMENT: 'Disillusionment',
+    FALL: 'Fall',
+    CORRUPTION: 'Corruption',
+  };
+
+  var DYNAMIC_LABELS = {
+    CONVERGENT: 'Convergent',
+    DIVERGENT: 'Divergent',
+    SUBSTITUTIVE: 'Substitutive',
+    IRRECONCILABLE: 'Irreconcilable',
+  };
+
+  var selectedSpine = null;
+
+  function getSelectedSpine() {
+    return selectedSpine;
+  }
+
+  function clearSelectedSpine() {
+    selectedSpine = null;
+  }
+
+  function renderSpineOptions(options, container, onSelect) {
+    container.innerHTML = '';
+    selectedSpine = null;
+
+    options.forEach(function (option, index) {
+      var card = document.createElement('div');
+      card.className = 'spine-card';
+      card.dataset.index = String(index);
+
+      var badges = document.createElement('div');
+      badges.className = 'spine-badges';
+      badges.innerHTML =
+        '<span class="spine-badge spine-badge-type">' +
+        escapeHtml(SPINE_TYPE_LABELS[option.storySpineType] || option.storySpineType) +
+        '</span>' +
+        '<span class="spine-badge spine-badge-conflict">' +
+        escapeHtml(CONFLICT_TYPE_LABELS[option.conflictType] || option.conflictType) +
+        '</span>' +
+        '<span class="spine-badge spine-badge-arc">' +
+        escapeHtml(ARC_TYPE_LABELS[option.characterArcType] || option.characterArcType) +
+        '</span>';
+
+      var cdq = document.createElement('h3');
+      cdq.className = 'spine-cdq';
+      cdq.textContent = option.centralDramaticQuestion;
+
+      var needWant = document.createElement('div');
+      needWant.className = 'spine-need-want';
+      needWant.innerHTML =
+        '<div class="spine-field">' +
+        '<span class="spine-label">Need:</span> ' +
+        escapeHtml(option.protagonistNeedVsWant.need) +
+        '</div>' +
+        '<div class="spine-field">' +
+        '<span class="spine-label">Want:</span> ' +
+        escapeHtml(option.protagonistNeedVsWant.want) +
+        '</div>' +
+        '<div class="spine-field">' +
+        '<span class="spine-label">Dynamic:</span> ' +
+        '<span class="spine-badge spine-badge-dynamic">' +
+        escapeHtml(DYNAMIC_LABELS[option.protagonistNeedVsWant.dynamic] || option.protagonistNeedVsWant.dynamic) +
+        '</span>' +
+        '</div>';
+
+      var antag = document.createElement('div');
+      antag.className = 'spine-antagonist';
+      antag.innerHTML =
+        '<div class="spine-field">' +
+        '<span class="spine-label">Opposition:</span> ' +
+        escapeHtml(option.primaryAntagonisticForce.description) +
+        '</div>' +
+        '<div class="spine-field">' +
+        '<span class="spine-label">Pressure:</span> ' +
+        escapeHtml(option.primaryAntagonisticForce.pressureMechanism) +
+        '</div>';
+
+      card.appendChild(badges);
+      card.appendChild(cdq);
+      card.appendChild(needWant);
+      card.appendChild(antag);
+
+      card.addEventListener('click', function () {
+        var allCards = container.querySelectorAll('.spine-card');
+        allCards.forEach(function (c) {
+          c.classList.remove('spine-card-selected');
+        });
+        card.classList.add('spine-card-selected');
+        selectedSpine = option;
+        if (typeof onSelect === 'function') {
+          onSelect(option);
+        }
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  function clearSpineOptions(container) {
+    container.innerHTML = '';
+    selectedSpine = null;
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   // ── Choice renderers ──────────────────────────────────────────────
@@ -3094,51 +3260,122 @@ function createRecapModalController(initialData) {
   function initNewStoryPage() {
     const form = document.querySelector('.story-form');
     const loading = document.getElementById('loading');
-    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const generateSpineBtn = document.getElementById('generate-spine-btn');
+    const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
+    const spineContainer = document.getElementById('spine-options');
+    const spineSection = document.getElementById('spine-section');
     const errorDiv = document.querySelector('.alert-error');
 
-    if (!form || !loading || !submitBtn) {
+    if (!form || !loading || !generateSpineBtn) {
       return;
     }
     const loadingProgress = createLoadingProgressController(loading);
 
     initNpcControls();
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+    function collectFormData() {
+      var formData = new FormData(form);
+      var npcs = collectNpcEntries();
+      return {
+        title: formData.get('title'),
+        characterConcept: formData.get('characterConcept'),
+        worldbuilding: formData.get('worldbuilding'),
+        tone: formData.get('tone'),
+        npcs: npcs.length > 0 ? npcs : undefined,
+        startingSituation: formData.get('startingSituation'),
+        apiKey: formData.get('apiKey'),
+      };
+    }
 
+    async function fetchSpineOptions() {
       if (errorDiv) {
         errorDiv.style.display = 'none';
       }
 
-      submitBtn.disabled = true;
+      generateSpineBtn.disabled = true;
+      if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
       loading.style.display = 'flex';
-      const progressId = createProgressId();
+      var progressId = createProgressId();
       loadingProgress.start(progressId);
-      var shouldReenable = false;
 
       try {
-        const formData = new FormData(form);
-        const npcs = collectNpcEntries();
-        const response = await fetch('/stories/create-ajax', {
+        var formValues = collectFormData();
+        var response = await fetch('/stories/generate-spines', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: formData.get('title'),
-            characterConcept: formData.get('characterConcept'),
-            worldbuilding: formData.get('worldbuilding'),
-            tone: formData.get('tone'),
-            npcs: npcs.length > 0 ? npcs : undefined,
-            startingSituation: formData.get('startingSituation'),
-            apiKey: formData.get('apiKey'),
+            characterConcept: formValues.characterConcept,
+            worldbuilding: formValues.worldbuilding,
+            tone: formValues.tone,
+            npcs: formValues.npcs,
+            startingSituation: formValues.startingSituation,
+            apiKey: formValues.apiKey,
             progressId: progressId,
           }),
         });
 
-        const data = await response.json();
+        var data = await response.json();
 
         if (!response.ok || !data.success) {
-          // Log enhanced error details if available
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          throw new Error(data.error || 'Failed to generate spine options');
+        }
+
+        setApiKey(formValues.apiKey);
+
+        if (spineContainer && spineSection) {
+          renderSpineOptions(data.options, spineContainer, function (option) {
+            createStoryWithSpine(option);
+          });
+          spineSection.style.display = 'block';
+          if (regenerateSpineBtn) regenerateSpineBtn.style.display = 'inline-block';
+          spineSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.error('Spine generation error:', error);
+        showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+        generateSpineBtn.disabled = false;
+        if (regenerateSpineBtn) regenerateSpineBtn.disabled = false;
+      }
+    }
+
+    async function createStoryWithSpine(spine) {
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+
+      generateSpineBtn.disabled = true;
+      if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
+      loading.style.display = 'flex';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var formValues = collectFormData();
+        var response = await fetch('/stories/create-ajax', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: formValues.title,
+            characterConcept: formValues.characterConcept,
+            worldbuilding: formValues.worldbuilding,
+            tone: formValues.tone,
+            npcs: formValues.npcs,
+            startingSituation: formValues.startingSituation,
+            apiKey: formValues.apiKey,
+            spine: spine,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
           if (data.code) {
             console.error('Error code:', data.code, '| Retryable:', data.retryable);
           }
@@ -3148,20 +3385,37 @@ function createRecapModalController(initialData) {
           throw new Error(data.error || 'Failed to create story');
         }
 
-        setApiKey(formData.get('apiKey'));
-
         window.location.assign('/play/' + data.storyId + '/briefing');
       } catch (error) {
         console.error('Story creation error:', error);
         showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
-        shouldReenable = true;
+        generateSpineBtn.disabled = false;
+        if (regenerateSpineBtn) regenerateSpineBtn.disabled = false;
       } finally {
         loadingProgress.stop();
         loading.style.display = 'none';
-        if (shouldReenable) {
-          submitBtn.disabled = false;
-        }
       }
+    }
+
+    // Phase A: Generate Spine on button click
+    generateSpineBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      fetchSpineOptions();
+    });
+
+    // Regenerate button
+    if (regenerateSpineBtn) {
+      regenerateSpineBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (spineContainer) clearSpineOptions(spineContainer);
+        clearSelectedSpine();
+        fetchSpineOptions();
+      });
+    }
+
+    // Prevent default form submit (no longer a submit button)
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
     });
   }
 

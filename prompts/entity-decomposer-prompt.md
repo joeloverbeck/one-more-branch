@@ -128,7 +128,7 @@ INSTRUCTIONS:
       "coreTraits": ["{{trait1}}", "{{trait2}}", "{{trait3}}"],
       "motivations": "{{what drives this character}}",
       "protagonistRelationship": {
-        "valence": "{{-5 to +5, negative=hostile, positive=warm}}",
+        "valence": 3,
         "dynamic": "{{mentor|rival|ally|target|dependency|protector|manipulator|etc.}}",
         "history": "{{1-2 sentences of relationship history}}",
         "currentTension": "{{1-2 sentences of current tension or conflict}}",
@@ -171,7 +171,7 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
    - `characterConcept` for index 0 (protagonist)
    - Matching NPC description for index > 0 (matched by array order, falling back to `''`)
 2. **Speech fingerprint defaults**: Missing or undefined arrays default to `[]`.
-2b. **Protagonist relationship parsing**: `protagonistRelationship` is parsed as a nullable object. Valid objects must have `valence` (number, clamped to -5..+5), `dynamic`, `history`, `currentTension`, and `leverage` (strings). Invalid or missing objects default to `null`.
+2b. **Protagonist relationship parsing**: `protagonistRelationship` is parsed as a nullable object. Valid objects must have `valence` (number or numeric string, coerced to number and clamped to -5..+5; non-numeric strings and missing values default to 0), `dynamic`, `history`, `currentTension`, and `leverage` (strings). Invalid or missing objects default to `null`.
 3. **Domain validation**: World fact domains not in the valid enum are defaulted to `'culture'`. The `custom` domain is still accepted when reading existing stories.
 4. **Fact type validation**: World fact `factType` values not in the valid enum (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY) are omitted (field not set). Missing `factType` is treated as `undefined` for backward compatibility.
 5. **Empty fact filtering**: World facts with empty or whitespace-only `fact` text are removed.

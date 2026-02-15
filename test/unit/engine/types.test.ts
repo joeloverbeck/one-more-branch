@@ -39,6 +39,7 @@ describe('Engine types', () => {
   describe('type compatibility (compile-time)', () => {
     it('defines shared generation stage IDs exactly once and in order', () => {
       const expectedStages: GenerationStage[] = [
+        'GENERATING_SPINE',
         'PLANNING_PAGE',
         'ACCOUNTING_STATE',
         'CURATING_CONTEXT',

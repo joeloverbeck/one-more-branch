@@ -1,9 +1,11 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
 import type { GenerationStageEvent } from '../../engine';
+import { generateStorySpines } from '../../llm/spine-generator.js';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
+import type { StorySpine } from '../../models/story-spine.js';
 import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
 import { formatLLMError, parseProgressId, wrapAsyncRoute } from '../utils/index.js';
@@ -65,6 +67,98 @@ storyRoutes.post(
 );
 
 storyRoutes.post(
+  '/generate-spines',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const body = req.body as {
+      characterConcept?: string;
+      worldbuilding?: string;
+      tone?: string;
+      npcs?: Array<{ name?: string; description?: string }>;
+      startingSituation?: string;
+      apiKey?: string;
+      progressId?: unknown;
+    };
+
+    const characterConcept = body.characterConcept?.trim();
+    const apiKey = body.apiKey?.trim();
+
+    if (!characterConcept || characterConcept.length < 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'Character concept must be at least 10 characters',
+      });
+    }
+
+    if (!apiKey || apiKey.length < 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'OpenRouter API key is required',
+      });
+    }
+
+    const progressId = parseProgressId(body.progressId);
+    if (progressId) {
+      generationProgressService.start(progressId, 'new-story');
+      generationProgressService.markStageStarted(progressId, 'GENERATING_SPINE', 1);
+    }
+
+    try {
+      const validNpcs = body.npcs
+        ?.map((npc) => ({
+          name: (npc.name ?? '').trim(),
+          description: (npc.description ?? '').trim(),
+        }))
+        .filter((npc) => npc.name.length > 0 && npc.description.length > 0);
+
+      const result = await generateStorySpines(
+        {
+          characterConcept,
+          worldbuilding: body.worldbuilding?.trim() ?? '',
+          tone: body.tone?.trim() ?? 'fantasy adventure',
+          npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
+          startingSituation: body.startingSituation?.trim(),
+        },
+        apiKey
+      );
+
+      if (progressId) {
+        generationProgressService.markStageCompleted(progressId, 'GENERATING_SPINE', 1);
+        generationProgressService.complete(progressId);
+      }
+
+      return res.json({
+        success: true,
+        options: result.options,
+      });
+    } catch (error) {
+      if (error instanceof LLMError) {
+        logLLMError(error, 'generating spines');
+        const formattedError = formatLLMError(error);
+        if (progressId) {
+          generationProgressService.fail(progressId, formattedError);
+        }
+        return res.status(500).json({
+          success: false,
+          error: formattedError,
+          code: error.code,
+          retryable: error.retryable,
+        });
+      }
+
+      const err = error instanceof Error ? error : new Error(String(error));
+      if (progressId) {
+        generationProgressService.fail(progressId, err.message);
+      }
+      logger.error('Error generating spines:', { error: err.message, stack: err.stack });
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+  })
+);
+
+storyRoutes.post(
   '/create-ajax',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const progressId = parseProgressId((req.body as { progressId?: unknown })?.progressId);
@@ -86,9 +180,12 @@ storyRoutes.post(
       });
     }
 
+    const selectedSpine = (req.body as { spine?: StorySpine }).spine;
+
     try {
       const result = await storyEngine.prepareStory({
         ...validation.trimmed,
+        ...(selectedSpine ? { spine: selectedSpine } : {}),
         onGenerationStage: progressId
           ? (event: GenerationStageEvent): void => {
               if (event.status === 'started') {

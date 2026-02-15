@@ -124,10 +124,19 @@
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-large">Begin Adventure</button>
+          <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
           <a href="/" class="btn btn-secondary">Cancel</a>
         </div>
       </form>
+
+      <div id="spine-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Choose Your Story's Spine</h2>
+        <p class="spine-section-subtitle">Each option offers a different dramatic foundation for your adventure. Click one to begin.</p>
+        <div id="spine-options" class="spine-options-container"></div>
+        <div class="spine-actions">
+          <button type="button" id="regenerate-spines-btn" class="btn btn-secondary">Regenerate Options</button>
+        </div>
+      </div>
     </section>
 
     <div class="loading-overlay" id="loading" style="display: none;">

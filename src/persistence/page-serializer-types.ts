@@ -160,6 +160,9 @@ export interface AnalystResultFileData {
   promisePayoffAssessments: PromisePayoffAssessmentFileData[];
   threadPayoffAssessments: ThreadPayoffAssessmentFileData[];
   relationshipShiftsDetected: DetectedRelationshipShiftFileData[];
+  spineDeviationDetected?: boolean;
+  spineDeviationReason?: string;
+  spineInvalidatedElement?: string | null;
 }
 
 export interface PageFileData {

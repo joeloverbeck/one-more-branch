@@ -330,6 +330,9 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
     promisePayoffAssessments: [],
     threadPayoffAssessments: [],
     relationshipShiftsDetected: [],
+    spineDeviationDetected: false,
+    spineDeviationReason: '',
+    spineInvalidatedElement: null,
     rawResponse: 'analyst-raw',
     ...overrides,
   });

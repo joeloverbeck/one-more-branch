@@ -19,3 +19,5 @@ export { buildToneBlock, buildToneReminder } from './tone-block.js';
 export { formatStoryBibleSection } from './story-bible-section.js';
 
 export { buildSceneCharacterVoicesSection } from './scene-character-voices.js';
+
+export { buildSpineSection } from './spine-section.js';

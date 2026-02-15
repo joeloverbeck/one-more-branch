@@ -57,6 +57,20 @@ Tone: {{tone}}
 {{#if toneAntiKeywords}}Tone avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 Original Theme: {{originalTheme}}
 
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+Story Pattern: {{spine.storySpineType}}
+Conflict Axis: {{spine.conflictType}}
+Character Arc: {{spine.characterArcType}}
+Central Dramatic Question: {{spine.centralDramaticQuestion}}
+Protagonist Need: {{spine.protagonistNeedVsWant.need}}
+Protagonist Want: {{spine.protagonistNeedVsWant.want}}
+Need–Want Dynamic: {{spine.protagonistNeedVsWant.dynamic}}
+Antagonistic Force: {{spine.primaryAntagonisticForce.description}}
+Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
+Every act must advance or complicate the protagonist's relationship to the central dramatic question.
+{{/if}}
+
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
 
@@ -98,7 +112,7 @@ REQUIREMENTS (follow ALL):
 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
 
-OUTPUT SHAPE (same as original structure):
+OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }

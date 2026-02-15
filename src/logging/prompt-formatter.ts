@@ -11,6 +11,8 @@ export type PromptType =
   | 'lorekeeper'
   | 'structure'
   | 'structure-rewrite'
+  | 'spine'
+  | 'spine-rewrite'
   | 'agenda-resolver'
   | 'entity-decomposer';
 

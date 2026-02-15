@@ -9,6 +9,7 @@ import type {
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
+import type { StorySpine } from '../models/story-spine.js';
 
 export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
 export type SceneMomentum =
@@ -70,6 +71,9 @@ export interface AnalystResult {
   npcCoherenceAdherent: boolean;
   npcCoherenceIssues: string;
   relationshipShiftsDetected: DetectedRelationshipShift[];
+  spineDeviationDetected: boolean;
+  spineDeviationReason: string;
+  spineInvalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want' | null;
   rawResponse: string;
 }
 
@@ -83,6 +87,7 @@ export interface AnalystContext {
   tone: string;
   toneKeywords?: readonly string[];
   toneAntiKeywords?: readonly string[];
+  spine?: StorySpine;
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   accumulatedNpcRelationships?: AccumulatedNpcRelationships;

@@ -99,8 +99,14 @@ function parseProtagonistRelationship(raw: unknown): DecomposedRelationship | nu
   }
 
   const data = raw as Record<string, unknown>;
-  const valence = typeof data['valence'] === 'number' ? data['valence'] : 0;
-  const clampedValence = Math.max(-5, Math.min(5, valence));
+  const rawValence = data['valence'];
+  const numericValence =
+    typeof rawValence === 'number'
+      ? rawValence
+      : typeof rawValence === 'string' && rawValence.trim() !== ''
+        ? Number(rawValence)
+        : 0;
+  const clampedValence = Math.max(-5, Math.min(5, Number.isNaN(numericValence) ? 0 : numericValence));
 
   return {
     valence: clampedValence,

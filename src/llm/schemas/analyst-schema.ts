@@ -246,6 +246,22 @@ export const ANALYST_SCHEMA: JsonSchema = {
             additionalProperties: false,
           },
         },
+        spineDeviationDetected: {
+          type: 'boolean',
+          description:
+            'True ONLY when a spine element has been IRREVERSIBLY invalidated by the narrative. This should be extremely rare — most narrative changes are beat-level deviations, not spine-level. Only set true when the central dramatic question has been definitively answered, the antagonistic force has been permanently eliminated, or the protagonist need-want arc has been fully resolved prematurely.',
+        },
+        spineDeviationReason: {
+          type: 'string',
+          description:
+            'If spineDeviationDetected is true, explains which spine element was irreversibly invalidated and why. Empty string when no spine deviation.',
+        },
+        spineInvalidatedElement: {
+          type: ['string', 'null'],
+          enum: ['dramatic_question', 'antagonistic_force', 'need_want', null],
+          description:
+            'Which spine element was invalidated: "dramatic_question" if the CDQ was definitively answered, "antagonistic_force" if the primary opposition was permanently eliminated, "need_want" if the protagonist arc was fully resolved prematurely. null when no spine deviation.',
+        },
       },
       required: [
         'beatConcluded',
@@ -275,6 +291,9 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'promisePayoffAssessments',
         'threadPayoffAssessments',
         'relationshipShiftsDetected',
+        'spineDeviationDetected',
+        'spineDeviationReason',
+        'spineInvalidatedElement',
       ],
       additionalProperties: false,
     },

@@ -37,7 +37,7 @@ async function buildPreparedStory(
 ): Promise<Story> {
   validateStartStoryOptions(options);
 
-  const story = createStory({
+  let story = createStory({
     title: options.title.trim(),
     characterConcept: options.characterConcept.trim(),
     worldbuilding: options.worldbuilding,
@@ -45,6 +45,11 @@ async function buildPreparedStory(
     npcs: options.npcs,
     startingSituation: options.startingSituation,
   });
+
+  if (options.spine) {
+    story = { ...story, spine: options.spine };
+  }
+
   onStoryCreated?.(story);
 
   await storage.saveStory(story);
@@ -61,6 +66,7 @@ async function buildPreparedStory(
       tone: story.tone,
       npcs: story.npcs,
       startingSituation: story.startingSituation,
+      spine: story.spine,
     },
     options.apiKey
   );

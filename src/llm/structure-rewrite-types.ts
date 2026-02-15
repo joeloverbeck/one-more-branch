@@ -1,4 +1,5 @@
 import type { StoryStructure } from '../models/story-arc.js';
+import type { StorySpine } from '../models/story-spine.js';
 
 export interface CompletedBeat {
   readonly actIndex: number;
@@ -27,6 +28,7 @@ export interface StructureRewriteContext {
   readonly tone: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
+  readonly spine?: StorySpine;
   readonly completedBeats: readonly CompletedBeat[];
   readonly plannedBeats: readonly PlannedBeat[];
   readonly narrativeSummary: string;

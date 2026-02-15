@@ -355,51 +355,122 @@
   function initNewStoryPage() {
     const form = document.querySelector('.story-form');
     const loading = document.getElementById('loading');
-    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const generateSpineBtn = document.getElementById('generate-spine-btn');
+    const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
+    const spineContainer = document.getElementById('spine-options');
+    const spineSection = document.getElementById('spine-section');
     const errorDiv = document.querySelector('.alert-error');
 
-    if (!form || !loading || !submitBtn) {
+    if (!form || !loading || !generateSpineBtn) {
       return;
     }
     const loadingProgress = createLoadingProgressController(loading);
 
     initNpcControls();
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+    function collectFormData() {
+      var formData = new FormData(form);
+      var npcs = collectNpcEntries();
+      return {
+        title: formData.get('title'),
+        characterConcept: formData.get('characterConcept'),
+        worldbuilding: formData.get('worldbuilding'),
+        tone: formData.get('tone'),
+        npcs: npcs.length > 0 ? npcs : undefined,
+        startingSituation: formData.get('startingSituation'),
+        apiKey: formData.get('apiKey'),
+      };
+    }
 
+    async function fetchSpineOptions() {
       if (errorDiv) {
         errorDiv.style.display = 'none';
       }
 
-      submitBtn.disabled = true;
+      generateSpineBtn.disabled = true;
+      if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
       loading.style.display = 'flex';
-      const progressId = createProgressId();
+      var progressId = createProgressId();
       loadingProgress.start(progressId);
-      var shouldReenable = false;
 
       try {
-        const formData = new FormData(form);
-        const npcs = collectNpcEntries();
-        const response = await fetch('/stories/create-ajax', {
+        var formValues = collectFormData();
+        var response = await fetch('/stories/generate-spines', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: formData.get('title'),
-            characterConcept: formData.get('characterConcept'),
-            worldbuilding: formData.get('worldbuilding'),
-            tone: formData.get('tone'),
-            npcs: npcs.length > 0 ? npcs : undefined,
-            startingSituation: formData.get('startingSituation'),
-            apiKey: formData.get('apiKey'),
+            characterConcept: formValues.characterConcept,
+            worldbuilding: formValues.worldbuilding,
+            tone: formValues.tone,
+            npcs: formValues.npcs,
+            startingSituation: formValues.startingSituation,
+            apiKey: formValues.apiKey,
             progressId: progressId,
           }),
         });
 
-        const data = await response.json();
+        var data = await response.json();
 
         if (!response.ok || !data.success) {
-          // Log enhanced error details if available
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          throw new Error(data.error || 'Failed to generate spine options');
+        }
+
+        setApiKey(formValues.apiKey);
+
+        if (spineContainer && spineSection) {
+          renderSpineOptions(data.options, spineContainer, function (option) {
+            createStoryWithSpine(option);
+          });
+          spineSection.style.display = 'block';
+          if (regenerateSpineBtn) regenerateSpineBtn.style.display = 'inline-block';
+          spineSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.error('Spine generation error:', error);
+        showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+        generateSpineBtn.disabled = false;
+        if (regenerateSpineBtn) regenerateSpineBtn.disabled = false;
+      }
+    }
+
+    async function createStoryWithSpine(spine) {
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+
+      generateSpineBtn.disabled = true;
+      if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
+      loading.style.display = 'flex';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var formValues = collectFormData();
+        var response = await fetch('/stories/create-ajax', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: formValues.title,
+            characterConcept: formValues.characterConcept,
+            worldbuilding: formValues.worldbuilding,
+            tone: formValues.tone,
+            npcs: formValues.npcs,
+            startingSituation: formValues.startingSituation,
+            apiKey: formValues.apiKey,
+            spine: spine,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
           if (data.code) {
             console.error('Error code:', data.code, '| Retryable:', data.retryable);
           }
@@ -409,20 +480,37 @@
           throw new Error(data.error || 'Failed to create story');
         }
 
-        setApiKey(formData.get('apiKey'));
-
         window.location.assign('/play/' + data.storyId + '/briefing');
       } catch (error) {
         console.error('Story creation error:', error);
         showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
-        shouldReenable = true;
+        generateSpineBtn.disabled = false;
+        if (regenerateSpineBtn) regenerateSpineBtn.disabled = false;
       } finally {
         loadingProgress.stop();
         loading.style.display = 'none';
-        if (shouldReenable) {
-          submitBtn.disabled = false;
-        }
       }
+    }
+
+    // Phase A: Generate Spine on button click
+    generateSpineBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      fetchSpineOptions();
+    });
+
+    // Regenerate button
+    if (regenerateSpineBtn) {
+      regenerateSpineBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (spineContainer) clearSpineOptions(spineContainer);
+        clearSelectedSpine();
+        fetchSpineOptions();
+      });
+    }
+
+    // Prevent default form submit (no longer a submit button)
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
     });
   }
 

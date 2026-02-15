@@ -317,6 +317,12 @@ These characters are available for use in the story. Introduce or involve them w
 
 TONE/GENRE: {{tone}}
 
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+{{spine section from buildSpineSection()}}
+Every act must advance or complicate the protagonist's relationship to the central dramatic question.
+{{/if}}
+
 {{#if pagePlan}}
 === PLANNER GUIDANCE ===
 Scene Intent: {{pagePlan.sceneIntent}}

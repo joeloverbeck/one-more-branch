@@ -689,6 +689,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -1361,6 +1364,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -1678,6 +1684,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -1782,6 +1791,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -1891,6 +1903,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -1990,6 +2005,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -2092,6 +2110,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -2234,6 +2255,9 @@ describe('page-service', () => {
           promisePayoffAssessments: [],
           threadPayoffAssessments: [],
           relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
           rawResponse: 'raw-analyst',
         })
         .mockResolvedValueOnce({
@@ -2264,6 +2288,9 @@ describe('page-service', () => {
           promisePayoffAssessments: [],
           threadPayoffAssessments: [],
           relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
           rawResponse: 'raw-analyst',
         });
 
@@ -2368,6 +2395,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -2511,6 +2541,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -2711,6 +2744,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -2962,6 +2998,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -3057,6 +3096,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -3157,6 +3199,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 
@@ -3416,6 +3461,9 @@ describe('page-service', () => {
           promisePayoffAssessments: [],
           threadPayoffAssessments: [],
           relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
           rawResponse: 'raw-analyst',
         });
 
@@ -3454,6 +3502,9 @@ describe('page-service', () => {
           promisePayoffAssessments: [],
           threadPayoffAssessments: [],
           relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
           rawResponse: 'raw-analyst',
         });
 
@@ -3492,6 +3543,9 @@ describe('page-service', () => {
           promisePayoffAssessments: [],
           threadPayoffAssessments: [],
           relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
           rawResponse: 'raw-analyst',
         });
 
@@ -3627,6 +3681,9 @@ describe('page-service', () => {
           promisePayoffAssessments: [],
           threadPayoffAssessments: [],
           relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
           rawResponse: 'raw-analyst',
         });
 
@@ -4082,6 +4139,9 @@ describe('page-service', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: 'raw-analyst',
       });
 

@@ -1,8 +1,10 @@
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
+import type { StorySpine } from '../../models/story-spine.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneReminder } from './sections/shared/tone-block.js';
 
 export interface StructureContext {
@@ -11,6 +13,7 @@ export interface StructureContext {
   tone: string;
   npcs?: readonly Npc[];
   startingSituation?: string;
+  spine?: StorySpine;
 }
 
 const STRUCTURE_FEW_SHOT_USER = `Generate a story structure before the first page.
@@ -106,12 +109,14 @@ export function buildStructurePrompt(
     ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
     : '';
 
+  const spineSection = buildSpineSection(context.spine);
+
   const userPrompt = `Generate a story structure before the first page.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}${spineSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.

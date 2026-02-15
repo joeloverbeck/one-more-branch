@@ -9,6 +9,7 @@ import {
   buildToneReminder,
   formatStoryBibleSection,
   buildSceneCharacterVoicesSection,
+  buildSpineSection,
 } from './sections/shared/index.js';
 
 export function buildOpeningPrompt(
@@ -112,7 +113,7 @@ ${dataRules}
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
 
-${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
+${buildSpineSection(context.spine)}${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in

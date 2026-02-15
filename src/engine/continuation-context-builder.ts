@@ -30,6 +30,7 @@ export function buildContinuationContext(
     globalCanon: story.globalCanon,
     globalCharacterCanon: story.globalCharacterCanon,
     structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
+    spine: story.spine,
     accumulatedStructureState: parentState.structureState,
     previousNarrative: parentPage.narrativeText,
     selectedChoice: choiceText,

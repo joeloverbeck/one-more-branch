@@ -1334,6 +1334,9 @@ describe('playRoutes', () => {
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
         rawResponse: '{}',
       };
       const resultPage = createPage({

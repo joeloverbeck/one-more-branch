@@ -76,6 +76,12 @@ Tone: {{tone}}
 {{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
 {{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
 
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+{{spine section from buildSpineSection()}}
+Every act must advance or complicate the protagonist's relationship to the central dramatic question.
+{{/if}}
+
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles with speech fingerprints):
 {{decomposedCharacters formatted as structured profiles with SPEECH FINGERPRINT blocks; index 0 marked as PROTAGONIST}}
@@ -225,6 +231,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `accumulatedNpcAgendas` | Current NPC agendas (by NPC name): goal, leverage, fear, off-screen behavior |
 | `accumulatedNpcRelationships` | Current NPC-protagonist relationships (by NPC name): dynamic, valence, tension |
 | `activeState` | Current location, threats, constraints, threads |
+| `spine` | Story spine context (optional; injected via `buildSpineSection()` between tone block and NPC sections) |
 | `startingSituation` | Starting situation text (opening pages only; replaces narrative history fields) |
 | `ancestorSummaries` | All ancestor page summaries (continuation only) |
 | `grandparentNarrative` | Full text of 2 pages ago (continuation only, if exists) |

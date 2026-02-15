@@ -12,6 +12,13 @@ import {
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
+import type {
+  StorySpine,
+  StorySpineType,
+  ConflictType,
+  CharacterArcType,
+  NeedWantDynamic,
+} from '../models/story-spine';
 import {
   deleteDirectory,
   directoryExists,
@@ -80,6 +87,15 @@ interface CanonFactFileData {
   factType: string;
 }
 
+interface SpineFileData {
+  centralDramaticQuestion: string;
+  protagonistNeedVsWant: { need: string; want: string; dynamic: string };
+  primaryAntagonisticForce: { description: string; pressureMechanism: string };
+  storySpineType: string;
+  conflictType: string;
+  characterArcType: string;
+}
+
 interface StoryFileData {
   id: string;
   title: string;
@@ -94,6 +110,7 @@ interface StoryFileData {
   globalCharacterCanon: Record<string, string[]>;
   structure: StoryStructureFileData | null;
   structureVersions: VersionedStoryStructureFileData[];
+  spine?: SpineFileData;
   decomposedCharacters?: DecomposedCharacterFileData[];
   decomposedWorld?: DecomposedWorldFileData;
   createdAt: string;
@@ -230,6 +247,25 @@ function storyToFileData(story: Story): StoryFileData {
     globalCharacterCanon,
     structure: story.structure ? structureToFileData(story.structure) : null,
     structureVersions: (story.structureVersions ?? []).map(versionedStructureToFileData),
+    ...(story.spine
+      ? {
+          spine: {
+            centralDramaticQuestion: story.spine.centralDramaticQuestion,
+            protagonistNeedVsWant: {
+              need: story.spine.protagonistNeedVsWant.need,
+              want: story.spine.protagonistNeedVsWant.want,
+              dynamic: story.spine.protagonistNeedVsWant.dynamic,
+            },
+            primaryAntagonisticForce: {
+              description: story.spine.primaryAntagonisticForce.description,
+              pressureMechanism: story.spine.primaryAntagonisticForce.pressureMechanism,
+            },
+            storySpineType: story.spine.storySpineType,
+            conflictType: story.spine.conflictType,
+            characterArcType: story.spine.characterArcType,
+          },
+        }
+      : {}),
     ...(story.decomposedCharacters
       ? {
           decomposedCharacters: story.decomposedCharacters.map((char) => ({
@@ -323,6 +359,25 @@ function fileDataToStory(data: StoryFileData): Story {
     globalCharacterCanon,
     structure: data.structure ? fileDataToStructure(data.structure) : null,
     structureVersions,
+    ...(data.spine
+      ? {
+          spine: {
+            centralDramaticQuestion: data.spine.centralDramaticQuestion,
+            protagonistNeedVsWant: {
+              need: data.spine.protagonistNeedVsWant.need,
+              want: data.spine.protagonistNeedVsWant.want,
+              dynamic: data.spine.protagonistNeedVsWant.dynamic as NeedWantDynamic,
+            },
+            primaryAntagonisticForce: {
+              description: data.spine.primaryAntagonisticForce.description,
+              pressureMechanism: data.spine.primaryAntagonisticForce.pressureMechanism,
+            },
+            storySpineType: data.spine.storySpineType as StorySpineType,
+            conflictType: data.spine.conflictType as ConflictType,
+            characterArcType: data.spine.characterArcType as CharacterArcType,
+          } as StorySpine,
+        }
+      : {}),
     ...(data.decomposedCharacters
       ? {
           decomposedCharacters: data.decomposedCharacters.map(

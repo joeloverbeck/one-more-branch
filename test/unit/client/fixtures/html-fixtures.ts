@@ -378,9 +378,16 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
             <input type="password" id="apiKey" name="apiKey" required placeholder="sk-or-..." autocomplete="off">
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-large">Begin Adventure</button>
+            <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
           </div>
         </form>
+        <div id="spine-section" class="spine-section" style="display: none;">
+          <h2 class="spine-section-title">Choose Your Story's Spine</h2>
+          <div id="spine-options" class="spine-options-container"></div>
+          <div class="spine-actions">
+            <button type="button" id="regenerate-spines-btn" class="btn btn-secondary">Regenerate Options</button>
+          </div>
+        </div>
       </section>
       <div class="loading-overlay" id="loading" style="display: none;">
         <div class="loading-stage" aria-live="polite"></div>

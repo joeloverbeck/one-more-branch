@@ -172,6 +172,26 @@ export { Npc, formatNpcsForPrompt, isNpcArray } from './npc';
 
 export { setModelLogger, getModelLogger, modelWarn } from './model-logger';
 
+export type {
+  StorySpineType,
+  ConflictType,
+  CharacterArcType,
+  NeedWantDynamic,
+  ProtagonistNeedVsWant,
+  PrimaryAntagonisticForce,
+  StorySpine,
+} from './story-spine';
+export {
+  STORY_SPINE_TYPE_VALUES,
+  CONFLICT_TYPE_VALUES,
+  CHARACTER_ARC_TYPE_VALUES,
+  NEED_WANT_DYNAMIC_VALUES,
+  isStorySpineType,
+  isConflictType,
+  isCharacterArcType,
+  isNeedWantDynamic,
+} from './story-spine';
+
 export type { SpeechFingerprint, DecomposedCharacter } from './decomposed-character';
 export {
   formatDecomposedCharacterForPrompt,

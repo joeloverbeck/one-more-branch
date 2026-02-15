@@ -13,6 +13,7 @@ import type {
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
+import type { StorySpine } from '../models/story-spine.js';
 import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.js';
 import type {
   AncestorSummary,
@@ -31,6 +32,7 @@ export interface OpeningContext {
   npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
+  spine?: StorySpine;
   initialNpcAgendas?: readonly NpcAgenda[];
   decomposedCharacters?: readonly DecomposedCharacter[];
   decomposedWorld?: DecomposedWorld;
@@ -52,6 +54,7 @@ export interface ContinuationContext {
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc?: string | null;
   structure?: StoryStructure;
+  spine?: StorySpine;
   accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
   selectedChoice: string;
@@ -110,6 +113,7 @@ export interface LorekeeperContext {
   readonly accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;
   readonly activeState: ActiveState;
   readonly structure?: StoryStructure;
+  readonly spine?: StorySpine;
   readonly accumulatedStructureState?: AccumulatedStructureState;
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;

@@ -1,6 +1,7 @@
 import type { AnalystContext } from '../analyst-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildAnalystStructureEvaluation } from './continuation/story-structure-section.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
 const ANALYST_ROLE_INTRO = `You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
@@ -60,6 +61,16 @@ NPC-PROTAGONIST RELATIONSHIP SHIFTS:
 - Only flag shifts that are meaningful — not every interaction is a shift.
 - For each detected shift, provide the NPC name, a 1-2 sentence description of the change, a suggested valence change (-3 to +3), and a new dynamic label if the dynamic itself changed (empty string if unchanged).
 - Empty array when no significant relationship shifts occurred or no relationships are provided.
+
+SPINE INTEGRITY EVALUATION:
+- If a STORY SPINE section is present, evaluate whether any spine element has been IRREVERSIBLY invalidated by the narrative.
+- Set spineDeviationDetected to true ONLY when an element cannot be recovered or redirected. This should be extremely rare.
+- dramatic_question: The central dramatic question has been definitively and unambiguously answered. The story can no longer meaningfully explore it.
+- antagonistic_force: The primary antagonistic force has been permanently eliminated with no successor or transformation possible.
+- need_want: The protagonist's inner need has been fully satisfied OR the need-want tension has been completely resolved prematurely, leaving no room for further character development.
+- Be EXTREMELY conservative. Partial answers, temporary setbacks to the antagonist, or incremental growth do NOT constitute spine deviation. Only truly irreversible narrative events qualify.
+- When spineDeviationDetected is false, set spineDeviationReason to empty string and spineInvalidatedElement to null.
+- When no STORY SPINE section is present, always set spineDeviationDetected to false.
 
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.`;
@@ -164,7 +175,9 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
 
-  const userContent = `${structureEvaluation}${toneReminder}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const spineSection = buildSpineSection(context.spine);
+
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

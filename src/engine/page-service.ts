@@ -6,9 +6,11 @@ import type {
 } from '../llm';
 import { randomUUID } from 'node:crypto';
 import {
+  createBeatDeviation,
   createEmptyAccumulatedStructureState,
   generatePageId,
   getLatestStructureVersion,
+  isDeviation,
   Page,
   parsePageId,
   Story,
@@ -27,6 +29,8 @@ import { resolveNpcAgendas } from './npc-agenda-pipeline';
 import {
   runAnalystEvaluation,
   handleDeviationIfDetected,
+  handleSpineDeviationIfDetected,
+  collectRemainingBeatIds,
   resolveBeatConclusion,
   applyPacingResponse,
   resolveStructureProgression,
@@ -132,6 +136,7 @@ export async function generatePage(
           npcs: story.npcs,
           startingSituation: story.startingSituation,
           structure: story.structure ?? undefined,
+          spine: story.spine,
           initialNpcAgendas: story.initialNpcAgendas,
           decomposedCharacters: story.decomposedCharacters,
           decomposedWorld: story.decomposedWorld,
@@ -177,6 +182,7 @@ export async function generatePage(
           npcs: story.npcs,
           startingSituation: story.startingSituation,
           structure: story.structure ?? undefined,
+          spine: story.spine,
           initialNpcAgendas: story.initialNpcAgendas,
           decomposedCharacters: story.decomposedCharacters,
           decomposedWorld: story.decomposedWorld,
@@ -256,6 +262,7 @@ export async function generatePage(
           tone: story.tone,
           toneKeywords: story.toneKeywords,
           toneAntiKeywords: story.toneAntiKeywords,
+          spine: story.spine,
           apiKey,
           logContext,
           onGenerationStage,
@@ -263,19 +270,53 @@ export async function generatePage(
       : null;
 
   // --- Merge results ---
-  const result = mergePageWriterAndReconciledStateWithAnalystResults(
+  let result = mergePageWriterAndReconciledStateWithAnalystResults(
     writerResult,
     reconciliation,
     analystResult
   );
 
+  // --- Handle spine deviation (two-tier: spine then beats) ---
+  const spineDeviationResult = await handleSpineDeviationIfDetected({
+    analystResult,
+    story,
+    apiKey,
+    logContext,
+  });
+  const storyAfterSpine = spineDeviationResult.updatedStory;
+
+  // If spine was rewritten but no beat deviation was detected, force a
+  // structure rewrite by injecting a synthetic deviation with all remaining
+  // beat IDs invalidated.
+  if (
+    spineDeviationResult.spineRewritten &&
+    !isDeviation(result.deviation) &&
+    currentStructureVersion &&
+    parentStructureState
+  ) {
+    const remainingBeatIds = collectRemainingBeatIds(
+      currentStructureVersion.structure,
+      parentStructureState
+    );
+    if (remainingBeatIds.length > 0) {
+      result = {
+        ...result,
+        deviation: createBeatDeviation(
+          `Spine rewritten (${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated) — all remaining beats need restructuring`,
+          remainingBeatIds,
+          analystResult?.narrativeSummary ?? ''
+        ),
+      };
+    }
+  }
+
   // --- Handle deviation ---
   const newPageId = isOpening ? parsePageId(1) : generatePageId(maxPageId!);
 
-  const { storyForPage, activeStructureVersion, deviationInfo } =
+  const { storyForPage, activeStructureVersion, deviationInfo: rawDeviationInfo } =
     await handleDeviationIfDetected({
       result,
-      story,
+      story: storyAfterSpine,
       currentStructureVersion,
       parentStructureState,
       newPageId,
@@ -283,6 +324,23 @@ export async function generatePage(
       logContext,
       onGenerationStage,
     });
+
+  // Enrich deviation info with spine rewrite metadata
+  const deviationInfo: DeviationInfo | undefined = rawDeviationInfo
+    ? {
+        ...rawDeviationInfo,
+        spineRewritten: spineDeviationResult.spineRewritten || undefined,
+        spineInvalidatedElement: spineDeviationResult.spineInvalidatedElement,
+      }
+    : spineDeviationResult.spineRewritten
+      ? {
+          detected: true,
+          reason: `Spine rewritten: ${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated`,
+          beatsInvalidated: 0,
+          spineRewritten: true,
+          spineInvalidatedElement: spineDeviationResult.spineInvalidatedElement,
+        }
+      : undefined;
 
   // --- Resolve beat conclusion ---
   const activeBeat = resolveActiveBeat(

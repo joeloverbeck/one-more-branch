@@ -6,6 +6,7 @@ import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
 } from './sections/planner/index.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
 
 const PLANNER_ROLE_INTRO = `You are an interactive fiction page planner.`;
@@ -50,9 +51,11 @@ ${context.reconciliationFailureReasons
     context.toneAntiKeywords
   );
 
+  const spineSection = buildSpineSection(context.spine);
+
   const userPrompt = `Create a page plan for the writer model.
 
-${contextSection}
+${spineSection}${contextSection}
 ${reconciliationRetrySection}
 
 ${toneReminderLine}

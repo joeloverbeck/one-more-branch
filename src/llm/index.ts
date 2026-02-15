@@ -46,6 +46,9 @@ export { buildFewShotMessages } from './examples.js';
 export { generateStoryStructure } from './structure-generator.js';
 export type { StructureGenerationResult } from './structure-generator.js';
 
+export { generateStorySpines } from './spine-generator.js';
+export type { SpineOption, SpineGenerationResult } from './spine-generator.js';
+
 export {
   WRITER_GENERATION_SCHEMA,
   ANALYST_SCHEMA,
