@@ -3,6 +3,7 @@ import {
   buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
 } from '../../../../../../src/llm/prompts/sections/planner/thread-pacing-directive';
+import { THREAD_PACING } from '../../../../../../src/config/thread-pacing-config';
 import { PromiseType, ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
 import type {
   ThreadEntry,
@@ -89,11 +90,55 @@ describe('buildTrackedPromisesSection', () => {
     const result = buildTrackedPromisesSection(promises);
     expect(result).toContain('TRACKED PROMISES');
     expect(result).toContain('[pr-1]');
-    expect(result).toContain('6 pages old');
-    expect(result).toContain('reincorporation opportunity');
+    expect(result).toContain('(FORESHADOWING/MEDIUM, 6 pages)');
     expect(result).toContain('Old foreshadowing');
     expect(result).toContain('New chekhov gun');
     expect(result).toContain('CHEKHOV_GUN');
+
+    expect(result.indexOf('[pr-1]')).toBeLessThan(result.indexOf('[pr-2]'));
+  });
+
+  it('separates aging and recent promises at configured threshold', () => {
+    const threshold = THREAD_PACING.PROMISE_AGING_NOTICE_PAGES;
+    const promises = [
+      makeTrackedPromise('pr-1', threshold + 1, 'Aging promise'),
+      makeTrackedPromise('pr-2', threshold - 1, 'Recent promise'),
+    ];
+
+    const result = buildTrackedPromisesSection(promises);
+    expect(result).toContain('Aging promises:');
+    expect(result).toContain('Recent promises:');
+    expect(result).toContain('[pr-1]');
+    expect(result).toContain('[pr-2]');
+
+    const agingHeaderIndex = result.indexOf('Aging promises:');
+    const recentHeaderIndex = result.indexOf('Recent promises:');
+    const agingPromiseIndex = result.indexOf('[pr-1]');
+    const recentPromiseIndex = result.indexOf('[pr-2]');
+    expect(agingHeaderIndex).toBeLessThan(recentHeaderIndex);
+    expect(agingPromiseIndex).toBeLessThan(recentPromiseIndex);
+  });
+
+  it('classifies age exactly at threshold as aging', () => {
+    const threshold = THREAD_PACING.PROMISE_AGING_NOTICE_PAGES;
+    const promises = [
+      makeTrackedPromise('pr-1', threshold, 'Threshold promise'),
+      makeTrackedPromise('pr-2', threshold - 1, 'Recent promise'),
+    ];
+
+    const result = buildTrackedPromisesSection(promises);
+    const agingSection = result.split('Recent promises:')[0] ?? '';
+    expect(agingSection).toContain('[pr-1]');
+    expect(agingSection).not.toContain('[pr-2]');
+  });
+
+  it('uses soft encouragement language, not mandate wording', () => {
+    const promises = [makeTrackedPromise('pr-1', THREAD_PACING.PROMISE_AGING_NOTICE_PAGES, 'Old hint')];
+    const result = buildTrackedPromisesSection(promises);
+    expect(result).toContain(
+      'These represent opportunities for reincorporation. Consider whether any fit naturally into the upcoming scene.'
+    );
+    expect(result).toContain('not mandatory beats');
   });
 });
 

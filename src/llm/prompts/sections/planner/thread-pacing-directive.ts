@@ -66,19 +66,39 @@ export function buildTrackedPromisesSection(
   }
 
   const sortedByAge = [...accumulatedPromises].sort((a, b) => b.age - a.age);
+  const agingPromises = sortedByAge.filter(
+    (promise) => promise.age >= THREAD_PACING.PROMISE_AGING_NOTICE_PAGES
+  );
+  const recentPromises = sortedByAge.filter(
+    (promise) => promise.age < THREAD_PACING.PROMISE_AGING_NOTICE_PAGES
+  );
 
   const lines = ['=== TRACKED PROMISES (implicit foreshadowing not yet captured as threads) ==='];
 
-  for (const promise of sortedByAge) {
-    const oldTag =
-      promise.age >= THREAD_PACING.PROMISE_AGING_NOTICE_PAGES ? ', reincorporation opportunity' : '';
+  if (agingPromises.length > 0) {
+    lines.push('Aging promises:');
     lines.push(
-      `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages old${oldTag}) ${promise.description}`
+      'These represent opportunities for reincorporation. Consider whether any fit naturally into the upcoming scene.'
     );
+    for (const promise of agingPromises) {
+      lines.push(
+        `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}`
+      );
+    }
+    lines.push('');
   }
 
-  lines.push('');
-  lines.push('These are opportunities for reincorporation, not mandatory beats.');
+  if (recentPromises.length > 0) {
+    lines.push('Recent promises:');
+    for (const promise of recentPromises) {
+      lines.push(
+        `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}`
+      );
+    }
+    lines.push('');
+  }
+
+  lines.push('All promises are opportunities for reincorporation, not mandatory beats.');
   lines.push('');
 
   return lines.join('\n') + '\n';
