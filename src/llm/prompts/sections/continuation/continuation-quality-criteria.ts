@@ -120,3 +120,26 @@ THREAT/CONSTRAINT SELF-CHECK (before you finalize JSON):
 - For each new constraint: Is constraintType correct? PHYSICAL for body limits, ENVIRONMENTAL for world limits, TEMPORAL for deadlines/time pressure.
 - For each new add: Does ANY existing entry already cover this concept? If yes -> do not add.
 - Count check: Will the total threats exceed 8? Will total constraints exceed 8? If yes, identify entries to remove first.`;
+
+export const CONTINUATION_CANON_QUALITY = `CANON EPISTEMIC CLASSIFICATION (continuation pages):
+Each canon.worldAdd entry MUST include a factType that reflects how the protagonist LEARNED this fact:
+
+FACT TYPE RUBRIC:
+- LAW: Protagonist directly witnessed or physically verified this truth (e.g., saw the sun rise in the west, tested a lock mechanism).
+- NORM: Protagonist observed a repeated social pattern or custom (e.g., noticed all merchants bow before speaking).
+- BELIEF: Protagonist was told this by a trusted authority but has not personally verified it (e.g., a mentor explained the world's creation myth).
+- DISPUTED: Protagonist has encountered conflicting accounts from different sources (e.g., one NPC says the king is just, another says he is a tyrant).
+- RUMOR: Protagonist heard this secondhand, from gossip, overheard conversation, or unreliable source (e.g., a tavern patron mentioned a hidden treasure).
+- MYSTERY: Protagonist has evidence something exists or is true but cannot explain it yet (e.g., the locked door opens every midnight, but no one knows why).
+
+EPISTEMIC ACCESS RULES:
+- Match the protagonist's ACTUAL epistemic access, not the narrator's omniscient knowledge.
+- If the protagonist only HEARD about something -> RUMOR or BELIEF, never LAW.
+- If the protagonist SAW it happen -> LAW.
+- If sources conflict -> DISPUTED.
+- Epistemic status CAN evolve across pages: a RUMOR may become LAW when the protagonist witnesses it directly.
+
+CONTINUATION-SPECIFIC REMINDERS:
+- Do NOT re-add facts that were already established by the entity decomposer at story creation (check ESTABLISHED WORLD FACTS).
+- Do NOT duplicate decomposed world facts with slightly different wording.
+- Most continuation pages should add ZERO canon entries. Only add when genuinely new permanent information is established.`;

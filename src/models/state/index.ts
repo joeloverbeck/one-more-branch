@@ -4,7 +4,17 @@
  */
 
 // Canon
-export { CanonFact, GlobalCanon, addCanonFact, mergeCanonFacts } from './canon.js';
+export {
+  CanonFact,
+  TaggedCanonFact,
+  GlobalCanon,
+  WorldFactType,
+  isTaggedCanonFact,
+  canonFactText,
+  canonFactType,
+  addCanonFact,
+  mergeCanonFacts,
+} from './canon.js';
 
 // Character canon
 export { CharacterCanonFact, CharacterCanon, GlobalCharacterCanon } from './character-canon.js';

@@ -1,6 +1,7 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
+import { formatCanonForPrompt } from '../../engine/canon-manager.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { LorekeeperContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -44,7 +45,7 @@ ${formatNpcsForPrompt(context.npcs)}
   const canonSection =
     context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
-${context.globalCanon.map((fact) => `- ${fact}`).join('\n')}
+${formatCanonForPrompt(context.globalCanon)}
 
 `
       : '';

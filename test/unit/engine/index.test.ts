@@ -129,7 +129,7 @@ describe('engine barrel export', () => {
       healthRemoved: [],
       characterStateChangesAdded: [{ characterName: 'Scout', states: ['focused'] }],
       characterStateChangesRemoved: [],
-      newCanonFacts: ['The bridge collapsed after the crossing.'],
+      newCanonFacts: [{ text: 'The bridge collapsed after the crossing.', factType: 'LAW' }],
       newCharacterCanonFacts: {},
       reconciliationDiagnostics: [],
     };

@@ -19,6 +19,7 @@ import {
   ThreatType,
   VersionedStoryStructure,
 } from '../../../src/models';
+import type { CanonFact } from '../../../src/models/state/canon';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
 import { StateReconciliationError } from '../../../src/engine/state-reconciler-errors';
 import { reconcileState } from '../../../src/engine/state-reconciler';
@@ -132,7 +133,7 @@ function passthroughReconciledState(
     healthRemoved: readonly string[];
     characterStateChangesAdded: StateReconciliationResult['characterStateChangesAdded'];
     characterStateChangesRemoved: readonly string[];
-    newCanonFacts: readonly string[];
+    newCanonFacts: readonly CanonFact[];
     newCharacterCanonFacts: Record<string, string[]>;
   },
   previousLocation: string
@@ -567,7 +568,7 @@ describe('page-service', () => {
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
-        newCanonFacts: ['The city enforces nightly curfew'],
+        newCanonFacts: [{ text: 'The city enforces nightly curfew', factType: 'LAW' }],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -611,7 +612,7 @@ describe('page-service', () => {
         'Hide in the print shop',
         'Bribe a gate sergeant',
       ]);
-      expect(updatedStory.globalCanon).toContain('The city enforces nightly curfew');
+      expect(updatedStory.globalCanon).toContainEqual({ text: 'The city enforces nightly curfew', factType: 'LAW' });
       expect(updatedStory.structure).toEqual(structure);
     });
 
@@ -860,7 +861,7 @@ describe('page-service', () => {
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
-        newCanonFacts: ['The city enforces nightly curfew'],
+        newCanonFacts: [{ text: 'The city enforces nightly curfew', factType: 'LAW' }],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -1447,7 +1448,7 @@ describe('page-service', () => {
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
-        newCanonFacts: ['Clocktower guards rotate every ten minutes'],
+        newCanonFacts: [{ text: 'Clocktower guards rotate every ten minutes', factType: 'LAW' }],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -1510,7 +1511,7 @@ describe('page-service', () => {
       // Active state stores keyed entries ({ id, text }) in accumulated state
       expect(page.accumulatedActiveState.activeThreats).toHaveLength(1);
       expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
-      expect(updatedStory.globalCanon).toContain('Clocktower guards rotate every ten minutes');
+      expect(updatedStory.globalCanon).toContainEqual({ text: 'Clocktower guards rotate every ten minutes', factType: 'LAW' });
       expect(metrics).toEqual(
         expect.objectContaining({
           reconcilerRetried: false,
@@ -2311,7 +2312,7 @@ describe('page-service', () => {
           { text: 'Serve imperial command', threadType: 'INFORMATION', urgency: 'MEDIUM' },
         ],
         threadsResolved: ['Infiltrate the empire'],
-        newCanonFacts: ['Resistance branded you a traitor'],
+        newCanonFacts: [{ text: 'Resistance branded you a traitor', factType: 'LAW' }],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -2376,7 +2377,7 @@ describe('page-service', () => {
         'Current infiltration beats are invalid after defection.'
       );
       expect(updatedStory.structureVersions?.[1]?.createdAtPageId).toBe(page.id);
-      expect(updatedStory.globalCanon).toContain('Resistance branded you a traitor');
+      expect(updatedStory.globalCanon).toContainEqual({ text: 'Resistance branded you a traitor', factType: 'LAW' });
       expect(onGenerationStage.mock.calls).toEqual(
         expect.arrayContaining([
           [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
@@ -3420,7 +3421,7 @@ describe('page-service', () => {
           { text: 'Contact the resistance', threadType: 'INFORMATION', urgency: 'MEDIUM' },
         ],
         threadsResolved: [],
-        newCanonFacts: ['Resistance uses songs as ciphers'],
+        newCanonFacts: [{ text: 'Resistance uses songs as ciphers', factType: 'LAW' }],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],

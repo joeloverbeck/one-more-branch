@@ -1,5 +1,6 @@
 import { formatSpeechFingerprintForWriter } from '../../models/decomposed-character.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
+import { formatCanonForPrompt } from '../../engine/canon-manager.js';
 import { buildFewShotMessages } from '../examples.js';
 import type { ContinuationContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
@@ -122,7 +123,7 @@ ${context.reconciliationFailureReasons
     ? ''
     : context.globalCanon.length > 0
       ? `ESTABLISHED WORLD FACTS:
-${context.globalCanon.map((fact) => `- ${fact}`).join('\n')}
+${formatCanonForPrompt(context.globalCanon)}
 
 `
       : '';

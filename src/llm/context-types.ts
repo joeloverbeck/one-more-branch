@@ -1,3 +1,4 @@
+import type { CanonFact } from '../models/state/canon.js';
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
 import type { Npc } from '../models/npc.js';
@@ -47,7 +48,7 @@ export interface ContinuationContext {
   npcs?: readonly Npc[];
   decomposedCharacters?: readonly DecomposedCharacter[];
   decomposedWorld?: DecomposedWorld;
-  globalCanon: readonly string[];
+  globalCanon: readonly CanonFact[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc?: string | null;
   structure?: StoryStructure;
@@ -104,7 +105,7 @@ export interface LorekeeperContext {
   readonly npcs?: readonly Npc[];
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;
-  readonly globalCanon: readonly string[];
+  readonly globalCanon: readonly CanonFact[];
   readonly globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   readonly accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;
   readonly activeState: ActiveState;

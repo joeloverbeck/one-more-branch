@@ -41,8 +41,13 @@ export interface CharacterStateIntentMutations {
   removeIds: string[];
 }
 
+export interface CanonWorldAddItem {
+  text: string;
+  factType: string;
+}
+
 export interface CanonIntents {
-  worldAdd: string[];
+  worldAdd: CanonWorldAddItem[];
   characterAdd: Array<{ characterName: string; facts: string[] }>;
 }
 

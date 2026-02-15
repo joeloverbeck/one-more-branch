@@ -136,7 +136,12 @@ Return JSON only.
       "removeIds": ["{{cs-...}}"]
     },
     "canon": {
-      "worldAdd": ["{{new world canon fact}}"],
+      "worldAdd": [
+        {
+          "text": "{{new world canon fact}}",
+          "factType": "{{LAW|NORM|BELIEF|DISPUTED|RUMOR|MYSTERY}}"
+        }
+      ],
       "characterAdd": [{ "characterName": "{{npc name}}", "facts": ["{{new character canon fact}}"] }]
     }
   }
@@ -147,3 +152,5 @@ Return JSON only.
 
 - The reduced planner output in this prompt is formatted text, not raw JSON. This avoids leaking large `rawResponse` payloads from runtime objects.
 - In continuation mode, the accountant receives extra quality and pacing sections plus tracked promise context to control state growth and cleanup over long runs.
+- `canon.worldAdd` items are objects with `text` (the fact) and `factType` (epistemic classification: LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). The factType reflects how the protagonist learned this fact, not omniscient narrator knowledge.
+- In continuation mode, the accountant additionally receives `CONTINUATION_CANON_QUALITY` criteria with detailed epistemic classification guidance.

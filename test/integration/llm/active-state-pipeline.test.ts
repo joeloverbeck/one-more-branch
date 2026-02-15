@@ -78,7 +78,7 @@ describe('Active state pipeline integration', () => {
       health: { add: ['Your lungs burn from smoke inhalation'], removeIds: [] },
       characterState: { add: [], removeIds: [] },
       canon: {
-        worldAdd: ['The Golden Flagon tavern is the oldest building in Millhaven'],
+        worldAdd: [{ text: 'The Golden Flagon tavern is the oldest building in Millhaven', factType: 'LAW' }],
         characterAdd: [{ characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] }],
       },
     },

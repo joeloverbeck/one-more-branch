@@ -73,7 +73,7 @@ describe('llm barrel exports', () => {
       constraintsRemoved: [],
       threadsAdded: [],
       threadsResolved: [],
-      newCanonFacts: ['The ravine bridge is unstable'],
+      newCanonFacts: [{ text: 'The ravine bridge is unstable', factType: 'LAW' }],
       newCharacterCanonFacts: {},
       inventoryAdded: [],
       inventoryRemoved: [],
@@ -97,7 +97,7 @@ describe('llm barrel exports', () => {
       healthRemoved: [],
       characterStateChangesAdded: [],
       characterStateChangesRemoved: [],
-      newCanonFacts: ['The ravine bridge is unstable'],
+      newCanonFacts: [{ text: 'The ravine bridge is unstable', factType: 'LAW' }],
       newCharacterCanonFacts: {},
       reconciliationDiagnostics: [],
     };

@@ -1,4 +1,11 @@
-import { GlobalCanon, Story, mergeCanonFacts } from '../models';
+import {
+  CanonFact,
+  GlobalCanon,
+  Story,
+  canonFactText,
+  canonFactType,
+  mergeCanonFacts,
+} from '../models';
 import { mergeCharacterCanonFacts } from './character-canon-manager';
 
 const NEGATION_PATTERNS = ['is not', 'does not', 'never', 'no longer', 'was destroyed', 'died'];
@@ -44,7 +51,7 @@ function extractEntityTokens(fact: string): Set<string> {
   return new Set(tokens.filter((token) => token.length > 3 && !STOP_WORDS.has(token)));
 }
 
-export function updateStoryWithNewCanon(story: Story, newFacts: readonly string[]): Story {
+export function updateStoryWithNewCanon(story: Story, newFacts: readonly CanonFact[]): Story {
   if (newFacts.length === 0) {
     return story;
   }
@@ -95,7 +102,7 @@ export function updateStoryWithNewCharacterCanon(
  */
 export function updateStoryWithAllCanon(
   story: Story,
-  worldFacts: readonly string[],
+  worldFacts: readonly CanonFact[],
   characterFacts: Record<string, readonly string[]>
 ): Story {
   let updatedStory = updateStoryWithNewCanon(story, worldFacts);
@@ -108,7 +115,13 @@ export function formatCanonForPrompt(canon: GlobalCanon): string {
     return '';
   }
 
-  return canon.map((fact) => `• ${fact}`).join('\n');
+  return canon
+    .map((fact) => {
+      const text = canonFactText(fact);
+      const type = canonFactType(fact);
+      return type ? `• [${type}] ${text}` : `• ${text}`;
+    })
+    .join('\n');
 }
 
 export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string): boolean {
@@ -117,7 +130,7 @@ export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string
   const newFactTokens = extractEntityTokens(normalizedNewFact);
 
   for (const existingFact of existingCanon) {
-    const normalizedExistingFact = existingFact.toLowerCase();
+    const normalizedExistingFact = canonFactText(existingFact).toLowerCase();
     const existingFactHasNegation = hasNegationPattern(normalizedExistingFact);
 
     if (existingFactHasNegation === newFactHasNegation) {

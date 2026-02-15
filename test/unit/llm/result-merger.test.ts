@@ -41,7 +41,7 @@ function createReconciliationResult(
     constraintsRemoved: [],
     threadsAdded: [{ text: 'Golden chest reconciled', threadType: 'QUEST', urgency: 'MEDIUM' }],
     threadsResolved: [],
-    newCanonFacts: ['Reconciler accepted cave continuity'],
+    newCanonFacts: [{ text: 'Reconciler accepted cave continuity', factType: 'LAW' }],
     newCharacterCanonFacts: { Goblin: ['Reconciler confirms goblin fear of fire'] },
     inventoryAdded: ['Reconciled torch'],
     inventoryRemoved: [],

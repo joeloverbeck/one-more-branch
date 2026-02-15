@@ -1,4 +1,5 @@
 import type {
+  CanonFact,
   ConstraintAddition,
   ConstraintEntry,
   ThreatAddition,
@@ -49,7 +50,7 @@ export interface StateReconciliationResult {
   healthRemoved: string[];
   characterStateChangesAdded: ReconciledCharacterStateAdd[];
   characterStateChangesRemoved: string[];
-  newCanonFacts: string[];
+  newCanonFacts: CanonFact[];
   newCharacterCanonFacts: Record<string, string[]>;
   reconciliationDiagnostics: StateReconciliationDiagnostic[];
 }

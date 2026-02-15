@@ -7,6 +7,12 @@ import {
   validateNewFacts,
 } from '../../../src/engine/canon-manager';
 import { createStory } from '../../../src/models';
+import {
+  canonFactText,
+  canonFactType,
+  isTaggedCanonFact,
+} from '../../../src/models/state/canon';
+import type { TaggedCanonFact, CanonFact } from '../../../src/models/state/canon';
 
 describe('Canon manager', () => {
   describe('updateStoryWithNewCanon', () => {
@@ -258,6 +264,126 @@ describe('Canon manager', () => {
       expect(updated.globalCharacterCanon).toEqual({
         'The Kid': ['The Kid is an eidolon'],
       });
+    });
+
+    it('accepts tagged canon facts for world canon', () => {
+      const story = createStory({ title: 'Test Story', characterConcept: 'A wandering scholar.' });
+      const tagged: TaggedCanonFact = { text: 'The year is 1972', factType: 'LAW' };
+
+      const updated = updateStoryWithAllCanon(story, [tagged], {});
+
+      expect(updated.globalCanon).toEqual([{ text: 'The year is 1972', factType: 'LAW' }]);
+    });
+  });
+
+  describe('Helper functions (canonFactText, canonFactType, isTaggedCanonFact)', () => {
+    it('canonFactText returns text from a tagged fact', () => {
+      const tagged: TaggedCanonFact = { text: 'The dragon sleeps', factType: 'BELIEF' };
+      expect(canonFactText(tagged)).toBe('The dragon sleeps');
+    });
+
+    it('canonFactText returns the string for a bare string fact', () => {
+      expect(canonFactText('The citadel stands')).toBe('The citadel stands');
+    });
+
+    it('canonFactType returns factType from a tagged fact', () => {
+      const tagged: TaggedCanonFact = { text: 'Magic is banned', factType: 'LAW' };
+      expect(canonFactType(tagged)).toBe('LAW');
+    });
+
+    it('canonFactType returns undefined for a bare string fact', () => {
+      expect(canonFactType('The citadel stands')).toBeUndefined();
+    });
+
+    it('isTaggedCanonFact returns true for tagged facts', () => {
+      const tagged: TaggedCanonFact = { text: 'Rumor of gold', factType: 'RUMOR' };
+      expect(isTaggedCanonFact(tagged)).toBe(true);
+    });
+
+    it('isTaggedCanonFact returns false for bare strings', () => {
+      expect(isTaggedCanonFact('Just a string')).toBe(false);
+    });
+
+    it('isTaggedCanonFact returns false for null-ish values cast as CanonFact', () => {
+      // Ensure the guard handles edge cases safely
+      expect(isTaggedCanonFact('' as CanonFact)).toBe(false);
+    });
+  });
+
+  describe('formatCanonForPrompt with tagged facts', () => {
+    it('formats tagged facts with type prefix', () => {
+      const canon: CanonFact[] = [{ text: 'Magic is banned', factType: 'LAW' }];
+      expect(formatCanonForPrompt(canon)).toBe('• [LAW] Magic is banned');
+    });
+
+    it('formats mixed tagged and untagged facts', () => {
+      const canon: CanonFact[] = [
+        'The citadel stands',
+        { text: 'Dragons are rumored to exist', factType: 'RUMOR' },
+        { text: 'The council meets weekly', factType: 'NORM' },
+      ];
+      const formatted = formatCanonForPrompt(canon);
+      expect(formatted).toBe(
+        '• The citadel stands\n• [RUMOR] Dragons are rumored to exist\n• [NORM] The council meets weekly'
+      );
+    });
+
+    it('handles all factType values correctly', () => {
+      const types = ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'] as const;
+      for (const factType of types) {
+        const canon: CanonFact[] = [{ text: 'Test fact', factType }];
+        expect(formatCanonForPrompt(canon)).toBe(`• [${factType}] Test fact`);
+      }
+    });
+  });
+
+  describe('updateStoryWithNewCanon with tagged facts', () => {
+    it('adds tagged facts preserving their type', () => {
+      const story = createStory({
+        title: 'Test Story',
+        characterConcept: 'A ranger.',
+      });
+      const tagged: TaggedCanonFact = { text: 'The river is poisoned', factType: 'BELIEF' };
+
+      const updated = updateStoryWithNewCanon(story, [tagged]);
+
+      expect(updated.globalCanon).toEqual([{ text: 'The river is poisoned', factType: 'BELIEF' }]);
+    });
+
+    it('deduplicates tagged facts against existing bare string canon', () => {
+      const story = {
+        ...createStory({ title: 'Test', characterConcept: 'A scout.' }),
+        globalCanon: ['The dragon is alive'] as CanonFact[],
+      };
+      const tagged: TaggedCanonFact = { text: 'The dragon is alive', factType: 'LAW' };
+
+      const updated = updateStoryWithNewCanon(story, [tagged]);
+
+      // Should not add a duplicate
+      expect(updated).toBe(story);
+    });
+
+    it('deduplicates bare string facts against existing tagged canon', () => {
+      const story = {
+        ...createStory({ title: 'Test', characterConcept: 'A scout.' }),
+        globalCanon: [{ text: 'The dragon is alive', factType: 'LAW' }] as CanonFact[],
+      };
+
+      const updated = updateStoryWithNewCanon(story, ['The dragon is alive']);
+
+      expect(updated).toBe(story);
+    });
+  });
+
+  describe('mightContradictCanon with tagged facts', () => {
+    it('detects contradiction against tagged canon facts', () => {
+      const canon: CanonFact[] = [{ text: 'The dragon is alive', factType: 'LAW' }];
+      expect(mightContradictCanon(canon, 'The dragon died in battle')).toBe(true);
+    });
+
+    it('allows compatible facts against tagged canon', () => {
+      const canon: CanonFact[] = [{ text: 'The kingdom exists', factType: 'BELIEF' }];
+      expect(mightContradictCanon(canon, 'The kingdom is prosperous')).toBe(false);
     });
   });
 });
