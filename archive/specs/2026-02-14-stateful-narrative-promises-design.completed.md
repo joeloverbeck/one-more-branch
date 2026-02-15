@@ -1,5 +1,5 @@
 # Stateful Narrative Promises
-**Status**: IMPLEMENTED (2026-02-14)
+**Status**: COMPLETED
 **Note**: This design doc includes historical problem framing of the legacy system; current runtime architecture uses `accumulatedPromises` with explicit analyst detect/resolve lifecycle.
 
 ## Problem
@@ -177,3 +177,14 @@ The planner may weave them into `writerBrief.mustIncludeBeats` or ignore them if
 ## Breaking Change
 
 Old stories with `inheritedNarrativePromises` on their pages will not load. New stories only. No migration or backward compatibility paths.
+
+## Outcome
+
+- **Completion date**: 2026-02-15
+- **What was actually changed**:
+  - The design was realized in runtime with tracked promise IDs (`pr-N`), explicit analyst detect/resolve outputs, and page-level `accumulatedPromises`.
+  - Planner/accountant context and docs now reference tracked promises instead of legacy narrative promise blobs.
+- **Deviations from original plan**:
+  - None in architecture direction; no backward compatibility layer was introduced.
+- **Verification results**:
+  - Final verification suite executed at closeout with green tests, typecheck, lint, build, and coverage.

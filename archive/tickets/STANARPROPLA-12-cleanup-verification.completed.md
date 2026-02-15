@@ -1,6 +1,6 @@
 # STANARPROPLA-12: Clean up all old NarrativePromise references and verify
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Depends on**: STANARPROPLA-01 through STANARPROPLA-11 (all prior tickets)
 **Blocks**: None
 
@@ -54,3 +54,16 @@ Search the entire codebase for remaining references to the old promise system (`
   - Keyed state IDs (server-assigned sequential, now including `pr-N`)
   - Ending consistency
   - Choice minimum (2-5 for non-ending)
+
+## Outcome
+
+- **Completion date**: 2026-02-15
+- **What changed**:
+  - Verified legacy promise symbols are removed from `src/` and `test/` TypeScript code paths.
+  - Updated root prompt documentation to reflect the current tracked-promise contract:
+    - `prompts/analyst-prompt.md`: replaced legacy `narrativePromises` shape with `promisesDetected`, `promisesResolved`, and `promisePayoffAssessments`; added ACTIVE TRACKED PROMISES and promise-evaluation instructions.
+    - `prompts/state-accountant-prompt.md`: updated continuation placeholder text from `narrative promises section` to `tracked promises section`.
+- **Deviations from original plan**:
+  - The original ticket marked prompt text updates out of scope; prompt docs were updated explicitly per user request to keep runtime/docs aligned.
+- **Verification**:
+  - Full verification suite requested by the ticket is run after these edits (`npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:coverage`).

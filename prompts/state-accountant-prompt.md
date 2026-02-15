@@ -80,7 +80,7 @@ PLANNER RULES:
 {{#if mode === 'continuation'}}
 {{continuation active state quality criteria block}}
 {{thread aging section}}
-{{narrative promises section}}
+{{tracked promises section}}
 {{payoff feedback section}}
 {{/if}}
 
@@ -146,4 +146,4 @@ Return JSON only.
 ## Notes
 
 - The reduced planner output in this prompt is formatted text, not raw JSON. This avoids leaking large `rawResponse` payloads from runtime objects.
-- In continuation mode, the accountant receives extra quality and pacing sections to control state growth and cleanup over long runs.
+- In continuation mode, the accountant receives extra quality and pacing sections plus tracked promise context to control state growth and cleanup over long runs.

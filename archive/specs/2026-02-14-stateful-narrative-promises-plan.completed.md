@@ -1,5 +1,5 @@
 # Stateful Narrative Promises Implementation Plan
-**Status**: IMPLEMENTED (2026-02-14)
+**Status**: COMPLETED
 **Note**: This file is an implementation plan record. Some sections intentionally describe pre-cutover migration states and temporary intermediate errors.
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
@@ -1077,3 +1077,15 @@ Expected: PASS
 
 Run: `grep -r 'NarrativePromise\|inheritedNarrativePromises\|MAX_INHERITED_PROMISES\|PROMISE_AGE_OUT_PAGES\|computeInheritedNarrativePromises' src/ --include='*.ts'`
 Expected: No matches
+
+## Outcome
+
+- **Completion date**: 2026-02-15
+- **What was actually changed**:
+  - Runtime now uses `TrackedPromise` + `accumulatedPromises` with analyst-managed detect/resolve lifecycle (`promisesDetected`, `promisesResolved`, `promisePayoffAssessments`).
+  - Legacy promise fields and constants were removed from runtime codepaths with no compatibility aliases.
+  - Prompt documentation was aligned to the runtime schema and context contract.
+- **Deviations from original plan**:
+  - This archived plan remains as a historical implementation record; intermediate "expected temporary errors" notes are preserved even though the final state is green.
+- **Verification results**:
+  - Full verification run completed at archive time: tests, typecheck, lint, build, and coverage.

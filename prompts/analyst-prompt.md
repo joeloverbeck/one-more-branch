@@ -44,6 +44,14 @@ TONE EVALUATION:
 - When toneAdherent is false, write a brief toneDriftDescription explaining what feels off and what the tone should be instead.
 - When toneAdherent is true, set toneDriftDescription to an empty string.
 
+PROMISE EVALUATION:
+- Detect at most 3 new promises in promisesDetected.
+- Only detect promises with deliberate narrative weight; ignore incidental details.
+- Check whether any ACTIVE TRACKED PROMISES were meaningfully paid off in this scene.
+- Only include a promise in promisesResolved when it is substantively addressed, not merely referenced.
+- Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
+- Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
@@ -89,6 +97,13 @@ Only flag items that a reader would reasonably expect to pay off later:
 - Unresolved emotional beats that demand future closure (UNRESOLVED_EMOTION)
 
 Do NOT flag incidental scene-setting details. Max 3 per page. Empty array if none detected.
+
+=== ACTIVE TRACKED PROMISES ===
+(Only present when there are active promises)
+ACTIVE TRACKED PROMISES:
+- [{{promise.id}}] ({{promise.promiseType}}/{{promise.suggestedUrgency}}, {{promise.age}} pages old) {{promise.description}}
+
+Use these IDs for promisesResolved when a promise is explicitly paid off in this scene.
 
 === THREAD PAYOFF QUALITY ===
 (Only present when threads were resolved this scene)
@@ -204,11 +219,20 @@ The tone reminder is injected into the user prompt (before the narrative) in add
   "completionGateFailureReason": "{{string}}",
   "toneAdherent": {{true|false}},
   "toneDriftDescription": "{{string, empty when toneAdherent is true}}",
-  "narrativePromises": [
+  "promisesDetected": [
     {
       "description": "{{what was planted with emphasis}}",
-      "promiseType": "{{CHEKHOV_GUN|FORESHADOWING|DRAMATIC_IRONY|UNRESOLVED_EMOTION}}",
+      "promiseType": "{{CHEKHOV_GUN|FORESHADOWING|DRAMATIC_IRONY|UNRESOLVED_EMOTION|SETUP_PAYOFF}}",
       "suggestedUrgency": "{{LOW|MEDIUM|HIGH}}"
+    }
+  ],
+  "promisesResolved": ["{{pr-N}}"],
+  "promisePayoffAssessments": [
+    {
+      "promiseId": "{{pr-N}}",
+      "description": "{{the resolved promise description}}",
+      "satisfactionLevel": "{{RUSHED|ADEQUATE|WELL_EARNED}}",
+      "reasoning": "{{why this satisfaction level}}"
     }
   ],
   "threadPayoffAssessments": [
@@ -224,5 +248,7 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 
 - `toneAdherent`: Whether the narrative matches the target tone's mood, vocabulary, and emotional register. Defaults to `true`.
 - `toneDriftDescription`: When `toneAdherent` is `false`, describes what feels off and what the tone should be. Empty string when adherent. This feedback propagates to the planner's continuation context for course correction.
-- `narrativePromises`: Array of implicit foreshadowing detected in the narrative (max 3). Empty array if none detected. Only items introduced with deliberate narrative emphasis.
+- `promisesDetected`: Array of newly detected narrative promises (max 3). Empty array if none detected. Only items introduced with deliberate narrative emphasis.
+- `promisesResolved`: Array of resolved promise IDs (`pr-N`) from active tracked promises. Empty array when no tracked promises were paid off.
+- `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
 - `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.
