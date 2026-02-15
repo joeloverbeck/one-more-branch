@@ -3,7 +3,6 @@ import type { ChatMessage } from '../llm-client-types.js';
 import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-import { buildToneReminder } from './sections/shared/tone-block.js';
 
 function getActsToRegenerate(currentActIndex: number): string {
   if (currentActIndex === 0) {
@@ -196,13 +195,13 @@ ${formatPlannedBeats(context.plannedBeats)}
 
   const worldSection = context.worldbuilding ? `World: ${context.worldbuilding}\n` : '';
 
-  const toneKeywordsLine =
-    context.toneKeywords && context.toneKeywords.length > 0
-      ? `Tone target feel: ${context.toneKeywords.join(', ')}\n`
+  const toneFeelLine =
+    context.toneFeel && context.toneFeel.length > 0
+      ? `Tone target feel: ${context.toneFeel.join(', ')}\n`
       : '';
-  const toneAntiKeywordsLine =
-    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
-      ? `Tone avoid: ${context.toneAntiKeywords.join(', ')}\n`
+  const toneAvoidLine =
+    context.toneAvoid && context.toneAvoid.length > 0
+      ? `Tone avoid: ${context.toneAvoid.join(', ')}\n`
       : '';
 
   const spineSection = buildSpineSection(context.spine);
@@ -214,7 +213,7 @@ The story has deviated from its original plan. Generate replacement beats for in
 ## STORY CONTEXT
 Character: ${context.characterConcept}
 ${worldSection}Tone: ${context.tone}
-${toneKeywordsLine}${toneAntiKeywordsLine}Original Theme: ${context.originalTheme}
+${toneFeelLine}${toneAvoidLine}Original Theme: ${context.originalTheme}
 ${spineSection}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
@@ -244,8 +243,6 @@ REQUIREMENTS (follow ALL):
    - Preserve beat roles from completed beats unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
-
-${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)

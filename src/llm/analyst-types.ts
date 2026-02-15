@@ -85,8 +85,8 @@ export interface AnalystContext {
   threadsResolved: readonly string[];
   threadAges: Readonly<Record<string, number>>;
   tone: string;
-  toneKeywords?: readonly string[];
-  toneAntiKeywords?: readonly string[];
+  toneFeel?: readonly string[];
+  toneAvoid?: readonly string[];
   spine?: StorySpine;
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

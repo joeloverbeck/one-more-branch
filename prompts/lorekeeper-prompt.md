@@ -73,8 +73,8 @@ WORLDBUILDING:
 
 TONE/GENRE IDENTITY:
 Tone: {{tone}}
-{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
 
 {{#if spine}}
 STORY SPINE (invariant narrative backbone — every scene must serve this):
@@ -161,7 +161,7 @@ PARENT NARRATIVE (previous page):
 {{previousNarrative}}
 {{/if}}
 
-TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
+TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneFeel}} Target feel: {{toneFeel joined by ', '}}.{{/if}}{{#if toneAvoid}} Avoid: {{toneAvoid joined by ', '}}.{{/if}}
 
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
@@ -221,8 +221,8 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred over raw NPCs) |
 | `decomposedWorld` | Domain-tagged atomic world facts (optional, preferred over raw worldbuilding) |
 | `tone` | Tone/genre string |
-| `toneKeywords` | Target feel keywords (optional, from spine) |
-| `toneAntiKeywords` | Words/moods to avoid (optional, from spine) |
+| `toneFeel` | Target feel keywords (optional, from spine) |
+| `toneAvoid` | Words/moods to avoid (optional, from spine) |
 | `npcs` | All NPC definitions (fallback when no decomposed characters) |
 | `structure` / `accumulatedStructureState` | Current story structure and act/beat position |
 | `globalCanon` | All global canon facts as `CanonFact[]` — may be bare strings (legacy) or `{ text, factType }` objects with epistemic tags (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). Rendered via `formatCanonForPrompt()` |

@@ -28,8 +28,8 @@ export interface Story {
   globalCharacterCanon: GlobalCharacterCanon;
   structure: StoryStructure | null;
   readonly structureVersions?: readonly VersionedStoryStructure[];
-  readonly toneKeywords?: readonly string[];
-  readonly toneAntiKeywords?: readonly string[];
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
   readonly initialNpcAgendas?: readonly NpcAgenda[];
   readonly initialNpcRelationships?: readonly NpcRelationship[];
   readonly spine?: StorySpine;

@@ -106,15 +106,15 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
     );
   }
 
-  const toneKeywords = Array.isArray(data['toneKeywords'])
-    ? (data['toneKeywords'] as unknown[])
+  const toneFeel = Array.isArray(data['toneFeel'])
+    ? (data['toneFeel'] as unknown[])
         .filter((item): item is string => typeof item === 'string')
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
     : [];
 
-  const toneAntiKeywords = Array.isArray(data['toneAntiKeywords'])
-    ? (data['toneAntiKeywords'] as unknown[])
+  const toneAvoid = Array.isArray(data['toneAvoid'])
+    ? (data['toneAvoid'] as unknown[])
         .filter((item): item is string => typeof item === 'string')
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
@@ -134,8 +134,8 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
     storySpineType: data['storySpineType'],
     conflictType: data['conflictType'],
     characterArcType: data['characterArcType'],
-    toneKeywords,
-    toneAntiKeywords,
+    toneFeel,
+    toneAvoid,
   };
 }
 

@@ -332,28 +332,27 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).not.toContain('NPC AGENDAS');
   });
 
-  it('includes tone keywords and anti-keywords when provided', () => {
+  it('includes tone feel and avoid when provided', () => {
     const context = buildMinimalContext({
-      toneKeywords: ['gritty', 'visceral', 'tense'],
-      toneAntiKeywords: ['whimsical', 'lighthearted'],
+      toneFeel: ['gritty', 'visceral', 'tense'],
+      toneAvoid: ['whimsical', 'lighthearted'],
     });
     const messages = buildLorekeeperPrompt(context);
     const userPrompt = messages[1]?.content ?? '';
 
-    expect(userPrompt).toContain('TONE/GENRE IDENTITY:');
-    expect(userPrompt).toContain('Target feel: gritty, visceral, tense');
-    expect(userPrompt).toContain('Avoid: whimsical, lighthearted');
-    expect(userPrompt).toContain('TONE REMINDER:');
+    expect(userPrompt).toContain('TONE DIRECTIVE:');
+    expect(userPrompt).toContain('Atmospheric feel (evoke these qualities): gritty, visceral, tense');
+    expect(userPrompt).toContain('Anti-patterns (never drift toward): whimsical, lighthearted');
   });
 
-  it('falls back to tone-only when keywords are absent', () => {
+  it('falls back to tone-only when feel/avoid are absent', () => {
     const messages = buildLorekeeperPrompt(buildMinimalContext());
     const userPrompt = messages[1]?.content ?? '';
 
-    expect(userPrompt).toContain('TONE/GENRE IDENTITY:');
-    expect(userPrompt).toContain('Tone: dark fantasy');
-    expect(userPrompt).not.toContain('Target feel:');
-    expect(userPrompt).not.toContain('Avoid:');
+    expect(userPrompt).toContain('TONE DIRECTIVE:');
+    expect(userPrompt).toContain('Genre/tone: dark fantasy');
+    expect(userPrompt).not.toContain('Atmospheric feel');
+    expect(userPrompt).not.toContain('Anti-patterns');
   });
 
   it('omits optional sections when empty', () => {

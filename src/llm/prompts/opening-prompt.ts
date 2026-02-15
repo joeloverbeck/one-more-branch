@@ -6,7 +6,6 @@ import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildOpeningSystemPrompt, composeOpeningDataRules } from './system-prompt.js';
 import {
-  buildToneReminder,
   formatStoryBibleSection,
   buildSceneCharacterVoicesSection,
   buildSpineSection,
@@ -123,8 +122,6 @@ ${buildSpineSection(context.spine)}${storyBibleSection}${plannerSection}${choice
 
 REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
 
-${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
-
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. Open with immediate, scene-level tension tied to the current dramatic setup
 2. Maintain consistency with established worldbuilding, tone, and scene context
@@ -134,8 +131,8 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 
   const toneParams = {
     tone: context.tone,
-    toneKeywords: context.toneKeywords,
-    toneAntiKeywords: context.toneAntiKeywords,
+    toneFeel: context.toneFeel,
+    toneAvoid: context.toneAvoid,
   };
   const messages: ChatMessage[] = [{ role: 'system', content: buildOpeningSystemPrompt(toneParams) }];
 

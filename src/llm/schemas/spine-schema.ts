@@ -23,8 +23,8 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
               'storySpineType',
               'conflictType',
               'characterArcType',
-              'toneKeywords',
-              'toneAntiKeywords',
+              'toneFeel',
+              'toneAvoid',
             ],
             properties: {
               centralDramaticQuestion: {
@@ -118,16 +118,16 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
                 description:
                   'The type of character arc: POSITIVE_CHANGE (grows), FLAT (tests existing belief), DISILLUSIONMENT (learns hard truth), FALL (loses way), CORRUPTION (becomes what they opposed).',
               },
-              toneKeywords: {
+              toneFeel: {
                 type: 'array',
                 description:
-                  '3-5 words capturing the target feel of the tone (e.g., ["irreverent", "bawdy", "slapstick", "warm-hearted"]).',
+                  '3-5 atmospheric adjectives describing HOW the story FEELS, not WHAT genre it IS. Derive sensory, emotional, and rhythmic qualities. FORBIDDEN: Do not repeat or paraphrase genre/tone labels. If tone is "grim political fantasy", BAD: ["grim", "political", "fantasy"]. GOOD: ["claustrophobic", "treacherous", "morally-grey", "ash-scented", "hushed"].',
                 items: { type: 'string' },
               },
-              toneAntiKeywords: {
+              toneAvoid: {
                 type: 'array',
                 description:
-                  '3-5 words describing what the tone should NOT be (e.g., ["grimdark", "portentous", "tragic", "grim"]).',
+                  '3-5 tonal anti-patterns the story must never drift toward. These define the negative space. Example for "grim political fantasy": ["whimsical", "slapstick", "heartwarming", "campy"].',
                 items: { type: 'string' },
               },
             },

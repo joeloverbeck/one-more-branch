@@ -488,13 +488,13 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
     context.parentThreadPayoffAssessments ?? []
   );
 
-  const toneKeywordsLine =
-    context.toneKeywords && context.toneKeywords.length > 0
-      ? `\nTone target feel: ${context.toneKeywords.join(', ')}`
+  const toneFeelLine =
+    context.toneFeel && context.toneFeel.length > 0
+      ? `\nTone target feel: ${context.toneFeel.join(', ')}`
       : '';
-  const toneAntiKeywordsLine =
-    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
-      ? `\nTone avoid: ${context.toneAntiKeywords.join(', ')}`
+  const toneAvoidLine =
+    context.toneAvoid && context.toneAvoid.length > 0
+      ? `\nTone avoid: ${context.toneAvoid.join(', ')}`
       : '';
   const toneDriftLine =
     context.parentToneDriftDescription && context.parentToneDriftDescription.length > 0
@@ -509,7 +509,7 @@ ${context.characterConcept}
 `;
 
   return `=== PLANNER CONTEXT: CONTINUATION ===
-${characterConceptSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}${toneDriftLine}
+${characterConceptSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
 
 ${structureSection}${pacingSection}${escalationDirective}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}

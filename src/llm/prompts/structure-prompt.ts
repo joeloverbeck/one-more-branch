@@ -9,7 +9,6 @@ import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-import { buildToneReminder } from './sections/shared/tone-block.js';
 
 export interface StructureContext {
   characterConcept: string;
@@ -123,16 +122,16 @@ function buildWorldSection(context: StructureContext): string {
   return '';
 }
 
-function buildToneKeywordsSection(context: StructureContext): string {
+function buildToneFeelSection(context: StructureContext): string {
   const spine = context.spine;
   if (!spine) return '';
 
   const lines: string[] = [];
-  if (spine.toneKeywords.length > 0) {
-    lines.push(`TONE KEYWORDS (target feel): ${spine.toneKeywords.join(', ')}`);
+  if (spine.toneFeel.length > 0) {
+    lines.push(`TONE FEEL (target atmosphere): ${spine.toneFeel.join(', ')}`);
   }
-  if (spine.toneAntiKeywords.length > 0) {
-    lines.push(`TONE ANTI-KEYWORDS (must avoid): ${spine.toneAntiKeywords.join(', ')}`);
+  if (spine.toneAvoid.length > 0) {
+    lines.push(`TONE AVOID (must not drift toward): ${spine.toneAvoid.join(', ')}`);
   }
   return lines.length > 0 ? lines.join('\n') + '\n\n' : '';
 }
@@ -149,14 +148,14 @@ export function buildStructurePrompt(
     : '';
 
   const spineSection = buildSpineSection(context.spine);
-  const toneKeywordsSection = buildToneKeywordsSection(context);
+  const toneFeelSection = buildToneFeelSection(context);
 
   const userPrompt = `Generate a story structure before the first page.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneKeywordsSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.
@@ -177,8 +176,6 @@ REQUIREMENTS (follow ALL):
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
 11. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
-
-${buildToneReminder(context.tone)}
 
 OUTPUT SHAPE:
 - overallTheme: string

@@ -8,7 +8,7 @@ import type { ChatMessage } from '../llm-client-types.js';
 import { LOREKEEPER_CURATION_PRINCIPLES } from '../lorekeeper-contract.js';
 import { buildWriterStructureContext } from './continuation/index.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 function formatNumberedLines(lines: readonly string[]): string {
   return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
@@ -200,10 +200,9 @@ ${context.characterConcept}
 `}
 ${hasDecomposedWorld ? formatDecomposedWorldForPrompt(context.decomposedWorld) : `WORLDBUILDING:\n${context.worldbuilding || '(none provided)'}`}
 
-${buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords)}
+${buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)}
 
 ${buildSpineSection(context.spine)}${npcsSection}${npcAgendasSection}${npcRelationshipsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
-${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:

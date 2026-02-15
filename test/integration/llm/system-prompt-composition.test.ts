@@ -303,13 +303,13 @@ describe('buildStructureSystemPrompt composition', () => {
   describe('tone injection', () => {
     it('includes tone block when tone is provided', () => {
       const prompt = buildStructureSystemPrompt('comedic fantasy');
-      expect(prompt).toContain('TONE/GENRE IDENTITY:');
-      expect(prompt).toContain('Tone: comedic fantasy');
+      expect(prompt).toContain('TONE DIRECTIVE:');
+      expect(prompt).toContain('Genre/tone: comedic fantasy');
     });
 
     it('omits tone block when no tone is provided', () => {
       const prompt = buildStructureSystemPrompt();
-      expect(prompt).not.toContain('TONE/GENRE IDENTITY:');
+      expect(prompt).not.toContain('TONE DIRECTIVE:');
     });
   });
 });

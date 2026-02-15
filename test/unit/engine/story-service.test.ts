@@ -76,8 +76,8 @@ const mockSpine: StorySpine = {
   storySpineType: 'MYSTERY',
   conflictType: 'PERSON_VS_SOCIETY',
   characterArcType: 'POSITIVE_CHANGE',
-  toneKeywords: ['grim', 'tense', 'political'],
-  toneAntiKeywords: ['whimsical', 'comedic'],
+  toneFeel: ['grim', 'tense', 'political'],
+  toneAvoid: ['whimsical', 'comedic'],
 };
 
 function buildStory(overrides?: Partial<Story>): Story {
@@ -234,8 +234,8 @@ describe('story-service', () => {
       expect(mockedStorage.saveStory).toHaveBeenCalledWith({
         ...story,
         spine: mockSpine,
-        toneKeywords: mockSpine.toneKeywords,
-        toneAntiKeywords: mockSpine.toneAntiKeywords,
+        toneFeel: mockSpine.toneFeel,
+        toneAvoid: mockSpine.toneAvoid,
       });
       expect(mockedGenerateStoryStructure).toHaveBeenCalledWith(
         expect.objectContaining({

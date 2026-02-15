@@ -120,8 +120,8 @@ const mockSpine: StorySpine = {
   storySpineType: 'MYSTERY',
   conflictType: 'PERSON_VS_SOCIETY',
   characterArcType: 'POSITIVE_CHANGE',
-  toneKeywords: ['grim', 'tense', 'political'],
-  toneAntiKeywords: ['whimsical', 'comedic'],
+  toneFeel: ['grim', 'tense', 'political'],
+  toneAvoid: ['whimsical', 'comedic'],
 };
 
 type RouteLayer = {

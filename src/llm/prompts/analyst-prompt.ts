@@ -2,7 +2,7 @@ import type { AnalystContext } from '../analyst-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildAnalystStructureEvaluation } from './continuation/story-structure-section.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const ANALYST_ROLE_INTRO = `You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
 1. Whether the current story beat has been concluded
@@ -77,13 +77,13 @@ Be conservative about deviation - minor variations are acceptable. Only mark tru
 
 function buildAnalystSystemPrompt(
   tone?: string,
-  toneKeywords?: readonly string[],
-  toneAntiKeywords?: readonly string[]
+  toneFeel?: readonly string[],
+  toneAvoid?: readonly string[]
 ): string {
   const sections: string[] = [ANALYST_ROLE_INTRO];
 
   if (tone) {
-    sections.push(buildToneBlock(tone, toneKeywords, toneAntiKeywords));
+    sections.push(buildToneDirective(tone, toneFeel, toneAvoid));
   }
 
   sections.push(ANALYST_RULES);
@@ -168,9 +168,7 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
     context.threadAges
   );
 
-  const toneReminder = context.tone
-    ? `\n${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}\n`
-    : '';
+  const toneReminder = '';
   const activePromisesSection = buildActivePromisesSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
@@ -181,8 +179,8 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,
-    context.toneKeywords,
-    context.toneAntiKeywords
+    context.toneFeel,
+    context.toneAvoid
   );
 
   return [

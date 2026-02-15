@@ -6,8 +6,8 @@ export interface EntityDecomposerContext {
   readonly characterConcept: string;
   readonly worldbuilding: string;
   readonly tone: string;
-  readonly toneKeywords?: readonly string[];
-  readonly toneAntiKeywords?: readonly string[];
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
   readonly npcs?: readonly Npc[];
 }
 

@@ -1,7 +1,7 @@
 import type { StorySpine } from '../../models/story-spine.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
-import { buildToneBlock } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 
 export interface SpineRewriteContext {
@@ -32,7 +32,7 @@ export function buildSpineRewritePrompt(context: SpineRewriteContext): ChatMessa
   const systemSections: string[] = [SPINE_REWRITE_ROLE];
 
   if (context.tone) {
-    systemSections.push(buildToneBlock(context.tone));
+    systemSections.push(buildToneDirective(context.tone));
   }
 
   systemSections.push(CONTENT_POLICY);

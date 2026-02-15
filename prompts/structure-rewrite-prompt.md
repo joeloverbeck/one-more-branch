@@ -13,8 +13,8 @@ You are an expert interactive fiction storyteller specializing in story structur
 
 TONE/GENRE IDENTITY:
 Tone: {{tone}}
-{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
 
 CONTENT GUIDELINES:
 RATING: NC-21 (ADULTS ONLY)
@@ -53,8 +53,8 @@ The story has deviated from its original plan. Generate replacement beats for in
 Character: {{characterConcept}}
 {{#if worldbuilding}}World: {{worldbuilding}}{{/if}}
 Tone: {{tone}}
-{{#if toneKeywords}}Tone target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Tone avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Tone target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Tone avoid: {{toneAvoid joined by ', '}}{{/if}}
 Original Theme: {{originalTheme}}
 
 {{#if spine}}
@@ -110,7 +110,7 @@ REQUIREMENTS (follow ALL):
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
 
-TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
+TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
 OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)

@@ -11,7 +11,7 @@ import type { ActiveState } from '../../models/state/active-state.js';
 import type { StoryStructure } from '../../models/story-arc.js';
 import type { DetectedRelationshipShift } from '../analyst-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
-import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const AGENDA_RESOLVER_SYSTEM_PROMPT = `You are the NPC Agenda Resolver for an interactive branching story. After each scene, you evaluate how events affect each NPC's agenda and update their goals, leverage, fears, and off-screen behavior accordingly.
 
@@ -52,8 +52,8 @@ export interface AgendaResolverPromptContext {
     }[];
   };
   readonly tone?: string;
-  readonly toneKeywords?: readonly string[];
-  readonly toneAntiKeywords?: readonly string[];
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
 }
 
 function formatCurrentAgendas(agendas: AccumulatedNpcAgendas): string {
@@ -146,7 +146,7 @@ Realign NPC goals and off-screen behavior to reflect this structural shift.
 function buildAgendaResolverSystemPrompt(context: AgendaResolverPromptContext): string {
   const sections: string[] = [AGENDA_RESOLVER_SYSTEM_PROMPT];
   if (context.tone) {
-    sections.push(buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords));
+    sections.push(buildToneDirective(context.tone, context.toneFeel, context.toneAvoid));
   }
   return sections.join('\n\n');
 }
@@ -195,7 +195,7 @@ ${context.sceneSummary}
 NARRATIVE:
 ${context.narrative}
 
-${analystShiftsSection}${context.analystNpcCoherenceIssues ? `ANALYST COHERENCE NOTE:\nThe scene analyst flagged the following NPC behavior inconsistency: ${context.analystNpcCoherenceIssues}\nConsider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).\n\n` : ''}${context.tone ? buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords) + '\n\n' : ''}Return only agendas and relationships that changed. If nothing material changed, return empty arrays for both updatedAgendas and updatedRelationships.`;
+${analystShiftsSection}${context.analystNpcCoherenceIssues ? `ANALYST COHERENCE NOTE:\nThe scene analyst flagged the following NPC behavior inconsistency: ${context.analystNpcCoherenceIssues}\nConsider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).\n\n` : ''}Return only agendas and relationships that changed. If nothing material changed, return empty arrays for both updatedAgendas and updatedRelationships.`;
 
   return [
     { role: 'system', content: buildAgendaResolverSystemPrompt(context) },

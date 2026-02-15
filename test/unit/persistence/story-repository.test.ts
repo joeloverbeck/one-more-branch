@@ -312,10 +312,10 @@ describe('story-repository', () => {
     await expect(getPageCount(olderStory.id)).resolves.toBe(1);
   });
 
-  it('saveStory/loadStory preserves toneKeywords and toneAntiKeywords', async () => {
+  it('saveStory/loadStory preserves toneFeel and toneAvoid', async () => {
     const story = buildTestStory({
-      toneKeywords: ['gritty', 'visceral', 'tense'],
-      toneAntiKeywords: ['whimsical', 'lighthearted'],
+      toneFeel: ['gritty', 'visceral', 'tense'],
+      toneAvoid: ['whimsical', 'lighthearted'],
     });
     createdStoryIds.add(story.id);
 
@@ -323,8 +323,8 @@ describe('story-repository', () => {
     const loaded = await loadStory(story.id);
 
     expect(loaded).not.toBeNull();
-    expect(loaded?.toneKeywords).toEqual(['gritty', 'visceral', 'tense']);
-    expect(loaded?.toneAntiKeywords).toEqual(['whimsical', 'lighthearted']);
+    expect(loaded?.toneFeel).toEqual(['gritty', 'visceral', 'tense']);
+    expect(loaded?.toneAvoid).toEqual(['whimsical', 'lighthearted']);
   });
 
   it('loadStory throws when persisted story id does not match the directory id', async () => {

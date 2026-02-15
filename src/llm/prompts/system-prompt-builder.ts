@@ -15,7 +15,7 @@ import {
   HEALTH_MANAGEMENT,
   FIELD_SEPARATION,
   PROTAGONIST_AFFECT,
-  buildToneBlock,
+  buildToneDirective,
 } from './sections/shared/index.js';
 
 // Continuation-specific sections
@@ -114,8 +114,8 @@ const OPENING_DATA_SECTIONS = [] as const;
 
 export interface ToneParams {
   tone: string;
-  toneKeywords?: readonly string[];
-  toneAntiKeywords?: readonly string[];
+  toneFeel?: readonly string[];
+  toneAvoid?: readonly string[];
 }
 
 /**
@@ -127,7 +127,7 @@ export function composeCreativeSystemPrompt(toneParams?: ToneParams): string {
   const sections: string[] = [SYSTEM_INTRO];
 
   if (toneParams) {
-    sections.push(buildToneBlock(toneParams.tone, toneParams.toneKeywords, toneParams.toneAntiKeywords));
+    sections.push(buildToneDirective(toneParams.tone, toneParams.toneFeel, toneParams.toneAvoid));
   }
 
   sections.push(CONTENT_POLICY, ...CREATIVE_SECTIONS);

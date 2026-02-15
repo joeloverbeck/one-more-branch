@@ -27,8 +27,8 @@ export interface OpeningContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
-  toneKeywords?: readonly string[];
-  toneAntiKeywords?: readonly string[];
+  toneFeel?: readonly string[];
+  toneAvoid?: readonly string[];
   npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
@@ -45,8 +45,8 @@ export interface ContinuationContext {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
-  toneKeywords?: readonly string[];
-  toneAntiKeywords?: readonly string[];
+  toneFeel?: readonly string[];
+  toneAvoid?: readonly string[];
   npcs?: readonly Npc[];
   decomposedCharacters?: readonly DecomposedCharacter[];
   decomposedWorld?: DecomposedWorld;
@@ -103,8 +103,8 @@ export interface LorekeeperContext {
   readonly characterConcept: string;
   readonly worldbuilding: string;
   readonly tone: string;
-  readonly toneKeywords?: readonly string[];
-  readonly toneAntiKeywords?: readonly string[];
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
   readonly npcs?: readonly Npc[];
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;

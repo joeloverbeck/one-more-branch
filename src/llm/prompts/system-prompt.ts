@@ -4,7 +4,7 @@
  */
 
 import { CONTENT_POLICY } from '../content-policy.js';
-import { buildToneBlock } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 export {
   buildOpeningSystemPrompt,
@@ -33,7 +33,7 @@ export function buildStructureSystemPrompt(tone?: string): string {
   const sections: string[] = [STRUCTURE_ROLE_INTRO];
 
   if (tone) {
-    sections.push(buildToneBlock(tone));
+    sections.push(buildToneDirective(tone));
   }
 
   sections.push(CONTENT_POLICY);

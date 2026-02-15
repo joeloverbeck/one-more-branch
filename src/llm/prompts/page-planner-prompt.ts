@@ -7,7 +7,7 @@ import {
   buildPlannerOpeningContextSection,
 } from './sections/planner/index.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const PLANNER_ROLE_INTRO = `You are an interactive fiction page planner.`;
 
@@ -16,13 +16,13 @@ ${PAGE_PLANNER_PROMPT_RULES.map((rule) => `- ${rule}`).join('\n')}`;
 
 function buildPagePlannerSystemPrompt(
   tone?: string,
-  toneKeywords?: readonly string[],
-  toneAntiKeywords?: readonly string[]
+  toneFeel?: readonly string[],
+  toneAvoid?: readonly string[]
 ): string {
   const sections: string[] = [PLANNER_ROLE_INTRO];
 
   if (tone) {
-    sections.push(buildToneBlock(tone, toneKeywords, toneAntiKeywords));
+    sections.push(buildToneDirective(tone, toneFeel, toneAvoid));
   }
 
   sections.push(CONTENT_POLICY, PLANNER_RULES, PAGE_PLANNER_TONE_RULE);
@@ -45,11 +45,7 @@ ${context.reconciliationFailureReasons
   .join('\n')}`
       : '';
 
-  const toneReminderLine = buildToneReminder(
-    context.tone,
-    context.toneKeywords,
-    context.toneAntiKeywords
-  );
+  const toneReminderLine = '';
 
   const spineSection = buildSpineSection(context.spine);
 
@@ -64,8 +60,8 @@ Return JSON only.`;
 
   const systemPrompt = buildPagePlannerSystemPrompt(
     context.tone,
-    context.toneKeywords,
-    context.toneAntiKeywords
+    context.toneFeel,
+    context.toneAvoid
   );
 
   return [

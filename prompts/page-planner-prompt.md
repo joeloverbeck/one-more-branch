@@ -17,8 +17,8 @@ You are an interactive fiction page planner.
 
 TONE/GENRE IDENTITY:
 Tone: {{tone}}
-{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
 
 CONTENT GUIDELINES:
 RATING: NC-21 (ADULTS ONLY)
@@ -68,7 +68,7 @@ Prior attempt failed deterministic reconciliation. You MUST correct these failur
 {{reconciliationFailureReasons as bullet list with [code] (field) message}}
 {{/if}}
 
-TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
+TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
 Return JSON only.
 ```

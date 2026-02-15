@@ -57,8 +57,8 @@ You are an expert interactive fiction storyteller and Dungeon Master. Your role 
 
 TONE/GENRE IDENTITY:
 Tone: {{tone}}
-{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
 
 CONTENT GUIDELINES:
 RATING: NC-21 (ADULTS ONLY)
@@ -468,7 +468,7 @@ REQUIREMENTS (follow all):
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
-TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneKeywords}}. Avoid: {{toneAntiKeywords}}.
+TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly

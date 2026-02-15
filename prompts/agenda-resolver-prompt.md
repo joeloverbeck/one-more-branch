@@ -45,8 +45,8 @@ RELATIONSHIP UPDATES:
 {{#if tone}}
 TONE/GENRE IDENTITY:
 Tone: {{tone}}
-{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
 {{/if}}
 ```
 
@@ -121,7 +121,7 @@ The scene analyst flagged the following NPC behavior inconsistency: {{analystNpc
 Consider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).
 {{/if}}
 
-{{#if tone}}TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
+{{#if tone}}TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneFeel}} Target feel: {{toneFeel joined by ', '}}.{{/if}}{{#if toneAvoid}} Avoid: {{toneAvoid joined by ', '}}.{{/if}}
 
 {{/if}}Return only agendas and relationships that changed. If nothing material changed, return empty arrays for both updatedAgendas and updatedRelationships.
 ```
@@ -186,8 +186,8 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `analystNpcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
 | `deviationContext` | Structural deviation context (optional, present only when a story structure rewrite just occurred). Contains the deviation reason and the new beats from the rewritten structure |
 | `tone` | Tone/genre string (optional) |
-| `toneKeywords` | Target feel keywords (optional, from spine) |
-| `toneAntiKeywords` | Words/moods to avoid (optional, from spine) |
+| `toneFeel` | Target feel keywords (optional, from spine) |
+| `toneAvoid` | Words/moods to avoid (optional, from spine) |
 
 ## Agenda and Relationship Accumulation
 

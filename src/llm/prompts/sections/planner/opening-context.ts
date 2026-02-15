@@ -65,13 +65,13 @@ ${initialAgendas
 `
       : '';
 
-  const toneKeywordsLine =
-    context.toneKeywords && context.toneKeywords.length > 0
-      ? `\nTone target feel: ${context.toneKeywords.join(', ')}`
+  const toneFeelLine =
+    context.toneFeel && context.toneFeel.length > 0
+      ? `\nTone target feel: ${context.toneFeel.join(', ')}`
       : '';
-  const toneAntiKeywordsLine =
-    context.toneAntiKeywords && context.toneAntiKeywords.length > 0
-      ? `\nTone avoid: ${context.toneAntiKeywords.join(', ')}`
+  const toneAvoidLine =
+    context.toneAvoid && context.toneAvoid.length > 0
+      ? `\nTone avoid: ${context.toneAvoid.join(', ')}`
       : '';
 
   const characterConceptSection = hasDecomposed
@@ -82,7 +82,7 @@ ${context.characterConcept}
 `;
 
   return `=== PLANNER CONTEXT: OPENING ===
-${characterConceptSection}${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}
+${characterConceptSection}${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}
 
 ${structureSection}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
 }

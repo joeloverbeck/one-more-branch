@@ -112,12 +112,12 @@
       var tone = document.createElement('div');
       tone.className = 'spine-tone';
       var toneHtml = '';
-      if (option.toneKeywords && option.toneKeywords.length > 0) {
+      if (option.toneFeel && option.toneFeel.length > 0) {
         toneHtml +=
           '<div class="spine-field">' +
-          '<span class="spine-label">Tone:</span> ' +
+          '<span class="spine-label">Feel:</span> ' +
           '<span class="spine-tone-pills">';
-        option.toneKeywords.forEach(function (kw) {
+        option.toneFeel.forEach(function (kw) {
           toneHtml +=
             '<span class="spine-tone-pill spine-tone-pill-positive">' +
             escapeHtml(kw) +
@@ -125,12 +125,12 @@
         });
         toneHtml += '</span></div>';
       }
-      if (option.toneAntiKeywords && option.toneAntiKeywords.length > 0) {
+      if (option.toneAvoid && option.toneAvoid.length > 0) {
         toneHtml +=
           '<div class="spine-field">' +
           '<span class="spine-label">Avoids:</span> ' +
           '<span class="spine-tone-pills">';
-        option.toneAntiKeywords.forEach(function (kw) {
+        option.toneAvoid.forEach(function (kw) {
           toneHtml +=
             '<span class="spine-tone-pill spine-tone-pill-negative">' +
             escapeHtml(kw) +

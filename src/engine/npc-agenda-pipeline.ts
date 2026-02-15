@@ -35,8 +35,8 @@ export interface NpcAgendaContext {
   readonly analystRelationshipShifts?: readonly DetectedRelationshipShift[];
   readonly deviationContext?: DeviationContextForAgendas;
   readonly tone?: string;
-  readonly toneKeywords?: readonly string[];
-  readonly toneAntiKeywords?: readonly string[];
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }
@@ -65,8 +65,8 @@ export async function resolveNpcAgendas(
         analystRelationshipShifts: context.analystRelationshipShifts,
         deviationContext: context.deviationContext,
         tone: context.tone,
-        toneKeywords: context.toneKeywords,
-        toneAntiKeywords: context.toneAntiKeywords,
+        toneFeel: context.toneFeel,
+        toneAvoid: context.toneAvoid,
       },
       context.npcs,
       { apiKey: context.apiKey }

@@ -148,25 +148,24 @@ describe('buildAnalystPrompt', () => {
     );
   });
 
-  it('includes tone reminder in user prompt when tone is provided', () => {
+  it('includes tone directive in system prompt when tone is provided', () => {
     const contextWithTone: AnalystContext = {
       ...testContext,
       tone: 'noir thriller',
-      toneKeywords: ['brooding', 'cynical'],
-      toneAntiKeywords: ['cheerful', 'slapstick'],
+      toneFeel: ['brooding', 'cynical'],
+      toneAvoid: ['cheerful', 'slapstick'],
     };
     const messages = buildAnalystPrompt(contextWithTone);
-    const userContent = messages[1].content;
-
-    expect(userContent).toContain('TONE REMINDER:');
-    expect(userContent).toContain('noir thriller');
-    expect(userContent).toContain('Target feel: brooding, cynical');
-    expect(userContent).toContain('Avoid: cheerful, slapstick');
+    const systemContent = messages[0].content;
+    expect(systemContent).toContain('TONE DIRECTIVE:');
+    expect(systemContent).toContain('Genre/tone: noir thriller');
+    expect(systemContent).toContain('Atmospheric feel (evoke these qualities): brooding, cynical');
+    expect(systemContent).toContain('Anti-patterns (never drift toward): cheerful, slapstick');
   });
 
-  it('omits tone reminder from user prompt when tone is absent', () => {
+  it('omits tone directive from system prompt when tone is absent', () => {
     const messages = buildAnalystPrompt(testContext);
-    expect(messages[1].content).not.toContain('TONE REMINDER:');
+    expect(messages[0].content).not.toContain('TONE DIRECTIVE:');
   });
 
   it('includes active tracked promises section with IDs and metadata', () => {

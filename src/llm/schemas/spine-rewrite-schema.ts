@@ -15,8 +15,8 @@ export const SPINE_REWRITE_SCHEMA: JsonSchema = {
         'storySpineType',
         'conflictType',
         'characterArcType',
-        'toneKeywords',
-        'toneAntiKeywords',
+        'toneFeel',
+        'toneAvoid',
       ],
       properties: {
         centralDramaticQuestion: {
@@ -99,16 +99,16 @@ export const SPINE_REWRITE_SCHEMA: JsonSchema = {
           enum: ['POSITIVE_CHANGE', 'FLAT', 'DISILLUSIONMENT', 'FALL', 'CORRUPTION'],
           description: 'The new character arc trajectory.',
         },
-        toneKeywords: {
+        toneFeel: {
           type: 'array',
           description:
-            '3-5 words capturing the target feel of the tone for the rewritten story direction.',
+            '3-5 atmospheric adjectives describing HOW the rewritten story FEELS, not WHAT genre it IS. Derive sensory, emotional, and rhythmic qualities. FORBIDDEN: Do not repeat or paraphrase genre/tone labels.',
           items: { type: 'string' },
         },
-        toneAntiKeywords: {
+        toneAvoid: {
           type: 'array',
           description:
-            '3-5 words describing what the tone should NOT be for the rewritten story direction.',
+            '3-5 tonal anti-patterns the rewritten story must never drift toward.',
           items: { type: 'string' },
         },
       },

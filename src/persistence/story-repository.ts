@@ -95,7 +95,11 @@ interface SpineFileData {
   storySpineType: string;
   conflictType: string;
   characterArcType: string;
+  toneFeel?: string[];
+  toneAvoid?: string[];
+  /** @deprecated Read-path only: old field name for backward compat */
   toneKeywords?: string[];
+  /** @deprecated Read-path only: old field name for backward compat */
   toneAntiKeywords?: string[];
 }
 
@@ -105,7 +109,11 @@ interface StoryFileData {
   characterConcept: string;
   worldbuilding: string;
   tone: string;
+  toneFeel?: string[];
+  toneAvoid?: string[];
+  /** @deprecated Read-path only: old field name for backward compat */
   toneKeywords?: string[];
+  /** @deprecated Read-path only: old field name for backward compat */
   toneAntiKeywords?: string[];
   npcs: Array<{ name: string; description: string }> | null;
   startingSituation: string | null;
@@ -253,8 +261,8 @@ function storyToFileData(story: Story): StoryFileData {
     characterConcept: story.characterConcept,
     worldbuilding: story.worldbuilding,
     tone: story.tone,
-    ...(story.toneKeywords ? { toneKeywords: [...story.toneKeywords] } : {}),
-    ...(story.toneAntiKeywords ? { toneAntiKeywords: [...story.toneAntiKeywords] } : {}),
+    ...(story.toneFeel ? { toneFeel: [...story.toneFeel] } : {}),
+    ...(story.toneAvoid ? { toneAvoid: [...story.toneAvoid] } : {}),
     npcs: story.npcs
       ? story.npcs.map((npc) => ({ name: npc.name, description: npc.description }))
       : null,
@@ -281,8 +289,8 @@ function storyToFileData(story: Story): StoryFileData {
             storySpineType: story.spine.storySpineType,
             conflictType: story.spine.conflictType,
             characterArcType: story.spine.characterArcType,
-            toneKeywords: [...story.spine.toneKeywords],
-            toneAntiKeywords: [...story.spine.toneAntiKeywords],
+            toneFeel: [...story.spine.toneFeel],
+            toneAvoid: [...story.spine.toneAvoid],
           },
         }
       : {}),
@@ -411,8 +419,8 @@ function fileDataToStory(data: StoryFileData): Story {
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
-    ...(data.toneKeywords ? { toneKeywords: [...data.toneKeywords] } : {}),
-    ...(data.toneAntiKeywords ? { toneAntiKeywords: [...data.toneAntiKeywords] } : {}),
+    ...(data.toneFeel ?? data.toneKeywords ? { toneFeel: [...(data.toneFeel ?? data.toneKeywords ?? [])] } : {}),
+    ...(data.toneAvoid ?? data.toneAntiKeywords ? { toneAvoid: [...(data.toneAvoid ?? data.toneAntiKeywords ?? [])] } : {}),
     ...(data.npcs !== null && data.npcs.length > 0
       ? { npcs: data.npcs.map((npc) => ({ name: npc.name, description: npc.description })) }
       : {}),
@@ -437,8 +445,8 @@ function fileDataToStory(data: StoryFileData): Story {
             storySpineType: data.spine.storySpineType as StorySpineType,
             conflictType: data.spine.conflictType as ConflictType,
             characterArcType: data.spine.characterArcType as CharacterArcType,
-            toneKeywords: data.spine.toneKeywords ?? [],
-            toneAntiKeywords: data.spine.toneAntiKeywords ?? [],
+            toneFeel: data.spine.toneFeel ?? data.spine.toneKeywords ?? [],
+            toneAvoid: data.spine.toneAvoid ?? data.spine.toneAntiKeywords ?? [],
           } as StorySpine,
         }
       : {}),

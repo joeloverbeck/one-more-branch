@@ -24,8 +24,8 @@ You are a story structure analyst for interactive fiction. Your role is to evalu
 
 TONE/GENRE IDENTITY:
 Tone: {{tone}}
-{{#if toneKeywords}}Target feel: {{toneKeywords joined by ', '}}{{/if}}
-{{#if toneAntiKeywords}}Avoid: {{toneAntiKeywords joined by ', '}}{{/if}}
+{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
+{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
 
 You analyze structure progression, deviation, and tone adherence. You do NOT write narrative or make creative decisions.
 
@@ -260,7 +260,7 @@ NPC-PROTAGONIST RELATIONSHIPS (evaluate for shifts):
   Tension: {{rel.currentTension}}
 {{/if}}
 
-TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
+TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneFeel}} Target feel: {{toneFeel joined by ', '}}.{{/if}}{{#if toneAvoid}} Avoid: {{toneAvoid joined by ', '}}.{{/if}}
 
 {{#if spine}}
 STORY SPINE (invariant narrative backbone — every scene must serve this):

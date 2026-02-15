@@ -2,7 +2,7 @@ import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
-import { buildToneBlock } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 export interface SpinePromptContext {
   characterConcept: string;
@@ -25,7 +25,7 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
   const systemSections: string[] = [SPINE_ROLE_INTRO];
 
   if (context.tone) {
-    systemSections.push(buildToneBlock(context.tone));
+    systemSections.push(buildToneDirective(context.tone));
   }
 
   systemSections.push(CONTENT_POLICY);
@@ -67,8 +67,16 @@ FIELD INSTRUCTIONS:
 - storySpineType: The primary narrative pattern (QUEST, SURVIVAL, ESCAPE, REVENGE, RESCUE, RIVALRY, MYSTERY, TEMPTATION, TRANSFORMATION, FORBIDDEN_LOVE, SACRIFICE, FALL_FROM_GRACE, RISE_TO_POWER, COMING_OF_AGE, REBELLION).
 - conflictType: The primary source of opposition (PERSON_VS_PERSON, PERSON_VS_SELF, PERSON_VS_SOCIETY, PERSON_VS_NATURE, PERSON_VS_TECHNOLOGY, PERSON_VS_SUPERNATURAL, PERSON_VS_FATE).
 - characterArcType: The character arc trajectory (POSITIVE_CHANGE, FLAT, DISILLUSIONMENT, FALL, CORRUPTION).
-- toneKeywords: 3-5 words capturing the target feel of the tone. These should be evocative adjectives or style words that downstream writers can use as a compass (e.g., ["irreverent", "bawdy", "slapstick", "warm-hearted"] for a comedic tone, or ["claustrophobic", "dread", "visceral", "bleak"] for horror).
-- toneAntiKeywords: 3-5 words the tone should actively avoid. These define the negative space — what the story must NOT become (e.g., ["grimdark", "portentous", "tragic"] for a comedy, or ["whimsical", "lighthearted", "playful"] for horror).
+- toneFeel: 3-5 atmospheric adjectives describing HOW the story FEELS to the reader -- sensory, emotional, and rhythmic qualities. A compass for downstream writers.
+  CRITICAL: Do NOT repeat or rephrase genre/tone labels from the TONE/GENRE field. Instead, DERIVE the experiential qualities that emerge from that genre.
+  Ask: "If I were inside this story, what would I feel on my skin, in my gut, in my pulse?"
+  BAD for "grim political fantasy": ["grim", "political", "dark", "serious"]
+  GOOD for "grim political fantasy": ["claustrophobic", "treacherous", "morally-grey", "ash-scented", "hushed"]
+  BAD for "comedic heist": ["comedic", "funny", "heist", "lighthearted"]
+  GOOD for "comedic heist": ["snappy", "irreverent", "nerve-jangling", "winking", "kinetic"]
+- toneAvoid: 3-5 tonal anti-patterns the story must never drift toward. These define the negative space -- what the story must NOT become.
+  Example for "grim political fantasy": ["whimsical", "slapstick", "heartwarming", "campy"]
+  Example for "comedic heist": ["grimdark", "portentous", "plodding", "nihilistic"]
 
 OUTPUT SHAPE:
 - options: array of exactly 3 spine objects, each containing all fields above`;

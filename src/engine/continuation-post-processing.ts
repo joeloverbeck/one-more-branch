@@ -36,8 +36,8 @@ export interface AnalystEvaluationContext {
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
   readonly tone: string;
-  readonly toneKeywords?: readonly string[];
-  readonly toneAntiKeywords?: readonly string[];
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
   readonly spine?: StorySpine;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
@@ -72,8 +72,8 @@ export async function runAnalystEvaluation(
         accumulatedNpcAgendas: context.accumulatedNpcAgendas,
         accumulatedNpcRelationships: context.accumulatedNpcRelationships,
         tone: context.tone,
-        toneKeywords: context.toneKeywords,
-        toneAntiKeywords: context.toneAntiKeywords,
+        toneFeel: context.toneFeel,
+        toneAvoid: context.toneAvoid,
         spine: context.spine,
       },
       { apiKey: context.apiKey }

@@ -3,7 +3,7 @@ import { CONTENT_POLICY } from '../content-policy.js';
 import { AGENCY_PRINCIPLES, SPEECH_EXTRACTION_BULLETS } from '../entity-decomposition-contract.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { EntityDecomposerContext } from '../entity-decomposer-types.js';
-import { buildToneBlock } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 function formatBullets(lines: readonly string[], indent = '   - '): string {
   return lines.map((line) => `${indent}${line}`).join('\n');
@@ -59,7 +59,7 @@ export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): C
     : '';
 
   const toneSection = context.tone
-    ? `\n\n${buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords)}`
+    ? `\n\n${buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)}`
     : '';
 
   const userPrompt = `Decompose the following character descriptions and worldbuilding into structured attribute objects.

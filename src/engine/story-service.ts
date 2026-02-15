@@ -51,15 +51,15 @@ async function buildPreparedStory(
       startingSituation: options.startingSituation,
     }),
     spine: options.spine,
-    toneKeywords: options.spine.toneKeywords,
-    toneAntiKeywords: options.spine.toneAntiKeywords,
+    toneFeel: options.spine.toneFeel,
+    toneAvoid: options.spine.toneAvoid,
   };
 
   onStoryCreated?.(story);
 
   await storage.saveStory(story);
 
-  // Stage 1: Decompose entities (uses toneKeywords from spine)
+  // Stage 1: Decompose entities (uses toneFeel from spine)
   options.onGenerationStage?.({
     stage: 'DECOMPOSING_ENTITIES',
     status: 'started',
@@ -70,8 +70,8 @@ async function buildPreparedStory(
       characterConcept: story.characterConcept,
       worldbuilding: story.worldbuilding,
       tone: story.tone,
-      toneKeywords: story.toneKeywords,
-      toneAntiKeywords: story.toneAntiKeywords,
+      toneFeel: story.toneFeel,
+      toneAvoid: story.toneAvoid,
       npcs: story.npcs,
     },
     options.apiKey

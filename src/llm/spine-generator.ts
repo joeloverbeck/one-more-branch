@@ -38,8 +38,8 @@ export interface SpineOption {
   readonly storySpineType: StorySpineType;
   readonly conflictType: ConflictType;
   readonly characterArcType: CharacterArcType;
-  readonly toneKeywords: readonly string[];
-  readonly toneAntiKeywords: readonly string[];
+  readonly toneFeel: readonly string[];
+  readonly toneAvoid: readonly string[];
 }
 
 export interface SpineGenerationResult {
@@ -131,15 +131,15 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
     );
   }
 
-  const toneKeywords = Array.isArray(data['toneKeywords'])
-    ? (data['toneKeywords'] as unknown[])
+  const toneFeel = Array.isArray(data['toneFeel'])
+    ? (data['toneFeel'] as unknown[])
         .filter((item): item is string => typeof item === 'string')
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
     : [];
 
-  const toneAntiKeywords = Array.isArray(data['toneAntiKeywords'])
-    ? (data['toneAntiKeywords'] as unknown[])
+  const toneAvoid = Array.isArray(data['toneAvoid'])
+    ? (data['toneAvoid'] as unknown[])
         .filter((item): item is string => typeof item === 'string')
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
@@ -159,8 +159,8 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
     storySpineType: data['storySpineType'],
     conflictType: data['conflictType'],
     characterArcType: data['characterArcType'],
-    toneKeywords,
-    toneAntiKeywords,
+    toneFeel,
+    toneAvoid,
   };
 }
 

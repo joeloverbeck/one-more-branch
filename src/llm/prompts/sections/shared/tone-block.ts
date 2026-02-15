@@ -1,45 +1,42 @@
 /**
- * Builds a consistent tone block for injection into prompts.
- * When keywords are not yet available (e.g., structure generator hasn't run),
- * falls back to just the tone string.
+ * Builds a single tone directive for system-message injection.
+ * Replaces the former buildToneBlock + buildToneReminder pair.
+ * Tone goes in the system message ONLY — the analyst's toneDriftDescription
+ * provides the feedback loop if the writer drifts.
  */
-export function buildToneBlock(
+export function buildToneDirective(
   tone: string,
-  toneKeywords?: readonly string[],
-  toneAntiKeywords?: readonly string[]
+  toneFeel?: readonly string[],
+  toneAvoid?: readonly string[]
 ): string {
-  const lines: string[] = ['TONE/GENRE IDENTITY:'];
-  lines.push(`Tone: ${tone}`);
+  const lines: string[] = ['TONE DIRECTIVE:'];
+  lines.push(`Genre/tone: ${tone}`);
 
-  if (toneKeywords && toneKeywords.length > 0) {
-    lines.push(`Target feel: ${toneKeywords.join(', ')}`);
+  if (toneFeel && toneFeel.length > 0) {
+    lines.push(`Atmospheric feel (evoke these qualities): ${toneFeel.join(', ')}`);
   }
 
-  if (toneAntiKeywords && toneAntiKeywords.length > 0) {
-    lines.push(`Avoid: ${toneAntiKeywords.join(', ')}`);
+  if (toneAvoid && toneAvoid.length > 0) {
+    lines.push(`Anti-patterns (never drift toward): ${toneAvoid.join(', ')}`);
   }
 
+  lines.push('Every scene, description, and dialogue beat must be filtered through this tonal lens.');
   return lines.join('\n');
 }
 
 /**
- * Builds a tone reminder for bookending user prompts.
- * Placed just before the final instruction line to exploit recency attention.
+ * @deprecated Use buildToneDirective instead. Kept temporarily for backward compat during migration.
+ */
+export const buildToneBlock = buildToneDirective;
+
+/**
+ * @deprecated Tone reminders are no longer used. Tone is set once in system message.
+ * Kept temporarily so callers that still reference it compile.
  */
 export function buildToneReminder(
   tone: string,
-  toneKeywords?: readonly string[],
-  toneAntiKeywords?: readonly string[]
+  _toneFeel?: readonly string[],
+  _toneAvoid?: readonly string[]
 ): string {
-  let reminder = `TONE REMINDER: All output must fit the tone: ${tone}.`;
-
-  if (toneKeywords && toneKeywords.length > 0) {
-    reminder += ` Target feel: ${toneKeywords.join(', ')}.`;
-  }
-
-  if (toneAntiKeywords && toneAntiKeywords.length > 0) {
-    reminder += ` Avoid: ${toneAntiKeywords.join(', ')}.`;
-  }
-
-  return reminder;
+  return `TONE REMINDER: All output must fit the tone: ${tone}.`;
 }

@@ -14,7 +14,7 @@ import {
   buildPayoffFeedbackSection,
   buildThreadAgingSection,
 } from './sections/planner/index.js';
-import { buildToneBlock, buildToneReminder } from './sections/shared/tone-block.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
   const anchors =
@@ -65,13 +65,13 @@ const ACCOUNTANT_RULES = `Generate stateIntents only.
 
 function buildStateAccountantSystemPrompt(
   tone?: string,
-  toneKeywords?: readonly string[],
-  toneAntiKeywords?: readonly string[]
+  toneFeel?: readonly string[],
+  toneAvoid?: readonly string[]
 ): string {
   const sections: string[] = [ACCOUNTANT_ROLE_INTRO];
 
   if (tone) {
-    sections.push(buildToneBlock(tone, toneKeywords, toneAntiKeywords));
+    sections.push(buildToneDirective(tone, toneFeel, toneAvoid));
   }
 
   sections.push(CONTENT_POLICY, ACCOUNTANT_RULES);
@@ -98,11 +98,7 @@ ${context.reconciliationFailureReasons
   .join('\n')}`
       : '';
 
-  const toneReminderLine = buildToneReminder(
-    context.tone,
-    context.toneKeywords,
-    context.toneAntiKeywords
-  );
+  const toneReminderLine = '';
 
   const qualityCriteriaSection =
     context.mode === 'continuation'
@@ -139,8 +135,8 @@ Return JSON only.`;
 
   const systemPrompt = buildStateAccountantSystemPrompt(
     context.tone,
-    context.toneKeywords,
-    context.toneAntiKeywords
+    context.toneFeel,
+    context.toneAvoid
   );
 
   return [
