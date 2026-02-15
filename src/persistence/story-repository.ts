@@ -5,7 +5,6 @@ import {
   StoryMetadata,
   StoryStructure,
   VersionedStoryStructure,
-  isTaggedCanonFact,
   parsePageId,
   parseStoryId,
   parseStructureVersionId,
@@ -53,10 +52,7 @@ interface DecomposedCharacterFileData {
   speechFingerprint: SpeechFingerprintFileData;
   coreTraits: string[];
   motivations: string;
-  // New structured format
   protagonistRelationship?: DecomposedRelationshipFileData | null;
-  // Legacy format for backward compatibility
-  relationships?: string[];
   knowledgeBoundaries: string;
   falseBeliefs?: string[];
   secretsKept?: string[];
@@ -94,10 +90,10 @@ interface StoryFileData {
   toneAntiKeywords?: string[];
   npcs: Array<{ name: string; description: string }> | null;
   startingSituation: string | null;
-  globalCanon: (string | CanonFactFileData)[];
+  globalCanon: CanonFactFileData[];
   globalCharacterCanon: Record<string, string[]>;
   structure: StoryStructureFileData | null;
-  structureVersions?: VersionedStoryStructureFileData[];
+  structureVersions: VersionedStoryStructureFileData[];
   decomposedCharacters?: DecomposedCharacterFileData[];
   decomposedWorld?: DecomposedWorldFileData;
   createdAt: string;
@@ -228,8 +224,8 @@ function storyToFileData(story: Story): StoryFileData {
       ? story.npcs.map((npc) => ({ name: npc.name, description: npc.description }))
       : null,
     startingSituation: story.startingSituation ?? null,
-    globalCanon: story.globalCanon.map((fact): string | CanonFactFileData =>
-      isTaggedCanonFact(fact) ? { text: fact.text, factType: fact.factType } : fact
+    globalCanon: story.globalCanon.map(
+      (fact): CanonFactFileData => ({ text: fact.text, factType: fact.factType })
     ),
     globalCharacterCanon,
     structure: story.structure ? structureToFileData(story.structure) : null,
@@ -296,30 +292,20 @@ const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
   'MYSTERY',
 ]);
 
-function deserializeCanonFact(raw: string | CanonFactFileData): CanonFact {
-  if (typeof raw === 'string') {
-    return raw;
-  }
-
-  if (raw.factType && VALID_WORLD_FACT_TYPES.has(raw.factType)) {
-    return { text: raw.text, factType: raw.factType as WorldFactType };
-  }
-
-  return raw.text;
+function deserializeCanonFact(raw: CanonFactFileData): CanonFact {
+  const factType = raw.factType && VALID_WORLD_FACT_TYPES.has(raw.factType)
+    ? raw.factType as WorldFactType
+    : 'NORM' as WorldFactType;
+  return { text: raw.text, factType };
 }
 
 function fileDataToStory(data: StoryFileData): Story {
-  // Migration: handle existing stories without globalCharacterCanon
   const globalCharacterCanon: Record<string, readonly string[]> = {};
-  if (data.globalCharacterCanon) {
-    for (const [name, facts] of Object.entries(data.globalCharacterCanon)) {
-      globalCharacterCanon[name] = [...facts];
-    }
+  for (const [name, facts] of Object.entries(data.globalCharacterCanon)) {
+    globalCharacterCanon[name] = [...facts];
   }
 
-  const structureVersions = data.structureVersions
-    ? data.structureVersions.map(fileDataToVersionedStructure)
-    : [];
+  const structureVersions = data.structureVersions.map(fileDataToVersionedStructure);
 
   return {
     id: parseStoryId(data.id),

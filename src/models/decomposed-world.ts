@@ -10,8 +10,7 @@ export type WorldFactDomain =
   | 'faction'
   | 'technology'
   | 'magic'
-  | 'language'
-  | 'custom'; // Retained for backward compatibility with existing stories
+  | 'language';
 
 export type WorldFactType =
   | 'LAW'

@@ -11,6 +11,11 @@ import {
 import { parsePageId, StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { PageWriterResult } from '@/llm/writer-types';
+import {
+  createMockAnalystResult,
+  createMockPageWriterResult,
+  createMockProtagonistAffect,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -94,7 +99,7 @@ const mockedStructureResult = {
   rawResponse: 'structure',
 };
 
-const openingResult = {
+const openingResult = createMockPageWriterResult({
   narrative:
     'You step into Lanternport as the harbor lights ignite in impossible colors and every captain in the bay turns to watch your arrival in uneasy silence.',
   choices: [
@@ -109,40 +114,21 @@ const openingResult = {
       primaryDelta: 'INFORMATION_REVEALED',
     },
   ],
-  currentLocation: 'Lanternport harbor district',
-  threatsAdded: ['Unwelcome attention from harbor captains'],
-  threatsRemoved: [],
-  constraintsAdded: [],
-  constraintsRemoved: [],
-  threadsAdded: [
-    { text: 'The crimson fog phenomenon', threadType: 'INFORMATION', urgency: 'MEDIUM' },
-  ],
-  threadsResolved: [],
-  newCanonFacts: [{ text: 'Lanternport fog glows crimson at sunset', factType: 'LAW' }],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
-  protagonistAffect: {
+  protagonistAffect: createMockProtagonistAffect({
     primaryEmotion: 'curiosity',
-    primaryIntensity: 'moderate' as const,
+    primaryIntensity: 'moderate',
     primaryCause: 'The unnatural crimson fog and strange lights',
     secondaryEmotions: [{ emotion: 'unease', cause: 'The captains watching in silence' }],
     dominantMotivation: 'Understand the source of the strange phenomena',
-  },
+  }),
   sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
   rawResponse: 'opening',
-};
+});
 
 function buildWriterResult(selectedChoice: string): PageWriterResult {
   if (selectedChoice === 'Investigate the ember trail') {
-    return {
+    return createMockPageWriterResult({
       narrative:
         'You follow embers down alleys of wet stone, where shuttered windows open just enough for whispered warnings and the ash forms a map beneath your boots.',
       choices: [
@@ -157,35 +143,20 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
           primaryDelta: 'INFORMATION_REVEALED',
         },
       ],
-      currentLocation: 'Chapel district alleys',
-      threatsAdded: ['Whispered warnings from hidden watchers'],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [{ text: 'The ash map pattern', threadType: 'INFORMATION', urgency: 'MEDIUM' }],
-      threadsResolved: [],
-      newCanonFacts: [{ text: 'Ash in Lanternport drifts against the wind', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
+      protagonistAffect: createMockProtagonistAffect({
         primaryEmotion: 'determination',
-        primaryIntensity: 'strong' as const,
+        primaryIntensity: 'strong',
         primaryCause: 'Following a clear trail of evidence',
         secondaryEmotions: [{ emotion: 'wariness', cause: 'The whispered warnings' }],
         dominantMotivation: 'Reach the source of the ember trail',
-      },
+      }),
       sceneSummary: 'Test summary of the scene events and consequences.',
       isEnding: false,
       rawResponse: 'continuation-ember',
-    };
+    });
   }
 
-  return {
+  return createMockPageWriterResult({
     narrative:
       'The ferryman speaks in a voice like scraped iron and admits he has rowed passengers to a pier that does not exist on any map, then offers you passage.',
     choices: [
@@ -200,70 +171,38 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
         primaryDelta: 'INFORMATION_REVEALED',
       },
     ],
-    currentLocation: 'Lanternport docks',
-    threatsAdded: [],
-    threatsRemoved: [],
-    constraintsAdded: [],
-    constraintsRemoved: [],
-    threadsAdded: [
-      { text: 'The hidden pier mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' },
-    ],
-    threadsResolved: [],
-    newCanonFacts: [{ text: 'A hidden pier appears only during red fog', factType: 'LAW' }],
-    newCharacterCanonFacts: {},
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
-    protagonistAffect: {
+    protagonistAffect: createMockProtagonistAffect({
       primaryEmotion: 'intrigue',
-      primaryIntensity: 'moderate' as const,
+      primaryIntensity: 'moderate',
       primaryCause: 'The ferryman knows secrets about an unmapped pier',
       secondaryEmotions: [
         { emotion: 'suspicion', cause: 'The ferryman seems too willing to share' },
       ],
       dominantMotivation: 'Learn what the ferryman knows',
-    },
+    }),
     sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: false,
     rawResponse: 'continuation-ferryman',
-  };
+  });
 }
 
 function buildAnalystResult(narrative: string): AnalystResult {
   if (narrative.includes('embers down alleys')) {
-    return {
+    return createMockAnalystResult({
       beatConcluded: true,
       beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [] as string[],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none',
-      npcCoherenceAdherent: true,
-      npcCoherenceIssues: '',
-      rawResponse: 'analyst-raw',
-    };
+      sceneMomentum: 'MAJOR_PROGRESS',
+      objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+      commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+    });
   }
 
-  return {
+  return createMockAnalystResult({
     beatConcluded: false,
-    beatResolution: '',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [] as string[],
-    narrativeSummary: 'The protagonist continues the current scene.',
-    pacingIssueDetected: false,
-    pacingIssueReason: '',
-    recommendedAction: 'none',
-    npcCoherenceAdherent: true,
-    npcCoherenceIssues: '',
-    rawResponse: 'analyst-raw',
-  };
+    sceneMomentum: 'STASIS',
+    objectiveEvidenceStrength: 'NONE',
+    commitmentStrength: 'NONE',
+  });
 }
 
 function createRewriteFetchResponse(): Response {
@@ -511,6 +450,24 @@ describe('story-engine integration', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none' as const,
+        sceneMomentum: 'STASIS' as const,
+        objectiveEvidenceStrength: 'NONE' as const,
+        commitmentStrength: 'NONE' as const,
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
+        entryConditionReadiness: 'NOT_READY' as const,
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -523,6 +480,24 @@ describe('story-engine integration', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none' as const,
+        sceneMomentum: 'STASIS' as const,
+        objectiveEvidenceStrength: 'NONE' as const,
+        commitmentStrength: 'NONE' as const,
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
+        entryConditionReadiness: 'NOT_READY' as const,
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: 'analyst-raw',
       });
 
@@ -657,6 +632,24 @@ describe('story-engine integration', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none' as const,
+        sceneMomentum: 'STASIS' as const,
+        objectiveEvidenceStrength: 'NONE' as const,
+        commitmentStrength: 'NONE' as const,
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
+        entryConditionReadiness: 'NOT_READY' as const,
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -669,6 +662,24 @@ describe('story-engine integration', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none' as const,
+        sceneMomentum: 'STASIS' as const,
+        objectiveEvidenceStrength: 'NONE' as const,
+        commitmentStrength: 'NONE' as const,
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
+        entryConditionReadiness: 'NOT_READY' as const,
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -681,6 +692,24 @@ describe('story-engine integration', () => {
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none' as const,
+        sceneMomentum: 'STASIS' as const,
+        objectiveEvidenceStrength: 'NONE' as const,
+        commitmentStrength: 'NONE' as const,
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
+        entryConditionReadiness: 'NOT_READY' as const,
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: 'analyst-raw',
       });
 

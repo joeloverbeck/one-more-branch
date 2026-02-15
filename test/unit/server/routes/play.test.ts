@@ -1333,6 +1333,7 @@ describe('playRoutes', () => {
         promisesResolved: [],
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: '{}',
       };
       const resultPage = createPage({

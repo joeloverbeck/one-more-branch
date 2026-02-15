@@ -144,7 +144,7 @@ describe('state-modules integration', () => {
 
   describe('barrel export verification', () => {
     it('exports all expected types and functions from @/models', () => {
-      const canonFact: CanonFact = 'test';
+      const canonFact: CanonFact = { text: 'test', factType: 'NORM' };
       const globalCanon: GlobalCanon = [];
       const charCanonFact: CharacterCanonFact = 'test';
       const charCanon: CharacterCanon = [];
@@ -314,23 +314,34 @@ describe('state-modules integration', () => {
   describe('canon functions', () => {
     it('addCanonFact deduplicates case-insensitively', () => {
       let canon: GlobalCanon = [];
-      canon = addCanonFact(canon, 'The sword is magical');
-      canon = addCanonFact(canon, 'THE SWORD IS MAGICAL');
-      canon = addCanonFact(canon, 'the sword is magical');
-      canon = addCanonFact(canon, 'The hero is brave');
+      canon = addCanonFact(canon, { text: 'The sword is magical', factType: 'NORM' });
+      canon = addCanonFact(canon, { text: 'THE SWORD IS MAGICAL', factType: 'NORM' });
+      canon = addCanonFact(canon, { text: 'the sword is magical', factType: 'NORM' });
+      canon = addCanonFact(canon, { text: 'The hero is brave', factType: 'NORM' });
 
       expect(canon).toHaveLength(2);
-      expect(canon).toEqual(['The sword is magical', 'The hero is brave']);
+      expect(canon).toEqual([
+        { text: 'The sword is magical', factType: 'NORM' },
+        { text: 'The hero is brave', factType: 'NORM' },
+      ]);
     });
 
     it('mergeCanonFacts handles multiple facts', () => {
-      const canon: GlobalCanon = ['Existing fact'];
-      const newFacts = ['New fact 1', 'New fact 2', 'Existing fact'];
+      const canon: GlobalCanon = [{ text: 'Existing fact', factType: 'NORM' }];
+      const newFacts: CanonFact[] = [
+        { text: 'New fact 1', factType: 'NORM' },
+        { text: 'New fact 2', factType: 'NORM' },
+        { text: 'Existing fact', factType: 'NORM' },
+      ];
 
       const merged = mergeCanonFacts(canon, newFacts);
 
       expect(merged).toHaveLength(3);
-      expect(merged).toEqual(['Existing fact', 'New fact 1', 'New fact 2']);
+      expect(merged).toEqual([
+        { text: 'Existing fact', factType: 'NORM' },
+        { text: 'New fact 1', factType: 'NORM' },
+        { text: 'New fact 2', factType: 'NORM' },
+      ]);
     });
   });
 });

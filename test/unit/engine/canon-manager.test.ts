@@ -7,11 +7,6 @@ import {
   validateNewFacts,
 } from '../../../src/engine/canon-manager';
 import { createStory } from '../../../src/models';
-import {
-  canonFactText,
-  canonFactType,
-  isTaggedCanonFact,
-} from '../../../src/models/state/canon';
 import type { TaggedCanonFact, CanonFact } from '../../../src/models/state/canon';
 
 describe('Canon manager', () => {
@@ -26,10 +21,16 @@ describe('Canon manager', () => {
         updatedAt: baselineUpdatedAt,
       };
 
-      const updated = updateStoryWithNewCanon(story, ['Fact A', 'Fact B']);
+      const updated = updateStoryWithNewCanon(story, [
+        { text: 'Fact A', factType: 'NORM' },
+        { text: 'Fact B', factType: 'NORM' },
+      ]);
 
       expect(updated).not.toBe(story);
-      expect(updated.globalCanon).toEqual(['Fact A', 'Fact B']);
+      expect(updated.globalCanon).toEqual([
+        { text: 'Fact A', factType: 'NORM' },
+        { text: 'Fact B', factType: 'NORM' },
+      ]);
       expect(updated.updatedAt.getTime()).toBeGreaterThan(baselineUpdatedAt.getTime());
     });
 
@@ -50,13 +51,15 @@ describe('Canon manager', () => {
           title: 'Test Story',
           characterConcept: 'A hopeful knight serving a stormbound kingdom.',
         }),
-        globalCanon: ['The dragon is alive'],
+        globalCanon: [{ text: 'The dragon is alive', factType: 'NORM' }] as CanonFact[],
       };
 
-      const updated = updateStoryWithNewCanon(story, ['  the dragon is alive  ']);
+      const updated = updateStoryWithNewCanon(story, [
+        { text: '  the dragon is alive  ', factType: 'NORM' },
+      ]);
 
       expect(updated).toBe(story);
-      expect(updated.globalCanon).toEqual(['The dragon is alive']);
+      expect(updated.globalCanon).toEqual([{ text: 'The dragon is alive', factType: 'NORM' }]);
     });
 
     it('deduplicates facts and keeps new unique entries', () => {
@@ -65,20 +68,29 @@ describe('Canon manager', () => {
           title: 'Test Story',
           characterConcept: 'A scout crossing the ember dunes at dusk.',
         }),
-        globalCanon: ['The citadel stands'],
+        globalCanon: [{ text: 'The citadel stands', factType: 'NORM' }] as CanonFact[],
       };
 
-      const updated = updateStoryWithNewCanon(story, ['the citadel stands', 'A moon gate exists']);
+      const updated = updateStoryWithNewCanon(story, [
+        { text: 'the citadel stands', factType: 'NORM' },
+        { text: 'A moon gate exists', factType: 'NORM' },
+      ]);
 
-      expect(updated.globalCanon).toEqual(['The citadel stands', 'A moon gate exists']);
+      expect(updated.globalCanon).toEqual([
+        { text: 'The citadel stands', factType: 'NORM' },
+        { text: 'A moon gate exists', factType: 'NORM' },
+      ]);
     });
   });
 
   describe('formatCanonForPrompt', () => {
     it('formats canon as a bulleted list', () => {
-      const formatted = formatCanonForPrompt(['Fact A', 'Fact B']);
+      const formatted = formatCanonForPrompt([
+        { text: 'Fact A', factType: 'NORM' },
+        { text: 'Fact B', factType: 'NORM' },
+      ]);
 
-      expect(formatted).toBe('• Fact A\n• Fact B');
+      expect(formatted).toBe('• [NORM] Fact A\n• [NORM] Fact B');
     });
 
     it('returns empty string for empty canon', () => {
@@ -86,26 +98,59 @@ describe('Canon manager', () => {
     });
 
     it('handles a single fact', () => {
-      expect(formatCanonForPrompt(['Only fact'])).toBe('• Only fact');
+      expect(formatCanonForPrompt([{ text: 'Only fact', factType: 'NORM' }])).toBe(
+        '• [NORM] Only fact'
+      );
+    });
+
+    it('formats tagged facts with type prefix', () => {
+      const canon: CanonFact[] = [{ text: 'Magic is banned', factType: 'LAW' }];
+      expect(formatCanonForPrompt(canon)).toBe('• [LAW] Magic is banned');
+    });
+
+    it('formats multiple tagged facts with different types', () => {
+      const canon: CanonFact[] = [
+        { text: 'The citadel stands', factType: 'NORM' },
+        { text: 'Dragons are rumored to exist', factType: 'RUMOR' },
+        { text: 'The council meets weekly', factType: 'NORM' },
+      ];
+      const formatted = formatCanonForPrompt(canon);
+      expect(formatted).toBe(
+        '• [NORM] The citadel stands\n• [RUMOR] Dragons are rumored to exist\n• [NORM] The council meets weekly'
+      );
+    });
+
+    it('handles all factType values correctly', () => {
+      const types = ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'] as const;
+      for (const factType of types) {
+        const canon: CanonFact[] = [{ text: 'Test fact', factType }];
+        expect(formatCanonForPrompt(canon)).toBe(`• [${factType}] Test fact`);
+      }
     });
   });
 
   describe('mightContradictCanon', () => {
     it('detects alive vs died contradiction', () => {
-      const result = mightContradictCanon(['The dragon is alive'], 'The dragon died in battle');
+      const result = mightContradictCanon(
+        [{ text: 'The dragon is alive', factType: 'NORM' }],
+        'The dragon died in battle'
+      );
 
       expect(result).toBe(true);
     });
 
     it('allows compatible facts about the same entity', () => {
-      const result = mightContradictCanon(['The kingdom exists'], 'The kingdom is prosperous');
+      const result = mightContradictCanon(
+        [{ text: 'The kingdom exists', factType: 'NORM' }],
+        'The kingdom is prosperous'
+      );
 
       expect(result).toBe(false);
     });
 
     it('returns false for unrelated facts', () => {
       const result = mightContradictCanon(
-        ['The lighthouse shines over the western coast'],
+        [{ text: 'The lighthouse shines over the western coast', factType: 'NORM' }],
         'The inventor builds a brass automaton'
       );
 
@@ -113,14 +158,17 @@ describe('Canon manager', () => {
     });
 
     it('handles case-insensitive matching', () => {
-      const result = mightContradictCanon(['THE DRAGON IS ALIVE'], 'the dragon DIED yesterday');
+      const result = mightContradictCanon(
+        [{ text: 'THE DRAGON IS ALIVE', factType: 'NORM' }],
+        'the dragon DIED yesterday'
+      );
 
       expect(result).toBe(true);
     });
 
     it('does not flag matching negation polarity as contradiction', () => {
       const result = mightContradictCanon(
-        ['The dragon died in battle'],
+        [{ text: 'The dragon died in battle', factType: 'NORM' }],
         'The dragon died defending the gate'
       );
 
@@ -130,7 +178,10 @@ describe('Canon manager', () => {
 
   describe('validateNewFacts', () => {
     it('returns potentially problematic facts', () => {
-      const canon = ['The dragon is alive', 'The citadel stands'];
+      const canon: CanonFact[] = [
+        { text: 'The dragon is alive', factType: 'NORM' },
+        { text: 'The citadel stands', factType: 'NORM' },
+      ];
       const newFacts = [
         'The dragon died in battle',
         'The citadel was destroyed at dawn',
@@ -147,7 +198,10 @@ describe('Canon manager', () => {
 
     it('returns empty array when there are no conflicts', () => {
       const problematic = validateNewFacts(
-        ['The kingdom prospers', 'A hidden library exists'],
+        [
+          { text: 'The kingdom prospers', factType: 'NORM' },
+          { text: 'A hidden library exists', factType: 'NORM' },
+        ],
         ['Merchants arrive every spring']
       );
 
@@ -156,7 +210,7 @@ describe('Canon manager', () => {
 
     it('checks all facts in the input array', () => {
       const problematic = validateNewFacts(
-        ['The dragon is alive'],
+        [{ text: 'The dragon is alive', factType: 'NORM' }],
         ['The dragon died in battle', 'The dragon never returned']
       );
 
@@ -226,11 +280,15 @@ describe('Canon manager', () => {
         characterConcept: 'A scout crossing the ember dunes at dusk.',
       });
 
-      const updated = updateStoryWithAllCanon(story, ['The year is 1972'], {
-        Margaret: ['Margaret is the intake nurse'],
-      });
+      const updated = updateStoryWithAllCanon(
+        story,
+        [{ text: 'The year is 1972', factType: 'NORM' }],
+        {
+          Margaret: ['Margaret is the intake nurse'],
+        }
+      );
 
-      expect(updated.globalCanon).toEqual(['The year is 1972']);
+      expect(updated.globalCanon).toEqual([{ text: 'The year is 1972', factType: 'NORM' }]);
       expect(updated.globalCharacterCanon).toEqual({
         Margaret: ['Margaret is the intake nurse'],
       });
@@ -247,9 +305,13 @@ describe('Canon manager', () => {
     it('updates only world canon when character canon is empty', () => {
       const story = createStory({ title: 'Test Story', characterConcept: 'A wandering scholar.' });
 
-      const updated = updateStoryWithAllCanon(story, ['New world fact'], {});
+      const updated = updateStoryWithAllCanon(
+        story,
+        [{ text: 'New world fact', factType: 'NORM' }],
+        {}
+      );
 
-      expect(updated.globalCanon).toEqual(['New world fact']);
+      expect(updated.globalCanon).toEqual([{ text: 'New world fact', factType: 'NORM' }]);
       expect(updated.globalCharacterCanon).toEqual({});
     });
 
@@ -276,67 +338,6 @@ describe('Canon manager', () => {
     });
   });
 
-  describe('Helper functions (canonFactText, canonFactType, isTaggedCanonFact)', () => {
-    it('canonFactText returns text from a tagged fact', () => {
-      const tagged: TaggedCanonFact = { text: 'The dragon sleeps', factType: 'BELIEF' };
-      expect(canonFactText(tagged)).toBe('The dragon sleeps');
-    });
-
-    it('canonFactText returns the string for a bare string fact', () => {
-      expect(canonFactText('The citadel stands')).toBe('The citadel stands');
-    });
-
-    it('canonFactType returns factType from a tagged fact', () => {
-      const tagged: TaggedCanonFact = { text: 'Magic is banned', factType: 'LAW' };
-      expect(canonFactType(tagged)).toBe('LAW');
-    });
-
-    it('canonFactType returns undefined for a bare string fact', () => {
-      expect(canonFactType('The citadel stands')).toBeUndefined();
-    });
-
-    it('isTaggedCanonFact returns true for tagged facts', () => {
-      const tagged: TaggedCanonFact = { text: 'Rumor of gold', factType: 'RUMOR' };
-      expect(isTaggedCanonFact(tagged)).toBe(true);
-    });
-
-    it('isTaggedCanonFact returns false for bare strings', () => {
-      expect(isTaggedCanonFact('Just a string')).toBe(false);
-    });
-
-    it('isTaggedCanonFact returns false for null-ish values cast as CanonFact', () => {
-      // Ensure the guard handles edge cases safely
-      expect(isTaggedCanonFact('' as CanonFact)).toBe(false);
-    });
-  });
-
-  describe('formatCanonForPrompt with tagged facts', () => {
-    it('formats tagged facts with type prefix', () => {
-      const canon: CanonFact[] = [{ text: 'Magic is banned', factType: 'LAW' }];
-      expect(formatCanonForPrompt(canon)).toBe('• [LAW] Magic is banned');
-    });
-
-    it('formats mixed tagged and untagged facts', () => {
-      const canon: CanonFact[] = [
-        'The citadel stands',
-        { text: 'Dragons are rumored to exist', factType: 'RUMOR' },
-        { text: 'The council meets weekly', factType: 'NORM' },
-      ];
-      const formatted = formatCanonForPrompt(canon);
-      expect(formatted).toBe(
-        '• The citadel stands\n• [RUMOR] Dragons are rumored to exist\n• [NORM] The council meets weekly'
-      );
-    });
-
-    it('handles all factType values correctly', () => {
-      const types = ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'] as const;
-      for (const factType of types) {
-        const canon: CanonFact[] = [{ text: 'Test fact', factType }];
-        expect(formatCanonForPrompt(canon)).toBe(`• [${factType}] Test fact`);
-      }
-    });
-  });
-
   describe('updateStoryWithNewCanon with tagged facts', () => {
     it('adds tagged facts preserving their type', () => {
       const story = createStory({
@@ -350,10 +351,10 @@ describe('Canon manager', () => {
       expect(updated.globalCanon).toEqual([{ text: 'The river is poisoned', factType: 'BELIEF' }]);
     });
 
-    it('deduplicates tagged facts against existing bare string canon', () => {
+    it('deduplicates tagged facts against existing tagged canon', () => {
       const story = {
         ...createStory({ title: 'Test', characterConcept: 'A scout.' }),
-        globalCanon: ['The dragon is alive'] as CanonFact[],
+        globalCanon: [{ text: 'The dragon is alive', factType: 'NORM' }] as CanonFact[],
       };
       const tagged: TaggedCanonFact = { text: 'The dragon is alive', factType: 'LAW' };
 
@@ -363,13 +364,15 @@ describe('Canon manager', () => {
       expect(updated).toBe(story);
     });
 
-    it('deduplicates bare string facts against existing tagged canon', () => {
+    it('deduplicates tagged facts against existing tagged canon (reverse)', () => {
       const story = {
         ...createStory({ title: 'Test', characterConcept: 'A scout.' }),
         globalCanon: [{ text: 'The dragon is alive', factType: 'LAW' }] as CanonFact[],
       };
 
-      const updated = updateStoryWithNewCanon(story, ['The dragon is alive']);
+      const updated = updateStoryWithNewCanon(story, [
+        { text: 'The dragon is alive', factType: 'NORM' },
+      ]);
 
       expect(updated).toBe(story);
     });

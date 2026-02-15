@@ -75,7 +75,10 @@ function buildTestStory(overrides?: Partial<Story>): Story {
 
   return {
     ...baseStory,
-    globalCanon: ['fact-1', 'fact-2'],
+    globalCanon: [
+      { text: 'fact-1', factType: 'NORM' as const },
+      { text: 'fact-2', factType: 'NORM' as const },
+    ],
     ...overrides,
   };
 }
@@ -214,30 +217,6 @@ describe('story-repository', () => {
     expect(parsed.structureVersions[1]?.structure.acts[0]?.beats[0]?.name).toBe('Ambush escape');
   });
 
-  it('loadStory defaults structureVersions to empty array for legacy files', async () => {
-    const legacyStory = buildTestStory();
-    createdStoryIds.add(legacyStory.id);
-
-    await ensureDirectory(getStoryDir(legacyStory.id));
-    await writeJsonFile(getStoryFilePath(legacyStory.id), {
-      id: legacyStory.id,
-      title: legacyStory.title,
-      characterConcept: legacyStory.characterConcept,
-      worldbuilding: legacyStory.worldbuilding,
-      tone: legacyStory.tone,
-      globalCanon: legacyStory.globalCanon,
-      globalCharacterCanon: legacyStory.globalCharacterCanon,
-      structure: null,
-      npcs: null,
-      startingSituation: null,
-      createdAt: legacyStory.createdAt.toISOString(),
-      updatedAt: legacyStory.updatedAt.toISOString(),
-    });
-
-    const loaded = await loadStory(legacyStory.id);
-    expect(loaded?.structureVersions).toEqual([]);
-  });
-
   it('loadStory returns null when story does not exist', async () => {
     await expect(loadStory(MISSING_STORY_ID)).resolves.toBeNull();
   });
@@ -251,7 +230,7 @@ describe('story-repository', () => {
     const updatedStory: Story = {
       ...story,
       worldbuilding: 'Updated worldbuilding',
-      globalCanon: ['updated-fact'],
+      globalCanon: [{ text: 'updated-fact', factType: 'NORM' as const }],
       updatedAt: new Date('2025-01-02T00:00:00.000Z'),
     };
 
@@ -259,7 +238,7 @@ describe('story-repository', () => {
 
     const loaded = await loadStory(story.id);
     expect(loaded?.worldbuilding).toBe('Updated worldbuilding');
-    expect(loaded?.globalCanon).toEqual(['updated-fact']);
+    expect(loaded?.globalCanon).toEqual([{ text: 'updated-fact', factType: 'NORM' }]);
     expect(loaded?.structure).toBeNull();
     expect(loaded?.updatedAt.toISOString()).toBe('2025-01-02T00:00:00.000Z');
   });
@@ -346,31 +325,6 @@ describe('story-repository', () => {
     expect(loaded).not.toBeNull();
     expect(loaded?.toneKeywords).toEqual(['gritty', 'visceral', 'tense']);
     expect(loaded?.toneAntiKeywords).toEqual(['whimsical', 'lighthearted']);
-  });
-
-  it('loadStory omits toneKeywords and toneAntiKeywords for legacy files without them', async () => {
-    const legacyStory = buildTestStory();
-    createdStoryIds.add(legacyStory.id);
-
-    await ensureDirectory(getStoryDir(legacyStory.id));
-    await writeJsonFile(getStoryFilePath(legacyStory.id), {
-      id: legacyStory.id,
-      title: legacyStory.title,
-      characterConcept: legacyStory.characterConcept,
-      worldbuilding: legacyStory.worldbuilding,
-      tone: legacyStory.tone,
-      globalCanon: legacyStory.globalCanon,
-      globalCharacterCanon: legacyStory.globalCharacterCanon,
-      structure: null,
-      npcs: null,
-      startingSituation: null,
-      createdAt: legacyStory.createdAt.toISOString(),
-      updatedAt: legacyStory.updatedAt.toISOString(),
-    });
-
-    const loaded = await loadStory(legacyStory.id);
-    expect(loaded?.toneKeywords).toBeUndefined();
-    expect(loaded?.toneAntiKeywords).toBeUndefined();
   });
 
   it('loadStory throws when persisted story id does not match the directory id', async () => {

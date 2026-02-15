@@ -455,7 +455,7 @@ describe('buildContinuationPrompt', () => {
   it('should include global canon when present', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
-      globalCanon: ['Mayor Calder controls the city police through blackmail'],
+      globalCanon: [{ text: 'Mayor Calder controls the city police through blackmail', factType: 'NORM' }],
     });
 
     const user = getUserMessage(messages);

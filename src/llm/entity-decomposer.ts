@@ -40,7 +40,6 @@ const VALID_DOMAINS: readonly WorldFactDomain[] = [
   'technology',
   'magic',
   'language',
-  'custom', // Retained for reading existing stories
 ];
 
 const VALID_FACT_TYPES: readonly WorldFactType[] = [

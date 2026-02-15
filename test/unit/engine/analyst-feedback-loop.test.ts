@@ -14,86 +14,16 @@ import {
   createPage,
   parsePageId,
 } from '@/models';
-import type { AnalystResult } from '@/llm/analyst-types';
 import type { MomentumTrajectory } from '@/llm/generation-pipeline-types';
 import { serializePage, deserializePage } from '@/persistence/page-serializer';
 import { buildContinuationPage, ContinuationPageBuildContext } from '@/engine/page-builder';
 import { buildPlannerContinuationContextSection } from '@/llm/prompts/sections/planner/continuation-context';
 import { countConsecutiveFromEnd } from '@/llm/prompts/sections/planner/continuation-context';
 import type { ContinuationPagePlanContext } from '@/llm/context-types';
-import type { FinalPageGenerationResult } from '@/llm/writer-types';
-
-function buildFullAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
-  return {
-    beatConcluded: false,
-    beatResolution: '',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [],
-    narrativeSummary: 'The protagonist explored the market.',
-    pacingIssueDetected: true,
-    pacingIssueReason: 'Beat 1.1 stalled for 4 pages without advancing objective.',
-    recommendedAction: 'nudge',
-    sceneMomentum: 'STASIS',
-    objectiveEvidenceStrength: 'WEAK_IMPLICIT',
-    commitmentStrength: 'TENTATIVE',
-    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
-    entryConditionReadiness: 'NOT_READY',
-    objectiveAnchors: ['Find the hidden cache'],
-    anchorEvidence: ['The merchant mentioned a cache'],
-    completionGateSatisfied: false,
-    completionGateFailureReason: 'Insufficient evidence of beat objective progress.',
-    toneAdherent: true,
-    toneDriftDescription: '',
-    npcCoherenceAdherent: true,
-    npcCoherenceIssues: '',
-    promisesDetected: [],
-    promisesResolved: [],
-    promisePayoffAssessments: [],
-    threadPayoffAssessments: [],
-    rawResponse: '{"some":"raw"}',
-    ...overrides,
-  };
-}
-
-function buildMockResult(
-  overrides: Partial<FinalPageGenerationResult> = {}
-): FinalPageGenerationResult {
-  return {
-    narrative: 'You step into the corridor.',
-    choices: [
-      { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Go right', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-    ],
-    currentLocation: 'Corridor',
-    threatsAdded: [],
-    threatsRemoved: [],
-    constraintsAdded: [],
-    constraintsRemoved: [],
-    threadsAdded: [],
-    threadsResolved: [],
-    newCanonFacts: [],
-    newCharacterCanonFacts: {},
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
-    protagonistAffect: {
-      primaryEmotion: 'curiosity',
-      primaryIntensity: 'moderate',
-      primaryCause: 'Exploring unknown',
-      secondaryEmotions: [],
-      dominantMotivation: 'Discover secrets',
-    },
-    isEnding: false,
-    sceneSummary: 'Explored the corridor.',
-    rawResponse: 'raw',
-    reconciliationDiagnostics: [],
-    ...overrides,
-  };
-}
+import {
+  createMockAnalystResult,
+  createMockFinalResult,
+} from '../../fixtures/llm-results';
 
 function makeBasePlannerContext(
   overrides: Partial<ContinuationPagePlanContext> = {}
@@ -133,7 +63,7 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     });
 
     it('createPage stores provided analystResult', () => {
-      const ar = buildFullAnalystResult();
+      const ar = createMockAnalystResult();
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'Test.',
@@ -148,7 +78,12 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     });
 
     it('serializes and deserializes analystResult round-trip', () => {
-      const ar = buildFullAnalystResult();
+      const ar = createMockAnalystResult({
+        sceneMomentum: 'STASIS',
+        objectiveAnchors: ['Find the hidden cache'],
+        pacingIssueDetected: true,
+        pacingIssueReason: 'Beat 1.1 stalled for 4 pages without advancing objective.',
+      });
       const page = createPage({
         id: parsePageId(1),
         narrativeText: 'Test.',
@@ -176,24 +111,6 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       expect(deserialized.analystResult?.rawResponse).toBe('');
     });
 
-    it('backward compat: old page JSON without analystResult deserializes to null', () => {
-      const page = createPage({
-        id: parsePageId(1),
-        narrativeText: 'Test.',
-        sceneSummary: 'Test summary.',
-        choices: [createChoice('A'), createChoice('B')],
-        isEnding: false,
-        parentPageId: null,
-        parentChoiceIndex: null,
-      });
-      const serialized = serializePage(page);
-      // Simulate old page JSON without the field
-      delete (serialized as Record<string, unknown>)['analystResult'];
-
-      const deserialized = deserializePage(serialized);
-      expect(deserialized.analystResult).toBeNull();
-    });
-
     it('serializes null analystResult', () => {
       const page = createPage({
         id: parsePageId(1),
@@ -211,8 +128,8 @@ describe('Analyst-to-Planner Feedback Loop', () => {
 
   describe('Phase 1: buildContinuationPage passes analystResult', () => {
     it('passes analystResult to created page', () => {
-      const ar = buildFullAnalystResult();
-      const result = buildMockResult();
+      const ar = createMockAnalystResult();
+      const result = createMockFinalResult();
       const context: ContinuationPageBuildContext = {
         pageId: parsePageId(2),
         parentPageId: parsePageId(1),
@@ -236,7 +153,7 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     });
 
     it('passes null analystResult when not provided', () => {
-      const result = buildMockResult();
+      const result = createMockFinalResult();
       const context: ContinuationPageBuildContext = {
         pageId: parsePageId(2),
         parentPageId: parsePageId(1),

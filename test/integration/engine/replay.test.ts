@@ -11,6 +11,11 @@ import type { PageWriterResult } from '@/llm/writer-types';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { parsePageId, StoryId } from '@/models';
+import {
+  createMockAnalystResult,
+  createMockProtagonistAffect,
+  createMockFinalResult,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -124,7 +129,7 @@ const mockedStructureResult = {
   rawResponse: 'structure',
 };
 
-const openingResult = {
+const openingResult = createMockFinalResult({
   narrative:
     'At first bell you cross the bridge into Brightwater and the river mirrors an unfamiliar constellation that shifts whenever you speak your own name.',
   choices: [
@@ -139,12 +144,17 @@ const openingResult = {
       primaryDelta: 'INFORMATION_REVEALED',
     },
   ],
-  // New active state fields
+  protagonistAffect: createMockProtagonistAffect({
+    primaryEmotion: 'curious',
+    primaryIntensity: 'moderate',
+    primaryCause: 'The unfamiliar constellation in the river',
+    secondaryEmotions: [],
+    dominantMotivation: 'Understand the strange phenomenon',
+  }),
+  sceneSummary: 'Test summary of the scene events and consequences.',
+  isEnding: false,
+  rawResponse: 'opening',
   currentLocation: 'Brightwater bridge',
-  threatsAdded: [],
-  threatsRemoved: [],
-  constraintsAdded: [],
-  constraintsRemoved: [],
   threadsAdded: [
     {
       text: 'THREAD_CONSTELLATION: Investigate the mirrored constellation',
@@ -152,30 +162,9 @@ const openingResult = {
       urgency: 'MEDIUM',
     },
   ],
-  threadsResolved: [],
-  newCanonFacts: [{ text: 'Brightwater river reflects impossible constellations', factType: 'LAW' }],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
-  protagonistAffect: {
-    primaryEmotion: 'curious',
-    primaryIntensity: 'moderate',
-    primaryCause: 'The unfamiliar constellation in the river',
-    secondaryEmotions: [],
-    dominantMotivation: 'Understand the strange phenomenon',
-  },
-  sceneSummary: 'Test summary of the scene events and consequences.',
-  isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
-  rawResponse: 'opening',
-};
+});
 
-const writerResult = {
+const writerResult = createMockFinalResult({
   narrative:
     'You pursue the mirrored stars along the embankment until engraved mile markers begin counting backward and a hidden gate rises from the riverbank.',
   choices: [
@@ -186,55 +175,28 @@ const writerResult = {
       primaryDelta: 'INFORMATION_REVEALED',
     },
   ],
-  currentLocation: 'Riverside embankment',
-  threatsAdded: [],
-  threatsRemoved: [],
-  constraintsAdded: [],
-  constraintsRemoved: [],
-  threadsAdded: [
-    { text: 'THREAD_GATE: Explore the hidden gate', threadType: 'INFORMATION', urgency: 'MEDIUM' },
-  ],
-  threadsResolved: [],
-  newCanonFacts: [{ text: 'Brightwater has a hidden gate beneath the embankment', factType: 'LAW' }],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
-  protagonistAffect: {
+  protagonistAffect: createMockProtagonistAffect({
     primaryEmotion: 'intrigued',
-    primaryIntensity: 'high',
+    primaryIntensity: 'strong',
     primaryCause: 'Discovery of the hidden gate',
     secondaryEmotions: [],
     dominantMotivation: 'Uncover what lies beyond the gate',
-  },
+  }),
   sceneSummary: 'Test summary of the scene events and consequences.',
   isEnding: false,
   rawResponse: 'continuation',
-};
+  currentLocation: 'Riverside embankment',
+  threadsAdded: [
+    { text: 'THREAD_GATE: Explore the hidden gate', threadType: 'INFORMATION', urgency: 'MEDIUM' },
+  ],
+});
 
-const defaultAnalystResult = {
+const defaultAnalystResult = createMockAnalystResult({
   beatConcluded: false,
-  beatResolution: '',
-  deviationDetected: false,
-  deviationReason: '',
-  invalidatedBeatIds: [] as string[],
-  narrativeSummary: 'The protagonist continues the current scene.',
-  pacingIssueDetected: false,
-  pacingIssueReason: '',
-  recommendedAction: 'none' as const,
-  toneAdherent: true,
-  toneDriftDescription: '',
-  npcCoherenceAdherent: true,
-  npcCoherenceIssues: '',
-  promisesDetected: [],
-  promisesResolved: [],
-  promisePayoffAssessments: [],
-  threadPayoffAssessments: [],
-  rawResponse: 'analyst-raw',
-};
+  sceneMomentum: 'STASIS',
+  objectiveEvidenceStrength: 'NONE',
+  commitmentStrength: 'NONE',
+});
 
 describe('story replay integration', () => {
   const createdStoryIds = new Set<StoryId>();

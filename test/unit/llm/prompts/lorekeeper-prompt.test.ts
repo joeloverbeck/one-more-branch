@@ -178,7 +178,10 @@ describe('buildLorekeeperPrompt', () => {
 
   it('includes global canon when present', () => {
     const context = buildMinimalContext({
-      globalCanon: ['The eastern gate is sealed', 'Dragons are extinct'],
+      globalCanon: [
+        { text: 'The eastern gate is sealed', factType: 'NORM' },
+        { text: 'Dragons are extinct', factType: 'NORM' },
+      ],
     });
     const messages = buildLorekeeperPrompt(context);
     const userPrompt = messages[1]?.content ?? '';

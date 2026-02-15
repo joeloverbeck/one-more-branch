@@ -275,26 +275,6 @@ describe('Story', () => {
       ).toBe(false);
     });
 
-    it('returns false when only legacy storyArc exists and structure is missing', () => {
-      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
-      const { structure: _structure, ...storyWithoutStructure } = story;
-      expect(_structure).toBeNull();
-      const legacyStory = {
-        ...storyWithoutStructure,
-        storyArc: 'Legacy arc',
-      } as unknown;
-
-      expect(isStory(legacyStory)).toBe(false);
-    });
-
-    it('returns true for legacy shape without structureVersions', () => {
-      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
-      const { structureVersions: _versions, ...legacyCompatibleStory } = story;
-      expect(_versions).toEqual([]);
-
-      expect(isStory(legacyCompatibleStory)).toBe(true);
-    });
-
     it('returns false when structureVersions contains invalid entries', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
       expect(isStory({ ...story, structureVersions: ['not-a-version'] })).toBe(false);

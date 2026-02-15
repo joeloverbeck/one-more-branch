@@ -15,8 +15,8 @@ export interface AccumulatedStructureStateFileData {
   currentActIndex: number;
   currentBeatIndex: number;
   beatProgressions: BeatProgressionFileData[];
-  pagesInCurrentBeat?: number;
-  pacingNudge?: string | null;
+  pagesInCurrentBeat: number;
+  pacingNudge: string | null;
 }
 
 export interface SecondaryEmotionFileData {
@@ -151,15 +151,15 @@ export interface AnalystResultFileData {
   anchorEvidence: string[];
   completionGateSatisfied: boolean;
   completionGateFailureReason: string;
-  toneAdherent?: boolean;
-  toneDriftDescription?: string;
-  npcCoherenceAdherent?: boolean;
-  npcCoherenceIssues?: string;
-  promisesDetected?: DetectedPromiseFileData[];
-  promisesResolved?: string[];
-  promisePayoffAssessments?: PromisePayoffAssessmentFileData[];
-  threadPayoffAssessments?: ThreadPayoffAssessmentFileData[];
-  relationshipShiftsDetected?: DetectedRelationshipShiftFileData[];
+  toneAdherent: boolean;
+  toneDriftDescription: string;
+  npcCoherenceAdherent: boolean;
+  npcCoherenceIssues: string;
+  promisesDetected: DetectedPromiseFileData[];
+  promisesResolved: string[];
+  promisePayoffAssessments: PromisePayoffAssessmentFileData[];
+  threadPayoffAssessments: ThreadPayoffAssessmentFileData[];
+  relationshipShiftsDetected: DetectedRelationshipShiftFileData[];
 }
 
 export interface PageFileData {
@@ -207,17 +207,17 @@ export interface PageFileData {
   accumulatedCharacterState: Record<string, KeyedEntryFileData[]>;
   accumulatedStructureState: AccumulatedStructureStateFileData;
   protagonistAffect: ProtagonistAffectFileData;
-  structureVersionId?: string | null;
-  storyBible?: StoryBibleFileData | null;
-  analystResult?: AnalystResultFileData | null;
-  threadAges?: Record<string, number>;
+  structureVersionId: string | null;
+  storyBible: StoryBibleFileData | null;
+  analystResult: AnalystResultFileData | null;
+  threadAges: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
-  resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
-  resolvedPromiseMeta?: Record<string, { promiseType: string; urgency: string }>;
-  npcAgendaUpdates?: NpcAgendaFileData[];
-  accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;
-  npcRelationshipUpdates?: NpcRelationshipFileData[];
-  accumulatedNpcRelationships?: Record<string, NpcRelationshipFileData>;
+  resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
+  resolvedPromiseMeta: Record<string, { promiseType: string; urgency: string }>;
+  npcAgendaUpdates: NpcAgendaFileData[];
+  accumulatedNpcAgendas: Record<string, NpcAgendaFileData>;
+  npcRelationshipUpdates: NpcRelationshipFileData[];
+  accumulatedNpcRelationships: Record<string, NpcRelationshipFileData>;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

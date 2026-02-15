@@ -1,97 +1,24 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../../../src/llm/result-merger.js';
-import type { StateReconciliationResult } from '../../../src/engine/state-reconciler-types.js';
-import type { AnalystResult } from '../../../src/llm/analyst-types.js';
-import type { PageWriterResult } from '../../../src/llm/writer-types.js';
 import { ThreatType } from '../../../src/models/index.js';
-
-function createPageWriterResult(overrides: Partial<PageWriterResult> = {}): PageWriterResult {
-  return {
-    narrative: 'The hero entered the cave.',
-    choices: [
-      { text: 'Go left', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
-      { text: 'Go right', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-    ],
-    sceneSummary: 'The hero enters a dark cave and encounters a hostile goblin.',
-    protagonistAffect: {
-      primaryEmotion: 'determination',
-      primaryIntensity: 'moderate',
-      primaryCause: 'The quest ahead',
-      secondaryEmotions: [],
-      dominantMotivation: 'Find the treasure',
-    },
-    isEnding: false,
-    rawResponse: 'writer raw response',
-    ...overrides,
-  };
-}
-
-function createReconciliationResult(
-  overrides: Partial<StateReconciliationResult> = {}
-): StateReconciliationResult {
-  return {
-    currentLocation: 'Reconciled cave',
-    threatsAdded: [
-      {
-        text: 'THREAT_BATS_RECONCILED: Confirmed bat swarm',
-        threatType: ThreatType.ENVIRONMENTAL,
-      },
-    ],
-    threatsRemoved: [],
-    constraintsAdded: [],
-    constraintsRemoved: [],
-    threadsAdded: [{ text: 'Golden chest reconciled', threadType: 'QUEST', urgency: 'MEDIUM' }],
-    threadsResolved: [],
-    newCanonFacts: [{ text: 'Reconciler accepted cave continuity', factType: 'LAW' }],
-    newCharacterCanonFacts: { Goblin: ['Reconciler confirms goblin fear of fire'] },
-    inventoryAdded: ['Reconciled torch'],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
-    characterStateChangesAdded: [{ characterName: 'Goblin', states: ['Cautious'] }],
-    characterStateChangesRemoved: [],
-    reconciliationDiagnostics: [{ code: 'INFO', message: 'All checks passed' }],
-    ...overrides,
-  };
-}
-
-function createAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
-  return {
-    beatConcluded: false,
-    beatResolution: '',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [],
-    narrativeSummary: 'The protagonist continues the current scene.',
-    pacingIssueDetected: false,
-    pacingIssueReason: '',
-    recommendedAction: 'none',
-    sceneMomentum: 'STASIS',
-    objectiveEvidenceStrength: 'NONE',
-    commitmentStrength: 'NONE',
-    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
-    entryConditionReadiness: 'NOT_READY',
-    objectiveAnchors: [],
-    anchorEvidence: [],
-    completionGateSatisfied: false,
-    completionGateFailureReason: '',
-    toneAdherent: true,
-    toneDriftDescription: '',
-    npcCoherenceAdherent: true,
-    npcCoherenceIssues: '',
-    promisesDetected: [],
-    promisesResolved: [],
-    promisePayoffAssessments: [],
-    threadPayoffAssessments: [],
-    rawResponse: 'analyst raw response',
-    ...overrides,
-  };
-}
+import {
+  createMockPageWriterResult,
+  createMockReconciliationResult,
+  createMockAnalystResult,
+} from '../../fixtures/llm-results.js';
 
 describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
   it('merges creative writer fields with reconciled deltas and analyst fields', () => {
-    const writer = createPageWriterResult();
-    const reconciliation = createReconciliationResult();
-    const analyst = createAnalystResult({
+    const writer = createMockPageWriterResult();
+    const reconciliation = createMockReconciliationResult({
+      currentLocation: 'Reconciled cave',
+      threatsAdded: [
+        {
+          text: 'THREAT_BATS_RECONCILED: Confirmed bat swarm',
+          threatType: ThreatType.ENVIRONMENTAL,
+        },
+      ],
+    });
+    const analyst = createMockAnalystResult({
       beatConcluded: true,
       beatResolution: 'The scene stabilizes',
     });
@@ -116,8 +43,8 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
   });
 
   it('uses writer rawResponse and preserves reconciliation diagnostics', () => {
-    const writer = createPageWriterResult({ rawResponse: 'writer-only-raw' });
-    const reconciliation = createReconciliationResult({
+    const writer = createMockPageWriterResult({ rawResponse: 'writer-only-raw' });
+    const reconciliation = createMockReconciliationResult({
       reconciliationDiagnostics: [{ code: 'WARN', message: 'diagnostic detail' }],
     });
 

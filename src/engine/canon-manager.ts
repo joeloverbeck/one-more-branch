@@ -2,8 +2,6 @@ import {
   CanonFact,
   GlobalCanon,
   Story,
-  canonFactText,
-  canonFactType,
   mergeCanonFacts,
 } from '../models';
 import { mergeCharacterCanonFacts } from './character-canon-manager';
@@ -116,11 +114,7 @@ export function formatCanonForPrompt(canon: GlobalCanon): string {
   }
 
   return canon
-    .map((fact) => {
-      const text = canonFactText(fact);
-      const type = canonFactType(fact);
-      return type ? `• [${type}] ${text}` : `• ${text}`;
-    })
+    .map((fact) => `• [${fact.factType}] ${fact.text}`)
     .join('\n');
 }
 
@@ -130,7 +124,7 @@ export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string
   const newFactTokens = extractEntityTokens(normalizedNewFact);
 
   for (const existingFact of existingCanon) {
-    const normalizedExistingFact = canonFactText(existingFact).toLowerCase();
+    const normalizedExistingFact = existingFact.text.toLowerCase();
     const existingFactHasNegation = hasNegationPattern(normalizedExistingFact);
 
     if (existingFactHasNegation === newFactHasNegation) {

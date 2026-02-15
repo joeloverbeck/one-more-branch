@@ -12,41 +12,24 @@ export interface TaggedCanonFact {
   readonly factType: WorldFactType;
 }
 
-export type CanonFact = string | TaggedCanonFact;
+export type CanonFact = TaggedCanonFact;
 export type GlobalCanon = readonly CanonFact[];
-
-export function isTaggedCanonFact(fact: CanonFact): fact is TaggedCanonFact {
-  return typeof fact === 'object' && fact !== null && 'text' in fact && 'factType' in fact;
-}
-
-export function canonFactText(fact: CanonFact): string {
-  return isTaggedCanonFact(fact) ? fact.text : fact;
-}
-
-export function canonFactType(fact: CanonFact): WorldFactType | undefined {
-  return isTaggedCanonFact(fact) ? fact.factType : undefined;
-}
 
 /**
  * Adds a canon fact to the global canon if not already present.
  * Uses case-insensitive deduplication based on fact text.
  */
 export function addCanonFact(canon: GlobalCanon, fact: CanonFact): GlobalCanon {
-  const factText = canonFactText(fact);
-  const normalizedFact = normalizeForComparison(factText);
+  const normalizedFact = normalizeForComparison(fact.text);
   const exists = canon.some(
-    (existingFact) => normalizeForComparison(canonFactText(existingFact)) === normalizedFact
+    (existingFact) => normalizeForComparison(existingFact.text) === normalizedFact
   );
 
   if (exists) {
     return canon;
   }
 
-  if (isTaggedCanonFact(fact)) {
-    return [...canon, { text: fact.text.trim(), factType: fact.factType }];
-  }
-
-  return [...canon, fact.trim()];
+  return [...canon, { text: fact.text.trim(), factType: fact.factType }];
 }
 
 /**

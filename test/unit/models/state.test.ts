@@ -410,12 +410,19 @@ describe('State utilities', () => {
   });
 
   describe('canon utilities', () => {
+    const factA: { text: string; factType: 'NORM' } = { text: 'Fact A', factType: 'NORM' };
+    const factB: { text: string; factType: 'NORM' } = { text: 'Fact B', factType: 'NORM' };
+    const kingdomFact: { text: string; factType: 'NORM' } = {
+      text: 'The kingdom exists',
+      factType: 'NORM',
+    };
+
     it('adds and merges canon facts with case-insensitive dedupe', () => {
-      expect(addCanonFact(['Fact A'], 'Fact B')).toEqual(['Fact A', 'Fact B']);
-      expect(addCanonFact(['The kingdom exists'], 'THE KINGDOM EXISTS')).toEqual([
-        'The kingdom exists',
-      ]);
-      expect(mergeCanonFacts(['Fact A'], ['Fact A', 'Fact B'])).toEqual(['Fact A', 'Fact B']);
+      expect(addCanonFact([factA], factB)).toEqual([factA, factB]);
+      expect(
+        addCanonFact([kingdomFact], { text: 'THE KINGDOM EXISTS', factType: 'NORM' })
+      ).toEqual([kingdomFact]);
+      expect(mergeCanonFacts([factA], [factA, factB])).toEqual([factA, factB]);
     });
   });
 });

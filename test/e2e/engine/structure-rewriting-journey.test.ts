@@ -10,6 +10,11 @@ import {
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { PageWriterResult } from '@/llm/writer-types';
+import {
+  createMockAnalystResult,
+  createMockFinalResult,
+  createMockStoryStructure,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -53,68 +58,83 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 
 const TEST_PREFIX = 'E2E TEST STRREWSYS-016';
 
-const mockedStructureResult = {
+const mockedStructureResult = createMockStoryStructure({
   overallTheme: 'Protect the city while exposing institutional betrayal.',
   acts: [
     {
+      id: '1',
       name: 'Act I - Fracture',
       objective: 'Discover how the alliance is manipulated.',
       stakes: 'Failure locks the city into authoritarian control.',
       entryCondition: 'A public emergency forces immediate action.',
       beats: [
         {
+          id: '1.1',
           name: 'Alliance commitment',
           description: 'Publicly commit to a risky alliance.',
           objective: 'Gain temporary access to restricted circles.',
+          role: 'setup',
         },
         {
+          id: '1.2',
           name: 'Alliance control map',
           description: 'Privately map who controls the alliance.',
           objective: 'Find leverage before exposure.',
+          role: 'escalation',
         },
       ],
     },
     {
+      id: '2',
       name: 'Act II - Countermove',
       objective: 'Break the alliance command network.',
       stakes: 'Failure gives the regime permanent narrative control.',
       entryCondition: 'The first command links are identified.',
       beats: [
         {
+          id: '2.1',
           name: 'Command relay infiltration',
           description: 'Infiltrate the command relay.',
           objective: 'Extract plans before they are burned.',
+          role: 'escalation',
         },
         {
+          id: '2.2',
           name: 'Informant protection',
           description: 'Protect informants from retaliation.',
           objective: 'Keep evidence channels alive.',
+          role: 'turning_point',
         },
       ],
     },
     {
+      id: '3',
       name: 'Act III - Reckoning',
       objective: 'Force a public reckoning.',
       stakes: 'Failure normalizes the coup.',
       entryCondition: 'Enough evidence exists for direct challenge.',
       beats: [
         {
+          id: '3.1',
           name: 'Witness assembly',
           description: 'Assemble witnesses for public testimony.',
           objective: 'Make suppression impossible.',
+          role: 'escalation',
         },
         {
+          id: '3.2',
           name: 'Civic forum confrontation',
           description: 'Confront leadership in the civic forum.',
           objective: 'Resolve the conflict with public accountability.',
+          role: 'resolution',
         },
       ],
     },
   ],
   rawResponse: 'initial-structure',
-};
+});
 
-const openingResult = {
+const openingResult = createMockFinalResult({
   narrative:
     'You step onto the flooded parliament steps and swear temporary loyalty so you can track who is rewriting emergency laws overnight.',
   choices: [
@@ -131,34 +151,21 @@ const openingResult = {
   ],
   currentLocation: 'Flooded parliament steps',
   threatsAdded: ['Regime surveillance on parliament grounds'],
-  threatsRemoved: [],
   constraintsAdded: ['Sworn temporary loyalty to alliance'],
-  constraintsRemoved: [],
   threadsAdded: [
     { text: 'Tracking emergency law rewrites', threadType: 'INFORMATION', urgency: 'MEDIUM' },
   ],
-  threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'determination',
-    primaryIntensity: 7,
+    primaryIntensity: 'overwhelming',
     primaryCause: 'Infiltrating alliance to expose law manipulation',
     secondaryEmotions: ['caution', 'resolve'],
     dominantMotivation: 'Discover who controls emergency law changes',
   },
   newCanonFacts: [{ text: 'Emergency laws can be changed between bell strikes', factType: 'LAW' }],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
   sceneSummary: 'Test summary of the scene events and consequences.',
-  isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
   rawResponse: 'opening',
-};
+});
 
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
@@ -239,7 +246,7 @@ function createRewriteFetchResponse(): Response {
 
 function buildWriterResult(selectedChoice: string): PageWriterResult {
   if (selectedChoice === 'Commit to the alliance publicly') {
-    return {
+    return createMockFinalResult({
       narrative:
         'Inside the alliance chamber you copy sealed dispatches proving law edits are synchronized to private signal towers.',
       choices: [
@@ -255,37 +262,25 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
         },
       ],
       currentLocation: 'Alliance chamber interior',
-      threatsAdded: [],
-      threatsRemoved: [],
       constraintsAdded: ['Copied dispatches as evidence'],
-      constraintsRemoved: [],
       threadsAdded: [
         { text: 'Signal tower coordination exposed', threadType: 'INFORMATION', urgency: 'MEDIUM' },
       ],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'triumph',
-        primaryIntensity: 7,
+        primaryIntensity: 'overwhelming',
         primaryCause: 'Successfully obtaining proof of law manipulation',
         secondaryEmotions: ['anticipation', 'tension'],
         dominantMotivation: 'Expose signal tower coordination to the public',
       },
       newCanonFacts: [{ text: 'Signal towers coordinate legal edits by district', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: 'continuation-initial',
-    };
+    });
   }
 
   if (selectedChoice === 'Leak your true intent to a dockworker ally') {
-    return {
+    return createMockFinalResult({
       narrative:
         'Your covert leak is exposed, and the alliance recasts you as a loyal enforcer, invalidating the original infiltration route.',
       choices: [
@@ -302,7 +297,6 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
       ],
       currentLocation: 'Alliance controlled territory',
       threatsAdded: ['Alliance propaganda targeting protagonist'],
-      threatsRemoved: [],
       constraintsAdded: ['Cover identity compromised'],
       constraintsRemoved: ['Infiltration route access'],
       threadsAdded: [
@@ -312,110 +306,75 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
           urgency: 'MEDIUM',
         },
       ],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'dismay',
-        primaryIntensity: 8,
+        primaryIntensity: 'overwhelming',
         primaryCause: 'Cover blown and publicly reframed as regime loyalist',
         secondaryEmotions: ['frustration', 'desperation'],
         dominantMotivation: 'Rebuild credibility and salvage mission',
       },
       newCanonFacts: [{ text: 'Alliance propaganda can invert public loyalties in a single night', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: 'continuation-deviation',
-    };
+    });
   }
 
-  return {
+  return createMockFinalResult({
     narrative:
       'You and the dockworkers publish authenticated dispatches, forcing an emergency vote that dismantles the alliance command structure before dawn.',
     choices: [],
     currentLocation: 'Civic forum',
-    threatsAdded: [],
     threatsRemoved: ['Alliance command structure'],
-    constraintsAdded: [],
     constraintsRemoved: ['Alliance emergency powers'],
-    threadsAdded: [],
     threadsResolved: ['Emergency law manipulation', 'Alliance control over city'],
     protagonistAffect: {
       primaryEmotion: 'vindication',
-      primaryIntensity: 9,
+      primaryIntensity: 'overwhelming',
       primaryCause: 'Successfully dismantling alliance emergency authority',
       secondaryEmotions: ['relief', 'pride'],
       dominantMotivation: 'Ensure lasting accountability for the regime',
     },
     newCanonFacts: [{ text: 'Civic votes can immediately revoke emergency command chains', factType: 'LAW' }],
-    newCharacterCanonFacts: {},
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
     sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: true,
     rawResponse: 'continuation-ending',
-  };
+  });
 }
 
 function buildAnalystResult(narrative: string): AnalystResult {
   if (narrative.includes('copy sealed dispatches')) {
-    return {
+    return createMockAnalystResult({
       beatConcluded: true,
       beatResolution: 'Secured proof that alliance command controls emergency law edits.',
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [] as string[],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none',
-      npcCoherenceAdherent: true,
-      npcCoherenceIssues: '',
+      sceneMomentum: 'MAJOR_PROGRESS',
+      objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+      commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
       rawResponse: 'analyst-raw',
-    };
+    });
   }
 
   if (narrative.includes('covert leak is exposed')) {
-    return {
-      beatConcluded: false,
-      beatResolution: '',
+    return createMockAnalystResult({
       deviationDetected: true,
       deviationReason:
         'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
       invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
       narrativeSummary: 'Public perception now places the protagonist inside alliance leadership.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none',
-      npcCoherenceAdherent: true,
-      npcCoherenceIssues: '',
+      sceneMomentum: 'REVERSAL_OR_SETBACK',
+      objectiveEvidenceStrength: 'NONE',
+      commitmentStrength: 'NONE',
       rawResponse: 'analyst-raw',
-    };
+    });
   }
 
-  return {
+  return createMockAnalystResult({
     beatConcluded: true,
     beatResolution: 'Alliance emergency authority ended through public accountability.',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [] as string[],
-    narrativeSummary: 'The protagonist continues the current scene.',
-    pacingIssueDetected: false,
-    pacingIssueReason: '',
-    recommendedAction: 'none',
-    npcCoherenceAdherent: true,
-    npcCoherenceIssues: '',
+    sceneMomentum: 'MAJOR_PROGRESS',
+    objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+    commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
     rawResponse: 'analyst-raw',
-  };
+  });
 }
 
 describe('Structure Rewriting Journey E2E', () => {

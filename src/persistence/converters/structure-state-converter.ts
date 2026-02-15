@@ -32,7 +32,7 @@ export function fileDataToStructureState(
       status: beatProgression.status,
       resolution: beatProgression.resolution,
     })),
-    pagesInCurrentBeat: data.pagesInCurrentBeat ?? 0,
-    pacingNudge: data.pacingNudge ?? null,
+    pagesInCurrentBeat: data.pagesInCurrentBeat,
+    pacingNudge: data.pacingNudge,
   };
 }

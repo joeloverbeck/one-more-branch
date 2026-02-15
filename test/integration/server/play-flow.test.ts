@@ -12,6 +12,11 @@ import { reconcileState } from '@/engine/state-reconciler';
 import type { StoryId } from '@/models';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
+import {
+  createMockAnalystResult,
+  createMockPageWriterResult,
+  createMockProtagonistAffect,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -253,45 +258,30 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   });
 
   it('creates a story through POST /stories/create with mocked LLM output', async () => {
-    mockedGenerateOpeningPage.mockResolvedValueOnce({
-      narrative: 'You find yourself in a dark forest...',
-      choices: [
-        { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        {
-          text: 'Follow the path',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
-        },
-        { text: 'Climb a tree', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
-      ],
-      currentLocation: 'Dark forest',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
-      newCanonFacts: [{ text: 'The forest is ancient', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'curious',
-        primaryIntensity: 'moderate',
-        primaryCause: 'Strange surroundings',
-        secondaryEmotions: [],
-        dominantMotivation: 'Explore',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
-      rawResponse: 'opening',
-    });
+    mockedGenerateOpeningPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'You find yourself in a dark forest...',
+        choices: [
+          { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          {
+            text: 'Follow the path',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
+          { text: 'Climb a tree', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'curious',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Strange surroundings',
+          secondaryEmotions: [],
+          dominantMotivation: 'Explore',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'opening',
+      })
+    );
 
     const { res, status, render, redirect } = createMockResponse();
 
@@ -320,40 +310,25 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   });
 
   it('generates a continuation page through POST /play/:storyId/choice', async () => {
-    mockedGenerateOpeningPage.mockResolvedValueOnce({
-      narrative: 'Initial narrative...',
-      choices: [
-        { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-      ],
-      currentLocation: 'Starting location',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
-      newCanonFacts: [],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'neutral',
-        primaryIntensity: 'low',
-        primaryCause: 'Beginning of journey',
-        secondaryEmotions: [],
-        dominantMotivation: 'Progress',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
-      rawResponse: 'opening',
-    });
+    mockedGenerateOpeningPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'Initial narrative...',
+        choices: [
+          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'neutral',
+          primaryIntensity: 'low',
+          primaryCause: 'Beginning of journey',
+          secondaryEmotions: [],
+          dominantMotivation: 'Progress',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'opening',
+      })
+    );
 
     const createRes = createMockResponse();
     void createStoryHandler(
@@ -381,54 +356,37 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     await waitForMock(beginRes.json);
 
-    mockedGenerateWriterPage.mockResolvedValueOnce({
-      narrative: 'You chose wisely...',
-      choices: [
-        { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        {
-          text: 'Inspect surroundings',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
-        },
-      ],
-      currentLocation: 'Next location',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
-      newCanonFacts: [],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'satisfied',
-        primaryIntensity: 'moderate',
-        primaryCause: 'Good choice',
-        secondaryEmotions: [],
-        dominantMotivation: 'Continue',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      rawResponse: 'continuation',
-    });
-    mockedGenerateAnalystEvaluation.mockResolvedValueOnce({
-      beatConcluded: false,
-      beatResolution: '',
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none' as const,
-      rawResponse: 'analyst-raw',
-    });
+    mockedGenerateWriterPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'You chose wisely...',
+        choices: [
+          { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          {
+            text: 'Inspect surroundings',
+            choiceType: 'INVESTIGATION',
+            primaryDelta: 'INFORMATION_REVEALED',
+          },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'satisfied',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Good choice',
+          secondaryEmotions: [],
+          dominantMotivation: 'Continue',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'continuation',
+      })
+    );
+    mockedGenerateAnalystEvaluation.mockResolvedValueOnce(
+      createMockAnalystResult({
+        beatConcluded: false,
+        sceneMomentum: 'STASIS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+      })
+    );
 
     const choiceRes = createMockResponse();
     void chooseHandler(
@@ -473,40 +431,25 @@ describe('Play Flow Integration (Mocked LLM)', () => {
   });
 
   it('replays an existing branch without a second continuation generation', async () => {
-    mockedGenerateOpeningPage.mockResolvedValueOnce({
-      narrative: 'Start...',
-      choices: [
-        { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Wait', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-      ],
-      currentLocation: 'Starting point',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
-      newCanonFacts: [],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'ready',
-        primaryIntensity: 'moderate',
-        primaryCause: 'Prepared to act',
-        secondaryEmotions: [],
-        dominantMotivation: 'Move forward',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
-      rawResponse: 'opening',
-    });
+    mockedGenerateOpeningPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'Start...',
+        choices: [
+          { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Wait', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'ready',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Prepared to act',
+          secondaryEmotions: [],
+          dominantMotivation: 'Move forward',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'opening',
+      })
+    );
 
     const createRes = createMockResponse();
     void createStoryHandler(
@@ -534,50 +477,33 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     await waitForMock(beginRes.json);
 
-    mockedGenerateWriterPage.mockResolvedValueOnce({
-      narrative: 'Page 2 content...',
-      choices: [
-        { text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Turn back', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-      ],
-      currentLocation: 'Second location',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
-      newCanonFacts: [],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'determined',
-        primaryIntensity: 'moderate',
-        primaryCause: 'Progress made',
-        secondaryEmotions: [],
-        dominantMotivation: 'Keep going',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      rawResponse: 'continuation',
-    });
-    mockedGenerateAnalystEvaluation.mockResolvedValueOnce({
-      beatConcluded: false,
-      beatResolution: '',
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none' as const,
-      rawResponse: 'analyst-raw',
-    });
+    mockedGenerateWriterPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'Page 2 content...',
+        choices: [
+          { text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Turn back', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'determined',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Progress made',
+          secondaryEmotions: [],
+          dominantMotivation: 'Keep going',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'continuation',
+      })
+    );
+    mockedGenerateAnalystEvaluation.mockResolvedValueOnce(
+      createMockAnalystResult({
+        beatConcluded: false,
+        sceneMomentum: 'STASIS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+      })
+    );
 
     const firstChoiceRes = createMockResponse();
     void chooseHandler(
@@ -667,48 +593,25 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         rawResponse: 'accountant-continuation-threads',
       });
 
-    mockedGenerateOpeningPage.mockResolvedValueOnce({
-      narrative: 'Opening scene with multiple active threads.',
-      choices: [
-        { text: 'Advance', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Investigate', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-      ],
-      currentLocation: 'City outskirts',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [
-        { text: 'Stop the imminent sabotage', threadType: 'DANGER', urgency: 'HIGH' },
-        { text: 'Find the compromised courier', threadType: 'MYSTERY', urgency: 'HIGH' },
-        { text: 'Secure comms fallback', threadType: 'INFORMATION', urgency: 'MEDIUM' },
-        { text: 'Identify the planted observer', threadType: 'MYSTERY', urgency: 'MEDIUM' },
-        { text: 'Check the abandoned supply route', threadType: 'QUEST', urgency: 'LOW' },
-        { text: 'Collect reserve medkits', threadType: 'RESOURCE', urgency: 'LOW' },
-        { text: 'Mark low-traffic alleys', threadType: 'QUEST', urgency: 'LOW' },
-      ],
-      threadsResolved: [],
-      newCanonFacts: [],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'concerned',
-        primaryIntensity: 'moderate',
-        primaryCause: 'Conflicting priorities',
-        secondaryEmotions: [],
-        dominantMotivation: 'Prevent disaster',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      beatConcluded: false,
-      beatResolution: '',
-      rawResponse: 'opening',
-    });
+    mockedGenerateOpeningPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'Opening scene with multiple active threads.',
+        choices: [
+          { text: 'Advance', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Investigate', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'concerned',
+          primaryIntensity: 'moderate',
+          primaryCause: 'Conflicting priorities',
+          secondaryEmotions: [],
+          dominantMotivation: 'Prevent disaster',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'opening',
+      })
+    );
 
     const createRes = createMockResponse();
     void createStoryHandler(
@@ -775,52 +678,33 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     expect(playPayload?.constraintsPanelRows).toBeDefined();
     expect(Array.isArray(playPayload?.constraintsPanelRows)).toBe(true);
 
-    mockedGenerateWriterPage.mockResolvedValueOnce({
-      narrative: 'Continuation updates open threads.',
-      choices: [
-        { text: 'Press on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Reassess', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-      ],
-      currentLocation: 'Inside the city',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [
-        { text: 'Interrogate the blackout source', threadType: 'DANGER', urgency: 'HIGH' },
-      ],
-      threadsResolved: ['td-5'],
-      newCanonFacts: [],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'focused',
-        primaryIntensity: 'moderate',
-        primaryCause: 'A clear lead emerged',
-        secondaryEmotions: [],
-        dominantMotivation: 'Track the signal',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
-      rawResponse: 'continuation',
-    });
-    mockedGenerateAnalystEvaluation.mockResolvedValueOnce({
-      beatConcluded: false,
-      beatResolution: '',
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none' as const,
-      rawResponse: 'analyst-raw',
-    });
+    mockedGenerateWriterPage.mockResolvedValueOnce(
+      createMockPageWriterResult({
+        narrative: 'Continuation updates open threads.',
+        choices: [
+          { text: 'Press on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Reassess', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        protagonistAffect: createMockProtagonistAffect({
+          primaryEmotion: 'focused',
+          primaryIntensity: 'moderate',
+          primaryCause: 'A clear lead emerged',
+          secondaryEmotions: [],
+          dominantMotivation: 'Track the signal',
+        }),
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+        rawResponse: 'continuation',
+      })
+    );
+    mockedGenerateAnalystEvaluation.mockResolvedValueOnce(
+      createMockAnalystResult({
+        beatConcluded: false,
+        sceneMomentum: 'STASIS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+      })
+    );
 
     const choiceRes = createMockResponse();
     void chooseHandler(

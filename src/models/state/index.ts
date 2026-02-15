@@ -9,9 +9,6 @@ export {
   TaggedCanonFact,
   GlobalCanon,
   WorldFactType,
-  isTaggedCanonFact,
-  canonFactText,
-  canonFactType,
   addCanonFact,
   mergeCanonFacts,
 } from './canon.js';

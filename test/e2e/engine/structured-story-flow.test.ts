@@ -10,6 +10,11 @@ import {
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { PageWriterResult } from '@/llm/writer-types';
+import {
+  createMockAnalystResult,
+  createMockFinalResult,
+  createMockStoryStructure,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -53,68 +58,83 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 
 const TEST_PREFIX = 'E2E TEST STRSTOARCSYS-016';
 
-const mockedStructureResult = {
+const mockedStructureResult = createMockStoryStructure({
   overallTheme: 'Expose the hidden regime while keeping innocent allies safe.',
   acts: [
     {
+      id: '1',
       name: 'Act I - Discovery',
       objective: 'Prove the threat is real.',
       stakes: 'If you fail, nobody believes the danger.',
       entryCondition: 'A public anomaly forces immediate action.',
       beats: [
         {
+          id: '1.1',
           name: 'Public anomaly witness',
           description: 'Witness a manipulated event in public.',
           objective: 'Collect undeniable first evidence.',
+          role: 'setup',
         },
         {
+          id: '1.2',
           name: 'Trusted contact secured',
           description: 'Find a trustworthy contact.',
           objective: 'Avoid facing the threat alone.',
+          role: 'escalation',
         },
       ],
     },
     {
+      id: '2',
       name: 'Act II - Escalation',
       objective: 'Break into the regime network.',
       stakes: 'If you fail, the enemy controls all information.',
       entryCondition: 'Initial evidence points to coordinated control.',
       beats: [
         {
+          id: '2.1',
           name: 'Archive node infiltration',
           description: 'Infiltrate an archive node.',
           objective: 'Extract operational records.',
+          role: 'escalation',
         },
         {
+          id: '2.2',
           name: 'Retaliation survival',
           description: 'Survive retaliation and regroup.',
           objective: 'Preserve momentum into the final phase.',
+          role: 'turning_point',
         },
       ],
     },
     {
+      id: '3',
       name: 'Act III - Resolution',
       objective: 'Force a decisive public outcome.',
       stakes: 'If you fail, the regime narrative becomes permanent.',
       entryCondition: 'Enough proof exists to challenge the system publicly.',
       beats: [
         {
+          id: '3.1',
           name: 'Public reveal coordination',
           description: 'Coordinate allies for a public reveal.',
           objective: 'Synchronize final action.',
+          role: 'escalation',
         },
         {
+          id: '3.2',
           name: 'Final confrontation',
           description: 'Execute the final confrontation.',
           objective: 'Resolve the central conflict.',
+          role: 'resolution',
         },
       ],
     },
   ],
   rawResponse: 'mock-structure',
-};
+});
 
-const openingResult = {
+const openingResult = createMockFinalResult({
   narrative:
     'You arrive in the rain-soaked capital square as the city clocks skip thirteen seconds in unison and every guard looks toward the archives.',
   choices: [
@@ -131,38 +151,24 @@ const openingResult = {
   ],
   currentLocation: 'Rain-soaked capital square',
   threatsAdded: ['Guards alerted by clock anomaly'],
-  threatsRemoved: [],
-  constraintsAdded: [],
-  constraintsRemoved: [],
   threadsAdded: [
     { text: 'Clock anomaly synchronization mystery', threadType: 'INFORMATION', urgency: 'MEDIUM' },
   ],
-  threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'intrigue',
-    primaryIntensity: 6,
+    primaryIntensity: 'strong',
     primaryCause: 'Witnessing impossible clock synchronization',
     secondaryEmotions: ['alertness', 'curiosity'],
     dominantMotivation: 'Uncover the source of the archive signal',
   },
   newCanonFacts: [{ text: 'City clocks can be synchronized by a hidden archive signal', factType: 'LAW' }],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
   sceneSummary: 'Test summary of the scene events and consequences.',
-  isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
   rawResponse: 'opening',
-};
+});
 
 function buildWriterResult(selectedChoice: string, pageNumber: number): PageWriterResult {
   if (selectedChoice.includes('Pursue')) {
-    return {
+    return createMockFinalResult({
       narrative:
         'You catch the courier in a submerged tunnel and recover encoded route slips linking the archive signal to regime patrol schedules.',
       choices: [
@@ -178,10 +184,8 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
         },
       ],
       currentLocation: 'Submerged archive tunnel',
-      threatsAdded: [],
       threatsRemoved: ['Masked courier'],
       constraintsAdded: [`Courier evidence secured on page ${pageNumber}`],
-      constraintsRemoved: [],
       threadsAdded: [
         {
           text: 'Archive signal linked to patrol schedules',
@@ -189,30 +193,21 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
           urgency: 'MEDIUM',
         },
       ],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'determination',
-        primaryIntensity: 7,
+        primaryIntensity: 'overwhelming',
         primaryCause: 'Successfully intercepting courier evidence',
         secondaryEmotions: ['urgency', 'focus'],
         dominantMotivation: 'Trace signal to its source',
       },
       newCanonFacts: [{ text: 'Courier routes mirror archive broadcast timing', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: `continuation-pursue-${pageNumber}`,
-    };
+    });
   }
 
   if (selectedChoice.includes('Press deeper')) {
-    return {
+    return createMockFinalResult({
       narrative:
         'At the signal chamber you copy command logs that prove the archive clocks are weaponized for mass disinformation.',
       choices: [
@@ -229,9 +224,7 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
       ],
       currentLocation: 'Signal chamber deep in archive',
       threatsAdded: ['Chamber security systems'],
-      threatsRemoved: [],
       constraintsAdded: [`Signal chamber logs copied on page ${pageNumber}`],
-      constraintsRemoved: [],
       threadsAdded: [
         {
           text: 'Clock weaponization for disinformation confirmed',
@@ -239,29 +232,20 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
           urgency: 'MEDIUM',
         },
       ],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'triumph',
-        primaryIntensity: 8,
+        primaryIntensity: 'overwhelming',
         primaryCause: 'Obtaining proof of mass disinformation system',
         secondaryEmotions: ['vindication', 'caution'],
         dominantMotivation: 'Escape with the evidence intact',
       },
       newCanonFacts: [{ text: 'Signal chambers distribute timing scripts to patrol sectors', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: `continuation-press-${pageNumber}`,
-    };
+    });
   }
 
-  return {
+  return createMockFinalResult({
     narrative:
       'You stay hidden and map guard rotations from the crowd, gaining context but no decisive breakthrough yet.',
     choices: [
@@ -277,82 +261,49 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
       },
     ],
     currentLocation: 'Hidden in capital square crowd',
-    threatsAdded: [],
-    threatsRemoved: [],
     constraintsAdded: [`Guard pattern mapped on page ${pageNumber}`],
-    constraintsRemoved: [],
-    threadsAdded: [],
-    threadsResolved: [],
     protagonistAffect: {
       primaryEmotion: 'patience',
-      primaryIntensity: 5,
+      primaryIntensity: 'moderate',
       primaryCause: 'Gathering intelligence without taking risks',
       secondaryEmotions: ['caution', 'observation'],
       dominantMotivation: 'Wait for the right moment to act',
     },
     newCanonFacts: [{ text: 'Guard rotations change immediately after clock anomalies', factType: 'LAW' }],
-    newCharacterCanonFacts: {},
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
     sceneSummary: 'Test summary of the scene events and consequences.',
-    isEnding: false,
     rawResponse: `continuation-cautious-${pageNumber}`,
-  };
+  });
 }
 
 function buildAnalystResult(narrative: string, pageNumber: number): AnalystResult {
   if (narrative.includes('catch the courier')) {
-    return {
+    return createMockAnalystResult({
       beatConcluded: true,
       beatResolution: `Recovered decisive courier evidence on page ${pageNumber}.`,
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [] as string[],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none',
-      npcCoherenceAdherent: true,
-      npcCoherenceIssues: '',
+      sceneMomentum: 'MAJOR_PROGRESS',
+      objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+      commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
       rawResponse: 'analyst-raw',
-    };
+    });
   }
 
   if (narrative.includes('signal chamber')) {
-    return {
+    return createMockAnalystResult({
       beatConcluded: true,
       beatResolution: `Copied chamber logs on page ${pageNumber}.`,
-      deviationDetected: false,
-      deviationReason: '',
-      invalidatedBeatIds: [] as string[],
-      narrativeSummary: 'The protagonist continues the current scene.',
-      pacingIssueDetected: false,
-      pacingIssueReason: '',
-      recommendedAction: 'none',
-      npcCoherenceAdherent: true,
-      npcCoherenceIssues: '',
+      sceneMomentum: 'MAJOR_PROGRESS',
+      objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+      commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
       rawResponse: 'analyst-raw',
-    };
+    });
   }
 
-  return {
-    beatConcluded: false,
-    beatResolution: '',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [] as string[],
-    narrativeSummary: 'The protagonist continues the current scene.',
-    pacingIssueDetected: false,
-    pacingIssueReason: '',
-    recommendedAction: 'none',
-    npcCoherenceAdherent: true,
-    npcCoherenceIssues: '',
+  return createMockAnalystResult({
+    sceneMomentum: 'STASIS',
+    objectiveEvidenceStrength: 'NONE',
+    commitmentStrength: 'NONE',
     rawResponse: 'analyst-raw',
-  };
+  });
 }
 
 describe('Structured Story E2E', () => {

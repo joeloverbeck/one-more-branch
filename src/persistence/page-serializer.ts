@@ -60,7 +60,7 @@ function serializeStoryBible(storyBible: StoryBible | null): StoryBibleFileData 
   };
 }
 
-function deserializeStoryBible(data: StoryBibleFileData | null | undefined): StoryBible | null {
+function deserializeStoryBible(data: StoryBibleFileData | null): StoryBible | null {
   if (!data) {
     return null;
   }
@@ -87,47 +87,47 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
     return null;
   }
   return {
-    beatConcluded: analystResult.beatConcluded ?? false,
-    beatResolution: analystResult.beatResolution ?? '',
-    deviationDetected: analystResult.deviationDetected ?? false,
-    deviationReason: analystResult.deviationReason ?? '',
-    invalidatedBeatIds: [...(analystResult.invalidatedBeatIds ?? [])],
-    narrativeSummary: analystResult.narrativeSummary ?? '',
-    pacingIssueDetected: analystResult.pacingIssueDetected ?? false,
-    pacingIssueReason: analystResult.pacingIssueReason ?? '',
-    recommendedAction: analystResult.recommendedAction ?? 'none',
-    sceneMomentum: analystResult.sceneMomentum ?? 'STASIS',
-    objectiveEvidenceStrength: analystResult.objectiveEvidenceStrength ?? 'NONE',
-    commitmentStrength: analystResult.commitmentStrength ?? 'NONE',
-    structuralPositionSignal: analystResult.structuralPositionSignal ?? 'WITHIN_ACTIVE_BEAT',
-    entryConditionReadiness: analystResult.entryConditionReadiness ?? 'NOT_READY',
-    objectiveAnchors: [...(analystResult.objectiveAnchors ?? [])],
-    anchorEvidence: [...(analystResult.anchorEvidence ?? [])],
-    completionGateSatisfied: analystResult.completionGateSatisfied ?? false,
-    completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
-    toneAdherent: analystResult.toneAdherent ?? true,
-    toneDriftDescription: analystResult.toneDriftDescription ?? '',
-    npcCoherenceAdherent: analystResult.npcCoherenceAdherent ?? true,
-    npcCoherenceIssues: analystResult.npcCoherenceIssues ?? '',
-    promisesDetected: (analystResult.promisesDetected ?? []).map((p) => ({
+    beatConcluded: analystResult.beatConcluded,
+    beatResolution: analystResult.beatResolution,
+    deviationDetected: analystResult.deviationDetected,
+    deviationReason: analystResult.deviationReason,
+    invalidatedBeatIds: [...analystResult.invalidatedBeatIds],
+    narrativeSummary: analystResult.narrativeSummary,
+    pacingIssueDetected: analystResult.pacingIssueDetected,
+    pacingIssueReason: analystResult.pacingIssueReason,
+    recommendedAction: analystResult.recommendedAction,
+    sceneMomentum: analystResult.sceneMomentum,
+    objectiveEvidenceStrength: analystResult.objectiveEvidenceStrength,
+    commitmentStrength: analystResult.commitmentStrength,
+    structuralPositionSignal: analystResult.structuralPositionSignal,
+    entryConditionReadiness: analystResult.entryConditionReadiness,
+    objectiveAnchors: [...analystResult.objectiveAnchors],
+    anchorEvidence: [...analystResult.anchorEvidence],
+    completionGateSatisfied: analystResult.completionGateSatisfied,
+    completionGateFailureReason: analystResult.completionGateFailureReason,
+    toneAdherent: analystResult.toneAdherent,
+    toneDriftDescription: analystResult.toneDriftDescription,
+    npcCoherenceAdherent: analystResult.npcCoherenceAdherent,
+    npcCoherenceIssues: analystResult.npcCoherenceIssues,
+    promisesDetected: analystResult.promisesDetected.map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
       suggestedUrgency: p.suggestedUrgency,
     })),
-    promisesResolved: [...(analystResult.promisesResolved ?? [])],
-    promisePayoffAssessments: (analystResult.promisePayoffAssessments ?? []).map((a) => ({
+    promisesResolved: [...analystResult.promisesResolved],
+    promisePayoffAssessments: analystResult.promisePayoffAssessments.map((a) => ({
       promiseId: a.promiseId,
       description: a.description,
       satisfactionLevel: a.satisfactionLevel,
       reasoning: a.reasoning,
     })),
-    threadPayoffAssessments: (analystResult.threadPayoffAssessments ?? []).map((a) => ({
+    threadPayoffAssessments: analystResult.threadPayoffAssessments.map((a) => ({
       threadId: a.threadId,
       threadText: a.threadText,
       satisfactionLevel: a.satisfactionLevel,
       reasoning: a.reasoning,
     })),
-    relationshipShiftsDetected: (analystResult.relationshipShiftsDetected ?? []).map((s) => ({
+    relationshipShiftsDetected: analystResult.relationshipShiftsDetected.map((s) => ({
       npcName: s.npcName,
       shiftDescription: s.shiftDescription,
       suggestedValenceChange: s.suggestedValenceChange,
@@ -137,7 +137,7 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
 }
 
 function deserializeAnalystResult(
-  data: AnalystResultFileData | null | undefined
+  data: AnalystResultFileData | null
 ): AnalystResult | null {
   if (!data) {
     return null;
@@ -164,32 +164,32 @@ function deserializeAnalystResult(
     anchorEvidence: [...data.anchorEvidence],
     completionGateSatisfied: data.completionGateSatisfied,
     completionGateFailureReason: data.completionGateFailureReason,
-    toneAdherent: data.toneAdherent ?? true,
-    toneDriftDescription: data.toneDriftDescription ?? '',
-    npcCoherenceAdherent: data.npcCoherenceAdherent ?? true,
-    npcCoherenceIssues: data.npcCoherenceIssues ?? '',
-    promisesDetected: (data.promisesDetected ?? []).map((p) => ({
+    toneAdherent: data.toneAdherent,
+    toneDriftDescription: data.toneDriftDescription,
+    npcCoherenceAdherent: data.npcCoherenceAdherent,
+    npcCoherenceIssues: data.npcCoherenceIssues,
+    promisesDetected: data.promisesDetected.map((p) => ({
       description: p.description,
       promiseType: p.promiseType as AnalystResult['promisesDetected'][number]['promiseType'],
       suggestedUrgency:
         p.suggestedUrgency as AnalystResult['promisesDetected'][number]['suggestedUrgency'],
     })),
-    promisesResolved: [...(data.promisesResolved ?? [])],
-    promisePayoffAssessments: (data.promisePayoffAssessments ?? []).map((a) => ({
+    promisesResolved: [...data.promisesResolved],
+    promisePayoffAssessments: data.promisePayoffAssessments.map((a) => ({
       promiseId: a.promiseId,
       description: a.description,
       satisfactionLevel:
         a.satisfactionLevel as AnalystResult['promisePayoffAssessments'][number]['satisfactionLevel'],
       reasoning: a.reasoning,
     })),
-    threadPayoffAssessments: (data.threadPayoffAssessments ?? []).map((a) => ({
+    threadPayoffAssessments: data.threadPayoffAssessments.map((a) => ({
       threadId: a.threadId,
       threadText: a.threadText,
       satisfactionLevel:
         a.satisfactionLevel as AnalystResult['threadPayoffAssessments'][number]['satisfactionLevel'],
       reasoning: a.reasoning,
     })),
-    relationshipShiftsDetected: (data.relationshipShiftsDetected ?? []).map((s) => ({
+    relationshipShiftsDetected: data.relationshipShiftsDetected.map((s) => ({
       npcName: s.npcName,
       shiftDescription: s.shiftDescription,
       suggestedValenceChange: s.suggestedValenceChange,
@@ -211,20 +211,14 @@ function deserializeNpcRelationship(data: NpcRelationshipFileData): NpcRelations
 }
 
 function deserializeNpcRelationshipArray(
-  data: NpcRelationshipFileData[] | undefined
+  data: NpcRelationshipFileData[]
 ): readonly NpcRelationship[] {
-  if (!data || data.length === 0) {
-    return [];
-  }
   return data.map(deserializeNpcRelationship);
 }
 
 function deserializeAccumulatedNpcRelationships(
-  data: Record<string, NpcRelationshipFileData> | undefined
+  data: Record<string, NpcRelationshipFileData>
 ): AccumulatedNpcRelationships {
-  if (!data) {
-    return {};
-  }
   return Object.fromEntries(
     Object.entries(data).map(([key, r]) => [key, deserializeNpcRelationship(r)])
   );
@@ -240,19 +234,13 @@ function deserializeNpcAgenda(data: NpcAgendaFileData): NpcAgenda {
   };
 }
 
-function deserializeNpcAgendaArray(data: NpcAgendaFileData[] | undefined): readonly NpcAgenda[] {
-  if (!data || data.length === 0) {
-    return [];
-  }
+function deserializeNpcAgendaArray(data: NpcAgendaFileData[]): readonly NpcAgenda[] {
   return data.map(deserializeNpcAgenda);
 }
 
 function deserializeAccumulatedNpcAgendas(
-  data: Record<string, NpcAgendaFileData> | undefined
+  data: Record<string, NpcAgendaFileData>
 ): AccumulatedNpcAgendas {
-  if (!data) {
-    return {};
-  }
   return Object.fromEntries(Object.entries(data).map(([key, a]) => [key, deserializeNpcAgenda(a)]));
 }
 
@@ -305,12 +293,8 @@ export function serializePage(page: Page): PageFileData {
       suggestedUrgency: p.suggestedUrgency,
       age: p.age,
     })),
-    resolvedThreadMeta: Object.keys(page.resolvedThreadMeta).length > 0
-      ? { ...page.resolvedThreadMeta }
-      : undefined,
-    resolvedPromiseMeta: Object.keys(page.resolvedPromiseMeta).length > 0
-      ? { ...page.resolvedPromiseMeta }
-      : undefined,
+    resolvedThreadMeta: { ...page.resolvedThreadMeta },
+    resolvedPromiseMeta: { ...page.resolvedPromiseMeta },
     npcAgendaUpdates: page.npcAgendaUpdates.map((a) => ({
       npcName: a.npcName,
       currentGoal: a.currentGoal,
@@ -391,7 +375,7 @@ export function deserializePage(data: PageFileData): Page {
     data.accumulatedStructureState
   );
   const structureVersionId =
-    data.structureVersionId === undefined || data.structureVersionId === null
+    data.structureVersionId === null
       ? null
       : parseStructureVersionId(data.structureVersionId);
 
@@ -406,8 +390,8 @@ export function deserializePage(data: PageFileData): Page {
     sceneSummary: data.sceneSummary,
     choices: data.choices.map((choice) => ({
       text: choice.text,
-      choiceType: (choice.choiceType ?? 'TACTICAL_APPROACH') as ChoiceType,
-      primaryDelta: (choice.primaryDelta ?? 'GOAL_SHIFT') as PrimaryDelta,
+      choiceType: choice.choiceType as ChoiceType,
+      primaryDelta: choice.primaryDelta as PrimaryDelta,
       nextPageId: choice.nextPageId === null ? null : parsePageId(choice.nextPageId),
     })),
     activeStateChanges,
@@ -423,7 +407,7 @@ export function deserializePage(data: PageFileData): Page {
     structureVersionId,
     storyBible: deserializeStoryBible(data.storyBible),
     analystResult: deserializeAnalystResult(data.analystResult),
-    threadAges: data.threadAges ?? {},
+    threadAges: data.threadAges,
     accumulatedPromises: data.accumulatedPromises.map((p) => ({
       id: p.id,
       description: p.description,
@@ -431,8 +415,8 @@ export function deserializePage(data: PageFileData): Page {
       suggestedUrgency: p.suggestedUrgency as TrackedPromise['suggestedUrgency'],
       age: p.age,
     })),
-    resolvedThreadMeta: data.resolvedThreadMeta ?? {},
-    resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
+    resolvedThreadMeta: data.resolvedThreadMeta,
+    resolvedPromiseMeta: data.resolvedPromiseMeta,
     npcAgendaUpdates: deserializeNpcAgendaArray(data.npcAgendaUpdates),
     accumulatedNpcAgendas: deserializeAccumulatedNpcAgendas(data.accumulatedNpcAgendas),
     npcRelationshipUpdates: deserializeNpcRelationshipArray(data.npcRelationshipUpdates),

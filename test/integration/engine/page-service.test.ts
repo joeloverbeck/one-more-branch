@@ -37,6 +37,12 @@ import type {
 import type { PageWriterResult } from '@/llm/writer-types';
 import { logger } from '@/logging/index';
 import type { StateAccountantGenerationResult } from '@/llm/accountant-types';
+import {
+  createMockAnalystResult,
+  createMockPageWriterResult,
+  createMockProtagonistAffect,
+  createMockStoryStructure,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -147,7 +153,7 @@ function reconciledStateWithDiagnostics(
 }
 
 function buildStructure(): StoryStructure {
-  return {
+  return createMockStoryStructure({
     overallTheme: 'Navigate political intrigue in a city of shadows.',
     premise: 'A courier uncovers a conspiracy while navigating rival factions.',
     pacingBudget: { targetPagesMin: 12, targetPagesMax: 24 },
@@ -193,20 +199,32 @@ function buildStructure(): StoryStructure {
         ],
       },
     ],
-  };
+  });
 }
 
-function buildOpeningResult(): PageWriterResult {
+function buildOpeningResult(): ReconciliationWriterPayload {
   return {
-    narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
-    choices: [
-      { text: 'Follow the whispers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      {
-        text: 'Seek shelter in the tavern',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
-      },
-    ],
+    ...createMockPageWriterResult({
+      narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
+      choices: [
+        { text: 'Follow the whispers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        {
+          text: 'Seek shelter in the tavern',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
+      ],
+      protagonistAffect: createMockProtagonistAffect({
+        primaryEmotion: 'curiosity',
+        primaryIntensity: 'moderate',
+        primaryCause: 'the mysterious whispers',
+        secondaryEmotions: [],
+        dominantMotivation: 'uncover the truth',
+      }),
+      sceneSummary: 'Test summary of the scene events and consequences.',
+      isEnding: false,
+      rawResponse: 'opening-raw',
+    }),
     currentLocation: 'The fog-shrouded city entrance',
     threatsAdded: ['THREAT_whispers: The whispers seem to know your name'],
     threatsRemoved: [],
@@ -228,34 +246,37 @@ function buildOpeningResult(): PageWriterResult {
     healthRemoved: [],
     characterStateChangesAdded: [],
     characterStateChangesRemoved: [],
-    protagonistAffect: {
-      primaryEmotion: 'curiosity',
-      primaryIntensity: 'moderate' as const,
-      primaryCause: 'the mysterious whispers',
-      secondaryEmotions: [],
-      dominantMotivation: 'uncover the truth',
-    },
-    sceneSummary: 'Test summary of the scene events and consequences.',
-    isEnding: false,
-    rawResponse: 'opening-raw',
   };
 }
 
-function buildContinuationResult(overrides?: Partial<PageWriterResult>): PageWriterResult {
+function buildContinuationResult(overrides?: Partial<PageWriterResult>): ReconciliationWriterPayload {
   return {
-    narrative: 'The whispers lead you deeper into the maze of alleys.',
-    choices: [
-      {
-        text: 'Enter the marked door',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
-      },
-      {
-        text: 'Double back to the square',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
-      },
-    ],
+    ...createMockPageWriterResult({
+      narrative: 'The whispers lead you deeper into the maze of alleys.',
+      choices: [
+        {
+          text: 'Enter the marked door',
+          choiceType: 'TACTICAL_APPROACH',
+          primaryDelta: 'GOAL_SHIFT',
+        },
+        {
+          text: 'Double back to the square',
+          choiceType: 'INVESTIGATION',
+          primaryDelta: 'INFORMATION_REVEALED',
+        },
+      ],
+      protagonistAffect: createMockProtagonistAffect({
+        primaryEmotion: 'determination',
+        primaryIntensity: 'strong',
+        primaryCause: 'getting closer to the truth',
+        secondaryEmotions: [],
+        dominantMotivation: 'reach the resistance',
+      }),
+      sceneSummary: 'Test summary of the scene events and consequences.',
+      isEnding: false,
+      rawResponse: 'continuation-raw',
+      ...overrides,
+    }),
     currentLocation: 'Maze of alleys',
     threatsAdded: ['THREAT_shadows: Shadows move with purpose in the alleyways'],
     threatsRemoved: [],
@@ -277,22 +298,11 @@ function buildContinuationResult(overrides?: Partial<PageWriterResult>): PageWri
     healthRemoved: [],
     characterStateChangesAdded: [],
     characterStateChangesRemoved: [],
-    protagonistAffect: {
-      primaryEmotion: 'determination',
-      primaryIntensity: 'strong' as const,
-      primaryCause: 'getting closer to the truth',
-      secondaryEmotions: [],
-      dominantMotivation: 'reach the resistance',
-    },
-    sceneSummary: 'Test summary of the scene events and consequences.',
-    isEnding: false,
-    rawResponse: 'continuation-raw',
-    ...overrides,
   };
 }
 
 function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
-  return {
+  return createMockAnalystResult({
     beatConcluded: false,
     beatResolution: '',
     deviationDetected: false,
@@ -311,9 +321,18 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
     anchorEvidence: [''],
     completionGateSatisfied: false,
     completionGateFailureReason: '',
+    toneAdherent: true,
+    toneDriftDescription: '',
+    npcCoherenceAdherent: true,
+    npcCoherenceIssues: '',
+    promisesDetected: [],
+    promisesResolved: [],
+    promisePayoffAssessments: [],
+    threadPayoffAssessments: [],
+    relationshipShiftsDetected: [],
     rawResponse: 'analyst-raw',
     ...overrides,
-  };
+  });
 }
 
 function buildPagePlanResult(

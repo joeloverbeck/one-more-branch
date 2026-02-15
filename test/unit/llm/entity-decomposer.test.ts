@@ -253,15 +253,6 @@ describe('decomposeEntities', () => {
     expect(result.decomposedWorld.facts[0]!.domain).toBe('culture');
   });
 
-  it('accepts custom domain from existing stories (backward compat)', async () => {
-    const payload = createValidPayload();
-    payload.worldFacts[0]!.domain = 'custom';
-    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
-
-    const result = await decomposeEntities(createMinimalContext(), 'test-key');
-    expect(result.decomposedWorld.facts[0]!.domain).toBe('custom');
-  });
-
   it.each([
     'ecology',
     'culture',

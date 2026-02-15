@@ -66,7 +66,10 @@ function buildStory(overrides?: Partial<Story>): Story {
 
   return {
     ...base,
-    globalCanon: ['canon-1', 'canon-2'],
+    globalCanon: [
+      { text: 'canon-1', factType: 'NORM' as const },
+      { text: 'canon-2', factType: 'NORM' as const },
+    ],
     ...overrides,
   };
 }
@@ -111,7 +114,10 @@ describe('story-repository integration', () => {
       characterConcept: `${TEST_PREFIX} round-trip`,
       worldbuilding: 'Round trip world',
       tone: 'Round trip tone',
-      globalCanon: ['fact-a', 'fact-b'],
+      globalCanon: [
+        { text: 'fact-a', factType: 'NORM' as const },
+        { text: 'fact-b', factType: 'NORM' as const },
+      ],
       structure: buildStructure(),
     });
     createdStoryIds.add(story.id);
@@ -268,7 +274,7 @@ describe('story-repository integration', () => {
     const updatedStory: Story = {
       ...story,
       worldbuilding: 'Updated worldbuilding',
-      globalCanon: ['updated-canon'],
+      globalCanon: [{ text: 'updated-canon', factType: 'NORM' as const }],
       updatedAt: new Date('2025-02-02T00:00:00.000Z'),
     };
 

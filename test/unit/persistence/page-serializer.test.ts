@@ -97,7 +97,17 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
       pacingNudge: null,
     },
     protagonistAffect: createDefaultProtagonistAffect(),
+    structureVersionId: null,
+    storyBible: null,
+    analystResult: null,
+    threadAges: {},
     accumulatedPromises: [],
+    resolvedThreadMeta: {},
+    resolvedPromiseMeta: {},
+    npcAgendaUpdates: [],
+    accumulatedNpcAgendas: {},
+    npcRelationshipUpdates: [],
+    accumulatedNpcRelationships: {},
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -304,16 +314,6 @@ describe('page-serializer', () => {
       });
     });
 
-    it('defaults npcAgendaUpdates and accumulatedNpcAgendas when missing (backward compat)', () => {
-      const fileData = buildTestFileData();
-      delete (fileData as Record<string, unknown>).npcAgendaUpdates;
-      delete (fileData as Record<string, unknown>).accumulatedNpcAgendas;
-
-      const page = deserializePage(fileData);
-      expect(page.npcAgendaUpdates).toEqual([]);
-      expect(page.accumulatedNpcAgendas).toEqual({});
-    });
-
     it('deserializes npcAgendaUpdates and accumulatedNpcAgendas when present', () => {
       const agenda: NpcAgenda = {
         npcName: 'Garak',
@@ -332,9 +332,8 @@ describe('page-serializer', () => {
       expect(page.accumulatedNpcAgendas).toEqual({ Garak: agenda });
     });
 
-    it('defaults structureVersionId to null when missing', () => {
-      const fileData = buildTestFileData();
-      delete fileData.structureVersionId;
+    it('deserializes structureVersionId as null when set to null', () => {
+      const fileData = buildTestFileData({ structureVersionId: null });
 
       const page = deserializePage(fileData);
       expect(page.structureVersionId).toBeNull();

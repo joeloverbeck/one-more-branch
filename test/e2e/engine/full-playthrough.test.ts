@@ -9,6 +9,11 @@ import {
 } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
 import type { PageWriterResult } from '@/llm/writer-types';
+import {
+  createMockAnalystResult,
+  createMockFinalResult,
+  createMockStoryStructure,
+} from '../../fixtures/llm-results';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -52,7 +57,7 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 
 const TEST_PREFIX = 'E2E TEST STOENG-009';
 
-const openingResult = {
+const openingResult = createMockFinalResult({
   narrative:
     'The time fractures shimmer at the district boundary as you check your sibling is still hidden in the cellar. Patrol searchlights sweep the fog-choked streets.',
   choices: [
@@ -74,9 +79,7 @@ const openingResult = {
   ],
   currentLocation: 'District boundary near cellar hideout',
   threatsAdded: ['Patrol searchlights sweeping fog'],
-  threatsRemoved: [],
   constraintsAdded: ['Sibling hidden in cellar'],
-  constraintsRemoved: [],
   threadsAdded: [
     {
       text: 'Time fractures detected at district boundary',
@@ -84,10 +87,9 @@ const openingResult = {
       urgency: 'MEDIUM',
     },
   ],
-  threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'anxiety',
-    primaryIntensity: 7,
+    primaryIntensity: 'overwhelming',
     primaryCause: 'Protecting hidden sibling from patrols',
     secondaryEmotions: ['vigilance', 'determination'],
     dominantMotivation: 'Keep sibling safe while navigating fractured districts',
@@ -96,23 +98,13 @@ const openingResult = {
     { text: 'Districts shift at midnight based on beacon towers', factType: 'LAW' },
     { text: 'Patrols use searchlights in fog', factType: 'LAW' },
   ],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
   sceneSummary: 'Test summary of the scene events and consequences.',
-  isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
   rawResponse: 'opening',
-};
+});
 
 function buildWriterResult(selectedChoice: string, stepIndex: number): PageWriterResult {
   if (selectedChoice.includes('beacon tower')) {
-    return {
+    return createMockFinalResult({
       narrative:
         'You reach the beacon tower as the last light fades. The machinery hums with temporal energy, and you spot a patrol approaching from the east.',
       choices: [
@@ -129,9 +121,6 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
       ],
       currentLocation: 'Beacon tower base',
       threatsAdded: ['Patrol approaching from the east'],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
       threadsAdded: [
         {
           text: 'Beacon machinery humming with temporal energy',
@@ -139,30 +128,21 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
           urgency: 'MEDIUM',
         },
       ],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'tension',
-        primaryIntensity: 6,
+        primaryIntensity: 'strong',
         primaryCause: 'Patrol approaching while near beacon tower',
         secondaryEmotions: ['curiosity', 'caution'],
         dominantMotivation: 'Disable beacon while avoiding detection',
       },
       newCanonFacts: [{ text: 'Beacon towers emit temporal energy', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: `continuation-beacon-${stepIndex}`,
-    };
+    });
   }
 
   if (selectedChoice.includes('patrol schedules') || selectedChoice.includes('checkpoint')) {
-    return {
+    return createMockFinalResult({
       narrative:
         'The checkpoint guard is distracted by a commotion. You slip past and find the schedule board, memorizing the patrol routes.',
       choices: [
@@ -178,35 +158,23 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
         },
       ],
       currentLocation: 'Border checkpoint interior',
-      threatsAdded: [],
       threatsRemoved: ['Checkpoint guard attention'],
       constraintsAdded: ['Patrol routes memorized'],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'focus',
-        primaryIntensity: 7,
+        primaryIntensity: 'overwhelming',
         primaryCause: 'Successfully infiltrating checkpoint undetected',
         secondaryEmotions: ['satisfaction', 'urgency'],
         dominantMotivation: 'Gather intelligence on patrol patterns',
       },
       newCanonFacts: [{ text: 'Checkpoints store patrol schedules on physical boards', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: `continuation-checkpoint-${stepIndex}`,
-    };
+    });
   }
 
   if (selectedChoice.includes('hiding spot') || selectedChoice.includes('stalled district')) {
-    return {
+    return createMockFinalResult({
       narrative:
         'The stalled district is eerily quiet—time moves slowly here. You find an abandoned warehouse where clocks tick once per hour.',
       choices: [
@@ -222,37 +190,26 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
         },
       ],
       currentLocation: 'Time-dilated warehouse in stalled district',
-      threatsAdded: [],
       threatsRemoved: ['Immediate patrol threat'],
       constraintsAdded: ['Time moves slowly here'],
-      constraintsRemoved: [],
       threadsAdded: [
         { text: 'Abandoned warehouse discovered', threadType: 'INFORMATION', urgency: 'MEDIUM' },
       ],
-      threadsResolved: [],
       protagonistAffect: {
         primaryEmotion: 'relief',
-        primaryIntensity: 5,
+        primaryIntensity: 'moderate',
         primaryCause: 'Finding a safe location in the stalled district',
         secondaryEmotions: ['unease', 'contemplation'],
         dominantMotivation: 'Establish a secure base for operations',
       },
       newCanonFacts: [{ text: 'Stalled districts experience severe time dilation', factType: 'LAW' }],
-      newCharacterCanonFacts: {},
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
       rawResponse: `continuation-stalled-${stepIndex}`,
-    };
+    });
   }
 
   // Default continuation for any other choice
-  return {
+  return createMockFinalResult({
     narrative:
       'Your actions draw attention. A patrol closes in, and you must make a critical decision that will determine your fate.',
     choices: [
@@ -269,54 +226,28 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
     ],
     currentLocation: 'Exposed position near patrol route',
     threatsAdded: ['Patrol closing in'],
-    threatsRemoved: [],
     constraintsAdded: ['Critical decision point reached'],
-    constraintsRemoved: [],
-    threadsAdded: [],
-    threadsResolved: [],
     protagonistAffect: {
       primaryEmotion: 'fear',
-      primaryIntensity: 9,
+      primaryIntensity: 'overwhelming',
       primaryCause: 'Patrol closing in on position',
       secondaryEmotions: ['desperation', 'protectiveness'],
       dominantMotivation: 'Protect sibling at any cost',
     },
     newCanonFacts: [{ text: 'Patrols can track movement through time fractures', factType: 'LAW' }],
-    newCharacterCanonFacts: {},
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
     sceneSummary: 'Test summary of the scene events and consequences.',
-    isEnding: false,
     rawResponse: `continuation-default-${stepIndex}`,
-  };
+  });
 }
 
-const defaultAnalystResult = {
-  beatConcluded: false,
-  beatResolution: '',
-  deviationDetected: false,
-  deviationReason: '',
-  invalidatedBeatIds: [] as string[],
-  narrativeSummary: 'The protagonist continues the current scene.',
-  pacingIssueDetected: false,
-  pacingIssueReason: '',
-  recommendedAction: 'none' as const,
-  toneAdherent: true,
-  toneDriftDescription: '',
-  npcCoherenceAdherent: true,
-  npcCoherenceIssues: '',
-  promisesDetected: [],
-  promisesResolved: [],
-  promisePayoffAssessments: [],
-  threadPayoffAssessments: [],
+const defaultAnalystResult = createMockAnalystResult({
+  sceneMomentum: 'STASIS',
+  objectiveEvidenceStrength: 'NONE',
+  commitmentStrength: 'NONE',
   rawResponse: 'analyst-raw',
-};
+});
 
-const replayOpeningResult = {
+const replayOpeningResult = createMockFinalResult({
   narrative:
     'The canal waters rise as the dawn siren sounds. You clutch the testimony documents, watching political agents argue on the bridge above.',
   choices: [
@@ -333,14 +264,10 @@ const replayOpeningResult = {
   ],
   currentLocation: 'Canal waterway beneath bridge',
   threatsAdded: ['Political agents on bridge above'],
-  threatsRemoved: [],
   constraintsAdded: ['Carrying testimony documents', 'Canal waters rising'],
-  constraintsRemoved: [],
-  threadsAdded: [],
-  threadsResolved: [],
   protagonistAffect: {
     primaryEmotion: 'urgency',
-    primaryIntensity: 7,
+    primaryIntensity: 'overwhelming',
     primaryCause: 'Need to deliver testimony documents safely',
     secondaryEmotions: ['wariness', 'resolve'],
     dominantMotivation: 'Transport documents past political agents',
@@ -349,22 +276,12 @@ const replayOpeningResult = {
     { text: 'Canals respond to civic votes at dawn sirens', factType: 'LAW' },
     { text: 'Political factions alter street reality', factType: 'LAW' },
   ],
-  newCharacterCanonFacts: {},
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
   sceneSummary: 'Test summary of the scene events and consequences.',
-  isEnding: false,
-  beatConcluded: false,
-  beatResolution: '',
   rawResponse: 'replay-opening',
-};
+});
 
 function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
-  return {
+  return createMockFinalResult({
     narrative:
       'You slip beneath the murky water, the documents sealed in waterproof wrapping. The agents never notice your passage.',
     choices: [
@@ -380,31 +297,19 @@ function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
       },
     ],
     currentLocation: 'Underwater passage beneath bridge',
-    threatsAdded: [],
     threatsRemoved: ['Political agents on bridge'],
-    constraintsAdded: [],
-    constraintsRemoved: [],
-    threadsAdded: [],
     threadsResolved: ['Bridge crossing obstacle'],
     protagonistAffect: {
       primaryEmotion: 'relief',
-      primaryIntensity: 6,
+      primaryIntensity: 'strong',
       primaryCause: 'Successfully evading agents undetected',
       secondaryEmotions: ['confidence', 'focus'],
       dominantMotivation: 'Reach safe destination with documents',
     },
     newCanonFacts: [{ text: 'Safe houses have underwater access points', factType: 'LAW' }],
-    newCharacterCanonFacts: {},
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
     sceneSummary: 'Test summary of the scene events and consequences.',
-    isEnding: false,
     rawResponse: 'replay-continuation',
-  };
+  });
 }
 
 function expectAccumulatedInventoryPrefix(parent: Page, child: Page): void {
@@ -416,66 +321,81 @@ function expectAccumulatedInventoryPrefix(parent: Page, child: Page): void {
   );
 }
 
-const mockedStructureResult = {
+const mockedStructureResult = createMockStoryStructure({
   overallTheme: 'Expose regime manipulations while protecting vulnerable allies.',
   acts: [
     {
+      id: '1',
       name: 'Act I',
       objective: 'Reveal the initial threat.',
       stakes: 'Failure leaves the protagonist blind to the core danger.',
       entryCondition: 'A disruptive event forces action.',
       beats: [
         {
+          id: '1.1',
           name: 'First anomaly discovery',
           description: 'Discover the first anomaly.',
           objective: 'Confirm the threat is real.',
+          role: 'setup',
         },
         {
+          id: '1.2',
           name: 'Immediate ally recruitment',
           description: 'Gather immediate allies.',
           objective: 'Avoid isolation.',
+          role: 'escalation',
         },
       ],
     },
     {
+      id: '2',
       name: 'Act II',
       objective: 'Escalate conflict and gather leverage.',
       stakes: 'Failure gives control to the antagonist force.',
-      entryCondition: 'The threat’s network is partially mapped.',
+      entryCondition: 'The threat network is partially mapped.',
       beats: [
         {
+          id: '2.1',
           name: 'Risky infiltration attempt',
           description: 'Attempt a risky infiltration.',
           objective: 'Extract actionable proof.',
+          role: 'escalation',
         },
         {
+          id: '2.2',
           name: 'Retaliation endurance',
           description: 'Survive retaliation.',
           objective: 'Preserve capability to continue.',
+          role: 'turning_point',
         },
       ],
     },
     {
+      id: '3',
       name: 'Act III',
       objective: 'Force final resolution.',
       stakes: 'Failure permanently cements the hostile status quo.',
       entryCondition: 'Public confrontation becomes unavoidable.',
       beats: [
         {
+          id: '3.1',
           name: 'Final strategy commitment',
           description: 'Commit to final strategy.',
           objective: 'Align allies and resources.',
+          role: 'escalation',
         },
         {
+          id: '3.2',
           name: 'Decisive action delivery',
           description: 'Deliver decisive action.',
           objective: 'Resolve primary conflict.',
+          role: 'resolution',
         },
       ],
     },
   ],
   rawResponse: 'mock-structure',
-};
+});
 
 describe('story engine e2e full playthrough', () => {
   const createdStoryIds = new Set<StoryId>();

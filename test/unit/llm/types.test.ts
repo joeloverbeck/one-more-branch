@@ -835,6 +835,7 @@ describe('LLM types', () => {
         promisesResolved: [],
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -871,6 +872,7 @@ describe('LLM types', () => {
         promisesResolved: [],
         promisePayoffAssessments: [],
         threadPayoffAssessments: [],
+        relationshipShiftsDetected: [],
         rawResponse: '{"deviationDetected":true}',
       };
 

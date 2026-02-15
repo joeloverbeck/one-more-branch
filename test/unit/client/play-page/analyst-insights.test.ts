@@ -1,39 +1,7 @@
 import { buildPlayPageHtml } from '../fixtures/html-fixtures';
 import { loadAppAndInit } from '../helpers/app-loader';
 import { mockJsonResponse } from '../helpers/fetch-helpers';
-
-function buildAnalystResult(overrides: Record<string, unknown> = {}): Record<string, unknown> {
-  return {
-    beatConcluded: false,
-    beatResolution: '',
-    deviationDetected: false,
-    deviationReason: '',
-    invalidatedBeatIds: [],
-    narrativeSummary: 'Summary',
-    pacingIssueDetected: false,
-    pacingIssueReason: '',
-    recommendedAction: 'none',
-    sceneMomentum: 'STASIS',
-    objectiveEvidenceStrength: 'WEAK_IMPLICIT',
-    commitmentStrength: 'TENTATIVE',
-    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
-    entryConditionReadiness: 'PARTIAL',
-    objectiveAnchors: [],
-    anchorEvidence: [],
-    completionGateSatisfied: false,
-    completionGateFailureReason: 'Need a stronger commitment.',
-    toneAdherent: true,
-    toneDriftDescription: '',
-    npcCoherenceAdherent: true,
-    npcCoherenceIssues: '',
-    promisesDetected: [],
-    promisesResolved: [],
-    promisePayoffAssessments: [],
-    threadPayoffAssessments: [],
-    rawResponse: '{}',
-    ...overrides,
-  };
-}
+import { createMockAnalystResult } from '../../../fixtures/llm-results';
 
 describe('analyst insights modal', () => {
   let fetchMock: jest.Mock;
@@ -60,7 +28,7 @@ describe('analyst insights modal', () => {
   });
 
   it('opens and closes the modal from the trigger and close button', async () => {
-    document.body.innerHTML = buildPlayPageHtml({ analystResult: buildAnalystResult() });
+    document.body.innerHTML = buildPlayPageHtml({ analystResult: createMockAnalystResult() });
     loadAppAndInit();
 
     const button = document.getElementById('insights-btn') as HTMLButtonElement;
@@ -78,7 +46,7 @@ describe('analyst insights modal', () => {
   });
 
   it('closes the modal on outside click and Escape', async () => {
-    document.body.innerHTML = buildPlayPageHtml({ analystResult: buildAnalystResult() });
+    document.body.innerHTML = buildPlayPageHtml({ analystResult: createMockAnalystResult() });
     loadAppAndInit();
 
     const button = document.getElementById('insights-btn') as HTMLButtonElement;
@@ -112,7 +80,7 @@ describe('analyst insights modal', () => {
   });
 
   it('renders sections inside collapsible details elements', async () => {
-    document.body.innerHTML = buildPlayPageHtml({ analystResult: buildAnalystResult() });
+    document.body.innerHTML = buildPlayPageHtml({ analystResult: createMockAnalystResult() });
     loadAppAndInit();
 
     const button = document.getElementById('insights-btn') as HTMLButtonElement;
@@ -130,7 +98,7 @@ describe('analyst insights modal', () => {
 
   it('displays beat info subtitle when actDisplayInfo is provided', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult(),
+      analystResult: createMockAnalystResult(),
       actDisplayInfo: { displayString: 'Act 1: The Setup - Beat 1.2: The Discovery' },
     });
     loadAppAndInit();
@@ -147,7 +115,7 @@ describe('analyst insights modal', () => {
 
   it('displays scene summary when provided', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult(),
+      analystResult: createMockAnalystResult(),
       sceneSummary: 'The hero arrived at the castle gates.',
     });
     loadAppAndInit();
@@ -165,7 +133,7 @@ describe('analyst insights modal', () => {
   it('displays full thread text without truncation in thread payoffs', async () => {
     const longText = 'A very long thread text that should not be truncated at all because truncation was removed from the implementation';
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         threadPayoffAssessments: [
           {
             threadId: 'th-1',
@@ -190,7 +158,7 @@ describe('analyst insights modal', () => {
 
   it('renders thread payoffs with separate label, text, and reasoning elements', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         threadPayoffAssessments: [
           {
             threadId: 'th-1',
@@ -231,7 +199,7 @@ describe('analyst insights modal', () => {
 
   it('renders completion gate as a gauge row instead of plain text', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         completionGateSatisfied: false,
         completionGateFailureReason: 'Need stronger commitment.',
       }),
@@ -257,7 +225,7 @@ describe('analyst insights modal', () => {
 
   it('renders completion gate gauge as satisfied (100%) when gate is met', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         completionGateSatisfied: true,
         completionGateFailureReason: '',
       }),
@@ -282,7 +250,7 @@ describe('analyst insights modal', () => {
 
   it('renders thread payoff badges when resolvedThreadMeta is provided', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         threadPayoffAssessments: [
           {
             threadId: 'td-1',
@@ -312,7 +280,7 @@ describe('analyst insights modal', () => {
 
   it('gracefully omits thread payoff badge when meta is missing', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         threadPayoffAssessments: [
           {
             threadId: 'td-1',
@@ -340,7 +308,7 @@ describe('analyst insights modal', () => {
 
   it('renders promise payoffs with type badge and satisfaction', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         promisePayoffAssessments: [
           {
             promiseId: 'pr-1',
@@ -370,7 +338,7 @@ describe('analyst insights modal', () => {
 
   it('renders promise payoffs without badge when meta is missing', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({
+      analystResult: createMockAnalystResult({
         promisePayoffAssessments: [
           {
             promiseId: 'pr-1',
@@ -397,7 +365,7 @@ describe('analyst insights modal', () => {
 
   it('updates modal content on choice response and supports ending-page initialization', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({ sceneMomentum: 'STASIS' }),
+      analystResult: createMockAnalystResult({ sceneMomentum: 'STASIS' }),
       isEnding: true,
     });
     loadAppAndInit();
@@ -409,7 +377,7 @@ describe('analyst insights modal', () => {
     expect(document.getElementById('insights-modal-body')?.textContent).toContain('Stasis');
 
     document.body.innerHTML = buildPlayPageHtml({
-      analystResult: buildAnalystResult({ sceneMomentum: 'STASIS' }),
+      analystResult: createMockAnalystResult({ sceneMomentum: 'STASIS' }),
       isEnding: false,
     });
     loadAppAndInit();
@@ -429,7 +397,7 @@ describe('analyst insights modal', () => {
               { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
             ],
             isEnding: false,
-            analystResult: buildAnalystResult({
+            analystResult: createMockAnalystResult({
               sceneMomentum: 'MAJOR_PROGRESS',
               completionGateSatisfied: true,
               completionGateFailureReason: '',
