@@ -10,6 +10,15 @@ import { logger } from '../logging/index.js';
 import { emitGenerationStage } from './generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from './types';
 
+export interface DeviationContextForAgendas {
+  readonly reason: string;
+  readonly newBeats: readonly {
+    readonly name: string;
+    readonly objective: string;
+    readonly role: string;
+  }[];
+}
+
 export interface NpcAgendaContext {
   readonly npcs: readonly Npc[] | undefined;
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
@@ -20,6 +29,7 @@ export interface NpcAgendaContext {
   readonly storyStructure: StoryStructure | null;
   readonly parentActiveState: ActiveState;
   readonly analystNpcCoherenceIssues?: string;
+  readonly deviationContext?: DeviationContextForAgendas;
   readonly tone?: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
@@ -47,6 +57,7 @@ export async function resolveNpcAgendas(
           context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
         activeState: context.parentActiveState,
         analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
+        deviationContext: context.deviationContext,
         tone: context.tone,
         toneKeywords: context.toneKeywords,
         toneAntiKeywords: context.toneAntiKeywords,

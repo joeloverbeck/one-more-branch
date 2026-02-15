@@ -29,6 +29,14 @@ export interface AgendaResolverPromptContext {
   readonly structure?: StoryStructure;
   readonly activeState: ActiveState;
   readonly analystNpcCoherenceIssues?: string;
+  readonly deviationContext?: {
+    readonly reason: string;
+    readonly newBeats: readonly {
+      readonly name: string;
+      readonly objective: string;
+      readonly role: string;
+    }[];
+  };
   readonly tone?: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
@@ -50,6 +58,25 @@ function formatCurrentAgendas(agendas: AccumulatedNpcAgendas): string {
   Off-screen: ${a.offScreenBehavior}`
     )
     .join('\n\n');
+}
+
+function buildDeviationSection(context: AgendaResolverPromptContext): string {
+  if (!context.deviationContext) {
+    return '';
+  }
+
+  const beatLines = context.deviationContext.newBeats
+    .map((b) => `- ${b.name} (${b.role}): ${b.objective}`)
+    .join('\n');
+
+  return `STRUCTURAL DEVIATION ALERT:
+The story has just deviated from its planned structure. NPC agendas aligned with now-invalidated beats must be proactively realigned.
+Deviation reason: ${context.deviationContext.reason}
+New story beats going forward:
+${beatLines}
+Realign NPC goals and off-screen behavior to reflect this structural shift.
+
+`;
 }
 
 function buildAgendaResolverSystemPrompt(context: AgendaResolverPromptContext): string {
@@ -93,7 +120,7 @@ Overall Theme: ${context.structure.overallTheme}
 ${characterDefinitionsSection}CURRENT NPC AGENDAS:
 ${formatCurrentAgendas(context.currentAgendas)}
 
-${structureSection}ACTIVE STATE:
+${structureSection}${buildDeviationSection(context)}ACTIVE STATE:
 ${locationLine}${threatsLine}
 SCENE SUMMARY:
 ${context.sceneSummary}

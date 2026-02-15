@@ -226,4 +226,61 @@ describe('buildAgendaResolverPrompt', () => {
       expect(user).not.toContain('ANALYST COHERENCE NOTE:');
     });
   });
+
+  describe('deviation context', () => {
+    it('includes deviation section when deviationContext is provided', () => {
+      const context = buildMinimalContext({
+        deviationContext: {
+          reason: 'Protagonist refused the quest',
+          newBeats: [
+            { name: 'Reluctant Return', objective: 'Deal with consequences of refusal', role: 'turning_point' },
+            { name: 'Forced Hand', objective: 'External pressure forces action', role: 'escalation' },
+          ],
+        },
+      });
+      const messages = buildAgendaResolverPrompt(context);
+      const user = messages[1]?.content ?? '';
+
+      expect(user).toContain('STRUCTURAL DEVIATION ALERT:');
+      expect(user).toContain('Deviation reason: Protagonist refused the quest');
+      expect(user).toContain('- Reluctant Return (turning_point): Deal with consequences of refusal');
+      expect(user).toContain('- Forced Hand (escalation): External pressure forces action');
+      expect(user).toContain('Realign NPC goals and off-screen behavior');
+    });
+
+    it('omits deviation section when deviationContext is undefined', () => {
+      const messages = buildAgendaResolverPrompt(buildMinimalContext());
+      const user = messages[1]?.content ?? '';
+
+      expect(user).not.toContain('STRUCTURAL DEVIATION ALERT:');
+      expect(user).not.toContain('Deviation reason:');
+    });
+
+    it('places deviation section between structure section and active state section', () => {
+      const context = buildMinimalContext({
+        structure: {
+          overallTheme: 'Survival at any cost',
+          premise: 'A smuggler must escape.',
+          pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
+          generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+          acts: [],
+        },
+        deviationContext: {
+          reason: 'Protagonist fled the city',
+          newBeats: [
+            { name: 'Exile', objective: 'Survive in the wasteland', role: 'setup' },
+          ],
+        },
+      });
+      const messages = buildAgendaResolverPrompt(context);
+      const user = messages[1]?.content ?? '';
+
+      const structureIndex = user.indexOf('STORY STRUCTURE CONTEXT');
+      const deviationIndex = user.indexOf('STRUCTURAL DEVIATION ALERT');
+      const activeStateIndex = user.indexOf('ACTIVE STATE:');
+
+      expect(structureIndex).toBeLessThan(deviationIndex);
+      expect(deviationIndex).toBeLessThan(activeStateIndex);
+    });
+  });
 });

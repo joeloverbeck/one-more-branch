@@ -70,6 +70,16 @@ STORY STRUCTURE CONTEXT:
 Overall Theme: {{structure.overallTheme}}
 {{/if}}
 
+{{#if deviationContext}}
+STRUCTURAL DEVIATION ALERT:
+The story has just deviated from its planned structure. NPC agendas aligned with now-invalidated beats must be proactively realigned.
+Deviation reason: {{deviationContext.reason}}
+New story beats going forward:
+{{#each deviationContext.newBeats}}- {{name}} ({{role}}): {{objective}}
+{{/each}}
+Realign NPC goals and off-screen behavior to reflect this structural shift.
+{{/if}}
+
 ACTIVE STATE:
 {{#if activeState.currentLocation}}Current Location: {{activeState.currentLocation}}{{/if}}
 {{#if activeState.activeThreats.length > 0}}Active Threats: {{activeState.activeThreats as comma-separated text}}{{/if}}
@@ -133,6 +143,7 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `structure` | Current story structure (optional) |
 | `activeState` | Current location and active threats |
 | `analystNpcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
+| `deviationContext` | Structural deviation context (optional, present only when a story structure rewrite just occurred). Contains the deviation reason and the new beats from the rewritten structure |
 | `tone` | Tone/genre string (optional) |
 | `toneKeywords` | Target feel keywords (optional, from structure generator) |
 | `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
@@ -151,6 +162,7 @@ Agendas are stored per-page and inherit from the parent page, similar to other a
 The Agenda Resolver receives feedback from the analyst:
 
 - **Analyst NPC coherence assessment**: When the analyst flags NPC behavior inconsistency (`npcCoherenceIssues`), this is forwarded as `analystNpcCoherenceIssues`. The resolver uses this to decide whether the inconsistency represents intentional NPC evolution (update agenda accordingly) or a writer error (maintain original agenda direction).
+- **Structural deviation context**: When the analyst detects a story deviation and a structure rewrite occurs, the resolver receives `deviationContext` containing the deviation reason and the new beats from the rewritten structure. This allows NPCs to proactively realign their agendas with the new story direction. Zero token cost when no deviation occurs.
 
 ## Downstream Consumers
 
@@ -163,7 +175,7 @@ Updated agendas flow into the next page's planning context:
 
 ## Generation Stage
 
-The Agenda Resolver runs as the `RESOLVING_AGENDAS` generation stage, after `ANALYZING_SCENE`. The stage event ordering is the same for both opening and continuation pages (with the WRITING stage name varying):
+The Agenda Resolver runs as the `RESOLVING_AGENDAS` generation stage, after `ANALYZING_SCENE` (and after the conditional `RESTRUCTURING_STORY` stage when a deviation is detected). The stage event ordering is the same for both opening and continuation pages (with the WRITING stage name varying):
 
 ```
 PLANNING_PAGE started
@@ -174,9 +186,13 @@ WRITING_OPENING_PAGE / WRITING_CONTINUING_PAGE started
 WRITING_OPENING_PAGE / WRITING_CONTINUING_PAGE completed
 ANALYZING_SCENE started
 ANALYZING_SCENE completed
+RESTRUCTURING_STORY started       (conditional: only when deviation detected)
+RESTRUCTURING_STORY completed
 RESOLVING_AGENDAS started
 RESOLVING_AGENDAS completed
 ```
+
+When `RESTRUCTURING_STORY` runs, the agenda resolver receives a `deviationContext` containing the deviation reason and the new beats from the rewritten structure. When no deviation occurs, `RESTRUCTURING_STORY` is skipped and `deviationContext` is absent.
 
 The frontend displays this stage as "SCHEMING" in the spinner UI with dedicated Sims-style humor phrases themed around NPC plotting and off-screen machinations.
 

@@ -131,6 +131,40 @@ describe('resolveNpcAgendas', () => {
     });
   });
 
+  it('forwards deviationContext to generateAgendaResolver', async () => {
+    mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
+    const deviationContext = {
+      reason: 'Protagonist refused the quest',
+      newBeats: [
+        { name: 'Reluctant Return', objective: 'Deal with consequences', role: 'turning_point' },
+      ],
+    };
+    const context = createBaseContext({
+      npcs: testNpcs,
+      deviationContext,
+    });
+
+    await resolveNpcAgendas(context);
+
+    expect(mockedGenerateAgendaResolver).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deviationContext,
+      }),
+      testNpcs,
+      { apiKey: 'test-key' }
+    );
+  });
+
+  it('does not forward deviationContext when undefined', async () => {
+    mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
+    const context = createBaseContext({ npcs: testNpcs });
+
+    await resolveNpcAgendas(context);
+
+    const promptContext = mockedGenerateAgendaResolver.mock.calls[0]?.[0];
+    expect(promptContext?.deviationContext).toBeUndefined();
+  });
+
   it('does not emit completed stage on failure', async () => {
     mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
     const stageCallback: GenerationStageCallback = jest.fn();

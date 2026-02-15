@@ -314,7 +314,7 @@ export async function generatePage(
     writerNarrative: writerResult.narrative,
     writerSceneSummary: writerResult.sceneSummary,
     parentAccumulatedNpcAgendas,
-    currentStructureVersion,
+    currentStructureVersion: activeStructureVersion ?? currentStructureVersion,
     storyStructure: story.structure,
     parentActiveState: isOpening
       ? {
@@ -325,6 +325,19 @@ export async function generatePage(
         }
       : parentState!.accumulatedActiveState,
     analystNpcCoherenceIssues: analystResult?.npcCoherenceIssues,
+    deviationContext:
+      deviationInfo?.detected && activeStructureVersion
+        ? {
+            reason: deviationInfo.reason,
+            newBeats: activeStructureVersion.structure.acts.flatMap((act) =>
+              act.beats.map((beat) => ({
+                name: beat.name,
+                objective: beat.objective,
+                role: beat.role,
+              }))
+            ),
+          }
+        : undefined,
     tone: story.tone,
     toneKeywords: story.toneKeywords,
     toneAntiKeywords: story.toneAntiKeywords,
