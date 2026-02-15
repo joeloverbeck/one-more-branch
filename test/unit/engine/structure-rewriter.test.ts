@@ -514,5 +514,80 @@ describe('structure-rewriter', () => {
         'Merged structure is missing beats for act 2'
       );
     });
+
+    it('deduplicates regenerated beats with whitespace-variant signatures', () => {
+      const regenerated = createStoryStructure({
+        acts: [
+          {
+            id: '1',
+            name: 'Act One',
+            objective: 'Objective 1',
+            stakes: 'Stakes 1',
+            entryCondition: 'Entry 1',
+            beats: [
+              {
+                id: '1.1',
+                name: 'New Beat',
+                description: 'Fight  the  villain ',
+                objective: 'Defeat  evil ',
+                role: 'escalation',
+              },
+            ],
+          },
+          {
+            id: '2',
+            name: 'Act Two',
+            objective: 'Objective 2',
+            stakes: 'Stakes 2',
+            entryCondition: 'Entry 2',
+            beats: [
+              {
+                id: '2.1',
+                name: 'Beat 2.1',
+                description: 'Beat 2.1',
+                objective: 'Goal 2.1',
+                role: 'escalation',
+              },
+            ],
+          },
+          {
+            id: '3',
+            name: 'Act Three',
+            objective: 'Objective 3',
+            stakes: 'Stakes 3',
+            entryCondition: 'Entry 3',
+            beats: [
+              {
+                id: '3.1',
+                name: 'Beat 3.1',
+                description: 'Beat 3.1',
+                objective: 'Goal 3.1',
+                role: 'resolution',
+              },
+            ],
+          },
+        ],
+      });
+
+      const merged = mergePreservedWithRegenerated(
+        [
+          {
+            actIndex: 0,
+            beatIndex: 0,
+            beatId: '1.1',
+            name: 'Preserved Beat',
+            description: 'Fight the villain',
+            objective: 'Defeat evil',
+            role: 'setup',
+            resolution: 'Villain was defeated',
+          },
+        ],
+        regenerated,
+        'Theme'
+      );
+
+      expect(merged.acts[0]?.beats).toHaveLength(1);
+      expect(merged.acts[0]?.beats[0]?.name).toBe('Preserved Beat');
+    });
   });
 });

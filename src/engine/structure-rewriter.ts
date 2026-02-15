@@ -64,6 +64,12 @@ function parseBeatNumber(beatId: string, actIndex: number): number | null {
   return parsedBeat;
 }
 
+function beatSignature(description: string, objective: string): string {
+  const normalizedDesc = description.trim().replace(/\s+/g, ' ');
+  const normalizedObj = objective.trim().replace(/\s+/g, ' ');
+  return `${normalizedDesc}\n${normalizedObj}`;
+}
+
 export function createStructureRewriter(
   generator: StructureRewriteGenerator = generateRewrittenStructure
 ): StructureRewriter {
@@ -128,11 +134,11 @@ export function mergePreservedWithRegenerated(
     }, 0);
 
     const seenBeatSignature = new Set(
-      mergedBeats.map((beat) => `${beat.description}\n${beat.objective}`)
+      mergedBeats.map((beat) => beatSignature(beat.description, beat.objective))
     );
 
     for (const beat of regeneratedAct?.beats ?? []) {
-      const signature = `${beat.description}\n${beat.objective}`;
+      const signature = beatSignature(beat.description, beat.objective);
       if (seenBeatSignature.has(signature)) {
         continue;
       }
