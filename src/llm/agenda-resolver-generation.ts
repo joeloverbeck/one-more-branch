@@ -80,6 +80,7 @@ export async function generateAgendaResolver(
 
   return {
     updatedAgendas: validated.updatedAgendas,
+    updatedRelationships: validated.updatedRelationships,
     rawResponse: validated.rawResponse,
   };
 }

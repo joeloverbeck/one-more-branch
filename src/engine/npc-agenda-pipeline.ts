@@ -3,6 +3,8 @@ import type { AgendaResolverResult } from '../llm';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { ActiveState } from '../models/state/active-state';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
+import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import type { DetectedRelationshipShift } from '../llm/analyst-types';
 import type { StoryStructure } from '../models/story-arc';
 import type { Npc } from '../models/npc';
 import type { VersionedStoryStructure } from '../models/structure-version';
@@ -29,6 +31,8 @@ export interface NpcAgendaContext {
   readonly storyStructure: StoryStructure | null;
   readonly parentActiveState: ActiveState;
   readonly analystNpcCoherenceIssues?: string;
+  readonly parentAccumulatedNpcRelationships?: AccumulatedNpcRelationships;
+  readonly analystRelationshipShifts?: readonly DetectedRelationshipShift[];
   readonly deviationContext?: DeviationContextForAgendas;
   readonly tone?: string;
   readonly toneKeywords?: readonly string[];
@@ -57,6 +61,8 @@ export async function resolveNpcAgendas(
           context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
         activeState: context.parentActiveState,
         analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
+        currentRelationships: context.parentAccumulatedNpcRelationships,
+        analystRelationshipShifts: context.analystRelationshipShifts,
         deviationContext: context.deviationContext,
         tone: context.tone,
         toneKeywords: context.toneKeywords,

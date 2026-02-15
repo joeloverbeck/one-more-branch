@@ -1,10 +1,12 @@
 import type { Npc } from '../../models/npc.js';
 import { normalizeForComparison } from '../../models/normalize.js';
 import type { NpcAgenda } from '../../models/state/npc-agenda.js';
+import type { NpcRelationship } from '../../models/state/npc-relationship.js';
 import { LLMError } from '../llm-client-types.js';
 
 export interface AgendaResolverRawResponse {
   readonly updatedAgendas: readonly NpcAgenda[];
+  readonly updatedRelationships: readonly NpcRelationship[];
   readonly rawResponse: string;
 }
 
@@ -79,5 +81,46 @@ export function validateAgendaResolverResponse(
     });
   }
 
-  return { updatedAgendas, rawResponse };
+  // Parse relationship updates
+  const rawRelationships = data['updatedRelationships'];
+  const updatedRelationships: NpcRelationship[] = [];
+
+  if (Array.isArray(rawRelationships)) {
+    for (const item of rawRelationships) {
+      if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+        continue;
+      }
+
+      const r = item as Record<string, unknown>;
+      if (
+        typeof r['npcName'] !== 'string' ||
+        typeof r['valence'] !== 'number' ||
+        typeof r['dynamic'] !== 'string' ||
+        typeof r['history'] !== 'string' ||
+        typeof r['currentTension'] !== 'string' ||
+        typeof r['leverage'] !== 'string'
+      ) {
+        continue;
+      }
+
+      const npcName = r['npcName'].trim();
+      const normalizedName = normalizeForComparison(npcName);
+
+      // Reject relationships for NPCs not in the story's NPC list
+      if (!validNpcNames.has(normalizedName)) {
+        continue;
+      }
+
+      updatedRelationships.push({
+        npcName,
+        valence: Math.max(-5, Math.min(5, r['valence'])),
+        dynamic: r['dynamic'].trim(),
+        history: r['history'].trim(),
+        currentTension: r['currentTension'].trim(),
+        leverage: r['leverage'].trim(),
+      });
+    }
+  }
+
+  return { updatedAgendas, updatedRelationships, rawResponse };
 }

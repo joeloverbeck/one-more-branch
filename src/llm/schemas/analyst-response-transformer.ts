@@ -1,5 +1,5 @@
 import type { PromisePayoffAssessment, ThreadPayoffAssessment } from '../../models/state/index.js';
-import type { AnalystResult, DetectedPromise } from '../analyst-types.js';
+import type { AnalystResult, DetectedPromise, DetectedRelationshipShift } from '../analyst-types.js';
 import { isCanonicalIdForPrefix, STATE_ID_PREFIXES } from '../validation/state-id-prefixes.js';
 import { AnalystResultSchema } from './analyst-validation-schema.js';
 
@@ -75,6 +75,24 @@ function normalizeAnchorEvidence(value: readonly string[]): string[] {
   return value.map((item: string) => item.trim()).slice(0, MAX_OBJECTIVE_ANCHORS);
 }
 
+function normalizeRelationshipShifts(
+  value: readonly {
+    npcName: string;
+    shiftDescription: string;
+    suggestedValenceChange: number;
+    suggestedNewDynamic: string;
+  }[]
+): DetectedRelationshipShift[] {
+  return value
+    .filter((s) => s.npcName.trim().length > 0 && s.shiftDescription.trim().length > 0)
+    .map((s) => ({
+      npcName: s.npcName.trim(),
+      shiftDescription: s.shiftDescription.trim(),
+      suggestedValenceChange: Math.max(-3, Math.min(3, s.suggestedValenceChange)),
+      suggestedNewDynamic: s.suggestedNewDynamic.trim(),
+    }));
+}
+
 export function validateAnalystResponse(rawJson: unknown, rawResponse: string): AnalystResult {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {
@@ -119,6 +137,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     promisesResolved: normalizePromisesResolved(validated.promisesResolved),
     promisePayoffAssessments: normalizePromisePayoffAssessments(validated.promisePayoffAssessments),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
+    relationshipShiftsDetected: normalizeRelationshipShifts(validated.relationshipShiftsDetected),
     rawResponse,
   };
 }

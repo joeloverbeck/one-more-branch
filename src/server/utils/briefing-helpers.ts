@@ -5,7 +5,12 @@ export interface ProtagonistBriefing {
   readonly appearance: string;
   readonly coreTraits: readonly string[];
   readonly motivations: string;
-  readonly relationships: readonly string[];
+}
+
+export interface NpcRelationshipBriefing {
+  readonly valence: number;
+  readonly dynamic: string;
+  readonly currentTension: string;
 }
 
 export interface NpcBriefing {
@@ -13,7 +18,7 @@ export interface NpcBriefing {
   readonly appearance: string;
   readonly coreTraits: readonly string[];
   readonly motivations: string;
-  readonly relationships: readonly string[];
+  readonly protagonistRelationship: NpcRelationshipBriefing | null;
   readonly currentGoal: string | null;
   readonly fear: string | null;
 }
@@ -36,7 +41,6 @@ export function extractProtagonistBriefing(
       appearance: '',
       coreTraits: [],
       motivations: '',
-      relationships: [],
     };
   }
 
@@ -45,7 +49,6 @@ export function extractProtagonistBriefing(
     appearance: protagonist.appearance,
     coreTraits: protagonist.coreTraits,
     motivations: protagonist.motivations,
-    relationships: protagonist.relationships,
   };
 }
 
@@ -60,12 +63,15 @@ export function extractNpcBriefings(
 
   return characters.slice(1).map((character) => {
     const matchingAgenda = agendaByName.get(normalizeName(character.name));
+    const rel = character.protagonistRelationship;
     return {
       name: character.name,
       appearance: character.appearance,
       coreTraits: character.coreTraits,
       motivations: character.motivations,
-      relationships: character.relationships,
+      protagonistRelationship: rel
+        ? { valence: rel.valence, dynamic: rel.dynamic, currentTension: rel.currentTension }
+        : null,
       currentGoal: matchingAgenda?.currentGoal ?? null,
       fear: matchingAgenda?.fear ?? null,
     };

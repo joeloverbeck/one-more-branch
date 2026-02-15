@@ -10,6 +10,7 @@ import type {
   ThreadPayoffAssessment,
 } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
+import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.js';
 import type {
@@ -77,6 +78,7 @@ export interface ContinuationContext {
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;
+  accumulatedNpcRelationships?: AccumulatedNpcRelationships;
 
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
@@ -109,6 +111,7 @@ export interface LorekeeperContext {
   readonly structure?: StoryStructure;
   readonly accumulatedStructureState?: AccumulatedStructureState;
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
+  readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
   readonly ancestorSummaries: readonly AncestorSummary[];
   readonly grandparentNarrative: string | null;
   readonly previousNarrative: string;

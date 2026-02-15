@@ -17,6 +17,8 @@ import {
 } from '../models';
 import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
+import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PageWriterResult } from '../llm/writer-types';
@@ -66,6 +68,8 @@ export interface PageBuildContext {
   readonly analystPromisesResolved: readonly string[];
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
+  readonly parentAccumulatedNpcRelationships: AccumulatedNpcRelationships;
+  readonly npcRelationshipUpdates?: readonly NpcRelationship[];
 }
 
 /**
@@ -323,6 +327,8 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     resolvedPromiseMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
+    npcRelationshipUpdates: context.npcRelationshipUpdates,
+    parentAccumulatedNpcRelationships: context.parentAccumulatedNpcRelationships,
   });
 }
 
@@ -358,6 +364,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     analystPromisesDetected: [],
     analystPromisesResolved: [],
     parentAccumulatedNpcAgendas: agendaRecord,
+    parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
   });
 }
 
@@ -386,6 +393,7 @@ export function buildContinuationPage(
     analystPromisesResolved: context.analystPromisesResolved,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
     npcAgendaUpdates: context.npcAgendaUpdates,
+    parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
   });
 }
 

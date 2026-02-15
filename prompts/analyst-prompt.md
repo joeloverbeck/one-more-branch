@@ -74,6 +74,12 @@ NPC AGENDA COHERENCE:
 - When npcCoherenceAdherent is false, write a brief npcCoherenceIssues description naming the NPC and explaining the inconsistency.
 - When npcCoherenceAdherent is true or no NPC agendas are provided, set npcCoherenceIssues to an empty string.
 
+NPC RELATIONSHIP SHIFT DETECTION:
+- If NPC-protagonist relationships are provided, evaluate whether any relationship shifted significantly during the scene.
+- Only flag meaningful shifts — routine interactions are not shifts.
+- For each detected shift, provide: the NPC name, a description of what changed, a suggested valence change (-3 to +3), and a new dynamic label if the relationship dynamic itself changed (empty string if unchanged).
+- These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
@@ -237,6 +243,13 @@ NPC AGENDAS (evaluate behavior consistency):
   Fear: {{npc.fear}}
 {{/if}}
 
+{{#if accumulatedNpcRelationships has entries}}
+NPC-PROTAGONIST RELATIONSHIPS (evaluate for shifts):
+[{{rel.npcName}}]
+  Dynamic: {{rel.dynamic}} | Valence: {{rel.valence}}
+  Tension: {{rel.currentTension}}
+{{/if}}
+
 TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
 
 NARRATIVE TO EVALUATE:
@@ -294,6 +307,14 @@ The tone reminder is injected into the user prompt (before the narrative) in add
       "satisfactionLevel": "{{RUSHED|ADEQUATE|WELL_EARNED}}",
       "reasoning": "{{why this satisfaction level}}"
     }
+  ],
+  "relationshipShiftsDetected": [
+    {
+      "npcName": "{{exact NPC name}}",
+      "shiftDescription": "{{what changed in the relationship, 1-2 sentences}}",
+      "suggestedValenceChange": "{{-3 to +3, positive=warmer, negative=colder}}",
+      "suggestedNewDynamic": "{{new dynamic label if changed, empty string if unchanged}}"
+    }
   ]
 }
 ```
@@ -306,3 +327,4 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 - `promisesResolved`: Array of resolved promise IDs (`pr-N`) from active tracked promises. Empty array when no tracked promises were paid off.
 - `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
 - `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.
+- `relationshipShiftsDetected`: Array of NPC-protagonist relationship shifts observed in this scene. Empty array if no significant shifts detected. Only flag meaningful changes, not routine interactions. `suggestedValenceChange` is clamped to -3..+3 by the response transformer. These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.

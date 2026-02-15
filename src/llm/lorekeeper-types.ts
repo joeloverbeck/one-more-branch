@@ -1,4 +1,5 @@
 import type { NpcAgenda } from '../models/state/npc-agenda.js';
+import type { NpcRelationship } from '../models/state/npc-relationship.js';
 
 export interface StoryBibleCharacter {
   readonly name: string;
@@ -23,5 +24,6 @@ export interface LorekeeperResult extends StoryBible {
 
 export interface AgendaResolverResult {
   readonly updatedAgendas: readonly NpcAgenda[];
+  readonly updatedRelationships: readonly NpcRelationship[];
   readonly rawResponse: string;
 }

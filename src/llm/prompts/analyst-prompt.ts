@@ -55,6 +55,12 @@ NPC AGENDA COHERENCE:
 - When npcCoherenceAdherent is false, write a brief npcCoherenceIssues description naming the NPC and explaining the inconsistency.
 - When npcCoherenceAdherent is true or no NPC agendas are provided, set npcCoherenceIssues to an empty string.
 
+NPC-PROTAGONIST RELATIONSHIP SHIFTS:
+- If NPC relationships are provided, evaluate whether the scene caused any significant relationship changes.
+- Only flag shifts that are meaningful — not every interaction is a shift.
+- For each detected shift, provide the NPC name, a 1-2 sentence description of the change, a suggested valence change (-3 to +3), and a new dynamic label if the dynamic itself changed (empty string if unchanged).
+- Empty array when no significant relationship shifts occurred or no relationships are provided.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.`;
 
@@ -88,6 +94,27 @@ function buildNpcAgendasSection(context: AnalystContext): string {
     ...entries.map(
       (a) =>
         `[${a.npcName}]\n  Goal: ${a.currentGoal}\n  Fear: ${a.fear}`
+    ),
+  ];
+
+  return `${lines.join('\n')}\n\n`;
+}
+
+function buildNpcRelationshipsSection(context: AnalystContext): string {
+  const relationships = context.accumulatedNpcRelationships;
+  if (!relationships) {
+    return '';
+  }
+  const entries = Object.values(relationships);
+  if (entries.length === 0) {
+    return '';
+  }
+
+  const lines = [
+    'NPC-PROTAGONIST RELATIONSHIPS (evaluate for shifts):',
+    ...entries.map(
+      (r) =>
+        `[${r.npcName}] Dynamic: ${r.dynamic} | Valence: ${r.valence} | Tension: ${r.currentTension}`
     ),
   ];
 
@@ -135,8 +162,9 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
     : '';
   const activePromisesSection = buildActivePromisesSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
+  const npcRelationshipsSection = buildNpcRelationshipsSection(context);
 
-  const userContent = `${structureEvaluation}${toneReminder}${activePromisesSection}${npcAgendasSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

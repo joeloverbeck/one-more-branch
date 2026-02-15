@@ -6,10 +6,13 @@ import {
 } from '../entity-decomposition-contract.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SchemaProperty = Record<string, any>;
+
 function buildSchemaProperties(
-  fields: Record<string, { type: 'string' | 'array'; description: string }>
-): Record<string, { type: string; description: string; items?: { type: 'string' } }> {
-  const properties: Record<string, { type: string; description: string; items?: { type: 'string' } }> = {};
+  fields: Record<string, { type: string; description: string }>
+): Record<string, SchemaProperty> {
+  const properties: Record<string, SchemaProperty> = {};
 
   for (const [key, field] of Object.entries(fields)) {
     if (field.type === 'array') {
@@ -21,6 +24,11 @@ function buildSchemaProperties(
       continue;
     }
 
+    if (field.type === 'nullable_object') {
+      // Handled separately below — skip here
+      continue;
+    }
+
     properties[key] = {
       type: 'string',
       description: field.description,
@@ -29,6 +37,48 @@ function buildSchemaProperties(
 
   return properties;
 }
+
+const PROTAGONIST_RELATIONSHIP_SCHEMA: SchemaProperty = {
+  anyOf: [
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['valence', 'dynamic', 'history', 'currentTension', 'leverage'],
+      properties: {
+        valence: {
+          type: 'number',
+          description:
+            'Relationship valence from -5 (hostile/antagonistic) to +5 (devoted/unconditional ally). ' +
+            '0 = neutral/indifferent.',
+        },
+        dynamic: {
+          type: 'string',
+          description:
+            'Relationship dynamic label. E.g. "mentor", "rival", "ally", "target", ' +
+            '"dependency", "protector", "adversary", "unrequited", "co-conspirator".',
+        },
+        history: {
+          type: 'string',
+          description: 'Brief history of the relationship. 1-2 sentences.',
+        },
+        currentTension: {
+          type: 'string',
+          description:
+            'Active tension or unresolved issue in the relationship right now. 1-2 sentences.',
+        },
+        leverage: {
+          type: 'string',
+          description:
+            'What this NPC holds over the protagonist or vice versa. 1 sentence.',
+        },
+      },
+    },
+    { type: 'null' },
+  ],
+  description:
+    'This NPC\'s relationship with the protagonist. MUST be null for the protagonist\'s own entry. ' +
+    'For NPCs, describe the structured relationship with valence, dynamic, history, tension, and leverage.',
+};
 
 const SPEECH_PROPERTIES = buildSchemaProperties(SPEECH_SCHEMA_FIELDS);
 const CHARACTER_PROPERTIES = buildSchemaProperties(CHARACTER_SCHEMA_FIELDS);
@@ -53,6 +103,7 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
             additionalProperties: false,
             properties: {
               ...CHARACTER_PROPERTIES,
+              protagonistRelationship: PROTAGONIST_RELATIONSHIP_SCHEMA,
               speechFingerprint: {
                 type: 'object',
                 additionalProperties: false,

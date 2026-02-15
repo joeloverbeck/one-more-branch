@@ -5,6 +5,7 @@ import { Npc } from './npc';
 import { StoryStructure } from './story-arc';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
 import type { NpcAgenda } from './state/npc-agenda';
+import type { NpcRelationship } from './state/npc-relationship';
 import {
   StructureVersionId,
   VersionedStoryStructure,
@@ -29,6 +30,7 @@ export interface Story {
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
   readonly initialNpcAgendas?: readonly NpcAgenda[];
+  readonly initialNpcRelationships?: readonly NpcRelationship[];
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;
   readonly createdAt: Date;

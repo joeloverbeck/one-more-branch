@@ -15,6 +15,8 @@ import {
 } from '../models';
 import { createInitialStructureState } from '../models/story-arc';
 import type { NpcAgenda } from '../models/state/npc-agenda';
+import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import { storage } from '../persistence';
 import { collectAncestorContext } from './ancestor-collector';
@@ -219,6 +221,11 @@ export async function generatePage(
     ? buildInitialNpcAgendaRecord(story.initialNpcAgendas)
     : parentState!.accumulatedNpcAgendas;
 
+  // --- NPC relationships (computed early for analyst context) ---
+  const parentAccumulatedNpcRelationships: AccumulatedNpcRelationships = isOpening
+    ? buildInitialNpcRelationshipRecord(story.initialNpcRelationships)
+    : parentState!.accumulatedNpcRelationships;
+
   // --- Run analyst evaluation ---
   const parentStructureState = isOpening
     ? (story.structure
@@ -245,6 +252,7 @@ export async function generatePage(
           threadAges: parentPage?.threadAges ?? {},
           activeTrackedPromises: parentPage?.accumulatedPromises ?? [],
           accumulatedNpcAgendas: parentAccumulatedNpcAgendas,
+          accumulatedNpcRelationships: parentAccumulatedNpcRelationships,
           tone: story.tone,
           toneKeywords: story.toneKeywords,
           toneAntiKeywords: story.toneAntiKeywords,
@@ -325,6 +333,8 @@ export async function generatePage(
         }
       : parentState!.accumulatedActiveState,
     analystNpcCoherenceIssues: analystResult?.npcCoherenceIssues,
+    parentAccumulatedNpcRelationships,
+    analystRelationshipShifts: analystResult?.relationshipShiftsDetected,
     deviationContext:
       deviationInfo?.detected && activeStructureVersion
         ? {
@@ -373,6 +383,8 @@ export async function generatePage(
     analystPromisesResolved: analystResult?.promisesResolved ?? [],
     parentAccumulatedNpcAgendas,
     npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
+    parentAccumulatedNpcRelationships,
+    npcRelationshipUpdates: agendaResolverResult?.updatedRelationships,
   });
 
   // --- Update canon ---
@@ -392,6 +404,19 @@ function buildInitialNpcAgendaRecord(
   const record: Record<string, NpcAgenda> = {};
   for (const agenda of agendas) {
     record[agenda.npcName] = agenda;
+  }
+  return record;
+}
+
+function buildInitialNpcRelationshipRecord(
+  initialNpcRelationships: readonly NpcRelationship[] | undefined
+): AccumulatedNpcRelationships {
+  if (!initialNpcRelationships || initialNpcRelationships.length === 0) {
+    return createEmptyAccumulatedNpcRelationships();
+  }
+  const record: Record<string, NpcRelationship> = {};
+  for (const rel of initialNpcRelationships) {
+    record[rel.npcName] = rel;
   }
   return record;
 }

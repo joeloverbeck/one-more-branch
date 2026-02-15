@@ -89,3 +89,12 @@ export {
   createEmptyAccumulatedNpcAgendas,
   applyAgendaUpdates,
 } from './npc-agenda.js';
+
+// NPC relationships
+export {
+  NpcRelationship,
+  AccumulatedNpcRelationships,
+  createEmptyAccumulatedNpcRelationships,
+  applyRelationshipUpdates,
+  buildInitialNpcRelationships,
+} from './npc-relationship.js';

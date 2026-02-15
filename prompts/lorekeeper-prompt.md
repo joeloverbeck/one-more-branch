@@ -93,6 +93,13 @@ NPC AGENDAS (current goals and off-screen behavior):
   Off-screen: {{agenda.offScreenBehavior}}
 {{/if}}
 
+{{#if accumulatedNpcRelationships has entries}}
+NPC-PROTAGONIST RELATIONSHIPS:
+[CharacterName]
+  Dynamic: {{relationship.dynamic}} | Valence: {{relationship.valence}}
+  Tension: {{relationship.currentTension}}
+{{/if}}
+
 {{#if structure && accumulatedStructureState}}
 === STORY STRUCTURE ===
 {{structureSection (same format as continuation prompt)}}
@@ -216,6 +223,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `globalCharacterCanon` | All character canon facts (by character name, runtime discoveries) |
 | `accumulatedCharacterState` | All NPC state entries (by character name) |
 | `accumulatedNpcAgendas` | Current NPC agendas (by NPC name): goal, leverage, fear, off-screen behavior |
+| `accumulatedNpcRelationships` | Current NPC-protagonist relationships (by NPC name): dynamic, valence, tension |
 | `activeState` | Current location, threats, constraints, threads |
 | `startingSituation` | Starting situation text (opening pages only; replaces narrative history fields) |
 | `ancestorSummaries` | All ancestor page summaries (continuation only) |

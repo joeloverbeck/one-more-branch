@@ -52,6 +52,8 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],
     accumulatedNpcAgendas: createEmptyAccumulatedNpcAgendas(),
+    npcRelationshipUpdates: [],
+    accumulatedNpcRelationships: {},
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,

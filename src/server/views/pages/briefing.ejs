@@ -58,16 +58,6 @@
             <span class="briefing-label">Motivations</span>
             <p><%= briefing.protagonist.motivations %></p>
           </div>
-          <% if (briefing.protagonist.relationships.length > 0) { %>
-          <div class="briefing-field">
-            <span class="briefing-label">Relationships</span>
-            <ul>
-              <% briefing.protagonist.relationships.forEach((relationship) => { %>
-              <li><%= relationship %></li>
-              <% }) %>
-            </ul>
-          </div>
-          <% } %>
         </div>
       </section>
 
@@ -94,14 +84,13 @@
               <span class="briefing-label">Motivations</span>
               <p><%= npc.motivations %></p>
             </div>
-            <% if (npc.relationships.length > 0) { %>
+            <% if (npc.protagonistRelationship) { %>
             <div class="briefing-field">
-              <span class="briefing-label">Relationships</span>
-              <ul>
-                <% npc.relationships.forEach((relationship) => { %>
-                <li><%= relationship %></li>
-                <% }) %>
-              </ul>
+              <span class="briefing-label">Relationship with Protagonist</span>
+              <p><strong><%= npc.protagonistRelationship.dynamic %></strong> (valence: <%= npc.protagonistRelationship.valence %>)</p>
+              <% if (npc.protagonistRelationship.currentTension) { %>
+              <p class="briefing-tension"><%= npc.protagonistRelationship.currentTension %></p>
+              <% } %>
             </div>
             <% } %>
             <% if (npc.currentGoal) { %>

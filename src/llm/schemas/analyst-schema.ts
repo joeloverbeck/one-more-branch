@@ -211,6 +211,41 @@ export const ANALYST_SCHEMA: JsonSchema = {
             additionalProperties: false,
           },
         },
+        relationshipShiftsDetected: {
+          type: 'array',
+          description:
+            'NPC relationship shifts with the protagonist observed in this scene. Only flag significant changes, not routine interactions. Empty array if no shifts detected.',
+          items: {
+            type: 'object',
+            properties: {
+              npcName: {
+                type: 'string',
+                description: 'Exact NPC name.',
+              },
+              shiftDescription: {
+                type: 'string',
+                description: 'What changed in the relationship (1-2 sentences).',
+              },
+              suggestedValenceChange: {
+                type: 'number',
+                description:
+                  'Suggested change to valence score (-3 to +3). Positive = warmer, negative = colder.',
+              },
+              suggestedNewDynamic: {
+                type: 'string',
+                description:
+                  'New dynamic label if the relationship dynamic itself changed. Empty string if dynamic unchanged.',
+              },
+            },
+            required: [
+              'npcName',
+              'shiftDescription',
+              'suggestedValenceChange',
+              'suggestedNewDynamic',
+            ],
+            additionalProperties: false,
+          },
+        },
       },
       required: [
         'beatConcluded',
@@ -239,6 +274,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'promisesResolved',
         'promisePayoffAssessments',
         'threadPayoffAssessments',
+        'relationshipShiftsDetected',
       ],
       additionalProperties: false,
     },

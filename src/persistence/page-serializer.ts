@@ -15,6 +15,7 @@ import {
 } from '../models';
 import type { TrackedPromise } from '../models/state/keyed-entry';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
+import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { AnalystResult } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import {
@@ -22,6 +23,7 @@ import {
   AnalystResultFileData,
   StoryBibleFileData,
   NpcAgendaFileData,
+  NpcRelationshipFileData,
 } from './page-serializer-types';
 import {
   structureStateToFileData,
@@ -125,6 +127,12 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
       satisfactionLevel: a.satisfactionLevel,
       reasoning: a.reasoning,
     })),
+    relationshipShiftsDetected: (analystResult.relationshipShiftsDetected ?? []).map((s) => ({
+      npcName: s.npcName,
+      shiftDescription: s.shiftDescription,
+      suggestedValenceChange: s.suggestedValenceChange,
+      suggestedNewDynamic: s.suggestedNewDynamic,
+    })),
   };
 }
 
@@ -181,8 +189,45 @@ function deserializeAnalystResult(
         a.satisfactionLevel as AnalystResult['threadPayoffAssessments'][number]['satisfactionLevel'],
       reasoning: a.reasoning,
     })),
+    relationshipShiftsDetected: (data.relationshipShiftsDetected ?? []).map((s) => ({
+      npcName: s.npcName,
+      shiftDescription: s.shiftDescription,
+      suggestedValenceChange: s.suggestedValenceChange,
+      suggestedNewDynamic: s.suggestedNewDynamic,
+    })),
     rawResponse: '',
   };
+}
+
+function deserializeNpcRelationship(data: NpcRelationshipFileData): NpcRelationship {
+  return {
+    npcName: data.npcName,
+    valence: data.valence,
+    dynamic: data.dynamic,
+    history: data.history,
+    currentTension: data.currentTension,
+    leverage: data.leverage,
+  };
+}
+
+function deserializeNpcRelationshipArray(
+  data: NpcRelationshipFileData[] | undefined
+): readonly NpcRelationship[] {
+  if (!data || data.length === 0) {
+    return [];
+  }
+  return data.map(deserializeNpcRelationship);
+}
+
+function deserializeAccumulatedNpcRelationships(
+  data: Record<string, NpcRelationshipFileData> | undefined
+): AccumulatedNpcRelationships {
+  if (!data) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(data).map(([key, r]) => [key, deserializeNpcRelationship(r)])
+  );
 }
 
 function deserializeNpcAgenda(data: NpcAgendaFileData): NpcAgenda {
@@ -285,6 +330,27 @@ export function serializePage(page: Page): PageFileData {
         },
       ])
     ),
+    npcRelationshipUpdates: page.npcRelationshipUpdates.map((r) => ({
+      npcName: r.npcName,
+      valence: r.valence,
+      dynamic: r.dynamic,
+      history: r.history,
+      currentTension: r.currentTension,
+      leverage: r.leverage,
+    })),
+    accumulatedNpcRelationships: Object.fromEntries(
+      Object.entries(page.accumulatedNpcRelationships).map(([key, r]) => [
+        key,
+        {
+          npcName: r.npcName,
+          valence: r.valence,
+          dynamic: r.dynamic,
+          history: r.history,
+          currentTension: r.currentTension,
+          leverage: r.leverage,
+        },
+      ])
+    ),
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -369,6 +435,10 @@ export function deserializePage(data: PageFileData): Page {
     resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
     npcAgendaUpdates: deserializeNpcAgendaArray(data.npcAgendaUpdates),
     accumulatedNpcAgendas: deserializeAccumulatedNpcAgendas(data.accumulatedNpcAgendas),
+    npcRelationshipUpdates: deserializeNpcRelationshipArray(data.npcRelationshipUpdates),
+    accumulatedNpcRelationships: deserializeAccumulatedNpcRelationships(
+      data.accumulatedNpcRelationships
+    ),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

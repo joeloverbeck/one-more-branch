@@ -61,6 +61,13 @@ const ThreadPayoffAssessmentSchema = z.object({
   reasoning: z.string().default(''),
 });
 
+const DetectedRelationshipShiftSchema = z.object({
+  npcName: z.string().default(''),
+  shiftDescription: z.string().default(''),
+  suggestedValenceChange: z.number().default(0),
+  suggestedNewDynamic: z.string().default(''),
+});
+
 export const AnalystResultSchema = z.object({
   beatConcluded: z.boolean().default(false),
   beatResolution: z.string().default(''),
@@ -88,4 +95,5 @@ export const AnalystResultSchema = z.object({
   promisesResolved: z.array(z.string()).catch([]).default([]),
   promisePayoffAssessments: z.array(PromisePayoffAssessmentSchema).catch([]).default([]),
   threadPayoffAssessments: z.array(ThreadPayoffAssessmentSchema).catch([]).default([]),
+  relationshipShiftsDetected: z.array(DetectedRelationshipShiftSchema).catch([]).default([]),
 });

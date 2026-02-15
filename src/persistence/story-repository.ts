@@ -38,12 +38,23 @@ interface SpeechFingerprintFileData {
   registerShifts: string;
 }
 
+interface DecomposedRelationshipFileData {
+  valence: number;
+  dynamic: string;
+  history: string;
+  currentTension: string;
+  leverage: string;
+}
+
 interface DecomposedCharacterFileData {
   name: string;
   speechFingerprint: SpeechFingerprintFileData;
   coreTraits: string[];
   motivations: string;
-  relationships: string[];
+  // New structured format
+  protagonistRelationship?: DecomposedRelationshipFileData | null;
+  // Legacy format for backward compatibility
+  relationships?: string[];
   knowledgeBoundaries: string;
   decisionPattern: string;
   coreBeliefs: string[];
@@ -229,7 +240,9 @@ function storyToFileData(story: Story): StoryFileData {
             },
             coreTraits: [...char.coreTraits],
             motivations: char.motivations,
-            relationships: [...char.relationships],
+            protagonistRelationship: char.protagonistRelationship
+              ? { ...char.protagonistRelationship }
+              : null,
             knowledgeBoundaries: char.knowledgeBoundaries,
             decisionPattern: char.decisionPattern,
             coreBeliefs: [...char.coreBeliefs],
@@ -304,7 +317,9 @@ function fileDataToStory(data: StoryFileData): Story {
               },
               coreTraits: [...char.coreTraits],
               motivations: char.motivations,
-              relationships: [...char.relationships],
+              protagonistRelationship: char.protagonistRelationship
+                ? { ...char.protagonistRelationship }
+                : null,
               knowledgeBoundaries: char.knowledgeBoundaries,
               decisionPattern: char.decisionPattern,
               coreBeliefs: [...char.coreBeliefs],

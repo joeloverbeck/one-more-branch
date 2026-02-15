@@ -51,6 +51,7 @@ export function buildContinuationContext(
     momentumTrajectory: ancestorContext.momentumTrajectory,
 
     accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
+    accumulatedNpcRelationships: parentState.accumulatedNpcRelationships,
 
     threadAges: parentPage.threadAges,
     accumulatedPromises: parentPage.accumulatedPromises,

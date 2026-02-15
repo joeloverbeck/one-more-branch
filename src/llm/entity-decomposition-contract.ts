@@ -10,7 +10,15 @@ interface StringArrayFieldSchemaDefinition {
   readonly description: string;
 }
 
-type FieldSchemaDefinition = StringFieldSchemaDefinition | StringArrayFieldSchemaDefinition;
+interface NullableObjectFieldSchemaDefinition {
+  readonly type: 'nullable_object';
+  readonly description: string;
+}
+
+type FieldSchemaDefinition =
+  | StringFieldSchemaDefinition
+  | StringArrayFieldSchemaDefinition
+  | NullableObjectFieldSchemaDefinition;
 
 type SchemaFieldMap<TKey extends string> = Record<TKey, FieldSchemaDefinition>;
 
@@ -89,12 +97,11 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
     type: 'string',
     description: 'What drives this character. 1-2 sentences.',
   },
-  relationships: {
-    type: 'array',
+  protagonistRelationship: {
+    type: 'nullable_object',
     description:
-      'Key relationships with context. ' +
-      'E.g. ["Mistrusts Kael after the betrayal at Thornwall", "Protective of younger sister Elise"]. ' +
-      'Empty array if no relationships mentioned.',
+      'This NPC\'s relationship with the protagonist. null for the protagonist\'s own entry. ' +
+      'For NPCs, describe the relationship with valence (-5 to +5), dynamic label, history, tension, and leverage.',
   },
   knowledgeBoundaries: {
     type: 'string',
@@ -133,7 +140,7 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
   'name',
   'coreTraits',
   'motivations',
-  'relationships',
+  'protagonistRelationship',
   'knowledgeBoundaries',
   'appearance',
   'decisionPattern',
@@ -157,18 +164,18 @@ export const SPEECH_ARRAY_FIELDS: ReadonlyArray<keyof SpeechFingerprint> = [
 ];
 
 export const CHARACTER_STRING_FIELDS: ReadonlyArray<
-  keyof Omit<DecomposedCharacter, 'speechFingerprint' | 'rawDescription' | 'name'>
-> = [
-  'motivations',
-  'knowledgeBoundaries',
-  'appearance',
-  'decisionPattern',
-  'conflictPriority',
-];
+  keyof Omit<
+    DecomposedCharacter,
+    'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
+  >
+> = ['motivations', 'knowledgeBoundaries', 'appearance', 'decisionPattern', 'conflictPriority'];
 
 export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
-  keyof Omit<DecomposedCharacter, 'speechFingerprint' | 'rawDescription' | 'name'>
-> = ['coreTraits', 'relationships', 'coreBeliefs'];
+  keyof Omit<
+    DecomposedCharacter,
+    'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
+  >
+> = ['coreTraits', 'coreBeliefs'];
 
 export const SPEECH_EXTRACTION_BULLETS: readonly string[] = [
   'Catchphrases: Signature phrases they would repeat based on personality and background',

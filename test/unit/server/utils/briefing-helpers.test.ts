@@ -11,7 +11,7 @@ function buildCharacter(overrides: Partial<DecomposedCharacter> = {}): Decompose
     appearance: 'Tall with silver hair',
     coreTraits: ['Calm', 'Perceptive'],
     motivations: 'Protect the city',
-    relationships: ['Mentors Oren'],
+    protagonistRelationship: null,
     knowledgeBoundaries: 'Does not know traitor identity',
     rawDescription: 'Character',
     speechFingerprint: {
@@ -41,7 +41,6 @@ describe('briefing-helpers', () => {
       appearance: 'Tall with silver hair',
       coreTraits: ['Calm', 'Perceptive'],
       motivations: 'Protect the city',
-      relationships: ['Mentors Oren'],
     });
   });
 

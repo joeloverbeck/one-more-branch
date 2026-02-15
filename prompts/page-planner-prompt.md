@@ -42,7 +42,7 @@ Plan the next page before prose generation.
 - choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
 - You do not produce stateIntents. State accounting is handled in a separate stage.
 - Keep output deterministic and concise.
-- Consider NPC agendas when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior.
+- Consider NPC agendas and relationships when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior. NPC-protagonist relationship dynamics (valence, tension, leverage) should inform how NPCs approach the protagonist.
 - When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.
 
 TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustIncludeBeats, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.
@@ -141,9 +141,24 @@ The previous beat resolution is found by walking backward through concluded beat
 
 Source: `buildEscalationDirective()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
+## Continuation Context: NPC Relationship Data
+
+When `accumulatedNpcRelationships` has entries, the continuation context includes:
+
+```text
+NPC-PROTAGONIST RELATIONSHIPS (current dynamics):
+[CharacterName]
+  Dynamic: {{relationship.dynamic}} | Valence: {{relationship.valence}}
+  Tension: {{relationship.currentTension}}
+```
+
+This section appears after `NPC AGENDAS` and before `YOUR INVENTORY:`. It provides the planner with structured relationship context to inform scene planning — e.g., leveraging hostile dynamics for confrontation scenes or warm dynamics for trust-building moments.
+
+Source: `buildNpcRelationshipsSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
-- Planner continuation context still includes active state, canon, thread aging, pacing, and payoff feedback to inform scene and choice planning.
+- Planner continuation context still includes active state, canon, thread aging, pacing, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant intentionally share the same context builders so both stages reason over identical continuity input.
 - Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.

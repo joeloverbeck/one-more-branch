@@ -7,6 +7,7 @@ import type {
   Urgency,
 } from '../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
+import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 
 export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
@@ -32,6 +33,13 @@ export interface DetectedPromise {
   readonly description: string;
   readonly promiseType: PromiseType;
   readonly suggestedUrgency: Urgency;
+}
+
+export interface DetectedRelationshipShift {
+  readonly npcName: string;
+  readonly shiftDescription: string;
+  readonly suggestedValenceChange: number;
+  readonly suggestedNewDynamic: string;
 }
 
 export interface AnalystResult {
@@ -61,6 +69,7 @@ export interface AnalystResult {
   threadPayoffAssessments: ThreadPayoffAssessment[];
   npcCoherenceAdherent: boolean;
   npcCoherenceIssues: string;
+  relationshipShiftsDetected: DetectedRelationshipShift[];
   rawResponse: string;
 }
 
@@ -76,4 +85,5 @@ export interface AnalystContext {
   toneAntiKeywords?: readonly string[];
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;
+  accumulatedNpcRelationships?: AccumulatedNpcRelationships;
 }

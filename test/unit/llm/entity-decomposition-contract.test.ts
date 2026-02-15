@@ -30,7 +30,11 @@ describe('entity-decomposition-contract alignment', () => {
   it('keeps character field sets aligned across parser/schema contract lists', () => {
     const characterSet = new Set([...CHARACTER_ARRAY_FIELDS, ...CHARACTER_STRING_FIELDS]);
     expect(characterSet).toEqual(
-      new Set(CHARACTER_REQUIRED_FIELDS.filter((field) => field !== 'name'))
+      new Set(
+        CHARACTER_REQUIRED_FIELDS.filter(
+          (field) => field !== 'name' && field !== 'protagonistRelationship'
+        )
+      )
     );
   });
 

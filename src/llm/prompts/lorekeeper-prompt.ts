@@ -94,6 +94,24 @@ ${npcAgendaEntries
 `
       : '';
 
+  const npcRelationshipEntries = context.accumulatedNpcRelationships
+    ? Object.values(context.accumulatedNpcRelationships)
+    : [];
+  const npcRelationshipsSection =
+    npcRelationshipEntries.length > 0
+      ? `NPC-PROTAGONIST RELATIONSHIPS:
+${npcRelationshipEntries
+  .map(
+    (r) =>
+      `[${r.npcName}]
+  Dynamic: ${r.dynamic} | Valence: ${r.valence}
+  Tension: ${r.currentTension}`
+  )
+  .join('\n\n')}
+
+`
+      : '';
+
   const activeState = context.activeState;
   const locationLine = activeState.currentLocation
     ? `Current Location: ${activeState.currentLocation}\n`
@@ -182,7 +200,7 @@ ${hasDecomposedWorld ? formatDecomposedWorldForPrompt(context.decomposedWorld) :
 
 ${buildToneBlock(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
-${npcsSection}${npcAgendasSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
+${npcsSection}${npcAgendasSection}${npcRelationshipsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
 ${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}
 
 === INSTRUCTIONS ===

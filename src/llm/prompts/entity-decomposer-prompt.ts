@@ -26,7 +26,7 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
 3. KNOWLEDGE BOUNDARIES: Explicitly state what each character knows and does NOT know. This prevents information leaking between characters during generation.
 
-4. RELATIONSHIP MAPPING: Capture relationships WITH CONTEXT - not just "knows X" but the emotional quality and history of the relationship.
+4. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured protagonistRelationship object describing the NPC's relationship WITH THE PROTAGONIST ONLY. Include valence (-5 hostile to +5 devoted), a dynamic label (mentor, rival, ally, etc.), brief history, current tension, and leverage. The protagonist's own entry MUST have protagonistRelationship: null.
 
 5. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
    Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
@@ -70,7 +70,8 @@ INSTRUCTIONS:
 4. For worldbuilding facts: decompose into atomic propositions. If no worldbuilding is provided, return an empty worldFacts array
 5. Every character MUST have a distinct speech fingerprint - no two characters should sound alike
 6. For decision patterns and core beliefs: if not explicit, infer from behavior, background, and relationship dynamics
-7. Core beliefs should read like statements the character would actually think or say`;
+7. Core beliefs should read like statements the character would actually think or say
+8. The protagonist's protagonistRelationship MUST be null. Each NPC MUST have a non-null protagonistRelationship describing their relationship with the protagonist`;
 
   return [
     { role: 'system', content: ENTITY_DECOMPOSER_SYSTEM_PROMPT },

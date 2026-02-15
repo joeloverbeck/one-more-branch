@@ -116,6 +116,22 @@ export interface NpcAgendaFileData {
   offScreenBehavior: string;
 }
 
+export interface NpcRelationshipFileData {
+  npcName: string;
+  valence: number;
+  dynamic: string;
+  history: string;
+  currentTension: string;
+  leverage: string;
+}
+
+export interface DetectedRelationshipShiftFileData {
+  npcName: string;
+  shiftDescription: string;
+  suggestedValenceChange: number;
+  suggestedNewDynamic: string;
+}
+
 export interface AnalystResultFileData {
   beatConcluded: boolean;
   beatResolution: string;
@@ -143,6 +159,7 @@ export interface AnalystResultFileData {
   promisesResolved?: string[];
   promisePayoffAssessments?: PromisePayoffAssessmentFileData[];
   threadPayoffAssessments?: ThreadPayoffAssessmentFileData[];
+  relationshipShiftsDetected?: DetectedRelationshipShiftFileData[];
 }
 
 export interface PageFileData {
@@ -199,6 +216,8 @@ export interface PageFileData {
   resolvedPromiseMeta?: Record<string, { promiseType: string; urgency: string }>;
   npcAgendaUpdates?: NpcAgendaFileData[];
   accumulatedNpcAgendas?: Record<string, NpcAgendaFileData>;
+  npcRelationshipUpdates?: NpcRelationshipFileData[];
+  accumulatedNpcRelationships?: Record<string, NpcRelationshipFileData>;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

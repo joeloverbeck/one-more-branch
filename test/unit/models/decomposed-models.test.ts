@@ -26,7 +26,13 @@ describe('formatDecomposedCharacterForPrompt', () => {
       },
       coreTraits: ['stoic', 'loyal'],
       motivations: 'Seeks redemption',
-      relationships: ['Former commander'],
+      protagonistRelationship: {
+        valence: 2,
+        dynamic: 'former subordinate',
+        history: 'Served under the former commander for years.',
+        currentTension: 'Seeks to prove worthy of their legacy.',
+        leverage: 'Knowledge of shared military operations.',
+      },
       knowledgeBoundaries: 'Knows tactics, not politics',
       decisionPattern: 'Calculates risk first, commits when cornered.',
       coreBeliefs: ['Debt must be paid'],
@@ -72,10 +78,11 @@ describe('formatDecomposedCharacterForPrompt', () => {
     expect(result).toContain('Conflict Priority: Protect civilians over status.');
   });
 
-  it('includes relationships', () => {
+  it('includes protagonist relationship', () => {
     const result = formatDecomposedCharacterForPrompt(createCharacter());
-    expect(result).toContain('Relationships:');
-    expect(result).toContain('- Former commander');
+    expect(result).toContain('Protagonist Relationship:');
+    expect(result).toContain('Dynamic: former subordinate (valence: 2)');
+    expect(result).toContain('Current Tension:');
   });
 
   it('omits catchphrases section when empty', () => {

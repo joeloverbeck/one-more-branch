@@ -99,6 +99,7 @@ function buildLorekeeperContext(
     structure: cc.structure,
     accumulatedStructureState: cc.accumulatedStructureState,
     accumulatedNpcAgendas: cc.accumulatedNpcAgendas,
+    accumulatedNpcRelationships: cc.accumulatedNpcRelationships,
     ancestorSummaries: cc.ancestorSummaries,
     grandparentNarrative: cc.grandparentNarrative,
     previousNarrative: cc.previousNarrative,

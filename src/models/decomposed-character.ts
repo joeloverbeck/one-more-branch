@@ -10,12 +10,20 @@ export interface SpeechFingerprint {
   readonly registerShifts: string;
 }
 
+export interface DecomposedRelationship {
+  readonly valence: number; // -5 to +5
+  readonly dynamic: string; // label: mentor, rival, ally, target, dependency, protector, etc.
+  readonly history: string; // 1-2 sentences
+  readonly currentTension: string; // 1-2 sentences
+  readonly leverage: string; // 1 sentence
+}
+
 export interface DecomposedCharacter {
   readonly name: string;
   readonly speechFingerprint: SpeechFingerprint;
   readonly coreTraits: readonly string[];
   readonly motivations: string;
-  readonly relationships: readonly string[];
+  readonly protagonistRelationship: DecomposedRelationship | null;
   readonly knowledgeBoundaries: string;
   readonly decisionPattern: string;
   readonly coreBeliefs: readonly string[];
@@ -41,8 +49,15 @@ export function formatDecomposedCharacterForPrompt(
     `Appearance: ${char.appearance}`
   );
 
-  if (char.relationships.length > 0) {
-    lines.push(`Relationships:\n${char.relationships.map((r) => `  - ${r}`).join('\n')}`);
+  if (char.protagonistRelationship !== null) {
+    const rel = char.protagonistRelationship;
+    lines.push(
+      `Protagonist Relationship:`,
+      `  Dynamic: ${rel.dynamic} (valence: ${rel.valence})`,
+      `  History: ${rel.history}`,
+      `  Current Tension: ${rel.currentTension}`,
+      `  Leverage: ${rel.leverage}`
+    );
   }
 
   lines.push(`Knowledge Boundaries: ${char.knowledgeBoundaries}`);

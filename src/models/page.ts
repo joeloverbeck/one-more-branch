@@ -34,6 +34,11 @@ import {
 } from './state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from './state/npc-agenda';
 import { createEmptyAccumulatedNpcAgendas, applyAgendaUpdates } from './state/npc-agenda';
+import type { NpcRelationship, AccumulatedNpcRelationships } from './state/npc-relationship';
+import {
+  createEmptyAccumulatedNpcRelationships,
+  applyRelationshipUpdates,
+} from './state/npc-relationship';
 
 export interface Page {
   readonly id: PageId;
@@ -59,6 +64,8 @@ export interface Page {
   readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
   readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
+  readonly npcRelationshipUpdates: readonly NpcRelationship[];
+  readonly accumulatedNpcRelationships: AccumulatedNpcRelationships;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -91,6 +98,8 @@ export interface CreatePageData {
   resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; urgency: string }>>;
   npcAgendaUpdates?: readonly NpcAgenda[];
   parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
+  npcRelationshipUpdates?: readonly NpcRelationship[];
+  parentAccumulatedNpcRelationships?: AccumulatedNpcRelationships;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -151,6 +160,11 @@ export function createPage(data: CreatePageData): Page {
     accumulatedNpcAgendas: applyAgendaUpdates(
       data.parentAccumulatedNpcAgendas ?? createEmptyAccumulatedNpcAgendas(),
       data.npcAgendaUpdates ?? []
+    ),
+    npcRelationshipUpdates: data.npcRelationshipUpdates ?? [],
+    accumulatedNpcRelationships: applyRelationshipUpdates(
+      data.parentAccumulatedNpcRelationships ?? createEmptyAccumulatedNpcRelationships(),
+      data.npcRelationshipUpdates ?? []
     ),
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,

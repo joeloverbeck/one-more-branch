@@ -42,7 +42,7 @@ DECOMPOSITION PRINCIPLES:
 
 3. KNOWLEDGE BOUNDARIES: Explicitly state what each character knows and does NOT know. This prevents information leaking between characters during generation.
 
-4. RELATIONSHIP MAPPING: Capture relationships WITH CONTEXT - not just "knows X" but the emotional quality and history of the relationship.
+4. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured relationship object describing their dynamic with the protagonist: valence (-5 to +5), dynamic label (mentor, rival, ally, etc.), 1-2 sentence history, current tension, and leverage. Set to null for the protagonist's own entry. This structured data feeds into the runtime relationship tracking system.
 
 5. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
    Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
@@ -120,7 +120,13 @@ INSTRUCTIONS:
       },
       "coreTraits": ["{{trait1}}", "{{trait2}}", "{{trait3}}"],
       "motivations": "{{what drives this character}}",
-      "relationships": ["{{relationship with context}}"],
+      "protagonistRelationship": {
+        "valence": "{{-5 to +5, negative=hostile, positive=warm}}",
+        "dynamic": "{{mentor|rival|ally|target|dependency|protector|manipulator|etc.}}",
+        "history": "{{1-2 sentences of relationship history}}",
+        "currentTension": "{{1-2 sentences of current tension or conflict}}",
+        "leverage": "{{1 sentence: what one can use against the other}}"
+      },
       "knowledgeBoundaries": "{{what they know and don't know}}",
       "appearance": "{{brief physical description}}",
       "decisionPattern": "{{how they decide under pressure}}",
@@ -140,6 +146,7 @@ INSTRUCTIONS:
 ```
 
 - `characters[0]` is always the protagonist (from CHARACTER CONCEPT); subsequent entries are NPCs in definition order.
+- `protagonistRelationship` is `null` for the protagonist's own entry. For NPCs, it is a structured object describing their relationship with the protagonist. This feeds into the runtime NPC relationship tracking system (see `agenda-resolver-prompt.md`).
 - `worldFacts` is an empty array when no worldbuilding is provided.
 - `domain` is a strict enum of 12 values (geography, ecology, history, society, culture, religion, governance, economy, faction, technology, magic, language); invalid values are defaulted to `'culture'` by the response transformer. The `custom` domain is no longer produced by the LLM but is still accepted when reading existing stories.
 - `factType` is a strict enum of 6 values (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY) representing the epistemic status of the fact. Required in the schema for new generations. Invalid or missing values are omitted (defaulted to `undefined`) by the response transformer for backward compatibility with existing stories.
@@ -154,6 +161,7 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
    - `characterConcept` for index 0 (protagonist)
    - Matching NPC description for index > 0 (matched by array order, falling back to `''`)
 2. **Speech fingerprint defaults**: Missing or undefined arrays default to `[]`.
+2b. **Protagonist relationship parsing**: `protagonistRelationship` is parsed as a nullable object. Valid objects must have `valence` (number, clamped to -5..+5), `dynamic`, `history`, `currentTension`, and `leverage` (strings). Invalid or missing objects default to `null`.
 3. **Domain validation**: World fact domains not in the valid enum are defaulted to `'culture'`. The `custom` domain is still accepted when reading existing stories.
 4. **Fact type validation**: World fact `factType` values not in the valid enum (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY) are omitted (field not set). Missing `factType` is treated as `undefined` for backward compatibility.
 5. **Empty fact filtering**: World facts with empty or whitespace-only `fact` text are removed.
@@ -182,6 +190,7 @@ The decomposed output is stored on the `Story` object and propagated to downstre
 - **Planner** (opening + continuation): Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles)` and `DecomposedWorld` as `WORLDBUILDING (structured)` with domain-tagged, epistemic-status-tagged facts (e.g., `[BELIEF] The clans believe...`), instead of raw prose. Falls back to raw when decomposed data is absent.
 - **Lorekeeper**: Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles with speech fingerprints)` with full speech fingerprints for voice synthesis. Falls back to raw NPC definitions when absent. Receives domain-tagged `DecomposedWorld` facts with epistemic status tags instead of raw worldbuilding. The lorekeeper's TWO-SOURCE SYNTHESIS principle guides merging decomposed structure (initial scaffold) with runtime canon facts (gameplay discoveries). The EPISTEMIC FIDELITY principle instructs the lorekeeper to preserve fact epistemic status in the Story Bible.
 - **Writer** (opening + continuation): Receives the protagonist's `SpeechFingerprint` as a dedicated `PROTAGONIST SPEECH FINGERPRINT` section for voice consistency. NPC speech data arrives via the Story Bible (curated by lorekeeper).
+- **NPC Relationship System**: `protagonistRelationship` objects from decomposed NPCs are used to build the initial `AccumulatedNpcRelationships` at story creation. These are then evolved by the Agenda Resolver after each scene and propagated to downstream prompts (planner, lorekeeper, analyst) as structured relationship context.
 
 ## Generation Stage
 

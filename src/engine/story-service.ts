@@ -1,4 +1,5 @@
 import { decomposeEntities, generateStoryStructure } from '../llm';
+import { buildInitialNpcRelationships } from '../models/state/npc-relationship';
 import {
   createStory,
   Page,
@@ -114,10 +115,14 @@ async function buildPreparedStory(
     status: 'completed',
     attempt: 1,
   });
+  const initialNpcRelationships = buildInitialNpcRelationships(
+    decompositionResult.decomposedCharacters
+  );
   storyWithStructure = {
     ...storyWithStructure,
     decomposedCharacters: decompositionResult.decomposedCharacters,
     decomposedWorld: decompositionResult.decomposedWorld,
+    ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
   };
   await storage.updateStory(storyWithStructure);
 

@@ -1,5 +1,9 @@
 import { getConfig } from '../config/index.js';
-import type { DecomposedCharacter, SpeechFingerprint } from '../models/decomposed-character.js';
+import type {
+  DecomposedCharacter,
+  DecomposedRelationship,
+  SpeechFingerprint,
+} from '../models/decomposed-character.js';
 import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from '../models/decomposed-world.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
@@ -86,6 +90,28 @@ function parseSpeechFingerprint(raw: Record<string, unknown>): SpeechFingerprint
   return speech as SpeechFingerprint;
 }
 
+function parseProtagonistRelationship(raw: unknown): DecomposedRelationship | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+
+  const data = raw as Record<string, unknown>;
+  const valence = typeof data['valence'] === 'number' ? data['valence'] : 0;
+  const clampedValence = Math.max(-5, Math.min(5, valence));
+
+  return {
+    valence: clampedValence,
+    dynamic: typeof data['dynamic'] === 'string' ? data['dynamic'] : 'neutral',
+    history: typeof data['history'] === 'string' ? data['history'] : '',
+    currentTension: typeof data['currentTension'] === 'string' ? data['currentTension'] : '',
+    leverage: typeof data['leverage'] === 'string' ? data['leverage'] : '',
+  };
+}
+
 function parseCharacter(
   raw: unknown,
   index: number,
@@ -110,7 +136,13 @@ function parseCharacter(
   }
 
   const speechFingerprint = parseSpeechFingerprint(data);
-  const character = {} as Record<keyof Omit<DecomposedCharacter, 'name' | 'speechFingerprint' | 'rawDescription'>, string | string[]>;
+  const character = {} as Record<
+    keyof Omit<
+      DecomposedCharacter,
+      'name' | 'speechFingerprint' | 'rawDescription' | 'protagonistRelationship'
+    >,
+    string | string[]
+  >;
 
   for (const field of CHARACTER_STRING_FIELDS) {
     character[field] = parseStringField(data, field);
@@ -125,7 +157,7 @@ function parseCharacter(
     speechFingerprint,
     coreTraits: character.coreTraits as string[],
     motivations: character.motivations as string,
-    relationships: character.relationships as string[],
+    protagonistRelationship: parseProtagonistRelationship(data['protagonistRelationship']),
     knowledgeBoundaries: character.knowledgeBoundaries as string,
     decisionPattern: character.decisionPattern as string,
     coreBeliefs: character.coreBeliefs as string[],
