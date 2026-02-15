@@ -171,7 +171,7 @@ describe('schema pipeline integration', () => {
         threatsAdded: ['Legacy threat'],
         constraintsAdded: ['Legacy constraint'],
         threadsAdded: [{ text: 'Legacy thread', threadType: 'RELATIONSHIP', urgency: 'MEDIUM' }],
-        newCanonFacts: ['Legacy canon fact'],
+        newCanonFacts: [{ text: 'Legacy canon fact', factType: 'LAW' }],
         protagonistAffect: {
           primaryEmotion: 'reverence',
           primaryIntensity: 'moderate',
@@ -237,7 +237,7 @@ describe('schema pipeline integration', () => {
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: ['td-1'],
-        newCanonFacts: ['Peace was restored'],
+        newCanonFacts: [{ text: 'Peace was restored', factType: 'LAW' }],
         newCharacterCanonFacts: [],
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -427,7 +427,7 @@ describe('schema pipeline integration', () => {
         threatsAdded: ['', '  ', 'Ghostly watcher', '\n'],
         constraintsAdded: ['', 'Locked gate'],
         threadsAdded: [{ text: 'The mystery', threadType: 'MYSTERY', urgency: 'MEDIUM' }],
-        newCanonFacts: ['The keep is haunted', '', '   '],
+        newCanonFacts: [{ text: 'The keep is haunted', factType: 'LAW' }],
         inventoryAdded: ['Key', '', '  '],
         protagonistAffect: {
           primaryEmotion: 'caution',

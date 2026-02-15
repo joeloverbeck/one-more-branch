@@ -99,6 +99,16 @@ CANON INTENT RULES:
 Canon facts are PERMANENT and BRANCH-INDEPENDENT. They persist across ALL branches of the story.
 Canon is RARE. Most pages should add ZERO canon entries. Only add canon when genuinely new permanent information is established.
 
+EPISTEMIC CLASSIFICATION:
+Each canon.worldAdd entry is an object { text, factType } where factType is one of: LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY.
+- LAW: Directly witnessed or verified by the protagonist.
+- NORM: Observed repeated social pattern or custom.
+- BELIEF: Told by a trusted source but not personally verified.
+- DISPUTED: Conflicting accounts from different sources.
+- RUMOR: Heard secondhand from unreliable source.
+- MYSTERY: Evidence of existence but no explanation yet.
+Match the protagonist's actual epistemic access, not omniscient narrator knowledge.
+
 THREE GATES - a fact must pass ALL three to be canon:
 1. PERMANENCE: Would this be true regardless of which choices the player made?
 2. NOVELTY: Does the ESTABLISHED WORLD FACTS / CHARACTER INFORMATION section above already cover this concept? If a similar fact exists, do NOT add a variant.

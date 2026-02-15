@@ -28,6 +28,7 @@ import { createInitialStructureState } from '@/models/story-arc';
 import type { StoryStructure } from '@/models/story-arc';
 import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 import { LLMError } from '@/llm/llm-client-types';
+import type { CanonFact } from '@/models/state/canon';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type {
   PagePlanGenerationResult,
@@ -100,7 +101,7 @@ type ReconciliationWriterPayload = PageWriterResult & {
   healthRemoved: readonly string[];
   characterStateChangesAdded: StateReconciliationResult['characterStateChangesAdded'];
   characterStateChangesRemoved: readonly string[];
-  newCanonFacts: readonly string[];
+  newCanonFacts: readonly CanonFact[];
   newCharacterCanonFacts: Record<string, string[]>;
 };
 
@@ -219,7 +220,7 @@ function buildOpeningResult(): PageWriterResult {
       },
     ],
     threadsResolved: [],
-    newCanonFacts: ['The city fog carries voices of the dead'],
+    newCanonFacts: [{ text: 'The city fog carries voices of the dead', factType: 'LAW' }],
     newCharacterCanonFacts: { 'The Watcher': ['Observes from the bell tower'] },
     inventoryAdded: ['Weathered map'],
     inventoryRemoved: [],
@@ -268,7 +269,7 @@ function buildContinuationResult(overrides?: Partial<PageWriterResult>): PageWri
       },
     ],
     threadsResolved: [],
-    newCanonFacts: ['Marked doors hide resistance cells'],
+    newCanonFacts: [{ text: 'Marked doors hide resistance cells', factType: 'LAW' }],
     newCharacterCanonFacts: {},
     inventoryAdded: [],
     inventoryRemoved: [],
@@ -647,7 +648,7 @@ describe('page-service integration', () => {
       expect(page.inventoryChanges.added).toContain('Weathered map');
 
       // Verify canon updates
-      expect(updatedStory.globalCanon).toContain('The city fog carries voices of the dead');
+      expect(updatedStory.globalCanon).toContainEqual({ text: 'The city fog carries voices of the dead', factType: 'LAW' });
       expect(updatedStory.globalCharacterCanon['The Watcher']).toContain(
         'Observes from the bell tower'
       );
@@ -774,7 +775,7 @@ describe('page-service integration', () => {
 
       mockedGenerateOpeningPage.mockResolvedValue({
         ...buildOpeningResult(),
-        newCanonFacts: ['Fact One', 'Fact Two'],
+        newCanonFacts: [{ text: 'Fact One', factType: 'LAW' }, { text: 'Fact Two', factType: 'LAW' }],
         newCharacterCanonFacts: {
           Hero: ['Has a scar'],
           Villain: ['Wears a mask'],
@@ -783,8 +784,8 @@ describe('page-service integration', () => {
 
       const { updatedStory } = await generateFirstPage(baseStory, 'test-api-key');
 
-      expect(updatedStory.globalCanon).toContain('Fact One');
-      expect(updatedStory.globalCanon).toContain('Fact Two');
+      expect(updatedStory.globalCanon).toContainEqual({ text: 'Fact One', factType: 'LAW' });
+      expect(updatedStory.globalCanon).toContainEqual({ text: 'Fact Two', factType: 'LAW' });
       expect(updatedStory.globalCharacterCanon['Hero']).toContain('Has a scar');
       expect(updatedStory.globalCharacterCanon['Villain']).toContain('Wears a mask');
     });
@@ -1934,19 +1935,19 @@ describe('page-service integration', () => {
 
       mockedGenerateWriterPage.mockResolvedValue({
         ...buildContinuationResult(),
-        newCanonFacts: ['A new world fact discovered'],
+        newCanonFacts: [{ text: 'A new world fact discovered', factType: 'LAW' }],
         newCharacterCanonFacts: { Sage: ['Knows ancient secrets'] },
       });
 
       const result = await getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key');
 
       // Verify story was updated with new canon
-      expect(result.story.globalCanon).toContain('A new world fact discovered');
+      expect(result.story.globalCanon).toContainEqual({ text: 'A new world fact discovered', factType: 'LAW' });
       expect(result.story.globalCharacterCanon['Sage']).toContain('Knows ancient secrets');
 
       // Verify persistence
       const reloadedStory = await storage.loadStory(baseStory.id);
-      expect(reloadedStory?.globalCanon).toContain('A new world fact discovered');
+      expect(reloadedStory?.globalCanon).toContainEqual({ text: 'A new world fact discovered', factType: 'LAW' });
       expect(reloadedStory?.globalCharacterCanon['Sage']).toContain('Knows ancient secrets');
     });
 

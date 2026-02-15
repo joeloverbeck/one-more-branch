@@ -36,7 +36,7 @@ function createValidStatePayload(): Record<string, unknown> {
         removeIds: [],
       },
       canon: {
-        worldAdd: ['The eastern stairwell overlooks the collapsed market square.'],
+        worldAdd: [{ text: 'The eastern stairwell overlooks the collapsed market square.', factType: 'LAW' }],
         characterAdd: [
           { characterName: 'Captain Ives', facts: ['Ives served at the tower before the war.'] },
         ],

@@ -1,18 +1,30 @@
+import type { TaggedCanonFact } from '../models/state/index.js';
+import type { WorldFactType } from '../models/decomposed-world.js';
+import type { CanonWorldAddItem } from '../llm/planner-types.js';
 import type { StateReconciliationDiagnostic } from './state-reconciler-types.js';
 import { normalizeIntentText, intentComparisonKey } from './reconciler-text-utils.js';
 
 export const DUPLICATE_CANON_FACT = 'DUPLICATE_CANON_FACT';
 
+const VALID_FACT_TYPES: ReadonlySet<string> = new Set<string>([
+  'LAW',
+  'NORM',
+  'BELIEF',
+  'DISPUTED',
+  'RUMOR',
+  'MYSTERY',
+]);
+
 export function normalizeCanonFacts(
-  values: readonly string[],
+  values: readonly CanonWorldAddItem[],
   diagnostics: StateReconciliationDiagnostic[]
-): string[] {
+): TaggedCanonFact[] {
   const seen = new Set<string>();
-  const result: string[] = [];
+  const result: TaggedCanonFact[] = [];
 
   values.forEach((value, index) => {
-    const normalized = normalizeIntentText(value);
-    const key = intentComparisonKey(value);
+    const normalized = normalizeIntentText(value.text);
+    const key = intentComparisonKey(value.text);
 
     if (!normalized || !key) {
       return;
@@ -27,8 +39,12 @@ export function normalizeCanonFacts(
       return;
     }
 
+    const factType: WorldFactType = VALID_FACT_TYPES.has(value.factType)
+      ? (value.factType as WorldFactType)
+      : 'LAW';
+
     seen.add(key);
-    result.push(normalized);
+    result.push({ text: normalized, factType });
   });
 
   return result;

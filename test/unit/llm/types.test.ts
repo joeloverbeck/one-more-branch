@@ -114,7 +114,7 @@ describe('LLM types', () => {
         constraintsRemoved: [],
         threadsAdded: [],
         threadsResolved: [],
-        newCanonFacts: ['The forest has two exits.'],
+        newCanonFacts: [{ text: 'The forest has two exits.', factType: 'LAW' }],
         newCharacterCanonFacts: {},
         inventoryAdded: [],
         inventoryRemoved: [],
@@ -226,7 +226,7 @@ describe('LLM types', () => {
             removeIds: [],
           },
           canon: {
-            worldAdd: ['The bridge groans audibly before each thunderclap.'],
+            worldAdd: [{ text: 'The bridge groans audibly before each thunderclap.', factType: 'LAW' }],
             characterAdd: [
               { characterName: 'Scout', facts: ['The scout has crossed this bridge once before.'] },
             ],
@@ -663,7 +663,7 @@ describe('LLM types', () => {
           { text: 'THREAD_LOST: Lost the trail', threadType: 'MYSTERY', urgency: 'MEDIUM' },
         ],
         threadsResolved: [],
-        newCanonFacts: ['The forest is cursed.'],
+        newCanonFacts: [{ text: 'The forest is cursed.', factType: 'LAW' }],
         newCharacterCanonFacts: { Elara: ['Elara fears the dark'] },
         inventoryAdded: ['rusty key'],
         inventoryRemoved: [],
@@ -732,7 +732,7 @@ describe('LLM types', () => {
         healthRemoved: [],
         characterStateChangesAdded: [{ characterName: 'Elara', states: ['determined'] }],
         characterStateChangesRemoved: [],
-        newCanonFacts: ['The eastern tower survived the initial collapse.'],
+        newCanonFacts: [{ text: 'The eastern tower survived the initial collapse.', factType: 'LAW' }],
         newCharacterCanonFacts: { Elara: ['Elara reached the tower ahead of the squad.'] },
         reconciliationDiagnostics: [],
       };

@@ -159,8 +159,13 @@ export const CharacterStateIntentMutationsSchema = z.object({
   removeIds: z.array(z.string()),
 });
 
+const CanonWorldAddItemSchema = z.object({
+  text: z.string(),
+  factType: z.enum(['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY']),
+});
+
 export const CanonIntentsSchema = z.object({
-  worldAdd: z.array(z.string()),
+  worldAdd: z.array(CanonWorldAddItemSchema),
   characterAdd: z.array(
     z.object({
       characterName: z.string(),
@@ -198,7 +203,11 @@ export function addStateIntentRefinements(
   );
   addDuplicateIssues(stateIntents.inventory.add, ['stateIntents', 'inventory', 'add'], ctx);
   addDuplicateIssues(stateIntents.health.add, ['stateIntents', 'health', 'add'], ctx);
-  addDuplicateIssues(stateIntents.canon.worldAdd, ['stateIntents', 'canon', 'worldAdd'], ctx);
+  addDuplicateIssues(
+    stateIntents.canon.worldAdd.map((entry) => entry.text),
+    ['stateIntents', 'canon', 'worldAdd'],
+    ctx
+  );
 
   addNoIdLikeAdditionIssues(
     stateIntents.threats.add.map((entry) => entry.text),
@@ -225,7 +234,7 @@ export function addStateIntentRefinements(
     ctx
   );
   addNoIdLikeAdditionIssues(
-    stateIntents.canon.worldAdd,
+    stateIntents.canon.worldAdd.map((entry) => entry.text),
     'stateIntents.canon.worldAdd',
     ['stateIntents', 'canon', 'worldAdd'],
     ctx

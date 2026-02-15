@@ -650,7 +650,7 @@ describe('state-reconciler', () => {
       stateIntents: {
         ...buildPlan().stateIntents,
         canon: {
-          worldAdd: ['  Iron   gates remain sealed ', 'iron gates remain sealed'],
+          worldAdd: [{ text: '  Iron   gates remain sealed ', factType: 'LAW' }, { text: 'iron gates remain sealed', factType: 'LAW' }],
           characterAdd: [
             {
               characterName: 'Mara',
@@ -667,7 +667,7 @@ describe('state-reconciler', () => {
 
     const result = reconcileState(plan, buildWriterResult(), buildPreviousState());
 
-    expect(result.newCanonFacts).toEqual(['Iron gates remain sealed']);
+    expect(result.newCanonFacts).toEqual([{ text: 'Iron gates remain sealed', factType: 'LAW' }]);
     expect(result.newCharacterCanonFacts).toEqual({
       Mara: ['Keeps a hidden ledger', 'Distrusts city watch'],
     });

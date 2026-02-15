@@ -305,9 +305,9 @@ describe('state-reconciler integration', () => {
         ...buildBasePlan().stateIntents,
         canon: {
           worldAdd: [
-            '  The bridge district is under martial law ',
-            'the bridge district is under martial law',
-            'The old archive holds forbidden texts',
+            { text: '  The bridge district is under martial law ', factType: 'LAW' },
+            { text: 'the bridge district is under martial law', factType: 'LAW' },
+            { text: 'The old archive holds forbidden texts', factType: 'LAW' },
           ],
           characterAdd: [
             {
@@ -330,8 +330,8 @@ describe('state-reconciler integration', () => {
     const result = reconcileState(plan, buildWriterResult(), buildPopulatedPreviousState());
 
     expect(result.newCanonFacts).toEqual([
-      'The bridge district is under martial law',
-      'The old archive holds forbidden texts',
+      { text: 'The bridge district is under martial law', factType: 'LAW' },
+      { text: 'The old archive holds forbidden texts', factType: 'LAW' },
     ]);
     expect(result.newCharacterCanonFacts).toEqual({
       Mara: [
@@ -585,7 +585,7 @@ describe('state-reconciler integration', () => {
           removeIds: [],
         },
         canon: {
-          worldAdd: ['The sewer system predates the current city by centuries'],
+          worldAdd: [{ text: 'The sewer system predates the current city by centuries', factType: 'LAW' }],
           characterAdd: [
             { characterName: 'Mara', facts: ['Explored the sewer tunnel as a child'] },
           ],
@@ -623,7 +623,7 @@ describe('state-reconciler integration', () => {
       { characterName: 'Mara', states: ['Navigating by memory'] },
     ]);
     expect(result.newCanonFacts).toEqual([
-      'The sewer system predates the current city by centuries',
+      { text: 'The sewer system predates the current city by centuries', factType: 'LAW' },
     ]);
     expect(result.newCharacterCanonFacts).toEqual({
       Mara: ['Explored the sewer tunnel as a child'],
@@ -694,7 +694,7 @@ describe('state-reconciler integration', () => {
           removeIds: [],
         },
         canon: {
-          worldAdd: ['The sewer junction connects three districts'],
+          worldAdd: [{ text: 'The sewer junction connects three districts', factType: 'LAW' }],
           characterAdd: [{ characterName: 'Mara', facts: ['Remembers the valve location'] }],
         },
       },

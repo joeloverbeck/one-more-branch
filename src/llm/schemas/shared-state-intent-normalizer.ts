@@ -55,7 +55,12 @@ export function normalizeStateIntents(
       removeIds: normalizeStringArray(stateIntents.characterState.removeIds),
     },
     canon: {
-      worldAdd: normalizeStringArray(stateIntents.canon.worldAdd),
+      worldAdd: stateIntents.canon.worldAdd
+        .map((entry) => ({
+          text: entry.text.trim(),
+          factType: entry.factType,
+        }))
+        .filter((entry) => entry.text),
       characterAdd: stateIntents.canon.characterAdd
         .map((entry) => ({
           characterName: entry.characterName.trim(),

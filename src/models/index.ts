@@ -23,7 +23,12 @@ export {
 
 export {
   CanonFact,
+  TaggedCanonFact,
   GlobalCanon,
+  WorldFactType,
+  isTaggedCanonFact,
+  canonFactText,
+  canonFactType,
   CharacterCanonFact,
   CharacterCanon,
   GlobalCharacterCanon,

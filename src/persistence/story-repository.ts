@@ -5,10 +5,12 @@ import {
   StoryMetadata,
   StoryStructure,
   VersionedStoryStructure,
+  isTaggedCanonFact,
   parsePageId,
   parseStoryId,
   parseStructureVersionId,
 } from '../models';
+import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
 import {
@@ -77,6 +79,11 @@ interface DecomposedWorldFileData {
   rawWorldbuilding: string;
 }
 
+interface CanonFactFileData {
+  text: string;
+  factType: string;
+}
+
 interface StoryFileData {
   id: string;
   title: string;
@@ -87,7 +94,7 @@ interface StoryFileData {
   toneAntiKeywords?: string[];
   npcs: Array<{ name: string; description: string }> | null;
   startingSituation: string | null;
-  globalCanon: string[];
+  globalCanon: (string | CanonFactFileData)[];
   globalCharacterCanon: Record<string, string[]>;
   structure: StoryStructureFileData | null;
   structureVersions?: VersionedStoryStructureFileData[];
@@ -221,7 +228,9 @@ function storyToFileData(story: Story): StoryFileData {
       ? story.npcs.map((npc) => ({ name: npc.name, description: npc.description }))
       : null,
     startingSituation: story.startingSituation ?? null,
-    globalCanon: [...story.globalCanon],
+    globalCanon: story.globalCanon.map((fact): string | CanonFactFileData =>
+      isTaggedCanonFact(fact) ? { text: fact.text, factType: fact.factType } : fact
+    ),
     globalCharacterCanon,
     structure: story.structure ? structureToFileData(story.structure) : null,
     structureVersions: (story.structureVersions ?? []).map(versionedStructureToFileData),
@@ -278,6 +287,27 @@ function storyToFileData(story: Story): StoryFileData {
   };
 }
 
+const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
+  'LAW',
+  'NORM',
+  'BELIEF',
+  'DISPUTED',
+  'RUMOR',
+  'MYSTERY',
+]);
+
+function deserializeCanonFact(raw: string | CanonFactFileData): CanonFact {
+  if (typeof raw === 'string') {
+    return raw;
+  }
+
+  if (raw.factType && VALID_WORLD_FACT_TYPES.has(raw.factType)) {
+    return { text: raw.text, factType: raw.factType as WorldFactType };
+  }
+
+  return raw.text;
+}
+
 function fileDataToStory(data: StoryFileData): Story {
   // Migration: handle existing stories without globalCharacterCanon
   const globalCharacterCanon: Record<string, readonly string[]> = {};
@@ -303,7 +333,7 @@ function fileDataToStory(data: StoryFileData): Story {
       ? { npcs: data.npcs.map((npc) => ({ name: npc.name, description: npc.description })) }
       : {}),
     ...(data.startingSituation !== null ? { startingSituation: data.startingSituation } : {}),
-    globalCanon: [...data.globalCanon],
+    globalCanon: data.globalCanon.map(deserializeCanonFact),
     globalCharacterCanon,
     structure: data.structure ? fileDataToStructure(data.structure) : null,
     structureVersions,

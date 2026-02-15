@@ -97,7 +97,7 @@ const validStructuredPayload = {
   constraintsRemoved: [],
   threadsAdded: [],
   threadsResolved: [],
-  newCanonFacts: ['A chanting cult gathers beneath the cathedral'],
+  newCanonFacts: [{ text: 'A chanting cult gathers beneath the cathedral', factType: 'LAW' }],
   newCharacterCanonFacts: [],
   inventoryAdded: [],
   inventoryRemoved: [],
@@ -145,7 +145,7 @@ const validPlannerPayload = {
       add: [{ characterName: 'Mara', states: ['Shaken but determined'] }],
       removeIds: [],
     },
-    canon: { worldAdd: ['The lower vault has ritual markings on every column.'], characterAdd: [] },
+    canon: { worldAdd: [{ text: 'The lower vault has ritual markings on every column.', factType: 'LAW' }], characterAdd: [] },
   },
   writerBrief: {
     openingLineDirective: 'Start on immediate tactical pressure.',

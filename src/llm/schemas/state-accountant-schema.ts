@@ -134,7 +134,21 @@ export const STATE_ACCOUNTANT_SCHEMA: JsonSchema = {
             canon: {
               type: 'object',
               properties: {
-                worldAdd: { type: 'array', items: { type: 'string' } },
+                worldAdd: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      text: { type: 'string' },
+                      factType: {
+                        type: 'string',
+                        enum: ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'],
+                      },
+                    },
+                    required: ['text', 'factType'],
+                    additionalProperties: false,
+                  },
+                },
                 characterAdd: {
                   type: 'array',
                   items: {

@@ -2,7 +2,10 @@ import { CONTENT_POLICY } from '../content-policy.js';
 import type { PagePlanContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { ReducedPagePlanResult } from '../planner-types.js';
-import { CONTINUATION_ACTIVE_STATE_QUALITY } from './sections/continuation/index.js';
+import {
+  CONTINUATION_ACTIVE_STATE_QUALITY,
+  CONTINUATION_CANON_QUALITY,
+} from './sections/continuation/index.js';
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
@@ -102,7 +105,9 @@ ${context.reconciliationFailureReasons
   );
 
   const qualityCriteriaSection =
-    context.mode === 'continuation' ? `\n${CONTINUATION_ACTIVE_STATE_QUALITY}\n` : '';
+    context.mode === 'continuation'
+      ? `\n${CONTINUATION_ACTIVE_STATE_QUALITY}\n\n${CONTINUATION_CANON_QUALITY}\n`
+      : '';
 
   const threadAgingSection =
     context.mode === 'continuation'

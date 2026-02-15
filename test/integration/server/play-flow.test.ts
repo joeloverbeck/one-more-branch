@@ -271,7 +271,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       constraintsRemoved: [],
       threadsAdded: [],
       threadsResolved: [],
-      newCanonFacts: ['The forest is ancient'],
+      newCanonFacts: [{ text: 'The forest is ancient', factType: 'LAW' }],
       newCharacterCanonFacts: {},
       characterStateChangesAdded: [],
       characterStateChangesRemoved: [],

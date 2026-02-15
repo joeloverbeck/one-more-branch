@@ -37,7 +37,7 @@ function buildMockGenerationResult(
     constraintsRemoved: [],
     threadsAdded: [],
     threadsResolved: [],
-    newCanonFacts: ['The corridor echoes with distant footsteps'],
+    newCanonFacts: [{ text: 'The corridor echoes with distant footsteps', factType: 'LAW' }],
     newCharacterCanonFacts: {},
     inventoryAdded: ['Rusty key'],
     inventoryRemoved: [],

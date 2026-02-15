@@ -8,6 +8,7 @@ import type { ProtagonistGuidance } from '../../../../models/protagonist-guidanc
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../../../../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../../../models/story-arc.js';
+import { formatCanonForPrompt } from '../../../../engine/canon-manager.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
 import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
@@ -416,7 +417,7 @@ ${formatNpcsForPrompt(context.npcs)}
 
   const globalCanonSection =
     context.globalCanon.length > 0
-      ? context.globalCanon.map((fact) => `- ${fact}`).join('\n')
+      ? formatCanonForPrompt(context.globalCanon)
       : '(none)';
 
   const inventorySection =

@@ -162,7 +162,7 @@ describe('validateWriterResponse', () => {
         ],
         currentLocation: 'Legacy location',
         threatsAdded: ['Legacy threat'],
-        newCanonFacts: ['Legacy canon'],
+        newCanonFacts: [{ text: 'Legacy canon', factType: 'LAW' }],
         inventoryAdded: ['Legacy inventory'],
         sceneSummary: 'Test summary of the scene events and consequences.',
         isEnding: false,
