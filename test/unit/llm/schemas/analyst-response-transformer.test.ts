@@ -338,4 +338,47 @@ describe('validateAnalystResponse', () => {
       expect(result.recommendedAction).toBe('nudge');
     });
   });
+
+  describe('NPC coherence fields', () => {
+    it('parses npcCoherenceAdherent and npcCoherenceIssues from valid response', () => {
+      const input = {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: 'A tense scene.',
+        npcCoherenceAdherent: false,
+        npcCoherenceIssues: 'Kael acted boldly despite fearing exposure.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.npcCoherenceAdherent).toBe(false);
+      expect(result.npcCoherenceIssues).toBe('Kael acted boldly despite fearing exposure.');
+    });
+
+    it('defaults npcCoherenceAdherent to true when missing', () => {
+      const result = validateAnalystResponse({}, RAW_RESPONSE);
+
+      expect(result.npcCoherenceAdherent).toBe(true);
+    });
+
+    it('defaults npcCoherenceIssues to empty string when missing', () => {
+      const result = validateAnalystResponse({}, RAW_RESPONSE);
+
+      expect(result.npcCoherenceIssues).toBe('');
+    });
+
+    it('trims whitespace from npcCoherenceIssues', () => {
+      const input = {
+        npcCoherenceAdherent: false,
+        npcCoherenceIssues: '  Kael acted out of character  ',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.npcCoherenceIssues).toBe('Kael acted out of character');
+    });
+  });
 });

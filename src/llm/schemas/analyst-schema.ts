@@ -103,6 +103,16 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'If toneAdherent is false, briefly describes what feels off and what the tone should be. Empty string when toneAdherent is true.',
         },
+        npcCoherenceAdherent: {
+          type: 'boolean',
+          description:
+            'True if NPCs in the scene acted consistently with their stated agendas. True when no NPC agendas are provided.',
+        },
+        npcCoherenceIssues: {
+          type: 'string',
+          description:
+            'If npcCoherenceAdherent is false, briefly names the NPC and explains the inconsistency. Empty string when coherent or no agendas.',
+        },
         promisesDetected: {
           type: 'array',
           description:
@@ -223,6 +233,8 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'completionGateFailureReason',
         'toneAdherent',
         'toneDriftDescription',
+        'npcCoherenceAdherent',
+        'npcCoherenceIssues',
         'promisesDetected',
         'promisesResolved',
         'promisePayoffAssessments',

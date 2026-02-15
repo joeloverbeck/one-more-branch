@@ -1,6 +1,7 @@
 import type { AnalystContext } from '../../../../src/llm/analyst-types';
 import type { StoryStructure, AccumulatedStructureState } from '../../../../src/models/story-arc';
 import type { ActiveState } from '../../../../src/models/state/active-state';
+import type { AccumulatedNpcAgendas } from '../../../../src/models/state/npc-agenda';
 import { buildAnalystPrompt } from '../../../../src/llm/prompts/analyst-prompt';
 
 describe('buildAnalystPrompt', () => {
@@ -225,5 +226,78 @@ describe('buildAnalystPrompt', () => {
     expect(systemContent).toContain(
       'Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.'
     );
+  });
+
+  describe('NPC agendas section', () => {
+    const npcAgendas: AccumulatedNpcAgendas = {
+      Kael: {
+        npcName: 'Kael',
+        currentGoal: 'Secure the artifact',
+        leverage: 'Military connections',
+        fear: 'Being exposed as a traitor',
+        offScreenBehavior: 'Recruiting operatives',
+      },
+      Mira: {
+        npcName: 'Mira',
+        currentGoal: 'Escape the city',
+        leverage: 'Knowledge of tunnels',
+        fear: 'Capture by enforcers',
+        offScreenBehavior: 'Mapping routes',
+      },
+    };
+
+    it('includes NPC agendas section when accumulatedNpcAgendas is provided', () => {
+      const contextWithAgendas: AnalystContext = {
+        ...testContext,
+        accumulatedNpcAgendas: npcAgendas,
+      };
+      const messages = buildAnalystPrompt(contextWithAgendas);
+      const userContent = messages[1].content;
+
+      expect(userContent).toContain('NPC AGENDAS (evaluate behavior consistency):');
+      expect(userContent).toContain('[Kael]');
+      expect(userContent).toContain('[Mira]');
+    });
+
+    it('omits NPC agendas section when accumulatedNpcAgendas is undefined', () => {
+      const messages = buildAnalystPrompt(testContext);
+      const userContent = messages[1].content;
+
+      expect(userContent).not.toContain('NPC AGENDAS');
+    });
+
+    it('omits NPC agendas section when accumulatedNpcAgendas is empty', () => {
+      const contextWithEmpty: AnalystContext = {
+        ...testContext,
+        accumulatedNpcAgendas: {},
+      };
+      const messages = buildAnalystPrompt(contextWithEmpty);
+      const userContent = messages[1].content;
+
+      expect(userContent).not.toContain('NPC AGENDAS');
+    });
+
+    it('only includes npcName, currentGoal, and fear (not leverage or offScreenBehavior)', () => {
+      const contextWithAgendas: AnalystContext = {
+        ...testContext,
+        accumulatedNpcAgendas: npcAgendas,
+      };
+      const messages = buildAnalystPrompt(contextWithAgendas);
+      const userContent = messages[1].content;
+
+      expect(userContent).toContain('Goal: Secure the artifact');
+      expect(userContent).toContain('Fear: Being exposed as a traitor');
+      expect(userContent).not.toContain('Leverage: Military connections');
+      expect(userContent).not.toContain('Off-screen: Recruiting operatives');
+    });
+
+    it('system message includes NPC agenda coherence rules', () => {
+      const messages = buildAnalystPrompt(testContext);
+      const systemContent = messages[0].content;
+
+      expect(systemContent).toContain('NPC AGENDA COHERENCE:');
+      expect(systemContent).toContain('npcCoherenceAdherent');
+      expect(systemContent).toContain('npcCoherenceIssues');
+    });
   });
 });

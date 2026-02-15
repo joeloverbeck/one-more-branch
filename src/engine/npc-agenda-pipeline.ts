@@ -19,6 +19,7 @@ export interface NpcAgendaContext {
   readonly currentStructureVersion: VersionedStoryStructure | null;
   readonly storyStructure: StoryStructure | null;
   readonly parentActiveState: ActiveState;
+  readonly analystNpcCoherenceIssues?: string;
   readonly tone?: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
@@ -45,6 +46,7 @@ export async function resolveNpcAgendas(
         structure:
           context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
         activeState: context.parentActiveState,
+        analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
         tone: context.tone,
         toneKeywords: context.toneKeywords,
         toneAntiKeywords: context.toneAntiKeywords,

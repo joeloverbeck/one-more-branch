@@ -48,6 +48,13 @@ PROMISE EVALUATION:
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
 - Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
 
+NPC AGENDA COHERENCE:
+- If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
+- Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
+- Set npcCoherenceAdherent to false if any NPC acts contrary to their stated goal or fear without narrative justification.
+- When npcCoherenceAdherent is false, write a brief npcCoherenceIssues description naming the NPC and explaining the inconsistency.
+- When npcCoherenceAdherent is true or no NPC agendas are provided, set npcCoherenceIssues to an empty string.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.`;
 
@@ -64,6 +71,27 @@ function buildAnalystSystemPrompt(
 
   sections.push(ANALYST_RULES);
   return sections.join('\n\n');
+}
+
+function buildNpcAgendasSection(context: AnalystContext): string {
+  const agendas = context.accumulatedNpcAgendas;
+  if (!agendas) {
+    return '';
+  }
+  const entries = Object.values(agendas);
+  if (entries.length === 0) {
+    return '';
+  }
+
+  const lines = [
+    'NPC AGENDAS (evaluate behavior consistency):',
+    ...entries.map(
+      (a) =>
+        `[${a.npcName}]\n  Goal: ${a.currentGoal}\n  Fear: ${a.fear}`
+    ),
+  ];
+
+  return `${lines.join('\n')}\n\n`;
 }
 
 function buildActivePromisesSection(context: AnalystContext): string {
@@ -106,8 +134,9 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
     ? `\n${buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords)}\n`
     : '';
   const activePromisesSection = buildActivePromisesSection(context);
+  const npcAgendasSection = buildNpcAgendasSection(context);
 
-  const userContent = `${structureEvaluation}${toneReminder}${activePromisesSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${activePromisesSection}${npcAgendasSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

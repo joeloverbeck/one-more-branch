@@ -316,6 +316,8 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
       pacingIssueDetected: false,
       pacingIssueReason: '',
       recommendedAction: 'none',
+      npcCoherenceAdherent: true,
+      npcCoherenceIssues: '',
       rawResponse: 'analyst-raw',
     };
   }
@@ -331,6 +333,8 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
       pacingIssueDetected: false,
       pacingIssueReason: '',
       recommendedAction: 'none',
+      npcCoherenceAdherent: true,
+      npcCoherenceIssues: '',
       rawResponse: 'analyst-raw',
     };
   }
@@ -345,6 +349,8 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',
+    npcCoherenceAdherent: true,
+    npcCoherenceIssues: '',
     rawResponse: 'analyst-raw',
   };
 }

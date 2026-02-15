@@ -105,6 +105,8 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
     completionGateFailureReason: analystResult.completionGateFailureReason ?? '',
     toneAdherent: analystResult.toneAdherent ?? true,
     toneDriftDescription: analystResult.toneDriftDescription ?? '',
+    npcCoherenceAdherent: analystResult.npcCoherenceAdherent ?? true,
+    npcCoherenceIssues: analystResult.npcCoherenceIssues ?? '',
     promisesDetected: (analystResult.promisesDetected ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
@@ -156,6 +158,8 @@ function deserializeAnalystResult(
     completionGateFailureReason: data.completionGateFailureReason,
     toneAdherent: data.toneAdherent ?? true,
     toneDriftDescription: data.toneDriftDescription ?? '',
+    npcCoherenceAdherent: data.npcCoherenceAdherent ?? true,
+    npcCoherenceIssues: data.npcCoherenceIssues ?? '',
     promisesDetected: (data.promisesDetected ?? []).map((p) => ({
       description: p.description,
       promiseType: p.promiseType as AnalystResult['promisesDetected'][number]['promiseType'],

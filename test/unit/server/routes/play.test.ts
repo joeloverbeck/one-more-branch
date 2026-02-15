@@ -1325,9 +1325,11 @@ describe('playRoutes', () => {
         completionGateFailureReason: '',
         toneAdherent: true,
         toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
         promisesDetected: [],
-    promisesResolved: [],
-    promisePayoffAssessments: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
         threadPayoffAssessments: [],
         rawResponse: '{}',
       };

@@ -194,4 +194,36 @@ describe('buildAgendaResolverPrompt', () => {
     expect(user).toContain('Current Location: Dockside warehouse');
     expect(user).toContain('Active Threats: Security drones');
   });
+
+  describe('analyst coherence note', () => {
+    it('includes coherence note when analystNpcCoherenceIssues is non-empty', () => {
+      const context = buildMinimalContext({
+        analystNpcCoherenceIssues: 'Azra acted boldly despite fearing capture.',
+      });
+      const messages = buildAgendaResolverPrompt(context);
+      const user = messages[1]?.content ?? '';
+
+      expect(user).toContain('ANALYST COHERENCE NOTE:');
+      expect(user).toContain('Azra acted boldly despite fearing capture.');
+      expect(user).toContain('intentional NPC evolution');
+      expect(user).toContain('writer error');
+    });
+
+    it('omits coherence note when analystNpcCoherenceIssues is undefined', () => {
+      const messages = buildAgendaResolverPrompt(buildMinimalContext());
+      const user = messages[1]?.content ?? '';
+
+      expect(user).not.toContain('ANALYST COHERENCE NOTE:');
+    });
+
+    it('omits coherence note when analystNpcCoherenceIssues is empty string', () => {
+      const context = buildMinimalContext({
+        analystNpcCoherenceIssues: '',
+      });
+      const messages = buildAgendaResolverPrompt(context);
+      const user = messages[1]?.content ?? '';
+
+      expect(user).not.toContain('ANALYST COHERENCE NOTE:');
+    });
+  });
 });

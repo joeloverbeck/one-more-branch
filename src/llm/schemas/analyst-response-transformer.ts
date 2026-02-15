@@ -113,6 +113,8 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     completionGateFailureReason,
     toneAdherent: validated.toneAdherent,
     toneDriftDescription: validated.toneDriftDescription.trim(),
+    npcCoherenceAdherent: validated.npcCoherenceAdherent,
+    npcCoherenceIssues: validated.npcCoherenceIssues.trim(),
     promisesDetected: normalizeDetectedPromises(validated.promisesDetected),
     promisesResolved: normalizePromisesResolved(validated.promisesResolved),
     promisePayoffAssessments: normalizePromisePayoffAssessments(validated.promisePayoffAssessments),

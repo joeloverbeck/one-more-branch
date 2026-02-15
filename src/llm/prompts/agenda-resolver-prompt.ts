@@ -28,6 +28,7 @@ export interface AgendaResolverPromptContext {
   readonly currentAgendas: AccumulatedNpcAgendas;
   readonly structure?: StoryStructure;
   readonly activeState: ActiveState;
+  readonly analystNpcCoherenceIssues?: string;
   readonly tone?: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
@@ -100,7 +101,7 @@ ${context.sceneSummary}
 NARRATIVE:
 ${context.narrative}
 
-${context.tone ? buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords) + '\n\n' : ''}Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.`;
+${context.analystNpcCoherenceIssues ? `ANALYST COHERENCE NOTE:\nThe scene analyst flagged the following NPC behavior inconsistency: ${context.analystNpcCoherenceIssues}\nConsider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).\n\n` : ''}${context.tone ? buildToneReminder(context.tone, context.toneKeywords, context.toneAntiKeywords) + '\n\n' : ''}Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.`;
 
   return [
     { role: 'system', content: buildAgendaResolverSystemPrompt(context) },

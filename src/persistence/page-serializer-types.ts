@@ -137,6 +137,8 @@ export interface AnalystResultFileData {
   completionGateFailureReason: string;
   toneAdherent?: boolean;
   toneDriftDescription?: string;
+  npcCoherenceAdherent?: boolean;
+  npcCoherenceIssues?: string;
   promisesDetected?: DetectedPromiseFileData[];
   promisesResolved?: string[];
   promisePayoffAssessments?: PromisePayoffAssessmentFileData[];

@@ -80,6 +80,12 @@ SCENE SUMMARY:
 NARRATIVE:
 {{narrative}}
 
+{{#if analystNpcCoherenceIssues}}
+ANALYST COHERENCE NOTE:
+The scene analyst flagged the following NPC behavior inconsistency: {{analystNpcCoherenceIssues}}
+Consider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).
+{{/if}}
+
 {{#if tone}}TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
 
 {{/if}}Return only agendas that changed. If nothing material changed for any NPC, return an empty updatedAgendas array.
@@ -126,6 +132,7 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `currentAgendas` | Accumulated NPC agendas from the parent page |
 | `structure` | Current story structure (optional) |
 | `activeState` | Current location and active threats |
+| `analystNpcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
 | `tone` | Tone/genre string (optional) |
 | `toneKeywords` | Target feel keywords (optional, from structure generator) |
 | `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
@@ -138,6 +145,12 @@ Agendas are stored per-page and inherit from the parent page, similar to other a
 - **Continuation pages**: Parent agendas + resolver updates = new accumulated agendas.
 - **Branch isolation**: Different branches evolve agendas independently.
 - **Update semantics**: Updates are full replacements keyed by NPC name (case-insensitive matching). NPCs not included in `updatedAgendas` retain their existing agenda unchanged.
+
+## Upstream Inputs
+
+The Agenda Resolver receives feedback from the analyst:
+
+- **Analyst NPC coherence assessment**: When the analyst flags NPC behavior inconsistency (`npcCoherenceIssues`), this is forwarded as `analystNpcCoherenceIssues`. The resolver uses this to decide whether the inconsistency represents intentional NPC evolution (update agenda accordingly) or a writer error (maintain original agenda direction).
 
 ## Downstream Consumers
 

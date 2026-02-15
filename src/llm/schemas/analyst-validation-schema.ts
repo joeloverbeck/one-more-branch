@@ -82,6 +82,8 @@ export const AnalystResultSchema = z.object({
   completionGateFailureReason: z.string().catch('').default(''),
   toneAdherent: z.boolean().catch(true).default(true),
   toneDriftDescription: z.string().catch('').default(''),
+  npcCoherenceAdherent: z.boolean().catch(true).default(true),
+  npcCoherenceIssues: z.string().catch('').default(''),
   promisesDetected: z.array(DetectedPromiseSchema).catch([]).default([]),
   promisesResolved: z.array(z.string()).catch([]).default([]),
   promisePayoffAssessments: z.array(PromisePayoffAssessmentSchema).catch([]).default([]),

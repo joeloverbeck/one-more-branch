@@ -13,6 +13,7 @@ import type {
   StoryStructure,
   VersionedStoryStructure,
 } from '../models';
+import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import { getCurrentBeat, isDeviation } from '../models';
 import { handleDeviation, isActualDeviation } from './deviation-handler';
 import { emitGenerationStage } from './generation-pipeline-helpers';
@@ -29,6 +30,7 @@ export interface AnalystEvaluationContext {
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
   readonly activeTrackedPromises: readonly TrackedPromise[];
+  readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly tone: string;
   readonly toneKeywords?: readonly string[];
   readonly toneAntiKeywords?: readonly string[];
@@ -62,6 +64,7 @@ export async function runAnalystEvaluation(
         threadsResolved: context.threadsResolved,
         threadAges: context.threadAges,
         activeTrackedPromises: context.activeTrackedPromises,
+        accumulatedNpcAgendas: context.accumulatedNpcAgendas,
         tone: context.tone,
         toneKeywords: context.toneKeywords,
         toneAntiKeywords: context.toneAntiKeywords,

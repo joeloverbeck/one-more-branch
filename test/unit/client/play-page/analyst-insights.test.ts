@@ -24,6 +24,8 @@ function buildAnalystResult(overrides: Record<string, unknown> = {}): Record<str
     completionGateFailureReason: 'Need a stronger commitment.',
     toneAdherent: true,
     toneDriftDescription: '',
+    npcCoherenceAdherent: true,
+    npcCoherenceIssues: '',
     promisesDetected: [],
     promisesResolved: [],
     promisePayoffAssessments: [],

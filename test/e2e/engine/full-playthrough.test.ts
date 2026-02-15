@@ -305,6 +305,14 @@ const defaultAnalystResult = {
   pacingIssueDetected: false,
   pacingIssueReason: '',
   recommendedAction: 'none' as const,
+  toneAdherent: true,
+  toneDriftDescription: '',
+  npcCoherenceAdherent: true,
+  npcCoherenceIssues: '',
+  promisesDetected: [],
+  promisesResolved: [],
+  promisePayoffAssessments: [],
+  threadPayoffAssessments: [],
   rawResponse: 'analyst-raw',
 };
 

@@ -6,6 +6,7 @@ import type {
   ThreadPayoffAssessment,
   Urgency,
 } from '../models/state/index.js';
+import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 
 export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
@@ -58,6 +59,8 @@ export interface AnalystResult {
   promisesResolved: string[];
   promisePayoffAssessments: PromisePayoffAssessment[];
   threadPayoffAssessments: ThreadPayoffAssessment[];
+  npcCoherenceAdherent: boolean;
+  npcCoherenceIssues: string;
   rawResponse: string;
 }
 
@@ -72,4 +75,5 @@ export interface AnalystContext {
   toneKeywords?: readonly string[];
   toneAntiKeywords?: readonly string[];
   activeTrackedPromises: readonly TrackedPromise[];
+  accumulatedNpcAgendas?: AccumulatedNpcAgendas;
 }

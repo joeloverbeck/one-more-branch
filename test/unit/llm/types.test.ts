@@ -827,6 +827,14 @@ describe('LLM types', () => {
         anchorEvidence: [],
         completionGateSatisfied: false,
         completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -855,6 +863,14 @@ describe('LLM types', () => {
         anchorEvidence: [],
         completionGateSatisfied: false,
         completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
         rawResponse: '{"deviationDetected":true}',
       };
 

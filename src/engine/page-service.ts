@@ -214,6 +214,11 @@ export async function generatePage(
     onGenerationStage,
   });
 
+  // --- NPC agendas (computed early for analyst context) ---
+  const parentAccumulatedNpcAgendas = isOpening
+    ? buildInitialNpcAgendaRecord(story.initialNpcAgendas)
+    : parentState!.accumulatedNpcAgendas;
+
   // --- Run analyst evaluation ---
   const parentStructureState = isOpening
     ? (story.structure
@@ -239,6 +244,7 @@ export async function generatePage(
           threadsResolved: reconciliation.threadsResolved,
           threadAges: parentPage?.threadAges ?? {},
           activeTrackedPromises: parentPage?.accumulatedPromises ?? [],
+          accumulatedNpcAgendas: parentAccumulatedNpcAgendas,
           tone: story.tone,
           toneKeywords: story.toneKeywords,
           toneAntiKeywords: story.toneAntiKeywords,
@@ -301,11 +307,7 @@ export async function generatePage(
     pacingIssueReason: result.pacingIssueReason ?? '',
   });
 
-  // --- NPC agendas ---
-  const parentAccumulatedNpcAgendas = isOpening
-    ? buildInitialNpcAgendaRecord(story.initialNpcAgendas)
-    : parentState!.accumulatedNpcAgendas;
-
+  // --- NPC agenda resolver ---
   const agendaResolverResult = await resolveNpcAgendas({
     npcs: story.npcs,
     decomposedCharacters: story.decomposedCharacters,
@@ -322,6 +324,7 @@ export async function generatePage(
           openThreads: [],
         }
       : parentState!.accumulatedActiveState,
+    analystNpcCoherenceIssues: analystResult?.npcCoherenceIssues,
     tone: story.tone,
     toneKeywords: story.toneKeywords,
     toneAntiKeywords: story.toneAntiKeywords,

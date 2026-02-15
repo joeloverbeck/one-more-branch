@@ -67,6 +67,13 @@ PROMISE EVALUATION:
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
 - Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
 
+NPC AGENDA COHERENCE:
+- If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
+- Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
+- Set npcCoherenceAdherent to false if any NPC acts contrary to their stated goal or fear without narrative justification.
+- When npcCoherenceAdherent is false, write a brief npcCoherenceIssues description naming the NPC and explaining the inconsistency.
+- When npcCoherenceAdherent is true or no NPC agendas are provided, set npcCoherenceIssues to an empty string.
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
@@ -223,6 +230,13 @@ If pacingIssueDetected is true:
 
 If no pacing issue: pacingIssueDetected: false, pacingIssueReason: "", recommendedAction: "none"
 
+{{#if accumulatedNpcAgendas}}
+NPC AGENDAS (evaluate behavior consistency):
+[{{npc.npcName}}]
+  Goal: {{npc.currentGoal}}
+  Fear: {{npc.fear}}
+{{/if}}
+
 TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneKeywords}} Target feel: {{toneKeywords joined by ', '}}.{{/if}}{{#if toneAntiKeywords}} Avoid: {{toneAntiKeywords joined by ', '}}.{{/if}}
 
 NARRATIVE TO EVALUATE:
@@ -255,6 +269,8 @@ The tone reminder is injected into the user prompt (before the narrative) in add
   "completionGateFailureReason": "{{string}}",
   "toneAdherent": {{true|false}},
   "toneDriftDescription": "{{string, empty when toneAdherent is true}}",
+  "npcCoherenceAdherent": {{true|false}},
+  "npcCoherenceIssues": "{{string, empty when coherent or no agendas}}",
   "promisesDetected": [
     {
       "description": "{{what was planted with emphasis}}",
@@ -284,6 +300,8 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 
 - `toneAdherent`: Whether the narrative matches the target tone's mood, vocabulary, and emotional register. Defaults to `true`.
 - `toneDriftDescription`: When `toneAdherent` is `false`, describes what feels off and what the tone should be. Empty string when adherent. This feedback propagates to the planner's continuation context for course correction.
+- `npcCoherenceAdherent`: Whether NPCs in the scene acted consistently with their stated agendas. Defaults to `true` when no NPC agendas are provided.
+- `npcCoherenceIssues`: When `npcCoherenceAdherent` is `false`, briefly names the NPC and explains the inconsistency. Empty string when coherent or no agendas. This feedback is forwarded to the agenda resolver to distinguish intentional NPC evolution from writer error.
 - `promisesDetected`: Array of newly detected narrative promises (max 3). Empty array if none detected. Only items introduced with deliberate narrative emphasis.
 - `promisesResolved`: Array of resolved promise IDs (`pr-N`) from active tracked promises. Empty array when no tracked promises were paid off.
 - `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
