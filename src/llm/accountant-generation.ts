@@ -1,3 +1,4 @@
+import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
 import {
@@ -75,7 +76,7 @@ async function callAccountantStructured(
   responseFormat: JsonSchema = STATE_ACCOUNTANT_SCHEMA
 ): Promise<StateAccountantGenerationResult> {
   const config = getConfig().llm;
-  const model = options.model ?? config.defaultModel;
+  const model = options.model ?? getStageModel('accountant');
   const temperature = options.temperature ?? config.temperature;
   const maxTokens = options.maxTokens ?? config.maxTokens;
 
@@ -176,7 +177,7 @@ export async function generateAccountantWithFallback(
     }
 
     if (isStructuredOutputNotSupported(error)) {
-      const model = options.model ?? getConfig().llm.defaultModel;
+      const model = options.model ?? getStageModel('accountant');
       throw new LLMError(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',

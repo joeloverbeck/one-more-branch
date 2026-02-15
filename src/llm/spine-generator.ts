@@ -1,3 +1,4 @@
+import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
@@ -191,7 +192,7 @@ export async function generateStorySpines(
   options?: Partial<GenerationOptions>
 ): Promise<SpineGenerationResult> {
   const config = getConfig().llm;
-  const model = options?.model ?? config.defaultModel;
+  const model = options?.model ?? getStageModel('spine');
   const temperature = options?.temperature ?? config.temperature;
   const maxTokens = options?.maxTokens ?? config.maxTokens;
 

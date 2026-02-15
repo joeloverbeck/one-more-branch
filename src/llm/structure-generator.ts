@@ -1,3 +1,4 @@
+import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
@@ -200,7 +201,7 @@ export async function generateStoryStructure(
   };
   const promptOptions = resolvePromptOptions(resolvedOptions);
   const config = getConfig().llm;
-  const model = options?.model ?? config.defaultModel;
+  const model = options?.model ?? getStageModel('structure');
   const temperature = options?.temperature ?? config.temperature;
   const maxTokens = options?.maxTokens ?? config.maxTokens;
 

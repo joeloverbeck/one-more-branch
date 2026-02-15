@@ -1,4 +1,4 @@
-import { getConfig } from '../config/index.js';
+import { getStageModel } from '../config/stage-model.js';
 import { logger } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
@@ -20,8 +20,7 @@ async function callAnalystStructured(
   messages: ChatMessage[],
   options: GenerationOptions
 ): Promise<AnalystResult> {
-  const config = getConfig().llm;
-  const model = options.model ?? config.defaultModel;
+  const model = options.model ?? getStageModel('analyst');
   const temperature = options.temperature ?? DEFAULT_ANALYST_TEMPERATURE;
   const maxTokens = options.maxTokens ?? DEFAULT_ANALYST_MAX_TOKENS;
   const response = await fetch(OPENROUTER_API_URL, {
@@ -87,7 +86,7 @@ export async function generateAnalystWithFallback(
     return await callAnalystStructured(messages, options);
   } catch (error) {
     if (isStructuredOutputNotSupported(error)) {
-      const model = options.model ?? getConfig().llm.defaultModel;
+      const model = options.model ?? getStageModel('analyst');
       throw new LLMError(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',

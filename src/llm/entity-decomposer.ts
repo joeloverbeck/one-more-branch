@@ -1,3 +1,4 @@
+import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import type {
   DecomposedCharacter,
@@ -243,7 +244,7 @@ export async function decomposeEntities(
   apiKey: string
 ): Promise<EntityDecompositionResult> {
   const config = getConfig().llm;
-  const model = config.defaultModel;
+  const model = getStageModel('entityDecomposer');
   const temperature = config.temperature;
   const maxTokens = config.maxTokens;
 

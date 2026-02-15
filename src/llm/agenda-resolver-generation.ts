@@ -1,4 +1,4 @@
-import { getConfig } from '../config/index.js';
+import { getStageModel } from '../config/stage-model.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
@@ -29,8 +29,7 @@ export async function generateAgendaResolver(
   storyNpcs: readonly Npc[],
   options: GenerateAgendaResolverOptions
 ): Promise<AgendaResolverResult> {
-  const config = getConfig().llm;
-  const model = options.model ?? config.defaultModel;
+  const model = options.model ?? getStageModel('agendaResolver');
   const messages = buildAgendaResolverPrompt(context);
 
   logPrompt(logger, 'agenda-resolver', messages);

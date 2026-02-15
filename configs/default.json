@@ -7,6 +7,17 @@
   },
   "llm": {
     "defaultModel": "anthropic/claude-sonnet-4.5",
+    "models": {
+      "spine": "z-ai/glm-5",
+      "entityDecomposer": "z-ai/glm-5",
+      "structure": "z-ai/glm-5",
+      "planner": "z-ai/glm-5",
+      "accountant": "z-ai/glm-5",
+      "lorekeeper": "z-ai/glm-5",
+      "writer": "z-ai/glm-5",
+      "analyst": "z-ai/glm-5",
+      "agendaResolver": "z-ai/glm-5"
+    },
     "temperature": 0.8,
     "maxTokens": 8192,
     "retry": {

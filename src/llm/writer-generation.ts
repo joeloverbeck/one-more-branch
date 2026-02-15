@@ -1,3 +1,4 @@
+import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
 import {
@@ -56,7 +57,7 @@ async function callWriterStructured(
   options: GenerationOptions
 ): Promise<PageWriterResult> {
   const config = getConfig().llm;
-  const model = options.model ?? config.defaultModel;
+  const model = options.model ?? getStageModel('writer');
   const temperature = options.temperature ?? config.temperature;
   const maxTokens = options.maxTokens ?? config.maxTokens;
   const response = await fetch(OPENROUTER_API_URL, {
@@ -149,7 +150,7 @@ export async function generateWriterWithFallback(
     return await callWriterStructured(messages, options);
   } catch (error) {
     if (isStructuredOutputNotSupported(error)) {
-      const model = options.model ?? getConfig().llm.defaultModel;
+      const model = options.model ?? getStageModel('writer');
       throw new LLMError(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',
