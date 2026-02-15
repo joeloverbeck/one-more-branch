@@ -25,6 +25,8 @@ export interface DecomposedCharacter {
   readonly motivations: string;
   readonly protagonistRelationship: DecomposedRelationship | null;
   readonly knowledgeBoundaries: string;
+  readonly falseBeliefs?: readonly string[];
+  readonly secretsKept?: readonly string[];
   readonly decisionPattern: string;
   readonly coreBeliefs: readonly string[];
   readonly conflictPriority: string;
@@ -61,6 +63,14 @@ export function formatDecomposedCharacterForPrompt(
   }
 
   lines.push(`Knowledge Boundaries: ${char.knowledgeBoundaries}`);
+
+  if (char.falseBeliefs && char.falseBeliefs.length > 0) {
+    lines.push(`False Beliefs:\n${char.falseBeliefs.map((b) => `  - ${b}`).join('\n')}`);
+  }
+  if (char.secretsKept && char.secretsKept.length > 0) {
+    lines.push(`Secrets Kept:\n${char.secretsKept.map((s) => `  - ${s}`).join('\n')}`);
+  }
+
   lines.push('');
   lines.push('SPEECH FINGERPRINT:');
   lines.push(`  Vocabulary: ${fingerprint.vocabularyProfile}`);

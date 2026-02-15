@@ -56,6 +56,8 @@ interface DecomposedCharacterFileData {
   // Legacy format for backward compatibility
   relationships?: string[];
   knowledgeBoundaries: string;
+  falseBeliefs?: string[];
+  secretsKept?: string[];
   decisionPattern: string;
   coreBeliefs: string[];
   conflictPriority: string;
@@ -244,6 +246,12 @@ function storyToFileData(story: Story): StoryFileData {
               ? { ...char.protagonistRelationship }
               : null,
             knowledgeBoundaries: char.knowledgeBoundaries,
+            ...(char.falseBeliefs && char.falseBeliefs.length > 0
+              ? { falseBeliefs: [...char.falseBeliefs] }
+              : {}),
+            ...(char.secretsKept && char.secretsKept.length > 0
+              ? { secretsKept: [...char.secretsKept] }
+              : {}),
             decisionPattern: char.decisionPattern,
             coreBeliefs: [...char.coreBeliefs],
             conflictPriority: char.conflictPriority,
@@ -321,6 +329,8 @@ function fileDataToStory(data: StoryFileData): Story {
                 ? { ...char.protagonistRelationship }
                 : null,
               knowledgeBoundaries: char.knowledgeBoundaries,
+              ...(char.falseBeliefs ? { falseBeliefs: [...char.falseBeliefs] } : {}),
+              ...(char.secretsKept ? { secretsKept: [...char.secretsKept] } : {}),
               decisionPattern: char.decisionPattern,
               coreBeliefs: [...char.coreBeliefs],
               conflictPriority: char.conflictPriority,

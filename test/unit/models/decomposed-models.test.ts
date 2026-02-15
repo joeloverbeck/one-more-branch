@@ -85,6 +85,49 @@ describe('formatDecomposedCharacterForPrompt', () => {
     expect(result).toContain('Current Tension:');
   });
 
+  it('renders falseBeliefs when present', () => {
+    const char = createCharacter({
+      falseBeliefs: ['Believes the king is still alive', 'Thinks magic is superstition'],
+    });
+    const result = formatDecomposedCharacterForPrompt(char);
+    expect(result).toContain('False Beliefs:');
+    expect(result).toContain('  - Believes the king is still alive');
+    expect(result).toContain('  - Thinks magic is superstition');
+  });
+
+  it('renders secretsKept when present', () => {
+    const char = createCharacter({
+      secretsKept: ['Hiding their noble birth'],
+    });
+    const result = formatDecomposedCharacterForPrompt(char);
+    expect(result).toContain('Secrets Kept:');
+    expect(result).toContain('  - Hiding their noble birth');
+  });
+
+  it('omits falseBeliefs when empty array', () => {
+    const char = createCharacter({ falseBeliefs: [] });
+    const result = formatDecomposedCharacterForPrompt(char);
+    expect(result).not.toContain('False Beliefs:');
+  });
+
+  it('omits secretsKept when empty array', () => {
+    const char = createCharacter({ secretsKept: [] });
+    const result = formatDecomposedCharacterForPrompt(char);
+    expect(result).not.toContain('Secrets Kept:');
+  });
+
+  it('omits falseBeliefs when undefined', () => {
+    const char = createCharacter();
+    const result = formatDecomposedCharacterForPrompt(char);
+    expect(result).not.toContain('False Beliefs:');
+  });
+
+  it('omits secretsKept when undefined', () => {
+    const char = createCharacter();
+    const result = formatDecomposedCharacterForPrompt(char);
+    expect(result).not.toContain('Secrets Kept:');
+  });
+
   it('omits catchphrases section when empty', () => {
     const char = createCharacter({
       speechFingerprint: {

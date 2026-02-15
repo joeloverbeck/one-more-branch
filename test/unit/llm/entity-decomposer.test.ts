@@ -47,6 +47,8 @@ interface CharacterPayload {
   decisionPattern: string;
   coreBeliefs: string[];
   conflictPriority: string;
+  falseBeliefs: string[];
+  secretsKept: string[];
 }
 
 interface WorldFactPayload {
@@ -80,6 +82,8 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
         decisionPattern: 'Delays commitment until data is sufficient, then executes decisively.',
         coreBeliefs: ['Mercy without leverage is suicide', 'Promises outlive people'],
         conflictPriority: 'Protect civilians over reputation.',
+        falseBeliefs: ['Believes the old commander died honorably'],
+        secretsKept: ['Knows the location of the hidden armory'],
       },
       {
         name: 'Mirela',
@@ -105,6 +109,8 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
         decisionPattern: 'Runs social probes first, commits after reading room dynamics.',
         coreBeliefs: ['Information is safer than steel', 'Debt is a leash'],
         conflictPriority: 'Protect the troupe above political outcomes.',
+        falseBeliefs: [],
+        secretsKept: ['Secretly works for the resistance'],
       },
     ],
     worldFacts: [
@@ -325,6 +331,44 @@ describe('decomposeEntities', () => {
       'Promises outlive people',
     ]);
     expect(result.decomposedCharacters[0]!.conflictPriority).toBe('Protect civilians over reputation.');
+  });
+
+  it('parses falseBeliefs and secretsKept from valid payloads', async () => {
+    const payload = createValidPayload();
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    const protagonist = result.decomposedCharacters[0]!;
+    expect(protagonist.falseBeliefs).toEqual(['Believes the old commander died honorably']);
+    expect(protagonist.secretsKept).toEqual(['Knows the location of the hidden armory']);
+
+    const npc = result.decomposedCharacters[1]!;
+    expect(npc.falseBeliefs).toEqual([]);
+    expect(npc.secretsKept).toEqual(['Secretly works for the resistance']);
+  });
+
+  it('defaults falseBeliefs and secretsKept to [] when missing from LLM response', async () => {
+    const payload = createValidPayload();
+    const firstChar = payload.characters[0] as unknown as Record<string, unknown>;
+    delete firstChar['falseBeliefs'];
+    delete firstChar['secretsKept'];
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedCharacters[0]!.falseBeliefs).toEqual([]);
+    expect(result.decomposedCharacters[0]!.secretsKept).toEqual([]);
+  });
+
+  it('defaults falseBeliefs and secretsKept to [] when malformed', async () => {
+    const payload = createValidPayload();
+    const firstChar = payload.characters[0] as unknown as Record<string, unknown>;
+    firstChar['falseBeliefs'] = 'not an array';
+    firstChar['secretsKept'] = 42;
+    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
+
+    const result = await decomposeEntities(createMinimalContext(), 'test-key');
+    expect(result.decomposedCharacters[0]!.falseBeliefs).toEqual([]);
+    expect(result.decomposedCharacters[0]!.secretsKept).toEqual([]);
   });
 
   it('defaults new fields when malformed values are returned by the LLM', async () => {

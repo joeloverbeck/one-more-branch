@@ -26,9 +26,13 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
 3. KNOWLEDGE BOUNDARIES: Explicitly state what each character knows and does NOT know. This prevents information leaking between characters during generation.
 
-4. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured protagonistRelationship object describing the NPC's relationship WITH THE PROTAGONIST ONLY. Include valence (-5 hostile to +5 devoted), a dynamic label (mentor, rival, ally, etc.), brief history, current tension, and leverage. The protagonist's own entry MUST have protagonistRelationship: null.
+4. FALSE BELIEFS: Identify things each character sincerely believes that are WRONG. These are genuine misconceptions that should influence their reasoning and dialogue. A character who falsely believes the king is alive will act on that belief. Empty array if none.
 
-5. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
+5. SECRETS KEPT: Identify things each character knows but actively conceals from others. A character hiding their noble birth will steer conversations away from lineage. Empty array if none.
+
+6. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured protagonistRelationship object describing the NPC's relationship WITH THE PROTAGONIST ONLY. Include valence (-5 hostile to +5 devoted), a dynamic label (mentor, rival, ally, etc.), brief history, current tension, and leverage. The protagonist's own entry MUST have protagonistRelationship: null.
+
+7. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
    Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
    Epistemic status (factType) for each fact:
    - LAW: Fundamental world truths that simply ARE (magic rules, physics, cosmology). E.g. "Iron disrupts magical fields."
@@ -38,11 +42,11 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
    - RUMOR: Unverified hearsay circulating in the world. E.g. "Tavern talk claims the duke poisoned his brother."
    - MYSTERY: Intentionally unresolved unknowns. Preserve the unknown quality. E.g. "No one knows what lies beyond the Veil."
 
-6. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
+8. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
 
-7. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
+9. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
 
-${formatNumbered(8, AGENCY_PRINCIPLES)}`;
+${formatNumbered(10, AGENCY_PRINCIPLES)}`;
 
 export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): ChatMessage[] {
   const npcsSection =
@@ -71,7 +75,9 @@ INSTRUCTIONS:
 5. Every character MUST have a distinct speech fingerprint - no two characters should sound alike
 6. For decision patterns and core beliefs: if not explicit, infer from behavior, background, and relationship dynamics
 7. Core beliefs should read like statements the character would actually think or say
-8. The protagonist's protagonistRelationship MUST be null. Each NPC MUST have a non-null protagonistRelationship describing their relationship with the protagonist`;
+8. The protagonist's protagonistRelationship MUST be null. Each NPC MUST have a non-null protagonistRelationship describing their relationship with the protagonist
+9. For false beliefs: identify sincere misconceptions from character background and context
+10. For secrets: identify truths the character actively hides from others`;
 
   return [
     { role: 'system', content: ENTITY_DECOMPOSER_SYSTEM_PROMPT },

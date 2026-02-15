@@ -159,6 +159,8 @@ function parseCharacter(
     motivations: character.motivations as string,
     protagonistRelationship: parseProtagonistRelationship(data['protagonistRelationship']),
     knowledgeBoundaries: character.knowledgeBoundaries as string,
+    falseBeliefs: character.falseBeliefs as string[],
+    secretsKept: character.secretsKept as string[],
     decisionPattern: character.decisionPattern as string,
     coreBeliefs: character.coreBeliefs as string[],
     conflictPriority: character.conflictPriority as string,

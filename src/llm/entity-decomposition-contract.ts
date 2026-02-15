@@ -128,6 +128,20 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
     type: 'string',
     description: 'When this character\'s goals conflict, what wins? One sentence.',
   },
+  falseBeliefs: {
+    type: 'array',
+    description:
+      'Things this character sincerely believes that are WRONG. Misconceptions, not lies. ' +
+      'E.g. ["Believes the king is still alive", "Thinks magic is superstition"]. ' +
+      'Empty array if no notable false beliefs.',
+  },
+  secretsKept: {
+    type: 'array',
+    description:
+      'Things this character knows but actively conceals from others. ' +
+      'E.g. ["Hiding their noble birth", "Knows the rebel hideout location"]. ' +
+      'Empty array if no notable secrets.',
+  },
 };
 
 export const SPEECH_REQUIRED_FIELDS = Object.keys(SPEECH_SCHEMA_FIELDS) as ReadonlyArray<
@@ -146,6 +160,8 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
   'decisionPattern',
   'coreBeliefs',
   'conflictPriority',
+  'falseBeliefs',
+  'secretsKept',
 ];
 
 export const SPEECH_STRING_FIELDS: ReadonlyArray<keyof SpeechFingerprint> = [
@@ -175,7 +191,7 @@ export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
     DecomposedCharacter,
     'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
   >
-> = ['coreTraits', 'coreBeliefs'];
+> = ['coreTraits', 'coreBeliefs', 'falseBeliefs', 'secretsKept'];
 
 export const SPEECH_EXTRACTION_BULLETS: readonly string[] = [
   'Catchphrases: Signature phrases they would repeat based on personality and background',
