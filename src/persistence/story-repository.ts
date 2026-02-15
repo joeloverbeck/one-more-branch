@@ -19,6 +19,7 @@ import type {
   CharacterArcType,
   NeedWantDynamic,
 } from '../models/story-spine';
+import type { NpcRelationship } from '../models/state/npc-relationship';
 import {
   deleteDirectory,
   directoryExists,
@@ -115,6 +116,21 @@ interface StoryFileData {
   spine?: SpineFileData;
   decomposedCharacters?: DecomposedCharacterFileData[];
   decomposedWorld?: DecomposedWorldFileData;
+  initialNpcAgendas?: Array<{
+    npcName: string;
+    currentGoal: string;
+    leverage: string;
+    fear: string;
+    offScreenBehavior: string;
+  }>;
+  initialNpcRelationships?: Array<{
+    npcName: string;
+    valence: number;
+    dynamic: string;
+    history: string;
+    currentTension: string;
+    leverage: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -318,6 +334,29 @@ function storyToFileData(story: Story): StoryFileData {
           },
         }
       : {}),
+    ...(story.initialNpcAgendas && story.initialNpcAgendas.length > 0
+      ? {
+          initialNpcAgendas: story.initialNpcAgendas.map((a) => ({
+            npcName: a.npcName,
+            currentGoal: a.currentGoal,
+            leverage: a.leverage,
+            fear: a.fear,
+            offScreenBehavior: a.offScreenBehavior,
+          })),
+        }
+      : {}),
+    ...(story.initialNpcRelationships && story.initialNpcRelationships.length > 0
+      ? {
+          initialNpcRelationships: story.initialNpcRelationships.map((r) => ({
+            npcName: r.npcName,
+            valence: r.valence,
+            dynamic: r.dynamic,
+            history: r.history,
+            currentTension: r.currentTension,
+            leverage: r.leverage,
+          })),
+        }
+      : {}),
     createdAt: story.createdAt.toISOString(),
     updatedAt: story.updatedAt.toISOString(),
   };
@@ -337,6 +376,25 @@ function deserializeCanonFact(raw: CanonFactFileData): CanonFact {
     ? raw.factType as WorldFactType
     : 'NORM' as WorldFactType;
   return { text: raw.text, factType };
+}
+
+function deriveInitialNpcRelationshipsFromDecomposed(
+  decomposedCharacters?: DecomposedCharacterFileData[]
+): { initialNpcRelationships: NpcRelationship[] } | Record<string, never> {
+  if (!decomposedCharacters) return {};
+  const relationships: NpcRelationship[] = [];
+  for (const char of decomposedCharacters) {
+    if (!char.protagonistRelationship) continue;
+    relationships.push({
+      npcName: char.name,
+      valence: char.protagonistRelationship.valence,
+      dynamic: char.protagonistRelationship.dynamic,
+      history: char.protagonistRelationship.history,
+      currentTension: char.protagonistRelationship.currentTension,
+      leverage: char.protagonistRelationship.leverage,
+    });
+  }
+  return relationships.length > 0 ? { initialNpcRelationships: relationships } : {};
 }
 
 function fileDataToStory(data: StoryFileData): Story {
@@ -430,6 +488,12 @@ function fileDataToStory(data: StoryFileData): Story {
           } as DecomposedWorld,
         }
       : {}),
+    ...(data.initialNpcAgendas && data.initialNpcAgendas.length > 0
+      ? { initialNpcAgendas: data.initialNpcAgendas }
+      : {}),
+    ...(data.initialNpcRelationships && data.initialNpcRelationships.length > 0
+      ? { initialNpcRelationships: data.initialNpcRelationships }
+      : deriveInitialNpcRelationshipsFromDecomposed(data.decomposedCharacters)),
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
   };

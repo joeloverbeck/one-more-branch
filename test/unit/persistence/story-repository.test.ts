@@ -425,4 +425,160 @@ describe('story-repository', () => {
       { name: 'Bob', description: 'An antagonist' },
     ]);
   });
+
+  it('saveStory/loadStory preserves initialNpcRelationships', async () => {
+    const story = buildTestStory({
+      initialNpcRelationships: [
+        {
+          npcName: 'Vera',
+          valence: 3,
+          dynamic: 'ally',
+          history: 'Fought together in the war.',
+          currentTension: 'Vera suspects betrayal.',
+          leverage: 'Knows protagonist\'s secret.',
+        },
+      ],
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.initialNpcRelationships).toEqual([
+      {
+        npcName: 'Vera',
+        valence: 3,
+        dynamic: 'ally',
+        history: 'Fought together in the war.',
+        currentTension: 'Vera suspects betrayal.',
+        leverage: 'Knows protagonist\'s secret.',
+      },
+    ]);
+  });
+
+  it('saveStory/loadStory preserves initialNpcAgendas', async () => {
+    const story = buildTestStory({
+      initialNpcAgendas: [
+        {
+          npcName: 'Holt',
+          currentGoal: 'Protect the tavern',
+          leverage: 'Controls the supply route',
+          fear: 'Losing the tavern to raiders',
+          offScreenBehavior: 'Fortifying defenses and gathering allies',
+        },
+      ],
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.initialNpcAgendas).toEqual([
+      {
+        npcName: 'Holt',
+        currentGoal: 'Protect the tavern',
+        leverage: 'Controls the supply route',
+        fear: 'Losing the tavern to raiders',
+        offScreenBehavior: 'Fortifying defenses and gathering allies',
+      },
+    ]);
+  });
+
+  it('loadStory derives initialNpcRelationships from decomposedCharacters for old stories', async () => {
+    const story = buildTestStory({
+      decomposedCharacters: [
+        {
+          name: 'Protagonist',
+          speechFingerprint: {
+            catchphrases: [],
+            vocabularyProfile: 'casual',
+            sentencePatterns: 'short',
+            verbalTics: [],
+            dialogueSamples: [],
+            metaphorFrames: 'nature',
+            antiExamples: [],
+            discourseMarkers: [],
+            registerShifts: 'none',
+          },
+          coreTraits: ['brave'],
+          motivations: 'survive',
+          protagonistRelationship: null,
+          knowledgeBoundaries: 'limited',
+          decisionPattern: 'impulsive',
+          coreBeliefs: ['justice'],
+          conflictPriority: 'survival',
+          appearance: 'scarred',
+          rawDescription: 'The protagonist',
+        },
+        {
+          name: 'Mira',
+          speechFingerprint: {
+            catchphrases: ['Indeed'],
+            vocabularyProfile: 'formal',
+            sentencePatterns: 'complex',
+            verbalTics: ['hmm'],
+            dialogueSamples: ['Indeed, the path is clear.'],
+            metaphorFrames: 'mechanical',
+            antiExamples: ['yo'],
+            discourseMarkers: ['furthermore'],
+            registerShifts: 'formal-to-casual',
+          },
+          coreTraits: ['cunning'],
+          motivations: 'power',
+          protagonistRelationship: {
+            valence: -2,
+            dynamic: 'rival',
+            history: 'Old rivals from school.',
+            currentTension: 'Competing for the throne.',
+            leverage: 'Holds damaging information.',
+          },
+          knowledgeBoundaries: 'extensive',
+          decisionPattern: 'calculating',
+          coreBeliefs: ['ends justify means'],
+          conflictPriority: 'dominance',
+          appearance: 'elegant',
+          rawDescription: 'A cunning rival',
+        },
+      ],
+    });
+    createdStoryIds.add(story.id);
+
+    // Save without initialNpcRelationships — simulates an old story
+    await saveStory(story);
+
+    // Manually strip initialNpcRelationships from the persisted JSON to simulate old format
+    const filePath = getStoryFilePath(story.id);
+    const raw = await fsPromises.readFile(filePath, 'utf-8');
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    delete parsed['initialNpcRelationships'];
+    await fsPromises.writeFile(filePath, JSON.stringify(parsed), 'utf-8');
+
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.initialNpcRelationships).toEqual([
+      {
+        npcName: 'Mira',
+        valence: -2,
+        dynamic: 'rival',
+        history: 'Old rivals from school.',
+        currentTension: 'Competing for the throne.',
+        leverage: 'Holds damaging information.',
+      },
+    ]);
+  });
+
+  it('loadStory loads correctly when story has no NPCs or initial NPC data', async () => {
+    const story = buildTestStory();
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.initialNpcAgendas).toBeUndefined();
+    expect(loaded?.initialNpcRelationships).toBeUndefined();
+  });
 });

@@ -257,8 +257,13 @@ export const ANALYST_SCHEMA: JsonSchema = {
             'If spineDeviationDetected is true, explains which spine element was irreversibly invalidated and why. Empty string when no spine deviation.',
         },
         spineInvalidatedElement: {
-          type: ['string', 'null'],
-          enum: ['dramatic_question', 'antagonistic_force', 'need_want', null],
+          anyOf: [
+            {
+              type: 'string',
+              enum: ['dramatic_question', 'antagonistic_force', 'need_want'],
+            },
+            { type: 'null' },
+          ],
           description:
             'Which spine element was invalidated: "dramatic_question" if the CDQ was definitively answered, "antagonistic_force" if the primary opposition was permanently eliminated, "need_want" if the protagonist arc was fully resolved prematurely. null when no spine deviation.',
         },

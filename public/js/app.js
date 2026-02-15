@@ -1724,10 +1724,42 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
         escapeHtml(option.primaryAntagonisticForce.pressureMechanism) +
         '</div>';
 
+      var tone = document.createElement('div');
+      tone.className = 'spine-tone';
+      var toneHtml = '';
+      if (option.toneKeywords && option.toneKeywords.length > 0) {
+        toneHtml +=
+          '<div class="spine-field">' +
+          '<span class="spine-label">Tone:</span> ' +
+          '<span class="spine-tone-pills">';
+        option.toneKeywords.forEach(function (kw) {
+          toneHtml +=
+            '<span class="spine-tone-pill spine-tone-pill-positive">' +
+            escapeHtml(kw) +
+            '</span>';
+        });
+        toneHtml += '</span></div>';
+      }
+      if (option.toneAntiKeywords && option.toneAntiKeywords.length > 0) {
+        toneHtml +=
+          '<div class="spine-field">' +
+          '<span class="spine-label">Avoids:</span> ' +
+          '<span class="spine-tone-pills">';
+        option.toneAntiKeywords.forEach(function (kw) {
+          toneHtml +=
+            '<span class="spine-tone-pill spine-tone-pill-negative">' +
+            escapeHtml(kw) +
+            '</span>';
+        });
+        toneHtml += '</span></div>';
+      }
+      tone.innerHTML = toneHtml;
+
       card.appendChild(badges);
       card.appendChild(cdq);
       card.appendChild(needWant);
       card.appendChild(antag);
+      card.appendChild(tone);
 
       card.addEventListener('click', function () {
         var allCards = container.querySelectorAll('.spine-card');
