@@ -11,6 +11,7 @@ import type { PageWriterResult } from '@/llm/writer-types';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { parsePageId, StoryId } from '@/models';
+import type { StorySpine } from '@/models';
 import {
   createMockAnalystResult,
   createMockProtagonistAffect,
@@ -127,6 +128,20 @@ const mockedStructureResult = {
     },
   ],
   rawResponse: 'structure',
+};
+
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
 };
 
 const openingResult = createMockFinalResult({
@@ -280,6 +295,7 @@ describe('story replay integration', () => {
       worldbuilding: 'A canal city built around old astronomical locks.',
       tone: 'reflective mystery',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 
@@ -303,6 +319,7 @@ describe('story replay integration', () => {
       worldbuilding: 'A river city where maps rewrite themselves at dawn.',
       tone: 'investigative',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 
@@ -333,6 +350,7 @@ describe('story replay integration', () => {
       worldbuilding: 'A market city where barges carry sealed prophecies.',
       tone: 'adventure',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 

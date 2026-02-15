@@ -106,6 +106,20 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
     );
   }
 
+  const toneKeywords = Array.isArray(data['toneKeywords'])
+    ? (data['toneKeywords'] as unknown[])
+        .filter((item): item is string => typeof item === 'string')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : [];
+
+  const toneAntiKeywords = Array.isArray(data['toneAntiKeywords'])
+    ? (data['toneAntiKeywords'] as unknown[])
+        .filter((item): item is string => typeof item === 'string')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : [];
+
   return {
     centralDramaticQuestion: data['centralDramaticQuestion'],
     protagonistNeedVsWant: {
@@ -120,6 +134,8 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
     storySpineType: data['storySpineType'],
     conflictType: data['conflictType'],
     characterArcType: data['characterArcType'],
+    toneKeywords,
+    toneAntiKeywords,
   };
 }
 

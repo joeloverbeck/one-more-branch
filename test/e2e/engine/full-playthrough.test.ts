@@ -9,6 +9,7 @@ import {
 } from '@/llm';
 import { Page, PageId, StoryId, parsePageId } from '@/models';
 import type { PageWriterResult } from '@/llm/writer-types';
+import type { StorySpine } from '@/models';
 import {
   createMockAnalystResult,
   createMockFinalResult,
@@ -56,6 +57,20 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 >;
 
 const TEST_PREFIX = 'E2E TEST STOENG-009';
+
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
+};
 
 const openingResult = createMockFinalResult({
   narrative:
@@ -480,6 +495,7 @@ describe('story engine e2e full playthrough', () => {
       worldbuilding:
         'The city is divided into districts that rewind, stall, or accelerate each midnight depending on beacon towers.',
       tone: 'tense, character-driven speculative thriller',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(start.story.id);
@@ -550,6 +566,7 @@ describe('story engine e2e full playthrough', () => {
       characterConcept: `${TEST_PREFIX}: A courier smuggling testimony through a flood-locked republic while political factions alter street-level reality.`,
       worldbuilding: 'Canals rise and fall based on civic votes cast at dawn sirens.',
       tone: 'political intrigue with survival pressure',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(start.story.id);

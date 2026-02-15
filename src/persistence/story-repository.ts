@@ -94,6 +94,8 @@ interface SpineFileData {
   storySpineType: string;
   conflictType: string;
   characterArcType: string;
+  toneKeywords?: string[];
+  toneAntiKeywords?: string[];
 }
 
 interface StoryFileData {
@@ -263,6 +265,8 @@ function storyToFileData(story: Story): StoryFileData {
             storySpineType: story.spine.storySpineType,
             conflictType: story.spine.conflictType,
             characterArcType: story.spine.characterArcType,
+            toneKeywords: [...story.spine.toneKeywords],
+            toneAntiKeywords: [...story.spine.toneAntiKeywords],
           },
         }
       : {}),
@@ -375,6 +379,8 @@ function fileDataToStory(data: StoryFileData): Story {
             storySpineType: data.spine.storySpineType as StorySpineType,
             conflictType: data.spine.conflictType as ConflictType,
             characterArcType: data.spine.characterArcType as CharacterArcType,
+            toneKeywords: data.spine.toneKeywords ?? [],
+            toneAntiKeywords: data.spine.toneAntiKeywords ?? [],
           } as StorySpine,
         }
       : {}),

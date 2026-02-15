@@ -15,6 +15,8 @@ export const SPINE_REWRITE_SCHEMA: JsonSchema = {
         'storySpineType',
         'conflictType',
         'characterArcType',
+        'toneKeywords',
+        'toneAntiKeywords',
       ],
       properties: {
         centralDramaticQuestion: {
@@ -96,6 +98,18 @@ export const SPINE_REWRITE_SCHEMA: JsonSchema = {
           type: 'string',
           enum: ['POSITIVE_CHANGE', 'FLAT', 'DISILLUSIONMENT', 'FALL', 'CORRUPTION'],
           description: 'The new character arc trajectory.',
+        },
+        toneKeywords: {
+          type: 'array',
+          description:
+            '3-5 words capturing the target feel of the tone for the rewritten story direction.',
+          items: { type: 'string' },
+        },
+        toneAntiKeywords: {
+          type: 'array',
+          description:
+            '3-5 words describing what the tone should NOT be for the rewritten story direction.',
+          items: { type: 'string' },
         },
       },
     },

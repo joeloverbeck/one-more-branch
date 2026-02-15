@@ -67,9 +67,11 @@ FIELD INSTRUCTIONS:
 - storySpineType: The primary narrative pattern (QUEST, SURVIVAL, ESCAPE, REVENGE, RESCUE, RIVALRY, MYSTERY, TEMPTATION, TRANSFORMATION, FORBIDDEN_LOVE, SACRIFICE, FALL_FROM_GRACE, RISE_TO_POWER, COMING_OF_AGE, REBELLION).
 - conflictType: The primary source of opposition (PERSON_VS_PERSON, PERSON_VS_SELF, PERSON_VS_SOCIETY, PERSON_VS_NATURE, PERSON_VS_TECHNOLOGY, PERSON_VS_SUPERNATURAL, PERSON_VS_FATE).
 - characterArcType: The character arc trajectory (POSITIVE_CHANGE, FLAT, DISILLUSIONMENT, FALL, CORRUPTION).
+- toneKeywords: 3-5 words capturing the target feel of the tone. These should be evocative adjectives or style words that downstream writers can use as a compass (e.g., ["irreverent", "bawdy", "slapstick", "warm-hearted"] for a comedic tone, or ["claustrophobic", "dread", "visceral", "bleak"] for horror).
+- toneAntiKeywords: 3-5 words the tone should actively avoid. These define the negative space — what the story must NOT become (e.g., ["grimdark", "portentous", "tragic"] for a comedy, or ["whimsical", "lighthearted", "playful"] for horror).
 
 OUTPUT SHAPE:
-- options: array of exactly 3 spine objects`;
+- options: array of exactly 3 spine objects, each containing all fields above`;
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },

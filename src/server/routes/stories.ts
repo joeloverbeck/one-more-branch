@@ -43,7 +43,15 @@ storyRoutes.post(
     }
 
     try {
-      const result = await storyEngine.prepareStory(validation.trimmed);
+      const selectedSpine = (req.body as { spine?: StorySpine }).spine;
+      if (!selectedSpine) {
+        return res.status(400).render('pages/new-story', {
+          title: 'New Adventure - One More Branch',
+          error: 'Story spine is required. Please generate and select a spine first.',
+          values: formValues,
+        });
+      }
+      const result = await storyEngine.prepareStory({ ...validation.trimmed, spine: selectedSpine });
       return res.redirect(`/play/${result.story.id}/briefing`);
     } catch (error) {
       if (error instanceof LLMError) {
@@ -181,11 +189,20 @@ storyRoutes.post(
     }
 
     const selectedSpine = (req.body as { spine?: StorySpine }).spine;
+    if (!selectedSpine) {
+      if (progressId) {
+        generationProgressService.fail(progressId, 'Story spine is required');
+      }
+      return res.status(400).json({
+        success: false,
+        error: 'Story spine is required. Please generate and select a spine first.',
+      });
+    }
 
     try {
       const result = await storyEngine.prepareStory({
         ...validation.trimmed,
-        ...(selectedSpine ? { spine: selectedSpine } : {}),
+        spine: selectedSpine,
         onGenerationStage: progressId
           ? (event: GenerationStageEvent): void => {
               if (event.status === 'started') {

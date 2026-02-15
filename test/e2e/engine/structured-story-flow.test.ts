@@ -10,6 +10,7 @@ import {
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { PageWriterResult } from '@/llm/writer-types';
+import type { StorySpine } from '@/models';
 import {
   createMockAnalystResult,
   createMockFinalResult,
@@ -57,6 +58,20 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 >;
 
 const TEST_PREFIX = 'E2E TEST STRSTOARCSYS-016';
+
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
+};
 
 const mockedStructureResult = createMockStoryStructure({
   overallTheme: 'Expose the hidden regime while keeping innocent allies safe.',
@@ -381,6 +396,7 @@ describe('Structured Story E2E', () => {
       characterConcept: `${TEST_PREFIX}: A skeptical archivist trying to expose a regime signal hidden in civic clocks.`,
       worldbuilding: 'A capital where public timekeeping controls policing and access rights.',
       tone: 'political thriller',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(story.id);
@@ -411,6 +427,7 @@ describe('Structured Story E2E', () => {
       characterConcept: `${TEST_PREFIX}: A civic observer trying to decode manipulated time signals without direct confrontation.`,
       worldbuilding: 'Watchtowers trigger behavior shifts in entire districts.',
       tone: 'slow-burn mystery',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(story.id);
@@ -434,6 +451,7 @@ describe('Structured Story E2E', () => {
       characterConcept: `${TEST_PREFIX}: An investigator pursuing regime couriers through restricted infrastructure.`,
       worldbuilding: 'Flooded archives connect every district through hidden tunnels.',
       tone: 'urgent conspiracy',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(story.id);
@@ -488,6 +506,7 @@ describe('Structured Story E2E', () => {
       characterConcept: `${TEST_PREFIX}: A field analyst balancing rapid action against cautious surveillance.`,
       worldbuilding: 'Every district contains mirrored patrol routes tied to archive clocks.',
       tone: 'strategic suspense',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(story.id);

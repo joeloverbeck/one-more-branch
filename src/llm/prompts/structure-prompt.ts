@@ -1,3 +1,7 @@
+import type { DecomposedCharacter } from '../../models/decomposed-character.js';
+import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
+import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { StorySpine } from '../../models/story-spine.js';
@@ -14,6 +18,8 @@ export interface StructureContext {
   npcs?: readonly Npc[];
   startingSituation?: string;
   spine?: StorySpine;
+  decomposedCharacters?: readonly DecomposedCharacter[];
+  decomposedWorld?: DecomposedWorld;
 }
 
 const STRUCTURE_FEW_SHOT_USER = `Generate a story structure before the first page.
@@ -94,29 +100,63 @@ const STRUCTURE_FEW_SHOT_ASSISTANT = `{
   ]
 }`;
 
+function buildCharacterSection(context: StructureContext): string {
+  if (context.decomposedCharacters && context.decomposedCharacters.length > 0) {
+    const profiles = context.decomposedCharacters
+      .map((char) => formatDecomposedCharacterForPrompt(char))
+      .join('\n\n');
+    return `CHARACTERS (decomposed profiles):\n${profiles}\n\n`;
+  }
+  if (context.npcs && context.npcs.length > 0) {
+    return `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`;
+  }
+  return '';
+}
+
+function buildWorldSection(context: StructureContext): string {
+  if (context.decomposedWorld && context.decomposedWorld.facts.length > 0) {
+    return `${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n\n`;
+  }
+  if (context.worldbuilding) {
+    return `WORLDBUILDING:\n${context.worldbuilding}\n\n`;
+  }
+  return '';
+}
+
+function buildToneKeywordsSection(context: StructureContext): string {
+  const spine = context.spine;
+  if (!spine) return '';
+
+  const lines: string[] = [];
+  if (spine.toneKeywords.length > 0) {
+    lines.push(`TONE KEYWORDS (target feel): ${spine.toneKeywords.join(', ')}`);
+  }
+  if (spine.toneAntiKeywords.length > 0) {
+    lines.push(`TONE ANTI-KEYWORDS (must avoid): ${spine.toneAntiKeywords.join(', ')}`);
+  }
+  return lines.length > 0 ? lines.join('\n') + '\n\n' : '';
+}
+
 export function buildStructurePrompt(
   context: StructureContext,
   options?: PromptOptions
 ): ChatMessage[] {
-  const worldSection = context.worldbuilding ? `WORLDBUILDING:\n${context.worldbuilding}\n\n` : '';
-
-  const npcsSection =
-    context.npcs && context.npcs.length > 0
-      ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
-      : '';
+  const worldSection = buildWorldSection(context);
+  const characterSection = buildCharacterSection(context);
 
   const startingSituationSection = context.startingSituation
     ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
     : '';
 
   const spineSection = buildSpineSection(context.spine);
+  const toneKeywordsSection = buildToneKeywordsSection(context);
 
   const userPrompt = `Generate a story structure before the first page.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}${spineSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneKeywordsSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.
@@ -128,16 +168,15 @@ REQUIREMENTS (follow ALL):
    - Act names, beat names, and descriptions should reflect the tone (comedic tones get playful names, noir gets terse names, etc.)
    - Stakes and conflicts should match the tone's emotional register (comedic stakes can be absurd, horror stakes visceral)
    - The overall theme should harmonize with the tone, not fight against it
-7. Generate toneKeywords (3-5 words capturing the target feel) and toneAntiKeywords (3-5 words the tone should avoid).
-8. Design structure pacing suitable for a 15-50 page interactive story.
-9. Design beats with clear dramatic roles:
+7. Design structure pacing suitable for a 15-50 page interactive story.
+8. Design beats with clear dramatic roles:
    - At least one beat in Act 1 should be a "turning_point" representing a point of no return
    - The midpoint of the story (typically late Act 1 or mid Act 2) should include a reveal or reversal that reframes prior events
    - Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "resolution" for denouement
-10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
-11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
-12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
+9. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
+10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
+11. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
 
 ${buildToneReminder(context.tone)}
 
@@ -145,8 +184,6 @@ OUTPUT SHAPE:
 - overallTheme: string
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
-- toneKeywords: array of 3-5 strings (words capturing the target feel)
-- toneAntiKeywords: array of 3-5 strings (words the tone should avoid)
 - initialNpcAgendas: array of NPC agendas (empty array if no NPCs)
   - each agenda has:
     - npcName: exact NPC name from definitions

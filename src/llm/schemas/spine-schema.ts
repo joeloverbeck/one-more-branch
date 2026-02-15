@@ -23,6 +23,8 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
               'storySpineType',
               'conflictType',
               'characterArcType',
+              'toneKeywords',
+              'toneAntiKeywords',
             ],
             properties: {
               centralDramaticQuestion: {
@@ -115,6 +117,18 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
                 ],
                 description:
                   'The type of character arc: POSITIVE_CHANGE (grows), FLAT (tests existing belief), DISILLUSIONMENT (learns hard truth), FALL (loses way), CORRUPTION (becomes what they opposed).',
+              },
+              toneKeywords: {
+                type: 'array',
+                description:
+                  '3-5 words capturing the target feel of the tone (e.g., ["irreverent", "bawdy", "slapstick", "warm-hearted"]).',
+                items: { type: 'string' },
+              },
+              toneAntiKeywords: {
+                type: 'array',
+                description:
+                  '3-5 words describing what the tone should NOT be (e.g., ["grimdark", "portentous", "tragic", "grim"]).',
+                items: { type: 'string' },
               },
             },
           },

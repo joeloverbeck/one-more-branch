@@ -221,8 +221,8 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred over raw NPCs) |
 | `decomposedWorld` | Domain-tagged atomic world facts (optional, preferred over raw worldbuilding) |
 | `tone` | Tone/genre string |
-| `toneKeywords` | Target feel keywords (optional, from structure generator) |
-| `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
+| `toneKeywords` | Target feel keywords (optional, from spine) |
+| `toneAntiKeywords` | Words/moods to avoid (optional, from spine) |
 | `npcs` | All NPC definitions (fallback when no decomposed characters) |
 | `structure` / `accumulatedStructureState` | Current story structure and act/beat position |
 | `globalCanon` | All global canon facts as `CanonFact[]` — may be bare strings (legacy) or `{ text, factType }` objects with epistemic tags (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). Rendered via `formatCanonForPrompt()` |

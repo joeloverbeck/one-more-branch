@@ -186,8 +186,8 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `analystNpcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
 | `deviationContext` | Structural deviation context (optional, present only when a story structure rewrite just occurred). Contains the deviation reason and the new beats from the rewritten structure |
 | `tone` | Tone/genre string (optional) |
-| `toneKeywords` | Target feel keywords (optional, from structure generator) |
-| `toneAntiKeywords` | Words/moods to avoid (optional, from structure generator) |
+| `toneKeywords` | Target feel keywords (optional, from spine) |
+| `toneAntiKeywords` | Words/moods to avoid (optional, from spine) |
 
 ## Agenda and Relationship Accumulation
 

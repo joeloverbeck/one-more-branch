@@ -11,8 +11,8 @@ export const GENERATION_STAGES = [
   'WRITING_CONTINUING_PAGE',
   'ANALYZING_SCENE',
   'RESOLVING_AGENDAS',
-  'STRUCTURING_STORY',
   'DECOMPOSING_ENTITIES',
+  'STRUCTURING_STORY',
   'RESTRUCTURING_STORY',
 ] as const;
 
@@ -63,7 +63,7 @@ export interface StartStoryOptions {
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
   readonly startingSituation?: string;
-  readonly spine?: StorySpine;
+  readonly spine: StorySpine;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }

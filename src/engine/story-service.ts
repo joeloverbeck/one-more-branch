@@ -29,6 +29,10 @@ function validateStartStoryOptions(options: StartStoryOptions): void {
   if (options.apiKey.trim().length === 0) {
     throw new EngineError('API key is required', 'VALIDATION_FAILED');
   }
+
+  if (!options.spine) {
+    throw new EngineError('Story spine is required', 'VALIDATION_FAILED');
+  }
 }
 
 async function buildPreparedStory(
@@ -37,23 +41,58 @@ async function buildPreparedStory(
 ): Promise<Story> {
   validateStartStoryOptions(options);
 
-  let story = createStory({
-    title: options.title.trim(),
-    characterConcept: options.characterConcept.trim(),
-    worldbuilding: options.worldbuilding,
-    tone: options.tone,
-    npcs: options.npcs,
-    startingSituation: options.startingSituation,
-  });
-
-  if (options.spine) {
-    story = { ...story, spine: options.spine };
-  }
+  let story: Story = {
+    ...createStory({
+      title: options.title.trim(),
+      characterConcept: options.characterConcept.trim(),
+      worldbuilding: options.worldbuilding,
+      tone: options.tone,
+      npcs: options.npcs,
+      startingSituation: options.startingSituation,
+    }),
+    spine: options.spine,
+    toneKeywords: options.spine.toneKeywords,
+    toneAntiKeywords: options.spine.toneAntiKeywords,
+  };
 
   onStoryCreated?.(story);
 
   await storage.saveStory(story);
 
+  // Stage 1: Decompose entities (uses toneKeywords from spine)
+  options.onGenerationStage?.({
+    stage: 'DECOMPOSING_ENTITIES',
+    status: 'started',
+    attempt: 1,
+  });
+  const decompositionResult = await decomposeEntities(
+    {
+      characterConcept: story.characterConcept,
+      worldbuilding: story.worldbuilding,
+      tone: story.tone,
+      toneKeywords: story.toneKeywords,
+      toneAntiKeywords: story.toneAntiKeywords,
+      npcs: story.npcs,
+    },
+    options.apiKey
+  );
+  options.onGenerationStage?.({
+    stage: 'DECOMPOSING_ENTITIES',
+    status: 'completed',
+    attempt: 1,
+  });
+  const initialNpcRelationships = buildInitialNpcRelationships(
+    decompositionResult.decomposedCharacters
+  );
+  story = {
+    ...story,
+    decomposedCharacters: decompositionResult.decomposedCharacters,
+    decomposedWorld: decompositionResult.decomposedWorld,
+    ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
+  };
+  await storage.updateStory(story);
+
+  // Stage 2: Generate structure (uses spine + decomposed data)
   options.onGenerationStage?.({
     stage: 'STRUCTURING_STORY',
     status: 'started',
@@ -67,6 +106,8 @@ async function buildPreparedStory(
       npcs: story.npcs,
       startingSituation: story.startingSituation,
       spine: story.spine,
+      decomposedCharacters: story.decomposedCharacters,
+      decomposedWorld: story.decomposedWorld,
     },
     options.apiKey
   );
@@ -77,62 +118,18 @@ async function buildPreparedStory(
   });
 
   const structure = createStoryStructure(structureResult);
-  let storyWithStructure = updateStoryStructure(story, structure);
+  story = updateStoryStructure(story, structure);
 
-  if (structureResult.toneKeywords && structureResult.toneKeywords.length > 0) {
-    storyWithStructure = {
-      ...storyWithStructure,
-      toneKeywords: structureResult.toneKeywords,
-    };
-  }
-  if (structureResult.toneAntiKeywords && structureResult.toneAntiKeywords.length > 0) {
-    storyWithStructure = {
-      ...storyWithStructure,
-      toneAntiKeywords: structureResult.toneAntiKeywords,
-    };
-  }
   if (structureResult.initialNpcAgendas && structureResult.initialNpcAgendas.length > 0) {
-    storyWithStructure = {
-      ...storyWithStructure,
+    story = {
+      ...story,
       initialNpcAgendas: structureResult.initialNpcAgendas,
     };
   }
 
-  await storage.updateStory(storyWithStructure);
+  await storage.updateStory(story);
 
-  options.onGenerationStage?.({
-    stage: 'DECOMPOSING_ENTITIES',
-    status: 'started',
-    attempt: 1,
-  });
-  const decompositionResult = await decomposeEntities(
-    {
-      characterConcept: story.characterConcept,
-      worldbuilding: story.worldbuilding,
-      tone: story.tone,
-      toneKeywords: storyWithStructure.toneKeywords,
-      toneAntiKeywords: storyWithStructure.toneAntiKeywords,
-      npcs: story.npcs,
-    },
-    options.apiKey
-  );
-  options.onGenerationStage?.({
-    stage: 'DECOMPOSING_ENTITIES',
-    status: 'completed',
-    attempt: 1,
-  });
-  const initialNpcRelationships = buildInitialNpcRelationships(
-    decompositionResult.decomposedCharacters
-  );
-  storyWithStructure = {
-    ...storyWithStructure,
-    decomposedCharacters: decompositionResult.decomposedCharacters,
-    decomposedWorld: decompositionResult.decomposedWorld,
-    ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
-  };
-  await storage.updateStory(storyWithStructure);
-
-  return storyWithStructure;
+  return story;
 }
 
 function assertStoryPrepared(story: Story): void {

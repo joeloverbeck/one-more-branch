@@ -38,6 +38,8 @@ export interface SpineOption {
   readonly storySpineType: StorySpineType;
   readonly conflictType: ConflictType;
   readonly characterArcType: CharacterArcType;
+  readonly toneKeywords: readonly string[];
+  readonly toneAntiKeywords: readonly string[];
 }
 
 export interface SpineGenerationResult {
@@ -129,6 +131,20 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
     );
   }
 
+  const toneKeywords = Array.isArray(data['toneKeywords'])
+    ? (data['toneKeywords'] as unknown[])
+        .filter((item): item is string => typeof item === 'string')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : [];
+
+  const toneAntiKeywords = Array.isArray(data['toneAntiKeywords'])
+    ? (data['toneAntiKeywords'] as unknown[])
+        .filter((item): item is string => typeof item === 'string')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : [];
+
   return {
     centralDramaticQuestion: data['centralDramaticQuestion'],
     protagonistNeedVsWant: {
@@ -143,6 +159,8 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
     storySpineType: data['storySpineType'],
     conflictType: data['conflictType'],
     characterArcType: data['characterArcType'],
+    toneKeywords,
+    toneAntiKeywords,
   };
 }
 

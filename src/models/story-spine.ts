@@ -94,6 +94,8 @@ export interface StorySpine {
   readonly storySpineType: StorySpineType;
   readonly conflictType: ConflictType;
   readonly characterArcType: CharacterArcType;
+  readonly toneKeywords: readonly string[];
+  readonly toneAntiKeywords: readonly string[];
 }
 
 export function isStorySpineType(value: unknown): value is StorySpineType {

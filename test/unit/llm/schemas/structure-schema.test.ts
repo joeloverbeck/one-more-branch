@@ -48,8 +48,6 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'pacingBudget',
       'acts',
       'initialNpcAgendas',
-      'toneKeywords',
-      'toneAntiKeywords',
     ]);
     expect(schema.properties.acts.items.required).toEqual([
       'name',

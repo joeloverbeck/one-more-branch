@@ -9,7 +9,7 @@ import {
   generateStoryStructure,
 } from '@/llm';
 import { reconcileState } from '@/engine/state-reconciler';
-import type { StoryId } from '@/models';
+import type { StoryId, StorySpine } from '@/models';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 import {
@@ -108,6 +108,20 @@ const mockedStructureResult = {
     },
   ],
   rawResponse: 'structure',
+};
+
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
 };
 
 type RouteLayer = {
@@ -292,6 +306,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           characterConcept: `${TEST_PREFIX} create-story`,
           tone: 'fantasy',
           apiKey: 'mock-api-key-12345',
+          spine: mockSpine,
         },
       } as Request,
       res
@@ -337,6 +352,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           title: `${TEST_PREFIX} Title`,
           characterConcept: `${TEST_PREFIX} make-choice`,
           apiKey: 'mock-api-key-12345',
+          spine: mockSpine,
         },
       } as Request,
       createRes.res
@@ -458,6 +474,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           title: `${TEST_PREFIX} Title`,
           characterConcept: `${TEST_PREFIX} replay`,
           apiKey: 'mock-api-key-12345',
+          spine: mockSpine,
         },
       } as Request,
       createRes.res
@@ -620,6 +637,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           title: `${TEST_PREFIX} Threads`,
           characterConcept: `${TEST_PREFIX} open-thread-panel`,
           apiKey: 'mock-api-key-12345',
+          spine: mockSpine,
         },
       } as Request,
       createRes.res

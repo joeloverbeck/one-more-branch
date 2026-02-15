@@ -30,8 +30,6 @@ export interface StructureGenerationResult {
       role: string;
     }>;
   }>;
-  toneKeywords?: string[];
-  toneAntiKeywords?: string[];
   initialNpcAgendas?: NpcAgenda[];
   rawResponse: string;
 }

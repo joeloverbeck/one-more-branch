@@ -10,6 +10,7 @@ import {
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { PageWriterResult } from '@/llm/writer-types';
+import type { StorySpine } from '@/models';
 import {
   createMockAnalystResult,
   createMockFinalResult,
@@ -57,6 +58,20 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 >;
 
 const TEST_PREFIX = 'E2E TEST STRREWSYS-016';
+
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
+};
 
 const mockedStructureResult = createMockStoryStructure({
   overallTheme: 'Protect the city while exposing institutional betrayal.',
@@ -457,6 +472,7 @@ describe('Structure Rewriting Journey E2E', () => {
       characterConcept: `${TEST_PREFIX}: A civic mediator navigating a staged alliance to expose legal manipulation.`,
       worldbuilding: 'A floodlit capital where emergency law changes follow hidden signal towers.',
       tone: 'political thriller',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(start.story.id);
@@ -514,6 +530,7 @@ describe('Structure Rewriting Journey E2E', () => {
       characterConcept: `${TEST_PREFIX}: An alliance insider leaking proof while avoiding total exposure.`,
       worldbuilding: 'A harbor parliament where sirens authorize instant policy rewrites.',
       tone: 'suspense',
+      spine: mockSpine,
       apiKey: 'mock-api-key',
     });
     createdStoryIds.add(start.story.id);

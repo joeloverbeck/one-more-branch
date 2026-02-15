@@ -16,6 +16,7 @@ import {
   createMockPageWriterResult,
   createMockProtagonistAffect,
 } from '../../fixtures/llm-results';
+import type { StorySpine } from '@/models';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -62,8 +63,23 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
 >;
 
 const TEST_PREFIX = 'TEST STOENG-008 engine integration';
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
+};
 const mockedStructureResult = {
   overallTheme: 'Uncover the harbor conspiracy before dawn.',
+  premise: 'A disgraced guard must infiltrate the tribunal that framed her.',
+  pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
   acts: [
     {
       name: 'Act I',
@@ -376,6 +392,7 @@ describe('story-engine integration', () => {
       worldbuilding: 'A city where harbor lights can remember names.',
       tone: 'mystery adventure',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
 
     createdStoryIds.add(result.story.id);
@@ -403,6 +420,7 @@ describe('story-engine integration', () => {
       worldbuilding: 'A coast where fog preserves memories as sparks.',
       tone: 'tense mystery',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 
@@ -513,6 +531,7 @@ describe('story-engine integration', () => {
       worldbuilding: 'A harbor where each district hides a different faction ledger.',
       tone: 'investigative suspense',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 
@@ -550,6 +569,7 @@ describe('story-engine integration', () => {
       worldbuilding: 'A harbor where fire leaves written clues in the air.',
       tone: 'investigative fantasy',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 
@@ -581,6 +601,7 @@ describe('story-engine integration', () => {
       worldbuilding: 'An old port where every alley leads to a different rumor.',
       tone: 'suspenseful',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 
@@ -734,6 +755,7 @@ describe('story-engine integration', () => {
       worldbuilding: 'A storm-lit port where alliances flip overnight.',
       tone: 'political mystery',
       apiKey: 'test-api-key',
+      spine: mockSpine,
     });
     createdStoryIds.add(start.story.id);
 

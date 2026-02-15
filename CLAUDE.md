@@ -153,22 +153,30 @@ archive/specs/      # Archived completed specifications
 
 ## Core Data Flow
 
-1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + API key
-2. **Structure Generation**: LLM generates a StoryStructure (acts, beats, pacing budget, theme)
-3. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
-4. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
-5. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
-6. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
-7. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
-8. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
-9. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + accumulated tracked promises
-10. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
-11. **State Accumulation**: Each page's state = parent's accumulated state + own changes
-12. **Canon Management**: Global and character-specific canon facts persist across all branches
+1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + spine (with toneKeywords/toneAntiKeywords) + API key
+2. **Entity Decomposition**: LLM decomposes raw worldbuilding and NPCs into structured character profiles and world facts, guided by spine's tone keywords
+3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas)
+4. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
+5. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
+6. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
+7. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
+8. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
+9. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
+10. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + accumulated tracked promises
+11. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
+12. **State Accumulation**: Each page's state = parent's accumulated state + own changes
+13. **Canon Management**: Global and character-specific canon facts persist across all branches
 
 ## Generation Pipeline Stages
 
 The engine reports progress through these stages (used by the spinner UI):
+
+Story preparation stages (run once on story creation):
+- `GENERATING_SPINE` - Spine option generation LLM call (separate pre-creation step)
+- `DECOMPOSING_ENTITIES` - Entity decomposition LLM call (characters + world facts)
+- `STRUCTURING_STORY` - Story structure generation LLM call (uses spine + decomposed data)
+
+Per-page generation stages:
 - `PLANNING_PAGE` - Page planner LLM call
 - `CURATING_CONTEXT` - Lorekeeper story bible generation
 - `WRITING_OPENING_PAGE` - Opening page writer LLM call
@@ -310,15 +318,18 @@ Completed specs are archived in `archive/specs/`.
 
 - Uses OpenRouter API exclusively via `src/llm/client.ts`
 - Default model: `anthropic/claude-sonnet-4.5`
-- **8-stage architecture**: Each generation pass involves up to 8 stages (6 LLM calls + 2 engine-side):
-  1. **Structure prompt** (`structure-generator.ts`): Generates story arc on story creation
-  2. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent, state intents, dramatic question, and choice intents
-  3. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
-  4. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
-  5. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
-  6. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing
-  7. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas based on scene events
-  8. **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on deviation (conditional)
+- **Story preparation** (run once at story creation, 3 LLM calls):
+  1. **Spine prompt** (`spine-generator.ts`): Generates spine options with tone keywords (separate pre-creation step)
+  2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts
+  3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data
+- **Per-page generation** (up to 6 stages: 4 LLM calls + 2 engine-side):
+  1. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent, state intents, dramatic question, and choice intents
+  2. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
+  3. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
+  4. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
+  5. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing
+  6. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas based on scene events
+- **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on deviation
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
 - Response transformers in `schemas/` convert raw LLM JSON to typed results
 - Validation pipeline in `validation/` repairs malformed writer output (e.g., ID prefix repair)

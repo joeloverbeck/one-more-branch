@@ -5,6 +5,7 @@ import {
   parsePageId,
   Story,
   StoryMetadata,
+  StorySpine,
 } from '../../../src/models';
 import * as models from '../../../src/models';
 import { generateStoryStructure } from '../../../src/llm';
@@ -65,6 +66,20 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
   typeof generateStoryStructure
 >;
 
+const mockSpine: StorySpine = {
+  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+  primaryAntagonisticForce: {
+    description: 'The corrupt tribunal',
+    pressureMechanism: 'Controls all records and courts',
+  },
+  storySpineType: 'MYSTERY',
+  conflictType: 'PERSON_VS_SOCIETY',
+  characterArcType: 'POSITIVE_CHANGE',
+  toneKeywords: ['grim', 'tense', 'political'],
+  toneAntiKeywords: ['whimsical', 'comedic'],
+};
+
 function buildStory(overrides?: Partial<Story>): Story {
   return {
     ...createStory({
@@ -80,6 +95,8 @@ function buildStory(overrides?: Partial<Story>): Story {
 function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateStoryStructure>> {
   return {
     overallTheme: 'Expose the city tribunal and reclaim your name.',
+    premise: 'A disgraced guard must infiltrate the tribunal that framed her.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     acts: [
       {
         name: 'Act I',
@@ -87,8 +104,8 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         stakes: 'Failure means imprisonment.',
         entryCondition: 'A witness vanishes.',
         beats: [
-          { description: 'Meet an informant', objective: 'Gain first evidence.' },
-          { description: 'Break into records office', objective: 'Recover sealed files.' },
+          { name: 'First Contact', description: 'Meet an informant', objective: 'Gain first evidence.', role: 'setup' },
+          { name: 'Sealed Files', description: 'Break into records office', objective: 'Recover sealed files.', role: 'turning_point' },
         ],
       },
       {
@@ -97,8 +114,8 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         stakes: 'Failure lets the tribunal lock down the city.',
         entryCondition: 'The files identify corrupt officials.',
         beats: [
-          { description: 'Confront rival house', objective: 'Secure temporary alliance.' },
-          { description: 'Escape an ambush', objective: 'Keep evidence intact.' },
+          { name: 'Rival House', description: 'Confront rival house', objective: 'Secure temporary alliance.', role: 'escalation' },
+          { name: 'Ambush', description: 'Escape an ambush', objective: 'Keep evidence intact.', role: 'turning_point' },
         ],
       },
       {
@@ -107,8 +124,8 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         stakes: 'Failure cements authoritarian rule.',
         entryCondition: 'Public hearing is announced.',
         beats: [
-          { description: 'Force open testimony', objective: 'Reveal the conspiracy.' },
-          { description: 'Decide final justice', objective: 'Settle the conflict.' },
+          { name: 'Testimony', description: 'Force open testimony', objective: 'Reveal the conspiracy.', role: 'turning_point' },
+          { name: 'Final Justice', description: 'Decide final justice', objective: 'Settle the conflict.', role: 'resolution' },
         ],
       },
     ],
@@ -128,6 +145,7 @@ describe('story-service', () => {
           title: '   ',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: 'test-key',
+          spine: mockSpine,
         })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
@@ -141,6 +159,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'too short',
           apiKey: 'test-key',
+          spine: mockSpine,
         })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
@@ -154,6 +173,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid character concept for this test case.',
           apiKey: '   ',
+          spine: mockSpine,
         })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
@@ -201,6 +221,7 @@ describe('story-service', () => {
         worldbuilding: 'High valleys controlled by signal towers',
         tone: 'tense exploration',
         apiKey: 'test-key',
+        spine: mockSpine,
         onGenerationStage,
       });
 
@@ -210,13 +231,21 @@ describe('story-service', () => {
         worldbuilding: 'High valleys controlled by signal towers',
         tone: 'tense exploration',
       });
-      expect(mockedStorage.saveStory).toHaveBeenCalledWith(story);
+      expect(mockedStorage.saveStory).toHaveBeenCalledWith({
+        ...story,
+        spine: mockSpine,
+        toneKeywords: mockSpine.toneKeywords,
+        toneAntiKeywords: mockSpine.toneAntiKeywords,
+      });
       expect(mockedGenerateStoryStructure).toHaveBeenCalledWith(
-        {
+        expect.objectContaining({
           characterConcept: story.characterConcept,
           worldbuilding: story.worldbuilding,
           tone: story.tone,
-        },
+          spine: mockSpine,
+          decomposedCharacters: [],
+          decomposedWorld: { facts: [], rawWorldbuilding: '' },
+        }),
         'test-key'
       );
       expect(mockedStorage.updateStory).toHaveBeenCalled();
@@ -228,10 +257,10 @@ describe('story-service', () => {
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
       expect(onGenerationStage.mock.calls).toEqual([
-        [{ stage: 'STRUCTURING_STORY', status: 'started', attempt: 1 }],
-        [{ stage: 'STRUCTURING_STORY', status: 'completed', attempt: 1 }],
         [{ stage: 'DECOMPOSING_ENTITIES', status: 'started', attempt: 1 }],
         [{ stage: 'DECOMPOSING_ENTITIES', status: 'completed', attempt: 1 }],
+        [{ stage: 'STRUCTURING_STORY', status: 'started', attempt: 1 }],
+        [{ stage: 'STRUCTURING_STORY', status: 'completed', attempt: 1 }],
       ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
@@ -259,6 +288,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
+          spine: mockSpine,
         })
       ).rejects.toBe(generationError);
 
@@ -280,6 +310,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
+          spine: mockSpine,
         })
       ).rejects.toBe(structureError);
 
@@ -303,6 +334,7 @@ describe('story-service', () => {
           title: 'Test Title',
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
+          spine: mockSpine,
         })
       ).rejects.toBe(generationError);
     });
@@ -322,6 +354,7 @@ describe('story-service', () => {
         title: 'Prepared Story',
         characterConcept: 'A valid concept that is definitely long enough.',
         apiKey: 'test-key',
+        spine: mockSpine,
       });
 
       expect(result.story.structure).not.toBeNull();

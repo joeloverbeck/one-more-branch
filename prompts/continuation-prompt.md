@@ -93,7 +93,7 @@ When writing endings (character death, victory, conclusion):
 - Leave no choices when the story concludes.
 ```
 
-The tone block is injected between the role intro and content policy. When tone keywords are available (from the structure generator), the `Target feel` and `Avoid` lines are included; otherwise only the `Tone` line appears.
+The tone block is injected between the role intro and content policy. When tone keywords are available (from the spine), the `Target feel` and `Avoid` lines are included; otherwise only the `Tone` line appears.
 
 ### 2) User Message
 
