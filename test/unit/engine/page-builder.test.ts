@@ -12,11 +12,13 @@ import { PromiseType, Urgency } from '@/models/state/keyed-entry';
 import {
   buildFirstPage,
   buildContinuationPage,
+  buildPage,
   computeAccumulatedPromises,
   createEmptyStructureContext,
   FirstPageBuildContext,
   getMaxPromiseIdNumber,
   ContinuationPageBuildContext,
+  PageBuildContext,
 } from '@/engine/page-builder';
 
 function buildMockGenerationResult(
@@ -482,6 +484,64 @@ describe('page-builder', () => {
     it('returns empty when no promises exist', () => {
       const result = computeAccumulatedPromises([], [], [], 0);
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('buildPage (opening page promises)', () => {
+    it('accumulates analyst-detected promises on an opening page', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(1),
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        analystPromisesDetected: [
+          {
+            description: 'A mysterious key glints in the shadows',
+            promiseType: 'CHEKHOV_GUN',
+            suggestedUrgency: 'MEDIUM',
+          },
+          {
+            description: 'The villain hints at a hidden alliance',
+            promiseType: 'FORESHADOWING',
+            suggestedUrgency: 'HIGH',
+          },
+        ],
+        analystPromisesResolved: [],
+        parentAccumulatedNpcAgendas: {},
+      };
+
+      const page = buildPage(result, context);
+
+      expect(page.accumulatedPromises).toHaveLength(2);
+      expect(page.accumulatedPromises[0]).toEqual({
+        id: 'pr-1',
+        description: 'A mysterious key glints in the shadows',
+        promiseType: PromiseType.CHEKHOV_GUN,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 0,
+      });
+      expect(page.accumulatedPromises[1]).toEqual({
+        id: 'pr-2',
+        description: 'The villain hints at a hidden alliance',
+        promiseType: PromiseType.FORESHADOWING,
+        suggestedUrgency: Urgency.HIGH,
+        age: 0,
+      });
     });
   });
 });

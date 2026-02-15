@@ -277,7 +277,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
   const accumulatedPromises = computeAccumulatedPromises(
     isOpening ? [] : context.parentAccumulatedPromises,
     isOpening ? [] : context.analystPromisesResolved,
-    isOpening ? [] : context.analystPromisesDetected,
+    context.analystPromisesDetected,
     getMaxPromiseIdNumber(isOpening ? [] : context.parentAccumulatedPromises)
   );
 
