@@ -6,6 +6,7 @@ import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
 import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
+import type { AccumulatedStructureState, StoryStructure } from '../../../../models/story-arc.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
 import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
@@ -256,6 +257,101 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
   return lines.join('\n') + '\n';
 }
 
+export function buildEscalationDirective(
+  structure: StoryStructure | undefined,
+  accumulatedStructureState: AccumulatedStructureState | undefined
+): string {
+  if (!structure || !accumulatedStructureState) {
+    return '';
+  }
+
+  const currentAct = structure.acts[accumulatedStructureState.currentActIndex];
+  if (!currentAct) {
+    return '';
+  }
+
+  const activeBeat = currentAct.beats[accumulatedStructureState.currentBeatIndex];
+  if (!activeBeat) {
+    return '';
+  }
+
+  if (activeBeat.role !== 'escalation' && activeBeat.role !== 'turning_point') {
+    return '';
+  }
+
+  const previousResolution = findPreviousBeatResolution(
+    currentAct.beats,
+    accumulatedStructureState
+  );
+
+  const lines: string[] = [];
+
+  if (activeBeat.role === 'escalation') {
+    lines.push('=== ESCALATION DIRECTIVE ===');
+    lines.push(
+      'The active beat role is "escalation". This scene MUST raise stakes beyond the previous beat.'
+    );
+    if (previousResolution) {
+      lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    lines.push('Requirements:');
+    lines.push(
+      '- Introduce a new consequence, threat, or irreversible change not present before'
+    );
+    lines.push(
+      '- The protagonist\'s situation must be measurably worse, more constrained, or more costly than before'
+    );
+    lines.push(
+      '- "More complicated" is NOT escalation — escalation means "more costly to fail"'
+    );
+  } else {
+    lines.push('=== TURNING POINT DIRECTIVE ===');
+    lines.push(
+      'The active beat role is "turning_point". This scene MUST deliver an irreversible shift.'
+    );
+    if (previousResolution) {
+      lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    lines.push('Requirements:');
+    lines.push(
+      '- Create a point of no return — a decision, revelation, or consequence that cannot be undone'
+    );
+    lines.push(
+      '- The protagonist\'s available options must fundamentally change after this scene'
+    );
+    lines.push(
+      '- "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed'
+    );
+  }
+
+  lines.push('');
+  return lines.join('\n') + '\n';
+}
+
+function findPreviousBeatResolution(
+  beats: readonly { readonly id: string }[],
+  state: AccumulatedStructureState
+): string | null {
+  const currentBeatIndex = state.currentBeatIndex;
+
+  for (let i = currentBeatIndex - 1; i >= 0; i--) {
+    const beat = beats[i];
+    if (!beat) {
+      continue;
+    }
+    const progression = state.beatProgressions.find((p) => p.beatId === beat.id);
+    if (
+      progression?.status === 'concluded' &&
+      progression.resolution &&
+      progression.resolution.trim().length > 0
+    ) {
+      return progression.resolution;
+    }
+  }
+
+  return null;
+}
+
 export function buildPlannerContinuationContextSection(
   context: ContinuationPagePlanContext
 ): string {
@@ -350,6 +446,11 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
 
   const pacingSection = buildPacingBriefingSection(context);
 
+  const escalationDirective = buildEscalationDirective(
+    context.structure,
+    context.accumulatedStructureState
+  );
+
   const threadAgingSection = buildThreadAgingSection(context.activeState.openThreads, threadAges);
 
   const trackedPromisesSection = buildTrackedPromisesSection(
@@ -383,7 +484,7 @@ ${context.characterConcept}
   return `=== PLANNER CONTEXT: CONTINUATION ===
 ${characterConceptSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneKeywordsLine}${toneAntiKeywordsLine}${toneDriftLine}
 
-${structureSection}${pacingSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${escalationDirective}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):

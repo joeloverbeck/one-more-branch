@@ -1,4 +1,9 @@
-import type { AccumulatedStructureState, StoryStructure } from '../../../models/story-arc.js';
+import type {
+  AccumulatedStructureState,
+  BeatRole,
+  StoryBeat,
+  StoryStructure,
+} from '../../../models/story-arc.js';
 import type { ActiveState } from '../../../models/state/index.js';
 
 export const DEVIATION_DETECTION_SECTION = `=== BEAT DEVIATION EVALUATION ===
@@ -144,6 +149,86 @@ ${remainingActs || '  - None'}
 `;
 }
 
+export function buildEscalationCheckSection(
+  activeBeatRole: BeatRole | undefined,
+  beats: readonly StoryBeat[],
+  state: AccumulatedStructureState
+): string {
+  if (!activeBeatRole || (activeBeatRole !== 'escalation' && activeBeatRole !== 'turning_point')) {
+    return '';
+  }
+
+  const previousResolution = findPreviousConcludedResolution(beats, state);
+
+  const lines: string[] = [];
+
+  if (activeBeatRole === 'escalation') {
+    lines.push('=== ESCALATION QUALITY CHECK ===');
+    lines.push(
+      'The active beat role is "escalation". When evaluating this beat:'
+    );
+    if (previousResolution) {
+      lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    lines.push(
+      '- Assess whether the narrative actually raised stakes beyond the previous beat'
+    );
+    lines.push(
+      '- Stakes are raised when new consequences, threats, or costs were introduced that did not exist before'
+    );
+    lines.push(
+      '- Stakes are NOT raised if the scene only added complexity without raising the cost of failure'
+    );
+    lines.push(
+      '- If beatConcluded is true but stakes were not genuinely raised, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without genuine escalation — scene added complexity but did not raise the cost of failure"'
+    );
+  } else {
+    lines.push('=== TURNING POINT QUALITY CHECK ===');
+    lines.push(
+      'The active beat role is "turning_point". When evaluating this beat:'
+    );
+    if (previousResolution) {
+      lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    lines.push(
+      '- Assess whether the narrative delivered an irreversible shift'
+    );
+    lines.push(
+      '- An irreversible shift means a decision, revelation, or consequence that permanently changes available options'
+    );
+    lines.push(
+      '- A scene that only adds complications without destroying the status quo is NOT a turning point'
+    );
+    lines.push(
+      '- If beatConcluded is true but no irreversible shift occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without irreversible shift — status quo was not permanently altered"'
+    );
+  }
+
+  lines.push('');
+  return lines.join('\n') + '\n';
+}
+
+function findPreviousConcludedResolution(
+  beats: readonly StoryBeat[],
+  state: AccumulatedStructureState
+): string | null {
+  for (let i = state.currentBeatIndex - 1; i >= 0; i--) {
+    const beat = beats[i];
+    if (!beat) {
+      continue;
+    }
+    const progression = state.beatProgressions.find((p) => p.beatId === beat.id);
+    if (
+      progression?.status === 'concluded' &&
+      progression.resolution &&
+      progression.resolution.trim().length > 0
+    ) {
+      return progression.resolution;
+    }
+  }
+  return null;
+}
+
 export function buildAnalystStructureEvaluation(
   structure: StoryStructure,
   accumulatedStructureState: AccumulatedStructureState,
@@ -255,6 +340,13 @@ Populate threadPayoffAssessments for each resolved thread.
 `
     : '';
 
+  const activeBeat = currentAct.beats[state.currentBeatIndex];
+  const escalationCheckSection = buildEscalationCheckSection(
+    activeBeat?.role,
+    currentAct.beats,
+    state
+  );
+
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
 Premise: ${structure.premise}
@@ -298,7 +390,7 @@ Negative guards:
 
 If the completion gate is not satisfied, set beatConcluded: false.
 
-${beatComparisonHint}${DEVIATION_DETECTION_SECTION}
+${beatComparisonHint}${escalationCheckSection}${DEVIATION_DETECTION_SECTION}
 ${remainingBeatsSection}
 
 ${pacingEvaluationSection}`;

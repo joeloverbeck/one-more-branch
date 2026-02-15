@@ -161,6 +161,27 @@ If the completion gate is not satisfied, set beatConcluded: false.
 PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions when classifying structuralPositionSignal. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate.
 (Only present when there are pending beats remaining.)
 
+{{#if activeBeatRole === 'escalation'}}
+=== ESCALATION QUALITY CHECK ===
+The active beat role is "escalation". When evaluating this beat:
+{{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+- Assess whether the narrative actually raised stakes beyond the previous beat
+- Stakes are raised when new consequences, threats, or costs were introduced that did not exist before
+- Stakes are NOT raised if the scene only added complexity without raising the cost of failure
+- If beatConcluded is true but stakes were not genuinely raised, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without genuine escalation — scene added complexity but did not raise the cost of failure"
+{{/if}}
+
+{{#if activeBeatRole === 'turning_point'}}
+=== TURNING POINT QUALITY CHECK ===
+The active beat role is "turning_point". When evaluating this beat:
+{{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+- Assess whether the narrative delivered an irreversible shift
+- An irreversible shift means a decision, revelation, or consequence that permanently changes available options
+- A scene that only adds complications without destroying the status quo is NOT a turning point
+- If beatConcluded is true but no irreversible shift occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without irreversible shift — status quo was not permanently altered"
+{{/if}}
+(Only present when active beat role is escalation or turning_point.)
+
 === BEAT DEVIATION EVALUATION ===
 After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.
 

@@ -111,6 +111,36 @@ This is meaningful player input - plan around it, do not treat it as optional.
 
 This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent`, `writerBrief.mustIncludeBeats`, and `choiceIntents` to incorporate the speech intent, and the writer follows those instructions.
 
+## Escalation Directive
+
+When the active beat role is `escalation` or `turning_point`, the continuation context includes a directive section (placed after the pacing briefing and before thread aging):
+
+```text
+{{#if activeBeatRole === 'escalation'}}
+=== ESCALATION DIRECTIVE ===
+The active beat role is "escalation". This scene MUST raise stakes beyond the previous beat.
+{{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+Requirements:
+- Introduce a new consequence, threat, or irreversible change not present before
+- The protagonist's situation must be measurably worse, more constrained, or more costly than before
+- "More complicated" is NOT escalation — escalation means "more costly to fail"
+{{/if}}
+
+{{#if activeBeatRole === 'turning_point'}}
+=== TURNING POINT DIRECTIVE ===
+The active beat role is "turning_point". This scene MUST deliver an irreversible shift.
+{{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+Requirements:
+- Create a point of no return — a decision, revelation, or consequence that cannot be undone
+- The protagonist's available options must fundamentally change after this scene
+- "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed
+{{/if}}
+```
+
+The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point beat is the first beat in the act, the previous resolution line is omitted.
+
+Source: `buildEscalationDirective()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.

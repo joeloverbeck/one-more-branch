@@ -4,8 +4,12 @@ import {
   ThreadType,
   Urgency,
 } from '../../../../../../src/models/state/index.js';
+import type { AccumulatedStructureState, StoryStructure } from '../../../../../../src/models/story-arc.js';
 import type { ContinuationPagePlanContext } from '../../../../../../src/llm/context-types.js';
-import { buildPlannerContinuationContextSection } from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
+import {
+  buildPlannerContinuationContextSection,
+  buildEscalationDirective,
+} from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
 
 describe('planner continuation context section', () => {
   it('includes continuation state and previous scene context', () => {
@@ -560,5 +564,198 @@ describe('planner continuation context section', () => {
     const result = buildPlannerContinuationContextSection(context);
 
     expect(result).not.toContain('NPC AGENDAS');
+  });
+
+  it('includes escalation directive when active beat role is escalation', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      characterConcept: 'A biotech smuggler',
+      worldbuilding: '',
+      tone: 'gritty cyberpunk',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      structure: {
+        overallTheme: 'Loyalty under pressure',
+        premise: 'A smuggler must escape.',
+        pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'Act 1',
+            objective: 'Escape',
+            stakes: 'Death',
+            entryCondition: 'Start',
+            beats: [
+              {
+                id: '1.1',
+                name: 'Setup',
+                description: 'Secure route',
+                objective: 'Reach safe passage',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                name: 'Escalation',
+                description: 'Confront ally',
+                objective: 'Prevent betrayal',
+                role: 'escalation',
+              },
+            ],
+          },
+        ],
+      },
+      accumulatedStructureState: {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== ESCALATION DIRECTIVE ===');
+    expect(result).toContain('MUST raise stakes beyond the previous beat');
+    expect(result).toContain('Route secured through maintenance');
+    expect(result).toContain('"More complicated" is NOT escalation');
+  });
+});
+
+describe('buildEscalationDirective', () => {
+  const makeStructure = (
+    beatRoles: Array<{ id: string; role: 'setup' | 'escalation' | 'turning_point' | 'resolution' }>
+  ): StoryStructure => ({
+    overallTheme: 'Test',
+    premise: 'Test',
+    pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+    generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    acts: [
+      {
+        id: '1',
+        name: 'Act 1',
+        objective: 'Obj',
+        stakes: 'Stakes',
+        entryCondition: 'Start',
+        beats: beatRoles.map((b) => ({
+          id: b.id,
+          name: `Beat ${b.id}`,
+          description: `Desc for ${b.id}`,
+          objective: `Obj for ${b.id}`,
+          role: b.role,
+        })),
+      },
+    ],
+  });
+
+  it('returns empty string when structure is undefined', () => {
+    expect(buildEscalationDirective(undefined, undefined)).toBe('');
+  });
+
+  it('returns empty string when beat role is setup', () => {
+    const structure = makeStructure([{ id: '1.1', role: 'setup' }]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+    };
+
+    expect(buildEscalationDirective(structure, state)).toBe('');
+  });
+
+  it('returns empty string when beat role is resolution', () => {
+    const structure = makeStructure([{ id: '1.1', role: 'resolution' }]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+    };
+
+    expect(buildEscalationDirective(structure, state)).toBe('');
+  });
+
+  it('returns escalation directive with previous beat resolution', () => {
+    const structure = makeStructure([
+      { id: '1.1', role: 'setup' },
+      { id: '1.2', role: 'escalation' },
+    ]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 1,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Safehouse secured' },
+        { beatId: '1.2', status: 'active' },
+      ],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('=== ESCALATION DIRECTIVE ===');
+    expect(result).toContain('Previous beat resolved: "Safehouse secured"');
+    expect(result).toContain('more costly to fail');
+  });
+
+  it('returns turning point directive when beat role is turning_point', () => {
+    const structure = makeStructure([
+      { id: '1.1', role: 'setup' },
+      { id: '1.2', role: 'turning_point' },
+    ]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 1,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Route found' },
+        { beatId: '1.2', status: 'active' },
+      ],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('=== TURNING POINT DIRECTIVE ===');
+    expect(result).toContain('irreversible shift');
+    expect(result).toContain('Previous beat resolved: "Route found"');
+    expect(result).toContain('status quo is permanently destroyed');
+  });
+
+  it('handles first beat in act with no previous resolution', () => {
+    const structure = makeStructure([{ id: '1.1', role: 'escalation' }]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('=== ESCALATION DIRECTIVE ===');
+    expect(result).not.toContain('Previous beat resolved:');
   });
 });

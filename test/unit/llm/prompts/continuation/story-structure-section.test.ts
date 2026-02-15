@@ -7,6 +7,7 @@ import { ThreadType, Urgency } from '../../../../../src/models/state/keyed-entry
 import {
   getRemainingBeats,
   buildActiveStateForBeatEvaluation,
+  buildEscalationCheckSection,
   DEVIATION_DETECTION_SECTION,
 } from '../../../../../src/llm/prompts/continuation/story-structure-section';
 
@@ -221,6 +222,133 @@ describe('story-structure-section', () => {
       expect(DEVIATION_DETECTION_SECTION).toContain('A deviation occurs when');
       expect(DEVIATION_DETECTION_SECTION).toContain('deviationDetected: true');
       expect(DEVIATION_DETECTION_SECTION).toContain('Be conservative');
+    });
+  });
+
+  describe('buildEscalationCheckSection', () => {
+    it('returns empty string when beat role is setup', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      };
+
+      expect(buildEscalationCheckSection('setup', testStructure.acts[0]!.beats, state)).toBe('');
+    });
+
+    it('returns empty string when beat role is resolution', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      };
+
+      expect(buildEscalationCheckSection('resolution', testStructure.acts[0]!.beats, state)).toBe(
+        ''
+      );
+    });
+
+    it('returns empty string when beat role is undefined', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [],
+      };
+
+      expect(buildEscalationCheckSection(undefined, testStructure.acts[0]!.beats, state)).toBe('');
+    });
+
+    it('returns escalation check with previous resolution for escalation role', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      };
+
+      const result = buildEscalationCheckSection(
+        'escalation',
+        testStructure.acts[0]!.beats,
+        state
+      );
+
+      expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
+      expect(result).toContain('Previous beat resolved: "Reached safehouse"');
+      expect(result).toContain('cost of failure');
+      expect(result).toContain('pacingIssueDetected: true');
+    });
+
+    it('returns turning point check for turning_point role', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 2,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Evidence protected' },
+          { beatId: '1.3', status: 'active' },
+        ],
+      };
+
+      const result = buildEscalationCheckSection(
+        'turning_point',
+        testStructure.acts[0]!.beats,
+        state
+      );
+
+      expect(result).toContain('=== TURNING POINT QUALITY CHECK ===');
+      expect(result).toContain('irreversible shift');
+      expect(result).toContain('Previous beat resolved: "Evidence protected"');
+      expect(result).toContain('status quo was not permanently altered');
+    });
+
+    it('omits previous resolution when first beat in act', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      };
+
+      // Use a structure where the first beat is escalation
+      const escalationFirstStructure = {
+        ...testStructure,
+        acts: [
+          {
+            ...testStructure.acts[0]!,
+            beats: [
+              {
+                id: '1.1',
+                name: 'Esc',
+                description: 'Escalate',
+                objective: 'Raise stakes',
+                role: 'escalation' as const,
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = buildEscalationCheckSection(
+        'escalation',
+        escalationFirstStructure.acts[0]!.beats,
+        state
+      );
+
+      expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
+      expect(result).not.toContain('Previous beat resolved:');
     });
   });
 });
