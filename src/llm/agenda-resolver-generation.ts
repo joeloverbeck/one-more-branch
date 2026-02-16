@@ -17,11 +17,12 @@ import type { Npc } from '../models/npc.js';
 import type { AgendaResolverResult } from './lorekeeper-types.js';
 
 const DEFAULT_AGENDA_RESOLVER_TEMPERATURE = 0.4;
-const DEFAULT_AGENDA_RESOLVER_MAX_TOKENS = 2048;
+const DEFAULT_AGENDA_RESOLVER_MAX_TOKENS = 4096;
 
 export interface GenerateAgendaResolverOptions {
   readonly apiKey: string;
   readonly model?: string;
+  readonly maxTokens?: number;
 }
 
 export async function generateAgendaResolver(
@@ -30,6 +31,7 @@ export async function generateAgendaResolver(
   options: GenerateAgendaResolverOptions
 ): Promise<AgendaResolverResult> {
   const model = options.model ?? getStageModel('agendaResolver');
+  const maxTokens = options.maxTokens ?? DEFAULT_AGENDA_RESOLVER_MAX_TOKENS;
   const messages = buildAgendaResolverPrompt(context);
 
   logPrompt(logger, 'agenda-resolver', messages);
@@ -46,7 +48,7 @@ export async function generateAgendaResolver(
       model,
       messages,
       temperature: DEFAULT_AGENDA_RESOLVER_TEMPERATURE,
-      max_tokens: DEFAULT_AGENDA_RESOLVER_MAX_TOKENS,
+      max_tokens: maxTokens,
       response_format: AGENDA_RESOLVER_SCHEMA,
     }),
   });

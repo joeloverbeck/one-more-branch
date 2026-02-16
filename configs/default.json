@@ -14,7 +14,7 @@
       "planner": "z-ai/glm-5",
       "accountant": "z-ai/glm-5",
       "lorekeeper": "z-ai/glm-5",
-      "writer": "z-ai/glm-5",
+      "writer": "anthropic/claude-sonnet-4.5",
       "analyst": "z-ai/glm-5",
       "agendaResolver": "z-ai/glm-5"
     },
