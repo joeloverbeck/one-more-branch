@@ -14,7 +14,7 @@ import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 
 const DEFAULT_ANALYST_TEMPERATURE = 0.3;
-const DEFAULT_ANALYST_MAX_TOKENS = 1024;
+const DEFAULT_ANALYST_MAX_TOKENS = 4096;
 
 async function callAnalystStructured(
   messages: ChatMessage[],
@@ -56,7 +56,19 @@ async function callAnalystStructured(
   const content = data.choices[0]?.message?.content;
 
   if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+    const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
+    const usage = data.usage;
+    logger.warn('Analyst received empty content from OpenRouter', {
+      finishReason,
+      usage,
+      model,
+      choicesLength: data.choices?.length ?? 0,
+    });
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true, {
+      finishReason,
+      usage,
+      model,
+    });
   }
 
   const parsedMessage = parseMessageJsonContent(content);

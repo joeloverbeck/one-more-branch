@@ -74,7 +74,7 @@ export async function generateAnalystEvaluation(
 
   logPrompt(logger, 'analyst', messages);
 
-  const analystOptions = { ...options, temperature: 0.3, maxTokens: 1024 };
+  const analystOptions = { ...options, temperature: 0.3, maxTokens: 4096 };
   return withRetry(() => generateAnalystWithFallback(messages, analystOptions));
 }
 

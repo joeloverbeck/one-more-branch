@@ -17,7 +17,7 @@ import type { Npc } from '../models/npc.js';
 import type { AgendaResolverResult } from './lorekeeper-types.js';
 
 const DEFAULT_AGENDA_RESOLVER_TEMPERATURE = 0.4;
-const DEFAULT_AGENDA_RESOLVER_MAX_TOKENS = 1024;
+const DEFAULT_AGENDA_RESOLVER_MAX_TOKENS = 2048;
 
 export interface GenerateAgendaResolverOptions {
   readonly apiKey: string;
@@ -67,7 +67,19 @@ export async function generateAgendaResolver(
   const content = data.choices[0]?.message?.content;
 
   if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+    const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
+    const usage = data.usage;
+    logger.warn('Agenda resolver received empty content from OpenRouter', {
+      finishReason,
+      usage,
+      model,
+      choicesLength: data.choices?.length ?? 0,
+    });
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true, {
+      finishReason,
+      usage,
+      model,
+    });
   }
 
   const parsedMessage = parseMessageJsonContent(content);
