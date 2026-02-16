@@ -323,8 +323,7 @@
             + ' aria-controls="act-structure-details">'
             + '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>'
             + escapeHtml(data.actDisplayInfo.displayString)
-            + '</span>'
-            + detailsHtml;
+            + '</span>';
 
           if (existingWrapper) {
             existingWrapper.innerHTML = wrapperHtml;
@@ -341,6 +340,18 @@
             }
           }
 
+          // Place details panel after .story-header (outside the flex row)
+          var existingDetails = document.getElementById('act-structure-details');
+          if (existingDetails) {
+            existingDetails.remove();
+          }
+          if (detailsHtml) {
+            var storyHeader = document.getElementById('story-header');
+            if (storyHeader) {
+              storyHeader.insertAdjacentHTML('afterend', detailsHtml);
+            }
+          }
+
           initActIndicator();
           if (actChanged) {
             expandActStructureDetails();
@@ -348,6 +359,10 @@
           previousActNumber = newActNumber;
         } else if (existingWrapper) {
           existingWrapper.remove();
+          var orphanedDetails = document.getElementById('act-structure-details');
+          if (orphanedDetails) {
+            orphanedDetails.remove();
+          }
           previousActNumber = null;
         }
 

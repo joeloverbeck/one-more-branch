@@ -116,28 +116,6 @@
                   <span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>
                   <%= actDisplayInfo.displayString %>
                 </span>
-                <% if (actDisplayInfo.actObjective || actDisplayInfo.actStakes || actDisplayInfo.beatObjective) { %>
-                <div class="act-structure-details" id="act-structure-details" hidden>
-                  <% if (actDisplayInfo.actObjective) { %>
-                  <div class="act-structure-details__item">
-                    <span class="act-structure-details__label">Act Objective</span>
-                    <span class="act-structure-details__text"><%= actDisplayInfo.actObjective %></span>
-                  </div>
-                  <% } %>
-                  <% if (actDisplayInfo.actStakes) { %>
-                  <div class="act-structure-details__item">
-                    <span class="act-structure-details__label">Stakes</span>
-                    <span class="act-structure-details__text"><%= actDisplayInfo.actStakes %></span>
-                  </div>
-                  <% } %>
-                  <% if (actDisplayInfo.beatObjective) { %>
-                  <div class="act-structure-details__item">
-                    <span class="act-structure-details__label">Beat Objective</span>
-                    <span class="act-structure-details__text"><%= actDisplayInfo.beatObjective %></span>
-                  </div>
-                  <% } %>
-                </div>
-                <% } %>
               </div>
               <% } %>
             </div>
@@ -156,6 +134,29 @@
               <span class="page-indicator">Page <%= page.id %></span>
             </div>
           </div>
+
+          <% if (actDisplayInfo && (actDisplayInfo.actObjective || actDisplayInfo.actStakes || actDisplayInfo.beatObjective)) { %>
+          <div class="act-structure-details" id="act-structure-details" hidden>
+            <% if (actDisplayInfo.actObjective) { %>
+            <div class="act-structure-details__item">
+              <span class="act-structure-details__label">Act Objective</span>
+              <span class="act-structure-details__text"><%= actDisplayInfo.actObjective %></span>
+            </div>
+            <% } %>
+            <% if (actDisplayInfo.actStakes) { %>
+            <div class="act-structure-details__item">
+              <span class="act-structure-details__label">Stakes</span>
+              <span class="act-structure-details__text"><%= actDisplayInfo.actStakes %></span>
+            </div>
+            <% } %>
+            <% if (actDisplayInfo.beatObjective) { %>
+            <div class="act-structure-details__item">
+              <span class="act-structure-details__label">Beat Objective</span>
+              <span class="act-structure-details__text"><%= actDisplayInfo.beatObjective %></span>
+            </div>
+            <% } %>
+          </div>
+          <% } %>
 
           <article class="narrative" id="narrative">
             <div class="narrative-text">
