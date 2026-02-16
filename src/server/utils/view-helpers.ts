@@ -1,4 +1,4 @@
-import type { Page, Story, StoryAct } from '../../models/index.js';
+import type { Page, Story, StoryAct, StoryStructure } from '../../models/index.js';
 import type { TrackedPromise } from '../../models/state/index.js';
 import type { AccumulatedNpcRelationships } from '../../models/state/npc-relationship.js';
 import {
@@ -352,4 +352,93 @@ export function getNpcRelationshipPanelData(
   }));
 
   return { rows };
+}
+
+export interface MilestoneInfo {
+  readonly type: 'beat' | 'act';
+  readonly beatName: string;
+  readonly actName?: string;
+  readonly actNumber?: number;
+}
+
+function isLastBeatInAct(structure: StoryStructure, beatId: string): boolean {
+  for (const act of structure.acts) {
+    const lastBeat = act.beats[act.beats.length - 1];
+    if (lastBeat?.id === beatId) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function findActForBeat(
+  structure: StoryStructure,
+  beatId: string
+): { act: StoryAct; actIndex: number } | null {
+  for (let actIndex = 0; actIndex < structure.acts.length; actIndex++) {
+    const act = structure.acts[actIndex]!;
+    for (const beat of act.beats) {
+      if (beat.id === beatId) {
+        return { act, actIndex };
+      }
+    }
+  }
+  return null;
+}
+
+export function getMilestoneInfo(story: Story, page: Page): MilestoneInfo | null {
+  if (!page.analystResult?.beatConcluded) {
+    return null;
+  }
+
+  if (!page.structureVersionId) {
+    return null;
+  }
+
+  const structureVersion = getStructureVersion(story, page.structureVersionId);
+  if (!structureVersion) {
+    return null;
+  }
+
+  const progressions = page.accumulatedStructureState.beatProgressions;
+  let concludedBeatId: string | null = null;
+  for (let i = progressions.length - 1; i >= 0; i--) {
+    if (progressions[i]!.status === 'concluded') {
+      concludedBeatId = progressions[i]!.beatId;
+      break;
+    }
+  }
+
+  if (!concludedBeatId) {
+    return null;
+  }
+
+  const structure = structureVersion.structure;
+  let beatName = concludedBeatId;
+  for (const act of structure.acts) {
+    for (const beat of act.beats) {
+      if (beat.id === concludedBeatId) {
+        beatName = beat.name;
+        break;
+      }
+    }
+  }
+
+  if (isLastBeatInAct(structure, concludedBeatId)) {
+    const actInfo = findActForBeat(structure, concludedBeatId);
+    if (actInfo) {
+      const actNumber = extractActNumber(actInfo.act.id, actInfo.actIndex);
+      return {
+        type: 'act',
+        beatName,
+        actName: actInfo.act.name,
+        actNumber,
+      };
+    }
+  }
+
+  return {
+    type: 'beat',
+    beatName,
+  };
 }

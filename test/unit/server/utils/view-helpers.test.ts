@@ -1,6 +1,7 @@
 import {
   getActDisplayInfo,
   getKeyedEntryPanelData,
+  getMilestoneInfo,
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
@@ -866,5 +867,396 @@ describe('getNpcRelationshipPanelData', () => {
 
     expect(result.rows).toHaveLength(3);
     expect(result.rows.map((r) => r.npcName)).toEqual(['Alpha', 'Beta', 'Gamma']);
+  });
+});
+
+describe('getMilestoneInfo', () => {
+  const baseStory = createStory({
+    title: 'Test Story',
+    characterConcept: 'A test character',
+    worldbuilding: 'Test world',
+    tone: 'Adventure',
+  });
+
+  const basePage = createPage({
+    id: 1,
+    narrativeText: 'Test narrative',
+    sceneSummary: 'Test summary of the scene.',
+    choices: [createChoice('Choice 1'), createChoice('Choice 2')],
+    isEnding: false,
+    parentPageId: null,
+    parentChoiceIndex: null,
+  });
+
+  function createMultiBeatStructure(): StoryStructure {
+    return {
+      acts: [
+        {
+          id: 'act-1',
+          name: 'The Beginning',
+          objective: 'Establish',
+          stakes: 'Survival',
+          entryCondition: 'Story start',
+          beats: [
+            {
+              id: '1.1',
+              name: 'The Sound in the Dark',
+              description: 'First beat',
+              objective: 'Discover the sound',
+              role: 'setup' as const,
+            },
+            {
+              id: '1.2',
+              name: 'The Face in the Shadows',
+              description: 'Second beat',
+              objective: 'Confront the shadow',
+              role: 'escalation' as const,
+            },
+            {
+              id: '1.3',
+              name: 'First Blood',
+              description: 'Third beat',
+              objective: 'Survive the encounter',
+              role: 'turning_point' as const,
+            },
+          ],
+        },
+        {
+          id: 'act-2',
+          name: 'The Journey',
+          objective: 'Travel',
+          stakes: 'Time',
+          entryCondition: 'After act 1',
+          beats: [
+            {
+              id: '2.1',
+              name: 'The Road Ahead',
+              description: 'First beat of act 2',
+              objective: 'Set out',
+              role: 'setup' as const,
+            },
+          ],
+        },
+      ],
+      overallTheme: 'Survival',
+      premise: 'A dark journey',
+      pacingBudget: { targetPagesMin: 5, targetPagesMax: 15 },
+      generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+  }
+
+  it('returns null when beatConcluded is false', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'INCREMENTAL_PROGRESS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'NOT_READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
+        rawResponse: '',
+      },
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        beatProgressions: [
+          { beatId: '1.1', status: 'active' },
+          { beatId: '1.2', status: 'pending' },
+          { beatId: '1.3', status: 'pending' },
+        ],
+      },
+    };
+
+    expect(getMilestoneInfo(story, page)).toBeNull();
+  });
+
+  it('returns null when page has no analystResult', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: null,
+    };
+
+    expect(getMilestoneInfo(story, page)).toBeNull();
+  });
+
+  it('returns null when page has no structureVersionId', () => {
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: null,
+      analystResult: {
+        beatConcluded: true,
+        beatResolution: 'Done',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'MAJOR_PROGRESS',
+        objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+        commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+        structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
+        entryConditionReadiness: 'READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: true,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
+        rawResponse: '',
+      },
+    };
+
+    expect(getMilestoneInfo(story, page)).toBeNull();
+  });
+
+  function createAnalystWithBeatConcluded(): Page['analystResult'] {
+    return {
+      beatConcluded: true,
+      beatResolution: 'Beat resolved',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [] as string[],
+      narrativeSummary: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none' as const,
+      sceneMomentum: 'MAJOR_PROGRESS' as const,
+      objectiveEvidenceStrength: 'CLEAR_EXPLICIT' as const,
+      commitmentStrength: 'EXPLICIT_IRREVERSIBLE' as const,
+      structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT' as const,
+      entryConditionReadiness: 'READY' as const,
+      objectiveAnchors: [] as string[],
+      anchorEvidence: [] as string[],
+      completionGateSatisfied: true,
+      completionGateFailureReason: '',
+      toneAdherent: true,
+      toneDriftDescription: '',
+      promisesDetected: [] as [],
+      promisesResolved: [] as string[],
+      promisePayoffAssessments: [] as [],
+      threadPayoffAssessments: [] as [],
+      npcCoherenceAdherent: true,
+      npcCoherenceIssues: '',
+      relationshipShiftsDetected: [] as [],
+      spineDeviationDetected: false,
+      spineDeviationReason: '',
+      spineInvalidatedElement: null,
+      rawResponse: '',
+    };
+  }
+
+  it('returns beat type when beat concluded but not last in act', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: createAnalystWithBeatConcluded(),
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Found the sound' },
+          { beatId: '1.2', status: 'active' },
+          { beatId: '1.3', status: 'pending' },
+        ],
+      },
+    };
+
+    const result = getMilestoneInfo(story, page);
+
+    expect(result).toEqual({
+      type: 'beat',
+      beatName: 'The Sound in the Dark',
+    });
+  });
+
+  it('returns act type when last beat in act concluded', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: createAnalystWithBeatConcluded(),
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Done' },
+          { beatId: '1.3', status: 'concluded', resolution: 'Act complete' },
+          { beatId: '2.1', status: 'active' },
+        ],
+      },
+    };
+
+    const result = getMilestoneInfo(story, page);
+
+    expect(result).toEqual({
+      type: 'act',
+      beatName: 'First Blood',
+      actName: 'The Beginning',
+      actNumber: 1,
+    });
+  });
+
+  it('correctly extracts beat name from structure', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: createAnalystWithBeatConcluded(),
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 0,
+        currentBeatIndex: 2,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Done' },
+          { beatId: '1.3', status: 'active' },
+        ],
+      },
+    };
+
+    const result = getMilestoneInfo(story, page);
+
+    expect(result).not.toBeNull();
+    expect(result!.beatName).toBe('The Face in the Shadows');
+  });
+
+  it('returns null when no beat progressions have concluded status', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: createAnalystWithBeatConcluded(),
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        beatProgressions: [
+          { beatId: '1.1', status: 'active' },
+          { beatId: '1.2', status: 'pending' },
+        ],
+      },
+    };
+
+    expect(getMilestoneInfo(story, page)).toBeNull();
+  });
+
+  it('returns correct act number for non-standard act IDs', () => {
+    const structure: StoryStructure = {
+      acts: [
+        {
+          id: 'custom-first',
+          name: 'Prologue',
+          objective: 'Begin',
+          stakes: 'Life',
+          entryCondition: 'Start',
+          beats: [
+            { id: 'b1', name: 'Opening', description: 'Open', objective: 'Open', role: 'setup' },
+          ],
+        },
+      ],
+      overallTheme: 'Theme',
+      premise: 'Premise',
+      pacingBudget: { targetPagesMin: 1, targetPagesMax: 5 },
+      generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      analystResult: createAnalystWithBeatConcluded(),
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        beatProgressions: [{ beatId: 'b1', status: 'concluded', resolution: 'Done' }],
+      },
+    };
+
+    const result = getMilestoneInfo(story, page);
+
+    expect(result).toEqual({
+      type: 'act',
+      beatName: 'Opening',
+      actName: 'Prologue',
+      actNumber: 1,
+    });
   });
 });

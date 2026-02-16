@@ -121,6 +121,7 @@ describe('playRoutes', () => {
         recapSummaries: [],
         pageId: 2,
         actDisplayInfo: null,
+        milestoneInfo: null,
         openThreadPanelRows: [
           {
             id: 'td-2',

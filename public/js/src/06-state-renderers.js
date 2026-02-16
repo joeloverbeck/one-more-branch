@@ -53,3 +53,30 @@
     }
   }
 
+  function renderMilestoneBanner(milestoneInfo, narrativeElement) {
+    var existingBanner = document.getElementById('milestone-banner');
+    if (existingBanner) {
+      existingBanner.remove();
+    }
+
+    if (!milestoneInfo) {
+      return;
+    }
+
+    var banner = document.createElement('div');
+    banner.className = 'milestone-banner milestone-banner--' + milestoneInfo.type;
+    banner.id = 'milestone-banner';
+
+    if (milestoneInfo.type === 'act') {
+      banner.innerHTML =
+        '<div class="milestone-banner__act-title">Act ' + milestoneInfo.actNumber + ' Complete</div>'
+        + '<div class="milestone-banner__act-name">' + escapeHtml(milestoneInfo.actName || '') + '</div>';
+    } else {
+      banner.innerHTML =
+        '<div class="milestone-banner__beat-label">Beat Concluded</div>'
+        + '<div class="milestone-banner__beat-name">' + escapeHtml(milestoneInfo.beatName || '') + '</div>';
+    }
+
+    narrativeElement.after(banner);
+  }
+

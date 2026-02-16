@@ -25,6 +25,7 @@ import {
   getActDisplayInfo,
   getConstraintPanelData,
   getKeyedEntryPanelData,
+  getMilestoneInfo,
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getThreatPanelData,
@@ -254,6 +255,7 @@ playRoutes.get(
       const recapSummaries = await collectRecapSummaries(storyId as StoryId, page);
 
       const actDisplayInfo = getActDisplayInfo(story, page);
+      const milestoneInfo = getMilestoneInfo(story, page);
       const openThreadPanelData = getOpenThreadPanelData(page.accumulatedActiveState.openThreads);
       const threatsPanelData = getThreatPanelData(
         page.accumulatedActiveState.activeThreats
@@ -279,6 +281,7 @@ playRoutes.get(
         recapSummaries,
         pageId,
         actDisplayInfo,
+        milestoneInfo,
         openThreadPanelRows: openThreadPanelData.rows,
         openThreadOverflowSummary: openThreadPanelData.overflowSummary,
         threatsPanelRows: threatsPanelData.rows,
@@ -354,9 +357,10 @@ playRoutes.post(
         ...(protagonistGuidance !== undefined ? { protagonistGuidance } : {}),
       });
 
-      // Load story to compute actDisplayInfo for the new page
+      // Load story to compute actDisplayInfo and milestoneInfo for the new page
       const story = await storyEngine.loadStory(storyId as StoryId);
       const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
+      const milestoneInfo = story ? getMilestoneInfo(story, result.page) : null;
       const recapSummaries = await collectRecapSummaries(storyId as StoryId, result.page);
       const openThreadPanelData = getOpenThreadPanelData(
         result.page.accumulatedActiveState.openThreads
@@ -413,6 +417,7 @@ playRoutes.post(
         globalCharacterCanon: story?.globalCharacterCanon ?? {},
         recapSummaries,
         actDisplayInfo,
+        milestoneInfo,
         wasGenerated: result.wasGenerated,
         deviationInfo: result.deviationInfo,
       });

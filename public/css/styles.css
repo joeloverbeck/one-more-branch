@@ -1256,6 +1256,72 @@ main {
   line-height: 1.75;
 }
 
+/* ── Milestone banners ──────────────────────────────────────────── */
+
+.milestone-banner {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.milestone-banner--beat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.milestone-banner--beat::before,
+.milestone-banner--beat::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid rgba(160, 174, 192, 0.3);
+}
+
+.milestone-banner__beat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(160, 174, 192, 0.6);
+}
+
+.milestone-banner__beat-name {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(160, 174, 192, 0.8);
+}
+
+.milestone-banner--beat .milestone-banner__beat-label,
+.milestone-banner--beat .milestone-banner__beat-name {
+  white-space: nowrap;
+}
+
+.milestone-banner--act {
+  border: 1px solid rgba(233, 178, 69, 0.35);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(233, 178, 69, 0.06), rgba(233, 178, 69, 0.02));
+  animation: milestone-fade-in 0.5s ease-out;
+}
+
+.milestone-banner__act-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(233, 178, 69, 0.8);
+  margin-bottom: 0.25rem;
+}
+
+.milestone-banner__act-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(233, 178, 69, 0.95);
+}
+
+@keyframes milestone-fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .state-changes {
   margin-top: 1rem;
   border: 1px solid rgba(89, 193, 122, 0.6);

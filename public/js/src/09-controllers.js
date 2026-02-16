@@ -281,6 +281,7 @@
         renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
         cleanupEmptySidebar();
         renderStateChanges(data.page.stateChanges, narrative);
+        renderMilestoneBanner(data.milestoneInfo, narrative);
         renderDeviationBanner(data.deviationInfo, choicesSection);
 
         const pageIndicator = document.querySelector('.page-indicator');

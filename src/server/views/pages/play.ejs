@@ -164,6 +164,18 @@
             </div>
           </article>
 
+          <% if (milestoneInfo) { %>
+          <div class="milestone-banner milestone-banner--<%= milestoneInfo.type %>" id="milestone-banner">
+            <% if (milestoneInfo.type === 'act') { %>
+            <div class="milestone-banner__act-title">Act <%= milestoneInfo.actNumber %> Complete</div>
+            <div class="milestone-banner__act-name"><%= milestoneInfo.actName %></div>
+            <% } else { %>
+            <div class="milestone-banner__beat-label">Beat Concluded</div>
+            <div class="milestone-banner__beat-name"><%= milestoneInfo.beatName %></div>
+            <% } %>
+          </div>
+          <% } %>
+
           <% if (page.stateChanges && page.stateChanges.length > 0) { %>
           <aside class="state-changes" id="state-changes">
             <h4>What happened:</h4>
