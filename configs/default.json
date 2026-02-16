@@ -8,9 +8,9 @@
   "llm": {
     "defaultModel": "anthropic/claude-sonnet-4.5",
     "models": {
-      "spine": "z-ai/glm-5",
+      "spine": "anthropic/claude-sonnet-4.5",
       "entityDecomposer": "z-ai/glm-5",
-      "structure": "z-ai/glm-5",
+      "structure": "anthropic/claude-sonnet-4.5",
       "planner": "anthropic/claude-sonnet-4.5",
       "accountant": "z-ai/glm-5",
       "lorekeeper": "z-ai/glm-5",

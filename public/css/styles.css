@@ -981,6 +981,8 @@ main {
   padding: 0.55rem 0.65rem;
   background: rgba(6, 10, 24, 0.35);
   transition: border-color var(--transition), background-color var(--transition);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .npc-rel-card:hover {
@@ -995,6 +997,9 @@ main {
   gap: 0.2rem;
   cursor: pointer;
   user-select: none;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .npc-rel-name {
@@ -1020,6 +1025,7 @@ main {
   text-transform: capitalize;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   box-sizing: border-box;
 }
 
