@@ -149,6 +149,10 @@ describe('playRoutes', () => {
         trackedPromisesPanelRows: [],
         trackedPromisesOverflowSummary: null,
         npcRelationshipRows: [],
+        insightsThreadMeta: {
+          'td-1': { threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+          'td-2': { threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+        },
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -897,7 +901,10 @@ describe('playRoutes', () => {
             healthOverflowSummary: null,
             protagonistAffect: resultPage.protagonistAffect,
             analystResult: resultPage.analystResult,
-            resolvedThreadMeta: {},
+            resolvedThreadMeta: {
+              'td-1': { threadType: 'INFORMATION', urgency: 'LOW' },
+              'td-2': { threadType: 'MYSTERY', urgency: 'HIGH' },
+            },
             resolvedPromiseMeta: {},
             trackedPromises: [],
             trackedPromisesOverflowSummary: null,

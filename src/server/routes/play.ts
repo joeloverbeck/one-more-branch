@@ -58,6 +58,19 @@ function extractReconciliationIssueCodes(error: StateReconciliationError): strin
   ];
 }
 
+function buildInsightsThreadMeta(
+  resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>,
+  openThreads: readonly { id: string; threadType: string; urgency: string }[]
+): Record<string, { threadType: string; urgency: string }> {
+  const meta: Record<string, { threadType: string; urgency: string }> = { ...resolvedThreadMeta };
+  for (const thread of openThreads) {
+    if (!meta[thread.id]) {
+      meta[thread.id] = { threadType: thread.threadType, urgency: thread.urgency };
+    }
+  }
+  return meta;
+}
+
 function parseRequestedPageId(pageQuery: unknown): number {
   const pageInput =
     typeof pageQuery === 'string' || typeof pageQuery === 'number' ? String(pageQuery) : '';
@@ -254,6 +267,10 @@ playRoutes.get(
       const npcRelationshipPanelData = getNpcRelationshipPanelData(
         page.accumulatedNpcRelationships
       );
+      const insightsThreadMeta = buildInsightsThreadMeta(
+        page.resolvedThreadMeta ?? {},
+        page.accumulatedActiveState.openThreads
+      );
 
       return res.render('pages/play', {
         title: `${story.title} - One More Branch`,
@@ -275,6 +292,7 @@ playRoutes.get(
         trackedPromisesPanelRows: trackedPromisesPanelData.rows,
         trackedPromisesOverflowSummary: trackedPromisesPanelData.overflowSummary,
         npcRelationshipRows: npcRelationshipPanelData.rows,
+        insightsThreadMeta,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
       });
@@ -357,6 +375,10 @@ playRoutes.post(
       const npcRelationshipPanelData = getNpcRelationshipPanelData(
         result.page.accumulatedNpcRelationships
       );
+      const insightsThreadMeta = buildInsightsThreadMeta(
+        result.page.resolvedThreadMeta ?? {},
+        result.page.accumulatedActiveState.openThreads
+      );
       if (progressId) {
         generationProgressService.complete(progressId);
       }
@@ -370,7 +392,7 @@ playRoutes.post(
           choices: result.page.choices,
           isEnding: result.page.isEnding,
           analystResult: result.page.analystResult,
-          resolvedThreadMeta: result.page.resolvedThreadMeta ?? {},
+          resolvedThreadMeta: insightsThreadMeta,
           resolvedPromiseMeta: result.page.resolvedPromiseMeta ?? {},
           openThreads: openThreadPanelData.rows,
           openThreadOverflowSummary: openThreadPanelData.overflowSummary,
