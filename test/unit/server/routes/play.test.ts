@@ -395,6 +395,9 @@ describe('playRoutes', () => {
             beatId: '1.1',
             beatName: 'The Setup',
             displayString: 'Act 1: The Beginning - Beat 1.1: The Setup',
+            actObjective: 'Start the journey',
+            actStakes: 'High',
+            beatObjective: 'Start moving.',
           },
         })
       );
@@ -1481,6 +1484,9 @@ describe('playRoutes', () => {
             beatId: '2.1',
             beatName: 'Rising Pressure',
             displayString: 'Act 2: Act Two - Beat 2.1: Rising Pressure',
+            actObjective: 'Face challenges',
+            actStakes: 'Higher',
+            beatObjective: 'Force commitment.',
           },
         })
       );

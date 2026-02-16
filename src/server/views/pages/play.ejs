@@ -108,7 +108,37 @@
             <div class="story-title-section">
               <h2><%= story.title %></h2>
               <% if (actDisplayInfo) { %>
-              <span class="act-indicator"><%= actDisplayInfo.displayString %></span>
+              <div class="act-indicator-wrapper" id="act-indicator-wrapper"
+                   data-act-number="<%= actDisplayInfo.actNumber %>">
+                <span class="act-indicator act-indicator--clickable" id="act-indicator"
+                      role="button" tabindex="0" aria-expanded="false"
+                      aria-controls="act-structure-details">
+                  <span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>
+                  <%= actDisplayInfo.displayString %>
+                </span>
+                <% if (actDisplayInfo.actObjective || actDisplayInfo.actStakes || actDisplayInfo.beatObjective) { %>
+                <div class="act-structure-details" id="act-structure-details" hidden>
+                  <% if (actDisplayInfo.actObjective) { %>
+                  <div class="act-structure-details__item">
+                    <span class="act-structure-details__label">Act Objective</span>
+                    <span class="act-structure-details__text"><%= actDisplayInfo.actObjective %></span>
+                  </div>
+                  <% } %>
+                  <% if (actDisplayInfo.actStakes) { %>
+                  <div class="act-structure-details__item">
+                    <span class="act-structure-details__label">Stakes</span>
+                    <span class="act-structure-details__text"><%= actDisplayInfo.actStakes %></span>
+                  </div>
+                  <% } %>
+                  <% if (actDisplayInfo.beatObjective) { %>
+                  <div class="act-structure-details__item">
+                    <span class="act-structure-details__label">Beat Objective</span>
+                    <span class="act-structure-details__text"><%= actDisplayInfo.beatObjective %></span>
+                  </div>
+                  <% } %>
+                </div>
+                <% } %>
+              </div>
               <% } %>
             </div>
             <div class="story-header-actions" id="story-header-actions">

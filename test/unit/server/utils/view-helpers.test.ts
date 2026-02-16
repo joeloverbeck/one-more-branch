@@ -117,6 +117,9 @@ describe('getActDisplayInfo', () => {
         beatId: '1.1',
         beatName: 'The Beginning Beat',
         displayString: 'Act 1: The Beginning - Beat 1.1: The Beginning Beat',
+        actObjective: 'Test objective',
+        actStakes: 'Test stakes',
+        beatObjective: 'Test beat objective',
       });
     });
 
@@ -147,6 +150,9 @@ describe('getActDisplayInfo', () => {
         beatId: '2.1',
         beatName: 'The Middle Beat',
         displayString: 'Act 2: The Middle - Beat 2.1: The Middle Beat',
+        actObjective: 'Test objective',
+        actStakes: 'Test stakes',
+        beatObjective: 'Test beat objective',
       });
     });
 
@@ -177,7 +183,104 @@ describe('getActDisplayInfo', () => {
         beatId: '2.1',
         beatName: 'Another Custom Beat',
         displayString: 'Act 2: Another Custom - Beat 2.1: Another Custom Beat',
+        actObjective: 'Test objective',
+        actStakes: 'Test stakes',
+        beatObjective: 'Test beat objective',
       });
+    });
+  });
+
+  describe('returns structure detail fields', () => {
+    it('returns actObjective, actStakes, and beatObjective from structure', () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'Opening',
+            objective: 'Establish the world',
+            stakes: 'Character survival',
+            entryCondition: 'Story start',
+            beats: [
+              {
+                id: '1.1',
+                name: 'Discovery',
+                description: 'First discovery',
+                objective: 'Find the clue',
+                role: 'setup',
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Theme',
+        premise: 'Premise',
+        pacingBudget: { targetPagesMin: 1, targetPagesMax: 5 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      };
+      const versionId = createTestVersionId('0001');
+      const story: Story = {
+        ...baseStory,
+        structureVersions: [createTestVersionedStructure(versionId, structure)],
+      };
+      const page: Page = {
+        ...basePage,
+        structureVersionId: versionId,
+        accumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+        },
+      };
+
+      const result = getActDisplayInfo(story, page);
+
+      expect(result?.actObjective).toBe('Establish the world');
+      expect(result?.actStakes).toBe('Character survival');
+      expect(result?.beatObjective).toBe('Find the clue');
+    });
+
+    it('returns null for empty objective and stakes strings', () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'Opening',
+            objective: '',
+            stakes: '',
+            entryCondition: 'Start',
+            beats: [
+              {
+                id: '1.1',
+                name: 'Beat',
+                description: 'Desc',
+                objective: '',
+                role: 'setup',
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Theme',
+        premise: 'Premise',
+        pacingBudget: { targetPagesMin: 1, targetPagesMax: 5 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      };
+      const versionId = createTestVersionId('0002');
+      const story: Story = {
+        ...baseStory,
+        structureVersions: [createTestVersionedStructure(versionId, structure)],
+      };
+      const page: Page = {
+        ...basePage,
+        structureVersionId: versionId,
+        accumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+        },
+      };
+
+      const result = getActDisplayInfo(story, page);
+
+      expect(result?.actObjective).toBeNull();
+      expect(result?.actStakes).toBeNull();
+      expect(result?.beatObjective).toBeNull();
     });
   });
 

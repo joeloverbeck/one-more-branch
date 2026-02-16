@@ -23,7 +23,7 @@ describe('play page template', () => {
     it('contains act-indicator class', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
-      expect(template).toContain('class="act-indicator"');
+      expect(template).toContain('class="act-indicator act-indicator--clickable"');
     });
 
     it('has conditional for actDisplayInfo', () => {
@@ -38,7 +38,7 @@ describe('play page template', () => {
 
       expect(template).toContain('class="story-title-section"');
       expect(template).toMatch(
-        /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>[\s\S]*<span class="act-indicator">/
+        /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>[\s\S]*class="act-indicator act-indicator--clickable"/
       );
     });
   });

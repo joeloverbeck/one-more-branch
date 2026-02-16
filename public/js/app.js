@@ -1788,6 +1788,50 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     return div.innerHTML;
   }
 
+  // ── Act Indicator Toggle ──────────────────────────────────────────
+
+  function toggleActStructureDetails() {
+    var indicator = document.getElementById('act-indicator');
+    var details = document.getElementById('act-structure-details');
+    if (!indicator || !details) return;
+
+    var isExpanded = indicator.getAttribute('aria-expanded') === 'true';
+    indicator.setAttribute('aria-expanded', String(!isExpanded));
+    indicator.classList.toggle('act-indicator--expanded', !isExpanded);
+    details.hidden = isExpanded;
+  }
+
+  function initActIndicator() {
+    var indicator = document.getElementById('act-indicator');
+    if (!indicator) return;
+
+    indicator.addEventListener('click', toggleActStructureDetails);
+    indicator.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleActStructureDetails();
+      }
+    });
+  }
+
+  function expandActStructureDetails() {
+    var indicator = document.getElementById('act-indicator');
+    var details = document.getElementById('act-structure-details');
+    if (!indicator || !details) return;
+    indicator.setAttribute('aria-expanded', 'true');
+    indicator.classList.add('act-indicator--expanded');
+    details.hidden = false;
+  }
+
+  function collapseActStructureDetails() {
+    var indicator = document.getElementById('act-indicator');
+    var details = document.getElementById('act-structure-details');
+    if (!indicator || !details) return;
+    indicator.setAttribute('aria-expanded', 'false');
+    indicator.classList.remove('act-indicator--expanded');
+    details.hidden = true;
+  }
+
   // ── Choice renderers ──────────────────────────────────────────────
 
   function renderChoiceButtons(choiceList) {
@@ -2968,6 +3012,16 @@ function createRecapModalController(initialData) {
       bindNpcRelationshipCardToggles(initialRelPanel);
     }
 
+    var previousActNumber = null;
+    var initialActIndicator = document.getElementById('act-indicator');
+    if (initialActIndicator) {
+      var initialWrapper = document.getElementById('act-indicator-wrapper');
+      if (initialWrapper) {
+        previousActNumber = Number(initialWrapper.dataset.actNumber || '0') || null;
+      }
+    }
+    initActIndicator();
+
     const hasChoicesUi = choicesSection instanceof HTMLElement && choices instanceof HTMLElement;
     const loadingProgress = createLoadingProgressController(loading);
 
@@ -3216,23 +3270,66 @@ function createRecapModalController(initialData) {
         }
 
         // Update act indicator based on response
-        const actIndicator = document.querySelector('.act-indicator');
+        var existingWrapper = document.getElementById('act-indicator-wrapper');
         if (data.actDisplayInfo) {
-          if (actIndicator) {
-            actIndicator.textContent = data.actDisplayInfo.displayString;
+          var newActNumber = data.actDisplayInfo.actNumber;
+          var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
+
+          var detailsHtml = '';
+          if (data.actDisplayInfo.actObjective || data.actDisplayInfo.actStakes || data.actDisplayInfo.beatObjective) {
+            detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
+            if (data.actDisplayInfo.actObjective) {
+              detailsHtml += '<div class="act-structure-details__item">'
+                + '<span class="act-structure-details__label">Act Objective</span>'
+                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actObjective) + '</span>'
+                + '</div>';
+            }
+            if (data.actDisplayInfo.actStakes) {
+              detailsHtml += '<div class="act-structure-details__item">'
+                + '<span class="act-structure-details__label">Stakes</span>'
+                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actStakes) + '</span>'
+                + '</div>';
+            }
+            if (data.actDisplayInfo.beatObjective) {
+              detailsHtml += '<div class="act-structure-details__item">'
+                + '<span class="act-structure-details__label">Beat Objective</span>'
+                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.beatObjective) + '</span>'
+                + '</div>';
+            }
+            detailsHtml += '</div>';
+          }
+
+          var wrapperHtml = '<span class="act-indicator act-indicator--clickable" id="act-indicator"'
+            + ' role="button" tabindex="0" aria-expanded="false"'
+            + ' aria-controls="act-structure-details">'
+            + '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>'
+            + escapeHtml(data.actDisplayInfo.displayString)
+            + '</span>'
+            + detailsHtml;
+
+          if (existingWrapper) {
+            existingWrapper.innerHTML = wrapperHtml;
+            existingWrapper.dataset.actNumber = String(newActNumber);
           } else {
-            // Create act indicator if it doesn't exist yet
-            const storyTitleSection = document.querySelector('.story-title-section');
+            var storyTitleSection = document.querySelector('.story-title-section');
             if (storyTitleSection) {
-              const newIndicator = document.createElement('span');
-              newIndicator.className = 'act-indicator';
-              newIndicator.textContent = data.actDisplayInfo.displayString;
-              storyTitleSection.appendChild(newIndicator);
+              var newWrapper = document.createElement('div');
+              newWrapper.className = 'act-indicator-wrapper';
+              newWrapper.id = 'act-indicator-wrapper';
+              newWrapper.dataset.actNumber = String(newActNumber);
+              newWrapper.innerHTML = wrapperHtml;
+              storyTitleSection.appendChild(newWrapper);
             }
           }
-        } else if (actIndicator) {
-          // Remove act indicator if no act info
-          actIndicator.remove();
+
+          initActIndicator();
+          if (actChanged) {
+            expandActStructureDetails();
+          }
+          previousActNumber = newActNumber;
+        } else if (existingWrapper) {
+          existingWrapper.remove();
+          previousActNumber = null;
         }
 
         if (data.page.isEnding) {

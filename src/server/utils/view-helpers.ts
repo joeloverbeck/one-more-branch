@@ -17,6 +17,9 @@ export interface ActDisplayInfo {
   readonly beatId: string;
   readonly beatName: string;
   readonly displayString: string;
+  readonly actObjective: string | null;
+  readonly actStakes: string | null;
+  readonly beatObjective: string | null;
 }
 
 export interface OpenThreadPanelRow {
@@ -136,6 +139,9 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
     beatId: currentBeat.id,
     beatName: currentBeat.name,
     displayString: `Act ${actNumber}: ${currentAct.name} - Beat ${currentBeat.id}: ${currentBeat.name}`,
+    actObjective: currentAct.objective || null,
+    actStakes: currentAct.stakes || null,
+    beatObjective: currentBeat.objective || null,
   };
 }
 

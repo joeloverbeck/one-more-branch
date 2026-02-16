@@ -161,7 +161,7 @@ describe('play page choice click handler', () => {
       .mockResolvedValueOnce(
         mockJsonResponse(
           makeSuccessfulChoiceResponse({
-            actDisplayInfo: { displayString: 'Act II - Rising Action' },
+            actDisplayInfo: { displayString: 'Act II - Rising Action', actNumber: 2 },
           })
         )
       );
@@ -170,7 +170,7 @@ describe('play page choice click handler', () => {
     await jest.runAllTimersAsync();
 
     const actIndicator = document.querySelector('.act-indicator');
-    expect(actIndicator?.textContent).toBe('Act II - Rising Action');
+    expect(actIndicator?.textContent).toContain('Act II - Rising Action');
   });
 
   it('hides loading overlay after fetch completes', async () => {
