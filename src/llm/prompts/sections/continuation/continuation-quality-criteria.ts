@@ -142,4 +142,4 @@ EPISTEMIC ACCESS RULES:
 CONTINUATION-SPECIFIC REMINDERS:
 - Do NOT re-add facts that were already established by the entity decomposer at story creation (check ESTABLISHED WORLD FACTS).
 - Do NOT duplicate decomposed world facts with slightly different wording.
-- Most continuation pages should add ZERO canon entries. Only add when genuinely new permanent information is established.`;
+- If the planned scene reveals genuinely new permanent information that passes all three gates, add it. Empty arrays are fine when no new discoveries occur, but do not default to empty without scanning for discovery signals first.`;

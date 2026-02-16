@@ -97,7 +97,7 @@ URGENCY SELF-CHECK (before you finalize JSON):
 
 CANON INTENT RULES:
 Canon facts are PERMANENT and BRANCH-INDEPENDENT. They persist across ALL branches of the story.
-Canon is RARE. Most pages should add ZERO canon entries. Only add canon when genuinely new permanent information is established.
+Canon is selective. Only add canon when genuinely new permanent information is established and all three gates below pass. Expect 0-2 canon entries per page — some pages will have none, but scenes that reveal new world rules, factions, locations, or character traits should produce entries.
 
 EPISTEMIC CLASSIFICATION:
 Each canon.worldAdd entry is an object { text, factType } where factType is one of: LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY.
@@ -142,10 +142,19 @@ BAD world canon (do NOT add):
 - Granular elaborations of existing facts: if "Palace investigations use psychological pressure tactics" exists, do NOT add separate entries for each tactic (isolation, silence, document-everything, etc.)
 - Narrative observations: "Conditional cooperation is interpreted as manipulation" is scene commentary, not a world rule
 
-QUANTITY DISCIPLINE:
-- Aim for 0 canon entries on most pages. Canon is for genuine discoveries, not scene-by-scene documentation.
+DISCOVERY SCAN (run before finalizing canon arrays):
+Before defaulting to empty canon arrays, scan the planned scene for these discovery signals:
+- A named location the protagonist visits for the first time
+- A faction, organization, or power structure revealed or encountered
+- A world rule, law, or custom demonstrated in action
+- A character ability, trait, or background fact revealed for the first time
+- A permanent relationship between characters established
+If ANY signal is present AND passes all three gates, add it. If none are present or none pass the gates, empty arrays are correct.
+
+QUANTITY GUIDANCE:
 - One broad fact is better than multiple narrow variants. Prefer "Palace interrogations use psychological pressure" over five separate entries about specific interrogation techniques.
 - Read the existing canon carefully. If the concept is already there in any form, skip it.
+- Canon is for genuine discoveries, not scene-by-scene documentation.
 
 CANON SELF-CHECK (before you finalize JSON):
 - For each canon.characterAdd: Would this be true even if the player had made completely different choices? Is this genuinely new - not a variant of existing character canon?

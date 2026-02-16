@@ -87,9 +87,10 @@ describe('planner state-intent rules sections', () => {
       expect(PLANNER_STATE_INTENT_RULES).toContain('fails ANY gate, do not add it');
     });
 
-    it('enforces quantity discipline and deduplication against existing canon', () => {
-      expect(PLANNER_STATE_INTENT_RULES).toContain('QUANTITY DISCIPLINE:');
-      expect(PLANNER_STATE_INTENT_RULES).toContain('0 canon entries on most pages');
+    it('enforces discovery scan and quantity guidance against existing canon', () => {
+      expect(PLANNER_STATE_INTENT_RULES).toContain('DISCOVERY SCAN (run before finalizing canon arrays):');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('scan the planned scene for these discovery signals');
+      expect(PLANNER_STATE_INTENT_RULES).toContain('QUANTITY GUIDANCE:');
       expect(PLANNER_STATE_INTENT_RULES).toContain(
         'One broad fact is better than multiple narrow variants'
       );

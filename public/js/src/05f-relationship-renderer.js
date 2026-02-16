@@ -23,7 +23,7 @@
     var html = '<div class="npc-rel-card" data-npc="' + escapeHtml(npcName) + '">';
     html += '<div class="npc-rel-header">';
     html += '<span class="npc-rel-name">' + escapeHtml(npcName) + '</span>';
-    html += '<span class="npc-rel-dynamic-pill">' + escapeHtml(dynamic) + '</span>';
+    html += '<span class="npc-rel-dynamic-pill" title="' + escapeHtml(dynamic) + '">' + escapeHtml(dynamic) + '</span>';
     html += '</div>';
     html += '<div class="npc-rel-gauge">';
     html += '<div class="npc-rel-gauge-bar">';
