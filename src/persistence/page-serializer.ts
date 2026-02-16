@@ -112,6 +112,8 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
     promisesDetected: analystResult.promisesDetected.map((p) => ({
       description: p.description,
       promiseType: p.promiseType,
+      scope: p.scope,
+      resolutionHint: p.resolutionHint,
       suggestedUrgency: p.suggestedUrgency,
     })),
     promisesResolved: [...analystResult.promisesResolved],
@@ -174,6 +176,8 @@ function deserializeAnalystResult(
     promisesDetected: data.promisesDetected.map((p) => ({
       description: p.description,
       promiseType: p.promiseType as AnalystResult['promisesDetected'][number]['promiseType'],
+      scope: (p.scope ?? 'BEAT') as AnalystResult['promisesDetected'][number]['scope'],
+      resolutionHint: p.resolutionHint ?? '',
       suggestedUrgency:
         p.suggestedUrgency as AnalystResult['promisesDetected'][number]['suggestedUrgency'],
     })),
@@ -297,6 +301,8 @@ export function serializePage(page: Page): PageFileData {
       id: p.id,
       description: p.description,
       promiseType: p.promiseType,
+      scope: p.scope,
+      resolutionHint: p.resolutionHint,
       suggestedUrgency: p.suggestedUrgency,
       age: p.age,
     })),
@@ -421,11 +427,18 @@ export function deserializePage(data: PageFileData): Page {
       id: p.id,
       description: p.description,
       promiseType: p.promiseType as TrackedPromise['promiseType'],
+      scope: (p.scope ?? 'BEAT') as TrackedPromise['scope'],
+      resolutionHint: p.resolutionHint ?? '',
       suggestedUrgency: p.suggestedUrgency as TrackedPromise['suggestedUrgency'],
       age: p.age,
     })),
     resolvedThreadMeta: data.resolvedThreadMeta,
-    resolvedPromiseMeta: data.resolvedPromiseMeta,
+    resolvedPromiseMeta: Object.fromEntries(
+      Object.entries(data.resolvedPromiseMeta).map(([id, meta]) => [
+        id,
+        { promiseType: meta.promiseType, scope: meta.scope ?? 'BEAT', urgency: meta.urgency },
+      ])
+    ),
     npcAgendaUpdates: deserializeNpcAgendaArray(data.npcAgendaUpdates),
     accumulatedNpcAgendas: deserializeAccumulatedNpcAgendas(data.accumulatedNpcAgendas),
     npcRelationshipUpdates: deserializeNpcRelationshipArray(data.npcRelationshipUpdates),

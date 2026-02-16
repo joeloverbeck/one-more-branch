@@ -1,6 +1,7 @@
 import type {
   ActiveState,
   PromisePayoffAssessment,
+  PromiseScope,
   PromiseType,
   TrackedPromise,
   ThreadPayoffAssessment,
@@ -33,6 +34,8 @@ export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
 export interface DetectedPromise {
   readonly description: string;
   readonly promiseType: PromiseType;
+  readonly scope: PromiseScope;
+  readonly resolutionHint: string;
   readonly suggestedUrgency: Urgency;
 }
 

@@ -26,7 +26,7 @@ export interface PlayPageOptions {
   threatsOverflowSummary?: string;
   activeConstraints?: Array<{ id: string; text: string }>;
   constraintsOverflowSummary?: string;
-  trackedPromises?: Array<{ id: string; text: string; promiseType: string; age: number }>;
+  trackedPromises?: Array<{ id: string; text: string; promiseType: string; scope?: string; age: number }>;
   trackedPromisesOverflowSummary?: string;
   actDisplayInfo?: { displayString: string; actNumber?: number } | null;
   stateChanges?: string[];
@@ -35,7 +35,7 @@ export interface PlayPageOptions {
   sceneSummary?: string | null;
   recapSummaries?: Array<{ pageId: number; summary: string }>;
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
-  resolvedPromiseMeta?: Record<string, { promiseType: string; urgency: string }>;
+  resolvedPromiseMeta?: Record<string, { promiseType: string; scope?: string; urgency: string }>;
   worldFacts?: string[];
   characterCanon?: Record<string, string[]>;
 }
@@ -237,7 +237,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             <div class="story-header" id="story-header">
               <div class="story-title-section">
                 <h2>Test Story</h2>
-                ${actDisplayInfo ? `<div class="act-indicator-wrapper" id="act-indicator-wrapper" data-act-number="${actDisplayInfo.actNumber || 0}"><span class="act-indicator act-indicator--clickable" id="act-indicator" role="button" tabindex="0" aria-expanded="false" aria-controls="act-structure-details"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>${actDisplayInfo.displayString}</span></div>` : ''}
+                ${actDisplayInfo ? `<div class="act-indicator-wrapper" id="act-indicator-wrapper" data-act-number="${actDisplayInfo.actNumber ?? 0}"><span class="act-indicator act-indicator--clickable" id="act-indicator" role="button" tabindex="0" aria-expanded="false" aria-controls="act-structure-details"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>${actDisplayInfo.displayString}</span></div>` : ''}
               </div>
               <div class="story-header-actions" id="story-header-actions">
                 <button type="button" class="recap-btn" id="recap-btn" aria-haspopup="dialog" aria-controls="recap-modal">

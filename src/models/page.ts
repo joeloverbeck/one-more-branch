@@ -61,7 +61,7 @@ export interface Page {
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
-  readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; urgency: string }>>;
+  readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
   readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcRelationshipUpdates: readonly NpcRelationship[];
@@ -97,7 +97,7 @@ export interface CreatePageData {
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises?: readonly TrackedPromise[];
   resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
-  resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; urgency: string }>>;
+  resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   npcAgendaUpdates?: readonly NpcAgenda[];
   parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   npcRelationshipUpdates?: readonly NpcRelationship[];

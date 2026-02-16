@@ -2,6 +2,7 @@ import type {
   ThreadEntry,
   TrackedPromise,
   ThreadPayoffAssessment,
+  PromisePayoffAssessment,
 } from '../../../../models/state/index.js';
 import { THREAD_PACING } from '../../../../config/thread-pacing-config.js';
 
@@ -58,6 +59,12 @@ export function buildThreadAgingSection(
   return lines.join('\n') + '\n';
 }
 
+function formatPromiseLine(promise: TrackedPromise): string {
+  return `- [${promise.id}] (${promise.promiseType}/${promise.scope}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}\n  Question: ${promise.resolutionHint}`;
+}
+
+const SCOPE_ORDER: Record<string, number> = { STORY: 0, ACT: 1, BEAT: 2, SCENE: 3 };
+
 export function buildTrackedPromisesSection(
   accumulatedPromises: readonly TrackedPromise[]
 ): string {
@@ -65,25 +72,32 @@ export function buildTrackedPromisesSection(
     return '';
   }
 
-  const sortedByAge = [...accumulatedPromises].sort((a, b) => b.age - a.age);
-  const agingPromises = sortedByAge.filter(
+  const sorted = [...accumulatedPromises].sort((a, b) => {
+    const scopeDelta = (SCOPE_ORDER[a.scope] ?? 4) - (SCOPE_ORDER[b.scope] ?? 4);
+    if (scopeDelta !== 0) return scopeDelta;
+    return b.age - a.age;
+  });
+
+  const lines = ['=== TRACKED PROMISES ==='];
+
+  if (accumulatedPromises.length >= THREAD_PACING.MAX_ACTIVE_PROMISES) {
+    lines.push(
+      `WARNING: ${accumulatedPromises.length} active promises (limit: ${THREAD_PACING.MAX_ACTIVE_PROMISES}). Prioritize resolving existing promises over detecting new ones.`
+    );
+    lines.push('');
+  }
+
+  const agingPromises = sorted.filter(
     (promise) => promise.age >= THREAD_PACING.PROMISE_AGING_NOTICE_PAGES
   );
-  const recentPromises = sortedByAge.filter(
+  const recentPromises = sorted.filter(
     (promise) => promise.age < THREAD_PACING.PROMISE_AGING_NOTICE_PAGES
   );
 
-  const lines = ['=== TRACKED PROMISES (implicit foreshadowing not yet captured as threads) ==='];
-
   if (agingPromises.length > 0) {
-    lines.push('Aging promises:');
-    lines.push(
-      'These represent opportunities for reincorporation. Consider whether any fit naturally into the upcoming scene.'
-    );
+    lines.push('Aging promises (opportunities for reincorporation):');
     for (const promise of agingPromises) {
-      lines.push(
-        `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}`
-      );
+      lines.push(formatPromiseLine(promise));
     }
     lines.push('');
   }
@@ -91,30 +105,50 @@ export function buildTrackedPromisesSection(
   if (recentPromises.length > 0) {
     lines.push('Recent promises:');
     for (const promise of recentPromises) {
-      lines.push(
-        `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}`
-      );
+      lines.push(formatPromiseLine(promise));
     }
     lines.push('');
   }
 
-  lines.push('All promises are opportunities for reincorporation, not mandatory beats.');
+  lines.push(
+    'SCENE-scoped promises auto-expire after 4 pages if unresolved. All promises are opportunities for reincorporation, not mandatory beats.'
+  );
   lines.push('');
 
   return lines.join('\n') + '\n';
 }
 
 export function buildPayoffFeedbackSection(
-  parentPayoffAssessments: readonly ThreadPayoffAssessment[]
+  parentPayoffAssessments: readonly ThreadPayoffAssessment[],
+  parentPromisePayoffAssessments?: readonly PromisePayoffAssessment[]
 ): string {
-  const rushedPayoffs = parentPayoffAssessments.filter((a) => a.satisfactionLevel === 'RUSHED');
-  if (rushedPayoffs.length === 0) {
+  const rushedThreadPayoffs = parentPayoffAssessments.filter(
+    (a) => a.satisfactionLevel === 'RUSHED'
+  );
+  const rushedPromisePayoffs = (parentPromisePayoffAssessments ?? []).filter(
+    (a) => a.satisfactionLevel === 'RUSHED'
+  );
+
+  if (rushedThreadPayoffs.length === 0 && rushedPromisePayoffs.length === 0) {
     return '';
   }
 
-  return `=== PAYOFF QUALITY FEEDBACK ===
-Previous thread resolution was assessed as rushed. Ensure future resolutions develop through action and consequence, not exposition.
-Rushed payoffs: ${rushedPayoffs.map((a) => `[${a.threadId}] ${a.threadText}`).join('; ')}
+  const parts = ['=== PAYOFF QUALITY FEEDBACK ==='];
+  parts.push(
+    'Previous resolutions were assessed as rushed. Ensure future resolutions develop through action and consequence, not exposition.'
+  );
 
-`;
+  if (rushedThreadPayoffs.length > 0) {
+    parts.push(
+      `Rushed thread payoffs: ${rushedThreadPayoffs.map((a) => `[${a.threadId}] ${a.threadText}`).join('; ')}`
+    );
+  }
+
+  if (rushedPromisePayoffs.length > 0) {
+    parts.push(
+      `Rushed promise payoffs: ${rushedPromisePayoffs.map((a) => `[${a.promiseId}] ${a.description}`).join('; ')}`
+    );
+  }
+
+  return parts.join('\n') + '\n\n';
 }

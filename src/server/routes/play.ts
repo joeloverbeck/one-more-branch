@@ -65,9 +65,7 @@ function buildInsightsThreadMeta(
 ): Record<string, { threadType: string; urgency: string }> {
   const meta: Record<string, { threadType: string; urgency: string }> = { ...resolvedThreadMeta };
   for (const thread of openThreads) {
-    if (!meta[thread.id]) {
-      meta[thread.id] = { threadType: thread.threadType, urgency: thread.urgency };
-    }
+    meta[thread.id] ??= { threadType: thread.threadType, urgency: thread.urgency };
   }
   return meta;
 }

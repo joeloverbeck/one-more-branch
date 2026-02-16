@@ -176,13 +176,17 @@ describe('buildAnalystPrompt', () => {
           id: 'pr-2',
           description: 'A hidden satchel under the bridge arch',
           promiseType: 'CHEKHOV_GUN',
+          scope: 'BEAT',
+          resolutionHint: 'Will the satchel be opened?',
           suggestedUrgency: 'HIGH',
           age: 3,
         },
         {
           id: 'pr-3',
           description: 'The ally flinches at every bell toll',
-          promiseType: 'UNRESOLVED_EMOTION',
+          promiseType: 'UNRESOLVED_TENSION',
+          scope: 'ACT',
+          resolutionHint: 'Will the ally explain the flinching?',
           suggestedUrgency: 'MEDIUM',
           age: 1,
         },
@@ -194,12 +198,12 @@ describe('buildAnalystPrompt', () => {
 
     expect(userContent).toContain('ACTIVE TRACKED PROMISES:');
     expect(userContent).toContain(
-      '[pr-2] (CHEKHOV_GUN/HIGH, 3 pages old) A hidden satchel under the bridge arch'
+      '[pr-2] (CHEKHOV_GUN/BEAT/HIGH, 3 pages old) A hidden satchel under the bridge arch'
     );
     expect(userContent).toContain(
-      '[pr-3] (UNRESOLVED_EMOTION/MEDIUM, 1 pages old) The ally flinches at every bell toll'
+      '[pr-3] (UNRESOLVED_TENSION/ACT/MEDIUM, 1 pages old) The ally flinches at every bell toll'
     );
-    expect(userContent).toContain('Use these IDs for promisesResolved');
+    expect(userContent).toContain('Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.');
   });
 
   it('omits active tracked promises section when there are no active promises', () => {
@@ -212,12 +216,9 @@ describe('buildAnalystPrompt', () => {
     const messages = buildAnalystPrompt(testContext);
     const systemContent = messages[0].content;
 
-    expect(systemContent).toContain('Detect at most 3 new promises in promisesDetected.');
+    expect(systemContent).toContain('Detect at most 2 new promises in promisesDetected.');
     expect(systemContent).toContain(
-      'Only detect promises with deliberate narrative weight; ignore incidental details.'
-    );
-    expect(systemContent).toContain(
-      'Only include a promise in promisesResolved when it is substantively addressed, not merely referenced.'
+      'RESOLUTION: Only include a promise in promisesResolved when the resolutionHint question has been ANSWERED, not merely referenced.'
     );
     expect(systemContent).toContain(
       'Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.'

@@ -122,9 +122,23 @@ export function assignIds(
 export enum PromiseType {
   CHEKHOV_GUN = 'CHEKHOV_GUN',
   FORESHADOWING = 'FORESHADOWING',
-  DRAMATIC_IRONY = 'DRAMATIC_IRONY',
-  UNRESOLVED_EMOTION = 'UNRESOLVED_EMOTION',
-  SETUP_PAYOFF = 'SETUP_PAYOFF',
+  UNRESOLVED_TENSION = 'UNRESOLVED_TENSION',
+  DRAMATIC_QUESTION = 'DRAMATIC_QUESTION',
+  MYSTERY_HOOK = 'MYSTERY_HOOK',
+  TICKING_CLOCK = 'TICKING_CLOCK',
+}
+
+export enum PromiseScope {
+  SCENE = 'SCENE',
+  BEAT = 'BEAT',
+  ACT = 'ACT',
+  STORY = 'STORY',
+}
+
+export const PROMISE_SCOPE_VALUES: readonly PromiseScope[] = Object.values(PromiseScope);
+
+export function isPromiseScope(value: unknown): value is PromiseScope {
+  return typeof value === 'string' && PROMISE_SCOPE_VALUES.includes(value as PromiseScope);
 }
 
 export const PROMISE_TYPE_VALUES: readonly PromiseType[] = Object.values(PromiseType);
@@ -137,6 +151,8 @@ export interface TrackedPromise {
   readonly id: string;
   readonly description: string;
   readonly promiseType: PromiseType;
+  readonly scope: PromiseScope;
+  readonly resolutionHint: string;
   readonly suggestedUrgency: Urgency;
   readonly age: number;
 }
@@ -154,6 +170,8 @@ export function isTrackedPromise(value: unknown): value is TrackedPromise {
     typeof obj['description'] === 'string' &&
     obj['description'].trim().length > 0 &&
     isPromiseType(obj['promiseType']) &&
+    isPromiseScope(obj['scope']) &&
+    typeof obj['resolutionHint'] === 'string' &&
     isUrgency(obj['suggestedUrgency']) &&
     typeof obj['age'] === 'number' &&
     Number.isInteger(obj['age']) &&

@@ -120,7 +120,7 @@ describe('sidebar widgets container', () => {
         ],
         activeThreats: [{ id: 'at-1', text: 'A threat' }],
         activeConstraints: [{ id: 'cn-1', text: 'A constraint' }],
-        trackedPromises: [{ id: 'pr-1', text: 'A promise', promiseType: 'CHEKHOV_GUN', age: 2 }],
+        trackedPromises: [{ id: 'pr-1', text: 'A promise', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 2 }],
       })
     );
 
@@ -184,7 +184,7 @@ describe('sidebar widgets container', () => {
     await clickChoiceAndResolve(
       makeChoiceResponse({
         trackedPromises: [
-          { id: 'pr-1', text: 'The gun on the mantle', promiseType: 'CHEKHOV_GUN', age: 3 },
+          { id: 'pr-1', text: 'The gun on the mantle', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 3 },
         ],
       })
     );
@@ -202,7 +202,7 @@ describe('sidebar widgets container', () => {
 
   it('removes tracked promises panel when response has empty array', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', age: 1 }],
+      trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', scope: 'BEAT', age: 1 }],
     });
     loadAppAndInit();
 

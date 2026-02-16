@@ -7,11 +7,14 @@ import {
   isThreadType,
   isUrgency,
   isPromiseType,
+  isPromiseScope,
   isTrackedPromise,
   PROMISE_TYPE_VALUES,
+  PROMISE_SCOPE_VALUES,
   ThreadType,
   Urgency,
   PromiseType,
+  PromiseScope,
 } from '../../../../src/models/state/keyed-entry.js';
 import { modelWarn } from '../../../../src/models/model-logger.js';
 
@@ -130,7 +133,7 @@ describe('thread metadata enums', () => {
   });
 
   it('validates promise type values', () => {
-    expect(PROMISE_TYPE_VALUES).toContain(PromiseType.SETUP_PAYOFF);
+    expect(PROMISE_TYPE_VALUES).toContain(PromiseType.TICKING_CLOCK);
     expect(isPromiseType(PromiseType.CHEKHOV_GUN)).toBe(true);
     expect(isPromiseType('NOT_A_PROMISE')).toBe(false);
   });
@@ -141,6 +144,8 @@ describe('thread metadata enums', () => {
         id: 'pr-1',
         description: 'A distant storm is repeatedly referenced',
         promiseType: PromiseType.FORESHADOWING,
+        scope: PromiseScope.BEAT,
+        resolutionHint: 'Will the storm arrive?',
         suggestedUrgency: Urgency.MEDIUM,
         age: 2,
       })
@@ -150,6 +155,8 @@ describe('thread metadata enums', () => {
         id: 'pr-1',
         description: 'Invalid age',
         promiseType: PromiseType.FORESHADOWING,
+        scope: PromiseScope.BEAT,
+        resolutionHint: 'Will this resolve?',
         suggestedUrgency: Urgency.MEDIUM,
         age: -1,
       })
@@ -159,9 +166,40 @@ describe('thread metadata enums', () => {
         id: 'pr-1',
         description: 'Invalid urgency',
         promiseType: PromiseType.FORESHADOWING,
+        scope: PromiseScope.BEAT,
+        resolutionHint: 'Will this resolve?',
         suggestedUrgency: 'CRITICAL',
         age: 1,
       })
     ).toBe(false);
+    expect(
+      isTrackedPromise({
+        id: 'pr-1',
+        description: 'Missing scope',
+        promiseType: PromiseType.FORESHADOWING,
+        resolutionHint: 'Will this resolve?',
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 1,
+      })
+    ).toBe(false);
+    expect(
+      isTrackedPromise({
+        id: 'pr-1',
+        description: 'Missing resolutionHint',
+        promiseType: PromiseType.FORESHADOWING,
+        scope: PromiseScope.BEAT,
+        suggestedUrgency: Urgency.MEDIUM,
+        age: 1,
+      })
+    ).toBe(false);
+  });
+
+  it('validates promise scope values', () => {
+    expect(PROMISE_SCOPE_VALUES).toContain(PromiseScope.SCENE);
+    expect(PROMISE_SCOPE_VALUES).toContain(PromiseScope.BEAT);
+    expect(PROMISE_SCOPE_VALUES).toContain(PromiseScope.ACT);
+    expect(PROMISE_SCOPE_VALUES).toContain(PromiseScope.STORY);
+    expect(isPromiseScope(PromiseScope.BEAT)).toBe(true);
+    expect(isPromiseScope('INVALID')).toBe(false);
   });
 });

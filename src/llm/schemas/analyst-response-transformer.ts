@@ -5,7 +5,7 @@ import { AnalystResultSchema } from './analyst-validation-schema.js';
 
 const BEAT_ID_PATTERN = /^\d+\.\d+$/;
 const MAX_OBJECTIVE_ANCHORS = 3;
-const MAX_PROMISES_DETECTED = 3;
+const MAX_PROMISES_DETECTED = 2;
 
 function normalizeAnchors(value: readonly string[]): string[] {
   return value
@@ -15,14 +15,22 @@ function normalizeAnchors(value: readonly string[]): string[] {
 }
 
 function normalizeDetectedPromises(
-  value: readonly { description: string; promiseType: string; suggestedUrgency: string }[]
+  value: readonly {
+    description: string;
+    promiseType: string;
+    scope: string;
+    resolutionHint: string;
+    suggestedUrgency: string;
+  }[]
 ): DetectedPromise[] {
   return value
-    .filter((p) => p.description.trim().length > 0)
+    .filter((p) => p.description.trim().length > 0 && p.resolutionHint.trim().length > 0)
     .slice(0, MAX_PROMISES_DETECTED)
     .map((p) => ({
       description: p.description.trim(),
       promiseType: p.promiseType as DetectedPromise['promiseType'],
+      scope: p.scope as DetectedPromise['scope'],
+      resolutionHint: p.resolutionHint.trim(),
       suggestedUrgency: p.suggestedUrgency as DetectedPromise['suggestedUrgency'],
     }));
 }

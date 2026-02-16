@@ -8,7 +8,7 @@ import {
 import type { FinalPageGenerationResult } from '@/llm/writer-types';
 import type { DetectedPromise } from '@/llm/analyst-types';
 import type { TrackedPromise } from '@/models/state/keyed-entry';
-import { PromiseType, Urgency } from '@/models/state/keyed-entry';
+import { PromiseType, PromiseScope, Urgency } from '@/models/state/keyed-entry';
 import {
   buildFirstPage,
   buildContinuationPage,
@@ -273,6 +273,8 @@ describe('page-builder', () => {
             id: 'pr-1',
             description: 'A silver dagger was introduced with emphasis',
             promiseType: PromiseType.CHEKHOV_GUN,
+            scope: PromiseScope.BEAT,
+            resolutionHint: 'Will the dagger be used?',
             suggestedUrgency: Urgency.HIGH,
             age: 2,
           },
@@ -280,6 +282,8 @@ describe('page-builder', () => {
             id: 'pr-2',
             description: 'Unusual silence from northern watchtower',
             promiseType: PromiseType.FORESHADOWING,
+            scope: PromiseScope.ACT,
+            resolutionHint: 'Will the silence be explained?',
             suggestedUrgency: Urgency.MEDIUM,
             age: 1,
           },
@@ -291,7 +295,7 @@ describe('page-builder', () => {
       const page = buildContinuationPage(result, context);
 
       expect(page.resolvedPromiseMeta).toEqual({
-        'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
+        'pr-1': { promiseType: 'CHEKHOV_GUN', scope: 'BEAT', urgency: 'HIGH' },
       });
     });
 
@@ -320,6 +324,8 @@ describe('page-builder', () => {
             id: 'pr-1',
             description: 'A silver dagger was introduced with emphasis',
             promiseType: PromiseType.CHEKHOV_GUN,
+            scope: PromiseScope.BEAT,
+            resolutionHint: 'Will the dagger be used?',
             suggestedUrgency: Urgency.HIGH,
             age: 2,
           },
@@ -358,6 +364,8 @@ describe('page-builder', () => {
             id: 'pr-1',
             description: 'A silver dagger was introduced with emphasis',
             promiseType: PromiseType.CHEKHOV_GUN,
+            scope: PromiseScope.BEAT,
+            resolutionHint: 'Will the dagger be used?',
             suggestedUrgency: Urgency.HIGH,
             age: 2,
           },
@@ -386,21 +394,29 @@ describe('page-builder', () => {
       id: string,
       desc: string,
       age: number,
-      type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING
+      type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING,
+      scope: TrackedPromise['scope'] = PromiseScope.BEAT,
+      resolutionHint: string = `Will ${desc.toLowerCase()} resolve?`
     ): TrackedPromise => ({
       id,
       age,
       description: desc,
       promiseType: type,
+      scope,
+      resolutionHint,
       suggestedUrgency: Urgency.MEDIUM,
     });
 
     const makeDetectedPromise = (
       desc: string,
-      type: DetectedPromise['promiseType'] = PromiseType.FORESHADOWING
+      type: DetectedPromise['promiseType'] = PromiseType.FORESHADOWING,
+      scope: DetectedPromise['scope'] = PromiseScope.BEAT,
+      resolutionHint: string = `Will ${desc.toLowerCase()} resolve?`
     ): DetectedPromise => ({
       description: desc,
       promiseType: type,
+      scope,
+      resolutionHint,
       suggestedUrgency: Urgency.MEDIUM,
     });
 
@@ -446,7 +462,7 @@ describe('page-builder', () => {
 
     it('handles resolve + detect in the same page', () => {
       const tracked = [makeTrackedPromise('pr-7', 'Existing setup', 5, PromiseType.CHEKHOV_GUN)];
-      const detected = [makeDetectedPromise('Fresh setup', PromiseType.DRAMATIC_IRONY)];
+      const detected = [makeDetectedPromise('Fresh setup', PromiseType.UNRESOLVED_TENSION)];
       const result = computeAccumulatedPromises(
         tracked,
         ['pr-7'],
@@ -457,7 +473,9 @@ describe('page-builder', () => {
         {
           id: 'pr-8',
           description: 'Fresh setup',
-          promiseType: PromiseType.DRAMATIC_IRONY,
+          promiseType: PromiseType.UNRESOLVED_TENSION,
+          scope: PromiseScope.BEAT,
+          resolutionHint: 'Will fresh setup resolve?',
           suggestedUrgency: Urgency.MEDIUM,
           age: 0,
         },
@@ -467,14 +485,16 @@ describe('page-builder', () => {
     it('filters out empty descriptions', () => {
       const detected = [
         makeDetectedPromise('   '),
-        makeDetectedPromise('  valid promise  ', PromiseType.SETUP_PAYOFF),
+        makeDetectedPromise('  valid promise  ', PromiseType.TICKING_CLOCK),
       ];
       const result = computeAccumulatedPromises([], [], detected, 0);
       expect(result).toEqual([
         {
           id: 'pr-1',
           description: 'valid promise',
-          promiseType: PromiseType.SETUP_PAYOFF,
+          promiseType: PromiseType.TICKING_CLOCK,
+          scope: PromiseScope.BEAT,
+          resolutionHint: 'Will   valid promise   resolve?',
           suggestedUrgency: Urgency.MEDIUM,
           age: 0,
         },
@@ -484,6 +504,21 @@ describe('page-builder', () => {
     it('returns empty when no promises exist', () => {
       const result = computeAccumulatedPromises([], [], [], 0);
       expect(result).toEqual([]);
+    });
+
+    it('auto-expires SCENE-scoped promises after 4 pages', () => {
+      // age 4 -> aged to 5. The filter is `promise.age > sceneExpiryThreshold` where threshold is 4.
+      // So age 5 > 4, SCENE promise expires. BEAT has no expiry -> survives.
+      const trackedExpiring = [
+        makeTrackedPromise('pr-1', 'Scene promise expiring', 4, PromiseType.FORESHADOWING, PromiseScope.SCENE),
+        makeTrackedPromise('pr-2', 'Beat promise same age', 4, PromiseType.FORESHADOWING, PromiseScope.BEAT),
+      ];
+      const result = computeAccumulatedPromises(trackedExpiring, [], [], getMaxPromiseIdNumber(trackedExpiring));
+      // pr-1 aged to 5 > 4 (SCENE threshold) -> expired
+      // pr-2 aged to 5 but BEAT has no expiry -> survives
+      expect(result).toHaveLength(1);
+      expect(result[0]!.id).toBe('pr-2');
+      expect(result[0]!.age).toBe(5);
     });
   });
 
@@ -513,11 +548,15 @@ describe('page-builder', () => {
           {
             description: 'A mysterious key glints in the shadows',
             promiseType: 'CHEKHOV_GUN',
+            scope: 'BEAT',
+            resolutionHint: 'Will the key unlock something?',
             suggestedUrgency: 'MEDIUM',
           },
           {
             description: 'The villain hints at a hidden alliance',
             promiseType: 'FORESHADOWING',
+            scope: 'ACT',
+            resolutionHint: 'Will the alliance be revealed?',
             suggestedUrgency: 'HIGH',
           },
         ],
@@ -532,6 +571,8 @@ describe('page-builder', () => {
         id: 'pr-1',
         description: 'A mysterious key glints in the shadows',
         promiseType: PromiseType.CHEKHOV_GUN,
+        scope: PromiseScope.BEAT,
+        resolutionHint: 'Will the key unlock something?',
         suggestedUrgency: Urgency.MEDIUM,
         age: 0,
       });
@@ -539,6 +580,8 @@ describe('page-builder', () => {
         id: 'pr-2',
         description: 'The villain hints at a hidden alliance',
         promiseType: PromiseType.FORESHADOWING,
+        scope: PromiseScope.ACT,
+        resolutionHint: 'Will the alliance be revealed?',
         suggestedUrgency: Urgency.HIGH,
         age: 0,
       });

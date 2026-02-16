@@ -4,7 +4,7 @@ import {
   buildPayoffFeedbackSection,
 } from '../../../../../../src/llm/prompts/sections/planner/thread-pacing-directive';
 import { THREAD_PACING } from '../../../../../../src/config/thread-pacing-config';
-import { PromiseType, ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
+import { PromiseScope, PromiseType, ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
 import type {
   ThreadEntry,
   TrackedPromise,
@@ -69,12 +69,16 @@ describe('buildTrackedPromisesSection', () => {
     id: string,
     age: number,
     desc: string,
-    type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING
+    type: TrackedPromise['promiseType'] = PromiseType.FORESHADOWING,
+    scope: TrackedPromise['scope'] = PromiseScope.BEAT,
+    resolutionHint: string = `Will ${desc.toLowerCase()} resolve?`
   ): TrackedPromise => ({
     id,
     age,
     description: desc,
     promiseType: type,
+    scope,
+    resolutionHint,
     suggestedUrgency: Urgency.MEDIUM,
   });
 
@@ -90,7 +94,7 @@ describe('buildTrackedPromisesSection', () => {
     const result = buildTrackedPromisesSection(promises);
     expect(result).toContain('TRACKED PROMISES');
     expect(result).toContain('[pr-1]');
-    expect(result).toContain('(FORESHADOWING/MEDIUM, 6 pages)');
+    expect(result).toContain('(FORESHADOWING/BEAT/MEDIUM, 6 pages)');
     expect(result).toContain('Old foreshadowing');
     expect(result).toContain('New chekhov gun');
     expect(result).toContain('CHEKHOV_GUN');
@@ -106,12 +110,12 @@ describe('buildTrackedPromisesSection', () => {
     ];
 
     const result = buildTrackedPromisesSection(promises);
-    expect(result).toContain('Aging promises:');
+    expect(result).toContain('Aging promises (opportunities for reincorporation):');
     expect(result).toContain('Recent promises:');
     expect(result).toContain('[pr-1]');
     expect(result).toContain('[pr-2]');
 
-    const agingHeaderIndex = result.indexOf('Aging promises:');
+    const agingHeaderIndex = result.indexOf('Aging promises');
     const recentHeaderIndex = result.indexOf('Recent promises:');
     const agingPromiseIndex = result.indexOf('[pr-1]');
     const recentPromiseIndex = result.indexOf('[pr-2]');
@@ -135,9 +139,7 @@ describe('buildTrackedPromisesSection', () => {
   it('uses soft encouragement language, not mandate wording', () => {
     const promises = [makeTrackedPromise('pr-1', THREAD_PACING.PROMISE_AGING_NOTICE_PAGES, 'Old hint')];
     const result = buildTrackedPromisesSection(promises);
-    expect(result).toContain(
-      'These represent opportunities for reincorporation. Consider whether any fit naturally into the upcoming scene.'
-    );
+    expect(result).toContain('opportunities for reincorporation');
     expect(result).toContain('not mandatory beats');
   });
 });

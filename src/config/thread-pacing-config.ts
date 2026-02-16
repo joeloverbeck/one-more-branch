@@ -3,4 +3,11 @@ export const THREAD_PACING = {
   MEDIUM_URGENCY_OVERDUE_PAGES: 7,
   LOW_URGENCY_OVERDUE_PAGES: 10,
   PROMISE_AGING_NOTICE_PAGES: 5,
+  PROMISE_SCOPE_EXPIRY: {
+    SCENE: 4,
+    BEAT: null,
+    ACT: null,
+    STORY: null,
+  },
+  MAX_ACTIVE_PROMISES: 8,
 } as const;

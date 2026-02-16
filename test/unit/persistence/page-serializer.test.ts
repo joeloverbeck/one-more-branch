@@ -448,16 +448,16 @@ describe('page-serializer', () => {
     it('preserves resolvedPromiseMeta through serialize/deserialize cycle', () => {
       const page = buildTestPage({
         resolvedPromiseMeta: {
-          'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
-          'pr-2': { promiseType: 'FORESHADOWING', urgency: 'LOW' },
+          'pr-1': { promiseType: 'CHEKHOV_GUN', scope: 'BEAT', urgency: 'HIGH' },
+          'pr-2': { promiseType: 'FORESHADOWING', scope: 'ACT', urgency: 'LOW' },
         },
       });
 
       const serialized = serializePage(page);
       const deserialized = deserializePage(serialized);
       expect(deserialized.resolvedPromiseMeta).toEqual({
-        'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
-        'pr-2': { promiseType: 'FORESHADOWING', urgency: 'LOW' },
+        'pr-1': { promiseType: 'CHEKHOV_GUN', scope: 'BEAT', urgency: 'HIGH' },
+        'pr-2': { promiseType: 'FORESHADOWING', scope: 'ACT', urgency: 'LOW' },
       });
     });
   });

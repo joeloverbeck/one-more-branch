@@ -265,6 +265,7 @@ export interface TrackedPromisePanelRow {
   readonly id: string;
   readonly text: string;
   readonly promiseType: string;
+  readonly scope: string;
   readonly suggestedUrgency: string;
   readonly age: number;
   readonly displayLabel: string;
@@ -299,9 +300,10 @@ export function getTrackedPromisesPanelData(
     id: p.id,
     text: p.description,
     promiseType: p.promiseType,
+    scope: p.scope,
     suggestedUrgency: p.suggestedUrgency,
     age: p.age,
-    displayLabel: `(${p.promiseType}/${p.suggestedUrgency}) ${p.description}`,
+    displayLabel: `(${p.promiseType}/${p.scope}/${p.suggestedUrgency}) ${p.description}`,
   }));
 
   const overflowSummary = getOverflowSummary(

@@ -116,24 +116,36 @@ export const ANALYST_SCHEMA: JsonSchema = {
         promisesDetected: {
           type: 'array',
           description:
-            "Implicit foreshadowing or Chekhov's guns planted in the narrative prose with notable emphasis. Only flag items introduced with deliberate narrative weight, not incidental details. Max 3 per page.",
+            'Narrative promises: forward-looking obligations the reader expects answered. Litmus test: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if never addressed? If BOTH not clearly yes, do NOT detect it. Max 2 per page.',
           items: {
             type: 'object',
             properties: {
               description: {
                 type: 'string',
-                description: 'Brief description of the narrative promise or foreshadowed element.',
+                description: 'Brief description of the narrative promise.',
               },
               promiseType: {
                 type: 'string',
                 enum: [
                   'CHEKHOV_GUN',
                   'FORESHADOWING',
-                  'DRAMATIC_IRONY',
-                  'UNRESOLVED_EMOTION',
-                  'SETUP_PAYOFF',
+                  'UNRESOLVED_TENSION',
+                  'DRAMATIC_QUESTION',
+                  'MYSTERY_HOOK',
+                  'TICKING_CLOCK',
                 ],
                 description: 'The type of narrative promise.',
+              },
+              scope: {
+                type: 'string',
+                enum: ['SCENE', 'BEAT', 'ACT', 'STORY'],
+                description:
+                  'Structural scope matching the weight of the setup. SCENE = resolve within 1-3 pages, BEAT = resolve within current beat, ACT = resolve within current act, STORY = resolve at climax/ending.',
+              },
+              resolutionHint: {
+                type: 'string',
+                description:
+                  'A specific question this promise asks that the reader expects answered (e.g., "Will the attacker return?"). If you cannot write a clear question, it is NOT a promise.',
               },
               suggestedUrgency: {
                 type: 'string',
@@ -141,7 +153,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
                 description: 'How urgently this promise should be addressed in upcoming pages.',
               },
             },
-            required: ['description', 'promiseType', 'suggestedUrgency'],
+            required: ['description', 'promiseType', 'scope', 'resolutionHint', 'suggestedUrgency'],
             additionalProperties: false,
           },
         },

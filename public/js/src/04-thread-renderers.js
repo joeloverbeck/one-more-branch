@@ -369,6 +369,13 @@
     }).join(' ');
   }
 
+  function formatPromiseScope(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return '';
+    }
+    return value.charAt(0) + value.slice(1).toLowerCase();
+  }
+
   function renderTrackedPromisesPanel(promises, trackedPromisesOverflowSummary, sidebarContainer) {
     renderKeyedEntryPanel({
       panelId: 'tracked-promises-panel',
@@ -385,6 +392,7 @@
           id: typeof p.id === 'string' ? p.id : '',
           text: typeof p.text === 'string' ? p.text : '',
           promiseType: typeof p.promiseType === 'string' ? p.promiseType : '',
+          scope: typeof p.scope === 'string' ? p.scope : '',
           age: typeof p.age === 'number' ? p.age : 0,
         };
       }) : [],
@@ -392,7 +400,9 @@
       container: sidebarContainer,
       renderEntry: function(entry) {
         var typeLabel = formatPromiseType(entry.promiseType);
+        var scopeLabel = formatPromiseScope(entry.scope);
         return '<span class="promise-type-text-badge">' + escapeHtml(typeLabel) + '</span>'
+          + (scopeLabel ? '<span class="promise-scope-badge">' + escapeHtml(scopeLabel) + '</span>' : '')
           + '<span class="promise-age-badge">' + entry.age + ' pg</span>'
           + '<span>' + escapeHtml(entry.text) + '</span>';
       },

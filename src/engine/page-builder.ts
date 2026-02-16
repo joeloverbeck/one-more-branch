@@ -16,6 +16,8 @@ import {
   ThreadEntry,
 } from '../models';
 import type { TrackedPromise } from '../models/state/index.js';
+import { PromiseScope } from '../models/state/index.js';
+import { THREAD_PACING } from '../config/thread-pacing-config.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
@@ -162,9 +164,20 @@ export function computeAccumulatedPromises(
   maxExistingId: number
 ): readonly TrackedPromise[] {
   const resolvedSet = new Set(resolvedIds);
+  const sceneExpiryThreshold = THREAD_PACING.PROMISE_SCOPE_EXPIRY.SCENE;
   const survivingAgedPromises = parentPromises
     .filter((promise) => !resolvedSet.has(promise.id))
-    .map((promise) => ({ ...promise, age: promise.age + 1 }));
+    .map((promise) => ({ ...promise, age: promise.age + 1 }))
+    .filter((promise) => {
+      if (
+        promise.scope === PromiseScope.SCENE &&
+        sceneExpiryThreshold !== null &&
+        promise.age > sceneExpiryThreshold
+      ) {
+        return false;
+      }
+      return true;
+    });
 
   let nextPromiseId = maxExistingId;
   const newlyTrackedPromises = detected
@@ -175,6 +188,8 @@ export function computeAccumulatedPromises(
         id: `pr-${nextPromiseId}`,
         description: promise.description.trim(),
         promiseType: promise.promiseType,
+        scope: promise.scope,
+        resolutionHint: promise.resolutionHint,
         suggestedUrgency: promise.suggestedUrgency,
         age: 0,
       };
@@ -229,16 +244,20 @@ function buildResolvedThreadMeta(
 function buildResolvedPromiseMeta(
   resolvedIds: readonly string[],
   parentPromises: readonly TrackedPromise[]
-): Readonly<Record<string, { promiseType: string; urgency: string }>> {
+): Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>> {
   if (resolvedIds.length === 0) {
     return {};
   }
-  const meta: Record<string, { promiseType: string; urgency: string }> = {};
+  const meta: Record<string, { promiseType: string; scope: string; urgency: string }> = {};
   const promiseMap = new Map(parentPromises.map((p) => [p.id, p]));
   for (const id of resolvedIds) {
     const promise = promiseMap.get(id);
     if (promise) {
-      meta[id] = { promiseType: promise.promiseType, urgency: promise.suggestedUrgency };
+      meta[id] = {
+        promiseType: promise.promiseType,
+        scope: promise.scope,
+        urgency: promise.suggestedUrgency,
+      };
     }
   }
   return meta;

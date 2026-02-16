@@ -319,7 +319,7 @@ describe('analyst insights modal', () => {
         ],
       }),
       resolvedPromiseMeta: {
-        'pr-1': { promiseType: 'CHEKHOV_GUN', urgency: 'HIGH' },
+        'pr-1': { promiseType: 'CHEKHOV_GUN', scope: 'BEAT', urgency: 'HIGH' },
       },
     });
     loadAppAndInit();

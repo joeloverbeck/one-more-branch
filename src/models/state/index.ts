@@ -66,6 +66,9 @@ export {
   PromiseType,
   PROMISE_TYPE_VALUES,
   isPromiseType,
+  PromiseScope,
+  PROMISE_SCOPE_VALUES,
+  isPromiseScope,
 } from './keyed-entry.js';
 
 export type {

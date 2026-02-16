@@ -10,7 +10,7 @@ import {
   Story,
 } from '@/models';
 import type { VersionedStoryStructure } from '@/models';
-import { PromiseType, Urgency } from '@/models/state';
+import { PromiseScope, PromiseType, Urgency } from '@/models/state';
 
 function makeStory(overrides: Partial<Story> = {}): Story {
   return {
@@ -220,6 +220,8 @@ describe('continuation-context-builder', () => {
             id: 'pr-1',
             description: 'The silver locket feels narratively significant.',
             promiseType: PromiseType.CHEKHOV_GUN,
+            scope: PromiseScope.BEAT,
+            resolutionHint: 'Will the locket be opened?',
             suggestedUrgency: Urgency.MEDIUM,
             age: 2,
           },

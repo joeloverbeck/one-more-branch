@@ -35,11 +35,15 @@ describe('validateAnalystResponse - promisesDetected', () => {
         {
           description: 'A silver dagger placed with emphasis',
           promiseType: 'CHEKHOV_GUN',
+          scope: 'BEAT',
+          resolutionHint: 'Will the dagger be used?',
           suggestedUrgency: 'HIGH',
         },
         {
           description: 'The protagonist noted the eerie silence',
           promiseType: 'FORESHADOWING',
+          scope: 'ACT',
+          resolutionHint: 'Will the silence be explained?',
           suggestedUrgency: 'MEDIUM',
         },
       ],
@@ -52,28 +56,42 @@ describe('validateAnalystResponse - promisesDetected', () => {
     expect(result.promisesDetected[0]!.suggestedUrgency).toBe('HIGH');
   });
 
-  it('caps detected promises at 3', () => {
+  it('caps detected promises at 2', () => {
     const json = {
       ...buildBaseAnalystJson(),
       promisesDetected: [
-        { description: 'Promise 1', promiseType: 'CHEKHOV_GUN', suggestedUrgency: 'HIGH' },
-        { description: 'Promise 2', promiseType: 'FORESHADOWING', suggestedUrgency: 'MEDIUM' },
-        { description: 'Promise 3', promiseType: 'DRAMATIC_IRONY', suggestedUrgency: 'LOW' },
-        { description: 'Promise 4', promiseType: 'UNRESOLVED_EMOTION', suggestedUrgency: 'HIGH' },
+        { description: 'Promise 1', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', resolutionHint: 'Will it fire?', suggestedUrgency: 'HIGH' },
+        { description: 'Promise 2', promiseType: 'FORESHADOWING', scope: 'ACT', resolutionHint: 'Will the shadow return?', suggestedUrgency: 'MEDIUM' },
+        { description: 'Promise 3', promiseType: 'UNRESOLVED_TENSION', scope: 'BEAT', resolutionHint: 'Will tension break?', suggestedUrgency: 'LOW' },
       ],
     };
 
     const result = validateAnalystResponse(json, 'raw');
-    expect(result.promisesDetected).toHaveLength(3);
+    expect(result.promisesDetected).toHaveLength(2);
   });
 
   it('filters out empty description detected promises', () => {
     const json = {
       ...buildBaseAnalystJson(),
       promisesDetected: [
-        { description: '', promiseType: 'CHEKHOV_GUN', suggestedUrgency: 'HIGH' },
-        { description: '  ', promiseType: 'FORESHADOWING', suggestedUrgency: 'MEDIUM' },
-        { description: 'Valid promise', promiseType: 'FORESHADOWING', suggestedUrgency: 'LOW' },
+        { description: '', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', resolutionHint: 'Will it fire?', suggestedUrgency: 'HIGH' },
+        { description: '  ', promiseType: 'FORESHADOWING', scope: 'ACT', resolutionHint: 'Will it happen?', suggestedUrgency: 'MEDIUM' },
+        { description: 'Valid promise', promiseType: 'FORESHADOWING', scope: 'BEAT', resolutionHint: 'Will the promise pay off?', suggestedUrgency: 'LOW' },
+      ],
+    };
+
+    const result = validateAnalystResponse(json, 'raw');
+    expect(result.promisesDetected).toHaveLength(1);
+    expect(result.promisesDetected[0]!.description).toBe('Valid promise');
+  });
+
+  it('filters out promises with empty resolutionHint', () => {
+    const json = {
+      ...buildBaseAnalystJson(),
+      promisesDetected: [
+        { description: 'Good promise', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', resolutionHint: '', suggestedUrgency: 'HIGH' },
+        { description: 'Another promise', promiseType: 'FORESHADOWING', scope: 'ACT', resolutionHint: '   ', suggestedUrgency: 'MEDIUM' },
+        { description: 'Valid promise', promiseType: 'FORESHADOWING', scope: 'BEAT', resolutionHint: 'Will this resolve?', suggestedUrgency: 'LOW' },
       ],
     };
 

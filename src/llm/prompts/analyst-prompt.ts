@@ -42,10 +42,17 @@ TONE EVALUATION:
 - When toneAdherent is true, set toneDriftDescription to an empty string.
 
 PROMISE EVALUATION:
-- Detect at most 3 new promises in promisesDetected.
-- Only detect promises with deliberate narrative weight; ignore incidental details.
-- Check whether any ACTIVE TRACKED PROMISES were meaningfully paid off in this scene.
-- Only include a promise in promisesResolved when it is substantively addressed, not merely referenced.
+- A narrative promise is a forward-looking obligation the reader expects answered.
+- LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.
+- NOT a promise: motifs, atmosphere, characterization, backstory, self-contained emotions, worldbuilding facts, mood-setting details.
+- If you cannot write a clear resolutionHint question, it is NOT a promise.
+- Before adding a new promise, check if an existing active promise already covers the territory. Expand the existing one rather than duplicating.
+- Detect at most 2 new promises in promisesDetected.
+- Each promise MUST include:
+  - promiseType: CHEKHOV_GUN (concrete object/ability/rule with narrative emphasis), FORESHADOWING (hint at a specific future event), UNRESOLVED_TENSION (emotional/relational setup demanding closure), DRAMATIC_QUESTION (story/act-level question reader expects answered), MYSTERY_HOOK (deliberate information gap), TICKING_CLOCK (time-bound urgency constraint).
+  - scope: SCENE (resolve within 1-3 pages), BEAT (resolve within current beat), ACT (resolve within current act), STORY (resolve at climax/ending). Match the weight of the setup.
+  - resolutionHint: A specific question (e.g., "Will the attacker return?", "What is inside the locked box?").
+- RESOLUTION: Only include a promise in promisesResolved when the resolutionHint question has been ANSWERED, not merely referenced.
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
 - Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
 
@@ -142,10 +149,10 @@ function buildActivePromisesSection(context: AnalystContext): string {
     'ACTIVE TRACKED PROMISES:',
     ...activeTrackedPromises.map(
       (promise) =>
-        `- [${promise.id}] (${promise.promiseType}/${promise.suggestedUrgency}, ${promise.age} pages old) ${promise.description}`
+        `- [${promise.id}] (${promise.promiseType}/${promise.scope}/${promise.suggestedUrgency}, ${promise.age} pages old) ${promise.description}\n  Resolution criterion: ${promise.resolutionHint}`
     ),
     '',
-    'Use these IDs for promisesResolved when a promise is explicitly paid off in this scene.',
+    'Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.',
   ];
 
   return `${lines.join('\n')}\n`;

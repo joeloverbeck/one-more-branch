@@ -31,11 +31,16 @@ const PromiseTypeSchema = z
   .enum([
     'CHEKHOV_GUN',
     'FORESHADOWING',
-    'DRAMATIC_IRONY',
-    'UNRESOLVED_EMOTION',
-    'SETUP_PAYOFF',
+    'UNRESOLVED_TENSION',
+    'DRAMATIC_QUESTION',
+    'MYSTERY_HOOK',
+    'TICKING_CLOCK',
   ])
   .catch('FORESHADOWING');
+
+const PromiseScopeSchema = z
+  .enum(['SCENE', 'BEAT', 'ACT', 'STORY'])
+  .catch('BEAT');
 
 const UrgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']).catch('MEDIUM');
 
@@ -44,6 +49,8 @@ const SatisfactionLevelSchema = z.enum(['RUSHED', 'ADEQUATE', 'WELL_EARNED']).ca
 const DetectedPromiseSchema = z.object({
   description: z.string().default(''),
   promiseType: PromiseTypeSchema,
+  scope: PromiseScopeSchema,
+  resolutionHint: z.string().default(''),
   suggestedUrgency: UrgencySchema,
 });
 

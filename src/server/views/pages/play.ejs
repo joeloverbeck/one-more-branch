@@ -390,6 +390,7 @@
               <% trackedPromisesPanelRows.forEach((promise) => { %>
               <li class="tracked-promises-item">
                 <span class="promise-type-text-badge"><%= promise.promiseType.toLowerCase().split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') %></span>
+                <% if (promise.scope) { %><span class="promise-scope-badge"><%= promise.scope.charAt(0) + promise.scope.slice(1).toLowerCase() %></span><% } %>
                 <span class="promise-age-badge"><%= promise.age %> pg</span>
                 <span><%= promise.text %></span>
               </li>

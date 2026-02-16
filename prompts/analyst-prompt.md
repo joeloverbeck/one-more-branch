@@ -60,10 +60,17 @@ TONE EVALUATION:
 - When toneAdherent is true, set toneDriftDescription to an empty string.
 
 PROMISE EVALUATION:
-- Detect at most 3 new promises in promisesDetected.
-- Only detect promises with deliberate narrative weight; ignore incidental details.
-- Check whether any ACTIVE TRACKED PROMISES were meaningfully paid off in this scene.
-- Only include a promise in promisesResolved when it is substantively addressed, not merely referenced.
+- A narrative promise is a forward-looking obligation the reader expects answered.
+- LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.
+- NOT a promise: motifs, atmosphere, characterization, backstory, self-contained emotions, worldbuilding facts, mood-setting details.
+- If you cannot write a clear resolutionHint question, it is NOT a promise.
+- Before adding a new promise, check if an existing active promise already covers the territory. Expand the existing one rather than duplicating.
+- Detect at most 2 new promises in promisesDetected.
+- Each promise MUST include:
+  - promiseType: CHEKHOV_GUN (concrete object/ability/rule with narrative emphasis), FORESHADOWING (hint at a specific future event), UNRESOLVED_TENSION (emotional/relational setup demanding closure), DRAMATIC_QUESTION (story/act-level question reader expects answered), MYSTERY_HOOK (deliberate information gap), TICKING_CLOCK (time-bound urgency constraint).
+  - scope: SCENE (resolve within 1-3 pages), BEAT (resolve within current beat), ACT (resolve within current act), STORY (resolve at climax/ending). Match the weight of the setup.
+  - resolutionHint: A specific question (e.g., "Will the attacker return?", "What is inside the locked box?").
+- RESOLUTION: Only include a promise in promisesResolved when the resolutionHint question has been ANSWERED, not merely referenced.
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
 - Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
 
@@ -126,22 +133,13 @@ CURRENT STATE (for beat evaluation):
 - Threads resolved this scene: {{threadsResolved}}
 (Consider these when evaluating beat completion)
 
-=== FORESHADOWING DETECTION ===
-Scan the narrative for implicit promises planted with deliberate narrative emphasis.
-Only flag items that a reader would reasonably expect to pay off later:
-- Objects, locations, or abilities introduced with unusual descriptive weight (CHEKHOV_GUN)
-- Hints at future events or outcomes (FORESHADOWING)
-- Information the reader knows but characters don't (DRAMATIC_IRONY)
-- Unresolved emotional beats that demand future closure (UNRESOLVED_EMOTION)
-
-Do NOT flag incidental scene-setting details. Max 3 per page. Empty array if none detected.
-
 === ACTIVE TRACKED PROMISES ===
 (Only present when there are active promises)
 ACTIVE TRACKED PROMISES:
-- [{{promise.id}}] ({{promise.promiseType}}/{{promise.suggestedUrgency}}, {{promise.age}} pages old) {{promise.description}}
+- [{{promise.id}}] ({{promise.promiseType}}/{{promise.scope}}/{{promise.suggestedUrgency}}, {{promise.age}} pages old) {{promise.description}}
+  Resolution criterion: {{promise.resolutionHint}}
 
-Use these IDs for promisesResolved when a promise is explicitly paid off in this scene.
+Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.
 
 === THREAD PAYOFF QUALITY ===
 (Only present when threads were resolved this scene)
@@ -311,7 +309,9 @@ The tone reminder is injected into the user prompt (before the narrative) in add
   "promisesDetected": [
     {
       "description": "{{what was planted with emphasis}}",
-      "promiseType": "{{CHEKHOV_GUN|FORESHADOWING|DRAMATIC_IRONY|UNRESOLVED_EMOTION|SETUP_PAYOFF}}",
+      "promiseType": "{{CHEKHOV_GUN|FORESHADOWING|UNRESOLVED_TENSION|DRAMATIC_QUESTION|MYSTERY_HOOK|TICKING_CLOCK}}",
+      "scope": "{{SCENE|BEAT|ACT|STORY}}",
+      "resolutionHint": "{{specific question this promise asks, e.g. 'Will the attacker return?'}}",
       "suggestedUrgency": "{{LOW|MEDIUM|HIGH}}"
     }
   ],
@@ -350,8 +350,8 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 - `toneDriftDescription`: When `toneAdherent` is `false`, describes what feels off and what the tone should be. Empty string when adherent. This feedback propagates to the planner's continuation context for course correction.
 - `npcCoherenceAdherent`: Whether NPCs in the scene acted consistently with their stated agendas. Defaults to `true` when no NPC agendas are provided.
 - `npcCoherenceIssues`: When `npcCoherenceAdherent` is `false`, briefly names the NPC and explains the inconsistency. Empty string when coherent or no agendas. This feedback is forwarded to the agenda resolver to distinguish intentional NPC evolution from writer error.
-- `promisesDetected`: Array of newly detected narrative promises (max 3). Empty array if none detected. Only items introduced with deliberate narrative emphasis.
-- `promisesResolved`: Array of resolved promise IDs (`pr-N`) from active tracked promises. Empty array when no tracked promises were paid off.
+- `promisesDetected`: Array of newly detected narrative promises (max 2). Empty array if none detected. Each promise must pass the litmus test: phrasable as a specific question the reader expects answered and would feel disappointed if never addressed. Each entry includes `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, UNRESOLVED_TENSION, DRAMATIC_QUESTION, MYSTERY_HOOK, TICKING_CLOCK), `scope` (SCENE, BEAT, ACT, STORY — matching the weight of the setup), `resolutionHint` (a specific question), and `suggestedUrgency`. Promises with empty `resolutionHint` are filtered out by the response transformer.
+- `promisesResolved`: Array of resolved promise IDs (`pr-N`) from active tracked promises. A promise is resolved when its `resolutionHint` question has been ANSWERED, not merely referenced. Empty array when no tracked promises were paid off.
 - `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
 - `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.
 - `relationshipShiftsDetected`: Array of NPC-protagonist relationship shifts observed in this scene. Empty array if no significant shifts detected. Only flag meaningful changes, not routine interactions. `suggestedValenceChange` is clamped to -3..+3 by the response transformer. These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.

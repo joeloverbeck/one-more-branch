@@ -86,6 +86,8 @@ export interface StoryBibleFileData {
 export interface DetectedPromiseFileData {
   description: string;
   promiseType: string;
+  scope: string;
+  resolutionHint: string;
   suggestedUrgency: string;
 }
 
@@ -216,7 +218,7 @@ export interface PageFileData {
   threadAges: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
   resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
-  resolvedPromiseMeta: Record<string, { promiseType: string; urgency: string }>;
+  resolvedPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;
   npcAgendaUpdates: NpcAgendaFileData[];
   accumulatedNpcAgendas: Record<string, NpcAgendaFileData>;
   npcRelationshipUpdates: NpcRelationshipFileData[];
