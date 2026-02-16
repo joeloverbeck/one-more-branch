@@ -9,6 +9,7 @@ import type {
   ThreadEntry,
   TrackedPromise,
   ThreadPayoffAssessment,
+  PromisePayoffAssessment,
 } from '../../../../../../src/models/state/keyed-entry';
 
 function makeThread(id: string, type: ThreadType, urgency: Urgency, text: string): ThreadEntry {
@@ -142,6 +143,26 @@ describe('buildTrackedPromisesSection', () => {
     expect(result).toContain('opportunities for reincorporation');
     expect(result).toContain('not mandatory beats');
   });
+
+  it('omits promise IDs when includePromiseIds is false', () => {
+    const promises = [
+      makeTrackedPromise('pr-1', 6, 'Old foreshadowing'),
+      makeTrackedPromise('pr-2', 1, 'New chekhov gun', PromiseType.CHEKHOV_GUN),
+    ];
+    const result = buildTrackedPromisesSection(promises, { includePromiseIds: false });
+    expect(result).toContain('TRACKED PROMISES');
+    expect(result).toContain('Old foreshadowing');
+    expect(result).toContain('New chekhov gun');
+    expect(result).not.toContain('[pr-1]');
+    expect(result).not.toContain('[pr-2]');
+    expect(result).toContain('(FORESHADOWING/BEAT/MEDIUM, 6 pages)');
+  });
+
+  it('includes promise IDs by default (no options)', () => {
+    const promises = [makeTrackedPromise('pr-5', 3, 'A clue')];
+    const result = buildTrackedPromisesSection(promises);
+    expect(result).toContain('[pr-5]');
+  });
 });
 
 describe('buildPayoffFeedbackSection', () => {
@@ -175,5 +196,36 @@ describe('buildPayoffFeedbackSection', () => {
     expect(result).toContain('rushed');
     expect(result).toContain('[td-2]');
     expect(result).toContain('Find the artifact');
+  });
+
+  it('omits promise IDs from rushed promise payoffs when includePromiseIds is false', () => {
+    const promiseAssessments: PromisePayoffAssessment[] = [
+      {
+        promiseId: 'pr-17',
+        description: 'The hidden dagger',
+        satisfactionLevel: 'RUSHED',
+        reasoning: 'Too quick',
+      },
+    ];
+    const result = buildPayoffFeedbackSection([], promiseAssessments, {
+      includePromiseIds: false,
+    });
+    expect(result).toContain('PAYOFF QUALITY FEEDBACK');
+    expect(result).toContain('The hidden dagger');
+    expect(result).not.toContain('[pr-17]');
+  });
+
+  it('includes promise IDs in payoffs by default', () => {
+    const promiseAssessments: PromisePayoffAssessment[] = [
+      {
+        promiseId: 'pr-17',
+        description: 'The hidden dagger',
+        satisfactionLevel: 'RUSHED',
+        reasoning: 'Too quick',
+      },
+    ];
+    const result = buildPayoffFeedbackSection([], promiseAssessments);
+    expect(result).toContain('[pr-17]');
+    expect(result).toContain('The hidden dagger');
   });
 });

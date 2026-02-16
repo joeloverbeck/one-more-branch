@@ -120,7 +120,7 @@ describe('sidebar widgets container', () => {
         ],
         activeThreats: [{ id: 'at-1', text: 'A threat' }],
         activeConstraints: [{ id: 'cn-1', text: 'A constraint' }],
-        trackedPromises: [{ id: 'pr-1', text: 'A promise', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 2 }],
+        trackedPromises: [{ id: 'pr-1', text: 'A promise', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 2, suggestedUrgency: 'HIGH' }],
       })
     );
 
@@ -177,14 +177,14 @@ describe('sidebar widgets container', () => {
     expect(asides[0].id).toBe('active-threats-panel');
   });
 
-  it('renders tracked promises panel with type badge and age', async () => {
+  it('renders tracked promises panel with icon, type badge, and age', async () => {
     document.body.innerHTML = buildPlayPageHtml();
     loadAppAndInit();
 
     await clickChoiceAndResolve(
       makeChoiceResponse({
         trackedPromises: [
-          { id: 'pr-1', text: 'The gun on the mantle', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 3 },
+          { id: 'pr-1', text: 'The gun on the mantle', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 3, suggestedUrgency: 'HIGH' },
         ],
       })
     );
@@ -195,14 +195,18 @@ describe('sidebar widgets container', () => {
 
     const items = panel!.querySelectorAll('.tracked-promises-item');
     expect(items.length).toBe(1);
-    expect(items[0].querySelector('.promise-type-text-badge')?.textContent).toBe('Chekhov Gun');
     expect(items[0].querySelector('.promise-age-badge')?.textContent).toBe('3 pg');
     expect(items[0].textContent).toContain('The gun on the mantle');
+
+    const iconImg = items[0].querySelector('img.thread-icon--promise') as HTMLImageElement;
+    expect(iconImg).not.toBeNull();
+    expect(iconImg.src).toContain('promise-chekhov-gun-high.png');
+    expect(iconImg.getAttribute('onerror')).toContain("this.style.display='none'");
   });
 
   it('removes tracked promises panel when response has empty array', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', scope: 'BEAT', age: 1 }],
+      trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', scope: 'BEAT', age: 1, suggestedUrgency: 'LOW' }],
     });
     loadAppAndInit();
 

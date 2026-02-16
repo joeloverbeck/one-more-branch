@@ -264,10 +264,39 @@ function buildResolvedPromiseMeta(
 }
 
 /**
+ * Augments the reconciler's threadsResolved with thread IDs from the analyst's
+ * threadPayoffAssessments. The analyst acts as a safety net — if it assessed
+ * a thread payoff but the accountant missed including that thread in
+ * resolveIds, we add it here. Only IDs that exist in parentOpenThreads are
+ * added (validation guard).
+ */
+export function augmentThreadsResolvedFromAnalyst(
+  reconcilerThreadsResolved: readonly string[],
+  analystResult: AnalystResult | null,
+  parentOpenThreads: readonly { id: string }[]
+): readonly string[] {
+  if (!analystResult || analystResult.threadPayoffAssessments.length === 0) {
+    return reconcilerThreadsResolved;
+  }
+  const existing = new Set(reconcilerThreadsResolved);
+  const parentIds = new Set(parentOpenThreads.map((t) => t.id));
+  const additional = analystResult.threadPayoffAssessments
+    .filter((a) => !existing.has(a.threadId) && parentIds.has(a.threadId))
+    .map((a) => a.threadId);
+  if (additional.length === 0) {
+    return reconcilerThreadsResolved;
+  }
+  return [...reconcilerThreadsResolved, ...additional];
+}
+
+/**
  * Maps reconciled state fields to ActiveStateChanges.
  * Handles the conversion from LLM output format to the typed change structure.
  */
-function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
+function mapToActiveStateChanges(
+  result: PageBuildResult,
+  effectiveThreadsResolved: readonly string[]
+): ActiveStateChanges {
   return {
     newLocation: result.currentLocation || null,
     threatsAdded: result.threatsAdded,
@@ -279,7 +308,7 @@ function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
       threadType: thread.threadType,
       urgency: thread.urgency,
     })),
-    threadsResolved: result.threadsResolved,
+    threadsResolved: effectiveThreadsResolved,
   };
 }
 
@@ -289,13 +318,21 @@ function mapToActiveStateChanges(result: PageBuildResult): ActiveStateChanges {
 export function buildPage(result: PageBuildResult, context: PageBuildContext): Page {
   const isOpening = context.parentPageId === null;
 
+  const effectiveThreadsResolved = isOpening
+    ? result.threadsResolved
+    : augmentThreadsResolvedFromAnalyst(
+        result.threadsResolved,
+        context.analystResult,
+        context.parentAccumulatedActiveState.openThreads
+      );
+
   const threadAges = isOpening
     ? computeFirstPageThreadAges(result.threadsAdded)
     : computeContinuationThreadAges(
         context.parentThreadAges,
         context.parentAccumulatedActiveState.openThreads.map((t) => t.id),
         result.threadsAdded,
-        result.threadsResolved,
+        effectiveThreadsResolved,
         getMaxIdNumber(context.parentAccumulatedActiveState.openThreads, 'td')
       );
 
@@ -307,7 +344,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
   );
 
   const resolvedThreadMeta = buildResolvedThreadMeta(
-    result.threadsResolved,
+    effectiveThreadsResolved,
     context.parentAccumulatedActiveState.openThreads
   );
 
@@ -321,7 +358,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     narrativeText: result.narrative,
     sceneSummary: result.sceneSummary,
     choices: result.choices.map((c) => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
-    activeStateChanges: mapToActiveStateChanges(result),
+    activeStateChanges: mapToActiveStateChanges(result, effectiveThreadsResolved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     characterStateChanges: createCharacterStateChanges(

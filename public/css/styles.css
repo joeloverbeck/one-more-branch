@@ -835,6 +835,11 @@ main {
   height: 1.95rem;
 }
 
+.thread-icon-badge--promise {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
 .open-threads-text {
   min-width: 0;
   color: var(--color-text-muted);
@@ -901,22 +906,12 @@ main {
 
 .tracked-promises-item {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
 
-.promise-type-text-badge {
-  display: inline-flex;
-  border-radius: 999px;
-  padding: 0.12rem 0.42rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
-  font-weight: 600;
-  background: rgba(59, 130, 246, 0.2);
-  color: #cfe4ff;
-  white-space: nowrap;
-}
+
 
 .promise-age-badge {
   display: inline-flex;
@@ -2426,6 +2421,11 @@ main {
     width: 1.55rem;
     height: 1.55rem;
   }
+
+  .thread-icon-badge--promise {
+    width: 2rem;
+    height: 2rem;
+  }
 }
 
 /* ── Prompt Log Viewer ───────────────────────────────────── */
@@ -2448,6 +2448,7 @@ main {
 .log-entry {
   background: var(--color-bg-card);
   border: 1px solid var(--border-color);
+  border-left: 4px solid transparent;
   border-radius: var(--radius);
   margin-bottom: 0.5rem;
 }
@@ -2478,6 +2479,66 @@ main {
 
 .log-entry-body {
   padding: 0 1rem 0.75rem;
+}
+
+/* Log type color coding - semantic families */
+
+/* Creative (amber) */
+.log-entry.log-type-opening {
+  border-left: 4px solid #e08a3e;
+  background: rgba(224, 138, 62, 0.12);
+}
+.log-entry.log-type-writer {
+  border-left: 4px solid #d4723c;
+  background: rgba(212, 114, 60, 0.12);
+}
+
+/* Analytical (purple) */
+.log-entry.log-type-analyst {
+  border-left: 4px solid #9b7ed4;
+  background: rgba(155, 126, 212, 0.12);
+}
+.log-entry.log-type-accountant {
+  border-left: 4px solid #7b6bb5;
+  background: rgba(123, 107, 181, 0.12);
+}
+
+/* Planning (teal) */
+.log-entry.log-type-planner {
+  border-left: 4px solid #4db8a4;
+  background: rgba(77, 184, 164, 0.12);
+}
+.log-entry.log-type-lorekeeper {
+  border-left: 4px solid #3a9d8f;
+  background: rgba(58, 157, 143, 0.12);
+}
+
+/* Structural (gold) */
+.log-entry.log-type-structure {
+  border-left: 4px solid #c9a84c;
+  background: rgba(201, 168, 76, 0.12);
+}
+.log-entry.log-type-structure-rewrite {
+  border-left: 4px solid #b8943f;
+  background: rgba(184, 148, 63, 0.12);
+}
+.log-entry.log-type-spine {
+  border-left: 4px solid #d4b85c;
+  background: rgba(212, 184, 92, 0.12);
+}
+.log-entry.log-type-spine-rewrite {
+  border-left: 4px solid #a88a3a;
+  background: rgba(168, 138, 58, 0.12);
+}
+
+/* Supporting (rose) */
+.log-entry.log-type-agenda-resolver {
+  border-left: 4px solid #d4728a;
+  background: rgba(212, 114, 138, 0.12);
+}
+.log-entry.log-type-entity-decomposer {
+  border-left: 4px solid #c45e7a;
+  background: rgba(196, 94, 122, 0.12);
 }
 
 .log-message {

@@ -2,7 +2,6 @@ import type { ThreadAdd } from '../llm/writer-types.js';
 import { ThreadType } from '../models/state/index.js';
 import type {
   ReconciledThreadAdd,
-  StateReconciliationDiagnostic,
   StateReconciliationPreviousState,
 } from './state-reconciler-types.js';
 import {
@@ -12,8 +11,10 @@ import {
   normalizeEvidenceText,
 } from './reconciler-text-utils.js';
 
-export const THREAD_DUPLICATE_LIKE_ADD = 'THREAD_DUPLICATE_LIKE_ADD';
-export const THREAD_MISSING_EQUIVALENT_RESOLVE = 'THREAD_MISSING_EQUIVALENT_RESOLVE';
+export interface ThreadDedupResult {
+  accepted: ReconciledThreadAdd[];
+  autoResolvedThreadIds: string[];
+}
 
 export const THREAD_JACCARD_THRESHOLDS: Record<ThreadType, number> = {
   [ThreadType.RELATIONSHIP]: 0.58,
@@ -85,11 +86,11 @@ function jaccardSimilarity(
 function dedupAgainstPreviousThreads(
   candidates: readonly ReconciledThreadAdd[],
   previousThreads: StateReconciliationPreviousState['threads'],
-  resolvedThreadIds: readonly string[],
-  diagnostics: StateReconciliationDiagnostic[]
-): ReconciledThreadAdd[] {
+  resolvedThreadIds: readonly string[]
+): ThreadDedupResult {
   const resolvedThreadIdSet = new Set(resolvedThreadIds);
   const accepted: ReconciledThreadAdd[] = [];
+  const autoResolvedThreadIds: string[] = [];
 
   for (const candidate of candidates) {
     const threshold = THREAD_JACCARD_THRESHOLDS[candidate.threadType];
@@ -111,30 +112,21 @@ function dedupAgainstPreviousThreads(
       );
 
       if (unresolvedEquivalentThread) {
-        diagnostics.push({
-          code: THREAD_DUPLICATE_LIKE_ADD,
-          field: 'threadsAdded',
-          message: `Thread add "${candidate.text}" is near-duplicate of existing thread "${unresolvedEquivalentThread.id}".`,
-        });
-        diagnostics.push({
-          code: THREAD_MISSING_EQUIVALENT_RESOLVE,
-          field: 'threadsAdded',
-          message: `Near-duplicate thread add "${candidate.text}" requires resolving "${unresolvedEquivalentThread.id}" in the same payload.`,
-        });
-        continue;
+        console.info(
+          `Auto-resolved thread "${unresolvedEquivalentThread.id}" due to near-duplicate replacement by "${candidate.text}".`
+        );
+        autoResolvedThreadIds.push(unresolvedEquivalentThread.id);
+        resolvedThreadIdSet.add(unresolvedEquivalentThread.id);
       }
     }
 
     accepted.push(candidate);
   }
 
-  return accepted;
+  return { accepted, autoResolvedThreadIds };
 }
 
-function dedupWithinBatch(
-  candidates: readonly ReconciledThreadAdd[],
-  diagnostics: StateReconciliationDiagnostic[]
-): ReconciledThreadAdd[] {
+function dedupWithinBatch(candidates: readonly ReconciledThreadAdd[]): ReconciledThreadAdd[] {
   const accepted: ReconciledThreadAdd[] = [];
 
   for (const candidate of candidates) {
@@ -154,11 +146,9 @@ function dedupWithinBatch(
     });
 
     if (duplicateAcceptedThread) {
-      diagnostics.push({
-        code: THREAD_DUPLICATE_LIKE_ADD,
-        field: 'threadsAdded',
-        message: `Thread add "${candidate.text}" is near-duplicate of another added thread "${duplicateAcceptedThread.text}".`,
-      });
+      console.info(
+        `Dropped within-batch near-duplicate thread "${candidate.text}" (duplicate of "${duplicateAcceptedThread.text}").`
+      );
       continue;
     }
 
@@ -171,14 +161,13 @@ function dedupWithinBatch(
 export function applyThreadDedupAndContradictionRules(
   candidateAdds: readonly ReconciledThreadAdd[],
   previousThreads: StateReconciliationPreviousState['threads'],
-  resolvedThreadIds: readonly string[],
-  diagnostics: StateReconciliationDiagnostic[]
-): ReconciledThreadAdd[] {
+  resolvedThreadIds: readonly string[]
+): ThreadDedupResult {
   const afterPrevious = dedupAgainstPreviousThreads(
     candidateAdds,
     previousThreads,
-    resolvedThreadIds,
-    diagnostics
+    resolvedThreadIds
   );
-  return dedupWithinBatch(afterPrevious, diagnostics);
+  const accepted = dedupWithinBatch(afterPrevious.accepted);
+  return { accepted, autoResolvedThreadIds: afterPrevious.autoResolvedThreadIds };
 }

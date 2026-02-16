@@ -26,7 +26,7 @@ export interface PlayPageOptions {
   threatsOverflowSummary?: string;
   activeConstraints?: Array<{ id: string; text: string }>;
   constraintsOverflowSummary?: string;
-  trackedPromises?: Array<{ id: string; text: string; promiseType: string; scope?: string; age: number }>;
+  trackedPromises?: Array<{ id: string; text: string; promiseType: string; scope?: string; age: number; suggestedUrgency?: string }>;
   trackedPromisesOverflowSummary?: string;
   actDisplayInfo?: { displayString: string; actNumber?: number } | null;
   stateChanges?: string[];
@@ -112,7 +112,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       ? `<aside class="tracked-promises-panel" id="tracked-promises-panel" aria-labelledby="tracked-promises-title">
         <h3 class="tracked-promises-title" id="tracked-promises-title">Tracked Promises</h3>
         <ul class="tracked-promises-list" id="tracked-promises-list">
-          ${trackedPromises.map((p) => `<li class="tracked-promises-item"><span class="promise-type-text-badge">${p.promiseType}</span><span class="promise-age-badge">${p.age} pg</span><span>${p.text}</span></li>`).join('')}
+          ${trackedPromises.map((p) => `<li class="tracked-promises-item"><span class="thread-icon-pill" aria-hidden="true"><span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--promise"><img class="thread-icon thread-icon--type thread-icon--promise" src="/images/icons/promise-${p.promiseType.toLowerCase().replace(/_/g, '-')}-${(p.suggestedUrgency ?? 'low').toLowerCase()}.png" alt="" title="${p.promiseType} (${p.suggestedUrgency ?? 'LOW'})" loading="lazy" onerror="this.style.display='none'"></span></span><span class="promise-age-badge">${p.age} pg</span><span>${p.text}</span></li>`).join('')}
         </ul>
         ${options.trackedPromisesOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="tracked-promises-overflow">${options.trackedPromisesOverflowSummary}</div>` : ''}
       </aside>`

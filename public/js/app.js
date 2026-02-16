@@ -1006,6 +1006,16 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     return '/images/icons/thread-' + threadType.toLowerCase() + '-' + urgency.toLowerCase() + '.png';
   }
 
+  function getPromiseIconPath(promiseType, urgency) {
+    if (typeof promiseType !== 'string' || promiseType.length === 0) {
+      return '';
+    }
+    if (typeof urgency !== 'string' || urgency.length === 0) {
+      return '';
+    }
+    return '/images/icons/promise-' + promiseType.toLowerCase().replace(/_/g, '-') + '-' + urgency.toLowerCase() + '.png';
+  }
+
 
   // ── Loading progress controller ────────────────────────────────────
 
@@ -1215,6 +1225,24 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       html += '<img class="thread-icon thread-icon--type"'
         + ' src="' + escapeHtml(constraintTypeIconPath) + '"'
         + ' alt="" title="' + escapeHtml(constraintType) + '"'
+        + ' loading="lazy"'
+        + " onerror=\"this.style.display='none'\">";
+    }
+    html += '</span>';
+
+    html += '</span>';
+    return html;
+  }
+
+  function renderPromiseBadgePill(promiseType, urgency) {
+    var iconPath = getPromiseIconPath(promiseType, urgency);
+    var html = '<span class="thread-icon-pill" aria-hidden="true">';
+
+    html += '<span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--promise">';
+    if (iconPath) {
+      html += '<img class="thread-icon thread-icon--type thread-icon--promise"'
+        + ' src="' + escapeHtml(iconPath) + '"'
+        + ' alt="" title="' + escapeHtml(promiseType + ' (' + urgency + ')') + '"'
         + ' loading="lazy"'
         + " onerror=\"this.style.display='none'\">";
     }
@@ -1530,15 +1558,6 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     });
   }
 
-  function formatPromiseType(value) {
-    if (typeof value !== 'string' || value.length === 0) {
-      return 'Unknown';
-    }
-    return value.toLowerCase().split('_').map(function(part) {
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    }).join(' ');
-  }
-
   function formatPromiseScope(value) {
     if (typeof value !== 'string' || value.length === 0) {
       return '';
@@ -1564,14 +1583,14 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
           promiseType: typeof p.promiseType === 'string' ? p.promiseType : '',
           scope: typeof p.scope === 'string' ? p.scope : '',
           age: typeof p.age === 'number' ? p.age : 0,
+          suggestedUrgency: typeof p.suggestedUrgency === 'string' ? p.suggestedUrgency : '',
         };
       }) : [],
       overflowSummary: trackedPromisesOverflowSummary,
       container: sidebarContainer,
       renderEntry: function(entry) {
-        var typeLabel = formatPromiseType(entry.promiseType);
         var scopeLabel = formatPromiseScope(entry.scope);
-        return '<span class="promise-type-text-badge">' + escapeHtml(typeLabel) + '</span>'
+        return renderPromiseBadgePill(entry.promiseType, entry.suggestedUrgency)
           + (scopeLabel ? '<span class="promise-scope-badge">' + escapeHtml(scopeLabel) + '</span>' : '')
           + '<span class="promise-age-badge">' + entry.age + ' pg</span>'
           + '<span>' + escapeHtml(entry.text) + '</span>';
@@ -2180,9 +2199,9 @@ function renderPromisePayoffs(assessments, resolvedPromiseMeta) {
 
     var badgeHtml = '';
     var meta = promiseId ? metaMap[promiseId] : null;
-    if (meta && typeof meta.promiseType === 'string') {
+    if (meta && typeof meta.promiseType === 'string' && typeof meta.urgency === 'string') {
       badgeHtml = '<span class="promise-payoff-badge">'
-        + '<span class="promise-type-text-badge">' + escapeHtml(formatAnalystEnum(meta.promiseType)) + '</span>'
+        + renderPromiseBadgePill(meta.promiseType, meta.urgency)
         + '</span>';
     }
 

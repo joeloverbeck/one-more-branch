@@ -57,11 +57,35 @@ describe('validateStateAccountantResponse', () => {
     expect(result.rawResponse).toBe('{"raw":"accountant"}');
   });
 
-  it('throws LLMError with machine-readable context for ID prefix mismatch', () => {
+  it('repairs ID prefix mismatch instead of throwing', () => {
     const rawJson = createValidStatePayload();
     (rawJson.stateIntents as { threats: { removeIds: string[] } }).threats.removeIds = ['cn-9'];
 
-    expect(() => validateStateAccountantResponse(rawJson, '{}')).toThrow(LLMError);
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = validateStateAccountantResponse(rawJson, '{}');
+    expect(result.stateIntents.threats.removeIds).toEqual([]);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[accountant-id-repair]'),
+      expect.stringContaining('cn-9')
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('filters pr-* IDs from threads.resolveIds and succeeds validation', () => {
+    const rawJson = createValidStatePayload();
+    (rawJson.stateIntents as { threads: { resolveIds: string[] } }).threads.resolveIds = [
+      'td-3',
+      'pr-17',
+    ];
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = validateStateAccountantResponse(rawJson, '{"raw":"accountant"}');
+    expect(result.stateIntents.threads.resolveIds).toEqual(['td-3']);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[accountant-id-repair]'),
+      expect.stringContaining('pr-17')
+    );
+    warnSpy.mockRestore();
   });
 
   it('maps invalid thread taxonomy enums to deterministic rule keys', () => {

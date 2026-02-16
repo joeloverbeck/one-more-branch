@@ -110,12 +110,13 @@ export function reconcileState(
     diagnostics
   );
 
-  const threadsAdded = applyThreadDedupAndContradictionRules(
+  const dedupResult = applyThreadDedupAndContradictionRules(
     normalizeThreadAdds(plan.stateIntents.threads.add),
     previousState.threads,
-    threadsResolved,
-    diagnostics
+    threadsResolved
   );
+  const threadsAdded = dedupResult.accepted;
+  const threadsResolvedFinal = [...threadsResolved, ...dedupResult.autoResolvedThreadIds];
 
   const inventory = reconcileTextMutationField(
     plan.stateIntents.inventory,
@@ -152,7 +153,7 @@ export function reconcileState(
     constraintsAdded: constraints.added,
     constraintsRemoved: constraints.removed,
     threadsAdded,
-    threadsResolved,
+    threadsResolved: threadsResolvedFinal,
     inventoryAdded: inventory.added,
     inventoryRemoved: inventory.removed,
     healthAdded: health.added,

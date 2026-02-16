@@ -22,7 +22,7 @@
       <p class="logs-count"><%= entries.length %> log entries</p>
 
       <% entries.forEach((entry, i) => { %>
-      <details class="log-entry">
+      <details class="log-entry log-type-<%= entry.promptType %>">
         <summary>
           <strong><%= entry.promptType %></strong>
           <span class="log-meta">

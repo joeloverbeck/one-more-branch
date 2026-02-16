@@ -389,7 +389,15 @@
             <ul class="tracked-promises-list" id="tracked-promises-list">
               <% trackedPromisesPanelRows.forEach((promise) => { %>
               <li class="tracked-promises-item">
-                <span class="promise-type-text-badge"><%= promise.promiseType.toLowerCase().split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') %></span>
+                <span class="thread-icon-pill" aria-hidden="true">
+                  <span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--promise">
+                    <img class="thread-icon thread-icon--type thread-icon--promise"
+                         src="/images/icons/promise-<%= promise.promiseType.toLowerCase().replace(/_/g, '-') %>-<%= promise.suggestedUrgency.toLowerCase() %>.png"
+                         alt="" title="<%= promise.promiseType %> (<%= promise.suggestedUrgency %>)"
+                         loading="lazy"
+                         onerror="this.style.display='none'">
+                  </span>
+                </span>
                 <% if (promise.scope) { %><span class="promise-scope-badge"><%= promise.scope.charAt(0) + promise.scope.slice(1).toLowerCase() %></span><% } %>
                 <span class="promise-age-badge"><%= promise.age %> pg</span>
                 <span><%= promise.text %></span>

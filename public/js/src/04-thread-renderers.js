@@ -54,6 +54,24 @@
     return html;
   }
 
+  function renderPromiseBadgePill(promiseType, urgency) {
+    var iconPath = getPromiseIconPath(promiseType, urgency);
+    var html = '<span class="thread-icon-pill" aria-hidden="true">';
+
+    html += '<span class="thread-icon-badge thread-icon-badge--type thread-icon-badge--promise">';
+    if (iconPath) {
+      html += '<img class="thread-icon thread-icon--type thread-icon--promise"'
+        + ' src="' + escapeHtml(iconPath) + '"'
+        + ' alt="" title="' + escapeHtml(promiseType + ' (' + urgency + ')') + '"'
+        + ' loading="lazy"'
+        + " onerror=\"this.style.display='none'\">";
+    }
+    html += '</span>';
+
+    html += '</span>';
+    return html;
+  }
+
   function getOpenThreadUrgencyClass(urgency) {
     if (urgency === 'HIGH') {
       return 'open-threads-text--high';
@@ -360,15 +378,6 @@
     });
   }
 
-  function formatPromiseType(value) {
-    if (typeof value !== 'string' || value.length === 0) {
-      return 'Unknown';
-    }
-    return value.toLowerCase().split('_').map(function(part) {
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    }).join(' ');
-  }
-
   function formatPromiseScope(value) {
     if (typeof value !== 'string' || value.length === 0) {
       return '';
@@ -394,14 +403,14 @@
           promiseType: typeof p.promiseType === 'string' ? p.promiseType : '',
           scope: typeof p.scope === 'string' ? p.scope : '',
           age: typeof p.age === 'number' ? p.age : 0,
+          suggestedUrgency: typeof p.suggestedUrgency === 'string' ? p.suggestedUrgency : '',
         };
       }) : [],
       overflowSummary: trackedPromisesOverflowSummary,
       container: sidebarContainer,
       renderEntry: function(entry) {
-        var typeLabel = formatPromiseType(entry.promiseType);
         var scopeLabel = formatPromiseScope(entry.scope);
-        return '<span class="promise-type-text-badge">' + escapeHtml(typeLabel) + '</span>'
+        return renderPromiseBadgePill(entry.promiseType, entry.suggestedUrgency)
           + (scopeLabel ? '<span class="promise-scope-badge">' + escapeHtml(scopeLabel) + '</span>' : '')
           + '<span class="promise-age-badge">' + entry.age + ' pg</span>'
           + '<span>' + escapeHtml(entry.text) + '</span>';

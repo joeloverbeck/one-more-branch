@@ -59,18 +59,22 @@ export function buildThreadAgingSection(
   return lines.join('\n') + '\n';
 }
 
-function formatPromiseLine(promise: TrackedPromise): string {
-  return `- [${promise.id}] (${promise.promiseType}/${promise.scope}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}\n  Question: ${promise.resolutionHint}`;
+function formatPromiseLine(promise: TrackedPromise, includeId: boolean = true): string {
+  const prefix = includeId ? `[${promise.id}] ` : '';
+  return `- ${prefix}(${promise.promiseType}/${promise.scope}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}\n  Question: ${promise.resolutionHint}`;
 }
 
 const SCOPE_ORDER: Record<string, number> = { STORY: 0, ACT: 1, BEAT: 2, SCENE: 3 };
 
 export function buildTrackedPromisesSection(
-  accumulatedPromises: readonly TrackedPromise[]
+  accumulatedPromises: readonly TrackedPromise[],
+  options: { includePromiseIds?: boolean } = {}
 ): string {
   if (accumulatedPromises.length === 0) {
     return '';
   }
+
+  const includeId = options.includePromiseIds !== false;
 
   const sorted = [...accumulatedPromises].sort((a, b) => {
     const scopeDelta = (SCOPE_ORDER[a.scope] ?? 4) - (SCOPE_ORDER[b.scope] ?? 4);
@@ -97,7 +101,7 @@ export function buildTrackedPromisesSection(
   if (agingPromises.length > 0) {
     lines.push('Aging promises (opportunities for reincorporation):');
     for (const promise of agingPromises) {
-      lines.push(formatPromiseLine(promise));
+      lines.push(formatPromiseLine(promise, includeId));
     }
     lines.push('');
   }
@@ -105,7 +109,7 @@ export function buildTrackedPromisesSection(
   if (recentPromises.length > 0) {
     lines.push('Recent promises:');
     for (const promise of recentPromises) {
-      lines.push(formatPromiseLine(promise));
+      lines.push(formatPromiseLine(promise, includeId));
     }
     lines.push('');
   }
@@ -120,8 +124,11 @@ export function buildTrackedPromisesSection(
 
 export function buildPayoffFeedbackSection(
   parentPayoffAssessments: readonly ThreadPayoffAssessment[],
-  parentPromisePayoffAssessments?: readonly PromisePayoffAssessment[]
+  parentPromisePayoffAssessments?: readonly PromisePayoffAssessment[],
+  options: { includePromiseIds?: boolean } = {}
 ): string {
+  const includePromiseIds = options.includePromiseIds !== false;
+
   const rushedThreadPayoffs = parentPayoffAssessments.filter(
     (a) => a.satisfactionLevel === 'RUSHED'
   );
@@ -145,9 +152,10 @@ export function buildPayoffFeedbackSection(
   }
 
   if (rushedPromisePayoffs.length > 0) {
-    parts.push(
-      `Rushed promise payoffs: ${rushedPromisePayoffs.map((a) => `[${a.promiseId}] ${a.description}`).join('; ')}`
-    );
+    const formatPayoff = includePromiseIds
+      ? (a: PromisePayoffAssessment) => `[${a.promiseId}] ${a.description}`
+      : (a: PromisePayoffAssessment) => a.description;
+    parts.push(`Rushed promise payoffs: ${rushedPromisePayoffs.map(formatPayoff).join('; ')}`);
   }
 
   return parts.join('\n') + '\n\n';

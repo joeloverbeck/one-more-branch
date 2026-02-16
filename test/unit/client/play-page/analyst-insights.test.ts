@@ -306,7 +306,7 @@ describe('analyst insights modal', () => {
     expect(payoffItem).not.toBeNull();
   });
 
-  it('renders promise payoffs with type badge and satisfaction', async () => {
+  it('renders promise payoffs with icon pill and satisfaction', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult({
         promisePayoffAssessments: [
@@ -331,7 +331,14 @@ describe('analyst insights modal', () => {
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
     const payoffItem = modalBody.querySelector('.promise-payoff-item');
     expect(payoffItem).not.toBeNull();
-    expect(payoffItem?.querySelector('.promise-type-text-badge')?.textContent).toBe('Chekhov Gun');
+
+    const badge = payoffItem?.querySelector('.promise-payoff-badge');
+    expect(badge).not.toBeNull();
+    const img = badge?.querySelector('img.thread-icon--promise') as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.src).toContain('promise-chekhov-gun-high.png');
+    expect(img.getAttribute('onerror')).toContain("this.style.display='none'");
+
     expect(payoffItem?.querySelector('.payoff-satisfaction-badge')?.textContent).toBe('WELL_EARNED');
     expect(payoffItem?.querySelector('.payoff-reasoning')?.textContent).toBe('Built up over 5 pages.');
   });

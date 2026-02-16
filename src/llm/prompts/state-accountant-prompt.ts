@@ -112,12 +112,18 @@ ${context.reconciliationFailureReasons
 
   const trackedPromisesSection =
     context.mode === 'continuation'
-      ? buildTrackedPromisesSection(context.accumulatedPromises ?? [])
+      ? buildTrackedPromisesSection(context.accumulatedPromises ?? [], {
+          includePromiseIds: false,
+        })
       : '';
 
   const payoffFeedbackSection =
     context.mode === 'continuation'
-      ? buildPayoffFeedbackSection(context.parentThreadPayoffAssessments ?? [])
+      ? buildPayoffFeedbackSection(
+          context.parentThreadPayoffAssessments ?? [],
+          undefined,
+          { includePromiseIds: false }
+        )
       : '';
 
   const userPrompt = `Create state intents for the next page.

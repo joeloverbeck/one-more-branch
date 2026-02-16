@@ -68,3 +68,13 @@
     return '/images/icons/thread-' + threadType.toLowerCase() + '-' + urgency.toLowerCase() + '.png';
   }
 
+  function getPromiseIconPath(promiseType, urgency) {
+    if (typeof promiseType !== 'string' || promiseType.length === 0) {
+      return '';
+    }
+    if (typeof urgency !== 'string' || urgency.length === 0) {
+      return '';
+    }
+    return '/images/icons/promise-' + promiseType.toLowerCase().replace(/_/g, '-') + '-' + urgency.toLowerCase() + '.png';
+  }
+

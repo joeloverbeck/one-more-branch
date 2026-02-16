@@ -9,7 +9,10 @@ import type { FinalPageGenerationResult } from '@/llm/writer-types';
 import type { DetectedPromise } from '@/llm/analyst-types';
 import type { TrackedPromise } from '@/models/state/keyed-entry';
 import { PromiseType, PromiseScope, Urgency } from '@/models/state/keyed-entry';
+import type { AnalystResult } from '@/llm/analyst-types';
+import { createEmptyAccumulatedNpcRelationships } from '@/models/state/npc-relationship';
 import {
+  augmentThreadsResolvedFromAnalyst,
   buildFirstPage,
   buildContinuationPage,
   buildPage,
@@ -585,6 +588,225 @@ describe('page-builder', () => {
         suggestedUrgency: Urgency.HIGH,
         age: 0,
       });
+    });
+  });
+
+  describe('augmentThreadsResolvedFromAnalyst', () => {
+    function makeAnalystResult(
+      threadPayoffAssessments: AnalystResult['threadPayoffAssessments']
+    ): AnalystResult {
+      return {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'INCREMENTAL_PROGRESS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'NOT_READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments,
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
+        rawResponse: '',
+      };
+    }
+
+    it('returns unchanged when analystResult is null', () => {
+      const result = augmentThreadsResolvedFromAnalyst([], null, []);
+      expect(result).toEqual([]);
+    });
+
+    it('returns unchanged when threadPayoffAssessments is empty', () => {
+      const original = ['td-5'];
+      const analyst = makeAnalystResult([]);
+      const result = augmentThreadsResolvedFromAnalyst(original, analyst, []);
+      expect(result).toBe(original);
+    });
+
+    it('adds analyst-detected thread IDs when threadsResolved is empty', () => {
+      const analyst = makeAnalystResult([
+        { threadId: 'td-13', threadText: 'Thread 13', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+        { threadId: 'td-14', threadText: 'Thread 14', satisfactionLevel: 'WELL_EARNED', reasoning: 'r' },
+      ]);
+      const parentOpenThreads = [
+        { id: 'td-13', text: 'Thread 13' },
+        { id: 'td-14', text: 'Thread 14' },
+      ];
+      const result = augmentThreadsResolvedFromAnalyst([], analyst, parentOpenThreads);
+      expect(result).toEqual(['td-13', 'td-14']);
+    });
+
+    it('does not duplicate IDs already in threadsResolved', () => {
+      const analyst = makeAnalystResult([
+        { threadId: 'td-5', threadText: 'Thread 5', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+        { threadId: 'td-13', threadText: 'Thread 13', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+      ]);
+      const parentOpenThreads = [
+        { id: 'td-5', text: 'Thread 5' },
+        { id: 'td-13', text: 'Thread 13' },
+      ];
+      const result = augmentThreadsResolvedFromAnalyst(['td-5'], analyst, parentOpenThreads);
+      expect(result).toEqual(['td-5', 'td-13']);
+    });
+
+    it('skips analyst thread IDs not present in parent open threads', () => {
+      const analyst = makeAnalystResult([
+        { threadId: 'td-99', threadText: 'Ghost thread', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+      ]);
+      const parentOpenThreads = [{ id: 'td-1', text: 'Thread 1' }];
+      const result = augmentThreadsResolvedFromAnalyst([], analyst, parentOpenThreads);
+      expect(result).toEqual([]);
+    });
+
+    it('does not mutate original arrays', () => {
+      const original: string[] = ['td-1'];
+      const analyst = makeAnalystResult([
+        { threadId: 'td-2', threadText: 'Thread 2', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+      ]);
+      const parentOpenThreads = [
+        { id: 'td-1', text: 'Thread 1' },
+        { id: 'td-2', text: 'Thread 2' },
+      ];
+      const result = augmentThreadsResolvedFromAnalyst(original, analyst, parentOpenThreads);
+      expect(original).toEqual(['td-1']);
+      expect(result).toEqual(['td-1', 'td-2']);
+      expect(result).not.toBe(original);
+    });
+
+    it('returns original reference when no augmentation needed', () => {
+      const original = ['td-5'];
+      const analyst = makeAnalystResult([
+        { threadId: 'td-5', threadText: 'Thread 5', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+      ]);
+      const parentOpenThreads = [{ id: 'td-5', text: 'Thread 5' }];
+      const result = augmentThreadsResolvedFromAnalyst(original, analyst, parentOpenThreads);
+      expect(result).toBe(original);
+    });
+  });
+
+  describe('buildPage augments threadsResolved from analyst', () => {
+    function makeAnalystResultFull(
+      threadPayoffAssessments: AnalystResult['threadPayoffAssessments']
+    ): AnalystResult {
+      return {
+        beatConcluded: false,
+        beatResolution: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        narrativeSummary: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        sceneMomentum: 'INCREMENTAL_PROGRESS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'NOT_READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        toneAdherent: true,
+        toneDriftDescription: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments,
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        relationshipShiftsDetected: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
+        rawResponse: '',
+      };
+    }
+
+    it('augments threadsResolved, resolvedThreadMeta, and removes from openThreads', () => {
+      const result = buildMockGenerationResult({
+        threadsResolved: [],
+      });
+      const analystResult = makeAnalystResultFull([
+        {
+          threadId: 'td-13',
+          threadText: 'Find the hidden passage',
+          satisfactionLevel: 'WELL_EARNED',
+          reasoning: 'Thread was addressed narratively',
+        },
+        {
+          threadId: 'td-14',
+          threadText: 'Rescue the prisoner',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'Resolved through dialogue',
+        },
+      ]);
+      const context: PageBuildContext = {
+        pageId: parsePageId(15),
+        parentPageId: parsePageId(14),
+        parentChoiceIndex: 1,
+        parentAccumulatedActiveState: {
+          currentLocation: 'Dungeon',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [
+            { id: 'td-12', text: 'Explore the castle', threadType: 'QUEST', urgency: 'LOW' },
+            { id: 'td-13', text: 'Find the hidden passage', threadType: 'MYSTERY', urgency: 'HIGH' },
+            { id: 'td-14', text: 'Rescue the prisoner', threadType: 'QUEST', urgency: 'MEDIUM' },
+          ],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult,
+        parentThreadAges: { 'td-12': 3, 'td-13': 5, 'td-14': 2 },
+        parentAccumulatedPromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+
+      // threadsResolved should be augmented with td-13 and td-14
+      expect(page.activeStateChanges.threadsResolved).toEqual(['td-13', 'td-14']);
+
+      // resolvedThreadMeta should have entries for both
+      expect(page.resolvedThreadMeta).toEqual({
+        'td-13': { threadType: 'MYSTERY', urgency: 'HIGH' },
+        'td-14': { threadType: 'QUEST', urgency: 'MEDIUM' },
+      });
+
+      // openThreads should NOT contain td-13 or td-14
+      const openThreadIds = page.accumulatedActiveState.openThreads.map((t) => t.id);
+      expect(openThreadIds).not.toContain('td-13');
+      expect(openThreadIds).not.toContain('td-14');
+      expect(openThreadIds).toContain('td-12');
     });
   });
 });

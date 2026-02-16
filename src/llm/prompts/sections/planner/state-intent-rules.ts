@@ -32,6 +32,8 @@ MUST NOT:
 
 ID RULES:
 - removeIds/resolveIds must reference IDs from provided continuation context.
+- Each removal/resolve field only accepts IDs matching its own prefix: threats.removeIds = th-*, constraints.removeIds = cn-*, threads.resolveIds = td-*, inventory.removeIds = inv-*, health.removeIds = hp-*, characterState.removeIds = cs-*.
+- Narrative promise IDs (pr-*) are NOT resolved through stateIntents. Do not place pr-* IDs in any removeIds/resolveIds field.
 - Opening mode commonly has no removable IDs; use empty arrays when nothing should be removed.
 - characterState.removeIds must correspond to explicit invalidation/resolution in planned events.
 - Add fields must contain plain text/object content only, never ID-like strings (e.g., th-1, cn-2, td-3, inv-4, hp-5, cs-6).

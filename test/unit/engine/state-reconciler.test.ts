@@ -270,7 +270,7 @@ describe('state-reconciler', () => {
     expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
-  it('rejects near-duplicate thread add intents when equivalent previous thread is not resolved', () => {
+  it('auto-resolves existing thread when near-duplicate add replaces it without explicit resolve', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
@@ -294,22 +294,11 @@ describe('state-reconciler', () => {
 
     const result = reconcileState(plan, writer, buildPreviousState());
 
-    expect(result.threadsAdded).toEqual([]);
-    expect(result.threadsResolved).toEqual([]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'THREAD_DUPLICATE_LIKE_ADD',
-        field: 'threadsAdded',
-        message:
-          'Thread add "Safely reach the archive" is near-duplicate of existing thread "td-1".',
-      },
-      {
-        code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
-        field: 'threadsAdded',
-        message:
-          'Near-duplicate thread add "Safely reach the archive" requires resolving "td-1" in the same payload.',
-      },
+    expect(result.threadsAdded).toEqual([
+      { text: 'Safely reach the archive', threadType: ThreadType.QUEST, urgency: Urgency.HIGH },
     ]);
+    expect(result.threadsResolved).toEqual(['td-1']);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
   it('allows equivalent thread refinement when the previous equivalent thread is resolved', () => {
@@ -347,7 +336,7 @@ describe('state-reconciler', () => {
     expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
-  it('rejects fixture-backed duplicate relationship loop adds without explicit resolve', () => {
+  it('auto-resolves fixture-backed duplicate relationship loop adds without explicit resolve', () => {
     const scenario = THREAD_DEDUP_FIXTURE.scenarios.duplicateWithoutResolve;
     const candidateText = scenario.add[0]?.text ?? '';
     const duplicateId = scenario.expectedDuplicateOfId ?? '';
@@ -357,20 +346,9 @@ describe('state-reconciler', () => {
       buildPreviousStateWithThreads(THREAD_DEDUP_FIXTURE.previousThreads)
     );
 
-    expect(result.threadsAdded).toEqual([]);
-    expect(result.threadsResolved).toEqual([]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'THREAD_DUPLICATE_LIKE_ADD',
-        field: 'threadsAdded',
-        message: `Thread add "${candidateText}" is near-duplicate of existing thread "${duplicateId}".`,
-      },
-      {
-        code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
-        field: 'threadsAdded',
-        message: `Near-duplicate thread add "${candidateText}" requires resolving "${duplicateId}" in the same payload.`,
-      },
-    ]);
+    expect(result.threadsAdded).toEqual(scenario.add);
+    expect(result.threadsResolved).toEqual([duplicateId]);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
   it('accepts fixture-backed duplicate relationship refinement when matching resolve is present', () => {
@@ -457,23 +435,15 @@ describe('state-reconciler', () => {
         previousState
       );
 
-      expect(duplicateResult.threadsAdded).toEqual([]);
-      expect(duplicateResult.reconciliationDiagnostics).toEqual([
-        {
-          code: 'THREAD_DUPLICATE_LIKE_ADD',
-          field: 'threadsAdded',
-          message: `Thread add "${duplicateText}" is near-duplicate of existing thread "td-threshold".`,
-        },
-        {
-          code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
-          field: 'threadsAdded',
-          message: `Near-duplicate thread add "${duplicateText}" requires resolving "td-threshold" in the same payload.`,
-        },
+      expect(duplicateResult.threadsAdded).toEqual([
+        { text: duplicateText, threadType, urgency: Urgency.HIGH },
       ]);
+      expect(duplicateResult.threadsResolved).toEqual(['td-threshold']);
+      expect(duplicateResult.reconciliationDiagnostics).toEqual([]);
     }
   );
 
-  it('trims filler stop-phrases before thread similarity scoring', () => {
+  it('trims filler stop-phrases before thread similarity scoring and auto-resolves near-duplicate', () => {
     const previousText = 'decode hidden ledger cipher';
     const candidateText = 'decode hidden ledger cipher at this point currently';
     const plan = buildThreadAddPlan(ThreadType.MYSTERY, candidateText);
@@ -482,22 +452,14 @@ describe('state-reconciler', () => {
 
     const result = reconcileState(plan, writer, previousState);
 
-    expect(result.threadsAdded).toEqual([]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'THREAD_DUPLICATE_LIKE_ADD',
-        field: 'threadsAdded',
-        message: `Thread add "${candidateText}" is near-duplicate of existing thread "td-threshold".`,
-      },
-      {
-        code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
-        field: 'threadsAdded',
-        message: `Near-duplicate thread add "${candidateText}" requires resolving "td-threshold" in the same payload.`,
-      },
+    expect(result.threadsAdded).toEqual([
+      { text: candidateText, threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
     ]);
+    expect(result.threadsResolved).toEqual(['td-threshold']);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
-  it('rejects near-duplicate thread adds within the same payload deterministically', () => {
+  it('silently deduplicates near-duplicate thread adds within the same payload', () => {
     const plan = buildPlan({
       stateIntents: {
         ...buildPlan().stateIntents,
@@ -533,14 +495,7 @@ describe('state-reconciler', () => {
         urgency: Urgency.MEDIUM,
       },
     ]);
-    expect(result.reconciliationDiagnostics).toEqual([
-      {
-        code: 'THREAD_DUPLICATE_LIKE_ADD',
-        field: 'threadsAdded',
-        message:
-          'Thread add "Decode cipher ledger" is near-duplicate of another added thread "Decode the cipher ledger".',
-      },
-    ]);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
   it('rejects unknown remove/resolve IDs with deterministic diagnostics', () => {

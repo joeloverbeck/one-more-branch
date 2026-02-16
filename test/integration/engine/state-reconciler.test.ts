@@ -190,7 +190,7 @@ describe('state-reconciler integration', () => {
     expect(result.characterStateChangesRemoved).toEqual(['cs-1']);
   });
 
-  it('exercises the full thread dedup pipeline: near-duplicate rejection + valid acceptance', () => {
+  it('exercises the full thread dedup pipeline: auto-resolves near-duplicate + accepts all adds', () => {
     const plan: PagePlan = {
       ...buildBasePlan(),
       stateIntents: {
@@ -227,16 +227,15 @@ describe('state-reconciler integration', () => {
 
     const result = reconcileState(plan, writer, buildPopulatedPreviousState());
 
-    const dupDiags = result.reconciliationDiagnostics.filter(
-      (d) => d.code === 'THREAD_DUPLICATE_LIKE_ADD'
-    );
-    expect(dupDiags).toHaveLength(1);
-    expect(dupDiags[0].message).toContain('Reach the archive before dawn breaks');
-
     expect(result.threadsAdded).toEqual([
       {
         text: 'The building is collapsing right now around them',
         threadType: ThreadType.DANGER,
+        urgency: Urgency.HIGH,
+      },
+      {
+        text: 'Reach the archive before dawn breaks',
+        threadType: ThreadType.QUEST,
         urgency: Urgency.HIGH,
       },
       {
@@ -245,6 +244,8 @@ describe('state-reconciler integration', () => {
         urgency: Urgency.MEDIUM,
       },
     ]);
+    expect(result.threadsResolved).toEqual(['td-1']);
+    expect(result.reconciliationDiagnostics).toEqual([]);
   });
 
   it('accepts all field type additions without narrative evidence gating', () => {
@@ -467,10 +468,9 @@ describe('state-reconciler integration', () => {
       }),
       previousState
     );
-    expect(dupRelResult.threadsAdded).toHaveLength(0);
-    expect(
-      dupRelResult.reconciliationDiagnostics.some((d) => d.code === 'THREAD_DUPLICATE_LIKE_ADD')
-    ).toBe(true);
+    expect(dupRelResult.threadsAdded).toHaveLength(1);
+    expect(dupRelResult.threadsResolved).toContain('td-rel');
+    expect(dupRelResult.reconciliationDiagnostics).toEqual([]);
 
     const belowQuestResult = reconcileState(
       {
@@ -508,7 +508,9 @@ describe('state-reconciler integration', () => {
       }),
       previousState
     );
-    expect(dupQuestResult.threadsAdded).toHaveLength(0);
+    expect(dupQuestResult.threadsAdded).toHaveLength(1);
+    expect(dupQuestResult.threadsResolved).toContain('td-quest');
+    expect(dupQuestResult.reconciliationDiagnostics).toEqual([]);
 
     const belowMysResult = reconcileState(
       {
@@ -546,7 +548,9 @@ describe('state-reconciler integration', () => {
       }),
       previousState
     );
-    expect(dupMysResult.threadsAdded).toHaveLength(0);
+    expect(dupMysResult.threadsAdded).toHaveLength(1);
+    expect(dupMysResult.threadsResolved).toContain('td-mys');
+    expect(dupMysResult.reconciliationDiagnostics).toEqual([]);
   });
 
   it('produces a complete result for a full realistic page reconciliation scenario', () => {

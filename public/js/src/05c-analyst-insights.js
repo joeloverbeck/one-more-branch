@@ -108,9 +108,9 @@ function renderPromisePayoffs(assessments, resolvedPromiseMeta) {
 
     var badgeHtml = '';
     var meta = promiseId ? metaMap[promiseId] : null;
-    if (meta && typeof meta.promiseType === 'string') {
+    if (meta && typeof meta.promiseType === 'string' && typeof meta.urgency === 'string') {
       badgeHtml = '<span class="promise-payoff-badge">'
-        + '<span class="promise-type-text-badge">' + escapeHtml(formatAnalystEnum(meta.promiseType)) + '</span>'
+        + renderPromiseBadgePill(meta.promiseType, meta.urgency)
         + '</span>';
     }
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { StateAccountantGenerationResult } from '../accountant-types.js';
 import { LLMError } from '../llm-client-types.js';
+import { repairAccountantIdFieldMismatches } from '../validation/accountant-id-repair.js';
 import { normalizeStateIntents } from './shared-state-intent-normalizer.js';
 import { StateAccountantResultSchema } from './state-accountant-validation-schema.js';
 
@@ -98,9 +99,17 @@ export function validateStateAccountantResponse(
     }
   }
 
+  const { repairedJson, filteredIds } = repairAccountantIdFieldMismatches(parsed);
+  if (filteredIds.length > 0) {
+    console.warn(
+      '[accountant-id-repair] Filtered mismatched IDs:',
+      filteredIds.map((f) => `${f.field}: ${f.value} (expected ${f.expectedPrefix}*)`).join(', ')
+    );
+  }
+
   let validated: z.infer<typeof StateAccountantResultSchema>;
   try {
-    validated = StateAccountantResultSchema.parse(parsed);
+    validated = StateAccountantResultSchema.parse(repairedJson);
   } catch (error) {
     throw toAccountantValidationError(error, rawResponse);
   }
