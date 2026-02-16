@@ -136,6 +136,8 @@ describe('getActDisplayInfo', () => {
       const page: Page = {
         ...basePage,
         structureVersionId: versionId,
+        pageActIndex: 1,
+        pageBeatIndex: 0,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 1,
@@ -169,6 +171,8 @@ describe('getActDisplayInfo', () => {
       const page: Page = {
         ...basePage,
         structureVersionId: versionId,
+        pageActIndex: 1,
+        pageBeatIndex: 0,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 1,
@@ -354,7 +358,7 @@ describe('getActDisplayInfo', () => {
       expect(result).toBeNull();
     });
 
-    it('returns null when currentActIndex is out of bounds', () => {
+    it('returns null when pageActIndex is out of bounds', () => {
       const structure = createTestStructure([{ id: 'act-1', name: 'Only Act' }]);
       const versionId = createTestVersionId('0001');
       const story: Story = {
@@ -364,9 +368,11 @@ describe('getActDisplayInfo', () => {
       const page: Page = {
         ...basePage,
         structureVersionId: versionId,
+        pageActIndex: 5,
+        pageBeatIndex: 0,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
-          currentActIndex: 5, // Out of bounds
+          currentActIndex: 5,
         },
       };
 
@@ -375,7 +381,7 @@ describe('getActDisplayInfo', () => {
       expect(result).toBeNull();
     });
 
-    it('returns null when currentBeatIndex is out of bounds', () => {
+    it('returns null when pageBeatIndex is out of bounds', () => {
       const structure = createTestStructure([{ id: 'act-1', name: 'Only Act' }]);
       const versionId = createTestVersionId('0001');
       const story: Story = {
@@ -385,6 +391,8 @@ describe('getActDisplayInfo', () => {
       const page: Page = {
         ...basePage,
         structureVersionId: versionId,
+        pageActIndex: 0,
+        pageBeatIndex: 3,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 0,

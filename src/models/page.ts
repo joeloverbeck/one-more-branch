@@ -66,6 +66,8 @@ export interface Page {
   readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcRelationshipUpdates: readonly NpcRelationship[];
   readonly accumulatedNpcRelationships: AccumulatedNpcRelationships;
+  readonly pageActIndex: number;
+  readonly pageBeatIndex: number;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -100,6 +102,8 @@ export interface CreatePageData {
   parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   npcRelationshipUpdates?: readonly NpcRelationship[];
   parentAccumulatedNpcRelationships?: AccumulatedNpcRelationships;
+  pageActIndex?: number;
+  pageBeatIndex?: number;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -166,6 +170,8 @@ export function createPage(data: CreatePageData): Page {
       data.parentAccumulatedNpcRelationships ?? createEmptyAccumulatedNpcRelationships(),
       data.npcRelationshipUpdates ?? []
     ),
+    pageActIndex: data.pageActIndex ?? parentStructureState.currentActIndex,
+    pageBeatIndex: data.pageBeatIndex ?? parentStructureState.currentBeatIndex,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,

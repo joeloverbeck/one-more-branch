@@ -221,6 +221,8 @@ export interface PageFileData {
   accumulatedNpcAgendas: Record<string, NpcAgendaFileData>;
   npcRelationshipUpdates: NpcRelationshipFileData[];
   accumulatedNpcRelationships: Record<string, NpcRelationshipFileData>;
+  pageActIndex?: number;
+  pageBeatIndex?: number;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

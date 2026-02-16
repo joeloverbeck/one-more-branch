@@ -70,6 +70,8 @@ export interface PageBuildContext {
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
   readonly parentAccumulatedNpcRelationships: AccumulatedNpcRelationships;
   readonly npcRelationshipUpdates?: readonly NpcRelationship[];
+  readonly pageActIndex: number;
+  readonly pageBeatIndex: number;
 }
 
 /**
@@ -329,6 +331,8 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
     npcRelationshipUpdates: context.npcRelationshipUpdates,
     parentAccumulatedNpcRelationships: context.parentAccumulatedNpcRelationships,
+    pageActIndex: context.pageActIndex,
+    pageBeatIndex: context.pageBeatIndex,
   });
 }
 
@@ -365,6 +369,8 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     analystPromisesResolved: [],
     parentAccumulatedNpcAgendas: agendaRecord,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+    pageActIndex: 0,
+    pageBeatIndex: 0,
   });
 }
 
@@ -394,6 +400,8 @@ export function buildContinuationPage(
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+    pageActIndex: context.structureState.currentActIndex,
+    pageBeatIndex: context.structureState.currentBeatIndex,
   });
 }
 

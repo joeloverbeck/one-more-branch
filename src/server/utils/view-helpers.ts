@@ -3,8 +3,6 @@ import type { TrackedPromise } from '../../models/state/index.js';
 import type { AccumulatedNpcRelationships } from '../../models/state/npc-relationship.js';
 import {
   ConstraintType,
-  getCurrentAct,
-  getCurrentBeat,
   getStructureVersion,
   ThreatType,
   isUrgency,
@@ -123,14 +121,14 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
   const structureVersion = getStructureVersion(story, page.structureVersionId);
   if (!structureVersion) return null;
 
-  const currentAct: StoryAct | undefined = getCurrentAct(
-    structureVersion.structure,
-    page.accumulatedStructureState
-  );
+  const displayActIndex = page.pageActIndex;
+  const displayBeatIndex = page.pageBeatIndex;
+
+  const currentAct: StoryAct | undefined = structureVersion.structure.acts[displayActIndex];
   if (!currentAct) return null;
 
-  const actNumber = extractActNumber(currentAct.id, page.accumulatedStructureState.currentActIndex);
-  const currentBeat = getCurrentBeat(structureVersion.structure, page.accumulatedStructureState);
+  const actNumber = extractActNumber(currentAct.id, displayActIndex);
+  const currentBeat = currentAct.beats[displayBeatIndex];
   if (!currentBeat) return null;
 
   return {

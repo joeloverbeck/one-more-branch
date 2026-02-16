@@ -443,6 +443,8 @@ export async function generatePage(
     npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
     parentAccumulatedNpcRelationships,
     npcRelationshipUpdates: agendaResolverResult?.updatedRelationships,
+    pageActIndex: parentStructureState.currentActIndex,
+    pageBeatIndex: parentStructureState.currentBeatIndex,
   });
 
   // --- Update canon ---

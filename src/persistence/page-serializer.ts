@@ -342,6 +342,8 @@ export function serializePage(page: Page): PageFileData {
         },
       ])
     ),
+    pageActIndex: page.pageActIndex,
+    pageBeatIndex: page.pageBeatIndex,
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -430,6 +432,8 @@ export function deserializePage(data: PageFileData): Page {
     accumulatedNpcRelationships: deserializeAccumulatedNpcRelationships(
       data.accumulatedNpcRelationships
     ),
+    pageActIndex: data.pageActIndex ?? data.accumulatedStructureState.currentActIndex,
+    pageBeatIndex: data.pageBeatIndex ?? data.accumulatedStructureState.currentBeatIndex,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,
