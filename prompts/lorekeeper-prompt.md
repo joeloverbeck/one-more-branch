@@ -55,6 +55,12 @@ Choice Intents:
 {{pagePlan.choiceIntents as numbered list: "N. [choiceType / primaryDelta] hook"}}
 {{/if}}
 
+{{#if mentionedCharacters detected in planner text}}
+CHARACTERS REFERENCED IN THIS PLAN (must appear in relevantCharacters):
+- {{matched canonical character name}}
+- ...
+{{/if}}
+
 === FULL STORY CONTEXT ===
 
 {{#if !(decomposedCharacters && decomposedCharacters.length > 0)}}
@@ -237,6 +243,10 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `ancestorSummaries` | All ancestor page summaries (continuation only) |
 | `grandparentNarrative` | Full text of 2 pages ago (continuation only, if exists) |
 | `previousNarrative` | Full text of parent page (continuation only) |
+
+## Engine-Side Character Detection
+
+Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `choiceIntents[].hook`, `writerBrief.openingLineDirective`, `writerBrief.mustIncludeBeats`, `writerBrief.forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters` and `npcs`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
 
 ## Two-Source Synthesis
 

@@ -14,6 +14,58 @@ function formatNumberedLines(lines: readonly string[]): string {
   return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
 }
 
+function stripParenthetical(name: string): string {
+  return name.replace(/\s*\(.*\)\s*$/, '').trim();
+}
+
+export function detectMentionedCharacters(context: LorekeeperContext): string[] {
+  const characterNames: Map<string, string> = new Map();
+
+  if (context.decomposedCharacters) {
+    for (const c of context.decomposedCharacters) {
+      characterNames.set(c.name.toLowerCase(), c.name);
+    }
+  }
+
+  if (context.npcs) {
+    for (const npc of context.npcs) {
+      const key = npc.name.toLowerCase();
+      if (!characterNames.has(key)) {
+        characterNames.set(key, npc.name);
+      }
+    }
+  }
+
+  if (characterNames.size === 0) {
+    return [];
+  }
+
+  const plan = context.pagePlan;
+  const plannerTextParts: string[] = [
+    plan.sceneIntent,
+    plan.dramaticQuestion,
+    ...plan.continuityAnchors,
+    ...plan.choiceIntents.map((ci) => ci.hook),
+    plan.writerBrief.openingLineDirective,
+    ...plan.writerBrief.mustIncludeBeats,
+    ...plan.writerBrief.forbiddenRecaps,
+  ];
+  const combinedText = plannerTextParts.join(' ').toLowerCase();
+
+  const matched: string[] = [];
+
+  for (const [, canonicalName] of characterNames) {
+    const stripped = stripParenthetical(canonicalName);
+    const tokens = stripped.split(/\s+/).filter((t) => t.length >= 3);
+    const hasMatch = tokens.some((token) => combinedText.includes(token.toLowerCase()));
+    if (hasMatch) {
+      matched.push(canonicalName);
+    }
+  }
+
+  return matched;
+}
+
 const LOREKEEPER_SYSTEM_PROMPT = `You are the Lorekeeper for an interactive branching story. Your role is to curate a compact, scene-focused "Story Bible" containing ONLY what the writer needs for the upcoming scene.
 
 You receive the full story context and the planner's scene intent. You must filter, synthesize, and return a focused bible that eliminates irrelevant information while preserving everything essential.
@@ -184,6 +236,12 @@ ${plan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${int
 `
       : '';
 
+  const mentionedCharacters = detectMentionedCharacters(context);
+  const mentionedCharacterDirective =
+    mentionedCharacters.length > 0
+      ? `\nCHARACTERS REFERENCED IN THIS PLAN (must appear in relevantCharacters):\n${mentionedCharacters.map((n) => `- ${n}`).join('\n')}\n`
+      : '';
+
   const userPrompt = `Curate a Story Bible for the upcoming scene based on the planner's guidance and all available context.
 
 === PLANNER GUIDANCE ===
@@ -191,7 +249,7 @@ Scene Intent: ${plan.sceneIntent}
 Dramatic Question: ${plan.dramaticQuestion}
 Continuity Anchors:
 ${plan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'}
-${choiceIntentSection}
+${choiceIntentSection}${mentionedCharacterDirective}
 === FULL STORY CONTEXT ===
 
 ${hasDecomposed ? '' : `CHARACTER CONCEPT:
