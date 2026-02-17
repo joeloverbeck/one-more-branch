@@ -501,6 +501,11 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
       ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
       : '';
 
+  const protagonistName = hasDecomposed ? context.decomposedCharacters![0]!.name : null;
+  const protagonistDirective = protagonistName
+    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
+    : '';
+
   const characterConceptSection = hasDecomposed
     ? ''
     : `CHARACTER CONCEPT:
@@ -541,6 +546,6 @@ ${threadsSection}
 ${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
-${buildProtagonistGuidanceSection(context.protagonistGuidance)}PLAYER'S CHOICE:
+${protagonistDirective}${buildProtagonistGuidanceSection(context.protagonistGuidance)}PLAYER'S CHOICE:
 ${context.selectedChoice}`;
 }

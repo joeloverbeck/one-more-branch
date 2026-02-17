@@ -3,6 +3,33 @@ import type { ContinuationContext } from '../../../../src/llm/context-types';
 import type { ActiveState } from '../../../../src/models/state/active-state';
 import { buildContinuationPrompt } from '../../../../src/llm/prompts/continuation-prompt';
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
+import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
+
+function makeMinimalDecomposedCharacter(name: string): DecomposedCharacter {
+  return {
+    name,
+    coreTraits: ['brave'],
+    motivations: 'Survive.',
+    protagonistRelationship: null,
+    knowledgeBoundaries: 'None.',
+    appearance: 'Average build.',
+    rawDescription: 'A character.',
+    speechFingerprint: {
+      catchphrases: [],
+      vocabularyProfile: 'Direct and simple',
+      sentencePatterns: 'Short declarative',
+      verbalTics: [],
+      dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
+    },
+    decisionPattern: '',
+    coreBeliefs: [],
+    conflictPriority: '',
+  };
+}
 
 describe('buildContinuationPrompt pacing nudge injection', () => {
   const testStructure: StoryStructure = {
@@ -334,5 +361,28 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
 
     expect(userMessage?.content).not.toContain('CHOICE INTENT GUIDANCE');
     expect(userMessage?.content).not.toContain('Dramatic Question:');
+  });
+
+  it('includes PROTAGONIST: [Name] before speech fingerprint when decomposed characters are present', () => {
+    const messages = buildContinuationPrompt(
+      makeContext({
+        decomposedCharacters: [makeMinimalDecomposedCharacter('Jon Ureña')],
+      })
+    );
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('PROTAGONIST: Jon Ureña');
+    expect(userMessage).toContain('PROTAGONIST SPEECH FINGERPRINT');
+    const protagonistIndex = userMessage.indexOf('PROTAGONIST: Jon Ureña');
+    const fingerprintIndex = userMessage.indexOf('PROTAGONIST SPEECH FINGERPRINT');
+    expect(protagonistIndex).toBeLessThan(fingerprintIndex);
+  });
+
+  it('omits PROTAGONIST: line when no decomposed characters', () => {
+    const messages = buildContinuationPrompt(makeContext());
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('PROTAGONIST:');
+    expect(userMessage).not.toContain('PROTAGONIST SPEECH FINGERPRINT');
   });
 });

@@ -207,7 +207,7 @@ ${buildSpineSection(context.spine)}${npcsSection}${npcAgendasSection}${npcRelati
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
 1. sceneWorldContext: Filter worldbuilding to what's relevant here
-2. relevantCharacters: Only characters present, referenced, or whose influence matters - with synthesized speech patterns
+2. relevantCharacters: Characters present, physically nearby (behind doors, approaching, in adjacent spaces), referenced, or whose influence matters - with synthesized speech patterns
 3. relevantCanonFacts: Only canon facts needed for consistency in this scene
 4. relevantHistory: A synthesized narrative chronology preserving causality chains`;
 

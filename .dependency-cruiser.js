@@ -22,6 +22,7 @@ module.exports = {
         "files (.d.ts), tsconfig.json and some of the babel and webpack configs.",
       severity: 'warn',
       from: {
+        path: '^(src)',
         orphan: true,
         pathNot: [
           '(^|/)[.][^/]+[.](?:js|cjs|mjs|ts|cts|mts|json)$',                  // dot files

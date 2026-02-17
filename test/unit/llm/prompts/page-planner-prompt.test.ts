@@ -10,6 +10,33 @@ import type {
 } from '../../../../src/llm/context-types';
 import { buildPagePlannerPrompt } from '../../../../src/llm/prompts/page-planner-prompt';
 import { buildPagePlannerPrompt as buildPagePlannerPromptFromBarrel } from '../../../../src/llm/prompts';
+import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
+
+function makeMinimalDecomposedCharacter(name: string): DecomposedCharacter {
+  return {
+    name,
+    coreTraits: ['brave'],
+    motivations: 'Survive.',
+    protagonistRelationship: null,
+    knowledgeBoundaries: 'None.',
+    appearance: 'Average build.',
+    rawDescription: 'A character.',
+    speechFingerprint: {
+      catchphrases: [],
+      vocabularyProfile: 'Direct and simple',
+      sentencePatterns: 'Short declarative',
+      verbalTics: [],
+      dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
+    },
+    decisionPattern: '',
+    coreBeliefs: [],
+    conflictPriority: '',
+  };
+}
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
@@ -110,5 +137,57 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).not.toContain('STATE PERSISTENCE CONTRACT:');
     expect(user).not.toContain('THREAT TYPE CONTRACT:');
     expect(user).toContain('Return JSON only.');
+  });
+
+  it('includes protagonist perspective rule in system prompt', () => {
+    const messages = buildPagePlannerPrompt(openingContext);
+    const system = getSystemMessage(messages);
+
+    expect(system).toContain('PROTAGONIST');
+    expect(system).toContain('Never frame a choice as what another character does');
+  });
+
+  it('includes PROTAGONIST IDENTITY directive in opening context with decomposed characters', () => {
+    const contextWithDecomposed: OpeningPagePlanContext = {
+      ...openingContext,
+      decomposedCharacters: [
+        makeMinimalDecomposedCharacter('Jon Ureña'),
+        makeMinimalDecomposedCharacter('Captain Voss'),
+      ],
+    };
+    const messages = buildPagePlannerPrompt(contextWithDecomposed);
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('PROTAGONIST IDENTITY: Jon Ureña');
+    expect(user).toContain('what Jon Ureña can do or decide');
+  });
+
+  it('omits PROTAGONIST IDENTITY directive in opening context without decomposed characters', () => {
+    const messages = buildPagePlannerPrompt(openingContext);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('PROTAGONIST IDENTITY:');
+  });
+
+  it('includes PROTAGONIST IDENTITY directive in continuation context with decomposed characters', () => {
+    const contextWithDecomposed: ContinuationPagePlanContext = {
+      ...continuationContext,
+      decomposedCharacters: [
+        makeMinimalDecomposedCharacter('Jon Ureña'),
+        makeMinimalDecomposedCharacter('Captain Voss'),
+      ],
+    };
+    const messages = buildPagePlannerPrompt(contextWithDecomposed);
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('PROTAGONIST IDENTITY: Jon Ureña');
+    expect(user).toContain('what Jon Ureña can do or decide');
+  });
+
+  it('omits PROTAGONIST IDENTITY directive in continuation context without decomposed characters', () => {
+    const messages = buildPagePlannerPrompt(continuationContext);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('PROTAGONIST IDENTITY:');
   });
 });

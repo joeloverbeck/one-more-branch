@@ -43,6 +43,7 @@ Plan the next page before prose generation.
 - Keep output deterministic and concise.
 - Consider NPC agendas and relationships when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior. NPC-protagonist relationship dynamics (valence, tension, leverage) should inform how NPCs approach the protagonist.
 - When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.
+- choiceIntents hooks must describe available actions from the PROTAGONIST's perspective. Never frame a choice as what another character does — always as what the protagonist can do, decide, or pursue.
 
 TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustIncludeBeats, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.
 ```
@@ -86,13 +87,25 @@ Return JSON only.
   "dramaticQuestion": "{{single sentence framing the core tension the choices answer}}",
   "choiceIntents": [
     {
-      "hook": "{{1-sentence description of what this choice offers}}",
+      "hook": "{{1-sentence description of what the PROTAGONIST can do or decide}}",
       "choiceType": "{{TACTICAL_APPROACH|MORAL_DILEMMA|IDENTITY_EXPRESSION|RELATIONSHIP_SHIFT|RESOURCE_COMMITMENT|INVESTIGATION|PATH_DIVERGENCE|CONFRONTATION|AVOIDANCE_RETREAT}}",
       "primaryDelta": "{{LOCATION_CHANGE|GOAL_SHIFT|RELATIONSHIP_CHANGE|URGENCY_CHANGE|ITEM_CONTROL|EXPOSURE_CHANGE|CONDITION_CHANGE|INFORMATION_REVEALED|THREAT_SHIFT|CONSTRAINT_CHANGE}}"
     }
   ]
 }
 ```
+
+## Protagonist Identity Directive
+
+When decomposed characters are available (`decomposedCharacters[0]` exists), a `PROTAGONIST IDENTITY` directive is injected into the user message (both opening and continuation contexts):
+
+```text
+PROTAGONIST IDENTITY: {{protagonistName}} is the protagonist. All choiceIntents hooks must describe what {{protagonistName}} can do or decide — never what other characters do.
+```
+
+This prevents the planner from framing choice hooks from non-protagonist characters' perspectives (e.g., "Alicia offers to help" instead of "Accept Alicia's offer to help").
+
+Source: `buildPlannerOpeningContextSection()` and `buildPlannerContinuationContextSection()` in `src/llm/prompts/sections/planner/`
 
 ## Suggested Protagonist Speech
 

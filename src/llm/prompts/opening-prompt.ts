@@ -89,6 +89,7 @@ ${context.reconciliationFailureReasons
       : null;
   const protagonistSpeechSection = protagonistSpeech
     ? `
+PROTAGONIST: ${protagonistSpeech.name}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 ${formatSpeechFingerprintForWriter(protagonistSpeech.speechFingerprint)}
 

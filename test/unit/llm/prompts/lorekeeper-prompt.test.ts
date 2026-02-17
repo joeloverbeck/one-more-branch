@@ -368,4 +368,21 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).not.toContain('GRANDPARENT NARRATIVE');
     expect(userPrompt).not.toContain('NPC AGENDAS');
   });
+
+  it('includes PROXIMITY AWARENESS principle in system prompt', () => {
+    const messages = buildLorekeeperPrompt(buildMinimalContext());
+    const systemPrompt = messages[0]?.content ?? '';
+
+    expect(systemPrompt).toContain('PROXIMITY AWARENESS');
+    expect(systemPrompt).toContain('physically nearby');
+    expect(systemPrompt).toContain('behind doors');
+  });
+
+  it('includes physically nearby language in user prompt instructions', () => {
+    const messages = buildLorekeeperPrompt(buildMinimalContext());
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).toContain('physically nearby');
+    expect(userPrompt).toContain('behind doors');
+  });
 });

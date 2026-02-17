@@ -61,7 +61,7 @@ export const LOREKEEPER_SCHEMA: JsonSchema = {
             additionalProperties: false,
           },
           description:
-            'Characters relevant to this scene. Only include characters who are present, referenced, or whose influence matters.',
+            'Characters relevant to this scene. Include characters who are present, physically nearby (behind doors, approaching, in adjacent spaces), referenced, or whose influence matters.',
         },
         relevantCanonFacts: {
           type: 'array',
