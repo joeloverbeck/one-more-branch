@@ -15,7 +15,6 @@ function getUserMessages(messages: { role: string; content: string }[]): string[
 
 describe('buildStructurePrompt', () => {
   const baseContext = {
-    characterConcept: 'A retired smuggler forced back into one final run',
     worldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
     tone: 'stormy maritime thriller',
   };
@@ -28,13 +27,49 @@ describe('buildStructurePrompt', () => {
     expect(messages.some((message) => message.role === 'user')).toBe(true);
   });
 
-  it('includes character concept, worldbuilding, and tone', () => {
+  it('includes worldbuilding and tone but not CHARACTER CONCEPT', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
-    expect(lastUser).toContain(baseContext.characterConcept);
     expect(lastUser).toContain(baseContext.worldbuilding);
     expect(lastUser).toContain(`TONE/GENRE: ${baseContext.tone}`);
+    expect(lastUser).not.toContain('CHARACTER CONCEPT:');
+  });
+
+  it('includes decomposed character profiles when provided', () => {
+    const contextWithChars = {
+      ...baseContext,
+      decomposedCharacters: [
+        {
+          name: 'Kael',
+          speechFingerprint: {
+            catchphrases: [],
+            vocabularyProfile: 'terse',
+            sentencePatterns: 'short declaratives',
+            verbalTics: [],
+            dialogueSamples: [],
+            metaphorFrames: 'nautical',
+            antiExamples: [],
+            discourseMarkers: [],
+            registerShifts: 'none',
+          },
+          coreTraits: ['cunning', 'loyal'],
+          motivations: 'Redemption through one last run',
+          protagonistRelationship: null,
+          knowledgeBoundaries: 'Knows the outer islands',
+          decisionPattern: 'Risk-averse unless cornered',
+          coreBeliefs: ['The sea provides'],
+          conflictPriority: 'survival',
+          appearance: 'Tall and weathered',
+          rawDescription: 'A retired smuggler',
+        },
+      ],
+    };
+    const messages = buildStructurePrompt(contextWithChars);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('CHARACTERS (decomposed profiles)');
+    expect(lastUser).toContain('Kael');
   });
 
   it('requests 3-5 acts and 2-4 beats per act', () => {
@@ -129,7 +164,6 @@ describe('buildStructurePrompt', () => {
 
 describe('buildStructurePrompt - minimal system prompt', () => {
   const baseContext = {
-    characterConcept: 'A retired smuggler forced back into one final run',
     worldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
     tone: 'stormy maritime thriller',
   };

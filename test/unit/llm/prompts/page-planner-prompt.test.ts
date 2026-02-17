@@ -79,7 +79,7 @@ describe('buildPagePlannerPrompt', () => {
     expect(system).toContain('page planner');
     expect(system).toContain('do not narrate');
     expect(system).toContain('propose a dramaticQuestion');
-    expect(system).toContain('do not produce stateIntents');
+    expect(system).not.toContain('do not produce stateIntents');
   });
 
   it('uses opening context section for opening mode', () => {

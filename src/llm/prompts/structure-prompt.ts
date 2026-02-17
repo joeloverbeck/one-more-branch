@@ -11,7 +11,6 @@ import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 
 export interface StructureContext {
-  characterConcept: string;
   worldbuilding: string;
   tone: string;
   npcs?: readonly Npc[];
@@ -22,9 +21,6 @@ export interface StructureContext {
 }
 
 const STRUCTURE_FEW_SHOT_USER = `Generate a story structure before the first page.
-
-CHARACTER CONCEPT:
-A disgraced city guard seeking redemption
 
 WORLDBUILDING:
 A plague-ridden port city ruled by merchant houses and secret tribunals
@@ -152,16 +148,13 @@ export function buildStructurePrompt(
 
   const userPrompt = `Generate a story structure before the first page.
 
-CHARACTER CONCEPT:
-${context.characterConcept}
-
 ${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.
 2. For each act, include 2-4 beats that function as flexible milestones, not rigid gates.
 3. Ensure beats are branching-aware so different player choices can still plausibly satisfy them.
-4. Reflect the character concept in the protagonist's journey, conflicts, and opportunities.
+4. Reflect the protagonist (first character profile) in the protagonist's journey, conflicts, and opportunities.
 5. Use worldbuilding details to shape stakes, pressures, and act entry conditions.
 6. Calibrate the entire story architecture to the specified TONE/GENRE:
    - Act names, beat names, and descriptions should reflect the tone (comedic tones get playful names, noir gets terse names, etc.)

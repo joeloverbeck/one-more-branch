@@ -331,7 +331,7 @@ main {
   background: linear-gradient(180deg, rgba(22, 33, 62, 0.88), rgba(15, 52, 96, 0.85));
   box-shadow: var(--shadow);
   margin: 0 auto;
-  max-width: 900px;
+  max-width: 1100px;
   padding: 1.5rem;
 }
 
@@ -416,7 +416,7 @@ main {
 .briefing-npc-grid {
   display: grid;
   gap: 0.8rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
 
 .briefing-world-domain {

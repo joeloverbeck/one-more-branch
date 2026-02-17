@@ -239,7 +239,6 @@ describe('story-service', () => {
       });
       expect(mockedGenerateStoryStructure).toHaveBeenCalledWith(
         expect.objectContaining({
-          characterConcept: story.characterConcept,
           worldbuilding: story.worldbuilding,
           tone: story.tone,
           spine: mockSpine,

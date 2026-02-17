@@ -100,7 +100,6 @@ async function buildPreparedStory(
   });
   const structureResult = await generateStoryStructure(
     {
-      characterConcept: story.characterConcept,
       worldbuilding: story.worldbuilding,
       tone: story.tone,
       npcs: story.npcs,

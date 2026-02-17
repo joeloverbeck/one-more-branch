@@ -47,8 +47,10 @@ The tone block is injected between the role intro and content policy. When no to
 ```text
 Generate a story structure before the first page.
 
-CHARACTER CONCEPT:
-{{characterConcept}}
+{{#if decomposedCharacters.length}}
+CHARACTERS (decomposed profiles):
+{{formattedDecomposedCharacters}}
+{{/if}}
 
 {{#if worldbuilding}}
 WORLDBUILDING:
@@ -85,7 +87,7 @@ REQUIREMENTS (follow ALL):
 1. Return exactly 3 acts following setup, confrontation, and resolution.
 2. For each act, include 2-4 beats that function as flexible milestones, not rigid gates.
 3. Ensure beats are branching-aware so different player choices can still plausibly satisfy them.
-4. Reflect the character concept in the protagonist's journey, conflicts, and opportunities.
+4. Reflect the protagonist (first character profile) in the protagonist's journey, conflicts, and opportunities.
 5. Use worldbuilding details to shape stakes, pressures, and act entry conditions.
 6. Calibrate the entire story architecture to the specified TONE/GENRE:
    - Act names, beat names, and descriptions should reflect the tone (comedic tones get playful names, noir gets terse names, etc.)

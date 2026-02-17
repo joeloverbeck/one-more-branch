@@ -139,7 +139,6 @@ describe('structure-generator', () => {
   const originalFetch = global.fetch;
 
   const context = {
-    characterConcept: 'A disgraced guard trying to clear their name.',
     worldbuilding: 'A plague-ridden harbor city controlled by merchant tribunals.',
     tone: 'grim political fantasy',
   };
@@ -198,7 +197,6 @@ describe('structure-generator', () => {
 
     const messages = body.messages as Array<{ role: string; content: string }>;
     expect(Array.isArray(messages)).toBe(true);
-    expect(messages[messages.length - 1]?.content).toContain(context.characterConcept);
     expect(messages[messages.length - 1]?.content).toContain(context.worldbuilding);
     expect(messages[messages.length - 1]?.content).toContain(context.tone);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'structure', expect.any(Array));
