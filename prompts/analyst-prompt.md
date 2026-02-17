@@ -97,6 +97,19 @@ SPINE INTEGRITY EVALUATION:
 - When spineDeviationDetected is false, set spineDeviationReason to empty string and spineInvalidatedElement to null.
 - When no STORY SPINE section is present, always set spineDeviationDetected to false.
 
+PACING DIRECTIVE:
+After classifying scene signals, write a pacingDirective: a 1-3 sentence natural-language briefing for the page planner.
+Synthesize ALL of the following into one coherent instruction:
+- Scene rhythm: Does the next scene need to breathe after a major event, or accelerate toward a conclusion?
+- Momentum: Is the story stalling, progressing steadily, or shifting scope?
+- Structural position: How close is the current beat to conclusion? Is the next beat's entry condition approaching readiness?
+- Commitment level: Has the protagonist locked into a path, or are options still open?
+- Pacing budget: How many pages remain relative to beats? Burning budget or running lean?
+- Any pacing issue detected: If pacingIssueDetected is true, the directive MUST include the corrective action.
+
+Write as if briefing a fiction writer: "The next scene should deliver a direct confrontation that advances the beat objective" NOT "momentum should increase."
+If no pacing concern exists, still provide rhythm guidance: "After this tense revelation, the next scene can afford a brief character moment before escalating."
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
@@ -340,6 +353,7 @@ The tone reminder is injected into the user prompt (before the narrative) in add
       "suggestedNewDynamic": "{{new dynamic label if changed, empty string if unchanged}}"
     }
   ],
+  "pacingDirective": "{{1-3 sentence natural-language pacing briefing for the page planner}}",
   "spineDeviationDetected": {{true|false}},
   "spineDeviationReason": "{{string, empty when no spine deviation}}",
   "spineInvalidatedElement": "{{dramatic_question|antagonistic_force|need_want|null}}"
@@ -355,6 +369,7 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 - `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
 - `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.
 - `relationshipShiftsDetected`: Array of NPC-protagonist relationship shifts observed in this scene. Empty array if no significant shifts detected. Only flag meaningful changes, not routine interactions. `suggestedValenceChange` is clamped to -3..+3 by the response transformer. These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.
+- `pacingDirective`: A holistic 1-3 sentence natural-language pacing briefing for the page planner. Synthesizes sceneMomentum, objectiveEvidenceStrength, commitmentStrength, structuralPositionSignal, entryConditionReadiness, and pacing budget context into a single actionable instruction. Addresses rhythm (breathe or accelerate?), structural position (how close is beat conclusion?), and what narrative movement the next page should deliver. Written as if briefing a fiction writer, not classifying signals. This field replaces the raw enum display in the planner's pacing briefing — enums are retained internally for beat-conclusion gating but no longer forwarded to the planner as raw labels.
 - `spineDeviationDetected`: Whether a story spine element has been irreversibly invalidated. Defaults to `false`. This is distinct from the existing beat-level `deviationDetected` field, forming a **two-tier deviation system**: beat deviation triggers structure rewrites within the existing spine, while spine deviation signals that the narrative backbone itself needs regeneration.
 - `spineDeviationReason`: When `spineDeviationDetected` is `true`, explains which element was invalidated and why. Empty string when no spine deviation.
 - `spineInvalidatedElement`: The specific spine element that was invalidated: `"dramatic_question"` (central question definitively answered), `"antagonistic_force"` (permanently eliminated with no successor), or `"need_want"` (need-want tension fully resolved prematurely). `null` when no spine deviation detected. Only one element can be flagged per evaluation.

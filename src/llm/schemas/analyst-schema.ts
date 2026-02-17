@@ -79,6 +79,11 @@ export const ANALYST_SCHEMA: JsonSchema = {
           type: 'string',
           enum: ['NOT_READY', 'PARTIAL', 'READY'],
         },
+        pacingDirective: {
+          type: 'string',
+          description:
+            'A holistic 1-3 sentence natural-language pacing directive for the page planner. Synthesize sceneMomentum, objectiveEvidenceStrength, commitmentStrength, structuralPositionSignal, entryConditionReadiness, and the pacing budget context into a single actionable instruction. Address rhythm (breathe or accelerate?), structural position (how close is beat conclusion?), and what narrative movement the next page should deliver. Write as if briefing a writer, not classifying signals.',
+        },
         objectiveAnchors: {
           type: 'array',
           items: { type: 'string' },
@@ -295,6 +300,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'commitmentStrength',
         'structuralPositionSignal',
         'entryConditionReadiness',
+        'pacingDirective',
         'objectiveAnchors',
         'anchorEvidence',
         'completionGateSatisfied',

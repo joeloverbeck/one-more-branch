@@ -178,63 +178,66 @@ describe('Analyst-to-Planner Feedback Loop', () => {
   });
 
   describe('Phase 2: Pacing briefing in planner prompt', () => {
-    it('renders PACING BRIEFING when pacing data present', () => {
+    it('renders PACING BRIEFING with directive and nudge', () => {
       const context = makeBasePlannerContext({
+        parentPacingDirective: 'The next scene should deliver a direct confrontation.',
         parentPacingNudge: 'Beat stalled for 4 pages.',
-        parentPacingIssueReason: 'No objective progress.',
-        parentSceneMomentum: 'STASIS',
-        parentObjectiveEvidenceStrength: 'NONE',
       });
 
       const result = buildPlannerContinuationContextSection(context);
       expect(result).toContain('=== PACING BRIEFING (from story analyst) ===');
-      expect(result).toContain('Pacing nudge: Beat stalled for 4 pages.');
-      expect(result).toContain('Pacing issue reason: No objective progress.');
-      expect(result).toContain('Scene momentum: STASIS');
-      expect(result).toContain('Objective evidence strength: NONE');
+      expect(result).toContain('The next scene should deliver a direct confrontation.');
+      expect(result).toContain('URGENT: Beat stalled for 4 pages.');
     });
 
-    it('includes CRITICAL rule for STASIS + weak evidence', () => {
+    it('renders PACING BRIEFING with directive alone', () => {
       const context = makeBasePlannerContext({
-        parentSceneMomentum: 'STASIS',
-        parentObjectiveEvidenceStrength: 'WEAK_IMPLICIT',
+        parentPacingDirective: 'After this tense revelation, a brief character moment is acceptable.',
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('CRITICAL: Previous scene showed STASIS');
-      expect(result).toContain('Plan MUST advance beat objective directly');
+      expect(result).toContain('=== PACING BRIEFING (from story analyst) ===');
+      expect(result).toContain('After this tense revelation, a brief character moment is acceptable.');
+      expect(result).not.toContain('URGENT:');
     });
 
-    it('includes breathing scene rule for MAJOR_PROGRESS', () => {
-      const context = makeBasePlannerContext({
-        parentSceneMomentum: 'MAJOR_PROGRESS',
-        parentObjectiveEvidenceStrength: 'CLEAR_EXPLICIT',
-      });
-
-      const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('breathing scene is acceptable');
-    });
-
-    it('omits PACING BRIEFING when no pacing data', () => {
+    it('omits PACING BRIEFING when no directive, nudge, or trajectory warnings', () => {
       const context = makeBasePlannerContext();
       const result = buildPlannerContinuationContextSection(context);
       expect(result).not.toContain('PACING BRIEFING');
     });
 
-    it('renders partial data correctly', () => {
+    it('omits PACING BRIEFING when only raw momentum/evidence present (no directive)', () => {
       const context = makeBasePlannerContext({
-        parentSceneMomentum: 'INCREMENTAL_PROGRESS',
+        parentSceneMomentum: 'STASIS',
+        parentObjectiveEvidenceStrength: 'NONE',
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('=== PACING BRIEFING (from story analyst) ===');
-      expect(result).toContain('Scene momentum: INCREMENTAL_PROGRESS');
-      expect(result).not.toContain('Pacing nudge:');
+      expect(result).not.toContain('PACING BRIEFING');
+      expect(result).not.toContain('Scene momentum:');
+      expect(result).not.toContain('Objective evidence strength:');
+    });
+
+    it('renders directive together with trajectory warnings', () => {
+      const trajectory: MomentumTrajectory = [
+        { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
+        { pageId: parsePageId(2), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
+      ];
+
+      const context = makeBasePlannerContext({
+        parentPacingDirective: 'Accelerate toward the beat objective.',
+        momentumTrajectory: trajectory,
+      });
+
+      const result = buildPlannerContinuationContextSection(context);
+      expect(result).toContain('Accelerate toward the beat objective.');
+      expect(result).toContain('WARNING: The last 2 scenes showed no meaningful narrative progress.');
     });
   });
 
-  describe('Phase 4: Momentum trajectory in planner prompt', () => {
-    it('renders trajectory when 2+ entries present', () => {
+  describe('Phase 4: Momentum trajectory warnings in planner prompt', () => {
+    it('does not render trajectory trend lines (raw enums removed)', () => {
       const trajectory: MomentumTrajectory = [
         { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
         {
@@ -245,28 +248,27 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       ];
 
       const context = makeBasePlannerContext({
-        parentSceneMomentum: 'INCREMENTAL_PROGRESS',
-        parentObjectiveEvidenceStrength: 'WEAK_IMPLICIT',
-        momentumTrajectory: trajectory,
-      });
-
-      const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('Momentum trend (last 2 pages): STASIS -> INCREMENTAL_PROGRESS');
-      expect(result).toContain('Objective evidence trend: NONE -> WEAK_IMPLICIT');
-    });
-
-    it('omits trajectory when fewer than 2 entries', () => {
-      const trajectory: MomentumTrajectory = [
-        { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
-      ];
-
-      const context = makeBasePlannerContext({
-        parentSceneMomentum: 'STASIS',
+        parentPacingDirective: 'Continue steadily.',
         momentumTrajectory: trajectory,
       });
 
       const result = buildPlannerContinuationContextSection(context);
       expect(result).not.toContain('Momentum trend');
+      expect(result).not.toContain('Objective evidence trend');
+    });
+
+    it('omits trajectory warnings when fewer than 2 entries', () => {
+      const trajectory: MomentumTrajectory = [
+        { pageId: parsePageId(1), sceneMomentum: 'STASIS', objectiveEvidenceStrength: 'NONE' },
+      ];
+
+      const context = makeBasePlannerContext({
+        parentPacingDirective: 'Keep moving.',
+        momentumTrajectory: trajectory,
+      });
+
+      const result = buildPlannerContinuationContextSection(context);
+      expect(result).not.toContain('WARNING:');
     });
 
     it('emits STASIS warning at 2+ consecutive', () => {
@@ -285,13 +287,12 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       ];
 
       const context = makeBasePlannerContext({
-        parentSceneMomentum: 'STASIS',
         momentumTrajectory: trajectory,
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('WARNING: 2 consecutive pages with STASIS momentum');
-      expect(result).toContain('major narrative advancement');
+      expect(result).toContain('WARNING: The last 2 scenes showed no meaningful narrative progress.');
+      expect(result).toContain('major advancement');
     });
 
     it('emits weak evidence warning at 3+ consecutive', () => {
@@ -310,12 +311,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       ];
 
       const context = makeBasePlannerContext({
-        parentSceneMomentum: 'INCREMENTAL_PROGRESS',
         momentumTrajectory: trajectory,
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('WARNING: 3 consecutive pages with weak/no objective evidence');
+      expect(result).toContain('WARNING: The last 3 scenes produced no clear evidence of beat objective progress.');
       expect(result).toContain('direct progress toward the current beat objective');
     });
 
@@ -331,13 +331,11 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       ];
 
       const context = makeBasePlannerContext({
-        parentSceneMomentum: 'MAJOR_PROGRESS',
-        parentObjectiveEvidenceStrength: 'CLEAR_EXPLICIT',
         momentumTrajectory: trajectory,
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).not.toContain('WARNING: 3 consecutive');
+      expect(result).not.toContain('WARNING:');
     });
   });
 

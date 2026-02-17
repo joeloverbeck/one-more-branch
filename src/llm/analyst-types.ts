@@ -61,6 +61,7 @@ export interface AnalystResult {
   commitmentStrength: CommitmentStrength;
   structuralPositionSignal: StructuralPositionSignal;
   entryConditionReadiness: EntryConditionReadiness;
+  pacingDirective: string;
   objectiveAnchors: string[];
   anchorEvidence: string[];
   completionGateSatisfied: boolean;

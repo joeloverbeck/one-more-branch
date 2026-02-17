@@ -51,6 +51,7 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     commitmentStrength: 'TENTATIVE',
     structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
     entryConditionReadiness: 'NOT_READY',
+    pacingDirective: '',
     objectiveAnchors: [],
     anchorEvidence: [],
     completionGateSatisfied: false,

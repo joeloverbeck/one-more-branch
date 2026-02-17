@@ -162,6 +162,7 @@ export interface AnalystResultFileData {
   promisePayoffAssessments: PromisePayoffAssessmentFileData[];
   threadPayoffAssessments: ThreadPayoffAssessmentFileData[];
   relationshipShiftsDetected: DetectedRelationshipShiftFileData[];
+  pacingDirective?: string;
   spineDeviationDetected?: boolean;
   spineDeviationReason?: string;
   spineInvalidatedElement?: string | null;
