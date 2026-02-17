@@ -176,6 +176,32 @@ describe('validateWriterResponse', () => {
     expect(result['inventoryAdded']).toBeUndefined();
   });
 
+  it('accepts choice text up to 500 characters (new limit)', () => {
+    const longChoiceText = 'Venture into the ancient catacombs beneath the crumbling cathedral where ' +
+      'the forgotten relics of a bygone civilization await discovery among the winding corridors ' +
+      'filled with the echoes of forgotten prayers and the whispers of restless spirits that guard ' +
+      'the sacred treasures hidden deep within the labyrinthine passages that stretch endlessly ' +
+      'beneath the hallowed ground of the once-magnificent structure now reduced to rubble and dust';
+    // ~450 chars - well under 500 but over old 300 limit
+    expect(longChoiceText.length).toBeGreaterThan(300);
+    expect(longChoiceText.length).toBeLessThanOrEqual(500);
+
+    const result = validateWriterResponse(
+      {
+        narrative: VALID_NARRATIVE,
+        choices: [
+          { text: longChoiceText, choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Turn back and seek another way', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        ],
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        isEnding: false,
+      },
+      'raw json response'
+    );
+
+    expect(result.choices[0]?.text).toBe(longChoiceText);
+  });
+
   it('rejects responses with empty narrative', () => {
     expect(() =>
       validateWriterResponse(

@@ -466,7 +466,7 @@ describe('llm client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('should treat schema validation failures as non-retryable', async () => {
+  it('should treat schema validation failures as retryable', async () => {
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: [
@@ -507,11 +507,15 @@ describe('llm client', () => {
     // Attach rejection handler early to prevent unhandled rejection detection
     const expectation = expect(promise).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
-      retryable: false,
+      retryable: true,
     });
 
+    // Advance through retry delays: 1000ms then 2000ms
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
     await expectation;
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it('should log opening prompts before API call', async () => {
@@ -642,17 +646,23 @@ describe('llm client', () => {
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
-    await expect(promise).rejects.toMatchObject({
+    const expectation = expect(promise).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',
-      retryable: false,
+      retryable: true,
     });
+
+    // Advance through retry delays: 1000ms then 2000ms
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expectation;
 
     const rejectedError = await promise.catch((error: unknown): unknown => error);
     expect(rejectedError).toBeInstanceOf(LLMError);
     const errorContext = rejectedError instanceof LLMError ? rejectedError.context : undefined;
     expect(Array.isArray(errorContext?.validationIssues)).toBe(true);
     expect(Array.isArray(errorContext?.ruleKeys)).toBe(true);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
 
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const validationErrorCall = errorCalls.find(
@@ -688,19 +698,25 @@ describe('llm client', () => {
       responseWithStructuredContent(JSON.stringify(invalidStructuredPayload))
     );
 
-    await expect(
-      generateWriterPage(continuationContext, {
-        apiKey: 'test-key',
-        observability: {
-          storyId: 'story-123',
-          pageId: 7,
-          requestId: 'req-abc',
-        },
-      })
-    ).rejects.toMatchObject({
-      code: 'VALIDATION_ERROR',
-      retryable: false,
+    const promise = generateWriterPage(continuationContext, {
+      apiKey: 'test-key',
+      observability: {
+        storyId: 'story-123',
+        pageId: 7,
+        requestId: 'req-abc',
+      },
     });
+
+    const expectation = expect(promise).rejects.toMatchObject({
+      code: 'VALIDATION_ERROR',
+      retryable: true,
+    });
+
+    // Advance through retry delays: 1000ms then 2000ms
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
+
+    await expectation;
 
     expect(mockLogger.error).toHaveBeenCalledWith(
       'Writer validator failure counter',

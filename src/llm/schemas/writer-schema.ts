@@ -30,7 +30,7 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
               text: {
                 type: 'string',
                 description:
-                  'The choice text the player sees. Start with a verb. 3-300 characters.',
+                  'The choice text the player sees. Start with a verb. 3-500 characters.',
               },
               choiceType: {
                 type: 'string',
