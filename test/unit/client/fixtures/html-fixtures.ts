@@ -36,7 +36,7 @@ export interface PlayPageOptions {
   recapSummaries?: Array<{ pageId: number; summary: string }>;
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
   resolvedPromiseMeta?: Record<string, { promiseType: string; scope?: string; urgency: string }>;
-  worldFacts?: string[];
+  worldFacts?: Array<string | { text: string; factType: string }>;
   characterCanon?: Record<string, string[]>;
 }
 
