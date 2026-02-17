@@ -1,0 +1,38 @@
+name: nightly-quality
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  heavy-tests:
+    name: heavy-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Performance tests
+        run: npm run test:performance
+
+      - name: Memory tests
+        run: npm run test:memory
+
+      - name: Coverage check
+        run: npm run test:coverage
