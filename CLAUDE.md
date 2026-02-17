@@ -88,40 +88,60 @@ Current integration and E2E suites run with mocked LLM/fetch flows and do not re
 
 ```
 src/
-├── config/             # Runtime configuration, Zod schemas, thread-pacing-config.ts
+├── config/             # Runtime configuration, Zod schemas, thread-pacing-config.ts,
+│                       #   stage-model.ts (per-stage LLM model selection)
 ├── engine/             # Core story engine: page service, state reconciliation,
 │   │                   #   structure progression, deviation handling, canon management
-│   ├── page-service.ts       # Orchestrates the full generation pipeline
-│   ├── page-builder.ts       # Constructs Page objects from generation results
-│   ├── state-reconciler.ts   # Validates/reconciles writer output against active state
-│   ├── structure-state.ts    # Beat/act progression state machine
-│   ├── structure-rewriter.ts # Rewrites story structure on deviation
-│   ├── deviation-handler.ts  # Detects and handles story deviations
-│   ├── canon-manager.ts      # Global and character canon management
-│   ├── ancestor-collector.ts # Collects ancestor context for prompts
-│   └── story-engine.ts       # High-level API (startStory, makeChoice)
-├── llm/                # OpenRouter client, 8-stage prompt system, response parsing
+│   ├── page-service.ts              # Orchestrates the full generation pipeline
+│   ├── page-builder.ts              # Constructs Page objects from generation results
+│   ├── state-reconciler.ts          # Validates/reconciles writer output against active state
+│   ├── reconciliation-retry-pipeline.ts # Planner→accountant→writer→reconciler retry loop
+│   ├── structure-state.ts           # Beat/act progression state machine
+│   ├── structure-rewriter.ts        # Rewrites story structure on deviation
+│   ├── spine-rewriter.ts            # Rewrites story spine on spine-level deviation
+│   ├── deviation-handler.ts         # Detects and handles story deviations
+│   ├── continuation-post-processing.ts  # Analyst eval, deviation, beat conclusion, pacing
+│   ├── continuation-context-builder.ts  # Builds continuation context for planner/writer
+│   ├── lorekeeper-writer-pipeline.ts    # Lorekeeper→writer pipeline orchestration
+│   ├── npc-agenda-pipeline.ts       # NPC agenda resolver orchestration
+│   ├── canon-manager.ts             # Global and character canon management
+│   ├── ancestor-collector.ts        # Collects ancestor context for prompts
+│   ├── parent-state-collector.ts    # Collects parent page state snapshots
+│   ├── story-engine.ts              # High-level API (startStory, makeChoice)
+│   └── story-service.ts             # Story preparation (decomposition + structure)
+├── llm/                # OpenRouter client, multi-stage prompt system, response parsing
 │   ├── prompts/              # Prompt builders (opening, continuation, planner,
-│   │   │                     #   lorekeeper, analyst, structure, structure-rewrite, agenda-resolver)
+│   │   │                     #   accountant, lorekeeper, analyst, structure,
+│   │   │                     #   structure-rewrite, spine-rewrite, agenda-resolver,
+│   │   │                     #   entity-decomposer, spine)
 │   │   └── sections/         # Shared prompt sections (opening/, continuation/,
 │   │                         #   planner/, shared/)
 │   ├── schemas/              # JSON Schema definitions for structured LLM output
-│   ├── validation/           # Writer output validation and ID repair
+│   ├── validation/           # Writer and accountant output validation and ID repair
 │   ├── client.ts             # OpenRouter HTTP client
 │   ├── structure-generator.ts    # Story structure generation
-│   ├── planner-generation.ts     # Page plan generation
+│   ├── planner-generation.ts     # Page plan generation (reduced plan, no state intents)
+│   ├── accountant-generation.ts  # State accountant generation (state intents)
 │   ├── writer-generation.ts      # Page narrative/choices generation
 │   ├── analyst-generation.ts     # Post-write scene analysis
+│   ├── lorekeeper-generation.ts  # Story bible curation
+│   ├── agenda-resolver-generation.ts # NPC agenda + relationship resolution
+│   ├── spine-generator.ts        # Spine option generation
+│   ├── entity-decomposer.ts      # Entity decomposition (characters + world)
 │   └── result-merger.ts          # Merges writer + reconciler + analyst results
 ├── logging/            # Structured logging: console, file-based prompt sink,
 │   │                   #   browser injector
 │   └── prompt-file-sink.ts   # JSONL prompt logging to logs/MM-DD-YYYY/
 ├── models/             # Data types: Story, Page, Choice, state, structure
 │   ├── state/                # ActiveState, KeyedEntry, Inventory, Health,
-│   │                         #   CharacterState, Canon types
+│   │                         #   CharacterState, Canon, NpcAgenda, NpcRelationship types
 │   ├── story-arc.ts          # StoryStructure, StoryAct, StoryBeat,
 │   │                         #   AccumulatedStructureState
+│   ├── story-spine.ts        # StorySpine, StorySpineType, ConflictType, CharacterArcType
 │   ├── protagonist-affect.ts # Emotional state snapshots per page
+│   ├── protagonist-guidance.ts # Player guidance (emotions, thoughts, speech)
+│   ├── decomposed-character.ts # Decomposed character profiles from entity decomposer
+│   ├── decomposed-world.ts   # Decomposed world facts from entity decomposer
 │   ├── choice-enums.ts       # ChoiceType and PrimaryDelta enums
 │   ├── npc.ts                # NPC definitions
 │   └── structure-version.ts  # Versioned structure tracking
@@ -130,11 +150,12 @@ src/
 │   ├── page-serializer.ts    # Page JSON serialization/deserialization
 │   └── storage.ts            # Core file I/O operations
 ├── server/             # Express server
-│   ├── routes/               # Route handlers (home, play, stories, progress)
+│   ├── routes/               # Route handlers (home, play, stories, progress, logs)
 │   ├── services/             # Generation progress tracking, story creation
 │   ├── middleware/            # Error handler
-│   ├── utils/                # Async route wrapper, view helpers, LLM error formatter
-│   └── views/pages/          # EJS templates (home, new-story, play, error)
+│   ├── utils/                # Async route wrapper, view helpers, briefing helpers,
+│   │                         #   request normalizers, LLM error formatter
+│   └── views/pages/          # EJS templates (home, new-story, play, briefing, logs, error)
 └── index.ts            # Application entry point
 
 test/
@@ -156,16 +177,18 @@ archive/specs/      # Archived completed specifications
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + spine (with toneFeel/toneAvoid) + API key
 2. **Entity Decomposition**: LLM decomposes raw worldbuilding and NPCs into structured character profiles and world facts, guided by spine's tone feel
 3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas)
-4. **Page Planning** (Planner prompt): LLM creates a PagePlan with scene intent, continuity anchors, state intents, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
-5. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
-6. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
-7. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
-8. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, pacing, structural position, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
-9. **Structure Rewrite** (conditional): If deviation detected, LLM rewrites remaining story structure
-10. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + accumulated tracked promises
-11. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
-12. **State Accumulation**: Each page's state = parent's accumulated state + own changes
-13. **Canon Management**: Global and character-specific canon facts persist across all branches
+4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
+5. **State Accounting** (Accountant prompt): LLM generates state intents (what state changes to target) separately from the planner. The accountant receives the reduced plan and produces structured state mutation intents
+6. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
+7. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
+8. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
+9. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, spine deviation, pacing, structural position, NPC coherence, relationship shifts, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
+10. **Spine Rewrite** (conditional): If spine-level deviation detected, LLM rewrites the story spine
+11. **Structure Rewrite** (conditional): If beat-level deviation detected (or forced by spine rewrite), LLM rewrites remaining story structure
+12. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + accumulated tracked promises + NPC agenda/relationship updates
+13. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
+14. **State Accumulation**: Each page's state = parent's accumulated state + own changes
+15. **Canon Management**: Global and character-specific canon facts persist across all branches
 
 ## Generation Pipeline Stages
 
@@ -177,12 +200,13 @@ Story preparation stages (run once on story creation):
 - `STRUCTURING_STORY` - Story structure generation LLM call (uses spine + decomposed data)
 
 Per-page generation stages:
-- `PLANNING_PAGE` - Page planner LLM call
+- `PLANNING_PAGE` - Page planner LLM call (reduced plan without state intents)
+- `ACCOUNTING_STATE` - State accountant LLM call (state intents from reduced plan)
 - `CURATING_CONTEXT` - Lorekeeper story bible generation
 - `WRITING_OPENING_PAGE` - Opening page writer LLM call
 - `WRITING_CONTINUING_PAGE` - Continuation page writer LLM call
-- `ANALYZING_SCENE` - Analyst LLM call (beat conclusion, deviation, pacing, foreshadowing, payoff quality)
-- `RESOLVING_AGENDAS` - NPC agenda resolver LLM call (when NPCs exist)
+- `ANALYZING_SCENE` - Analyst LLM call (beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts, payoff quality)
+- `RESOLVING_AGENDAS` - NPC agenda + relationship resolver LLM call (when NPCs exist)
 - `RESTRUCTURING_STORY` - Structure rewrite LLM call (on deviation)
 
 Progress is tracked in-memory by `GenerationProgressService` and polled via `GET /play/:storyId/progress/:progressId`.
@@ -190,13 +214,13 @@ Progress is tracked in-memory by `GenerationProgressService` and polled via `GET
 ## Key Data Models
 
 ### Page
-Each page stores: narrative text, scene summary, typed choices, protagonist affect, active state changes, accumulated state snapshots (active state, inventory, health, character state, structure state), structure version ID, thread ages (`threadAges: Record<string, number>`), accumulated tracked promises (`accumulatedPromises: TrackedPromise[]`), and parent linkage.
+Each page stores: narrative text, scene summary, typed choices, protagonist affect, active state changes, accumulated state snapshots (active state, inventory, health, character state, structure state), structure version ID, thread ages (`threadAges: Record<string, number>`), accumulated tracked promises (`accumulatedPromises: TrackedPromise[]`), resolved thread/promise metadata (`resolvedThreadMeta`, `resolvedPromiseMeta`), story bible (`storyBible: StoryBible | null`), analyst result (`analystResult: AnalystResult | null`), NPC agendas (`npcAgendaUpdates`, `accumulatedNpcAgendas`), NPC relationships (`npcRelationshipUpdates`, `accumulatedNpcRelationships`), page structure position (`pageActIndex`, `pageBeatIndex`), and parent linkage.
 
 ### ActiveState
-Tracks current truths: `currentLocation`, `activeThreats`, `activeConstraints`, `openThreads`. Each entry is a `KeyedEntry` with a server-assigned ID (e.g., `th-1`, `cn-2`). Threads are `ThreadEntry` with `threadType` (MYSTERY, QUEST, RELATIONSHIP, DANGER, INFORMATION, RESOURCE, MORAL) and `urgency` (LOW, MEDIUM, HIGH).
+Tracks current truths: `currentLocation`, `activeThreats`, `activeConstraints`, `openThreads`. Each entry is a `KeyedEntry` with a server-assigned ID (e.g., `th-1`, `cn-2`). Threats are `ThreatEntry` with `threatType` (HOSTILE_AGENT, ENVIRONMENTAL, CREATURE). Constraints are `ConstraintEntry` with `constraintType` (PHYSICAL, ENVIRONMENTAL, TEMPORAL). Threads are `ThreadEntry` with `threadType` (MYSTERY, QUEST, RELATIONSHIP, DANGER, INFORMATION, RESOURCE, MORAL) and `urgency` (LOW, MEDIUM, HIGH).
 
 ### TrackedPromise & Payoff Assessments
-`TrackedPromise` represents a server-owned narrative promise with lifecycle state: `id`, `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, DRAMATIC_IRONY, UNRESOLVED_EMOTION, SETUP_PAYOFF), `suggestedUrgency` (LOW, MEDIUM, HIGH), `age` (pages since detection). `ThreadPayoffAssessment` evaluates resolved thread quality: `threadId`, `threadText`, `satisfactionLevel` (RUSHED, ADEQUATE, WELL_EARNED), `reasoning`. `PromisePayoffAssessment` evaluates resolved promise quality with the same satisfaction rubric. Promises are explicitly resolved by analyst-provided IDs (no heuristic conversion and no hard cap).
+`TrackedPromise` represents a server-owned narrative promise with lifecycle state: `id`, `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, UNRESOLVED_TENSION, DRAMATIC_QUESTION, MYSTERY_HOOK, TICKING_CLOCK), `scope` (SCENE, BEAT, ACT, STORY), `resolutionHint`, `suggestedUrgency` (LOW, MEDIUM, HIGH), `age` (pages since detection). `ThreadPayoffAssessment` evaluates resolved thread quality: `threadId`, `threadText`, `satisfactionLevel` (RUSHED, ADEQUATE, WELL_EARNED), `reasoning`. `PromisePayoffAssessment` evaluates resolved promise quality: `promiseId`, `description`, `satisfactionLevel`, `reasoning`. Promises are explicitly resolved by analyst-provided IDs (no heuristic conversion and no hard cap).
 
 ### Choice
 Each choice has `text`, `choiceType` (9 types: TACTICAL_APPROACH, MORAL_DILEMMA, etc.), `primaryDelta` (10 types: LOCATION_CHANGE, GOAL_SHIFT, etc.), and `nextPageId`.
@@ -208,7 +232,7 @@ Per-page emotional snapshot (not accumulated): `primaryEmotion`, `primaryIntensi
 Multi-act story arc with beats. Each act has an objective, stakes, entry condition, and beats. Each beat has a name, description, objective, and role (setup/escalation/turning_point/resolution). `AccumulatedStructureState` tracks progression through acts/beats with `BeatProgression` records.
 
 ### Story
-Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Supports NPCs and starting situation.
+Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from entity decomposer), `decomposedWorld` (structured world facts), `initialNpcAgendas`, `initialNpcRelationships`. Supports NPCs and starting situation.
 
 ## Prompt Logging
 
@@ -223,7 +247,7 @@ Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`
 - `GET /play/:storyId?page=:n` renders `pages/play` with `openThreadPanelRows` already sorted for display.
 - Open thread panel rows expose `id`, `text`, `threadType`, `urgency`, and `displayLabel`.
 - `POST /play/:storyId/choice` JSON includes `page.openThreads` with `id`, `text`, `threadType`, `urgency`, and `displayLabel`.
-- `POST /play/:storyId/choice` accepts optional `suggestedProtagonistSpeech` field for player-suggested dialogue.
+- `POST /play/:storyId/choice` accepts optional `protagonistGuidance` object with `suggestedEmotions`, `suggestedThoughts`, `suggestedSpeech` fields for player-guided protagonist behavior.
 - Client-side play updates (`public/js/app.js`) must re-render the open-threads panel from AJAX response data after each successful choice without full page reload.
 
 ## Client-Side JavaScript (CRITICAL)
@@ -236,15 +260,23 @@ The client JS is split into numbered source files in `public/js/src/`:
 public/js/
 ├── app.js              ← GENERATED by concat script. Do not edit.
 └── src/
-    ├── 01-constants.js       # Config, STAGE_PHRASE_POOLS, STAGE_DISPLAY_NAMES, enums
-    ├── 02-utils.js           # Shared utility functions
+    ├── 01-constants.js        # Config, STAGE_PHRASE_POOLS, STAGE_DISPLAY_NAMES, enums
+    ├── 02-utils.js            # Shared utility functions
     ├── 03-loading-progress.js # Spinner and progress polling
     ├── 04-thread-renderers.js # Open threads panel rendering
+    ├── 04b-spine-renderer.js  # Story spine display rendering
+    ├── 04c-act-indicator.js   # Act/beat progress indicator
     ├── 05-choice-renderers.js # Choice button rendering
+    ├── 05b-affect-renderer.js # Protagonist affect display
+    ├── 05c-analyst-insights.js # Analyst insights modal
+    ├── 05d-lore-modal.js      # Story lore/bible modal
+    ├── 05e-recap-modal.js     # Story recap modal
+    ├── 05f-relationship-renderer.js # NPC relationship display
     ├── 06-state-renderers.js  # State panel rendering
     ├── 07-error-display.js    # Error display logic
     ├── 08-npc-manager.js      # NPC management UI
-    └── 09-controllers.js      # Page controllers and initialization
+    ├── 09-controllers.js      # Page controllers and initialization
+    └── 10-briefing-controller.js # Story briefing page controller
 ```
 
 **Workflow**: Edit files in `public/js/src/`, then regenerate `app.js`:
@@ -311,6 +343,24 @@ Core specs (01-06) plus extensive post-core development:
 | suggested-protagonist-speech | Player-suggested dialogue input | Done |
 | beat-conclusion-scene-signal-gating | Beat conclusion gating via analyst signals | Done |
 | planner-choice-intents-and-dramatic-question | Planner choice intents and dramatic question | Done |
+| state-accountant-stage-split | State accountant separated from planner | Done |
+| threat-constraint-type-classification | Typed threats (HOSTILE_AGENT, etc.) and constraints (PHYSICAL, etc.) | Done |
+| protagonist-guidance-block | Protagonist guidance (emotions/thoughts/speech) replacing single speech field | Done |
+| analyst-insights-modal | Analyst insights modal in play UI | Done |
+| analyst-narrative-summary-always-populated | Analyst narrative summary always populated | Done |
+| story-lore-modal | Story lore/bible modal in play UI | Done |
+| story-recap-modal | Story recap modal in play UI | Done |
+| dramatic-question-guideline-and-priority-stack | Dramatic question guidelines and priority stack | Done |
+| story-briefing-landing-page | Story briefing landing page | Done |
+| protagonist-affect-widget | Protagonist affect widget in play UI | Done |
+| flexible-act-count | Flexible act count in story structure | Done |
+| prose-golden-rule-and-audit | Prose quality golden rule and audit | Done |
+| story-architecture-improvements | Story architecture improvements | Done |
+| planner-prompt-character-and-structure-cleanup | Planner prompt character and structure cleanup | Done |
+| move-suggested-speech-to-planner | Move suggested speech to planner stage | Done |
+| choice-count-wording-fix | Choice count wording fix | Done |
+| accountant-planner-output-formatting | Accountant/planner output formatting | Done |
+| stateful-narrative-promises | Stateful narrative promises with PromiseScope and lifecycle | Done |
 
 Completed specs are archived in `archive/specs/`.
 
@@ -322,14 +372,16 @@ Completed specs are archived in `archive/specs/`.
   1. **Spine prompt** (`spine-generator.ts`): Generates spine options with tone keywords (separate pre-creation step)
   2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts
   3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data
-- **Per-page generation** (up to 6 stages: 4 LLM calls + 2 engine-side):
-  1. **Planner prompt** (`planner-generation.ts`): Creates page plan with scene intent, state intents, dramatic question, and choice intents
-  2. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
-  3. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
-  4. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
-  5. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, pacing
-  6. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas based on scene events
-- **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on deviation
+- **Per-page generation** (up to 7 stages: 5 LLM calls + 2 engine-side):
+  1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, dramatic question, choice intents (no state intents)
+  2. **State accountant prompt** (`accountant-generation.ts`): Generates state intents from reduced plan
+  3. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
+  4. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
+  5. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
+  6. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts
+  7. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas and relationships based on scene events
+- **Conditional**: **Spine rewrite prompt** (`spine-rewriter.ts`): Rewrites spine on spine-level deviation
+- **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on beat-level deviation (or forced by spine rewrite)
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
 - Response transformers in `schemas/` convert raw LLM JSON to typed results
 - Validation pipeline in `validation/` repairs malformed writer output (e.g., ID prefix repair)
@@ -443,9 +495,9 @@ When LLM interfaces change, all test mocks must include every required field. Th
 // StateReconciliationResult fields (from state reconciler)
 {
   currentLocation: '...',
-  threatsAdded: [],
+  threatsAdded: [],       // Array of { text, threatType } (ThreatAddition)
   threatsRemoved: [],
-  constraintsAdded: [],
+  constraintsAdded: [],   // Array of { text, constraintType } (ConstraintAddition)
   constraintsRemoved: [],
   threadsAdded: [],       // Array of { text, threadType, urgency }
   threadsResolved: [],
