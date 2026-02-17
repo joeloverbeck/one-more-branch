@@ -1,4 +1,7 @@
-import { buildLorekeeperPrompt } from '../../../../src/llm/prompts/lorekeeper-prompt';
+import {
+  buildLorekeeperPrompt,
+  detectMentionedCharacters,
+} from '../../../../src/llm/prompts/lorekeeper-prompt';
 import {
   ChoiceType,
   PrimaryDelta,
@@ -7,6 +10,7 @@ import {
 } from '../../../../src/models';
 import type { LorekeeperContext } from '../../../../src/llm/context-types';
 import type { PagePlan } from '../../../../src/llm/planner-types';
+import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
 
 function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
   return {
@@ -384,5 +388,221 @@ describe('buildLorekeeperPrompt', () => {
 
     expect(userPrompt).toContain('physically nearby');
     expect(userPrompt).toContain('behind doors');
+  });
+});
+
+const EMPTY_SPEECH_FINGERPRINT = {
+  catchphrases: [],
+  vocabularyProfile: '',
+  sentencePatterns: '',
+  verbalTics: [],
+  dialogueSamples: [],
+  metaphorFrames: '',
+  antiExamples: [],
+  discourseMarkers: [],
+  registerShifts: '',
+};
+
+function buildMinimalDecomposedCharacter(
+  name: string,
+  overrides?: Partial<DecomposedCharacter>
+): DecomposedCharacter {
+  return {
+    name,
+    speechFingerprint: EMPTY_SPEECH_FINGERPRINT,
+    coreTraits: [],
+    motivations: '',
+    protagonistRelationship: null,
+    knowledgeBoundaries: '',
+    decisionPattern: '',
+    coreBeliefs: [],
+    conflictPriority: '',
+    appearance: '',
+    rawDescription: '',
+    ...overrides,
+  };
+}
+
+describe('detectMentionedCharacters', () => {
+  it('detects a character by partial name match in sceneIntent', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Jon materializes outside Alicia\'s room',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Alicia Western');
+  });
+
+  it('strips parenthetical suffixes before token matching', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Bobby Western (1972)')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Bobby appears at the doorway',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Bobby Western (1972)');
+  });
+
+  it('returns empty array when no characters are mentioned', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'The protagonist explores the empty corridor',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toHaveLength(0);
+  });
+
+  it('filters out tokens shorter than 3 characters', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Li Chen')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Chen enters the room while Li waits outside',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Li Chen');
+  });
+
+  it('does not match on short-only tokens', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Li Al')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Li and Al walk down the street',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toHaveLength(0);
+  });
+
+  it('matches case-insensitively', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'alicia is waiting in the lobby',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Alicia Western');
+  });
+
+  it('detects multiple characters from different planner fields', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Alicia Western'),
+        buildMinimalDecomposedCharacter('Captain Voss'),
+      ],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Alicia enters the command room',
+        continuityAnchors: ['Voss is waiting with his soldiers'],
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Alicia Western');
+    expect(result).toContain('Captain Voss');
+    expect(result).toHaveLength(2);
+  });
+
+  it('deduplicates characters present in both decomposedCharacters and npcs', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
+      npcs: [{ name: 'Alicia Western', description: 'A mysterious woman' }],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Alicia appears',
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toEqual(['Alicia Western']);
+  });
+
+  it('detects characters mentioned in choiceIntents hooks', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Marcus Reed')],
+      pagePlan: buildMinimalPagePlan({
+        choiceIntents: [
+          {
+            hook: 'Confront Marcus about the theft',
+            choiceType: ChoiceType.MORAL_DILEMMA,
+            primaryDelta: PrimaryDelta.RELATIONSHIP_CHANGE,
+          },
+        ],
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Marcus Reed');
+  });
+
+  it('detects characters mentioned in writerBrief fields', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Elena Vasquez')],
+      pagePlan: buildMinimalPagePlan({
+        writerBrief: {
+          openingLineDirective: 'Elena steps through the door',
+          mustIncludeBeats: [],
+          forbiddenRecaps: [],
+        },
+      }),
+    });
+
+    const result = detectMentionedCharacters(context);
+
+    expect(result).toContain('Elena Vasquez');
+  });
+});
+
+describe('buildLorekeeperPrompt character directive integration', () => {
+  it('includes CHARACTERS REFERENCED directive when characters are detected', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Alicia Western'),
+        buildMinimalDecomposedCharacter('Captain Voss'),
+      ],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'Alicia confronts Voss in the command tent',
+      }),
+    });
+
+    const messages = buildLorekeeperPrompt(context);
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).toContain('CHARACTERS REFERENCED IN THIS PLAN');
+    expect(userPrompt).toContain('- Alicia Western');
+    expect(userPrompt).toContain('- Captain Voss');
+  });
+
+  it('omits CHARACTERS REFERENCED directive when no characters are detected', () => {
+    const context = buildMinimalContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
+      pagePlan: buildMinimalPagePlan({
+        sceneIntent: 'The protagonist wanders alone through the forest',
+      }),
+    });
+
+    const messages = buildLorekeeperPrompt(context);
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).not.toContain('CHARACTERS REFERENCED IN THIS PLAN');
   });
 });
