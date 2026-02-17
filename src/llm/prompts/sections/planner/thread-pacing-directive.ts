@@ -153,8 +153,8 @@ export function buildPayoffFeedbackSection(
 
   if (rushedPromisePayoffs.length > 0) {
     const formatPayoff = includePromiseIds
-      ? (a: PromisePayoffAssessment) => `[${a.promiseId}] ${a.description}`
-      : (a: PromisePayoffAssessment) => a.description;
+      ? (a: PromisePayoffAssessment): string => `[${a.promiseId}] ${a.description}`
+      : (a: PromisePayoffAssessment): string => a.description;
     parts.push(`Rushed promise payoffs: ${rushedPromisePayoffs.map(formatPayoff).join('; ')}`);
   }
 
