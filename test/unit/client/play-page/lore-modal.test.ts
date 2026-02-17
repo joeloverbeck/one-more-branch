@@ -28,7 +28,7 @@ describe('story lore modal', () => {
 
   function setupAndInit(): void {
     document.body.innerHTML = buildPlayPageHtml({
-      worldFacts: ['The citadel stands'],
+      worldFacts: [{ text: 'The citadel stands', factType: 'LAW' }],
       characterCanon: { 'Bobby Western': ['Bobby is in a coma'] },
     });
     loadAppAndInit();
@@ -111,6 +111,103 @@ describe('story lore modal', () => {
     expect(charactersPanel.textContent).toContain('No character facts established yet.');
   });
 
+  it('renders tagged CanonFact objects in world facts panel', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      worldFacts: [
+        { text: 'The citadel stands', factType: 'LAW' },
+        { text: 'Magic is forbidden', factType: 'CULTURAL_NORM' },
+      ],
+      characterCanon: {},
+    });
+    loadAppAndInit();
+
+    const trigger = document.getElementById('lore-trigger-btn') as HTMLButtonElement;
+    const badge = document.getElementById('lore-count-badge') as HTMLElement;
+    const worldPanel = document.getElementById('lore-panel-world') as HTMLElement;
+
+    expect(badge.textContent).toBe('(2)');
+    trigger.click();
+    await jest.advanceTimersByTimeAsync(0);
+    expect(worldPanel.textContent).toContain('The citadel stands');
+    expect(worldPanel.textContent).toContain('Magic is forbidden');
+  });
+
+  it('renders tagged CanonFact objects received via AJAX choice response', async () => {
+    document.body.innerHTML = buildPlayPageHtml({ choices: [{ text: 'Continue' }] });
+    loadAppAndInit();
+
+    fetchMock
+      .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          page: {
+            id: 2,
+            narrativeText: 'A new scene.',
+            sceneSummary: 'Summary',
+            choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            isEnding: false,
+            analystResult: null,
+            openThreads: [],
+            openThreadOverflowSummary: null,
+            activeThreats: [],
+            threatsOverflowSummary: null,
+            activeConstraints: [],
+            constraintsOverflowSummary: null,
+            inventory: [],
+            inventoryOverflowSummary: null,
+            health: [],
+            healthOverflowSummary: null,
+            protagonistAffect: null,
+            resolvedThreadMeta: {},
+          },
+          globalCanon: [
+            { text: 'The moon is red', factType: 'GEOGRAPHY' },
+            { text: 'Dragons exist', factType: 'CULTURAL_NORM' },
+          ],
+          globalCharacterCanon: {},
+          actDisplayInfo: null,
+          wasGenerated: true,
+          deviationInfo: null,
+        })
+      );
+
+    const choiceButton = document.querySelector('.choice-btn') as HTMLButtonElement;
+    choiceButton.click();
+    await jest.runAllTimersAsync();
+
+    const badge = document.getElementById('lore-count-badge') as HTMLElement;
+    expect(badge.textContent).toBe('(2)');
+
+    const trigger = document.getElementById('lore-trigger-btn') as HTMLElement;
+    trigger.click();
+    await jest.advanceTimersByTimeAsync(0);
+    const worldPanel = document.getElementById('lore-panel-world') as HTMLElement;
+    expect(worldPanel.textContent).toContain('The moon is red');
+    expect(worldPanel.textContent).toContain('Dragons exist');
+  });
+
+  it('handles mixed string and object world facts gracefully', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      worldFacts: [
+        'Plain string fact',
+        { text: 'Object fact', factType: 'LAW' },
+      ],
+      characterCanon: {},
+    });
+    loadAppAndInit();
+
+    const trigger = document.getElementById('lore-trigger-btn') as HTMLButtonElement;
+    const badge = document.getElementById('lore-count-badge') as HTMLElement;
+    const worldPanel = document.getElementById('lore-panel-world') as HTMLElement;
+
+    expect(badge.textContent).toBe('(2)');
+    trigger.click();
+    await jest.advanceTimersByTimeAsync(0);
+    expect(worldPanel.textContent).toContain('Plain string fact');
+    expect(worldPanel.textContent).toContain('Object fact');
+  });
+
   it('updates lore count/content from choice response and keeps trigger at sidebar bottom', async () => {
     document.body.innerHTML = buildPlayPageHtml({ choices: [{ text: 'Continue' }] });
     loadAppAndInit();
@@ -140,7 +237,7 @@ describe('story lore modal', () => {
             protagonistAffect: null,
             resolvedThreadMeta: {},
           },
-          globalCanon: ['The moon is red'],
+          globalCanon: [{ text: 'The moon is red', factType: 'GEOGRAPHY' }],
           globalCharacterCanon: { 'Captain Vale': ['Lost an eye'] },
           actDisplayInfo: null,
           wasGenerated: true,

@@ -1,5 +1,15 @@
 // ── Story lore modal ─────────────────────────────────────────────
 
+function extractWorldFactText(fact) {
+  if (typeof fact === 'string') {
+    return fact.length > 0 ? fact : null;
+  }
+  if (fact && typeof fact === 'object' && typeof fact.text === 'string' && fact.text.length > 0) {
+    return fact.text;
+  }
+  return null;
+}
+
 function parseLoreDataFromDom() {
   var node = document.getElementById('lore-data');
   if (!node || typeof node.textContent !== 'string') {
@@ -13,9 +23,7 @@ function parseLoreDataFromDom() {
     }
 
     var worldFacts = Array.isArray(parsed.worldFacts)
-      ? parsed.worldFacts.filter(function(fact) {
-          return typeof fact === 'string' && fact.length > 0;
-        })
+      ? parsed.worldFacts.map(extractWorldFactText).filter(Boolean)
       : [];
     var characterCanon = parsed.characterCanon && typeof parsed.characterCanon === 'object'
       ? parsed.characterCanon
@@ -164,9 +172,7 @@ function createLoreModalController(initialData) {
 
   function renderLore(worldFactsInput, characterCanonInput) {
     var worldFacts = Array.isArray(worldFactsInput)
-      ? worldFactsInput.filter(function(fact) {
-          return typeof fact === 'string' && fact.length > 0;
-        })
+      ? worldFactsInput.map(extractWorldFactText).filter(Boolean)
       : [];
     var characterCanon = normalizeCharacterCanon(characterCanonInput);
 
