@@ -64,17 +64,12 @@ export function countConsecutiveFromEnd<T>(
   return count;
 }
 
-function buildTrajectorySection(trajectory: MomentumTrajectory): string {
+function buildTrajectoryWarnings(trajectory: MomentumTrajectory): string {
   if (trajectory.length < 2) {
     return '';
   }
 
   const lines: string[] = [];
-
-  const momentumTrend = trajectory.map((p) => p.sceneMomentum).join(' -> ');
-  const evidenceTrend = trajectory.map((p) => p.objectiveEvidenceStrength).join(' -> ');
-  lines.push(`Momentum trend (last ${trajectory.length} pages): ${momentumTrend}`);
-  lines.push(`Objective evidence trend: ${evidenceTrend}`);
 
   const consecutiveStasis = countConsecutiveFromEnd(
     trajectory,
@@ -82,8 +77,8 @@ function buildTrajectorySection(trajectory: MomentumTrajectory): string {
   );
   if (consecutiveStasis >= 2) {
     lines.push(
-      `WARNING: ${consecutiveStasis} consecutive pages with STASIS momentum. ` +
-        'Plan MUST include a major narrative advancement — reveal, confrontation, or irreversible change.'
+      `WARNING: The last ${consecutiveStasis} scenes showed no meaningful narrative progress. ` +
+        'Plan MUST include a major advancement — reveal, confrontation, or irreversible change.'
     );
   }
 
@@ -93,7 +88,7 @@ function buildTrajectorySection(trajectory: MomentumTrajectory): string {
   );
   if (consecutiveWeakEvidence >= 3) {
     lines.push(
-      `WARNING: ${consecutiveWeakEvidence} consecutive pages with weak/no objective evidence. ` +
+      `WARNING: The last ${consecutiveWeakEvidence} scenes produced no clear evidence of beat objective progress. ` +
         'Plan MUST make direct progress toward the current beat objective.'
     );
   }
@@ -103,67 +98,31 @@ function buildTrajectorySection(trajectory: MomentumTrajectory): string {
 
 function buildPacingBriefingSection(context: ContinuationPagePlanContext): string {
   const hasNudge = context.parentPacingNudge != null && context.parentPacingNudge.length > 0;
-  const hasMomentum = context.parentSceneMomentum != null;
-  const hasEvidence = context.parentObjectiveEvidenceStrength != null;
-  const hasIssueReason =
-    context.parentPacingIssueReason != null && context.parentPacingIssueReason.length > 0;
+  const hasDirective =
+    context.parentPacingDirective != null && context.parentPacingDirective.length > 0;
   const hasTrajectory = (context.momentumTrajectory?.length ?? 0) >= 2;
 
-  if (!hasNudge && !hasMomentum && !hasEvidence && !hasIssueReason && !hasTrajectory) {
+  const trajectoryWarnings = hasTrajectory && context.momentumTrajectory
+    ? buildTrajectoryWarnings(context.momentumTrajectory)
+    : '';
+
+  if (!hasNudge && !hasDirective && !trajectoryWarnings) {
     return '';
   }
 
   const lines: string[] = ['=== PACING BRIEFING (from story analyst) ==='];
 
+  if (hasDirective) {
+    lines.push(context.parentPacingDirective!);
+  }
+
   if (hasNudge) {
-    lines.push(`Pacing nudge: ${context.parentPacingNudge}`);
-  }
-  if (hasIssueReason) {
-    lines.push(`Pacing issue reason: ${context.parentPacingIssueReason}`);
-  }
-  if (hasMomentum) {
-    lines.push(`Scene momentum: ${context.parentSceneMomentum}`);
-  }
-  if (hasEvidence) {
-    lines.push(`Objective evidence strength: ${context.parentObjectiveEvidenceStrength}`);
+    lines.push(`URGENT: ${context.parentPacingNudge}`);
   }
 
-  if (hasTrajectory && context.momentumTrajectory) {
+  if (trajectoryWarnings) {
     lines.push('');
-    const trajectoryText = buildTrajectorySection(context.momentumTrajectory);
-    if (trajectoryText) {
-      lines.push(trajectoryText);
-    }
-  }
-
-  lines.push('');
-  lines.push('Pacing response rules:');
-
-  if (
-    context.parentSceneMomentum === 'STASIS' &&
-    (context.parentObjectiveEvidenceStrength === 'NONE' ||
-      context.parentObjectiveEvidenceStrength === 'WEAK_IMPLICIT')
-  ) {
-    lines.push(
-      '- CRITICAL: Previous scene showed STASIS with weak/no evidence of progress. ' +
-        'Plan MUST advance beat objective directly. No exploratory or setup scenes.'
-    );
-  }
-
-  if (hasIssueReason) {
-    lines.push(
-      '- Pacing issue flagged: plan should push forward with action, revelation, or consequence. ' +
-        'No exploratory or setup scenes.'
-    );
-  }
-
-  if (
-    context.parentSceneMomentum === 'MAJOR_PROGRESS' ||
-    context.parentSceneMomentum === 'SCOPE_SHIFT'
-  ) {
-    lines.push(
-      '- Previous scene had major progress. A breathing scene is acceptable if dramatically appropriate.'
-    );
+    lines.push(trajectoryWarnings);
   }
 
   lines.push('');

@@ -72,6 +72,7 @@ export interface ContinuationContext {
 
   parentToneDriftDescription?: string;
   parentPacingNudge?: string | null;
+  parentPacingDirective?: string;
   parentPacingIssueReason?: string;
   parentSceneMomentum?: SceneMomentum;
   parentObjectiveEvidenceStrength?: ObjectiveEvidenceStrength;

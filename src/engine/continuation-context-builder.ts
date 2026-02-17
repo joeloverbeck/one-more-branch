@@ -45,6 +45,7 @@ export function buildContinuationContext(
 
     parentToneDriftDescription: parentPage.analystResult?.toneDriftDescription ?? undefined,
     parentPacingNudge: parentState.structureState.pacingNudge,
+    parentPacingDirective: parentPage.analystResult?.pacingDirective ?? undefined,
     parentPacingIssueReason: parentPage.analystResult?.pacingIssueReason ?? undefined,
     parentSceneMomentum: parentPage.analystResult?.sceneMomentum ?? undefined,
     parentObjectiveEvidenceStrength:

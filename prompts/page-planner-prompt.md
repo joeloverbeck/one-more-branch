@@ -129,6 +129,30 @@ This is meaningful player input - plan around it, do not treat it as optional.
 
 This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent`, `writerBrief.mustIncludeBeats`, and `choiceIntents` to incorporate the speech intent, and the writer follows those instructions.
 
+## Pacing Briefing
+
+When the parent page's analyst result includes a `pacingDirective`, the continuation context includes a pacing briefing section:
+
+```text
+{{#if parentPacingDirective OR parentPacingNudge OR trajectoryWarnings}}
+=== PACING BRIEFING (from story analyst) ===
+{{parentPacingDirective}}
+{{#if parentPacingNudge}}URGENT: {{parentPacingNudge}}{{/if}}
+
+{{trajectoryWarnings}}
+{{/if}}
+```
+
+The pacing briefing is a natural-language directive synthesized by the analyst from all pacing signals (momentum, evidence strength, commitment, structural position, entry readiness, pacing budget). Raw enum labels (e.g., `Scene momentum: MAJOR_PROGRESS`) are no longer displayed to the planner.
+
+Trajectory warnings are emitted when momentum data shows concerning patterns:
+- **Stasis warning** (2+ consecutive): "The last N scenes showed no meaningful narrative progress. Plan MUST include a major advancement."
+- **Weak evidence warning** (3+ consecutive): "The last N scenes produced no clear evidence of beat objective progress. Plan MUST make direct progress toward the current beat objective."
+
+The briefing is omitted entirely when no directive, nudge, or trajectory warnings are present.
+
+Source: `buildPacingBriefingSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Escalation Directive
 
 When the active beat role is `escalation` or `turning_point`, the continuation context includes a directive section (placed after the pacing briefing and before thread aging):
@@ -177,6 +201,6 @@ Source: `buildNpcRelationshipsSection()` in `src/llm/prompts/sections/planner/co
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
-- Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
+- Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant intentionally share the same context builders so both stages reason over identical continuity input.
 - Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.

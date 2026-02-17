@@ -79,6 +79,19 @@ SPINE INTEGRITY EVALUATION:
 - When spineDeviationDetected is false, set spineDeviationReason to empty string and spineInvalidatedElement to null.
 - When no STORY SPINE section is present, always set spineDeviationDetected to false.
 
+PACING DIRECTIVE:
+After classifying scene signals, write a pacingDirective: a 1-3 sentence natural-language briefing for the page planner.
+Synthesize ALL of the following into one coherent instruction:
+- Scene rhythm: Does the next scene need to breathe after a major event, or accelerate toward a conclusion?
+- Momentum: Is the story stalling, progressing steadily, or shifting scope?
+- Structural position: How close is the current beat to conclusion? Is the next beat's entry condition approaching readiness?
+- Commitment level: Has the protagonist locked into a path, or are options still open?
+- Pacing budget: How many pages remain relative to beats? Burning budget or running lean?
+- Any pacing issue detected: If pacingIssueDetected is true, the directive MUST include the corrective action.
+
+Write as if briefing a fiction writer: "The next scene should deliver a direct confrontation that advances the beat objective" NOT "momentum should increase."
+If no pacing concern exists, still provide rhythm guidance: "After this tense revelation, the next scene can afford a brief character moment before escalating."
+
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.`;
 

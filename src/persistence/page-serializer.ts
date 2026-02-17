@@ -135,6 +135,7 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
       suggestedValenceChange: s.suggestedValenceChange,
       suggestedNewDynamic: s.suggestedNewDynamic,
     })),
+    pacingDirective: analystResult.pacingDirective,
     spineDeviationDetected: analystResult.spineDeviationDetected,
     spineDeviationReason: analystResult.spineDeviationReason,
     spineInvalidatedElement: analystResult.spineInvalidatedElement,
@@ -202,6 +203,7 @@ function deserializeAnalystResult(
       suggestedValenceChange: s.suggestedValenceChange,
       suggestedNewDynamic: s.suggestedNewDynamic,
     })),
+    pacingDirective: data.pacingDirective ?? '',
     spineDeviationDetected: data.spineDeviationDetected ?? false,
     spineDeviationReason: data.spineDeviationReason ?? '',
     spineInvalidatedElement:

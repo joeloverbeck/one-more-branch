@@ -133,6 +133,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     commitmentStrength: validated.commitmentStrength,
     structuralPositionSignal: validated.structuralPositionSignal,
     entryConditionReadiness: validated.entryConditionReadiness,
+    pacingDirective: validated.pacingDirective.trim(),
     objectiveAnchors,
     anchorEvidence,
     completionGateSatisfied,

@@ -90,6 +90,7 @@ export const AnalystResultSchema = z.object({
   commitmentStrength: CommitmentStrengthSchema,
   structuralPositionSignal: StructuralPositionSignalSchema,
   entryConditionReadiness: EntryConditionReadinessSchema,
+  pacingDirective: z.string().catch('').default(''),
   objectiveAnchors: SafeStringArraySchema,
   anchorEvidence: SafeStringArraySchema,
   completionGateSatisfied: z.boolean().catch(false).default(false),

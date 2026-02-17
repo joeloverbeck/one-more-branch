@@ -1332,6 +1332,7 @@ describe('playRoutes', () => {
         commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
         structuralPositionSignal: 'CLEARLY_IN_NEXT_BEAT',
         entryConditionReadiness: 'READY',
+        pacingDirective: '',
         objectiveAnchors: [],
         anchorEvidence: [],
         completionGateSatisfied: true,
