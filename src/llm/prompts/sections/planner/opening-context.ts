@@ -74,6 +74,11 @@ ${initialAgendas
       ? `\nTone avoid: ${context.toneAvoid.join(', ')}`
       : '';
 
+  const protagonistName = hasDecomposed ? context.decomposedCharacters![0]!.name : null;
+  const protagonistDirective = protagonistName
+    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
+    : '';
+
   const characterConceptSection = hasDecomposed
     ? ''
     : `CHARACTER CONCEPT:
@@ -84,5 +89,5 @@ ${context.characterConcept}
   return `=== PLANNER CONTEXT: OPENING ===
 ${characterConceptSection}${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}
 
-${structureSection}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
+${structureSection}${protagonistDirective}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
 }

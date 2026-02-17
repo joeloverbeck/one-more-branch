@@ -36,10 +36,21 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       properties: Record<string, unknown>;
     };
     const choiceIntents = schema.properties.choiceIntents as {
-      items: { properties: Record<string, { enum?: string[] }> };
+      items: { properties: Record<string, { enum?: string[]; description?: string }> };
     };
 
     expect(choiceIntents.items.properties.choiceType?.enum).toContain('CONFRONTATION');
     expect(choiceIntents.items.properties.primaryDelta?.enum).toContain('THREAT_SHIFT');
+  });
+
+  it('hook description mentions PROTAGONIST perspective', () => {
+    const schema = PAGE_PLANNER_GENERATION_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+    };
+    const choiceIntents = schema.properties.choiceIntents as {
+      items: { properties: Record<string, { description?: string }> };
+    };
+
+    expect(choiceIntents.items.properties.hook?.description).toContain('PROTAGONIST');
   });
 });

@@ -1,6 +1,33 @@
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.js';
 import type { OpeningContext } from '../../../../src/llm/context-types.js';
+import type { DecomposedCharacter } from '../../../../src/models/decomposed-character.js';
+
+function makeMinimalDecomposedCharacter(name: string): DecomposedCharacter {
+  return {
+    name,
+    coreTraits: ['brave'],
+    motivations: 'Survive.',
+    protagonistRelationship: null,
+    knowledgeBoundaries: 'None.',
+    appearance: 'Average build.',
+    rawDescription: 'A character.',
+    speechFingerprint: {
+      catchphrases: [],
+      vocabularyProfile: 'Direct and simple',
+      sentencePatterns: 'Short declarative',
+      verbalTics: [],
+      dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
+    },
+    decisionPattern: '',
+    coreBeliefs: [],
+    conflictPriority: '',
+  };
+}
 
 describe('buildOpeningPrompt with active state', () => {
   it('keeps requirements focused on creative output fields', () => {
@@ -273,5 +300,39 @@ describe('buildOpeningPrompt with npcs and omitted raw setup fields', () => {
     expect(userMessage).not.toContain('STARTING SITUATION:');
     expect(userMessage).not.toContain('You wake up in a dungeon cell');
     expect(userMessage).not.toContain('Begin the story with this situation');
+  });
+});
+
+describe('buildOpeningPrompt protagonist name', () => {
+  it('includes PROTAGONIST: [Name] before speech fingerprint when decomposed characters are present', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A wandering healer',
+      worldbuilding: 'A war-torn kingdom',
+      tone: 'dark fantasy',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Jon Ureña')],
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('PROTAGONIST: Jon Ureña');
+    expect(userMessage).toContain('PROTAGONIST SPEECH FINGERPRINT');
+    const protagonistIndex = userMessage.indexOf('PROTAGONIST: Jon Ureña');
+    const fingerprintIndex = userMessage.indexOf('PROTAGONIST SPEECH FINGERPRINT');
+    expect(protagonistIndex).toBeLessThan(fingerprintIndex);
+  });
+
+  it('omits PROTAGONIST: line when no decomposed characters', () => {
+    const context: OpeningContext = {
+      characterConcept: 'A wandering healer',
+      worldbuilding: 'A war-torn kingdom',
+      tone: 'dark fantasy',
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
+
+    expect(userMessage).not.toContain('PROTAGONIST:');
+    expect(userMessage).not.toContain('PROTAGONIST SPEECH FINGERPRINT');
   });
 });

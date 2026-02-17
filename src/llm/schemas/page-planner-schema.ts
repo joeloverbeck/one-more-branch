@@ -42,7 +42,8 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
             properties: {
               hook: {
                 type: 'string',
-                description: 'A 1-sentence description of what this choice offers the protagonist.',
+                description:
+                  'A 1-sentence description of what the PROTAGONIST can do or decide. Frame as the protagonist\'s available action, never as another character\'s action.',
               },
               choiceType: {
                 type: 'string',

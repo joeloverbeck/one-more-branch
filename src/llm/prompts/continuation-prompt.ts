@@ -203,6 +203,7 @@ ${context.accumulatedHealth.map((entry) => `- [${entry.id}] ${entry.text}`).join
       : null;
   const protagonistSpeechSection = protagonistDecomposed
     ? `
+PROTAGONIST: ${protagonistDecomposed.name}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 ${formatSpeechFingerprintForWriter(protagonistDecomposed.speechFingerprint)}
 

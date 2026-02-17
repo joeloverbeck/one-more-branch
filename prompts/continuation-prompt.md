@@ -35,7 +35,7 @@ The following sections are **always included** regardless of Story Bible presenc
 
 ## Protagonist Speech Fingerprint
 
-When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST SPEECH FINGERPRINT` section is inserted into the user prompt. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence.
+When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST: [Name]` line followed by a `PROTAGONIST SPEECH FINGERPRINT` section is inserted into the user prompt. The name line explicitly identifies the protagonist so the writer knows whose voice to channel. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence.
 
 ## NPC Voice Fingerprints
 
@@ -285,6 +285,7 @@ CHOICE FORMATTING EXAMPLE:
 {{/if}}
 
 {{#if decomposedCharacters && decomposedCharacters.length > 0}}
+PROTAGONIST: {{protagonist.name}}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
 Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
