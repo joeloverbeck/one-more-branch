@@ -11,26 +11,36 @@ permissions:
 
 jobs:
   verify-dependencies:
-    if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
+    name: dependency-bot
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
+        if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
         uses: actions/checkout@v4
 
       - name: Setup Node
+        if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
+        if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
         run: npm ci
 
       - name: Lint
+        if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
         run: npm run lint
 
       - name: Typecheck
+        if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
         run: npm run typecheck
 
       - name: Unit tests
+        if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'dependabot/')
         run: npm run test:unit
+
+      - name: Skip for non-Dependabot pull requests
+        if: github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/')
+        run: echo "Dependency checks are enforced on Dependabot PRs only."
