@@ -17,6 +17,7 @@ import {
   type WriterOutputValidationIssue,
 } from './validation/writer-output-validator.js';
 import { repairWriterRemovalIdFieldMismatches } from './validation/writer-id-repair.js';
+import { repairCorruptedChoices } from './validation/writer-choice-repair.js';
 import type {
   GenerationObservabilityContext,
   GenerationOptions,
@@ -110,8 +111,16 @@ async function callWriterStructured(
     });
   }
 
+  const choiceRepairResult = repairCorruptedChoices(repairResult.repairedJson);
+  if (choiceRepairResult.repaired) {
+    logger.warn('Writer corrupted choices repaired', {
+      repairDetails: choiceRepairResult.repairDetails,
+      ...buildObservabilityContext(options.observability),
+    });
+  }
+
   try {
-    const validated = validateWriterResponse(repairResult.repairedJson, rawContent);
+    const validated = validateWriterResponse(choiceRepairResult.repairedJson, rawContent);
     const validationIssues = validateWriterOutput(validated);
     if (validationIssues.length > 0) {
       throw new WriterOutputValidationError(validationIssues);
@@ -133,7 +142,7 @@ async function callWriterStructured(
 
     const message =
       error instanceof Error ? error.message : 'Failed to validate structured response';
-    throw new LLMError(message, 'VALIDATION_ERROR', false, {
+    throw new LLMError(message, 'VALIDATION_ERROR', true, {
       rawResponse: rawContent,
       validationIssues: issues,
       ruleKeys: [...new Set(issues.map((issue) => issue.ruleKey))],

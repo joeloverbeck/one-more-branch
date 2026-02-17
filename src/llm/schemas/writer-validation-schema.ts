@@ -24,7 +24,7 @@ const ChoiceObjectSchema = z.object({
   text: z
     .string()
     .min(3, 'Choice text must be at least 3 characters')
-    .max(300, 'Choice text must be at most 300 characters'),
+    .max(500, 'Choice text must be at most 500 characters'),
   choiceType: z.nativeEnum(ChoiceType),
   primaryDelta: z.nativeEnum(PrimaryDelta),
 });

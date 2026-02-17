@@ -14,7 +14,7 @@ import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 
 const DEFAULT_ANALYST_TEMPERATURE = 0.3;
-const DEFAULT_ANALYST_MAX_TOKENS = 4096;
+const DEFAULT_ANALYST_MAX_TOKENS = 8192;
 
 async function callAnalystStructured(
   messages: ChatMessage[],
