@@ -112,9 +112,6 @@ function dedupAgainstPreviousThreads(
       );
 
       if (unresolvedEquivalentThread) {
-        console.info(
-          `Auto-resolved thread "${unresolvedEquivalentThread.id}" due to near-duplicate replacement by "${candidate.text}".`
-        );
         autoResolvedThreadIds.push(unresolvedEquivalentThread.id);
         resolvedThreadIdSet.add(unresolvedEquivalentThread.id);
       }
@@ -146,9 +143,6 @@ function dedupWithinBatch(candidates: readonly ReconciledThreadAdd[]): Reconcile
     });
 
     if (duplicateAcceptedThread) {
-      console.info(
-        `Dropped within-batch near-duplicate thread "${candidate.text}" (duplicate of "${duplicateAcceptedThread.text}").`
-      );
       continue;
     }
 
