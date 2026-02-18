@@ -1,10 +1,19 @@
 import type { Request, Response } from 'express';
 import { storyEngine } from '@/engine';
 import { LLMError } from '@/llm/llm-client-types';
-import { createChoice, createPage, createStory, parseStoryId } from '@/models';
+import {
+  createChoice,
+  createPage,
+  createStory,
+  parseStoryId,
+  type ConceptDimensionScores,
+  type ConceptSpec,
+  type ConceptStressTestResult,
+  type EvaluatedConcept,
+} from '@/models';
 import type { StorySpine } from '@/models';
 import { storyRoutes } from '@/server/routes/stories';
-import { generationProgressService } from '@/server/services';
+import { conceptService, generationProgressService } from '@/server/services';
 
 type RouteLayer = {
   route?: {
@@ -28,6 +37,59 @@ function getRouteHandler(
   }
 
   return handler;
+}
+
+function flushPromises(): Promise<void> {
+  return new Promise((resolve) => {
+    setImmediate(resolve);
+  });
+}
+
+function createConceptSpec(index = 1): ConceptSpec {
+  return {
+    oneLineHook: `Hook ${index}`,
+    elevatorParagraph: `Elevator paragraph ${index}`,
+    genreFrame: 'NOIR',
+    genreSubversion: `Subversion ${index}`,
+    protagonistRole: `Role ${index}`,
+    coreCompetence: `Competence ${index}`,
+    coreFlaw: `Flaw ${index}`,
+    actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
+    coreConflictLoop: `Conflict loop ${index}`,
+    conflictAxis: 'TRUTH_VS_STABILITY',
+    pressureSource: `Pressure ${index}`,
+    stakesPersonal: `Personal stakes ${index}`,
+    stakesSystemic: `Systemic stakes ${index}`,
+    deadlineMechanism: `Deadline ${index}`,
+    settingAxioms: ['Axiom 1', 'Axiom 2'],
+    constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
+    keyInstitutions: ['Institution 1', 'Institution 2'],
+    settingScale: 'LOCAL',
+    branchingPosture: 'RECONVERGE',
+    stateComplexity: 'MEDIUM',
+  };
+}
+
+function createScores(): ConceptDimensionScores {
+  return {
+    hookStrength: 4,
+    conflictEngine: 4,
+    agencyBreadth: 3,
+    noveltyLeverage: 3,
+    branchingFitness: 4,
+    llmFeasibility: 4,
+  };
+}
+
+function createEvaluatedConcept(index = 1): EvaluatedConcept {
+  return {
+    concept: createConceptSpec(index),
+    scores: createScores(),
+    overallScore: 80,
+    strengths: ['Strong hook'],
+    weaknesses: ['Lower novelty'],
+    tradeoffSummary: 'Strong conflict, lower novelty.',
+  };
 }
 
 const mockSpine: StorySpine = {
@@ -619,6 +681,225 @@ describe('storyRoutes', () => {
           npcs: [],
           startingSituation: undefined,
         },
+      });
+    });
+  });
+
+  describe('POST /generate-concepts', () => {
+    it('returns 400 JSON for missing API key', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const generateConceptsSpy = jest.spyOn(conceptService, 'generateConcepts');
+
+      void getRouteHandler('post', '/generate-concepts')(
+        {
+          body: {
+            genreVibes: 'dark fantasy',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(generateConceptsSpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'OpenRouter API key is required',
+      });
+    });
+
+    it('returns 400 JSON when all concept seeds are empty', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const generateConceptsSpy = jest.spyOn(conceptService, 'generateConcepts');
+
+      void getRouteHandler('post', '/generate-concepts')(
+        {
+          body: {
+            genreVibes: '  ',
+            moodKeywords: '',
+            contentPreferences: '   ',
+            thematicInterests: '',
+            sparkLine: '   ',
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(generateConceptsSpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'At least one concept seed field is required',
+      });
+    });
+
+    it('returns 200 with evaluated concepts and updates progress lifecycle', async () => {
+      const json = jest.fn();
+      const status = jest.fn().mockReturnThis();
+      const evaluatedConcepts = [createEvaluatedConcept(1), createEvaluatedConcept(2)];
+      const generateConceptsSpy = jest
+        .spyOn(conceptService, 'generateConcepts')
+        .mockResolvedValue({ evaluatedConcepts });
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+
+      void getRouteHandler('post', '/generate-concepts')(
+        {
+          body: {
+            genreVibes: 'dark fantasy',
+            sparkLine: 'What if memory was taxed?',
+            apiKey: '  valid-key-12345  ',
+            progressId: ' concept-progress-1 ',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(generateConceptsSpy).toHaveBeenCalledWith({
+        genreVibes: 'dark fantasy',
+        moodKeywords: undefined,
+        contentPreferences: undefined,
+        thematicInterests: undefined,
+        sparkLine: 'What if memory was taxed?',
+        apiKey: 'valid-key-12345',
+      });
+      expect(progressStartSpy).toHaveBeenCalledWith('concept-progress-1', 'new-story');
+      expect(progressCompleteSpy).toHaveBeenCalledWith('concept-progress-1');
+      expect(progressFailSpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: true,
+        evaluatedConcepts,
+      });
+    });
+
+    it('returns 500 JSON with structured LLMError payload and fails progress', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+      jest.spyOn(conceptService, 'generateConcepts').mockRejectedValue(
+        new LLMError('Rate limit exceeded', 'HTTP_429', true, {
+          httpStatus: 429,
+        }),
+      );
+
+      void getRouteHandler('post', '/generate-concepts')(
+        {
+          body: {
+            genreVibes: 'dark fantasy',
+            apiKey: 'valid-key-12345',
+            progressId: 'concept-progress-2',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(progressStartSpy).toHaveBeenCalledWith('concept-progress-2', 'new-story');
+      expect(progressCompleteSpy).not.toHaveBeenCalled();
+      expect(progressFailSpy).toHaveBeenCalledWith(
+        'concept-progress-2',
+        'Rate limit exceeded. Please wait a moment and try again.',
+      );
+      expect(status).toHaveBeenCalledWith(500);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Rate limit exceeded. Please wait a moment and try again.',
+        code: 'HTTP_429',
+        retryable: true,
+      });
+    });
+  });
+
+  describe('POST /stress-test-concept', () => {
+    it('returns 400 JSON for missing concept payload', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const stressTestSpy = jest.spyOn(conceptService, 'stressTestConcept');
+
+      void getRouteHandler('post', '/stress-test-concept')(
+        {
+          body: {
+            scores: createScores(),
+            weaknesses: ['Weak urgency'],
+            apiKey: 'valid-key-12345',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(stressTestSpy).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Concept is required',
+      });
+    });
+
+    it('returns 200 with hardened concept result and updates progress lifecycle', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+      const stressResult: ConceptStressTestResult = {
+        hardenedConcept: createConceptSpec(9),
+        driftRisks: [
+          {
+            risk: 'Memory economy drifts into omnipotence',
+            mitigation: 'Cap memory transfer per chapter',
+            mitigationType: 'STATE_CONSTRAINT',
+          },
+        ],
+        playerBreaks: [
+          {
+            scenario: 'Player hoards black-market memories',
+            handling: 'Institution freezes transactions above quota',
+            constraintUsed: 'Constraint 1',
+          },
+        ],
+        rawResponse: 'raw-stress',
+      };
+      const stressTestSpy = jest.spyOn(conceptService, 'stressTestConcept').mockResolvedValue(stressResult);
+      const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
+      const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+
+      void getRouteHandler('post', '/stress-test-concept')(
+        {
+          body: {
+            concept: createConceptSpec(1),
+            scores: createScores(),
+            weaknesses: ['Weak urgency'],
+            apiKey: '  valid-key-12345  ',
+            progressId: 'stress-progress-1',
+          },
+        } as Request,
+        { status, json } as unknown as Response,
+      );
+      await flushPromises();
+
+      expect(stressTestSpy).toHaveBeenCalledWith({
+        concept: createConceptSpec(1),
+        scores: createScores(),
+        weaknesses: ['Weak urgency'],
+        apiKey: 'valid-key-12345',
+      });
+      expect(progressStartSpy).toHaveBeenCalledWith('stress-progress-1', 'new-story');
+      expect(progressCompleteSpy).toHaveBeenCalledWith('stress-progress-1');
+      expect(progressFailSpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
+      expect(json).toHaveBeenCalledWith({
+        success: true,
+        hardenedConcept: stressResult.hardenedConcept,
+        driftRisks: stressResult.driftRisks,
+        playerBreaks: stressResult.playerBreaks,
       });
     });
   });

@@ -13,3 +13,11 @@ export {
   type GenerationProgressSnapshot,
   type GenerationProgressStatus,
 } from './generation-progress.js';
+export {
+  createConceptService,
+  conceptService,
+  type ConceptService,
+  type GenerateConceptsInput,
+  type GenerateConceptsResult,
+  type StressTestInput,
+} from './concept-service.js';

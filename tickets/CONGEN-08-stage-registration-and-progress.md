@@ -30,6 +30,12 @@ Register the 3 new concept generation stages in the engine's type system and sta
 - CONGEN-02 introduced `concept-ideator` internals (`src/llm/concept-ideator.ts`, prompt, schema) and stage-model support for `conceptIdeator`, but intentionally did **not** add LLM barrel/client orchestration exports.
 - In this ticket pass, keep that boundary explicit: add concept-stage exports/wiring only when the concept-generation service/orchestration is ready in the same pass, so partial public API exposure does not drift ahead of runtime integration.
 - Preferred direction (no compatibility aliases): export only canonical stage modules and update all call sites directly during orchestration cutover.
+- CONGEN-05 implemented route-level progress lifecycle for concept endpoints using existing `'new-story'` flow as an interim state.
+- In this ticket, perform a **clean cutover** to canonical concept progress primitives:
+  - Add `'concept-generation'` flow type and use it directly in concept routes.
+  - Add concept stage literals and emit them from concept routes/service flow.
+  - Remove interim `'new-story'` usage for concept endpoints in the same pass.
+  - Do not introduce backward-compat aliases or dual-write behavior.
 
 ## Work Description
 
@@ -64,6 +70,19 @@ export type GenerationFlowType = 'new-story' | 'choice' | 'begin-adventure' | 'c
 
 This allows the concept service to start a progress record with `generationProgressService.start(progressId, 'concept-generation')`.
 
+### 4. Route Cutover Requirement (from CONGEN-05 interim implementation)
+
+Update concept endpoints in `src/server/routes/stories.ts`:
+
+- `POST /stories/generate-concepts`
+- `POST /stories/stress-test-concept`
+
+Required cutover behavior:
+
+- Start progress with `'concept-generation'` (not `'new-story'`).
+- Emit concept-specific stage events (`GENERATING_CONCEPTS`, `EVALUATING_CONCEPTS`, `STRESS_TESTING_CONCEPT`) as appropriate.
+- Preserve existing error contract and progress fail semantics.
+
 ## Acceptance Criteria
 
 ### Tests That Must Pass
@@ -73,6 +92,8 @@ This allows the concept service to start a progress record with `generationProgr
 3. **`getStageModel` accepts new stage names**: `getStageModel('conceptIdeator')` returns default model without error
 4. **Progress service accepts new flow type**: `generationProgressService.start('test', 'concept-generation')` works
 5. **Existing generation stages still work**: All current stage values remain valid
+6. **Concept routes use concept-generation flow**: No `'new-story'` progress lifecycle usage remains for concept endpoints
+7. **Concept routes emit concept stage names**: Progress snapshots reflect concept-specific stages during concept generation/stress-test
 
 ### Invariants That Must Remain True
 
