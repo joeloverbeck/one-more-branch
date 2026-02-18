@@ -5,6 +5,7 @@ import type { Logger } from './types.js';
 export type PromptType =
   | 'conceptIdeator'
   | 'conceptEvaluator'
+  | 'conceptStressTester'
   | 'opening'
   | 'writer'
   | 'analyst'
