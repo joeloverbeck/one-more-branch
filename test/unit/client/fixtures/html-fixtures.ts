@@ -375,6 +375,7 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
             </div>
           </section>
           <section id="manual-story-section" style="display: none;">
+            <div id="concept-context-panel" class="form-group" style="display: none;"></div>
             <div class="form-group">
               <label for="title">Story Title *</label>
               <input type="text" id="title" name="title" required value="">

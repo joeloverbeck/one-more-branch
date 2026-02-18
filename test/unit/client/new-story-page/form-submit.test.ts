@@ -222,9 +222,46 @@ describe('new story form submit', () => {
     const card = document.querySelector('.concept-card') as HTMLElement;
     expect(card).not.toBeNull();
     card.click();
+    await jest.runAllTimersAsync();
 
     const manualSection = document.getElementById('manual-story-section') as HTMLElement;
     expect(manualSection.style.display).toBe('block');
+  });
+
+  it('pre-fills story form fields and shows concept context after concept selection', async () => {
+    setupPage();
+    fillForm();
+    (document.getElementById('genreVibes') as HTMLInputElement).value = 'dystopian';
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      return Promise.resolve(
+        mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
+      );
+    });
+
+    const generateConceptsBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
+    generateConceptsBtn.click();
+    await jest.runAllTimersAsync();
+
+    const card = document.querySelector('.concept-card') as HTMLElement;
+    card.click();
+    await jest.runAllTimersAsync();
+
+    expect((document.getElementById('characterConcept') as HTMLTextAreaElement).value).toContain(
+      'Role: Memory broker.'
+    );
+    expect((document.getElementById('worldbuilding') as HTMLTextAreaElement).value).toContain(
+      'Setting Axioms:'
+    );
+    expect((document.getElementById('tone') as HTMLInputElement).value).toContain('NOIR -');
+
+    const contextPanel = document.getElementById('concept-context-panel') as HTMLElement;
+    expect(contextPanel.style.display).toBe('block');
+    expect(contextPanel.textContent).toContain('Selected Concept Context');
+    expect(contextPanel.textContent).toContain('A memory broker hunts a stolen life.');
   });
 
   it('stores API key via setApiKey on spine generation success', async () => {
@@ -304,6 +341,76 @@ describe('new story form submit', () => {
     expect(body.title).toBe('My Test Story');
     expect(body.spine).toBeDefined();
     expect((body.spine as Record<string, unknown>).storySpineType).toBe('QUEST');
+    expect(body.conceptSpec).toBeUndefined();
+  });
+
+  it('POSTs hardened conceptSpec to /stories/create-ajax when harden toggle is enabled', async () => {
+    setupPage();
+    fillForm();
+    (document.getElementById('genreVibes') as HTMLInputElement).value = 'dystopian';
+
+    const hardenedConcept = {
+      ...MOCK_EVALUATED_CONCEPTS[0].concept,
+      oneLineHook: 'Hardened hook',
+      pressureSource: 'Hardened pressure source',
+    };
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      if (typeof url === 'string' && url.includes('generate-concepts')) {
+        return Promise.resolve(
+          mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
+        );
+      }
+      if (typeof url === 'string' && url.includes('stress-test-concept')) {
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            hardenedConcept,
+            driftRisks: [],
+            playerBreaks: [],
+          })
+        );
+      }
+      if (typeof url === 'string' && url.includes('generate-spines')) {
+        return Promise.resolve(
+          mockJsonResponse({ success: true, options: MOCK_SPINE_OPTIONS })
+        );
+      }
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
+    });
+
+    (document.getElementById('generate-concepts-btn') as HTMLButtonElement).click();
+    await jest.runAllTimersAsync();
+
+    const hardenCheckbox = document.querySelector('.concept-harden-checkbox') as HTMLInputElement;
+    hardenCheckbox.click();
+
+    const card = document.querySelector('.concept-card') as HTMLElement;
+    card.click();
+    await jest.runAllTimersAsync();
+
+    clickGenerateSpine();
+    await jest.runAllTimersAsync();
+
+    const spineCard = document.querySelector('#spine-options .spine-card') as HTMLElement;
+    spineCard.click();
+    await jest.runAllTimersAsync();
+
+    const stressCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('stress-test-concept')
+    );
+    expect(stressCall).toBeDefined();
+
+    const createCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
+    );
+    expect(createCall).toBeDefined();
+
+    const createBody = JSON.parse(createCall![1]!.body as string) as Record<string, unknown>;
+    expect((createBody.conceptSpec as Record<string, unknown>).oneLineHook).toBe('Hardened hook');
   });
 
   it('shows error banner on failed spine generation', async () => {

@@ -1,5 +1,6 @@
 import {
   BeatRole,
+  type ConceptSpec,
   Story,
   StoryId,
   StoryMetadata,
@@ -122,6 +123,7 @@ interface StoryFileData {
   structure: StoryStructureFileData | null;
   structureVersions: VersionedStoryStructureFileData[];
   spine?: SpineFileData;
+  conceptSpec?: ConceptSpec;
   decomposedCharacters?: DecomposedCharacterFileData[];
   decomposedWorld?: DecomposedWorldFileData;
   initialNpcAgendas?: Array<{
@@ -294,6 +296,17 @@ function storyToFileData(story: Story): StoryFileData {
           },
         }
       : {}),
+    ...(story.conceptSpec
+      ? {
+          conceptSpec: {
+            ...story.conceptSpec,
+            actionVerbs: [...story.conceptSpec.actionVerbs],
+            settingAxioms: [...story.conceptSpec.settingAxioms],
+            constraintSet: [...story.conceptSpec.constraintSet],
+            keyInstitutions: [...story.conceptSpec.keyInstitutions],
+          },
+        }
+      : {}),
     ...(story.decomposedCharacters
       ? {
           decomposedCharacters: story.decomposedCharacters.map((char) => ({
@@ -448,6 +461,17 @@ function fileDataToStory(data: StoryFileData): Story {
             toneFeel: data.spine.toneFeel ?? data.spine.toneKeywords ?? [],
             toneAvoid: data.spine.toneAvoid ?? data.spine.toneAntiKeywords ?? [],
           } as StorySpine,
+        }
+      : {}),
+    ...(data.conceptSpec
+      ? {
+          conceptSpec: {
+            ...data.conceptSpec,
+            actionVerbs: [...data.conceptSpec.actionVerbs],
+            settingAxioms: [...data.conceptSpec.settingAxioms],
+            constraintSet: [...data.conceptSpec.constraintSet],
+            keyInstitutions: [...data.conceptSpec.keyInstitutions],
+          },
         }
       : {}),
     ...(data.decomposedCharacters

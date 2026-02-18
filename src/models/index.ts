@@ -237,5 +237,6 @@ export {
   isSettingScale,
   isStateComplexity,
   isDriftRiskMitigationType,
+  isConceptSpec,
   computeOverallScore,
 } from './concept-generator';

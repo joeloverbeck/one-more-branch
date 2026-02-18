@@ -3,6 +3,8 @@ import type { DecomposedWorld } from './decomposed-world';
 import { StoryId, generateStoryId, isStoryId } from './id';
 import { Npc } from './npc';
 import { StoryStructure } from './story-arc';
+import type { ConceptSpec } from './concept-generator';
+import { isConceptSpec } from './concept-generator';
 import type { StorySpine } from './story-spine';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
 import type { NpcAgenda } from './state/npc-agenda';
@@ -33,6 +35,7 @@ export interface Story {
   readonly initialNpcAgendas?: readonly NpcAgenda[];
   readonly initialNpcRelationships?: readonly NpcRelationship[];
   readonly spine?: StorySpine;
+  readonly conceptSpec?: ConceptSpec;
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;
   readonly createdAt: Date;
@@ -46,6 +49,7 @@ export interface CreateStoryData {
   tone?: string;
   npcs?: readonly Npc[];
   startingSituation?: string;
+  conceptSpec?: ConceptSpec;
 }
 
 export interface StoryMetadata {
@@ -88,6 +92,7 @@ export function createStory(data: CreateStoryData): Story {
     npcs,
     startingSituation:
       startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
+    conceptSpec: data.conceptSpec,
     globalCanon: [],
     globalCharacterCanon: {},
     structure: null,
@@ -149,6 +154,7 @@ export function isStory(value: unknown): value is Story {
     typeof obj['worldbuilding'] === 'string' &&
     typeof obj['tone'] === 'string' &&
     Array.isArray(obj['globalCanon']) &&
+    (obj['conceptSpec'] === undefined || isConceptSpec(obj['conceptSpec'])) &&
     isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
     (structure === null || isStoryStructure(structure)) &&
     (structureVersions === undefined ||

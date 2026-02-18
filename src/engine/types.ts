@@ -1,4 +1,5 @@
 import { Npc, Page, PageId, Story, StoryId } from '../models';
+import type { ConceptSpec } from '../models/concept-generator.js';
 import type { StorySpine } from '../models/story-spine.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 
@@ -66,6 +67,7 @@ export interface StartStoryOptions {
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
   readonly startingSituation?: string;
+  readonly conceptSpec?: ConceptSpec;
   readonly spine: StorySpine;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;

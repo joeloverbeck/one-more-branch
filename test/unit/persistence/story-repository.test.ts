@@ -376,6 +376,44 @@ describe('story-repository', () => {
     expect(loaded?.startingSituation).toBe('Waking up in a dungeon cell');
   });
 
+  it('saveStory/loadStory preserves conceptSpec', async () => {
+    const story = buildTestStory({
+      conceptSpec: {
+        oneLineHook: 'A courier smuggles forbidden memories through a fractured city.',
+        elevatorParagraph: 'A courier must choose who gets the truth when every faction edits history.',
+        genreFrame: 'NOIR',
+        genreSubversion: 'The detective story is run by the evidence runner.',
+        protagonistRole: 'Memory courier',
+        coreCompetence: 'Pattern-based recall and route planning',
+        coreFlaw: 'Compulsive secrecy',
+        actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
+        coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
+        conflictAxis: 'TRUTH_VS_STABILITY',
+        pressureSource: 'Competing cartels erase witnesses and records.',
+        stakesPersonal: 'Losing her identity and remaining allies.',
+        stakesSystemic: 'Civic memory collapse and institutional capture.',
+        deadlineMechanism: 'A citywide record purge begins at dawn.',
+        settingAxioms: ['Memories can be extracted.', 'Memories can be traded as legal evidence.'],
+        constraintSet: [
+          'Unlicensed extraction causes permanent neurological damage.',
+          'Tampered memories cannot be restored once audited.',
+          'Public memory ledgers update only once per day.',
+        ],
+        keyInstitutions: ['Ledger Court', 'Memory Cartel'],
+        settingScale: 'LOCAL',
+        branchingPosture: 'RECONVERGE',
+        stateComplexity: 'MEDIUM',
+      },
+    });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded).not.toBeNull();
+    expect(loaded?.conceptSpec).toEqual(story.conceptSpec);
+  });
+
   it('saveStory/loadStory preserves both npcs and startingSituation together', async () => {
     const story = buildTestStory({
       npcs: [{ name: 'Oracle', description: 'A mysterious oracle' }],

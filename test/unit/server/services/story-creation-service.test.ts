@@ -163,6 +163,63 @@ describe('story-creation-service', () => {
       }
     });
 
+    it('accepts valid conceptSpec payload', () => {
+      const conceptSpec = {
+        oneLineHook: 'A courier smuggles forbidden memories through a fractured city.',
+        elevatorParagraph: 'A courier must choose who gets the truth when every faction edits history.',
+        genreFrame: 'NOIR',
+        genreSubversion: 'The detective story is run by the evidence runner.',
+        protagonistRole: 'Memory courier',
+        coreCompetence: 'Pattern-based recall and route planning',
+        coreFlaw: 'Compulsive secrecy',
+        actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
+        coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
+        conflictAxis: 'TRUTH_VS_STABILITY',
+        pressureSource: 'Competing cartels erase witnesses and records.',
+        stakesPersonal: 'Losing her identity and remaining allies.',
+        stakesSystemic: 'Civic memory collapse and institutional capture.',
+        deadlineMechanism: 'A citywide record purge begins at dawn.',
+        settingAxioms: ['Memories can be extracted.', 'Memories can be traded as legal evidence.'],
+        constraintSet: [
+          'Unlicensed extraction causes permanent neurological damage.',
+          'Tampered memories cannot be restored once audited.',
+          'Public memory ledgers update only once per day.',
+        ],
+        keyInstitutions: ['Ledger Court', 'Memory Cartel'],
+        settingScale: 'LOCAL',
+        branchingPosture: 'RECONVERGE',
+        stateComplexity: 'MEDIUM',
+      } as const;
+
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        apiKey: 'sk-valid-api-key-12345',
+        conceptSpec,
+      });
+
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.trimmed.conceptSpec).toEqual(conceptSpec);
+      }
+    });
+
+    it('rejects invalid conceptSpec payload', () => {
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        apiKey: 'sk-valid-api-key-12345',
+        conceptSpec: {
+          oneLineHook: 'Only one field',
+        },
+      });
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toBe('Concept payload is invalid');
+      }
+    });
+
     it('validates in correct priority order: title, characterConcept, apiKey', () => {
       // All invalid - should fail on title first
       let result = validateStoryInput({});
