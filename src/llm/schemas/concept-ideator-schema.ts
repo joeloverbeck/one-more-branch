@@ -7,7 +7,7 @@ import {
 } from '../../models/concept-generator.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
-const CONCEPT_SPEC_SCHEMA = {
+export const CONCEPT_SPEC_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: [
