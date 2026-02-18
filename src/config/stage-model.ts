@@ -1,6 +1,7 @@
 import { getConfig } from './index.js';
 
 export type LlmStage =
+  | 'conceptIdeator'
   | 'spine'
   | 'entityDecomposer'
   | 'structure'

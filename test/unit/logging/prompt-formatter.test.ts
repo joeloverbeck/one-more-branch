@@ -47,6 +47,7 @@ describe('logPrompt', () => {
     const logger = createMockLogger();
     const messages: ChatMessage[] = [{ role: 'user', content: 'Message' }];
     const promptTypes: PromptType[] = [
+      'conceptIdeator',
       'opening',
       'writer',
       'analyst',

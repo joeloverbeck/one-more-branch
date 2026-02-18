@@ -25,6 +25,12 @@ Register the 3 new concept generation stages in the engine's type system and sta
 - Route handlers (CONGEN-05)
 - UI changes (CONGEN-06, CONGEN-07)
 
+## Architecture Note
+
+- CONGEN-02 introduced `concept-ideator` internals (`src/llm/concept-ideator.ts`, prompt, schema) and stage-model support for `conceptIdeator`, but intentionally did **not** add LLM barrel/client orchestration exports.
+- In this ticket pass, keep that boundary explicit: add concept-stage exports/wiring only when the concept-generation service/orchestration is ready in the same pass, so partial public API exposure does not drift ahead of runtime integration.
+- Preferred direction (no compatibility aliases): export only canonical stage modules and update all call sites directly during orchestration cutover.
+
 ## Work Description
 
 ### 1. Generation Stages (`src/engine/types.ts`)
