@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="concepts-page">
+    <section class="form-section">
+      <h1>Story Concepts</h1>
+
+      <section id="concept-generate-section">
+        <h2>Generate New Concepts</h2>
+
+        <div class="form-group">
+          <label for="genreVibes">Genre Vibes</label>
+          <input
+            type="text"
+            id="genreVibes"
+            placeholder="dark fantasy, sci-fi noir, cosmic horror..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="moodKeywords">Mood Keywords</label>
+          <input
+            type="text"
+            id="moodKeywords"
+            placeholder="melancholic, tense, whimsical..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="contentPreferences">Content Preferences</label>
+          <input
+            type="text"
+            id="contentPreferences"
+            placeholder="include body horror, no romance..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="thematicInterests">Thematic Interests</label>
+          <input
+            type="text"
+            id="thematicInterests"
+            placeholder="identity, power, memory, justice..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="sparkLine">Spark Line</label>
+          <input
+            type="text"
+            id="sparkLine"
+            placeholder="What if memories could be eaten?"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="conceptApiKey">OpenRouter API Key *</label>
+          <input
+            type="password"
+            id="conceptApiKey"
+            required
+            placeholder="sk-or-..."
+            autocomplete="off"
+          >
+          <p class="form-help">
+            Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+            Your key is never stored on the server.
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">Generate Concepts</button>
+        </div>
+      </section>
+
+      <section id="concept-results-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Generated Concepts</h2>
+        <p class="spine-section-subtitle">Click "Save" on any concept to add it to your library.</p>
+        <div id="concept-cards" class="spine-options-container"></div>
+      </section>
+
+      <section id="saved-concepts-section">
+        <h2>Saved Concepts</h2>
+        <% if (concepts.length === 0) { %>
+          <p class="spine-section-subtitle">No saved concepts yet. Generate some above!</p>
+        <% } %>
+        <div id="saved-concepts-list" class="spine-options-container">
+          <% for (const concept of concepts) { %>
+          <article class="spine-card concept-card saved-concept-card" data-concept-id="<%= concept.id %>">
+            <div class="spine-badges">
+              <span class="spine-badge spine-badge-type"><%= (concept.evaluatedConcept.concept.genreFrame || '').replace(/_/g, ' ') %></span>
+              <span class="spine-badge spine-badge-conflict"><%= (concept.evaluatedConcept.concept.conflictAxis || '').replace(/_/g, ' ') %></span>
+              <span class="spine-badge spine-badge-arc">Score <%= Math.round(concept.evaluatedConcept.overallScore || 0) %></span>
+              <% if (concept.hardenedAt) { %>
+              <span class="spine-badge spine-badge-type" style="background: var(--accent-green, #2ecc71);">Hardened</span>
+              <% } %>
+            </div>
+            <h3 class="spine-cdq"><%= concept.name %></h3>
+            <p class="spine-field"><%= concept.evaluatedConcept.concept.elevatorParagraph || '' %></p>
+            <div class="spine-field">
+              <span class="spine-label">Created:</span> <%= new Date(concept.createdAt).toLocaleDateString() %>
+              <% if (concept.updatedAt !== concept.createdAt) { %>
+                | <span class="spine-label">Updated:</span> <%= new Date(concept.updatedAt).toLocaleDateString() %>
+              <% } %>
+            </div>
+            <div class="form-actions" style="margin-top: 0.5rem;">
+              <button type="button" class="btn btn-secondary btn-small concept-edit-btn" data-concept-id="<%= concept.id %>">Edit</button>
+              <button type="button" class="btn btn-primary btn-small concept-harden-btn" data-concept-id="<%= concept.id %>" <%= concept.hardenedAt ? 'disabled' : '' %>><%= concept.hardenedAt ? 'Already Hardened' : 'Harden' %></button>
+              <button type="button" class="btn btn-danger btn-small concept-delete-btn" data-concept-id="<%= concept.id %>">Delete</button>
+            </div>
+          </article>
+          <% } %>
+        </div>
+      </section>
+    </section>
+
+    <div id="concept-edit-modal" class="loading-overlay" style="display: none;">
+      <div class="form-section" style="max-width: 700px; max-height: 90vh; overflow-y: auto; position: relative;">
+        <button type="button" id="concept-edit-close" class="btn btn-secondary btn-small" style="position: absolute; top: 1rem; right: 1rem;">&times;</button>
+        <h2>Edit Concept</h2>
+        <div class="form-group">
+          <label for="edit-name">Display Name</label>
+          <input type="text" id="edit-name" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="edit-oneLineHook">One-Line Hook</label>
+          <input type="text" id="edit-oneLineHook">
+        </div>
+        <div class="form-group">
+          <label for="edit-elevatorParagraph">Elevator Paragraph</label>
+          <textarea id="edit-elevatorParagraph" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-protagonistRole">Protagonist Role</label>
+          <input type="text" id="edit-protagonistRole">
+        </div>
+        <div class="form-group">
+          <label for="edit-coreCompetence">Core Competence</label>
+          <input type="text" id="edit-coreCompetence">
+        </div>
+        <div class="form-group">
+          <label for="edit-coreFlaw">Core Flaw</label>
+          <input type="text" id="edit-coreFlaw">
+        </div>
+        <div class="form-group">
+          <label for="edit-coreConflictLoop">Core Conflict Loop</label>
+          <textarea id="edit-coreConflictLoop" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-pressureSource">Pressure Source</label>
+          <input type="text" id="edit-pressureSource">
+        </div>
+        <div class="form-group">
+          <label for="edit-stakesPersonal">Personal Stakes</label>
+          <input type="text" id="edit-stakesPersonal">
+        </div>
+        <div class="form-group">
+          <label for="edit-stakesSystemic">Systemic Stakes</label>
+          <input type="text" id="edit-stakesSystemic">
+        </div>
+        <div class="form-group">
+          <label for="edit-deadlineMechanism">Deadline Mechanism</label>
+          <input type="text" id="edit-deadlineMechanism">
+        </div>
+        <div class="form-group">
+          <label for="edit-genreSubversion">Genre Subversion</label>
+          <input type="text" id="edit-genreSubversion">
+        </div>
+        <div class="form-group">
+          <label for="edit-genreFrame">Genre Frame</label>
+          <select id="edit-genreFrame">
+            <option value="HORROR">Horror</option>
+            <option value="THRILLER">Thriller</option>
+            <option value="MYSTERY">Mystery</option>
+            <option value="FANTASY">Fantasy</option>
+            <option value="SCI_FI">Sci Fi</option>
+            <option value="LITERARY">Literary</option>
+            <option value="ROMANCE">Romance</option>
+            <option value="DRAMA">Drama</option>
+            <option value="WESTERN">Western</option>
+            <option value="NOIR">Noir</option>
+            <option value="SATIRE">Satire</option>
+            <option value="FABLE">Fable</option>
+            <option value="GOTHIC">Gothic</option>
+            <option value="SURREAL">Surreal</option>
+            <option value="DYSTOPIAN">Dystopian</option>
+            <option value="MYTHIC">Mythic</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-conflictAxis">Conflict Axis</label>
+          <select id="edit-conflictAxis">
+            <option value="INDIVIDUAL_VS_SYSTEM">Individual vs System</option>
+            <option value="TRUTH_VS_STABILITY">Truth vs Stability</option>
+            <option value="DUTY_VS_DESIRE">Duty vs Desire</option>
+            <option value="FREEDOM_VS_SAFETY">Freedom vs Safety</option>
+            <option value="KNOWLEDGE_VS_INNOCENCE">Knowledge vs Innocence</option>
+            <option value="POWER_VS_MORALITY">Power vs Morality</option>
+            <option value="LOYALTY_VS_SURVIVAL">Loyalty vs Survival</option>
+            <option value="IDENTITY_VS_BELONGING">Identity vs Belonging</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-branchingPosture">Branching Posture</label>
+          <select id="edit-branchingPosture">
+            <option value="TREE">Tree</option>
+            <option value="RECONVERGE">Reconverge</option>
+            <option value="STORYLETS">Storylets</option>
+            <option value="HUB_AND_SPOKE">Hub and Spoke</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-settingScale">Setting Scale</label>
+          <select id="edit-settingScale">
+            <option value="INTIMATE">Intimate</option>
+            <option value="LOCAL">Local</option>
+            <option value="REGIONAL">Regional</option>
+            <option value="GLOBAL">Global</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-stateComplexity">State Complexity</label>
+          <select id="edit-stateComplexity">
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-actionVerbs">Action Verbs (one per line)</label>
+          <textarea id="edit-actionVerbs" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-settingAxioms">Setting Axioms (one per line)</label>
+          <textarea id="edit-settingAxioms" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-constraintSet">Constraints (one per line)</label>
+          <textarea id="edit-constraintSet" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-keyInstitutions">Key Institutions (one per line)</label>
+          <textarea id="edit-keyInstitutions" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="concept-edit-save" class="btn btn-primary">Save Changes</button>
+          <button type="button" id="concept-edit-cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Working...</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

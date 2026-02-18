@@ -17,6 +17,15 @@ jest.mock('@/llm/concept-stress-tester', () => ({
   stressTestConcept: jest.fn(),
 }));
 
+jest.mock('@/persistence/concept-repository', () => ({
+  listConcepts: jest.fn().mockResolvedValue([]),
+  loadConcept: jest.fn(),
+  saveConcept: jest.fn(),
+  updateConcept: jest.fn(),
+  deleteConcept: jest.fn(),
+  conceptExists: jest.fn(),
+}));
+
 jest.mock('@/logging/index', () => ({
   logger: {
     info: jest.fn(),
@@ -35,9 +44,14 @@ import { evaluateConcepts } from '@/llm/concept-evaluator';
 import { generateConceptIdeas } from '@/llm/concept-ideator';
 import { stressTestConcept } from '@/llm/concept-stress-tester';
 import type { StoryId, StorySpine } from '@/models';
+import { conceptRoutes } from '@/server/routes/concepts';
 import { storyRoutes } from '@/server/routes/stories';
 import {
-  createConceptScoresFixture,
+  loadConcept,
+  saveConcept,
+  updateConcept,
+} from '@/persistence/concept-repository';
+import {
   createConceptSpecFixture,
   createConceptStressTestFixture,
   createEvaluatedConceptFixture,
@@ -109,9 +123,13 @@ describe('Concept Assisted Story Flow (E2E)', () => {
   const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
     typeof generateStoryStructure
   >;
+  const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
+  const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
+  const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
 
-  const generateConceptsHandler = getRouteHandler(storyRoutes, 'post', '/generate-concepts');
-  const stressTestHandler = getRouteHandler(storyRoutes, 'post', '/stress-test-concept');
+  const generateConceptsHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate');
+  const saveConceptHandler = getRouteHandler(conceptRoutes, 'post', '/api/save');
+  const hardenHandler = getRouteHandler(conceptRoutes, 'post', '/api/:conceptId/harden');
   const createAjaxHandler = getRouteHandler(storyRoutes, 'post', '/create-ajax');
 
   beforeEach(() => {
@@ -131,6 +149,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       rawResponse: 'raw-eval',
     });
     mockedStressTestConcept.mockResolvedValue(createConceptStressTestFixture());
+    mockedSaveConcept.mockResolvedValue(undefined);
 
     mockedDecomposeEntities.mockResolvedValue({
       decomposedCharacters: [],
@@ -175,7 +194,8 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     createdStoryIds.clear();
   });
 
-  it('generates concepts, stress-tests selection, and persists conceptSpec on story creation', async () => {
+  it('generates concepts, saves, hardens, and persists conceptSpec on story creation', async () => {
+    // Step 1: Generate concepts
     const generateStatus = jest.fn().mockReturnThis();
     const generateJson = jest.fn().mockReturnThis();
     void generateConceptsHandler(
@@ -200,25 +220,62 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     const selected = evaluatedConcepts[0];
     expect(selected).toBeDefined();
 
-    const stressStatus = jest.fn().mockReturnThis();
-    const stressJson = jest.fn().mockReturnThis();
-    void stressTestHandler(
+    // Step 2: Save the concept
+    const savedConceptId = 'saved-concept-1';
+    const saveStatus = jest.fn().mockReturnThis();
+    const saveJson = jest.fn().mockReturnThis();
+    void saveConceptHandler(
       {
         body: {
-          concept: selected?.concept ?? createConceptSpecFixture(1),
-          scores: selected?.scores ?? createConceptScoresFixture(),
-          weaknesses: selected?.weaknesses ?? ['weak urgency'],
+          evaluatedConcept: selected,
+          seeds: { genreVibes: 'dark fantasy', moodKeywords: 'tense' },
+        },
+      } as unknown as Request,
+      { status: saveStatus, json: saveJson } as unknown as Response,
+    );
+    await waitForMock(saveJson);
+
+    const savePayload = getMockCallArg(saveJson, 0, 0) as {
+      success: boolean;
+      concept: { id: string };
+    };
+    expect(savePayload.success).toBe(true);
+    const conceptId = savePayload.concept.id;
+
+    // Step 3: Harden the saved concept
+    const savedConcept = {
+      id: conceptId,
+      name: selected?.concept.oneLineHook ?? 'Test',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      seeds: { genreVibes: 'dark fantasy' },
+      evaluatedConcept: selected!,
+    };
+    mockedLoadConcept.mockResolvedValue(savedConcept);
+    mockedUpdateConcept.mockImplementation(
+      (_id: string, updater: (existing: typeof savedConcept) => typeof savedConcept) => {
+        return Promise.resolve(updater(savedConcept));
+      },
+    );
+
+    const hardenStatus = jest.fn().mockReturnThis();
+    const hardenJson = jest.fn().mockReturnThis();
+    void hardenHandler(
+      {
+        params: { conceptId: savedConceptId },
+        body: {
           apiKey: 'valid-key-12345',
         },
-      } as Request,
-      { status: stressStatus, json: stressJson } as unknown as Response,
+      } as unknown as Request,
+      { status: hardenStatus, json: hardenJson } as unknown as Response,
     );
-    await waitForMock(stressJson);
+    await waitForMock(hardenJson);
 
-    const stressPayload = getMockCallArg(stressJson, 0, 0) as { hardenedConcept: unknown };
-    const hardenedConcept = stressPayload.hardenedConcept;
+    const hardenPayload = getMockCallArg(hardenJson, 0, 0) as { hardenedConcept: unknown };
+    const hardenedConcept = hardenPayload.hardenedConcept;
     expect(hardenedConcept).toBeDefined();
 
+    // Step 4: Create story with the hardened concept
     const createStatus = jest.fn().mockReturnThis();
     const createJson = jest.fn().mockReturnThis();
     void createAjaxHandler(

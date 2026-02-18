@@ -35,45 +35,6 @@ const MOCK_SPINE_OPTIONS = [
   },
 ];
 
-const MOCK_EVALUATED_CONCEPTS = [
-  {
-    concept: {
-      oneLineHook: 'A memory broker hunts a stolen life.',
-      elevatorParagraph: 'In a city where memory is currency, a broker discovers her own past was forged.',
-      genreFrame: 'NOIR',
-      genreSubversion: 'The detective is also the evidence.',
-      protagonistRole: 'Memory broker',
-      coreCompetence: 'Pattern recall',
-      coreFlaw: 'Compulsive secrecy',
-      actionVerbs: ['investigate', 'bargain', 'deceive', 'expose', 'evade', 'reconstruct'],
-      coreConflictLoop: 'Reveal truth at the cost of identity stability.',
-      conflictAxis: 'TRUTH_VS_STABILITY',
-      pressureSource: 'Memory cartels erase witnesses.',
-      stakesPersonal: 'She may lose her own identity.',
-      stakesSystemic: 'The city record collapses into chaos.',
-      deadlineMechanism: 'A citywide memory reset begins at dawn.',
-      settingAxioms: ['Memories can be extracted.'],
-      constraintSet: ['Unlicensed extraction is fatal.'],
-      keyInstitutions: ['Cartel courts'],
-      settingScale: 'LOCAL',
-      branchingPosture: 'RECONVERGE',
-      stateComplexity: 'MEDIUM',
-    },
-    scores: {
-      hookStrength: 4,
-      conflictEngine: 4,
-      agencyBreadth: 3,
-      noveltyLeverage: 4,
-      branchingFitness: 4,
-      llmFeasibility: 3,
-    },
-    overallScore: 78,
-    strengths: ['Strong contradiction'],
-    weaknesses: ['Moderate systems load'],
-    tradeoffSummary: 'High intrigue, medium complexity cost.',
-  },
-];
-
 describe('new story form submit', () => {
   let fetchMock: jest.Mock;
 
@@ -122,7 +83,7 @@ describe('new story form submit', () => {
     (document.getElementById('worldbuilding') as HTMLTextAreaElement).value = values.worldbuilding;
     (document.getElementById('startingSituation') as HTMLTextAreaElement).value =
       values.startingSituation;
-    (document.getElementById('tone') as HTMLInputElement).value = values.tone;
+    (document.getElementById('tone') as HTMLTextAreaElement).value = values.tone;
     (document.getElementById('apiKey') as HTMLInputElement).value = values.apiKey;
   }
 
@@ -133,6 +94,8 @@ describe('new story form submit', () => {
 
   it('POSTs to /stories/generate-spines when Generate Spine is clicked', async () => {
     setupPage();
+    // Skip concept selector to show manual section
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     fetchMock.mockImplementation((url: string) => {
@@ -161,36 +124,6 @@ describe('new story form submit', () => {
     expect(body.progressId).toBe('form-progress-uuid');
   });
 
-  it('POSTs to /stories/generate-concepts with seed payload', async () => {
-    setupPage();
-    fillForm();
-    (document.getElementById('genreVibes') as HTMLInputElement).value = 'neo noir';
-    (document.getElementById('moodKeywords') as HTMLInputElement).value = 'tense';
-
-    fetchMock.mockImplementation((url: string) => {
-      if (typeof url === 'string' && url.includes('generation-progress')) {
-        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
-      }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
-      );
-    });
-
-    const generateConceptsBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
-    generateConceptsBtn.click();
-    await jest.runAllTimersAsync();
-
-    const conceptCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
-      (call) => typeof call[0] === 'string' && call[0].includes('generate-concepts')
-    );
-    expect(conceptCall).toBeDefined();
-    const body = JSON.parse(conceptCall![1]!.body as string) as Record<string, unknown>;
-    expect(body.genreVibes).toBe('neo noir');
-    expect(body.moodKeywords).toBe('tense');
-    expect(body.apiKey).toBe('sk-or-valid-test-key-12345');
-    expect(body.progressId).toBe('form-progress-uuid');
-  });
-
   it('reveals manual story section when Skip is clicked', () => {
     setupPage();
     const manualSection = document.getElementById('manual-story-section') as HTMLElement;
@@ -201,71 +134,9 @@ describe('new story form submit', () => {
     expect(manualSection.style.display).toBe('block');
   });
 
-  it('reveals manual story section after concept card selection', async () => {
-    setupPage();
-    fillForm();
-    (document.getElementById('genreVibes') as HTMLInputElement).value = 'dystopian';
-
-    fetchMock.mockImplementation((url: string) => {
-      if (typeof url === 'string' && url.includes('generation-progress')) {
-        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
-      }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
-      );
-    });
-
-    const generateConceptsBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
-    generateConceptsBtn.click();
-    await jest.runAllTimersAsync();
-
-    const card = document.querySelector('.concept-card') as HTMLElement;
-    expect(card).not.toBeNull();
-    card.click();
-    await jest.runAllTimersAsync();
-
-    const manualSection = document.getElementById('manual-story-section') as HTMLElement;
-    expect(manualSection.style.display).toBe('block');
-  });
-
-  it('pre-fills story form fields and shows concept context after concept selection', async () => {
-    setupPage();
-    fillForm();
-    (document.getElementById('genreVibes') as HTMLInputElement).value = 'dystopian';
-
-    fetchMock.mockImplementation((url: string) => {
-      if (typeof url === 'string' && url.includes('generation-progress')) {
-        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
-      }
-      return Promise.resolve(
-        mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
-      );
-    });
-
-    const generateConceptsBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
-    generateConceptsBtn.click();
-    await jest.runAllTimersAsync();
-
-    const card = document.querySelector('.concept-card') as HTMLElement;
-    card.click();
-    await jest.runAllTimersAsync();
-
-    expect((document.getElementById('characterConcept') as HTMLTextAreaElement).value).toContain(
-      'Role: Memory broker.'
-    );
-    expect((document.getElementById('worldbuilding') as HTMLTextAreaElement).value).toContain(
-      'Setting Axioms:'
-    );
-    expect((document.getElementById('tone') as HTMLInputElement).value).toContain('NOIR -');
-
-    const contextPanel = document.getElementById('concept-context-panel') as HTMLElement;
-    expect(contextPanel.style.display).toBe('block');
-    expect(contextPanel.textContent).toContain('Selected Concept Context');
-    expect(contextPanel.textContent).toContain('A memory broker hunts a stolen life.');
-  });
-
   it('stores API key via setApiKey on spine generation success', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm({ apiKey: 'sk-or-my-special-key-abc' });
 
     fetchMock.mockImplementation((url: string) => {
@@ -285,6 +156,7 @@ describe('new story form submit', () => {
 
   it('renders spine cards after successful generation', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     fetchMock.mockImplementation((url: string) => {
@@ -308,6 +180,7 @@ describe('new story form submit', () => {
 
   it('POSTs to /stories/create-ajax when spine card is clicked', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     fetchMock.mockImplementation((url: string) => {
@@ -344,77 +217,9 @@ describe('new story form submit', () => {
     expect(body.conceptSpec).toBeUndefined();
   });
 
-  it('POSTs hardened conceptSpec to /stories/create-ajax when harden toggle is enabled', async () => {
-    setupPage();
-    fillForm();
-    (document.getElementById('genreVibes') as HTMLInputElement).value = 'dystopian';
-
-    const hardenedConcept = {
-      ...MOCK_EVALUATED_CONCEPTS[0].concept,
-      oneLineHook: 'Hardened hook',
-      pressureSource: 'Hardened pressure source',
-    };
-
-    fetchMock.mockImplementation((url: string) => {
-      if (typeof url === 'string' && url.includes('generation-progress')) {
-        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
-      }
-      if (typeof url === 'string' && url.includes('generate-concepts')) {
-        return Promise.resolve(
-          mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
-        );
-      }
-      if (typeof url === 'string' && url.includes('stress-test-concept')) {
-        return Promise.resolve(
-          mockJsonResponse({
-            success: true,
-            hardenedConcept,
-            driftRisks: [],
-            playerBreaks: [],
-          })
-        );
-      }
-      if (typeof url === 'string' && url.includes('generate-spines')) {
-        return Promise.resolve(
-          mockJsonResponse({ success: true, options: MOCK_SPINE_OPTIONS })
-        );
-      }
-      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
-    });
-
-    (document.getElementById('generate-concepts-btn') as HTMLButtonElement).click();
-    await jest.runAllTimersAsync();
-
-    const hardenCheckbox = document.querySelector('.concept-harden-checkbox') as HTMLInputElement;
-    hardenCheckbox.click();
-
-    const card = document.querySelector('.concept-card') as HTMLElement;
-    card.click();
-    await jest.runAllTimersAsync();
-
-    clickGenerateSpine();
-    await jest.runAllTimersAsync();
-
-    const spineCard = document.querySelector('#spine-options .spine-card') as HTMLElement;
-    spineCard.click();
-    await jest.runAllTimersAsync();
-
-    const stressCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
-      (call) => typeof call[0] === 'string' && call[0].includes('stress-test-concept')
-    );
-    expect(stressCall).toBeDefined();
-
-    const createCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
-      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
-    );
-    expect(createCall).toBeDefined();
-
-    const createBody = JSON.parse(createCall![1]!.body as string) as Record<string, unknown>;
-    expect((createBody.conceptSpec as Record<string, unknown>).oneLineHook).toBe('Hardened hook');
-  });
-
   it('shows error banner on failed spine generation', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     fetchMock.mockImplementation((url: string) => {
@@ -437,6 +242,7 @@ describe('new story form submit', () => {
 
   it('re-enables generate button on error', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     fetchMock.mockImplementation((url: string) => {
@@ -455,6 +261,7 @@ describe('new story form submit', () => {
 
   it('hides loading overlay after completion', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     fetchMock.mockImplementation((url: string) => {
@@ -475,6 +282,7 @@ describe('new story form submit', () => {
 
   it('includes NPC entries in spine generation request', async () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     // Add an NPC via the UI controls
@@ -507,6 +315,7 @@ describe('new story form submit', () => {
 
   it('prevents default form submission', () => {
     setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
 
     const form = document.querySelector('.story-form') as HTMLFormElement;

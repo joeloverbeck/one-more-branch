@@ -240,3 +240,6 @@ export {
   isConceptSpec,
   computeOverallScore,
 } from './concept-generator';
+
+export type { ConceptSeeds, SavedConcept } from './saved-concept';
+export { isSavedConcept } from './saved-concept';
