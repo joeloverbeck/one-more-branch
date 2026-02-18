@@ -2206,32 +2206,41 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     return String(value || '').replace(/_/g, ' ');
   }
 
-  function getScoreBarClass(score) {
-    if (score < 3) {
-      return 'concept-score-bar-fill-low';
-    }
-    if (score > 3) {
-      return 'concept-score-bar-fill-high';
-    }
-    return 'concept-score-bar-fill-mid';
+  function getScoreColorClass(score) {
+    if (score <= 2) return 'low';
+    if (score <= 3) return 'mid';
+    return 'high';
   }
 
-  function renderScoreRows(scores) {
-    return CONCEPT_SCORE_FIELDS.map(function (field) {
+  function renderScoreGrid(scores) {
+    var cells = CONCEPT_SCORE_FIELDS.map(function (field) {
       var rawScore = Number(scores && scores[field.key]);
       var safeScore = Number.isFinite(rawScore) ? Math.max(0, Math.min(5, rawScore)) : 0;
-      var widthPct = (safeScore / 5) * 100;
+      var colorClass = getScoreColorClass(safeScore);
+      var fullCount = Math.floor(safeScore);
+      var hasHalf = (safeScore % 1) >= 0.25;
+      var pips = '';
+
+      for (var i = 0; i < 5; i++) {
+        if (i < fullCount) {
+          pips += '<span class="concept-pip concept-pip--filled concept-pip--' + colorClass + '"></span>';
+        } else if (i === fullCount && hasHalf) {
+          pips += '<span class="concept-pip concept-pip--half concept-pip--' + colorClass + '"></span>';
+        } else {
+          pips += '<span class="concept-pip concept-pip--empty"></span>';
+        }
+      }
 
       return (
-        '<div class="concept-score-row">' +
+        '<div class="concept-score-cell">' +
           '<span class="concept-score-label">' + escapeHtml(field.label) + '</span>' +
-          '<div class="concept-score-bar">' +
-            '<div class="concept-score-bar-fill ' + getScoreBarClass(safeScore) + '" style="width:' + widthPct + '%"></div>' +
-          '</div>' +
-          '<span class="concept-score-value">' + safeScore.toFixed(1) + '</span>' +
+          '<span class="concept-score-value concept-score-value--' + colorClass + '">' + safeScore.toFixed(1) + '</span>' +
+          '<div class="concept-score-pips">' + pips + '</div>' +
         '</div>'
       );
     }).join('');
+
+    return '<div class="concept-scores-grid">' + cells + '</div>';
   }
 
   function renderListItems(items) {
@@ -2275,7 +2284,7 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
         '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
         '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
         '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
-        '<div class="concept-scores">' + renderScoreRows(entry && entry.scores) + '</div>' +
+        '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
         '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
         '<div class="concept-feedback">' +
           '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
