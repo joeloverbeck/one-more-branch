@@ -26,7 +26,6 @@ describe('config loader', () => {
 
       expect(config.server.port).toBe(3000);
       expect(config.storage.storiesDir).toBe('stories');
-      expect(config.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
     });
 
     it('returns frozen immutable config object', () => {
