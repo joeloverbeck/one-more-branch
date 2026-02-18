@@ -6,15 +6,15 @@
     "storiesDir": "stories"
   },
   "llm": {
-    "defaultModel": "anthropic/claude-sonnet-4.5",
+    "defaultModel": "anthropic/claude-sonnet-4.6",
     "models": {
-      "spine": "anthropic/claude-sonnet-4.5",
+      "spine": "anthropic/claude-sonnet-4.6",
       "entityDecomposer": "z-ai/glm-5",
-      "structure": "anthropic/claude-sonnet-4.5",
-      "planner": "anthropic/claude-sonnet-4.5",
+      "structure": "anthropic/claude-sonnet-4.6",
+      "planner": "anthropic/claude-sonnet-4.6",
       "accountant": "z-ai/glm-5",
       "lorekeeper": "z-ai/glm-5",
-      "writer": "anthropic/claude-sonnet-4.5",
+      "writer": "anthropic/claude-sonnet-4.6",
       "analyst": "z-ai/glm-5",
       "agendaResolver": "z-ai/glm-5"
     },
