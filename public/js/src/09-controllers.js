@@ -561,6 +561,37 @@
       };
     }
 
+    function validateBeforeGeneratingSpines() {
+      hideExistingError();
+
+      var titleInput = document.getElementById('title');
+      var characterConceptInput = document.getElementById('characterConcept');
+      var apiKeyInput = document.getElementById('apiKey');
+
+      if (titleInput && typeof titleInput.checkValidity === 'function' && !titleInput.checkValidity()) {
+        titleInput.reportValidity();
+        return false;
+      }
+
+      if (
+        characterConceptInput &&
+        typeof characterConceptInput.checkValidity === 'function' &&
+        !characterConceptInput.checkValidity()
+      ) {
+        characterConceptInput.reportValidity();
+        return false;
+      }
+
+      var apiKeyValue =
+        apiKeyInput && typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+      if (!apiKeyValue) {
+        showFormError('OpenRouter API key is required');
+        return false;
+      }
+
+      return true;
+    }
+
     // ── Concept selector logic ─────────────────────────────────────
 
     async function loadConceptList() {
@@ -740,6 +771,9 @@
     // Phase A: Generate Spine on button click
     generateSpineBtn.addEventListener('click', function (event) {
       event.preventDefault();
+      if (!validateBeforeGeneratingSpines()) {
+        return;
+      }
       fetchSpineOptions();
     });
 
