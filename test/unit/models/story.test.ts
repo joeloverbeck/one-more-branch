@@ -1,4 +1,5 @@
 import { isStoryId } from '@/models/id';
+import type { ConceptSpec } from '@/models/concept-generator';
 import { StoryStructure } from '@/models/story-arc';
 import { createInitialVersionedStructure } from '@/models/structure-version';
 import {
@@ -60,6 +61,35 @@ function createTestStructure(): StoryStructure {
     ],
     overallTheme: 'Hope against overwhelming odds',
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
+}
+
+function createTestConceptSpec(): ConceptSpec {
+  return {
+    oneLineHook: 'A courier smuggles forbidden memories through a fractured city.',
+    elevatorParagraph: 'A courier must choose who gets the truth when every faction edits history.',
+    genreFrame: 'NOIR',
+    genreSubversion: 'The detective story is run by the evidence runner.',
+    protagonistRole: 'Memory courier',
+    coreCompetence: 'Pattern-based recall and route planning',
+    coreFlaw: 'Compulsive secrecy',
+    actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
+    coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
+    conflictAxis: 'TRUTH_VS_STABILITY',
+    pressureSource: 'Competing cartels erase witnesses and records.',
+    stakesPersonal: 'Losing her identity and remaining allies.',
+    stakesSystemic: 'Civic memory collapse and institutional capture.',
+    deadlineMechanism: 'A citywide record purge begins at dawn.',
+    settingAxioms: ['Memories can be extracted.', 'Memories can be traded as legal evidence.'],
+    constraintSet: [
+      'Unlicensed extraction causes permanent neurological damage.',
+      'Tampered memories cannot be restored once audited.',
+      'Public memory ledgers update only once per day.',
+    ],
+    keyInstitutions: ['Ledger Court', 'Memory Cartel'],
+    settingScale: 'LOCAL',
+    branchingPosture: 'RECONVERGE',
+    stateComplexity: 'MEDIUM',
   };
 }
 
@@ -229,6 +259,17 @@ describe('Story', () => {
       expect(story.updatedAt.getTime()).toBeLessThanOrEqual(after.getTime());
       expect(story.createdAt.getTime()).toBe(story.updatedAt.getTime());
     });
+
+    it('stores conceptSpec when provided', () => {
+      const conceptSpec = createTestConceptSpec();
+      const story = createStory({
+        title: 'Concept Story',
+        characterConcept: 'A protagonist with enough detail',
+        conceptSpec,
+      });
+
+      expect(story.conceptSpec).toEqual(conceptSpec);
+    });
   });
 
   describe('isStory', () => {
@@ -278,6 +319,16 @@ describe('Story', () => {
     it('returns false when structureVersions contains invalid entries', () => {
       const story = createStory({ title: 'Test', characterConcept: 'Hero' });
       expect(isStory({ ...story, structureVersions: ['not-a-version'] })).toBe(false);
+    });
+
+    it('returns true when optional conceptSpec is valid', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      expect(isStory({ ...story, conceptSpec: createTestConceptSpec() })).toBe(true);
+    });
+
+    it('returns false when optional conceptSpec is invalid', () => {
+      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
+      expect(isStory({ ...story, conceptSpec: { oneLineHook: 'bad' } })).toBe(false);
     });
   });
 

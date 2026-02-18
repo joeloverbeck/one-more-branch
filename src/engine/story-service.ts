@@ -49,6 +49,7 @@ async function buildPreparedStory(
       tone: options.tone,
       npcs: options.npcs,
       startingSituation: options.startingSituation,
+      conceptSpec: options.conceptSpec,
     }),
     spine: options.spine,
     toneFeel: options.spine.toneFeel,

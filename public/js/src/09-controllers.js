@@ -434,6 +434,7 @@
     const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
     const spineContainer = document.getElementById('spine-options');
     const spineSection = document.getElementById('spine-section');
+    const conceptContextPanel = document.getElementById('concept-context-panel');
     const errorDiv = document.querySelector('.alert-error');
 
     if (!form || !loading || !generateSpineBtn) {
@@ -441,6 +442,8 @@
     }
     const loadingProgress = createLoadingProgressController(loading);
     var selectedConceptPayload = null;
+    var selectedConceptSpec = null;
+    var conceptSelectionRequestId = 0;
 
     initNpcControls();
 
@@ -463,8 +466,181 @@
       }
     }
 
-    function handleConceptSelected(payload) {
+    function formatConceptLabel(value) {
+      return String(value || '').replace(/_/g, ' ');
+    }
+
+    function asTrimmedLines(items) {
+      if (!Array.isArray(items)) {
+        return [];
+      }
+
+      return items
+        .filter(function (item) {
+          return typeof item === 'string' && item.trim().length > 0;
+        })
+        .map(function (item) {
+          return item.trim();
+        });
+    }
+
+    function setValueById(id, value) {
+      var field = document.getElementById(id);
+      if (!field || typeof field.value !== 'string') {
+        return;
+      }
+
+      field.value = value;
+    }
+
+    function renderConceptContextPanel(conceptSpec) {
+      if (!conceptContextPanel) {
+        return;
+      }
+
+      if (!conceptSpec) {
+        conceptContextPanel.style.display = 'none';
+        conceptContextPanel.innerHTML = '';
+        return;
+      }
+
+      var actionVerbs = asTrimmedLines(conceptSpec.actionVerbs).join(', ');
+      conceptContextPanel.innerHTML =
+        '<h3>Selected Concept Context</h3>' +
+        '<p><strong>Hook:</strong> ' + escapeHtml(conceptSpec.oneLineHook || '') + '</p>' +
+        '<p><strong>Core conflict loop:</strong> ' + escapeHtml(conceptSpec.coreConflictLoop || '') + '</p>' +
+        '<p><strong>Conflict axis:</strong> ' + escapeHtml(formatConceptLabel(conceptSpec.conflictAxis)) + '</p>' +
+        '<p><strong>Pressure source:</strong> ' + escapeHtml(conceptSpec.pressureSource || '') + '</p>' +
+        '<p><strong>Stakes:</strong> Personal: ' + escapeHtml(conceptSpec.stakesPersonal || '') + ' | Systemic: ' + escapeHtml(conceptSpec.stakesSystemic || '') + '</p>' +
+        '<p><strong>Deadline:</strong> ' + escapeHtml(conceptSpec.deadlineMechanism || '') + '</p>' +
+        '<p><strong>Action verbs:</strong> ' + escapeHtml(actionVerbs) + '</p>';
+      conceptContextPanel.style.display = 'block';
+    }
+
+    function prefillFromConceptSpec(conceptSpec) {
+      if (!conceptSpec) {
+        return;
+      }
+
+      var role = toTrimmedString(conceptSpec.protagonistRole);
+      var competence = toTrimmedString(conceptSpec.coreCompetence);
+      var flaw = toTrimmedString(conceptSpec.coreFlaw);
+      var characterConcept = 'Role: ' + role + '. Competence: ' + competence + '. Flaw: ' + flaw + '.';
+
+      var settingAxioms = asTrimmedLines(conceptSpec.settingAxioms);
+      var constraintSet = asTrimmedLines(conceptSpec.constraintSet);
+      var keyInstitutions = asTrimmedLines(conceptSpec.keyInstitutions);
+      var worldbuilding = [
+        'Setting Axioms:',
+        settingAxioms.length > 0 ? '- ' + settingAxioms.join('\n- ') : '-',
+        '',
+        'Constraints:',
+        constraintSet.length > 0 ? '- ' + constraintSet.join('\n- ') : '-',
+        '',
+        'Key Institutions:',
+        keyInstitutions.length > 0 ? '- ' + keyInstitutions.join('\n- ') : '-',
+      ].join('\n');
+
+      var tone = formatConceptLabel(conceptSpec.genreFrame) + ' - ' + toTrimmedString(conceptSpec.genreSubversion);
+
+      setValueById('characterConcept', characterConcept);
+      setValueById('worldbuilding', worldbuilding);
+      setValueById('tone', tone);
+      renderConceptContextPanel(conceptSpec);
+    }
+
+    function clearSelectedConceptPayload() {
+      selectedConceptPayload = null;
+      selectedConceptSpec = null;
+      renderConceptContextPanel(null);
+    }
+
+    async function maybeHardenConcept(payload, conceptData) {
+      if (!payload.hardenRequested) {
+        return conceptData.concept;
+      }
+
+      var apiKeyInput = document.getElementById('apiKey');
+      var apiKeyValue = toTrimmedString(apiKeyInput && typeof apiKeyInput.value === 'string' ? apiKeyInput.value : '');
+      var apiKey = apiKeyValue || toTrimmedString(getApiKey());
+      if (apiKey.length < 10) {
+        throw new Error('OpenRouter API key is required to harden a concept');
+      }
+
+      var progressId = createProgressId();
+      loading.style.display = 'flex';
+      loadingProgress.start(progressId);
+
+      try {
+        var response = await fetch('/stories/stress-test-concept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            concept: conceptData.concept,
+            scores: conceptData.scores,
+            weaknesses: conceptData.weaknesses,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+        if (!response.ok || !data.success || !data.hardenedConcept) {
+          throw new Error(data.error || 'Failed to harden concept');
+        }
+
+        setApiKey(apiKey);
+        return data.hardenedConcept;
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+      }
+    }
+
+    async function handleConceptSelected(payload) {
+      var requestId = ++conceptSelectionRequestId;
+      var conceptData = payload && payload.evaluatedConcept;
+      if (!conceptData || !conceptData.concept) {
+        return;
+      }
+
       selectedConceptPayload = payload;
+
+      try {
+        var selectedSpec = await maybeHardenConcept(payload, conceptData);
+        if (requestId !== conceptSelectionRequestId) {
+          return;
+        }
+
+        selectedConceptSpec = selectedSpec;
+        selectedConceptPayload = {
+          evaluatedConcept: {
+            concept: selectedSpec,
+            scores: conceptData.scores,
+            overallScore: conceptData.overallScore,
+            strengths: conceptData.strengths,
+            weaknesses: conceptData.weaknesses,
+            tradeoffSummary: conceptData.tradeoffSummary,
+          },
+          index: payload.index,
+          hardenRequested: Boolean(payload.hardenRequested),
+        };
+        prefillFromConceptSpec(selectedSpec);
+      } catch (error) {
+        if (requestId !== conceptSelectionRequestId) {
+          return;
+        }
+
+        selectedConceptSpec = conceptData.concept;
+        selectedConceptPayload = {
+          evaluatedConcept: conceptData,
+          index: payload.index,
+          hardenRequested: false,
+        };
+        prefillFromConceptSpec(conceptData.concept);
+        showFormError(error instanceof Error ? error.message : 'Failed to harden concept');
+      }
+
       revealManualStorySection();
       document.dispatchEvent(
         new CustomEvent('omb:concept-selected', {
@@ -552,6 +728,7 @@
         }
 
         setApiKey(conceptData.apiKey);
+        clearSelectedConceptPayload();
 
         if (conceptCardsContainer && conceptResultsSection) {
           renderConceptCards(data.evaluatedConcepts, conceptCardsContainer, handleConceptSelected);
@@ -650,6 +827,7 @@
             npcs: formValues.npcs,
             startingSituation: formValues.startingSituation,
             apiKey: formValues.apiKey,
+            conceptSpec: selectedConceptSpec || undefined,
             spine: spine,
             progressId: progressId,
           }),
@@ -695,7 +873,7 @@
     if (skipConceptBtn) {
       skipConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        selectedConceptPayload = null;
+        clearSelectedConceptPayload();
         if (typeof clearSelectedConcept === 'function') {
           clearSelectedConcept();
         }

@@ -1,5 +1,6 @@
 import type { LLMError } from '../../llm/llm-client-types.js';
 import { logger } from '../../logging/index.js';
+import { type ConceptSpec, isConceptSpec } from '../../models/index.js';
 import type { Npc } from '../../models/npc.js';
 
 export type StoryFormInput = {
@@ -9,6 +10,7 @@ export type StoryFormInput = {
   tone?: string;
   npcs?: Array<{ name?: string; description?: string }>;
   startingSituation?: string;
+  conceptSpec?: unknown;
   apiKey?: string;
 };
 
@@ -19,6 +21,7 @@ export type TrimmedStoryInput = {
   tone?: string;
   npcs?: Npc[];
   startingSituation?: string;
+  conceptSpec?: ConceptSpec;
   apiKey: string;
 };
 
@@ -47,6 +50,11 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     return { valid: false, error: 'OpenRouter API key is required' };
   }
 
+  if (input.conceptSpec !== undefined && !isConceptSpec(input.conceptSpec)) {
+    return { valid: false, error: 'Concept payload is invalid' };
+  }
+  const conceptSpec = isConceptSpec(input.conceptSpec) ? input.conceptSpec : undefined;
+
   const validNpcs = input.npcs
     ?.map((npc) => ({
       name: (npc.name ?? '').trim(),
@@ -63,6 +71,7 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
       tone: input.tone?.trim(),
       npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
       startingSituation: input.startingSituation?.trim(),
+      ...(conceptSpec !== undefined ? { conceptSpec } : {}),
       apiKey: trimmedApiKey,
     },
   };

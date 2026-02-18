@@ -111,6 +111,61 @@ export interface ConceptSpec {
   readonly stateComplexity: StateComplexity;
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isStringArrayWithinBounds(
+  value: unknown,
+  minItems: number,
+  maxItems?: number
+): value is readonly string[] {
+  if (!Array.isArray(value)) {
+    return false;
+  }
+
+  if (value.length < minItems) {
+    return false;
+  }
+
+  if (typeof maxItems === 'number' && value.length > maxItems) {
+    return false;
+  }
+
+  return value.every((item) => typeof item === 'string' && item.trim().length > 0);
+}
+
+export function isConceptSpec(value: unknown): value is ConceptSpec {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const concept = value as Record<string, unknown>;
+
+  return (
+    isNonEmptyString(concept['oneLineHook']) &&
+    isNonEmptyString(concept['elevatorParagraph']) &&
+    isGenreFrame(concept['genreFrame']) &&
+    isNonEmptyString(concept['genreSubversion']) &&
+    isNonEmptyString(concept['protagonistRole']) &&
+    isNonEmptyString(concept['coreCompetence']) &&
+    isNonEmptyString(concept['coreFlaw']) &&
+    isStringArrayWithinBounds(concept['actionVerbs'], 6) &&
+    isNonEmptyString(concept['coreConflictLoop']) &&
+    isConflictAxis(concept['conflictAxis']) &&
+    isNonEmptyString(concept['pressureSource']) &&
+    isNonEmptyString(concept['stakesPersonal']) &&
+    isNonEmptyString(concept['stakesSystemic']) &&
+    isNonEmptyString(concept['deadlineMechanism']) &&
+    isStringArrayWithinBounds(concept['settingAxioms'], 2, 5) &&
+    isStringArrayWithinBounds(concept['constraintSet'], 3, 5) &&
+    isStringArrayWithinBounds(concept['keyInstitutions'], 2, 4) &&
+    isSettingScale(concept['settingScale']) &&
+    isBranchingPosture(concept['branchingPosture']) &&
+    isStateComplexity(concept['stateComplexity'])
+  );
+}
+
 export interface ConceptDimensionScores {
   readonly hookStrength: number;
   readonly conflictEngine: number;
