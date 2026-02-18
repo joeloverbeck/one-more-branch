@@ -11,6 +11,10 @@ import { createPage as createPageDirect } from '@/models/page';
 import { createEmptyAccumulatedStructureState as createEmptyAccumulatedStructureStateDirect } from '@/models/story-arc';
 import { createStory as createStoryDirect } from '@/models/story';
 import { validateStory as validateStoryDirect } from '@/models/validation';
+import {
+  GENRE_FRAMES as GENRE_FRAMES_DIRECT,
+  computeOverallScore as computeOverallScoreDirect,
+} from '@/models/concept-generator';
 import * as models from '@/models';
 
 describe('models barrel exports', () => {
@@ -31,6 +35,11 @@ describe('models barrel exports', () => {
     expect(models.PRIMARY_DELTA_VALUES).toBe(PRIMARY_DELTA_VALUES_Direct);
     expect(models.CHOICE_TYPE_COLORS).toBe(CHOICE_TYPE_COLORS_Direct);
     expect(models.PRIMARY_DELTA_LABELS).toBe(PRIMARY_DELTA_LABELS_Direct);
+  });
+
+  it('re-exports concept generator domain contracts from models barrel', () => {
+    expect(models.GENRE_FRAMES).toBe(GENRE_FRAMES_DIRECT);
+    expect(models.computeOverallScore).toBe(computeOverallScoreDirect);
   });
 
   it('supports creating and validating model objects via barrel imports', () => {

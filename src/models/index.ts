@@ -200,3 +200,42 @@ export {
 
 export type { WorldFactDomain, WorldFact, DecomposedWorld } from './decomposed-world';
 export { formatDecomposedWorldForPrompt } from './decomposed-world';
+
+export type {
+  GenreFrame,
+  ConflictAxis,
+  BranchingPosture,
+  SettingScale,
+  StateComplexity,
+  DriftRiskMitigationType,
+  ConceptSeedInput,
+  ConceptSpec,
+  ConceptDimensionScores,
+  EvaluatedConcept,
+  ConceptContext,
+  DriftRisk,
+  PlayerBreak,
+  ConceptIdeatorContext,
+  ConceptIdeationResult,
+  ConceptEvaluatorContext,
+  ConceptEvaluationResult,
+  ConceptStressTesterContext,
+  ConceptStressTestResult,
+} from './concept-generator';
+export {
+  GENRE_FRAMES,
+  CONFLICT_AXES,
+  BRANCHING_POSTURES,
+  SETTING_SCALES,
+  STATE_COMPLEXITIES,
+  DRIFT_RISK_MITIGATION_TYPES,
+  CONCEPT_SCORING_WEIGHTS,
+  CONCEPT_PASS_THRESHOLDS,
+  isGenreFrame,
+  isConflictAxis,
+  isBranchingPosture,
+  isSettingScale,
+  isStateComplexity,
+  isDriftRiskMitigationType,
+  computeOverallScore,
+} from './concept-generator';
