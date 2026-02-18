@@ -1,6 +1,4 @@
-import { getStageModel } from '../config/stage-model.js';
-import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger } from '../logging/index.js';
 import {
   computeOverallScore,
   type ConceptDimensionScores,
@@ -9,16 +7,10 @@ import {
   type EvaluatedConcept,
 } from '../models/index.js';
 import { parseConceptSpec } from './concept-spec-parser.js';
+import { runConceptStage } from './concept-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
-import {
-  OPENROUTER_API_URL,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from './http-client.js';
 import { LLMError } from './llm-client-types.js';
 import { buildConceptEvaluatorPrompt } from './prompts/concept-evaluator-prompt.js';
-import { withRetry } from './retry.js';
 import { CONCEPT_EVALUATION_SCHEMA } from './schemas/concept-evaluator-schema.js';
 
 function requireNonEmptyString(value: unknown, fieldName: string, label: string): string {
@@ -147,61 +139,19 @@ export async function evaluateConcepts(
   apiKey: string,
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptEvaluationResult> {
-  const config = getConfig().llm;
-  const model = options?.model ?? getStageModel('conceptEvaluator');
-  const temperature = options?.temperature ?? config.temperature;
-  const maxTokens = options?.maxTokens ?? config.maxTokens;
-
   const messages = buildConceptEvaluatorPrompt(context);
-  logPrompt(logger, 'conceptEvaluator', messages);
-
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: CONCEPT_EVALUATION_SCHEMA,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const data = await readJsonResponse(response);
-    const content = data.choices[0]?.message?.content;
-    if (!content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-
-    const parsedMessage = parseMessageJsonContent(content);
-    const responseText = parsedMessage.rawText;
-    try {
-      const evaluatedConcepts = parseConceptEvaluationResponse(parsedMessage.parsed);
-      return { evaluatedConcepts, rawResponse: responseText };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
+  const result = await runConceptStage({
+    stageModel: 'conceptEvaluator',
+    promptType: 'conceptEvaluator',
+    apiKey,
+    options,
+    schema: CONCEPT_EVALUATION_SCHEMA,
+    messages,
+    parseResponse: parseConceptEvaluationResponse,
   });
+
+  return {
+    evaluatedConcepts: result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }
