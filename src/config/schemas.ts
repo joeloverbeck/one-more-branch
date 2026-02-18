@@ -33,9 +33,26 @@ const PromptOptionsConfigSchema = z.object({
 /**
  * LLM configuration schema.
  */
+const LLMModelsConfigSchema = z
+  .object({
+    conceptIdeator: z.string().min(1).optional(),
+    conceptEvaluator: z.string().min(1).optional(),
+    conceptStressTester: z.string().min(1).optional(),
+    spine: z.string().min(1).optional(),
+    entityDecomposer: z.string().min(1).optional(),
+    structure: z.string().min(1).optional(),
+    planner: z.string().min(1).optional(),
+    accountant: z.string().min(1).optional(),
+    lorekeeper: z.string().min(1).optional(),
+    writer: z.string().min(1).optional(),
+    analyst: z.string().min(1).optional(),
+    agendaResolver: z.string().min(1).optional(),
+  })
+  .strict();
+
 const LLMConfigSchema = z.object({
   defaultModel: z.string().min(1).default('anthropic/claude-sonnet-4.5'),
-  models: z.record(z.string(), z.string()).optional(),
+  models: LLMModelsConfigSchema.optional(),
   temperature: z.number().min(0).max(2).default(0.8),
   maxTokens: z.number().int().min(256).max(32768).default(8192),
   retry: RetryConfigSchema.optional().transform((val) => val ?? RetryConfigSchema.parse({})),

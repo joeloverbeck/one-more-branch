@@ -166,5 +166,36 @@ describe('config schemas', () => {
       expect(result.llm.retry.baseDelayMs).toBe(1000);
       expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
     });
+
+    it('accepts explicit per-stage model overrides including concept stages', () => {
+      const result = AppConfigSchema.parse({
+        llm: {
+          models: {
+            conceptIdeator: 'anthropic/claude-sonnet-4.6',
+            conceptEvaluator: 'z-ai/glm-5',
+            conceptStressTester: 'anthropic/claude-sonnet-4.6',
+            writer: 'anthropic/claude-sonnet-4.6',
+          },
+        },
+      });
+
+      expect(result.llm.models?.conceptIdeator).toBe('anthropic/claude-sonnet-4.6');
+      expect(result.llm.models?.conceptEvaluator).toBe('z-ai/glm-5');
+      expect(result.llm.models?.conceptStressTester).toBe('anthropic/claude-sonnet-4.6');
+      expect(result.llm.models?.writer).toBe('anthropic/claude-sonnet-4.6');
+    });
+
+    it('rejects unknown llm.models stage keys', () => {
+      expect(() =>
+        AppConfigSchema.parse({
+          llm: {
+            models: {
+              conceptIdeator: 'anthropic/claude-sonnet-4.6',
+              invalidStageName: 'z-ai/glm-5',
+            },
+          },
+        }),
+      ).toThrow();
+    });
   });
 });
