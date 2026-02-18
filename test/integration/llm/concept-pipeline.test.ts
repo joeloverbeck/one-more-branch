@@ -6,7 +6,6 @@ import {
   createScoredConceptFixture,
   createConceptSpecFixture,
   createConceptStressTestFixture,
-  createEvaluatedConceptFixture,
 } from '../../fixtures/concept-generator';
 
 function createJsonResponse(status: number, body: unknown): Response {
