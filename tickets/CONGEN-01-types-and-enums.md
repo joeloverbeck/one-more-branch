@@ -1,7 +1,7 @@
 # CONGEN-01: Types, Enums, and Type Guards
 
 **Status**: PENDING
-**Depends on**: NoneRea
+**Depends on**: None
 **Blocks**: CONGEN-02, CONGEN-03, CONGEN-04, CONGEN-05
 
 ## Summary
