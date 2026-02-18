@@ -5,6 +5,7 @@ import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   ConceptDimensionScores,
   ConceptSpec,
+  ScoredConcept,
   ConceptStressTestResult,
   EvaluatedConcept,
 } from '../../models/index.js';
@@ -20,6 +21,8 @@ export interface GenerateConceptsInput {
 }
 
 export interface GenerateConceptsResult {
+  readonly ideatedConcepts: readonly ConceptSpec[];
+  readonly scoredConcepts: readonly ScoredConcept[];
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
 }
 
@@ -159,6 +162,8 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       });
 
       return {
+        ideatedConcepts: ideation.concepts,
+        scoredConcepts: evaluation.scoredConcepts,
         evaluatedConcepts: evaluation.evaluatedConcepts,
       };
     },

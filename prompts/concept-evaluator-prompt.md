@@ -8,82 +8,38 @@
 
 ## Pipeline Position
 
-The concept evaluator is the second LLM call in the `/concepts` flow. It scores ideated concepts, selects the strongest options, and returns tradeoff framing without rewriting concept content.
+The concept evaluator is the second stage in the `/concepts` flow and now runs in **two passes**:
 
-**Pipeline position**: Concept Ideator -> **Concept Evaluator** -> (optional per-concept) Concept Stress Tester
+1. **Scoring pass**: score **all** ideated concepts with per-dimension evidence.
+2. **Deep-eval pass**: code selects shortlist by thresholds/ranking, then model returns strengths/weaknesses/tradeoffs for shortlist only.
+
+**Pipeline position**: Concept Ideator -> **Concept Evaluator (Scoring -> Deep Eval)** -> (optional per-concept) Concept Stress Tester
 
 Generation stage emitted by `conceptService`: `EVALUATING_CONCEPTS`.
 
-## Messages Sent To Model
+## Pass 1: Scoring Prompt
 
-### 1) System Message
+### System highlights
 
-```text
-You are a strict evaluator for branching interactive narrative concepts. You score and select concepts; you do not rewrite or improve them.
+- Score every candidate concept.
+- Do not rank, filter, or select concepts.
+- Do not compute weighted totals.
+- Provide 1-3 evidence bullets for each score dimension.
 
-SCORING RUBRIC (0-5):
-- hookStrength: Curiosity gap, emotional pull, and one-line clarity.
-- conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
-- agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
-- noveltyLeverage: Familiar frame plus a load-bearing differentiator.
-- branchingFitness: Branch scalability, reconvergence viability, and state manageability.
-- llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
+### User highlights
 
-WEIGHTS AND PASS THRESHOLDS:
-- hookStrength: weight 12, pass >= 3
-- conflictEngine: weight 20, pass >= 3
-- agencyBreadth: weight 15, pass >= 3
-- noveltyLeverage: weight 10, pass >= 2
-- branchingFitness: weight 20, pass >= 3
-- llmFeasibility: weight 23, pass >= 3
+- Includes all user seed context.
+- Includes all concept candidates from ideator output.
+- Requires JSON: `{ "scoredConcepts": [ ... ] }`.
+- Each item must include: `concept`, `scores`, `scoreEvidence`.
 
-EVIDENCE REQUIREMENT:
-- For every score dimension, ground judgment in 1-3 concrete bullet points that reference actual concept fields.
-
-SELECTION RULES:
-- Compute weighted scores using the provided weights.
-- Return only the top 3 concepts by weighted score.
-- If fewer than 3 concepts pass thresholds, return only passing concepts and call out threshold failures in weaknesses/tradeoffSummary.
-
-TRADEOFF FRAMING:
-- For each selected concept, state what the user gains and what they give up.
-- Do not modify concept content.
-```
-
-### 2) User Message
-
-```text
-Evaluate these concept candidates against the user intent and rubric.
-
-USER SEEDS:
-{{normalized seed block from buildSeedSection(context)}}
-
-CONCEPT CANDIDATES:
-1. {{JSON.stringify(concept1, null, 2)}}
-2. {{JSON.stringify(concept2, null, 2)}}
-...
-
-OUTPUT REQUIREMENTS:
-- Return JSON with shape: { "evaluatedConcepts": [ ... ] }.
-- For each item include: concept, scores, overallScore, strengths, weaknesses, tradeoffSummary.
-- strengths and weaknesses must be non-empty string arrays.
-```
-
-If all optional seed fields are empty, the seed block is exactly:
-
-```text
-No optional user seeds provided.
-```
-
-## JSON Response Shape
+### Response shape
 
 ```json
 {
-  "evaluatedConcepts": [
+  "scoredConcepts": [
     {
-      "concept": {
-        "{{ConceptSpec fields}}": "same shape as concept ideator output"
-      },
+      "concept": { "{{ConceptSpec fields}}": "..." },
       "scores": {
         "hookStrength": 0,
         "conflictEngine": 0,
@@ -92,33 +48,58 @@ No optional user seeds provided.
         "branchingFitness": 0,
         "llmFeasibility": 0
       },
-      "overallScore": 0,
-      "strengths": ["{{concrete strength}}"],
-      "weaknesses": ["{{concrete weakness}}"],
-      "tradeoffSummary": "{{what user gains vs gives up}}"
+      "scoreEvidence": {
+        "hookStrength": ["..."],
+        "conflictEngine": ["..."],
+        "agencyBreadth": ["..."],
+        "noveltyLeverage": ["..."],
+        "branchingFitness": ["..."],
+        "llmFeasibility": ["..."]
+      }
     }
   ]
 }
 ```
 
-- Schema allows 1..N items, but `parseConceptEvaluationResponse(...)` enforces **1-3** evaluated concepts.
-- Runtime parser recomputes `overallScore` with `computeOverallScore(scores)` and sorts descending by that value.
+Runtime behavior:
+
+- Parser recomputes `overallScore` with `computeOverallScore(scores)`.
 - Score fields are clamped to 0..5 at parse time; clamping emits a warning log.
-- `strengths`, `weaknesses`, and `tradeoffSummary` must be non-empty after trimming or parsing fails.
+- Parser enforces exact concept coverage (no omissions/duplicates vs ideator set).
 
-## Context Provided
+## Pass 2: Deep-Eval Prompt
 
-| Context Field | Description |
-|---|---|
-| `concepts` | Candidate concepts from ideation stage |
-| `userSeeds.genreVibes` | Optional genre guidance |
-| `userSeeds.moodKeywords` | Optional mood/tone guidance |
-| `userSeeds.contentPreferences` | Optional content preferences |
-| `userSeeds.thematicInterests` | Optional thematic interests |
-| `userSeeds.sparkLine` | Optional spark-line seed |
+### System highlights
 
-## Notes
+- Evaluate only the code-selected shortlist.
+- Do not rescore and do not alter concepts.
+- Return strengths, weaknesses, and tradeoff summary.
 
-- This stage evaluates and selects only; it does not harden concepts.
-- Prompt logging uses `promptType: 'conceptEvaluator'` via `runConceptStage(...)`.
-- Model routing uses stage key `conceptEvaluator` in `getStageModel(...)`.
+### User highlights
+
+- Includes user seed context.
+- Includes shortlist concepts with locked scores and overallScore from code.
+- Requires JSON: `{ "evaluatedConcepts": [ ... ] }`.
+- Each item must include: `concept`, `strengths`, `weaknesses`, `tradeoffSummary`.
+
+### Response shape
+
+```json
+{
+  "evaluatedConcepts": [
+    {
+      "concept": { "{{ConceptSpec fields}}": "..." },
+      "strengths": ["..."],
+      "weaknesses": ["..."],
+      "tradeoffSummary": "..."
+    }
+  ]
+}
+```
+
+Runtime behavior:
+
+- Code applies thresholding with `passesConceptThresholds(scores)` and ranks by recomputed `overallScore`.
+- If no concepts pass thresholds, code falls back to top scored concepts.
+- Deep-eval parser enforces exact concept coverage against shortlist.
+- Final returned concepts are sorted descending by code-computed `overallScore`.

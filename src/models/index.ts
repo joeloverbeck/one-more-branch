@@ -211,6 +211,8 @@ export type {
   ConceptSeedInput,
   ConceptSpec,
   ConceptDimensionScores,
+  ConceptScoreEvidence,
+  ScoredConcept,
   EvaluatedConcept,
   ConceptContext,
   DriftRisk,
@@ -239,7 +241,8 @@ export {
   isDriftRiskMitigationType,
   isConceptSpec,
   computeOverallScore,
+  passesConceptThresholds,
 } from './concept-generator';
 
-export type { ConceptSeeds, SavedConcept } from './saved-concept';
-export { isSavedConcept } from './saved-concept';
+export type { ConceptSeeds, SavedConcept, GeneratedConceptBatch } from './saved-concept';
+export { isSavedConcept, isGeneratedConceptBatch } from './saved-concept';

@@ -3,6 +3,7 @@ import { createConceptService } from '@/server/services/concept-service';
 import {
   createConceptScoresFixture,
   createConceptSeedInputFixture,
+  createScoredConceptFixture,
   createConceptSpecFixture,
   createConceptStressTestFixture,
   createEvaluatedConceptFixture,
@@ -46,21 +47,59 @@ describe('Concept Pipeline Integration', () => {
       concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
     };
 
-    const lowScore = { ...createConceptScoresFixture(), hookStrength: 2 };
+    const lowScore = { ...createConceptScoresFixture(), hookStrength: 3 };
     const topScore = { ...createConceptScoresFixture(), hookStrength: 5 };
-    const middleScore = { ...createConceptScoresFixture(), hookStrength: 3 };
+    const middleScore = { ...createConceptScoresFixture(), hookStrength: 4 };
 
-    const evaluationPayload = {
+    const scoringPayload = {
+      scoredConcepts: [
+        { ...createScoredConceptFixture(1), scores: lowScore, overallScore: 1 },
+        { ...createScoredConceptFixture(2), scores: topScore, overallScore: 1 },
+        { ...createScoredConceptFixture(3), scores: middleScore, overallScore: 1 },
+        {
+          ...createScoredConceptFixture(4),
+          scores: { ...createConceptScoresFixture(), hookStrength: 1 },
+          overallScore: 1,
+        },
+        {
+          ...createScoredConceptFixture(5),
+          scores: { ...createConceptScoresFixture(), hookStrength: 1 },
+          overallScore: 1,
+        },
+        {
+          ...createScoredConceptFixture(6),
+          scores: { ...createConceptScoresFixture(), hookStrength: 1 },
+          overallScore: 1,
+        },
+      ],
+    };
+    const deepPayload = {
       evaluatedConcepts: [
-        { ...createEvaluatedConceptFixture(1), scores: lowScore, overallScore: 1 },
-        { ...createEvaluatedConceptFixture(2), scores: topScore, overallScore: 1 },
-        { ...createEvaluatedConceptFixture(3), scores: middleScore, overallScore: 1 },
+        {
+          concept: createConceptSpecFixture(2),
+          strengths: ['Strong pressure'],
+          weaknesses: ['Lower novelty'],
+          tradeoffSummary: 'High conflict coherence with moderate novelty.',
+        },
+        {
+          concept: createConceptSpecFixture(3),
+          strengths: ['Good agency breadth'],
+          weaknesses: ['Hook is less sharp'],
+          tradeoffSummary: 'Broader tactics but weaker initial pull.',
+        },
+        {
+          concept: createConceptSpecFixture(1),
+          strengths: ['Solid feasibility'],
+          weaknesses: ['Hook is weaker'],
+          tradeoffSummary: 'Reliable execution at lower immediate intrigue.',
+        },
       ],
     };
 
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(ideationPayload)))
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(evaluationPayload)));
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)));
 
     const result = await service.generateConcepts({
       ...seeds,
@@ -69,8 +108,9 @@ describe('Concept Pipeline Integration', () => {
       },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(result.evaluatedConcepts).toHaveLength(3);
+    expect(result.scoredConcepts).toHaveLength(6);
     expect(result.evaluatedConcepts[0]?.concept.oneLineHook).toBe('Hook 2');
     expect(result.evaluatedConcepts[0]?.overallScore).toBe(computeOverallScore(topScore));
     expect(result.evaluatedConcepts[2]?.overallScore).toBe(computeOverallScore(lowScore));

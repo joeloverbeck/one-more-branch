@@ -15,6 +15,7 @@ jest.mock('@/llm/concept-stress-tester', () => ({
 jest.mock('@/persistence/concept-repository', () => ({
   listConcepts: jest.fn().mockResolvedValue([]),
   loadConcept: jest.fn(),
+  saveConceptGenerationBatch: jest.fn(),
   saveConcept: jest.fn(),
   updateConcept: jest.fn(),
   deleteConcept: jest.fn(),
@@ -29,9 +30,11 @@ import { conceptRoutes } from '@/server/routes/concepts';
 import { generationProgressService } from '@/server/services';
 import {
   loadConcept,
+  saveConceptGenerationBatch,
   updateConcept,
 } from '@/persistence/concept-repository';
 import {
+  createScoredConceptFixture,
   createConceptScoresFixture,
   createConceptSpecFixture,
   createConceptStressTestFixture,
@@ -75,6 +78,9 @@ describe('Concept Route Integration', () => {
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
+  const mockedSaveConceptGenerationBatch = saveConceptGenerationBatch as jest.MockedFunction<
+    typeof saveConceptGenerationBatch
+  >;
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
 
   beforeEach(() => {
@@ -92,6 +98,7 @@ describe('Concept Route Integration', () => {
       createEvaluatedConceptFixture(3),
     ];
     mockedEvaluateConcepts.mockResolvedValue({
+      scoredConcepts: Array.from({ length: 6 }, (_, index) => createScoredConceptFixture(index + 1)),
       evaluatedConcepts,
       rawResponse: 'raw-eval',
     });
@@ -139,6 +146,7 @@ describe('Concept Route Integration', () => {
       1,
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-1');
+    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts });
   });

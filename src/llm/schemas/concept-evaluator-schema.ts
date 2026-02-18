@@ -22,10 +22,60 @@ const SCORE_SCHEMA = {
   },
 } as const;
 
-export const CONCEPT_EVALUATION_SCHEMA: JsonSchema = {
+const SCORE_EVIDENCE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: [
+    'hookStrength',
+    'conflictEngine',
+    'agencyBreadth',
+    'noveltyLeverage',
+    'branchingFitness',
+    'llmFeasibility',
+  ],
+  properties: {
+    hookStrength: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    conflictEngine: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    agencyBreadth: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    noveltyLeverage: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    branchingFitness: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    llmFeasibility: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+  },
+} as const;
+
+export const CONCEPT_EVALUATION_SCORING_SCHEMA: JsonSchema = {
   type: 'json_schema',
   json_schema: {
-    name: 'concept_evaluation',
+    name: 'concept_evaluation_scoring',
+    strict: true,
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['scoredConcepts'],
+      properties: {
+        scoredConcepts: {
+          type: 'array',
+          minItems: 1,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['concept', 'scores', 'scoreEvidence'],
+            properties: {
+              concept: CONCEPT_SPEC_SCHEMA,
+              scores: SCORE_SCHEMA,
+              scoreEvidence: SCORE_EVIDENCE_SCHEMA,
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const CONCEPT_EVALUATION_DEEP_SCHEMA: JsonSchema = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'concept_evaluation_deep',
     strict: true,
     schema: {
       type: 'object',
@@ -34,24 +84,17 @@ export const CONCEPT_EVALUATION_SCHEMA: JsonSchema = {
       properties: {
         evaluatedConcepts: {
           type: 'array',
+          minItems: 1,
+          maxItems: 3,
           items: {
             type: 'object',
             additionalProperties: false,
-            required: [
-              'concept',
-              'scores',
-              'overallScore',
-              'strengths',
-              'weaknesses',
-              'tradeoffSummary',
-            ],
+            required: ['concept', 'strengths', 'weaknesses', 'tradeoffSummary'],
             properties: {
               concept: CONCEPT_SPEC_SCHEMA,
-              scores: SCORE_SCHEMA,
-              overallScore: { type: 'number' },
-              strengths: { type: 'array', items: { type: 'string' } },
-              weaknesses: { type: 'array', items: { type: 'string' } },
-              tradeoffSummary: { type: 'string' },
+              strengths: { type: 'array', items: { type: 'string' }, minItems: 1 },
+              weaknesses: { type: 'array', items: { type: 'string' }, minItems: 1 },
+              tradeoffSummary: { type: 'string', minLength: 1 },
             },
           },
         },

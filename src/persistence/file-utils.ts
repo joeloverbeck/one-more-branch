@@ -133,6 +133,21 @@ export function getConceptFilePath(conceptId: string): string {
   return path.join(getConceptsDir(), `${conceptId}.json`);
 }
 
+export function getConceptGenerationsDir(): string {
+  return path.join(getConceptsDir(), 'generated');
+}
+
+export function ensureConceptGenerationsDir(): void {
+  const generatedDir = getConceptGenerationsDir();
+  if (!existsSync(generatedDir)) {
+    mkdirSync(generatedDir, { recursive: true });
+  }
+}
+
+export function getConceptGenerationFilePath(generationId: string): string {
+  return path.join(getConceptGenerationsDir(), `${generationId}.json`);
+}
+
 export async function deleteFile(filePath: string): Promise<void> {
   try {
     await fs.unlink(filePath);
