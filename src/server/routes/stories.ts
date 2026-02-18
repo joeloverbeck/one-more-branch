@@ -5,6 +5,8 @@ import { generateStorySpines } from '../../llm/spine-generator.js';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
+import { isConceptSpec } from '../../models/concept-generator.js';
+import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
@@ -84,6 +86,7 @@ storyRoutes.post(
       npcs?: Array<{ name?: string; description?: string }>;
       startingSituation?: string;
       apiKey?: string;
+      conceptSpec?: unknown;
       progressId?: unknown;
     };
 
@@ -118,6 +121,9 @@ storyRoutes.post(
         }))
         .filter((npc) => npc.name.length > 0 && npc.description.length > 0);
 
+      const validatedConceptSpec: ConceptSpec | undefined =
+        isConceptSpec(body.conceptSpec) ? body.conceptSpec : undefined;
+
       const result = await generateStorySpines(
         {
           characterConcept,
@@ -125,6 +131,7 @@ storyRoutes.post(
           tone: body.tone?.trim() ?? 'fantasy adventure',
           npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
           startingSituation: body.startingSituation?.trim(),
+          conceptSpec: validatedConceptSpec,
         },
         apiKey
       );

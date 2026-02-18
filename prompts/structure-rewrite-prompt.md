@@ -71,6 +71,16 @@ Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
+{{#if conceptSpec}}
+CONCEPT STAKES (use to ground your per-act stakes):
+Personal stakes: {{conceptSpec.stakesPersonal}}
+Systemic stakes: {{conceptSpec.stakesSystemic}}
+Pressure source: {{conceptSpec.pressureSource}}
+Deadline mechanism: {{conceptSpec.deadlineMechanism}}
+
+Each act's stakes should escalate FROM these foundations, even after the deviation.
+{{/if}}
+
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
 
@@ -172,3 +182,4 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
 
 - In production, this prompt may include a few-shot user/assistant example before the final user message when `fewShotMode` is enabled. The few-shot example includes a planned beats section demonstrating the expected format.
 - `plannedBeats` are extracted by `extractPlannedBeats()` in `src/engine/structure-rewrite-support.ts` — all beats from the structure that are not concluded and come after the deviation point, excluding the currently active beat.
+- When `conceptSpec` is present on the story, the CONCEPT STAKES section is included to ground per-act stakes in the original concept's thematic foundations. The rewrite variant adds "even after the deviation" to the escalation guidance. The `conceptSpec` is passed through via `buildRewriteContext()` in `src/engine/structure-rewrite-support.ts`.

@@ -137,6 +137,7 @@ export function buildRewriteContext(
     toneFeel: story.toneFeel,
     toneAvoid: story.toneAvoid,
     spine: story.spine,
+    conceptSpec: story.conceptSpec,
     completedBeats,
     plannedBeats,
     narrativeSummary: deviation.narrativeSummary,

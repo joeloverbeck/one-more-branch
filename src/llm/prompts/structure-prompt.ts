@@ -1,3 +1,4 @@
+import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
@@ -18,6 +19,7 @@ export interface StructureContext {
   spine?: StorySpine;
   decomposedCharacters?: readonly DecomposedCharacter[];
   decomposedWorld?: DecomposedWorld;
+  conceptSpec?: ConceptSpec;
 }
 
 const STRUCTURE_FEW_SHOT_USER = `Generate a story structure before the first page.
@@ -132,6 +134,22 @@ function buildToneFeelSection(context: StructureContext): string {
   return lines.length > 0 ? lines.join('\n') + '\n\n' : '';
 }
 
+function buildConceptStakesSection(conceptSpec?: ConceptSpec): string {
+  if (!conceptSpec) {
+    return '';
+  }
+
+  return `CONCEPT STAKES (use to ground your per-act stakes):
+Personal stakes: ${conceptSpec.stakesPersonal}
+Systemic stakes: ${conceptSpec.stakesSystemic}
+Pressure source: ${conceptSpec.pressureSource}
+Deadline mechanism: ${conceptSpec.deadlineMechanism}
+
+Each act's stakes should escalate FROM these foundations. Act 1 stakes should connect to the personal dimension, Act 2 should compound both personal and systemic, Act 3 should put the systemic stakes at maximum risk.
+
+`;
+}
+
 export function buildStructurePrompt(
   context: StructureContext,
   options?: PromptOptions
@@ -145,10 +163,11 @@ export function buildStructurePrompt(
 
   const spineSection = buildSpineSection(context.spine);
   const toneFeelSection = buildToneFeelSection(context);
+  const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
 
   const userPrompt = `Generate a story structure before the first page.
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.

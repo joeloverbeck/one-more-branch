@@ -1,3 +1,6 @@
+import type { ConflictType } from './story-spine.js';
+import { isConflictType as isConflictTypeValidator } from './story-spine.js';
+
 export const GENRE_FRAMES = [
   'HORROR',
   'THRILLER',
@@ -99,6 +102,7 @@ export interface ConceptSpec {
   readonly actionVerbs: readonly string[];
   readonly coreConflictLoop: string;
   readonly conflictAxis: ConflictAxis;
+  readonly conflictType: ConflictType;
   readonly pressureSource: string;
   readonly stakesPersonal: string;
   readonly stakesSystemic: string;
@@ -153,6 +157,7 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isStringArrayWithinBounds(concept['actionVerbs'], 6) &&
     isNonEmptyString(concept['coreConflictLoop']) &&
     isConflictAxis(concept['conflictAxis']) &&
+    isConflictTypeValidator(concept['conflictType']) &&
     isNonEmptyString(concept['pressureSource']) &&
     isNonEmptyString(concept['stakesPersonal']) &&
     isNonEmptyString(concept['stakesSystemic']) &&
@@ -188,6 +193,7 @@ export interface ConceptContext {
   readonly oneLineHook: string;
   readonly coreConflictLoop: string;
   readonly conflictAxis: ConflictAxis;
+  readonly conflictType: ConflictType;
   readonly pressureSource: string;
   readonly stakesPersonal: string;
   readonly stakesSystemic: string;

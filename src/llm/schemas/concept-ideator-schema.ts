@@ -5,6 +5,7 @@ import {
   SETTING_SCALES,
   STATE_COMPLEXITIES,
 } from '../../models/concept-generator.js';
+import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
 export const CONCEPT_SPEC_SCHEMA = {
@@ -21,6 +22,7 @@ export const CONCEPT_SPEC_SCHEMA = {
     'actionVerbs',
     'coreConflictLoop',
     'conflictAxis',
+    'conflictType',
     'pressureSource',
     'stakesPersonal',
     'stakesSystemic',
@@ -43,6 +45,7 @@ export const CONCEPT_SPEC_SCHEMA = {
     actionVerbs: { type: 'array', items: { type: 'string' } },
     coreConflictLoop: { type: 'string' },
     conflictAxis: { type: 'string', enum: [...CONFLICT_AXES] },
+    conflictType: { type: 'string', enum: [...CONFLICT_TYPE_VALUES] },
     pressureSource: { type: 'string' },
     stakesPersonal: { type: 'string' },
     stakesSystemic: { type: 'string' },

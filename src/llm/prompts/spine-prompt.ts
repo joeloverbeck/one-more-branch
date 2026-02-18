@@ -1,3 +1,4 @@
+import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -10,6 +11,7 @@ export interface SpinePromptContext {
   tone: string;
   npcs?: readonly Npc[];
   startingSituation?: string;
+  conceptSpec?: ConceptSpec;
 }
 
 const SPINE_ROLE_INTRO = `You are a story architect designing the thematic spine of interactive branching fiction. Your job is to identify the invariant causal chain and thematic logic that will anchor the entire story — the dramatic question, the protagonist's inner transformation, and the force that opposes them.`;
@@ -20,6 +22,29 @@ const SPINE_DESIGN_GUIDELINES = `SPINE DESIGN GUIDELINES:
 - The antagonistic force is NOT necessarily a villain. It can be a system, an environment, an internal flaw, a social pressure, or fate itself. What matters is that it creates difficult choices that widen the gap between need and want.
 - The pressure mechanism explains HOW the antagonistic force creates those difficult choices — the specific way it forces the protagonist to choose between need and want.
 - Each option must feel like a genuinely different story, not a cosmetic variation.`;
+
+function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
+  if (!conceptSpec) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'CONCEPT ANALYSIS (from upstream concept generation — use as grounding):',
+    `One-line hook: ${conceptSpec.oneLineHook}`,
+    `Core conflict loop: ${conceptSpec.coreConflictLoop}`,
+    `Thematic tension axis: ${conceptSpec.conflictAxis}`,
+    `Structural opposition: ${conceptSpec.conflictType} — Your spine MUST use this exact conflictType value.`,
+    `Pressure source: ${conceptSpec.pressureSource}`,
+    `Personal stakes: ${conceptSpec.stakesPersonal}`,
+    `Systemic stakes: ${conceptSpec.stakesSystemic}`,
+    `Deadline mechanism: ${conceptSpec.deadlineMechanism}`,
+    `Action verbs available to player: ${conceptSpec.actionVerbs.join(', ')}`,
+    '',
+    'CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept\'s conflict loop and stakes; don\'t contradict them.',
+  ];
+
+  return lines.join('\n') + '\n\n';
+}
 
 export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
   const systemSections: string[] = [SPINE_ROLE_INTRO];
@@ -44,12 +69,14 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
     ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
     : '';
 
+  const conceptSection = buildConceptAnalysisSection(context.conceptSpec);
+
   const userPrompt = `Generate exactly 3 story spine options for the following story setup.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}${conceptSection}TONE/GENRE: ${context.tone}
 
 DIVERGENCE CONSTRAINT:
 Generate exactly 3 spine options. Each MUST differ in at least one of:

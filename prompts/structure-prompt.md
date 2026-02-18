@@ -81,6 +81,16 @@ Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
+{{#if conceptSpec}}
+CONCEPT STAKES (use to ground your per-act stakes):
+Personal stakes: {{conceptSpec.stakesPersonal}}
+Systemic stakes: {{conceptSpec.stakesSystemic}}
+Pressure source: {{conceptSpec.pressureSource}}
+Deadline mechanism: {{conceptSpec.deadlineMechanism}}
+
+Each act's stakes should escalate FROM these foundations. Act 1 stakes should connect to the personal dimension, Act 2 should compound both personal and systemic, Act 3 should put the systemic stakes at maximum risk.
+{{/if}}
+
 TONE/GENRE: {{tone}}
 
 REQUIREMENTS (follow ALL):

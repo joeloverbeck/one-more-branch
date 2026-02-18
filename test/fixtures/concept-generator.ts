@@ -18,6 +18,7 @@ export function createConceptSpecFixture(index = 1): ConceptSpec {
     actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
     coreConflictLoop: `Conflict loop ${index}`,
     conflictAxis: 'TRUTH_VS_STABILITY',
+    conflictType: 'PERSON_VS_SOCIETY',
     pressureSource: `Pressure ${index}`,
     stakesPersonal: `Personal stakes ${index}`,
     stakesSystemic: `Systemic stakes ${index}`,
