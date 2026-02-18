@@ -6,6 +6,7 @@ import {
   STATE_COMPLEXITIES,
   type ConceptIdeatorContext,
 } from '../../models/concept-generator.js';
+import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
@@ -62,6 +63,16 @@ ${buildEnumGuidance('conflictAxis', CONFLICT_AXES, [
   'Capability gain versus ethical limits.',
   'Commitments versus self-preservation.',
   'Self-definition versus group acceptance.',
+])}
+
+${buildEnumGuidance('conflictType', CONFLICT_TYPE_VALUES, [
+  'Direct human antagonist opposition.',
+  'Internal psychological struggle.',
+  'Individual against societal structures.',
+  'Environmental or natural forces opposition.',
+  'Technology-driven opposition or consequence.',
+  'Otherworldly or inexplicable forces.',
+  'Destiny, prophecy, or inevitable forces.',
 ])}
 
 ${buildEnumGuidance('branchingPosture', BRANCHING_POSTURES, [
@@ -140,6 +151,7 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
 - Return JSON matching schema shape: { "concepts": [ConceptSpec, ...] }.
 - Populate every required field for each concept.
 - actionVerbs must contain at least 6 concise, distinct verbs.
+- conflictType must be structurally coherent with conflictAxis (e.g., INDIVIDUAL_VS_SYSTEM pairs naturally with PERSON_VS_SOCIETY).
 - settingAxioms must contain 2-5 enforceable rules.
 - constraintSet must contain 3-5 meaningful limits.
 - keyInstitutions must contain 2-4 pressure-producing institutions.`

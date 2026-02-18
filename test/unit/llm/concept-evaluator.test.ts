@@ -33,6 +33,7 @@ function createValidConcept(index: number): {
   actionVerbs: readonly string[];
   coreConflictLoop: string;
   conflictAxis: 'TRUTH_VS_STABILITY';
+  conflictType: 'PERSON_VS_SOCIETY';
   pressureSource: string;
   stakesPersonal: string;
   stakesSystemic: string;
@@ -55,6 +56,7 @@ function createValidConcept(index: number): {
     actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
     coreConflictLoop: `Conflict loop ${index}`,
     conflictAxis: 'TRUTH_VS_STABILITY',
+    conflictType: 'PERSON_VS_SOCIETY',
     pressureSource: `Pressure ${index}`,
     stakesPersonal: `Personal stakes ${index}`,
     stakesSystemic: `Systemic stakes ${index}`,

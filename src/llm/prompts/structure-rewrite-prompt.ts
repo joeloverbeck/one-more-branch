@@ -206,6 +206,16 @@ ${formatPlannedBeats(context.plannedBeats)}
 
   const spineSection = buildSpineSection(context.spine);
 
+  const conceptStakesSection = context.conceptSpec
+    ? `\nCONCEPT STAKES (use to ground your per-act stakes):
+Personal stakes: ${context.conceptSpec.stakesPersonal}
+Systemic stakes: ${context.conceptSpec.stakesSystemic}
+Pressure source: ${context.conceptSpec.pressureSource}
+Deadline mechanism: ${context.conceptSpec.deadlineMechanism}
+
+Each act's stakes should escalate FROM these foundations, even after the deviation.\n`
+    : '';
+
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
@@ -214,7 +224,7 @@ The story has deviated from its original plan. Generate replacement beats for in
 Character: ${context.characterConcept}
 ${worldSection}Tone: ${context.tone}
 ${toneFeelLine}${toneAvoidLine}Original Theme: ${context.originalTheme}
-${spineSection}
+${spineSection}${conceptStakesSection}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.

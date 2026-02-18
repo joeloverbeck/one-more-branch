@@ -72,6 +72,21 @@ STARTING SITUATION:
 {{startingSituation}}
 {{/if}}
 
+{{#if conceptSpec}}
+CONCEPT ANALYSIS (from upstream concept generation — use as grounding):
+One-line hook: {{conceptSpec.oneLineHook}}
+Core conflict loop: {{conceptSpec.coreConflictLoop}}
+Thematic tension axis: {{conceptSpec.conflictAxis}}
+Structural opposition: {{conceptSpec.conflictType}} — Your spine MUST use this exact conflictType value.
+Pressure source: {{conceptSpec.pressureSource}}
+Personal stakes: {{conceptSpec.stakesPersonal}}
+Systemic stakes: {{conceptSpec.stakesSystemic}}
+Deadline mechanism: {{conceptSpec.deadlineMechanism}}
+Action verbs available to player: {{conceptSpec.actionVerbs joined by ', '}}
+
+CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept's conflict loop and stakes; don't contradict them.
+{{/if}}
+
 TONE/GENRE: {{tone}}
 
 DIVERGENCE CONSTRAINT:
@@ -124,3 +139,4 @@ OUTPUT SHAPE:
 - `protagonistNeedVsWant.dynamic` describes the relationship between need and want: `CONVERGENT` (achieving want fulfills need), `DIVERGENT` (want leads away from need), `SUBSTITUTIVE` (need replaces want), `IRRECONCILABLE` (cannot satisfy both).
 - `characterArcType` describes the trajectory: `POSITIVE_CHANGE` (grows), `FLAT` (tests existing belief), `DISILLUSIONMENT` (learns hard truth), `FALL` (loses way), `CORRUPTION` (becomes what they opposed).
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
+- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with a hard constraint on `conflictType`. This means all 3 spine options will share the concept's `conflictType` and must satisfy the divergence constraint by differing in `storySpineType` instead. When no concept is present (manual story creation), spine generation works as before with no concept section.

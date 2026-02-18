@@ -6,6 +6,7 @@ import {
   isSettingScale,
   isStateComplexity,
 } from '../models/index.js';
+import { isConflictType } from '../models/story-spine.js';
 import { LLMError } from './llm-client-types.js';
 
 function requireNonEmptyString(value: unknown, fieldName: string, label: string): string {
@@ -71,6 +72,13 @@ export function parseConceptSpec(
       true,
     );
   }
+  if (!isConflictType(data['conflictType'])) {
+    throw new LLMError(
+      `${label} has invalid conflictType: ${String(data['conflictType'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
   if (!isSettingScale(data['settingScale'])) {
     throw new LLMError(
       `${label} has invalid settingScale: ${String(data['settingScale'])}`,
@@ -104,6 +112,7 @@ export function parseConceptSpec(
     actionVerbs: requireStringArray(data['actionVerbs'], 'actionVerbs', label, 6),
     coreConflictLoop: requireNonEmptyString(data['coreConflictLoop'], 'coreConflictLoop', label),
     conflictAxis: data['conflictAxis'],
+    conflictType: data['conflictType'],
     pressureSource: requireNonEmptyString(data['pressureSource'], 'pressureSource', label),
     stakesPersonal: requireNonEmptyString(data['stakesPersonal'], 'stakesPersonal', label),
     stakesSystemic: requireNonEmptyString(data['stakesSystemic'], 'stakesSystemic', label),

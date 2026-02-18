@@ -10,7 +10,7 @@ const ROLE_INTRO =
 
 const RUBRIC = `SCORING RUBRIC (0-5):
 - hookStrength: Curiosity gap, emotional pull, and one-line clarity.
-- conflictEngine: Stakes depth, pressure mechanism quality, and recurring dilemma strength.
+- conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
 - branchingFitness: Branch scalability, reconvergence viability, and state manageability.

@@ -76,6 +76,7 @@ function createTestConceptSpec(): ConceptSpec {
     actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
     coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
     conflictAxis: 'TRUTH_VS_STABILITY',
+    conflictType: 'PERSON_VS_SOCIETY',
     pressureSource: 'Competing cartels erase witnesses and records.',
     stakesPersonal: 'Losing her identity and remaining allies.',
     stakesSystemic: 'Civic memory collapse and institutional capture.',

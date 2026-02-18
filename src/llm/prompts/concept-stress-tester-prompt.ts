@@ -12,6 +12,7 @@ const ADVERSARIAL_DIRECTIVES = `ADVERSARIAL DIRECTIVES:
 - Do not praise the concept. Prioritize failure modes.
 - Drift analysis: identify where world rules, constraints, or consequences are likely to erode across turns.
 - Player-break analysis: test extreme but plausible player behavior (refusal, exploit loops, antagonist alignment, sidequest fixation).
+- conflictType durability: does the conflictType create enough structural opposition to sustain branching? Can the antagonistic source (person/society/nature/etc.) generate sufficient variety of encounters?
 - For every identified weakness, tighten existing concept fields with concrete and enforceable changes.
 - Keep hardenedConcept in the exact ConceptSpec shape.`;
 

@@ -1,3 +1,4 @@
+import type { ConceptSpec } from '../models/concept-generator.js';
 import type { StoryStructure } from '../models/story-arc.js';
 import type { StorySpine } from '../models/story-spine.js';
 
@@ -29,6 +30,7 @@ export interface StructureRewriteContext {
   readonly toneFeel?: readonly string[];
   readonly toneAvoid?: readonly string[];
   readonly spine?: StorySpine;
+  readonly conceptSpec?: ConceptSpec;
   readonly completedBeats: readonly CompletedBeat[];
   readonly plannedBeats: readonly PlannedBeat[];
   readonly narrativeSummary: string;

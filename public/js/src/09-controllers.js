@@ -633,6 +633,7 @@
             npcs: formValues.npcs,
             startingSituation: formValues.startingSituation,
             apiKey: formValues.apiKey,
+            conceptSpec: selectedConceptSpec || undefined,
             progressId: progressId,
           }),
         });
