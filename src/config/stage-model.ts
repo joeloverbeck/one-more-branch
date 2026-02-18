@@ -2,6 +2,7 @@ import { getConfig } from './index.js';
 
 export type LlmStage =
   | 'conceptIdeator'
+  | 'conceptEvaluator'
   | 'spine'
   | 'entityDecomposer'
   | 'structure'

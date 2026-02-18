@@ -46,6 +46,7 @@ describe('getStageModel', () => {
 
     const stages: LlmStage[] = [
       'conceptIdeator',
+      'conceptEvaluator',
       'spine',
       'entityDecomposer',
       'structure',
