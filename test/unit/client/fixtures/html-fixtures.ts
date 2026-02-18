@@ -344,34 +344,24 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
         <h1>Begin a New Adventure</h1>
         ${errorHtml}
         <form action="/stories/create" method="POST" class="story-form">
-          <section id="concept-seed-section">
+          <section id="concept-selector-section">
+            <h2>Step 1: Choose a Concept</h2>
             <div class="form-group">
-              <label for="genreVibes">Genre Vibes</label>
-              <input type="text" id="genreVibes" name="genreVibes" value="">
-            </div>
-            <div class="form-group">
-              <label for="moodKeywords">Mood Keywords</label>
-              <input type="text" id="moodKeywords" name="moodKeywords" value="">
-            </div>
-            <div class="form-group">
-              <label for="contentPreferences">Content Preferences</label>
-              <input type="text" id="contentPreferences" name="contentPreferences" value="">
-            </div>
-            <div class="form-group">
-              <label for="thematicInterests">Thematic Interests</label>
-              <input type="text" id="thematicInterests" name="thematicInterests" value="">
-            </div>
-            <div class="form-group">
-              <label for="sparkLine">Spark Line</label>
-              <input type="text" id="sparkLine" name="sparkLine" value="">
+              <label for="concept-selector">Start from a saved concept</label>
+              <select id="concept-selector">
+                <option value="">-- Select a saved concept --</option>
+              </select>
+              <p class="form-help">
+                <a href="/concepts">Manage your concepts</a>
+              </p>
             </div>
             <div class="form-group">
               <label for="apiKey">OpenRouter API Key *</label>
               <input type="password" id="apiKey" name="apiKey" required placeholder="sk-or-..." autocomplete="off">
             </div>
             <div class="form-actions">
-              <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">Generate Concepts</button>
-              <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - I have my own concept</button>
+              <button type="button" id="use-concept-btn" class="btn btn-primary btn-large" disabled>Use Selected Concept</button>
+              <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - Enter details manually</button>
             </div>
           </section>
           <section id="manual-story-section" style="display: none;">
@@ -403,17 +393,13 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
             </div>
             <div class="form-group">
               <label for="tone">Tone/Genre</label>
-              <input type="text" id="tone" name="tone" value="">
+              <textarea id="tone" name="tone" rows="3"></textarea>
             </div>
             <div class="form-actions">
               <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
             </div>
           </section>
         </form>
-        <section id="concept-results-section" class="spine-section" style="display: none;">
-          <h2 class="spine-section-title">Choose a Concept</h2>
-          <div id="concept-cards" class="spine-options-container"></div>
-        </section>
         <div id="spine-section" class="spine-section" style="display: none;">
           <h2 class="spine-section-title">Choose Your Story's Spine</h2>
           <div id="spine-options" class="spine-options-container"></div>

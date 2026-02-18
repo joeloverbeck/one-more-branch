@@ -117,3 +117,28 @@ export async function listFiles(dirPath: string, pattern?: RegExp): Promise<stri
 export async function deleteDirectory(dirPath: string): Promise<void> {
   await fs.rm(dirPath, { recursive: true, force: true });
 }
+
+export function getConceptsDir(): string {
+  return path.join(process.cwd(), getConfig().storage.conceptsDir);
+}
+
+export function ensureConceptsDir(): void {
+  const conceptsDir = getConceptsDir();
+  if (!existsSync(conceptsDir)) {
+    mkdirSync(conceptsDir, { recursive: true });
+  }
+}
+
+export function getConceptFilePath(conceptId: string): string {
+  return path.join(getConceptsDir(), `${conceptId}.json`);
+}
+
+export async function deleteFile(filePath: string): Promise<void> {
+  try {
+    await fs.unlink(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error;
+    }
+  }
+}

@@ -12,12 +12,25 @@ jest.mock('@/llm/concept-stress-tester', () => ({
   stressTestConcept: jest.fn(),
 }));
 
+jest.mock('@/persistence/concept-repository', () => ({
+  listConcepts: jest.fn().mockResolvedValue([]),
+  loadConcept: jest.fn(),
+  saveConcept: jest.fn(),
+  updateConcept: jest.fn(),
+  deleteConcept: jest.fn(),
+  conceptExists: jest.fn(),
+}));
+
 import { LLMError } from '@/llm/llm-client-types';
 import { evaluateConcepts } from '@/llm/concept-evaluator';
 import { generateConceptIdeas } from '@/llm/concept-ideator';
 import { stressTestConcept } from '@/llm/concept-stress-tester';
-import { storyRoutes } from '@/server/routes/stories';
+import { conceptRoutes } from '@/server/routes/concepts';
 import { generationProgressService } from '@/server/services';
+import {
+  loadConcept,
+  updateConcept,
+} from '@/persistence/concept-repository';
 import {
   createConceptScoresFixture,
   createConceptSpecFixture,
@@ -34,16 +47,16 @@ type RouteLayer = {
 };
 
 function getRouteHandler(
-  method: 'post',
+  method: 'get' | 'post' | 'put' | 'delete',
   path: string
 ): (req: Request, res: Response) => Promise<void> | void {
-  const layer = (storyRoutes.stack as unknown as RouteLayer[]).find(
+  const layer = (conceptRoutes.stack as unknown as RouteLayer[]).find(
     (item) => item.route?.path === path && item.route?.methods?.[method],
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
   if (!handler) {
-    throw new Error(`${method.toUpperCase()} ${path} handler not found on storyRoutes`);
+    throw new Error(`${method.toUpperCase()} ${path} handler not found on conceptRoutes`);
   }
 
   return handler;
@@ -61,12 +74,14 @@ describe('Concept Route Integration', () => {
   >;
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
+  const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
+  const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('POST /generate-concepts delegates through service and returns evaluated concepts', async () => {
+  it('POST /api/generate delegates through service and returns evaluated concepts', async () => {
     mockedGenerateConceptIdeas.mockResolvedValue({
       concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
       rawResponse: 'raw-ideas',
@@ -88,7 +103,7 @@ describe('Concept Route Integration', () => {
     const progressMarkCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
     const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
 
-    void getRouteHandler('post', '/generate-concepts')(
+    void getRouteHandler('post', '/api/generate')(
       {
         body: {
           genreVibes: '  dark fantasy  ',
@@ -128,7 +143,7 @@ describe('Concept Route Integration', () => {
     expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts });
   });
 
-  it('POST /generate-concepts maps stage failures to structured LLM errors', async () => {
+  it('POST /api/generate maps stage failures to structured LLM errors', async () => {
     mockedGenerateConceptIdeas.mockRejectedValue(
       new LLMError('Rate limit exceeded', 'HTTP_429', true, { httpStatus: 429 }),
     );
@@ -137,7 +152,7 @@ describe('Concept Route Integration', () => {
     const json = jest.fn().mockReturnThis();
     const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
-    void getRouteHandler('post', '/generate-concepts')(
+    void getRouteHandler('post', '/api/generate')(
       {
         body: {
           genreVibes: 'dark fantasy',
@@ -162,22 +177,43 @@ describe('Concept Route Integration', () => {
     });
   });
 
-  it('POST /stress-test-concept delegates through service and returns hardened concept', async () => {
+  it('POST /api/:conceptId/harden delegates through service and returns hardened concept', async () => {
+    const savedConcept = {
+      id: 'test-concept-1',
+      name: 'Test Concept',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: {
+        concept: createConceptSpecFixture(1),
+        scores: createConceptScoresFixture(),
+        overallScore: 80,
+        strengths: ['Strong hook'],
+        weaknesses: ['weak urgency'],
+        tradeoffSummary: 'Strong conflict, lower novelty.',
+      },
+    };
+    mockedLoadConcept.mockResolvedValue(savedConcept);
+
     const stressResult = createConceptStressTestFixture();
     mockedStressTestConcept.mockResolvedValue(stressResult);
+
+    mockedUpdateConcept.mockImplementation(
+      (_id: string, updater: (existing: typeof savedConcept) => typeof savedConcept) => {
+        return Promise.resolve(updater(savedConcept));
+      },
+    );
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
 
-    void getRouteHandler('post', '/stress-test-concept')(
+    void getRouteHandler('post', '/api/:conceptId/harden')(
       {
+        params: { conceptId: 'test-concept-1' },
         body: {
-          concept: createConceptSpecFixture(1),
-          scores: createConceptScoresFixture(),
-          weaknesses: ['weak urgency'],
           apiKey: 'valid-key-12345',
         },
-      } as Request,
+      } as unknown as Request,
       { status, json } as unknown as Response,
     );
     await flushPromises();
@@ -191,11 +227,13 @@ describe('Concept Route Integration', () => {
       'valid-key-12345',
     );
     expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith({
-      success: true,
-      hardenedConcept: stressResult.hardenedConcept,
-      driftRisks: stressResult.driftRisks,
-      playerBreaks: stressResult.playerBreaks,
-    });
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        hardenedConcept: stressResult.hardenedConcept,
+        driftRisks: stressResult.driftRisks,
+        playerBreaks: stressResult.playerBreaks,
+      }),
+    );
   });
 });

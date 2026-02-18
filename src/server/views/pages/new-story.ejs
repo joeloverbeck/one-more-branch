@@ -22,57 +22,17 @@
       <% const hasManualValues = Boolean(values.title || values.characterConcept || values.worldbuilding || values.tone || values.startingSituation || (values.npcs && values.npcs.length)); %>
       <% const showManualInitially = Boolean(error) || hasManualValues; %>
       <form action="/stories/create" method="POST" class="story-form">
-        <section id="concept-seed-section" style="<%= showManualInitially ? 'display: none;' : '' %>">
-          <h2>Step 1: Seed Your Concept</h2>
+        <section id="concept-selector-section" style="<%= showManualInitially ? 'display: none;' : '' %>">
+          <h2>Step 1: Choose a Concept</h2>
 
           <div class="form-group">
-            <label for="genreVibes">Genre Vibes</label>
-            <input
-              type="text"
-              id="genreVibes"
-              name="genreVibes"
-              placeholder="dark fantasy, sci-fi noir, cosmic horror..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="moodKeywords">Mood Keywords</label>
-            <input
-              type="text"
-              id="moodKeywords"
-              name="moodKeywords"
-              placeholder="melancholic, tense, whimsical..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="contentPreferences">Content Preferences</label>
-            <input
-              type="text"
-              id="contentPreferences"
-              name="contentPreferences"
-              placeholder="include body horror, no romance..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="thematicInterests">Thematic Interests</label>
-            <input
-              type="text"
-              id="thematicInterests"
-              name="thematicInterests"
-              placeholder="identity, power, memory, justice..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="sparkLine">Spark Line</label>
-            <input
-              type="text"
-              id="sparkLine"
-              name="sparkLine"
-              placeholder="What if memories could be eaten?"
-            >
+            <label for="concept-selector">Start from a saved concept</label>
+            <select id="concept-selector">
+              <option value="">-- Select a saved concept --</option>
+            </select>
+            <p class="form-help">
+              <a href="/concepts">Manage your concepts</a> to generate, edit, and save reusable story foundations.
+            </p>
           </div>
 
           <div class="form-group">
@@ -92,8 +52,8 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">Generate Concepts</button>
-            <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - I have my own concept</button>
+            <button type="button" id="use-concept-btn" class="btn btn-primary btn-large" disabled>Use Selected Concept</button>
+            <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - Enter details manually</button>
           </div>
         </section>
 
@@ -195,12 +155,6 @@
           </div>
         </section>
       </form>
-
-      <section id="concept-results-section" class="spine-section" style="display: none;">
-        <h2 class="spine-section-title">Step 2: Choose a Concept Foundation</h2>
-        <p class="spine-section-subtitle">Select a concept to continue with story details.</p>
-        <div id="concept-cards" class="spine-options-container"></div>
-      </section>
 
       <div id="spine-section" class="spine-section" style="display: none;">
         <h2 class="spine-section-title">Choose Your Story's Spine</h2>

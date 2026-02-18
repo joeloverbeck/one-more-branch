@@ -424,11 +424,10 @@
   function initNewStoryPage() {
     const form = document.querySelector('.story-form');
     const loading = document.getElementById('loading');
-    const conceptSeedSection = document.getElementById('concept-seed-section');
+    const conceptSelectorSection = document.getElementById('concept-selector-section');
     const manualStorySection = document.getElementById('manual-story-section');
-    const conceptResultsSection = document.getElementById('concept-results-section');
-    const conceptCardsContainer = document.getElementById('concept-cards');
-    const generateConceptsBtn = document.getElementById('generate-concepts-btn');
+    const conceptSelector = document.getElementById('concept-selector');
+    const useConceptBtn = document.getElementById('use-concept-btn');
     const skipConceptBtn = document.getElementById('skip-concept-btn');
     const generateSpineBtn = document.getElementById('generate-spine-btn');
     const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
@@ -441,9 +440,8 @@
       return;
     }
     const loadingProgress = createLoadingProgressController(loading);
-    var selectedConceptPayload = null;
     var selectedConceptSpec = null;
-    var conceptSelectionRequestId = 0;
+    var loadedConceptsMap = {};
 
     initNpcControls();
 
@@ -458,8 +456,8 @@
     }
 
     function revealManualStorySection() {
-      if (conceptSeedSection) {
-        conceptSeedSection.style.display = 'none';
+      if (conceptSelectorSection) {
+        conceptSelectorSection.style.display = 'none';
       }
       if (manualStorySection) {
         manualStorySection.style.display = 'block';
@@ -549,110 +547,6 @@
       renderConceptContextPanel(conceptSpec);
     }
 
-    function clearSelectedConceptPayload() {
-      selectedConceptPayload = null;
-      selectedConceptSpec = null;
-      renderConceptContextPanel(null);
-    }
-
-    async function maybeHardenConcept(payload, conceptData) {
-      if (!payload.hardenRequested) {
-        return conceptData.concept;
-      }
-
-      var apiKeyInput = document.getElementById('apiKey');
-      var apiKeyValue = toTrimmedString(apiKeyInput && typeof apiKeyInput.value === 'string' ? apiKeyInput.value : '');
-      var apiKey = apiKeyValue || toTrimmedString(getApiKey());
-      if (apiKey.length < 10) {
-        throw new Error('OpenRouter API key is required to harden a concept');
-      }
-
-      var progressId = createProgressId();
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
-
-      try {
-        var response = await fetch('/stories/stress-test-concept', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            concept: conceptData.concept,
-            scores: conceptData.scores,
-            weaknesses: conceptData.weaknesses,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
-
-        var data = await response.json();
-        if (!response.ok || !data.success || !data.hardenedConcept) {
-          throw new Error(data.error || 'Failed to harden concept');
-        }
-
-        setApiKey(apiKey);
-        return data.hardenedConcept;
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-      }
-    }
-
-    async function handleConceptSelected(payload) {
-      var requestId = ++conceptSelectionRequestId;
-      var conceptData = payload && payload.evaluatedConcept;
-      if (!conceptData || !conceptData.concept) {
-        return;
-      }
-
-      selectedConceptPayload = payload;
-
-      try {
-        var selectedSpec = await maybeHardenConcept(payload, conceptData);
-        if (requestId !== conceptSelectionRequestId) {
-          return;
-        }
-
-        selectedConceptSpec = selectedSpec;
-        selectedConceptPayload = {
-          evaluatedConcept: {
-            concept: selectedSpec,
-            scores: conceptData.scores,
-            overallScore: conceptData.overallScore,
-            strengths: conceptData.strengths,
-            weaknesses: conceptData.weaknesses,
-            tradeoffSummary: conceptData.tradeoffSummary,
-          },
-          index: payload.index,
-          hardenRequested: Boolean(payload.hardenRequested),
-        };
-        prefillFromConceptSpec(selectedSpec);
-      } catch (error) {
-        if (requestId !== conceptSelectionRequestId) {
-          return;
-        }
-
-        selectedConceptSpec = conceptData.concept;
-        selectedConceptPayload = {
-          evaluatedConcept: conceptData,
-          index: payload.index,
-          hardenRequested: false,
-        };
-        prefillFromConceptSpec(conceptData.concept);
-        showFormError(error instanceof Error ? error.message : 'Failed to harden concept');
-      }
-
-      revealManualStorySection();
-      document.dispatchEvent(
-        new CustomEvent('omb:concept-selected', {
-          detail: selectedConceptPayload,
-        })
-      );
-
-      if (manualStorySection && typeof manualStorySection.scrollIntoView === 'function') {
-        manualStorySection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-
     function collectFormData() {
       var formData = new FormData(form);
       var npcs = collectNpcEntries();
@@ -667,85 +561,55 @@
       };
     }
 
-    function collectConceptSeeds() {
-      var formData = new FormData(form);
-      return {
-        genreVibes: toTrimmedString(formData.get('genreVibes')),
-        moodKeywords: toTrimmedString(formData.get('moodKeywords')),
-        contentPreferences: toTrimmedString(formData.get('contentPreferences')),
-        thematicInterests: toTrimmedString(formData.get('thematicInterests')),
-        sparkLine: toTrimmedString(formData.get('sparkLine')),
-        apiKey: toTrimmedString(formData.get('apiKey')),
-      };
+    // ── Concept selector logic ─────────────────────────────────────
+
+    async function loadConceptList() {
+      try {
+        var response = await fetch('/concepts/api/list');
+        var data = await response.json();
+        if (!response.ok || !data.success) return;
+
+        if (conceptSelector && Array.isArray(data.concepts)) {
+          data.concepts.forEach(function (c) {
+            loadedConceptsMap[c.id] = c;
+            var option = document.createElement('option');
+            option.value = c.id;
+            option.textContent = c.name + ' (' + Math.round(c.evaluatedConcept.overallScore || 0) + ')';
+            conceptSelector.appendChild(option);
+          });
+        }
+      } catch (e) {
+        // Non-fatal: concepts list unavailable
+      }
     }
 
-    async function fetchConceptOptions() {
-      hideExistingError();
+    if (conceptSelector) {
+      loadConceptList();
 
-      if (generateConceptsBtn) generateConceptsBtn.disabled = true;
-      if (skipConceptBtn) skipConceptBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
-
-      try {
-        var conceptData = collectConceptSeeds();
-        if (conceptData.apiKey.length < 10) {
-          throw new Error('OpenRouter API key is required');
+      conceptSelector.addEventListener('change', function () {
+        var conceptId = conceptSelector.value;
+        if (useConceptBtn) {
+          useConceptBtn.disabled = !conceptId;
         }
+      });
+    }
 
-        if (
-          !conceptData.genreVibes &&
-          !conceptData.moodKeywords &&
-          !conceptData.contentPreferences &&
-          !conceptData.thematicInterests &&
-          !conceptData.sparkLine
-        ) {
-          throw new Error('At least one concept seed field is required');
-        }
+    if (useConceptBtn) {
+      useConceptBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        var conceptId = conceptSelector ? conceptSelector.value : '';
+        if (!conceptId) return;
 
-        var response = await fetch('/stories/generate-concepts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            genreVibes: conceptData.genreVibes,
-            moodKeywords: conceptData.moodKeywords,
-            contentPreferences: conceptData.contentPreferences,
-            thematicInterests: conceptData.thematicInterests,
-            sparkLine: conceptData.sparkLine,
-            apiKey: conceptData.apiKey,
-            progressId: progressId,
-          }),
-        });
-
-        var data = await response.json();
-
-        if (!response.ok || !data.success) {
-          if (data.code) {
-            console.error('Error code:', data.code, '| Retryable:', data.retryable);
-          }
-          throw new Error(data.error || 'Failed to generate concepts');
-        }
-
-        setApiKey(conceptData.apiKey);
-        clearSelectedConceptPayload();
-
-        if (conceptCardsContainer && conceptResultsSection) {
-          renderConceptCards(data.evaluatedConcepts, conceptCardsContainer, handleConceptSelected);
-          conceptResultsSection.style.display = 'block';
-          if (typeof conceptResultsSection.scrollIntoView === 'function') {
-            conceptResultsSection.scrollIntoView({ behavior: 'smooth' });
+        var savedConcept = loadedConceptsMap[conceptId];
+        if (savedConcept && savedConcept.evaluatedConcept && savedConcept.evaluatedConcept.concept) {
+          selectedConceptSpec = savedConcept.evaluatedConcept.concept;
+          prefillFromConceptSpec(selectedConceptSpec);
+          revealManualStorySection();
+          if (manualStorySection && typeof manualStorySection.scrollIntoView === 'function') {
+            manualStorySection.scrollIntoView({ behavior: 'smooth' });
           }
         }
-      } catch (error) {
-        console.error('Concept generation error:', error);
-        showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        if (generateConceptsBtn) generateConceptsBtn.disabled = false;
-        if (skipConceptBtn) skipConceptBtn.disabled = false;
-      }
+      });
     }
 
     async function fetchSpineOptions() {
@@ -863,20 +727,11 @@
       apiKeyInput.value = storedApiKey;
     }
 
-    if (generateConceptsBtn) {
-      generateConceptsBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        fetchConceptOptions();
-      });
-    }
-
     if (skipConceptBtn) {
       skipConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        clearSelectedConceptPayload();
-        if (typeof clearSelectedConcept === 'function') {
-          clearSelectedConcept();
-        }
+        selectedConceptSpec = null;
+        renderConceptContextPanel(null);
         revealManualStorySection();
       });
     }
@@ -907,4 +762,5 @@
     initPlayPage();
     initNewStoryPage();
     initBriefingPage();
+    initConceptsPage();
   });
