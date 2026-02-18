@@ -64,6 +64,16 @@
     // ── Generate concepts ──────────────────────────────────────────
 
     async function handleGenerate() {
+      var conceptApiKeyInput = document.getElementById('conceptApiKey');
+      if (
+        conceptApiKeyInput &&
+        typeof conceptApiKeyInput.checkValidity === 'function' &&
+        !conceptApiKeyInput.checkValidity()
+      ) {
+        conceptApiKeyInput.reportValidity();
+        return;
+      }
+
       var apiKey = getConceptApiKey();
       if (apiKey.length < 10) {
         showError('OpenRouter API key is required');

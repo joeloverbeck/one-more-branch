@@ -326,4 +326,22 @@ describe('new story form submit', () => {
 
     expect(preventDefaultSpy).toHaveBeenCalled();
   });
+
+  it('does not fetch spines when required form fields are missing', () => {
+    setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
+
+    const titleInput = document.getElementById('title') as HTMLInputElement;
+    const checkValiditySpy = jest.spyOn(titleInput, 'checkValidity').mockReturnValue(false);
+    const reportValiditySpy = jest.spyOn(titleInput, 'reportValidity').mockReturnValue(false);
+
+    clickGenerateSpine();
+
+    expect(checkValiditySpy).toHaveBeenCalled();
+    expect(reportValiditySpy).toHaveBeenCalled();
+    const spineCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('/stories/generate-spines')
+    );
+    expect(spineCall).toBeUndefined();
+  });
 });

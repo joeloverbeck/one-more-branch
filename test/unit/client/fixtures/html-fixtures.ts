@@ -421,6 +421,43 @@ export interface BriefingPageOptions {
   storyId?: string;
 }
 
+export function buildConceptsPageHtml(): string {
+  return `
+    <main class="container" id="concepts-page">
+      <section class="form-section">
+        <h1>Story Concepts</h1>
+        <section id="concept-generate-section">
+          <h2>Generate New Concepts</h2>
+          <form id="concept-generate-form">
+            <div class="form-group"><input type="text" id="genreVibes"></div>
+            <div class="form-group"><input type="text" id="moodKeywords"></div>
+            <div class="form-group"><input type="text" id="contentPreferences"></div>
+            <div class="form-group"><input type="text" id="thematicInterests"></div>
+            <div class="form-group"><input type="text" id="sparkLine"></div>
+            <div class="form-group">
+              <input type="password" id="conceptApiKey" required>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">
+                Generate Concepts
+              </button>
+            </div>
+          </form>
+        </section>
+        <section id="concept-results-section" class="spine-section" style="display: none;">
+          <div id="concept-cards" class="spine-options-container"></div>
+        </section>
+        <section id="saved-concepts-section">
+          <div id="saved-concepts-list" class="spine-options-container"></div>
+        </section>
+      </section>
+      <div class="loading-overlay" id="loading" style="display: none;">
+        <div class="loading-stage" aria-live="polite"></div>
+      </div>
+    </main>
+  `;
+}
+
 export function buildBriefingPageHtml(options: BriefingPageOptions = {}): string {
   const storyId = options.storyId ?? 'test-story-1';
 

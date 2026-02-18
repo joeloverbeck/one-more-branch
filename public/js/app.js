@@ -3425,19 +3425,39 @@ function createRecapModalController(initialData) {
   }
 
   function showFormError(message) {
-    let errorDiv = document.querySelector('.alert-error');
+    let errorDiv = document.querySelector('.alert-error.form-error');
+    if (!errorDiv) {
+      errorDiv = document.querySelector(
+        '.form-section .alert-error:not(.play-error):not(.briefing-error)'
+      );
+      if (errorDiv) {
+        errorDiv.classList.add('form-error');
+      }
+    }
+
     if (!errorDiv) {
       errorDiv = document.createElement('div');
-      errorDiv.className = 'alert alert-error';
+      errorDiv.className = 'alert alert-error form-error';
+      errorDiv.setAttribute('role', 'alert');
+      errorDiv.setAttribute('aria-live', 'polite');
+
       const form = document.querySelector('.story-form');
+      const conceptGenerateSection = document.getElementById('concept-generate-section');
+      const formSection = document.querySelector('.form-section');
+
       if (form && form.parentNode) {
         form.parentNode.insertBefore(errorDiv, form);
+      } else if (conceptGenerateSection && conceptGenerateSection.parentNode) {
+        conceptGenerateSection.parentNode.insertBefore(errorDiv, conceptGenerateSection);
+      } else if (formSection) {
+        formSection.insertAdjacentElement('afterbegin', errorDiv);
+      } else {
+        document.body.insertAdjacentElement('afterbegin', errorDiv);
       }
     }
     errorDiv.textContent = message;
     errorDiv.style.display = 'block';
   }
-
 
   // ── NPC manager ───────────────────────────────────────────────────
 
@@ -4078,6 +4098,37 @@ function createRecapModalController(initialData) {
       };
     }
 
+    function validateBeforeGeneratingSpines() {
+      hideExistingError();
+
+      var titleInput = document.getElementById('title');
+      var characterConceptInput = document.getElementById('characterConcept');
+      var apiKeyInput = document.getElementById('apiKey');
+
+      if (titleInput && typeof titleInput.checkValidity === 'function' && !titleInput.checkValidity()) {
+        titleInput.reportValidity();
+        return false;
+      }
+
+      if (
+        characterConceptInput &&
+        typeof characterConceptInput.checkValidity === 'function' &&
+        !characterConceptInput.checkValidity()
+      ) {
+        characterConceptInput.reportValidity();
+        return false;
+      }
+
+      var apiKeyValue =
+        apiKeyInput && typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+      if (!apiKeyValue) {
+        showFormError('OpenRouter API key is required');
+        return false;
+      }
+
+      return true;
+    }
+
     // ── Concept selector logic ─────────────────────────────────────
 
     async function loadConceptList() {
@@ -4257,6 +4308,9 @@ function createRecapModalController(initialData) {
     // Phase A: Generate Spine on button click
     generateSpineBtn.addEventListener('click', function (event) {
       event.preventDefault();
+      if (!validateBeforeGeneratingSpines()) {
+        return;
+      }
       fetchSpineOptions();
     });
 
@@ -4483,6 +4537,16 @@ function createRecapModalController(initialData) {
     // ── Generate concepts ──────────────────────────────────────────
 
     async function handleGenerate() {
+      var conceptApiKeyInput = document.getElementById('conceptApiKey');
+      if (
+        conceptApiKeyInput &&
+        typeof conceptApiKeyInput.checkValidity === 'function' &&
+        !conceptApiKeyInput.checkValidity()
+      ) {
+        conceptApiKeyInput.reportValidity();
+        return;
+      }
+
       var apiKey = getConceptApiKey();
       if (apiKey.length < 10) {
         showError('OpenRouter API key is required');
