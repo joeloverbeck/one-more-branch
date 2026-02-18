@@ -743,8 +743,33 @@ describe('storyRoutes', () => {
       const evaluatedConcepts = [createEvaluatedConcept(1), createEvaluatedConcept(2)];
       const generateConceptsSpy = jest
         .spyOn(conceptService, 'generateConcepts')
-        .mockResolvedValue({ evaluatedConcepts });
+        .mockImplementation((input) => {
+          input.onGenerationStage?.({
+            stage: 'GENERATING_CONCEPTS',
+            status: 'started',
+            attempt: 1,
+          });
+          input.onGenerationStage?.({
+            stage: 'GENERATING_CONCEPTS',
+            status: 'completed',
+            attempt: 1,
+          });
+          input.onGenerationStage?.({
+            stage: 'EVALUATING_CONCEPTS',
+            status: 'started',
+            attempt: 1,
+          });
+          input.onGenerationStage?.({
+            stage: 'EVALUATING_CONCEPTS',
+            status: 'completed',
+            attempt: 1,
+          });
+
+          return Promise.resolve({ evaluatedConcepts });
+        });
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressMarkStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
+      const progressMarkCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
@@ -761,7 +786,8 @@ describe('storyRoutes', () => {
       );
       await flushPromises();
 
-      expect(generateConceptsSpy).toHaveBeenCalledWith({
+      const generateConceptsInput = generateConceptsSpy.mock.calls[0]?.[0];
+      expect(generateConceptsInput).toMatchObject({
         genreVibes: 'dark fantasy',
         moodKeywords: undefined,
         contentPreferences: undefined,
@@ -769,7 +795,32 @@ describe('storyRoutes', () => {
         sparkLine: 'What if memory was taxed?',
         apiKey: 'valid-key-12345',
       });
-      expect(progressStartSpy).toHaveBeenCalledWith('concept-progress-1', 'new-story');
+      expect(typeof generateConceptsInput?.onGenerationStage).toBe('function');
+      expect(progressStartSpy).toHaveBeenCalledWith('concept-progress-1', 'concept-generation');
+      expect(progressMarkStartedSpy).toHaveBeenNthCalledWith(
+        1,
+        'concept-progress-1',
+        'GENERATING_CONCEPTS',
+        1,
+      );
+      expect(progressMarkCompletedSpy).toHaveBeenNthCalledWith(
+        1,
+        'concept-progress-1',
+        'GENERATING_CONCEPTS',
+        1,
+      );
+      expect(progressMarkStartedSpy).toHaveBeenNthCalledWith(
+        2,
+        'concept-progress-1',
+        'EVALUATING_CONCEPTS',
+        1,
+      );
+      expect(progressMarkCompletedSpy).toHaveBeenNthCalledWith(
+        2,
+        'concept-progress-1',
+        'EVALUATING_CONCEPTS',
+        1,
+      );
       expect(progressCompleteSpy).toHaveBeenCalledWith('concept-progress-1');
       expect(progressFailSpy).not.toHaveBeenCalled();
       expect(status).not.toHaveBeenCalled();
@@ -803,7 +854,7 @@ describe('storyRoutes', () => {
       );
       await flushPromises();
 
-      expect(progressStartSpy).toHaveBeenCalledWith('concept-progress-2', 'new-story');
+      expect(progressStartSpy).toHaveBeenCalledWith('concept-progress-2', 'concept-generation');
       expect(progressCompleteSpy).not.toHaveBeenCalled();
       expect(progressFailSpy).toHaveBeenCalledWith(
         'concept-progress-2',
@@ -866,8 +917,24 @@ describe('storyRoutes', () => {
         ],
         rawResponse: 'raw-stress',
       };
-      const stressTestSpy = jest.spyOn(conceptService, 'stressTestConcept').mockResolvedValue(stressResult);
+      const stressTestSpy = jest
+        .spyOn(conceptService, 'stressTestConcept')
+        .mockImplementation((input) => {
+          input.onGenerationStage?.({
+            stage: 'STRESS_TESTING_CONCEPT',
+            status: 'started',
+            attempt: 1,
+          });
+          input.onGenerationStage?.({
+            stage: 'STRESS_TESTING_CONCEPT',
+            status: 'completed',
+            attempt: 1,
+          });
+          return Promise.resolve(stressResult);
+        });
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
+      const progressMarkStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
+      const progressMarkCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
@@ -885,13 +952,25 @@ describe('storyRoutes', () => {
       );
       await flushPromises();
 
-      expect(stressTestSpy).toHaveBeenCalledWith({
+      const stressTestInput = stressTestSpy.mock.calls[0]?.[0];
+      expect(stressTestInput).toMatchObject({
         concept: createConceptSpec(1),
         scores: createScores(),
         weaknesses: ['Weak urgency'],
         apiKey: 'valid-key-12345',
       });
-      expect(progressStartSpy).toHaveBeenCalledWith('stress-progress-1', 'new-story');
+      expect(typeof stressTestInput?.onGenerationStage).toBe('function');
+      expect(progressStartSpy).toHaveBeenCalledWith('stress-progress-1', 'concept-generation');
+      expect(progressMarkStartedSpy).toHaveBeenCalledWith(
+        'stress-progress-1',
+        'STRESS_TESTING_CONCEPT',
+        1,
+      );
+      expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
+        'stress-progress-1',
+        'STRESS_TESTING_CONCEPT',
+        1,
+      );
       expect(progressCompleteSpy).toHaveBeenCalledWith('stress-progress-1');
       expect(progressFailSpy).not.toHaveBeenCalled();
       expect(status).not.toHaveBeenCalled();

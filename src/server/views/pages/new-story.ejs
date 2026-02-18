@@ -19,115 +19,186 @@
       </div>
       <% } %>
 
+      <% const hasManualValues = Boolean(values.title || values.characterConcept || values.worldbuilding || values.tone || values.startingSituation || (values.npcs && values.npcs.length)); %>
+      <% const showManualInitially = Boolean(error) || hasManualValues; %>
       <form action="/stories/create" method="POST" class="story-form">
-        <div class="form-group">
-          <label for="title">Story Title *</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            required
-            minlength="1"
-            maxlength="100"
-            placeholder="Give your adventure a memorable title"
-            value="<%= values.title || '' %>"
-          >
-        </div>
+        <section id="concept-seed-section" style="<%= showManualInitially ? 'display: none;' : '' %>">
+          <h2>Step 1: Seed Your Concept</h2>
 
-        <div class="form-group">
-          <label for="characterConcept">Character Concept *</label>
-          <textarea
-            id="characterConcept"
-            name="characterConcept"
-            rows="4"
-            required
-            minlength="10"
-            placeholder="Describe your protagonist: their name, personality, background, abilities, and motivations."
-          ><%= values.characterConcept || '' %></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="worldbuilding">Worldbuilding (Optional)</label>
-          <textarea
-            id="worldbuilding"
-            name="worldbuilding"
-            rows="3"
-            placeholder="Describe important places, factions, or history."
-          ><%= values.worldbuilding || '' %></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>NPCs (Optional)</label>
-          <div id="npc-entries">
-            <% const npcList = values.npcs || []; %>
-            <% for (let i = 0; i < npcList.length; i++) { %>
-            <div class="npc-entry" data-index="<%= i %>">
-              <div class="npc-entry-header">
-                <strong><%= npcList[i].name %></strong>
-                <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
-              </div>
-              <p class="npc-entry-description"><%= npcList[i].description %></p>
-            </div>
-            <% } %>
-          </div>
-          <div class="npc-add-form">
+          <div class="form-group">
+            <label for="genreVibes">Genre Vibes</label>
             <input
               type="text"
-              id="npc-name-input"
-              placeholder="NPC name"
-              maxlength="100"
+              id="genreVibes"
+              name="genreVibes"
+              placeholder="dark fantasy, sci-fi noir, cosmic horror..."
             >
-            <textarea
-              id="npc-desc-input"
-              rows="2"
-              placeholder="Describe this character: personality, role, relationship to the protagonist."
-            ></textarea>
-            <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
           </div>
-          <input type="hidden" id="npcs-json" name="npcsJson" value="">
-        </div>
 
-        <div class="form-group">
-          <label for="tone">Tone/Genre (Optional)</label>
-          <textarea
-            id="tone"
-            name="tone"
-            rows="3"
-            placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
-          ><%= values.tone || '' %></textarea>
-        </div>
+          <div class="form-group">
+            <label for="moodKeywords">Mood Keywords</label>
+            <input
+              type="text"
+              id="moodKeywords"
+              name="moodKeywords"
+              placeholder="melancholic, tense, whimsical..."
+            >
+          </div>
 
-        <div class="form-group">
-          <label for="startingSituation">Starting Situation (Optional)</label>
-          <textarea
-            id="startingSituation"
-            name="startingSituation"
-            rows="3"
-            placeholder="Describe how you want the story to begin: the scene, circumstances, or specific events for the opening."
-          ><%= values.startingSituation || '' %></textarea>
-        </div>
+          <div class="form-group">
+            <label for="contentPreferences">Content Preferences</label>
+            <input
+              type="text"
+              id="contentPreferences"
+              name="contentPreferences"
+              placeholder="include body horror, no romance..."
+            >
+          </div>
 
-        <div class="form-group">
-          <label for="apiKey">OpenRouter API Key *</label>
-          <input
-            type="password"
-            id="apiKey"
-            name="apiKey"
-            required
-            placeholder="sk-or-..."
-            autocomplete="off"
-          >
-          <p class="form-help">
-            Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
-            Your key is never stored on the server.
-          </p>
-        </div>
+          <div class="form-group">
+            <label for="thematicInterests">Thematic Interests</label>
+            <input
+              type="text"
+              id="thematicInterests"
+              name="thematicInterests"
+              placeholder="identity, power, memory, justice..."
+            >
+          </div>
 
-        <div class="form-actions">
-          <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
-          <a href="/" class="btn btn-secondary">Cancel</a>
-        </div>
+          <div class="form-group">
+            <label for="sparkLine">Spark Line</label>
+            <input
+              type="text"
+              id="sparkLine"
+              name="sparkLine"
+              placeholder="What if memories could be eaten?"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="apiKey">OpenRouter API Key *</label>
+            <input
+              type="password"
+              id="apiKey"
+              name="apiKey"
+              required
+              placeholder="sk-or-..."
+              autocomplete="off"
+            >
+            <p class="form-help">
+              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+              Your key is never stored on the server.
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">Generate Concepts</button>
+            <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - I have my own concept</button>
+          </div>
+        </section>
+
+        <section id="manual-story-section" style="<%= showManualInitially ? '' : 'display: none;' %>">
+          <h2>Step 2: Build Story Details</h2>
+
+          <div class="form-group">
+            <label for="title">Story Title *</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              minlength="1"
+              maxlength="100"
+              placeholder="Give your adventure a memorable title"
+              value="<%= values.title || '' %>"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="characterConcept">Character Concept *</label>
+            <textarea
+              id="characterConcept"
+              name="characterConcept"
+              rows="4"
+              required
+              minlength="10"
+              placeholder="Describe your protagonist: their name, personality, background, abilities, and motivations."
+            ><%= values.characterConcept || '' %></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="worldbuilding">Worldbuilding (Optional)</label>
+            <textarea
+              id="worldbuilding"
+              name="worldbuilding"
+              rows="3"
+              placeholder="Describe important places, factions, or history."
+            ><%= values.worldbuilding || '' %></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>NPCs (Optional)</label>
+            <div id="npc-entries">
+              <% const npcList = values.npcs || []; %>
+              <% for (let i = 0; i < npcList.length; i++) { %>
+              <div class="npc-entry" data-index="<%= i %>">
+                <div class="npc-entry-header">
+                  <strong><%= npcList[i].name %></strong>
+                  <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
+                </div>
+                <p class="npc-entry-description"><%= npcList[i].description %></p>
+              </div>
+              <% } %>
+            </div>
+            <div class="npc-add-form">
+              <input
+                type="text"
+                id="npc-name-input"
+                placeholder="NPC name"
+                maxlength="100"
+              >
+              <textarea
+                id="npc-desc-input"
+                rows="2"
+                placeholder="Describe this character: personality, role, relationship to the protagonist."
+              ></textarea>
+              <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
+            </div>
+            <input type="hidden" id="npcs-json" name="npcsJson" value="">
+          </div>
+
+          <div class="form-group">
+            <label for="tone">Tone/Genre (Optional)</label>
+            <textarea
+              id="tone"
+              name="tone"
+              rows="3"
+              placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
+            ><%= values.tone || '' %></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="startingSituation">Starting Situation (Optional)</label>
+            <textarea
+              id="startingSituation"
+              name="startingSituation"
+              rows="3"
+              placeholder="Describe how you want the story to begin: the scene, circumstances, or specific events for the opening."
+            ><%= values.startingSituation || '' %></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+          </div>
+        </section>
       </form>
+
+      <section id="concept-results-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Step 2: Choose a Concept Foundation</h2>
+        <p class="spine-section-subtitle">Select a concept to continue with story details.</p>
+        <div id="concept-cards" class="spine-options-container"></div>
+      </section>
 
       <div id="spine-section" class="spine-section" style="display: none;">
         <h2 class="spine-section-title">Choose Your Story's Spine</h2>

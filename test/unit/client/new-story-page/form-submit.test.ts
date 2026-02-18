@@ -35,6 +35,45 @@ const MOCK_SPINE_OPTIONS = [
   },
 ];
 
+const MOCK_EVALUATED_CONCEPTS = [
+  {
+    concept: {
+      oneLineHook: 'A memory broker hunts a stolen life.',
+      elevatorParagraph: 'In a city where memory is currency, a broker discovers her own past was forged.',
+      genreFrame: 'NOIR',
+      genreSubversion: 'The detective is also the evidence.',
+      protagonistRole: 'Memory broker',
+      coreCompetence: 'Pattern recall',
+      coreFlaw: 'Compulsive secrecy',
+      actionVerbs: ['investigate', 'bargain', 'deceive', 'expose', 'evade', 'reconstruct'],
+      coreConflictLoop: 'Reveal truth at the cost of identity stability.',
+      conflictAxis: 'TRUTH_VS_STABILITY',
+      pressureSource: 'Memory cartels erase witnesses.',
+      stakesPersonal: 'She may lose her own identity.',
+      stakesSystemic: 'The city record collapses into chaos.',
+      deadlineMechanism: 'A citywide memory reset begins at dawn.',
+      settingAxioms: ['Memories can be extracted.'],
+      constraintSet: ['Unlicensed extraction is fatal.'],
+      keyInstitutions: ['Cartel courts'],
+      settingScale: 'LOCAL',
+      branchingPosture: 'RECONVERGE',
+      stateComplexity: 'MEDIUM',
+    },
+    scores: {
+      hookStrength: 4,
+      conflictEngine: 4,
+      agencyBreadth: 3,
+      noveltyLeverage: 4,
+      branchingFitness: 4,
+      llmFeasibility: 3,
+    },
+    overallScore: 78,
+    strengths: ['Strong contradiction'],
+    weaknesses: ['Moderate systems load'],
+    tradeoffSummary: 'High intrigue, medium complexity cost.',
+  },
+];
+
 describe('new story form submit', () => {
   let fetchMock: jest.Mock;
 
@@ -120,6 +159,72 @@ describe('new story form submit', () => {
     expect(body.startingSituation).toBe('Standing at the gates of doom');
     expect(body.apiKey).toBe('sk-or-valid-test-key-12345');
     expect(body.progressId).toBe('form-progress-uuid');
+  });
+
+  it('POSTs to /stories/generate-concepts with seed payload', async () => {
+    setupPage();
+    fillForm();
+    (document.getElementById('genreVibes') as HTMLInputElement).value = 'neo noir';
+    (document.getElementById('moodKeywords') as HTMLInputElement).value = 'tense';
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      return Promise.resolve(
+        mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
+      );
+    });
+
+    const generateConceptsBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
+    generateConceptsBtn.click();
+    await jest.runAllTimersAsync();
+
+    const conceptCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('generate-concepts')
+    );
+    expect(conceptCall).toBeDefined();
+    const body = JSON.parse(conceptCall![1]!.body as string) as Record<string, unknown>;
+    expect(body.genreVibes).toBe('neo noir');
+    expect(body.moodKeywords).toBe('tense');
+    expect(body.apiKey).toBe('sk-or-valid-test-key-12345');
+    expect(body.progressId).toBe('form-progress-uuid');
+  });
+
+  it('reveals manual story section when Skip is clicked', () => {
+    setupPage();
+    const manualSection = document.getElementById('manual-story-section') as HTMLElement;
+    const skipBtn = document.getElementById('skip-concept-btn') as HTMLButtonElement;
+
+    expect(manualSection.style.display).toBe('none');
+    skipBtn.click();
+    expect(manualSection.style.display).toBe('block');
+  });
+
+  it('reveals manual story section after concept card selection', async () => {
+    setupPage();
+    fillForm();
+    (document.getElementById('genreVibes') as HTMLInputElement).value = 'dystopian';
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      return Promise.resolve(
+        mockJsonResponse({ success: true, evaluatedConcepts: MOCK_EVALUATED_CONCEPTS })
+      );
+    });
+
+    const generateConceptsBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
+    generateConceptsBtn.click();
+    await jest.runAllTimersAsync();
+
+    const card = document.querySelector('.concept-card') as HTMLElement;
+    expect(card).not.toBeNull();
+    card.click();
+
+    const manualSection = document.getElementById('manual-story-section') as HTMLElement;
+    expect(manualSection.style.display).toBe('block');
   });
 
   it('stores API key via setApiKey on spine generation success', async () => {

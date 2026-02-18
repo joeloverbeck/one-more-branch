@@ -50,6 +50,9 @@ describe('Engine types', () => {
         'DECOMPOSING_ENTITIES',
         'STRUCTURING_STORY',
         'RESTRUCTURING_STORY',
+        'GENERATING_CONCEPTS',
+        'EVALUATING_CONCEPTS',
+        'STRESS_TESTING_CONCEPT',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);

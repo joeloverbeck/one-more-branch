@@ -1,6 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 
+function countStagePhrases(script: string, stageKey: string): number {
+  const pattern = new RegExp(`${stageKey}: \\[(.*?)\\],`, 's');
+  const match = script.match(pattern);
+  if (!match || typeof match[1] !== 'string') {
+    return 0;
+  }
+
+  return match[1]
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("'"))
+    .length;
+}
+
 describe('public client script', () => {
   const scriptPath = path.join(__dirname, '../../../../public/js/app.js');
 
@@ -85,6 +99,9 @@ describe('public client script', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
     expect(script).toContain('const STAGE_PHRASE_POOLS = {');
+    expect(script).toContain('GENERATING_CONCEPTS: [');
+    expect(script).toContain('EVALUATING_CONCEPTS: [');
+    expect(script).toContain('STRESS_TESTING_CONCEPT: [');
     expect(script).toContain('PLANNING_PAGE: [');
     expect(script).toContain('ACCOUNTING_STATE: [');
     expect(script).toContain('WRITING_OPENING_PAGE: [');
@@ -92,6 +109,22 @@ describe('public client script', () => {
     expect(script).toContain('ANALYZING_SCENE: [');
     expect(script).toContain('STRUCTURING_STORY: [');
     expect(script).toContain('RESTRUCTURING_STORY: [');
+  });
+
+  it('defines display names for concept generation stages', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain("GENERATING_CONCEPTS: 'IDEATING'");
+    expect(script).toContain("EVALUATING_CONCEPTS: 'EVALUATING'");
+    expect(script).toContain("STRESS_TESTING_CONCEPT: 'HARDENING'");
+  });
+
+  it('ships 20+ phrase variants for each concept stage pool', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(countStagePhrases(script, 'GENERATING_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'EVALUATING_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'STRESS_TESTING_CONCEPT')).toBeGreaterThanOrEqual(20);
   });
 
   it('polls generation progress and falls back on unknown or polling failures', () => {

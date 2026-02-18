@@ -17,6 +17,72 @@ const KEYED_ENTRY_PANEL_LIMIT = 6;
 const LEFT_PANEL_LIMIT = 10;
 
 const STAGE_PHRASE_POOLS = {
+  GENERATING_CONCEPTS: [
+    'Gathering raw sparks from the edge of imagination...',
+    'Mixing genre pressure with emotional voltage...',
+    'Sketching concept engines instead of plot summaries...',
+    'Trying three strange ideas and one responsible one...',
+    'Distilling themes into playable tension...',
+    'Stressing each premise for decision-making potential...',
+    'Checking if this hook creates immediate curiosity...',
+    'Refining role, flaw, and pressure into a clean loop...',
+    'Turning vibes into usable dramatic machinery...',
+    'Interviewing chaos for better concept candidates...',
+    'Searching for concepts that branch without collapsing...',
+    'Balancing novelty against clarity and control...',
+    'Locating the sharpest contradiction in the premise...',
+    'Converting fragments into load-bearing narrative cores...',
+    'Drafting hooks that survive first contact with play...',
+    'Separating atmospheric ideas from playable ideas...',
+    'Pairing constraints with consequences that actually bite...',
+    'Tuning each concept for agency and conflict density...',
+    'Assembling foundations sturdy enough for branching stories...',
+    'Selecting concepts that create pressure, not just lore...',
+  ],
+  EVALUATING_CONCEPTS: [
+    'Scoring concept hooks for clarity and pull...',
+    'Measuring conflict engines against repeatable pressure...',
+    'Checking agency breadth across strategy space...',
+    'Auditing novelty for usefulness, not noise...',
+    'Estimating branching fitness under real play...',
+    'Reviewing feasibility against LLM drift risk...',
+    'Comparing tradeoffs instead of chasing perfection...',
+    'Ranking candidates by long-term narrative leverage...',
+    'Testing whether the constraints actually constrain...',
+    'Verifying the premise survives player unpredictability...',
+    'Checking if the protagonist role drives meaningful decisions...',
+    'Inspecting deadlines for real urgency...',
+    'Cross-checking stakes against systems-level consequences...',
+    'Filtering out concepts that look good but play flat...',
+    'Selecting high-upside concepts with manageable complexity...',
+    'Penalizing brittle premises before they break production...',
+    'Scoring world kernels for enforceability...',
+    'Calibrating the shortlist for creative durability...',
+    'Comparing concept spread for strategic diversity...',
+    'Finalizing ranked concepts for user selection...',
+  ],
+  STRESS_TESTING_CONCEPT: [
+    'Pushing the concept through adversarial player behavior...',
+    'Probing weak seams in the dramatic engine...',
+    'Looking for exploitable loopholes in constraints...',
+    'Testing if pressure loops still hold under edge cases...',
+    'Hardening vague rules into enforceable boundaries...',
+    'Simulating worst-case branching paths...',
+    'Checking whether urgency survives detours...',
+    'Breaking assumptions before players do it first...',
+    'Reinforcing world axioms against narrative drift...',
+    'Tracing how this premise fails at scale...',
+    'Converting soft spots into explicit guardrails...',
+    'Running sabotage drills on core conflict loops...',
+    'Examining tradeoffs under sustained player pressure...',
+    'Stress-testing stakes for durability over long runs...',
+    'Tightening weak constraints with actionable language...',
+    'Rebuilding brittle edges for production safety...',
+    'Evaluating failure modes across divergent branches...',
+    'Locking in mitigations for the highest-risk gaps...',
+    'Hardening concept structure for noisy real play...',
+    'Completing adversarial pass before final handoff...',
+  ],
   GENERATING_SPINE: [
     'Searching for the beating heart of the story...',
     'Asking the hard question nobody wants answered...',
@@ -1141,6 +1207,9 @@ const STAGE_PHRASE_POOLS = {
   ],
 };
 const STAGE_DISPLAY_NAMES = {
+  GENERATING_CONCEPTS: 'IDEATING',
+  EVALUATING_CONCEPTS: 'EVALUATING',
+  STRESS_TESTING_CONCEPT: 'HARDENING',
   GENERATING_SPINE: 'ENVISIONING',
   PLANNING_PAGE: 'PLANNING',
   ACCOUNTING_STATE: 'ACCOUNTING',
@@ -2110,6 +2179,151 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     indicator.setAttribute('aria-expanded', 'false');
     indicator.classList.remove('act-indicator--expanded');
     details.hidden = true;
+  }
+
+  // ── Concept Renderer ───────────────────────────────────────────────
+
+  var CONCEPT_SCORE_FIELDS = [
+    { key: 'hookStrength', label: 'Hook' },
+    { key: 'conflictEngine', label: 'Conflict' },
+    { key: 'agencyBreadth', label: 'Agency' },
+    { key: 'noveltyLeverage', label: 'Novelty' },
+    { key: 'branchingFitness', label: 'Branching' },
+    { key: 'llmFeasibility', label: 'Feasibility' },
+  ];
+
+  var selectedConceptIndex = -1;
+
+  function clearSelectedConcept() {
+    selectedConceptIndex = -1;
+  }
+
+  function getSelectedConceptIndex() {
+    return selectedConceptIndex;
+  }
+
+  function formatConceptLabel(value) {
+    return String(value || '').replace(/_/g, ' ');
+  }
+
+  function getScoreBarClass(score) {
+    if (score < 3) {
+      return 'concept-score-bar-fill-low';
+    }
+    if (score > 3) {
+      return 'concept-score-bar-fill-high';
+    }
+    return 'concept-score-bar-fill-mid';
+  }
+
+  function renderScoreRows(scores) {
+    return CONCEPT_SCORE_FIELDS.map(function (field) {
+      var rawScore = Number(scores && scores[field.key]);
+      var safeScore = Number.isFinite(rawScore) ? Math.max(0, Math.min(5, rawScore)) : 0;
+      var widthPct = (safeScore / 5) * 100;
+
+      return (
+        '<div class="concept-score-row">' +
+          '<span class="concept-score-label">' + escapeHtml(field.label) + '</span>' +
+          '<div class="concept-score-bar">' +
+            '<div class="concept-score-bar-fill ' + getScoreBarClass(safeScore) + '" style="width:' + widthPct + '%"></div>' +
+          '</div>' +
+          '<span class="concept-score-value">' + safeScore.toFixed(1) + '</span>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  function renderListItems(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return '<li class="concept-list-empty">None</li>';
+    }
+
+    return items.map(function (item) {
+      return '<li>' + escapeHtml(String(item)) + '</li>';
+    }).join('');
+  }
+
+  function renderConceptCards(evaluatedConcepts, container, onSelect) {
+    if (!container) {
+      return;
+    }
+
+    container.innerHTML = '';
+    selectedConceptIndex = -1;
+
+    if (!Array.isArray(evaluatedConcepts) || evaluatedConcepts.length === 0) {
+      container.innerHTML = '<p class="spine-section-subtitle">No concept candidates returned. Adjust your seeds and try again.</p>';
+      return;
+    }
+
+    evaluatedConcepts.forEach(function (entry, index) {
+      var concept = entry && entry.concept ? entry.concept : {};
+      var card = document.createElement('article');
+      card.className = 'spine-card concept-card';
+      card.dataset.index = String(index);
+
+      var overallScore = Number(entry && entry.overallScore);
+      var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
+
+      card.innerHTML =
+        '<div class="spine-badges">' +
+          '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
+          '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
+          '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+        '</div>' +
+        '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
+        '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
+        '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
+        '<div class="concept-scores">' + renderScoreRows(entry && entry.scores) + '</div>' +
+        '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
+        '<div class="concept-feedback">' +
+          '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
+          '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
+        '</div>' +
+        '<label class="concept-harden-toggle">' +
+          '<input type="checkbox" class="concept-harden-checkbox" data-concept-index="' + index + '"> Harden this concept' +
+        '</label>';
+
+      card.addEventListener('click', function () {
+        var allCards = container.querySelectorAll('.concept-card');
+        allCards.forEach(function (candidate) {
+          candidate.classList.remove('spine-card-selected');
+        });
+        card.classList.add('spine-card-selected');
+        selectedConceptIndex = index;
+
+        if (typeof onSelect === 'function') {
+          var hardenInput = card.querySelector('.concept-harden-checkbox');
+          onSelect({
+            evaluatedConcept: entry,
+            index: index,
+            hardenRequested: Boolean(hardenInput && hardenInput.checked),
+          });
+        }
+      });
+
+      var hardenCheckbox = card.querySelector('.concept-harden-checkbox');
+      if (hardenCheckbox) {
+        hardenCheckbox.addEventListener('click', function (event) {
+          event.stopPropagation();
+        });
+
+        hardenCheckbox.addEventListener('change', function () {
+          if (selectedConceptIndex !== index || typeof onSelect !== 'function') {
+            return;
+          }
+
+          onSelect({
+            evaluatedConcept: entry,
+            index: index,
+            hardenRequested: hardenCheckbox.checked,
+          });
+        });
+      }
+
+      container.appendChild(card);
+    });
   }
 
   // ── Choice renderers ──────────────────────────────────────────────
@@ -3718,6 +3932,12 @@ function createRecapModalController(initialData) {
   function initNewStoryPage() {
     const form = document.querySelector('.story-form');
     const loading = document.getElementById('loading');
+    const conceptSeedSection = document.getElementById('concept-seed-section');
+    const manualStorySection = document.getElementById('manual-story-section');
+    const conceptResultsSection = document.getElementById('concept-results-section');
+    const conceptCardsContainer = document.getElementById('concept-cards');
+    const generateConceptsBtn = document.getElementById('generate-concepts-btn');
+    const skipConceptBtn = document.getElementById('skip-concept-btn');
     const generateSpineBtn = document.getElementById('generate-spine-btn');
     const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
     const spineContainer = document.getElementById('spine-options');
@@ -3728,27 +3948,139 @@ function createRecapModalController(initialData) {
       return;
     }
     const loadingProgress = createLoadingProgressController(loading);
+    var selectedConceptPayload = null;
 
     initNpcControls();
+
+    function toTrimmedString(value) {
+      return typeof value === 'string' ? value.trim() : '';
+    }
+
+    function hideExistingError() {
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+    }
+
+    function revealManualStorySection() {
+      if (conceptSeedSection) {
+        conceptSeedSection.style.display = 'none';
+      }
+      if (manualStorySection) {
+        manualStorySection.style.display = 'block';
+      }
+    }
+
+    function handleConceptSelected(payload) {
+      selectedConceptPayload = payload;
+      revealManualStorySection();
+      document.dispatchEvent(
+        new CustomEvent('omb:concept-selected', {
+          detail: selectedConceptPayload,
+        })
+      );
+
+      if (manualStorySection && typeof manualStorySection.scrollIntoView === 'function') {
+        manualStorySection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
 
     function collectFormData() {
       var formData = new FormData(form);
       var npcs = collectNpcEntries();
       return {
-        title: formData.get('title'),
-        characterConcept: formData.get('characterConcept'),
-        worldbuilding: formData.get('worldbuilding'),
-        tone: formData.get('tone'),
+        title: toTrimmedString(formData.get('title')),
+        characterConcept: toTrimmedString(formData.get('characterConcept')),
+        worldbuilding: toTrimmedString(formData.get('worldbuilding')),
+        tone: toTrimmedString(formData.get('tone')),
         npcs: npcs.length > 0 ? npcs : undefined,
-        startingSituation: formData.get('startingSituation'),
-        apiKey: formData.get('apiKey'),
+        startingSituation: toTrimmedString(formData.get('startingSituation')),
+        apiKey: toTrimmedString(formData.get('apiKey')),
       };
     }
 
-    async function fetchSpineOptions() {
-      if (errorDiv) {
-        errorDiv.style.display = 'none';
+    function collectConceptSeeds() {
+      var formData = new FormData(form);
+      return {
+        genreVibes: toTrimmedString(formData.get('genreVibes')),
+        moodKeywords: toTrimmedString(formData.get('moodKeywords')),
+        contentPreferences: toTrimmedString(formData.get('contentPreferences')),
+        thematicInterests: toTrimmedString(formData.get('thematicInterests')),
+        sparkLine: toTrimmedString(formData.get('sparkLine')),
+        apiKey: toTrimmedString(formData.get('apiKey')),
+      };
+    }
+
+    async function fetchConceptOptions() {
+      hideExistingError();
+
+      if (generateConceptsBtn) generateConceptsBtn.disabled = true;
+      if (skipConceptBtn) skipConceptBtn.disabled = true;
+      loading.style.display = 'flex';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var conceptData = collectConceptSeeds();
+        if (conceptData.apiKey.length < 10) {
+          throw new Error('OpenRouter API key is required');
+        }
+
+        if (
+          !conceptData.genreVibes &&
+          !conceptData.moodKeywords &&
+          !conceptData.contentPreferences &&
+          !conceptData.thematicInterests &&
+          !conceptData.sparkLine
+        ) {
+          throw new Error('At least one concept seed field is required');
+        }
+
+        var response = await fetch('/stories/generate-concepts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            genreVibes: conceptData.genreVibes,
+            moodKeywords: conceptData.moodKeywords,
+            contentPreferences: conceptData.contentPreferences,
+            thematicInterests: conceptData.thematicInterests,
+            sparkLine: conceptData.sparkLine,
+            apiKey: conceptData.apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          throw new Error(data.error || 'Failed to generate concepts');
+        }
+
+        setApiKey(conceptData.apiKey);
+
+        if (conceptCardsContainer && conceptResultsSection) {
+          renderConceptCards(data.evaluatedConcepts, conceptCardsContainer, handleConceptSelected);
+          conceptResultsSection.style.display = 'block';
+          if (typeof conceptResultsSection.scrollIntoView === 'function') {
+            conceptResultsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      } catch (error) {
+        console.error('Concept generation error:', error);
+        showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+        if (generateConceptsBtn) generateConceptsBtn.disabled = false;
+        if (skipConceptBtn) skipConceptBtn.disabled = false;
       }
+    }
+
+    async function fetchSpineOptions() {
+      hideExistingError();
 
       generateSpineBtn.disabled = true;
       if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
@@ -3781,7 +4113,9 @@ function createRecapModalController(initialData) {
           throw new Error(data.error || 'Failed to generate spine options');
         }
 
-        setApiKey(formValues.apiKey);
+        if (formValues.apiKey.length >= 10) {
+          setApiKey(formValues.apiKey);
+        }
 
         if (spineContainer && spineSection) {
           renderSpineOptions(data.options, spineContainer, function (option) {
@@ -3803,9 +4137,7 @@ function createRecapModalController(initialData) {
     }
 
     async function createStoryWithSpine(spine) {
-      if (errorDiv) {
-        errorDiv.style.display = 'none';
-      }
+      hideExistingError();
 
       generateSpineBtn.disabled = true;
       if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
@@ -3853,6 +4185,30 @@ function createRecapModalController(initialData) {
         loadingProgress.stop();
         loading.style.display = 'none';
       }
+    }
+
+    var storedApiKey = getApiKey();
+    var apiKeyInput = document.getElementById('apiKey');
+    if (apiKeyInput && storedApiKey && typeof apiKeyInput.value === 'string' && apiKeyInput.value.length === 0) {
+      apiKeyInput.value = storedApiKey;
+    }
+
+    if (generateConceptsBtn) {
+      generateConceptsBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        fetchConceptOptions();
+      });
+    }
+
+    if (skipConceptBtn) {
+      skipConceptBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        selectedConceptPayload = null;
+        if (typeof clearSelectedConcept === 'function') {
+          clearSelectedConcept();
+        }
+        revealManualStorySection();
+      });
     }
 
     // Phase A: Generate Spine on button click

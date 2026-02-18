@@ -424,6 +424,12 @@
   function initNewStoryPage() {
     const form = document.querySelector('.story-form');
     const loading = document.getElementById('loading');
+    const conceptSeedSection = document.getElementById('concept-seed-section');
+    const manualStorySection = document.getElementById('manual-story-section');
+    const conceptResultsSection = document.getElementById('concept-results-section');
+    const conceptCardsContainer = document.getElementById('concept-cards');
+    const generateConceptsBtn = document.getElementById('generate-concepts-btn');
+    const skipConceptBtn = document.getElementById('skip-concept-btn');
     const generateSpineBtn = document.getElementById('generate-spine-btn');
     const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
     const spineContainer = document.getElementById('spine-options');
@@ -434,27 +440,139 @@
       return;
     }
     const loadingProgress = createLoadingProgressController(loading);
+    var selectedConceptPayload = null;
 
     initNpcControls();
+
+    function toTrimmedString(value) {
+      return typeof value === 'string' ? value.trim() : '';
+    }
+
+    function hideExistingError() {
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+    }
+
+    function revealManualStorySection() {
+      if (conceptSeedSection) {
+        conceptSeedSection.style.display = 'none';
+      }
+      if (manualStorySection) {
+        manualStorySection.style.display = 'block';
+      }
+    }
+
+    function handleConceptSelected(payload) {
+      selectedConceptPayload = payload;
+      revealManualStorySection();
+      document.dispatchEvent(
+        new CustomEvent('omb:concept-selected', {
+          detail: selectedConceptPayload,
+        })
+      );
+
+      if (manualStorySection && typeof manualStorySection.scrollIntoView === 'function') {
+        manualStorySection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
 
     function collectFormData() {
       var formData = new FormData(form);
       var npcs = collectNpcEntries();
       return {
-        title: formData.get('title'),
-        characterConcept: formData.get('characterConcept'),
-        worldbuilding: formData.get('worldbuilding'),
-        tone: formData.get('tone'),
+        title: toTrimmedString(formData.get('title')),
+        characterConcept: toTrimmedString(formData.get('characterConcept')),
+        worldbuilding: toTrimmedString(formData.get('worldbuilding')),
+        tone: toTrimmedString(formData.get('tone')),
         npcs: npcs.length > 0 ? npcs : undefined,
-        startingSituation: formData.get('startingSituation'),
-        apiKey: formData.get('apiKey'),
+        startingSituation: toTrimmedString(formData.get('startingSituation')),
+        apiKey: toTrimmedString(formData.get('apiKey')),
       };
     }
 
-    async function fetchSpineOptions() {
-      if (errorDiv) {
-        errorDiv.style.display = 'none';
+    function collectConceptSeeds() {
+      var formData = new FormData(form);
+      return {
+        genreVibes: toTrimmedString(formData.get('genreVibes')),
+        moodKeywords: toTrimmedString(formData.get('moodKeywords')),
+        contentPreferences: toTrimmedString(formData.get('contentPreferences')),
+        thematicInterests: toTrimmedString(formData.get('thematicInterests')),
+        sparkLine: toTrimmedString(formData.get('sparkLine')),
+        apiKey: toTrimmedString(formData.get('apiKey')),
+      };
+    }
+
+    async function fetchConceptOptions() {
+      hideExistingError();
+
+      if (generateConceptsBtn) generateConceptsBtn.disabled = true;
+      if (skipConceptBtn) skipConceptBtn.disabled = true;
+      loading.style.display = 'flex';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var conceptData = collectConceptSeeds();
+        if (conceptData.apiKey.length < 10) {
+          throw new Error('OpenRouter API key is required');
+        }
+
+        if (
+          !conceptData.genreVibes &&
+          !conceptData.moodKeywords &&
+          !conceptData.contentPreferences &&
+          !conceptData.thematicInterests &&
+          !conceptData.sparkLine
+        ) {
+          throw new Error('At least one concept seed field is required');
+        }
+
+        var response = await fetch('/stories/generate-concepts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            genreVibes: conceptData.genreVibes,
+            moodKeywords: conceptData.moodKeywords,
+            contentPreferences: conceptData.contentPreferences,
+            thematicInterests: conceptData.thematicInterests,
+            sparkLine: conceptData.sparkLine,
+            apiKey: conceptData.apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          throw new Error(data.error || 'Failed to generate concepts');
+        }
+
+        setApiKey(conceptData.apiKey);
+
+        if (conceptCardsContainer && conceptResultsSection) {
+          renderConceptCards(data.evaluatedConcepts, conceptCardsContainer, handleConceptSelected);
+          conceptResultsSection.style.display = 'block';
+          if (typeof conceptResultsSection.scrollIntoView === 'function') {
+            conceptResultsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      } catch (error) {
+        console.error('Concept generation error:', error);
+        showFormError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+        if (generateConceptsBtn) generateConceptsBtn.disabled = false;
+        if (skipConceptBtn) skipConceptBtn.disabled = false;
       }
+    }
+
+    async function fetchSpineOptions() {
+      hideExistingError();
 
       generateSpineBtn.disabled = true;
       if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
@@ -487,7 +605,9 @@
           throw new Error(data.error || 'Failed to generate spine options');
         }
 
-        setApiKey(formValues.apiKey);
+        if (formValues.apiKey.length >= 10) {
+          setApiKey(formValues.apiKey);
+        }
 
         if (spineContainer && spineSection) {
           renderSpineOptions(data.options, spineContainer, function (option) {
@@ -509,9 +629,7 @@
     }
 
     async function createStoryWithSpine(spine) {
-      if (errorDiv) {
-        errorDiv.style.display = 'none';
-      }
+      hideExistingError();
 
       generateSpineBtn.disabled = true;
       if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
@@ -559,6 +677,30 @@
         loadingProgress.stop();
         loading.style.display = 'none';
       }
+    }
+
+    var storedApiKey = getApiKey();
+    var apiKeyInput = document.getElementById('apiKey');
+    if (apiKeyInput && storedApiKey && typeof apiKeyInput.value === 'string' && apiKeyInput.value.length === 0) {
+      apiKeyInput.value = storedApiKey;
+    }
+
+    if (generateConceptsBtn) {
+      generateConceptsBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        fetchConceptOptions();
+      });
+    }
+
+    if (skipConceptBtn) {
+      skipConceptBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        selectedConceptPayload = null;
+        if (typeof clearSelectedConcept === 'function') {
+          clearSelectedConcept();
+        }
+        revealManualStorySection();
+      });
     }
 
     // Phase A: Generate Spine on button click
