@@ -344,43 +344,75 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
         <h1>Begin a New Adventure</h1>
         ${errorHtml}
         <form action="/stories/create" method="POST" class="story-form">
-          <div class="form-group">
-            <label for="title">Story Title *</label>
-            <input type="text" id="title" name="title" required value="">
-          </div>
-          <div class="form-group">
-            <label for="characterConcept">Character Concept *</label>
-            <textarea id="characterConcept" name="characterConcept" rows="4" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="worldbuilding">Worldbuilding</label>
-            <textarea id="worldbuilding" name="worldbuilding" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label>NPCs (Optional)</label>
-            <div id="npc-entries">${npcEntriesHtml}</div>
-            <div class="npc-add-form">
-              <input type="text" id="npc-name-input" placeholder="NPC name" maxlength="100">
-              <textarea id="npc-desc-input" rows="2" placeholder="Describe this character"></textarea>
-              <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
+          <section id="concept-seed-section">
+            <div class="form-group">
+              <label for="genreVibes">Genre Vibes</label>
+              <input type="text" id="genreVibes" name="genreVibes" value="">
             </div>
-          </div>
-          <div class="form-group">
-            <label for="startingSituation">Starting Situation</label>
-            <textarea id="startingSituation" name="startingSituation" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="tone">Tone/Genre</label>
-            <input type="text" id="tone" name="tone" value="">
-          </div>
-          <div class="form-group">
-            <label for="apiKey">OpenRouter API Key *</label>
-            <input type="password" id="apiKey" name="apiKey" required placeholder="sk-or-..." autocomplete="off">
-          </div>
-          <div class="form-actions">
-            <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
-          </div>
+            <div class="form-group">
+              <label for="moodKeywords">Mood Keywords</label>
+              <input type="text" id="moodKeywords" name="moodKeywords" value="">
+            </div>
+            <div class="form-group">
+              <label for="contentPreferences">Content Preferences</label>
+              <input type="text" id="contentPreferences" name="contentPreferences" value="">
+            </div>
+            <div class="form-group">
+              <label for="thematicInterests">Thematic Interests</label>
+              <input type="text" id="thematicInterests" name="thematicInterests" value="">
+            </div>
+            <div class="form-group">
+              <label for="sparkLine">Spark Line</label>
+              <input type="text" id="sparkLine" name="sparkLine" value="">
+            </div>
+            <div class="form-group">
+              <label for="apiKey">OpenRouter API Key *</label>
+              <input type="password" id="apiKey" name="apiKey" required placeholder="sk-or-..." autocomplete="off">
+            </div>
+            <div class="form-actions">
+              <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">Generate Concepts</button>
+              <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - I have my own concept</button>
+            </div>
+          </section>
+          <section id="manual-story-section" style="display: none;">
+            <div class="form-group">
+              <label for="title">Story Title *</label>
+              <input type="text" id="title" name="title" required value="">
+            </div>
+            <div class="form-group">
+              <label for="characterConcept">Character Concept *</label>
+              <textarea id="characterConcept" name="characterConcept" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="worldbuilding">Worldbuilding</label>
+              <textarea id="worldbuilding" name="worldbuilding" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>NPCs (Optional)</label>
+              <div id="npc-entries">${npcEntriesHtml}</div>
+              <div class="npc-add-form">
+                <input type="text" id="npc-name-input" placeholder="NPC name" maxlength="100">
+                <textarea id="npc-desc-input" rows="2" placeholder="Describe this character"></textarea>
+                <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="startingSituation">Starting Situation</label>
+              <textarea id="startingSituation" name="startingSituation" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="tone">Tone/Genre</label>
+              <input type="text" id="tone" name="tone" value="">
+            </div>
+            <div class="form-actions">
+              <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
+            </div>
+          </section>
         </form>
+        <section id="concept-results-section" class="spine-section" style="display: none;">
+          <h2 class="spine-section-title">Choose a Concept</h2>
+          <div id="concept-cards" class="spine-options-container"></div>
+        </section>
         <div id="spine-section" class="spine-section" style="display: none;">
           <h2 class="spine-section-title">Choose Your Story's Spine</h2>
           <div id="spine-options" class="spine-options-container"></div>

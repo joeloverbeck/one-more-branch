@@ -169,6 +169,40 @@ describe('concept-service', () => {
         }),
       ).rejects.toBe(llmError);
     });
+
+    it('emits stage callbacks for ideation and evaluation in order', async () => {
+      const events: Array<{ stage: string; status: string; attempt: number }> = [];
+      const service = createConceptService({
+        generateConceptIdeas: jest.fn().mockResolvedValue({
+          concepts: [createConceptSpec(1)],
+          rawResponse: 'raw-ideas',
+        }),
+        evaluateConcepts: jest.fn().mockResolvedValue({
+          evaluatedConcepts: [createEvaluatedConcept(1)],
+          rawResponse: 'raw-eval',
+        }),
+        stressTestConcept: jest.fn(),
+      });
+
+      await service.generateConcepts({
+        genreVibes: 'noir',
+        apiKey: 'valid-key-12345',
+        onGenerationStage: (event) => {
+          events.push({
+            stage: event.stage,
+            status: event.status,
+            attempt: event.attempt,
+          });
+        },
+      });
+
+      expect(events).toEqual([
+        { stage: 'GENERATING_CONCEPTS', status: 'started', attempt: 1 },
+        { stage: 'GENERATING_CONCEPTS', status: 'completed', attempt: 1 },
+        { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
+        { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
+      ]);
+    });
   });
 
   describe('stressTestConcept', () => {
@@ -251,6 +285,40 @@ describe('concept-service', () => {
           apiKey: 'valid-key-12345',
         }),
       ).rejects.toThrow('Concept weaknesses are required');
+    });
+
+    it('emits stress-test stage callbacks in order', async () => {
+      const events: Array<{ stage: string; status: string; attempt: number }> = [];
+      const output: ConceptStressTestResult = {
+        hardenedConcept: createConceptSpec(9),
+        driftRisks: [],
+        playerBreaks: [],
+        rawResponse: 'raw-stress',
+      };
+      const service = createConceptService({
+        generateConceptIdeas: jest.fn(),
+        evaluateConcepts: jest.fn(),
+        stressTestConcept: jest.fn().mockResolvedValue(output),
+      });
+
+      await service.stressTestConcept({
+        concept: createConceptSpec(1),
+        scores: createScores(),
+        weaknesses: ['Weak urgency'],
+        apiKey: 'valid-key-12345',
+        onGenerationStage: (event) => {
+          events.push({
+            stage: event.stage,
+            status: event.status,
+            attempt: event.attempt,
+          });
+        },
+      });
+
+      expect(events).toEqual([
+        { stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 },
+        { stage: 'STRESS_TESTING_CONCEPT', status: 'completed', attempt: 1 },
+      ]);
     });
   });
 });

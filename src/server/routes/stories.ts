@@ -218,7 +218,7 @@ storyRoutes.post(
 
     const progressId = parseProgressId(body.progressId);
     if (progressId) {
-      generationProgressService.start(progressId, 'new-story');
+      generationProgressService.start(progressId, 'concept-generation');
     }
 
     try {
@@ -229,6 +229,15 @@ storyRoutes.post(
         thematicInterests: body.thematicInterests,
         sparkLine: body.sparkLine,
         apiKey,
+        onGenerationStage: progressId
+          ? (event: GenerationStageEvent): void => {
+              if (event.status === 'started') {
+                generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
+              } else {
+                generationProgressService.markStageCompleted(progressId, event.stage, event.attempt);
+              }
+            }
+          : undefined,
       });
 
       if (progressId) {
@@ -309,7 +318,7 @@ storyRoutes.post(
 
     const progressId = parseProgressId(body.progressId);
     if (progressId) {
-      generationProgressService.start(progressId, 'new-story');
+      generationProgressService.start(progressId, 'concept-generation');
     }
 
     try {
@@ -318,6 +327,15 @@ storyRoutes.post(
         scores: body.scores as ConceptDimensionScores,
         weaknesses: body.weaknesses as readonly string[],
         apiKey,
+        onGenerationStage: progressId
+          ? (event: GenerationStageEvent): void => {
+              if (event.status === 'started') {
+                generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
+              } else {
+                generationProgressService.markStageCompleted(progressId, event.stage, event.attempt);
+              }
+            }
+          : undefined,
       });
 
       if (progressId) {

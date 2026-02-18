@@ -1,6 +1,7 @@
 import { evaluateConcepts } from '../../llm/concept-evaluator.js';
 import { generateConceptIdeas } from '../../llm/concept-ideator.js';
 import { stressTestConcept as runConceptStressTest } from '../../llm/concept-stress-tester.js';
+import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   ConceptDimensionScores,
   ConceptSpec,
@@ -15,6 +16,7 @@ export interface GenerateConceptsInput {
   readonly thematicInterests?: string;
   readonly sparkLine?: string;
   readonly apiKey: string;
+  readonly onGenerationStage?: GenerationStageCallback;
 }
 
 export interface GenerateConceptsResult {
@@ -26,6 +28,7 @@ export interface StressTestInput {
   readonly scores: ConceptDimensionScores;
   readonly weaknesses: readonly string[];
   readonly apiKey: string;
+  readonly onGenerationStage?: GenerationStageCallback;
 }
 
 interface ConceptServiceDeps {
@@ -120,8 +123,25 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
     async generateConcepts(input: GenerateConceptsInput): Promise<GenerateConceptsResult> {
       const apiKey = requireApiKey(input.apiKey);
       const seeds = requireConceptSeeds(input);
+      const onGenerationStage = input.onGenerationStage;
 
+      onGenerationStage?.({
+        stage: 'GENERATING_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
       const ideation = await deps.generateConceptIdeas(seeds, apiKey);
+      onGenerationStage?.({
+        stage: 'GENERATING_CONCEPTS',
+        status: 'completed',
+        attempt: 1,
+      });
+
+      onGenerationStage?.({
+        stage: 'EVALUATING_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
       const evaluation = await deps.evaluateConcepts(
         {
           concepts: ideation.concepts,
@@ -132,6 +152,11 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         },
         apiKey,
       );
+      onGenerationStage?.({
+        stage: 'EVALUATING_CONCEPTS',
+        status: 'completed',
+        attempt: 1,
+      });
 
       return {
         evaluatedConcepts: evaluation.evaluatedConcepts,
@@ -140,8 +165,14 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
 
     async stressTestConcept(input: StressTestInput): Promise<ConceptStressTestResult> {
       const normalized = requireStressTestInput(input);
+      const onGenerationStage = input.onGenerationStage;
 
-      return deps.stressTestConcept(
+      onGenerationStage?.({
+        stage: 'STRESS_TESTING_CONCEPT',
+        status: 'started',
+        attempt: 1,
+      });
+      const result = await deps.stressTestConcept(
         {
           concept: normalized.concept,
           scores: normalized.scores,
@@ -149,6 +180,13 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         },
         normalized.apiKey,
       );
+      onGenerationStage?.({
+        stage: 'STRESS_TESTING_CONCEPT',
+        status: 'completed',
+        attempt: 1,
+      });
+
+      return result;
     },
   };
 }
