@@ -2751,3 +2751,78 @@ main {
   display: flex;
   gap: 0.75rem;
 }
+
+/* ── Concept Score Pips ─────────────────────────────── */
+
+.concept-scores-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0.7rem 0;
+}
+
+.concept-score-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.4rem;
+}
+
+.concept-score-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  flex: 1;
+}
+
+.concept-score-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.concept-score-value--low  { color: #ef4444; }
+.concept-score-value--mid  { color: #fbbf24; }
+.concept-score-value--high { color: #2dd4bf; }
+
+.concept-score-pips {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.concept-pip {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.concept-pip--filled.concept-pip--low {
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
+}
+.concept-pip--filled.concept-pip--mid {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+.concept-pip--filled.concept-pip--high {
+  background: linear-gradient(135deg, #10b981, #2dd4bf);
+}
+
+.concept-pip--half.concept-pip--low {
+  background: linear-gradient(90deg, #ef4444 50%, rgba(255, 255, 255, 0.12) 50%);
+}
+.concept-pip--half.concept-pip--mid {
+  background: linear-gradient(90deg, #fbbf24 50%, rgba(255, 255, 255, 0.12) 50%);
+}
+.concept-pip--half.concept-pip--high {
+  background: linear-gradient(90deg, #2dd4bf 50%, rgba(255, 255, 255, 0.12) 50%);
+}
+
+.concept-pip--empty {
+  background: rgba(255, 255, 255, 0.12);
+}

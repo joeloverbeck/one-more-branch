@@ -82,16 +82,6 @@ function parseEvaluatedConcept(value: unknown, index: number): EvaluatedConcept 
   const concept = parseConceptSpec(data['concept'], index, 'Evaluated concept');
   const scores = parseScores(data['scores'], index);
 
-  if (
-    typeof data['overallScore'] !== 'number' ||
-    Number.isNaN(data['overallScore']) ||
-    !Number.isFinite(data['overallScore']) ||
-    data['overallScore'] < 0 ||
-    data['overallScore'] > 100
-  ) {
-    throw new LLMError(`${label} has invalid overallScore`, 'STRUCTURE_PARSE_ERROR', true);
-  }
-
   const strengths = requireNonEmptyStringArray(data['strengths'], 'strengths', label);
   const weaknesses = requireNonEmptyStringArray(data['weaknesses'], 'weaknesses', label);
   const tradeoffSummary = requireNonEmptyString(data['tradeoffSummary'], 'tradeoffSummary', label);
