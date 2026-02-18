@@ -41,6 +41,19 @@ describe('getStageModel', () => {
     expect(model).toBe(expected);
   });
 
+  it('resolves concept stage models from config when configured', () => {
+    loadConfig();
+
+    const config = getConfig();
+    expect(config.llm.models?.['conceptIdeator']).toBeDefined();
+    expect(config.llm.models?.['conceptEvaluator']).toBeDefined();
+    expect(config.llm.models?.['conceptStressTester']).toBeDefined();
+
+    expect(getStageModel('conceptIdeator')).toBe(config.llm.models?.['conceptIdeator']);
+    expect(getStageModel('conceptEvaluator')).toBe(config.llm.models?.['conceptEvaluator']);
+    expect(getStageModel('conceptStressTester')).toBe(config.llm.models?.['conceptStressTester']);
+  });
+
   it('resolves each valid LlmStage value to a non-empty string', () => {
     loadConfig();
 

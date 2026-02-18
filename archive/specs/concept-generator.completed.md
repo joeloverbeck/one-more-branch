@@ -1,6 +1,6 @@
 # Concept Generator Module
 
-**Status**: ACTIVE
+**Status**: COMPLETED
 
 ## 1. Overview
 
@@ -547,3 +547,15 @@ Given the scope, this epic should be broken into tickets:
 7. **Integration - Form pre-fill and downstream context**: Mapping concept to form fields, optional spine prompt enrichment
 8. **Stage registration and progress**: Add LlmStage entries, progress spinner phrases
 9. **Integration and E2E tests**: Full pipeline and route testing
+
+## Outcome
+
+- **Completion date**: 2026-02-18
+- **What was implemented**:
+  - Concept ideator/evaluator/stress-tester stages, schemas, prompts, and shared concept model support are present in the codebase.
+  - Concept generation routes, service orchestration, UI flow, progress stages, and story model persistence are implemented.
+  - Additional integration/E2E tests for concept pipeline/service wiring/persistence were completed in CONGEN-09.
+- **Deviation from original plan**:
+  - Integration and E2E verification emphasized existing repository test architecture (handler-level integration/E2E with mocked LLM boundaries) rather than adding duplicate browser-E2E for already unit-covered client behavior.
+- **Verification summary**:
+  - Full project validation passes: `npm run typecheck`, `npm run lint`, `npm test`.
