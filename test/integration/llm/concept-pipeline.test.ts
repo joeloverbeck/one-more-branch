@@ -102,6 +102,13 @@ describe('Concept Pipeline Integration', () => {
 
     const result = await service.generateConcepts({
       ...seeds,
+      kernel: {
+        dramaticThesis: 'Control destroys trust',
+        valueAtStake: 'Trust',
+        opposingForce: 'Fear of uncertainty',
+        directionOfChange: 'IRONIC',
+        thematicQuestion: 'Can safety exist without control?',
+      },
       onGenerationStage: (event) => {
         stageEvents.push(event);
       },

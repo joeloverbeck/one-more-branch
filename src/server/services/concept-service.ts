@@ -9,6 +9,7 @@ import type {
   ConceptStressTestResult,
   EvaluatedConcept,
 } from '../../models/index.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
 
 export interface GenerateConceptsInput {
   readonly genreVibes?: string;
@@ -16,6 +17,7 @@ export interface GenerateConceptsInput {
   readonly contentPreferences?: string;
   readonly thematicInterests?: string;
   readonly sparkLine?: string;
+  readonly kernel: StoryKernel;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }
@@ -87,6 +89,14 @@ function requireConceptSeeds(input: GenerateConceptsInput): {
   return seeds;
 }
 
+function requireKernel(kernel: StoryKernel | undefined): StoryKernel {
+  if (!kernel || typeof kernel !== 'object') {
+    throw new Error('Story kernel is required');
+  }
+
+  return kernel;
+}
+
 function requireStressTestInput(input: StressTestInput): {
   concept: ConceptSpec;
   scores: ConceptDimensionScores;
@@ -126,6 +136,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
     async generateConcepts(input: GenerateConceptsInput): Promise<GenerateConceptsResult> {
       const apiKey = requireApiKey(input.apiKey);
       const seeds = requireConceptSeeds(input);
+      const kernel = requireKernel(input.kernel);
       const onGenerationStage = input.onGenerationStage;
 
       onGenerationStage?.({
@@ -133,7 +144,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         status: 'started',
         attempt: 1,
       });
-      const ideation = await deps.generateConceptIdeas(seeds, apiKey);
+      const ideation = await deps.generateConceptIdeas({ ...seeds, kernel }, apiKey);
       onGenerationStage?.({
         stage: 'GENERATING_CONCEPTS',
         status: 'completed',

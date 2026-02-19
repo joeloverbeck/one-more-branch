@@ -22,6 +22,10 @@ jest.mock('@/persistence/concept-repository', () => ({
   conceptExists: jest.fn(),
 }));
 
+jest.mock('@/persistence/kernel-repository', () => ({
+  loadKernel: jest.fn(),
+}));
+
 import { LLMError } from '@/llm/llm-client-types';
 import { evaluateConcepts } from '@/llm/concept-evaluator';
 import { generateConceptIdeas } from '@/llm/concept-ideator';
@@ -33,6 +37,7 @@ import {
   saveConceptGenerationBatch,
   updateConcept,
 } from '@/persistence/concept-repository';
+import { loadKernel } from '@/persistence/kernel-repository';
 import {
   createScoredConceptFixture,
   createConceptScoresFixture,
@@ -82,9 +87,37 @@ describe('Concept Route Integration', () => {
     typeof saveConceptGenerationBatch
   >;
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
+  const mockedLoadKernel = loadKernel as jest.MockedFunction<typeof loadKernel>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedLoadKernel.mockResolvedValue({
+      id: 'kernel-1',
+      name: 'Kernel 1',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      seeds: {},
+      evaluatedKernel: {
+        kernel: {
+          dramaticThesis: 'Control destroys trust',
+          valueAtStake: 'Trust',
+          opposingForce: 'Fear of uncertainty',
+          directionOfChange: 'IRONIC',
+          thematicQuestion: 'Can safety exist without control?',
+        },
+        scores: {
+          dramaticClarity: 4,
+          thematicUniversality: 4,
+          generativePotential: 4,
+          conflictTension: 4,
+          emotionalDepth: 4,
+        },
+        overallScore: 80,
+        strengths: ['Strong thesis'],
+        weaknesses: ['Slightly abstract'],
+        tradeoffSummary: 'Clear and generative.',
+      },
+    });
   });
 
   it('POST /api/generate delegates through service and returns evaluated concepts', async () => {
@@ -115,6 +148,7 @@ describe('Concept Route Integration', () => {
         body: {
           genreVibes: '  dark fantasy  ',
           moodKeywords: '  tense ',
+          kernelId: 'kernel-1',
           apiKey: '  valid-key-12345 ',
           progressId: ' route-progress-1 ',
         },
@@ -130,6 +164,13 @@ describe('Concept Route Integration', () => {
         contentPreferences: undefined,
         thematicInterests: undefined,
         sparkLine: undefined,
+        kernel: {
+          dramaticThesis: 'Control destroys trust',
+          valueAtStake: 'Trust',
+          opposingForce: 'Fear of uncertainty',
+          directionOfChange: 'IRONIC',
+          thematicQuestion: 'Can safety exist without control?',
+        },
       },
       'valid-key-12345',
     );
@@ -164,6 +205,7 @@ describe('Concept Route Integration', () => {
       {
         body: {
           genreVibes: 'dark fantasy',
+          kernelId: 'kernel-1',
           apiKey: 'valid-key-12345',
           progressId: 'route-progress-2',
         },
@@ -182,6 +224,53 @@ describe('Concept Route Integration', () => {
       error: 'Rate limit exceeded. Please wait a moment and try again.',
       code: 'HTTP_429',
       retryable: true,
+    });
+  });
+
+  it('POST /api/generate returns 400 when kernelId is missing', async () => {
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+
+    void getRouteHandler('post', '/api/generate')(
+      {
+        body: {
+          genreVibes: 'dark fantasy',
+          apiKey: 'valid-key-12345',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith({
+      success: false,
+      error: 'Kernel selection is required',
+    });
+  });
+
+  it('POST /api/generate returns 400 when kernel does not exist', async () => {
+    mockedLoadKernel.mockResolvedValueOnce(null);
+
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+
+    void getRouteHandler('post', '/api/generate')(
+      {
+        body: {
+          genreVibes: 'dark fantasy',
+          kernelId: 'missing-kernel',
+          apiKey: 'valid-key-12345',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith({
+      success: false,
+      error: 'Selected kernel was not found',
     });
   });
 

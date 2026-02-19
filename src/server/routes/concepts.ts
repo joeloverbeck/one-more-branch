@@ -13,6 +13,7 @@ import {
   saveConcept,
   updateConcept,
 } from '../../persistence/concept-repository.js';
+import { loadKernel } from '../../persistence/kernel-repository.js';
 import { conceptService } from '../services/index.js';
 import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
@@ -77,6 +78,7 @@ conceptRoutes.post(
       contentPreferences?: string;
       thematicInterests?: string;
       sparkLine?: string;
+      kernelId?: string;
       apiKey?: string;
       progressId?: unknown;
     };
@@ -92,6 +94,16 @@ conceptRoutes.post(
         .json({ success: false, error: 'At least one concept seed field is required' });
     }
 
+    const kernelId = body.kernelId?.trim();
+    if (!kernelId) {
+      return res.status(400).json({ success: false, error: 'Kernel selection is required' });
+    }
+
+    const savedKernel = await loadKernel(kernelId);
+    if (!savedKernel) {
+      return res.status(400).json({ success: false, error: 'Selected kernel was not found' });
+    }
+
     const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
 
     try {
@@ -101,6 +113,7 @@ conceptRoutes.post(
         contentPreferences: body.contentPreferences,
         thematicInterests: body.thematicInterests,
         sparkLine: body.sparkLine,
+        kernel: savedKernel.evaluatedKernel.kernel,
         apiKey,
         onGenerationStage: progress.onGenerationStage,
       });

@@ -143,6 +143,13 @@ describe('concept-ideator', () => {
       thematicInterests: 'identity and memory',
       sparkLine: 'What if memory could be taxed?',
       contentPreferences: 'No explicit sexual violence',
+      kernel: {
+        dramaticThesis: 'Control destroys trust',
+        valueAtStake: 'Trust',
+        opposingForce: 'Fear of uncertainty',
+        directionOfChange: 'IRONIC',
+        thematicQuestion: 'Can safety exist without control?',
+      },
     });
 
     expect(messages).toHaveLength(2);
@@ -156,6 +163,9 @@ describe('concept-ideator', () => {
     expect(userMessage).toContain('THEMATIC INTERESTS');
     expect(userMessage).toContain('SPARK LINE');
     expect(userMessage).toContain('CONTENT PREFERENCES');
+    expect(systemMessage).toContain('KERNEL CONSTRAINTS');
+    expect(userMessage).toContain('SELECTED STORY KERNEL');
+    expect(userMessage).toContain('dramaticThesis: Control destroys trust');
   });
 
   it('buildConceptIdeatorPrompt omits empty seed fields', () => {
@@ -187,6 +197,17 @@ describe('concept-ideator', () => {
     expect(systemMessage).toContain('whatIfQuestion must be a single question ending with');
     expect(systemMessage).toContain('ironicTwist must be 1-2 sentences');
     expect(systemMessage).toContain('playerFantasy must be 1 sentence');
+  });
+
+  it('buildConceptIdeatorPrompt omits kernel constraints when kernel is absent', () => {
+    const messages = buildConceptIdeatorPrompt({
+      genreVibes: 'noir',
+    });
+    const systemMessage = messages[0]?.content ?? '';
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(systemMessage).not.toContain('KERNEL CONSTRAINTS');
+    expect(userMessage).not.toContain('SELECTED STORY KERNEL');
   });
 
   it('generateConceptIdeas returns parsed ideation result', async () => {

@@ -11,6 +11,7 @@ import {
   type GenerateConceptsInput,
   type StressTestInput,
 } from '@/server/services/concept-service';
+import type { StoryKernel } from '@/models/story-kernel';
 import { createConceptSpecFixture } from '../../../fixtures/concept-generator';
 
 function createConceptSpec(index = 1): ConceptSpec {
@@ -36,6 +37,16 @@ function createEvaluatedConcept(index = 1): EvaluatedConcept {
     strengths: ['Strong hook'],
     weaknesses: ['Lower novelty'],
     tradeoffSummary: 'Strong conflict, lower novelty.',
+  };
+}
+
+function createStoryKernel(): StoryKernel {
+  return {
+    dramaticThesis: 'Control destroys trust',
+    valueAtStake: 'Trust',
+    opposingForce: 'Fear of uncertainty',
+    directionOfChange: 'IRONIC',
+    thematicQuestion: 'Can safety exist without control?',
   };
 }
 
@@ -90,6 +101,7 @@ describe('concept-service', () => {
         contentPreferences: ' no romance ',
         thematicInterests: ' identity ',
         sparkLine: ' what if memory had a market? ',
+        kernel: createStoryKernel(),
         apiKey: '  valid-key-12345  ',
       };
 
@@ -103,6 +115,7 @@ describe('concept-service', () => {
           contentPreferences: 'no romance',
           thematicInterests: 'identity',
           sparkLine: 'what if memory had a market?',
+          kernel: createStoryKernel(),
         },
         'valid-key-12345',
       );
@@ -142,6 +155,7 @@ describe('concept-service', () => {
           contentPreferences: '',
           thematicInterests: '  ',
           sparkLine: undefined,
+          kernel: createStoryKernel(),
           apiKey: 'valid-key-12345',
         }),
       ).rejects.toThrow('At least one concept seed field is required');
@@ -157,6 +171,7 @@ describe('concept-service', () => {
       await expect(
         service.generateConcepts({
           genreVibes: 'noir',
+          kernel: createStoryKernel(),
           apiKey: '  short ',
         }),
       ).rejects.toThrow('OpenRouter API key is required');
@@ -173,6 +188,7 @@ describe('concept-service', () => {
       await expect(
         service.generateConcepts({
           genreVibes: 'dark fantasy',
+          kernel: createStoryKernel(),
           apiKey: 'valid-key-12345',
         }),
       ).rejects.toBe(llmError);
@@ -195,6 +211,7 @@ describe('concept-service', () => {
 
       await service.generateConcepts({
         genreVibes: 'noir',
+        kernel: createStoryKernel(),
         apiKey: 'valid-key-12345',
         onGenerationStage: (event) => {
           events.push({
@@ -211,6 +228,22 @@ describe('concept-service', () => {
         { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
       ]);
+    });
+
+    it('rejects missing kernel', async () => {
+      const service = createConceptService({
+        generateConceptIdeas: jest.fn(),
+        evaluateConcepts: jest.fn(),
+        stressTestConcept: jest.fn(),
+      });
+
+      await expect(
+        service.generateConcepts({
+          genreVibes: 'noir',
+          kernel: undefined as unknown as StoryKernel,
+          apiKey: 'valid-key-12345',
+        }),
+      ).rejects.toThrow('Story kernel is required');
     });
   });
 

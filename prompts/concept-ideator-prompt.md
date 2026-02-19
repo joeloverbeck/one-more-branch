@@ -8,7 +8,7 @@
 
 ## Pipeline Position
 
-The concept ideator is the first LLM call in the `/concepts` generation flow. It expands user seed inputs into a diverse candidate set of concept engines.
+The concept ideator is the first LLM call in the `/concepts` generation flow. It expands user seed inputs into a diverse candidate set of concept engines and, when provided, must operationalize the selected story kernel.
 
 **Pipeline position**: **Concept Ideator** -> Concept Evaluator -> (optional per-concept) Concept Stress Tester
 
@@ -87,6 +87,16 @@ QUALITY ANCHORS:
 - coreConflictLoop must describe a recurring decision pattern.
 - settingAxioms and constraints must be concrete and enforceable by an LLM.
 - actionVerbs must imply strategy diversity, not synonyms.
+- whatIfQuestion must be a single question ending with '?' that translates the dramatic thesis into a specific, producible situation.
+- ironicTwist must be 1-2 sentences describing built-in irony where strength becomes weakness or solution creates the problem.
+- playerFantasy must be 1 sentence describing the experiential promise of being the protagonist, not just their actions.
+
+{{#if kernel}}
+KERNEL CONSTRAINTS:
+- The concept MUST operationalize the provided story kernel's dramatic thesis.
+- The kernel's valueAtStake and opposingForce must anchor the concept's conflict engine.
+- Preserve the kernel's thematic direction while still producing a distinct playable concept.
+{{/if}}
 
 DIVERSITY CONSTRAINTS:
 - Return 6-8 concepts.
@@ -126,6 +136,15 @@ CONTENT PREFERENCES:
 {{contentPreferences}}
 {{/if}}
 
+{{#if kernel}}
+SELECTED STORY KERNEL:
+- dramaticThesis: {{kernel.dramaticThesis}}
+- valueAtStake: {{kernel.valueAtStake}}
+- opposingForce: {{kernel.opposingForce}}
+- directionOfChange: {{kernel.directionOfChange}}
+- thematicQuestion: {{kernel.thematicQuestion}}
+{{/if}}
+
 OUTPUT REQUIREMENTS:
 - Return JSON matching schema shape: { "concepts": [ConceptSpec, ...] }.
 - Populate every required field for each concept.
@@ -162,7 +181,10 @@ OUTPUT REQUIREMENTS:
       "keyInstitutions": ["{{institution imposing pressure}}"],
       "settingScale": "{{INTIMATE|LOCAL|REGIONAL|GLOBAL}}",
       "branchingPosture": "{{TREE|RECONVERGE|STORYLETS|HUB_AND_SPOKE}}",
-      "stateComplexity": "{{LOW|MEDIUM|HIGH}}"
+      "stateComplexity": "{{LOW|MEDIUM|HIGH}}",
+      "whatIfQuestion": "{{single dramatic question ending in ?}}",
+      "ironicTwist": "{{1-2 sentence irony}}",
+      "playerFantasy": "{{1 sentence player fantasy}}"
     }
   ]
 }
@@ -180,6 +202,7 @@ OUTPUT REQUIREMENTS:
 | `contentPreferences` | Optional content boundaries/preferences |
 | `thematicInterests` | Optional theme interests |
 | `sparkLine` | Optional seed hook sentence |
+| `kernel` | Optional selected `StoryKernel`; when supplied, concepts must operationalize it |
 
 ## Notes
 
