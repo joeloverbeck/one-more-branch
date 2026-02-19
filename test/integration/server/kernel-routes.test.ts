@@ -100,6 +100,32 @@ describe('Kernel Route Integration', () => {
     jest.clearAllMocks();
   });
 
+  it('GET / renders kernels page with saved kernels', async () => {
+    mockedListKernels.mockResolvedValue([
+      {
+        id: 'kernel-1',
+        name: 'Kernel 1',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        seeds: {},
+        evaluatedKernel: createEvaluatedKernel(1),
+      },
+    ]);
+
+    const render = jest.fn().mockReturnThis();
+
+    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response);
+    await flushPromises();
+
+    expect(render).toHaveBeenCalledTimes(1);
+    const renderCalls = render.mock.calls as unknown[][];
+    expect(renderCalls[0]?.[0]).toBe('pages/kernels');
+    const payload = renderCalls[0]?.[1] as { title: string; kernels: Array<{ id: string }> };
+    expect(payload.title).toBe('Story Kernels - One More Branch');
+    expect(Array.isArray(payload.kernels)).toBe(true);
+    expect(payload.kernels[0]?.id).toBe('kernel-1');
+  });
+
   it('GET /api/list returns all kernels', async () => {
     mockedListKernels.mockResolvedValue([
       {

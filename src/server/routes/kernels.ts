@@ -37,6 +37,17 @@ function normalizeSeedInput(body: {
 }
 
 kernelRoutes.get(
+  '/',
+  wrapAsyncRoute(async (_req: Request, res: Response) => {
+    const kernels = await listKernels();
+    return res.render('pages/kernels', {
+      title: 'Story Kernels - One More Branch',
+      kernels,
+    });
+  }),
+);
+
+kernelRoutes.get(
   '/api/list',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const kernels = await listKernels();
