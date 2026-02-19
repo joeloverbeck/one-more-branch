@@ -1,4 +1,8 @@
-import type { GeneratedConceptBatch, SavedConcept } from '../models/saved-concept.js';
+import {
+  isSavedConcept,
+  type GeneratedConceptBatch,
+  type SavedConcept,
+} from '../models/saved-concept.js';
 import {
   deleteFile,
   ensureConceptGenerationsDir,
@@ -14,6 +18,14 @@ import {
 import { withLock } from './lock-manager.js';
 
 const CONCEPT_LOCK_PREFIX = 'concept:';
+
+function assertSavedConcept(value: unknown, sourcePath: string): SavedConcept {
+  if (!isSavedConcept(value)) {
+    throw new Error(`Invalid SavedConcept payload at ${sourcePath}`);
+  }
+
+  return value;
+}
 
 export async function saveConcept(concept: SavedConcept): Promise<void> {
   await withLock(`${CONCEPT_LOCK_PREFIX}${concept.id}`, async () => {
@@ -34,7 +46,12 @@ export async function saveConceptGenerationBatch(batch: GeneratedConceptBatch): 
 
 export async function loadConcept(conceptId: string): Promise<SavedConcept | null> {
   const filePath = getConceptFilePath(conceptId);
-  return readJsonFile<SavedConcept>(filePath);
+  const concept = await readJsonFile<unknown>(filePath);
+  if (concept === null) {
+    return null;
+  }
+
+  return assertSavedConcept(concept, filePath);
 }
 
 export async function updateConcept(
@@ -43,13 +60,14 @@ export async function updateConcept(
 ): Promise<SavedConcept> {
   return withLock(`${CONCEPT_LOCK_PREFIX}${conceptId}`, async () => {
     const filePath = getConceptFilePath(conceptId);
-    const existing = await readJsonFile<SavedConcept>(filePath);
+    const existing = await readJsonFile<unknown>(filePath);
 
     if (!existing) {
       throw new Error(`Concept not found: ${conceptId}`);
     }
 
-    const updated = updater(existing);
+    const validatedExisting = assertSavedConcept(existing, filePath);
+    const updated = updater(validatedExisting);
     await writeJsonFile(filePath, updated);
     return updated;
   });
@@ -69,9 +87,9 @@ export async function listConcepts(): Promise<SavedConcept[]> {
   const concepts: SavedConcept[] = [];
   for (const file of files) {
     const filePath = `${conceptsDir}/${file}`;
-    const concept = await readJsonFile<SavedConcept>(filePath);
+    const concept = await readJsonFile<unknown>(filePath);
     if (concept) {
-      concepts.push(concept);
+      concepts.push(assertSavedConcept(concept, filePath));
     }
   }
 

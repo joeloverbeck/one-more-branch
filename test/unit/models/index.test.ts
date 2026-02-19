@@ -15,6 +15,10 @@ import {
   GENRE_FRAMES as GENRE_FRAMES_DIRECT,
   computeOverallScore as computeOverallScoreDirect,
 } from '@/models/concept-generator';
+import {
+  DIRECTION_OF_CHANGE_VALUES as DIRECTION_OF_CHANGE_VALUES_DIRECT,
+  computeKernelOverallScore as computeKernelOverallScoreDirect,
+} from '@/models/story-kernel';
 import * as models from '@/models';
 
 describe('models barrel exports', () => {
@@ -40,6 +44,11 @@ describe('models barrel exports', () => {
   it('re-exports concept generator domain contracts from models barrel', () => {
     expect(models.GENRE_FRAMES).toBe(GENRE_FRAMES_DIRECT);
     expect(models.computeOverallScore).toBe(computeOverallScoreDirect);
+  });
+
+  it('re-exports story kernel domain contracts from models barrel', () => {
+    expect(models.DIRECTION_OF_CHANGE_VALUES).toBe(DIRECTION_OF_CHANGE_VALUES_DIRECT);
+    expect(models.computeKernelOverallScore).toBe(computeKernelOverallScoreDirect);
   });
 
   it('supports creating and validating model objects via barrel imports', () => {

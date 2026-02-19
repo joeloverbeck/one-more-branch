@@ -244,5 +244,27 @@ export {
   passesConceptThresholds,
 } from './concept-generator';
 
+export type {
+  DirectionOfChange,
+  StoryKernel,
+  KernelSeedInput,
+  KernelDimensionScores,
+  KernelScoreEvidence,
+  ScoredKernel,
+  EvaluatedKernel,
+} from './story-kernel';
+export {
+  DIRECTION_OF_CHANGE_VALUES,
+  KERNEL_SCORING_WEIGHTS,
+  KERNEL_PASS_THRESHOLDS,
+  isDirectionOfChange,
+  isStoryKernel,
+  computeKernelOverallScore,
+  passesKernelThresholds,
+} from './story-kernel';
+
 export type { ConceptSeeds, SavedConcept, GeneratedConceptBatch } from './saved-concept';
 export { isSavedConcept, isGeneratedConceptBatch } from './saved-concept';
+
+export type { SavedKernel, GeneratedKernelBatch } from './saved-kernel';
+export { isSavedKernel, isGeneratedKernelBatch } from './saved-kernel';
