@@ -32,9 +32,9 @@ import {
   getStoryFilePath,
   listDirectories,
   listFiles,
-  readJsonFile,
   writeJsonFile,
 } from './file-utils';
+import { createJsonFileStore } from './json-file-store';
 import { withLock } from './lock-manager';
 
 interface SpeechFingerprintFileData {
@@ -539,14 +539,17 @@ function fileDataToStory(data: StoryFileData): Story {
   };
 }
 
-export async function saveStory(story: Story): Promise<void> {
-  ensureStoriesDir();
+const storyFileStore = createJsonFileStore<StoryId, StoryFileData>({
+  getFilePath: getStoryFilePath,
+  getLockKey: (storyId) => storyId,
+  ensureWriteTarget: async (storyId) => {
+    ensureStoriesDir();
+    await ensureDirectory(getStoryDir(storyId));
+  },
+});
 
-  await withLock(story.id, async () => {
-    const storyDir = getStoryDir(story.id);
-    await ensureDirectory(storyDir);
-    await writeJsonFile(getStoryFilePath(story.id), storyToFileData(story));
-  });
+export async function saveStory(story: Story): Promise<void> {
+  await storyFileStore.write(story.id, storyToFileData(story));
 }
 
 export async function updateStory(story: Story): Promise<void> {
@@ -561,7 +564,7 @@ export async function updateStory(story: Story): Promise<void> {
 }
 
 export async function loadStory(storyId: StoryId): Promise<Story | null> {
-  const data = await readJsonFile<StoryFileData>(getStoryFilePath(storyId));
+  const data = await storyFileStore.read(storyId);
 
   if (!data) {
     return null;

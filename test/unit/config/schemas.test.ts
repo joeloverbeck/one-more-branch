@@ -7,6 +7,7 @@ describe('config schemas', () => {
 
       expect(result.server.port).toBe(3000);
       expect(result.storage.storiesDir).toBe('stories');
+      expect(result.storage.kernelsDir).toBe('kernels');
       expect(result.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
       expect(result.llm.temperature).toBe(0.8);
       expect(result.llm.maxTokens).toBe(8192);
@@ -23,7 +24,7 @@ describe('config schemas', () => {
     it('overrides defaults with provided values', () => {
       const input = {
         server: { port: 8080 },
-        storage: { storiesDir: 'custom-stories' },
+        storage: { storiesDir: 'custom-stories', kernelsDir: 'custom-kernels' },
         llm: {
           defaultModel: 'openai/gpt-4',
           temperature: 0.5,
@@ -43,6 +44,7 @@ describe('config schemas', () => {
 
       expect(result.server.port).toBe(8080);
       expect(result.storage.storiesDir).toBe('custom-stories');
+      expect(result.storage.kernelsDir).toBe('custom-kernels');
       expect(result.llm.defaultModel).toBe('openai/gpt-4');
       expect(result.llm.temperature).toBe(0.5);
       expect(result.llm.maxTokens).toBe(4096);
@@ -143,9 +145,10 @@ describe('config schemas', () => {
       expect(valid.logging.level).toBe('error');
     });
 
-    it('requires non-empty strings for model and storiesDir', () => {
+    it('requires non-empty strings for model and storage directories', () => {
       expect(() => AppConfigSchema.parse({ llm: { defaultModel: '' } })).toThrow();
       expect(() => AppConfigSchema.parse({ storage: { storiesDir: '' } })).toThrow();
+      expect(() => AppConfigSchema.parse({ storage: { kernelsDir: '' } })).toThrow();
     });
 
     it('handles partial nested overrides', () => {

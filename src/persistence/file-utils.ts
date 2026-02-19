@@ -148,6 +148,36 @@ export function getConceptGenerationFilePath(generationId: string): string {
   return path.join(getConceptGenerationsDir(), `${generationId}.json`);
 }
 
+export function getKernelsDir(): string {
+  return path.join(process.cwd(), getConfig().storage.kernelsDir);
+}
+
+export function ensureKernelsDir(): void {
+  const kernelsDir = getKernelsDir();
+  if (!existsSync(kernelsDir)) {
+    mkdirSync(kernelsDir, { recursive: true });
+  }
+}
+
+export function getKernelFilePath(kernelId: string): string {
+  return path.join(getKernelsDir(), `${kernelId}.json`);
+}
+
+export function getKernelGenerationsDir(): string {
+  return path.join(getKernelsDir(), 'generated');
+}
+
+export function ensureKernelGenerationsDir(): void {
+  const generatedDir = getKernelGenerationsDir();
+  if (!existsSync(generatedDir)) {
+    mkdirSync(generatedDir, { recursive: true });
+  }
+}
+
+export function getKernelGenerationFilePath(generationId: string): string {
+  return path.join(getKernelGenerationsDir(), `${generationId}.json`);
+}
+
 export async function deleteFile(filePath: string): Promise<void> {
   try {
     await fs.unlink(filePath);
