@@ -29,12 +29,12 @@ CONTENT GUIDELINES:
 CURATION PRINCIPLES:
 1. SELECTIVE INCLUSION: Only include characters, facts, history, and world details relevant to the planner's scene intent, continuity anchors, and dramatic question. The whole point is curation, not regurgitation.
 2. PROXIMITY AWARENESS: Include characters who are physically nearby even if not yet visible — behind doors, approaching, in adjacent rooms, on the other side of a wall, etc. The writer needs to know about nearby characters to handle reveals, entries, sounds, and environmental hints. Exclude only characters who are truly distant or irrelevant to the scene geography.
-3. SPEECH PATTERN EXTRACTION: For each relevant character, synthesize HOW they speak. When structured character profiles with speech fingerprints are provided, use those as your primary source for voice data (catchphrases, vocabulary, verbal tics, sentence patterns, dialogue samples). Enrich with character canon facts AND actual dialogue found in recent narrative text. When only raw NPC definitions are available, extract speech patterns from personality descriptions and backstory. This must be thorough - idiosyncratic speech is critical for voice consistency.
+3. SPEECH PATTERN EXTRACTION: For each relevant character, synthesize HOW they speak. When structured character profiles with speech fingerprints are provided, use those as your primary source for voice data (catchphrases, vocabulary, verbal tics, sentence patterns, dialogue samples). Enrich with character canon facts AND actual dialogue found in recent narrative text. This must be thorough - idiosyncratic speech is critical for voice consistency.
 4. NARRATIVE CHRONOLOGY: The relevantHistory field must preserve causality chains and temporal ordering from ancestor summaries. Don't extract disconnected facts - build a narrative thread that shows how events led to the current moment.
 5. RELATIONSHIP DYNAMICS: Capture trust levels, power dynamics, emotional tensions, and unresolved interpersonal history between characters and the protagonist.
 6. INTER-CHARACTER DYNAMICS: When multiple characters share a scene, describe how they relate to EACH OTHER, not just to the protagonist.
 7. CURRENT STATE: Each character's emotional state and situation as they enter the scene, derived from accumulated character state entries and recent narrative.
-8. WORLD CONTEXT: When domain-tagged world facts are provided, use them as your primary worldbuilding source - they are pre-decomposed for efficient filtering by domain (geography, magic, society, etc.). Supplement with any runtime canon facts. When only raw worldbuilding text is available, extract relevant details manually. Include only what is physically, culturally, or socially relevant to THIS scene's location and events.
+8. WORLD CONTEXT: When domain-tagged world facts are provided, use them as your primary worldbuilding source - they are pre-decomposed for efficient filtering by domain (geography, magic, society, etc.). Supplement with any runtime canon facts. Include only what is physically, culturally, or socially relevant to THIS scene's location and events.
 9. NPC AGENDAS: For each relevant character, incorporate their current agenda (goal, leverage, fear, off-screen behavior) into the character profile. This informs how NPCs will act in the scene.
 10. TWO-SOURCE SYNTHESIS: You may receive two sources of truth: (a) structured character/world profiles (initial decomposition from story creation) and (b) runtime canon facts (discovered during gameplay). Prefer structured profiles for speech patterns, traits, relationships, and world rules. Use canon facts for runtime discoveries that supplement the initial decomposition.
 11. EPISTEMIC FIDELITY: When world facts are tagged with epistemic status (LAW, BELIEF, RUMOR, MYSTERY, etc.), preserve that status in the Story Bible. Do not present beliefs as settled truth, rumors as confirmed facts, or resolve mysteries. Characters may be wrong about the world - this ambiguity is narratively valuable.
@@ -63,19 +63,14 @@ CHARACTERS REFERENCED IN THIS PLAN (must appear in relevantCharacters):
 
 === FULL STORY CONTEXT ===
 
-{{#if !(decomposedCharacters && decomposedCharacters.length > 0)}}
-CHARACTER CONCEPT:
-{{characterConcept}}
-{{/if}}
-
-{{#if decomposedWorld && decomposedWorld.facts.length > 0}}
+{{#if decomposedWorld.facts.length > 0}}
 WORLDBUILDING (structured):
 [DOMAIN_NAME]
 - [FACT_TYPE] fact text (scope: scope text)
 ...
 {{else}}
 WORLDBUILDING:
-{{worldbuilding || '(none provided)'}}
+(none provided)
 {{/if}}
 
 TONE/GENRE IDENTITY:
@@ -89,12 +84,9 @@ STORY SPINE (invariant narrative backbone — every scene must serve this):
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
-{{#if decomposedCharacters && decomposedCharacters.length > 0}}
+{{#if decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles with speech fingerprints):
 {{decomposedCharacters formatted as structured profiles with SPEECH FINGERPRINT blocks; index 0 marked as PROTAGONIST}}
-{{else if npcs.length}}
-NPC DEFINITIONS:
-{{formattedNpcs}}
 {{/if}}
 
 {{#if accumulatedNpcAgendas has entries}}
@@ -223,14 +215,11 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 
 | Context Field | Description |
 |---|---|
-| `characterConcept` | Protagonist concept (injected into user prompt only when decomposed characters are unavailable) |
-| `worldbuilding` | Full worldbuilding text (raw prose, fallback when no decomposed world) |
-| `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred over raw NPCs) |
-| `decomposedWorld` | Domain-tagged atomic world facts (optional, preferred over raw worldbuilding) |
+| `decomposedCharacters` | Structured character profiles with speech fingerprints (required) |
+| `decomposedWorld` | Domain-tagged atomic world facts (required) |
 | `tone` | Tone/genre string |
 | `toneFeel` | Target feel keywords (optional, from spine) |
 | `toneAvoid` | Words/moods to avoid (optional, from spine) |
-| `npcs` | All NPC definitions (fallback when no decomposed characters) |
 | `structure` / `accumulatedStructureState` | Current story structure and act/beat position |
 | `globalCanon` | All global canon facts as `CanonFact[]` — may be bare strings (legacy) or `{ text, factType }` objects with epistemic tags (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). Rendered via `formatCanonForPrompt()` |
 | `globalCharacterCanon` | All character canon facts (by character name, runtime discoveries) |
@@ -246,7 +235,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 
 ## Engine-Side Character Detection
 
-Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `choiceIntents[].hook`, `writerBrief.openingLineDirective`, `writerBrief.mustIncludeBeats`, `writerBrief.forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters` and `npcs`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
+Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `choiceIntents[].hook`, `writerBrief.openingLineDirective`, `writerBrief.mustIncludeBeats`, `writerBrief.forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
 
 ## Two-Source Synthesis
 

@@ -26,14 +26,15 @@ import { LLMError } from '../../../src/llm/llm-client-types';
 import type { StructureRewriteContext } from '../../../src/llm/structure-rewrite-types';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import type { StoryStructure } from '../../../src/models/story-arc';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 function createRewriteContext(
   overrides?: Partial<StructureRewriteContext>
 ): StructureRewriteContext {
   return {
-    characterConcept: 'A disgraced captain seeking absolution',
-    worldbuilding: 'A chain of storm-bound islands governed by rival guilds',
     tone: 'dark nautical intrigue',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A disgraced captain seeking absolution')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     completedBeats: [
       {
         actIndex: 0,

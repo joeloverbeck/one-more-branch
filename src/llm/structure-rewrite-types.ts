@@ -1,4 +1,6 @@
 import type { ConceptSpec } from '../models/concept-generator.js';
+import type { DecomposedCharacter } from '../models/decomposed-character.js';
+import type { DecomposedWorld } from '../models/decomposed-world.js';
 import type { StoryStructure } from '../models/story-arc.js';
 import type { StorySpine } from '../models/story-spine.js';
 
@@ -24,13 +26,13 @@ export interface PlannedBeat {
 }
 
 export interface StructureRewriteContext {
-  readonly characterConcept: string;
-  readonly worldbuilding: string;
   readonly tone: string;
   readonly toneFeel?: readonly string[];
   readonly toneAvoid?: readonly string[];
   readonly spine?: StorySpine;
   readonly conceptSpec?: ConceptSpec;
+  readonly decomposedCharacters: readonly DecomposedCharacter[];
+  readonly decomposedWorld: DecomposedWorld;
   readonly completedBeats: readonly CompletedBeat[];
   readonly plannedBeats: readonly PlannedBeat[];
   readonly narrativeSummary: string;

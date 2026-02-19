@@ -11,6 +11,7 @@ import {
 } from '@/models';
 import type { VersionedStoryStructure } from '@/models';
 import { PromiseScope, PromiseType, Urgency } from '@/models/state';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 function makeStory(overrides: Partial<Story> = {}): Story {
   return {
@@ -21,6 +22,8 @@ function makeStory(overrides: Partial<Story> = {}): Story {
     tone: 'dark',
     npcs: [{ name: 'Guide', description: 'A helpful guide' }],
     startingSituation: 'You awaken in a dungeon.',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A brave warrior')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     globalCanon: ['The king is dead'],
     globalCharacterCanon: { Guide: ['Knows the way'] },
     structure: null,
@@ -93,10 +96,9 @@ describe('continuation-context-builder', () => {
         { suggestedSpeech: 'I demand you release me!' }
       );
 
-      expect(result.characterConcept).toBe('A brave warrior');
-      expect(result.worldbuilding).toBe('Medieval fantasy realm');
+      expect(result.decomposedCharacters).toEqual(story.decomposedCharacters);
+      expect(result.decomposedWorld).toEqual(story.decomposedWorld);
       expect(result.tone).toBe('dark');
-      expect(result.npcs).toEqual(story.npcs);
       expect(result.globalCanon).toEqual(['The king is dead']);
       expect(result.globalCharacterCanon).toEqual({ Guide: ['Knows the way'] });
       expect(result.previousNarrative).toBe('You see a corridor.');

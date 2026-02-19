@@ -1,40 +1,17 @@
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.js';
 import type { OpeningContext } from '../../../../src/llm/context-types.js';
-import type { DecomposedCharacter } from '../../../../src/models/decomposed-character.js';
-
-function makeMinimalDecomposedCharacter(name: string): DecomposedCharacter {
-  return {
-    name,
-    coreTraits: ['brave'],
-    motivations: 'Survive.',
-    protagonistRelationship: null,
-    knowledgeBoundaries: 'None.',
-    appearance: 'Average build.',
-    rawDescription: 'A character.',
-    speechFingerprint: {
-      catchphrases: [],
-      vocabularyProfile: 'Direct and simple',
-      sentencePatterns: 'Short declarative',
-      verbalTics: [],
-      dialogueSamples: [],
-      metaphorFrames: '',
-      antiExamples: [],
-      discourseMarkers: [],
-      registerShifts: '',
-    },
-    decisionPattern: '',
-    coreBeliefs: [],
-    conflictPriority: '',
-  };
-}
+import {
+  buildMinimalDecomposedCharacter as makeMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../../fixtures/decomposed';
 
 describe('buildOpeningPrompt with active state', () => {
   it('keeps requirements focused on creative output fields', () => {
     const context: OpeningContext = {
-      characterConcept: 'A traveling merchant',
-      worldbuilding: 'Medieval fantasy',
       tone: 'Adventure',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('A traveling merchant')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
@@ -47,9 +24,9 @@ describe('buildOpeningPrompt with active state', () => {
 
   it('removes opening state establishment output instructions', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
       tone: 'Test',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
@@ -62,9 +39,9 @@ describe('buildOpeningPrompt with active state', () => {
 
   it('still includes plan guidance fields when pagePlan is provided', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test hero',
-      worldbuilding: 'Test world',
       tone: 'Test tone',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test hero')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       pagePlan: {
         sceneIntent: 'Introduce the debt collector conflict',
         continuityAnchors: ['The debt is due by sunrise'],
@@ -112,9 +89,9 @@ describe('buildOpeningPrompt with active state', () => {
 
   it('includes data rules in user message', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
       tone: 'Test',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
@@ -128,9 +105,9 @@ describe('buildOpeningPrompt with active state', () => {
 
   it('does NOT include data rules in system message', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test',
-      worldbuilding: 'Test',
       tone: 'Test',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
@@ -145,9 +122,9 @@ describe('buildOpeningPrompt with active state', () => {
 describe('buildOpeningPrompt choice intent section', () => {
   it('includes choice intent section when choiceIntents are provided', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test hero',
-      worldbuilding: 'Test world',
       tone: 'Test tone',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test hero')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       pagePlan: {
         sceneIntent: 'Test scene intent',
         continuityAnchors: [],
@@ -195,9 +172,9 @@ describe('buildOpeningPrompt choice intent section', () => {
 
   it('omits choice intent section when choiceIntents is absent', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test hero',
-      worldbuilding: 'Test world',
       tone: 'Test tone',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test hero')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
@@ -209,9 +186,9 @@ describe('buildOpeningPrompt choice intent section', () => {
 
   it('omits choice intent section when choiceIntents is empty array', () => {
     const context: OpeningContext = {
-      characterConcept: 'Test hero',
-      worldbuilding: 'Test world',
       tone: 'Test tone',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Test hero')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       pagePlan: {
         sceneIntent: 'Test intent',
         continuityAnchors: [],
@@ -241,56 +218,25 @@ describe('buildOpeningPrompt choice intent section', () => {
   });
 });
 
-describe('buildOpeningPrompt with npcs and omitted raw setup fields', () => {
-  it('includes NPC section when npcs is provided', () => {
+describe('buildOpeningPrompt with decomposed characters and omitted raw setup fields', () => {
+  it('omits character concept section (uses decomposed characters instead)', () => {
     const context: OpeningContext = {
-      characterConcept: 'A brave knight',
-      worldbuilding: 'Medieval fantasy',
       tone: 'Adventure',
-      npcs: [{ name: 'Gandalf', description: 'A wise mentor' }],
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find((m) => m.role === 'user')!.content;
-
-    expect(userMessage).toContain('NPCS (Available Characters)');
-    expect(userMessage).toContain('NPC: Gandalf');
-    expect(userMessage).toContain('A wise mentor');
-    expect(userMessage).toContain("you don't need to include all of them");
-  });
-
-  it('omits NPC section when npcs is not provided', () => {
-    const context: OpeningContext = {
-      characterConcept: 'A brave knight',
-      worldbuilding: 'Medieval fantasy',
-      tone: 'Adventure',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find((m) => m.role === 'user')!.content;
-
-    expect(userMessage).not.toContain('NPCS (Available Characters)');
-  });
-
-  it('omits character concept section even when characterConcept is provided', () => {
-    const context: OpeningContext = {
-      characterConcept: 'A brave knight',
-      worldbuilding: 'Medieval fantasy',
-      tone: 'Adventure',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('A brave knight')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
     const userMessage = messages.find((m) => m.role === 'user')!.content;
 
     expect(userMessage).not.toContain('CHARACTER CONCEPT:');
-    expect(userMessage).not.toContain('A brave knight');
   });
 
   it('omits starting situation section when startingSituation is provided', () => {
     const context: OpeningContext = {
-      characterConcept: 'A brave knight',
-      worldbuilding: 'Medieval fantasy',
       tone: 'Adventure',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('A brave knight')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       startingSituation: 'You wake up in a dungeon cell',
     };
 
@@ -306,10 +252,9 @@ describe('buildOpeningPrompt with npcs and omitted raw setup fields', () => {
 describe('buildOpeningPrompt protagonist name', () => {
   it('includes PROTAGONIST: [Name] before speech fingerprint when decomposed characters are present', () => {
     const context: OpeningContext = {
-      characterConcept: 'A wandering healer',
-      worldbuilding: 'A war-torn kingdom',
       tone: 'dark fantasy',
       decomposedCharacters: [makeMinimalDecomposedCharacter('Jon Ureña')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const messages = buildOpeningPrompt(context);
@@ -320,19 +265,5 @@ describe('buildOpeningPrompt protagonist name', () => {
     const protagonistIndex = userMessage.indexOf('PROTAGONIST: Jon Ureña');
     const fingerprintIndex = userMessage.indexOf('PROTAGONIST SPEECH FINGERPRINT');
     expect(protagonistIndex).toBeLessThan(fingerprintIndex);
-  });
-
-  it('omits PROTAGONIST: line when no decomposed characters', () => {
-    const context: OpeningContext = {
-      characterConcept: 'A wandering healer',
-      worldbuilding: 'A war-torn kingdom',
-      tone: 'dark fantasy',
-    };
-
-    const messages = buildOpeningPrompt(context);
-    const userMessage = messages.find((m) => m.role === 'user')!.content;
-
-    expect(userMessage).not.toContain('PROTAGONIST:');
-    expect(userMessage).not.toContain('PROTAGONIST SPEECH FINGERPRINT');
   });
 });

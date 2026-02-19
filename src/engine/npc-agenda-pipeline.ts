@@ -6,7 +6,6 @@ import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { DetectedRelationshipShift } from '../llm/analyst-types';
 import type { StoryStructure } from '../models/story-arc';
-import type { Npc } from '../models/npc';
 import type { VersionedStoryStructure } from '../models/structure-version';
 import { logger } from '../logging/index.js';
 import { emitGenerationStage } from './generation-pipeline-helpers.js';
@@ -22,8 +21,7 @@ export interface DeviationContextForAgendas {
 }
 
 export interface NpcAgendaContext {
-  readonly npcs: readonly Npc[] | undefined;
-  readonly decomposedCharacters?: readonly DecomposedCharacter[];
+  readonly decomposedCharacters: readonly DecomposedCharacter[];
   readonly writerNarrative: string;
   readonly writerSceneSummary: string;
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
@@ -44,8 +42,8 @@ export interface NpcAgendaContext {
 export async function resolveNpcAgendas(
   context: NpcAgendaContext
 ): Promise<AgendaResolverResult | null> {
-  if (!context.npcs || context.npcs.length === 0) {
-    return null;
+  if (context.decomposedCharacters.length <= 1) {
+    return null; // Only protagonist, no NPCs to resolve agendas for
   }
 
   try {
@@ -54,7 +52,6 @@ export async function resolveNpcAgendas(
       {
         narrative: context.writerNarrative,
         sceneSummary: context.writerSceneSummary,
-        npcs: context.npcs,
         decomposedCharacters: context.decomposedCharacters,
         currentAgendas: context.parentAccumulatedNpcAgendas,
         structure:
@@ -68,7 +65,7 @@ export async function resolveNpcAgendas(
         toneFeel: context.toneFeel,
         toneAvoid: context.toneAvoid,
       },
-      context.npcs,
+      context.decomposedCharacters,
       { apiKey: context.apiKey }
     );
     emitGenerationStage(context.onGenerationStage, 'RESOLVING_AGENDAS', 'completed', 1);

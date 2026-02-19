@@ -1,7 +1,5 @@
-import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
-import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
-import type { Npc } from '../../models/npc.js';
+import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';
 import type {
   NpcRelationship,
@@ -35,8 +33,7 @@ RELATIONSHIP UPDATES:
 export interface AgendaResolverPromptContext {
   readonly narrative: string;
   readonly sceneSummary: string;
-  readonly npcs: readonly Npc[];
-  readonly decomposedCharacters?: readonly DecomposedCharacter[];
+  readonly decomposedCharacters: readonly DecomposedCharacter[];
   readonly currentAgendas: AccumulatedNpcAgendas;
   readonly structure?: StoryStructure;
   readonly activeState: ActiveState;
@@ -152,17 +149,12 @@ function buildAgendaResolverSystemPrompt(context: AgendaResolverPromptContext): 
 }
 
 export function buildAgendaResolverPrompt(context: AgendaResolverPromptContext): ChatMessage[] {
-  const hasDecomposed =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0;
-  const characterDefinitionsSection = hasDecomposed
+  const characterDefinitionsSection = context.decomposedCharacters.length > 0
     ? `CHARACTERS (structured profiles with speech fingerprints):
 ${context.decomposedCharacters.map((c) => formatDecomposedCharacterForPrompt(c)).join('\n\n')}
 
 `
-    : `NPC DEFINITIONS:
-${formatNpcsForPrompt(context.npcs)}
-
-`;
+    : '';
 
   const structureSection = context.structure
     ? `STORY STRUCTURE CONTEXT:

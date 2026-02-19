@@ -11,6 +11,7 @@ import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
 import { createBeatDeviation, createInitialStructureState } from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 function createGenerationResult(): StructureGenerationResult {
   return {
@@ -299,12 +300,16 @@ describe('structure-rewrite-support', () => {
     it('includes story fields, completed beats, deviation fields, and structure state positions', () => {
       const structure = createStructure();
       const structureVersion = createInitialVersionedStructure(structure);
-      const story = createStory({
-        title: 'Rewrite Story',
-        characterConcept: 'A reluctant knight',
-        worldbuilding: 'A fractured kingdom',
-        tone: 'grim fantasy',
-      });
+      const story = {
+        ...createStory({
+          title: 'Rewrite Story',
+          characterConcept: 'A reluctant knight',
+          worldbuilding: 'A fractured kingdom',
+          tone: 'grim fantasy',
+        }),
+        decomposedCharacters: [buildMinimalDecomposedCharacter('A reluctant knight')],
+        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
         currentBeatIndex: 1,
@@ -324,8 +329,8 @@ describe('structure-rewrite-support', () => {
 
       const context = buildRewriteContext(story, structureVersion, state, deviation);
 
-      expect(context.characterConcept).toBe('A reluctant knight');
-      expect(context.worldbuilding).toBe('A fractured kingdom');
+      expect(context.decomposedCharacters).toEqual([buildMinimalDecomposedCharacter('A reluctant knight')]);
+      expect(context.decomposedWorld).toEqual(MINIMAL_DECOMPOSED_WORLD);
       expect(context.tone).toBe('grim fantasy');
       expect(context.originalTheme).toBe('Restore the broken kingdom');
       expect(context.narrativeSummary).toBe('Now aligned with the rival faction.');

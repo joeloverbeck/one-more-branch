@@ -62,11 +62,11 @@ The tone block is injected between the role intro and content policy.
 ```text
 The story spine has been irreversibly broken. Rewrite it to accommodate the narrative direction.
 
-CHARACTER CONCEPT:
-{{characterConcept}}
+PROTAGONIST PROFILE:
+{{decomposedCharacters[0] formatted as protagonist profile, or '(no protagonist profile)'}}
 
 WORLDBUILDING:
-{{worldbuilding}}
+{{decomposedWorld formatted as structured world facts, or '(no worldbuilding)'}}
 
 CURRENT (BROKEN) SPINE:
 STORY SPINE (invariant narrative backbone — every scene must serve this):

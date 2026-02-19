@@ -7,7 +7,6 @@ import type { GenerationOptions, PromptOptions } from './generation-pipeline-typ
 export function getDefaultPromptOptions(): PromptOptions {
   const { promptOptions } = getConfig().llm;
   return {
-    fewShotMode: promptOptions.fewShotMode,
     choiceGuidance: promptOptions.choiceGuidance,
   };
 }

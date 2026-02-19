@@ -2,39 +2,23 @@ import {
   formatDecomposedCharacterForPrompt,
 } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
-import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import { createInitialStructureState } from '../../../../models/story-arc.js';
 import type { OpeningPagePlanContext } from '../../../context-types.js';
 import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 
 export function buildPlannerOpeningContextSection(context: OpeningPagePlanContext): string {
-  const hasDecomposed =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0;
-  const hasDecomposedWorld =
-    context.decomposedWorld && context.decomposedWorld.facts.length > 0;
-
-  const worldSection = hasDecomposedWorld
-    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld!)}
+  const worldSection = context.decomposedWorld.facts.length > 0
+    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
 
 `
-    : context.worldbuilding
-      ? `WORLDBUILDING:
-${context.worldbuilding}
+    : '';
 
-`
-      : '';
-
-  const npcsSection = hasDecomposed
+  const npcsSection = context.decomposedCharacters.length > 0
     ? `CHARACTERS (structured profiles):
-${context.decomposedCharacters!.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
+${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
-    : context.npcs && context.npcs.length > 0
-      ? `NPCS (Available Characters):
-${formatNpcsForPrompt(context.npcs)}
-
-`
-      : '';
+    : '';
 
   const startingSituationSection = context.startingSituation
     ? `STARTING SITUATION:
@@ -74,20 +58,13 @@ ${initialAgendas
       ? `\nTone avoid: ${context.toneAvoid.join(', ')}`
       : '';
 
-  const protagonistName = hasDecomposed ? context.decomposedCharacters![0]!.name : null;
+  const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
   const protagonistDirective = protagonistName
     ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
     : '';
 
-  const characterConceptSection = hasDecomposed
-    ? ''
-    : `CHARACTER CONCEPT:
-${context.characterConcept}
-
-`;
-
   return `=== PLANNER CONTEXT: OPENING ===
-${characterConceptSection}${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}
+${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}
 
 ${structureSection}${protagonistDirective}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
 }

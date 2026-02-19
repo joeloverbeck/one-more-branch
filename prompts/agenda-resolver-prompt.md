@@ -55,13 +55,8 @@ Tone: {{tone}}
 ```text
 Evaluate NPC agenda and relationship changes after the following scene.
 
-{{#if decomposedCharacters && decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles with speech fingerprints):
 {{decomposedCharacters formatted with formatDecomposedCharacterForPrompt()}}
-{{else}}
-NPC DEFINITIONS:
-{{formattedNpcs}}
-{{/if}}
 
 CURRENT NPC AGENDAS:
 {{currentAgendas rendered as:
@@ -176,8 +171,7 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 |---|---|
 | `narrative` | Full narrative text of the just-written page |
 | `sceneSummary` | Scene summary from the writer |
-| `npcs` | All NPC definitions (name + description), used as fallback when decomposition is unavailable |
-| `decomposedCharacters` | Structured character profiles with speech fingerprints (optional, preferred when present) |
+| `decomposedCharacters` | Structured character profiles with speech fingerprints (required) |
 | `currentAgendas` | Accumulated NPC agendas from the parent page |
 | `currentRelationships` | Accumulated NPC-protagonist relationships from the parent page (optional) |
 | `analystRelationshipShifts` | Relationship shifts detected by the analyst (optional, present when analyst flagged meaningful NPC-protagonist relationship changes) |

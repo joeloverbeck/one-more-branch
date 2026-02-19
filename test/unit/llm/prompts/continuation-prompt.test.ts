@@ -3,33 +3,10 @@ import type { ContinuationContext } from '../../../../src/llm/context-types';
 import type { ActiveState } from '../../../../src/models/state/active-state';
 import { buildContinuationPrompt } from '../../../../src/llm/prompts/continuation-prompt';
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
-import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
-
-function makeMinimalDecomposedCharacter(name: string): DecomposedCharacter {
-  return {
-    name,
-    coreTraits: ['brave'],
-    motivations: 'Survive.',
-    protagonistRelationship: null,
-    knowledgeBoundaries: 'None.',
-    appearance: 'Average build.',
-    rawDescription: 'A character.',
-    speechFingerprint: {
-      catchphrases: [],
-      vocabularyProfile: 'Direct and simple',
-      sentencePatterns: 'Short declarative',
-      verbalTics: [],
-      dialogueSamples: [],
-      metaphorFrames: '',
-      antiExamples: [],
-      discourseMarkers: [],
-      registerShifts: '',
-    },
-    decisionPattern: '',
-    coreBeliefs: [],
-    conflictPriority: '',
-  };
-}
+import {
+  buildMinimalDecomposedCharacter as makeMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../../fixtures/decomposed';
 
 describe('buildContinuationPrompt pacing nudge injection', () => {
   const testStructure: StoryStructure = {
@@ -97,9 +74,9 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
 
   function makeContext(overrides: Partial<ContinuationContext> = {}): ContinuationContext {
     return {
-      characterConcept: 'A rogue agent',
-      worldbuilding: '',
       tone: 'Dark thriller',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('A rogue agent')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'The door slammed shut.',
@@ -110,6 +87,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
       activeState: emptyActiveState,
       grandparentNarrative: null,
       ancestorSummaries: [],
+      accumulatedPromises: [],
       ...overrides,
     };
   }
@@ -199,12 +177,11 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).not.toContain('newCanonFacts/newCharacterCanonFacts');
   });
 
-  it('omits raw character concept section even when characterConcept is present', () => {
+  it('omits raw character concept section (uses decomposed characters)', () => {
     const messages = buildContinuationPrompt(makeContext());
     const userMessage = messages.find((m) => m.role === 'user');
 
     expect(userMessage?.content).not.toContain('CHARACTER CONCEPT:');
-    expect(userMessage?.content).not.toContain('A rogue agent');
   });
 
   it('includes planner guidance fields when pagePlan is provided', () => {
@@ -378,11 +355,10 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(protagonistIndex).toBeLessThan(fingerprintIndex);
   });
 
-  it('omits PROTAGONIST: line when no decomposed characters', () => {
-    const messages = buildContinuationPrompt(makeContext());
+  it('omits PROTAGONIST: line when decomposed characters is empty', () => {
+    const messages = buildContinuationPrompt(makeContext({ decomposedCharacters: [] }));
     const userMessage = messages.find((m) => m.role === 'user')!.content;
 
-    expect(userMessage).not.toContain('PROTAGONIST:');
     expect(userMessage).not.toContain('PROTAGONIST SPEECH FINGERPRINT');
   });
 });

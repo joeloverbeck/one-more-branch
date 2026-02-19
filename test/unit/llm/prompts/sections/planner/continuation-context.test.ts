@@ -10,21 +10,18 @@ import {
   buildPlannerContinuationContextSection,
   buildEscalationDirective,
 } from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../../../fixtures/decomposed';
 
 describe('planner continuation context section', () => {
   it('includes continuation state and previous scene context', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: 'A quarantined coastal megacity.',
       tone: 'gritty cyberpunk',
-      npcs: [
-        {
-          name: 'Azra',
-          description: 'Ex-military fixer with a debt to the protagonist',
-          archetype: 'Ally',
-        },
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('A biotech smuggler'),
+        buildMinimalDecomposedCharacter('Azra', { rawDescription: 'Ex-military fixer with a debt to the protagonist' }),
       ],
+      decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A quarantined coastal megacity.', scope: 'global' }], rawWorldbuilding: 'A quarantined coastal megacity.' },
       globalCanon: ['Drone patrols scan thermal signatures nightly'],
       globalCharacterCanon: {
         azra: ['Azra speaks in clipped military phrases'],
@@ -68,9 +65,9 @@ describe('planner continuation context section', () => {
     const result = buildPlannerContinuationContextSection(context);
 
     expect(result).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
-    expect(result).toContain('CHARACTER CONCEPT:');
-    expect(result).toContain('NPCS (Available Characters):');
-    expect(result).toContain('NPC: Azra');
+    expect(result).not.toContain('CHARACTER CONCEPT:');
+    expect(result).toContain('CHARACTERS (structured profiles):');
+    expect(result).toContain('Azra');
     expect(result).toContain('ESTABLISHED WORLD FACTS:');
     expect(result).toContain('- [inv-1] Spoofed access token');
     expect(result).toContain('- [th-2] (ENVIRONMENTAL) Counterintrusion daemon active');
@@ -84,9 +81,8 @@ describe('planner continuation context section', () => {
   it('omits character concept and marks protagonist when structured characters are present', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'Should not render when structured characters exist',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -170,9 +166,9 @@ describe('planner continuation context section', () => {
   it('renders rich structure context from accumulated structure state', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -268,9 +264,9 @@ describe('planner continuation context section', () => {
   it('renders optional sections as (none) when state is empty', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -305,9 +301,9 @@ describe('planner continuation context section', () => {
   it('includes NPC agendas section when agendas are present', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -348,9 +344,9 @@ describe('planner continuation context section', () => {
   it('includes protagonist affect section when parentProtagonistAffect is provided', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -387,9 +383,9 @@ describe('planner continuation context section', () => {
   it('omits protagonist affect section when parentProtagonistAffect is undefined', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -416,9 +412,9 @@ describe('planner continuation context section', () => {
   it('includes protagonist guidance speech subsection when provided', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -451,9 +447,9 @@ describe('planner continuation context section', () => {
   it('omits protagonist guidance section when not provided', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -480,9 +476,9 @@ describe('planner continuation context section', () => {
   it('omits protagonist guidance section when blank after trim', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -510,9 +506,9 @@ describe('planner continuation context section', () => {
   it('includes all guidance subsections when all fields are present', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -546,9 +542,9 @@ describe('planner continuation context section', () => {
   it('omits NPC agendas section when no agendas exist', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',
@@ -575,9 +571,9 @@ describe('planner continuation context section', () => {
   it('includes escalation directive when active beat role is escalation', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
-      characterConcept: 'A biotech smuggler',
-      worldbuilding: '',
       tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       previousNarrative: 'A silent corridor stretches ahead.',

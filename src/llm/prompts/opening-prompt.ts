@@ -1,6 +1,4 @@
 import { formatSpeechFingerprintForWriter } from '../../models/decomposed-character.js';
-import { formatNpcsForPrompt } from '../../models/npc.js';
-import { buildFewShotMessages } from '../examples.js';
 import type { OpeningContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -15,28 +13,7 @@ export function buildOpeningPrompt(
   context: OpeningContext,
   options?: PromptOptions
 ): ChatMessage[] {
-  const hasBible = !!context.storyBible;
   const dataRules = composeOpeningDataRules(options);
-
-  const worldSection = hasBible
-    ? ''
-    : context.worldbuilding
-      ? `WORLDBUILDING:
-${context.worldbuilding}
-
-`
-      : '';
-
-  const npcsSection = hasBible
-    ? ''
-    : context.npcs && context.npcs.length > 0
-      ? `NPCS (Available Characters):
-${formatNpcsForPrompt(context.npcs)}
-
-These characters are available for use in the story. Introduce them when narratively appropriate - you don't need to include all of them, and you don't need to introduce them all in the opening.
-
-`
-      : '';
 
   const plannerSection = context.pagePlan
     ? `=== PLANNER GUIDANCE ===
@@ -83,10 +60,7 @@ ${context.reconciliationFailureReasons
     ? formatStoryBibleSection(context.storyBible)
     : '';
 
-  const protagonistSpeech =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0
-      ? context.decomposedCharacters[0]!
-      : null;
+  const protagonistSpeech = context.decomposedCharacters[0] ?? null;
   const protagonistSpeechSection = protagonistSpeech
     ? `
 PROTAGONIST: ${protagonistSpeech.name}
@@ -111,7 +85,7 @@ ${formatSpeechFingerprintForWriter(protagonistSpeech.speechFingerprint)}
 ${dataRules}
 
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}
-${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
+TONE/GENRE: ${context.tone}
 
 ${buildSpineSection(context.spine)}${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
@@ -136,11 +110,6 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
     toneAvoid: context.toneAvoid,
   };
   const messages: ChatMessage[] = [{ role: 'system', content: buildOpeningSystemPrompt(toneParams) }];
-
-  // Add few-shot examples if requested
-  if (options?.fewShotMode && options.fewShotMode !== 'none') {
-    messages.push(...buildFewShotMessages('opening', options.fewShotMode));
-  }
 
   messages.push({ role: 'user', content: userPrompt });
 

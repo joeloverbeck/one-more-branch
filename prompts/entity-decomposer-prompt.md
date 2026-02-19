@@ -11,7 +11,7 @@
 
 The Entity Decomposer is a one-time LLM call at story creation (after spine selection, before structure generation) that converts raw character descriptions and worldbuilding prose into structured, machine-friendly attribute objects. The structured output is persisted in `story.json` and used by downstream prompts (structure, planner, lorekeeper, writer) instead of raw prose dumps.
 
-**Pipeline position**: Spine Selection -> **Entity Decomposer** -> Structure Generator -> First Page Generation
+**Pipeline position**: Kernel Generation -> Concept Generation -> Spine Selection -> **Entity Decomposer** -> Structure Generator -> First Page Generation
 
 **Why it exists**: Research demonstrates that raw prose dumps degrade LLM performance. Speech patterns, verbal tics, and linguistic fingerprints buried in prose paragraphs get lost. Domain-tagged atomic facts are easier to filter and reason about than monolithic worldbuilding text. The decomposed structure makes each character identifiable by voice alone.
 
@@ -92,6 +92,53 @@ TONE/GENRE IDENTITY:
 Tone: {{tone}}
 {{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
 {{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
+{{/if}}
+
+{{#if spine}}
+STORY SPINE CONTEXT (use to inform decomposition):
+Central Dramatic Question: {{spine.centralDramaticQuestion}}
+Protagonist Need: {{spine.protagonistNeedVsWant.need}}
+Protagonist Want: {{spine.protagonistNeedVsWant.want}}
+Need-Want Dynamic: {{spine.protagonistNeedVsWant.dynamic}}
+Antagonistic Force: {{spine.primaryAntagonisticForce.description}}
+Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
+Character Arc: {{spine.characterArcType}}
+
+Use the spine's need-want tension to inform character decomposition. The protagonist's core traits, decision patterns, and core beliefs should reflect or tension with the need-want gap. NPC motivations should connect to the antagonistic force.
+{{/if}}
+
+{{#if conceptSpec}}
+CONCEPT ANALYSIS (use to inform decomposition):
+Narrative Identity: {{conceptSpec.narrativeIdentity}}
+Protagonist Role: {{conceptSpec.protagonistRole}}
+Protagonist Competence: {{conceptSpec.protagonistCompetence}}
+Protagonist Fatal Flaw: {{conceptSpec.protagonistFlaw}}
+Protagonist Action Verbs: {{conceptSpec.protagonistActionVerbs joined by ', '}}
+Inciting Disruption: {{conceptSpec.incitingDisruption}}
+Escape Valve: {{conceptSpec.escapeValve}}
+Pressure Source: {{conceptSpec.pressureSource}}
+Setting Axioms: {{conceptSpec.settingAxioms joined by '; '}}
+Key Institutions: {{conceptSpec.keyInstitutions joined by ', '}}
+
+Use protagonist fields to inform speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization.
+{{/if}}
+
+{{#if storyKernel}}
+STORY KERNEL (use to ground thematic decomposition):
+Dramatic Thesis: {{storyKernel.dramaticThesis}}
+Value at Stake: {{storyKernel.valueAtStake}}
+Opposing Force: {{storyKernel.opposingForce}}
+Direction of Change: {{storyKernel.directionOfChange}}
+Thematic Question: {{storyKernel.thematicQuestion}}
+
+Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question.
+{{/if}}
+
+{{#if startingSituation}}
+STARTING SITUATION:
+{{startingSituation}}
+
+Ground protagonist's initial knowledge boundaries and NPC relationship immediacy in this context.
 {{/if}}
 
 INSTRUCTIONS:
@@ -192,13 +239,17 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
 | `toneFeel` | Target feel keywords (optional, from spine) |
 | `toneAvoid` | Words/moods to avoid (optional, from spine) |
 | `npcs` | All NPC definitions (name + description pairs) |
+| `spine` | Story spine (optional) — narrative backbone with dramatic question, need-want, antagonistic force |
+| `conceptSpec` | Concept specification (optional) — 23-field concept spec when concept-based |
+| `storyKernel` | Story kernel (optional) — thematic kernel when kernel-based |
+| `startingSituation` | Starting situation (optional) — initial scene context |
 
 ## Downstream Usage
 
 The decomposed output is stored on the `Story` object and propagated to downstream prompts:
 
-- **Planner** (opening + continuation): Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles)` and `DecomposedWorld` as `WORLDBUILDING (structured)` with domain-tagged, epistemic-status-tagged facts (e.g., `[BELIEF] The clans believe...`), instead of raw prose. Falls back to raw when decomposed data is absent.
-- **Lorekeeper**: Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles with speech fingerprints)` with full speech fingerprints for voice synthesis. Falls back to raw NPC definitions when absent. Receives domain-tagged `DecomposedWorld` facts with epistemic status tags instead of raw worldbuilding. The lorekeeper's TWO-SOURCE SYNTHESIS principle guides merging decomposed structure (initial scaffold) with runtime canon facts (gameplay discoveries). The EPISTEMIC FIDELITY principle instructs the lorekeeper to preserve fact epistemic status in the Story Bible.
+- **Planner** (opening + continuation): Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles)` and `DecomposedWorld` as `WORLDBUILDING (structured)` with domain-tagged, epistemic-status-tagged facts. Decomposed data is always present (required on planner context types).
+- **Lorekeeper**: Receives `DecomposedCharacter[]` as `CHARACTERS (structured profiles with speech fingerprints)` with full speech fingerprints for voice synthesis. Receives domain-tagged `DecomposedWorld` facts with epistemic status tags. Decomposed data is always present (required on lorekeeper context type). The lorekeeper's TWO-SOURCE SYNTHESIS principle guides merging decomposed structure (initial scaffold) with runtime canon facts (gameplay discoveries). The EPISTEMIC FIDELITY principle instructs the lorekeeper to preserve fact epistemic status in the Story Bible.
 - **Writer** (opening + continuation): Receives the protagonist's `SpeechFingerprint` as a dedicated `PROTAGONIST SPEECH FINGERPRINT` section for voice consistency. NPC speech data arrives via the Story Bible (curated by lorekeeper).
 - **NPC Relationship System**: `protagonistRelationship` objects from decomposed NPCs are used to build the initial `AccumulatedNpcRelationships` at story creation. These are then evolved by the Agenda Resolver after each scene and propagated to downstream prompts (planner, lorekeeper, analyst) as structured relationship context.
 
@@ -220,5 +271,5 @@ The frontend displays this stage as "STUDYING" in the spinner UI with Sims-style
 ## Contract Notes
 
 - Raw fields (`characterConcept`, `worldbuilding`, `npcs`) remain untouched on the Story object.
-- `decomposedCharacters` and `decomposedWorld` are optional on Story at the story level.
-- Once decomposed data is present, the expanded speech/agency fields are part of the canonical contract.
+- `decomposedCharacters` and `decomposedWorld` are optional on the Story model but required on all downstream context types (OpeningContext, ContinuationContext, LorekeeperContext, StructureContext, etc.). Once entity decomposition runs, all downstream stages use decomposed data exclusively.
+- Raw data fallbacks (`characterConcept`, `worldbuilding`, `npcs`) have been removed from all downstream prompt builders. The entity decomposer is the single gateway between raw form data and the rest of the pipeline.

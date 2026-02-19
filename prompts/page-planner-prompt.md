@@ -97,7 +97,7 @@ Return JSON only.
 
 ## Protagonist Identity Directive
 
-When decomposed characters are available (`decomposedCharacters[0]` exists), a `PROTAGONIST IDENTITY` directive is injected into the user message (both opening and continuation contexts):
+A `PROTAGONIST IDENTITY` directive is always injected into the user message (both opening and continuation contexts), since decomposed characters are required on planner context types:
 
 ```text
 PROTAGONIST IDENTITY: {{protagonistName}} is the protagonist. All choiceIntents hooks must describe what {{protagonistName}} can do or decide — never what other characters do.
@@ -204,3 +204,4 @@ Source: `buildNpcRelationshipsSection()` in `src/llm/prompts/sections/planner/co
 - Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant intentionally share the same context builders so both stages reason over identical continuity input.
 - Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.
+- Decomposed character and world data are required on both opening and continuation planner contexts. Raw `characterConcept`, `worldbuilding`, and `npcs` fallbacks have been removed from planner context builders.

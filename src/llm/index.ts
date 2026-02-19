@@ -41,8 +41,6 @@ export { CONTENT_POLICY } from './content-policy.js';
 
 export { buildOpeningPrompt, buildContinuationPrompt } from './prompts/index.js';
 
-export { buildFewShotMessages } from './examples.js';
-
 export { generateStoryStructure } from './structure-generator.js';
 export type { StructureGenerationResult } from './structure-generator.js';
 

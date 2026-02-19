@@ -1,3 +1,7 @@
+import type { DecomposedCharacter } from '../../models/decomposed-character.js';
+import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
+import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
@@ -5,13 +9,13 @@ import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 
 export interface SpineRewriteContext {
-  readonly characterConcept: string;
-  readonly worldbuilding: string;
   readonly tone: string;
   readonly currentSpine: StorySpine;
   readonly invalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want';
   readonly deviationReason: string;
   readonly narrativeSummary: string;
+  readonly decomposedCharacters: readonly DecomposedCharacter[];
+  readonly decomposedWorld: DecomposedWorld;
 }
 
 const SPINE_REWRITE_ROLE = `You are a story architect performing emergency spine surgery on interactive branching fiction. The story's thematic backbone has been irreversibly broken by player choices, and you must design a NEW spine that:
@@ -47,13 +51,21 @@ export function buildSpineRewritePrompt(context: SpineRewriteContext): ChatMessa
         ? 'Primary Antagonistic Force'
         : 'Protagonist Need vs Want';
 
+  const protagonistSection = context.decomposedCharacters.length > 0
+    ? formatDecomposedCharacterForPrompt(context.decomposedCharacters[0]!, true)
+    : '(no protagonist profile)';
+
+  const worldSection = context.decomposedWorld.facts.length > 0
+    ? formatDecomposedWorldForPrompt(context.decomposedWorld)
+    : '(no worldbuilding)';
+
   const userPrompt = `The story spine has been irreversibly broken. Rewrite it to accommodate the narrative direction.
 
-CHARACTER CONCEPT:
-${context.characterConcept}
+PROTAGONIST PROFILE:
+${protagonistSection}
 
 WORLDBUILDING:
-${context.worldbuilding}
+${worldSection}
 
 CURRENT (BROKEN) SPINE:
 ${currentSpineSection}

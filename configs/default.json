@@ -30,7 +30,6 @@
       "baseDelayMs": 1000
     },
     "promptOptions": {
-      "fewShotMode": "none",
       "enableChainOfThought": true,
       "choiceGuidance": "strict"
     }

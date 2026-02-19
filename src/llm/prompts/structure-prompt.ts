@@ -3,8 +3,6 @@ import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
-import type { Npc } from '../../models/npc.js';
-import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -12,110 +10,27 @@ import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 
 export interface StructureContext {
-  worldbuilding: string;
   tone: string;
-  npcs?: readonly Npc[];
   startingSituation?: string;
   spine?: StorySpine;
-  decomposedCharacters?: readonly DecomposedCharacter[];
-  decomposedWorld?: DecomposedWorld;
+  decomposedCharacters: readonly DecomposedCharacter[];
+  decomposedWorld: DecomposedWorld;
   conceptSpec?: ConceptSpec;
 }
 
-const STRUCTURE_FEW_SHOT_USER = `Generate a story structure before the first page.
-
-WORLDBUILDING:
-A plague-ridden port city ruled by merchant houses and secret tribunals
-
-TONE/GENRE: grim political fantasy`;
-
-const STRUCTURE_FEW_SHOT_ASSISTANT = `{
-  "overallTheme": "Redeem a stained name by exposing the city tribunal's crimes",
-  "premise": "A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption before they execute her as a scapegoat.",
-  "pacingBudget": { "targetPagesMin": 20, "targetPagesMax": 40 },
-  "acts": [
-    {
-      "name": "Ashes of Trust",
-      "objective": "Force the protagonist into a dangerous comeback",
-      "stakes": "Failure means execution as a convenient scapegoat",
-      "entryCondition": "The protagonist is blamed for a public murder",
-      "beats": [
-        {
-          "name": "A Bargain in Smoke",
-          "description": "A former ally offers proof of a frame-up in exchange for protection",
-          "objective": "Decide whether to trust an ally tied to the tribunal",
-          "role": "setup"
-        },
-        {
-          "name": "Ledgers in the Dark",
-          "description": "The protagonist steals sealed court ledgers from a guarded archive",
-          "objective": "Secure evidence before the tribunal can destroy it",
-          "role": "turning_point"
-        }
-      ]
-    },
-    {
-      "name": "Knives in Council",
-      "objective": "Expose the network behind the frame-up while hunted",
-      "stakes": "Failure lets the conspirators tighten martial law",
-      "entryCondition": "The stolen ledgers reveal a list of compromised officials",
-      "beats": [
-        {
-          "name": "Proof for the Faithless",
-          "description": "Rival houses demand proof before committing support",
-          "objective": "Win backing without revealing all leverage",
-          "role": "escalation"
-        },
-        {
-          "name": "The Rigged Hearing",
-          "description": "The protagonist is cornered into a public hearing rigged by enemies",
-          "objective": "Survive the hearing and force hidden evidence into the open",
-          "role": "turning_point"
-        }
-      ]
-    },
-    {
-      "name": "The Broken Seal",
-      "objective": "Resolve the conspiracy and define what redemption costs",
-      "stakes": "Failure dooms the city to permanent authoritarian rule",
-      "entryCondition": "Key conspirators are identified and vulnerable",
-      "beats": [
-        {
-          "name": "Fractured Oaths",
-          "description": "A final alliance fractures over how far justice should go",
-          "objective": "Choose between revenge and legitimate accountability",
-          "role": "turning_point"
-        },
-        {
-          "name": "Harbor Court Reckoning",
-          "description": "The protagonist confronts the tribunal leadership at the old harbor court",
-          "objective": "End the conspiracy while preserving a future worth protecting",
-          "role": "resolution"
-        }
-      ]
-    }
-  ]
-}`;
-
 function buildCharacterSection(context: StructureContext): string {
-  if (context.decomposedCharacters && context.decomposedCharacters.length > 0) {
+  if (context.decomposedCharacters.length > 0) {
     const profiles = context.decomposedCharacters
       .map((char) => formatDecomposedCharacterForPrompt(char))
       .join('\n\n');
     return `CHARACTERS (decomposed profiles):\n${profiles}\n\n`;
   }
-  if (context.npcs && context.npcs.length > 0) {
-    return `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`;
-  }
   return '';
 }
 
 function buildWorldSection(context: StructureContext): string {
-  if (context.decomposedWorld && context.decomposedWorld.facts.length > 0) {
+  if (context.decomposedWorld.facts.length > 0) {
     return `${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n\n`;
-  }
-  if (context.worldbuilding) {
-    return `WORLDBUILDING:\n${context.worldbuilding}\n\n`;
   }
   return '';
 }
@@ -152,7 +67,7 @@ Each act's stakes should escalate FROM these foundations. Act 1 stakes should co
 
 export function buildStructurePrompt(
   context: StructureContext,
-  options?: PromptOptions
+  _options?: PromptOptions
 ): ChatMessage[] {
   const worldSection = buildWorldSection(context);
   const characterSection = buildCharacterSection(context);
@@ -227,13 +142,6 @@ OUTPUT SHAPE:
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },
   ];
-
-  if (options?.fewShotMode && options.fewShotMode !== 'none') {
-    messages.push(
-      { role: 'user', content: STRUCTURE_FEW_SHOT_USER },
-      { role: 'assistant', content: STRUCTURE_FEW_SHOT_ASSISTANT }
-    );
-  }
 
   messages.push({ role: 'user', content: userPrompt });
   return messages;

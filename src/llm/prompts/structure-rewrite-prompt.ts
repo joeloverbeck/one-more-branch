@@ -1,3 +1,5 @@
+import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
+import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { StructureRewriteContext } from '../structure-rewrite-types.js';
@@ -43,140 +45,9 @@ function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats'
     .join('\n');
 }
 
-const STRUCTURE_REWRITE_FEW_SHOT_USER = `Regenerate story structure for an interactive branching narrative.
-
-The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
-
-## STORY CONTEXT
-Character: A grizzled mercenary captain seeking one last job to fund retirement
-World: The Shattered Kingdoms—seven petty kings wage proxy wars through mercenary companies
-Tone: gritty low fantasy with noir undertones
-Original Theme: Escape a blood-soaked past by completing one final contract
-
-## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
-  - Act 1, Beat 1 (1.1) [setup]: "A desperate employer offers terms too good to refuse"
-    Objective: Decide whether to take the contract despite warning signs
-    Resolution: Vera accepted Lord Vane's contract after verifying Duke Ashford's seal
-  - Act 1, Beat 2 (1.2) [turning_point]: "The true nature of the target is revealed"
-    Objective: Determine if the job is worth the escalating risk
-    Resolution: Vera learned the target is Lady Elowen and agreed to proceed
-
-## ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)
-The following beats were planned before the deviation occurred. Review each one:
-- If a beat remains narratively coherent given the deviation, preserve it (you may adjust wording slightly)
-- If a beat conflicts with the new story direction, replace it with something better suited
-- You are NOT required to keep any of these — use your narrative judgment
-
-  - Act 1, Beat 4 (1.4) [escalation] "Road to the Hinterlands": "The journey to the extraction point reveals rival mercenary companies closing in"
-    Objective: Evade or neutralize competitors before reaching Lady Elowen
-  - Act 2, Beat 1 (2.1) [escalation] "The Gilded Cage": "Lady Elowen's estate is more fortress than home"
-    Objective: Infiltrate the estate and make contact with the target
-  - Act 2, Beat 2 (2.2) [turning_point] "Broken Loyalties": "A former comrade from the border wars appears among the guards"
-    Objective: Decide whether to exploit or protect the old friendship
-  - Act 3, Beat 1 (3.1) [turning_point] "The Duke's Gambit": "Duke Ashford makes a counter-offer that changes the calculus entirely"
-    Objective: Choose between the original contract and a more lucrative betrayal
-  - Act 3, Beat 2 (3.2) [resolution] "Last Coin Standing": "The final reckoning determines whether retirement is earned or lost"
-    Objective: Resolve all competing obligations and secure a future
-
-## CURRENT SITUATION
-Deviation occurred at: Act 1, Beat 3
-Reason for deviation: The protagonist killed Lord Aldric Vane when he attempted betrayal, eliminating the employer entirely
-
-Current narrative state:
-Vera has killed her employer Lord Vane. She possesses the contract letter, half the payment, and knowledge of Lady Elowen's location, but operates without a client.
-
-## YOUR TASK
-Generate NEW beats to replace invalidated ones. You are regenerating: remaining beats in Act 1, plus all of Acts 2 and 3.`;
-
-const STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT = `{
-  "overallTheme": "Escape a blood-soaked past by completing a contract that lost its purpose, discovering whether redemption requires coin or conscience",
-  "premise": "A mercenary captain kills her own employer mid-contract, leaving her to choose between finishing a purposeless extraction or abandoning the only job that could buy her freedom.",
-  "pacingBudget": { "targetPagesMin": 20, "targetPagesMax": 40 },
-  "acts": [
-    {
-      "name": "The Last Contract",
-      "objective": "Deal with the aftermath of killing the employer and decide whether to continue",
-      "stakes": "Failure means dying hunted or penniless",
-      "entryCondition": "Already in progress",
-      "beats": [
-        {
-          "name": "The Offer with Hooks",
-          "description": "A desperate employer offers terms too good to refuse",
-          "objective": "Decide whether to take the contract despite warning signs",
-          "role": "setup"
-        },
-        {
-          "name": "Target Unmasked",
-          "description": "The true nature of the target is revealed",
-          "objective": "Determine if the job is worth the escalating risk",
-          "role": "turning_point"
-        },
-        {
-          "name": "Blood on the Contract",
-          "description": "Vera must escape before Vane's death is discovered",
-          "objective": "Evade pursuit and reach safety to plan the extraction alone",
-          "role": "escalation"
-        },
-        {
-          "name": "No Patron, No Excuse",
-          "description": "Without an employer, Vera decides whether to continue for her own reasons",
-          "objective": "Commit to the extraction or abandon the contract entirely",
-          "role": "turning_point"
-        }
-      ]
-    },
-    {
-      "name": "Blood Without Coin",
-      "objective": "Execute the extraction without a client, managing multiple hunters",
-      "stakes": "Capture by Duke Ashford's enemies or death at the hands of those hunting Vane's killer",
-      "entryCondition": "Vera commits to extracting Lady Elowen on her own terms",
-      "beats": [
-        {
-          "name": "Hunters on the Road",
-          "description": "The journey reveals others hunting Lady Elowen for their own purposes",
-          "objective": "Navigate competing interests while maintaining surprise",
-          "role": "escalation"
-        },
-        {
-          "name": "The Target Bites Back",
-          "description": "Lady Elowen proves to have her own agenda complicating extraction",
-          "objective": "Negotiate with the target while keeping the mission viable",
-          "role": "escalation"
-        },
-        {
-          "name": "Ghosts of Border Wars",
-          "description": "Vera's past catches up as someone from the border wars recognizes her",
-          "objective": "Handle the threat without compromising the extraction",
-          "role": "turning_point"
-        }
-      ]
-    },
-    {
-      "name": "The Weight of Freedom",
-      "objective": "Complete the extraction and choose what freedom is worth having",
-      "stakes": "Becoming a fugitive with no future, having sacrificed everything for nothing",
-      "entryCondition": "Lady Elowen is extracted but the path to safety is contested",
-      "beats": [
-        {
-          "name": "Duke's Ultimatum",
-          "description": "Duke Ashford's forces close in, demanding both Vera and his daughter",
-          "objective": "Negotiate, fight, or flee—reach a resolution with the Duke",
-          "role": "turning_point"
-        },
-        {
-          "name": "What Freedom Costs",
-          "description": "The true cost of the contract is revealed in who Vera has become",
-          "objective": "Decide what legacy to leave and whether the fishing cottage is still possible",
-          "role": "resolution"
-        }
-      ]
-    }
-  ]
-}`;
-
 export function buildStructureRewritePrompt(
   context: StructureRewriteContext,
-  options?: PromptOptions
+  _options?: PromptOptions
 ): ChatMessage[] {
   const completedBeatsSection = formatCompletedBeats(context.completedBeats);
   const plannedBeatsSection =
@@ -193,7 +64,13 @@ ${formatPlannedBeats(context.plannedBeats)}
 `
       : '';
 
-  const worldSection = context.worldbuilding ? `World: ${context.worldbuilding}\n` : '';
+  const protagonistSection = context.decomposedCharacters.length > 0
+    ? formatDecomposedCharacterForPrompt(context.decomposedCharacters[0]!, true)
+    : '(no protagonist profile)';
+
+  const worldSection = context.decomposedWorld.facts.length > 0
+    ? `World:\n${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n`
+    : '';
 
   const toneFeelLine =
     context.toneFeel && context.toneFeel.length > 0
@@ -221,7 +98,7 @@ Each act's stakes should escalate FROM these foundations, even after the deviati
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
 
 ## STORY CONTEXT
-Character: ${context.characterConcept}
+Character: ${protagonistSection}
 ${worldSection}Tone: ${context.tone}
 ${toneFeelLine}${toneAvoidLine}Original Theme: ${context.originalTheme}
 ${spineSection}${conceptStakesSection}
@@ -285,14 +162,6 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },
   ];
-
-  // Add few-shot example for structure rewrite
-  if (options?.fewShotMode && options.fewShotMode !== 'none') {
-    messages.push(
-      { role: 'user', content: STRUCTURE_REWRITE_FEW_SHOT_USER },
-      { role: 'assistant', content: STRUCTURE_REWRITE_FEW_SHOT_ASSISTANT }
-    );
-  }
 
   messages.push({ role: 'user', content: userPrompt });
 

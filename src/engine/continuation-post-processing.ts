@@ -228,13 +228,13 @@ export async function handleSpineDeviationIfDetected(
   try {
     const spineResult = await rewriteSpine(
       {
-        characterConcept: story.characterConcept,
-        worldbuilding: story.worldbuilding,
         tone: story.tone,
         currentSpine: story.spine,
         invalidatedElement: analystResult.spineInvalidatedElement,
         deviationReason: analystResult.spineDeviationReason,
         narrativeSummary: analystResult.narrativeSummary,
+        decomposedCharacters: story.decomposedCharacters!,
+        decomposedWorld: story.decomposedWorld!,
       },
       context.apiKey
     );
