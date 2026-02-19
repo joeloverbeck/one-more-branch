@@ -22,6 +22,7 @@ export interface SavedConcept {
   readonly updatedAt: string;
   readonly seeds: ConceptSeeds;
   readonly evaluatedConcept: EvaluatedConcept;
+  readonly preHardenedConcept?: EvaluatedConcept;
   readonly hardenedAt?: string;
   readonly stressTestResult?: {
     readonly driftRisks: readonly DriftRisk[];
@@ -114,7 +115,8 @@ function isScoredConcept(value: unknown): value is ScoredConcept {
     isConceptDimensionScores(value['scores']) &&
     isScoreEvidence(value['scoreEvidence']) &&
     typeof value['overallScore'] === 'number' &&
-    Number.isFinite(value['overallScore'])
+    Number.isFinite(value['overallScore']) &&
+    typeof value['passes'] === 'boolean'
   );
 }
 
@@ -128,6 +130,7 @@ function isEvaluatedConcept(value: unknown): value is EvaluatedConcept {
     isConceptDimensionScores(value['scores']) &&
     typeof value['overallScore'] === 'number' &&
     Number.isFinite(value['overallScore']) &&
+    typeof value['passes'] === 'boolean' &&
     isStringArray(value['strengths']) &&
     isStringArray(value['weaknesses']) &&
     isNonEmptyString(value['tradeoffSummary'])
@@ -176,6 +179,7 @@ export function isSavedConcept(value: unknown): value is SavedConcept {
     isIsoDateString(value['updatedAt']) &&
     isConceptSeeds(value['seeds']) &&
     isEvaluatedConcept(value['evaluatedConcept']) &&
+    (value['preHardenedConcept'] === undefined || isEvaluatedConcept(value['preHardenedConcept'])) &&
     (value['hardenedAt'] === undefined || isIsoDateString(value['hardenedAt'])) &&
     (value['stressTestResult'] === undefined || isStressTestResult(value['stressTestResult']))
   );

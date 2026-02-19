@@ -73,6 +73,7 @@ function isEvaluatedKernel(value: unknown): value is EvaluatedKernel {
     isKernelDimensionScores(value['scores']) &&
     typeof value['overallScore'] === 'number' &&
     Number.isFinite(value['overallScore']) &&
+    typeof value['passes'] === 'boolean' &&
     isStringArray(value['strengths']) &&
     isStringArray(value['weaknesses']) &&
     isNonEmptyString(value['tradeoffSummary'])

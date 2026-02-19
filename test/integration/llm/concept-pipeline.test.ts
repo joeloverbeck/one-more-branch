@@ -92,6 +92,24 @@ describe('Concept Pipeline Integration', () => {
           weaknesses: ['Hook is weaker'],
           tradeoffSummary: 'Reliable execution at lower immediate intrigue.',
         },
+        {
+          concept: createConceptSpecFixture(4),
+          strengths: ['Focused scenario'],
+          weaknesses: ['Narrower hook'],
+          tradeoffSummary: 'Focused but limited draw.',
+        },
+        {
+          concept: createConceptSpecFixture(5),
+          strengths: ['Clear stakes'],
+          weaknesses: ['Lower variety'],
+          tradeoffSummary: 'Defined stakes, narrower tactics.',
+        },
+        {
+          concept: createConceptSpecFixture(6),
+          strengths: ['Thematic clarity'],
+          weaknesses: ['Less branching'],
+          tradeoffSummary: 'Thematically tight but less expansive.',
+        },
       ],
     };
 
@@ -115,7 +133,7 @@ describe('Concept Pipeline Integration', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(result.evaluatedConcepts).toHaveLength(3);
+    expect(result.evaluatedConcepts).toHaveLength(6);
     expect(result.scoredConcepts).toHaveLength(6);
     expect(result.evaluatedConcepts[0]?.concept.oneLineHook).toBe('Hook 2');
     expect(result.evaluatedConcepts[0]?.overallScore).toBe(computeOverallScore(topScore));

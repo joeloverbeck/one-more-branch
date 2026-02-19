@@ -23,6 +23,7 @@ function createEvaluatedKernel(index = 1): EvaluatedKernel {
       emotionalDepth: 3,
     },
     overallScore: 78,
+    passes: true,
     strengths: ['Strong thesis'],
     weaknesses: ['Needs more ambiguity'],
     tradeoffSummary: 'Strong conflict with moderate depth.',

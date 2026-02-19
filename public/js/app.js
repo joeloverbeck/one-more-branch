@@ -2348,11 +2348,16 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     var overallScore = Number(entry && entry.overallScore);
     var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
 
+    var passBadge = entry && typeof entry.passes === 'boolean'
+      ? '<span class="spine-badge ' + (entry.passes ? 'spine-badge-pass' : 'spine-badge-fail') + '">' + (entry.passes ? 'PASS' : 'FAIL') + '</span>'
+      : '';
+
     var html =
       '<div class="spine-badges">' +
         '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
         '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
         '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+        passBadge +
       '</div>' +
       '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
       '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
@@ -2524,10 +2529,15 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
         '</div>';
     }
 
+    var passBadge = evaluatedKernel && typeof evaluatedKernel.passes === 'boolean'
+      ? '<span class="spine-badge ' + (evaluatedKernel.passes ? 'spine-badge-pass' : 'spine-badge-fail') + '">' + (evaluatedKernel.passes ? 'PASS' : 'FAIL') + '</span>'
+      : '';
+
     return (
       '<div class="spine-badges">' +
         '<span class="spine-badge ' + directionBadgeClass + '">' + escapeHtml(direction) + '</span>' +
         '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+        passBadge +
       '</div>' +
       '<h3 class="spine-cdq">' + escapeHtml(title) + '</h3>' +
       '<div class="spine-field"><span class="spine-label">Dramatic Thesis:</span> ' + escapeHtml(kernel.dramaticThesis || '') + '</div>' +

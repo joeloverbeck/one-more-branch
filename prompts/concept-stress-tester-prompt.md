@@ -93,6 +93,7 @@ OUTPUT REQUIREMENTS:
 ## Notes
 
 - This stage mutates only concept durability artifacts; it does not rescore the concept.
-- In `conceptRoutes`, successful hardening updates persisted concept fields and stores `stressTestResult` (`driftRisks`, `playerBreaks`) on the saved concept record.
+- In `conceptRoutes`, successful hardening snapshots the current `evaluatedConcept` into `preHardenedConcept` before overwriting `evaluatedConcept.concept` with the hardened version. Repeated hardening overwrites `preHardenedConcept` each time (always reflects the state immediately before the most recent hardening).
+- `stressTestResult` (`driftRisks`, `playerBreaks`) is stored on the saved concept record and overwritten on each hardening pass.
 - Prompt logging uses `promptType: 'conceptStressTester'` via `runLlmStage(...)`.
 - Model routing uses stage key `conceptStressTester` in `getStageModel(...)`.

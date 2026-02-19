@@ -10,6 +10,7 @@ import {
   type EvaluatedConcept,
   type ScoredConcept,
 } from '../models/index.js';
+
 import { parseConceptSpec } from './concept-spec-parser.js';
 import { runTwoPhaseLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -134,6 +135,7 @@ function parseScoredConcept(value: unknown, index: number): ScoredConcept {
     scores,
     scoreEvidence,
     overallScore: computeOverallScore(scores),
+    passes: passesConceptThresholds(scores),
   };
 }
 
@@ -206,7 +208,7 @@ export function parseConceptScoringResponse(
   return parsedConcepts.sort((a, b) => b.overallScore - a.overallScore);
 }
 
-function parseDeepEvaluatedConcept(value: unknown, index: number): Omit<EvaluatedConcept, 'scores' | 'overallScore'> {
+function parseDeepEvaluatedConcept(value: unknown, index: number): Omit<EvaluatedConcept, 'scores' | 'overallScore' | 'passes'> {
   const label = `Evaluated concept ${index + 1}`;
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -269,6 +271,7 @@ function parseConceptDeepEvaluationResponse(
       concept: item.concept,
       scores: scored.scores,
       overallScore: scored.overallScore,
+      passes: scored.passes,
       strengths: item.strengths,
       weaknesses: item.weaknesses,
       tradeoffSummary: item.tradeoffSummary,
@@ -276,16 +279,6 @@ function parseConceptDeepEvaluationResponse(
   });
 
   return merged.sort((a, b) => b.overallScore - a.overallScore);
-}
-
-function selectConceptShortlist(scoredConcepts: readonly ScoredConcept[]): readonly ScoredConcept[] {
-  const passing = scoredConcepts.filter((item) => passesConceptThresholds(item.scores));
-  if (passing.length === 0) {
-    logger.warn('No concepts passed thresholds; falling back to top concepts by overall score');
-    return scoredConcepts.slice(0, Math.min(3, scoredConcepts.length));
-  }
-
-  return passing.slice(0, 3);
 }
 
 export async function evaluateConcepts(
@@ -303,18 +296,15 @@ export async function evaluateConcepts(
       messages: buildConceptEvaluatorScoringPrompt(context),
       parseResponse: (parsed) => parseConceptScoringResponse(parsed, context.concepts),
     },
-    secondStage: (scoredConcepts) => {
-      const shortlist = selectConceptShortlist(scoredConcepts);
-      return {
-        stageModel: 'conceptEvaluator',
-        promptType: 'conceptEvaluator',
-        apiKey,
-        options,
-        schema: CONCEPT_EVALUATION_DEEP_SCHEMA,
-        messages: buildConceptEvaluatorDeepEvalPrompt(context, shortlist),
-        parseResponse: (parsed) => parseConceptDeepEvaluationResponse(parsed, shortlist),
-      };
-    },
+    secondStage: (scoredConcepts) => ({
+      stageModel: 'conceptEvaluator',
+      promptType: 'conceptEvaluator',
+      apiKey,
+      options,
+      schema: CONCEPT_EVALUATION_DEEP_SCHEMA,
+      messages: buildConceptEvaluatorDeepEvalPrompt(context, scoredConcepts),
+      parseResponse: (parsed) => parseConceptDeepEvaluationResponse(parsed, scoredConcepts),
+    }),
     combineResult: ({ firstStageParsed, secondStageParsed, secondStageRawResponse }) => ({
       scoredConcepts: firstStageParsed,
       evaluatedConcepts: secondStageParsed,

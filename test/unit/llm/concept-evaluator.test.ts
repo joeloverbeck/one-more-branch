@@ -207,7 +207,7 @@ describe('concept-evaluator', () => {
     expect(systemMessage).toContain('ironicTwist quality');
   });
 
-  it('buildConceptEvaluatorDeepEvalPrompt includes shortlist-only deep evaluation instructions', () => {
+  it('buildConceptEvaluatorDeepEvalPrompt includes all-concept deep evaluation instructions', () => {
     const messages = buildConceptEvaluatorDeepEvalPrompt(
       {
         concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
@@ -222,16 +222,17 @@ describe('concept-evaluator', () => {
           scores: createScoredConceptPayload(1).scores,
           scoreEvidence: createScoredConceptPayload(1).scoreEvidence,
           overallScore: 80,
+          passes: true,
         },
       ],
     );
 
     const systemMessage = messages[0]?.content ?? '';
-    expect(systemMessage).toContain('Evaluate only the provided shortlist');
+    expect(systemMessage).toContain('Evaluate all provided scored concepts');
     expect(systemMessage).toContain('Do not rescore and do not alter concepts');
   });
 
-  it('evaluateConcepts runs scoring then deep-eval and returns selected top concepts', async () => {
+  it('evaluateConcepts runs scoring then deep-eval and returns all evaluated concepts', async () => {
     const scoringPayload = createScoringPayload();
     scoringPayload.scoredConcepts[0]!.scores.hookStrength = 2;
     scoringPayload.scoredConcepts[1]!.scores.hookStrength = 5;
@@ -241,26 +242,12 @@ describe('concept-evaluator', () => {
     scoringPayload.scoredConcepts[5]!.scores.hookStrength = 1;
 
     const deepPayload = {
-      evaluatedConcepts: [
-        {
-          concept: createValidConcept(2),
-          strengths: ['Strong pressure loop'],
-          weaknesses: ['Lower novelty'],
-          tradeoffSummary: 'More coherent conflict, less surprising frame.',
-        },
-        {
-          concept: createValidConcept(3),
-          strengths: ['Strong hook'],
-          weaknesses: ['Slightly narrower agency'],
-          tradeoffSummary: 'Sharper opening with tighter action space.',
-        },
-        {
-          concept: createValidConcept(4),
-          strengths: ['Solid feasibility'],
-          weaknesses: ['Hook is less immediate'],
-          tradeoffSummary: 'High reliability with less immediate intrigue.',
-        },
-      ],
+      evaluatedConcepts: Array.from({ length: 6 }, (_, index) => ({
+        concept: createValidConcept(index + 1),
+        strengths: [`Strength for concept ${index + 1}`],
+        weaknesses: [`Weakness for concept ${index + 1}`],
+        tradeoffSummary: `Tradeoff for concept ${index + 1}.`,
+      })),
     };
 
     fetchMock
@@ -279,8 +266,9 @@ describe('concept-evaluator', () => {
     );
 
     expect(result.scoredConcepts).toHaveLength(6);
-    expect(result.evaluatedConcepts).toHaveLength(3);
+    expect(result.evaluatedConcepts).toHaveLength(6);
     expect(result.evaluatedConcepts[0]!.concept.oneLineHook).toBe('Hook 2');
+    expect(result.evaluatedConcepts[0]!.passes).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
     const scoringRequestBody = getRequestBody(0);

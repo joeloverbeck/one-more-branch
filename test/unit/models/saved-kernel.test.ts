@@ -18,6 +18,7 @@ describe('saved-kernel model guards', () => {
       emotionalDepth: 3,
     },
     overallScore: 80,
+    passes: true,
     strengths: ['Clear thesis', 'High conflict pressure'],
     weaknesses: ['Could be more emotionally specific'],
     tradeoffSummary: 'Very generative but risks abstraction.',

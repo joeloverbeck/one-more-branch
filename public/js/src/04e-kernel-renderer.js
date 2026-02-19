@@ -86,10 +86,15 @@
         '</div>';
     }
 
+    var passBadge = evaluatedKernel && typeof evaluatedKernel.passes === 'boolean'
+      ? '<span class="spine-badge ' + (evaluatedKernel.passes ? 'spine-badge-pass' : 'spine-badge-fail') + '">' + (evaluatedKernel.passes ? 'PASS' : 'FAIL') + '</span>'
+      : '';
+
     return (
       '<div class="spine-badges">' +
         '<span class="spine-badge ' + directionBadgeClass + '">' + escapeHtml(direction) + '</span>' +
         '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+        passBadge +
       '</div>' +
       '<h3 class="spine-cdq">' + escapeHtml(title) + '</h3>' +
       '<div class="spine-field"><span class="spine-label">Dramatic Thesis:</span> ' + escapeHtml(kernel.dramaticThesis || '') + '</div>' +

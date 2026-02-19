@@ -113,6 +113,7 @@ describe('Concept Route Integration', () => {
           emotionalDepth: 4,
         },
         overallScore: 80,
+        passes: true,
         strengths: ['Strong thesis'],
         weaknesses: ['Slightly abstract'],
         tradeoffSummary: 'Clear and generative.',
@@ -285,6 +286,7 @@ describe('Concept Route Integration', () => {
         concept: createConceptSpecFixture(1),
         scores: createConceptScoresFixture(),
         overallScore: 80,
+        passes: true,
         strengths: ['Strong hook'],
         weaknesses: ['weak urgency'],
         tradeoffSummary: 'Strong conflict, lower novelty.',
@@ -331,6 +333,15 @@ describe('Concept Route Integration', () => {
         driftRisks: stressResult.driftRisks,
         playerBreaks: stressResult.playerBreaks,
       }),
+    );
+
+    const updaterArg = mockedUpdateConcept.mock.calls[0]![1] as (
+      existing: typeof savedConcept,
+    ) => Record<string, unknown>;
+    const updatedRecord = updaterArg(savedConcept);
+    expect(updatedRecord['preHardenedConcept']).toEqual(savedConcept.evaluatedConcept);
+    expect((updatedRecord['evaluatedConcept'] as Record<string, unknown>)['concept']).toEqual(
+      stressResult.hardenedConcept,
     );
   });
 });

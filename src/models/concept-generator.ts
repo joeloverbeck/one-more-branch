@@ -187,12 +187,14 @@ export interface ScoredConcept {
   readonly scores: ConceptDimensionScores;
   readonly scoreEvidence: ConceptScoreEvidence;
   readonly overallScore: number;
+  readonly passes: boolean;
 }
 
 export interface EvaluatedConcept {
   readonly concept: ConceptSpec;
   readonly scores: ConceptDimensionScores;
   readonly overallScore: number;
+  readonly passes: boolean;
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
   readonly tradeoffSummary: string;

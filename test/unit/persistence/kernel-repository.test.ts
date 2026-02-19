@@ -35,6 +35,7 @@ function createEvaluatedKernel(): SavedKernel['evaluatedKernel'] {
       emotionalDepth: 3,
     },
     overallScore: 84,
+    passes: true,
     strengths: ['Clear value conflict', 'Strong tension axis'],
     weaknesses: ['Could be more grounded emotionally'],
     tradeoffSummary: 'High generative range with moderate abstraction risk.',
