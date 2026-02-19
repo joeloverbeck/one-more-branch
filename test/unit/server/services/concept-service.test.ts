@@ -1,5 +1,11 @@
 import { LLMError } from '@/llm/llm-client-types';
-import type { ConceptDimensionScores, ConceptSpec, ConceptStressTestResult, EvaluatedConcept } from '@/models';
+import type {
+  ConceptDimensionScores,
+  ConceptSpec,
+  ConceptStressTestResult,
+  EvaluatedConcept,
+  ScoredConcept,
+} from '@/models';
 import {
   createConceptService,
   type GenerateConceptsInput,
@@ -53,12 +59,29 @@ function createEvaluatedConcept(index = 1): EvaluatedConcept {
   };
 }
 
+function createScoredConcept(index = 1): ScoredConcept {
+  return {
+    concept: createConceptSpec(index),
+    scores: createScores(),
+    scoreEvidence: {
+      hookStrength: [`Hook evidence ${index}`],
+      conflictEngine: [`Conflict evidence ${index}`],
+      agencyBreadth: [`Agency evidence ${index}`],
+      noveltyLeverage: [`Novelty evidence ${index}`],
+      branchingFitness: [`Branching evidence ${index}`],
+      llmFeasibility: [`Feasibility evidence ${index}`],
+    },
+    overallScore: 80,
+  };
+}
+
 describe('concept-service', () => {
   describe('generateConcepts', () => {
     it('calls ideator then evaluator with normalized inputs', async () => {
       const callOrder: string[] = [];
       const ideationConcepts = [createConceptSpec(1), createConceptSpec(2)];
       const evaluated = [createEvaluatedConcept(1)];
+      const scored = [createScoredConcept(1), createScoredConcept(2)];
       const generateConceptIdeas = jest.fn(() => {
         callOrder.push('ideator');
         return Promise.resolve({
@@ -69,6 +92,7 @@ describe('concept-service', () => {
       const evaluateConcepts = jest.fn(() => {
         callOrder.push('evaluator');
         return Promise.resolve({
+          scoredConcepts: scored,
           evaluatedConcepts: evaluated,
           rawResponse: 'raw-eval',
         });
@@ -116,7 +140,11 @@ describe('concept-service', () => {
         },
         'valid-key-12345',
       );
-      expect(result).toEqual({ evaluatedConcepts: evaluated });
+      expect(result).toEqual({
+        ideatedConcepts: ideationConcepts,
+        scoredConcepts: scored,
+        evaluatedConcepts: evaluated,
+      });
       expect(stressTestConcept).not.toHaveBeenCalled();
     });
 
@@ -178,6 +206,7 @@ describe('concept-service', () => {
           rawResponse: 'raw-ideas',
         }),
         evaluateConcepts: jest.fn().mockResolvedValue({
+          scoredConcepts: [createScoredConcept(1)],
           evaluatedConcepts: [createEvaluatedConcept(1)],
           rawResponse: 'raw-eval',
         }),

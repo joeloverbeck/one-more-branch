@@ -20,6 +20,7 @@ jest.mock('@/llm/concept-stress-tester', () => ({
 jest.mock('@/persistence/concept-repository', () => ({
   listConcepts: jest.fn().mockResolvedValue([]),
   loadConcept: jest.fn(),
+  saveConceptGenerationBatch: jest.fn(),
   saveConcept: jest.fn(),
   updateConcept: jest.fn(),
   deleteConcept: jest.fn(),
@@ -48,6 +49,7 @@ import { conceptRoutes } from '@/server/routes/concepts';
 import { storyRoutes } from '@/server/routes/stories';
 import {
   loadConcept,
+  saveConceptGenerationBatch,
   saveConcept,
   updateConcept,
 } from '@/persistence/concept-repository';
@@ -55,6 +57,7 @@ import {
   createConceptSpecFixture,
   createConceptStressTestFixture,
   createEvaluatedConceptFixture,
+  createScoredConceptFixture,
 } from '../../fixtures/concept-generator';
 
 type RouteLayer = {
@@ -124,6 +127,8 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     typeof generateStoryStructure
   >;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
+  const mockedSaveConceptGenerationBatch =
+    saveConceptGenerationBatch as jest.MockedFunction<typeof saveConceptGenerationBatch>;
   const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
 
@@ -141,6 +146,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       rawResponse: 'raw-ideas',
     });
     mockedEvaluateConcepts.mockResolvedValue({
+      scoredConcepts: Array.from({ length: 6 }, (_, index) => createScoredConceptFixture(index + 1)),
       evaluatedConcepts: [
         createEvaluatedConceptFixture(1),
         createEvaluatedConceptFixture(2),
@@ -214,6 +220,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       success: boolean;
       evaluatedConcepts: ReturnType<typeof createEvaluatedConceptFixture>[];
     };
+    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
     const evaluatedConcepts = generatePayload.evaluatedConcepts;
     expect(evaluatedConcepts).toHaveLength(3);
 

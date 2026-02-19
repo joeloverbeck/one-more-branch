@@ -10,6 +10,7 @@ import {
   deleteConcept,
   listConcepts,
   loadConcept,
+  saveConceptGenerationBatch,
   saveConcept,
   updateConcept,
 } from '../../persistence/concept-repository.js';
@@ -117,6 +118,23 @@ conceptRoutes.post(
               }
             }
           : undefined,
+      });
+
+      const generatedAt = new Date().toISOString();
+      const generationId = randomUUID();
+      await saveConceptGenerationBatch({
+        id: generationId,
+        generatedAt,
+        seeds: {
+          genreVibes: body.genreVibes?.trim(),
+          moodKeywords: body.moodKeywords?.trim(),
+          contentPreferences: body.contentPreferences?.trim(),
+          thematicInterests: body.thematicInterests?.trim(),
+          sparkLine: body.sparkLine?.trim(),
+        },
+        ideatedConcepts: result.ideatedConcepts,
+        scoredConcepts: result.scoredConcepts,
+        selectedConcepts: result.evaluatedConcepts,
       });
 
       if (progressId) {

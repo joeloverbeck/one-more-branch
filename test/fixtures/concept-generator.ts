@@ -2,6 +2,7 @@ import type {
   ConceptDimensionScores,
   ConceptSeedInput,
   ConceptSpec,
+  ScoredConcept,
   ConceptStressTestResult,
   EvaluatedConcept,
 } from '@/models';
@@ -51,6 +52,22 @@ export function createEvaluatedConceptFixture(index = 1): EvaluatedConcept {
     strengths: [`Strength ${index}`],
     weaknesses: [`Weakness ${index}`],
     tradeoffSummary: `Tradeoff ${index}`,
+  };
+}
+
+export function createScoredConceptFixture(index = 1): ScoredConcept {
+  return {
+    concept: createConceptSpecFixture(index),
+    scores: createConceptScoresFixture(),
+    scoreEvidence: {
+      hookStrength: [`Hook evidence ${index}`],
+      conflictEngine: [`Conflict evidence ${index}`],
+      agencyBreadth: [`Agency evidence ${index}`],
+      noveltyLeverage: [`Novelty evidence ${index}`],
+      branchingFitness: [`Branching evidence ${index}`],
+      llmFeasibility: [`Feasibility evidence ${index}`],
+    },
+    overallScore: 80,
   };
 }
 

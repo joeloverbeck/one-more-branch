@@ -2,11 +2,13 @@ import {
   CONCEPT_PASS_THRESHOLDS,
   CONCEPT_SCORING_WEIGHTS,
   type ConceptEvaluatorContext,
+  type ConceptSpec,
+  type ScoredConcept,
 } from '../../models/concept-generator.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
 const ROLE_INTRO =
-  'You are a strict evaluator for branching interactive narrative concepts. You score and select concepts; you do not rewrite or improve them.';
+  'You are a strict evaluator for branching interactive narrative concepts. You score and analyze concepts; you do not rewrite or improve them.';
 
 const RUBRIC = `SCORING RUBRIC (0-5):
 - hookStrength: Curiosity gap, emotional pull, and one-line clarity.
@@ -59,35 +61,80 @@ function buildSeedSection(context: ConceptEvaluatorContext): string {
   return sections.length > 0 ? sections.join('\n\n') : 'No optional user seeds provided.';
 }
 
-function buildConceptList(context: ConceptEvaluatorContext): string {
-  return context.concepts
-    .map((concept, index) => `${index + 1}. ${JSON.stringify(concept, null, 2)}`)
+function buildConceptList(concepts: readonly ConceptSpec[]): string {
+  return concepts.map((concept, index) => `${index + 1}. ${JSON.stringify(concept, null, 2)}`).join('\n\n');
+}
+
+function buildScoredConceptList(scoredConcepts: readonly ScoredConcept[]): string {
+  return scoredConcepts
+    .map(
+      (item, index) =>
+        `${index + 1}. ${JSON.stringify(
+          {
+            concept: item.concept,
+            scores: item.scores,
+            overallScore: item.overallScore,
+          },
+          null,
+          2,
+        )}`,
+    )
     .join('\n\n');
 }
 
-export function buildConceptEvaluatorPrompt(context: ConceptEvaluatorContext): ChatMessage[] {
+export function buildConceptEvaluatorScoringPrompt(context: ConceptEvaluatorContext): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
     RUBRIC,
     formatWeightsAndThresholds(),
+    `SCORING RULES:
+- Score every candidate concept.
+- Do not rank, filter, or select concepts.
+- Do not compute weighted totals.`,
     `EVIDENCE REQUIREMENT:
-- For every score dimension, ground judgment in 1-3 concrete bullet points that reference actual concept fields.`,
-    `SELECTION RULES:
-- Compute weighted scores using the provided weights.
-- Return only the top 3 concepts by weighted score.
-- If fewer than 3 concepts pass thresholds, return only passing concepts and call out threshold failures in weaknesses/tradeoffSummary.`,
-    `TRADEOFF FRAMING:
-- For each selected concept, state what the user gains and what they give up.
-- Do not modify concept content.`,
+- For each dimension provide 1-3 concrete bullets tied to specific concept fields.`,
   ];
 
   const userSections: string[] = [
-    'Evaluate these concept candidates against the user intent and rubric.',
+    'Score these concept candidates against the user intent and rubric.',
     `USER SEEDS:\n${buildSeedSection(context)}`,
-    `CONCEPT CANDIDATES:\n${buildConceptList(context)}`,
+    `CONCEPT CANDIDATES:\n${buildConceptList(context.concepts)}`,
+    `OUTPUT REQUIREMENTS:
+- Return JSON with shape: { "scoredConcepts": [ ... ] }.
+- Include one scoredConcept item for every input concept.
+- Preserve concept content exactly.
+- For each item include: concept, scores, scoreEvidence.`,
+  ];
+
+  return [
+    { role: 'system', content: systemSections.join('\n\n') },
+    { role: 'user', content: userSections.join('\n\n') },
+  ];
+}
+
+export function buildConceptEvaluatorDeepEvalPrompt(
+  context: ConceptEvaluatorContext,
+  scoredConcepts: readonly ScoredConcept[],
+): ChatMessage[] {
+  const systemSections: string[] = [
+    ROLE_INTRO,
+    RUBRIC,
+    formatWeightsAndThresholds(),
+    `DEEP EVALUATION RULES:
+- Evaluate only the provided shortlist.
+- Do not rescore and do not alter concepts.
+- For each concept, explain user-facing strengths, weaknesses, and tradeoffs.`,
+  ];
+
+  const userSections: string[] = [
+    'Deep-evaluate this shortlist selected in code.',
+    `USER SEEDS:\n${buildSeedSection(context)}`,
+    `SHORTLIST WITH LOCKED SCORES:\n${buildScoredConceptList(scoredConcepts)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "evaluatedConcepts": [ ... ] }.
-- For each item include: concept, scores, overallScore, strengths, weaknesses, tradeoffSummary.
+- Include one evaluatedConcept item for every shortlist concept.
+- Preserve concept content exactly.
+- For each item include: concept, strengths, weaknesses, tradeoffSummary.
 - strengths and weaknesses must be non-empty string arrays.`,
   ];
 

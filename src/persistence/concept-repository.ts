@@ -1,9 +1,11 @@
-import type { SavedConcept } from '../models/saved-concept.js';
+import type { GeneratedConceptBatch, SavedConcept } from '../models/saved-concept.js';
 import {
   deleteFile,
+  ensureConceptGenerationsDir,
   ensureConceptsDir,
   fileExists,
   getConceptFilePath,
+  getConceptGenerationFilePath,
   getConceptsDir,
   listFiles,
   readJsonFile,
@@ -18,6 +20,15 @@ export async function saveConcept(concept: SavedConcept): Promise<void> {
     ensureConceptsDir();
     const filePath = getConceptFilePath(concept.id);
     await writeJsonFile(filePath, concept);
+  });
+}
+
+export async function saveConceptGenerationBatch(batch: GeneratedConceptBatch): Promise<void> {
+  await withLock(`${CONCEPT_LOCK_PREFIX}generation:${batch.id}`, async () => {
+    ensureConceptsDir();
+    ensureConceptGenerationsDir();
+    const filePath = getConceptGenerationFilePath(batch.id);
+    await writeJsonFile(filePath, batch);
   });
 }
 

@@ -17,9 +17,15 @@ jest.mock('../../../src/logging/index.js', () => ({
   },
 }));
 
-import { evaluateConcepts, parseConceptEvaluationResponse } from '../../../src/llm/concept-evaluator';
-import { buildConceptEvaluatorPrompt } from '../../../src/llm/prompts/concept-evaluator-prompt';
-import { CONCEPT_EVALUATION_SCHEMA } from '../../../src/llm/schemas/concept-evaluator-schema';
+import { evaluateConcepts, parseConceptScoringResponse } from '../../../src/llm/concept-evaluator';
+import {
+  buildConceptEvaluatorDeepEvalPrompt,
+  buildConceptEvaluatorScoringPrompt,
+} from '../../../src/llm/prompts/concept-evaluator-prompt';
+import {
+  CONCEPT_EVALUATION_DEEP_SCHEMA,
+  CONCEPT_EVALUATION_SCORING_SCHEMA,
+} from '../../../src/llm/schemas/concept-evaluator-schema';
 import { computeOverallScore } from '../../../src/models';
 
 function createValidConcept(index: number): {
@@ -70,7 +76,7 @@ function createValidConcept(index: number): {
   } as const;
 }
 
-function createEvaluatedConcept(index: number): {
+function createScoredConceptPayload(index: number): {
   concept: ReturnType<typeof createValidConcept>;
   scores: {
     hookStrength: number;
@@ -80,36 +86,48 @@ function createEvaluatedConcept(index: number): {
     branchingFitness: number;
     llmFeasibility: number;
   };
-  overallScore: number;
-  strengths: readonly string[];
-  weaknesses: readonly string[];
-  tradeoffSummary: string;
-} {
-  const concept = createValidConcept(index);
-  const scores = {
-    hookStrength: 3 + (index % 2),
-    conflictEngine: 4,
-    agencyBreadth: 3,
-    noveltyLeverage: 3,
-    branchingFitness: 4,
-    llmFeasibility: 5,
+  scoreEvidence: {
+    hookStrength: readonly string[];
+    conflictEngine: readonly string[];
+    agencyBreadth: readonly string[];
+    noveltyLeverage: readonly string[];
+    branchingFitness: readonly string[];
+    llmFeasibility: readonly string[];
   };
-
+} {
   return {
-    concept,
-    scores,
-    overallScore: 12,
-    strengths: [`Strength ${index}`],
-    weaknesses: [`Weakness ${index}`],
-    tradeoffSummary: `Tradeoff ${index}`,
+    concept: createValidConcept(index),
+    scores: {
+      hookStrength: 3 + (index % 2),
+      conflictEngine: 4,
+      agencyBreadth: 3,
+      noveltyLeverage: 3,
+      branchingFitness: 4,
+      llmFeasibility: 5,
+    },
+    scoreEvidence: {
+      hookStrength: [`Hook evidence ${index}`],
+      conflictEngine: [`Conflict evidence ${index}`],
+      agencyBreadth: [`Agency evidence ${index}`],
+      noveltyLeverage: [`Novelty evidence ${index}`],
+      branchingFitness: [`Branching evidence ${index}`],
+      llmFeasibility: [`Feasibility evidence ${index}`],
+    },
   };
 }
 
-function createValidPayload(): {
-  evaluatedConcepts: Array<ReturnType<typeof createEvaluatedConcept>>;
+function createScoringPayload(): {
+  scoredConcepts: Array<ReturnType<typeof createScoredConceptPayload>>;
 } {
   return {
-    evaluatedConcepts: [createEvaluatedConcept(1), createEvaluatedConcept(2), createEvaluatedConcept(3)],
+    scoredConcepts: [
+      createScoredConceptPayload(1),
+      createScoredConceptPayload(2),
+      createScoredConceptPayload(3),
+      createScoredConceptPayload(4),
+      createScoredConceptPayload(5),
+      createScoredConceptPayload(6),
+    ],
   };
 }
 
@@ -158,37 +176,27 @@ describe('concept-evaluator', () => {
     return JSON.parse(init.body) as Record<string, unknown>;
   }
 
-  it('parseConceptEvaluationResponse with valid data returns sorted EvaluatedConcept[]', () => {
-    const payload = createValidPayload();
-    payload.evaluatedConcepts[0]!.scores.hookStrength = 1;
-    payload.evaluatedConcepts[1]!.scores.hookStrength = 4;
-    payload.evaluatedConcepts[2]!.scores.hookStrength = 2;
+  it('parseConceptScoringResponse with valid data returns all concepts sorted and rescored', () => {
+    const payload = createScoringPayload();
+    payload.scoredConcepts[0]!.scores.hookStrength = 1;
+    payload.scoredConcepts[1]!.scores.hookStrength = 4;
+    payload.scoredConcepts[2]!.scores.hookStrength = 2;
 
-    const parsed = parseConceptEvaluationResponse(payload);
+    const expectedConcepts = payload.scoredConcepts.map((item) => item.concept);
+    const parsed = parseConceptScoringResponse(payload, expectedConcepts);
 
-    expect(parsed).toHaveLength(3);
+    expect(parsed).toHaveLength(6);
     expect(parsed[0]!.concept.oneLineHook).toBe('Hook 2');
-    expect(parsed[1]!.concept.oneLineHook).toBe('Hook 3');
-    expect(parsed[2]!.concept.oneLineHook).toBe('Hook 1');
+    expect(parsed[0]!.overallScore).toBe(computeOverallScore(parsed[0]!.scores));
   });
 
-  it('parseConceptEvaluationResponse recomputes overallScore from dimension scores', () => {
-    const payload = createValidPayload();
-    payload.evaluatedConcepts[0]!.overallScore = 0;
+  it('parseConceptScoringResponse clamps out-of-range scores', () => {
+    const payload = createScoringPayload();
+    payload.scoredConcepts[0]!.scores.hookStrength = 7;
+    payload.scoredConcepts[0]!.scores.noveltyLeverage = -1;
 
-    const parsed = parseConceptEvaluationResponse(payload);
-    const expected = computeOverallScore(payload.evaluatedConcepts[0]!.scores);
-
-    expect(parsed[0]!.overallScore).toBe(expected);
-    expect(parsed[0]!.overallScore).not.toBe(0);
-  });
-
-  it('parseConceptEvaluationResponse clamps out-of-range scores', () => {
-    const payload = createValidPayload();
-    payload.evaluatedConcepts[0]!.scores.hookStrength = 7;
-    payload.evaluatedConcepts[0]!.scores.noveltyLeverage = -1;
-
-    const parsed = parseConceptEvaluationResponse(payload);
+    const expectedConcepts = payload.scoredConcepts.map((item) => item.concept);
+    const parsed = parseConceptScoringResponse(payload, expectedConcepts);
     const target = parsed.find((item) => item.concept.oneLineHook === 'Hook 1');
 
     expect(target?.scores.hookStrength).toBe(5);
@@ -196,25 +204,25 @@ describe('concept-evaluator', () => {
     expect(mockLogger.warn).toHaveBeenCalledTimes(2);
   });
 
-  it('parseConceptEvaluationResponse rejects missing evaluatedConcepts', () => {
-    expect(() => parseConceptEvaluationResponse({})).toThrow('missing evaluatedConcepts array');
-  });
-
-  it('parseConceptEvaluationResponse rejects empty strengths/weaknesses', () => {
-    const payload = createValidPayload();
-    payload.evaluatedConcepts[0]!.strengths = [];
-    expect(() => parseConceptEvaluationResponse(payload)).toThrow('strengths must contain at least 1 item');
-
-    payload.evaluatedConcepts[0]!.strengths = ['valid'];
-    payload.evaluatedConcepts[0]!.weaknesses = [];
-    expect(() => parseConceptEvaluationResponse(payload)).toThrow(
-      'weaknesses must contain at least 1 item',
+  it('parseConceptScoringResponse rejects missing scoredConcepts', () => {
+    expect(() => parseConceptScoringResponse({}, [createValidConcept(1)])).toThrow(
+      'missing scoredConcepts array',
     );
   });
 
-  it('buildConceptEvaluatorPrompt includes scoring rubric and weights', () => {
-    const messages = buildConceptEvaluatorPrompt({
-      concepts: [createValidConcept(1), createValidConcept(2), createValidConcept(3)],
+  it('parseConceptScoringResponse rejects omitted concepts', () => {
+    const payload = createScoringPayload();
+    payload.scoredConcepts = payload.scoredConcepts.slice(0, 5);
+    const expectedConcepts = Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1));
+
+    expect(() => parseConceptScoringResponse(payload, expectedConcepts)).toThrow(
+      'must include exactly 6 concepts',
+    );
+  });
+
+  it('buildConceptEvaluatorScoringPrompt includes all-concept scoring instructions', () => {
+    const messages = buildConceptEvaluatorScoringPrompt({
+      concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
       userSeeds: {
         apiKey: 'test-api-key',
         genreVibes: 'sci-fi noir',
@@ -222,42 +230,74 @@ describe('concept-evaluator', () => {
     });
 
     const systemMessage = messages[0]?.content ?? '';
-    expect(systemMessage).toContain('hookStrength');
-    expect(systemMessage).toContain('conflictEngine');
-    expect(systemMessage).toContain('agencyBreadth');
-    expect(systemMessage).toContain('noveltyLeverage');
-    expect(systemMessage).toContain('branchingFitness');
-    expect(systemMessage).toContain('llmFeasibility');
-    expect(systemMessage).toContain('weight 12');
-    expect(systemMessage).toContain('weight 23');
+    expect(systemMessage).toContain('Score every candidate concept');
+    expect(systemMessage).toContain('Do not rank, filter, or select concepts');
+    expect(systemMessage).toContain('Do not compute weighted totals');
   });
 
-  it('buildConceptEvaluatorPrompt includes user seeds', () => {
-    const messages = buildConceptEvaluatorPrompt({
-      concepts: [createValidConcept(1)],
-      userSeeds: {
-        apiKey: 'test-api-key',
-        genreVibes: 'dark fantasy',
-        sparkLine: 'What if memory could be taxed?',
+  it('buildConceptEvaluatorDeepEvalPrompt includes shortlist-only deep evaluation instructions', () => {
+    const messages = buildConceptEvaluatorDeepEvalPrompt(
+      {
+        concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
+        userSeeds: {
+          apiKey: 'test-api-key',
+          genreVibes: 'dark fantasy',
+        },
       },
-    });
-    const userMessage = messages[1]?.content ?? '';
+      [
+        {
+          concept: createValidConcept(1),
+          scores: createScoredConceptPayload(1).scores,
+          scoreEvidence: createScoredConceptPayload(1).scoreEvidence,
+          overallScore: 80,
+        },
+      ],
+    );
 
-    expect(userMessage).toContain('GENRE VIBES');
-    expect(userMessage).toContain('dark fantasy');
-    expect(userMessage).toContain('SPARK LINE');
-    expect(userMessage).toContain('What if memory could be taxed?');
-    expect(userMessage).not.toContain('test-api-key');
+    const systemMessage = messages[0]?.content ?? '';
+    expect(systemMessage).toContain('Evaluate only the provided shortlist');
+    expect(systemMessage).toContain('Do not rescore and do not alter concepts');
   });
 
-  it('evaluateConcepts with mocked fetch returns parsed ConceptEvaluationResult', async () => {
-    const payload = createValidPayload();
-    const rawContent = JSON.stringify(payload);
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+  it('evaluateConcepts runs scoring then deep-eval and returns selected top concepts', async () => {
+    const scoringPayload = createScoringPayload();
+    scoringPayload.scoredConcepts[0]!.scores.hookStrength = 2;
+    scoringPayload.scoredConcepts[1]!.scores.hookStrength = 5;
+    scoringPayload.scoredConcepts[2]!.scores.hookStrength = 4;
+    scoringPayload.scoredConcepts[3]!.scores.hookStrength = 3;
+    scoringPayload.scoredConcepts[4]!.scores.hookStrength = 1;
+    scoringPayload.scoredConcepts[5]!.scores.hookStrength = 1;
+
+    const deepPayload = {
+      evaluatedConcepts: [
+        {
+          concept: createValidConcept(2),
+          strengths: ['Strong pressure loop'],
+          weaknesses: ['Lower novelty'],
+          tradeoffSummary: 'More coherent conflict, less surprising frame.',
+        },
+        {
+          concept: createValidConcept(3),
+          strengths: ['Strong hook'],
+          weaknesses: ['Slightly narrower agency'],
+          tradeoffSummary: 'Sharper opening with tighter action space.',
+        },
+        {
+          concept: createValidConcept(4),
+          strengths: ['Solid feasibility'],
+          weaknesses: ['Hook is less immediate'],
+          tradeoffSummary: 'High reliability with less immediate intrigue.',
+        },
+      ],
+    };
+
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)));
 
     const result = await evaluateConcepts(
       {
-        concepts: [createValidConcept(1), createValidConcept(2), createValidConcept(3)],
+        concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
         userSeeds: {
           apiKey: 'test-api-key',
           genreVibes: 'noir',
@@ -266,13 +306,16 @@ describe('concept-evaluator', () => {
       'test-api-key',
     );
 
-    expect(result.rawResponse).toBe(rawContent);
+    expect(result.scoredConcepts).toHaveLength(6);
     expect(result.evaluatedConcepts).toHaveLength(3);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.evaluatedConcepts[0]!.concept.oneLineHook).toBe('Hook 2');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
-    const requestBody = getRequestBody();
-    expect(requestBody['response_format']).toEqual(CONCEPT_EVALUATION_SCHEMA);
+    const scoringRequestBody = getRequestBody(0);
+    const deepRequestBody = getRequestBody(1);
+    expect(scoringRequestBody['response_format']).toEqual(CONCEPT_EVALUATION_SCORING_SCHEMA);
+    expect(deepRequestBody['response_format']).toEqual(CONCEPT_EVALUATION_DEEP_SCHEMA);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptEvaluator', expect.any(Array));
-    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+    expect(mockLogPrompt).toHaveBeenCalledTimes(2);
   });
 });

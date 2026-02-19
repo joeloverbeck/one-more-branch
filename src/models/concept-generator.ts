@@ -180,6 +180,22 @@ export interface ConceptDimensionScores {
   readonly llmFeasibility: number;
 }
 
+export interface ConceptScoreEvidence {
+  readonly hookStrength: readonly string[];
+  readonly conflictEngine: readonly string[];
+  readonly agencyBreadth: readonly string[];
+  readonly noveltyLeverage: readonly string[];
+  readonly branchingFitness: readonly string[];
+  readonly llmFeasibility: readonly string[];
+}
+
+export interface ScoredConcept {
+  readonly concept: ConceptSpec;
+  readonly scores: ConceptDimensionScores;
+  readonly scoreEvidence: ConceptScoreEvidence;
+  readonly overallScore: number;
+}
+
 export interface EvaluatedConcept {
   readonly concept: ConceptSpec;
   readonly scores: ConceptDimensionScores;
@@ -235,6 +251,7 @@ export interface ConceptEvaluatorContext {
 }
 
 export interface ConceptEvaluationResult {
+  readonly scoredConcepts: readonly ScoredConcept[];
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
   readonly rawResponse: string;
 }
@@ -278,5 +295,16 @@ export function computeOverallScore(scores: ConceptDimensionScores): number {
     (scores.noveltyLeverage * CONCEPT_SCORING_WEIGHTS.noveltyLeverage) / 5 +
     (scores.branchingFitness * CONCEPT_SCORING_WEIGHTS.branchingFitness) / 5 +
     (scores.llmFeasibility * CONCEPT_SCORING_WEIGHTS.llmFeasibility) / 5
+  );
+}
+
+export function passesConceptThresholds(scores: ConceptDimensionScores): boolean {
+  return (
+    scores.hookStrength >= CONCEPT_PASS_THRESHOLDS.hookStrength &&
+    scores.conflictEngine >= CONCEPT_PASS_THRESHOLDS.conflictEngine &&
+    scores.agencyBreadth >= CONCEPT_PASS_THRESHOLDS.agencyBreadth &&
+    scores.noveltyLeverage >= CONCEPT_PASS_THRESHOLDS.noveltyLeverage &&
+    scores.branchingFitness >= CONCEPT_PASS_THRESHOLDS.branchingFitness &&
+    scores.llmFeasibility >= CONCEPT_PASS_THRESHOLDS.llmFeasibility
   );
 }
