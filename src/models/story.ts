@@ -6,6 +6,8 @@ import { StoryStructure } from './story-arc';
 import type { ConceptSpec } from './concept-generator';
 import { isConceptSpec } from './concept-generator';
 import type { StorySpine } from './story-spine';
+import type { StoryKernel } from './story-kernel.js';
+import { isStoryKernel } from './story-kernel.js';
 import { GlobalCanon, GlobalCharacterCanon } from './state/index.js';
 import type { NpcAgenda } from './state/npc-agenda';
 import type { NpcRelationship } from './state/npc-relationship';
@@ -36,6 +38,7 @@ export interface Story {
   readonly initialNpcRelationships?: readonly NpcRelationship[];
   readonly spine?: StorySpine;
   readonly conceptSpec?: ConceptSpec;
+  readonly storyKernel?: StoryKernel;
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;
   readonly createdAt: Date;
@@ -50,6 +53,7 @@ export interface CreateStoryData {
   npcs?: readonly Npc[];
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
+  storyKernel?: StoryKernel;
 }
 
 export interface StoryMetadata {
@@ -93,6 +97,7 @@ export function createStory(data: CreateStoryData): Story {
     startingSituation:
       startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
     conceptSpec: data.conceptSpec,
+    ...(data.storyKernel ? { storyKernel: data.storyKernel } : {}),
     globalCanon: [],
     globalCharacterCanon: {},
     structure: null,
@@ -155,6 +160,7 @@ export function isStory(value: unknown): value is Story {
     typeof obj['tone'] === 'string' &&
     Array.isArray(obj['globalCanon']) &&
     (obj['conceptSpec'] === undefined || isConceptSpec(obj['conceptSpec'])) &&
+    (obj['storyKernel'] === undefined || isStoryKernel(obj['storyKernel'])) &&
     isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
     (structure === null || isStoryStructure(structure)) &&
     (structureVersions === undefined ||

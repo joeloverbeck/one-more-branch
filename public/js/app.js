@@ -3755,6 +3755,98 @@ function createRecapModalController(initialData) {
   }
 
 
+  // ── Dynamic list controller ──────────────────────────────────────
+
+  function initDynamicLists() {
+    document.querySelectorAll('.dynamic-list-add-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var field = btn.dataset.field;
+        if (!field) return;
+        var input = document.querySelector('.dynamic-list-input[data-field="' + field + '"]');
+        if (!input || typeof input.value !== 'string') return;
+
+        var text = input.value.trim();
+        if (!text) return;
+
+        addDynamicListItem(field, text);
+        input.value = '';
+        input.focus();
+      });
+    });
+
+    document.querySelectorAll('.dynamic-list-input').forEach(function (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        var field = input.dataset.field;
+        if (!field) return;
+
+        var text = input.value.trim();
+        if (!text) return;
+
+        addDynamicListItem(field, text);
+        input.value = '';
+      });
+    });
+  }
+
+  function addDynamicListItem(fieldName, text) {
+    var container = document.getElementById('dynamic-list-' + fieldName);
+    if (!container) return;
+
+    var item = document.createElement('div');
+    item.className = 'dynamic-list-item';
+
+    var span = document.createElement('span');
+    span.className = 'dynamic-list-item-text';
+    span.textContent = text;
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-small btn-danger dynamic-list-remove-btn';
+    removeBtn.textContent = '\u00D7';
+    removeBtn.addEventListener('click', function () {
+      item.remove();
+    });
+
+    item.appendChild(span);
+    item.appendChild(removeBtn);
+    container.appendChild(item);
+  }
+
+  function populateDynamicList(fieldName, items) {
+    clearDynamicList(fieldName);
+    if (!Array.isArray(items)) return;
+
+    items.forEach(function (text) {
+      if (typeof text === 'string' && text.trim().length > 0) {
+        addDynamicListItem(fieldName, text.trim());
+      }
+    });
+  }
+
+  function collectDynamicListEntries(fieldName) {
+    var container = document.getElementById('dynamic-list-' + fieldName);
+    if (!container) return [];
+
+    var items = container.querySelectorAll('.dynamic-list-item-text');
+    var result = [];
+    items.forEach(function (span) {
+      var text = span.textContent.trim();
+      if (text.length > 0) {
+        result.push(text);
+      }
+    });
+    return result;
+  }
+
+  function clearDynamicList(fieldName) {
+    var container = document.getElementById('dynamic-list-' + fieldName);
+    if (container) {
+      container.innerHTML = '';
+    }
+  }
+
   // ── Controllers ───────────────────────────────────────────────────
 
   function initPlayPage() {
@@ -4190,7 +4282,8 @@ function createRecapModalController(initialData) {
     const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
     const spineContainer = document.getElementById('spine-options');
     const spineSection = document.getElementById('spine-section');
-    const conceptContextPanel = document.getElementById('concept-context-panel');
+    const kernelSelectorStory = document.getElementById('kernel-selector-story');
+    const kernelDisplayPanel = document.getElementById('kernel-display-panel');
     const errorDiv = document.querySelector('.alert-error');
 
     if (!form || !loading || !generateSpineBtn) {
@@ -4198,12 +4291,19 @@ function createRecapModalController(initialData) {
     }
     const loadingProgress = createLoadingProgressController(loading);
     var selectedConceptSpec = null;
+    var selectedKernelForStory = null;
     var loadedConceptsMap = {};
 
     initNpcControls();
+    initDynamicLists();
 
     function toTrimmedString(value) {
       return typeof value === 'string' ? value.trim() : '';
+    }
+
+    function getValueById(id) {
+      var field = document.getElementById(id);
+      return field && typeof field.value === 'string' ? field.value.trim() : '';
     }
 
     function hideExistingError() {
@@ -4221,24 +4321,6 @@ function createRecapModalController(initialData) {
       }
     }
 
-    function formatConceptLabel(value) {
-      return String(value || '').replace(/_/g, ' ');
-    }
-
-    function asTrimmedLines(items) {
-      if (!Array.isArray(items)) {
-        return [];
-      }
-
-      return items
-        .filter(function (item) {
-          return typeof item === 'string' && item.trim().length > 0;
-        })
-        .map(function (item) {
-          return item.trim();
-        });
-    }
-
     function setValueById(id, value) {
       var field = document.getElementById(id);
       if (!field || typeof field.value !== 'string') {
@@ -4248,70 +4330,140 @@ function createRecapModalController(initialData) {
       field.value = value;
     }
 
-    function renderConceptContextPanel(conceptSpec) {
-      if (!conceptContextPanel) {
-        return;
+    function setSelectedById(id, value) {
+      var field = document.getElementById(id);
+      if (!(field instanceof HTMLSelectElement)) return;
+      var strVal = String(value || '');
+      for (var i = 0; i < field.options.length; i++) {
+        if (field.options[i].value === strVal) {
+          field.selectedIndex = i;
+          return;
+        }
       }
+    }
 
-      if (!conceptSpec) {
-        conceptContextPanel.style.display = 'none';
-        conceptContextPanel.innerHTML = '';
-        return;
-      }
-
-      var actionVerbs = asTrimmedLines(conceptSpec.actionVerbs).join(', ');
-      conceptContextPanel.innerHTML =
-        '<h3>Selected Concept Context</h3>' +
-        '<p><strong>Hook:</strong> ' + escapeHtml(conceptSpec.oneLineHook || '') + '</p>' +
-        '<p><strong>Core conflict loop:</strong> ' + escapeHtml(conceptSpec.coreConflictLoop || '') + '</p>' +
-        '<p><strong>Conflict axis:</strong> ' + escapeHtml(formatConceptLabel(conceptSpec.conflictAxis)) + '</p>' +
-        '<p><strong>Pressure source:</strong> ' + escapeHtml(conceptSpec.pressureSource || '') + '</p>' +
-        '<p><strong>Stakes:</strong> Personal: ' + escapeHtml(conceptSpec.stakesPersonal || '') + ' | Systemic: ' + escapeHtml(conceptSpec.stakesSystemic || '') + '</p>' +
-        '<p><strong>Deadline:</strong> ' + escapeHtml(conceptSpec.deadlineMechanism || '') + '</p>' +
-        '<p><strong>Action verbs:</strong> ' + escapeHtml(actionVerbs) + '</p>';
-      conceptContextPanel.style.display = 'block';
+    function openAllCollapsibleSections() {
+      document.querySelectorAll('.form-section-collapsible').forEach(function (details) {
+        details.open = true;
+      });
     }
 
     function prefillFromConceptSpec(conceptSpec) {
-      if (!conceptSpec) {
-        return;
-      }
+      if (!conceptSpec) return;
 
+      // Narrative Identity
+      setValueById('oneLineHook', conceptSpec.oneLineHook || '');
+      setValueById('elevatorParagraph', conceptSpec.elevatorParagraph || '');
+      setValueById('whatIfQuestion', conceptSpec.whatIfQuestion || '');
+      setValueById('ironicTwist', conceptSpec.ironicTwist || '');
+      setValueById('playerFantasy', conceptSpec.playerFantasy || '');
+
+      // Genre & Tone
+      setSelectedById('genreFrame', conceptSpec.genreFrame);
+      setValueById('genreSubversion', conceptSpec.genreSubversion || '');
+      var genreLabel = String(conceptSpec.genreFrame || '').replace(/_/g, ' ');
+      var subversion = toTrimmedString(conceptSpec.genreSubversion);
+      setValueById('tone', genreLabel + (subversion ? ' - ' + subversion : ''));
+
+      // Protagonist
+      setValueById('protagonistRole', conceptSpec.protagonistRole || '');
+      setValueById('coreCompetence', conceptSpec.coreCompetence || '');
+      setValueById('coreFlaw', conceptSpec.coreFlaw || '');
       var role = toTrimmedString(conceptSpec.protagonistRole);
       var competence = toTrimmedString(conceptSpec.coreCompetence);
       var flaw = toTrimmedString(conceptSpec.coreFlaw);
-      var characterConcept = 'Role: ' + role + '. Competence: ' + competence + '. Flaw: ' + flaw + '.';
+      setValueById('characterConcept', 'Role: ' + role + '. Competence: ' + competence + '. Flaw: ' + flaw + '.');
+      populateDynamicList('actionVerbs', conceptSpec.actionVerbs);
 
-      var settingAxioms = asTrimmedLines(conceptSpec.settingAxioms);
-      var constraintSet = asTrimmedLines(conceptSpec.constraintSet);
-      var keyInstitutions = asTrimmedLines(conceptSpec.keyInstitutions);
-      var worldbuilding = [
-        'Setting Axioms:',
-        settingAxioms.length > 0 ? '- ' + settingAxioms.join('\n- ') : '-',
-        '',
-        'Constraints:',
-        constraintSet.length > 0 ? '- ' + constraintSet.join('\n- ') : '-',
-        '',
-        'Key Institutions:',
-        keyInstitutions.length > 0 ? '- ' + keyInstitutions.join('\n- ') : '-',
-      ].join('\n');
+      // Conflict Engine
+      setValueById('coreConflictLoop', conceptSpec.coreConflictLoop || '');
+      setSelectedById('conflictAxis', conceptSpec.conflictAxis);
+      setSelectedById('conflictType', conceptSpec.conflictType);
+      setValueById('pressureSource', conceptSpec.pressureSource || '');
+      setValueById('stakesPersonal', conceptSpec.stakesPersonal || '');
+      setValueById('stakesSystemic', conceptSpec.stakesSystemic || '');
+      setValueById('deadlineMechanism', conceptSpec.deadlineMechanism || '');
 
-      var tone = formatConceptLabel(conceptSpec.genreFrame) + ' - ' + toTrimmedString(conceptSpec.genreSubversion);
+      // World
+      populateDynamicList('settingAxioms', conceptSpec.settingAxioms);
+      populateDynamicList('constraintSet', conceptSpec.constraintSet);
+      populateDynamicList('keyInstitutions', conceptSpec.keyInstitutions);
+      setSelectedById('settingScale', conceptSpec.settingScale);
 
-      setValueById('characterConcept', characterConcept);
-      setValueById('worldbuilding', worldbuilding);
-      setValueById('tone', tone);
-      renderConceptContextPanel(conceptSpec);
+      // Structure & Design
+      setSelectedById('branchingPosture', conceptSpec.branchingPosture);
+      setSelectedById('stateComplexity', conceptSpec.stateComplexity);
+
+      openAllCollapsibleSections();
+    }
+
+    function buildConceptSpecFromFields() {
+      var oneLineHook = getValueById('oneLineHook');
+      var elevatorParagraph = getValueById('elevatorParagraph');
+      var genreFrame = getValueById('genreFrame');
+      var protagonistRole = getValueById('protagonistRole');
+      var coreCompetence = getValueById('coreCompetence');
+      var coreFlaw = getValueById('coreFlaw');
+      var actionVerbs = collectDynamicListEntries('actionVerbs');
+      var coreConflictLoop = getValueById('coreConflictLoop');
+      var conflictAxis = getValueById('conflictAxis');
+      var conflictType = getValueById('conflictType');
+      var pressureSource = getValueById('pressureSource');
+      var stakesPersonal = getValueById('stakesPersonal');
+      var stakesSystemic = getValueById('stakesSystemic');
+      var deadlineMechanism = getValueById('deadlineMechanism');
+
+      // Only build a conceptSpec if we have enough meaningful fields
+      if (!oneLineHook && !coreConflictLoop && !conflictAxis) {
+        return null;
+      }
+
+      return {
+        oneLineHook: oneLineHook,
+        elevatorParagraph: elevatorParagraph,
+        genreFrame: genreFrame,
+        genreSubversion: getValueById('genreSubversion'),
+        protagonistRole: protagonistRole,
+        coreCompetence: coreCompetence,
+        coreFlaw: coreFlaw,
+        actionVerbs: actionVerbs,
+        coreConflictLoop: coreConflictLoop,
+        conflictAxis: conflictAxis,
+        conflictType: conflictType,
+        pressureSource: pressureSource,
+        stakesPersonal: stakesPersonal,
+        stakesSystemic: stakesSystemic,
+        deadlineMechanism: deadlineMechanism,
+        settingAxioms: collectDynamicListEntries('settingAxioms'),
+        constraintSet: collectDynamicListEntries('constraintSet'),
+        keyInstitutions: collectDynamicListEntries('keyInstitutions'),
+        settingScale: getValueById('settingScale'),
+        branchingPosture: getValueById('branchingPosture'),
+        stateComplexity: getValueById('stateComplexity'),
+        whatIfQuestion: getValueById('whatIfQuestion'),
+        ironicTwist: getValueById('ironicTwist'),
+        playerFantasy: getValueById('playerFantasy'),
+      };
     }
 
     function collectFormData() {
       var formData = new FormData(form);
       var npcs = collectNpcEntries();
+
+      // Build characterConcept from structured fields if the free-text is the default prefill
+      var characterConcept = toTrimmedString(formData.get('characterConcept'));
+
+      // Build worldbuilding — merge free text with structured lists
+      var worldbuildingFreeText = toTrimmedString(formData.get('worldbuilding'));
+
+      // Build tone from genre + free text
+      var toneFreeText = toTrimmedString(formData.get('tone'));
+
       return {
         title: toTrimmedString(formData.get('title')),
-        characterConcept: toTrimmedString(formData.get('characterConcept')),
-        worldbuilding: toTrimmedString(formData.get('worldbuilding')),
-        tone: toTrimmedString(formData.get('tone')),
+        characterConcept: characterConcept,
+        worldbuilding: worldbuildingFreeText,
+        tone: toneFreeText,
         npcs: npcs.length > 0 ? npcs : undefined,
         startingSituation: toTrimmedString(formData.get('startingSituation')),
         apiKey: toTrimmedString(formData.get('apiKey')),
@@ -4347,6 +4499,82 @@ function createRecapModalController(initialData) {
       }
 
       return true;
+    }
+
+    // ── Kernel selector logic (for story creation) ─────────────────
+
+    function renderStoryKernelDisplay(kernel) {
+      if (!kernelDisplayPanel) return;
+
+      if (!kernel) {
+        kernelDisplayPanel.style.display = 'none';
+        selectedKernelForStory = null;
+        return;
+      }
+
+      selectedKernelForStory = kernel;
+      var thesisEl = document.getElementById('kernel-disp-thesis');
+      var valueEl = document.getElementById('kernel-disp-value');
+      var opposingEl = document.getElementById('kernel-disp-opposing');
+      var directionEl = document.getElementById('kernel-disp-direction');
+      var questionEl = document.getElementById('kernel-disp-question');
+
+      if (thesisEl) thesisEl.textContent = kernel.dramaticThesis || '';
+      if (valueEl) valueEl.textContent = kernel.valueAtStake || '';
+      if (opposingEl) opposingEl.textContent = kernel.opposingForce || '';
+      if (directionEl) directionEl.textContent = String(kernel.directionOfChange || '').replace(/_/g, ' ');
+      if (questionEl) questionEl.textContent = kernel.thematicQuestion || '';
+
+      kernelDisplayPanel.style.display = 'block';
+    }
+
+    async function loadStoryKernelOptions() {
+      if (!(kernelSelectorStory instanceof HTMLSelectElement)) return;
+
+      try {
+        var response = await fetch('/kernels/api/list', { method: 'GET' });
+        var data = await response.json();
+        if (!response.ok || !data.success || !Array.isArray(data.kernels)) return;
+
+        data.kernels.forEach(function (kernel) {
+          var option = document.createElement('option');
+          option.value = kernel.id;
+          option.textContent = kernel.name || 'Untitled Kernel';
+          kernelSelectorStory.appendChild(option);
+        });
+      } catch (e) {
+        // Non-fatal
+      }
+    }
+
+    async function handleStoryKernelChange() {
+      if (!(kernelSelectorStory instanceof HTMLSelectElement)) return;
+
+      var kernelId = (kernelSelectorStory.value || '').trim();
+      if (!kernelId) {
+        renderStoryKernelDisplay(null);
+        return;
+      }
+
+      try {
+        var response = await fetch('/kernels/api/' + encodeURIComponent(kernelId));
+        var data = await response.json();
+        if (!response.ok || !data.success || !data.kernel) {
+          throw new Error(data.error || 'Failed to load kernel');
+        }
+
+        renderStoryKernelDisplay(data.kernel.evaluatedKernel.kernel);
+      } catch (e) {
+        kernelSelectorStory.value = '';
+        renderStoryKernelDisplay(null);
+      }
+    }
+
+    if (kernelSelectorStory instanceof HTMLSelectElement) {
+      loadStoryKernelOptions();
+      kernelSelectorStory.addEventListener('change', function () {
+        void handleStoryKernelChange();
+      });
     }
 
     // ── Concept selector logic ─────────────────────────────────────
@@ -4392,6 +4620,13 @@ function createRecapModalController(initialData) {
         if (savedConcept && savedConcept.evaluatedConcept && savedConcept.evaluatedConcept.concept) {
           selectedConceptSpec = savedConcept.evaluatedConcept.concept;
           prefillFromConceptSpec(selectedConceptSpec);
+
+          // Auto-load linked kernel if available
+          if (savedConcept.sourceKernelId && kernelSelectorStory instanceof HTMLSelectElement) {
+            kernelSelectorStory.value = savedConcept.sourceKernelId;
+            void handleStoryKernelChange();
+          }
+
           revealManualStorySection();
           if (manualStorySection && typeof manualStorySection.scrollIntoView === 'function') {
             manualStorySection.scrollIntoView({ behavior: 'smooth' });
@@ -4411,19 +4646,25 @@ function createRecapModalController(initialData) {
 
       try {
         var formValues = collectFormData();
+        var conceptSpecFromFields = selectedConceptSpec || buildConceptSpecFromFields();
+        var spineBody = {
+          characterConcept: formValues.characterConcept,
+          worldbuilding: formValues.worldbuilding,
+          tone: formValues.tone,
+          npcs: formValues.npcs,
+          startingSituation: formValues.startingSituation,
+          apiKey: formValues.apiKey,
+          conceptSpec: conceptSpecFromFields || undefined,
+          progressId: progressId,
+        };
+        if (selectedKernelForStory) {
+          spineBody.storyKernel = selectedKernelForStory;
+        }
+
         var response = await fetch('/stories/generate-spines', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            characterConcept: formValues.characterConcept,
-            worldbuilding: formValues.worldbuilding,
-            tone: formValues.tone,
-            npcs: formValues.npcs,
-            startingSituation: formValues.startingSituation,
-            apiKey: formValues.apiKey,
-            conceptSpec: selectedConceptSpec || undefined,
-            progressId: progressId,
-          }),
+          body: JSON.stringify(spineBody),
         });
 
         var data = await response.json();
@@ -4469,21 +4710,27 @@ function createRecapModalController(initialData) {
 
       try {
         var formValues = collectFormData();
+        var conceptSpecFromFields = selectedConceptSpec || buildConceptSpecFromFields();
+        var createBody = {
+          title: formValues.title,
+          characterConcept: formValues.characterConcept,
+          worldbuilding: formValues.worldbuilding,
+          tone: formValues.tone,
+          npcs: formValues.npcs,
+          startingSituation: formValues.startingSituation,
+          apiKey: formValues.apiKey,
+          conceptSpec: conceptSpecFromFields || undefined,
+          spine: spine,
+          progressId: progressId,
+        };
+        if (selectedKernelForStory) {
+          createBody.storyKernel = selectedKernelForStory;
+        }
+
         var response = await fetch('/stories/create-ajax', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: formValues.title,
-            characterConcept: formValues.characterConcept,
-            worldbuilding: formValues.worldbuilding,
-            tone: formValues.tone,
-            npcs: formValues.npcs,
-            startingSituation: formValues.startingSituation,
-            apiKey: formValues.apiKey,
-            conceptSpec: selectedConceptSpec || undefined,
-            spine: spine,
-            progressId: progressId,
-          }),
+          body: JSON.stringify(createBody),
         });
 
         var data = await response.json();
@@ -4520,7 +4767,6 @@ function createRecapModalController(initialData) {
       skipConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
         selectedConceptSpec = null;
-        renderConceptContextPanel(null);
         revealManualStorySection();
       });
     }
@@ -4977,13 +5223,17 @@ function createRecapModalController(initialData) {
 
     async function saveGeneratedConcept(evaluatedConcept, seeds, btn) {
       try {
+        var saveBody = {
+          evaluatedConcept: evaluatedConcept,
+          seeds: seeds || {},
+        };
+        if (selectedKernelId) {
+          saveBody.sourceKernelId = selectedKernelId;
+        }
         var response = await fetch('/concepts/api/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            evaluatedConcept: evaluatedConcept,
-            seeds: seeds || {},
-          }),
+          body: JSON.stringify(saveBody),
         });
 
         var data = await response.json();

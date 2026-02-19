@@ -518,6 +518,144 @@ main {
   margin-top: 1.4rem;
 }
 
+/* ── Collapsible form sections ──────────────────────────────────── */
+.form-section-collapsible {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.35);
+  margin-bottom: 1rem;
+}
+
+.form-section-collapsible > summary {
+  cursor: pointer;
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--color-primary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.form-section-collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.form-section-collapsible > summary::before {
+  content: '\25B6';
+  font-size: 0.7em;
+  transition: transform var(--transition);
+}
+
+.form-section-collapsible[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.form-section-collapsible > summary:hover {
+  color: var(--color-primary-hover);
+}
+
+.form-section-collapsible > .collapsible-body {
+  padding: 0 1rem 1rem;
+}
+
+/* ── Form-group select dropdowns ────────────────────────────────── */
+.form-group select {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.75);
+  color: var(--color-text);
+  padding: 0.75rem;
+  font: inherit;
+}
+
+.form-group select:focus {
+  outline: 2px solid transparent;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.25);
+}
+
+/* ── Dynamic list (reusable add/remove string arrays) ───────────── */
+.dynamic-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  min-height: 1.5rem;
+}
+
+.dynamic-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.55);
+}
+
+.dynamic-list-item-text {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.dynamic-list-remove-btn {
+  flex-shrink: 0;
+  padding: 0.1rem 0.45rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.dynamic-list-add-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.dynamic-list-add-row input {
+  flex: 1;
+}
+
+.dynamic-list-add-row .btn {
+  flex-shrink: 0;
+}
+
+/* ── Kernel display panel ───────────────────────────────────────── */
+.kernel-display-panel {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.55);
+  padding: 0.75rem 1rem;
+}
+
+.kernel-field {
+  margin-bottom: 0.6rem;
+}
+
+.kernel-field:last-child {
+  margin-bottom: 0;
+}
+
+.kernel-field-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.kernel-field-value {
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
 .alert {
   border-radius: var(--radius);
   padding: 0.75rem 0.9rem;

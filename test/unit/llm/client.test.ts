@@ -829,10 +829,12 @@ describe('llm client', () => {
       messages.find(
         (message) =>
           typeof message.content === 'string' &&
-          message.content.includes("Continue the interactive story based on the player's choice.")
+          message.content.includes('=== PLANNER GUIDANCE ===') &&
+          message.content.includes(`Scene Intent: ${validPlannerPayload.sceneIntent}`)
       )?.content ?? '';
 
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'writer', expect.any(Array));
+    expect(userPrompt).not.toBe('');
     expect(userPrompt).toContain(`Scene Intent: ${validPlannerPayload.sceneIntent}`);
     expect(userPrompt).toContain(validPlannerPayload.writerBrief.openingLineDirective);
   });

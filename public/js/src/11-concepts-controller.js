@@ -283,13 +283,17 @@
 
     async function saveGeneratedConcept(evaluatedConcept, seeds, btn) {
       try {
+        var saveBody = {
+          evaluatedConcept: evaluatedConcept,
+          seeds: seeds || {},
+        };
+        if (selectedKernelId) {
+          saveBody.sourceKernelId = selectedKernelId;
+        }
         var response = await fetch('/concepts/api/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            evaluatedConcept: evaluatedConcept,
-            seeds: seeds || {},
-          }),
+          body: JSON.stringify(saveBody),
         });
 
         var data = await response.json();
