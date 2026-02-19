@@ -1,6 +1,11 @@
 import type { GenerationStage } from '../../engine/types.js';
 
-export type GenerationFlowType = 'new-story' | 'choice' | 'begin-adventure' | 'concept-generation';
+export type GenerationFlowType =
+  | 'new-story'
+  | 'choice'
+  | 'begin-adventure'
+  | 'concept-generation'
+  | 'kernel-generation';
 export type GenerationProgressStatus = 'running' | 'completed' | 'failed' | 'unknown';
 
 export interface GenerationProgressSnapshot {

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { conceptRoutes } from './concepts';
 import { homeRoutes } from './home';
+import { kernelRoutes } from './kernels';
 import { logRoutes } from './logs';
 import { playRoutes } from './play';
 import { progressRoutes } from './progress';
@@ -10,6 +11,7 @@ export const router = Router();
 
 router.use('/', homeRoutes);
 router.use('/concepts', conceptRoutes);
+router.use('/kernels', kernelRoutes);
 router.use('/logs', logRoutes);
 router.use('/stories', storyRoutes);
 router.use('/play', playRoutes);
