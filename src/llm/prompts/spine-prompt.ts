@@ -83,6 +83,12 @@ Generate exactly 3 spine options. Each MUST differ in at least one of:
 - storySpineType (primary narrative pattern)
 - conflictType (primary source of opposition)
 Do NOT generate options sharing both the same storySpineType AND conflictType.
+Each option must represent a genuinely different story direction, not a cosmetic variant.
+Across the 3 options, each option must differ from every other option in at least TWO of:
+- protagonistNeedVsWant.dynamic (need/want relationship)
+- primaryAntagonisticForce.description (nature of opposition)
+- primaryAntagonisticForce.pressureMechanism (how pressure is applied)
+- centralDramaticQuestion (core story question framing)
 
 FIELD INSTRUCTIONS:
 - centralDramaticQuestion: A single sentence ending with a question mark. Specific to THIS character and world, not generic. Bad: "Will good triumph over evil?" Good: "Can a disgraced guard expose the tribunal that framed her before they execute her as a scapegoat?"
