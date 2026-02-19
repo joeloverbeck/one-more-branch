@@ -21,3 +21,10 @@ export {
   type GenerateConceptsResult,
   type StressTestInput,
 } from './concept-service.js';
+export {
+  createKernelService,
+  kernelService,
+  type GenerateKernelsInput,
+  type GenerateKernelsResult,
+  type KernelService,
+} from './kernel-service.js';

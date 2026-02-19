@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { Request, Response, Router } from 'express';
-import type { GenerationStageEvent } from '../../engine';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
 import type { ConceptSpec, EvaluatedConcept } from '../../models/index.js';
@@ -14,8 +13,9 @@ import {
   saveConcept,
   updateConcept,
 } from '../../persistence/concept-repository.js';
-import { conceptService, generationProgressService } from '../services/index.js';
-import { formatLLMError, parseProgressId, wrapAsyncRoute } from '../utils/index.js';
+import { conceptService } from '../services/index.js';
+import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
+import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const conceptRoutes = Router();
 
@@ -92,10 +92,7 @@ conceptRoutes.post(
         .json({ success: false, error: 'At least one concept seed field is required' });
     }
 
-    const progressId = parseProgressId(body.progressId);
-    if (progressId) {
-      generationProgressService.start(progressId, 'concept-generation');
-    }
+    const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
 
     try {
       const result = await conceptService.generateConcepts({
@@ -105,19 +102,7 @@ conceptRoutes.post(
         thematicInterests: body.thematicInterests,
         sparkLine: body.sparkLine,
         apiKey,
-        onGenerationStage: progressId
-          ? (event: GenerationStageEvent): void => {
-              if (event.status === 'started') {
-                generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
-              } else {
-                generationProgressService.markStageCompleted(
-                  progressId,
-                  event.stage,
-                  event.attempt
-                );
-              }
-            }
-          : undefined,
+        onGenerationStage: progress.onGenerationStage,
       });
 
       const generatedAt = new Date().toISOString();
@@ -137,17 +122,13 @@ conceptRoutes.post(
         selectedConcepts: result.evaluatedConcepts,
       });
 
-      if (progressId) {
-        generationProgressService.complete(progressId);
-      }
+      progress.complete();
 
       return res.json({ success: true, evaluatedConcepts: result.evaluatedConcepts });
     } catch (error) {
       if (error instanceof LLMError) {
         const formattedError = formatLLMError(error);
-        if (progressId) {
-          generationProgressService.fail(progressId, formattedError);
-        }
+        progress.fail(formattedError);
         return res.status(500).json({
           success: false,
           error: formattedError,
@@ -157,9 +138,7 @@ conceptRoutes.post(
       }
 
       const err = error instanceof Error ? error : new Error(String(error));
-      if (progressId) {
-        generationProgressService.fail(progressId, err.message);
-      }
+      progress.fail(err.message);
       logger.error('Error generating concepts:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
@@ -274,10 +253,7 @@ conceptRoutes.post(
       return res.status(404).json({ success: false, error: 'Concept not found' });
     }
 
-    const progressId = parseProgressId(body.progressId);
-    if (progressId) {
-      generationProgressService.start(progressId, 'concept-generation');
-    }
+    const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
 
     try {
       const result = await conceptService.stressTestConcept({
@@ -285,24 +261,10 @@ conceptRoutes.post(
         scores: existing.evaluatedConcept.scores,
         weaknesses: [...existing.evaluatedConcept.weaknesses],
         apiKey,
-        onGenerationStage: progressId
-          ? (event: GenerationStageEvent): void => {
-              if (event.status === 'started') {
-                generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
-              } else {
-                generationProgressService.markStageCompleted(
-                  progressId,
-                  event.stage,
-                  event.attempt
-                );
-              }
-            }
-          : undefined,
+        onGenerationStage: progress.onGenerationStage,
       });
 
-      if (progressId) {
-        generationProgressService.complete(progressId);
-      }
+      progress.complete();
 
       const now = new Date().toISOString();
       const updated = await updateConcept(conceptId as string, (current) => ({
@@ -329,9 +291,7 @@ conceptRoutes.post(
     } catch (error) {
       if (error instanceof LLMError) {
         const formattedError = formatLLMError(error);
-        if (progressId) {
-          generationProgressService.fail(progressId, formattedError);
-        }
+        progress.fail(formattedError);
         return res.status(500).json({
           success: false,
           error: formattedError,
@@ -341,9 +301,7 @@ conceptRoutes.post(
       }
 
       const err = error instanceof Error ? error : new Error(String(error));
-      if (progressId) {
-        generationProgressService.fail(progressId, err.message);
-      }
+      progress.fail(err.message);
       logger.error('Error hardening concept:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
