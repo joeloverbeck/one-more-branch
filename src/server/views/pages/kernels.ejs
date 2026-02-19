@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="kernels-page">
+    <section class="form-section">
+      <h1>Story Kernels</h1>
+      <p class="spine-section-subtitle">
+        The irreducible dramatic proposition: a value at stake, an opposing force, and a direction of change.
+      </p>
+
+      <section id="kernel-generate-section">
+        <h2>Generate New Kernels</h2>
+        <form id="kernel-generate-form">
+          <div class="form-group">
+            <label for="thematicInterests">Thematic Interests</label>
+            <textarea
+              id="thematicInterests"
+              rows="3"
+              placeholder="What themes fascinate you? e.g., power, corruption, the cost of ambition"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="emotionalCore">Emotional Core</label>
+            <textarea
+              id="emotionalCore"
+              rows="3"
+              placeholder="What emotional experience do you want? e.g., dread that builds slowly, betrayal from someone trusted"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="sparkLine">Spark Line</label>
+            <textarea
+              id="sparkLine"
+              rows="3"
+              placeholder="A raw idea or inspiration. e.g., A leader who must sacrifice the people they protect"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="kernelApiKey">OpenRouter API Key *</label>
+            <input
+              type="password"
+              id="kernelApiKey"
+              required
+              placeholder="sk-or-..."
+              autocomplete="off"
+            >
+            <p class="form-help">
+              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+              Your key is never stored on the server.
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              id="generate-kernels-btn"
+              class="btn btn-primary btn-large"
+              disabled
+            >
+              Generate Kernels
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section id="kernel-progress-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Generation Progress</h2>
+        <div id="kernel-progress-content"></div>
+      </section>
+
+      <section id="generated-kernels-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Generated Kernels</h2>
+        <p class="spine-section-subtitle">Click "Save to Library" on any kernel you want to keep.</p>
+        <div id="generated-kernels" class="spine-options-container"></div>
+      </section>
+
+      <section id="saved-kernels-section">
+        <h2>Saved Kernels</h2>
+        <% if (kernels.length === 0) { %>
+          <p class="spine-section-subtitle">No saved kernels yet. Generate some above!</p>
+        <% } %>
+        <div id="saved-kernels" class="spine-options-container"></div>
+      </section>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
