@@ -2,6 +2,8 @@ import type { LLMError } from '../../llm/llm-client-types.js';
 import { logger } from '../../logging/index.js';
 import { type ConceptSpec, isConceptSpec } from '../../models/index.js';
 import type { Npc } from '../../models/npc.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
+import { isStoryKernel } from '../../models/story-kernel.js';
 
 export type StoryFormInput = {
   title?: string;
@@ -11,6 +13,7 @@ export type StoryFormInput = {
   npcs?: Array<{ name?: string; description?: string }>;
   startingSituation?: string;
   conceptSpec?: unknown;
+  storyKernel?: unknown;
   apiKey?: string;
 };
 
@@ -22,6 +25,7 @@ export type TrimmedStoryInput = {
   npcs?: Npc[];
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
+  storyKernel?: StoryKernel;
   apiKey: string;
 };
 
@@ -54,6 +58,7 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     return { valid: false, error: 'Concept payload is invalid' };
   }
   const conceptSpec = isConceptSpec(input.conceptSpec) ? input.conceptSpec : undefined;
+  const storyKernel = isStoryKernel(input.storyKernel) ? input.storyKernel : undefined;
 
   const validNpcs = input.npcs
     ?.map((npc) => ({
@@ -72,6 +77,7 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
       npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
       startingSituation: input.startingSituation?.trim(),
       ...(conceptSpec !== undefined ? { conceptSpec } : {}),
+      ...(storyKernel !== undefined ? { storyKernel } : {}),
       apiKey: trimmedApiKey,
     },
   };

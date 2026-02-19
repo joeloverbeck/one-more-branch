@@ -60,8 +60,6 @@
         <section id="manual-story-section" style="<%= showManualInitially ? '' : 'display: none;' %>">
           <h2>Step 2: Build Story Details</h2>
 
-          <div id="concept-context-panel" class="form-group" style="display: none;"></div>
-
           <div class="form-group">
             <label for="title">Story Title *</label>
             <input
@@ -76,78 +74,317 @@
             >
           </div>
 
-          <div class="form-group">
-            <label for="characterConcept">Character Concept *</label>
-            <textarea
-              id="characterConcept"
-              name="characterConcept"
-              rows="4"
-              required
-              minlength="10"
-              placeholder="Describe your protagonist: their name, personality, background, abilities, and motivations."
-            ><%= values.characterConcept || '' %></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="worldbuilding">Worldbuilding (Optional)</label>
-            <textarea
-              id="worldbuilding"
-              name="worldbuilding"
-              rows="3"
-              placeholder="Describe important places, factions, or history."
-            ><%= values.worldbuilding || '' %></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>NPCs (Optional)</label>
-            <div id="npc-entries">
-              <% const npcList = values.npcs || []; %>
-              <% for (let i = 0; i < npcList.length; i++) { %>
-              <div class="npc-entry" data-index="<%= i %>">
-                <div class="npc-entry-header">
-                  <strong><%= npcList[i].name %></strong>
-                  <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
-                </div>
-                <p class="npc-entry-description"><%= npcList[i].description %></p>
+          <!-- Narrative Identity -->
+          <details class="form-section-collapsible" id="section-narrative" open>
+            <summary>Narrative Identity</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="oneLineHook">One-Line Hook</label>
+                <input type="text" id="oneLineHook" placeholder="A single punchy sentence that sells the concept">
               </div>
-              <% } %>
+              <div class="form-group">
+                <label for="elevatorParagraph">Elevator Pitch</label>
+                <textarea id="elevatorParagraph" rows="3" placeholder="A short paragraph expanding on the hook"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="whatIfQuestion">What-If Question</label>
+                <input type="text" id="whatIfQuestion" placeholder="What if...?">
+              </div>
+              <div class="form-group">
+                <label for="ironicTwist">Ironic Twist</label>
+                <textarea id="ironicTwist" rows="2" placeholder="The ironic or unexpected element in the premise"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="playerFantasy">Player Fantasy</label>
+                <input type="text" id="playerFantasy" placeholder="What the player gets to feel or become">
+              </div>
             </div>
-            <div class="npc-add-form">
-              <input
-                type="text"
-                id="npc-name-input"
-                placeholder="NPC name"
-                maxlength="100"
-              >
-              <textarea
-                id="npc-desc-input"
-                rows="2"
-                placeholder="Describe this character: personality, role, relationship to the protagonist."
-              ></textarea>
-              <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
+          </details>
+
+          <!-- Genre & Tone -->
+          <details class="form-section-collapsible" id="section-genre">
+            <summary>Genre &amp; Tone</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="genreFrame">Genre Frame</label>
+                <select id="genreFrame">
+                  <option value="">-- Select genre --</option>
+                  <option value="HORROR">Horror</option>
+                  <option value="THRILLER">Thriller</option>
+                  <option value="MYSTERY">Mystery</option>
+                  <option value="FANTASY">Fantasy</option>
+                  <option value="SCI_FI">Sci-Fi</option>
+                  <option value="LITERARY">Literary</option>
+                  <option value="ROMANCE">Romance</option>
+                  <option value="DRAMA">Drama</option>
+                  <option value="WESTERN">Western</option>
+                  <option value="NOIR">Noir</option>
+                  <option value="SATIRE">Satire</option>
+                  <option value="FABLE">Fable</option>
+                  <option value="GOTHIC">Gothic</option>
+                  <option value="SURREAL">Surreal</option>
+                  <option value="DYSTOPIAN">Dystopian</option>
+                  <option value="MYTHIC">Mythic</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="genreSubversion">Genre Subversion</label>
+                <input type="text" id="genreSubversion" placeholder="How the genre expectations are twisted">
+              </div>
+              <div class="form-group">
+                <label for="tone">Tone/Genre (free text)</label>
+                <textarea
+                  id="tone"
+                  name="tone"
+                  rows="2"
+                  placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
+                ><%= values.tone || '' %></textarea>
+              </div>
             </div>
-            <input type="hidden" id="npcs-json" name="npcsJson" value="">
-          </div>
+          </details>
 
-          <div class="form-group">
-            <label for="tone">Tone/Genre (Optional)</label>
-            <textarea
-              id="tone"
-              name="tone"
-              rows="3"
-              placeholder="e.g., dark fantasy, humorous, horror, epic adventure"
-            ><%= values.tone || '' %></textarea>
-          </div>
+          <!-- Protagonist -->
+          <details class="form-section-collapsible" id="section-protagonist">
+            <summary>Protagonist</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="protagonistRole">Role</label>
+                <input type="text" id="protagonistRole" placeholder="e.g., Disgraced knight, street urchin, reluctant prophet">
+              </div>
+              <div class="form-group">
+                <label for="coreCompetence">Core Competence</label>
+                <input type="text" id="coreCompetence" placeholder="What the protagonist is good at">
+              </div>
+              <div class="form-group">
+                <label for="coreFlaw">Core Flaw</label>
+                <input type="text" id="coreFlaw" placeholder="What holds the protagonist back">
+              </div>
+              <div class="form-group">
+                <label for="characterConcept">Character Concept (free text) *</label>
+                <textarea
+                  id="characterConcept"
+                  name="characterConcept"
+                  rows="3"
+                  required
+                  minlength="10"
+                  placeholder="Full protagonist description: name, personality, background, abilities, motivations."
+                ><%= values.characterConcept || '' %></textarea>
+              </div>
+              <div class="form-group">
+                <label>Action Verbs (min 6)</label>
+                <div id="dynamic-list-actionVerbs" class="dynamic-list" data-field="actionVerbs" data-min="6"></div>
+                <div class="dynamic-list-add">
+                  <input type="text" class="dynamic-list-input" data-field="actionVerbs" placeholder="Add a verb...">
+                  <button type="button" class="btn btn-secondary btn-small dynamic-list-add-btn" data-field="actionVerbs">Add</button>
+                </div>
+              </div>
+            </div>
+          </details>
 
-          <div class="form-group">
-            <label for="startingSituation">Starting Situation (Optional)</label>
-            <textarea
-              id="startingSituation"
-              name="startingSituation"
-              rows="3"
-              placeholder="Describe how you want the story to begin: the scene, circumstances, or specific events for the opening."
-            ><%= values.startingSituation || '' %></textarea>
-          </div>
+          <!-- Conflict Engine -->
+          <details class="form-section-collapsible" id="section-conflict">
+            <summary>Conflict Engine</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="coreConflictLoop">Core Conflict Loop</label>
+                <textarea id="coreConflictLoop" rows="2" placeholder="The repeating pattern of conflict"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="conflictAxis">Conflict Axis</label>
+                <select id="conflictAxis">
+                  <option value="">-- Select axis --</option>
+                  <option value="INDIVIDUAL_VS_SYSTEM">Individual vs System</option>
+                  <option value="TRUTH_VS_STABILITY">Truth vs Stability</option>
+                  <option value="DUTY_VS_DESIRE">Duty vs Desire</option>
+                  <option value="FREEDOM_VS_SAFETY">Freedom vs Safety</option>
+                  <option value="KNOWLEDGE_VS_INNOCENCE">Knowledge vs Innocence</option>
+                  <option value="POWER_VS_MORALITY">Power vs Morality</option>
+                  <option value="LOYALTY_VS_SURVIVAL">Loyalty vs Survival</option>
+                  <option value="IDENTITY_VS_BELONGING">Identity vs Belonging</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="conflictType">Conflict Type</label>
+                <select id="conflictType">
+                  <option value="">-- Select type --</option>
+                  <option value="PERSON_VS_PERSON">Person vs Person</option>
+                  <option value="PERSON_VS_SELF">Person vs Self</option>
+                  <option value="PERSON_VS_SOCIETY">Person vs Society</option>
+                  <option value="PERSON_VS_NATURE">Person vs Nature</option>
+                  <option value="PERSON_VS_TECHNOLOGY">Person vs Technology</option>
+                  <option value="PERSON_VS_SUPERNATURAL">Person vs Supernatural</option>
+                  <option value="PERSON_VS_FATE">Person vs Fate</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="pressureSource">Pressure Source</label>
+                <input type="text" id="pressureSource" placeholder="What creates urgency">
+              </div>
+              <div class="form-group">
+                <label for="stakesPersonal">Personal Stakes</label>
+                <input type="text" id="stakesPersonal" placeholder="What the protagonist personally loses">
+              </div>
+              <div class="form-group">
+                <label for="stakesSystemic">Systemic Stakes</label>
+                <input type="text" id="stakesSystemic" placeholder="What the world loses">
+              </div>
+              <div class="form-group">
+                <label for="deadlineMechanism">Deadline Mechanism</label>
+                <input type="text" id="deadlineMechanism" placeholder="What forces a time limit">
+              </div>
+            </div>
+          </details>
+
+          <!-- World -->
+          <details class="form-section-collapsible" id="section-world">
+            <summary>World</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="worldbuilding">Worldbuilding (free text)</label>
+                <textarea
+                  id="worldbuilding"
+                  name="worldbuilding"
+                  rows="3"
+                  placeholder="Describe important places, factions, or history."
+                ><%= values.worldbuilding || '' %></textarea>
+              </div>
+              <div class="form-group">
+                <label>Setting Axioms (2-5)</label>
+                <div id="dynamic-list-settingAxioms" class="dynamic-list" data-field="settingAxioms" data-min="2" data-max="5"></div>
+                <div class="dynamic-list-add">
+                  <input type="text" class="dynamic-list-input" data-field="settingAxioms" placeholder="Add an axiom...">
+                  <button type="button" class="btn btn-secondary btn-small dynamic-list-add-btn" data-field="settingAxioms">Add</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Constraints (3-5)</label>
+                <div id="dynamic-list-constraintSet" class="dynamic-list" data-field="constraintSet" data-min="3" data-max="5"></div>
+                <div class="dynamic-list-add">
+                  <input type="text" class="dynamic-list-input" data-field="constraintSet" placeholder="Add a constraint...">
+                  <button type="button" class="btn btn-secondary btn-small dynamic-list-add-btn" data-field="constraintSet">Add</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Key Institutions (2-4)</label>
+                <div id="dynamic-list-keyInstitutions" class="dynamic-list" data-field="keyInstitutions" data-min="2" data-max="4"></div>
+                <div class="dynamic-list-add">
+                  <input type="text" class="dynamic-list-input" data-field="keyInstitutions" placeholder="Add an institution...">
+                  <button type="button" class="btn btn-secondary btn-small dynamic-list-add-btn" data-field="keyInstitutions">Add</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="settingScale">Setting Scale</label>
+                <select id="settingScale">
+                  <option value="">-- Select scale --</option>
+                  <option value="INTIMATE">Intimate</option>
+                  <option value="LOCAL">Local</option>
+                  <option value="REGIONAL">Regional</option>
+                  <option value="GLOBAL">Global</option>
+                </select>
+              </div>
+            </div>
+          </details>
+
+          <!-- NPCs -->
+          <details class="form-section-collapsible" id="section-npcs">
+            <summary>NPCs</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <div id="npc-entries">
+                  <% const npcList = values.npcs || []; %>
+                  <% for (let i = 0; i < npcList.length; i++) { %>
+                  <div class="npc-entry" data-index="<%= i %>">
+                    <div class="npc-entry-header">
+                      <strong><%= npcList[i].name %></strong>
+                      <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
+                    </div>
+                    <p class="npc-entry-description"><%= npcList[i].description %></p>
+                  </div>
+                  <% } %>
+                </div>
+                <div class="npc-add-form">
+                  <input
+                    type="text"
+                    id="npc-name-input"
+                    placeholder="NPC name"
+                    maxlength="100"
+                  >
+                  <textarea
+                    id="npc-desc-input"
+                    rows="2"
+                    placeholder="Describe this character: personality, role, relationship to the protagonist."
+                  ></textarea>
+                  <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
+                </div>
+                <input type="hidden" id="npcs-json" name="npcsJson" value="">
+              </div>
+            </div>
+          </details>
+
+          <!-- Starting Situation -->
+          <details class="form-section-collapsible" id="section-starting">
+            <summary>Starting Situation</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="startingSituation">Starting Situation</label>
+                <textarea
+                  id="startingSituation"
+                  name="startingSituation"
+                  rows="3"
+                  placeholder="Describe how you want the story to begin: the scene, circumstances, or specific events for the opening."
+                ><%= values.startingSituation || '' %></textarea>
+              </div>
+            </div>
+          </details>
+
+          <!-- Structure & Design -->
+          <details class="form-section-collapsible" id="section-structure">
+            <summary>Structure &amp; Design</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="branchingPosture">Branching Posture</label>
+                <select id="branchingPosture">
+                  <option value="">-- Select posture --</option>
+                  <option value="TREE">Tree</option>
+                  <option value="RECONVERGE">Reconverge</option>
+                  <option value="STORYLETS">Storylets</option>
+                  <option value="HUB_AND_SPOKE">Hub and Spoke</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="stateComplexity">State Complexity</label>
+                <select id="stateComplexity">
+                  <option value="">-- Select complexity --</option>
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                </select>
+              </div>
+            </div>
+          </details>
+
+          <!-- Kernel Panel -->
+          <details class="form-section-collapsible" id="section-kernel">
+            <summary>Thematic Kernel</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="kernel-selector-story">Story Kernel</label>
+                <select id="kernel-selector-story">
+                  <option value="">-- No kernel (optional) --</option>
+                </select>
+                <p class="form-help">
+                  <a href="/kernels">Manage your kernels</a> to generate thematic foundations.
+                </p>
+              </div>
+              <div id="kernel-display-panel" class="kernel-display-panel" style="display: none;">
+                <div class="kernel-display-field"><span class="kernel-display-label">Dramatic Thesis:</span> <span id="kernel-disp-thesis"></span></div>
+                <div class="kernel-display-field"><span class="kernel-display-label">Value at Stake:</span> <span id="kernel-disp-value"></span></div>
+                <div class="kernel-display-field"><span class="kernel-display-label">Opposing Force:</span> <span id="kernel-disp-opposing"></span></div>
+                <div class="kernel-display-field"><span class="kernel-display-label">Direction of Change:</span> <span id="kernel-disp-direction"></span></div>
+                <div class="kernel-display-field"><span class="kernel-display-label">Thematic Question:</span> <span id="kernel-disp-question"></span></div>
+              </div>
+            </div>
+          </details>
 
           <div class="form-actions">
             <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>

@@ -12,6 +12,8 @@ The spine runs **before entity decomposition and structure generation**, as the 
 
 The spine defines the invariant narrative backbone: the central dramatic question, the protagonist's inner transformation vs outer goal, the antagonistic force, and the primary narrative pattern. All downstream prompts receive the selected spine via `buildSpineSection()` from `src/llm/prompts/sections/shared/spine-section.ts`.
 
+When a `conceptSpec` is provided (from the `/concepts` page), the prompt includes a CONCEPT ANALYSIS section with all 23 concept fields organized by group (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata). When a `storyKernel` is also available (linked via `sourceKernelId` on the concept or manually selected), a THEMATIC KERNEL section is added between the concept analysis and the tone/genre line, providing the philosophical foundation for the spine.
+
 ## Messages Sent To Model
 
 ### 1) System Message
@@ -74,17 +76,55 @@ STARTING SITUATION:
 
 {{#if conceptSpec}}
 CONCEPT ANALYSIS (from upstream concept generation — use as grounding):
+
+NARRATIVE IDENTITY:
 One-line hook: {{conceptSpec.oneLineHook}}
+Elevator pitch: {{conceptSpec.elevatorParagraph}}
+Player fantasy: {{conceptSpec.playerFantasy}}
+What-if question: {{conceptSpec.whatIfQuestion}}
+Ironic twist: {{conceptSpec.ironicTwist}}
+
+PROTAGONIST:
+Role: {{conceptSpec.protagonistRole}}
+Core competence: {{conceptSpec.coreCompetence}}
+Core flaw: {{conceptSpec.coreFlaw}}
+Action verbs: {{conceptSpec.actionVerbs joined by ', '}}
+
+GENRE FRAME:
+Genre: {{conceptSpec.genreFrame}} (Subversion: {{conceptSpec.genreSubversion}})
+
+CONFLICT ENGINE:
 Core conflict loop: {{conceptSpec.coreConflictLoop}}
-Thematic tension axis: {{conceptSpec.conflictAxis}} — Your spine MUST use this exact conflictAxis value.
-Structural opposition: {{conceptSpec.conflictType}} — Your spine MUST use this exact conflictType value.
+Thematic tension axis: {{conceptSpec.conflictAxis}} — MUST use this exact value.
+Structural opposition: {{conceptSpec.conflictType}} — MUST use this exact value.
 Pressure source: {{conceptSpec.pressureSource}}
 Personal stakes: {{conceptSpec.stakesPersonal}}
 Systemic stakes: {{conceptSpec.stakesSystemic}}
 Deadline mechanism: {{conceptSpec.deadlineMechanism}}
-Action verbs available to player: {{conceptSpec.actionVerbs joined by ', '}}
+
+WORLD ARCHITECTURE:
+Setting axioms: {{conceptSpec.settingAxioms joined by '; '}}
+Constraints: {{conceptSpec.constraintSet joined by '; '}}
+Key institutions: {{conceptSpec.keyInstitutions joined by '; '}}
+Setting scale: {{conceptSpec.settingScale}}
+
+STRUCTURAL METADATA:
+Branching posture: {{conceptSpec.branchingPosture}}
+State complexity: {{conceptSpec.stateComplexity}}
 
 CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept's conflict loop and stakes; don't contradict them.
+{{/if}}
+
+{{#if storyKernel}}
+THEMATIC KERNEL (the spine's philosophical foundation):
+Dramatic thesis: {{storyKernel.dramaticThesis}}
+Value at stake: {{storyKernel.valueAtStake}}
+Opposing force: {{storyKernel.opposingForce}}
+Direction of change: {{storyKernel.directionOfChange}}
+Thematic question: {{storyKernel.thematicQuestion}}
+
+CONSTRAINT: The spine's central dramatic question should operationalize this kernel.
+The kernel defines the thematic "why" — the spine defines the structural "how".
 {{/if}}
 
 TONE/GENRE: {{tone}}
@@ -159,4 +199,5 @@ OUTPUT SHAPE:
 - `protagonistNeedVsWant.dynamic` describes the relationship between need and want: `CONVERGENT` (achieving want fulfills need), `DIVERGENT` (want leads away from need), `SUBSTITUTIVE` (need replaces want), `IRRECONCILABLE` (cannot satisfy both).
 - `characterArcType` describes the trajectory: `POSITIVE_CHANGE` (grows), `FLAT` (tests existing belief), `DISILLUSIONMENT` (learns hard truth), `FALL` (loses way), `CORRUPTION` (becomes what they opposed).
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
-- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will usually share the concept's `conflictAxis` and `conflictType`, so divergence must come from `storySpineType` and/or deeper fields such as need/want dynamic, antagonistic force, pressure mechanism, and dramatic question framing. When no concept is present (manual story creation), spine generation works as before with no concept section.
+- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with all 23 concept fields organized into 6 groups (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata) and hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will usually share the concept's `conflictAxis` and `conflictType`, so divergence must come from `storySpineType` and/or deeper fields such as need/want dynamic, antagonistic force, pressure mechanism, and dramatic question framing. When no concept is present (manual story creation), spine generation works as before with no concept section.
+- When a `storyKernel` is provided (linked via `sourceKernelId` on the saved concept or manually selected), the THEMATIC KERNEL section is included with 5 kernel fields (dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion) and a constraint that the spine's central dramatic question should operationalize the kernel. The kernel defines the thematic "why" while the spine defines the structural "how".

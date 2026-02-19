@@ -8,6 +8,8 @@ import { StoryId } from '../../models';
 import { isConceptSpec } from '../../models/concept-generator.js';
 import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { StorySpine } from '../../models/story-spine.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
+import { isStoryKernel } from '../../models/story-kernel.js';
 import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
 import { formatLLMError, parseProgressId, wrapAsyncRoute } from '../utils/index.js';
@@ -87,6 +89,7 @@ storyRoutes.post(
       startingSituation?: string;
       apiKey?: string;
       conceptSpec?: unknown;
+      storyKernel?: unknown;
       progressId?: unknown;
     };
 
@@ -123,6 +126,8 @@ storyRoutes.post(
 
       const validatedConceptSpec: ConceptSpec | undefined =
         isConceptSpec(body.conceptSpec) ? body.conceptSpec : undefined;
+      const validatedKernel: StoryKernel | undefined =
+        isStoryKernel(body.storyKernel) ? body.storyKernel : undefined;
 
       const result = await generateStorySpines(
         {
@@ -132,6 +137,7 @@ storyRoutes.post(
           npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
           startingSituation: body.startingSituation?.trim(),
           conceptSpec: validatedConceptSpec,
+          storyKernel: validatedKernel,
         },
         apiKey
       );

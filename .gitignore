@@ -9,7 +9,8 @@ dist/
 coverage/
 
 # Runtime data
-stories/
+stories/**
+!stories/.gitkeep
 old-stories/
 
 # Environment

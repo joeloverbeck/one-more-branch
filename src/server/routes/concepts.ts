@@ -165,6 +165,7 @@ conceptRoutes.post(
       evaluatedConcept?: EvaluatedConcept;
       seeds?: ConceptSeeds;
       name?: string;
+      sourceKernelId?: string;
     };
 
     if (
@@ -182,6 +183,7 @@ conceptRoutes.post(
       ? trimmedName
       : (body.evaluatedConcept.concept.oneLineHook ?? 'Untitled Concept').slice(0, 80);
 
+    const trimmedKernelId = body.sourceKernelId?.trim();
     const savedConcept: SavedConcept = {
       id,
       name: defaultName,
@@ -189,6 +191,7 @@ conceptRoutes.post(
       updatedAt: now,
       seeds: body.seeds ?? {},
       evaluatedConcept: body.evaluatedConcept,
+      ...(trimmedKernelId && trimmedKernelId.length > 0 ? { sourceKernelId: trimmedKernelId } : {}),
     };
 
     await saveConcept(savedConcept);

@@ -294,14 +294,15 @@ describe('Data Integrity E2E', () => {
     await storage.savePage(story.id, page1);
     await storage.savePage(story.id, page2);
 
-    const storyDir = path.join(tempRootDir, 'stories', story.id);
-    await expect(fs.stat(storyDir)).resolves.toBeDefined();
+    await expect(storage.storyExists(story.id)).resolves.toBe(true);
+    await expect(storage.loadPage(story.id, parsePageId(1))).resolves.not.toBeNull();
+    await expect(storage.loadPage(story.id, parsePageId(2))).resolves.not.toBeNull();
 
     await storage.deleteStory(story.id);
     createdStoryIds.delete(story.id);
 
     await expect(storage.loadStory(story.id)).resolves.toBeNull();
+    await expect(storage.storyExists(story.id)).resolves.toBe(false);
     await expect(storage.loadAllPages(story.id)).resolves.toEqual(new Map());
-    await expect(fs.stat(storyDir)).rejects.toThrow();
   });
 });

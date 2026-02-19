@@ -1,6 +1,7 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
@@ -12,6 +13,7 @@ export interface SpinePromptContext {
   npcs?: readonly Npc[];
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
+  storyKernel?: StoryKernel;
 }
 
 const SPINE_ROLE_INTRO = `You are a story architect designing the thematic spine of interactive branching fiction. Your job is to identify the invariant causal chain and thematic logic that will anchor the entire story — the dramatic question, the protagonist's inner transformation, and the force that opposes them.`;
@@ -28,19 +30,69 @@ function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
     return '';
   }
 
+  const settingAxioms = conceptSpec.settingAxioms.join('; ');
+  const constraintSet = conceptSpec.constraintSet.join('; ');
+  const keyInstitutions = conceptSpec.keyInstitutions.join('; ');
+
   const lines: string[] = [
     'CONCEPT ANALYSIS (from upstream concept generation — use as grounding):',
+    '',
+    'NARRATIVE IDENTITY:',
     `One-line hook: ${conceptSpec.oneLineHook}`,
+    `Elevator pitch: ${conceptSpec.elevatorParagraph}`,
+    `Player fantasy: ${conceptSpec.playerFantasy}`,
+    `What-if question: ${conceptSpec.whatIfQuestion}`,
+    `Ironic twist: ${conceptSpec.ironicTwist}`,
+    '',
+    'PROTAGONIST:',
+    `Role: ${conceptSpec.protagonistRole}`,
+    `Core competence: ${conceptSpec.coreCompetence}`,
+    `Core flaw: ${conceptSpec.coreFlaw}`,
+    `Action verbs: ${conceptSpec.actionVerbs.join(', ')}`,
+    '',
+    'GENRE FRAME:',
+    `Genre: ${conceptSpec.genreFrame} (Subversion: ${conceptSpec.genreSubversion})`,
+    '',
+    'CONFLICT ENGINE:',
     `Core conflict loop: ${conceptSpec.coreConflictLoop}`,
-    `Thematic tension axis: ${conceptSpec.conflictAxis} — Your spine MUST use this exact conflictAxis value.`,
-    `Structural opposition: ${conceptSpec.conflictType} — Your spine MUST use this exact conflictType value.`,
+    `Thematic tension axis: ${conceptSpec.conflictAxis} — MUST use this exact value.`,
+    `Structural opposition: ${conceptSpec.conflictType} — MUST use this exact value.`,
     `Pressure source: ${conceptSpec.pressureSource}`,
     `Personal stakes: ${conceptSpec.stakesPersonal}`,
     `Systemic stakes: ${conceptSpec.stakesSystemic}`,
     `Deadline mechanism: ${conceptSpec.deadlineMechanism}`,
-    `Action verbs available to player: ${conceptSpec.actionVerbs.join(', ')}`,
+    '',
+    'WORLD ARCHITECTURE:',
+    `Setting axioms: ${settingAxioms}`,
+    `Constraints: ${constraintSet}`,
+    `Key institutions: ${keyInstitutions}`,
+    `Setting scale: ${conceptSpec.settingScale}`,
+    '',
+    'STRUCTURAL METADATA:',
+    `Branching posture: ${conceptSpec.branchingPosture}`,
+    `State complexity: ${conceptSpec.stateComplexity}`,
     '',
     'CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept\'s conflict loop and stakes; don\'t contradict them.',
+  ];
+
+  return lines.join('\n') + '\n\n';
+}
+
+function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
+  if (!storyKernel) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'THEMATIC KERNEL (the spine\'s philosophical foundation):',
+    `Dramatic thesis: ${storyKernel.dramaticThesis}`,
+    `Value at stake: ${storyKernel.valueAtStake}`,
+    `Opposing force: ${storyKernel.opposingForce}`,
+    `Direction of change: ${storyKernel.directionOfChange}`,
+    `Thematic question: ${storyKernel.thematicQuestion}`,
+    '',
+    'CONSTRAINT: The spine\'s central dramatic question should operationalize this kernel.',
+    'The kernel defines the thematic "why" — the spine defines the structural "how".',
   ];
 
   return lines.join('\n') + '\n\n';
@@ -70,13 +122,14 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
     : '';
 
   const conceptSection = buildConceptAnalysisSection(context.conceptSpec);
+  const kernelSection = buildKernelGroundingSection(context.storyKernel);
 
   const userPrompt = `Generate exactly 3 story spine options for the following story setup.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}${conceptSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}${conceptSection}${kernelSection}TONE/GENRE: ${context.tone}
 
 DIVERGENCE CONSTRAINT:
 Generate exactly 3 spine options. Each MUST differ in at least one of:

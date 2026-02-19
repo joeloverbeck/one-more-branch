@@ -47,10 +47,10 @@ describe('buildSpinePrompt', () => {
 
     expect(user).toContain('CONCEPT ANALYSIS (from upstream concept generation');
     expect(user).toContain(
-      `Thematic tension axis: ${conceptSpec.conflictAxis} — Your spine MUST use this exact conflictAxis value.`
+      `Thematic tension axis: ${conceptSpec.conflictAxis} — MUST use this exact value.`
     );
     expect(user).toContain(
-      `Structural opposition: ${conceptSpec.conflictType} — Your spine MUST use this exact conflictType value.`
+      `Structural opposition: ${conceptSpec.conflictType} — MUST use this exact value.`
     );
   });
 
