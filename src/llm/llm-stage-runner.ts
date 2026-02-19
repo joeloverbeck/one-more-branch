@@ -11,7 +11,7 @@ import {
 import { LLMError, type ChatMessage, type JsonSchema } from './llm-client-types.js';
 import { withRetry } from './retry.js';
 
-interface ConceptStageRunnerParams<TParsed> {
+interface LlmStageRunnerParams<TParsed> {
   readonly stageModel: LlmStage;
   readonly promptType: PromptType;
   readonly apiKey: string;
@@ -21,14 +21,14 @@ interface ConceptStageRunnerParams<TParsed> {
   readonly parseResponse: (parsed: unknown) => TParsed;
 }
 
-interface ConceptStageRunnerResult<TParsed> {
+interface LlmStageRunnerResult<TParsed> {
   readonly parsed: TParsed;
   readonly rawResponse: string;
 }
 
-export async function runConceptStage<TParsed>(
-  params: ConceptStageRunnerParams<TParsed>,
-): Promise<ConceptStageRunnerResult<TParsed>> {
+export async function runLlmStage<TParsed>(
+  params: LlmStageRunnerParams<TParsed>,
+): Promise<LlmStageRunnerResult<TParsed>> {
   const config = getConfig().llm;
   const model = params.options?.model ?? getStageModel(params.stageModel);
   const temperature = params.options?.temperature ?? config.temperature;

@@ -1,5 +1,5 @@
 import { isDriftRiskMitigationType, type ConceptStressTestResult, type ConceptStressTesterContext } from '../models/index.js';
-import { runConceptStage } from './concept-stage-runner.js';
+import { runLlmStage } from './llm-stage-runner.js';
 import { parseConceptSpec } from './concept-spec-parser.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
@@ -83,7 +83,7 @@ export async function stressTestConcept(
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptStressTestResult> {
   const messages = buildConceptStressTesterPrompt(context);
-  const result = await runConceptStage({
+  const result = await runLlmStage({
     stageModel: 'conceptStressTester',
     promptType: 'conceptStressTester',
     apiKey,

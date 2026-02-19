@@ -248,6 +248,8 @@ export type {
   DirectionOfChange,
   StoryKernel,
   KernelSeedInput,
+  KernelIdeatorContext,
+  KernelIdeationResult,
   KernelDimensionScores,
   KernelScoreEvidence,
   ScoredKernel,

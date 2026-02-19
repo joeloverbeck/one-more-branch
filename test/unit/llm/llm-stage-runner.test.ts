@@ -17,7 +17,7 @@ jest.mock('../../../src/logging/index.js', () => ({
   },
 }));
 
-import { runConceptStage } from '../../../src/llm/concept-stage-runner';
+import { runLlmStage } from '../../../src/llm/llm-stage-runner';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../src/llm/schemas/concept-ideator-schema';
 
@@ -32,7 +32,7 @@ function createJsonResponse(status: number, body: unknown): Response {
 
 function responseWithMessageContent(content: string): Response {
   return createJsonResponse(200, {
-    id: 'or-concept-stage-runner-1',
+    id: 'or-llm-stage-runner-1',
     choices: [{ message: { content }, finish_reason: 'stop' }],
   });
 }
@@ -51,7 +51,7 @@ async function advanceRetryDelays(): Promise<void> {
   await jest.advanceTimersByTimeAsync(2000);
 }
 
-describe('concept-stage-runner', () => {
+describe('llm-stage-runner', () => {
   const fetchMock: jest.MockedFunction<typeof fetch> = jest.fn();
   const originalFetch = global.fetch;
 
@@ -74,7 +74,7 @@ describe('concept-stage-runner', () => {
     const rawContent = JSON.stringify({ ok: true });
     fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
 
-    const result = await runConceptStage({
+    const result = await runLlmStage({
       stageModel: 'conceptIdeator',
       promptType: 'conceptIdeator',
       apiKey: 'test-api-key',
@@ -94,7 +94,7 @@ describe('concept-stage-runner', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
 
     await expect(
-      runConceptStage({
+      runLlmStage({
         stageModel: 'conceptEvaluator',
         promptType: 'conceptEvaluator',
         apiKey: 'test-api-key',
@@ -115,7 +115,7 @@ describe('concept-stage-runner', () => {
   it('retries retryable HTTP errors via withRetry policy', async () => {
     fetchMock.mockResolvedValue(createErrorResponse(429, 'rate limited'));
 
-    const pending = runConceptStage({
+    const pending = runLlmStage({
       stageModel: 'conceptStressTester',
       promptType: 'conceptStressTester',
       apiKey: 'test-api-key',

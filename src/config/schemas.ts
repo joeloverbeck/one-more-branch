@@ -37,6 +37,7 @@ const PromptOptionsConfigSchema = z.object({
  */
 const LLMModelsConfigSchema = z
   .object({
+    kernelIdeator: z.string().min(1).optional(),
     conceptIdeator: z.string().min(1).optional(),
     conceptEvaluator: z.string().min(1).optional(),
     conceptStressTester: z.string().min(1).optional(),

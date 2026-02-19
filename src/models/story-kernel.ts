@@ -21,6 +21,17 @@ export interface KernelSeedInput {
   readonly apiKey: string;
 }
 
+export interface KernelIdeatorContext {
+  readonly thematicInterests?: string;
+  readonly emotionalCore?: string;
+  readonly sparkLine?: string;
+}
+
+export interface KernelIdeationResult {
+  readonly kernels: readonly StoryKernel[];
+  readonly rawResponse: string;
+}
+
 export interface KernelDimensionScores {
   readonly dramaticClarity: number;
   readonly thematicUniversality: number;

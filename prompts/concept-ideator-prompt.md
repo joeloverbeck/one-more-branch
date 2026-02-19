@@ -2,7 +2,7 @@
 
 - Source: `src/llm/prompts/concept-ideator-prompt.ts`
 - Orchestration: `src/llm/concept-ideator.ts`
-- Shared concept runner: `src/llm/concept-stage-runner.ts`
+- Shared stage runner: `src/llm/llm-stage-runner.ts`
 - Output schema source: `src/llm/schemas/concept-ideator-schema.ts`
 - Concept model + enums: `src/models/concept-generator.ts`, `src/models/story-spine.ts`
 
@@ -184,5 +184,5 @@ OUTPUT REQUIREMENTS:
 ## Notes
 
 - Tone block injection is conditional: it is included only when `genreVibes` and/or `moodKeywords` is non-empty after trimming.
-- Prompt logging uses `promptType: 'conceptIdeator'` via `runConceptStage(...)`.
+- Prompt logging uses `promptType: 'conceptIdeator'` via `runLlmStage(...)`.
 - Model routing uses stage key `conceptIdeator` in `getStageModel(...)`.

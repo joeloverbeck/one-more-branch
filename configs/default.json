@@ -8,6 +8,7 @@
   "llm": {
     "defaultModel": "anthropic/claude-sonnet-4.6",
     "models": {
+      "kernelIdeator": "anthropic/claude-sonnet-4.6",
       "conceptIdeator": "anthropic/claude-sonnet-4.6",
       "conceptEvaluator": "z-ai/glm-5",
       "conceptStressTester": "anthropic/claude-sonnet-4.6",

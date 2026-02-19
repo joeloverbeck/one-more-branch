@@ -170,10 +170,11 @@ describe('config schemas', () => {
       expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
     });
 
-    it('accepts explicit per-stage model overrides including concept stages', () => {
+    it('accepts explicit per-stage model overrides including kernel and concept stages', () => {
       const result = AppConfigSchema.parse({
         llm: {
           models: {
+            kernelIdeator: 'anthropic/claude-sonnet-4.6',
             conceptIdeator: 'anthropic/claude-sonnet-4.6',
             conceptEvaluator: 'z-ai/glm-5',
             conceptStressTester: 'anthropic/claude-sonnet-4.6',
@@ -182,6 +183,7 @@ describe('config schemas', () => {
         },
       });
 
+      expect(result.llm.models?.kernelIdeator).toBe('anthropic/claude-sonnet-4.6');
       expect(result.llm.models?.conceptIdeator).toBe('anthropic/claude-sonnet-4.6');
       expect(result.llm.models?.conceptEvaluator).toBe('z-ai/glm-5');
       expect(result.llm.models?.conceptStressTester).toBe('anthropic/claude-sonnet-4.6');
@@ -193,6 +195,7 @@ describe('config schemas', () => {
         AppConfigSchema.parse({
           llm: {
             models: {
+              kernelIdeator: 'anthropic/claude-sonnet-4.6',
               conceptIdeator: 'anthropic/claude-sonnet-4.6',
               invalidStageName: 'z-ai/glm-5',
             },

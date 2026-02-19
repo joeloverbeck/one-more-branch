@@ -11,7 +11,7 @@ import {
   type ScoredConcept,
 } from '../models/index.js';
 import { parseConceptSpec } from './concept-spec-parser.js';
-import { runConceptStage } from './concept-stage-runner.js';
+import { runLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import {
@@ -294,7 +294,7 @@ export async function evaluateConcepts(
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptEvaluationResult> {
   const scoringMessages = buildConceptEvaluatorScoringPrompt(context);
-  const scoringResult = await runConceptStage({
+  const scoringResult = await runLlmStage({
     stageModel: 'conceptEvaluator',
     promptType: 'conceptEvaluator',
     apiKey,
@@ -306,7 +306,7 @@ export async function evaluateConcepts(
 
   const shortlist = selectConceptShortlist(scoringResult.parsed);
   const deepEvalMessages = buildConceptEvaluatorDeepEvalPrompt(context, shortlist);
-  const deepEvalResult = await runConceptStage({
+  const deepEvalResult = await runLlmStage({
     stageModel: 'conceptEvaluator',
     promptType: 'conceptEvaluator',
     apiKey,
