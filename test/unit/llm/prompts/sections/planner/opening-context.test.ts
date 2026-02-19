@@ -145,7 +145,7 @@ describe('planner opening context section', () => {
 
     expect(result).toContain('STARTING SITUATION:');
     expect(result).toContain('=== STORY STRUCTURE ===');
-    expect(result).toContain('CURRENT ACT: Lockdown (Act 1 of 3)');
+    expect(result).toContain('CURRENT ACT: Lockdown (Act 1 of 2)');
     expect(result).toContain('[>] ACTIVE (setup): Break through maintenance sectors');
     expect(result).toContain('[ ] PENDING (escalation): Escape patrol dragnet');
     expect(result).toContain('REMAINING ACTS:');

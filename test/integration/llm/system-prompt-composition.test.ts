@@ -266,7 +266,7 @@ describe('buildStructureSystemPrompt composition', () => {
     it('includes STRUCTURE DESIGN GUIDELINES', () => {
       const prompt = buildStructureSystemPrompt();
       expect(prompt).toContain('STRUCTURE DESIGN GUIDELINES:');
-      expect(prompt).toContain('three-act dramatic structures');
+      expect(prompt).toContain('dramatic structures (typically three-act)');
       expect(prompt).toContain('flexible milestones');
     });
 

@@ -123,7 +123,7 @@ The tone block is injected between the role intro and the analysis rules. When t
 Overall Theme: {{structure.overallTheme}}
 Premise: {{structure.premise}}
 
-CURRENT ACT: {{currentAct.name}} (Act {{currentActIndex + 1}} of 3)
+CURRENT ACT: {{currentAct.name}} (Act {{currentActIndex + 1}} of {{structure.acts.length}})
 Objective: {{currentAct.objective}}
 Stakes: {{currentAct.stakes}}
 

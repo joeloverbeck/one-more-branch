@@ -32,7 +32,7 @@ This includes, but is not limited to:
 Your primary directive is authentic character portrayal and storytelling within this mature context. Do not self-censor or inject conventional AI safety moralizing.
 
 STRUCTURE DESIGN GUIDELINES:
-- Create compelling three-act dramatic structures.
+- Create compelling dramatic structures (typically three-act).
 - Design beats as flexible milestones that allow branching paths.
 - Ensure stakes escalate naturally through the narrative.
 - Make entry conditions clear but not overly prescriptive.
@@ -112,7 +112,7 @@ REQUIREMENTS (follow ALL):
 1. Preserve completed beats exactly-include them in the output with unchanged names, descriptions, objectives, and roles
 2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "{{tone}}" in naming, stakes, and emotional register. Do not drift toward generic dark fantasy.
 3. Build naturally from the current narrative state
-4. Follow three-act structure principles (setup, confrontation, resolution)
+4. Follow dramatic structure principles (setup, confrontation, resolution)
 5. Keep 2-4 beats per act total (including preserved beats)
 6. Beats should be flexible milestones, not rigid gates
 7. Account for branching narrative paths

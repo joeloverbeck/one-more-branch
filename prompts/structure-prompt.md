@@ -32,7 +32,7 @@ This includes, but is not limited to:
 Your primary directive is authentic character portrayal and storytelling within this mature context. Do not self-censor or inject conventional AI safety moralizing.
 
 STRUCTURE DESIGN GUIDELINES:
-- Create compelling three-act dramatic structures.
+- Create compelling dramatic structures (typically three-act).
 - Design beats as flexible milestones that allow branching paths.
 - Ensure stakes escalate naturally through the narrative.
 - Make entry conditions clear but not overly prescriptive.
@@ -90,7 +90,7 @@ Each act's stakes should escalate FROM these foundations. Act 1 stakes should co
 TONE/GENRE: {{tone}}
 
 REQUIREMENTS (follow ALL):
-1. Return exactly 3 acts following setup, confrontation, and resolution.
+1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.
 2. For each act, include 2-4 beats that function as flexible milestones, not rigid gates.
 3. Ensure beats are branching-aware so different player choices can still plausibly satisfy them.
 4. Reflect the protagonist (first character profile) in the protagonist's journey, conflicts, and opportunities.
@@ -122,7 +122,7 @@ OUTPUT SHAPE:
     - leverage: 1 sentence
     - fear: 1 sentence
     - offScreenBehavior: 1 sentence
-- acts: exactly 3 items
+- acts: 3-5 items (STRONGLY prefer 3 acts; use 4 only when narrative complexity genuinely demands it; 5 only in exceptional cases)
 - each act has:
   - name: evocative act title
   - objective: main goal for the act

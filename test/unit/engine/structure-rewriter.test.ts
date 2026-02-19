@@ -53,6 +53,7 @@ function createRewriteContext(
     currentBeatIndex: 1,
     deviationReason: 'Prior rebellion beats are no longer viable after alliance reversal.',
     originalTheme: 'Loyalty tested by survival',
+    totalActCount: 3,
     ...overrides,
   };
 }

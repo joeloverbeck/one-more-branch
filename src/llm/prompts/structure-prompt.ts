@@ -85,7 +85,7 @@ export function buildStructurePrompt(
 ${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
-1. Return 3-5 acts following setup, confrontation, and resolution. Use 3 acts for simpler stories, 4-5 for more complex narratives.
+1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.
 2. For each act, include 2-4 beats that function as flexible milestones, not rigid gates.
 3. Ensure beats are branching-aware so different player choices can still plausibly satisfy them.
 4. Reflect the protagonist (first character profile) in the protagonist's journey, conflicts, and opportunities.

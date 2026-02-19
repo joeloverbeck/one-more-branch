@@ -40,6 +40,7 @@ export interface StructureRewriteContext {
   readonly currentBeatIndex: number;
   readonly deviationReason: string;
   readonly originalTheme: string;
+  readonly totalActCount: number;
 }
 
 export interface StructureRewriteResult {
