@@ -429,6 +429,18 @@ export function buildConceptsPageHtml(): string {
         <section id="concept-generate-section">
           <h2>Generate New Concepts</h2>
           <form id="concept-generate-form">
+            <div class="form-group">
+              <select id="kernel-selector">
+                <option value="">Select a saved kernel...</option>
+              </select>
+            </div>
+            <article id="selected-kernel-summary" style="display:none;">
+              <span id="selected-kernel-dramatic-thesis"></span>
+              <span id="selected-kernel-value-at-stake"></span>
+              <span id="selected-kernel-opposing-force"></span>
+              <span id="selected-kernel-thematic-question"></span>
+              <span id="selected-kernel-overall-score"></span>
+            </article>
             <div class="form-group"><input type="text" id="genreVibes"></div>
             <div class="form-group"><input type="text" id="moodKeywords"></div>
             <div class="form-group"><input type="text" id="contentPreferences"></div>
@@ -438,7 +450,7 @@ export function buildConceptsPageHtml(): string {
               <input type="password" id="conceptApiKey" required>
             </div>
             <div class="form-actions">
-              <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">
+              <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large" disabled>
                 Generate Concepts
               </button>
             </div>

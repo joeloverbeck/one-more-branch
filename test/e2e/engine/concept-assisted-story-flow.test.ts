@@ -27,6 +27,10 @@ jest.mock('@/persistence/concept-repository', () => ({
   conceptExists: jest.fn(),
 }));
 
+jest.mock('@/persistence/kernel-repository', () => ({
+  loadKernel: jest.fn(),
+}));
+
 jest.mock('@/logging/index', () => ({
   logger: {
     info: jest.fn(),
@@ -53,6 +57,7 @@ import {
   saveConcept,
   updateConcept,
 } from '@/persistence/concept-repository';
+import { loadKernel } from '@/persistence/kernel-repository';
 import {
   createConceptSpecFixture,
   createConceptStressTestFixture,
@@ -132,6 +137,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     saveConceptGenerationBatch as jest.MockedFunction<typeof saveConceptGenerationBatch>;
   const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
+  const mockedLoadKernel = loadKernel as jest.MockedFunction<typeof loadKernel>;
 
   const generateConceptsHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate');
   const saveConceptHandler = getRouteHandler(conceptRoutes, 'post', '/api/save');
@@ -157,6 +163,33 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     });
     mockedStressTestConcept.mockResolvedValue(createConceptStressTestFixture());
     mockedSaveConcept.mockResolvedValue(undefined);
+    mockedLoadKernel.mockResolvedValue({
+      id: 'kernel-1',
+      name: 'Kernel 1',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      seeds: {},
+      evaluatedKernel: {
+        kernel: {
+          dramaticThesis: 'Control destroys trust',
+          valueAtStake: 'Trust',
+          opposingForce: 'Fear of uncertainty',
+          directionOfChange: 'IRONIC',
+          thematicQuestion: 'Can safety exist without control?',
+        },
+        scores: {
+          dramaticClarity: 4,
+          thematicUniversality: 4,
+          generativePotential: 4,
+          conflictTension: 4,
+          emotionalDepth: 4,
+        },
+        overallScore: 80,
+        strengths: ['Strong thesis'],
+        weaknesses: ['Slightly abstract'],
+        tradeoffSummary: 'Clear and generative.',
+      },
+    });
 
     mockedDecomposeEntities.mockResolvedValue({
       decomposedCharacters: [],
@@ -210,12 +243,14 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         body: {
           genreVibes: 'dark fantasy',
           moodKeywords: 'tense',
+          kernelId: 'kernel-1',
           apiKey: 'valid-key-12345',
         },
       } as Request,
       { status: generateStatus, json: generateJson } as unknown as Response,
     );
     await waitForMock(generateJson);
+    expect(generateStatus).not.toHaveBeenCalled();
 
     const generatePayload = getMockCallArg(generateJson, 0, 0) as {
       success: boolean;
@@ -229,7 +264,6 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     expect(selected).toBeDefined();
 
     // Step 2: Save the concept
-    const savedConceptId = 'saved-concept-1';
     const saveStatus = jest.fn().mockReturnThis();
     const saveJson = jest.fn().mockReturnThis();
     void saveConceptHandler(
@@ -270,7 +304,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     const hardenJson = jest.fn().mockReturnThis();
     void hardenHandler(
       {
-        params: { conceptId: savedConceptId },
+        params: { conceptId },
         body: {
           apiKey: 'valid-key-12345',
         },

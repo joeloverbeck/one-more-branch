@@ -17,6 +17,22 @@
         <h2>Generate New Concepts</h2>
         <form id="concept-generate-form">
           <div class="form-group">
+            <label for="kernel-selector">Story Kernel *</label>
+            <select id="kernel-selector" required>
+              <option value="">Select a saved kernel...</option>
+            </select>
+          </div>
+
+          <article id="selected-kernel-summary" class="spine-card" style="display: none; margin-bottom: 1rem;">
+            <h3 class="spine-cdq">Selected Kernel</h3>
+            <p class="spine-field"><span class="spine-label">Dramatic Thesis:</span> <span id="selected-kernel-dramatic-thesis"></span></p>
+            <p class="spine-field"><span class="spine-label">Value At Stake:</span> <span id="selected-kernel-value-at-stake"></span></p>
+            <p class="spine-field"><span class="spine-label">Opposing Force:</span> <span id="selected-kernel-opposing-force"></span></p>
+            <p class="spine-field"><span class="spine-label">Thematic Question:</span> <span id="selected-kernel-thematic-question"></span></p>
+            <p class="spine-field"><span class="spine-label">Overall Score:</span> <span id="selected-kernel-overall-score"></span></p>
+          </article>
+
+          <div class="form-group">
             <label for="genreVibes">Genre Vibes</label>
             <input
               type="text"
@@ -77,7 +93,7 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large">Generate Concepts</button>
+            <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large" disabled>Generate Concepts</button>
           </div>
         </form>
       </section>

@@ -70,6 +70,68 @@
     }).join('');
   }
 
+  function renderConceptEnrichment(concept) {
+    var parts = '';
+
+    if (concept && typeof concept.whatIfQuestion === 'string' && concept.whatIfQuestion.trim()) {
+      parts +=
+        '<p class="spine-field concept-what-if"><span class="spine-label">What If:</span> <em>' +
+        escapeHtml(concept.whatIfQuestion.trim()) +
+        '</em></p>';
+    }
+
+    if (concept && typeof concept.ironicTwist === 'string' && concept.ironicTwist.trim()) {
+      parts +=
+        '<div class="spine-field"><span class="spine-label">Ironic Twist:</span> ' +
+        escapeHtml(concept.ironicTwist.trim()) +
+        '</div>';
+    }
+
+    if (concept && typeof concept.playerFantasy === 'string' && concept.playerFantasy.trim()) {
+      parts +=
+        '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' +
+        escapeHtml(concept.playerFantasy.trim()) +
+        '</em></p>';
+    }
+
+    return parts;
+  }
+
+  function renderConceptCardBody(entry, options) {
+    var concept = entry && entry.concept ? entry.concept : {};
+    var includeSelectionToggle = !options || options.includeSelectionToggle !== false;
+    var index = options && Number.isFinite(options.index) ? options.index : 0;
+
+    var overallScore = Number(entry && entry.overallScore);
+    var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
+
+    var html =
+      '<div class="spine-badges">' +
+        '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
+        '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
+        '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+      '</div>' +
+      '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
+      '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
+      '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
+      renderConceptEnrichment(concept) +
+      '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
+      '<div class="concept-feedback">' +
+        '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
+        '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
+      '</div>';
+
+    if (includeSelectionToggle) {
+      html +=
+        '<label class="concept-harden-toggle">' +
+          '<input type="checkbox" class="concept-harden-checkbox" data-concept-index="' + index + '"> Harden this concept' +
+        '</label>';
+    }
+
+    return html;
+  }
+
   function renderConceptCards(evaluatedConcepts, container, onSelect) {
     if (!container) {
       return;
@@ -84,32 +146,11 @@
     }
 
     evaluatedConcepts.forEach(function (entry, index) {
-      var concept = entry && entry.concept ? entry.concept : {};
       var card = document.createElement('article');
       card.className = 'spine-card concept-card';
       card.dataset.index = String(index);
 
-      var overallScore = Number(entry && entry.overallScore);
-      var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
-
-      card.innerHTML =
-        '<div class="spine-badges">' +
-          '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
-          '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
-          '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
-        '</div>' +
-        '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
-        '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
-        '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
-        '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
-        '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
-        '<div class="concept-feedback">' +
-          '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
-          '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
-        '</div>' +
-        '<label class="concept-harden-toggle">' +
-          '<input type="checkbox" class="concept-harden-checkbox" data-concept-index="' + index + '"> Harden this concept' +
-        '</label>';
+      card.innerHTML = renderConceptCardBody(entry, { includeSelectionToggle: true, index: index });
 
       card.addEventListener('click', function () {
         var allCards = container.querySelectorAll('.concept-card');

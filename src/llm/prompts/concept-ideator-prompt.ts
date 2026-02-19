@@ -104,12 +104,24 @@ function normalize(value: string | undefined): string | undefined {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 }
 
+function buildKernelConstraintBlock(kernel: ConceptIdeatorContext['kernel']): string | null {
+  if (!kernel) {
+    return null;
+  }
+
+  return `KERNEL CONSTRAINTS:
+- The concept MUST operationalize the provided story kernel's dramatic thesis.
+- The kernel's valueAtStake and opposingForce must anchor the concept's conflict engine.
+- Preserve the kernel's thematic direction while still producing a distinct playable concept.`;
+}
+
 export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatMessage[] {
   const genreVibes = normalize(context.genreVibes);
   const moodKeywords = normalize(context.moodKeywords);
   const contentPreferences = normalize(context.contentPreferences);
   const thematicInterests = normalize(context.thematicInterests);
   const sparkLine = normalize(context.sparkLine);
+  const kernel = context.kernel;
 
   const systemSections: string[] = [ROLE_INTRO];
 
@@ -126,6 +138,10 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
 
   systemSections.push(CONTENT_POLICY);
   systemSections.push(buildTaxonomyGuidance());
+  const kernelConstraintBlock = buildKernelConstraintBlock(kernel);
+  if (kernelConstraintBlock) {
+    systemSections.push(kernelConstraintBlock);
+  }
   systemSections.push(QUALITY_ANCHORS);
   systemSections.push(DIVERSITY_CONSTRAINTS);
 
@@ -147,6 +163,16 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
   }
   if (contentPreferences) {
     userSections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);
+  }
+  if (kernel) {
+    userSections.push(
+      `SELECTED STORY KERNEL:
+- dramaticThesis: ${kernel.dramaticThesis}
+- valueAtStake: ${kernel.valueAtStake}
+- opposingForce: ${kernel.opposingForce}
+- directionOfChange: ${kernel.directionOfChange}
+- thematicQuestion: ${kernel.thematicQuestion}`,
+    );
   }
 
   userSections.push(

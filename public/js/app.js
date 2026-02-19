@@ -2313,6 +2313,68 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     }).join('');
   }
 
+  function renderConceptEnrichment(concept) {
+    var parts = '';
+
+    if (concept && typeof concept.whatIfQuestion === 'string' && concept.whatIfQuestion.trim()) {
+      parts +=
+        '<p class="spine-field concept-what-if"><span class="spine-label">What If:</span> <em>' +
+        escapeHtml(concept.whatIfQuestion.trim()) +
+        '</em></p>';
+    }
+
+    if (concept && typeof concept.ironicTwist === 'string' && concept.ironicTwist.trim()) {
+      parts +=
+        '<div class="spine-field"><span class="spine-label">Ironic Twist:</span> ' +
+        escapeHtml(concept.ironicTwist.trim()) +
+        '</div>';
+    }
+
+    if (concept && typeof concept.playerFantasy === 'string' && concept.playerFantasy.trim()) {
+      parts +=
+        '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' +
+        escapeHtml(concept.playerFantasy.trim()) +
+        '</em></p>';
+    }
+
+    return parts;
+  }
+
+  function renderConceptCardBody(entry, options) {
+    var concept = entry && entry.concept ? entry.concept : {};
+    var includeSelectionToggle = !options || options.includeSelectionToggle !== false;
+    var index = options && Number.isFinite(options.index) ? options.index : 0;
+
+    var overallScore = Number(entry && entry.overallScore);
+    var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
+
+    var html =
+      '<div class="spine-badges">' +
+        '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
+        '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
+        '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+      '</div>' +
+      '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
+      '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
+      '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
+      renderConceptEnrichment(concept) +
+      '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
+      '<div class="concept-feedback">' +
+        '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
+        '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
+      '</div>';
+
+    if (includeSelectionToggle) {
+      html +=
+        '<label class="concept-harden-toggle">' +
+          '<input type="checkbox" class="concept-harden-checkbox" data-concept-index="' + index + '"> Harden this concept' +
+        '</label>';
+    }
+
+    return html;
+  }
+
   function renderConceptCards(evaluatedConcepts, container, onSelect) {
     if (!container) {
       return;
@@ -2327,32 +2389,11 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     }
 
     evaluatedConcepts.forEach(function (entry, index) {
-      var concept = entry && entry.concept ? entry.concept : {};
       var card = document.createElement('article');
       card.className = 'spine-card concept-card';
       card.dataset.index = String(index);
 
-      var overallScore = Number(entry && entry.overallScore);
-      var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
-
-      card.innerHTML =
-        '<div class="spine-badges">' +
-          '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
-          '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
-          '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
-        '</div>' +
-        '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
-        '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
-        '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
-        '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
-        '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
-        '<div class="concept-feedback">' +
-          '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
-          '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
-        '</div>' +
-        '<label class="concept-harden-toggle">' +
-          '<input type="checkbox" class="concept-harden-checkbox" data-concept-index="' + index + '"> Harden this concept' +
-        '</label>';
+      card.innerHTML = renderConceptCardBody(entry, { includeSelectionToggle: true, index: index });
 
       card.addEventListener('click', function () {
         var allCards = container.querySelectorAll('.concept-card');
@@ -4658,6 +4699,13 @@ function createRecapModalController(initialData) {
     var editCloseBtn = document.getElementById('concept-edit-close');
     var editSaveBtn = document.getElementById('concept-edit-save');
     var editCancelBtn = document.getElementById('concept-edit-cancel');
+    var kernelSelector = document.getElementById('kernel-selector');
+    var kernelSummary = document.getElementById('selected-kernel-summary');
+    var kernelThesis = document.getElementById('selected-kernel-dramatic-thesis');
+    var kernelValue = document.getElementById('selected-kernel-value-at-stake');
+    var kernelOpposingForce = document.getElementById('selected-kernel-opposing-force');
+    var kernelQuestion = document.getElementById('selected-kernel-thematic-question');
+    var kernelScore = document.getElementById('selected-kernel-overall-score');
 
     if (!loading || !generateBtn) {
       return;
@@ -4667,6 +4715,7 @@ function createRecapModalController(initialData) {
     var currentEditConceptId = null;
     var lastGeneratedConcepts = null;
     var lastSeeds = null;
+    var selectedKernelId = '';
 
     // Restore API key from session storage
     var storedKey = getApiKey();
@@ -4696,6 +4745,101 @@ function createRecapModalController(initialData) {
       };
     }
 
+    function isApiKeyValid() {
+      return getConceptApiKey().length >= 10;
+    }
+
+    function updateGenerateButtonState() {
+      generateBtn.disabled = !(isApiKeyValid() && selectedKernelId);
+    }
+
+    function hideKernelSummary() {
+      if (kernelSummary) {
+        kernelSummary.style.display = 'none';
+      }
+      if (kernelThesis) kernelThesis.textContent = '';
+      if (kernelValue) kernelValue.textContent = '';
+      if (kernelOpposingForce) kernelOpposingForce.textContent = '';
+      if (kernelQuestion) kernelQuestion.textContent = '';
+      if (kernelScore) kernelScore.textContent = '';
+    }
+
+    function renderKernelSummary(savedKernel) {
+      if (!savedKernel || !savedKernel.evaluatedKernel || !savedKernel.evaluatedKernel.kernel) {
+        hideKernelSummary();
+        return;
+      }
+
+      var kernel = savedKernel.evaluatedKernel.kernel;
+      if (kernelThesis) kernelThesis.textContent = kernel.dramaticThesis || '';
+      if (kernelValue) kernelValue.textContent = kernel.valueAtStake || '';
+      if (kernelOpposingForce) kernelOpposingForce.textContent = kernel.opposingForce || '';
+      if (kernelQuestion) kernelQuestion.textContent = kernel.thematicQuestion || '';
+      if (kernelScore) {
+        var rawScore = Number(savedKernel.evaluatedKernel.overallScore);
+        var safeScore = Number.isFinite(rawScore) ? Math.round(Math.max(0, Math.min(100, rawScore))) : 0;
+        kernelScore.textContent = safeScore + '/100';
+      }
+      if (kernelSummary) {
+        kernelSummary.style.display = 'block';
+      }
+    }
+
+    async function loadKernelOptions() {
+      if (!(kernelSelector instanceof HTMLSelectElement)) {
+        return;
+      }
+
+      try {
+        var response = await fetch('/kernels/api/list', { method: 'GET' });
+        var data = await response.json();
+        if (!response.ok || !data.success || !Array.isArray(data.kernels)) {
+          throw new Error(data.error || 'Failed to load kernels');
+        }
+
+        data.kernels.forEach(function (kernel) {
+          var option = document.createElement('option');
+          option.value = kernel.id;
+          option.textContent = kernel.name || 'Untitled Kernel';
+          kernelSelector.appendChild(option);
+        });
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to load kernels');
+      }
+    }
+
+    async function handleKernelSelectionChange() {
+      if (!(kernelSelector instanceof HTMLSelectElement)) {
+        return;
+      }
+
+      selectedKernelId = (kernelSelector.value || '').trim();
+      if (!selectedKernelId) {
+        hideKernelSummary();
+        updateGenerateButtonState();
+        return;
+      }
+
+      try {
+        var response = await fetch('/kernels/api/' + encodeURIComponent(selectedKernelId), {
+          method: 'GET',
+        });
+        var data = await response.json();
+        if (!response.ok || !data.success || !data.kernel) {
+          throw new Error(data.error || 'Failed to load selected kernel');
+        }
+
+        renderKernelSummary(data.kernel);
+      } catch (error) {
+        selectedKernelId = '';
+        kernelSelector.value = '';
+        hideKernelSummary();
+        showError(error instanceof Error ? error.message : 'Failed to load selected kernel');
+      } finally {
+        updateGenerateButtonState();
+      }
+    }
+
     function showError(message) {
       if (typeof showFormError === 'function') {
         showFormError(message);
@@ -4722,6 +4866,10 @@ function createRecapModalController(initialData) {
         showError('OpenRouter API key is required');
         return;
       }
+      if (!selectedKernelId) {
+        showError('Select a story kernel before generating concepts');
+        return;
+      }
 
       var seeds = collectSeeds();
       if (!seeds.genreVibes && !seeds.moodKeywords && !seeds.contentPreferences && !seeds.thematicInterests && !seeds.sparkLine) {
@@ -4744,6 +4892,7 @@ function createRecapModalController(initialData) {
             contentPreferences: seeds.contentPreferences,
             thematicInterests: seeds.thematicInterests,
             sparkLine: seeds.sparkLine,
+            kernelId: selectedKernelId,
             apiKey: apiKey,
             progressId: progressId,
           }),
@@ -4764,7 +4913,7 @@ function createRecapModalController(initialData) {
       } finally {
         loadingProgress.stop();
         loading.style.display = 'none';
-        generateBtn.disabled = false;
+        updateGenerateButtonState();
       }
     }
 
@@ -4782,29 +4931,11 @@ function createRecapModalController(initialData) {
       }
 
       evaluatedConcepts.forEach(function (entry, index) {
-        var concept = entry && entry.concept ? entry.concept : {};
         var card = document.createElement('article');
         card.className = 'spine-card concept-card';
         card.dataset.index = String(index);
-
-        var overallScore = Number(entry && entry.overallScore);
-        var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
-
         card.innerHTML =
-          '<div class="spine-badges">' +
-            '<span class="spine-badge spine-badge-type">' + escapeHtml((concept.genreFrame || '').replace(/_/g, ' ')) + '</span>' +
-            '<span class="spine-badge spine-badge-conflict">' + escapeHtml((concept.conflictAxis || '').replace(/_/g, ' ')) + '</span>' +
-            '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
-          '</div>' +
-          '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
-          '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
-          '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
-          '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
-          '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
-          '<div class="concept-feedback">' +
-            '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
-            '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
-          '</div>' +
+          renderConceptCardBody(entry, { includeSelectionToggle: false, index: index }) +
           '<div class="form-actions" style="margin-top: 0.5rem;">' +
             '<button type="button" class="btn btn-primary btn-small concept-save-generated-btn" data-gen-index="' + index + '">Save to Library</button>' +
           '</div>';
@@ -5143,10 +5274,22 @@ function createRecapModalController(initialData) {
       event.preventDefault();
       handleGenerate();
     });
+    if (apiKeyInput) {
+      apiKeyInput.addEventListener('input', updateGenerateButtonState);
+    }
+    if (kernelSelector instanceof HTMLSelectElement) {
+      kernelSelector.addEventListener('change', function () {
+        void handleKernelSelectionChange();
+      });
+    }
 
     if (editCloseBtn) editCloseBtn.addEventListener('click', closeEditModal);
     if (editCancelBtn) editCancelBtn.addEventListener('click', closeEditModal);
     if (editSaveBtn) editSaveBtn.addEventListener('click', handleEditSave);
+
+    hideKernelSummary();
+    updateGenerateButtonState();
+    void loadKernelOptions();
   }
 
   // ── Kernels Page Controller ─────────────────────────────────────

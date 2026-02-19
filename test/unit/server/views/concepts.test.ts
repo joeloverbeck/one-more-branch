@@ -17,4 +17,13 @@ describe('concepts page template', () => {
       /<form id="concept-generate-form">[\s\S]*<input[\s\S]*type="password"[\s\S]*id="conceptApiKey"/
     );
   });
+
+  it('includes kernel selector and disabled generate button by default', () => {
+    const template = fs.readFileSync(conceptsPath, 'utf8');
+
+    expect(template).toContain('id="kernel-selector"');
+    expect(template).toContain('id="selected-kernel-summary"');
+    expect(template).toContain('id="generate-concepts-btn"');
+    expect(template).toMatch(/id="generate-concepts-btn"[^>]*disabled/);
+  });
 });

@@ -1,5 +1,6 @@
 import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
 import { CONFLICT_AXES, isConflictAxis, isConflictType } from './conflict-taxonomy.js';
+import type { StoryKernel } from './story-kernel.js';
 
 export type { ConflictAxis };
 export { CONFLICT_AXES, isConflictAxis };
@@ -230,6 +231,7 @@ export interface ConceptIdeatorContext {
   readonly contentPreferences?: string;
   readonly thematicInterests?: string;
   readonly sparkLine?: string;
+  readonly kernel?: StoryKernel;
 }
 
 export interface ConceptIdeationResult {
