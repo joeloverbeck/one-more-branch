@@ -137,7 +137,7 @@ src/
 │   │                         #   CharacterState, Canon, NpcAgenda, NpcRelationship types
 │   ├── story-arc.ts          # StoryStructure, StoryAct, StoryBeat,
 │   │                         #   AccumulatedStructureState
-│   ├── story-spine.ts        # StorySpine, StorySpineType, ConflictType, CharacterArcType
+│   ├── story-spine.ts        # StorySpine, StorySpineType, ConflictAxis, ConflictType, CharacterArcType
 │   ├── protagonist-affect.ts # Emotional state snapshots per page
 │   ├── protagonist-guidance.ts # Player guidance (emotions, thoughts, speech)
 │   ├── decomposed-character.ts # Decomposed character profiles from entity decomposer
@@ -232,7 +232,7 @@ Per-page emotional snapshot (not accumulated): `primaryEmotion`, `primaryIntensi
 Multi-act story arc with beats. Each act has an objective, stakes, entry condition, and beats. Each beat has a name, description, objective, and role (setup/escalation/turning_point/resolution). `AccumulatedStructureState` tracks progression through acts/beats with `BeatProgression` records.
 
 ### Story
-Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from entity decomposer), `decomposedWorld` (structured world facts), `initialNpcAgendas`, `initialNpcRelationships`. Supports NPCs and starting situation.
+Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, story pattern, thematic conflict axis, structural conflict type, and arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from entity decomposer), `decomposedWorld` (structured world facts), `initialNpcAgendas`, `initialNpcRelationships`. Supports NPCs and starting situation.
 
 ## Prompt Logging
 

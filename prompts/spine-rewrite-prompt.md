@@ -51,7 +51,7 @@ SPINE REWRITE GUIDELINES:
 - The invalidated element MUST change meaningfully. Other elements may stay the same if they still work.
 - The new central dramatic question must arise organically from what has already happened.
 - The new need-want dynamic should reflect how the protagonist has been changed by their journey.
-- The storySpineType and conflictType CAN change if the narrative warrants it, but don't change them arbitrarily.
+- The storySpineType, conflictAxis, and conflictType CAN change if the narrative warrants it, but don't change them arbitrarily.
 - The characterArcType SHOULD change if the protagonist's trajectory has fundamentally shifted.
 ```
 
@@ -71,7 +71,8 @@ WORLDBUILDING:
 CURRENT (BROKEN) SPINE:
 STORY SPINE (invariant narrative backbone — every scene must serve this):
 Story Pattern: {{currentSpine.storySpineType}}
-Conflict Axis: {{currentSpine.conflictType}}
+Conflict Axis: {{currentSpine.conflictAxis}}
+Conflict Type: {{currentSpine.conflictType}}
 Character Arc: {{currentSpine.characterArcType}}
 Central Dramatic Question: {{currentSpine.centralDramaticQuestion}}
 Protagonist Need: {{currentSpine.protagonistNeedVsWant.need}}
@@ -107,6 +108,7 @@ The current spine is formatted by `buildSpineSection()` from `src/llm/prompts/se
     "pressureMechanism": "{{how the new force creates difficult choices}}"
   },
   "storySpineType": "{{QUEST|SURVIVAL|ESCAPE|REVENGE|RESCUE|RIVALRY|MYSTERY|TEMPTATION|TRANSFORMATION|FORBIDDEN_LOVE|SACRIFICE|FALL_FROM_GRACE|RISE_TO_POWER|COMING_OF_AGE|REBELLION}}",
+  "conflictAxis": "{{INDIVIDUAL_VS_SYSTEM|TRUTH_VS_STABILITY|DUTY_VS_DESIRE|FREEDOM_VS_SAFETY|KNOWLEDGE_VS_INNOCENCE|POWER_VS_MORALITY|LOYALTY_VS_SURVIVAL|IDENTITY_VS_BELONGING}}",
   "conflictType": "{{PERSON_VS_PERSON|PERSON_VS_SELF|PERSON_VS_SOCIETY|PERSON_VS_NATURE|PERSON_VS_TECHNOLOGY|PERSON_VS_SUPERNATURAL|PERSON_VS_FATE}}",
   "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}"
 }

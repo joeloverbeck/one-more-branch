@@ -21,6 +21,7 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
               'protagonistNeedVsWant',
               'primaryAntagonisticForce',
               'storySpineType',
+              'conflictAxis',
               'conflictType',
               'characterArcType',
               'toneFeel',
@@ -92,6 +93,20 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
                   'REBELLION',
                 ],
                 description: 'The primary narrative pattern.',
+              },
+              conflictAxis: {
+                type: 'string',
+                enum: [
+                  'INDIVIDUAL_VS_SYSTEM',
+                  'TRUTH_VS_STABILITY',
+                  'DUTY_VS_DESIRE',
+                  'FREEDOM_VS_SAFETY',
+                  'KNOWLEDGE_VS_INNOCENCE',
+                  'POWER_VS_MORALITY',
+                  'LOYALTY_VS_SURVIVAL',
+                  'IDENTITY_VS_BELONGING',
+                ],
+                description: 'The thematic tension axis that frames the conflict.',
               },
               conflictType: {
                 type: 'string',

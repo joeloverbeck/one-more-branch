@@ -276,7 +276,8 @@ TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneFeel}} Target fe
 {{#if spine}}
 STORY SPINE (invariant narrative backbone — every scene must serve this):
 Story Pattern: {{spine.storySpineType}}
-Conflict Axis: {{spine.conflictType}}
+Conflict Axis: {{spine.conflictAxis}}
+Conflict Type: {{spine.conflictType}}
 Character Arc: {{spine.characterArcType}}
 Central Dramatic Question: {{spine.centralDramaticQuestion}}
 Protagonist Need: {{spine.protagonistNeedVsWant.need}}

@@ -76,7 +76,7 @@ STARTING SITUATION:
 CONCEPT ANALYSIS (from upstream concept generation — use as grounding):
 One-line hook: {{conceptSpec.oneLineHook}}
 Core conflict loop: {{conceptSpec.coreConflictLoop}}
-Thematic tension axis: {{conceptSpec.conflictAxis}}
+Thematic tension axis: {{conceptSpec.conflictAxis}} — Your spine MUST use this exact conflictAxis value.
 Structural opposition: {{conceptSpec.conflictType}} — Your spine MUST use this exact conflictType value.
 Pressure source: {{conceptSpec.pressureSource}}
 Personal stakes: {{conceptSpec.stakesPersonal}}
@@ -103,6 +103,7 @@ FIELD INSTRUCTIONS:
 - primaryAntagonisticForce.description: What opposes the protagonist. Can be a person, system, environment, or internal force. One sentence.
 - primaryAntagonisticForce.pressureMechanism: HOW it creates difficult choices that widen the need-want gap. One sentence.
 - storySpineType: The primary narrative pattern (QUEST, SURVIVAL, ESCAPE, REVENGE, RESCUE, RIVALRY, MYSTERY, TEMPTATION, TRANSFORMATION, FORBIDDEN_LOVE, SACRIFICE, FALL_FROM_GRACE, RISE_TO_POWER, COMING_OF_AGE, REBELLION).
+- conflictAxis: The thematic tension axis (INDIVIDUAL_VS_SYSTEM, TRUTH_VS_STABILITY, DUTY_VS_DESIRE, FREEDOM_VS_SAFETY, KNOWLEDGE_VS_INNOCENCE, POWER_VS_MORALITY, LOYALTY_VS_SURVIVAL, IDENTITY_VS_BELONGING).
 - conflictType: The primary source of opposition (PERSON_VS_PERSON, PERSON_VS_SELF, PERSON_VS_SOCIETY, PERSON_VS_NATURE, PERSON_VS_TECHNOLOGY, PERSON_VS_SUPERNATURAL, PERSON_VS_FATE).
 - characterArcType: The character arc trajectory (POSITIVE_CHANGE, FLAT, DISILLUSIONMENT, FALL, CORRUPTION).
 
@@ -127,6 +128,7 @@ OUTPUT SHAPE:
         "pressureMechanism": "{{how the force creates difficult choices widening the need-want gap}}"
       },
       "storySpineType": "{{QUEST|SURVIVAL|ESCAPE|REVENGE|RESCUE|RIVALRY|MYSTERY|TEMPTATION|TRANSFORMATION|FORBIDDEN_LOVE|SACRIFICE|FALL_FROM_GRACE|RISE_TO_POWER|COMING_OF_AGE|REBELLION}}",
+      "conflictAxis": "{{INDIVIDUAL_VS_SYSTEM|TRUTH_VS_STABILITY|DUTY_VS_DESIRE|FREEDOM_VS_SAFETY|KNOWLEDGE_VS_INNOCENCE|POWER_VS_MORALITY|LOYALTY_VS_SURVIVAL|IDENTITY_VS_BELONGING}}",
       "conflictType": "{{PERSON_VS_PERSON|PERSON_VS_SELF|PERSON_VS_SOCIETY|PERSON_VS_NATURE|PERSON_VS_TECHNOLOGY|PERSON_VS_SUPERNATURAL|PERSON_VS_FATE}}",
       "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}"
     }
@@ -139,4 +141,4 @@ OUTPUT SHAPE:
 - `protagonistNeedVsWant.dynamic` describes the relationship between need and want: `CONVERGENT` (achieving want fulfills need), `DIVERGENT` (want leads away from need), `SUBSTITUTIVE` (need replaces want), `IRRECONCILABLE` (cannot satisfy both).
 - `characterArcType` describes the trajectory: `POSITIVE_CHANGE` (grows), `FLAT` (tests existing belief), `DISILLUSIONMENT` (learns hard truth), `FALL` (loses way), `CORRUPTION` (becomes what they opposed).
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
-- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with a hard constraint on `conflictType`. This means all 3 spine options will share the concept's `conflictType` and must satisfy the divergence constraint by differing in `storySpineType` instead. When no concept is present (manual story creation), spine generation works as before with no concept section.
+- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will share the concept's `conflictAxis` and `conflictType`, and must satisfy the divergence constraint by differing in `storySpineType` instead. When no concept is present (manual story creation), spine generation works as before with no concept section.

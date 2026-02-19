@@ -74,6 +74,7 @@ const mockSpine: StorySpine = {
     pressureMechanism: 'Controls all records and courts',
   },
   storySpineType: 'MYSTERY',
+  conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
   conflictType: 'PERSON_VS_SOCIETY',
   characterArcType: 'POSITIVE_CHANGE',
   toneFeel: ['grim', 'tense', 'political'],

@@ -1,3 +1,14 @@
+import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
+import {
+  CONFLICT_AXES,
+  CONFLICT_TYPE_VALUES,
+  isConflictAxis,
+  isConflictType,
+} from './conflict-taxonomy.js';
+
+export type { ConflictAxis, ConflictType };
+export { CONFLICT_AXES, CONFLICT_TYPE_VALUES, isConflictAxis, isConflictType };
+
 export type StorySpineType =
   | 'QUEST'
   | 'SURVIVAL'
@@ -14,15 +25,6 @@ export type StorySpineType =
   | 'RISE_TO_POWER'
   | 'COMING_OF_AGE'
   | 'REBELLION';
-
-export type ConflictType =
-  | 'PERSON_VS_PERSON'
-  | 'PERSON_VS_SELF'
-  | 'PERSON_VS_SOCIETY'
-  | 'PERSON_VS_NATURE'
-  | 'PERSON_VS_TECHNOLOGY'
-  | 'PERSON_VS_SUPERNATURAL'
-  | 'PERSON_VS_FATE';
 
 export type CharacterArcType =
   | 'POSITIVE_CHANGE'
@@ -49,16 +51,6 @@ export const STORY_SPINE_TYPE_VALUES: readonly StorySpineType[] = [
   'RISE_TO_POWER',
   'COMING_OF_AGE',
   'REBELLION',
-] as const;
-
-export const CONFLICT_TYPE_VALUES: readonly ConflictType[] = [
-  'PERSON_VS_PERSON',
-  'PERSON_VS_SELF',
-  'PERSON_VS_SOCIETY',
-  'PERSON_VS_NATURE',
-  'PERSON_VS_TECHNOLOGY',
-  'PERSON_VS_SUPERNATURAL',
-  'PERSON_VS_FATE',
 ] as const;
 
 export const CHARACTER_ARC_TYPE_VALUES: readonly CharacterArcType[] = [
@@ -92,6 +84,7 @@ export interface StorySpine {
   readonly protagonistNeedVsWant: ProtagonistNeedVsWant;
   readonly primaryAntagonisticForce: PrimaryAntagonisticForce;
   readonly storySpineType: StorySpineType;
+  readonly conflictAxis: ConflictAxis;
   readonly conflictType: ConflictType;
   readonly characterArcType: CharacterArcType;
   readonly toneFeel: readonly string[];
@@ -100,10 +93,6 @@ export interface StorySpine {
 
 export function isStorySpineType(value: unknown): value is StorySpineType {
   return typeof value === 'string' && (STORY_SPINE_TYPE_VALUES as readonly string[]).includes(value);
-}
-
-export function isConflictType(value: unknown): value is ConflictType {
-  return typeof value === 'string' && (CONFLICT_TYPE_VALUES as readonly string[]).includes(value);
 }
 
 export function isCharacterArcType(value: unknown): value is CharacterArcType {
