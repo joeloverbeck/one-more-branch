@@ -123,5 +123,8 @@ export function parseConceptSpec(
     settingScale: data['settingScale'],
     branchingPosture: data['branchingPosture'],
     stateComplexity: data['stateComplexity'],
+    whatIfQuestion: requireNonEmptyString(data['whatIfQuestion'], 'whatIfQuestion', label),
+    ironicTwist: requireNonEmptyString(data['ironicTwist'], 'ironicTwist', label),
+    playerFantasy: requireNonEmptyString(data['playerFantasy'], 'playerFantasy', label),
   };
 }

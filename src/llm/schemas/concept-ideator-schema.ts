@@ -33,6 +33,9 @@ export const CONCEPT_SPEC_SCHEMA = {
     'settingScale',
     'branchingPosture',
     'stateComplexity',
+    'whatIfQuestion',
+    'ironicTwist',
+    'playerFantasy',
   ],
   properties: {
     oneLineHook: { type: 'string' },
@@ -56,6 +59,9 @@ export const CONCEPT_SPEC_SCHEMA = {
     settingScale: { type: 'string', enum: [...SETTING_SCALES] },
     branchingPosture: { type: 'string', enum: [...BRANCHING_POSTURES] },
     stateComplexity: { type: 'string', enum: [...STATE_COMPLEXITIES] },
+    whatIfQuestion: { type: 'string' },
+    ironicTwist: { type: 'string' },
+    playerFantasy: { type: 'string' },
   },
 } as const;
 

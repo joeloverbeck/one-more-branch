@@ -1,6 +1,7 @@
 import { LLMError } from '@/llm/llm-client-types';
 import { logger } from '@/logging';
 import { logLLMError, validateStoryInput } from '@/server/services/story-creation-service';
+import { createConceptSpecFixture } from '../../../fixtures/concept-generator';
 
 describe('story-creation-service', () => {
   describe('validateStoryInput', () => {
@@ -164,33 +165,7 @@ describe('story-creation-service', () => {
     });
 
     it('accepts valid conceptSpec payload', () => {
-      const conceptSpec = {
-        oneLineHook: 'A courier smuggles forbidden memories through a fractured city.',
-        elevatorParagraph: 'A courier must choose who gets the truth when every faction edits history.',
-        genreFrame: 'NOIR',
-        genreSubversion: 'The detective story is run by the evidence runner.',
-        protagonistRole: 'Memory courier',
-        coreCompetence: 'Pattern-based recall and route planning',
-        coreFlaw: 'Compulsive secrecy',
-        actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
-        coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
-        conflictAxis: 'TRUTH_VS_STABILITY',
-        conflictType: 'PERSON_VS_SOCIETY',
-        pressureSource: 'Competing cartels erase witnesses and records.',
-        stakesPersonal: 'Losing her identity and remaining allies.',
-        stakesSystemic: 'Civic memory collapse and institutional capture.',
-        deadlineMechanism: 'A citywide record purge begins at dawn.',
-        settingAxioms: ['Memories can be extracted.', 'Memories can be traded as legal evidence.'],
-        constraintSet: [
-          'Unlicensed extraction causes permanent neurological damage.',
-          'Tampered memories cannot be restored once audited.',
-          'Public memory ledgers update only once per day.',
-        ],
-        keyInstitutions: ['Ledger Court', 'Memory Cartel'],
-        settingScale: 'LOCAL',
-        branchingPosture: 'RECONVERGE',
-        stateComplexity: 'MEDIUM',
-      } as const;
+      const conceptSpec = createConceptSpecFixture(1);
 
       const result = validateStoryInput({
         title: 'My Story',

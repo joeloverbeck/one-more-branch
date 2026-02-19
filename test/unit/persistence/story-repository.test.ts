@@ -25,6 +25,7 @@ import {
   storyExists,
   updateStory,
 } from '@/persistence/story-repository';
+import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
 const TEST_PREFIX = 'TEST: PERLAY-003';
 const MISSING_STORY_ID = parseStoryId('00000000-0000-4000-8000-000000000001');
@@ -378,32 +379,7 @@ describe('story-repository', () => {
 
   it('saveStory/loadStory preserves conceptSpec', async () => {
     const story = buildTestStory({
-      conceptSpec: {
-        oneLineHook: 'A courier smuggles forbidden memories through a fractured city.',
-        elevatorParagraph: 'A courier must choose who gets the truth when every faction edits history.',
-        genreFrame: 'NOIR',
-        genreSubversion: 'The detective story is run by the evidence runner.',
-        protagonistRole: 'Memory courier',
-        coreCompetence: 'Pattern-based recall and route planning',
-        coreFlaw: 'Compulsive secrecy',
-        actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
-        coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
-        conflictAxis: 'TRUTH_VS_STABILITY',
-        pressureSource: 'Competing cartels erase witnesses and records.',
-        stakesPersonal: 'Losing her identity and remaining allies.',
-        stakesSystemic: 'Civic memory collapse and institutional capture.',
-        deadlineMechanism: 'A citywide record purge begins at dawn.',
-        settingAxioms: ['Memories can be extracted.', 'Memories can be traded as legal evidence.'],
-        constraintSet: [
-          'Unlicensed extraction causes permanent neurological damage.',
-          'Tampered memories cannot be restored once audited.',
-          'Public memory ledgers update only once per day.',
-        ],
-        keyInstitutions: ['Ledger Court', 'Memory Cartel'],
-        settingScale: 'LOCAL',
-        branchingPosture: 'RECONVERGE',
-        stateComplexity: 'MEDIUM',
-      },
+      conceptSpec: createConceptSpecFixture(1),
     });
     createdStoryIds.add(story.id);
 

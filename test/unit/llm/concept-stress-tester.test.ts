@@ -20,54 +20,11 @@ jest.mock('../../../src/logging/index.js', () => ({
 import { parseConceptStressTestResponse, stressTestConcept } from '../../../src/llm/concept-stress-tester';
 import { buildConceptStressTesterPrompt } from '../../../src/llm/prompts/concept-stress-tester-prompt';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../src/llm/schemas/concept-stress-tester-schema';
-import type { ConceptStressTesterContext } from '../../../src/models';
+import type { ConceptSpec, ConceptStressTesterContext } from '../../../src/models';
+import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
-function createValidConcept(index: number): {
-  oneLineHook: string;
-  elevatorParagraph: string;
-  genreFrame: 'NOIR';
-  genreSubversion: string;
-  protagonistRole: string;
-  coreCompetence: string;
-  coreFlaw: string;
-  actionVerbs: readonly string[];
-  coreConflictLoop: string;
-  conflictAxis: 'TRUTH_VS_STABILITY';
-  conflictType: 'PERSON_VS_SOCIETY';
-  pressureSource: string;
-  stakesPersonal: string;
-  stakesSystemic: string;
-  deadlineMechanism: string;
-  settingAxioms: readonly string[];
-  constraintSet: readonly string[];
-  keyInstitutions: readonly string[];
-  settingScale: 'LOCAL';
-  branchingPosture: 'RECONVERGE';
-  stateComplexity: 'MEDIUM';
-} {
-  return {
-    oneLineHook: `Hook ${index}`,
-    elevatorParagraph: `Elevator paragraph ${index}`,
-    genreFrame: 'NOIR',
-    genreSubversion: `Subversion ${index}`,
-    protagonistRole: `Role ${index}`,
-    coreCompetence: `Competence ${index}`,
-    coreFlaw: `Flaw ${index}`,
-    actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
-    coreConflictLoop: `Conflict loop ${index}`,
-    conflictAxis: 'TRUTH_VS_STABILITY',
-    conflictType: 'PERSON_VS_SOCIETY',
-    pressureSource: `Pressure ${index}`,
-    stakesPersonal: `Personal stakes ${index}`,
-    stakesSystemic: `Systemic stakes ${index}`,
-    deadlineMechanism: `Deadline ${index}`,
-    settingAxioms: ['Axiom 1', 'Axiom 2'],
-    constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
-    keyInstitutions: ['Institution 1', 'Institution 2'],
-    settingScale: 'LOCAL',
-    branchingPosture: 'RECONVERGE',
-    stateComplexity: 'MEDIUM',
-  } as const;
+function createValidConcept(index: number): ConceptSpec {
+  return createConceptSpecFixture(index);
 }
 
 function createContext(): ConceptStressTesterContext {

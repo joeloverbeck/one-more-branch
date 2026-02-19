@@ -21,53 +21,11 @@ import { CONTENT_POLICY } from '../../../src/llm/content-policy';
 import { generateConceptIdeas, parseConceptIdeationResponse } from '../../../src/llm/concept-ideator';
 import { buildConceptIdeatorPrompt } from '../../../src/llm/prompts/concept-ideator-prompt';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../src/llm/schemas/concept-ideator-schema';
+import type { ConceptSpec } from '../../../src/models';
+import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
-function createValidConcept(index: number): {
-  oneLineHook: string;
-  elevatorParagraph: string;
-  genreFrame: 'NOIR';
-  genreSubversion: string;
-  protagonistRole: string;
-  coreCompetence: string;
-  coreFlaw: string;
-  actionVerbs: readonly string[];
-  coreConflictLoop: string;
-  conflictAxis: 'TRUTH_VS_STABILITY';
-  conflictType: 'PERSON_VS_SOCIETY';
-  pressureSource: string;
-  stakesPersonal: string;
-  stakesSystemic: string;
-  deadlineMechanism: string;
-  settingAxioms: readonly string[];
-  constraintSet: readonly string[];
-  keyInstitutions: readonly string[];
-  settingScale: 'LOCAL';
-  branchingPosture: 'RECONVERGE';
-  stateComplexity: 'MEDIUM';
-} {
-  return {
-    oneLineHook: `Hook ${index}`,
-    elevatorParagraph: `Elevator paragraph ${index}`,
-    genreFrame: 'NOIR',
-    genreSubversion: `Subversion ${index}`,
-    protagonistRole: `Role ${index}`,
-    coreCompetence: `Competence ${index}`,
-    coreFlaw: `Flaw ${index}`,
-    actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
-    coreConflictLoop: `Conflict loop ${index}`,
-    conflictAxis: 'TRUTH_VS_STABILITY',
-    conflictType: 'PERSON_VS_SOCIETY',
-    pressureSource: `Pressure ${index}`,
-    stakesPersonal: `Personal stakes ${index}`,
-    stakesSystemic: `Systemic stakes ${index}`,
-    deadlineMechanism: `Deadline ${index}`,
-    settingAxioms: ['Axiom 1', 'Axiom 2'],
-    constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
-    keyInstitutions: ['Institution 1', 'Institution 2'],
-    settingScale: 'LOCAL',
-    branchingPosture: 'RECONVERGE',
-    stateComplexity: 'MEDIUM',
-  } as const;
+function createValidConcept(index: number): ConceptSpec {
+  return createConceptSpecFixture(index);
 }
 
 function createValidPayload(): { concepts: ReturnType<typeof createValidConcept>[] } {
@@ -162,6 +120,16 @@ describe('concept-ideator', () => {
     expect(() => parseConceptIdeationResponse(payload)).toThrow('actionVerbs must contain 6+ items');
   });
 
+  it.each([
+    ['whatIfQuestion', 'invalid whatIfQuestion'],
+    ['ironicTwist', 'invalid ironicTwist'],
+    ['playerFantasy', 'invalid playerFantasy'],
+  ])('parseConceptIdeationResponse rejects missing %s', (fieldName, errorMatch) => {
+    const payload = createValidPayload();
+    delete (payload.concepts[0] as Record<string, unknown>)[fieldName];
+    expect(() => parseConceptIdeationResponse(payload)).toThrow(errorMatch);
+  });
+
   it('parseConceptIdeationResponse rejects concept counts outside 6-8', () => {
     const payload = createValidPayload();
     payload.concepts = payload.concepts.slice(0, 5);
@@ -210,6 +178,15 @@ describe('concept-ideator', () => {
   it('buildConceptIdeatorPrompt includes content policy', () => {
     const messages = buildConceptIdeatorPrompt({});
     expect(messages[0]?.content).toContain(CONTENT_POLICY);
+  });
+
+  it('buildConceptIdeatorPrompt includes quality anchors for enrichment fields', () => {
+    const messages = buildConceptIdeatorPrompt({});
+    const systemMessage = messages[0]?.content ?? '';
+
+    expect(systemMessage).toContain('whatIfQuestion must be a single question ending with');
+    expect(systemMessage).toContain('ironicTwist must be 1-2 sentences');
+    expect(systemMessage).toContain('playerFantasy must be 1 sentence');
   });
 
   it('generateConceptIdeas returns parsed ideation result', async () => {

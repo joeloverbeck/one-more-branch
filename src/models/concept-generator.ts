@@ -99,6 +99,9 @@ export interface ConceptSpec {
   readonly settingScale: SettingScale;
   readonly branchingPosture: BranchingPosture;
   readonly stateComplexity: StateComplexity;
+  readonly whatIfQuestion: string;
+  readonly ironicTwist: string;
+  readonly playerFantasy: string;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -153,7 +156,10 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isStringArrayWithinBounds(concept['keyInstitutions'], 2, 4) &&
     isSettingScale(concept['settingScale']) &&
     isBranchingPosture(concept['branchingPosture']) &&
-    isStateComplexity(concept['stateComplexity'])
+    isStateComplexity(concept['stateComplexity']) &&
+    isNonEmptyString(concept['whatIfQuestion']) &&
+    isNonEmptyString(concept['ironicTwist']) &&
+    isNonEmptyString(concept['playerFantasy'])
   );
 }
 

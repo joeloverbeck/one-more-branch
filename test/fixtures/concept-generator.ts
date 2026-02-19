@@ -30,6 +30,9 @@ export function createConceptSpecFixture(index = 1): ConceptSpec {
     settingScale: 'LOCAL',
     branchingPosture: 'RECONVERGE',
     stateComplexity: 'MEDIUM',
+    whatIfQuestion: `What if question ${index}?`,
+    ironicTwist: `Ironic twist ${index}.`,
+    playerFantasy: `Player fantasy ${index}.`,
   };
 }
 
