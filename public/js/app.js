@@ -1992,6 +1992,17 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     PERSON_VS_FATE: 'Person vs Fate',
   };
 
+  var CONFLICT_AXIS_LABELS = {
+    INDIVIDUAL_VS_SYSTEM: 'Individual vs System',
+    TRUTH_VS_STABILITY: 'Truth vs Stability',
+    DUTY_VS_DESIRE: 'Duty vs Desire',
+    FREEDOM_VS_SAFETY: 'Freedom vs Safety',
+    KNOWLEDGE_VS_INNOCENCE: 'Knowledge vs Innocence',
+    POWER_VS_MORALITY: 'Power vs Morality',
+    LOYALTY_VS_SURVIVAL: 'Loyalty vs Survival',
+    IDENTITY_VS_BELONGING: 'Identity vs Belonging',
+  };
+
   var ARC_TYPE_LABELS = {
     POSITIVE_CHANGE: 'Positive Change',
     FLAT: 'Flat Arc',
@@ -2031,6 +2042,9 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       badges.innerHTML =
         '<span class="spine-badge spine-badge-type">' +
         escapeHtml(SPINE_TYPE_LABELS[option.storySpineType] || option.storySpineType) +
+        '</span>' +
+        '<span class="spine-badge spine-badge-conflict">' +
+        escapeHtml(CONFLICT_AXIS_LABELS[option.conflictAxis] || option.conflictAxis || '') +
         '</span>' +
         '<span class="spine-badge spine-badge-conflict">' +
         escapeHtml(CONFLICT_TYPE_LABELS[option.conflictType] || option.conflictType) +

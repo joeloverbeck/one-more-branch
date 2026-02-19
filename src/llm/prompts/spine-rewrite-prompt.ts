@@ -25,7 +25,7 @@ const SPINE_REWRITE_GUIDELINES = `SPINE REWRITE GUIDELINES:
 - The invalidated element MUST change meaningfully. Other elements may stay the same if they still work.
 - The new central dramatic question must arise organically from what has already happened.
 - The new need-want dynamic should reflect how the protagonist has been changed by their journey.
-- The storySpineType and conflictType CAN change if the narrative warrants it, but don't change them arbitrarily.
+- The storySpineType, conflictAxis, and conflictType CAN change if the narrative warrants it, but don't change them arbitrarily.
 - The characterArcType SHOULD change if the protagonist's trajectory has fundamentally shifted.`;
 
 export function buildSpineRewritePrompt(context: SpineRewriteContext): ChatMessage[] {

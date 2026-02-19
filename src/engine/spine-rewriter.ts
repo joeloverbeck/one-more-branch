@@ -16,6 +16,7 @@ import { LLMError } from '../llm/llm-client-types.js';
 import type { StorySpine } from '../models/story-spine.js';
 import {
   isStorySpineType,
+  isConflictAxis,
   isConflictType,
   isCharacterArcType,
   isNeedWantDynamic,
@@ -90,6 +91,14 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
     );
   }
 
+  if (!isConflictAxis(data['conflictAxis'])) {
+    throw new LLMError(
+      `Spine rewrite invalid conflictAxis: ${String(data['conflictAxis'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
   if (!isConflictType(data['conflictType'])) {
     throw new LLMError(
       `Spine rewrite invalid conflictType: ${String(data['conflictType'])}`,
@@ -132,6 +141,7 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
       pressureMechanism: af['pressureMechanism'],
     },
     storySpineType: data['storySpineType'],
+    conflictAxis: data['conflictAxis'],
     conflictType: data['conflictType'],
     characterArcType: data['characterArcType'],
     toneFeel,

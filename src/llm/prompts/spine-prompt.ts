@@ -32,7 +32,7 @@ function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
     'CONCEPT ANALYSIS (from upstream concept generation — use as grounding):',
     `One-line hook: ${conceptSpec.oneLineHook}`,
     `Core conflict loop: ${conceptSpec.coreConflictLoop}`,
-    `Thematic tension axis: ${conceptSpec.conflictAxis}`,
+    `Thematic tension axis: ${conceptSpec.conflictAxis} — Your spine MUST use this exact conflictAxis value.`,
     `Structural opposition: ${conceptSpec.conflictType} — Your spine MUST use this exact conflictType value.`,
     `Pressure source: ${conceptSpec.pressureSource}`,
     `Personal stakes: ${conceptSpec.stakesPersonal}`,
@@ -92,6 +92,7 @@ FIELD INSTRUCTIONS:
 - primaryAntagonisticForce.description: What opposes the protagonist. Can be a person, system, environment, or internal force. One sentence.
 - primaryAntagonisticForce.pressureMechanism: HOW it creates difficult choices that widen the need-want gap. One sentence.
 - storySpineType: The primary narrative pattern (QUEST, SURVIVAL, ESCAPE, REVENGE, RESCUE, RIVALRY, MYSTERY, TEMPTATION, TRANSFORMATION, FORBIDDEN_LOVE, SACRIFICE, FALL_FROM_GRACE, RISE_TO_POWER, COMING_OF_AGE, REBELLION).
+- conflictAxis: The thematic tension axis (INDIVIDUAL_VS_SYSTEM, TRUTH_VS_STABILITY, DUTY_VS_DESIRE, FREEDOM_VS_SAFETY, KNOWLEDGE_VS_INNOCENCE, POWER_VS_MORALITY, LOYALTY_VS_SURVIVAL, IDENTITY_VS_BELONGING).
 - conflictType: The primary source of opposition (PERSON_VS_PERSON, PERSON_VS_SELF, PERSON_VS_SOCIETY, PERSON_VS_NATURE, PERSON_VS_TECHNOLOGY, PERSON_VS_SUPERNATURAL, PERSON_VS_FATE).
 - characterArcType: The character arc trajectory (POSITIVE_CHANGE, FLAT, DISILLUSIONMENT, FALL, CORRUPTION).
 - toneFeel: 3-5 atmospheric adjectives describing HOW the story FEELS to the reader -- sensory, emotional, and rhythmic qualities. A compass for downstream writers.

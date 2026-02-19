@@ -20,6 +20,7 @@ import type {
   CharacterArcType,
   NeedWantDynamic,
 } from '../models/story-spine';
+import { isConflictAxis } from '../models/story-spine';
 import type { NpcRelationship } from '../models/state/npc-relationship';
 import {
   deleteDirectory,
@@ -94,6 +95,7 @@ interface SpineFileData {
   protagonistNeedVsWant: { need: string; want: string; dynamic: string };
   primaryAntagonisticForce: { description: string; pressureMechanism: string };
   storySpineType: string;
+  conflictAxis?: string;
   conflictType: string;
   characterArcType: string;
   toneFeel?: string[];
@@ -289,6 +291,7 @@ function storyToFileData(story: Story): StoryFileData {
               pressureMechanism: story.spine.primaryAntagonisticForce.pressureMechanism,
             },
             storySpineType: story.spine.storySpineType,
+            conflictAxis: story.spine.conflictAxis,
             conflictType: story.spine.conflictType,
             characterArcType: story.spine.characterArcType,
             toneFeel: [...story.spine.toneFeel],
@@ -456,6 +459,11 @@ function fileDataToStory(data: StoryFileData): Story {
               pressureMechanism: data.spine.primaryAntagonisticForce.pressureMechanism,
             },
             storySpineType: data.spine.storySpineType as StorySpineType,
+            conflictAxis: (
+              isConflictAxis(data.spine.conflictAxis)
+                ? data.spine.conflictAxis
+                : data.conceptSpec?.conflictAxis ?? 'INDIVIDUAL_VS_SYSTEM'
+            ),
             conflictType: data.spine.conflictType as ConflictType,
             characterArcType: data.spine.characterArcType as CharacterArcType,
             toneFeel: data.spine.toneFeel ?? data.spine.toneKeywords ?? [],

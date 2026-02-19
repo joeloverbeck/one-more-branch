@@ -1,5 +1,8 @@
-import type { ConflictType } from './story-spine.js';
-import { isConflictType as isConflictTypeValidator } from './story-spine.js';
+import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
+import { CONFLICT_AXES, isConflictAxis, isConflictType } from './conflict-taxonomy.js';
+
+export type { ConflictAxis };
+export { CONFLICT_AXES, isConflictAxis };
 
 export const GENRE_FRAMES = [
   'HORROR',
@@ -21,19 +24,6 @@ export const GENRE_FRAMES = [
 ] as const;
 
 export type GenreFrame = (typeof GENRE_FRAMES)[number];
-
-export const CONFLICT_AXES = [
-  'INDIVIDUAL_VS_SYSTEM',
-  'TRUTH_VS_STABILITY',
-  'DUTY_VS_DESIRE',
-  'FREEDOM_VS_SAFETY',
-  'KNOWLEDGE_VS_INNOCENCE',
-  'POWER_VS_MORALITY',
-  'LOYALTY_VS_SURVIVAL',
-  'IDENTITY_VS_BELONGING',
-] as const;
-
-export type ConflictAxis = (typeof CONFLICT_AXES)[number];
 
 export const BRANCHING_POSTURES = ['TREE', 'RECONVERGE', 'STORYLETS', 'HUB_AND_SPOKE'] as const;
 
@@ -58,10 +48,6 @@ export type DriftRiskMitigationType = (typeof DRIFT_RISK_MITIGATION_TYPES)[numbe
 
 export function isGenreFrame(value: unknown): value is GenreFrame {
   return typeof value === 'string' && (GENRE_FRAMES as readonly string[]).includes(value);
-}
-
-export function isConflictAxis(value: unknown): value is ConflictAxis {
-  return typeof value === 'string' && (CONFLICT_AXES as readonly string[]).includes(value);
 }
 
 export function isBranchingPosture(value: unknown): value is BranchingPosture {
@@ -157,7 +143,7 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isStringArrayWithinBounds(concept['actionVerbs'], 6) &&
     isNonEmptyString(concept['coreConflictLoop']) &&
     isConflictAxis(concept['conflictAxis']) &&
-    isConflictTypeValidator(concept['conflictType']) &&
+    isConflictType(concept['conflictType']) &&
     isNonEmptyString(concept['pressureSource']) &&
     isNonEmptyString(concept['stakesPersonal']) &&
     isNonEmptyString(concept['stakesSystemic']) &&

@@ -14,12 +14,14 @@ import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type {
   StorySpineType,
+  ConflictAxis,
   ConflictType,
   CharacterArcType,
   NeedWantDynamic,
 } from '../models/story-spine.js';
 import {
   isStorySpineType,
+  isConflictAxis,
   isConflictType,
   isCharacterArcType,
   isNeedWantDynamic,
@@ -37,6 +39,7 @@ export interface SpineOption {
     readonly pressureMechanism: string;
   };
   readonly storySpineType: StorySpineType;
+  readonly conflictAxis: ConflictAxis;
   readonly conflictType: ConflictType;
   readonly characterArcType: CharacterArcType;
   readonly toneFeel: readonly string[];
@@ -116,6 +119,14 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
     );
   }
 
+  if (!isConflictAxis(data['conflictAxis'])) {
+    throw new LLMError(
+      `Spine option ${index + 1} invalid conflictAxis: ${String(data['conflictAxis'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
   if (!isConflictType(data['conflictType'])) {
     throw new LLMError(
       `Spine option ${index + 1} invalid conflictType: ${String(data['conflictType'])}`,
@@ -158,6 +169,7 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
       pressureMechanism: af['pressureMechanism'],
     },
     storySpineType: data['storySpineType'],
+    conflictAxis: data['conflictAxis'],
     conflictType: data['conflictType'],
     characterArcType: data['characterArcType'],
     toneFeel,
