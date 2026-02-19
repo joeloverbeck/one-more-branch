@@ -175,6 +175,7 @@ describe('config schemas', () => {
         llm: {
           models: {
             kernelIdeator: 'anthropic/claude-sonnet-4.6',
+            kernelEvaluator: 'z-ai/glm-5',
             conceptIdeator: 'anthropic/claude-sonnet-4.6',
             conceptEvaluator: 'z-ai/glm-5',
             conceptStressTester: 'anthropic/claude-sonnet-4.6',
@@ -184,6 +185,7 @@ describe('config schemas', () => {
       });
 
       expect(result.llm.models?.kernelIdeator).toBe('anthropic/claude-sonnet-4.6');
+      expect(result.llm.models?.kernelEvaluator).toBe('z-ai/glm-5');
       expect(result.llm.models?.conceptIdeator).toBe('anthropic/claude-sonnet-4.6');
       expect(result.llm.models?.conceptEvaluator).toBe('z-ai/glm-5');
       expect(result.llm.models?.conceptStressTester).toBe('anthropic/claude-sonnet-4.6');
@@ -196,6 +198,7 @@ describe('config schemas', () => {
           llm: {
             models: {
               kernelIdeator: 'anthropic/claude-sonnet-4.6',
+              kernelEvaluator: 'z-ai/glm-5',
               conceptIdeator: 'anthropic/claude-sonnet-4.6',
               invalidStageName: 'z-ai/glm-5',
             },

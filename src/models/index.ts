@@ -250,10 +250,12 @@ export type {
   KernelSeedInput,
   KernelIdeatorContext,
   KernelIdeationResult,
+  KernelEvaluatorContext,
   KernelDimensionScores,
   KernelScoreEvidence,
   ScoredKernel,
   EvaluatedKernel,
+  KernelEvaluationResult,
 } from './story-kernel';
 export {
   DIRECTION_OF_CHANGE_VALUES,

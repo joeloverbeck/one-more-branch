@@ -17,7 +17,8 @@ jest.mock('../../../src/logging/index.js', () => ({
   },
 }));
 
-import { runLlmStage } from '../../../src/llm/llm-stage-runner';
+import type { LlmStageRunnerParams } from '../../../src/llm/llm-stage-runner';
+import { runLlmStage, runTwoPhaseLlmStage } from '../../../src/llm/llm-stage-runner';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../src/llm/schemas/concept-ideator-schema';
 
@@ -133,5 +134,47 @@ describe('llm-stage-runner', () => {
     await expectation;
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('runs two-phase stages sequentially and combines parsed/raw outputs', async () => {
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify({ phase: 1, value: 'alpha' })))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify({ phase: 2, value: 'beta' })));
+
+    const result = await runTwoPhaseLlmStage({
+      firstStage: {
+        stageModel: 'conceptEvaluator',
+        promptType: 'conceptEvaluator',
+        apiKey: 'test-api-key',
+        schema: CONCEPT_IDEATION_SCHEMA,
+        messages: [{ role: 'user', content: 'phase one' }],
+        parseResponse: (parsed) => parsed as { phase: number; value: string },
+      },
+      secondStage: (
+        firstStageParsed,
+      ): LlmStageRunnerParams<{ phase: number; value: string }> => ({
+        stageModel: 'conceptEvaluator',
+        promptType: 'conceptEvaluator',
+        apiKey: 'test-api-key',
+        schema: CONCEPT_IDEATION_SCHEMA,
+        messages: [{ role: 'user', content: `phase two from ${firstStageParsed.value}` }],
+        parseResponse: (parsed) => parsed as { phase: number; value: string },
+      }),
+      combineResult: ({ firstStageParsed, firstStageRawResponse, secondStageParsed, secondStageRawResponse }) => ({
+        firstStageParsed,
+        firstStageRawResponse,
+        secondStageParsed,
+        secondStageRawResponse,
+      }),
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({
+      firstStageParsed: { phase: 1, value: 'alpha' },
+      firstStageRawResponse: JSON.stringify({ phase: 1, value: 'alpha' }),
+      secondStageParsed: { phase: 2, value: 'beta' },
+      secondStageRawResponse: JSON.stringify({ phase: 2, value: 'beta' }),
+    });
+    expect(mockLogPrompt).toHaveBeenCalledTimes(2);
   });
 });

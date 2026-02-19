@@ -32,6 +32,11 @@ export interface KernelIdeationResult {
   readonly rawResponse: string;
 }
 
+export interface KernelEvaluatorContext {
+  readonly kernels: readonly StoryKernel[];
+  readonly userSeeds: KernelSeedInput;
+}
+
 export interface KernelDimensionScores {
   readonly dramaticClarity: number;
   readonly thematicUniversality: number;
@@ -62,6 +67,12 @@ export interface EvaluatedKernel {
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
   readonly tradeoffSummary: string;
+}
+
+export interface KernelEvaluationResult {
+  readonly scoredKernels: readonly ScoredKernel[];
+  readonly evaluatedKernels: readonly EvaluatedKernel[];
+  readonly rawResponse: string;
 }
 
 export const KERNEL_SCORING_WEIGHTS = {

@@ -11,7 +11,7 @@ import {
 import { LLMError, type ChatMessage, type JsonSchema } from './llm-client-types.js';
 import { withRetry } from './retry.js';
 
-interface LlmStageRunnerParams<TParsed> {
+export interface LlmStageRunnerParams<TParsed> {
   readonly stageModel: LlmStage;
   readonly promptType: PromptType;
   readonly apiKey: string;
@@ -21,9 +21,20 @@ interface LlmStageRunnerParams<TParsed> {
   readonly parseResponse: (parsed: unknown) => TParsed;
 }
 
-interface LlmStageRunnerResult<TParsed> {
+export interface LlmStageRunnerResult<TParsed> {
   readonly parsed: TParsed;
   readonly rawResponse: string;
+}
+
+interface RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult> {
+  readonly firstStage: LlmStageRunnerParams<TFirstParsed>;
+  readonly secondStage: (firstStageParsed: TFirstParsed) => LlmStageRunnerParams<TSecondParsed>;
+  readonly combineResult: (result: {
+    firstStageParsed: TFirstParsed;
+    firstStageRawResponse: string;
+    secondStageParsed: TSecondParsed;
+    secondStageRawResponse: string;
+  }) => TResult;
 }
 
 export async function runLlmStage<TParsed>(
@@ -86,5 +97,19 @@ export async function runLlmStage<TParsed>(
       }
       throw error;
     }
+  });
+}
+
+export async function runTwoPhaseLlmStage<TFirstParsed, TSecondParsed, TResult>(
+  params: RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult>,
+): Promise<TResult> {
+  const firstStageResult = await runLlmStage(params.firstStage);
+  const secondStageResult = await runLlmStage(params.secondStage(firstStageResult.parsed));
+
+  return params.combineResult({
+    firstStageParsed: firstStageResult.parsed,
+    firstStageRawResponse: firstStageResult.rawResponse,
+    secondStageParsed: secondStageResult.parsed,
+    secondStageRawResponse: secondStageResult.rawResponse,
   });
 }

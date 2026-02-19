@@ -48,6 +48,7 @@ describe('logPrompt', () => {
     const messages: ChatMessage[] = [{ role: 'user', content: 'Message' }];
     const promptTypes: PromptType[] = [
       'kernelIdeator',
+      'kernelEvaluator',
       'conceptIdeator',
       'conceptEvaluator',
       'conceptStressTester',
