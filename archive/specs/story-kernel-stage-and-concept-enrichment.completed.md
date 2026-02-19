@@ -1,6 +1,6 @@
 # Story Kernel Stage & Concept Enrichment
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: Feature
 **Scope**: Models, LLM pipeline (ideator + evaluator), persistence, routes, services, UI, concept enrichment, prompt docs
 
@@ -681,3 +681,21 @@ The flow is linear (kernel before concept) but users should be able to navigate 
 7. **Lint**: `npm run lint` passes
 8. **Typecheck**: `npm run typecheck` passes
 9. **Tests**: `npm test` passes with existing + new tests
+
+---
+
+## Outcome
+
+- Completion date: 2026-02-19
+- What was actually changed:
+  - Kernel stage, persistence, routes, UI, and concept-enrichment pipeline work were implemented across prior `STOKERSTAANDCONENR-*` tickets.
+  - Final alignment in this pass closed remaining documentation gaps:
+    - added `prompts/kernel-evaluator-prompt.md`
+    - updated `prompts/concept-evaluator-prompt.md` rubric documentation
+    - verified spine inheritance docs/code/test alignment.
+- Deviations from original plan:
+  - No additional runtime changes were needed in spine prompt generation because conflict inheritance had already been implemented and tested.
+  - Remaining work was documentation synchronization rather than further architecture changes.
+- Verification results:
+  - Relevant prompt/evaluator unit tests pass.
+  - Typecheck and lint pass.
