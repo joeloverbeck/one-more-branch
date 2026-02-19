@@ -34,13 +34,14 @@ RULES:
 6. When structured character profiles are provided, treat them as the primary source for motivations, relationships, and voice-influenced behavior.
 7. NPC names in your output MUST exactly match the names in the character definitions section.
 8. Return an empty updatedAgendas array if no NPC's situation changed materially.
+9. NPC goal evolution should serve the story's central need/want conflict — NPCs should either challenge the protagonist's Want, illuminate their true Need, or create situations that widen the gap between the two.
 
 RELATIONSHIP UPDATES:
-9. When NPC-protagonist relationships are provided, evaluate whether the scene caused meaningful relationship changes.
-10. Use analyst relationship shift signals as guidance, but make your own judgment on final values.
-11. Only include an NPC in updatedRelationships when their relationship with the protagonist materially changed.
-12. Valence must stay within -5 to +5 (negative = hostile/cold, positive = warm/allied).
-13. Return an empty updatedRelationships array if no relationships changed.
+10. When NPC-protagonist relationships are provided, evaluate whether the scene caused meaningful relationship changes.
+11. Use analyst relationship shift signals as guidance, but make your own judgment on final values.
+12. Only include an NPC in updatedRelationships when their relationship with the protagonist materially changed.
+13. Valence must stay within -5 to +5 (negative = hostile/cold, positive = warm/allied).
+14. Return an empty updatedRelationships array if no relationships changed.
 
 {{#if tone}}
 TONE/GENRE IDENTITY:
@@ -76,6 +77,12 @@ CURRENT NPC-PROTAGONIST RELATIONSHIPS:
   Current Tension: {{relationship.currentTension}}
   Leverage: {{relationship.leverage}}
 or '(no existing relationships)'}}
+{{/if}}
+
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+Story Pattern: {{spine.storySpineType}}
+...
 {{/if}}
 
 {{#if structure}}
@@ -176,6 +183,7 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `currentRelationships` | Accumulated NPC-protagonist relationships from the parent page (optional) |
 | `analystRelationshipShifts` | Relationship shifts detected by the analyst (optional, present when analyst flagged meaningful NPC-protagonist relationship changes) |
 | `structure` | Current story structure (optional) |
+| `spine` | Story spine with need/want conflict, dramatic question, antagonistic force (optional) |
 | `activeState` | Current location and active threats |
 | `analystNpcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
 | `deviationContext` | Structural deviation context (optional, present only when a story structure rewrite just occurred). Contains the deviation reason and the new beats from the rewritten structure |

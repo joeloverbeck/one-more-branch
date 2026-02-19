@@ -7,8 +7,10 @@ import type {
 } from '../../models/state/npc-relationship.js';
 import type { ActiveState } from '../../models/state/active-state.js';
 import type { StoryStructure } from '../../models/story-arc.js';
+import type { StorySpine } from '../../models/story-spine.js';
 import type { DetectedRelationshipShift } from '../analyst-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const AGENDA_RESOLVER_SYSTEM_PROMPT = `You are the NPC Agenda Resolver for an interactive branching story. After each scene, you evaluate how events affect each NPC's agenda and update their goals, leverage, fears, and off-screen behavior accordingly.
@@ -22,13 +24,14 @@ RULES:
 6. When structured character profiles are provided, treat them as the primary source for motivations, relationships, and voice-influenced behavior.
 7. NPC names in your output MUST exactly match the names in the character definitions section.
 8. Return an empty updatedAgendas array if no NPC's situation changed materially.
+9. NPC goal evolution should serve the story's central need/want conflict — NPCs should either challenge the protagonist's Want, illuminate their true Need, or create situations that widen the gap between the two.
 
 RELATIONSHIP UPDATES:
-9. When NPC-protagonist relationships are provided, evaluate whether the scene caused meaningful relationship changes.
-10. Use analyst relationship shift signals as guidance, but make your own judgment on final values.
-11. Only include an NPC in updatedRelationships when their relationship with the protagonist materially changed.
-12. Valence must stay within -5 to +5 (negative = hostile/cold, positive = warm/allied).
-13. Return an empty updatedRelationships array if no relationships changed.`;
+10. When NPC-protagonist relationships are provided, evaluate whether the scene caused meaningful relationship changes.
+11. Use analyst relationship shift signals as guidance, but make your own judgment on final values.
+12. Only include an NPC in updatedRelationships when their relationship with the protagonist materially changed.
+13. Valence must stay within -5 to +5 (negative = hostile/cold, positive = warm/allied).
+14. Return an empty updatedRelationships array if no relationships changed.`;
 
 export interface AgendaResolverPromptContext {
   readonly narrative: string;
@@ -36,6 +39,7 @@ export interface AgendaResolverPromptContext {
   readonly decomposedCharacters: readonly DecomposedCharacter[];
   readonly currentAgendas: AccumulatedNpcAgendas;
   readonly structure?: StoryStructure;
+  readonly spine?: StorySpine;
   readonly activeState: ActiveState;
   readonly analystNpcCoherenceIssues?: string;
   readonly currentRelationships?: AccumulatedNpcRelationships;
@@ -174,12 +178,14 @@ Overall Theme: ${context.structure.overallTheme}
   const relationshipsSection = buildRelationshipsSection(context);
   const analystShiftsSection = buildAnalystRelationshipShiftsSection(context);
 
+  const spineSection = buildSpineSection(context.spine);
+
   const userPrompt = `Evaluate NPC agenda and relationship changes after the following scene.
 
 ${characterDefinitionsSection}CURRENT NPC AGENDAS:
 ${formatCurrentAgendas(context.currentAgendas)}
 
-${relationshipsSection}${structureSection}${buildDeviationSection(context)}ACTIVE STATE:
+${relationshipsSection}${spineSection}${structureSection}${buildDeviationSection(context)}ACTIVE STATE:
 ${locationLine}${threatsLine}
 SCENE SUMMARY:
 ${context.sceneSummary}

@@ -78,6 +78,7 @@ SPINE INTEGRITY EVALUATION:
 - Be EXTREMELY conservative. Partial answers, temporary setbacks to the antagonist, or incremental growth do NOT constitute spine deviation. Only truly irreversible narrative events qualify.
 - When spineDeviationDetected is false, set spineDeviationReason to empty string and spineInvalidatedElement to null.
 - When no STORY SPINE section is present, always set spineDeviationDetected to false.
+- Beyond checking for deviation, briefly assess whether this scene meaningfully advanced the protagonist's need/want arc — did it deepen, complicate, or clarify the tension between Need and Want? Report this in the narrativeSummary.
 
 PACING DIRECTIVE:
 After classifying scene signals, write a pacingDirective: a 1-3 sentence natural-language briefing for the page planner.

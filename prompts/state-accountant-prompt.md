@@ -40,12 +40,19 @@ Generate stateIntents only.
 - Do not assign server IDs.
 - Keep output deterministic and concise.
 - Align all state intents with the provided reduced planner output.
+- When designing state intents, consider how state changes serve the protagonist's Need vs Want conflict described in the story spine.
 ```
 
 ### 2) User Message
 
 ```text
 Create state intents for the next page.
+
+{{#if spine}}
+STORY SPINE (invariant narrative backbone — every scene must serve this):
+Story Pattern: {{spine.storySpineType}}
+...
+{{/if}}
 
 === PLANNER CONTEXT: OPENING|CONTINUATION ===
 {{opening or continuation context block from planner context section builder}}

@@ -14,6 +14,7 @@ import {
   buildPayoffFeedbackSection,
   buildThreadAgingSection,
 } from './sections/planner/index.js';
+import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
 function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
@@ -61,7 +62,8 @@ const ACCOUNTANT_RULES = `Generate stateIntents only.
 - Do not narrate the scene.
 - Do not assign server IDs.
 - Keep output deterministic and concise.
-- Align all state intents with the provided reduced planner output.`;
+- Align all state intents with the provided reduced planner output.
+- When designing state intents, consider how state changes serve the protagonist's Need vs Want conflict described in the story spine.`;
 
 function buildStateAccountantSystemPrompt(
   tone?: string,
@@ -126,9 +128,11 @@ ${context.reconciliationFailureReasons
         )
       : '';
 
+  const spineSection = buildSpineSection(context.spine);
+
   const userPrompt = `Create state intents for the next page.
 
-${contextSection}
+${spineSection}${contextSection}
 ${reconciliationRetrySection}
 
 === REDUCED PLANNER OUTPUT ===

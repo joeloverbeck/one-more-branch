@@ -456,6 +456,7 @@ REQUIREMENTS (follow all):
 6. Ensure choices are divergent via their enum tags - each must change a different dimension of the story
 7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
+9. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
