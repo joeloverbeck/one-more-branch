@@ -3,6 +3,8 @@ import { createPromptFileSinkFromConfig, type PromptSink } from './prompt-file-s
 import type { Logger } from './types.js';
 
 export type PromptType =
+  | 'kernelIdeator'
+  | 'kernelEvaluator'
   | 'conceptIdeator'
   | 'conceptEvaluator'
   | 'conceptStressTester'

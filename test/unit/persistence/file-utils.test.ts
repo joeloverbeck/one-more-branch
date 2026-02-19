@@ -5,8 +5,14 @@ import {
   deleteDirectory,
   directoryExists,
   ensureDirectory,
+  ensureKernelGenerationsDir,
+  ensureKernelsDir,
   ensureStoriesDir,
   fileExists,
+  getKernelFilePath,
+  getKernelGenerationFilePath,
+  getKernelGenerationsDir,
+  getKernelsDir,
   getPageFilePath,
   getStoriesDir,
   getStoryDir,
@@ -37,9 +43,26 @@ describe('file-utils', () => {
     expect(getPageFilePath('abc-123', 5)).toBe(path.join(storiesDir, 'abc-123', 'page_5.json'));
   });
 
+  it('builds deterministic kernel and kernel generation paths', () => {
+    const kernelsDir = getKernelsDir();
+    const generationsDir = getKernelGenerationsDir();
+
+    expect(getKernelFilePath('kernel-123')).toBe(path.join(kernelsDir, 'kernel-123.json'));
+    expect(generationsDir).toBe(path.join(kernelsDir, 'generated'));
+    expect(getKernelGenerationFilePath('batch-123')).toBe(path.join(generationsDir, 'batch-123.json'));
+  });
+
   it('ensures the stories directory exists', async () => {
     ensureStoriesDir();
     await expect(directoryExists(getStoriesDir())).resolves.toBe(true);
+  });
+
+  it('ensures kernel directories exist', async () => {
+    ensureKernelsDir();
+    ensureKernelGenerationsDir();
+
+    await expect(directoryExists(getKernelsDir())).resolves.toBe(true);
+    await expect(directoryExists(getKernelGenerationsDir())).resolves.toBe(true);
   });
 
   it('writes files atomically and leaves no temp files on success', async () => {

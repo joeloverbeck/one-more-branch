@@ -1,7 +1,7 @@
 import type { ConceptIdeationResult, ConceptIdeatorContext, ConceptSpec } from '../models/index.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
-import { runConceptStage } from './concept-stage-runner.js';
+import { runLlmStage } from './llm-stage-runner.js';
 import { parseConceptSpec } from './concept-spec-parser.js';
 import { buildConceptIdeatorPrompt } from './prompts/concept-ideator-prompt.js';
 import { CONCEPT_IDEATION_SCHEMA } from './schemas/concept-ideator-schema.js';
@@ -37,7 +37,7 @@ export async function generateConceptIdeas(
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptIdeationResult> {
   const messages = buildConceptIdeatorPrompt(context);
-  const result = await runConceptStage({
+  const result = await runLlmStage({
     stageModel: 'conceptIdeator',
     promptType: 'conceptIdeator',
     apiKey,

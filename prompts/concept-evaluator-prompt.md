@@ -2,7 +2,7 @@
 
 - Source: `src/llm/prompts/concept-evaluator-prompt.ts`
 - Orchestration: `src/llm/concept-evaluator.ts`
-- Shared concept runner: `src/llm/concept-stage-runner.ts`
+- Shared stage runner: `src/llm/llm-stage-runner.ts`
 - Output schema source: `src/llm/schemas/concept-evaluator-schema.ts`
 - Scoring weights/thresholds + score computation: `src/models/concept-generator.ts`
 

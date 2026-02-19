@@ -13,6 +13,7 @@ const ServerConfigSchema = z.object({
 const StorageConfigSchema = z.object({
   storiesDir: z.string().min(1).default('stories'),
   conceptsDir: z.string().min(1).default('concepts'),
+  kernelsDir: z.string().min(1).default('kernels'),
 });
 
 /**
@@ -36,6 +37,8 @@ const PromptOptionsConfigSchema = z.object({
  */
 const LLMModelsConfigSchema = z
   .object({
+    kernelIdeator: z.string().min(1).optional(),
+    kernelEvaluator: z.string().min(1).optional(),
     conceptIdeator: z.string().min(1).optional(),
     conceptEvaluator: z.string().min(1).optional(),
     conceptStressTester: z.string().min(1).optional(),

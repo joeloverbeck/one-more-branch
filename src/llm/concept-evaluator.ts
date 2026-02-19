@@ -11,7 +11,7 @@ import {
   type ScoredConcept,
 } from '../models/index.js';
 import { parseConceptSpec } from './concept-spec-parser.js';
-import { runConceptStage } from './concept-stage-runner.js';
+import { runTwoPhaseLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import {
@@ -293,32 +293,32 @@ export async function evaluateConcepts(
   apiKey: string,
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptEvaluationResult> {
-  const scoringMessages = buildConceptEvaluatorScoringPrompt(context);
-  const scoringResult = await runConceptStage({
-    stageModel: 'conceptEvaluator',
-    promptType: 'conceptEvaluator',
-    apiKey,
-    options,
-    schema: CONCEPT_EVALUATION_SCORING_SCHEMA,
-    messages: scoringMessages,
-    parseResponse: (parsed) => parseConceptScoringResponse(parsed, context.concepts),
+  return runTwoPhaseLlmStage({
+    firstStage: {
+      stageModel: 'conceptEvaluator',
+      promptType: 'conceptEvaluator',
+      apiKey,
+      options,
+      schema: CONCEPT_EVALUATION_SCORING_SCHEMA,
+      messages: buildConceptEvaluatorScoringPrompt(context),
+      parseResponse: (parsed) => parseConceptScoringResponse(parsed, context.concepts),
+    },
+    secondStage: (scoredConcepts) => {
+      const shortlist = selectConceptShortlist(scoredConcepts);
+      return {
+        stageModel: 'conceptEvaluator',
+        promptType: 'conceptEvaluator',
+        apiKey,
+        options,
+        schema: CONCEPT_EVALUATION_DEEP_SCHEMA,
+        messages: buildConceptEvaluatorDeepEvalPrompt(context, shortlist),
+        parseResponse: (parsed) => parseConceptDeepEvaluationResponse(parsed, shortlist),
+      };
+    },
+    combineResult: ({ firstStageParsed, secondStageParsed, secondStageRawResponse }) => ({
+      scoredConcepts: firstStageParsed,
+      evaluatedConcepts: secondStageParsed,
+      rawResponse: secondStageRawResponse,
+    }),
   });
-
-  const shortlist = selectConceptShortlist(scoringResult.parsed);
-  const deepEvalMessages = buildConceptEvaluatorDeepEvalPrompt(context, shortlist);
-  const deepEvalResult = await runConceptStage({
-    stageModel: 'conceptEvaluator',
-    promptType: 'conceptEvaluator',
-    apiKey,
-    options,
-    schema: CONCEPT_EVALUATION_DEEP_SCHEMA,
-    messages: deepEvalMessages,
-    parseResponse: (parsed) => parseConceptDeepEvaluationResponse(parsed, shortlist),
-  });
-
-  return {
-    scoredConcepts: scoringResult.parsed,
-    evaluatedConcepts: deepEvalResult.parsed,
-    rawResponse: deepEvalResult.rawResponse,
-  };
 }

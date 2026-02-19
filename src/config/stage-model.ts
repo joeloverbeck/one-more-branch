@@ -1,6 +1,8 @@
 import { getConfig } from './index.js';
 
 export type LlmStage =
+  | 'kernelIdeator'
+  | 'kernelEvaluator'
   | 'conceptIdeator'
   | 'conceptEvaluator'
   | 'conceptStressTester'

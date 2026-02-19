@@ -1,12 +1,11 @@
 import { Choice, ChoiceType, Page, PageId, PrimaryDelta, StoryId } from '../models';
 import {
-  fileExists,
   getPageFilePath,
   getStoryDir,
   listFiles,
-  readJsonFile,
   writeJsonFile,
 } from './file-utils';
+import { createJsonFileStore } from './json-file-store';
 import { withLock } from './lock-manager';
 import {
   deserializePage,
@@ -15,10 +14,16 @@ import {
   serializePage,
 } from './page-serializer';
 
-export async function savePage(storyId: StoryId, page: Page): Promise<void> {
-  await withLock(storyId, async () => {
-    await writeJsonFile(getPageFilePath(storyId, page.id), serializePage(page));
+function getPageFileStore(storyId: StoryId): ReturnType<typeof createJsonFileStore<PageId, PageFileData>> {
+  return createJsonFileStore<PageId, PageFileData>({
+    getFilePath: (pageId) => getPageFilePath(storyId, pageId),
+    getLockKey: () => storyId,
   });
+}
+
+export async function savePage(storyId: StoryId, page: Page): Promise<void> {
+  const pageFileStore = getPageFileStore(storyId);
+  await pageFileStore.write(page.id, serializePage(page));
 }
 
 export async function updatePage(storyId: StoryId, page: Page): Promise<void> {
@@ -26,8 +31,8 @@ export async function updatePage(storyId: StoryId, page: Page): Promise<void> {
 }
 
 export async function loadPage(storyId: StoryId, pageId: PageId): Promise<Page | null> {
-  const filePath = getPageFilePath(storyId, pageId);
-  const data = await readJsonFile<PageFileData>(filePath);
+  const pageFileStore = getPageFileStore(storyId);
+  const data = await pageFileStore.read(pageId);
 
   if (!data) {
     return null;
@@ -41,7 +46,8 @@ export async function loadPage(storyId: StoryId, pageId: PageId): Promise<Page |
 }
 
 export async function pageExists(storyId: StoryId, pageId: PageId): Promise<boolean> {
-  return fileExists(getPageFilePath(storyId, pageId));
+  const pageFileStore = getPageFileStore(storyId);
+  return pageFileStore.exists(pageId);
 }
 
 export async function loadAllPages(storyId: StoryId): Promise<Map<PageId, Page>> {

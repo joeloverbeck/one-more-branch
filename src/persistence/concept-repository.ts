@@ -1,90 +1,68 @@
-import type { GeneratedConceptBatch, SavedConcept } from '../models/saved-concept.js';
 import {
-  deleteFile,
+  isGeneratedConceptBatch,
+  isSavedConcept,
+  type GeneratedConceptBatch,
+  type SavedConcept,
+} from '../models/saved-concept.js';
+import {
   ensureConceptGenerationsDir,
   ensureConceptsDir,
-  fileExists,
   getConceptFilePath,
   getConceptGenerationFilePath,
   getConceptsDir,
-  listFiles,
-  readJsonFile,
-  writeJsonFile,
 } from './file-utils.js';
-import { withLock } from './lock-manager.js';
+import { createJsonBatchSaver, createJsonEntityRepository } from './json-entity-repository.js';
 
 const CONCEPT_LOCK_PREFIX = 'concept:';
 
-export async function saveConcept(concept: SavedConcept): Promise<void> {
-  await withLock(`${CONCEPT_LOCK_PREFIX}${concept.id}`, async () => {
+const conceptRepository = createJsonEntityRepository<SavedConcept>({
+  lockPrefix: CONCEPT_LOCK_PREFIX,
+  entityLabel: 'SavedConcept',
+  notFoundLabel: 'Concept',
+  ensureDir: ensureConceptsDir,
+  getDir: getConceptsDir,
+  getFilePath: getConceptFilePath,
+  isEntity: isSavedConcept,
+});
+
+const saveConceptBatch = createJsonBatchSaver<GeneratedConceptBatch>({
+  lockKeyPrefix: `${CONCEPT_LOCK_PREFIX}generation:`,
+  entityLabel: 'GeneratedConceptBatch',
+  ensureDir: () => {
     ensureConceptsDir();
-    const filePath = getConceptFilePath(concept.id);
-    await writeJsonFile(filePath, concept);
-  });
+    ensureConceptGenerationsDir();
+  },
+  getFilePath: getConceptGenerationFilePath,
+  isBatch: isGeneratedConceptBatch,
+});
+
+export async function saveConcept(concept: SavedConcept): Promise<void> {
+  return conceptRepository.save(concept);
 }
 
 export async function saveConceptGenerationBatch(batch: GeneratedConceptBatch): Promise<void> {
-  await withLock(`${CONCEPT_LOCK_PREFIX}generation:${batch.id}`, async () => {
-    ensureConceptsDir();
-    ensureConceptGenerationsDir();
-    const filePath = getConceptGenerationFilePath(batch.id);
-    await writeJsonFile(filePath, batch);
-  });
+  return saveConceptBatch(batch);
 }
 
 export async function loadConcept(conceptId: string): Promise<SavedConcept | null> {
-  const filePath = getConceptFilePath(conceptId);
-  return readJsonFile<SavedConcept>(filePath);
+  return conceptRepository.load(conceptId);
 }
 
 export async function updateConcept(
   conceptId: string,
   updater: (existing: SavedConcept) => SavedConcept
 ): Promise<SavedConcept> {
-  return withLock(`${CONCEPT_LOCK_PREFIX}${conceptId}`, async () => {
-    const filePath = getConceptFilePath(conceptId);
-    const existing = await readJsonFile<SavedConcept>(filePath);
-
-    if (!existing) {
-      throw new Error(`Concept not found: ${conceptId}`);
-    }
-
-    const updated = updater(existing);
-    await writeJsonFile(filePath, updated);
-    return updated;
-  });
+  return conceptRepository.update(conceptId, updater);
 }
 
 export async function deleteConcept(conceptId: string): Promise<void> {
-  await withLock(`${CONCEPT_LOCK_PREFIX}${conceptId}`, async () => {
-    const filePath = getConceptFilePath(conceptId);
-    await deleteFile(filePath);
-  });
+  return conceptRepository.remove(conceptId);
 }
 
 export async function listConcepts(): Promise<SavedConcept[]> {
-  const conceptsDir = getConceptsDir();
-  const files = await listFiles(conceptsDir, /\.json$/);
-
-  const concepts: SavedConcept[] = [];
-  for (const file of files) {
-    const filePath = `${conceptsDir}/${file}`;
-    const concept = await readJsonFile<SavedConcept>(filePath);
-    if (concept) {
-      concepts.push(concept);
-    }
-  }
-
-  concepts.sort((a, b) => {
-    const dateA = new Date(b.updatedAt).getTime();
-    const dateB = new Date(a.updatedAt).getTime();
-    return dateA - dateB;
-  });
-
-  return concepts;
+  return conceptRepository.list();
 }
 
 export async function conceptExists(conceptId: string): Promise<boolean> {
-  const filePath = getConceptFilePath(conceptId);
-  return fileExists(filePath);
+  return conceptRepository.exists(conceptId);
 }

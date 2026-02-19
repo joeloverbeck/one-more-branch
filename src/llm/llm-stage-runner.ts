@@ -11,7 +11,7 @@ import {
 import { LLMError, type ChatMessage, type JsonSchema } from './llm-client-types.js';
 import { withRetry } from './retry.js';
 
-interface ConceptStageRunnerParams<TParsed> {
+export interface LlmStageRunnerParams<TParsed> {
   readonly stageModel: LlmStage;
   readonly promptType: PromptType;
   readonly apiKey: string;
@@ -21,14 +21,25 @@ interface ConceptStageRunnerParams<TParsed> {
   readonly parseResponse: (parsed: unknown) => TParsed;
 }
 
-interface ConceptStageRunnerResult<TParsed> {
+export interface LlmStageRunnerResult<TParsed> {
   readonly parsed: TParsed;
   readonly rawResponse: string;
 }
 
-export async function runConceptStage<TParsed>(
-  params: ConceptStageRunnerParams<TParsed>,
-): Promise<ConceptStageRunnerResult<TParsed>> {
+interface RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult> {
+  readonly firstStage: LlmStageRunnerParams<TFirstParsed>;
+  readonly secondStage: (firstStageParsed: TFirstParsed) => LlmStageRunnerParams<TSecondParsed>;
+  readonly combineResult: (result: {
+    firstStageParsed: TFirstParsed;
+    firstStageRawResponse: string;
+    secondStageParsed: TSecondParsed;
+    secondStageRawResponse: string;
+  }) => TResult;
+}
+
+export async function runLlmStage<TParsed>(
+  params: LlmStageRunnerParams<TParsed>,
+): Promise<LlmStageRunnerResult<TParsed>> {
   const config = getConfig().llm;
   const model = params.options?.model ?? getStageModel(params.stageModel);
   const temperature = params.options?.temperature ?? config.temperature;
@@ -86,5 +97,19 @@ export async function runConceptStage<TParsed>(
       }
       throw error;
     }
+  });
+}
+
+export async function runTwoPhaseLlmStage<TFirstParsed, TSecondParsed, TResult>(
+  params: RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult>,
+): Promise<TResult> {
+  const firstStageResult = await runLlmStage(params.firstStage);
+  const secondStageResult = await runLlmStage(params.secondStage(firstStageResult.parsed));
+
+  return params.combineResult({
+    firstStageParsed: firstStageResult.parsed,
+    firstStageRawResponse: firstStageResult.rawResponse,
+    secondStageParsed: secondStageResult.parsed,
+    secondStageRawResponse: secondStageResult.rawResponse,
   });
 }

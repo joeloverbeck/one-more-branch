@@ -2,7 +2,7 @@
 
 - Source: `src/llm/prompts/concept-stress-tester-prompt.ts`
 - Orchestration: `src/llm/concept-stress-tester.ts`
-- Shared concept runner: `src/llm/concept-stage-runner.ts`
+- Shared stage runner: `src/llm/llm-stage-runner.ts`
 - Output schema source: `src/llm/schemas/concept-stress-tester-schema.ts`
 - Mitigation enums + concept model: `src/models/concept-generator.ts`
 
@@ -94,5 +94,5 @@ OUTPUT REQUIREMENTS:
 
 - This stage mutates only concept durability artifacts; it does not rescore the concept.
 - In `conceptRoutes`, successful hardening updates persisted concept fields and stores `stressTestResult` (`driftRisks`, `playerBreaks`) on the saved concept record.
-- Prompt logging uses `promptType: 'conceptStressTester'` via `runConceptStage(...)`.
+- Prompt logging uses `promptType: 'conceptStressTester'` via `runLlmStage(...)`.
 - Model routing uses stage key `conceptStressTester` in `getStageModel(...)`.
