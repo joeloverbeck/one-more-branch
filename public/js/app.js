@@ -61,6 +61,50 @@ const STAGE_PHRASE_POOLS = {
     'Comparing concept spread for strategic diversity...',
     'Finalizing ranked concepts for user selection...',
   ],
+  GENERATING_KERNELS: [
+    'Distilling premise candidates to irreducible dramatic cores...',
+    'Searching for value collisions that can survive any genre...',
+    'Extracting thesis statements from thematic static...',
+    'Drafting kernels that create pressure before plot...',
+    'Balancing universality against dramatic specificity...',
+    'Separating motifs from actual dramatic propositions...',
+    'Testing whether each thesis implies real consequences...',
+    'Looking for conflicts that stay alive across settings...',
+    'Refining the value-at-stake into a sharp dramatic axis...',
+    'Cutting away lore until only load-bearing tension remains...',
+    'Building kernels that can power multiple concept families...',
+    'Checking each thematic question for two viable answers...',
+    'Eliminating slogans that masquerade as dramatic claims...',
+    'Aligning opposing forces with emotionally credible pressure...',
+    'Comparing candidate kernels for generative spread...',
+    'Tuning kernels for conflict durability under iteration...',
+    'Converting abstract themes into playable dramatic engines...',
+    'Stress-checking premise language for clarity and bite...',
+    'Drafting variants across positive, negative, and ironic arcs...',
+    'Selecting kernels with long-term narrative leverage...',
+  ],
+  EVALUATING_KERNELS: [
+    'Scoring dramatic clarity for causal precision...',
+    'Auditing thematic universality against broad resonance...',
+    'Measuring generative potential across genre boundaries...',
+    'Testing conflict tension for irreconcilable pressure...',
+    'Checking emotional depth for lived human stakes...',
+    'Comparing kernels by structural reusability...',
+    'Flagging vague theses before they infect downstream stages...',
+    'Validating that opposing forces are truly antagonistic...',
+    'Ranking evidence quality behind each dimension score...',
+    'Looking for kernels that invite meaningful player agency...',
+    'Penalizing brittle premises with shallow contradiction...',
+    'Cross-checking score spread for artificial inflation...',
+    'Selecting high-upside kernels with durable tradeoffs...',
+    'Verifying thematic questions remain genuinely open...',
+    'Filtering out kernels that collapse into plot summary...',
+    'Reviewing weaknesses for practical mitigation paths...',
+    'Testing score consistency across evaluative dimensions...',
+    'Calibrating final rankings for production reality...',
+    'Ensuring strengths reflect actual dramatic mechanics...',
+    'Finalizing kernel evaluations for library triage...',
+  ],
   STRESS_TESTING_CONCEPT: [
     'Pushing the concept through adversarial player behavior...',
     'Probing weak seams in the dramatic engine...',
@@ -1209,6 +1253,8 @@ const STAGE_PHRASE_POOLS = {
 const STAGE_DISPLAY_NAMES = {
   GENERATING_CONCEPTS: 'IDEATING',
   EVALUATING_CONCEPTS: 'EVALUATING',
+  GENERATING_KERNELS: 'IDEATING',
+  EVALUATING_KERNELS: 'EVALUATING',
   STRESS_TESTING_CONCEPT: 'HARDENING',
   GENERATING_SPINE: 'ENVISIONING',
   PLANNING_PAGE: 'PLANNING',
@@ -2347,6 +2393,115 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
 
       container.appendChild(card);
     });
+  }
+
+  // ── Kernel Renderer ──────────────────────────────────────────────
+
+  var KERNEL_SCORE_FIELDS = [
+    { key: 'dramaticClarity', label: 'Clarity' },
+    { key: 'thematicUniversality', label: 'Universality' },
+    { key: 'generativePotential', label: 'Potential' },
+    { key: 'conflictTension', label: 'Tension' },
+    { key: 'emotionalDepth', label: 'Depth' },
+  ];
+
+  function formatKernelLabel(value) {
+    return String(value || '').replace(/_/g, ' ');
+  }
+
+  function getDirectionBadgeClass(direction) {
+    if (direction === 'NEGATIVE') return 'spine-badge-conflict';
+    if (direction === 'IRONIC') return 'spine-badge-arc';
+    if (direction === 'AMBIGUOUS') return 'spine-badge-type';
+    return 'spine-badge-type';
+  }
+
+  function renderKernelScoreGrid(scores) {
+    var cells = KERNEL_SCORE_FIELDS.map(function (field) {
+      var rawScore = Number(scores && scores[field.key]);
+      var safeScore = Number.isFinite(rawScore) ? Math.max(0, Math.min(5, rawScore)) : 0;
+      var colorClass = getScoreColorClass(safeScore);
+      var fullCount = Math.floor(safeScore);
+      var hasHalf = (safeScore % 1) >= 0.25;
+      var pips = '';
+
+      for (var i = 0; i < 5; i++) {
+        if (i < fullCount) {
+          pips += '<span class="concept-pip concept-pip--filled concept-pip--' + colorClass + '"></span>';
+        } else if (i === fullCount && hasHalf) {
+          pips += '<span class="concept-pip concept-pip--half concept-pip--' + colorClass + '"></span>';
+        } else {
+          pips += '<span class="concept-pip concept-pip--empty"></span>';
+        }
+      }
+
+      return (
+        '<div class="concept-score-cell">' +
+          '<span class="concept-score-label">' + escapeHtml(field.label) + '</span>' +
+          '<span class="concept-score-value concept-score-value--' + colorClass + '">' + safeScore.toFixed(1) + '</span>' +
+          '<div class="concept-score-pips">' + pips + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    return '<div class="concept-scores-grid">' + cells + '</div>';
+  }
+
+  function renderKernelCard(evaluatedKernel, options) {
+    var opts = options || {};
+    var kernel = evaluatedKernel && evaluatedKernel.kernel ? evaluatedKernel.kernel : {};
+    var overallScore = Number(evaluatedKernel && evaluatedKernel.overallScore);
+    var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
+    var direction = formatKernelLabel(kernel.directionOfChange || 'POSITIVE');
+    var directionBadgeClass = getDirectionBadgeClass(kernel.directionOfChange || 'POSITIVE');
+
+    var title = opts.mode === 'saved' && opts.kernelName
+      ? opts.kernelName
+      : (kernel.dramaticThesis || 'Untitled Kernel');
+
+    var actionsHtml = '';
+    if (opts.mode === 'generated') {
+      actionsHtml =
+        '<button type="button" class="btn btn-primary btn-small kernel-save-generated-btn" data-gen-index="' +
+          escapeHtml(String(opts.index || 0)) +
+        '">Save to Library</button>';
+    } else if (opts.mode === 'saved') {
+      actionsHtml =
+        '<button type="button" class="btn btn-secondary btn-small kernel-edit-btn" data-kernel-id="' +
+          escapeHtml(opts.kernelId || '') +
+        '">Edit</button>' +
+        '<button type="button" class="btn btn-danger btn-small kernel-delete-btn" data-kernel-id="' +
+          escapeHtml(opts.kernelId || '') +
+        '">Delete</button>';
+    }
+
+    var createdAtHtml = '';
+    if (opts.mode === 'saved' && opts.createdAt) {
+      createdAtHtml =
+        '<div class="spine-field"><span class="spine-label">Created:</span> ' +
+        escapeHtml(new Date(opts.createdAt).toLocaleDateString()) +
+        '</div>';
+    }
+
+    return (
+      '<div class="spine-badges">' +
+        '<span class="spine-badge ' + directionBadgeClass + '">' + escapeHtml(direction) + '</span>' +
+        '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
+      '</div>' +
+      '<h3 class="spine-cdq">' + escapeHtml(title) + '</h3>' +
+      '<div class="spine-field"><span class="spine-label">Dramatic Thesis:</span> ' + escapeHtml(kernel.dramaticThesis || '') + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Value at Stake:</span> ' + escapeHtml(kernel.valueAtStake || '') + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Opposing Force:</span> ' + escapeHtml(kernel.opposingForce || '') + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Thematic Question:</span> <em>' + escapeHtml(kernel.thematicQuestion || '') + '</em></div>' +
+      '<div class="concept-scores">' + renderKernelScoreGrid(evaluatedKernel && evaluatedKernel.scores) + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(evaluatedKernel && evaluatedKernel.tradeoffSummary ? evaluatedKernel.tradeoffSummary : '') + '</div>' +
+      '<div class="concept-feedback">' +
+        '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(evaluatedKernel && evaluatedKernel.strengths) + '</ul></div>' +
+        '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(evaluatedKernel && evaluatedKernel.weaknesses) + '</ul></div>' +
+      '</div>' +
+      createdAtHtml +
+      '<div class="form-actions" style="margin-top: 0.5rem;">' + actionsHtml + '</div>'
+    );
   }
 
   // ── Choice renderers ──────────────────────────────────────────────
@@ -4349,6 +4504,7 @@ function createRecapModalController(initialData) {
     initNewStoryPage();
     initBriefingPage();
     initConceptsPage();
+    initKernelsPage();
   });
 
   // ── Briefing page controller ─────────────────────────────────────
@@ -4991,5 +5147,438 @@ function createRecapModalController(initialData) {
     if (editCloseBtn) editCloseBtn.addEventListener('click', closeEditModal);
     if (editCancelBtn) editCancelBtn.addEventListener('click', closeEditModal);
     if (editSaveBtn) editSaveBtn.addEventListener('click', handleEditSave);
+  }
+
+  // ── Kernels Page Controller ─────────────────────────────────────
+
+  function initKernelsPage() {
+    var page = document.getElementById('kernels-page');
+    if (!page) {
+      return;
+    }
+
+    var generateBtn = document.getElementById('generate-kernels-btn');
+    var generateForm = document.getElementById('kernel-generate-form');
+    var apiKeyInput = document.getElementById('kernelApiKey');
+    var generatedSection = document.getElementById('generated-kernels-section');
+    var generatedContainer = document.getElementById('generated-kernels');
+    var savedContainer = document.getElementById('saved-kernels');
+    var progressSection = document.getElementById('kernel-progress-section');
+    var progressContent = document.getElementById('kernel-progress-content');
+
+    if (!generateBtn || !apiKeyInput || !generatedContainer || !savedContainer || !progressSection || !progressContent) {
+      return;
+    }
+
+    if (!progressContent.querySelector('.loading-status')) {
+      progressContent.innerHTML =
+        '<div class="loading-stage" aria-live="polite"></div>' +
+        '<div class="loading-spinner"></div>' +
+        '<p class="loading-status">Generating kernels...</p>';
+    }
+
+    var loadingProgress = createLoadingProgressController(progressContent);
+    var lastGeneratedKernels = [];
+    var lastSeeds = null;
+    var savedKernelsById = {};
+
+    var storedKey = getApiKey();
+    if (storedKey && typeof apiKeyInput.value === 'string' && apiKeyInput.value.length === 0) {
+      apiKeyInput.value = storedKey;
+    }
+
+    function showError(message) {
+      if (typeof showFormError === 'function') {
+        showFormError(message);
+      } else {
+        alert(message);
+      }
+    }
+
+    function getKernelApiKey() {
+      var raw = typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+      return raw || (getApiKey() || '').trim();
+    }
+
+    function collectSeeds() {
+      var thematicInterests = document.getElementById('thematicInterests');
+      var emotionalCore = document.getElementById('emotionalCore');
+      var sparkLine = document.getElementById('sparkLine');
+
+      return {
+        thematicInterests: thematicInterests && typeof thematicInterests.value === 'string' ? thematicInterests.value.trim() : '',
+        emotionalCore: emotionalCore && typeof emotionalCore.value === 'string' ? emotionalCore.value.trim() : '',
+        sparkLine: sparkLine && typeof sparkLine.value === 'string' ? sparkLine.value.trim() : '',
+      };
+    }
+
+    function hasAtLeastOneSeed(seeds) {
+      return Boolean(seeds.thematicInterests || seeds.emotionalCore || seeds.sparkLine);
+    }
+
+    function syncGenerateButtonState() {
+      var seeds = collectSeeds();
+      var validApi =
+        typeof apiKeyInput.checkValidity === 'function'
+          ? apiKeyInput.checkValidity()
+          : getKernelApiKey().length >= 10;
+      generateBtn.disabled = !validApi || !hasAtLeastOneSeed(seeds);
+    }
+
+    function createSavedCard(savedKernel) {
+      var card = document.createElement('article');
+      card.className = 'spine-card kernel-card saved-kernel-card';
+      card.dataset.kernelId = savedKernel.id;
+      card.innerHTML = renderKernelCard(savedKernel.evaluatedKernel, {
+        mode: 'saved',
+        kernelId: savedKernel.id,
+        kernelName: savedKernel.name,
+        createdAt: savedKernel.createdAt,
+      });
+      return card;
+    }
+
+    function createGeneratedCard(evaluatedKernel, index) {
+      var card = document.createElement('article');
+      card.className = 'spine-card kernel-card';
+      card.dataset.index = String(index);
+      card.innerHTML = renderKernelCard(evaluatedKernel, {
+        mode: 'generated',
+        index: index,
+      });
+      return card;
+    }
+
+    function renderGeneratedKernels(evaluatedKernels) {
+      generatedContainer.innerHTML = '';
+
+      if (!Array.isArray(evaluatedKernels) || evaluatedKernels.length === 0) {
+        generatedContainer.innerHTML = '<p class="spine-section-subtitle">No kernels generated. Adjust seeds and try again.</p>';
+        generatedSection.style.display = 'block';
+        return;
+      }
+
+      evaluatedKernels.forEach(function (evaluatedKernel, index) {
+        generatedContainer.appendChild(createGeneratedCard(evaluatedKernel, index));
+      });
+      generatedSection.style.display = 'block';
+      generatedSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderSavedKernels(kernels) {
+      savedContainer.innerHTML = '';
+      savedKernelsById = {};
+
+      if (!Array.isArray(kernels) || kernels.length === 0) {
+        savedContainer.innerHTML = '<p class="spine-section-subtitle">No saved kernels yet. Generate some above!</p>';
+        return;
+      }
+
+      kernels.forEach(function (savedKernel) {
+        savedKernelsById[savedKernel.id] = savedKernel;
+        savedContainer.appendChild(createSavedCard(savedKernel));
+      });
+    }
+
+    async function loadSavedKernels() {
+      var response = await fetch('/kernels/api/list', {
+        method: 'GET',
+        cache: 'no-store',
+      });
+
+      var data = await response.json();
+      if (!response.ok || !data.success || !Array.isArray(data.kernels)) {
+        throw new Error(data.error || 'Failed to load kernels');
+      }
+
+      renderSavedKernels(data.kernels);
+    }
+
+    async function handleGenerate() {
+      if (typeof apiKeyInput.checkValidity === 'function' && !apiKeyInput.checkValidity()) {
+        apiKeyInput.reportValidity();
+        return;
+      }
+
+      var apiKey = getKernelApiKey();
+      if (apiKey.length < 10) {
+        showError('OpenRouter API key is required');
+        return;
+      }
+
+      var seeds = collectSeeds();
+      if (!hasAtLeastOneSeed(seeds)) {
+        showError('At least one kernel seed field is required');
+        return;
+      }
+
+      generateBtn.disabled = true;
+      progressSection.style.display = 'block';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var response = await fetch('/kernels/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            thematicInterests: seeds.thematicInterests,
+            emotionalCore: seeds.emotionalCore,
+            sparkLine: seeds.sparkLine,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+        if (!response.ok || !data.success || !Array.isArray(data.evaluatedKernels)) {
+          throw new Error(data.error || 'Failed to generate kernels');
+        }
+
+        setApiKey(apiKey);
+        lastSeeds = seeds;
+        lastGeneratedKernels = data.evaluatedKernels;
+        renderGeneratedKernels(data.evaluatedKernels);
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to generate kernels');
+      } finally {
+        loadingProgress.stop();
+        progressSection.style.display = 'none';
+        syncGenerateButtonState();
+      }
+    }
+
+    async function handleSaveGenerated(index, button) {
+      if (!Array.isArray(lastGeneratedKernels) || !lastGeneratedKernels[index]) {
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Saving...';
+
+      try {
+        var response = await fetch('/kernels/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            evaluatedKernel: lastGeneratedKernels[index],
+            seeds: lastSeeds || {},
+          }),
+        });
+
+        var data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to save kernel');
+        }
+
+        button.textContent = 'Saved!';
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-secondary');
+
+        await loadSavedKernels();
+      } catch (error) {
+        button.disabled = false;
+        button.textContent = 'Save to Library';
+        showError(error instanceof Error ? error.message : 'Failed to save kernel');
+      }
+    }
+
+    function buildInlineEditForm(savedKernel) {
+      var kernel = savedKernel.evaluatedKernel.kernel;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'kernel-inline-edit';
+      wrapper.dataset.kernelId = savedKernel.id;
+      wrapper.innerHTML =
+        '<div class="form-group"><label>Name</label><input type="text" class="kernel-edit-name" value="' + escapeHtml(savedKernel.name || '') + '"></div>' +
+        '<div class="form-group"><label>Dramatic Thesis</label><textarea class="kernel-edit-dramaticThesis" rows="2">' + escapeHtml(kernel.dramaticThesis || '') + '</textarea></div>' +
+        '<div class="form-group"><label>Value at Stake</label><input type="text" class="kernel-edit-valueAtStake" value="' + escapeHtml(kernel.valueAtStake || '') + '"></div>' +
+        '<div class="form-group"><label>Opposing Force</label><textarea class="kernel-edit-opposingForce" rows="2">' + escapeHtml(kernel.opposingForce || '') + '</textarea></div>' +
+        '<div class="form-group"><label>Thematic Question</label><input type="text" class="kernel-edit-thematicQuestion" value="' + escapeHtml(kernel.thematicQuestion || '') + '"></div>' +
+        '<div class="form-group"><label>Direction of Change</label>' +
+          '<select class="kernel-edit-directionOfChange">' +
+            '<option value="POSITIVE"' + (kernel.directionOfChange === 'POSITIVE' ? ' selected' : '') + '>POSITIVE</option>' +
+            '<option value="NEGATIVE"' + (kernel.directionOfChange === 'NEGATIVE' ? ' selected' : '') + '>NEGATIVE</option>' +
+            '<option value="IRONIC"' + (kernel.directionOfChange === 'IRONIC' ? ' selected' : '') + '>IRONIC</option>' +
+            '<option value="AMBIGUOUS"' + (kernel.directionOfChange === 'AMBIGUOUS' ? ' selected' : '') + '>AMBIGUOUS</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="form-actions" style="margin-top: 0.5rem;">' +
+          '<button type="button" class="btn btn-primary btn-small kernel-edit-save-btn" data-kernel-id="' + escapeHtml(savedKernel.id) + '">Save Changes</button>' +
+          '<button type="button" class="btn btn-secondary btn-small kernel-edit-cancel-btn">Cancel</button>' +
+        '</div>';
+      return wrapper;
+    }
+
+    function readInlineEditValues(editForm) {
+      function getInputValue(selector) {
+        var el = editForm.querySelector(selector);
+        return el && typeof el.value === 'string' ? el.value.trim() : '';
+      }
+
+      return {
+        name: getInputValue('.kernel-edit-name'),
+        kernelFields: {
+          dramaticThesis: getInputValue('.kernel-edit-dramaticThesis'),
+          valueAtStake: getInputValue('.kernel-edit-valueAtStake'),
+          opposingForce: getInputValue('.kernel-edit-opposingForce'),
+          thematicQuestion: getInputValue('.kernel-edit-thematicQuestion'),
+          directionOfChange: getInputValue('.kernel-edit-directionOfChange'),
+        },
+      };
+    }
+
+    function validateInlineEditPayload(payload) {
+      return (
+        payload.name.length > 0 &&
+        payload.kernelFields.dramaticThesis.length > 0 &&
+        payload.kernelFields.valueAtStake.length > 0 &&
+        payload.kernelFields.opposingForce.length > 0 &&
+        payload.kernelFields.thematicQuestion.length > 0 &&
+        payload.kernelFields.directionOfChange.length > 0
+      );
+    }
+
+    async function handleEditSave(kernelId, editForm, saveButton) {
+      var payload = readInlineEditValues(editForm);
+      if (!validateInlineEditPayload(payload)) {
+        showError('All kernel edit fields are required');
+        return;
+      }
+
+      saveButton.disabled = true;
+
+      try {
+        var response = await fetch('/kernels/api/' + encodeURIComponent(kernelId), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        var data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to update kernel');
+        }
+
+        await loadSavedKernels();
+      } catch (error) {
+        saveButton.disabled = false;
+        showError(error instanceof Error ? error.message : 'Failed to update kernel');
+      }
+    }
+
+    async function handleDelete(kernelId, deleteButton) {
+      deleteButton.disabled = true;
+
+      try {
+        var response = await fetch('/kernels/api/' + encodeURIComponent(kernelId), {
+          method: 'DELETE',
+        });
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to delete kernel');
+        }
+
+        await loadSavedKernels();
+      } catch (error) {
+        deleteButton.disabled = false;
+        showError(error instanceof Error ? error.message : 'Failed to delete kernel');
+      }
+    }
+
+    generatedContainer.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      var saveButton = target.closest('.kernel-save-generated-btn');
+      if (!saveButton || saveButton.disabled) {
+        return;
+      }
+
+      var index = Number(saveButton.dataset.genIndex);
+      if (!Number.isFinite(index) || index < 0) {
+        return;
+      }
+
+      void handleSaveGenerated(index, saveButton);
+    });
+
+    savedContainer.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      var deleteButton = target.closest('.kernel-delete-btn');
+      if (deleteButton) {
+        var deleteKernelId = deleteButton.dataset.kernelId;
+        if (deleteKernelId && confirm('Delete this kernel?')) {
+          void handleDelete(deleteKernelId, deleteButton);
+        }
+        return;
+      }
+
+      var editButton = target.closest('.kernel-edit-btn');
+      if (editButton) {
+        var editKernelId = editButton.dataset.kernelId;
+        if (!editKernelId) {
+          return;
+        }
+
+        var currentCard = editButton.closest('.saved-kernel-card');
+        if (!currentCard || currentCard.querySelector('.kernel-inline-edit')) {
+          return;
+        }
+
+        var savedKernel = savedKernelsById[editKernelId];
+        if (!savedKernel) {
+          showError('Kernel data is unavailable. Refresh and try again.');
+          return;
+        }
+
+        currentCard.appendChild(buildInlineEditForm(savedKernel));
+        return;
+      }
+
+      var cancelButton = target.closest('.kernel-edit-cancel-btn');
+      if (cancelButton) {
+        var editSection = cancelButton.closest('.kernel-inline-edit');
+        if (editSection) {
+          editSection.remove();
+        }
+        return;
+      }
+
+      var saveEditButton = target.closest('.kernel-edit-save-btn');
+      if (saveEditButton) {
+        var saveKernelId = saveEditButton.dataset.kernelId;
+        var editForm = saveEditButton.closest('.kernel-inline-edit');
+
+        if (!saveKernelId || !editForm) {
+          return;
+        }
+
+        void handleEditSave(saveKernelId, editForm, saveEditButton);
+      }
+    });
+
+    generateBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      void handleGenerate();
+    });
+
+    if (generateForm) {
+      generateForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+      });
+    }
+
+    page.addEventListener('input', function () {
+      syncGenerateButtonState();
+    });
+
+    syncGenerateButtonState();
+
+    void loadSavedKernels().catch(function (error) {
+      showError(error instanceof Error ? error.message : 'Failed to load saved kernels');
+    });
   }
 })();
