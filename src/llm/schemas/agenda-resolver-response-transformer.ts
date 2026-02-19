@@ -1,4 +1,3 @@
-import type { Npc } from '../../models/npc.js';
 import { normalizeForComparison } from '../../models/normalize.js';
 import type { NpcAgenda } from '../../models/state/npc-agenda.js';
 import type { NpcRelationship } from '../../models/state/npc-relationship.js';
@@ -12,12 +11,12 @@ export interface AgendaResolverRawResponse {
 
 /**
  * Validates and transforms the raw LLM response for the agenda resolver.
- * Filters out agendas for NPCs not in the story's NPC list.
+ * Filters out agendas for NPCs not in the story's character list.
  */
 export function validateAgendaResolverResponse(
   rawJson: unknown,
   rawResponse: string,
-  storyNpcs: readonly Npc[]
+  storyNpcs: readonly { readonly name: string }[]
 ): AgendaResolverRawResponse {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {

@@ -10,20 +10,20 @@
 
 When a `storyBible` is present on the context (i.e., the Lorekeeper has curated context for this scene), the following sections are **replaced by the Story Bible section** and suppressed from the user prompt:
 
-- **WORLDBUILDING** - replaced by `storyBible.sceneWorldContext`
-- **NPCS** - replaced by `storyBible.relevantCharacters`
+- **WORLDBUILDING** - scene context provided by `storyBible.sceneWorldContext` (raw worldbuilding fallback removed; decomposed data is always present)
+- **NPCS** - scene characters provided by `storyBible.relevantCharacters` (raw NPC fallback removed; decomposed characters are always present)
 
 The following sections are **always included** regardless of Story Bible presence:
 
 - Starting situation (user-provided grounding, independent of the story bible)
-- Protagonist speech fingerprint (when decomposed characters are available)
+- Protagonist speech fingerprint (decomposed characters are always present)
 - NPC voice fingerprints (when story bible + decomposed characters are available; falls back to lorekeeper's `speechPatterns` for unmatched NPCs)
 - Planner guidance and choice intents
 - Reconciliation failure reasons (if retry)
 
 ## Protagonist Speech Fingerprint
 
-When decomposed character data is available (`decomposedCharacters[0]` exists), a `PROTAGONIST: [Name]` line followed by a `PROTAGONIST SPEECH FINGERPRINT` section is inserted into the user prompt. The name line explicitly identifies the protagonist so the writer knows whose voice to channel. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence.
+A `PROTAGONIST: [Name]` line followed by a `PROTAGONIST SPEECH FINGERPRINT` section is always inserted into the user prompt (decomposed characters are required on the opening context). The name line explicitly identifies the protagonist so the writer knows whose voice to channel. This provides the writer with the protagonist's voice data (vocabulary profile, sentence patterns, catchphrases, verbal tics, dialogue samples) so the second-person narrative reflects the protagonist's unique voice. This section is included regardless of Story Bible presence.
 
 ## NPC Voice Fingerprints
 
@@ -192,7 +192,6 @@ CHOICE FORMATTING EXAMPLE:
 }
 {{/if}}
 
-{{#if decomposedCharacters && decomposedCharacters.length > 0}}
 PROTAGONIST: {{protagonist.name}}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
@@ -202,7 +201,6 @@ Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
 {{#if dialogueSamples}}Example lines:
   "sample line 1"
   "sample line 2"{{/if}}
-{{/if}}
 
 {{#if storyBible && decomposedCharacters[0]}}
 NPC VOICE FINGERPRINTS (use these to write distinct NPC dialogue):
@@ -212,17 +210,9 @@ NPC VOICE FINGERPRINTS (use these to write distinct NPC dialogue):
 }}
 {{/if}}
 
-{{#if !storyBible && worldbuilding}}
-WORLDBUILDING:
-{{worldbuilding}}
-{{/if}}
-
-{{#if !storyBible && npcs.length}}
-NPCS (Available Characters):
-{{formattedNpcs}}
-
-These characters are available for use in the story. Introduce them when narratively appropriate - you don't need to include all of them, and you don't need to introduce them all in the opening.
-{{/if}}
+{{!-- Raw worldbuilding and NPC fallbacks removed. Decomposed data is always present.
+      When storyBible is absent, the writer still has protagonist speech fingerprint
+      and NPC voice fingerprints from decomposed characters. --}}
 
 TONE/GENRE: {{tone}}
 
@@ -335,4 +325,3 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 ```
 
 - `choices` is 2-4 items when `isEnding=false`; exactly `[]` when `isEnding=true`.
-- In production, this prompt may include few-shot examples between system and final user message when `fewShotMode` is enabled.

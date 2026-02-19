@@ -19,6 +19,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import { STRUCTURE_GENERATION_SCHEMA } from '../../../src/llm/schemas/structure-schema';
 import { generateStoryStructure } from '../../../src/llm/structure-generator';
+import { buildMinimalDecomposedCharacter } from '../../fixtures/decomposed';
 
 interface StructurePayload {
   overallTheme: string;
@@ -139,8 +140,12 @@ describe('structure-generator', () => {
   const originalFetch = global.fetch;
 
   const context = {
-    worldbuilding: 'A plague-ridden harbor city controlled by merchant tribunals.',
     tone: 'grim political fantasy',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A disgraced guard')],
+    decomposedWorld: {
+      facts: [{ domain: 'geography' as const, fact: 'A plague-ridden harbor city controlled by merchant tribunals.', scope: 'global' as const }],
+      rawWorldbuilding: 'A plague-ridden harbor city controlled by merchant tribunals.',
+    },
   };
 
   beforeEach(() => {
@@ -197,7 +202,7 @@ describe('structure-generator', () => {
 
     const messages = body.messages as Array<{ role: string; content: string }>;
     expect(Array.isArray(messages)).toBe(true);
-    expect(messages[messages.length - 1]?.content).toContain(context.worldbuilding);
+    expect(messages[messages.length - 1]?.content).toContain('plague-ridden harbor city');
     expect(messages[messages.length - 1]?.content).toContain(context.tone);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'structure', expect.any(Array));
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);

@@ -462,7 +462,7 @@ describe('story engine e2e full playthrough', () => {
     });
 
     mockedGenerateOpeningPage.mockImplementation((context) => {
-      if (context.characterConcept.includes('courier smuggling')) {
+      if (context.tone.includes('political intrigue')) {
         return Promise.resolve(replayOpeningResult);
       }
       return Promise.resolve(openingResult);
@@ -471,7 +471,7 @@ describe('story engine e2e full playthrough', () => {
 
     mockedGenerateWriterPage.mockImplementation((context) => {
       continuationCallCount += 1;
-      if (context.characterConcept.includes('courier smuggling')) {
+      if (context.tone.includes('political intrigue')) {
         return Promise.resolve(buildReplayWriterResult());
       }
       return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCallCount));

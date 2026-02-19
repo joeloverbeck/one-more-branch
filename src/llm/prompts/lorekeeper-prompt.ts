@@ -1,6 +1,5 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
-import { formatNpcsForPrompt } from '../../models/npc.js';
 import { formatCanonForPrompt } from '../../engine/canon-manager.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { LorekeeperContext } from '../context-types.js';
@@ -21,19 +20,8 @@ function stripParenthetical(name: string): string {
 export function detectMentionedCharacters(context: LorekeeperContext): string[] {
   const characterNames: Map<string, string> = new Map();
 
-  if (context.decomposedCharacters) {
-    for (const c of context.decomposedCharacters) {
-      characterNames.set(c.name.toLowerCase(), c.name);
-    }
-  }
-
-  if (context.npcs) {
-    for (const npc of context.npcs) {
-      const key = npc.name.toLowerCase();
-      if (!characterNames.has(key)) {
-        characterNames.set(key, npc.name);
-      }
-    }
+  for (const c of context.decomposedCharacters) {
+    characterNames.set(c.name.toLowerCase(), c.name);
   }
 
   if (characterNames.size === 0) {
@@ -78,22 +66,12 @@ ${formatNumberedLines(LOREKEEPER_CURATION_PRINCIPLES)}`;
 export function buildLorekeeperPrompt(context: LorekeeperContext): ChatMessage[] {
   const plan = context.pagePlan;
 
-  const hasDecomposed =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0;
-  const hasDecomposedWorld =
-    context.decomposedWorld && context.decomposedWorld.facts.length > 0;
-
-  const npcsSection = hasDecomposed
+  const npcsSection = context.decomposedCharacters.length > 0
     ? `CHARACTERS (structured profiles with speech fingerprints):
 ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
-    : context.npcs && context.npcs.length > 0
-      ? `NPC DEFINITIONS:
-${formatNpcsForPrompt(context.npcs)}
-
-`
-      : '';
+    : '';
 
   const canonSection =
     context.globalCanon.length > 0
@@ -252,11 +230,7 @@ ${plan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'
 ${choiceIntentSection}${mentionedCharacterDirective}
 === FULL STORY CONTEXT ===
 
-${hasDecomposed ? '' : `CHARACTER CONCEPT:
-${context.characterConcept}
-
-`}
-${hasDecomposedWorld ? formatDecomposedWorldForPrompt(context.decomposedWorld) : `WORLDBUILDING:\n${context.worldbuilding || '(none provided)'}`}
+${context.decomposedWorld.facts.length > 0 ? formatDecomposedWorldForPrompt(context.decomposedWorld) : 'WORLDBUILDING:\n(none provided)'}
 
 ${buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)}
 

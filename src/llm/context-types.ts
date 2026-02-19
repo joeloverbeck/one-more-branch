@@ -1,7 +1,6 @@
 import type { CanonFact } from '../models/state/canon.js';
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
-import type { Npc } from '../models/npc.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type {
@@ -24,32 +23,26 @@ import type { StoryBible } from './lorekeeper-types.js';
 import type { PagePlan } from './planner-types.js';
 
 export interface OpeningContext {
-  characterConcept: string;
-  worldbuilding: string;
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
-  npcs?: readonly Npc[];
   startingSituation?: string;
   structure?: StoryStructure;
   spine?: StorySpine;
   initialNpcAgendas?: readonly NpcAgenda[];
-  decomposedCharacters?: readonly DecomposedCharacter[];
-  decomposedWorld?: DecomposedWorld;
+  decomposedCharacters: readonly DecomposedCharacter[];
+  decomposedWorld: DecomposedWorld;
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
 }
 
 export interface ContinuationContext {
-  characterConcept: string;
-  worldbuilding: string;
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
-  npcs?: readonly Npc[];
-  decomposedCharacters?: readonly DecomposedCharacter[];
-  decomposedWorld?: DecomposedWorld;
+  decomposedCharacters: readonly DecomposedCharacter[];
+  decomposedWorld: DecomposedWorld;
   globalCanon: readonly CanonFact[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   storyArc?: string | null;
@@ -101,14 +94,11 @@ export interface ContinuationPagePlanContext extends ContinuationContext {
 export type PagePlanContext = OpeningPagePlanContext | ContinuationPagePlanContext;
 
 export interface LorekeeperContext {
-  readonly characterConcept: string;
-  readonly worldbuilding: string;
   readonly tone: string;
   readonly toneFeel?: readonly string[];
   readonly toneAvoid?: readonly string[];
-  readonly npcs?: readonly Npc[];
-  readonly decomposedCharacters?: readonly DecomposedCharacter[];
-  readonly decomposedWorld?: DecomposedWorld;
+  readonly decomposedCharacters: readonly DecomposedCharacter[];
+  readonly decomposedWorld: DecomposedWorld;
   readonly globalCanon: readonly CanonFact[];
   readonly globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   readonly accumulatedCharacterState: Readonly<Record<string, readonly KeyedEntry[]>>;

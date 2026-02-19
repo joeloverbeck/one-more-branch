@@ -1,7 +1,5 @@
 import { formatSpeechFingerprintForWriter } from '../../models/decomposed-character.js';
-import { formatNpcsForPrompt } from '../../models/npc.js';
 import { formatCanonForPrompt } from '../../engine/canon-manager.js';
-import { buildFewShotMessages } from '../examples.js';
 import type { ContinuationContext } from '../context-types.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -55,27 +53,6 @@ export function buildContinuationPrompt(
     ...options,
     hasStoryBible: hasBible,
   });
-
-  // When bible is present, these sections are replaced by the Story Bible
-  const worldSection = hasBible
-    ? ''
-    : context.worldbuilding
-      ? `WORLDBUILDING:
-${context.worldbuilding}
-
-`
-      : '';
-
-  const npcsSection = hasBible
-    ? ''
-    : context.npcs && context.npcs.length > 0
-      ? `NPCS (Available Characters):
-${formatNpcsForPrompt(context.npcs)}
-
-These characters are available for use in the story. Introduce or involve them when narratively appropriate.
-
-`
-      : '';
 
   const plannerSection = context.pagePlan
     ? `=== PLANNER GUIDANCE ===
@@ -197,10 +174,7 @@ ${context.accumulatedHealth.map((entry) => `- [${entry.id}] ${entry.text}`).join
 
   const storyBibleSection = context.storyBible ? formatStoryBibleSection(context.storyBible) : '';
 
-  const protagonistDecomposed =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0
-      ? context.decomposedCharacters[0]!
-      : null;
+  const protagonistDecomposed = context.decomposedCharacters[0] ?? null;
   const protagonistSpeechSection = protagonistDecomposed
     ? `
 PROTAGONIST: ${protagonistDecomposed.name}
@@ -224,7 +198,7 @@ ${formatSpeechFingerprintForWriter(protagonistDecomposed.speechFingerprint)}
 === DATA & STATE RULES ===
 ${dataRules}
 
-${protagonistSpeechSection}${sceneCharacterVoicesSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}
+${protagonistSpeechSection}${sceneCharacterVoicesSection}TONE/GENRE: ${context.tone}
 
 ${buildSpineSection(context.spine)}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
@@ -259,10 +233,6 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
   const messages: ChatMessage[] = [
     { role: 'system', content: buildContinuationSystemPrompt(toneParams) },
   ];
-
-  if (options?.fewShotMode && options.fewShotMode !== 'none') {
-    messages.push(...buildFewShotMessages('continuation', options.fewShotMode));
-  }
 
   messages.push({ role: 'user', content: userPrompt });
 

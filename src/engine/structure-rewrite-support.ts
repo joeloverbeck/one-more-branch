@@ -131,13 +131,13 @@ export function buildRewriteContext(
   const plannedBeats = extractPlannedBeats(structure, structureState);
 
   return {
-    characterConcept: story.characterConcept,
-    worldbuilding: story.worldbuilding,
     tone: story.tone,
     toneFeel: story.toneFeel,
     toneAvoid: story.toneAvoid,
     spine: story.spine,
     conceptSpec: story.conceptSpec,
+    decomposedCharacters: story.decomposedCharacters!,
+    decomposedWorld: story.decomposedWorld!,
     completedBeats,
     plannedBeats,
     narrativeSummary: deviation.narrativeSummary,

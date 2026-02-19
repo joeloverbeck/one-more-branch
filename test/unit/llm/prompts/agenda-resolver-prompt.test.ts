@@ -2,6 +2,7 @@ import { buildAgendaResolverPrompt } from '../../../../src/llm/prompts/agenda-re
 import type { AgendaResolverPromptContext } from '../../../../src/llm/prompts/agenda-resolver-prompt';
 import { createEmptyActiveState } from '../../../../src/models';
 import { createEmptyAccumulatedNpcAgendas } from '../../../../src/models/state/npc-agenda';
+import { buildMinimalDecomposedCharacter } from '../../../fixtures/decomposed';
 
 function buildMinimalContext(
   overrides?: Partial<AgendaResolverPromptContext>
@@ -9,9 +10,9 @@ function buildMinimalContext(
   return {
     narrative: 'The smuggler confronted Azra in the hallway.',
     sceneSummary: 'A tense confrontation between the protagonist and Azra.',
-    npcs: [
-      { name: 'Azra', description: 'Ex-military fixer' },
-      { name: 'Voss', description: 'Corporate spy' },
+    decomposedCharacters: [
+      buildMinimalDecomposedCharacter('Azra'),
+      buildMinimalDecomposedCharacter('Voss'),
     ],
     currentAgendas: createEmptyAccumulatedNpcAgendas(),
     activeState: createEmptyActiveState(),
@@ -37,11 +38,11 @@ describe('buildAgendaResolverPrompt', () => {
     expect(system).toContain('Off-screen NPCs still evolve');
   });
 
-  it('includes NPC definitions in user prompt', () => {
+  it('includes character definitions in user prompt', () => {
     const messages = buildAgendaResolverPrompt(buildMinimalContext());
     const user = messages[1]?.content ?? '';
 
-    expect(user).toContain('NPC DEFINITIONS');
+    expect(user).toContain('CHARACTERS (structured profiles with speech fingerprints)');
     expect(user).toContain('Azra');
     expect(user).toContain('Voss');
   });

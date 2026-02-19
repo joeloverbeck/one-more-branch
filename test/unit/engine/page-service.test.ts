@@ -42,6 +42,7 @@ import { logger } from '../../../src/logging/index.js';
 import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { StoryStructure } from '../../../src/models/story-arc';
 import type { StateAccountantGenerationResult } from '../../../src/llm/accountant-types';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -188,6 +189,8 @@ function buildStory(overrides?: Partial<Story>): Story {
       worldbuilding: 'A fractured empire with watchtowers on every road',
       tone: 'tense espionage',
     }),
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A courier smuggling letters through occupied cities')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     ...overrides,
   };
 }
@@ -771,7 +774,7 @@ describe('page-service', () => {
       expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
         expect.objectContaining({
           mode: 'opening',
-          characterConcept: story.characterConcept,
+          decomposedCharacters: story.decomposedCharacters,
         }),
         expect.objectContaining({
           apiKey: 'test-key',
@@ -2569,8 +2572,8 @@ describe('page-service', () => {
       expect(mockedCreateStructureRewriter).toHaveBeenCalled();
       expect(mockRewriter.rewriteStructure).toHaveBeenCalledWith(
         expect.objectContaining({
-          characterConcept: story.characterConcept,
-          worldbuilding: story.worldbuilding,
+          decomposedCharacters: story.decomposedCharacters,
+          decomposedWorld: story.decomposedWorld,
           tone: story.tone,
           deviationReason: 'Current infiltration beats are invalid after defection.',
           narrativeSummary: 'Protagonist joined imperial command hierarchy.',

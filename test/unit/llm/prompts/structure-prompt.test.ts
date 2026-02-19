@@ -15,8 +15,9 @@ function getUserMessages(messages: { role: string; content: string }[]): string[
 
 describe('buildStructurePrompt', () => {
   const baseContext = {
-    worldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
     tone: 'stormy maritime thriller',
+    decomposedCharacters: [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
+    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'An archipelago where each island is ruled by rival tide cults.', scope: 'global' }], rawWorldbuilding: 'An archipelago where each island is ruled by rival tide cults.' },
   };
 
   it('returns chat messages with system message first and a user prompt', () => {
@@ -31,7 +32,7 @@ describe('buildStructurePrompt', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
-    expect(lastUser).toContain(baseContext.worldbuilding);
+    expect(lastUser).toContain('archipelago');
     expect(lastUser).toContain(`TONE/GENRE: ${baseContext.tone}`);
     expect(lastUser).not.toContain('CHARACTER CONCEPT:');
   });
@@ -80,46 +81,12 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('2-4 beats');
   });
 
-  it('includes few-shot example when fewShotMode is standard', () => {
-    const messages = buildStructurePrompt(baseContext, { fewShotMode: 'standard' });
-
-    expect(messages).toHaveLength(4);
-    expect(messages[1]?.role).toBe('user');
-    expect(messages[2]?.role).toBe('assistant');
-  });
-
-  it('includes few-shot example when fewShotMode is minimal', () => {
-    const messages = buildStructurePrompt(baseContext, { fewShotMode: 'minimal' });
-
-    expect(messages).toHaveLength(4);
-    expect(messages[1]?.role).toBe('user');
-    expect(messages[2]?.role).toBe('assistant');
-  });
-
-  it('omits few-shot example when fewShotMode is none', () => {
-    const messages = buildStructurePrompt(baseContext, { fewShotMode: 'none' });
-
-    expect(messages).toHaveLength(2);
-  });
-
   it('includes NC-21 content policy in system prompt', () => {
     const messages = buildStructurePrompt(baseContext);
     const systemMessage = getSystemMessage(messages);
 
     expect(systemMessage).toContain('NC-21');
     expect(systemMessage).toContain(CONTENT_POLICY);
-  });
-
-  it('few-shot assistant message includes premise, pacingBudget, beat name, and role fields', () => {
-    const messages = buildStructurePrompt(baseContext, { fewShotMode: 'standard' });
-    const assistantMessage = messages.find((m) => m.role === 'assistant')?.content ?? '';
-
-    expect(assistantMessage).toContain('"premise"');
-    expect(assistantMessage).toContain('"pacingBudget"');
-    expect(assistantMessage).toContain('"targetPagesMin"');
-    expect(assistantMessage).toContain('"targetPagesMax"');
-    expect(assistantMessage).toContain('"name"');
-    expect(assistantMessage).toContain('"role"');
   });
 
   it('contains dramatic role guidance with all four beat roles', () => {
@@ -164,8 +131,9 @@ describe('buildStructurePrompt', () => {
 
 describe('buildStructurePrompt - minimal system prompt', () => {
   const baseContext = {
-    worldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
     tone: 'stormy maritime thriller',
+    decomposedCharacters: [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
+    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'An archipelago where each island is ruled by rival tide cults.', scope: 'global' }], rawWorldbuilding: 'An archipelago where each island is ruled by rival tide cults.' },
   };
 
   it('does NOT include state management instructions', () => {

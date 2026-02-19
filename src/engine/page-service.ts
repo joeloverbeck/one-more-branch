@@ -123,17 +123,22 @@ export async function generatePage(
     ? createOpeningPreviousStateSnapshot()
     : createContinuationPreviousStateSnapshot(parentState!);
 
+  // --- Guard: decomposed data must exist ---
+  if (!story.decomposedCharacters || !story.decomposedWorld) {
+    throw new EngineError(
+      'Story decomposed data is missing — story has not been fully prepared',
+      'STORY_NOT_PREPARED'
+    );
+  }
+
   // --- Build lorekeeper + writer pipeline ---
   const writerWithLorekeeper = isOpening
     ? createWriterWithLorekeeper({
         mode: 'opening',
         openingContext: {
-          characterConcept: story.characterConcept,
-          worldbuilding: story.worldbuilding,
           tone: story.tone,
           toneFeel: story.toneFeel,
           toneAvoid: story.toneAvoid,
-          npcs: story.npcs,
           startingSituation: story.startingSituation,
           structure: story.structure ?? undefined,
           spine: story.spine,
@@ -174,18 +179,15 @@ export async function generatePage(
     ? (failureReasons?: readonly ReconciliationFailureReason[]): PagePlanContext =>
         ({
           mode: 'opening' as const,
-          characterConcept: story.characterConcept,
-          worldbuilding: story.worldbuilding,
           tone: story.tone,
           toneFeel: story.toneFeel,
           toneAvoid: story.toneAvoid,
-          npcs: story.npcs,
           startingSituation: story.startingSituation,
           structure: story.structure ?? undefined,
           spine: story.spine,
           initialNpcAgendas: story.initialNpcAgendas,
-          decomposedCharacters: story.decomposedCharacters,
-          decomposedWorld: story.decomposedWorld,
+          decomposedCharacters: story.decomposedCharacters!,
+          decomposedWorld: story.decomposedWorld!,
           reconciliationFailureReasons: failureReasons,
         })
     : (() => {
@@ -375,7 +377,6 @@ export async function generatePage(
 
   // --- NPC agenda resolver ---
   const agendaResolverResult = await resolveNpcAgendas({
-    npcs: story.npcs,
     decomposedCharacters: story.decomposedCharacters,
     writerNarrative: writerResult.narrative,
     writerSceneSummary: writerResult.sceneSummary,

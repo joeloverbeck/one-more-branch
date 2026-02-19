@@ -19,14 +19,11 @@ export function buildContinuationContext(
   protagonistGuidance?: ProtagonistGuidance
 ): ContinuationContext {
   return {
-    characterConcept: story.characterConcept,
-    worldbuilding: story.worldbuilding,
     tone: story.tone,
     toneFeel: story.toneFeel,
     toneAvoid: story.toneAvoid,
-    npcs: story.npcs,
-    decomposedCharacters: story.decomposedCharacters,
-    decomposedWorld: story.decomposedWorld,
+    decomposedCharacters: story.decomposedCharacters!,
+    decomposedWorld: story.decomposedWorld!,
     globalCanon: story.globalCanon,
     globalCharacterCanon: story.globalCharacterCanon,
     structure: currentStructureVersion?.structure ?? story.structure ?? undefined,

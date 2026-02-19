@@ -24,15 +24,16 @@ import {
   createMockAnalystResult,
   createMockFinalResult,
 } from '../../fixtures/llm-results';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 function makeBasePlannerContext(
   overrides: Partial<ContinuationPagePlanContext> = {}
 ): ContinuationPagePlanContext {
   return {
     mode: 'continuation',
-    characterConcept: 'A rogue agent',
-    worldbuilding: 'Dark cyberpunk city',
     tone: 'gritty',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A rogue agent')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     globalCanon: [],
     globalCharacterCanon: {},
     previousNarrative: 'The alley was dark.',
@@ -43,6 +44,7 @@ function makeBasePlannerContext(
     activeState: createEmptyActiveState(),
     grandparentNarrative: null,
     ancestorSummaries: [],
+    accumulatedPromises: [],
     ...overrides,
   };
 }

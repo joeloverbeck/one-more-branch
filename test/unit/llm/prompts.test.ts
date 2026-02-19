@@ -2,13 +2,14 @@ import { CONTENT_POLICY } from '../../../src/llm/content-policy';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import { ConstraintType, ThreatType } from '../../../src/models/state';
 import { buildContinuationPrompt, buildOpeningPrompt } from '../../../src/llm/prompts';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
-  // Get the last user message (after any few-shot examples)
+  // Get the last user message
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages[userMessages.length - 1]?.content ?? '';
 }
@@ -88,42 +89,43 @@ describe('buildOpeningPrompt', () => {
 
   it('should omit raw character concept from opening user message', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'An exiled knight seeking redemption',
-      worldbuilding: '',
       tone: 'grim fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('An exiled knight')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     expect(getUserMessage(messages)).not.toContain('CHARACTER CONCEPT:');
-    expect(getUserMessage(messages)).not.toContain('An exiled knight seeking redemption');
   });
 
   it('should include content policy in system message', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'horror',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     expect(getSystemMessage(messages)).toContain('NC-21');
     expect(getSystemMessage(messages)).toContain(CONTENT_POLICY);
   });
 
-  it('should include worldbuilding if provided', () => {
+  it('should NOT include decomposed world facts in writer prompt (they flow through planner/lorekeeper)', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: 'The city floats above a poisoned sea.',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: {
+        facts: [{ domain: 'geography' as const, fact: 'The city floats above a poisoned sea.', scope: 'global' }],
+        rawWorldbuilding: 'The city floats above a poisoned sea.',
+      },
     });
 
-    expect(getUserMessage(messages)).toContain('WORLDBUILDING:');
-    expect(getUserMessage(messages)).toContain('poisoned sea');
+    expect(getUserMessage(messages)).not.toContain('poisoned sea');
   });
 
   it('should NOT include OUTPUT FORMAT instructions', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     const system = getSystemMessage(messages);
@@ -134,9 +136,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should not request story arc determination', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     expect(getUserMessage(messages).toLowerCase()).not.toContain('story arc');
@@ -145,9 +147,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should NOT include structure section even when structure is provided', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       structure: testStructure,
     });
 
@@ -160,9 +162,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should include tone in user message', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'neo-noir thriller',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     expect(getUserMessage(messages)).toContain('TONE/GENRE: neo-noir thriller');
@@ -170,9 +172,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should return exactly 2 messages (system, user) with no options', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     expect(messages).toHaveLength(2);
@@ -180,42 +182,12 @@ describe('buildOpeningPrompt', () => {
     expect(messages[1]?.role).toBe('user');
   });
 
-  it('should return exactly 2 messages with fewShotMode: none', () => {
-    const messages = buildOpeningPrompt(
-      {
-        characterConcept: 'Character',
-        worldbuilding: '',
-        tone: 'dark fantasy',
-      },
-      { fewShotMode: 'none' }
-    );
-
-    expect(messages).toHaveLength(2);
-  });
-
-  it('should return 4 messages with fewShotMode: minimal (system + example pair + user)', () => {
-    const messages = buildOpeningPrompt(
-      {
-        characterConcept: 'Character',
-        worldbuilding: '',
-        tone: 'dark fantasy',
-      },
-      { fewShotMode: 'minimal' }
-    );
-
-    expect(messages).toHaveLength(4);
-    expect(messages[0]?.role).toBe('system');
-    expect(messages[1]?.role).toBe('user'); // example user
-    expect(messages[2]?.role).toBe('assistant'); // example assistant
-    expect(messages[3]?.role).toBe('user'); // actual prompt
-  });
-
   it('should include strict choice guidelines in user message when choiceGuidance: strict', () => {
     const messages = buildOpeningPrompt(
       {
-        characterConcept: 'Character',
-        worldbuilding: '',
         tone: 'dark fantasy',
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       },
       { choiceGuidance: 'strict' }
     );
@@ -230,9 +202,9 @@ describe('buildOpeningPrompt', () => {
   it('should include DIVERGENCE ENFORCEMENT in user message with strict choice guidelines', () => {
     const messages = buildOpeningPrompt(
       {
-        characterConcept: 'Character',
-        worldbuilding: '',
         tone: 'dark fantasy',
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       },
       { choiceGuidance: 'strict' }
     );
@@ -245,9 +217,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should include read-only continuity guidance for opening data rules', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     const user = getUserMessage(messages);
@@ -259,9 +231,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should NOT include CONTINUITY RULES in opening system message', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     const system = getSystemMessage(messages);
@@ -272,9 +244,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should include enhanced storytelling guidelines', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     const system = getSystemMessage(messages);
@@ -285,9 +257,9 @@ describe('buildOpeningPrompt', () => {
   it('should NOT include strict choice guidelines when choiceGuidance: basic', () => {
     const messages = buildOpeningPrompt(
       {
-        characterConcept: 'Character',
-        worldbuilding: '',
         tone: 'dark fantasy',
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       },
       { choiceGuidance: 'basic' }
     );
@@ -298,9 +270,9 @@ describe('buildOpeningPrompt', () => {
 
   it('should include numbered REQUIREMENTS in user message', () => {
     const messages = buildOpeningPrompt({
-      characterConcept: 'Character',
-      worldbuilding: '',
       tone: 'dark fantasy',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
 
     const user = getUserMessage(messages);
@@ -412,9 +384,9 @@ describe('buildContinuationPrompt', () => {
     pacingNudge: null,
   };
   const baseContext = {
-    characterConcept: 'A disgraced detective',
-    worldbuilding: '',
     tone: 'noir',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A disgraced detective')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     globalCanon: [] as const,
     globalCharacterCanon: {} as const,
     previousNarrative: 'Rain batters the windows while the neon sign flickers overhead.',
@@ -423,7 +395,6 @@ describe('buildContinuationPrompt', () => {
     accumulatedInventory: [] as const,
     accumulatedHealth: [] as const,
     accumulatedCharacterState: {} as const,
-    // New active state fields
     activeState: {
       currentLocation: '',
       activeThreats: [],
@@ -432,6 +403,7 @@ describe('buildContinuationPrompt', () => {
     },
     grandparentNarrative: null as string | null,
     ancestorSummaries: [],
+    accumulatedPromises: [],
   };
 
   it('should include selected choice in user message', () => {
@@ -560,28 +532,6 @@ describe('buildContinuationPrompt', () => {
     expect(messages).toHaveLength(2);
     expect(messages[0]?.role).toBe('system');
     expect(messages[1]?.role).toBe('user');
-  });
-
-  it('should return 4 messages with fewShotMode: minimal', () => {
-    const messages = buildContinuationPrompt(baseContext, { fewShotMode: 'minimal' });
-
-    expect(messages).toHaveLength(4);
-    expect(messages[0]?.role).toBe('system');
-    expect(messages[1]?.role).toBe('user'); // example user
-    expect(messages[2]?.role).toBe('assistant'); // example assistant
-    expect(messages[3]?.role).toBe('user'); // actual prompt
-  });
-
-  it('should return 6 messages with fewShotMode: standard (includes ending example)', () => {
-    const messages = buildContinuationPrompt(baseContext, { fewShotMode: 'standard' });
-
-    expect(messages).toHaveLength(6);
-    expect(messages[0]?.role).toBe('system');
-    expect(messages[1]?.role).toBe('user'); // continuation example user
-    expect(messages[2]?.role).toBe('assistant'); // continuation example assistant
-    expect(messages[3]?.role).toBe('user'); // ending example user
-    expect(messages[4]?.role).toBe('assistant'); // ending example assistant
-    expect(messages[5]?.role).toBe('user'); // actual prompt
   });
 
   it('should include numbered REQUIREMENTS in user message', () => {
@@ -1073,63 +1023,25 @@ describe('buildContinuationPrompt', () => {
     });
   });
 
-  describe('npcs and startingSituation', () => {
-    it('includes NPC section when npcs is provided', () => {
+  describe('decomposed characters and startingSituation', () => {
+    it('includes decomposed character profiles when provided', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
-        npcs: [{ name: 'Gandalf', description: 'A wise mentor who guides the hero' }],
+        decomposedCharacters: [
+          buildMinimalDecomposedCharacter('Gandalf'),
+        ],
       });
 
       const content = getUserMessage(messages);
-      expect(content).toContain('NPCS (Available Characters)');
-      expect(content).toContain('NPC: Gandalf');
-      expect(content).toContain('A wise mentor who guides the hero');
-      expect(content).toContain('Introduce or involve them when narratively appropriate');
-    });
-
-    it('omits NPC section when npcs is not provided', () => {
-      const messages = buildContinuationPrompt(baseContext);
-
-      const content = getUserMessage(messages);
-      expect(content).not.toContain('NPCS (Available Characters)');
-    });
-
-    it('omits NPC section when npcs is empty array', () => {
-      const messages = buildContinuationPrompt({
-        ...baseContext,
-        npcs: [],
-      });
-
-      const content = getUserMessage(messages);
-      expect(content).not.toContain('NPCS (Available Characters)');
+      expect(content).toContain('Gandalf');
     });
 
     it('does NOT include starting situation in continuation prompts', () => {
-      // Starting situation should only appear in opening prompts, never in continuation
       const messages = buildContinuationPrompt(baseContext);
 
       const content = getUserMessage(messages);
       expect(content).not.toContain('STARTING SITUATION');
       expect(content).not.toContain('MUST FOLLOW');
-    });
-
-    it('places NPC section after worldbuilding and before tone', () => {
-      const messages = buildContinuationPrompt({
-        ...baseContext,
-        worldbuilding: 'A medieval fantasy world with magic',
-        npcs: [{ name: 'Merlin', description: 'The wise wizard' }],
-      });
-
-      const content = getUserMessage(messages);
-      const worldbuildingIdx = content.indexOf('WORLDBUILDING:');
-      const npcsIdx = content.indexOf('NPCS (Available Characters)');
-      const toneIdx = content.indexOf('TONE/GENRE:');
-
-      expect(worldbuildingIdx).toBeGreaterThan(-1);
-      expect(npcsIdx).toBeGreaterThan(-1);
-      expect(toneIdx).toBeGreaterThan(-1);
-      expect(worldbuildingIdx).toBeLessThan(npcsIdx);
-      expect(npcsIdx).toBeLessThan(toneIdx);
     });
   });
 });

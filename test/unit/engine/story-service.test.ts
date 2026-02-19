@@ -23,7 +23,6 @@ import {
   prepareStory,
   startNewStory,
 } from '../../../src/engine/story-service';
-
 jest.mock('../../../src/persistence', () => ({
   storage: {
     saveStory: jest.fn(),
@@ -240,7 +239,6 @@ describe('story-service', () => {
       });
       expect(mockedGenerateStoryStructure).toHaveBeenCalledWith(
         expect.objectContaining({
-          worldbuilding: story.worldbuilding,
           tone: story.tone,
           spine: mockSpine,
           decomposedCharacters: [],

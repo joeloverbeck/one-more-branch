@@ -56,12 +56,9 @@ function buildLorekeeperContext(
   if (ctx.mode === 'opening') {
     const oc = ctx.openingContext;
     return {
-      characterConcept: oc.characterConcept,
-      worldbuilding: oc.worldbuilding,
       tone: oc.tone,
       toneFeel: oc.toneFeel,
       toneAvoid: oc.toneAvoid,
-      npcs: oc.npcs,
       decomposedCharacters: oc.decomposedCharacters,
       decomposedWorld: oc.decomposedWorld,
       globalCanon: [],
@@ -85,12 +82,9 @@ function buildLorekeeperContext(
 
   const cc = ctx.continuationContext;
   return {
-    characterConcept: cc.characterConcept,
-    worldbuilding: cc.worldbuilding,
     tone: cc.tone,
     toneFeel: cc.toneFeel,
     toneAvoid: cc.toneAvoid,
-    npcs: cc.npcs,
     decomposedCharacters: cc.decomposedCharacters,
     decomposedWorld: cc.decomposedWorld,
     globalCanon: cc.globalCanon,

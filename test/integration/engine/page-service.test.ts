@@ -43,6 +43,8 @@ import {
   createMockProtagonistAffect,
   createMockStoryStructure,
 } from '../../fixtures/llm-results';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import type { Story, CreateStoryData } from '@/models/story';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -92,6 +94,14 @@ const mockedLogger = logger as {
 };
 
 const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
+
+function createTestStory(data: CreateStoryData): Story {
+  return {
+    ...createStory(data),
+    decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: data.characterConcept })],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+  };
+}
 
 type ReconciliationWriterPayload = PageWriterResult & {
   currentLocation?: string | null;
@@ -505,7 +515,7 @@ describe('page-service integration', () => {
 
   describe('generateFirstPage integration', () => {
     it('retries once on reconciliation diagnostics and injects failure reasons into retry prompts', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} reconciliation-retry-opening`,
         worldbuilding: 'A city where alarms travel faster than footsteps.',
@@ -628,7 +638,7 @@ describe('page-service integration', () => {
 
     it('assembles page with correct structure state for structured stories', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} structured-first-page`,
         worldbuilding: 'A city where shadows have memory.',
@@ -677,7 +687,7 @@ describe('page-service integration', () => {
     });
 
     it('runs planner before opening writer and forwards planner output into opening context', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} planner-opening-order`,
         worldbuilding: 'A city where every alley has watchers.',
@@ -761,7 +771,7 @@ describe('page-service integration', () => {
     });
 
     it('uses empty structure state for unstructured stories', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} unstructured-first-page`,
         worldbuilding: 'A freeform world.',
@@ -786,7 +796,7 @@ describe('page-service integration', () => {
     });
 
     it('updates story with canon facts from LLM result', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} canon-update`,
         worldbuilding: 'A world of secrets.',
@@ -815,7 +825,7 @@ describe('page-service integration', () => {
 
   describe('generateNextPage integration', () => {
     it('throws typed hard error after one reconciliation retry failure', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} reconciliation-hard-error`,
         worldbuilding: 'A district where patrol grids tighten every minute.',
@@ -885,7 +895,7 @@ describe('page-service integration', () => {
 
     it('collects all parent accumulated state correctly', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} parent-state-collection`,
         worldbuilding: 'A city of layers.',
@@ -991,7 +1001,7 @@ describe('page-service integration', () => {
     });
 
     it('forwards hierarchical continuity context into planner and writer calls', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} ancestor-context-forwarding`,
         worldbuilding: 'A city where old choices keep resurfacing.',
@@ -1079,7 +1089,7 @@ describe('page-service integration', () => {
     });
 
     it('runs planner before continuation writer and forwards planner output into writer context', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} planner-continuation-order`,
         worldbuilding: 'A city with shifting loyalties.',
@@ -1174,23 +1184,35 @@ describe('page-service integration', () => {
       );
     });
 
-    it('passes npcs from story to writer prompt after disk roundtrip', async () => {
-      const baseStory = createStory({
-        title: `${TEST_PREFIX} Title`,
-        characterConcept: `${TEST_PREFIX} npcs-passthrough`,
-        worldbuilding: 'A world with memorable characters.',
-        tone: 'dramatic',
-        npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
+    it('passes decomposed characters from story to writer prompt after disk roundtrip', async () => {
+      const holtCharacter = buildMinimalDecomposedCharacter('Holt', {
+        rawDescription: 'Grizzled barkeep who knows everyone',
       });
+      const baseStory: Story = {
+        ...createStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} npcs-passthrough`,
+          worldbuilding: 'A world with memorable characters.',
+          tone: 'dramatic',
+          npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
+        }),
+        decomposedCharacters: [
+          buildMinimalDecomposedCharacter('Protagonist'),
+          holtCharacter,
+        ],
+        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      };
       await storage.saveStory(baseStory);
       createdStoryIds.add(baseStory.id);
 
       // Reload from disk to prove persistence roundtrip
       const reloadedStory = await storage.loadStory(baseStory.id);
       expect(reloadedStory).not.toBeNull();
-      expect(reloadedStory!.npcs).toEqual([
-        { name: 'Holt', description: 'Grizzled barkeep who knows everyone' },
-      ]);
+      expect(reloadedStory!.decomposedCharacters).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Holt' }),
+        ])
+      );
 
       const parentPage = createPage({
         id: parsePageId(1),
@@ -1210,7 +1232,9 @@ describe('page-service integration', () => {
 
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
+          decomposedCharacters: expect.arrayContaining([
+            expect.objectContaining({ name: 'Holt' }),
+          ]),
         }),
         expect.any(Object),
         expect.objectContaining({
@@ -1229,7 +1253,7 @@ describe('page-service integration', () => {
 
     it('uses parent structureVersionId for branch isolation', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} branch-isolation`,
         worldbuilding: 'A branching world.',
@@ -1265,7 +1289,7 @@ describe('page-service integration', () => {
 
     it('triggers structure rewrite on deviation and creates new version', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} deviation-rewrite`,
         worldbuilding: 'A mutable world.',
@@ -1327,7 +1351,7 @@ describe('page-service integration', () => {
 
     it('advances structure state when beat is concluded', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} beat-advancement`,
         worldbuilding: 'A progressing world.',
@@ -1380,7 +1404,7 @@ describe('page-service integration', () => {
 
     it('action-heavy scene without explicit objective evidence does not conclude beat', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} gating-false-positive`,
         worldbuilding: 'A war-torn capital with collapsing checkpoints.',
@@ -1458,7 +1482,7 @@ describe('page-service integration', () => {
           baseStructure.acts[1]!,
         ],
       };
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} gating-turning-point`,
         worldbuilding: 'A capital where every vow is a political weapon.',
@@ -1553,7 +1577,7 @@ describe('page-service integration', () => {
       'applies the same completion-gate semantics for $label domain scenarios',
       async (scenario) => {
         const structure = buildStructure();
-        const baseStory = createStory({
+        const baseStory = createTestStory({
           title: `${TEST_PREFIX} Title`,
           characterConcept: `${TEST_PREFIX} cross-domain-${scenario.label}`,
           worldbuilding: scenario.worldbuilding,
@@ -1615,7 +1639,7 @@ describe('page-service integration', () => {
 
     it('degrades gracefully when analyst evaluation throws', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} analyst-graceful-degrade`,
         worldbuilding: 'A city of volatile magic.',
@@ -1668,7 +1692,7 @@ describe('page-service integration', () => {
 
     it('applies pacing nudge from analyst recommendation', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} pacing-nudge`,
         worldbuilding: 'A city of slow revelations.',
@@ -1707,7 +1731,7 @@ describe('page-service integration', () => {
 
     it('defers pacing rewrite and logs warning instead of rewriting', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} pacing-rewrite-deferred`,
         worldbuilding: 'A city of overextended arcs.',
@@ -1763,7 +1787,7 @@ describe('page-service integration', () => {
 
     it('skips pacing logic when deviation is detected', async () => {
       const structure = buildStructure();
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} pacing-skipped-on-deviation`,
         worldbuilding: 'A world of betrayal.',
@@ -1809,7 +1833,7 @@ describe('page-service integration', () => {
 
   describe('generateFirstPage integration', () => {
     it('propagates planner failure with pipeline metrics logging', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} planner-failure-propagation`,
         worldbuilding: 'A world of failed plans.',
@@ -1848,7 +1872,7 @@ describe('page-service integration', () => {
 
   describe('getOrGeneratePage integration', () => {
     it('persists page and updates choice link correctly', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} persistence-test`,
         worldbuilding: 'A persistent world.',
@@ -1890,7 +1914,7 @@ describe('page-service integration', () => {
     });
 
     it('returns cached page without regeneration', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} cache-test`,
         worldbuilding: 'A cached world.',
@@ -1934,7 +1958,7 @@ describe('page-service integration', () => {
     });
 
     it('persists story when canon is updated', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} canon-persistence`,
         worldbuilding: 'A world with growing lore.',
@@ -1974,7 +1998,7 @@ describe('page-service integration', () => {
     });
 
     it('does not persist page or choice link when writer validation fails', async () => {
-      const baseStory = createStory({
+      const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
         characterConcept: `${TEST_PREFIX} validation-failure`,
         worldbuilding: 'A world with strict validation.',

@@ -154,3 +154,4 @@ Return JSON only.
 - In continuation mode, the accountant receives extra quality and pacing sections plus tracked promise context to control state growth and cleanup over long runs.
 - `canon.worldAdd` items are objects with `text` (the fact) and `factType` (epistemic classification: LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). The factType reflects how the protagonist learned this fact, not omniscient narrator knowledge.
 - In continuation mode, the accountant additionally receives `CONTINUATION_CANON_QUALITY` criteria with detailed epistemic classification guidance.
+- The planner context sections (`opening-context.ts`, `continuation-context.ts`) always use decomposed character profiles and decomposed world facts — raw `characterConcept`/`worldbuilding`/`npcs` fields are no longer passed. The accountant inherits this change automatically through the shared planner context builders.

@@ -4,6 +4,7 @@ import type {
   OpeningPagePlanContext,
 } from '../../../../src/llm/context-types';
 import type { ReducedPagePlanResult } from '../../../../src/llm/planner-types';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../fixtures/decomposed';
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'user')?.content ?? '';
@@ -35,16 +36,16 @@ describe('buildStateAccountantPrompt', () => {
 
   const openingContext: OpeningPagePlanContext = {
     mode: 'opening',
-    characterConcept: 'A fugitive radio operator',
-    worldbuilding: 'A floodlit surveillance city.',
     tone: 'paranoid thriller',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A fugitive radio operator')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
   };
 
   const continuationContext: ContinuationPagePlanContext = {
     mode: 'continuation',
-    characterConcept: 'A fugitive radio operator',
-    worldbuilding: 'A floodlit surveillance city.',
     tone: 'paranoid thriller',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A fugitive radio operator')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     globalCanon: ['Broadcast towers are monitored around the clock'],
     globalCharacterCanon: {},
     previousNarrative: 'You duck into the relay tunnel as alarms start to pulse.',

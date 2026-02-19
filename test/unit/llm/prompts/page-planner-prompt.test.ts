@@ -10,33 +10,9 @@ import type {
 } from '../../../../src/llm/context-types';
 import { buildPagePlannerPrompt } from '../../../../src/llm/prompts/page-planner-prompt';
 import { buildPagePlannerPrompt as buildPagePlannerPromptFromBarrel } from '../../../../src/llm/prompts';
-import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
-
-function makeMinimalDecomposedCharacter(name: string): DecomposedCharacter {
-  return {
-    name,
-    coreTraits: ['brave'],
-    motivations: 'Survive.',
-    protagonistRelationship: null,
-    knowledgeBoundaries: 'None.',
-    appearance: 'Average build.',
-    rawDescription: 'A character.',
-    speechFingerprint: {
-      catchphrases: [],
-      vocabularyProfile: 'Direct and simple',
-      sentencePatterns: 'Short declarative',
-      verbalTics: [],
-      dialogueSamples: [],
-      metaphorFrames: '',
-      antiExamples: [],
-      discourseMarkers: [],
-      registerShifts: '',
-    },
-    decisionPattern: '',
-    coreBeliefs: [],
-    conflictPriority: '',
-  };
-}
+import {
+  buildMinimalDecomposedCharacter as makeMinimalDecomposedCharacter,
+} from '../../../fixtures/decomposed';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
@@ -49,16 +25,16 @@ function getUserMessage(messages: { role: string; content: string }[]): string {
 describe('buildPagePlannerPrompt', () => {
   const openingContext: OpeningPagePlanContext = {
     mode: 'opening',
-    characterConcept: 'A fugitive radio operator',
-    worldbuilding: 'A floodlit surveillance city.',
     tone: 'paranoid thriller',
+    decomposedCharacters: [makeMinimalDecomposedCharacter('A fugitive radio operator')],
+    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A floodlit surveillance city.', scope: 'global' }], rawWorldbuilding: 'A floodlit surveillance city.' },
   };
 
   const continuationContext: ContinuationPagePlanContext = {
     mode: 'continuation',
-    characterConcept: 'A fugitive radio operator',
-    worldbuilding: 'A floodlit surveillance city.',
     tone: 'paranoid thriller',
+    decomposedCharacters: [makeMinimalDecomposedCharacter('A fugitive radio operator')],
+    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A floodlit surveillance city.', scope: 'global' }], rawWorldbuilding: 'A floodlit surveillance city.' },
     globalCanon: ['Broadcast towers are monitored around the clock'],
     globalCharacterCanon: {
       'captain rourke': ['Relentless and procedural'],
@@ -114,7 +90,7 @@ describe('buildPagePlannerPrompt', () => {
     const user = getUserMessage(messages);
 
     expect(user).toContain('=== PLANNER CONTEXT: OPENING ===');
-    expect(user).toContain('A fugitive radio operator');
+    expect(user).toContain('floodlit surveillance');
     expect(user).not.toContain('=== PLANNER CONTEXT: CONTINUATION ===');
   });
 
@@ -162,8 +138,12 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('what Jon Ureña can do or decide');
   });
 
-  it('omits PROTAGONIST IDENTITY directive in opening context without decomposed characters', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
+  it('omits PROTAGONIST IDENTITY directive in opening context with empty decomposed characters', () => {
+    const contextWithEmpty: OpeningPagePlanContext = {
+      ...openingContext,
+      decomposedCharacters: [],
+    };
+    const messages = buildPagePlannerPrompt(contextWithEmpty);
     const user = getUserMessage(messages);
 
     expect(user).not.toContain('PROTAGONIST IDENTITY:');
@@ -184,8 +164,12 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('what Jon Ureña can do or decide');
   });
 
-  it('omits PROTAGONIST IDENTITY directive in continuation context without decomposed characters', () => {
-    const messages = buildPagePlannerPrompt(continuationContext);
+  it('omits PROTAGONIST IDENTITY directive in continuation context with empty decomposed characters', () => {
+    const contextWithEmpty: ContinuationPagePlanContext = {
+      ...continuationContext,
+      decomposedCharacters: [],
+    };
+    const messages = buildPagePlannerPrompt(contextWithEmpty);
     const user = getUserMessage(messages);
 
     expect(user).not.toContain('PROTAGONIST IDENTITY:');

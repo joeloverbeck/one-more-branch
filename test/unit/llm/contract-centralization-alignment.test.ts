@@ -26,6 +26,7 @@ import {
   WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS,
 } from '../../../src/llm/writer-contract';
 import { createEmptyActiveState } from '../../../src/models';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 describe('contract centralization alignment', () => {
   it('keeps planner contract aligned with planner schema and prompt', () => {
@@ -48,9 +49,9 @@ describe('contract centralization alignment', () => {
 
     const messages = buildPagePlannerPrompt({
       mode: 'opening',
-      characterConcept: 'A veteran courier with a debt.',
-      worldbuilding: 'A fractured harbor city.',
       tone: 'Noir thriller',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A veteran courier with a debt.')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     });
     const system = messages[0]?.content ?? '';
     for (const rule of PAGE_PLANNER_PROMPT_RULES) {
@@ -93,9 +94,9 @@ describe('contract centralization alignment', () => {
     expect(characterItem['required']).toEqual([...LOREKEEPER_CHARACTER_REQUIRED_FIELDS]);
 
     const messages = buildLorekeeperPrompt({
-      characterConcept: 'A grifter detective.',
-      worldbuilding: 'A city under permanent curfew.',
       tone: 'Neo-noir',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A grifter detective.')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       globalCanon: [],
       globalCharacterCanon: {},
       accumulatedCharacterState: {},

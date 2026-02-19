@@ -13,7 +13,6 @@ import {
 import { AGENDA_RESOLVER_SCHEMA } from './schemas/agenda-resolver-schema.js';
 import { validateAgendaResolverResponse } from './schemas/agenda-resolver-response-transformer.js';
 import { LLMError } from './llm-client-types.js';
-import type { Npc } from '../models/npc.js';
 import type { AgendaResolverResult } from './lorekeeper-types.js';
 
 const DEFAULT_AGENDA_RESOLVER_TEMPERATURE = 0.4;
@@ -27,7 +26,7 @@ export interface GenerateAgendaResolverOptions {
 
 export async function generateAgendaResolver(
   context: AgendaResolverPromptContext,
-  storyNpcs: readonly Npc[],
+  storyNpcs: readonly { readonly name: string }[],
   options: GenerateAgendaResolverOptions
 ): Promise<AgendaResolverResult> {
   const model = options.model ?? getStageModel('agendaResolver');

@@ -50,8 +50,9 @@ Regenerate story structure for an interactive branching narrative.
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
 
 ## STORY CONTEXT
-Character: {{characterConcept}}
-{{#if worldbuilding}}World: {{worldbuilding}}{{/if}}
+Character: {{decomposedCharacters[0] formatted as protagonist profile, or '(no protagonist profile)'}}
+{{#if decomposedWorld.facts.length > 0}}World:
+{{decomposedWorld formatted as structured world facts}}{{/if}}
 Tone: {{tone}}
 {{#if toneFeel}}Tone target feel: {{toneFeel joined by ', '}}{{/if}}
 {{#if toneAvoid}}Tone avoid: {{toneAvoid joined by ', '}}{{/if}}
@@ -181,6 +182,6 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
 }
 ```
 
-- In production, this prompt may include a few-shot user/assistant example before the final user message when `fewShotMode` is enabled. The few-shot example includes a planned beats section demonstrating the expected format.
 - `plannedBeats` are extracted by `extractPlannedBeats()` in `src/engine/structure-rewrite-support.ts` — all beats from the structure that are not concluded and come after the deviation point, excluding the currently active beat.
 - When `conceptSpec` is present on the story, the CONCEPT STAKES section is included to ground per-act stakes in the original concept's thematic foundations. The rewrite variant adds "even after the deviation" to the escalation guidance. The `conceptSpec` is passed through via `buildRewriteContext()` in `src/engine/structure-rewrite-support.ts`.
+- The rewrite context now receives `decomposedCharacters` and `decomposedWorld` (required) instead of raw `characterConcept` and `worldbuilding`. The protagonist is formatted via `formatDecomposedCharacterForPrompt()` and the world via `formatDecomposedWorldForPrompt()`. Passed through via `buildRewriteContext()` in `src/engine/structure-rewrite-support.ts`.

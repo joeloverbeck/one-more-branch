@@ -29,17 +29,18 @@ import {
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
 const openingContext = {
-  characterConcept: 'A haunted cartographer',
-  worldbuilding: 'A city built atop buried catacombs',
   tone: 'gothic mystery',
+  decomposedCharacters: [buildMinimalDecomposedCharacter('A haunted cartographer')],
+  decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
 };
 
 const continuationContext = {
-  characterConcept: 'A haunted cartographer',
-  worldbuilding: 'A city built atop buried catacombs',
   tone: 'gothic mystery',
+  decomposedCharacters: [buildMinimalDecomposedCharacter('A haunted cartographer')],
+  decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
   globalCanon: [],
   globalCharacterCanon: {},
   previousNarrative: 'You descend into the vault.',
@@ -55,24 +56,14 @@ const continuationContext = {
   },
   grandparentNarrative: null,
   ancestorSummaries: [],
+  accumulatedPromises: [],
 };
 
 const plannerOpeningContext = {
   mode: 'opening' as const,
-  characterConcept: 'A haunted cartographer',
-  worldbuilding: 'A city built atop buried catacombs',
   tone: 'gothic mystery',
-  globalCanon: [],
-  globalCharacterCanon: {},
-  accumulatedInventory: [],
-  accumulatedHealth: [],
-  accumulatedCharacterState: {},
-  activeState: {
-    currentLocation: 'Old city gate',
-    activeThreats: [],
-    activeConstraints: [],
-    openThreads: [],
-  },
+  decomposedCharacters: [buildMinimalDecomposedCharacter('A haunted cartographer')],
+  decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
 };
 
 const validStructuredPayload = {

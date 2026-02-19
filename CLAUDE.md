@@ -175,7 +175,7 @@ archive/specs/      # Archived completed specifications
 ## Core Data Flow
 
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + spine (with toneFeel/toneAvoid) + API key
-2. **Entity Decomposition**: LLM decomposes raw worldbuilding and NPCs into structured character profiles and world facts, guided by spine's tone feel
+2. **Entity Decomposition**: LLM decomposes raw worldbuilding and NPCs into structured character profiles and world facts, guided by spine, conceptSpec, storyKernel, startingSituation, and tone feel
 3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas)
 4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
 5. **State Accounting** (Accountant prompt): LLM generates state intents (what state changes to target) separately from the planner. The accountant receives the reduced plan and produces structured state mutation intents
@@ -232,7 +232,7 @@ Per-page emotional snapshot (not accumulated): `primaryEmotion`, `primaryIntensi
 Multi-act story arc with beats. Each act has an objective, stakes, entry condition, and beats. Each beat has a name, description, objective, and role (setup/escalation/turning_point/resolution). `AccumulatedStructureState` tracks progression through acts/beats with `BeatProgression` records.
 
 ### Story
-Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, story pattern, thematic conflict axis, structural conflict type, and arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from entity decomposer), `decomposedWorld` (structured world facts), `initialNpcAgendas`, `initialNpcRelationships`. Supports NPCs and starting situation.
+Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, story pattern, thematic conflict axis, structural conflict type, and arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from entity decomposer), `decomposedWorld` (structured world facts), `initialNpcAgendas`, `initialNpcRelationships`. Supports NPCs and starting situation. Note: `decomposedCharacters` and `decomposedWorld` are required on all downstream context types (OpeningContext, ContinuationContext, LorekeeperContext, StructureContext, AgendaResolverPromptContext, StructureRewriteContext, SpineRewriteContext) — raw `characterConcept`/`worldbuilding`/`npcs` fields are no longer passed to any prompt stage.
 
 ## Prompt Logging
 
@@ -370,7 +370,7 @@ Completed specs are archived in `archive/specs/`.
 - Default model: `anthropic/claude-sonnet-4.5`
 - **Story preparation** (run once at story creation, 3 LLM calls):
   1. **Spine prompt** (`spine-generator.ts`): Generates spine options with tone keywords (separate pre-creation step)
-  2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts
+  2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts, enriched with spine, conceptSpec, storyKernel, and startingSituation context
   3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data
 - **Per-page generation** (up to 7 stages: 5 LLM calls + 2 engine-side):
   1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, dramatic question, choice intents (no state intents)
@@ -385,7 +385,6 @@ Completed specs are archived in `archive/specs/`.
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
 - Response transformers in `schemas/` convert raw LLM JSON to typed results
 - Validation pipeline in `validation/` repairs malformed writer output (e.g., ID prefix repair)
-- Few-shot examples available via `few-shot-builder.ts` and `few-shot-data.ts`
 - Retry with exponential backoff on transient failures (429, 5xx)
 - Content policy sections injected via `content-policy.ts`
 - System prompts assembled by `system-prompt-builder.ts` with shared sections

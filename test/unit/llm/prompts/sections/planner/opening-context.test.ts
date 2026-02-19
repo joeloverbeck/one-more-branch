@@ -1,30 +1,29 @@
 import type { OpeningPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import { buildPlannerOpeningContextSection } from '../../../../../../src/llm/prompts/sections/planner/opening-context.js';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../../../fixtures/decomposed';
 
 describe('planner opening context section', () => {
-  it('includes character concept when structured decomposition is absent', () => {
+  it('includes decomposed world and tone in opening context', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
-      characterConcept: 'A stranded deep-space courier',
-      worldbuilding: 'A decaying orbital trade ring.',
       tone: 'sci-fi suspense',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A stranded deep-space courier')],
+      decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A decaying orbital trade ring.', scope: 'global' }], rawWorldbuilding: 'A decaying orbital trade ring.' },
     };
 
     const result = buildPlannerOpeningContextSection(context);
 
     expect(result).toContain('=== PLANNER CONTEXT: OPENING ===');
-    expect(result).toContain('CHARACTER CONCEPT:');
-    expect(result).toContain('A stranded deep-space courier');
-    expect(result).toContain('WORLDBUILDING:');
+    expect(result).not.toContain('CHARACTER CONCEPT:');
+    expect(result).toContain('decaying orbital trade ring');
     expect(result).toContain('TONE/GENRE: sci-fi suspense');
   });
 
   it('omits character concept and marks the first decomposed character as PROTAGONIST', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
-      characterConcept: 'Should not render when structured characters exist',
-      worldbuilding: '',
       tone: 'sci-fi suspense',
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       decomposedCharacters: [
         {
           name: 'Rin',
@@ -92,9 +91,9 @@ describe('planner opening context section', () => {
   it('renders rich structure context with active and pending beats', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
-      characterConcept: 'A stranded deep-space courier',
-      worldbuilding: '',
       tone: 'sci-fi suspense',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A stranded deep-space courier')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       startingSituation: 'An airlock alarm starts as oxygen drops.',
       structure: {
         overallTheme: 'Truth survives only if transmitted in time.',
@@ -155,9 +154,9 @@ describe('planner opening context section', () => {
   it('includes initial NPC agendas when present', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
-      characterConcept: 'A courier',
-      worldbuilding: 'A space station.',
       tone: 'sci-fi',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A courier')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       initialNpcAgendas: [
         {
           npcName: 'Voss',
@@ -182,9 +181,9 @@ describe('planner opening context section', () => {
   it('omits NPC agendas section when no agendas exist', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
-      characterConcept: 'A courier',
-      worldbuilding: '',
       tone: 'sci-fi',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A courier')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     };
 
     const result = buildPlannerOpeningContextSection(context);

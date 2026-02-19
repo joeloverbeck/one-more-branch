@@ -75,6 +75,10 @@ async function buildPreparedStory(
       toneFeel: story.toneFeel,
       toneAvoid: story.toneAvoid,
       npcs: story.npcs,
+      spine: story.spine,
+      conceptSpec: story.conceptSpec,
+      storyKernel: story.storyKernel,
+      startingSituation: story.startingSituation,
     },
     options.apiKey
   );
@@ -102,13 +106,11 @@ async function buildPreparedStory(
   });
   const structureResult = await generateStoryStructure(
     {
-      worldbuilding: story.worldbuilding,
       tone: story.tone,
-      npcs: story.npcs,
       startingSituation: story.startingSituation,
       spine: story.spine,
-      decomposedCharacters: story.decomposedCharacters,
-      decomposedWorld: story.decomposedWorld,
+      decomposedCharacters: story.decomposedCharacters!,
+      decomposedWorld: story.decomposedWorld!,
       conceptSpec: story.conceptSpec,
     },
     options.apiKey

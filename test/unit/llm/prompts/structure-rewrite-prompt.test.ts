@@ -5,22 +5,23 @@ import {
   composeContinuationDataRules,
 } from '../../../../src/llm/prompts/system-prompt';
 import type { StructureRewriteContext } from '../../../../src/llm/structure-rewrite-types';
+import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../fixtures/decomposed';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
 }
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
-  // Get the last user message (in case few-shot examples are included)
+  // Get the last user message
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages[userMessages.length - 1]?.content ?? '';
 }
 
 describe('buildStructureRewritePrompt', () => {
   const baseContext: StructureRewriteContext = {
-    characterConcept: 'A former royal scout with a forged identity',
-    worldbuilding: 'A flooded republic where cities travel on chained barges.',
     tone: 'tactical political thriller',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A former royal scout', { rawDescription: 'A former royal scout with a forged identity' })],
+    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A flooded republic where cities travel on chained barges.', scope: 'global' }], rawWorldbuilding: 'A flooded republic where cities travel on chained barges.' },
     completedBeats: [
       {
         actIndex: 0,
@@ -60,8 +61,7 @@ describe('buildStructureRewritePrompt', () => {
   it('includes key rewrite context in user prompt', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
-    expect(user).toContain(baseContext.characterConcept);
-    expect(user).toContain(baseContext.worldbuilding);
+    expect(user).toContain('flooded republic');
     expect(user).toContain(baseContext.tone);
     expect(user).toContain(baseContext.originalTheme);
     expect(user).toContain(baseContext.deviationReason);
@@ -150,42 +150,6 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('include them in the output');
   });
 
-  it('includes few-shot example when fewShotMode is enabled', () => {
-    const messages = buildStructureRewritePrompt(baseContext, { fewShotMode: 'minimal' });
-
-    // Should have 4 messages: system, few-shot user, few-shot assistant, actual user
-    expect(messages).toHaveLength(4);
-    expect(messages[1]?.role).toBe('user');
-    expect(messages[2]?.role).toBe('assistant');
-    expect(messages[3]?.role).toBe('user');
-
-    // Few-shot assistant response should be valid JSON with new fields
-    const fewShotAssistant = messages[2]?.content ?? '';
-    expect(fewShotAssistant).toContain('"overallTheme"');
-    expect(fewShotAssistant).toContain('"premise"');
-    expect(fewShotAssistant).toContain('"pacingBudget"');
-    expect(fewShotAssistant).toContain('"targetPagesMin"');
-    expect(fewShotAssistant).toContain('"targetPagesMax"');
-    expect(fewShotAssistant).toContain('"acts"');
-    expect(fewShotAssistant).toContain('"name"');
-    expect(fewShotAssistant).toContain('"role"');
-
-    // Few-shot user message should include role in completed beats
-    const fewShotUser = messages[1]?.content ?? '';
-    expect(fewShotUser).toContain('[setup]');
-    expect(fewShotUser).toContain('[turning_point]');
-  });
-
-  it('includes few-shot example with planned beats section', () => {
-    const messages = buildStructureRewritePrompt(baseContext, { fewShotMode: 'minimal' });
-
-    const fewShotUser = messages[1]?.content ?? '';
-    expect(fewShotUser).toContain('ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)');
-    expect(fewShotUser).toContain('Road to the Hinterlands');
-    expect(fewShotUser).toContain('The Gilded Cage');
-    expect(fewShotUser).toContain('Last Coin Standing');
-  });
-
   it('includes planned beats section when planned beats exist', () => {
     const contextWithPlanned: StructureRewriteContext = {
       ...baseContext,
@@ -252,9 +216,9 @@ describe('buildStructureRewritePrompt', () => {
 
 describe('buildStructureRewritePrompt - minimal system prompt', () => {
   const baseContext: StructureRewriteContext = {
-    characterConcept: 'A former royal scout with a forged identity',
-    worldbuilding: 'A flooded republic where cities travel on chained barges.',
     tone: 'tactical political thriller',
+    decomposedCharacters: [buildMinimalDecomposedCharacter('A former royal scout')],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     completedBeats: [],
     plannedBeats: [],
     narrativeSummary: 'The protagonist has publicly aligned with a rival flotilla.',

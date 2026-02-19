@@ -1,6 +1,7 @@
 import { generateOpeningPage, generatePageWriterOutput } from '../../../src/llm/client';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
+import { buildMinimalDecomposedCharacter } from '../../fixtures/decomposed';
 
 function createJsonResponse(status: number, body: unknown): Response {
   return {
@@ -82,9 +83,9 @@ describe('llm client integration (mocked fetch)', () => {
 
     const result = await generateOpeningPage(
       {
-        characterConcept: 'A disgraced astronomer',
-        worldbuilding: 'A city where the night sky has stopped moving',
         tone: 'mythic science fantasy',
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: 'A disgraced astronomer' })],
+        decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'The night sky has stopped moving', scope: 'global' }], rawWorldbuilding: 'A city where the night sky has stopped moving' },
       },
       { apiKey: 'test-key' }
     );
@@ -141,9 +142,9 @@ describe('llm client integration (mocked fetch)', () => {
 
     const promise = generateOpeningPage(
       {
-        characterConcept: 'A disgraced astronomer',
-        worldbuilding: 'A city where the night sky has stopped moving',
         tone: 'mythic science fantasy',
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: 'A disgraced astronomer' })],
+        decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'The night sky has stopped moving', scope: 'global' }], rawWorldbuilding: 'A city where the night sky has stopped moving' },
       },
       { apiKey: 'test-key' }
     );
@@ -204,9 +205,9 @@ describe('llm client integration (mocked fetch)', () => {
 
     const result = await generatePageWriterOutput(
       {
-        characterConcept: 'A disgraced astronomer',
-        worldbuilding: 'A city where the night sky has stopped moving',
         tone: 'mythic science fantasy',
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: 'A disgraced astronomer' })],
+        decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'The night sky has stopped moving', scope: 'global' }], rawWorldbuilding: 'A city where the night sky has stopped moving' },
         globalCanon: [],
         globalCharacterCanon: {},
         previousNarrative: 'The star map flares and hidden gears begin turning.',
@@ -222,6 +223,7 @@ describe('llm client integration (mocked fetch)', () => {
         },
         grandparentNarrative: null,
         ancestorSummaries: [],
+        accumulatedPromises: [],
       },
       {
         sceneIntent: 'Escalate pressure with moving machinery and shrinking options.',

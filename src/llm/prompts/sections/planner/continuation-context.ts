@@ -2,7 +2,6 @@ import {
   formatDecomposedCharacterForPrompt,
 } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
-import { formatNpcsForPrompt } from '../../../../models/npc.js';
 import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
 import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
@@ -341,33 +340,18 @@ function findPreviousBeatResolution(
 export function buildPlannerContinuationContextSection(
   context: ContinuationPagePlanContext
 ): string {
-  const hasDecomposed =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0;
-  const hasDecomposedWorld =
-    context.decomposedWorld && context.decomposedWorld.facts.length > 0;
-
-  const worldSection = hasDecomposedWorld
-    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld!)}
+  const worldSection = context.decomposedWorld.facts.length > 0
+    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
 
 `
-    : context.worldbuilding
-      ? `WORLDBUILDING:
-${context.worldbuilding}
+    : '';
 
-`
-      : '';
-
-  const npcsSection = hasDecomposed
+  const npcsSection = context.decomposedCharacters.length > 0
     ? `CHARACTERS (structured profiles):
-${context.decomposedCharacters!.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
+${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
-    : context.npcs && context.npcs.length > 0
-      ? `NPCS (Available Characters):
-${formatNpcsForPrompt(context.npcs)}
-
-`
-      : '';
+    : '';
 
   const structureSection = buildWriterStructureContext(
     context.structure,
@@ -460,20 +444,13 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
       ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
       : '';
 
-  const protagonistName = hasDecomposed ? context.decomposedCharacters![0]!.name : null;
+  const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
   const protagonistDirective = protagonistName
     ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
     : '';
 
-  const characterConceptSection = hasDecomposed
-    ? ''
-    : `CHARACTER CONCEPT:
-${context.characterConcept}
-
-`;
-
   return `=== PLANNER CONTEXT: CONTINUATION ===
-${characterConceptSection}${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
+${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
 
 ${structureSection}${pacingSection}${escalationDirective}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}

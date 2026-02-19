@@ -1,4 +1,7 @@
+import type { ConceptSpec } from '../../models/concept-generator.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
+import type { StorySpine } from '../../models/story-spine.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { AGENCY_PRINCIPLES, SPEECH_EXTRACTION_BULLETS } from '../entity-decomposition-contract.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -48,6 +51,95 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
 ${formatNumbered(10, AGENCY_PRINCIPLES)}`;
 
+function buildSpineContextSection(spine?: StorySpine): string {
+  if (!spine) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'STORY SPINE (the narrative backbone — decompose characters in light of this):',
+    `Central dramatic question: ${spine.centralDramaticQuestion}`,
+    `Protagonist need: ${spine.protagonistNeedVsWant.need}`,
+    `Protagonist want: ${spine.protagonistNeedVsWant.want}`,
+    `Need-want dynamic: ${spine.protagonistNeedVsWant.dynamic}`,
+    `Antagonistic force: ${spine.primaryAntagonisticForce.description}`,
+    `Pressure mechanism: ${spine.primaryAntagonisticForce.pressureMechanism}`,
+    `Character arc type: ${spine.characterArcType}`,
+    '',
+    'CONSTRAINT: Decompose characters so that the protagonist\'s core beliefs, decision patterns, and speech reflect the need-want tension. NPC traits should create friction with or support for the antagonistic force.',
+  ];
+
+  return '\n\n' + lines.join('\n');
+}
+
+function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
+  if (!conceptSpec) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'CONCEPT ANALYSIS (use to ground character decomposition):',
+    '',
+    'NARRATIVE IDENTITY:',
+    `One-line hook: ${conceptSpec.oneLineHook}`,
+    `Elevator pitch: ${conceptSpec.elevatorParagraph}`,
+    `Player fantasy: ${conceptSpec.playerFantasy}`,
+    '',
+    'PROTAGONIST:',
+    `Role: ${conceptSpec.protagonistRole}`,
+    `Core competence: ${conceptSpec.coreCompetence}`,
+    `Core flaw: ${conceptSpec.coreFlaw}`,
+    `Action verbs: ${conceptSpec.actionVerbs.join(', ')}`,
+    '',
+    'CONFLICT ENGINE:',
+    `Core conflict loop: ${conceptSpec.coreConflictLoop}`,
+    `Pressure source: ${conceptSpec.pressureSource}`,
+    '',
+    'WORLD ARCHITECTURE:',
+    `Setting axioms: ${conceptSpec.settingAxioms.join('; ')}`,
+    `Constraints: ${conceptSpec.constraintSet.join('; ')}`,
+    `Key institutions: ${conceptSpec.keyInstitutions.join('; ')}`,
+    '',
+    'CONSTRAINT: Use protagonist fields to inform speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms and constraints.',
+  ];
+
+  return '\n\n' + lines.join('\n');
+}
+
+function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
+  if (!storyKernel) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'THEMATIC KERNEL (philosophical foundation — let it shape character depth):',
+    `Dramatic thesis: ${storyKernel.dramaticThesis}`,
+    `Value at stake: ${storyKernel.valueAtStake}`,
+    `Opposing force: ${storyKernel.opposingForce}`,
+    `Direction of change: ${storyKernel.directionOfChange}`,
+    `Thematic question: ${storyKernel.thematicQuestion}`,
+    '',
+    'CONSTRAINT: Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question.',
+  ];
+
+  return '\n\n' + lines.join('\n');
+}
+
+function buildStartingSituationSection(startingSituation?: string): string {
+  if (!startingSituation) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'STARTING SITUATION:',
+    startingSituation,
+    '',
+    'CONSTRAINT: Ground the protagonist\'s initial knowledge boundaries and NPC relationship immediacy based on this opening scene context.',
+  ];
+
+  return '\n\n' + lines.join('\n');
+}
+
 export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): ChatMessage[] {
   const npcsSection =
     context.npcs && context.npcs.length > 0
@@ -62,10 +154,15 @@ export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): C
     ? `\n\n${buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)}`
     : '';
 
+  const spineSection = buildSpineContextSection(context.spine);
+  const conceptSection = buildConceptAnalysisSection(context.conceptSpec);
+  const kernelSection = buildKernelGroundingSection(context.storyKernel);
+  const situationSection = buildStartingSituationSection(context.startingSituation);
+
   const userPrompt = `Decompose the following character descriptions and worldbuilding into structured attribute objects.
 
 CHARACTER CONCEPT (protagonist):
-${context.characterConcept}${npcsSection}${worldSection}${toneSection}
+${context.characterConcept}${npcsSection}${worldSection}${toneSection}${spineSection}${conceptSection}${kernelSection}${situationSection}
 
 INSTRUCTIONS:
 1. The FIRST character in the output array MUST be the protagonist (from CHARACTER CONCEPT)

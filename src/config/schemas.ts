@@ -28,7 +28,6 @@ const RetryConfigSchema = z.object({
  * Prompt options configuration schema.
  */
 const PromptOptionsConfigSchema = z.object({
-  fewShotMode: z.enum(['none', 'minimal', 'standard']).default('minimal'),
   choiceGuidance: z.enum(['basic', 'strict']).default('strict'),
 });
 

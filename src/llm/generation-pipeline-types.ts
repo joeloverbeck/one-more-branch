@@ -33,7 +33,6 @@ export interface ContinuationGenerationResult
 }
 
 export interface PromptOptions {
-  fewShotMode?: 'none' | 'minimal' | 'standard';
   choiceGuidance?: 'basic' | 'strict';
 }
 

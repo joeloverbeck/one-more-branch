@@ -11,6 +11,7 @@ import {
 import type { LorekeeperContext } from '../../../../src/llm/context-types';
 import type { PagePlan } from '../../../../src/llm/planner-types';
 import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
+import { MINIMAL_DECOMPOSED_WORLD } from '../../../fixtures/decomposed';
 
 function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
   return {
@@ -39,9 +40,9 @@ function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
 
 function buildMinimalContext(overrides?: Partial<LorekeeperContext>): LorekeeperContext {
   return {
-    characterConcept: 'A wandering healer',
-    worldbuilding: 'A war-torn kingdom',
     tone: 'dark fantasy',
+    decomposedCharacters: [],
+    decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     globalCanon: [],
     globalCharacterCanon: {},
     accumulatedCharacterState: {},
@@ -87,12 +88,10 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).toContain('The merchant holds the key');
   });
 
-  it('includes character concept and worldbuilding', () => {
+  it('includes tone in user prompt', () => {
     const messages = buildLorekeeperPrompt(buildMinimalContext());
     const userPrompt = messages[1]?.content ?? '';
 
-    expect(userPrompt).toContain('A wandering healer');
-    expect(userPrompt).toContain('A war-torn kingdom');
     expect(userPrompt).toContain('dark fantasy');
   });
 
@@ -164,19 +163,18 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).not.toContain('A wandering healer');
   });
 
-  it('includes NPC definitions when present', () => {
+  it('includes decomposed character profiles when present', () => {
     const context = buildMinimalContext({
-      npcs: [
-        {
-          name: 'Gareth',
-          description: 'A gruff blacksmith who protects the village',
-        },
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Gareth', {
+          rawDescription: 'A gruff blacksmith who protects the village',
+        }),
       ],
     });
     const messages = buildLorekeeperPrompt(context);
     const userPrompt = messages[1]?.content ?? '';
 
-    expect(userPrompt).toContain('NPC DEFINITIONS');
+    expect(userPrompt).toContain('CHARACTERS (structured profiles with speech fingerprints)');
     expect(userPrompt).toContain('Gareth');
   });
 
@@ -521,10 +519,9 @@ describe('detectMentionedCharacters', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('deduplicates characters present in both decomposedCharacters and npcs', () => {
+  it('deduplicates characters when same character appears in decomposedCharacters', () => {
     const context = buildMinimalContext({
       decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
-      npcs: [{ name: 'Alicia Western', description: 'A mysterious woman' }],
       pagePlan: buildMinimalPagePlan({
         sceneIntent: 'Alicia appears',
       }),

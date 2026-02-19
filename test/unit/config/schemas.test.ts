@@ -13,7 +13,6 @@ describe('config schemas', () => {
       expect(result.llm.maxTokens).toBe(8192);
       expect(result.llm.retry.maxRetries).toBe(3);
       expect(result.llm.retry.baseDelayMs).toBe(1000);
-      expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
       expect(result.llm.promptOptions.choiceGuidance).toBe('strict');
       expect(result.logging.level).toBe('info');
       expect(result.logging.prompts.enabled).toBe(true);
@@ -123,9 +122,6 @@ describe('config schemas', () => {
 
     it('validates enum values', () => {
       expect(() =>
-        AppConfigSchema.parse({ llm: { promptOptions: { fewShotMode: 'invalid' } } })
-      ).toThrow();
-      expect(() =>
         AppConfigSchema.parse({ llm: { promptOptions: { choiceGuidance: 'invalid' } } })
       ).toThrow();
       expect(() => AppConfigSchema.parse({ logging: { level: 'invalid' } })).toThrow();
@@ -133,14 +129,12 @@ describe('config schemas', () => {
       const valid = AppConfigSchema.parse({
         llm: {
           promptOptions: {
-            fewShotMode: 'none',
             choiceGuidance: 'basic',
           },
         },
         logging: { level: 'error' },
       });
 
-      expect(valid.llm.promptOptions.fewShotMode).toBe('none');
       expect(valid.llm.promptOptions.choiceGuidance).toBe('basic');
       expect(valid.logging.level).toBe('error');
     });
@@ -167,7 +161,6 @@ describe('config schemas', () => {
 
       // Default values preserved
       expect(result.llm.retry.baseDelayMs).toBe(1000);
-      expect(result.llm.promptOptions.fewShotMode).toBe('minimal');
     });
 
     it('accepts explicit per-stage model overrides including kernel and concept stages', () => {
