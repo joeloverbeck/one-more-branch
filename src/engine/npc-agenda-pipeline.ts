@@ -6,6 +6,7 @@ import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { DetectedRelationshipShift } from '../llm/analyst-types';
 import type { StoryStructure } from '../models/story-arc';
+import type { StorySpine } from '../models/story-spine';
 import type { VersionedStoryStructure } from '../models/structure-version';
 import { logger } from '../logging/index.js';
 import { emitGenerationStage } from './generation-pipeline-helpers.js';
@@ -27,6 +28,7 @@ export interface NpcAgendaContext {
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly currentStructureVersion: VersionedStoryStructure | null;
   readonly storyStructure: StoryStructure | null;
+  readonly spine?: StorySpine;
   readonly parentActiveState: ActiveState;
   readonly analystNpcCoherenceIssues?: string;
   readonly parentAccumulatedNpcRelationships?: AccumulatedNpcRelationships;
@@ -56,6 +58,7 @@ export async function resolveNpcAgendas(
         currentAgendas: context.parentAccumulatedNpcAgendas,
         structure:
           context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
+        spine: context.spine,
         activeState: context.parentActiveState,
         analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
         currentRelationships: context.parentAccumulatedNpcRelationships,

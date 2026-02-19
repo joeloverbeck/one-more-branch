@@ -9,6 +9,7 @@ export const PAGE_PLANNER_PROMPT_RULES: ReadonlyArray<string> = [
   'Consider NPC agendas when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior.',
   'When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.',
   'choiceIntents hooks must describe available actions from the PROTAGONIST\'s perspective. Never frame a choice as what another character does — always as what the protagonist can do, decide, or pursue.',
+  'When planning scenes, ensure the sceneIntent and at least one choiceIntent serve the protagonist\'s Need vs Want conflict from the spine. Choices that force the protagonist to choose between pursuing their Want and addressing their true Need create the most compelling dramatic tension.',
 ];
 
 export const PAGE_PLANNER_TONE_RULE =

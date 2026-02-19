@@ -383,6 +383,7 @@ export async function generatePage(
     parentAccumulatedNpcAgendas,
     currentStructureVersion: activeStructureVersion ?? currentStructureVersion,
     storyStructure: story.structure,
+    spine: story.spine,
     parentActiveState: isOpening
       ? {
           currentLocation: '',

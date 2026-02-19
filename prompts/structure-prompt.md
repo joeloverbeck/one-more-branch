@@ -105,9 +105,10 @@ REQUIREMENTS (follow ALL):
    - The midpoint of the story (typically late Act 1 or mid Act 2) should include a reveal or reversal that reframes prior events
    - Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "resolution" for denouement
-9. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
-10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
-11. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
+9. When designing beat descriptions and objectives, connect them to the protagonist's Need (inner transformation) vs Want (outer goal) from the spine. Setup beats should establish the need/want gap. Escalation beats should widen it — making the Want harder to achieve or the Need more urgent. Turning points should force the protagonist to confront the gap directly. Resolution beats should resolve or transform the tension.
+10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
+11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
+12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
 
 TONE REMINDER: All output must fit the tone: {{tone}}.
 
