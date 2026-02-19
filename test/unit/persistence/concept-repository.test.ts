@@ -8,37 +8,12 @@ import {
   saveConcept,
   updateConcept,
 } from '@/persistence/concept-repository';
+import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
 const TEST_PREFIX = 'TEST: PERLAY-CONCEPT-001';
 
 function createValidConceptSpec(): SavedConcept['evaluatedConcept']['concept'] {
-  return {
-    oneLineHook: 'A courier smuggles forbidden memories through a fractured city.',
-    elevatorParagraph: 'A courier must choose who gets the truth when every faction edits history.',
-    genreFrame: 'NOIR' as const,
-    genreSubversion: 'The detective story is run by the evidence runner.',
-    protagonistRole: 'Memory courier',
-    coreCompetence: 'Pattern-based recall and route planning',
-    coreFlaw: 'Compulsive secrecy',
-    actionVerbs: ['investigate', 'bargain', 'infiltrate', 'deceive', 'protect', 'expose'],
-    coreConflictLoop: 'Trade immediate safety for long-term truth integrity.',
-    conflictAxis: 'TRUTH_VS_STABILITY' as const,
-    conflictType: 'PERSON_VS_SOCIETY' as const,
-    pressureSource: 'Competing cartels erase witnesses and records.',
-    stakesPersonal: 'Losing her identity and remaining allies.',
-    stakesSystemic: 'Civic memory collapse and institutional capture.',
-    deadlineMechanism: 'A citywide record purge begins at dawn.',
-    settingAxioms: ['Memories can be extracted.', 'Memories can be traded as legal evidence.'],
-    constraintSet: [
-      'Unlicensed extraction causes permanent neurological damage.',
-      'Tampered memories cannot be restored once audited.',
-      'Public memory ledgers update only once per day.',
-    ],
-    keyInstitutions: ['Ledger Court', 'Memory Cartel'],
-    settingScale: 'LOCAL' as const,
-    branchingPosture: 'RECONVERGE' as const,
-    stateComplexity: 'MEDIUM' as const,
-  };
+  return createConceptSpecFixture(1);
 }
 
 function createSavedConcept(id: string): SavedConcept {

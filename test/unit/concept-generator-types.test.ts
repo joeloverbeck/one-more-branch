@@ -9,12 +9,14 @@ import {
   computeOverallScore,
   isBranchingPosture,
   isConflictAxis,
+  isConceptSpec,
   isDriftRiskMitigationType,
   isGenreFrame,
   isSettingScale,
   isStateComplexity,
   type ConceptDimensionScores,
 } from '../../src/models/concept-generator';
+import { createConceptSpecFixture } from '../fixtures/concept-generator';
 
 describe('concept-generator types', () => {
   const invalidValues: readonly unknown[] = ['INVALID', null, undefined, 123, {}, []];
@@ -30,6 +32,10 @@ describe('concept-generator types', () => {
     for (const value of invalidValues) {
       expect(guard(value)).toBe(false);
     }
+  }
+
+  function createValidConceptSpec(): Record<string, unknown> {
+    return createConceptSpecFixture(1) as unknown as Record<string, unknown>;
   }
 
   it('validates all enum type guards', () => {
@@ -96,5 +102,22 @@ describe('concept-generator types', () => {
     );
 
     expect(totalWeight).toBe(100);
+  });
+
+  it('requires concept enrichment fields in isConceptSpec', () => {
+    const valid = createValidConceptSpec();
+    expect(isConceptSpec(valid)).toBe(true);
+
+    const missingWhatIf = { ...valid };
+    delete missingWhatIf['whatIfQuestion'];
+    expect(isConceptSpec(missingWhatIf)).toBe(false);
+
+    const missingIronic = { ...valid };
+    delete missingIronic['ironicTwist'];
+    expect(isConceptSpec(missingIronic)).toBe(false);
+
+    const missingFantasy = { ...valid };
+    delete missingFantasy['playerFantasy'];
+    expect(isConceptSpec(missingFantasy)).toBe(false);
   });
 });

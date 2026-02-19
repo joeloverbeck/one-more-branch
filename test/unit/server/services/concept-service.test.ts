@@ -11,30 +11,10 @@ import {
   type GenerateConceptsInput,
   type StressTestInput,
 } from '@/server/services/concept-service';
+import { createConceptSpecFixture } from '../../../fixtures/concept-generator';
 
 function createConceptSpec(index = 1): ConceptSpec {
-  return {
-    oneLineHook: `Hook ${index}`,
-    elevatorParagraph: `Elevator paragraph ${index}`,
-    genreFrame: 'NOIR',
-    genreSubversion: `Subversion ${index}`,
-    protagonistRole: `Role ${index}`,
-    coreCompetence: `Competence ${index}`,
-    coreFlaw: `Flaw ${index}`,
-    actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
-    coreConflictLoop: `Conflict loop ${index}`,
-    conflictAxis: 'TRUTH_VS_STABILITY',
-    pressureSource: `Pressure ${index}`,
-    stakesPersonal: `Personal stakes ${index}`,
-    stakesSystemic: `Systemic stakes ${index}`,
-    deadlineMechanism: `Deadline ${index}`,
-    settingAxioms: ['Axiom 1', 'Axiom 2'],
-    constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
-    keyInstitutions: ['Institution 1', 'Institution 2'],
-    settingScale: 'LOCAL',
-    branchingPosture: 'RECONVERGE',
-    stateComplexity: 'MEDIUM',
-  };
+  return createConceptSpecFixture(index);
 }
 
 function createScores(): ConceptDimensionScores {

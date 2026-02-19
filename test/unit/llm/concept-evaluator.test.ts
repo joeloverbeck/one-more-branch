@@ -27,53 +27,11 @@ import {
   CONCEPT_EVALUATION_SCORING_SCHEMA,
 } from '../../../src/llm/schemas/concept-evaluator-schema';
 import { computeOverallScore } from '../../../src/models';
+import type { ConceptSpec } from '../../../src/models';
+import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
-function createValidConcept(index: number): {
-  oneLineHook: string;
-  elevatorParagraph: string;
-  genreFrame: 'NOIR';
-  genreSubversion: string;
-  protagonistRole: string;
-  coreCompetence: string;
-  coreFlaw: string;
-  actionVerbs: readonly string[];
-  coreConflictLoop: string;
-  conflictAxis: 'TRUTH_VS_STABILITY';
-  conflictType: 'PERSON_VS_SOCIETY';
-  pressureSource: string;
-  stakesPersonal: string;
-  stakesSystemic: string;
-  deadlineMechanism: string;
-  settingAxioms: readonly string[];
-  constraintSet: readonly string[];
-  keyInstitutions: readonly string[];
-  settingScale: 'LOCAL';
-  branchingPosture: 'RECONVERGE';
-  stateComplexity: 'MEDIUM';
-} {
-  return {
-    oneLineHook: `Hook ${index}`,
-    elevatorParagraph: `Elevator paragraph ${index}`,
-    genreFrame: 'NOIR',
-    genreSubversion: `Subversion ${index}`,
-    protagonistRole: `Role ${index}`,
-    coreCompetence: `Competence ${index}`,
-    coreFlaw: `Flaw ${index}`,
-    actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
-    coreConflictLoop: `Conflict loop ${index}`,
-    conflictAxis: 'TRUTH_VS_STABILITY',
-    conflictType: 'PERSON_VS_SOCIETY',
-    pressureSource: `Pressure ${index}`,
-    stakesPersonal: `Personal stakes ${index}`,
-    stakesSystemic: `Systemic stakes ${index}`,
-    deadlineMechanism: `Deadline ${index}`,
-    settingAxioms: ['Axiom 1', 'Axiom 2'],
-    constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
-    keyInstitutions: ['Institution 1', 'Institution 2'],
-    settingScale: 'LOCAL',
-    branchingPosture: 'RECONVERGE',
-    stateComplexity: 'MEDIUM',
-  } as const;
+function createValidConcept(index: number): ConceptSpec {
+  return createConceptSpecFixture(index);
 }
 
 function createScoredConceptPayload(index: number): {
@@ -233,6 +191,20 @@ describe('concept-evaluator', () => {
     expect(systemMessage).toContain('Score every candidate concept');
     expect(systemMessage).toContain('Do not rank, filter, or select concepts');
     expect(systemMessage).toContain('Do not compute weighted totals');
+  });
+
+  it('buildConceptEvaluatorScoringPrompt references enrichment fields in rubric', () => {
+    const messages = buildConceptEvaluatorScoringPrompt({
+      concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
+      userSeeds: {
+        apiKey: 'test-api-key',
+      },
+    });
+
+    const systemMessage = messages[0]?.content ?? '';
+    expect(systemMessage).toContain('whatIfQuestion quality');
+    expect(systemMessage).toContain('playerFantasy appeal');
+    expect(systemMessage).toContain('ironicTwist quality');
   });
 
   it('buildConceptEvaluatorDeepEvalPrompt includes shortlist-only deep evaluation instructions', () => {

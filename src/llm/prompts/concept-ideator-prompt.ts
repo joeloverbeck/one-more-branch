@@ -19,7 +19,10 @@ const QUALITY_ANCHORS = `QUALITY ANCHORS:
 - oneLineHook must be graspable without proper nouns.
 - coreConflictLoop must describe a recurring decision pattern.
 - settingAxioms and constraints must be concrete and enforceable by an LLM.
-- actionVerbs must imply strategy diversity, not synonyms.`;
+- actionVerbs must imply strategy diversity, not synonyms.
+- whatIfQuestion must be a single question ending with '?' that translates the dramatic thesis into a specific, producible situation.
+- ironicTwist must be 1-2 sentences describing built-in irony where strength becomes weakness or solution creates the problem.
+- playerFantasy must be 1 sentence describing the experiential promise of being the protagonist, not just their actions.`;
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return 6-8 concepts.
