@@ -33,6 +33,15 @@ Generation stage emitted by `conceptService`: `EVALUATING_CONCEPTS`.
 - Requires JSON: `{ "scoredConcepts": [ ... ] }`.
 - Each item must include: `concept`, `scores`, `scoreEvidence`.
 
+### Rubric specifics (implemented)
+
+- `hookStrength`: evaluates curiosity gap, emotional pull, one-line clarity, `whatIfQuestion` quality, and `playerFantasy` appeal.
+- `conflictEngine`: evaluates stakes depth, pressure mechanism quality, recurring dilemma strength, `ironicTwist` quality, and coherence between `conflictType` and `conflictAxis`.
+- `agencyBreadth`: evaluates action-verb diversity, strategic range, and meaningful choice space.
+- `noveltyLeverage`: evaluates familiarity balance with a load-bearing differentiator.
+- `branchingFitness`: evaluates branch scalability, reconvergence viability, and state manageability.
+- `llmFeasibility`: evaluates rule enforceability, drift resistance, and implementation tractability.
+
 ### Response shape
 
 ```json
