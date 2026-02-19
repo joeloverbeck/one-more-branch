@@ -458,6 +458,37 @@ export function buildConceptsPageHtml(): string {
   `;
 }
 
+export function buildKernelsPageHtml(): string {
+  return `
+    <main class="container" id="kernels-page">
+      <section class="form-section">
+        <section id="kernel-generate-section">
+          <form id="kernel-generate-form">
+            <div class="form-group"><textarea id="thematicInterests"></textarea></div>
+            <div class="form-group"><textarea id="emotionalCore"></textarea></div>
+            <div class="form-group"><textarea id="sparkLine"></textarea></div>
+            <div class="form-group">
+              <input type="password" id="kernelApiKey" required />
+            </div>
+            <div class="form-actions">
+              <button type="button" id="generate-kernels-btn" disabled>Generate Kernels</button>
+            </div>
+          </form>
+        </section>
+        <section id="kernel-progress-section" style="display: none;">
+          <div id="kernel-progress-content"></div>
+        </section>
+        <section id="generated-kernels-section" style="display: none;">
+          <div id="generated-kernels"></div>
+        </section>
+        <section id="saved-kernels-section">
+          <div id="saved-kernels"></div>
+        </section>
+      </section>
+    </main>
+  `;
+}
+
 export function buildBriefingPageHtml(options: BriefingPageOptions = {}): string {
   const storyId = options.storyId ?? 'test-story-1';
 

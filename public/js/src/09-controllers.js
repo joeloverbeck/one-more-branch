@@ -798,4 +798,5 @@
     initNewStoryPage();
     initBriefingPage();
     initConceptsPage();
+    initKernelsPage();
   });

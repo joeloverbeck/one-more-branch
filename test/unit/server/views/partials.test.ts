@@ -14,7 +14,19 @@ describe('view partial templates', () => {
     expect(template).toContain('<a href="/" class="logo">One More Branch</a>');
     expect(template).toContain('<nav>');
     expect(template).toContain('<a href="/">Stories</a>');
+    expect(template).toContain('<a href="/kernels">Kernels</a>');
+    expect(template).toContain('<a href="/concepts">Concepts</a>');
     expect(template).toContain('<a href="/stories/new">New Adventure</a>');
+
+    expect(template.indexOf('<a href="/">Stories</a>')).toBeLessThan(
+      template.indexOf('<a href="/kernels">Kernels</a>')
+    );
+    expect(template.indexOf('<a href="/kernels">Kernels</a>')).toBeLessThan(
+      template.indexOf('<a href="/concepts">Concepts</a>')
+    );
+    expect(template.indexOf('<a href="/concepts">Concepts</a>')).toBeLessThan(
+      template.indexOf('<a href="/stories/new">New Adventure</a>')
+    );
   });
 
   it('footer partial exists and includes identity and disclaimer text', () => {
