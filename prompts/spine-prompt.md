@@ -6,9 +6,9 @@
 
 ## Pipeline Position
 
-The spine runs **before structure generation**, as the first LLM call in story creation. It generates exactly 3 spine options for the user to select from. The chosen spine is then passed to the structure generator to anchor the three-act dramatic arc.
+The spine runs **before entity decomposition and structure generation**, as the first LLM call in story creation. It generates exactly 3 spine options for the user to select from. The chosen spine is then passed to the entity decomposer and structure generator to anchor the three-act dramatic arc.
 
-**Pipeline position**: **Spine** -> Structure -> Planner -> Lorekeeper -> Writer -> Analyst -> Agenda Resolver
+**Pipeline position**: **Spine** -> Entity Decomposer -> Structure -> Planner -> Lorekeeper -> Writer -> Analyst -> Agenda Resolver
 
 The spine defines the invariant narrative backbone: the central dramatic question, the protagonist's inner transformation vs outer goal, the antagonistic force, and the primary narrative pattern. All downstream prompts receive the selected spine via `buildSpineSection()` from `src/llm/prompts/sections/shared/spine-section.ts`.
 
@@ -94,6 +94,12 @@ Generate exactly 3 spine options. Each MUST differ in at least one of:
 - storySpineType (primary narrative pattern)
 - conflictType (primary source of opposition)
 Do NOT generate options sharing both the same storySpineType AND conflictType.
+Each option must represent a genuinely different story direction, not a cosmetic variant.
+Across the 3 options, each option must differ from every other option in at least TWO of:
+- protagonistNeedVsWant.dynamic (need/want relationship)
+- primaryAntagonisticForce.description (nature of opposition)
+- primaryAntagonisticForce.pressureMechanism (how pressure is applied)
+- centralDramaticQuestion (core story question framing)
 
 FIELD INSTRUCTIONS:
 - centralDramaticQuestion: A single sentence ending with a question mark. Specific to THIS character and world, not generic. Bad: "Will good triumph over evil?" Good: "Can a disgraced guard expose the tribunal that framed her before they execute her as a scapegoat?"
@@ -106,9 +112,19 @@ FIELD INSTRUCTIONS:
 - conflictAxis: The thematic tension axis (INDIVIDUAL_VS_SYSTEM, TRUTH_VS_STABILITY, DUTY_VS_DESIRE, FREEDOM_VS_SAFETY, KNOWLEDGE_VS_INNOCENCE, POWER_VS_MORALITY, LOYALTY_VS_SURVIVAL, IDENTITY_VS_BELONGING).
 - conflictType: The primary source of opposition (PERSON_VS_PERSON, PERSON_VS_SELF, PERSON_VS_SOCIETY, PERSON_VS_NATURE, PERSON_VS_TECHNOLOGY, PERSON_VS_SUPERNATURAL, PERSON_VS_FATE).
 - characterArcType: The character arc trajectory (POSITIVE_CHANGE, FLAT, DISILLUSIONMENT, FALL, CORRUPTION).
+- toneFeel: 3-5 atmospheric adjectives describing HOW the story FEELS to the reader -- sensory, emotional, and rhythmic qualities. A compass for downstream writers.
+  CRITICAL: Do NOT repeat or rephrase genre/tone labels from the TONE/GENRE field. Instead, DERIVE the experiential qualities that emerge from that genre.
+  Ask: "If I were inside this story, what would I feel on my skin, in my gut, in my pulse?"
+  BAD for "grim political fantasy": ["grim", "political", "dark", "serious"]
+  GOOD for "grim political fantasy": ["claustrophobic", "treacherous", "morally-grey", "ash-scented", "hushed"]
+  BAD for "comedic heist": ["comedic", "funny", "heist", "lighthearted"]
+  GOOD for "comedic heist": ["snappy", "irreverent", "nerve-jangling", "winking", "kinetic"]
+- toneAvoid: 3-5 tonal anti-patterns the story must never drift toward. These define the negative space -- what the story must NOT become.
+  Example for "grim political fantasy": ["whimsical", "slapstick", "heartwarming", "campy"]
+  Example for "comedic heist": ["grimdark", "portentous", "plodding", "nihilistic"]
 
 OUTPUT SHAPE:
-- options: array of exactly 3 spine objects
+- options: array of exactly 3 spine objects, each containing all fields above
 ```
 
 ## JSON Response Shape
@@ -130,15 +146,17 @@ OUTPUT SHAPE:
       "storySpineType": "{{QUEST|SURVIVAL|ESCAPE|REVENGE|RESCUE|RIVALRY|MYSTERY|TEMPTATION|TRANSFORMATION|FORBIDDEN_LOVE|SACRIFICE|FALL_FROM_GRACE|RISE_TO_POWER|COMING_OF_AGE|REBELLION}}",
       "conflictAxis": "{{INDIVIDUAL_VS_SYSTEM|TRUTH_VS_STABILITY|DUTY_VS_DESIRE|FREEDOM_VS_SAFETY|KNOWLEDGE_VS_INNOCENCE|POWER_VS_MORALITY|LOYALTY_VS_SURVIVAL|IDENTITY_VS_BELONGING}}",
       "conflictType": "{{PERSON_VS_PERSON|PERSON_VS_SELF|PERSON_VS_SOCIETY|PERSON_VS_NATURE|PERSON_VS_TECHNOLOGY|PERSON_VS_SUPERNATURAL|PERSON_VS_FATE}}",
-      "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}"
+      "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}",
+      "toneFeel": ["{{atmospheric adjective 1}}", "{{atmospheric adjective 2}}", "{{atmospheric adjective 3}}"],
+      "toneAvoid": ["{{tonal anti-pattern 1}}", "{{tonal anti-pattern 2}}", "{{tonal anti-pattern 3}}"]
     }
   ]
 }
 ```
 
 - The `options` array must contain exactly 3 spine objects. The parser in `spine-generator.ts` rejects responses with any other count.
-- **Divergence constraint**: No two options may share both the same `storySpineType` AND the same `conflictType`. Each option must feel like a genuinely different story direction.
+- **Divergence constraint**: No two options may share both the same `storySpineType` AND the same `conflictType`. Additionally, each option must differ from every other option in at least TWO of: `protagonistNeedVsWant.dynamic`, `primaryAntagonisticForce.description`, `primaryAntagonisticForce.pressureMechanism`, `centralDramaticQuestion`.
 - `protagonistNeedVsWant.dynamic` describes the relationship between need and want: `CONVERGENT` (achieving want fulfills need), `DIVERGENT` (want leads away from need), `SUBSTITUTIVE` (need replaces want), `IRRECONCILABLE` (cannot satisfy both).
 - `characterArcType` describes the trajectory: `POSITIVE_CHANGE` (grows), `FLAT` (tests existing belief), `DISILLUSIONMENT` (learns hard truth), `FALL` (loses way), `CORRUPTION` (becomes what they opposed).
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
-- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will share the concept's `conflictAxis` and `conflictType`, and must satisfy the divergence constraint by differing in `storySpineType` instead. When no concept is present (manual story creation), spine generation works as before with no concept section.
+- When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will usually share the concept's `conflictAxis` and `conflictType`, so divergence must come from `storySpineType` and/or deeper fields such as need/want dynamic, antagonistic force, pressure mechanism, and dramatic question framing. When no concept is present (manual story creation), spine generation works as before with no concept section.

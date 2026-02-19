@@ -9,9 +9,9 @@
 
 ## Purpose
 
-The Entity Decomposer is a one-time LLM call at story creation (after structure generation) that converts raw character descriptions and worldbuilding prose into structured, machine-friendly attribute objects. The structured output is persisted in `story.json` and used by downstream prompts (planner, lorekeeper, writer) instead of raw prose dumps.
+The Entity Decomposer is a one-time LLM call at story creation (after spine selection, before structure generation) that converts raw character descriptions and worldbuilding prose into structured, machine-friendly attribute objects. The structured output is persisted in `story.json` and used by downstream prompts (structure, planner, lorekeeper, writer) instead of raw prose dumps.
 
-**Pipeline position**: Structure Generator -> **Entity Decomposer** -> First Page Generation
+**Pipeline position**: Spine Selection -> **Entity Decomposer** -> Structure Generator -> First Page Generation
 
 **Why it exists**: Research demonstrates that raw prose dumps degrade LLM performance. Speech patterns, verbal tics, and linguistic fingerprints buried in prose paragraphs get lost. Domain-tagged atomic facts are easier to filter and reason about than monolithic worldbuilding text. The decomposed structure makes each character identifiable by voice alone.
 
@@ -204,13 +204,13 @@ The decomposed output is stored on the `Story` object and propagated to downstre
 
 ## Generation Stage
 
-The Entity Decomposer runs as the `DECOMPOSING_ENTITIES` generation stage, emitted during story creation between structure generation and first page generation.
+The Entity Decomposer runs as the `DECOMPOSING_ENTITIES` generation stage, emitted during story creation after spine selection and before structure generation.
 
 ```
-STRUCTURING_STORY started
-STRUCTURING_STORY completed
 DECOMPOSING_ENTITIES started
 DECOMPOSING_ENTITIES completed
+STRUCTURING_STORY started
+STRUCTURING_STORY completed
 PLANNING_PAGE started
 ...
 ```
