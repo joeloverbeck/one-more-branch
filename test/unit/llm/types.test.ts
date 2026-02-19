@@ -1035,9 +1035,23 @@ describe('LLM types', () => {
 
     it('should allow creating StructureRewriteContext including empty completedBeats', () => {
       const context: StructureRewriteContext = {
-        characterConcept: 'A field medic turned reluctant leader',
-        worldbuilding: 'A flooded city-state in collapse',
         tone: 'Tense and hopeful',
+        decomposedCharacters: [
+          {
+            name: 'Test Character',
+            role: 'protagonist',
+            rawDescription: 'A field medic turned reluctant leader',
+            coreTraits: ['resourceful'],
+            primaryMotivation: 'Survive',
+            keyRelationships: [],
+            secretsOrWeaknesses: [],
+            speechPattern: 'Terse',
+          },
+        ],
+        decomposedWorld: {
+          facts: [{ domain: 'geography' as const, fact: 'A flooded city-state in collapse', scope: 'global' }],
+          rawWorldbuilding: 'A flooded city-state in collapse',
+        },
         completedBeats: [],
         plannedBeats: [],
         narrativeSummary: 'The protagonist now controls a key evacuation route.',
@@ -1045,10 +1059,12 @@ describe('LLM types', () => {
         currentBeatIndex: 0,
         deviationReason: 'Player allied with former rivals',
         originalTheme: 'Duty versus survival',
+        totalActCount: 3,
       };
 
       expect(context.completedBeats).toEqual([]);
       expect(context.currentActIndex).toBe(1);
+      expect(context.totalActCount).toBe(3);
     });
 
     it('should allow creating StructureRewriteResult with structure and preservedBeatIds', () => {

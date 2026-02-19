@@ -6,16 +6,23 @@ import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 
-function getActsToRegenerate(currentActIndex: number): string {
-  if (currentActIndex === 0) {
-    return 'remaining beats in Act 1, plus all of Acts 2 and 3';
+function getActsToRegenerate(currentActIndex: number, totalActs: number): string {
+  const currentActLabel = `Act ${currentActIndex + 1}`;
+  const remainingActNumbers: number[] = [];
+  for (let i = currentActIndex + 1; i < totalActs; i++) {
+    remainingActNumbers.push(i + 1);
   }
 
-  if (currentActIndex === 1) {
-    return 'remaining beats in Act 2, plus all of Act 3';
+  if (remainingActNumbers.length === 0) {
+    return `remaining beats in ${currentActLabel}`;
   }
 
-  return 'remaining beats in Act 3';
+  if (remainingActNumbers.length === 1) {
+    return `remaining beats in ${currentActLabel}, plus all of Act ${remainingActNumbers[0]!}`;
+  }
+
+  const numberList = `${remainingActNumbers.slice(0, -1).join(', ')} and ${remainingActNumbers[remainingActNumbers.length - 1]!}`;
+  return `remaining beats in ${currentActLabel}, plus all of Acts ${numberList}`;
 }
 
 function formatCompletedBeats(completedBeats: StructureRewriteContext['completedBeats']): string {
@@ -115,13 +122,13 @@ Current narrative state:
 ${context.narrativeSummary}
 
 ## YOUR TASK
-Generate NEW beats to replace invalidated ones. You are regenerating: ${getActsToRegenerate(context.currentActIndex)}.
+Generate NEW beats to replace invalidated ones. You are regenerating: ${getActsToRegenerate(context.currentActIndex, context.totalActCount)}.
 
 REQUIREMENTS (follow ALL):
 1. Preserve completed beats exactly—include them in the output with unchanged names, descriptions, objectives, and roles
 2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "${context.tone}" in naming, stakes, and emotional register. Do not drift toward generic dark fantasy.
 3. Build naturally from the current narrative state
-4. Follow three-act structure principles (setup, confrontation, resolution)
+4. Follow dramatic structure principles (setup, confrontation, resolution)
 5. Keep 2-4 beats per act total (including preserved beats)
 6. Beats should be flexible milestones, not rigid gates
 7. Account for branching narrative paths
@@ -135,7 +142,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
 - overallTheme: string (may evolve slightly from original, or stay the same)
 - premise: string (1-2 sentence story hook)
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
-- acts: 3-5 items
+- acts: 3-5 items (STRONGLY prefer 3 acts; use 4 only when narrative complexity genuinely demands it; 5 only in exceptional cases)
 - each act has:
   - name: evocative act title
   - objective: main goal for the act

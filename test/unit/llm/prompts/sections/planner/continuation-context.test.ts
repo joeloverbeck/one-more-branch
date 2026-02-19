@@ -252,7 +252,7 @@ describe('planner continuation context section', () => {
     const result = buildPlannerContinuationContextSection(context);
 
     expect(result).toContain('=== STORY STRUCTURE ===');
-    expect(result).toContain('CURRENT ACT: Containment (Act 1 of 3)');
+    expect(result).toContain('CURRENT ACT: Containment (Act 1 of 2)');
     expect(result).toContain('[x] CONCLUDED (setup): Secure route through lockdown');
     expect(result).toContain('[>] ACTIVE (escalation): Confront compromised ally');
     expect(result).toContain('[ ] PENDING (turning_point): Expose the city directive');

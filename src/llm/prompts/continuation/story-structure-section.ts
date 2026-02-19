@@ -136,7 +136,7 @@ export function buildWriterStructureContext(
 Overall Theme: ${structure.overallTheme}
 Premise: ${structure.premise}
 
-CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of 3)
+CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure.acts.length})
 Objective: ${currentAct.objective}
 Stakes: ${currentAct.stakes}
 
@@ -351,7 +351,7 @@ Populate threadPayoffAssessments for each resolved thread.
 Overall Theme: ${structure.overallTheme}
 Premise: ${structure.premise}
 
-CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of 3)
+CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure.acts.length})
 Objective: ${currentAct.objective}
 Stakes: ${currentAct.stakes}
 

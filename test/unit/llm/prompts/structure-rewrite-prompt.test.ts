@@ -40,6 +40,7 @@ describe('buildStructureRewritePrompt', () => {
     currentBeatIndex: 0,
     deviationReason: 'The prior allies now treat the protagonist as a traitor.',
     originalTheme: 'Duty versus chosen loyalty',
+    totalActCount: 3,
   };
 
   it('returns system and user messages', () => {
@@ -115,6 +116,42 @@ describe('buildStructureRewritePrompt', () => {
     );
 
     expect(user).toContain('remaining beats in Act 3');
+  });
+
+  it('handles 4-act stories correctly', () => {
+    const user = getUserMessage(
+      buildStructureRewritePrompt({
+        ...baseContext,
+        currentActIndex: 0,
+        totalActCount: 4,
+      })
+    );
+
+    expect(user).toContain('remaining beats in Act 1, plus all of Acts 2, 3 and 4');
+  });
+
+  it('handles 5-act stories correctly', () => {
+    const user = getUserMessage(
+      buildStructureRewritePrompt({
+        ...baseContext,
+        currentActIndex: 1,
+        totalActCount: 5,
+      })
+    );
+
+    expect(user).toContain('remaining beats in Act 2, plus all of Acts 3, 4 and 5');
+  });
+
+  it('handles last-act deviation in 4-act story', () => {
+    const user = getUserMessage(
+      buildStructureRewritePrompt({
+        ...baseContext,
+        currentActIndex: 3,
+        totalActCount: 4,
+      })
+    );
+
+    expect(user).toContain('remaining beats in Act 4');
   });
 
   it('includes JSON-compatible output shape description with premise, pacingBudget, beat name, and role', () => {
@@ -226,6 +263,7 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     currentBeatIndex: 0,
     deviationReason: 'The prior allies now treat the protagonist as a traitor.',
     originalTheme: 'Duty versus chosen loyalty',
+    totalActCount: 3,
   };
 
   it('does NOT include state management instructions', () => {
@@ -262,7 +300,7 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     const messages = buildStructureRewritePrompt(baseContext);
     const systemMessage = getSystemMessage(messages);
 
-    expect(systemMessage).toContain('three-act');
+    expect(systemMessage).toContain('dramatic structures');
     expect(systemMessage).toContain('beats');
     expect(systemMessage).toContain('stakes');
   });

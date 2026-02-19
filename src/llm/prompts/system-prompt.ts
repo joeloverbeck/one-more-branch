@@ -18,7 +18,7 @@ export {
 const STRUCTURE_ROLE_INTRO = `You are an expert interactive fiction storyteller specializing in story structure and dramatic arc design.`;
 
 const STRUCTURE_DESIGN_GUIDELINES = `STRUCTURE DESIGN GUIDELINES:
-- Create compelling three-act dramatic structures.
+- Create compelling dramatic structures (typically three-act).
 - Design beats as flexible milestones that allow branching paths.
 - Ensure stakes escalate naturally through the narrative.
 - Make entry conditions clear but not overly prescriptive.
