@@ -52,6 +52,7 @@ export function createEvaluatedConceptFixture(index = 1): EvaluatedConcept {
     concept: createConceptSpecFixture(index),
     scores: createConceptScoresFixture(),
     overallScore: 80,
+    passes: true,
     strengths: [`Strength ${index}`],
     weaknesses: [`Weakness ${index}`],
     tradeoffSummary: `Tradeoff ${index}`,
@@ -71,6 +72,7 @@ export function createScoredConceptFixture(index = 1): ScoredConcept {
       llmFeasibility: [`Feasibility evidence ${index}`],
     },
     overallScore: 80,
+    passes: true,
   };
 }
 

@@ -58,12 +58,14 @@ export interface ScoredKernel {
   readonly scores: KernelDimensionScores;
   readonly scoreEvidence: KernelScoreEvidence;
   readonly overallScore: number;
+  readonly passes: boolean;
 }
 
 export interface EvaluatedKernel {
   readonly kernel: StoryKernel;
   readonly scores: KernelDimensionScores;
   readonly overallScore: number;
+  readonly passes: boolean;
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
   readonly tradeoffSummary: string;

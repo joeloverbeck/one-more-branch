@@ -2,6 +2,7 @@ import { logger } from '../logging/index.js';
 import {
   computeKernelOverallScore,
   isStoryKernel,
+  passesKernelThresholds,
   type EvaluatedKernel,
   type KernelDimensionScores,
   type KernelEvaluationResult,
@@ -137,6 +138,7 @@ function parseScoredKernel(value: unknown, index: number): ScoredKernel {
     scores,
     scoreEvidence,
     overallScore: computeKernelOverallScore(scores),
+    passes: passesKernelThresholds(scores),
   };
 }
 
@@ -193,7 +195,7 @@ export function parseKernelScoringResponse(
 function parseDeepEvaluatedKernel(
   value: unknown,
   index: number,
-): Omit<EvaluatedKernel, 'scores' | 'overallScore'> {
+): Omit<EvaluatedKernel, 'scores' | 'overallScore' | 'passes'> {
   const label = `Evaluated kernel ${index + 1}`;
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -264,6 +266,7 @@ function parseKernelDeepEvaluationResponse(
       kernel: item.kernel,
       scores: scored.scores,
       overallScore: scored.overallScore,
+      passes: scored.passes,
       strengths: item.strengths,
       weaknesses: item.weaknesses,
       tradeoffSummary: item.tradeoffSummary,

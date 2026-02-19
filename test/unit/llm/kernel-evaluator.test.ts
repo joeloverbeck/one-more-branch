@@ -204,6 +204,7 @@ describe('kernel-evaluator', () => {
           scores: createScoredKernelPayload(1).scores,
           scoreEvidence: createScoredKernelPayload(1).scoreEvidence,
           overallScore: 80,
+          passes: true,
         },
       ],
     );

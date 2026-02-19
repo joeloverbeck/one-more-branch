@@ -38,6 +38,7 @@ function createScoredKernel(kernel: StoryKernel): ScoredKernel {
       emotionalDepth: ['Emotional stakes'],
     },
     overallScore: 78,
+    passes: true,
   };
 }
 
@@ -46,6 +47,7 @@ function createEvaluatedKernel(kernel: StoryKernel): EvaluatedKernel {
     kernel,
     scores: createScores(),
     overallScore: 78,
+    passes: true,
     strengths: ['Strong conflict', 'Clear value tension'],
     weaknesses: ['Could sharpen universality', 'Depth can be expanded'],
     tradeoffSummary: 'Strong dramatic engine with moderate thematic breadth.',

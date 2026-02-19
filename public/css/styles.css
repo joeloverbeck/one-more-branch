@@ -2678,6 +2678,24 @@ main {
   border: 1px solid rgba(89, 193, 122, 0.3);
 }
 
+.spine-badge-pass {
+  background: rgba(89, 193, 122, 0.2);
+  color: #59c17a;
+  border: 1px solid rgba(89, 193, 122, 0.4);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.spine-badge-fail {
+  background: rgba(224, 82, 82, 0.2);
+  color: #e05252;
+  border: 1px solid rgba(224, 82, 82, 0.4);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .spine-badge-dynamic {
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-text-muted);

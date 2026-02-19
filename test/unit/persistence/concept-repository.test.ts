@@ -37,6 +37,7 @@ function createSavedConcept(id: string): SavedConcept {
         llmFeasibility: 4,
       },
       overallScore: 82,
+      passes: true,
       strengths: ['Clear dramatic loop', 'High replay potential'],
       weaknesses: ['Could sharpen novelty hooks'],
       tradeoffSummary: 'Strong system-level stakes with moderate accessibility risk.',

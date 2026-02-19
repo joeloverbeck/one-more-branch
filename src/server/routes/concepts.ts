@@ -284,6 +284,7 @@ conceptRoutes.post(
         ...current,
         updatedAt: now,
         hardenedAt: now,
+        preHardenedConcept: { ...current.evaluatedConcept },
         evaluatedConcept: {
           ...current.evaluatedConcept,
           concept: result.hardenedConcept,

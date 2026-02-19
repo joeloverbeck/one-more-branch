@@ -18,6 +18,7 @@ function createEvaluatedConcept(): EvaluatedConcept {
       llmFeasibility: 4,
     },
     overallScore: 82,
+    passes: true,
     strengths: ['Clear dramatic loop', 'High replay potential'],
     weaknesses: ['Could sharpen novelty hooks'],
     tradeoffSummary: 'Strong system-level stakes with moderate accessibility risk.',
@@ -44,6 +45,7 @@ function createScoredConcept(): ScoredConcept {
       llmFeasibility: ['Clear constraints and institutions'],
     },
     overallScore: 82,
+    passes: true,
   };
 }
 
@@ -59,6 +61,7 @@ describe('saved-concept model guards', () => {
         thematicInterests: 'truth and control',
       },
       evaluatedConcept: createEvaluatedConcept(),
+      preHardenedConcept: createEvaluatedConcept(),
       hardenedAt: '2026-02-19T01:00:00.000Z',
       stressTestResult: {
         driftRisks: [
@@ -79,6 +82,20 @@ describe('saved-concept model guards', () => {
     };
 
     expect(isSavedConcept(value)).toBe(true);
+  });
+
+  it('rejects SavedConcept payloads with invalid preHardenedConcept', () => {
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConcept(),
+      preHardenedConcept: { concept: { oneLineHook: 'Incomplete' } },
+    };
+
+    expect(isSavedConcept(value)).toBe(false);
   });
 
   it('rejects SavedConcept payloads with invalid nested evaluated concept data', () => {

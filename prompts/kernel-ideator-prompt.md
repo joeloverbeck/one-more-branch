@@ -12,28 +12,79 @@ The kernel ideator generates 6-8 abstract dramatic kernels from thematic seeds.
 
 **Pipeline position**: **Kernel Ideator** -> Kernel Evaluator (implemented in STOKERSTAANDCONENR-04)
 
-## Message Intent
+## Messages Sent To Model
 
-### System Message
+### 1) System Message
 
-The system prompt defines:
-- Role: dramatic theorist focused on irreducible dramatic propositions.
-- Quality anchors for `dramaticThesis`, `valueAtStake`, `opposingForce`, and `thematicQuestion`.
-- Diversity constraints across kernel set (`valueAtStake`, `opposingForce`, `directionOfChange`).
-- `directionOfChange` taxonomy (`POSITIVE`, `NEGATIVE`, `IRONIC`, `AMBIGUOUS`).
-- Strict prohibitions against genre, setting, characters, plot beats, and game mechanics.
-- `CONTENT_POLICY` injection from `src/llm/content-policy.ts`.
+```text
+You are a dramatic theorist who distills stories to their irreducible dramatic proposition. You generate story kernels, not concepts or plot outlines.
 
-### User Message
+CONTENT GUIDELINES:
+{{CONTENT_POLICY}}
 
-The user prompt:
-- Requests 6-8 kernels.
-- Includes optional seed blocks when present:
-  - `THEMATIC INTERESTS`
-  - `EMOTIONAL CORE`
-  - `SPARK LINE`
-- Falls back to universal human themes when no seeds are provided.
-- Enforces JSON output shape: `{ "kernels": [StoryKernel, ...] }`.
+QUALITY ANCHORS:
+- dramaticThesis must be a causal dramatic claim, not a topic label.
+- valueAtStake must name a fundamental human value, not a task or objective.
+- opposingForce must be an abstract force that can operate across settings.
+- thematicQuestion must be a meaningful question that can be answered in multiple ways.
+- Keep kernels abstract and transferable across genres.
+
+DIVERSITY CONSTRAINTS:
+- Return 6-8 kernels.
+- No two kernels may share the same valueAtStake.
+- No two kernels may share the same opposingForce.
+- Use at least 3 distinct directionOfChange values.
+- Ensure kernels represent materially different human conflict domains.
+
+DIRECTION OF CHANGE TAXONOMY:
+- POSITIVE: The value ultimately prevails.
+- NEGATIVE: The value is lost, compromised, or corrupted.
+- IRONIC: The value is gained at a transformative cost, or victory feels hollow.
+- AMBIGUOUS: Multiple dramatic outcomes remain equally valid.
+
+VALID directionOfChange values:
+- POSITIVE
+- NEGATIVE
+- IRONIC
+- AMBIGUOUS
+
+PROHIBITIONS:
+- Do not include genre framing.
+- Do not include setting/world details.
+- Do not include named characters or character bios.
+- Do not include plot beats or scene sequencing.
+- Do not include game mechanics or system design instructions.
+```
+
+### 2) User Message
+
+```text
+Generate 6-8 story kernels as abstract dramatic propositions.
+
+{{#if thematicInterests}}
+THEMATIC INTERESTS:
+{{thematicInterests}}
+{{/if}}
+
+{{#if emotionalCore}}
+EMOTIONAL CORE:
+{{emotionalCore}}
+{{/if}}
+
+{{#if sparkLine}}
+SPARK LINE:
+{{sparkLine}}
+{{/if}}
+
+{{#if no seeds provided}}
+No seeds were provided. Derive kernels from universal human themes and conflicts.
+{{/if}}
+
+OUTPUT REQUIREMENTS:
+- Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
+- Each kernel must contain dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
+- Keep every field concise and semantically distinct across the set.
+```
 
 ## JSON Response Shape
 
@@ -64,6 +115,14 @@ Schema constraints in `src/llm/schemas/kernel-ideator-schema.ts`:
 - 6-8 kernel count
 - each entry passes `isStoryKernel(...)`
 - malformed payloads throw retryable `LLMError` with `STRUCTURE_PARSE_ERROR`
+
+## Context Provided
+
+| Context Field | Description |
+|---|---|
+| `thematicInterests` | Optional theme interests |
+| `emotionalCore` | Optional emotional core text |
+| `sparkLine` | Optional seed hook sentence |
 
 ## Integration Points
 

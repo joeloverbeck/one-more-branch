@@ -1,5 +1,4 @@
 import {
-  KERNEL_PASS_THRESHOLDS,
   KERNEL_SCORING_WEIGHTS,
   type KernelEvaluatorContext,
   type ScoredKernel,
@@ -17,13 +16,13 @@ const RUBRIC = `SCORING RUBRIC (0-5):
 - conflictTension: 0-1 weak opposition; 2-3 real but obvious resolution path; 4-5 irreconcilable value pressure with credible claims on both sides.
 - emotionalDepth: 0-1 abstract and detached; 2-3 emotionally present but surface-level; 4-5 visceral and deeply human.`;
 
-function formatWeightsAndThresholds(): string {
-  return `WEIGHTS AND PASS THRESHOLDS:
-- dramaticClarity: weight ${KERNEL_SCORING_WEIGHTS.dramaticClarity}, pass >= ${KERNEL_PASS_THRESHOLDS.dramaticClarity}
-- thematicUniversality: weight ${KERNEL_SCORING_WEIGHTS.thematicUniversality}, pass >= ${KERNEL_PASS_THRESHOLDS.thematicUniversality}
-- generativePotential: weight ${KERNEL_SCORING_WEIGHTS.generativePotential}, pass >= ${KERNEL_PASS_THRESHOLDS.generativePotential}
-- conflictTension: weight ${KERNEL_SCORING_WEIGHTS.conflictTension}, pass >= ${KERNEL_PASS_THRESHOLDS.conflictTension}
-- emotionalDepth: weight ${KERNEL_SCORING_WEIGHTS.emotionalDepth}, pass >= ${KERNEL_PASS_THRESHOLDS.emotionalDepth}`;
+function formatWeights(): string {
+  return `DIMENSION WEIGHTS:
+- dramaticClarity: weight ${KERNEL_SCORING_WEIGHTS.dramaticClarity}
+- thematicUniversality: weight ${KERNEL_SCORING_WEIGHTS.thematicUniversality}
+- generativePotential: weight ${KERNEL_SCORING_WEIGHTS.generativePotential}
+- conflictTension: weight ${KERNEL_SCORING_WEIGHTS.conflictTension}
+- emotionalDepth: weight ${KERNEL_SCORING_WEIGHTS.emotionalDepth}`;
 }
 
 function normalize(value: string | undefined): string | undefined {
@@ -77,7 +76,7 @@ export function buildKernelEvaluatorScoringPrompt(context: KernelEvaluatorContex
   const systemSections = [
     ROLE_INTRO,
     RUBRIC,
-    formatWeightsAndThresholds(),
+    formatWeights(),
     `SCORING RULES:
 - Score every candidate kernel.
 - Do not rank, filter, or select kernels.
@@ -110,7 +109,7 @@ export function buildKernelEvaluatorDeepEvalPrompt(
   const systemSections = [
     ROLE_INTRO,
     RUBRIC,
-    formatWeightsAndThresholds(),
+    formatWeights(),
     `DEEP EVALUATION RULES:
 - Evaluate all provided kernels.
 - Do not rescore and do not alter kernels.

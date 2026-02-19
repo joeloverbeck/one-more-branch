@@ -1,5 +1,4 @@
 import {
-  CONCEPT_PASS_THRESHOLDS,
   CONCEPT_SCORING_WEIGHTS,
   type ConceptEvaluatorContext,
   type ConceptSpec,
@@ -18,14 +17,14 @@ const RUBRIC = `SCORING RUBRIC (0-5):
 - branchingFitness: Branch scalability, reconvergence viability, and state manageability.
 - llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.`;
 
-function formatWeightsAndThresholds(): string {
-  return `WEIGHTS AND PASS THRESHOLDS:
-- hookStrength: weight ${CONCEPT_SCORING_WEIGHTS.hookStrength}, pass >= ${CONCEPT_PASS_THRESHOLDS.hookStrength}
-- conflictEngine: weight ${CONCEPT_SCORING_WEIGHTS.conflictEngine}, pass >= ${CONCEPT_PASS_THRESHOLDS.conflictEngine}
-- agencyBreadth: weight ${CONCEPT_SCORING_WEIGHTS.agencyBreadth}, pass >= ${CONCEPT_PASS_THRESHOLDS.agencyBreadth}
-- noveltyLeverage: weight ${CONCEPT_SCORING_WEIGHTS.noveltyLeverage}, pass >= ${CONCEPT_PASS_THRESHOLDS.noveltyLeverage}
-- branchingFitness: weight ${CONCEPT_SCORING_WEIGHTS.branchingFitness}, pass >= ${CONCEPT_PASS_THRESHOLDS.branchingFitness}
-- llmFeasibility: weight ${CONCEPT_SCORING_WEIGHTS.llmFeasibility}, pass >= ${CONCEPT_PASS_THRESHOLDS.llmFeasibility}`;
+function formatWeights(): string {
+  return `DIMENSION WEIGHTS:
+- hookStrength: weight ${CONCEPT_SCORING_WEIGHTS.hookStrength}
+- conflictEngine: weight ${CONCEPT_SCORING_WEIGHTS.conflictEngine}
+- agencyBreadth: weight ${CONCEPT_SCORING_WEIGHTS.agencyBreadth}
+- noveltyLeverage: weight ${CONCEPT_SCORING_WEIGHTS.noveltyLeverage}
+- branchingFitness: weight ${CONCEPT_SCORING_WEIGHTS.branchingFitness}
+- llmFeasibility: weight ${CONCEPT_SCORING_WEIGHTS.llmFeasibility}`;
 }
 
 function normalize(value: string | undefined): string | undefined {
@@ -86,7 +85,7 @@ export function buildConceptEvaluatorScoringPrompt(context: ConceptEvaluatorCont
   const systemSections: string[] = [
     ROLE_INTRO,
     RUBRIC,
-    formatWeightsAndThresholds(),
+    formatWeights(),
     `SCORING RULES:
 - Score every candidate concept.
 - Do not rank, filter, or select concepts.
@@ -119,20 +118,20 @@ export function buildConceptEvaluatorDeepEvalPrompt(
   const systemSections: string[] = [
     ROLE_INTRO,
     RUBRIC,
-    formatWeightsAndThresholds(),
+    formatWeights(),
     `DEEP EVALUATION RULES:
-- Evaluate only the provided shortlist.
+- Evaluate all provided scored concepts.
 - Do not rescore and do not alter concepts.
 - For each concept, explain user-facing strengths, weaknesses, and tradeoffs.`,
   ];
 
   const userSections: string[] = [
-    'Deep-evaluate this shortlist selected in code.',
+    'Deep-evaluate all scored concepts.',
     `USER SEEDS:\n${buildSeedSection(context)}`,
-    `SHORTLIST WITH LOCKED SCORES:\n${buildScoredConceptList(scoredConcepts)}`,
+    `SCORED CONCEPTS WITH LOCKED SCORES:\n${buildScoredConceptList(scoredConcepts)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "evaluatedConcepts": [ ... ] }.
-- Include one evaluatedConcept item for every shortlist concept.
+- Include one evaluatedConcept item for every scored concept.
 - Preserve concept content exactly.
 - For each item include: concept, strengths, weaknesses, tradeoffSummary.
 - strengths and weaknesses must be non-empty string arrays.`,

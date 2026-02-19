@@ -185,6 +185,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           emotionalDepth: 4,
         },
         overallScore: 80,
+        passes: true,
         strengths: ['Strong thesis'],
         weaknesses: ['Slightly abstract'],
         tradeoffSummary: 'Clear and generative.',

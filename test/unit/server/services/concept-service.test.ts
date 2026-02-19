@@ -34,6 +34,7 @@ function createEvaluatedConcept(index = 1): EvaluatedConcept {
     concept: createConceptSpec(index),
     scores: createScores(),
     overallScore: 80,
+    passes: true,
     strengths: ['Strong hook'],
     weaknesses: ['Lower novelty'],
     tradeoffSummary: 'Strong conflict, lower novelty.',
@@ -63,6 +64,7 @@ function createScoredConcept(index = 1): ScoredConcept {
       llmFeasibility: [`Feasibility evidence ${index}`],
     },
     overallScore: 80,
+    passes: true,
   };
 }
 
