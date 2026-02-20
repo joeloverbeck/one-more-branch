@@ -2,7 +2,6 @@ import {
   AccumulatedCharacterState,
   AccumulatedStructureState,
   ActiveState,
-  ActiveStateChanges,
   createChoice,
   createEmptyAccumulatedStructureState,
   createPage,
@@ -20,8 +19,6 @@ import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/sta
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
-import type { PageWriterResult } from '../llm/writer-types';
-import type { StateReconciliationResult } from './state-reconciler-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
@@ -36,28 +33,12 @@ import {
   getMaxPromiseIdNumber,
   buildResolvedPromiseMeta,
 } from './promise-lifecycle';
+import type { PageBuildResult } from './state-change-mapper';
+import { mapToActiveStateChanges } from './state-change-mapper';
 
 // Re-export for backward compatibility
 export { computeContinuationThreadAges, augmentThreadsResolvedFromAnalyst } from './thread-lifecycle';
 export { computeAccumulatedPromises, getMaxPromiseIdNumber } from './promise-lifecycle';
-
-type PageBuildResult = PageWriterResult &
-  Pick<
-    StateReconciliationResult,
-    | 'currentLocation'
-    | 'threatsAdded'
-    | 'threatsRemoved'
-    | 'constraintsAdded'
-    | 'constraintsRemoved'
-    | 'threadsAdded'
-    | 'threadsResolved'
-    | 'inventoryAdded'
-    | 'inventoryRemoved'
-    | 'healthAdded'
-    | 'healthRemoved'
-    | 'characterStateChangesAdded'
-    | 'characterStateChangesRemoved'
-  >;
 
 /**
  * Unified context for building any page (opening or continuation).
@@ -122,28 +103,6 @@ export interface ContinuationPageBuildContext {
 
 
 
-/**
- * Maps reconciled state fields to ActiveStateChanges.
- * Handles the conversion from LLM output format to the typed change structure.
- */
-function mapToActiveStateChanges(
-  result: PageBuildResult,
-  effectiveThreadsResolved: readonly string[]
-): ActiveStateChanges {
-  return {
-    newLocation: result.currentLocation || null,
-    threatsAdded: result.threatsAdded,
-    threatsRemoved: result.threatsRemoved,
-    constraintsAdded: result.constraintsAdded,
-    constraintsRemoved: result.constraintsRemoved,
-    threadsAdded: result.threadsAdded.map((thread) => ({
-      text: thread.text,
-      threadType: thread.threadType,
-      urgency: thread.urgency,
-    })),
-    threadsResolved: effectiveThreadsResolved,
-  };
-}
 
 /**
  * Builds any page (opening or continuation) from LLM generation result.
