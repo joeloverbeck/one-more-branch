@@ -2273,8 +2273,11 @@ describe('page-service integration', () => {
         })
       );
 
-      // Spine rewrite fetch fails
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Spine rewrite API timeout'));
+      // Spine rewrite fetch fails with non-retryable error to avoid 3s retry delays.
+      // The retry mechanism is tested in its own suite (llm/client.test.ts).
+      (global.fetch as jest.Mock).mockRejectedValueOnce(
+        new LLMError('Spine rewrite API timeout', 'NETWORK_ERROR', false)
+      );
       // Structure rewrite fetch succeeds (for any other fetch calls)
       (global.fetch as jest.Mock).mockResolvedValue(createRewriteFetchResponse());
 

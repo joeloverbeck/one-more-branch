@@ -54,6 +54,17 @@ export function normalizeProtagonistGuidance(rawGuidance: unknown): ProtagonistG
   return normalized;
 }
 
+export function parseRequestedPageId(pageQuery: unknown): number {
+  const pageInput =
+    typeof pageQuery === 'string' || typeof pageQuery === 'number' ? String(pageQuery) : '';
+  const parsed = Number.parseInt(pageInput, 10);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    return 1;
+  }
+
+  return parsed;
+}
+
 export function parseCustomChoiceText(input: unknown): { value?: string; error?: string } {
   if (typeof input !== 'string') {
     return { error: 'Missing pageId or choiceText' };
