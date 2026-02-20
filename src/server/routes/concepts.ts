@@ -14,7 +14,7 @@ import {
   updateConcept,
 } from '../../persistence/concept-repository.js';
 import { loadKernel } from '../../persistence/kernel-repository.js';
-import { conceptService } from '../services/index.js';
+import { ConceptEvaluationStageError, conceptService } from '../services/index.js';
 import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
@@ -34,6 +34,28 @@ function hasAtLeastOneConceptSeed(body: {
     body.thematicInterests,
     body.sparkLine,
   ].some((value) => value?.trim());
+}
+
+function normalizeConceptSeeds(body: {
+  genreVibes?: string;
+  moodKeywords?: string;
+  contentPreferences?: string;
+  thematicInterests?: string;
+  sparkLine?: string;
+}): {
+  genreVibes?: string;
+  moodKeywords?: string;
+  contentPreferences?: string;
+  thematicInterests?: string;
+  sparkLine?: string;
+} {
+  return {
+    genreVibes: body.genreVibes?.trim(),
+    moodKeywords: body.moodKeywords?.trim(),
+    contentPreferences: body.contentPreferences?.trim(),
+    thematicInterests: body.thematicInterests?.trim(),
+    sparkLine: body.sparkLine?.trim(),
+  };
 }
 
 conceptRoutes.get(
@@ -106,6 +128,8 @@ conceptRoutes.post(
 
     const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
 
+    const normalizedSeeds = normalizeConceptSeeds(body);
+
     try {
       const result = await conceptService.generateConcepts({
         genreVibes: body.genreVibes,
@@ -123,13 +147,7 @@ conceptRoutes.post(
       await saveConceptGenerationBatch({
         id: generationId,
         generatedAt,
-        seeds: {
-          genreVibes: body.genreVibes?.trim(),
-          moodKeywords: body.moodKeywords?.trim(),
-          contentPreferences: body.contentPreferences?.trim(),
-          thematicInterests: body.thematicInterests?.trim(),
-          sparkLine: body.sparkLine?.trim(),
-        },
+        seeds: normalizedSeeds,
         ideatedConcepts: result.ideatedConcepts,
         scoredConcepts: result.scoredConcepts,
         selectedConcepts: result.evaluatedConcepts,
@@ -139,18 +157,67 @@ conceptRoutes.post(
 
       return res.json({ success: true, evaluatedConcepts: result.evaluatedConcepts });
     } catch (error) {
-      if (error instanceof LLMError) {
-        const formattedError = formatLLMError(error);
-        progress.fail(formattedError);
-        return res.status(500).json({
-          success: false,
-          error: formattedError,
-          code: error.code,
-          retryable: error.retryable,
-        });
+      let rootError: unknown = error;
+      if (error instanceof ConceptEvaluationStageError) {
+        rootError = error.cause;
+        try {
+          await saveConceptGenerationBatch({
+            id: randomUUID(),
+            generatedAt: new Date().toISOString(),
+            seeds: normalizedSeeds,
+            ideatedConcepts: error.ideatedConcepts,
+            scoredConcepts: [],
+            selectedConcepts: [],
+          });
+        } catch (persistError) {
+          const persistErr =
+            persistError instanceof Error ? persistError : new Error(String(persistError));
+          logger.warn('Failed to persist partial concept generation batch', {
+            error: persistErr.message,
+          });
+        }
       }
 
-      const err = error instanceof Error ? error : new Error(String(error));
+      if (rootError instanceof LLMError) {
+        const formattedError = formatLLMError(rootError);
+        progress.fail(formattedError);
+        const errorResponse: {
+          success: false;
+          error: string;
+          code: string;
+          retryable: boolean;
+          debug?: {
+            httpStatus?: number;
+            model?: string;
+            rawError?: string;
+            parseStage?: string;
+            contentShape?: string;
+            contentPreview?: string;
+            rawContent?: string;
+          };
+        } = {
+          success: false,
+          error: formattedError,
+          code: rootError.code,
+          retryable: rootError.retryable,
+        };
+
+        if (process.env['NODE_ENV'] !== 'production') {
+          errorResponse.debug = {
+            httpStatus: rootError.context?.['httpStatus'] as number | undefined,
+            model: rootError.context?.['model'] as string | undefined,
+            rawError: rootError.context?.['rawErrorBody'] as string | undefined,
+            parseStage: rootError.context?.['parseStage'] as string | undefined,
+            contentShape: rootError.context?.['contentShape'] as string | undefined,
+            contentPreview: rootError.context?.['contentPreview'] as string | undefined,
+            rawContent: rootError.context?.['rawContent'] as string | undefined,
+          };
+        }
+
+        return res.status(500).json(errorResponse);
+      }
+
+      const err = rootError instanceof Error ? rootError : new Error(String(rootError));
       progress.fail(err.message);
       logger.error('Error generating concepts:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
@@ -179,9 +246,10 @@ conceptRoutes.post(
     const now = new Date().toISOString();
     const id = randomUUID();
     const trimmedName = body.name?.trim();
-    const defaultName = trimmedName && trimmedName.length > 0
-      ? trimmedName
-      : (body.evaluatedConcept.concept.oneLineHook ?? 'Untitled Concept').slice(0, 80);
+    const defaultName =
+      trimmedName && trimmedName.length > 0
+        ? trimmedName
+        : body.evaluatedConcept.concept.oneLineHook ?? 'Untitled Concept';
 
     const trimmedKernelId = body.sourceKernelId?.trim();
     const savedConcept: SavedConcept = {

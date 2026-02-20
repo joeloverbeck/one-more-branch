@@ -9,6 +9,8 @@ dist/
 coverage/
 
 # Runtime data
+kernels/**
+concepts/**
 stories/**
 !stories/.gitkeep
 old-stories/

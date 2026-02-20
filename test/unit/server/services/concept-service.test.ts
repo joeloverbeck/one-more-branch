@@ -7,6 +7,7 @@ import type {
   ScoredConcept,
 } from '@/models';
 import {
+  ConceptEvaluationStageError,
   createConceptService,
   type GenerateConceptsInput,
   type StressTestInput,
@@ -194,6 +195,35 @@ describe('concept-service', () => {
           apiKey: 'valid-key-12345',
         }),
       ).rejects.toBe(llmError);
+    });
+
+    it('wraps evaluation failures with ideated concepts for partial persistence', async () => {
+      const llmError = new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true);
+      const ideationConcepts = [createConceptSpec(1), createConceptSpec(2)];
+      const service = createConceptService({
+        generateConceptIdeas: jest.fn().mockResolvedValue({
+          concepts: ideationConcepts,
+          rawResponse: 'raw-ideas',
+        }),
+        evaluateConcepts: jest.fn().mockRejectedValue(llmError),
+        stressTestConcept: jest.fn(),
+      });
+
+      await service
+        .generateConcepts({
+          genreVibes: 'dark fantasy',
+          kernel: createStoryKernel(),
+          apiKey: 'valid-key-12345',
+        })
+        .then(() => {
+          throw new Error('Expected generateConcepts to reject');
+        })
+        .catch((error: unknown) => {
+          expect(error).toBeInstanceOf(ConceptEvaluationStageError);
+          const stageError = error as ConceptEvaluationStageError;
+          expect(stageError.ideatedConcepts).toEqual(ideationConcepts);
+          expect(stageError.cause).toBe(llmError);
+        });
     });
 
     it('emits stage callbacks for ideation and evaluation in order', async () => {

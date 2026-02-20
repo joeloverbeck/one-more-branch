@@ -60,16 +60,25 @@ function buildSeedSection(context: ConceptEvaluatorContext): string {
   return sections.length > 0 ? sections.join('\n\n') : 'No optional user seeds provided.';
 }
 
-function buildConceptList(concepts: readonly ConceptSpec[]): string {
-  return concepts.map((concept, index) => `${index + 1}. ${JSON.stringify(concept, null, 2)}`).join('\n\n');
+function buildConceptList(concepts: readonly ConceptSpec[], conceptIds: readonly string[]): string {
+  return concepts
+    .map(
+      (concept, index) =>
+        `${index + 1}. ${JSON.stringify({ conceptId: conceptIds[index], concept }, null, 2)}`,
+    )
+    .join('\n\n');
 }
 
-function buildScoredConceptList(scoredConcepts: readonly ScoredConcept[]): string {
+function buildScoredConceptList(
+  scoredConcepts: readonly ScoredConcept[],
+  conceptIds: readonly string[],
+): string {
   return scoredConcepts
     .map(
       (item, index) =>
         `${index + 1}. ${JSON.stringify(
           {
+            conceptId: conceptIds[index],
             concept: item.concept,
             scores: item.scores,
             overallScore: item.overallScore,
@@ -81,7 +90,10 @@ function buildScoredConceptList(scoredConcepts: readonly ScoredConcept[]): strin
     .join('\n\n');
 }
 
-export function buildConceptEvaluatorScoringPrompt(context: ConceptEvaluatorContext): ChatMessage[] {
+export function buildConceptEvaluatorScoringPrompt(
+  context: ConceptEvaluatorContext,
+  conceptIds: readonly string[],
+): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
     RUBRIC,
@@ -97,12 +109,12 @@ export function buildConceptEvaluatorScoringPrompt(context: ConceptEvaluatorCont
   const userSections: string[] = [
     'Score these concept candidates against the user intent and rubric.',
     `USER SEEDS:\n${buildSeedSection(context)}`,
-    `CONCEPT CANDIDATES:\n${buildConceptList(context.concepts)}`,
+    `CONCEPT CANDIDATES:\n${buildConceptList(context.concepts, conceptIds)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "scoredConcepts": [ ... ] }.
 - Include one scoredConcept item for every input concept.
-- Preserve concept content exactly.
-- For each item include: concept, scores, scoreEvidence.`,
+- For each item include: conceptId, scores, scoreEvidence.
+- conceptId must match exactly one provided candidate conceptId.`,
   ];
 
   return [
@@ -114,6 +126,7 @@ export function buildConceptEvaluatorScoringPrompt(context: ConceptEvaluatorCont
 export function buildConceptEvaluatorDeepEvalPrompt(
   context: ConceptEvaluatorContext,
   scoredConcepts: readonly ScoredConcept[],
+  conceptIds: readonly string[],
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
@@ -128,12 +141,12 @@ export function buildConceptEvaluatorDeepEvalPrompt(
   const userSections: string[] = [
     'Deep-evaluate all scored concepts.',
     `USER SEEDS:\n${buildSeedSection(context)}`,
-    `SCORED CONCEPTS WITH LOCKED SCORES:\n${buildScoredConceptList(scoredConcepts)}`,
+    `SCORED CONCEPTS WITH LOCKED SCORES:\n${buildScoredConceptList(scoredConcepts, conceptIds)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "evaluatedConcepts": [ ... ] }.
 - Include one evaluatedConcept item for every scored concept.
-- Preserve concept content exactly.
-- For each item include: concept, strengths, weaknesses, tradeoffSummary.
+- For each item include: conceptId, strengths, weaknesses, tradeoffSummary.
+- conceptId must match exactly one provided scored conceptId.
 - strengths and weaknesses must be non-empty string arrays.`,
   ];
 

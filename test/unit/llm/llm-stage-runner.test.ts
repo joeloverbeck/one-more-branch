@@ -38,6 +38,13 @@ function responseWithMessageContent(content: string): Response {
   });
 }
 
+function responseWithChoice(content: string, finishReason: string): Response {
+  return createJsonResponse(200, {
+    id: 'or-llm-stage-runner-2',
+    choices: [{ message: { content }, finish_reason: finishReason }],
+  });
+}
+
 function createErrorResponse(status: number, message: string): Response {
   return {
     ok: false,
@@ -88,6 +95,28 @@ describe('llm-stage-runner', () => {
     expect(result.rawResponse).toBe(rawContent);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptIdeator', expect.any(Array));
+  });
+
+  it('fails with OUTPUT_TRUNCATED when model stops for length', async () => {
+    fetchMock.mockResolvedValue(responseWithChoice('{"ok":true}', 'length'));
+
+    const pending = runLlmStage({
+      stageModel: 'conceptIdeator',
+      promptType: 'conceptIdeator',
+      apiKey: 'test-api-key',
+      schema: CONCEPT_IDEATION_SCHEMA,
+      messages: [{ role: 'user', content: 'test message' }],
+      parseResponse: (parsed) => parsed as { ok: boolean },
+    });
+
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'OUTPUT_TRUNCATED',
+      retryable: true,
+    });
+
+    await advanceRetryDelays();
+    await expectation;
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it('wraps parser LLMError with raw response content context', async () => {

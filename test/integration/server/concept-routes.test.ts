@@ -34,6 +34,7 @@ import { conceptRoutes } from '@/server/routes/concepts';
 import { generationProgressService } from '@/server/services';
 import {
   loadConcept,
+  saveConcept,
   saveConceptGenerationBatch,
   updateConcept,
 } from '@/persistence/concept-repository';
@@ -83,6 +84,7 @@ describe('Concept Route Integration', () => {
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
+  const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
   const mockedSaveConceptGenerationBatch = saveConceptGenerationBatch as jest.MockedFunction<
     typeof saveConceptGenerationBatch
   >;
@@ -220,12 +222,107 @@ describe('Concept Route Integration', () => {
       'Rate limit exceeded. Please wait a moment and try again.',
     );
     expect(status).toHaveBeenCalledWith(500);
-    expect(json).toHaveBeenCalledWith({
-      success: false,
-      error: 'Rate limit exceeded. Please wait a moment and try again.',
-      code: 'HTTP_429',
-      retryable: true,
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: 'Rate limit exceeded. Please wait a moment and try again.',
+        code: 'HTTP_429',
+        retryable: true,
+      }),
+    );
+  });
+
+  it('POST /api/generate persists ideated concepts when evaluation fails', async () => {
+    const ideatedConcepts = Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1));
+    mockedGenerateConceptIdeas.mockResolvedValue({
+      concepts: ideatedConcepts,
+      rawResponse: 'raw-ideas',
     });
+    mockedEvaluateConcepts.mockRejectedValue(
+      new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true),
+    );
+
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+
+    void getRouteHandler('post', '/api/generate')(
+      {
+        body: {
+          genreVibes: 'dark fantasy',
+          moodKeywords: 'tense',
+          kernelId: 'kernel-1',
+          apiKey: 'valid-key-12345',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
+    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ideatedConcepts,
+        scoredConcepts: [],
+        selectedConcepts: [],
+      }),
+    );
+    expect(status).toHaveBeenCalledWith(500);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: 'API error: Scored concept 4 has invalid scores',
+        code: 'STRUCTURE_PARSE_ERROR',
+        retryable: true,
+      }),
+    );
+  });
+
+  it('POST /api/generate returns debug details in non-production for LLM parsing failures', async () => {
+    mockedGenerateConceptIdeas.mockResolvedValue({
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
+      rawResponse: 'raw-ideas',
+    });
+    mockedEvaluateConcepts.mockRejectedValue(
+      new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true, {
+        parseStage: 'message_content',
+        contentShape: 'string',
+        contentPreview: '{"scoredConcepts":[...]}',
+        rawContent: '{"scoredConcepts":[{"concept":{},"scores":"N/A"}]}',
+        model: 'test-model',
+      }),
+    );
+
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+
+    void getRouteHandler('post', '/api/generate')(
+      {
+        body: {
+          genreVibes: 'dark fantasy',
+          kernelId: 'kernel-1',
+          apiKey: 'valid-key-12345',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(status).toHaveBeenCalledWith(500);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: 'API error: Scored concept 4 has invalid scores',
+        code: 'STRUCTURE_PARSE_ERROR',
+        retryable: true,
+        debug: expect.objectContaining({
+          model: 'test-model',
+          parseStage: 'message_content',
+          contentShape: 'string',
+          contentPreview: '{"scoredConcepts":[...]}',
+          rawContent: '{"scoredConcepts":[{"concept":{},"scores":"N/A"}]}',
+        }),
+      }),
+    );
   });
 
   it('POST /api/generate returns 400 when kernelId is missing', async () => {
@@ -273,6 +370,45 @@ describe('Concept Route Integration', () => {
       success: false,
       error: 'Selected kernel was not found',
     });
+  });
+
+  it('POST /api/save preserves long default names derived from oneLineHook', async () => {
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+    const longHook =
+      'A very long one-line hook that should remain fully intact when the concept is saved to the library and repository';
+
+    void getRouteHandler('post', '/api/save')(
+      {
+        body: {
+          evaluatedConcept: {
+            ...createEvaluatedConceptFixture(1),
+            concept: {
+              ...createConceptSpecFixture(1),
+              oneLineHook: longHook,
+            },
+          },
+          seeds: {},
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(mockedSaveConcept).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: longHook,
+      }),
+    );
+    expect(status).not.toHaveBeenCalled();
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        concept: expect.objectContaining({
+          name: longHook,
+        }),
+      }),
+    );
   });
 
   it('POST /api/:conceptId/harden delegates through service and returns hardened concept', async () => {

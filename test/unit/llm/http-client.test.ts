@@ -39,6 +39,12 @@ describe('http-client', () => {
       expect(result.parsed).toEqual({ ok: true, nested: { count: 2 } });
     });
 
+    it('does not repair malformed JSON when allowRepair is false', () => {
+      expect(() =>
+        parseMessageJsonContent('{"ok":true,"nested":{"count":2}', { allowRepair: false }),
+      ).toThrow('Invalid JSON response from OpenRouter');
+    });
+
     it('includes full raw content in INVALID_JSON context', () => {
       const rawContent = '{"ok": true, "narrative": "unterminated';
 

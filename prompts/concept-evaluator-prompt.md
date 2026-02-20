@@ -86,13 +86,13 @@ CONTENT PREFERENCES:
 {{/if}}
 
 CONCEPT CANDIDATES:
-{{numbered list of JSON-serialized ConceptSpec objects from ideator output}}
+{{numbered list of JSON-serialized { conceptId, concept } objects from ideator output}}
 
 OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "scoredConcepts": [ ... ] }.
 - Include one scoredConcept item for every input concept.
-- Preserve concept content exactly.
-- For each item include: concept, scores, scoreEvidence.
+- For each item include: conceptId, scores, scoreEvidence.
+- conceptId must match exactly one provided candidate conceptId.
 ```
 
 ### JSON Response Shape
@@ -101,7 +101,7 @@ OUTPUT REQUIREMENTS:
 {
   "scoredConcepts": [
     {
-      "concept": { "{{ConceptSpec fields}}": "..." },
+      "conceptId": "concept_1",
       "scores": {
         "hookStrength": 0,
         "conflictEngine": 0,
@@ -193,13 +193,13 @@ CONTENT PREFERENCES:
 {{/if}}
 
 SCORED CONCEPTS WITH LOCKED SCORES:
-{{numbered list of JSON-serialized { concept, scores, overallScore } objects}}
+{{numbered list of JSON-serialized { conceptId, concept, scores, overallScore } objects}}
 
 OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "evaluatedConcepts": [ ... ] }.
 - Include one evaluatedConcept item for every scored concept.
-- Preserve concept content exactly.
-- For each item include: concept, strengths, weaknesses, tradeoffSummary.
+- For each item include: conceptId, strengths, weaknesses, tradeoffSummary.
+- conceptId must match exactly one provided scored conceptId.
 - strengths and weaknesses must be non-empty string arrays.
 ```
 
@@ -209,7 +209,7 @@ OUTPUT REQUIREMENTS:
 {
   "evaluatedConcepts": [
     {
-      "concept": { "{{ConceptSpec fields}}": "..." },
+      "conceptId": "concept_1",
       "strengths": ["..."],
       "weaknesses": ["..."],
       "tradeoffSummary": "..."
@@ -220,7 +220,7 @@ OUTPUT REQUIREMENTS:
 
 Runtime behavior:
 
-- Deep-eval parser enforces exact concept coverage against all scored concepts.
+- Deep-eval parser enforces exact conceptId coverage against all scored concepts.
 - `passes` field is propagated from scored data during merge.
 - Final returned concepts are sorted descending by code-computed `overallScore`.
 
@@ -241,5 +241,5 @@ Runtime behavior:
 - Both passes share the same `ROLE_INTRO` and `RUBRIC` constants; pass 1 appends scoring rules while pass 2 appends deep evaluation rules.
 - Dimension weights are injected from `CONCEPT_SCORING_WEIGHTS` in `src/models/concept-generator.ts`. Pass thresholds are NOT sent to the LLM; they are applied code-side only.
 - User seed section is built identically for both passes via `buildSeedSection(context)`: each optional field is included only when non-empty after trimming, otherwise omitted entirely. If no seeds exist, "No optional user seeds provided." is emitted.
-- Prompt logging uses `promptType: 'conceptEvaluatorScoring'` / `'conceptEvaluatorDeepEval'` via `runLlmStage(...)`.
+- Prompt logging uses `promptType: 'conceptEvaluator'` for both passes via `runLlmStage(...)`.
 - Model routing uses stage key `conceptEvaluator` in `getStageModel(...)`.

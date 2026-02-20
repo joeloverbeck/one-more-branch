@@ -14,6 +14,7 @@ export {
   type GenerationProgressStatus,
 } from './generation-progress.js';
 export {
+  ConceptEvaluationStageError,
   createConceptService,
   conceptService,
   type ConceptService,

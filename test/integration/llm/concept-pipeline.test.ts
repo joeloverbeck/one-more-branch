@@ -52,20 +52,28 @@ describe('Concept Pipeline Integration', () => {
 
     const scoringPayload = {
       scoredConcepts: [
-        { ...createScoredConceptFixture(1), scores: lowScore, overallScore: 1 },
-        { ...createScoredConceptFixture(2), scores: topScore, overallScore: 1 },
-        { ...createScoredConceptFixture(3), scores: middleScore, overallScore: 1 },
+        { conceptId: 'concept_1', ...createScoredConceptFixture(1), scores: lowScore, overallScore: 1 },
+        { conceptId: 'concept_2', ...createScoredConceptFixture(2), scores: topScore, overallScore: 1 },
         {
+          conceptId: 'concept_3',
+          ...createScoredConceptFixture(3),
+          scores: middleScore,
+          overallScore: 1,
+        },
+        {
+          conceptId: 'concept_4',
           ...createScoredConceptFixture(4),
           scores: { ...createConceptScoresFixture(), hookStrength: 1 },
           overallScore: 1,
         },
         {
+          conceptId: 'concept_5',
           ...createScoredConceptFixture(5),
           scores: { ...createConceptScoresFixture(), hookStrength: 1 },
           overallScore: 1,
         },
         {
+          conceptId: 'concept_6',
           ...createScoredConceptFixture(6),
           scores: { ...createConceptScoresFixture(), hookStrength: 1 },
           overallScore: 1,
@@ -75,37 +83,37 @@ describe('Concept Pipeline Integration', () => {
     const deepPayload = {
       evaluatedConcepts: [
         {
-          concept: createConceptSpecFixture(2),
+          conceptId: 'concept_2',
           strengths: ['Strong pressure'],
           weaknesses: ['Lower novelty'],
           tradeoffSummary: 'High conflict coherence with moderate novelty.',
         },
         {
-          concept: createConceptSpecFixture(3),
+          conceptId: 'concept_3',
           strengths: ['Good agency breadth'],
           weaknesses: ['Hook is less sharp'],
           tradeoffSummary: 'Broader tactics but weaker initial pull.',
         },
         {
-          concept: createConceptSpecFixture(1),
+          conceptId: 'concept_1',
           strengths: ['Solid feasibility'],
           weaknesses: ['Hook is weaker'],
           tradeoffSummary: 'Reliable execution at lower immediate intrigue.',
         },
         {
-          concept: createConceptSpecFixture(4),
+          conceptId: 'concept_4',
           strengths: ['Focused scenario'],
           weaknesses: ['Narrower hook'],
           tradeoffSummary: 'Focused but limited draw.',
         },
         {
-          concept: createConceptSpecFixture(5),
+          conceptId: 'concept_5',
           strengths: ['Clear stakes'],
           weaknesses: ['Lower variety'],
           tradeoffSummary: 'Defined stakes, narrower tactics.',
         },
         {
-          concept: createConceptSpecFixture(6),
+          conceptId: 'concept_6',
           strengths: ['Thematic clarity'],
           weaknesses: ['Less branching'],
           tradeoffSummary: 'Thematically tight but less expansive.',

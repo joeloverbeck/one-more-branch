@@ -1,5 +1,4 @@
 import type { JsonSchema } from '../llm-client-types.js';
-import { CONCEPT_SPEC_SCHEMA } from './concept-ideator-schema.js';
 
 const SCORE_SCHEMA = {
   type: 'object',
@@ -34,12 +33,12 @@ const SCORE_EVIDENCE_SCHEMA = {
     'llmFeasibility',
   ],
   properties: {
-    hookStrength: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    conflictEngine: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    agencyBreadth: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    noveltyLeverage: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    branchingFitness: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    llmFeasibility: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    hookStrength: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    conflictEngine: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    agencyBreadth: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    noveltyLeverage: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    branchingFitness: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    llmFeasibility: { type: 'array', items: { type: 'string' }, minItems: 1 },
   },
 } as const;
 
@@ -59,9 +58,9 @@ export const CONCEPT_EVALUATION_SCORING_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['concept', 'scores', 'scoreEvidence'],
+            required: ['conceptId', 'scores', 'scoreEvidence'],
             properties: {
-              concept: CONCEPT_SPEC_SCHEMA,
+              conceptId: { type: 'string', minLength: 1 },
               scores: SCORE_SCHEMA,
               scoreEvidence: SCORE_EVIDENCE_SCHEMA,
             },
@@ -85,13 +84,12 @@ export const CONCEPT_EVALUATION_DEEP_SCHEMA: JsonSchema = {
         evaluatedConcepts: {
           type: 'array',
           minItems: 1,
-          maxItems: 3,
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['concept', 'strengths', 'weaknesses', 'tradeoffSummary'],
+            required: ['conceptId', 'strengths', 'weaknesses', 'tradeoffSummary'],
             properties: {
-              concept: CONCEPT_SPEC_SCHEMA,
+              conceptId: { type: 'string', minLength: 1 },
               strengths: { type: 'array', items: { type: 'string' }, minItems: 1 },
               weaknesses: { type: 'array', items: { type: 'string' }, minItems: 1 },
               tradeoffSummary: { type: 'string', minLength: 1 },

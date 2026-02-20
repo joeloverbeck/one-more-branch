@@ -31,11 +31,11 @@ const KERNEL_SCORE_EVIDENCE_SCHEMA = {
     'emotionalDepth',
   ],
   properties: {
-    dramaticClarity: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    thematicUniversality: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    generativePotential: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    conflictTension: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
-    emotionalDepth: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 3 },
+    dramaticClarity: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    thematicUniversality: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    generativePotential: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    conflictTension: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    emotionalDepth: { type: 'array', items: { type: 'string' }, minItems: 1 },
   },
 } as const;
 
@@ -87,8 +87,18 @@ export const KERNEL_EVALUATION_DEEP_SCHEMA: JsonSchema = {
             required: ['kernel', 'strengths', 'weaknesses', 'tradeoffSummary'],
             properties: {
               kernel: KERNEL_SCHEMA,
-              strengths: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 3 },
-              weaknesses: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 3 },
+              strengths: {
+                type: 'array',
+                items: { type: 'string' },
+                minItems: 1,
+                description: 'Provide 2-3 concise strengths.',
+              },
+              weaknesses: {
+                type: 'array',
+                items: { type: 'string' },
+                minItems: 1,
+                description: 'Provide 2-3 concise weaknesses.',
+              },
               tradeoffSummary: { type: 'string', minLength: 1 },
             },
           },

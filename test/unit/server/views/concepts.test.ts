@@ -26,4 +26,10 @@ describe('concepts page template', () => {
     expect(template).toContain('id="generate-concepts-btn"');
     expect(template).toMatch(/id="generate-concepts-btn"[^>]*disabled/);
   });
+
+  it('does not cap concept edit display name length in the template', () => {
+    const template = fs.readFileSync(conceptsPath, 'utf8');
+    expect(template).toContain('id="edit-name"');
+    expect(template).not.toMatch(/id="edit-name"[^>]*maxlength=/);
+  });
 });

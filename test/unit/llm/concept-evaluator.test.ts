@@ -35,7 +35,7 @@ function createValidConcept(index: number): ConceptSpec {
 }
 
 function createScoredConceptPayload(index: number): {
-  concept: ReturnType<typeof createValidConcept>;
+  conceptId: string;
   scores: {
     hookStrength: number;
     conflictEngine: number;
@@ -54,7 +54,7 @@ function createScoredConceptPayload(index: number): {
   };
 } {
   return {
-    concept: createValidConcept(index),
+    conceptId: `concept_${index}`,
     scores: {
       hookStrength: 3 + (index % 2),
       conflictEngine: 4,
@@ -140,7 +140,9 @@ describe('concept-evaluator', () => {
     payload.scoredConcepts[1]!.scores.hookStrength = 4;
     payload.scoredConcepts[2]!.scores.hookStrength = 2;
 
-    const expectedConcepts = payload.scoredConcepts.map((item) => item.concept);
+    const expectedConcepts = Array.from({ length: payload.scoredConcepts.length }, (_, index) =>
+      createValidConcept(index + 1),
+    );
     const parsed = parseConceptScoringResponse(payload, expectedConcepts);
 
     expect(parsed).toHaveLength(6);
@@ -153,7 +155,9 @@ describe('concept-evaluator', () => {
     payload.scoredConcepts[0]!.scores.hookStrength = 7;
     payload.scoredConcepts[0]!.scores.noveltyLeverage = -1;
 
-    const expectedConcepts = payload.scoredConcepts.map((item) => item.concept);
+    const expectedConcepts = Array.from({ length: payload.scoredConcepts.length }, (_, index) =>
+      createValidConcept(index + 1),
+    );
     const parsed = parseConceptScoringResponse(payload, expectedConcepts);
     const target = parsed.find((item) => item.concept.oneLineHook === 'Hook 1');
 
@@ -179,27 +183,31 @@ describe('concept-evaluator', () => {
   });
 
   it('buildConceptEvaluatorScoringPrompt includes all-concept scoring instructions', () => {
+    const conceptIds = Array.from({ length: 6 }, (_, index) => `concept_${index + 1}`);
     const messages = buildConceptEvaluatorScoringPrompt({
       concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
       userSeeds: {
         apiKey: 'test-api-key',
         genreVibes: 'sci-fi noir',
       },
-    });
+    }, conceptIds);
 
     const systemMessage = messages[0]?.content ?? '';
+    const userMessage = messages[1]?.content ?? '';
     expect(systemMessage).toContain('Score every candidate concept');
     expect(systemMessage).toContain('Do not rank, filter, or select concepts');
     expect(systemMessage).toContain('Do not compute weighted totals');
+    expect(userMessage).toContain('conceptId');
   });
 
   it('buildConceptEvaluatorScoringPrompt references enrichment fields in rubric', () => {
+    const conceptIds = Array.from({ length: 6 }, (_, index) => `concept_${index + 1}`);
     const messages = buildConceptEvaluatorScoringPrompt({
       concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
       userSeeds: {
         apiKey: 'test-api-key',
       },
-    });
+    }, conceptIds);
 
     const systemMessage = messages[0]?.content ?? '';
     expect(systemMessage).toContain('whatIfQuestion quality');
@@ -208,6 +216,7 @@ describe('concept-evaluator', () => {
   });
 
   it('buildConceptEvaluatorDeepEvalPrompt includes all-concept deep evaluation instructions', () => {
+    const conceptIds = ['concept_1'];
     const messages = buildConceptEvaluatorDeepEvalPrompt(
       {
         concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
@@ -225,11 +234,14 @@ describe('concept-evaluator', () => {
           passes: true,
         },
       ],
+      conceptIds,
     );
 
     const systemMessage = messages[0]?.content ?? '';
+    const userMessage = messages[1]?.content ?? '';
     expect(systemMessage).toContain('Evaluate all provided scored concepts');
     expect(systemMessage).toContain('Do not rescore and do not alter concepts');
+    expect(userMessage).toContain('conceptId');
   });
 
   it('evaluateConcepts runs scoring then deep-eval and returns all evaluated concepts', async () => {
@@ -243,7 +255,7 @@ describe('concept-evaluator', () => {
 
     const deepPayload = {
       evaluatedConcepts: Array.from({ length: 6 }, (_, index) => ({
-        concept: createValidConcept(index + 1),
+        conceptId: `concept_${index + 1}`,
         strengths: [`Strength for concept ${index + 1}`],
         weaknesses: [`Weakness for concept ${index + 1}`],
         tradeoffSummary: `Tradeoff for concept ${index + 1}.`,
