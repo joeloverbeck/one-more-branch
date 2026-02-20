@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
+  generateAgendaResolver,
   generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
@@ -45,6 +46,11 @@ import {
 } from '../../fixtures/llm-results';
 import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 import type { Story, CreateStoryData } from '@/models/story';
+import type { StorySpine } from '@/models/story-spine';
+import type { NpcAgenda } from '@/models/state/npc-agenda';
+import type { NpcRelationship } from '@/models/state/npc-relationship';
+import type { AgendaResolverResult } from '@/llm/lorekeeper-types';
+import type { TrackedPromise } from '@/models/state/keyed-entry';
 
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
@@ -52,6 +58,7 @@ jest.mock('@/llm', () => ({
   generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
+  generateAgendaResolver: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -86,6 +93,9 @@ const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunc
   typeof generateStateAccountant
 >;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
+const mockedGenerateAgendaResolver = generateAgendaResolver as jest.MockedFunction<
+  typeof generateAgendaResolver
+>;
 const mockedLogger = logger as {
   info: jest.Mock;
   warn: jest.Mock;
@@ -2042,6 +2052,567 @@ describe('page-service integration', () => {
 
       const parentAfter = await storage.loadPage(baseStory.id, parentPage.id);
       expect(parentAfter?.choices[0]?.nextPageId).toBeNull();
+    });
+  });
+
+  describe('spine deviation handling', () => {
+    function createSpine(): StorySpine {
+      return {
+        centralDramaticQuestion: 'Will the courier survive the conspiracy?',
+        protagonistNeedVsWant: {
+          need: 'trust',
+          want: 'survival',
+          dynamic: 'DIVERGENT',
+        },
+        primaryAntagonisticForce: {
+          description: 'The Shadow Council',
+          pressureMechanism: 'Political assassination',
+        },
+        storySpineType: 'SURVIVAL',
+        conflictAxis: 'LOYALTY_VS_SURVIVAL',
+        conflictType: 'PERSON_VS_SOCIETY',
+        characterArcType: 'POSITIVE_CHANGE',
+        toneFeel: ['gritty', 'tense'],
+        toneAvoid: ['comedic'],
+      };
+    }
+
+    function createSpineRewriteFetchResponse(): Response {
+      const rewrittenSpine = {
+        centralDramaticQuestion: 'Will the courier rise to lead the rebellion?',
+        protagonistNeedVsWant: {
+          need: 'purpose',
+          want: 'power',
+          dynamic: 'CONVERGENT',
+        },
+        primaryAntagonisticForce: {
+          description: 'The Iron Ministry',
+          pressureMechanism: 'Systematic oppression',
+        },
+        storySpineType: 'REBELLION',
+        conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
+        conflictType: 'PERSON_VS_SOCIETY',
+        characterArcType: 'POSITIVE_CHANGE',
+        toneFeel: ['revolutionary', 'intense'],
+        toneAvoid: ['passive'],
+      };
+
+      return {
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            choices: [{ message: { content: JSON.stringify(rewrittenSpine) } }],
+          }),
+      } as Response;
+    }
+
+    it('triggers spine rewrite and forces structure rewrite when spine deviates', async () => {
+      const structure = buildStructure();
+      const spine = createSpine();
+      const baseStory: Story = {
+        ...createTestStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} spine-deviation-rewrite`,
+          worldbuilding: 'A city of shifting power.',
+          tone: 'tense political thriller',
+        }),
+        spine,
+      };
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The protagonist stumbles onto the rebellion.',
+        sceneSummary: 'Discovered the rebellion headquarters.',
+        choices: [createChoice('Join the rebellion'), createChoice('Report to authorities')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          spineDeviationDetected: true,
+          spineDeviationReason: 'Story shifted from survival to rebellion arc.',
+          spineInvalidatedElement: 'conflictType',
+        })
+      );
+
+      // First fetch call = spine rewrite, second = structure rewrite
+      let fetchCallCount = 0;
+      (global.fetch as jest.Mock).mockImplementation(() => {
+        fetchCallCount++;
+        if (fetchCallCount === 1) {
+          return Promise.resolve(createSpineRewriteFetchResponse());
+        }
+        return Promise.resolve(createRewriteFetchResponse());
+      });
+
+      const { deviationInfo, updatedStory } = await generateNextPage(
+        storyWithStructure,
+        parentPage,
+        0,
+        'test-api-key'
+      );
+
+      expect(deviationInfo).toBeDefined();
+      expect(deviationInfo?.spineRewritten).toBe(true);
+      expect(deviationInfo?.spineInvalidatedElement).toBe('conflictType');
+      // Structure rewrite was triggered by spine deviation
+      expect(updatedStory.structureVersions).toHaveLength(2);
+      expect(updatedStory.spine?.storySpineType).toBe('REBELLION');
+    });
+
+    it('spine deviation with concurrent beat deviation enriches deviation info', async () => {
+      const structure = buildStructure();
+      const spine = createSpine();
+      const baseStory: Story = {
+        ...createTestStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} spine-beat-concurrent`,
+          worldbuilding: 'A city of layered intrigue.',
+          tone: 'dramatic thriller',
+        }),
+        spine,
+      };
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Both spine and beat are disrupted.',
+        sceneSummary: 'Everything changes.',
+        choices: [createChoice('Face the chaos'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          spineDeviationDetected: true,
+          spineDeviationReason: 'Spine shifted to rebellion.',
+          spineInvalidatedElement: 'storySpineType',
+          deviationDetected: true,
+          deviationReason: 'Beat-level deviation also detected.',
+          invalidatedBeatIds: ['1.2'],
+          narrativeSummary: 'Major story pivot.',
+        })
+      );
+
+      let fetchCallCount = 0;
+      (global.fetch as jest.Mock).mockImplementation(() => {
+        fetchCallCount++;
+        if (fetchCallCount === 1) {
+          return Promise.resolve(createSpineRewriteFetchResponse());
+        }
+        return Promise.resolve(createRewriteFetchResponse());
+      });
+
+      const { deviationInfo, updatedStory } = await generateNextPage(
+        storyWithStructure,
+        parentPage,
+        0,
+        'test-api-key'
+      );
+
+      expect(deviationInfo).toBeDefined();
+      expect(deviationInfo?.detected).toBe(true);
+      expect(deviationInfo?.spineRewritten).toBe(true);
+      expect(deviationInfo?.spineInvalidatedElement).toBe('storySpineType');
+      expect(updatedStory.structureVersions).toHaveLength(2);
+    });
+
+    it('graceful degradation when spine rewrite LLM call fails', async () => {
+      const structure = buildStructure();
+      const spine = createSpine();
+      const baseStory: Story = {
+        ...createTestStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} spine-rewrite-failure`,
+          worldbuilding: 'A city of fallible systems.',
+          tone: 'tense',
+        }),
+        spine,
+      };
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The system fails to adapt.',
+        sceneSummary: 'A failed adaptation.',
+        choices: [createChoice('Push forward'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          spineDeviationDetected: true,
+          spineDeviationReason: 'Spine drift detected.',
+          spineInvalidatedElement: 'conflictAxis',
+        })
+      );
+
+      // Spine rewrite fetch fails
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Spine rewrite API timeout'));
+      // Structure rewrite fetch succeeds (for any other fetch calls)
+      (global.fetch as jest.Mock).mockResolvedValue(createRewriteFetchResponse());
+
+      const { page, deviationInfo, updatedStory } = await generateNextPage(
+        storyWithStructure,
+        parentPage,
+        0,
+        'test-api-key'
+      );
+
+      // Page still generated despite spine rewrite failure
+      expect(page.narrativeText).toBe('The whispers lead you deeper into the maze of alleys.');
+      // No spine rewrite metadata (spine rewrite failed gracefully)
+      expect(deviationInfo?.spineRewritten).toBeUndefined();
+      // Original spine preserved
+      expect(updatedStory.spine?.storySpineType).toBe('SURVIVAL');
+      // Spine rewrite failure was logged
+      expect(mockedLogger.error).toHaveBeenCalledWith(
+        'Spine rewrite failed, continuing with original spine',
+        expect.objectContaining({ error: expect.any(Error) })
+      );
+    });
+  });
+
+  describe('validation guards', () => {
+    it('throws STORY_NOT_PREPARED when decomposed data is missing', async () => {
+      // Create story WITHOUT decomposedCharacters/decomposedWorld
+      const storyWithoutDecomposed = createStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} missing-decomposed`,
+        worldbuilding: 'A world needing decomposition.',
+        tone: 'test',
+      });
+      await storage.saveStory(storyWithoutDecomposed);
+      createdStoryIds.add(storyWithoutDecomposed.id);
+
+      await expect(
+        generateFirstPage(storyWithoutDecomposed, 'test-api-key')
+      ).rejects.toMatchObject({
+        name: 'EngineError',
+        code: 'STORY_NOT_PREPARED',
+      });
+    });
+  });
+
+  describe('protagonist guidance forwarding', () => {
+    it('forwards protagonist guidance through to continuation context', async () => {
+      const baseStory = createTestStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} guidance-forwarding`,
+        worldbuilding: 'A city of guided protagonists.',
+        tone: 'dramatic',
+      });
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The protagonist awaits guidance.',
+        sceneSummary: 'Awaiting direction.',
+        choices: [createChoice('Act with purpose'), createChoice('Hesitate')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      await storage.savePage(baseStory.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+
+      const guidance = {
+        suggestedEmotions: 'determination and resolve',
+        suggestedThoughts: 'thinking about the mission',
+        suggestedSpeech: 'I will not fail.',
+      };
+
+      await getOrGeneratePage(
+        baseStory,
+        parentPage,
+        0,
+        'test-api-key',
+        undefined,
+        guidance
+      );
+
+      // Verify guidance was passed to writer prompt
+      expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          protagonistGuidance: expect.objectContaining({
+            suggestedEmotions: 'determination and resolve',
+            suggestedThoughts: 'thinking about the mission',
+            suggestedSpeech: 'I will not fail.',
+          }),
+        }),
+        expect.any(Object),
+        expect.any(Object)
+      );
+
+      // Verify guidance was also passed to planner
+      expect(mockedGeneratePagePlan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          protagonistGuidance: expect.objectContaining({
+            suggestedEmotions: 'determination and resolve',
+            suggestedThoughts: 'thinking about the mission',
+            suggestedSpeech: 'I will not fail.',
+          }),
+        }),
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe('NPC initialization on opening', () => {
+    it('initializes NPC agendas and relationships from story initial data on opening', async () => {
+      const initialAgendas: readonly NpcAgenda[] = [
+        {
+          npcName: 'Vex',
+          currentGoal: 'Undermine the protagonist',
+          leverage: 'Political connections',
+          fear: 'Being exposed',
+          offScreenBehavior: 'Spreads rumors',
+        },
+      ];
+      const initialRelationships: readonly NpcRelationship[] = [
+        {
+          npcName: 'Vex',
+          valence: -2,
+          dynamic: 'rival',
+          history: 'Competed for the same position.',
+          currentTension: 'Simmering resentment.',
+          leverage: 'Knows a dark secret.',
+        },
+      ];
+
+      const baseStory: Story = {
+        ...createTestStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} npc-opening-init`,
+          worldbuilding: 'A city of scheming NPCs.',
+          tone: 'political intrigue',
+          npcs: [{ name: 'Vex', description: 'A scheming rival' }],
+        }),
+        initialNpcAgendas: initialAgendas,
+        initialNpcRelationships: initialRelationships,
+      };
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      mockedGenerateOpeningPage.mockResolvedValue(buildOpeningResult());
+
+      const { page } = await generateFirstPage(baseStory, 'test-api-key');
+
+      // NPC agendas initialized from story initial data
+      expect(page.accumulatedNpcAgendas).toEqual(
+        expect.objectContaining({
+          Vex: expect.objectContaining({
+            npcName: 'Vex',
+            currentGoal: 'Undermine the protagonist',
+          }),
+        })
+      );
+
+      // NPC relationships initialized from story initial data
+      expect(page.accumulatedNpcRelationships).toEqual(
+        expect.objectContaining({
+          Vex: expect.objectContaining({
+            npcName: 'Vex',
+            valence: -2,
+            dynamic: 'rival',
+          }),
+        })
+      );
+    });
+  });
+
+  describe('NPC relationship updates through page-service', () => {
+    it('includes NPC relationship updates from agenda resolver in built page', async () => {
+      const initialAgendas: readonly NpcAgenda[] = [
+        {
+          npcName: 'Mira',
+          currentGoal: 'Help the protagonist',
+          leverage: 'Healing knowledge',
+          fear: 'Being abandoned',
+          offScreenBehavior: 'Gathers herbs',
+        },
+      ];
+
+      const baseStory: Story = {
+        ...createTestStory({
+          title: `${TEST_PREFIX} Title`,
+          characterConcept: `${TEST_PREFIX} npc-relationship-updates`,
+          worldbuilding: 'A city of evolving relationships.',
+          tone: 'dramatic',
+          npcs: [{ name: 'Mira', description: 'A helpful healer' }],
+        }),
+        initialNpcAgendas: initialAgendas,
+        decomposedCharacters: [
+          buildMinimalDecomposedCharacter('Protagonist'),
+          buildMinimalDecomposedCharacter('Mira', { rawDescription: 'A helpful healer' }),
+        ],
+      };
+      await storage.saveStory(baseStory);
+      createdStoryIds.add(baseStory.id);
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'Mira tends to your wounds.',
+        sceneSummary: 'Mira heals the protagonist.',
+        choices: [createChoice('Thank Mira'), createChoice('Continue silently')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      await storage.savePage(baseStory.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+
+      const updatedRelationship: NpcRelationship = {
+        npcName: 'Mira',
+        valence: 3,
+        dynamic: 'ally',
+        history: 'Healed the protagonist twice.',
+        currentTension: 'Growing trust.',
+        leverage: 'Emotional bond.',
+      };
+
+      const agendaResult: AgendaResolverResult = {
+        updatedAgendas: [
+          {
+            npcName: 'Mira',
+            currentGoal: 'Protect the protagonist',
+            leverage: 'Healing knowledge',
+            fear: 'Being abandoned',
+            offScreenBehavior: 'Prepares supplies',
+          },
+        ],
+        updatedRelationships: [updatedRelationship],
+        rawResponse: '{"ok":true}',
+      };
+      mockedGenerateAgendaResolver.mockResolvedValue(agendaResult);
+
+      const { page } = await generateNextPage(baseStory, parentPage, 0, 'test-api-key');
+
+      expect(page.npcRelationshipUpdates).toContainEqual(
+        expect.objectContaining({
+          npcName: 'Mira',
+          valence: 3,
+          dynamic: 'ally',
+        })
+      );
+      expect(page.accumulatedNpcRelationships).toEqual(
+        expect.objectContaining({
+          Mira: expect.objectContaining({
+            npcName: 'Mira',
+            valence: 3,
+            dynamic: 'ally',
+          }),
+        })
+      );
+    });
+  });
+
+  describe('promise payoff lifecycle', () => {
+    it('propagates promise detection and resolution from analyst into page', async () => {
+      const structure = buildStructure();
+      const baseStory = createTestStory({
+        title: `${TEST_PREFIX} Title`,
+        characterConcept: `${TEST_PREFIX} promise-lifecycle`,
+        worldbuilding: 'A world of narrative promises.',
+        tone: 'dramatic',
+      });
+      const storyWithStructure = updateStoryStructure(baseStory, structure);
+      await storage.saveStory(storyWithStructure);
+      createdStoryIds.add(storyWithStructure.id);
+
+      const existingPromise: TrackedPromise = {
+        id: 'pr-1',
+        description: 'The locked chest in the tower',
+        promiseType: 'CHEKHOV_GUN',
+        scope: 'ACT',
+        resolutionHint: 'The chest will be opened in a critical moment',
+        suggestedUrgency: 'HIGH',
+        age: 2,
+      };
+
+      const parentPage = createPage({
+        id: parsePageId(1),
+        narrativeText: 'The tower looms with its secret chest.',
+        sceneSummary: 'Approaching the tower.',
+        choices: [createChoice('Open the chest'), createChoice('Explore further')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        parentAccumulatedStructureState: createInitialStructureState(structure),
+        structureVersionId: storyWithStructure.structureVersions?.[0]?.id ?? null,
+        accumulatedPromises: [existingPromise],
+      });
+      await storage.savePage(storyWithStructure.id, parentPage);
+
+      mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
+      mockedGenerateAnalystEvaluation.mockResolvedValue(
+        buildAnalystResult({
+          promisesDetected: [
+            {
+              description: 'A new foreshadowing of betrayal',
+              promiseType: 'FORESHADOWING',
+              scope: 'BEAT',
+              resolutionHint: 'Betrayal will come from an ally',
+              suggestedUrgency: 'MEDIUM',
+            },
+          ],
+          promisesResolved: ['pr-1'],
+        })
+      );
+
+      const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
+
+      // The existing promise (pr-1) should be resolved (removed from accumulated)
+      const resolvedPromiseIds = page.accumulatedPromises.map((p) => p.id);
+      expect(resolvedPromiseIds).not.toContain('pr-1');
+
+      // The new promise should be detected and tracked
+      expect(page.accumulatedPromises).toContainEqual(
+        expect.objectContaining({
+          description: 'A new foreshadowing of betrayal',
+          promiseType: 'FORESHADOWING',
+          scope: 'BEAT',
+          age: 0,
+        })
+      );
+
+      // Resolved promise metadata should be recorded
+      expect(page.resolvedPromiseMeta).toHaveProperty('pr-1');
+      expect(page.resolvedPromiseMeta?.['pr-1']).toEqual(
+        expect.objectContaining({
+          promiseType: 'CHEKHOV_GUN',
+          scope: 'ACT',
+        })
+      );
     });
   });
 });
