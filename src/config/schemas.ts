@@ -14,6 +14,7 @@ const StorageConfigSchema = z.object({
   storiesDir: z.string().min(1).default('stories'),
   conceptsDir: z.string().min(1).default('concepts'),
   kernelsDir: z.string().min(1).default('kernels'),
+  castsDir: z.string().min(1).default('casts'),
 });
 
 /**

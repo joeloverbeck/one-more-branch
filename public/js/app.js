@@ -4646,7 +4646,7 @@ function createRecapModalController(initialData) {
 
       try {
         var formValues = collectFormData();
-        var conceptSpecFromFields = selectedConceptSpec || buildConceptSpecFromFields();
+        var conceptSpecFromFields = buildConceptSpecFromFields();
         var spineBody = {
           characterConcept: formValues.characterConcept,
           worldbuilding: formValues.worldbuilding,
@@ -4710,7 +4710,7 @@ function createRecapModalController(initialData) {
 
       try {
         var formValues = collectFormData();
-        var conceptSpecFromFields = selectedConceptSpec || buildConceptSpecFromFields();
+        var conceptSpecFromFields = buildConceptSpecFromFields();
         var createBody = {
           title: formValues.title,
           characterConcept: formValues.characterConcept,
