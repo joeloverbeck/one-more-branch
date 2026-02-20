@@ -308,21 +308,19 @@ describe('Concept Route Integration', () => {
     await flushPromises();
 
     expect(status).toHaveBeenCalledWith(500);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        error: 'API error: Scored concept 4 has invalid scores',
-        code: 'STRUCTURE_PARSE_ERROR',
-        retryable: true,
-        debug: expect.objectContaining({
-          model: 'test-model',
-          parseStage: 'message_content',
-          contentShape: 'string',
-          contentPreview: '{"scoredConcepts":[...]}',
-          rawContent: '{"scoredConcepts":[{"concept":{},"scores":"N/A"}]}',
-        }),
-      }),
-    );
+    expect(json).toHaveBeenCalledTimes(1);
+    const responseCalls = json.mock.calls as unknown[][];
+    const payload = responseCalls[0]?.[0] as Record<string, unknown>;
+    expect(payload['success']).toBe(false);
+    expect(payload['error']).toBe('API error: Scored concept 4 has invalid scores');
+    expect(payload['code']).toBe('STRUCTURE_PARSE_ERROR');
+    expect(payload['retryable']).toBe(true);
+    const debug = payload['debug'] as Record<string, unknown>;
+    expect(debug['model']).toBe('test-model');
+    expect(debug['parseStage']).toBe('message_content');
+    expect(debug['contentShape']).toBe('string');
+    expect(debug['contentPreview']).toBe('{"scoredConcepts":[...]}');
+    expect(debug['rawContent']).toBe('{"scoredConcepts":[{"concept":{},"scores":"N/A"}]}');
   });
 
   it('POST /api/generate returns 400 when kernelId is missing', async () => {
@@ -401,14 +399,12 @@ describe('Concept Route Integration', () => {
       }),
     );
     expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        concept: expect.objectContaining({
-          name: longHook,
-        }),
-      }),
-    );
+    expect(json).toHaveBeenCalledTimes(1);
+    const responseCalls = json.mock.calls as unknown[][];
+    const payload = responseCalls[0]?.[0] as Record<string, unknown>;
+    expect(payload['success']).toBe(true);
+    const concept = payload['concept'] as Record<string, unknown>;
+    expect(concept['name']).toBe(longHook);
   });
 
   it('POST /api/:conceptId/harden delegates through service and returns hardened concept', async () => {

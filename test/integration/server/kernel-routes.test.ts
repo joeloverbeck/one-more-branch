@@ -445,14 +445,12 @@ describe('Kernel Route Integration', () => {
       }),
     );
     expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: true,
-        kernel: expect.objectContaining({
-          name: longThesis,
-        }),
-      }),
-    );
+    expect(json).toHaveBeenCalledTimes(1);
+    const responseCalls = json.mock.calls as unknown[][];
+    const payload = responseCalls[0]?.[0] as Record<string, unknown>;
+    expect(payload['success']).toBe(true);
+    const kernel = payload['kernel'] as Record<string, unknown>;
+    expect(kernel['name']).toBe(longThesis);
   });
 
   it('PUT /api/:kernelId returns 404 for missing kernel', async () => {
