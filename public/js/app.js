@@ -5154,9 +5154,24 @@ function createRecapModalController(initialData) {
           }),
         });
 
-        var data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to generate concepts');
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_parseError) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          if (data && typeof data === 'object') {
+            if (data.code) {
+              console.error('Concept generation error code:', data.code, '| Retryable:', data.retryable);
+            }
+            if (data.debug) {
+              console.error('Concept generation debug info:', data.debug);
+            }
+          }
+
+          throw new Error(data && data.error ? data.error : 'Failed to generate concepts');
         }
 
         setApiKey(apiKey);
@@ -5573,6 +5588,8 @@ function createRecapModalController(initialData) {
       return;
     }
 
+    progressContent.classList.add('loading-overlay-content');
+
     if (!progressContent.querySelector('.loading-status')) {
       progressContent.innerHTML =
         '<div class="loading-stage" aria-live="polite"></div>' +
@@ -5596,6 +5613,39 @@ function createRecapModalController(initialData) {
       } else {
         alert(message);
       }
+    }
+
+    function formatGenerateErrorMessage(data) {
+      var fallbackMessage = 'Failed to generate kernels';
+      if (!data || typeof data !== 'object') {
+        return fallbackMessage;
+      }
+
+      var message = typeof data.error === 'string' && data.error.trim() ? data.error.trim() : fallbackMessage;
+      var details = [];
+
+      if (typeof data.code === 'string' && data.code.trim()) {
+        details.push('Code: ' + data.code.trim());
+      }
+      if (typeof data.retryable === 'boolean') {
+        details.push('Retryable: ' + (data.retryable ? 'yes' : 'no'));
+      }
+
+      var debug = data.debug && typeof data.debug === 'object' ? data.debug : null;
+      if (debug) {
+        if (typeof debug.httpStatus === 'number') {
+          details.push('HTTP status: ' + String(debug.httpStatus));
+        }
+        if (typeof debug.model === 'string' && debug.model.trim()) {
+          details.push('Model: ' + debug.model.trim());
+        }
+        if (typeof debug.rawError === 'string' && debug.rawError.trim()) {
+          var normalizedRawError = debug.rawError.replace(/\s+/g, ' ').trim();
+          details.push('Provider detail: ' + normalizedRawError.slice(0, 240));
+        }
+      }
+
+      return details.length > 0 ? message + ' | ' + details.join(' | ') : message;
     }
 
     function getKernelApiKey() {
@@ -5716,7 +5766,7 @@ function createRecapModalController(initialData) {
       }
 
       generateBtn.disabled = true;
-      progressSection.style.display = 'block';
+      progressSection.style.display = 'flex';
       var progressId = createProgressId();
       loadingProgress.start(progressId);
 
@@ -5733,9 +5783,24 @@ function createRecapModalController(initialData) {
           }),
         });
 
-        var data = await response.json();
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_parseError) {
+          data = null;
+        }
+
         if (!response.ok || !data.success || !Array.isArray(data.evaluatedKernels)) {
-          throw new Error(data.error || 'Failed to generate kernels');
+          if (data && typeof data === 'object') {
+            if (data.code) {
+              console.error('Kernel generation error code:', data.code, '| Retryable:', data.retryable);
+            }
+            if (data.debug) {
+              console.error('Kernel generation debug info:', data.debug);
+            }
+          }
+
+          throw new Error(formatGenerateErrorMessage(data));
         }
 
         setApiKey(apiKey);

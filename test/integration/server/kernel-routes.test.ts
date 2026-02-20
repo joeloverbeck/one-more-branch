@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { KernelStageResult } from '@/llm/kernel-stage-runner';
 import type { EvaluatedKernel } from '@/models';
 import type { SavedKernel } from '@/models/saved-kernel';
+import { logger } from '@/logging';
 
 jest.mock('@/llm/kernel-stage-runner', () => ({
   runKernelStage: jest.fn(),
@@ -299,6 +300,76 @@ describe('Kernel Route Integration', () => {
       error: 'Rate limit exceeded. Please wait a moment and try again.',
       code: 'HTTP_429',
       retryable: true,
+      debug: {
+        httpStatus: 429,
+        model: undefined,
+        rawError: undefined,
+        parseStage: undefined,
+        contentShape: undefined,
+        contentPreview: undefined,
+        rawContent: undefined,
+      },
+    });
+  });
+
+  it('POST /api/generate logs and returns LLM debug details in non-production', async () => {
+    const loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation(() => undefined);
+    mockedRunKernelStage.mockRejectedValue(
+      new LLMError('Provider returned error', 'HTTP_400', false, {
+        httpStatus: 400,
+        model: 'openai/gpt-4o-mini',
+        parsedError: { code: 'provider_error', message: 'Provider returned error' },
+        rawErrorBody: '{"error":{"message":"Context length exceeded"}}',
+        parseStage: 'message_content',
+        contentShape: 'string',
+        contentPreview: '{"oops"',
+        rawContent: '{"oops"',
+      }),
+    );
+
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+    const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
+
+    void getRouteHandler('post', '/api/generate')(
+      {
+        body: {
+          thematicInterests: 'trust',
+          apiKey: 'valid-key-12345',
+          progressId: 'kernel-progress-3',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
+      'LLM error generating kernels:',
+      expect.objectContaining({
+        message: 'Provider returned error',
+        code: 'HTTP_400',
+        parsedError: { code: 'provider_error', message: 'Provider returned error' },
+      }),
+    );
+    expect(progressFailSpy).toHaveBeenCalledWith(
+      'kernel-progress-3',
+      'API request error: Provider returned error',
+    );
+    expect(status).toHaveBeenCalledWith(500);
+    expect(json).toHaveBeenCalledWith({
+      success: false,
+      error: 'API request error: Provider returned error',
+      code: 'HTTP_400',
+      retryable: false,
+      debug: {
+        httpStatus: 400,
+        model: 'openai/gpt-4o-mini',
+        rawError: '{"error":{"message":"Context length exceeded"}}',
+        parseStage: 'message_content',
+        contentShape: 'string',
+        contentPreview: '{"oops"',
+        rawContent: '{"oops"',
+      },
     });
   });
 
@@ -343,6 +414,43 @@ describe('Kernel Route Integration', () => {
     expect(typeof payload.kernel.id).toBe('string');
     expect(typeof payload.kernel.createdAt).toBe('string');
     expect(typeof payload.kernel.updatedAt).toBe('string');
+  });
+
+  it('POST /api/save preserves long default names derived from dramaticThesis', async () => {
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+    const longThesis =
+      'A very long dramatic thesis that should be stored in full without being trimmed at eighty characters by the save route';
+
+    void getRouteHandler('post', '/api/save')(
+      {
+        body: {
+          evaluatedKernel: {
+            ...createEvaluatedKernel(9),
+            kernel: {
+              ...createEvaluatedKernel(9).kernel,
+              dramaticThesis: longThesis,
+            },
+          },
+          seeds: {},
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(mockedSaveKernel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: longThesis,
+      }),
+    );
+    expect(status).not.toHaveBeenCalled();
+    expect(json).toHaveBeenCalledTimes(1);
+    const responseCalls = json.mock.calls as unknown[][];
+    const payload = responseCalls[0]?.[0] as Record<string, unknown>;
+    expect(payload['success']).toBe(true);
+    const kernel = payload['kernel'] as Record<string, unknown>;
+    expect(kernel['name']).toBe(longThesis);
   });
 
   it('PUT /api/:kernelId returns 404 for missing kernel', async () => {

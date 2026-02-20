@@ -487,8 +487,8 @@ export function buildKernelsPageHtml(): string {
             </div>
           </form>
         </section>
-        <section id="kernel-progress-section" style="display: none;">
-          <div id="kernel-progress-content"></div>
+        <section id="kernel-progress-section" class="loading-overlay" style="display: none;">
+          <div id="kernel-progress-content" class="loading-overlay-content"></div>
         </section>
         <section id="generated-kernels-section" style="display: none;">
           <div id="generated-kernels"></div>

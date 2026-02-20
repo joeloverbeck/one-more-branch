@@ -161,6 +161,99 @@ describe('kernels page controller', () => {
     expect(requestUrls.some((url) => url.includes('/kernels/api/save'))).toBe(true);
   });
 
+  it('shows loading as a modal-style overlay while kernel generation is in progress', async () => {
+    const generated = createKernel('generated-1').evaluatedKernel;
+    let resolveGenerate: ((response: Response) => void) | null = null;
+
+    global.fetch = jest.fn((input: RequestInfo | URL) => {
+      const url = getRequestUrl(input);
+      if (url.includes('/kernels/api/list')) {
+        return Promise.resolve(mockJsonResponse({ success: true, kernels: [] }));
+      }
+      if (url.includes('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'running', activeStage: 'GENERATING_KERNELS' }));
+      }
+      if (url.includes('/kernels/api/generate')) {
+        return new Promise((resolve) => {
+          resolveGenerate = resolve;
+        });
+      }
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Not found' }, 404));
+    }) as jest.MockedFunction<typeof fetch>;
+
+    document.body.innerHTML = buildKernelsPageHtml();
+    loadAppAndInit();
+    await flushPromises();
+
+    const apiKeyInput = document.getElementById('kernelApiKey') as HTMLInputElement;
+    const thematicInterests = document.getElementById('thematicInterests') as HTMLTextAreaElement;
+    const generateBtn = document.getElementById('generate-kernels-btn') as HTMLButtonElement;
+    const progressSection = document.getElementById('kernel-progress-section') as HTMLElement;
+    const progressContent = document.getElementById('kernel-progress-content') as HTMLElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    apiKeyInput.dispatchEvent(new Event('input', { bubbles: true }));
+    thematicInterests.value = 'slow-burn paranoia';
+    thematicInterests.dispatchEvent(new Event('input', { bubbles: true }));
+
+    generateBtn.click();
+    await flushPromises();
+
+    expect(progressSection.style.display).toBe('flex');
+    expect(progressContent.classList.contains('loading-overlay-content')).toBe(true);
+
+    resolveGenerate?.(mockJsonResponse({ success: true, evaluatedKernels: [generated] }));
+    await flushPromises();
+    await flushPromises();
+
+    expect(progressSection.style.display).toBe('none');
+  });
+
+  it('surfaces server debug fields in kernels generation error messages', async () => {
+    global.fetch = createRoutedFetch({
+      '/kernels/api/list': () => mockJsonResponse({ success: true, kernels: [] }),
+      '/generation-progress/': () => mockJsonResponse({ status: 'failed' }),
+      '/kernels/api/generate': () =>
+        mockJsonResponse(
+          {
+            success: false,
+            error: 'API request error: Provider returned error',
+            code: 'HTTP_400',
+            retryable: false,
+            debug: {
+              httpStatus: 400,
+              model: 'openai/gpt-4o-mini',
+              rawError: '{"error":{"message":"Context length exceeded"}}',
+            },
+          },
+          500,
+        ),
+    });
+
+    document.body.innerHTML = buildKernelsPageHtml();
+    loadAppAndInit();
+    await flushPromises();
+
+    const apiKeyInput = document.getElementById('kernelApiKey') as HTMLInputElement;
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    apiKeyInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const thematicInterests = document.getElementById('thematicInterests') as HTMLTextAreaElement;
+    thematicInterests.value = 'power and guilt';
+    thematicInterests.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const generateBtn = document.getElementById('generate-kernels-btn') as HTMLButtonElement;
+    generateBtn.click();
+    await flushPromises();
+    await flushPromises();
+
+    const formError = document.querySelector('.alert-error.form-error');
+    expect(formError?.textContent).toContain('API request error: Provider returned error');
+    expect(formError?.textContent).toContain('Code: HTTP_400');
+    expect(formError?.textContent).toContain('HTTP status: 400');
+    expect(formError?.textContent).toContain('Model: openai/gpt-4o-mini');
+  });
+
   it('deletes a saved kernel via the delete action', async () => {
     const kernel = createKernel('delete-me');
     let wasDeleted = false;

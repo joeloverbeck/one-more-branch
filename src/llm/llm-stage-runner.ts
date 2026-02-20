@@ -19,6 +19,7 @@ export interface LlmStageRunnerParams<TParsed> {
   readonly schema: JsonSchema;
   readonly messages: ChatMessage[];
   readonly parseResponse: (parsed: unknown) => TParsed;
+  readonly allowJsonRepair?: boolean;
 }
 
 export interface LlmStageRunnerResult<TParsed> {
@@ -77,12 +78,21 @@ export async function runLlmStage<TParsed>(
     }
 
     const data = await readJsonResponse(response);
-    const content = data.choices[0]?.message?.content;
-    if (!content) {
+    const choice = data.choices[0];
+    const content = choice?.message?.content;
+    if (!choice || !content) {
       throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
     }
+    if (choice.finish_reason === 'length') {
+      throw new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', true, {
+        model,
+        finishReason: choice.finish_reason,
+      });
+    }
 
-    const parsedMessage = parseMessageJsonContent(content);
+    const parsedMessage = parseMessageJsonContent(content, {
+      allowRepair: params.allowJsonRepair ?? true,
+    });
     const responseText = parsedMessage.rawText;
     try {
       return {

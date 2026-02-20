@@ -122,4 +122,93 @@ describe('concepts page renderer', () => {
     expect(cardText).not.toContain('Ironic Twist:');
     expect(cardText).not.toContain('Player Fantasy:');
   });
+
+  it('logs server debug details to console when concept generation fails', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+      if (url === '/kernels/api/list') {
+        return Promise.resolve(
+          mockJsonResponse({ success: true, kernels: [{ id: 'kernel-1', name: 'Kernel 1' }] }),
+        );
+      }
+      if (url === '/kernels/api/kernel-1') {
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernel: {
+              id: 'kernel-1',
+              name: 'Kernel 1',
+              evaluatedKernel: {
+                kernel: {
+                  dramaticThesis: 'Control destroys trust',
+                  valueAtStake: 'Trust',
+                  opposingForce: 'Fear of uncertainty',
+                  directionOfChange: 'IRONIC',
+                  thematicQuestion: 'Can safety exist without control?',
+                },
+                overallScore: 82,
+              },
+            },
+          }),
+        );
+      }
+      if (url === '/concepts/api/generate') {
+        return Promise.resolve(
+          mockJsonResponse(
+            {
+              success: false,
+              error: 'API error: Scored concept 4 has invalid scores',
+              code: 'STRUCTURE_PARSE_ERROR',
+              retryable: true,
+              debug: {
+                rawContent: '{"scoredConcepts":[{"scores":"N/A"}]}',
+                parseStage: 'message_content',
+              },
+            },
+            false,
+            500,
+          ),
+        );
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+    });
+
+    document.body.innerHTML = buildConceptsPageHtml();
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
+    const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
+    const genreInput = document.getElementById('genreVibes') as HTMLInputElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    apiKeyInput.dispatchEvent(new Event('input'));
+    await flushPromises();
+    kernelSelector.value = 'kernel-1';
+    kernelSelector.dispatchEvent(new Event('change'));
+    await flushPromises();
+    genreInput.value = 'dark fantasy';
+
+    const generateBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
+    generateBtn.click();
+    await flushPromises();
+
+    expect(console.error).toHaveBeenCalledWith(
+      'Concept generation error code:',
+      'STRUCTURE_PARSE_ERROR',
+      '| Retryable:',
+      true,
+    );
+    expect(console.error).toHaveBeenCalledWith(
+      'Concept generation debug info:',
+      expect.objectContaining({
+        rawContent: '{"scoredConcepts":[{"scores":"N/A"}]}',
+        parseStage: 'message_content',
+      }),
+    );
+  });
 });

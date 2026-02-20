@@ -11,7 +11,6 @@ import {
   type ScoredConcept,
 } from '../models/index.js';
 
-import { parseConceptSpec } from './concept-spec-parser.js';
 import { runTwoPhaseLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
@@ -28,6 +27,14 @@ function requireNonEmptyString(value: unknown, fieldName: string, label: string)
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new LLMError(`${label} has invalid ${fieldName}`, 'STRUCTURE_PARSE_ERROR', true);
   }
+  return value.trim();
+}
+
+function requireConceptId(value: unknown, label: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new LLMError(`${label} has invalid conceptId`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
   return value.trim();
 }
 
@@ -118,7 +125,11 @@ function parseScoreEvidence(value: unknown, index: number): ConceptScoreEvidence
   };
 }
 
-function parseScoredConcept(value: unknown, index: number): ScoredConcept {
+function parseScoredConcept(
+  value: unknown,
+  index: number,
+  expectedConceptById: ReadonlyMap<string, ConceptSpec>,
+): ScoredConcept {
   const label = `Scored concept ${index + 1}`;
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -126,7 +137,11 @@ function parseScoredConcept(value: unknown, index: number): ScoredConcept {
   }
 
   const data = value as Record<string, unknown>;
-  const concept = parseConceptSpec(data['concept'], index, 'Scored concept');
+  const conceptId = requireConceptId(data['conceptId'], label);
+  const concept = expectedConceptById.get(conceptId);
+  if (!concept) {
+    throw new LLMError(`${label} references unknown conceptId`, 'STRUCTURE_PARSE_ERROR', true);
+  }
   const scores = parseScores(data['scores'], index);
   const scoreEvidence = parseScoreEvidence(data['scoreEvidence'], index);
 
@@ -139,47 +154,29 @@ function parseScoredConcept(value: unknown, index: number): ScoredConcept {
   };
 }
 
-function conceptIdentityKey(concept: ConceptSpec): string {
-  return [
-    concept.oneLineHook,
-    concept.elevatorParagraph,
-    concept.genreFrame,
-    concept.genreSubversion,
-    concept.protagonistRole,
-    concept.coreCompetence,
-    concept.coreFlaw,
-    concept.coreConflictLoop,
-    concept.conflictAxis,
-    concept.conflictType,
-    concept.pressureSource,
-    concept.stakesPersonal,
-    concept.stakesSystemic,
-    concept.deadlineMechanism,
-    concept.settingScale,
-    concept.branchingPosture,
-    concept.stateComplexity,
-    concept.actionVerbs.join('|'),
-    concept.settingAxioms.join('|'),
-    concept.constraintSet.join('|'),
-    concept.keyInstitutions.join('|'),
-  ].join('::');
+function getConceptId(index: number): string {
+  return `concept_${index + 1}`;
 }
 
-function ensureExactConceptCoverage(
-  parsedConcepts: readonly { concept: ConceptSpec }[],
-  expectedConcepts: readonly ConceptSpec[],
+function buildExpectedConceptById(concepts: readonly ConceptSpec[]): Map<string, ConceptSpec> {
+  return new Map(concepts.map((concept, index) => [getConceptId(index), concept]));
+}
+
+function ensureExactIdCoverage(
+  parsedConceptIds: readonly string[],
+  expectedConceptIds: readonly string[],
   label: string,
 ): void {
-  if (parsedConcepts.length !== expectedConcepts.length) {
+  if (parsedConceptIds.length !== expectedConceptIds.length) {
     throw new LLMError(
-      `${label} must include exactly ${expectedConcepts.length} concepts (received: ${parsedConcepts.length})`,
+      `${label} must include exactly ${expectedConceptIds.length} concepts (received: ${parsedConceptIds.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );
   }
 
-  const expected = new Set(expectedConcepts.map((concept) => conceptIdentityKey(concept)));
-  const received = new Set(parsedConcepts.map((item) => conceptIdentityKey(item.concept)));
+  const expected = new Set(expectedConceptIds);
+  const received = new Set(parsedConceptIds);
 
   if (expected.size !== received.size || [...expected].some((key) => !received.has(key))) {
     throw new LLMError(`${label} concept set does not match requested candidates`, 'STRUCTURE_PARSE_ERROR', true);
@@ -203,12 +200,29 @@ export function parseConceptScoringResponse(
     );
   }
 
-  const parsedConcepts = data['scoredConcepts'].map((concept, index) => parseScoredConcept(concept, index));
-  ensureExactConceptCoverage(parsedConcepts, expectedConcepts, 'Concept scoring response');
+  const expectedConceptById = buildExpectedConceptById(expectedConcepts);
+  const parsedConcepts = data['scoredConcepts'].map((concept, index) =>
+    parseScoredConcept(concept, index, expectedConceptById),
+  );
+  const parsedConceptIds = data['scoredConcepts'].map((item, index) => {
+    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+      throw new LLMError(`Scored concept ${index + 1} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+    }
+    return requireConceptId((item as Record<string, unknown>)['conceptId'], `Scored concept ${index + 1}`);
+  });
+  ensureExactIdCoverage(parsedConceptIds, [...expectedConceptById.keys()], 'Concept scoring response');
   return parsedConcepts.sort((a, b) => b.overallScore - a.overallScore);
 }
 
-function parseDeepEvaluatedConcept(value: unknown, index: number): Omit<EvaluatedConcept, 'scores' | 'overallScore' | 'passes'> {
+function parseDeepEvaluatedConcept(
+  value: unknown,
+  index: number,
+): {
+  conceptId: string;
+  strengths: readonly string[];
+  weaknesses: readonly string[];
+  tradeoffSummary: string;
+} {
   const label = `Evaluated concept ${index + 1}`;
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -216,13 +230,13 @@ function parseDeepEvaluatedConcept(value: unknown, index: number): Omit<Evaluate
   }
 
   const data = value as Record<string, unknown>;
-  const concept = parseConceptSpec(data['concept'], index, 'Evaluated concept');
+  const conceptId = requireConceptId(data['conceptId'], label);
   const strengths = requireNonEmptyStringArray(data['strengths'], 'strengths', label);
   const weaknesses = requireNonEmptyStringArray(data['weaknesses'], 'weaknesses', label);
   const tradeoffSummary = requireNonEmptyString(data['tradeoffSummary'], 'tradeoffSummary', label);
 
   return {
-    concept,
+    conceptId,
     strengths,
     weaknesses,
     tradeoffSummary,
@@ -250,25 +264,29 @@ function parseConceptDeepEvaluationResponse(
     parseDeepEvaluatedConcept(concept, index),
   );
 
-  ensureExactConceptCoverage(parsedConcepts, selectedConcepts.map((item) => item.concept), 'Concept deep-evaluation response');
+  const expectedConceptById = buildExpectedConceptById(selectedConcepts.map((item) => item.concept));
+  ensureExactIdCoverage(
+    parsedConcepts.map((item) => item.conceptId),
+    [...expectedConceptById.keys()],
+    'Concept deep-evaluation response',
+  );
 
-  const scoredByIdentity = new Map<string, ScoredConcept>(
-    selectedConcepts.map((item) => [conceptIdentityKey(item.concept), item]),
+  const scoredById = new Map<string, ScoredConcept>(
+    selectedConcepts.map((item, index) => [getConceptId(index), item]),
   );
 
   const merged = parsedConcepts.map((item) => {
-    const identity = conceptIdentityKey(item.concept);
-    const scored = scoredByIdentity.get(identity);
+    const scored = scoredById.get(item.conceptId);
     if (!scored) {
       throw new LLMError(
-        'Concept deep-evaluation response included an unknown concept',
+        'Concept deep-evaluation response included an unknown conceptId',
         'STRUCTURE_PARSE_ERROR',
         true,
       );
     }
 
     return {
-      concept: item.concept,
+      concept: scored.concept,
       scores: scored.scores,
       overallScore: scored.overallScore,
       passes: scored.passes,
@@ -286,6 +304,8 @@ export async function evaluateConcepts(
   apiKey: string,
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptEvaluationResult> {
+  const conceptIds = context.concepts.map((_, index) => getConceptId(index));
+
   return runTwoPhaseLlmStage({
     firstStage: {
       stageModel: 'conceptEvaluator',
@@ -293,8 +313,9 @@ export async function evaluateConcepts(
       apiKey,
       options,
       schema: CONCEPT_EVALUATION_SCORING_SCHEMA,
-      messages: buildConceptEvaluatorScoringPrompt(context),
+      messages: buildConceptEvaluatorScoringPrompt(context, conceptIds),
       parseResponse: (parsed) => parseConceptScoringResponse(parsed, context.concepts),
+      allowJsonRepair: false,
     },
     secondStage: (scoredConcepts) => ({
       stageModel: 'conceptEvaluator',
@@ -302,8 +323,9 @@ export async function evaluateConcepts(
       apiKey,
       options,
       schema: CONCEPT_EVALUATION_DEEP_SCHEMA,
-      messages: buildConceptEvaluatorDeepEvalPrompt(context, scoredConcepts),
+      messages: buildConceptEvaluatorDeepEvalPrompt(context, scoredConcepts, conceptIds),
       parseResponse: (parsed) => parseConceptDeepEvaluationResponse(parsed, scoredConcepts),
+      allowJsonRepair: false,
     }),
     combineResult: ({ firstStageParsed, secondStageParsed, secondStageRawResponse }) => ({
       scoredConcepts: firstStageParsed,

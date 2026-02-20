@@ -47,6 +47,17 @@ export interface ConceptService {
   stressTestConcept(input: StressTestInput): Promise<ConceptStressTestResult>;
 }
 
+export class ConceptEvaluationStageError extends Error {
+  public readonly name = 'ConceptEvaluationStageError';
+
+  constructor(
+    public readonly ideatedConcepts: readonly ConceptSpec[],
+    public readonly cause: unknown,
+  ) {
+    super('Concept evaluation stage failed');
+  }
+}
+
 const defaultDeps: ConceptServiceDeps = {
   generateConceptIdeas,
   evaluateConcepts,
@@ -165,7 +176,9 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
           },
         },
         apiKey,
-      );
+      ).catch((error: unknown) => {
+        throw new ConceptEvaluationStageError(ideation.concepts, error);
+      });
       onGenerationStage?.({
         stage: 'EVALUATING_CONCEPTS',
         status: 'completed',

@@ -108,14 +108,54 @@ kernelRoutes.post(
       return res.json({ success: true, evaluatedKernels: result.evaluatedKernels });
     } catch (error) {
       if (error instanceof LLMError) {
+        logger.error('LLM error generating kernels:', {
+          message: error.message,
+          code: error.code,
+          retryable: error.retryable,
+          httpStatus: error.context?.['httpStatus'],
+          model: error.context?.['model'],
+          parsedError: error.context?.['parsedError'],
+          rawErrorBody: error.context?.['rawErrorBody'],
+          parseStage: error.context?.['parseStage'],
+          contentShape: error.context?.['contentShape'],
+          contentPreview: error.context?.['contentPreview'],
+        });
         const formattedError = formatLLMError(error);
         progress.fail(formattedError);
-        return res.status(500).json({
+        const errorResponse: {
+          success: false;
+          error: string;
+          code: string;
+          retryable: boolean;
+          debug?: {
+            httpStatus?: number;
+            model?: string;
+            rawError?: string;
+            parseStage?: string;
+            contentShape?: string;
+            contentPreview?: string;
+            rawContent?: string;
+          };
+        } = {
           success: false,
           error: formattedError,
           code: error.code,
           retryable: error.retryable,
-        });
+        };
+
+        if (process.env['NODE_ENV'] !== 'production') {
+          errorResponse.debug = {
+            httpStatus: error.context?.['httpStatus'] as number | undefined,
+            model: error.context?.['model'] as string | undefined,
+            rawError: error.context?.['rawErrorBody'] as string | undefined,
+            parseStage: error.context?.['parseStage'] as string | undefined,
+            contentShape: error.context?.['contentShape'] as string | undefined,
+            contentPreview: error.context?.['contentPreview'] as string | undefined,
+            rawContent: error.context?.['rawContent'] as string | undefined,
+          };
+        }
+
+        return res.status(500).json(errorResponse);
       }
 
       const err = error instanceof Error ? error : new Error(String(error));
@@ -149,7 +189,7 @@ kernelRoutes.post(
     const defaultName =
       trimmedName && trimmedName.length > 0
         ? trimmedName
-        : (body.evaluatedKernel.kernel.dramaticThesis ?? 'Untitled Kernel').slice(0, 80);
+        : body.evaluatedKernel.kernel.dramaticThesis ?? 'Untitled Kernel';
 
     const savedKernel: SavedKernel = {
       id,

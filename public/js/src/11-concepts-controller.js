@@ -214,9 +214,24 @@
           }),
         });
 
-        var data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to generate concepts');
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_parseError) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          if (data && typeof data === 'object') {
+            if (data.code) {
+              console.error('Concept generation error code:', data.code, '| Retryable:', data.retryable);
+            }
+            if (data.debug) {
+              console.error('Concept generation debug info:', data.debug);
+            }
+          }
+
+          throw new Error(data && data.error ? data.error : 'Failed to generate concepts');
         }
 
         setApiKey(apiKey);

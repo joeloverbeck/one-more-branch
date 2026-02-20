@@ -10,6 +10,10 @@ export interface ErrorDetails {
 
 type JsonRoot = Record<string, unknown> | unknown[];
 
+interface ParseMessageJsonOptions {
+  readonly allowRepair?: boolean;
+}
+
 function truncateForContext(value: string, maxLength = 200): string {
   return value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
 }
@@ -96,8 +100,8 @@ function extractLikelyJsonSubstring(input: string): string | null {
   return trimmed.slice(start, end + 1).trim();
 }
 
-function parseJsonWithFallbacks(jsonText: string): JsonRoot | null {
-  const repaired = repairMalformedJson(jsonText);
+function parseJsonWithFallbacks(jsonText: string, options?: ParseMessageJsonOptions): JsonRoot | null {
+  const repaired = options?.allowRepair === false ? null : repairMalformedJson(jsonText);
   const candidates = [
     jsonText,
     stripMarkdownCodeFence(jsonText),
@@ -185,9 +189,12 @@ function repairMalformedJson(input: string): string | null {
   return appendMissingClosingDelimiters(withoutTrailingCommas);
 }
 
-export function parseMessageJsonContent(content: unknown): { parsed: JsonRoot; rawText: string } {
+export function parseMessageJsonContent(
+  content: unknown,
+  options?: ParseMessageJsonOptions,
+): { parsed: JsonRoot; rawText: string } {
   const rawText = normalizeMessageContent(content);
-  const parsed = parseJsonWithFallbacks(rawText);
+  const parsed = parseJsonWithFallbacks(rawText, options);
 
   if (parsed !== null) {
     return { parsed, rawText };

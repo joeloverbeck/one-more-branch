@@ -32,8 +32,8 @@ export const KERNEL_IDEATION_SCHEMA: JsonSchema = {
       properties: {
         kernels: {
           type: 'array',
-          minItems: 6,
-          maxItems: 8,
+          description:
+            'Generate 6-8 kernels. Count is enforced by runtime validation because Anthropic limits array constraints in response schemas.',
           items: KERNEL_SCHEMA,
         },
       },
