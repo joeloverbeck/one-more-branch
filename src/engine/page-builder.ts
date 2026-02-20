@@ -101,9 +101,6 @@ export interface ContinuationPageBuildContext {
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
 
-
-
-
 /**
  * Builds any page (opening or continuation) from LLM generation result.
  */
