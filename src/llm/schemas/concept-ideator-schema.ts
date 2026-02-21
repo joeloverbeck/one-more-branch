@@ -3,7 +3,6 @@ import {
   CONFLICT_AXES,
   GENRE_FRAMES,
   SETTING_SCALES,
-  STATE_COMPLEXITIES,
 } from '../../models/concept-generator.js';
 import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 import type { JsonSchema } from '../llm-client-types.js';
@@ -32,7 +31,6 @@ export const CONCEPT_SPEC_SCHEMA = {
     'keyInstitutions',
     'settingScale',
     'branchingPosture',
-    'stateComplexity',
     'whatIfQuestion',
     'ironicTwist',
     'playerFantasy',
@@ -58,7 +56,6 @@ export const CONCEPT_SPEC_SCHEMA = {
     keyInstitutions: { type: 'array', items: { type: 'string' } },
     settingScale: { type: 'string', enum: [...SETTING_SCALES] },
     branchingPosture: { type: 'string', enum: [...BRANCHING_POSTURES] },
-    stateComplexity: { type: 'string', enum: [...STATE_COMPLEXITIES] },
     whatIfQuestion: { type: 'string' },
     ironicTwist: { type: 'string' },
     playerFantasy: { type: 'string' },

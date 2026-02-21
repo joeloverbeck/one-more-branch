@@ -543,7 +543,6 @@
 
       // Structure & Design
       setSelectedById('branchingPosture', conceptSpec.branchingPosture);
-      setSelectedById('stateComplexity', conceptSpec.stateComplexity);
 
       openAllCollapsibleSections();
     }
@@ -590,7 +589,6 @@
         keyInstitutions: collectDynamicListEntries('keyInstitutions'),
         settingScale: getValueById('settingScale'),
         branchingPosture: getValueById('branchingPosture'),
-        stateComplexity: getValueById('stateComplexity'),
         whatIfQuestion: getValueById('whatIfQuestion'),
         ironicTwist: getValueById('ironicTwist'),
         playerFantasy: getValueById('playerFantasy'),

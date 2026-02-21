@@ -70,7 +70,6 @@ function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
     '',
     'STRUCTURAL METADATA:',
     `Branching posture: ${conceptSpec.branchingPosture}`,
-    `State complexity: ${conceptSpec.stateComplexity}`,
     '',
     'CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept\'s conflict loop and stakes; don\'t contradict them.',
   ];

@@ -4,7 +4,6 @@ import {
   isConflictAxis,
   isGenreFrame,
   isSettingScale,
-  isStateComplexity,
 } from '../models/index.js';
 import { isConflictType } from '../models/story-spine.js';
 import { LLMError } from './llm-client-types.js';
@@ -93,14 +92,6 @@ export function parseConceptSpec(
       true,
     );
   }
-  if (!isStateComplexity(data['stateComplexity'])) {
-    throw new LLMError(
-      `${label} has invalid stateComplexity: ${String(data['stateComplexity'])}`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
-  }
-
   return {
     oneLineHook: requireNonEmptyString(data['oneLineHook'], 'oneLineHook', label),
     elevatorParagraph: requireNonEmptyString(data['elevatorParagraph'], 'elevatorParagraph', label),
@@ -122,7 +113,6 @@ export function parseConceptSpec(
     keyInstitutions: requireStringArray(data['keyInstitutions'], 'keyInstitutions', label, 2, 4),
     settingScale: data['settingScale'],
     branchingPosture: data['branchingPosture'],
-    stateComplexity: data['stateComplexity'],
     whatIfQuestion: requireNonEmptyString(data['whatIfQuestion'], 'whatIfQuestion', label),
     ironicTwist: requireNonEmptyString(data['ironicTwist'], 'ironicTwist', label),
     playerFantasy: requireNonEmptyString(data['playerFantasy'], 'playerFantasy', label),

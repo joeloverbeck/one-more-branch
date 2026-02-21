@@ -34,10 +34,6 @@ export const SETTING_SCALES = ['INTIMATE', 'LOCAL', 'REGIONAL', 'GLOBAL'] as con
 
 export type SettingScale = (typeof SETTING_SCALES)[number];
 
-export const STATE_COMPLEXITIES = ['LOW', 'MEDIUM', 'HIGH'] as const;
-
-export type StateComplexity = (typeof STATE_COMPLEXITIES)[number];
-
 export const DRIFT_RISK_MITIGATION_TYPES = [
   'STATE_CONSTRAINT',
   'WORLD_AXIOM',
@@ -57,10 +53,6 @@ export function isBranchingPosture(value: unknown): value is BranchingPosture {
 
 export function isSettingScale(value: unknown): value is SettingScale {
   return typeof value === 'string' && (SETTING_SCALES as readonly string[]).includes(value);
-}
-
-export function isStateComplexity(value: unknown): value is StateComplexity {
-  return typeof value === 'string' && (STATE_COMPLEXITIES as readonly string[]).includes(value);
 }
 
 export function isDriftRiskMitigationType(value: unknown): value is DriftRiskMitigationType {
@@ -99,7 +91,6 @@ export interface ConceptSpec {
   readonly keyInstitutions: readonly string[];
   readonly settingScale: SettingScale;
   readonly branchingPosture: BranchingPosture;
-  readonly stateComplexity: StateComplexity;
   readonly whatIfQuestion: string;
   readonly ironicTwist: string;
   readonly playerFantasy: string;
@@ -157,7 +148,6 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isStringArrayWithinBounds(concept['keyInstitutions'], 2, 4) &&
     isSettingScale(concept['settingScale']) &&
     isBranchingPosture(concept['branchingPosture']) &&
-    isStateComplexity(concept['stateComplexity']) &&
     isNonEmptyString(concept['whatIfQuestion']) &&
     isNonEmptyString(concept['ironicTwist']) &&
     isNonEmptyString(concept['playerFantasy'])
@@ -211,7 +201,6 @@ export interface ConceptContext {
   readonly deadlineMechanism: string;
   readonly actionVerbs: readonly string[];
   readonly branchingPosture: BranchingPosture;
-  readonly stateComplexity: StateComplexity;
   readonly settingScale: SettingScale;
 }
 
