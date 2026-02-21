@@ -13,6 +13,18 @@ export type EscalationType =
   | 'COMPLICATION_CASCADE'
   | 'COMPETENCE_DEMAND_SPIKE';
 
+export type ApproachVector =
+  | 'DIRECT_FORCE'
+  | 'SWIFT_ACTION'
+  | 'STEALTH_SUBTERFUGE'
+  | 'ANALYTICAL_REASONING'
+  | 'CAREFUL_OBSERVATION'
+  | 'INTUITIVE_LEAP'
+  | 'PERSUASION_INFLUENCE'
+  | 'EMPATHIC_CONNECTION'
+  | 'ENDURANCE_RESILIENCE'
+  | 'SELF_EXPRESSION';
+
 export interface StoryBeat {
   readonly id: string;
   readonly name: string;
@@ -21,6 +33,7 @@ export interface StoryBeat {
   readonly role: BeatRole;
   readonly escalationType: EscalationType | null;
   readonly uniqueScenarioHook: string | null;
+  readonly approachVectors: readonly ApproachVector[] | null;
 }
 
 export interface StoryAct {

@@ -285,6 +285,9 @@ export function buildEscalationDirective(
     if (activeBeat.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
     }
+    if (activeBeat.approachVectors && activeBeat.approachVectors.length > 0) {
+      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.`);
+    }
     lines.push('Requirements:');
     lines.push(
       '- Introduce a new consequence, threat, or irreversible change not present before'
@@ -308,6 +311,9 @@ export function buildEscalationDirective(
     }
     if (activeBeat.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
+    }
+    if (activeBeat.approachVectors && activeBeat.approachVectors.length > 0) {
+      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.`);
     }
     lines.push('Requirements:');
     lines.push(

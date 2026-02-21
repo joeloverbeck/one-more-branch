@@ -12,7 +12,7 @@ import {
   parseStoryId,
   parseStructureVersionId,
 } from '../models';
-import { parseEscalationType } from '../engine/structure-factory';
+import { parseApproachVectors, parseEscalationType } from '../engine/structure-factory';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
@@ -60,6 +60,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         role: beat.role,
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
+        approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
       })),
     })),
     overallTheme: structure.overallTheme,
@@ -85,6 +86,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         role: beat.role as BeatRole,
         escalationType: parseEscalationType(beat.escalationType),
         uniqueScenarioHook: beat.uniqueScenarioHook ?? null,
+        approachVectors: parseApproachVectors(beat.approachVectors) ?? null,
       })),
     })),
     overallTheme: data.overallTheme,

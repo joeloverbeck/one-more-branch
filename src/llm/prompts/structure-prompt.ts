@@ -175,6 +175,19 @@ REQUIREMENTS (follow ALL):
    For "setup" and "resolution" beats, set escalationType to null.
    When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
 14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup" and "resolution" beats, set uniqueScenarioHook to null.
+15. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+   - DIRECT_FORCE: Confronting head-on with power, aggression, or physical dominance
+   - SWIFT_ACTION: Speed, reflexes, seizing initiative before others react
+   - STEALTH_SUBTERFUGE: Deception, misdirection, stealth, operating under false pretenses
+   - ANALYTICAL_REASONING: Logic, deduction, strategy, thinking through the problem
+   - CAREFUL_OBSERVATION: Patience, attention to detail, gathering information before acting
+   - INTUITIVE_LEAP: Non-rational insight, gut instinct, lateral thinking, creative epiphany
+   - PERSUASION_INFLUENCE: Convincing through charm, argument, emotional appeal, or leverage
+   - EMPATHIC_CONNECTION: Understanding through emotional resonance, compassion, vulnerability
+   - ENDURANCE_RESILIENCE: Gritting through pain, waiting out adversity, resisting temptation
+   - SELF_EXPRESSION: Defining identity through the act itself; the approach IS the message
+   For "setup" and "resolution" beats, set approachVectors to null.
+   Select vectors that create meaningful diversity — avoid repeating the same combination across beats. The planner will use these as suggestions when designing player choices.
 
 OUTPUT SHAPE:
 - overallTheme: string
@@ -211,7 +224,8 @@ OUTPUT SHAPE:
           "Experience the consequences" (passive, no action verb, unverifiable)
       - role: "setup" | "escalation" | "turning_point" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
-      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats`;
+      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats
+      - approachVectors: 2-3 approach vector enums from the list above, or null for setup/resolution beats`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

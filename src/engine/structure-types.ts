@@ -30,6 +30,7 @@ export interface StructureGenerationResult {
       role: string;
       escalationType?: string | null;
       uniqueScenarioHook?: string | null;
+      approachVectors?: string[] | null;
     }>;
   }>;
   initialNpcAgendas?: NpcAgenda[];

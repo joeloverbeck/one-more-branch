@@ -11,7 +11,10 @@ import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
 import { createBeatDeviation, createInitialStructureState } from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 function createGenerationResult(): StructureGenerationResult {
   return {
@@ -33,6 +36,7 @@ function createGenerationResult(): StructureGenerationResult {
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Choose departure',
@@ -41,6 +45,7 @@ function createGenerationResult(): StructureGenerationResult {
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -57,6 +62,7 @@ function createGenerationResult(): StructureGenerationResult {
             role: 'escalation',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -107,6 +113,7 @@ describe('structure-rewrite-support', () => {
           role: 'setup',
           escalationType: null,
           uniqueScenarioHook: null,
+          approachVectors: null,
           resolution: 'Heard the warning.',
         },
         {
@@ -119,6 +126,7 @@ describe('structure-rewrite-support', () => {
           role: 'turning_point',
           escalationType: null,
           uniqueScenarioHook: null,
+          approachVectors: null,
           resolution: 'Left home.',
         },
         {
@@ -131,6 +139,7 @@ describe('structure-rewrite-support', () => {
           role: 'escalation',
           escalationType: null,
           uniqueScenarioHook: null,
+          approachVectors: null,
           resolution: 'Recovered from loss.',
         },
       ]);
@@ -227,6 +236,7 @@ describe('structure-rewrite-support', () => {
           role: 'escalation',
           escalationType: null,
           uniqueScenarioHook: null,
+          approachVectors: null,
         },
       ]);
     });
@@ -343,7 +353,9 @@ describe('structure-rewrite-support', () => {
 
       const context = buildRewriteContext(story, structureVersion, state, deviation);
 
-      expect(context.decomposedCharacters).toEqual([buildMinimalDecomposedCharacter('A reluctant knight')]);
+      expect(context.decomposedCharacters).toEqual([
+        buildMinimalDecomposedCharacter('A reluctant knight'),
+      ]);
       expect(context.decomposedWorld).toEqual(MINIMAL_DECOMPOSED_WORLD);
       expect(context.tone).toBe('grim fantasy');
       expect(context.originalTheme).toBe('Restore the broken kingdom');
@@ -362,6 +374,7 @@ describe('structure-rewrite-support', () => {
           role: 'setup',
           escalationType: null,
           uniqueScenarioHook: null,
+          approachVectors: null,
           resolution: 'Accepted the call.',
         },
       ]);
@@ -377,6 +390,7 @@ describe('structure-rewrite-support', () => {
           role: 'escalation',
           escalationType: null,
           uniqueScenarioHook: null,
+          approachVectors: null,
         },
       ]);
     });
@@ -573,6 +587,7 @@ describe('structure-rewrite-support', () => {
                 role: 'escalation' as const,
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },

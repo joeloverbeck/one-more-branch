@@ -1,4 +1,5 @@
 import type {
+  ApproachVector,
   BeatRole,
   EscalationType,
   StoryAct,
@@ -38,6 +39,31 @@ export function parseEscalationType(value: string | null | undefined): Escalatio
   return null;
 }
 
+const VALID_APPROACH_VECTORS: readonly string[] = [
+  'DIRECT_FORCE',
+  'SWIFT_ACTION',
+  'STEALTH_SUBTERFUGE',
+  'ANALYTICAL_REASONING',
+  'CAREFUL_OBSERVATION',
+  'INTUITIVE_LEAP',
+  'PERSUASION_INFLUENCE',
+  'EMPATHIC_CONNECTION',
+  'ENDURANCE_RESILIENCE',
+  'SELF_EXPRESSION',
+];
+
+export function parseApproachVectors(
+  value: unknown
+): readonly ApproachVector[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  const valid = value.filter(
+    (v): v is string => typeof v === 'string' && VALID_APPROACH_VECTORS.includes(v)
+  ) as ApproachVector[];
+  return valid.length > 0 ? valid : null;
+}
+
 /**
  * Creates StoryStructure from raw generation result.
  * Assigns hierarchical IDs to beats (e.g., "1.1", "1.2", "2.1").
@@ -54,6 +80,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       escalationType: parseEscalationType(beatData.escalationType),
       uniqueScenarioHook:
         typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
+      approachVectors: parseApproachVectors(beatData.approachVectors),
     }));
 
     return {

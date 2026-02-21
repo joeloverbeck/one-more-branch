@@ -35,6 +35,9 @@ interface StructurePayload {
       description: string;
       objective: string;
       role: string;
+      escalationType?: string | null;
+      uniqueScenarioHook?: string | null;
+      approachVectors?: string[] | null;
     }>;
   }>;
 }
@@ -59,6 +62,7 @@ function createValidStructurePayload(): StructurePayload {
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Archive theft',
@@ -67,6 +71,7 @@ function createValidStructurePayload(): StructurePayload {
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -83,6 +88,7 @@ function createValidStructurePayload(): StructurePayload {
             role: 'escalation',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Rigged hearing',
@@ -91,6 +97,7 @@ function createValidStructurePayload(): StructurePayload {
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -107,6 +114,7 @@ function createValidStructurePayload(): StructurePayload {
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Tribunal reckoning',
@@ -115,6 +123,7 @@ function createValidStructurePayload(): StructurePayload {
             role: 'resolution',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -155,7 +164,13 @@ describe('structure-generator', () => {
     tone: 'grim political fantasy',
     decomposedCharacters: [buildMinimalDecomposedCharacter('A disgraced guard')],
     decomposedWorld: {
-      facts: [{ domain: 'geography' as const, fact: 'A plague-ridden harbor city controlled by merchant tribunals.', scope: 'global' as const }],
+      facts: [
+        {
+          domain: 'geography' as const,
+          fact: 'A plague-ridden harbor city controlled by merchant tribunals.',
+          scope: 'global' as const,
+        },
+      ],
       rawWorldbuilding: 'A plague-ridden harbor city controlled by merchant tribunals.',
     },
   };
