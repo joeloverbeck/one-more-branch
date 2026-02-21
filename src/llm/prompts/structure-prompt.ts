@@ -3,6 +3,7 @@ import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -16,6 +17,7 @@ export interface StructureContext {
   decomposedCharacters: readonly DecomposedCharacter[];
   decomposedWorld: DecomposedWorld;
   conceptSpec?: ConceptSpec;
+  storyKernel?: StoryKernel;
 }
 
 function buildCharacterSection(context: StructureContext): string {
@@ -65,6 +67,41 @@ Each act's stakes should escalate FROM these foundations. Act 1 stakes should co
 `;
 }
 
+export function buildDirectionalGuidanceSection(storyKernel?: StoryKernel): string {
+  if (!storyKernel) {
+    return 'Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice';
+  }
+
+  const direction = storyKernel.directionOfChange;
+
+  switch (direction) {
+    case 'POSITIVE':
+      return (
+        'Act 3 should include a "turning_point" beat representing a crisis -- a supreme test of who the protagonist has become. ' +
+        'Beat architecture should allow triumph through sacrifice or growth; the crisis is the crucible where inner transformation ' +
+        'proves its worth. The resolution beat should consummate the victory, showing the new equilibrium earned through change'
+      );
+    case 'NEGATIVE':
+      return (
+        'Act 3 should include a "turning_point" beat representing a crisis -- a trap that seals the protagonist\'s loss. ' +
+        'Every option the protagonist faces should lead to compromise or defeat; the crisis confirms that the fatal flaw ' +
+        'or opposing force was insurmountable. The resolution beat should consummate the fall, showing the cost of failure or refusal to change'
+      );
+    case 'IRONIC':
+      return (
+        'Act 3 should include a "turning_point" beat representing a crisis -- a Pyrrhic crossroads where victory costs something essential. ' +
+        'The protagonist may achieve the outer goal but lose something irreplaceable, or gain wisdom too late to use it. ' +
+        'The resolution beat should feel hollow or bittersweet, showing that the answer to the dramatic question is more complex than expected'
+      );
+    case 'AMBIGUOUS':
+      return (
+        'Act 3 should include a "turning_point" beat representing a crisis -- an open question where outcomes are genuinely uncertain. ' +
+        'The crisis should resist clean resolution; multiple interpretations of success and failure coexist. ' +
+        'The resolution beat should leave the dramatic question resonating rather than answered, inviting the reader to decide what the story means'
+      );
+  }
+}
+
 export function buildStructurePrompt(
   context: StructureContext,
   _options?: PromptOptions
@@ -98,7 +135,7 @@ REQUIREMENTS (follow ALL):
 8. Design beats with clear dramatic roles:
    - At least one beat in Act 1 should be a "turning_point" representing a point of no return
    - The midpoint of the story (typically late Act 1 or mid Act 2) should include a reveal or reversal that reframes prior events
-   - Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice
+   - ${buildDirectionalGuidanceSection(context.storyKernel)}
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "resolution" for denouement
 9. When designing beat descriptions and objectives, connect them to the protagonist's Need (inner transformation) vs Want (outer goal) from the spine. Setup beats should establish the need/want gap. Escalation beats should widen it — making the Want harder to achieve or the Need more urgent. Turning points should force the protagonist to confront the gap directly. Resolution beats should resolve or transform the tension.
 10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.

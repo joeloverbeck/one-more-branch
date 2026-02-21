@@ -1,9 +1,13 @@
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
-import { buildStructurePrompt } from '../../../../src/llm/prompts/structure-prompt';
+import {
+  buildDirectionalGuidanceSection,
+  buildStructurePrompt,
+} from '../../../../src/llm/prompts/structure-prompt';
 import {
   buildContinuationSystemPrompt,
   composeContinuationDataRules,
 } from '../../../../src/llm/prompts/system-prompt';
+import type { StoryKernel } from '../../../../src/models/story-kernel';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
@@ -174,5 +178,95 @@ describe('buildStructurePrompt - minimal system prompt', () => {
     expect(systemMessage).toContain('three-act');
     expect(systemMessage).toContain('beats');
     expect(systemMessage).toContain('stakes');
+  });
+});
+
+describe('buildDirectionalGuidanceSection', () => {
+  const makeKernel = (direction: StoryKernel['directionOfChange']): StoryKernel => ({
+    dramaticThesis: 'Power corrupts',
+    valueAtStake: 'integrity',
+    opposingForce: 'ambition',
+    directionOfChange: direction,
+    thematicQuestion: 'Can integrity survive ambition?',
+  });
+
+  it('returns generic guidance when no kernel is provided', () => {
+    const result = buildDirectionalGuidanceSection(undefined);
+
+    expect(result).toContain('impossible choice or sacrifice');
+    expect(result).not.toContain('triumph');
+    expect(result).not.toContain('Pyrrhic');
+  });
+
+  it('returns POSITIVE guidance emphasizing triumph through growth', () => {
+    const result = buildDirectionalGuidanceSection(makeKernel('POSITIVE'));
+
+    expect(result).toContain('supreme test');
+    expect(result).toContain('triumph through sacrifice or growth');
+    expect(result).toContain('consummate the victory');
+  });
+
+  it('returns NEGATIVE guidance emphasizing the protagonist\'s fall', () => {
+    const result = buildDirectionalGuidanceSection(makeKernel('NEGATIVE'));
+
+    expect(result).toContain('trap');
+    expect(result).toContain('compromise or defeat');
+    expect(result).toContain('consummate the fall');
+  });
+
+  it('returns IRONIC guidance emphasizing Pyrrhic victory', () => {
+    const result = buildDirectionalGuidanceSection(makeKernel('IRONIC'));
+
+    expect(result).toContain('Pyrrhic crossroads');
+    expect(result).toContain('costs something essential');
+    expect(result).toContain('hollow or bittersweet');
+  });
+
+  it('returns AMBIGUOUS guidance emphasizing open questions', () => {
+    const result = buildDirectionalGuidanceSection(makeKernel('AMBIGUOUS'));
+
+    expect(result).toContain('open question');
+    expect(result).toContain('genuinely uncertain');
+    expect(result).toContain('dramatic question resonating');
+  });
+
+  it('all directions include turning_point beat reference', () => {
+    for (const direction of ['POSITIVE', 'NEGATIVE', 'IRONIC', 'AMBIGUOUS'] as const) {
+      const result = buildDirectionalGuidanceSection(makeKernel(direction));
+
+      expect(result).toContain('turning_point');
+      expect(result).toContain('crisis');
+    }
+  });
+});
+
+describe('buildStructurePrompt - directional guidance integration', () => {
+  const baseContext = {
+    tone: 'dark fantasy',
+    decomposedCharacters: [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
+    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A cursed kingdom.', scope: 'global' }], rawWorldbuilding: 'A cursed kingdom.' },
+  };
+
+  const kernel: StoryKernel = {
+    dramaticThesis: 'Power corrupts',
+    valueAtStake: 'integrity',
+    opposingForce: 'ambition',
+    directionOfChange: 'NEGATIVE',
+    thematicQuestion: 'Can integrity survive ambition?',
+  };
+
+  it('uses generic guidance when no kernel is provided', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('impossible choice or sacrifice');
+  });
+
+  it('uses direction-specific guidance when kernel is provided', () => {
+    const messages = buildStructurePrompt({ ...baseContext, storyKernel: kernel });
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('consummate the fall');
+    expect(lastUser).not.toContain('impossible choice or sacrifice');
   });
 });
