@@ -12,7 +12,12 @@ import type { StoryKernel } from '../../models/story-kernel.js';
 import { isStoryKernel } from '../../models/story-kernel.js';
 import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
-import { formatLLMError, parseProgressId, wrapAsyncRoute } from '../utils/index.js';
+import {
+  buildLlmRouteErrorResult,
+  formatLLMError,
+  parseProgressId,
+  wrapAsyncRoute,
+} from '../utils/index.js';
 
 export const storyRoutes = Router();
 
@@ -163,16 +168,11 @@ storyRoutes.post(
     } catch (error) {
       if (error instanceof LLMError) {
         logLLMError(error, 'generating spines');
-        const formattedError = formatLLMError(error);
+        const { publicMessage, response } = buildLlmRouteErrorResult(error, { includeDebug: false });
         if (progressId) {
-          generationProgressService.fail(progressId, formattedError);
+          generationProgressService.fail(progressId, publicMessage);
         }
-        return res.status(500).json({
-          success: false,
-          error: formattedError,
-          code: error.code,
-          retryable: error.retryable,
-        });
+        return res.status(500).json(response);
       }
 
       const err = error instanceof Error ? error : new Error(String(error));
@@ -251,45 +251,11 @@ storyRoutes.post(
     } catch (error) {
       if (error instanceof LLMError) {
         logLLMError(error, 'creating story (AJAX)');
-        const formattedError = formatLLMError(error);
+        const { publicMessage, response } = buildLlmRouteErrorResult(error);
         if (progressId) {
-          generationProgressService.fail(progressId, formattedError);
+          generationProgressService.fail(progressId, publicMessage);
         }
-
-        const errorResponse: {
-          success: false;
-          error: string;
-          code?: string;
-          retryable?: boolean;
-          debug?: {
-            httpStatus?: number;
-            model?: string;
-            rawError?: string;
-            parseStage?: string;
-            contentShape?: string;
-            contentPreview?: string;
-            rawContent?: string;
-          };
-        } = {
-          success: false,
-          error: formattedError,
-          code: error.code,
-          retryable: error.retryable,
-        };
-
-        if (process.env['NODE_ENV'] !== 'production') {
-          errorResponse.debug = {
-            httpStatus: error.context?.['httpStatus'] as number | undefined,
-            model: error.context?.['model'] as string | undefined,
-            rawError: error.context?.['rawErrorBody'] as string | undefined,
-            parseStage: error.context?.['parseStage'] as string | undefined,
-            contentShape: error.context?.['contentShape'] as string | undefined,
-            contentPreview: error.context?.['contentPreview'] as string | undefined,
-            rawContent: error.context?.['rawContent'] as string | undefined,
-          };
-        }
-
-        return res.status(500).json(errorResponse);
+        return res.status(500).json(response);
       }
 
       const err = error instanceof Error ? error : new Error(String(error));
