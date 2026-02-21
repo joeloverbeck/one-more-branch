@@ -12,7 +12,7 @@ The spine runs **before entity decomposition and structure generation**, as the 
 
 The spine defines the invariant narrative backbone: the central dramatic question, the protagonist's inner transformation vs outer goal, the antagonistic force, and the primary narrative pattern. All downstream prompts receive the selected spine via `buildSpineSection()` from `src/llm/prompts/sections/shared/spine-section.ts`.
 
-When a `conceptSpec` is provided (from the `/concepts` page), the prompt includes a CONCEPT ANALYSIS section with all 23 concept fields organized by group (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata). When a `storyKernel` is also available (linked via `sourceKernelId` on the concept or manually selected), a THEMATIC KERNEL section is added between the concept analysis and the tone/genre line, providing the philosophical foundation for the spine.
+When a `conceptSpec` is provided (from the `/concepts` page), the prompt includes a CONCEPT ANALYSIS section with all 23 concept fields organized by group (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata). When a `storyKernel` is also available (linked via `sourceKernelId` on the concept or manually selected), a THEMATIC KERNEL section is added between the concept analysis and the tone/genre line, providing the philosophical foundation for the spine. When a `conceptVerification` is available, a CONCEPT VERIFICATION section is included with the `signatureScenario` and `inevitabilityStatement`, constraining the spine's dramatic question to make the signature scenario inevitable and the antagonistic force's pressure mechanism to logically produce the inevitability conditions.
 
 ## Messages Sent To Model
 
@@ -114,6 +114,18 @@ Branching posture: {{conceptSpec.branchingPosture}}
 CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept's conflict loop and stakes; don't contradict them.
 {{/if}}
 
+{{#if conceptVerification}}
+CONCEPT VERIFICATION (upstream proof of concept specificity):
+Signature scenario: {{conceptVerification.signatureScenario}}
+Narrative inevitability: {{conceptVerification.inevitabilityStatement}}
+
+CONSTRAINT: Your centralDramaticQuestion should make the signature scenario
+inevitable — this is the most iconic decision moment the concept enables.
+The dramatic question should steer toward it, not away from it.
+The antagonistic force's pressure mechanism should logically produce the conditions
+described in the inevitability statement — the force is what makes this outcome inescapable.
+{{/if}}
+
 {{#if storyKernel}}
 THEMATIC KERNEL (the spine's philosophical foundation):
 Dramatic thesis: {{storyKernel.dramaticThesis}}
@@ -200,3 +212,4 @@ OUTPUT SHAPE:
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
 - When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with all 23 concept fields organized into 6 groups (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata) and hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will usually share the concept's `conflictAxis` and `conflictType`, so divergence must come from `storySpineType` and/or deeper fields such as need/want dynamic, antagonistic force, pressure mechanism, and dramatic question framing. When no concept is present (manual story creation), spine generation works as before with no concept section.
 - When a `storyKernel` is provided (linked via `sourceKernelId` on the saved concept or manually selected), the THEMATIC KERNEL section is included with 5 kernel fields (dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion) and a constraint that the spine's central dramatic question should operationalize the kernel. The kernel defines the thematic "why" while the spine defines the structural "how".
+- When a `conceptVerification` is provided, the CONCEPT VERIFICATION section is included with `signatureScenario` and `inevitabilityStatement`. Two constraints bind the spine to these verification outputs: (1) the `centralDramaticQuestion` must make the signature scenario inevitable, and (2) the antagonistic force's pressure mechanism must logically produce the conditions described in the inevitability statement.
