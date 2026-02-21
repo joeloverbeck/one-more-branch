@@ -173,6 +173,7 @@ REQUIREMENTS (follow ALL):
    - COMPLICATION_CASCADE: Consequences of earlier choices compound into simultaneous crises that cannot all be addressed
    - COMPETENCE_DEMAND_SPIKE: The challenge now exceeds the protagonist's demonstrated capability, forcing growth or improvisation
    For "setup" and "resolution" beats, set escalationType to null.
+   When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
 14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup" and "resolution" beats, set uniqueScenarioHook to null.
 
 OUTPUT SHAPE:
