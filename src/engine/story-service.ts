@@ -112,6 +112,7 @@ async function buildPreparedStory(
       decomposedCharacters: story.decomposedCharacters!,
       decomposedWorld: story.decomposedWorld!,
       conceptSpec: story.conceptSpec,
+      storyKernel: story.storyKernel,
     },
     options.apiKey
   );

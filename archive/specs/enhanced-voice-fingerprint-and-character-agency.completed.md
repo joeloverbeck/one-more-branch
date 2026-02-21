@@ -1,6 +1,6 @@
 # Enhanced Voice Fingerprint & Character Agency for Entity Decomposer
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: Enhancement
 **Scope**: Models, LLM schema, entity decomposer prompt/parser, persistence, tests
 
@@ -412,3 +412,10 @@ The lorekeeper filters characters per scene, so the writer doesn't receive all c
 4. `npm run lint` — no lint errors
 5. Manual: create a new story and verify `story.json` includes meaningful new field content
 6. Manual: load an existing story (without new fields) and verify it works unchanged
+
+## Outcome
+
+- Completion date: 2026-02-21
+- Implemented changes: Extended decomposed character speech + agency fields, updated entity decomposer schema/parser/prompting, added persistence fallbacks for backward compatibility, and propagated formatting updates to downstream prompt builders.
+- Deviations from original plan: None documented.
+- Verification results: Implementation marked complete and archived per request.
