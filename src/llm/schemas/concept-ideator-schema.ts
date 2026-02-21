@@ -34,6 +34,8 @@ export const CONCEPT_SPEC_SCHEMA = {
     'whatIfQuestion',
     'ironicTwist',
     'playerFantasy',
+    'incitingDisruption',
+    'escapeValve',
   ],
   properties: {
     oneLineHook: { type: 'string' },
@@ -59,6 +61,8 @@ export const CONCEPT_SPEC_SCHEMA = {
     whatIfQuestion: { type: 'string' },
     ironicTwist: { type: 'string' },
     playerFantasy: { type: 'string' },
+    incitingDisruption: { type: 'string' },
+    escapeValve: { type: 'string' },
   },
 } as const;
 

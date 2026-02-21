@@ -116,5 +116,11 @@ export function parseConceptSpec(
     whatIfQuestion: requireNonEmptyString(data['whatIfQuestion'], 'whatIfQuestion', label),
     ironicTwist: requireNonEmptyString(data['ironicTwist'], 'ironicTwist', label),
     playerFantasy: requireNonEmptyString(data['playerFantasy'], 'playerFantasy', label),
+    incitingDisruption: requireNonEmptyString(
+      data['incitingDisruption'],
+      'incitingDisruption',
+      label,
+    ),
+    escapeValve: requireNonEmptyString(data['escapeValve'], 'escapeValve', label),
   };
 }

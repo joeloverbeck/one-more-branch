@@ -33,6 +33,8 @@ export function createConceptSpecFixture(index = 1): ConceptSpec {
     whatIfQuestion: `What if question ${index}?`,
     ironicTwist: `Ironic twist ${index}.`,
     playerFantasy: `Player fantasy ${index}.`,
+    incitingDisruption: `Inciting disruption ${index}.`,
+    escapeValve: `Escape valve ${index}.`,
   };
 }
 

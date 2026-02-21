@@ -85,6 +85,8 @@ QUALITY ANCHORS:
 - whatIfQuestion must be a single question ending with '?' that translates the dramatic thesis into a specific, producible situation. The question must contain a built-in tension — not just a scenario but a dilemma where answering it one way forecloses something valuable.
 - ironicTwist must be 1-2 sentences describing built-in irony where strength becomes weakness or solution creates the problem.
 - playerFantasy must be 1 sentence describing the experiential promise of being the protagonist, not just their actions.
+- incitingDisruption must describe the specific event or revelation that shatters the protagonist's status quo. It must answer "why now?" and feel inevitable given the setting and conflict axis.
+- escapeValve must describe the structural mechanism that re-engages the conflict loop when the player refuses the obvious path, derails, or stalls. It should be embedded in the world or antagonistic force, not a deus ex machina.
 
 {{#if kernel}}
 KERNEL CONSTRAINTS:
@@ -168,7 +170,9 @@ OUTPUT REQUIREMENTS:
       "branchingPosture": "{{TREE|RECONVERGE|STORYLETS|HUB_AND_SPOKE}}",
       "whatIfQuestion": "{{single dramatic question ending in ?}}",
       "ironicTwist": "{{1-2 sentence irony}}",
-      "playerFantasy": "{{1 sentence player fantasy}}"
+      "playerFantasy": "{{1 sentence player fantasy}}",
+      "incitingDisruption": "{{event/revelation that shatters status quo}}",
+      "escapeValve": "{{structural mechanism that re-engages conflict when player stalls}}"
     }
   ]
 }

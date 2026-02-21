@@ -115,5 +115,13 @@ describe('concept-generator types', () => {
     const missingFantasy = { ...valid };
     delete missingFantasy['playerFantasy'];
     expect(isConceptSpec(missingFantasy)).toBe(false);
+
+    const missingDisruption = { ...valid };
+    delete missingDisruption['incitingDisruption'];
+    expect(isConceptSpec(missingDisruption)).toBe(false);
+
+    const missingEscapeValve = { ...valid };
+    delete missingEscapeValve['escapeValve'];
+    expect(isConceptSpec(missingEscapeValve)).toBe(false);
   });
 });

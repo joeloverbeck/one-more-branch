@@ -21,7 +21,9 @@ const QUALITY_ANCHORS = `QUALITY ANCHORS:
 - actionVerbs must imply strategy diversity, not synonyms.
 - whatIfQuestion must be a single question ending with '?' that translates the dramatic thesis into a specific, producible situation. The question must contain a built-in tension — not just a scenario but a dilemma where answering it one way forecloses something valuable.
 - ironicTwist must be 1-2 sentences describing built-in irony where strength becomes weakness or solution creates the problem.
-- playerFantasy must be 1 sentence describing the experiential promise of being the protagonist, not just their actions.`;
+- playerFantasy must be 1 sentence describing the experiential promise of being the protagonist, not just their actions.
+- incitingDisruption must describe the specific event or revelation that shatters the protagonist's status quo. It must answer "why now?" and feel inevitable given the setting and conflict axis.
+- escapeValve must describe the structural mechanism that re-engages the conflict loop when the player refuses the obvious path, derails, or stalls. It should be embedded in the world or antagonistic force, not a deus ex machina.`;
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return 6-8 concepts.
