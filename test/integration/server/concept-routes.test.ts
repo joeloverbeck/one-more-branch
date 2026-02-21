@@ -12,6 +12,10 @@ jest.mock('@/llm/concept-stress-tester', () => ({
   stressTestConcept: jest.fn(),
 }));
 
+jest.mock('@/llm/concept-verifier', () => ({
+  verifyConcepts: jest.fn(),
+}));
+
 jest.mock('@/persistence/concept-repository', () => ({
   listConcepts: jest.fn().mockResolvedValue([]),
   loadConcept: jest.fn(),
@@ -30,6 +34,7 @@ import { LLMError } from '@/llm/llm-client-types';
 import { evaluateConcepts } from '@/llm/concept-evaluator';
 import { generateConceptIdeas } from '@/llm/concept-ideator';
 import { stressTestConcept } from '@/llm/concept-stress-tester';
+import { verifyConcepts } from '@/llm/concept-verifier';
 import { conceptRoutes } from '@/server/routes/concepts';
 import { generationProgressService } from '@/server/services';
 import {
@@ -45,6 +50,7 @@ import {
   createConceptSpecFixture,
   createConceptStressTestFixture,
   createEvaluatedConceptFixture,
+  createConceptVerificationFixture,
 } from '../../fixtures/concept-generator';
 
 type RouteLayer = {
@@ -83,6 +89,7 @@ describe('Concept Route Integration', () => {
   >;
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
+  const mockedVerifyConcepts = verifyConcepts as jest.MockedFunction<typeof verifyConcepts>;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
   const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
   const mockedSaveConceptGenerationBatch = saveConceptGenerationBatch as jest.MockedFunction<
@@ -138,6 +145,11 @@ describe('Concept Route Integration', () => {
       evaluatedConcepts,
       rawResponse: 'raw-eval',
     });
+    const verifications = evaluatedConcepts.map((_, i) => createConceptVerificationFixture(i + 1));
+    mockedVerifyConcepts.mockResolvedValue({
+      verifications,
+      rawResponse: 'raw-verify',
+    });
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
@@ -186,13 +198,13 @@ describe('Concept Route Integration', () => {
     );
     expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
       'route-progress-1',
-      'EVALUATING_CONCEPTS',
+      'VERIFYING_CONCEPTS',
       1,
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-1');
     expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
     expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts });
+    expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts, verifications });
   });
 
   it('POST /api/generate maps stage failures to structured LLM errors', async () => {

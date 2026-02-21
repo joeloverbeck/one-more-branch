@@ -1,5 +1,5 @@
 import { Npc, Page, PageId, Story, StoryId } from '../models';
-import type { ConceptSpec } from '../models/concept-generator.js';
+import type { ConceptSpec, ConceptVerification } from '../models/concept-generator.js';
 import type { StorySpine } from '../models/story-spine.js';
 import type { StoryKernel } from '../models/story-kernel.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
@@ -21,6 +21,7 @@ export const GENERATION_STAGES = [
   'GENERATING_CONCEPTS',
   'EVALUATING_CONCEPTS',
   'STRESS_TESTING_CONCEPT',
+  'VERIFYING_CONCEPTS',
 ] as const;
 
 export type GenerationStage = (typeof GENERATION_STAGES)[number];
@@ -72,6 +73,7 @@ export interface StartStoryOptions {
   readonly startingSituation?: string;
   readonly conceptSpec?: ConceptSpec;
   readonly storyKernel?: StoryKernel;
+  readonly conceptVerification?: ConceptVerification;
   readonly spine: StorySpine;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;

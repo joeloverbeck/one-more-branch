@@ -6,6 +6,7 @@ export type LlmStage =
   | 'conceptIdeator'
   | 'conceptEvaluator'
   | 'conceptStressTester'
+  | 'conceptVerifier'
   | 'spine'
   | 'entityDecomposer'
   | 'structure'

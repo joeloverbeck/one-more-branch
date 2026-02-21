@@ -1,6 +1,7 @@
 import type { LLMError } from '../../llm/llm-client-types.js';
 import { logger } from '../../logging/index.js';
 import { type ConceptSpec, isConceptSpec } from '../../models/index.js';
+import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { Npc } from '../../models/npc.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import { isStoryKernel } from '../../models/story-kernel.js';
@@ -14,6 +15,7 @@ export type StoryFormInput = {
   startingSituation?: string;
   conceptSpec?: unknown;
   storyKernel?: unknown;
+  conceptVerification?: ConceptVerification;
   apiKey?: string;
 };
 
@@ -26,6 +28,7 @@ export type TrimmedStoryInput = {
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
+  conceptVerification?: ConceptVerification;
   apiKey: string;
 };
 
@@ -78,6 +81,7 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
       startingSituation: input.startingSituation?.trim(),
       ...(conceptSpec !== undefined ? { conceptSpec } : {}),
       ...(storyKernel !== undefined ? { storyKernel } : {}),
+      ...(input.conceptVerification ? { conceptVerification: input.conceptVerification } : {}),
       apiKey: trimmedApiKey,
     },
   };

@@ -17,6 +17,10 @@ jest.mock('@/llm/concept-stress-tester', () => ({
   stressTestConcept: jest.fn(),
 }));
 
+jest.mock('@/llm/concept-verifier', () => ({
+  verifyConcepts: jest.fn(),
+}));
+
 jest.mock('@/persistence/concept-repository', () => ({
   listConcepts: jest.fn().mockResolvedValue([]),
   loadConcept: jest.fn(),
@@ -48,6 +52,7 @@ import { generateStoryStructure, decomposeEntities } from '@/llm';
 import { evaluateConcepts } from '@/llm/concept-evaluator';
 import { generateConceptIdeas } from '@/llm/concept-ideator';
 import { stressTestConcept } from '@/llm/concept-stress-tester';
+import { verifyConcepts } from '@/llm/concept-verifier';
 import type { StoryId, StorySpine } from '@/models';
 import { conceptRoutes } from '@/server/routes/concepts';
 import { storyRoutes } from '@/server/routes/stories';
@@ -61,6 +66,7 @@ import { loadKernel } from '@/persistence/kernel-repository';
 import {
   createConceptSpecFixture,
   createConceptStressTestFixture,
+  createConceptVerificationFixture,
   createEvaluatedConceptFixture,
   createScoredConceptFixture,
 } from '../../fixtures/concept-generator';
@@ -128,6 +134,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
   >;
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
+  const mockedVerifyConcepts = verifyConcepts as jest.MockedFunction<typeof verifyConcepts>;
   const mockedDecomposeEntities = decomposeEntities as jest.MockedFunction<typeof decomposeEntities>;
   const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
     typeof generateStoryStructure
@@ -162,6 +169,14 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       rawResponse: 'raw-eval',
     });
     mockedStressTestConcept.mockResolvedValue(createConceptStressTestFixture());
+    mockedVerifyConcepts.mockResolvedValue({
+      verifications: [
+        createConceptVerificationFixture(1),
+        createConceptVerificationFixture(2),
+        createConceptVerificationFixture(3),
+      ],
+      rawResponse: 'raw-verify',
+    });
     mockedSaveConcept.mockResolvedValue(undefined);
     mockedLoadKernel.mockResolvedValue({
       id: 'kernel-1',

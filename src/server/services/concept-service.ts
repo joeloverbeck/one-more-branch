@@ -1,10 +1,12 @@
 import { evaluateConcepts } from '../../llm/concept-evaluator.js';
 import { generateConceptIdeas } from '../../llm/concept-ideator.js';
 import { stressTestConcept as runConceptStressTest } from '../../llm/concept-stress-tester.js';
+import { verifyConcepts as runVerifyConcepts } from '../../llm/concept-verifier.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   ConceptDimensionScores,
   ConceptSpec,
+  ConceptVerification,
   ScoredConcept,
   ConceptStressTestResult,
   EvaluatedConcept,
@@ -26,6 +28,7 @@ export interface GenerateConceptsResult {
   readonly ideatedConcepts: readonly ConceptSpec[];
   readonly scoredConcepts: readonly ScoredConcept[];
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
+  readonly verifications: readonly ConceptVerification[];
 }
 
 export interface StressTestInput {
@@ -40,6 +43,7 @@ interface ConceptServiceDeps {
   readonly generateConceptIdeas: typeof generateConceptIdeas;
   readonly evaluateConcepts: typeof evaluateConcepts;
   readonly stressTestConcept: typeof runConceptStressTest;
+  readonly verifyConcepts: typeof runVerifyConcepts;
 }
 
 export interface ConceptService {
@@ -62,6 +66,7 @@ const defaultDeps: ConceptServiceDeps = {
   generateConceptIdeas,
   evaluateConcepts,
   stressTestConcept: runConceptStressTest,
+  verifyConcepts: runVerifyConcepts,
 };
 
 function trimSeed(value: string | undefined): string | undefined {
@@ -185,10 +190,26 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         attempt: 1,
       });
 
+      onGenerationStage?.({
+        stage: 'VERIFYING_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
+      const verification = await deps.verifyConcepts(
+        { evaluatedConcepts: evaluation.evaluatedConcepts },
+        apiKey,
+      );
+      onGenerationStage?.({
+        stage: 'VERIFYING_CONCEPTS',
+        status: 'completed',
+        attempt: 1,
+      });
+
       return {
         ideatedConcepts: ideation.concepts,
         scoredConcepts: evaluation.scoredConcepts,
         evaluatedConcepts: evaluation.evaluatedConcepts,
+        verifications: verification.verifications,
       };
     },
 

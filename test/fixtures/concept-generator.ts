@@ -2,6 +2,7 @@ import type {
   ConceptDimensionScores,
   ConceptSeedInput,
   ConceptSpec,
+  ConceptVerification,
   ScoredConcept,
   ConceptStressTestResult,
   EvaluatedConcept,
@@ -104,5 +105,26 @@ export function createConceptSeedInputFixture(): ConceptSeedInput {
     thematicInterests: 'identity and power',
     sparkLine: 'What if memory could be taxed?',
     apiKey: 'valid-key-12345',
+  };
+}
+
+export function createConceptVerificationFixture(index = 1): ConceptVerification {
+  return {
+    signatureScenario: `Signature scenario for concept ${index}`,
+    escalatingSetpieces: [
+      `Setpiece 1 for concept ${index}`,
+      `Setpiece 2 for concept ${index}`,
+      `Setpiece 3 for concept ${index}`,
+      `Setpiece 4 for concept ${index}`,
+      `Setpiece 5 for concept ${index}`,
+      `Setpiece 6 for concept ${index}`,
+    ],
+    inevitabilityStatement: `Given this premise, X must happen for concept ${index}`,
+    loadBearingCheck: {
+      passes: true,
+      reasoning: `Concept ${index} is load-bearing because its differentiator is unique`,
+      genericCollapse: `Without the differentiator, concept ${index} becomes a generic genre story`,
+    },
+    conceptIntegrityScore: 85,
   };
 }

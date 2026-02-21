@@ -6,6 +6,7 @@ import {
   createScoredConceptFixture,
   createConceptSpecFixture,
   createConceptStressTestFixture,
+  createConceptVerificationFixture,
 } from '../../fixtures/concept-generator';
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -121,10 +122,15 @@ describe('Concept Pipeline Integration', () => {
       ],
     };
 
+    const verificationPayload = {
+      verifications: Array.from({ length: 6 }, (_, i) => createConceptVerificationFixture(i + 1)),
+    };
+
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(ideationPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)));
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(verificationPayload)));
 
     const result = await service.generateConcepts({
       ...seeds,
@@ -140,9 +146,10 @@ describe('Concept Pipeline Integration', () => {
       },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(result.evaluatedConcepts).toHaveLength(6);
     expect(result.scoredConcepts).toHaveLength(6);
+    expect(result.verifications).toHaveLength(6);
     expect(result.evaluatedConcepts[0]?.concept.oneLineHook).toBe('Hook 2');
     expect(result.evaluatedConcepts[0]?.overallScore).toBe(computeOverallScore(topScore));
     expect(result.evaluatedConcepts[2]?.overallScore).toBe(computeOverallScore(lowScore));
@@ -152,6 +159,8 @@ describe('Concept Pipeline Integration', () => {
       { stage: 'GENERATING_CONCEPTS', status: 'completed', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
+      { stage: 'VERIFYING_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'VERIFYING_CONCEPTS', status: 'completed', attempt: 1 },
     ]);
   });
 

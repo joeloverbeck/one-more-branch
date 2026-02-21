@@ -254,6 +254,29 @@ export interface ConceptStressTestResult {
   readonly rawResponse: string;
 }
 
+export interface LoadBearingCheck {
+  readonly passes: boolean;
+  readonly reasoning: string;
+  readonly genericCollapse: string;
+}
+
+export interface ConceptVerification {
+  readonly signatureScenario: string;
+  readonly escalatingSetpieces: readonly string[];
+  readonly inevitabilityStatement: string;
+  readonly loadBearingCheck: LoadBearingCheck;
+  readonly conceptIntegrityScore: number;
+}
+
+export interface ConceptVerifierContext {
+  readonly evaluatedConcepts: readonly EvaluatedConcept[];
+}
+
+export interface ConceptVerificationResult {
+  readonly verifications: readonly ConceptVerification[];
+  readonly rawResponse: string;
+}
+
 export const CONCEPT_SCORING_WEIGHTS = {
   hookStrength: 12,
   conflictEngine: 20,

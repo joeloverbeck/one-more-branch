@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
-import type { ConceptSpec, EvaluatedConcept } from '../../models/index.js';
+import type { ConceptSpec, ConceptVerification, EvaluatedConcept } from '../../models/index.js';
 import type { ConceptSeeds, SavedConcept } from '../../models/saved-concept.js';
 import {
   conceptExists,
@@ -151,11 +151,16 @@ conceptRoutes.post(
         ideatedConcepts: result.ideatedConcepts,
         scoredConcepts: result.scoredConcepts,
         selectedConcepts: result.evaluatedConcepts,
+        verifications: result.verifications,
       });
 
       progress.complete();
 
-      return res.json({ success: true, evaluatedConcepts: result.evaluatedConcepts });
+      return res.json({
+        success: true,
+        evaluatedConcepts: result.evaluatedConcepts,
+        verifications: result.verifications,
+      });
     } catch (error) {
       let rootError: unknown = error;
       if (error instanceof ConceptEvaluationStageError) {
@@ -233,6 +238,7 @@ conceptRoutes.post(
       seeds?: ConceptSeeds;
       name?: string;
       sourceKernelId?: string;
+      verificationResult?: ConceptVerification;
     };
 
     if (
@@ -260,6 +266,7 @@ conceptRoutes.post(
       seeds: body.seeds ?? {},
       evaluatedConcept: body.evaluatedConcept,
       ...(trimmedKernelId && trimmedKernelId.length > 0 ? { sourceKernelId: trimmedKernelId } : {}),
+      ...(body.verificationResult ? { verificationResult: body.verificationResult } : {}),
     };
 
     await saveConcept(savedConcept);

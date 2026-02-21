@@ -55,6 +55,7 @@ describe('Engine types', () => {
         'GENERATING_CONCEPTS',
         'EVALUATING_CONCEPTS',
         'STRESS_TESTING_CONCEPT',
+        'VERIFYING_CONCEPTS',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);
