@@ -61,6 +61,8 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'description',
       'objective',
       'role',
+      'escalationType',
+      'uniqueScenarioHook',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });

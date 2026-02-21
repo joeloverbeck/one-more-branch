@@ -86,7 +86,14 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                 items: {
                   type: 'object',
                   additionalProperties: false,
-                  required: ['name', 'description', 'objective', 'role'],
+                  required: [
+                    'name',
+                    'description',
+                    'objective',
+                    'role',
+                    'escalationType',
+                    'uniqueScenarioHook',
+                  ],
                   properties: {
                     name: { type: 'string' },
                     description: { type: 'string' },
@@ -95,6 +102,28 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       type: 'string',
                       enum: ['setup', 'escalation', 'turning_point', 'resolution'],
                       description: 'Dramatic function of this beat in the story structure.',
+                    },
+                    escalationType: {
+                      type: ['string', 'null'],
+                      enum: [
+                        'THREAT_ESCALATION',
+                        'REVELATION_SHIFT',
+                        'REVERSAL_OF_FORTUNE',
+                        'BETRAYAL_OR_ALLIANCE_SHIFT',
+                        'RESOURCE_OR_CAPABILITY_LOSS',
+                        'MORAL_OR_ETHICAL_PRESSURE',
+                        'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
+                        'COMPLICATION_CASCADE',
+                        'COMPETENCE_DEMAND_SPIKE',
+                        null,
+                      ],
+                      description:
+                        'For escalation/turning_point beats: HOW stakes rise. Null for setup/resolution beats.',
+                    },
+                    uniqueScenarioHook: {
+                      type: ['string', 'null'],
+                      description:
+                        'For escalation/turning_point beats: one sentence describing what makes this beat unique to THIS story. Null for setup/resolution beats.',
                     },
                   },
                 },

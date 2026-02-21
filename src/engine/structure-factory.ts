@@ -1,13 +1,41 @@
-import type { BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
+import type {
+  BeatRole,
+  EscalationType,
+  StoryAct,
+  StoryBeat,
+  StoryStructure,
+} from '../models/story-arc';
 import type { StructureGenerationResult } from './structure-types';
 
 const VALID_BEAT_ROLES: readonly string[] = ['setup', 'escalation', 'turning_point', 'resolution'];
+
+const VALID_ESCALATION_TYPES: readonly string[] = [
+  'THREAT_ESCALATION',
+  'REVELATION_SHIFT',
+  'REVERSAL_OF_FORTUNE',
+  'BETRAYAL_OR_ALLIANCE_SHIFT',
+  'RESOURCE_OR_CAPABILITY_LOSS',
+  'MORAL_OR_ETHICAL_PRESSURE',
+  'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
+  'COMPLICATION_CASCADE',
+  'COMPETENCE_DEMAND_SPIKE',
+];
 
 function parseBeatRole(role: string): BeatRole {
   if (VALID_BEAT_ROLES.includes(role)) {
     return role as BeatRole;
   }
   return 'escalation';
+}
+
+export function parseEscalationType(value: string | null | undefined): EscalationType | null {
+  if (value == null) {
+    return null;
+  }
+  if (VALID_ESCALATION_TYPES.includes(value)) {
+    return value as EscalationType;
+  }
+  return null;
 }
 
 /**
@@ -23,6 +51,9 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       description: beatData.description,
       objective: beatData.objective,
       role: parseBeatRole(beatData.role),
+      escalationType: parseEscalationType(beatData.escalationType),
+      uniqueScenarioHook:
+        typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
     }));
 
     return {

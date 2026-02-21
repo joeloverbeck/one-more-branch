@@ -104,6 +104,18 @@ REQUIREMENTS (follow ALL):
 10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
 11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
 12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
+13. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+   - THREAT_ESCALATION: Opposition magnitude increases — enemies grow stronger, more numerous, or more resourceful
+   - REVELATION_SHIFT: Hidden truth recontextualizes everything — what seemed safe is dangerous, what seemed true is false
+   - REVERSAL_OF_FORTUNE: Progress inverts into setback — a victory becomes a trap, an ally's help becomes a liability
+   - BETRAYAL_OR_ALLIANCE_SHIFT: Social topology changes — a trusted bond fractures or an enemy becomes necessary
+   - RESOURCE_OR_CAPABILITY_LOSS: Protagonist loses a dependency — a tool, ally, safe haven, or ability is stripped away
+   - MORAL_OR_ETHICAL_PRESSURE: Every available option requires compromising a value the protagonist holds dear
+   - TEMPORAL_OR_ENVIRONMENTAL_PRESSURE: External conditions constrict — a deadline tightens, an environment becomes hostile, escape routes close
+   - COMPLICATION_CASCADE: Consequences of earlier choices compound into simultaneous crises that cannot all be addressed
+   - COMPETENCE_DEMAND_SPIKE: The challenge now exceeds the protagonist's demonstrated capability, forcing growth or improvisation
+   For "setup" and "resolution" beats, set escalationType to null.
+14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup" and "resolution" beats, set uniqueScenarioHook to null.
 
 OUTPUT SHAPE:
 - overallTheme: string
@@ -138,7 +150,9 @@ OUTPUT SHAPE:
           "Deal with the situation" (no specific action, no obstacle, nothing to verify)
           "Move the story forward" (meta-commentary, not a protagonist goal)
           "Experience the consequences" (passive, no action verb, unverifiable)
-      - role: "setup" | "escalation" | "turning_point" | "resolution"`;
+      - role: "setup" | "escalation" | "turning_point" | "resolution"
+      - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
+      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

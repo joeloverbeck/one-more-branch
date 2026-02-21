@@ -118,8 +118,14 @@ export function buildWriterStructureContext(
     Resolution: ${resolution}`;
       }
       if (progression?.status === 'active') {
+        const escalationLine = beat.escalationType
+          ? `\n    Escalation mechanism: ${beat.escalationType}`
+          : '';
+        const hookLine = beat.uniqueScenarioHook
+          ? `\n    Scenario hook: ${beat.uniqueScenarioHook}`
+          : '';
         return `  [>] ACTIVE (${beat.role}): ${beat.description}
-    Objective: ${beat.objective}`;
+    Objective: ${beat.objective}${escalationLine}${hookLine}`;
       }
       return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })
@@ -159,6 +165,7 @@ export function buildEscalationCheckSection(
   }
 
   const previousResolution = findPreviousConcludedResolution(beats, state);
+  const activeBeat = beats[state.currentBeatIndex];
 
   const lines: string[] = [];
 
@@ -169,6 +176,16 @@ export function buildEscalationCheckSection(
     );
     if (previousResolution) {
       lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    if (activeBeat?.escalationType) {
+      lines.push(
+        `The expected escalation mechanism is ${activeBeat.escalationType}. Assess whether the narrative delivered this specific type of escalation — not just any stakes increase.`
+      );
+    }
+    if (activeBeat?.uniqueScenarioHook) {
+      lines.push(
+        `The scene should reflect this unique scenario hook: "${activeBeat.uniqueScenarioHook}". Assess whether the scene leveraged this story's specific elements.`
+      );
     }
     lines.push(
       '- Assess whether the narrative actually raised stakes beyond the previous beat'
@@ -182,6 +199,11 @@ export function buildEscalationCheckSection(
     lines.push(
       '- If beatConcluded is true but stakes were not genuinely raised, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without genuine escalation — scene added complexity but did not raise the cost of failure"'
     );
+    if (activeBeat?.escalationType) {
+      lines.push(
+        `- If the escalation type does not match what actually happened (e.g., expected ${activeBeat.escalationType} but got generic tension), note the mismatch in pacingIssueReason`
+      );
+    }
   } else {
     lines.push('=== TURNING POINT QUALITY CHECK ===');
     lines.push(
@@ -189,6 +211,16 @@ export function buildEscalationCheckSection(
     );
     if (previousResolution) {
       lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    if (activeBeat?.escalationType) {
+      lines.push(
+        `The expected turning point mechanism is ${activeBeat.escalationType}. Assess whether the narrative delivered this specific type of shift — not just any irreversible change.`
+      );
+    }
+    if (activeBeat?.uniqueScenarioHook) {
+      lines.push(
+        `The scene should reflect this unique scenario hook: "${activeBeat.uniqueScenarioHook}". Assess whether the scene leveraged this story's specific elements.`
+      );
     }
     lines.push(
       '- Assess whether the narrative delivered an irreversible shift'
@@ -202,6 +234,11 @@ export function buildEscalationCheckSection(
     lines.push(
       '- If beatConcluded is true but no irreversible shift occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without irreversible shift — status quo was not permanently altered"'
     );
+    if (activeBeat?.escalationType) {
+      lines.push(
+        `- If the turning point type does not match what actually happened (e.g., expected ${activeBeat.escalationType} but got generic change), note the mismatch in pacingIssueReason`
+      );
+    }
   }
 
   lines.push('');

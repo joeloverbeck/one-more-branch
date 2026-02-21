@@ -38,6 +38,8 @@ function buildStructure(): StoryStructure {
             description: 'Trace source',
             objective: 'Find the tower',
             role: 'setup',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
           {
             id: '1.2',
@@ -45,6 +47,8 @@ function buildStructure(): StoryStructure {
             description: 'Enter tower',
             objective: 'Reach control room',
             role: 'turning_point',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
         ],
       },

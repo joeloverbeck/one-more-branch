@@ -31,12 +31,16 @@ function createGenerationResult(): StructureGenerationResult {
             description: 'A warning arrives',
             objective: 'Hear the warning',
             role: 'setup',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
           {
             name: 'Choose departure',
             description: 'A difficult choice',
             objective: 'Leave home',
             role: 'turning_point',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
         ],
       },
@@ -51,6 +55,8 @@ function createGenerationResult(): StructureGenerationResult {
             description: 'First major setback',
             objective: 'Recover from loss',
             role: 'escalation',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
         ],
       },
@@ -99,6 +105,8 @@ describe('structure-rewrite-support', () => {
           description: 'A warning arrives',
           objective: 'Hear the warning',
           role: 'setup',
+          escalationType: null,
+          uniqueScenarioHook: null,
           resolution: 'Heard the warning.',
         },
         {
@@ -109,6 +117,8 @@ describe('structure-rewrite-support', () => {
           description: 'A difficult choice',
           objective: 'Leave home',
           role: 'turning_point',
+          escalationType: null,
+          uniqueScenarioHook: null,
           resolution: 'Left home.',
         },
         {
@@ -119,6 +129,8 @@ describe('structure-rewrite-support', () => {
           description: 'First major setback',
           objective: 'Recover from loss',
           role: 'escalation',
+          escalationType: null,
+          uniqueScenarioHook: null,
           resolution: 'Recovered from loss.',
         },
       ]);
@@ -213,6 +225,8 @@ describe('structure-rewrite-support', () => {
           description: 'First major setback',
           objective: 'Recover from loss',
           role: 'escalation',
+          escalationType: null,
+          uniqueScenarioHook: null,
         },
       ]);
     });
@@ -346,6 +360,8 @@ describe('structure-rewrite-support', () => {
           description: 'A warning arrives',
           objective: 'Hear the warning',
           role: 'setup',
+          escalationType: null,
+          uniqueScenarioHook: null,
           resolution: 'Accepted the call.',
         },
       ]);
@@ -359,6 +375,8 @@ describe('structure-rewrite-support', () => {
           description: 'First major setback',
           objective: 'Recover from loss',
           role: 'escalation',
+          escalationType: null,
+          uniqueScenarioHook: null,
         },
       ]);
     });
@@ -549,9 +567,12 @@ describe('structure-rewrite-support', () => {
               ...original.acts[0]!.beats,
               {
                 id: '1.3',
+                name: 'Additional beat',
                 description: 'Additional beat',
                 objective: 'New objective',
                 role: 'escalation' as const,
+                escalationType: null,
+                uniqueScenarioHook: null,
               },
             ],
           },
