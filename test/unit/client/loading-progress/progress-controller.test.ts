@@ -192,6 +192,104 @@ describe('loading progress controller', () => {
     expect(stageValues).toContain('IDEATING');
   });
 
+  it('maps evolving stage names for concept evolution polling', async () => {
+    setupPage();
+
+    const stageValues: string[] = [];
+    const stageEl = document.querySelector('.loading-stage') as HTMLElement;
+    const originalDescriptor = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+    Object.defineProperty(stageEl, 'textContent', {
+      set(value: string) {
+        stageValues.push(value);
+        originalDescriptor!.set!.call(this, value);
+      },
+      get(): string {
+        return originalDescriptor!.get!.call(this) as string;
+      },
+      configurable: true,
+    });
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(
+          mockJsonResponse({ status: 'running', activeStage: 'EVOLVING_CONCEPTS' })
+        );
+      }
+      return Promise.resolve(
+        mockJsonResponse({
+          page: {
+            id: 2,
+            narrativeText: 'Done.',
+            choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            isEnding: false,
+            openThreads: [],
+            openThreadOverflowSummary: null,
+            stateChanges: [],
+          },
+          wasGenerated: true,
+          actDisplayInfo: null,
+          deviationInfo: null,
+        })
+      );
+    });
+
+    const button = document.querySelector('.choice-btn') as HTMLButtonElement;
+    button.click();
+    await jest.runAllTimersAsync();
+
+    expect(stageValues).toContain('EVOLVING');
+  });
+
+  it('uses evolving stage phrase pool instead of fallback text', async () => {
+    setupPage();
+
+    let resolvePost!: (value: Response) => void;
+    const pendingPost = new Promise<Response>((resolve) => {
+      resolvePost = resolve;
+    });
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(
+          mockJsonResponse({ status: 'running', activeStage: 'EVOLVING_CONCEPTS' })
+        );
+      }
+      return pendingPost;
+    });
+
+    const button = document.querySelector('.choice-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const evolvingPhrases = [
+      'Breeding offspring concepts...',
+      'Recombining parent traits...',
+      'Mutating concept engines...',
+      'Cross-pollinating ideas...',
+      'Evolving new variations...',
+    ];
+    expect(evolvingPhrases).toContain(getStatusText());
+    expect(getStatusText()).not.toBe('Crafting your story...');
+
+    resolvePost(
+      mockJsonResponse({
+        page: {
+          id: 2,
+          narrativeText: 'Done.',
+          choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+          isEnding: false,
+          openThreads: [],
+          openThreadOverflowSummary: null,
+          stateChanges: [],
+        },
+        wasGenerated: true,
+        actDisplayInfo: null,
+        deviationInfo: null,
+      })
+    );
+    await jest.runAllTimersAsync();
+  });
+
   it('shows fallback text on poll error', async () => {
     setupPage();
 

@@ -103,6 +103,7 @@ describe('public client script', () => {
     expect(script).toContain('const STAGE_PHRASE_POOLS = {');
     expect(script).toContain('GENERATING_CONCEPTS: [');
     expect(script).toContain('EVALUATING_CONCEPTS: [');
+    expect(script).toContain('EVOLVING_CONCEPTS: [');
     expect(script).toContain('GENERATING_KERNELS: [');
     expect(script).toContain('EVALUATING_KERNELS: [');
     expect(script).toContain('STRESS_TESTING_CONCEPT: [');
@@ -121,6 +122,7 @@ describe('public client script', () => {
 
     expect(script).toContain("GENERATING_CONCEPTS: 'IDEATING'");
     expect(script).toContain("EVALUATING_CONCEPTS: 'EVALUATING'");
+    expect(script).toContain("EVOLVING_CONCEPTS: 'EVOLVING'");
     expect(script).toContain("GENERATING_KERNELS: 'IDEATING'");
     expect(script).toContain("EVALUATING_KERNELS: 'EVALUATING'");
     expect(script).toContain("STRESS_TESTING_CONCEPT: 'HARDENING'");
@@ -132,6 +134,7 @@ describe('public client script', () => {
 
     expect(countStagePhrases(script, 'GENERATING_CONCEPTS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'EVALUATING_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'EVOLVING_CONCEPTS')).toBeGreaterThanOrEqual(5);
     expect(countStagePhrases(script, 'GENERATING_KERNELS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'EVALUATING_KERNELS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'STRESS_TESTING_CONCEPT')).toBeGreaterThanOrEqual(20);
