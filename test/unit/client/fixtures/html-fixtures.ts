@@ -468,6 +468,42 @@ export function buildConceptsPageHtml(): string {
   `;
 }
 
+export function buildEvolutionPageHtml(): string {
+  return `
+    <main class="container" id="evolution-page">
+      <section class="form-section">
+        <section id="evolution-kernel-section">
+          <select id="evolution-kernel-selector">
+            <option value="">Select a saved kernel...</option>
+          </select>
+          <article id="evolution-selected-kernel-summary" style="display:none;">
+            <span id="evolution-kernel-dramatic-thesis"></span>
+            <span id="evolution-kernel-value-at-stake"></span>
+            <span id="evolution-kernel-opposing-force"></span>
+            <span id="evolution-kernel-thematic-question"></span>
+            <span id="evolution-kernel-overall-score"></span>
+          </article>
+        </section>
+        <section id="evolution-parent-concepts-section" style="display:none;">
+          <p id="evolution-selection-counter">Selected: 0/3 (select 2-3 concepts)</p>
+          <div id="evolution-parent-concepts" class="spine-options-container"></div>
+        </section>
+        <section id="evolution-actions-section">
+          <input type="password" id="evolutionApiKey" required />
+          <button type="button" id="evolve-btn" disabled>Evolve Concepts</button>
+        </section>
+        <section id="evolution-results-section" style="display:none;">
+          <div id="evolution-cards" class="spine-options-container"></div>
+        </section>
+      </section>
+      <div class="loading-overlay" id="evolution-loading" style="display:none;">
+        <div class="loading-stage" aria-live="polite"></div>
+        <p class="loading-status">Working...</p>
+      </div>
+    </main>
+  `;
+}
+
 export function buildKernelsPageHtml(): string {
   return `
     <main class="container" id="kernels-page">

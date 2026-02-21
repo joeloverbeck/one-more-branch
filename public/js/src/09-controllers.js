@@ -947,4 +947,5 @@
     initBriefingPage();
     initConceptsPage();
     initKernelsPage();
+    initEvolutionPage();
   });
