@@ -116,16 +116,6 @@ MOOD KEYWORDS:
 {{moodKeywords}}
 {{/if}}
 
-{{#if thematicInterests}}
-THEMATIC INTERESTS:
-{{thematicInterests}}
-{{/if}}
-
-{{#if sparkLine}}
-SPARK LINE:
-{{sparkLine}}
-{{/if}}
-
 {{#if contentPreferences}}
 CONTENT PREFERENCES:
 {{contentPreferences}}
@@ -194,8 +184,6 @@ OUTPUT REQUIREMENTS:
 | `genreVibes` | Optional genre guidance text |
 | `moodKeywords` | Optional tone keyword list/text |
 | `contentPreferences` | Optional content boundaries/preferences |
-| `thematicInterests` | Optional theme interests |
-| `sparkLine` | Optional seed hook sentence |
 | `kernel` | Optional selected `StoryKernel`; when supplied, concepts must operationalize it |
 
 ## Notes

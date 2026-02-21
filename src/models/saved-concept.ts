@@ -12,8 +12,6 @@ export interface ConceptSeeds {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly thematicInterests?: string;
-  readonly sparkLine?: string;
 }
 
 export interface SavedConcept {
@@ -72,8 +70,6 @@ function isConceptSeeds(value: unknown): value is ConceptSeeds {
     'genreVibes',
     'moodKeywords',
     'contentPreferences',
-    'thematicInterests',
-    'sparkLine',
   ];
 
   return fields.every((field) => value[field] === undefined || typeof value[field] === 'string');

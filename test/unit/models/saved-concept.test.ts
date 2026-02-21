@@ -58,7 +58,6 @@ describe('saved-concept model guards', () => {
       updatedAt: '2026-02-19T00:00:00.000Z',
       seeds: {
         genreVibes: 'noir, urban decay',
-        thematicInterests: 'truth and control',
       },
       evaluatedConcept: createEvaluatedConcept(),
       preHardenedConcept: createEvaluatedConcept(),
@@ -138,7 +137,7 @@ describe('saved-concept model guards', () => {
       id: 'batch-1',
       generatedAt: '2026-02-19T00:00:00.000Z',
       seeds: {
-        sparkLine: 'A city remembers selectively.',
+        genreVibes: 'noir, urban decay',
       },
       ideatedConcepts: [createValidConceptSpec()],
       scoredConcepts: [createScoredConcept()],

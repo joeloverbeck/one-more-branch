@@ -50,14 +50,10 @@
       var g = document.getElementById('genreVibes');
       var m = document.getElementById('moodKeywords');
       var c = document.getElementById('contentPreferences');
-      var t = document.getElementById('thematicInterests');
-      var s = document.getElementById('sparkLine');
       return {
         genreVibes: g && typeof g.value === 'string' ? g.value.trim() : '',
         moodKeywords: m && typeof m.value === 'string' ? m.value.trim() : '',
         contentPreferences: c && typeof c.value === 'string' ? c.value.trim() : '',
-        thematicInterests: t && typeof t.value === 'string' ? t.value.trim() : '',
-        sparkLine: s && typeof s.value === 'string' ? s.value.trim() : '',
       };
     }
 
@@ -188,7 +184,7 @@
       }
 
       var seeds = collectSeeds();
-      if (!seeds.genreVibes && !seeds.moodKeywords && !seeds.contentPreferences && !seeds.thematicInterests && !seeds.sparkLine) {
+      if (!seeds.genreVibes && !seeds.moodKeywords && !seeds.contentPreferences) {
         showError('At least one concept seed field is required');
         return;
       }
@@ -206,8 +202,6 @@
             genreVibes: seeds.genreVibes,
             moodKeywords: seeds.moodKeywords,
             contentPreferences: seeds.contentPreferences,
-            thematicInterests: seeds.thematicInterests,
-            sparkLine: seeds.sparkLine,
             kernelId: selectedKernelId,
             apiKey: apiKey,
             progressId: progressId,

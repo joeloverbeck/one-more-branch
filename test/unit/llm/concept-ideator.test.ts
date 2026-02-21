@@ -140,8 +140,6 @@ describe('concept-ideator', () => {
     const messages = buildConceptIdeatorPrompt({
       genreVibes: 'sci-fi noir',
       moodKeywords: 'tense, paranoid',
-      thematicInterests: 'identity and memory',
-      sparkLine: 'What if memory could be taxed?',
       contentPreferences: 'No explicit sexual violence',
       kernel: {
         dramaticThesis: 'Control destroys trust',
@@ -160,8 +158,6 @@ describe('concept-ideator', () => {
     expect(systemMessage).toContain('TAXONOMY GUIDANCE');
     expect(userMessage).toContain('GENRE VIBES');
     expect(userMessage).toContain('MOOD KEYWORDS');
-    expect(userMessage).toContain('THEMATIC INTERESTS');
-    expect(userMessage).toContain('SPARK LINE');
     expect(userMessage).toContain('CONTENT PREFERENCES');
     expect(systemMessage).toContain('KERNEL CONSTRAINTS');
     expect(userMessage).toContain('SELECTED STORY KERNEL');
@@ -172,16 +168,12 @@ describe('concept-ideator', () => {
     const messages = buildConceptIdeatorPrompt({
       genreVibes: '   ',
       moodKeywords: undefined,
-      thematicInterests: '',
-      sparkLine: '  ',
       contentPreferences: undefined,
     });
     const userMessage = messages[1]?.content ?? '';
 
     expect(userMessage).not.toContain('GENRE VIBES');
     expect(userMessage).not.toContain('MOOD KEYWORDS');
-    expect(userMessage).not.toContain('THEMATIC INTERESTS');
-    expect(userMessage).not.toContain('SPARK LINE');
     expect(userMessage).not.toContain('CONTENT PREFERENCES');
   });
 

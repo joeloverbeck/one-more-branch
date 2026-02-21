@@ -114,8 +114,6 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
   const genreVibes = normalize(context.genreVibes);
   const moodKeywords = normalize(context.moodKeywords);
   const contentPreferences = normalize(context.contentPreferences);
-  const thematicInterests = normalize(context.thematicInterests);
-  const sparkLine = normalize(context.sparkLine);
   const kernel = context.kernel;
 
   const systemSections: string[] = [ROLE_INTRO];
@@ -149,12 +147,6 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
   }
   if (moodKeywords) {
     userSections.push(`MOOD KEYWORDS:\n${moodKeywords}`);
-  }
-  if (thematicInterests) {
-    userSections.push(`THEMATIC INTERESTS:\n${thematicInterests}`);
-  }
-  if (sparkLine) {
-    userSections.push(`SPARK LINE:\n${sparkLine}`);
   }
   if (contentPreferences) {
     userSections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);

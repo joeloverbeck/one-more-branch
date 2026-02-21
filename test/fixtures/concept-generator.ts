@@ -102,8 +102,6 @@ export function createConceptSeedInputFixture(): ConceptSeedInput {
     genreVibes: 'dark fantasy',
     moodKeywords: 'tense, melancholic',
     contentPreferences: 'no romance subplot',
-    thematicInterests: 'identity and power',
-    sparkLine: 'What if memory could be taxed?',
     apiKey: 'valid-key-12345',
   };
 }

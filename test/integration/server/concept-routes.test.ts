@@ -177,8 +177,6 @@ describe('Concept Route Integration', () => {
         genreVibes: 'dark fantasy',
         moodKeywords: 'tense',
         contentPreferences: undefined,
-        thematicInterests: undefined,
-        sparkLine: undefined,
         kernel: {
           dramaticThesis: 'Control destroys trust',
           valueAtStake: 'Trust',
