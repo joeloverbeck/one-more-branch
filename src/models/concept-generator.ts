@@ -65,8 +65,6 @@ export interface ConceptSeedInput {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly thematicInterests?: string;
-  readonly sparkLine?: string;
   readonly apiKey: string;
 }
 
@@ -220,8 +218,6 @@ export interface ConceptIdeatorContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly thematicInterests?: string;
-  readonly sparkLine?: string;
   readonly kernel?: StoryKernel;
 }
 

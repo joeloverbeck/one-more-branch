@@ -24,15 +24,11 @@ function hasAtLeastOneConceptSeed(body: {
   genreVibes?: string;
   moodKeywords?: string;
   contentPreferences?: string;
-  thematicInterests?: string;
-  sparkLine?: string;
 }): boolean {
   return [
     body.genreVibes,
     body.moodKeywords,
     body.contentPreferences,
-    body.thematicInterests,
-    body.sparkLine,
   ].some((value) => value?.trim());
 }
 
@@ -40,21 +36,15 @@ function normalizeConceptSeeds(body: {
   genreVibes?: string;
   moodKeywords?: string;
   contentPreferences?: string;
-  thematicInterests?: string;
-  sparkLine?: string;
 }): {
   genreVibes?: string;
   moodKeywords?: string;
   contentPreferences?: string;
-  thematicInterests?: string;
-  sparkLine?: string;
 } {
   return {
     genreVibes: body.genreVibes?.trim(),
     moodKeywords: body.moodKeywords?.trim(),
     contentPreferences: body.contentPreferences?.trim(),
-    thematicInterests: body.thematicInterests?.trim(),
-    sparkLine: body.sparkLine?.trim(),
   };
 }
 
@@ -98,8 +88,6 @@ conceptRoutes.post(
       genreVibes?: string;
       moodKeywords?: string;
       contentPreferences?: string;
-      thematicInterests?: string;
-      sparkLine?: string;
       kernelId?: string;
       apiKey?: string;
       progressId?: unknown;
@@ -135,8 +123,6 @@ conceptRoutes.post(
         genreVibes: body.genreVibes,
         moodKeywords: body.moodKeywords,
         contentPreferences: body.contentPreferences,
-        thematicInterests: body.thematicInterests,
-        sparkLine: body.sparkLine,
         kernel: savedKernel.evaluatedKernel.kernel,
         apiKey,
         onGenerationStage: progress.onGenerationStage,

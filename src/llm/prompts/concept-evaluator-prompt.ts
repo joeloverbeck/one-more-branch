@@ -38,20 +38,12 @@ function buildSeedSection(context: ConceptEvaluatorContext): string {
   const genreVibes = normalize(seeds.genreVibes);
   const moodKeywords = normalize(seeds.moodKeywords);
   const contentPreferences = normalize(seeds.contentPreferences);
-  const thematicInterests = normalize(seeds.thematicInterests);
-  const sparkLine = normalize(seeds.sparkLine);
 
   if (genreVibes) {
     sections.push(`GENRE VIBES:\n${genreVibes}`);
   }
   if (moodKeywords) {
     sections.push(`MOOD KEYWORDS:\n${moodKeywords}`);
-  }
-  if (thematicInterests) {
-    sections.push(`THEMATIC INTERESTS:\n${thematicInterests}`);
-  }
-  if (sparkLine) {
-    sections.push(`SPARK LINE:\n${sparkLine}`);
   }
   if (contentPreferences) {
     sections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);

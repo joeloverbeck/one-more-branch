@@ -17,8 +17,6 @@ export interface GenerateConceptsInput {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly thematicInterests?: string;
-  readonly sparkLine?: string;
   readonly kernel: StoryKernel;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -87,15 +85,11 @@ function requireConceptSeeds(input: GenerateConceptsInput): {
   genreVibes?: string;
   moodKeywords?: string;
   contentPreferences?: string;
-  thematicInterests?: string;
-  sparkLine?: string;
 } {
   const seeds = {
     genreVibes: trimSeed(input.genreVibes),
     moodKeywords: trimSeed(input.moodKeywords),
     contentPreferences: trimSeed(input.contentPreferences),
-    thematicInterests: trimSeed(input.thematicInterests),
-    sparkLine: trimSeed(input.sparkLine),
   };
 
   if (!Object.values(seeds).some((value) => value !== undefined)) {

@@ -444,8 +444,6 @@ export function buildConceptsPageHtml(): string {
             <div class="form-group"><input type="text" id="genreVibes"></div>
             <div class="form-group"><input type="text" id="moodKeywords"></div>
             <div class="form-group"><input type="text" id="contentPreferences"></div>
-            <div class="form-group"><input type="text" id="thematicInterests"></div>
-            <div class="form-group"><input type="text" id="sparkLine"></div>
             <div class="form-group">
               <input type="password" id="conceptApiKey" required>
             </div>
