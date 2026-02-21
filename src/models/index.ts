@@ -205,7 +205,6 @@ export { formatDecomposedWorldForPrompt } from './decomposed-world';
 export type {
   GenreFrame,
   ConflictAxis,
-  BranchingPosture,
   SettingScale,
   DriftRiskMitigationType,
   ConceptSeedInput,
@@ -231,14 +230,12 @@ export type {
 export {
   GENRE_FRAMES,
   CONFLICT_AXES,
-  BRANCHING_POSTURES,
   SETTING_SCALES,
   DRIFT_RISK_MITIGATION_TYPES,
   CONCEPT_SCORING_WEIGHTS,
   CONCEPT_PASS_THRESHOLDS,
   isGenreFrame,
   isConflictAxis,
-  isBranchingPosture,
   isSettingScale,
   isDriftRiskMitigationType,
   isConceptSpec,

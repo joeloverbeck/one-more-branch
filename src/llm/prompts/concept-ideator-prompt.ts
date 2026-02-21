@@ -1,5 +1,4 @@
 import {
-  BRANCHING_POSTURES,
   CONFLICT_AXES,
   GENRE_FRAMES,
   SETTING_SCALES,
@@ -77,13 +76,6 @@ ${buildEnumGuidance('conflictType', CONFLICT_TYPE_VALUES, [
   'Technology-driven opposition or consequence.',
   'Otherworldly or inexplicable forces.',
   'Destiny, prophecy, or inevitable forces.',
-])}
-
-${buildEnumGuidance('branchingPosture', BRANCHING_POSTURES, [
-  'Pure branch divergence with no reconvergence.',
-  'Branches split but meet at major junctions.',
-  'Modular episodes gated by world state.',
-  'Central base with radial branch excursions.',
 ])}
 
 ${buildEnumGuidance('settingScale', SETTING_SCALES, [

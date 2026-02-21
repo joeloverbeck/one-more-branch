@@ -1,5 +1,4 @@
 import {
-  BRANCHING_POSTURES,
   CONFLICT_AXES,
   GENRE_FRAMES,
   SETTING_SCALES,
@@ -30,7 +29,6 @@ export const CONCEPT_SPEC_SCHEMA = {
     'constraintSet',
     'keyInstitutions',
     'settingScale',
-    'branchingPosture',
     'whatIfQuestion',
     'ironicTwist',
     'playerFantasy',
@@ -57,7 +55,6 @@ export const CONCEPT_SPEC_SCHEMA = {
     constraintSet: { type: 'array', items: { type: 'string' } },
     keyInstitutions: { type: 'array', items: { type: 'string' } },
     settingScale: { type: 'string', enum: [...SETTING_SCALES] },
-    branchingPosture: { type: 'string', enum: [...BRANCHING_POSTURES] },
     whatIfQuestion: { type: 'string' },
     ironicTwist: { type: 'string' },
     playerFantasy: { type: 'string' },

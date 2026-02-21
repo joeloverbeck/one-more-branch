@@ -1,12 +1,10 @@
 import {
-  BRANCHING_POSTURES,
   CONCEPT_SCORING_WEIGHTS,
   CONFLICT_AXES,
   DRIFT_RISK_MITIGATION_TYPES,
   GENRE_FRAMES,
   SETTING_SCALES,
   computeOverallScore,
-  isBranchingPosture,
   isConflictAxis,
   isConceptSpec,
   isDriftRiskMitigationType,
@@ -39,7 +37,6 @@ describe('concept-generator types', () => {
   it('validates all enum type guards', () => {
     expectTypeGuardBehavior(GENRE_FRAMES, isGenreFrame);
     expectTypeGuardBehavior(CONFLICT_AXES, isConflictAxis);
-    expectTypeGuardBehavior(BRANCHING_POSTURES, isBranchingPosture);
     expectTypeGuardBehavior(SETTING_SCALES, isSettingScale);
     expectTypeGuardBehavior(DRIFT_RISK_MITIGATION_TYPES, isDriftRiskMitigationType);
   });
@@ -47,7 +44,6 @@ describe('concept-generator types', () => {
   it('defines complete enum arrays with spec counts', () => {
     expect(GENRE_FRAMES).toHaveLength(16);
     expect(CONFLICT_AXES).toHaveLength(8);
-    expect(BRANCHING_POSTURES).toHaveLength(4);
     expect(SETTING_SCALES).toHaveLength(4);
     expect(DRIFT_RISK_MITIGATION_TYPES).toHaveLength(4);
   });

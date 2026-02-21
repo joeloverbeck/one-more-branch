@@ -26,10 +26,6 @@ export const GENRE_FRAMES = [
 
 export type GenreFrame = (typeof GENRE_FRAMES)[number];
 
-export const BRANCHING_POSTURES = ['TREE', 'RECONVERGE', 'STORYLETS', 'HUB_AND_SPOKE'] as const;
-
-export type BranchingPosture = (typeof BRANCHING_POSTURES)[number];
-
 export const SETTING_SCALES = ['INTIMATE', 'LOCAL', 'REGIONAL', 'GLOBAL'] as const;
 
 export type SettingScale = (typeof SETTING_SCALES)[number];
@@ -45,10 +41,6 @@ export type DriftRiskMitigationType = (typeof DRIFT_RISK_MITIGATION_TYPES)[numbe
 
 export function isGenreFrame(value: unknown): value is GenreFrame {
   return typeof value === 'string' && (GENRE_FRAMES as readonly string[]).includes(value);
-}
-
-export function isBranchingPosture(value: unknown): value is BranchingPosture {
-  return typeof value === 'string' && (BRANCHING_POSTURES as readonly string[]).includes(value);
 }
 
 export function isSettingScale(value: unknown): value is SettingScale {
@@ -88,7 +80,6 @@ export interface ConceptSpec {
   readonly constraintSet: readonly string[];
   readonly keyInstitutions: readonly string[];
   readonly settingScale: SettingScale;
-  readonly branchingPosture: BranchingPosture;
   readonly whatIfQuestion: string;
   readonly ironicTwist: string;
   readonly playerFantasy: string;
@@ -147,7 +138,6 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isStringArrayWithinBounds(concept['constraintSet'], 3, 5) &&
     isStringArrayWithinBounds(concept['keyInstitutions'], 2, 4) &&
     isSettingScale(concept['settingScale']) &&
-    isBranchingPosture(concept['branchingPosture']) &&
     isNonEmptyString(concept['whatIfQuestion']) &&
     isNonEmptyString(concept['ironicTwist']) &&
     isNonEmptyString(concept['playerFantasy']) &&
@@ -202,7 +192,6 @@ export interface ConceptContext {
   readonly stakesSystemic: string;
   readonly deadlineMechanism: string;
   readonly actionVerbs: readonly string[];
-  readonly branchingPosture: BranchingPosture;
   readonly settingScale: SettingScale;
 }
 
