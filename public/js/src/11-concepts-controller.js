@@ -32,6 +32,13 @@
     var lastGeneratedConcepts = null;
     var lastSeeds = null;
     var selectedKernelId = '';
+    var kernelSummaryFields = {
+      thesis: kernelThesis,
+      valueAtStake: kernelValue,
+      opposingForce: kernelOpposingForce,
+      thematicQuestion: kernelQuestion,
+      overallScore: kernelScore,
+    };
 
     // Restore API key from session storage
     var storedKey = getApiKey();
@@ -65,56 +72,9 @@
       generateBtn.disabled = !(isApiKeyValid() && selectedKernelId);
     }
 
-    function hideKernelSummary() {
-      if (kernelSummary) {
-        kernelSummary.style.display = 'none';
-      }
-      if (kernelThesis) kernelThesis.textContent = '';
-      if (kernelValue) kernelValue.textContent = '';
-      if (kernelOpposingForce) kernelOpposingForce.textContent = '';
-      if (kernelQuestion) kernelQuestion.textContent = '';
-      if (kernelScore) kernelScore.textContent = '';
-    }
-
-    function renderKernelSummary(savedKernel) {
-      if (!savedKernel || !savedKernel.evaluatedKernel || !savedKernel.evaluatedKernel.kernel) {
-        hideKernelSummary();
-        return;
-      }
-
-      var kernel = savedKernel.evaluatedKernel.kernel;
-      if (kernelThesis) kernelThesis.textContent = kernel.dramaticThesis || '';
-      if (kernelValue) kernelValue.textContent = kernel.valueAtStake || '';
-      if (kernelOpposingForce) kernelOpposingForce.textContent = kernel.opposingForce || '';
-      if (kernelQuestion) kernelQuestion.textContent = kernel.thematicQuestion || '';
-      if (kernelScore) {
-        var rawScore = Number(savedKernel.evaluatedKernel.overallScore);
-        var safeScore = Number.isFinite(rawScore) ? Math.round(Math.max(0, Math.min(100, rawScore))) : 0;
-        kernelScore.textContent = safeScore + '/100';
-      }
-      if (kernelSummary) {
-        kernelSummary.style.display = 'block';
-      }
-    }
-
     async function loadKernelOptions() {
-      if (!(kernelSelector instanceof HTMLSelectElement)) {
-        return;
-      }
-
       try {
-        var response = await fetch('/kernels/api/list', { method: 'GET' });
-        var data = await response.json();
-        if (!response.ok || !data.success || !Array.isArray(data.kernels)) {
-          throw new Error(data.error || 'Failed to load kernels');
-        }
-
-        data.kernels.forEach(function (kernel) {
-          var option = document.createElement('option');
-          option.value = kernel.id;
-          option.textContent = kernel.name || 'Untitled Kernel';
-          kernelSelector.appendChild(option);
-        });
+        await loadKernelOptionsIntoSelect(kernelSelector);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to load kernels');
       }
@@ -127,25 +87,18 @@
 
       selectedKernelId = (kernelSelector.value || '').trim();
       if (!selectedKernelId) {
-        hideKernelSummary();
+        hideSavedKernelSummary(kernelSummary, kernelSummaryFields);
         updateGenerateButtonState();
         return;
       }
 
       try {
-        var response = await fetch('/kernels/api/' + encodeURIComponent(selectedKernelId), {
-          method: 'GET',
-        });
-        var data = await response.json();
-        if (!response.ok || !data.success || !data.kernel) {
-          throw new Error(data.error || 'Failed to load selected kernel');
-        }
-
-        renderKernelSummary(data.kernel);
+        var kernel = await loadSavedKernelById(selectedKernelId);
+        renderSavedKernelSummary(kernel, kernelSummary, kernelSummaryFields);
       } catch (error) {
         selectedKernelId = '';
         kernelSelector.value = '';
-        hideKernelSummary();
+        hideSavedKernelSummary(kernelSummary, kernelSummaryFields);
         showError(error instanceof Error ? error.message : 'Failed to load selected kernel');
       } finally {
         updateGenerateButtonState();
@@ -612,7 +565,7 @@
     if (editCancelBtn) editCancelBtn.addEventListener('click', closeEditModal);
     if (editSaveBtn) editSaveBtn.addEventListener('click', handleEditSave);
 
-    hideKernelSummary();
+    hideSavedKernelSummary(kernelSummary, kernelSummaryFields);
     updateGenerateButtonState();
     void loadKernelOptions();
   }

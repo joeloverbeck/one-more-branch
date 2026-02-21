@@ -78,3 +78,76 @@
     return '/images/icons/promise-' + promiseType.toLowerCase().replace(/_/g, '-') + '-' + urgency.toLowerCase() + '.png';
   }
 
+  function setNodeText(node, value) {
+    if (!node) {
+      return;
+    }
+    node.textContent = value || '';
+  }
+
+  function hideSavedKernelSummary(summaryNode, fieldNodes) {
+    if (summaryNode) {
+      summaryNode.style.display = 'none';
+    }
+    if (!fieldNodes) {
+      return;
+    }
+    setNodeText(fieldNodes.thesis, '');
+    setNodeText(fieldNodes.valueAtStake, '');
+    setNodeText(fieldNodes.opposingForce, '');
+    setNodeText(fieldNodes.thematicQuestion, '');
+    setNodeText(fieldNodes.overallScore, '');
+  }
+
+  function renderSavedKernelSummary(savedKernel, summaryNode, fieldNodes) {
+    if (!savedKernel || !savedKernel.evaluatedKernel || !savedKernel.evaluatedKernel.kernel) {
+      hideSavedKernelSummary(summaryNode, fieldNodes);
+      return;
+    }
+
+    var kernel = savedKernel.evaluatedKernel.kernel;
+    setNodeText(fieldNodes && fieldNodes.thesis, kernel.dramaticThesis || '');
+    setNodeText(fieldNodes && fieldNodes.valueAtStake, kernel.valueAtStake || '');
+    setNodeText(fieldNodes && fieldNodes.opposingForce, kernel.opposingForce || '');
+    setNodeText(fieldNodes && fieldNodes.thematicQuestion, kernel.thematicQuestion || '');
+
+    if (fieldNodes && fieldNodes.overallScore) {
+      var rawScore = Number(savedKernel.evaluatedKernel.overallScore);
+      var safeScore = Number.isFinite(rawScore) ? Math.round(Math.max(0, Math.min(100, rawScore))) : 0;
+      setNodeText(fieldNodes.overallScore, safeScore + '/100');
+    }
+
+    if (summaryNode) {
+      summaryNode.style.display = 'block';
+    }
+  }
+
+  async function loadKernelOptionsIntoSelect(kernelSelector) {
+    if (!(kernelSelector instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    var response = await fetch('/kernels/api/list', { method: 'GET' });
+    var data = await response.json();
+    if (!response.ok || !data.success || !Array.isArray(data.kernels)) {
+      throw new Error(data.error || 'Failed to load kernels');
+    }
+
+    data.kernels.forEach(function (kernel) {
+      var option = document.createElement('option');
+      option.value = kernel.id;
+      option.textContent = kernel.name || 'Untitled Kernel';
+      kernelSelector.appendChild(option);
+    });
+  }
+
+  async function loadSavedKernelById(kernelId) {
+    var response = await fetch('/kernels/api/' + encodeURIComponent(kernelId), {
+      method: 'GET',
+    });
+    var data = await response.json();
+    if (!response.ok || !data.success || !data.kernel) {
+      throw new Error(data.error || 'Failed to load selected kernel');
+    }
+    return data.kernel;
+  }
