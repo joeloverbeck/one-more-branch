@@ -948,4 +948,5 @@
     initConceptsPage();
     initKernelsPage();
     initEvolutionPage();
+    initKernelEvolutionPage();
   });

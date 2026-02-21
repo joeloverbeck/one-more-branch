@@ -52,6 +52,7 @@ describe('Engine types', () => {
         'RESTRUCTURING_STORY',
         'GENERATING_KERNELS',
         'EVALUATING_KERNELS',
+        'EVOLVING_KERNELS',
         'GENERATING_CONCEPTS',
         'EVOLVING_CONCEPTS',
         'EVALUATING_CONCEPTS',

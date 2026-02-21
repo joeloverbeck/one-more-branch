@@ -123,6 +123,15 @@ export function computeKernelOverallScore(scores: KernelDimensionScores): number
   );
 }
 
+export interface KernelEvolverContext {
+  readonly parentKernels: readonly EvaluatedKernel[];
+}
+
+export interface KernelEvolutionResult {
+  readonly kernels: readonly StoryKernel[];
+  readonly rawResponse: string;
+}
+
 export function passesKernelThresholds(scores: KernelDimensionScores): boolean {
   return (
     scores.dramaticClarity >= KERNEL_PASS_THRESHOLDS.dramaticClarity &&

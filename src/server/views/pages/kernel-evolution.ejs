@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="kernel-evolution-page">
+    <section class="form-section">
+      <h1>Evolve Kernels</h1>
+      <p class="spine-section-subtitle">Select 2-3 saved kernels from your library, then evolve offspring.</p>
+
+      <section id="kernel-evo-parent-section" class="spine-section">
+        <h2 class="spine-section-title">1. Select Parent Kernels</h2>
+        <p id="kernel-evo-selection-counter" class="spine-section-subtitle">Selected: 0/3 (select 2-3 kernels)</p>
+        <div id="kernel-evo-parent-cards" class="spine-options-container"></div>
+      </section>
+
+      <section id="kernel-evo-actions-section" class="spine-section">
+        <h2 class="spine-section-title">2. Evolve</h2>
+        <div class="form-group">
+          <label for="kernelEvoApiKey">OpenRouter API Key *</label>
+          <input
+            type="password"
+            id="kernelEvoApiKey"
+            required
+            placeholder="sk-or-..."
+            autocomplete="off"
+          >
+          <p class="form-help">
+            Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+            Your key is never stored on the server.
+          </p>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="kernel-evo-btn" class="btn btn-primary btn-large" disabled>Evolve Kernels</button>
+        </div>
+      </section>
+
+      <section id="kernel-evo-results-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Evolved Kernels</h2>
+        <p class="spine-section-subtitle">Click "Save to Library" on any kernel to add it to your library.</p>
+        <div id="kernel-evo-cards" class="spine-options-container"></div>
+      </section>
+    </section>
+
+    <div class="loading-overlay" id="kernel-evo-loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Working...</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

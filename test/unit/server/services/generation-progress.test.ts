@@ -99,6 +99,7 @@ describe('generation-progress service', () => {
       'concept-generation',
       'concept-evolution',
       'kernel-generation',
+      'kernel-evolution',
     ]);
 
     const service = createGenerationProgressService();
