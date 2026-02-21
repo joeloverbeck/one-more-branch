@@ -253,6 +253,8 @@ export type {
   KernelIdeatorContext,
   KernelIdeationResult,
   KernelEvaluatorContext,
+  KernelEvolverContext,
+  KernelEvolutionResult,
   KernelDimensionScores,
   KernelScoreEvidence,
   ScoredKernel,

@@ -1,6 +1,7 @@
 export const LLM_STAGE_KEYS = [
   'kernelIdeator',
   'kernelEvaluator',
+  'kernelEvolver',
   'conceptIdeator',
   'conceptEvolver',
   'conceptEvaluator',

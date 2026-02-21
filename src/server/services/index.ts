@@ -37,3 +37,10 @@ export {
   type EvolveConceptsResult,
   type EvolutionService,
 } from './evolution-service.js';
+export {
+  createKernelEvolutionService,
+  kernelEvolutionService,
+  type EvolveKernelsInput,
+  type EvolveKernelsResult,
+  type KernelEvolutionService,
+} from './kernel-evolution-service.js';
