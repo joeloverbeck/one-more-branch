@@ -64,12 +64,6 @@ conflictType:
 - PERSON_VS_SUPERNATURAL: Otherworldly or inexplicable forces.
 - PERSON_VS_FATE: Destiny, prophecy, or inevitable forces.
 
-branchingPosture:
-- TREE: Pure branch divergence with no reconvergence.
-- RECONVERGE: Branches split but meet at major junctions.
-- STORYLETS: Modular episodes gated by world state.
-- HUB_AND_SPOKE: Central base with radial branch excursions.
-
 settingScale:
 - INTIMATE: Single place or tightly bounded area.
 - LOCAL: Neighborhood, district, or small town scope.
@@ -167,7 +161,6 @@ OUTPUT REQUIREMENTS:
       "constraintSet": ["{{limiting rule}}"],
       "keyInstitutions": ["{{institution imposing pressure}}"],
       "settingScale": "{{INTIMATE|LOCAL|REGIONAL|GLOBAL}}",
-      "branchingPosture": "{{TREE|RECONVERGE|STORYLETS|HUB_AND_SPOKE}}",
       "whatIfQuestion": "{{single dramatic question ending in ?}}",
       "ironicTwist": "{{1-2 sentence irony}}",
       "playerFantasy": "{{1 sentence player fantasy}}",

@@ -143,9 +143,6 @@ Constraints: {{conceptSpec.constraintSet joined by '; '}}
 Key institutions: {{conceptSpec.keyInstitutions joined by '; '}}
 Setting scale: {{conceptSpec.settingScale}}
 
-STRUCTURAL METADATA:
-Branching posture: {{conceptSpec.branchingPosture}}
-
 CONSTRAINT: Use genre frame to calibrate character vocabulary and world fact tone. Use conflict engine to inform NPC motivations and relationships. Use inciting disruption to define protagonist's initial knowledge boundaries and emotional state. Use escape valve to embed alternative engagement hooks in NPCs and world facts. Use protagonist fields to shape speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms, constraints, and scale.
 {{/if}}
 

@@ -541,9 +541,6 @@
       populateDynamicList('keyInstitutions', conceptSpec.keyInstitutions);
       setSelectedById('settingScale', conceptSpec.settingScale);
 
-      // Structure & Design
-      setSelectedById('branchingPosture', conceptSpec.branchingPosture);
-
       openAllCollapsibleSections();
     }
 
@@ -588,7 +585,6 @@
         constraintSet: collectDynamicListEntries('constraintSet'),
         keyInstitutions: collectDynamicListEntries('keyInstitutions'),
         settingScale: getValueById('settingScale'),
-        branchingPosture: getValueById('branchingPosture'),
         whatIfQuestion: getValueById('whatIfQuestion'),
         ironicTwist: getValueById('ironicTwist'),
         playerFantasy: getValueById('playerFantasy'),

@@ -514,7 +514,6 @@
         setEditValue('genreSubversion', c.genreSubversion);
         setEditValue('genreFrame', c.genreFrame);
         setEditValue('conflictAxis', c.conflictAxis);
-        setEditValue('branchingPosture', c.branchingPosture);
         setEditValue('settingScale', c.settingScale);
         setEditValue('actionVerbs', Array.isArray(c.actionVerbs) ? c.actionVerbs.join('\n') : '');
         setEditValue('settingAxioms', Array.isArray(c.settingAxioms) ? c.settingAxioms.join('\n') : '');
@@ -551,7 +550,6 @@
         genreSubversion: getEditValue('genreSubversion'),
         genreFrame: getEditValue('genreFrame'),
         conflictAxis: getEditValue('conflictAxis'),
-        branchingPosture: getEditValue('branchingPosture'),
         settingScale: getEditValue('settingScale'),
         actionVerbs: linesToArray(getEditValue('actionVerbs')),
         settingAxioms: linesToArray(getEditValue('settingAxioms')),

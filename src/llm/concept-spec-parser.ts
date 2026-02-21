@@ -1,6 +1,5 @@
 import type { ConceptSpec } from '../models/index.js';
 import {
-  isBranchingPosture,
   isConflictAxis,
   isGenreFrame,
   isSettingScale,
@@ -85,13 +84,6 @@ export function parseConceptSpec(
       true,
     );
   }
-  if (!isBranchingPosture(data['branchingPosture'])) {
-    throw new LLMError(
-      `${label} has invalid branchingPosture: ${String(data['branchingPosture'])}`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
-  }
   return {
     oneLineHook: requireNonEmptyString(data['oneLineHook'], 'oneLineHook', label),
     elevatorParagraph: requireNonEmptyString(data['elevatorParagraph'], 'elevatorParagraph', label),
@@ -112,7 +104,6 @@ export function parseConceptSpec(
     constraintSet: requireStringArray(data['constraintSet'], 'constraintSet', label, 3, 5),
     keyInstitutions: requireStringArray(data['keyInstitutions'], 'keyInstitutions', label, 2, 4),
     settingScale: data['settingScale'],
-    branchingPosture: data['branchingPosture'],
     whatIfQuestion: requireNonEmptyString(data['whatIfQuestion'], 'whatIfQuestion', label),
     ironicTwist: requireNonEmptyString(data['ironicTwist'], 'ironicTwist', label),
     playerFantasy: requireNonEmptyString(data['playerFantasy'], 'playerFantasy', label),

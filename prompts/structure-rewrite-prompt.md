@@ -110,7 +110,7 @@ Generate NEW beats to replace invalidated ones. You are regenerating: {{actsToRe
 
 REQUIREMENTS (follow ALL):
 1. Preserve completed beats exactly-include them in the output with unchanged names, descriptions, objectives, and roles
-2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "{{tone}}" in naming, stakes, and emotional register. Do not drift toward generic dark fantasy.
+2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "{{tone}}" in naming, stakes, and emotional register. Do not drift toward generic default-genre conventions; remain inside the given tone/genre identity.
 3. Build naturally from the current narrative state
 4. Follow dramatic structure principles (setup, confrontation, resolution)
 5. Keep 2-4 beats per act total (including preserved beats)

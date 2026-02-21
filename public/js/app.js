@@ -4413,9 +4413,6 @@ function createRecapModalController(initialData) {
       populateDynamicList('keyInstitutions', conceptSpec.keyInstitutions);
       setSelectedById('settingScale', conceptSpec.settingScale);
 
-      // Structure & Design
-      setSelectedById('branchingPosture', conceptSpec.branchingPosture);
-
       openAllCollapsibleSections();
     }
 
@@ -4460,7 +4457,6 @@ function createRecapModalController(initialData) {
         constraintSet: collectDynamicListEntries('constraintSet'),
         keyInstitutions: collectDynamicListEntries('keyInstitutions'),
         settingScale: getValueById('settingScale'),
-        branchingPosture: getValueById('branchingPosture'),
         whatIfQuestion: getValueById('whatIfQuestion'),
         ironicTwist: getValueById('ironicTwist'),
         playerFantasy: getValueById('playerFantasy'),
@@ -5475,7 +5471,6 @@ function createRecapModalController(initialData) {
         setEditValue('genreSubversion', c.genreSubversion);
         setEditValue('genreFrame', c.genreFrame);
         setEditValue('conflictAxis', c.conflictAxis);
-        setEditValue('branchingPosture', c.branchingPosture);
         setEditValue('settingScale', c.settingScale);
         setEditValue('actionVerbs', Array.isArray(c.actionVerbs) ? c.actionVerbs.join('\n') : '');
         setEditValue('settingAxioms', Array.isArray(c.settingAxioms) ? c.settingAxioms.join('\n') : '');
@@ -5512,7 +5507,6 @@ function createRecapModalController(initialData) {
         genreSubversion: getEditValue('genreSubversion'),
         genreFrame: getEditValue('genreFrame'),
         conflictAxis: getEditValue('conflictAxis'),
-        branchingPosture: getEditValue('branchingPosture'),
         settingScale: getEditValue('settingScale'),
         actionVerbs: linesToArray(getEditValue('actionVerbs')),
         settingAxioms: linesToArray(getEditValue('settingAxioms')),

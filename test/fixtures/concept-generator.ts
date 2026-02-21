@@ -29,7 +29,6 @@ export function createConceptSpecFixture(index = 1): ConceptSpec {
     constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
     keyInstitutions: ['Institution 1', 'Institution 2'],
     settingScale: 'LOCAL',
-    branchingPosture: 'RECONVERGE',
     whatIfQuestion: `What if question ${index}?`,
     ironicTwist: `Ironic twist ${index}.`,
     playerFantasy: `Player fantasy ${index}.`,
