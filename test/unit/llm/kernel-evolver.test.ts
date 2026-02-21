@@ -21,7 +21,12 @@ import { CONTENT_POLICY } from '../../../src/llm/content-policy';
 import { evolveKernels, parseKernelEvolutionResponse } from '../../../src/llm/kernel-evolver';
 import { buildKernelEvolverPrompt } from '../../../src/llm/prompts/kernel-evolver-prompt';
 import { KERNEL_EVOLUTION_SCHEMA } from '../../../src/llm/schemas/kernel-evolver-schema';
-import type { DirectionOfChange, KernelEvolverContext, StoryKernel } from '../../../src/models';
+import type {
+  DirectionOfChange,
+  EvaluatedKernel,
+  KernelEvolverContext,
+  StoryKernel,
+} from '../../../src/models';
 
 function createKernel(index: number, direction: DirectionOfChange = 'POSITIVE'): StoryKernel {
   return {
@@ -48,7 +53,7 @@ function createValidPayload(): { kernels: StoryKernel[] } {
   };
 }
 
-function createEvaluatedKernelFixture(index: number) {
+function createEvaluatedKernelFixture(index: number): EvaluatedKernel {
   return {
     kernel: createKernel(index),
     scores: {

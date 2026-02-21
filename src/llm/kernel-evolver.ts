@@ -12,7 +12,8 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
   }
 
   const data = parsed as Record<string, unknown>;
-  if (!Array.isArray(data['kernels'])) {
+  const kernelsValue = data['kernels'];
+  if (!Array.isArray(kernelsValue)) {
     throw new LLMError(
       'Kernel evolution response missing kernels array',
       'STRUCTURE_PARSE_ERROR',
@@ -20,17 +21,19 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     );
   }
 
-  if (data['kernels'].length !== 6) {
+  const kernelItems: readonly unknown[] = kernelsValue;
+
+  if (kernelItems.length !== 6) {
     throw new LLMError(
-      `Kernel evolution response must include exactly 6 kernels (received: ${data['kernels'].length})`,
+      `Kernel evolution response must include exactly 6 kernels (received: ${kernelItems.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );
   }
 
   const kernels: StoryKernel[] = [];
-  for (let i = 0; i < data['kernels'].length; i++) {
-    const item = data['kernels'][i];
+  for (let i = 0; i < kernelItems.length; i++) {
+    const item = kernelItems[i];
     if (!isStoryKernel(item)) {
       throw new LLMError(
         `Kernel evolution response item ${i + 1} is not a valid StoryKernel`,
