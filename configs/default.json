@@ -11,6 +11,7 @@
       "kernelIdeator": "anthropic/claude-sonnet-4.6",
       "kernelEvaluator": "z-ai/glm-5",
       "conceptIdeator": "anthropic/claude-sonnet-4.6",
+      "conceptEvolver": "anthropic/claude-sonnet-4.6",
       "conceptEvaluator": "z-ai/glm-5",
       "conceptStressTester": "anthropic/claude-sonnet-4.6",
       "spine": "anthropic/claude-sonnet-4.6",

@@ -1,4 +1,5 @@
 import { AppConfigSchema } from '@/config/schemas';
+import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
 
 describe('config schemas', () => {
   describe('AppConfigSchema', () => {
@@ -164,25 +165,19 @@ describe('config schemas', () => {
     });
 
     it('accepts explicit per-stage model overrides including kernel and concept stages', () => {
+      const perStageModels = Object.fromEntries(
+        LLM_STAGE_KEYS.map((stage) => [stage, `test-model-for-${stage}`]),
+      );
+
       const result = AppConfigSchema.parse({
         llm: {
-          models: {
-            kernelIdeator: 'anthropic/claude-sonnet-4.6',
-            kernelEvaluator: 'z-ai/glm-5',
-            conceptIdeator: 'anthropic/claude-sonnet-4.6',
-            conceptEvaluator: 'z-ai/glm-5',
-            conceptStressTester: 'anthropic/claude-sonnet-4.6',
-            writer: 'anthropic/claude-sonnet-4.6',
-          },
+          models: perStageModels,
         },
       });
 
-      expect(result.llm.models?.kernelIdeator).toBe('anthropic/claude-sonnet-4.6');
-      expect(result.llm.models?.kernelEvaluator).toBe('z-ai/glm-5');
-      expect(result.llm.models?.conceptIdeator).toBe('anthropic/claude-sonnet-4.6');
-      expect(result.llm.models?.conceptEvaluator).toBe('z-ai/glm-5');
-      expect(result.llm.models?.conceptStressTester).toBe('anthropic/claude-sonnet-4.6');
-      expect(result.llm.models?.writer).toBe('anthropic/claude-sonnet-4.6');
+      for (const stage of LLM_STAGE_KEYS) {
+        expect(result.llm.models?.[stage]).toBe(`test-model-for-${stage}`);
+      }
     });
 
     it('rejects unknown llm.models stage keys', () => {
@@ -193,6 +188,7 @@ describe('config schemas', () => {
               kernelIdeator: 'anthropic/claude-sonnet-4.6',
               kernelEvaluator: 'z-ai/glm-5',
               conceptIdeator: 'anthropic/claude-sonnet-4.6',
+              conceptEvolver: 'anthropic/claude-sonnet-4.6',
               invalidStageName: 'z-ai/glm-5',
             },
           },

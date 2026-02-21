@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LLM_STAGE_KEYS } from './llm-stage-registry.js';
 
 /**
  * Server configuration schema.
@@ -35,25 +36,11 @@ const PromptOptionsConfigSchema = z.object({
 /**
  * LLM configuration schema.
  */
-const LLMModelsConfigSchema = z
-  .object({
-    kernelIdeator: z.string().min(1).optional(),
-    kernelEvaluator: z.string().min(1).optional(),
-    conceptIdeator: z.string().min(1).optional(),
-    conceptEvaluator: z.string().min(1).optional(),
-    conceptStressTester: z.string().min(1).optional(),
-    conceptVerifier: z.string().min(1).optional(),
-    spine: z.string().min(1).optional(),
-    entityDecomposer: z.string().min(1).optional(),
-    structure: z.string().min(1).optional(),
-    planner: z.string().min(1).optional(),
-    accountant: z.string().min(1).optional(),
-    lorekeeper: z.string().min(1).optional(),
-    writer: z.string().min(1).optional(),
-    analyst: z.string().min(1).optional(),
-    agendaResolver: z.string().min(1).optional(),
-  })
-  .strict();
+const llmModelsSchemaShape = Object.fromEntries(
+  LLM_STAGE_KEYS.map((stage) => [stage, z.string().min(1).optional()]),
+) as Record<(typeof LLM_STAGE_KEYS)[number], z.ZodOptional<z.ZodString>>;
+
+const LLMModelsConfigSchema = z.object(llmModelsSchemaShape).strict();
 
 const LLMConfigSchema = z.object({
   defaultModel: z.string().min(1).default('anthropic/claude-sonnet-4.5'),
