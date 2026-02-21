@@ -223,6 +223,10 @@ export type {
   ConceptEvaluationResult,
   ConceptStressTesterContext,
   ConceptStressTestResult,
+  LoadBearingCheck,
+  ConceptVerification,
+  ConceptVerifierContext,
+  ConceptVerificationResult,
 } from './concept-generator';
 export {
   GENRE_FRAMES,

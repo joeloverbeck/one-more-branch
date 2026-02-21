@@ -8,6 +8,7 @@ export type PromptType =
   | 'conceptIdeator'
   | 'conceptEvaluator'
   | 'conceptStressTester'
+  | 'conceptVerifier'
   | 'opening'
   | 'writer'
   | 'analyst'

@@ -1,5 +1,6 @@
 import type {
   ConceptSpec,
+  ConceptVerification,
   DriftRisk,
   EvaluatedConcept,
   PlayerBreak,
@@ -29,6 +30,7 @@ export interface SavedConcept {
     readonly driftRisks: readonly DriftRisk[];
     readonly playerBreaks: readonly PlayerBreak[];
   };
+  readonly verificationResult?: ConceptVerification;
 }
 
 export interface GeneratedConceptBatch {
@@ -38,6 +40,7 @@ export interface GeneratedConceptBatch {
   readonly ideatedConcepts: readonly ConceptSpec[];
   readonly scoredConcepts: readonly ScoredConcept[];
   readonly selectedConcepts: readonly EvaluatedConcept[];
+  readonly verifications?: readonly ConceptVerification[];
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
@@ -138,6 +141,37 @@ function isEvaluatedConcept(value: unknown): value is EvaluatedConcept {
   );
 }
 
+function isLoadBearingCheck(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value['passes'] === 'boolean' &&
+    isNonEmptyString(value['reasoning']) &&
+    isNonEmptyString(value['genericCollapse'])
+  );
+}
+
+function isConceptVerification(value: unknown): value is ConceptVerification {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isNonEmptyString(value['signatureScenario']) &&
+    Array.isArray(value['escalatingSetpieces']) &&
+    value['escalatingSetpieces'].length === 6 &&
+    value['escalatingSetpieces'].every((item: unknown) => isNonEmptyString(item)) &&
+    isNonEmptyString(value['inevitabilityStatement']) &&
+    isLoadBearingCheck(value['loadBearingCheck']) &&
+    typeof value['conceptIntegrityScore'] === 'number' &&
+    Number.isFinite(value['conceptIntegrityScore']) &&
+    value['conceptIntegrityScore'] >= 0 &&
+    value['conceptIntegrityScore'] <= 100
+  );
+}
+
 function isStressTestResult(
   value: unknown
 ): value is { readonly driftRisks: readonly DriftRisk[]; readonly playerBreaks: readonly PlayerBreak[] } {
@@ -183,7 +217,8 @@ export function isSavedConcept(value: unknown): value is SavedConcept {
     (value['preHardenedConcept'] === undefined || isEvaluatedConcept(value['preHardenedConcept'])) &&
     (value['hardenedAt'] === undefined || isIsoDateString(value['hardenedAt'])) &&
     (value['sourceKernelId'] === undefined || isNonEmptyString(value['sourceKernelId'])) &&
-    (value['stressTestResult'] === undefined || isStressTestResult(value['stressTestResult']))
+    (value['stressTestResult'] === undefined || isStressTestResult(value['stressTestResult'])) &&
+    (value['verificationResult'] === undefined || isConceptVerification(value['verificationResult']))
   );
 }
 
@@ -201,6 +236,9 @@ export function isGeneratedConceptBatch(value: unknown): value is GeneratedConce
     Array.isArray(value['scoredConcepts']) &&
     value['scoredConcepts'].every((entry) => isScoredConcept(entry)) &&
     Array.isArray(value['selectedConcepts']) &&
-    value['selectedConcepts'].every((entry) => isEvaluatedConcept(entry))
+    value['selectedConcepts'].every((entry) => isEvaluatedConcept(entry)) &&
+    (value['verifications'] === undefined ||
+      (Array.isArray(value['verifications']) &&
+        value['verifications'].every((entry: unknown) => isConceptVerification(entry))))
   );
 }

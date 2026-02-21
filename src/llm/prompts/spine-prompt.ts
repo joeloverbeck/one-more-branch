@@ -1,4 +1,5 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
@@ -14,6 +15,7 @@ export interface SpinePromptContext {
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
+  conceptVerification?: ConceptVerification;
 }
 
 const SPINE_ROLE_INTRO = `You are a story architect designing the thematic spine of interactive branching fiction. Your job is to identify the invariant causal chain and thematic logic that will anchor the entire story — the dramatic question, the protagonist's inner transformation, and the force that opposes them.`;
@@ -97,6 +99,24 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
   return lines.join('\n') + '\n\n';
 }
 
+function buildConceptVerificationSection(verification?: ConceptVerification): string {
+  if (!verification) {
+    return '';
+  }
+
+  const lines: string[] = [
+    'CONCEPT VERIFICATION (upstream proof of concept specificity):',
+    `Signature scenario: ${verification.signatureScenario}`,
+    `Narrative inevitability: ${verification.inevitabilityStatement}`,
+    '',
+    'CONSTRAINT: Your centralDramaticQuestion should make the signature scenario',
+    'inevitable — this is the most iconic decision moment the concept enables.',
+    'The dramatic question should steer toward it, not away from it.',
+  ];
+
+  return lines.join('\n') + '\n\n';
+}
+
 export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
   const systemSections: string[] = [SPINE_ROLE_INTRO];
 
@@ -122,13 +142,14 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
 
   const conceptSection = buildConceptAnalysisSection(context.conceptSpec);
   const kernelSection = buildKernelGroundingSection(context.storyKernel);
+  const verificationSection = buildConceptVerificationSection(context.conceptVerification);
 
   const userPrompt = `Generate exactly 3 story spine options for the following story setup.
 
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}${conceptSection}${kernelSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}${conceptSection}${kernelSection}${verificationSection}TONE/GENRE: ${context.tone}
 
 DIVERGENCE CONSTRAINT:
 Generate exactly 3 spine options. Each MUST differ in at least one of:

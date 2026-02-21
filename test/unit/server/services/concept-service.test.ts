@@ -3,6 +3,7 @@ import type {
   ConceptDimensionScores,
   ConceptSpec,
   ConceptStressTestResult,
+  ConceptVerification,
   EvaluatedConcept,
   ScoredConcept,
 } from '@/models';
@@ -13,7 +14,10 @@ import {
   type StressTestInput,
 } from '@/server/services/concept-service';
 import type { StoryKernel } from '@/models/story-kernel';
-import { createConceptSpecFixture } from '../../../fixtures/concept-generator';
+import {
+  createConceptSpecFixture,
+  createConceptVerificationFixture,
+} from '../../../fixtures/concept-generator';
 
 function createConceptSpec(index = 1): ConceptSpec {
   return createConceptSpecFixture(index);
@@ -71,11 +75,12 @@ function createScoredConcept(index = 1): ScoredConcept {
 
 describe('concept-service', () => {
   describe('generateConcepts', () => {
-    it('calls ideator then evaluator with normalized inputs', async () => {
+    it('calls ideator then evaluator then verifier with normalized inputs', async () => {
       const callOrder: string[] = [];
       const ideationConcepts = [createConceptSpec(1), createConceptSpec(2)];
       const evaluated = [createEvaluatedConcept(1)];
       const scored = [createScoredConcept(1), createScoredConcept(2)];
+      const verifications: ConceptVerification[] = [createConceptVerificationFixture(1)];
       const generateConceptIdeas = jest.fn(() => {
         callOrder.push('ideator');
         return Promise.resolve({
@@ -91,11 +96,19 @@ describe('concept-service', () => {
           rawResponse: 'raw-eval',
         });
       });
+      const verifyConcepts = jest.fn(() => {
+        callOrder.push('verifier');
+        return Promise.resolve({
+          verifications,
+          rawResponse: 'raw-verify',
+        });
+      });
       const stressTestConcept = jest.fn();
       const service = createConceptService({
         generateConceptIdeas,
         evaluateConcepts,
         stressTestConcept,
+        verifyConcepts,
       });
 
       const input: GenerateConceptsInput = {
@@ -110,7 +123,7 @@ describe('concept-service', () => {
 
       const result = await service.generateConcepts(input);
 
-      expect(callOrder).toEqual(['ideator', 'evaluator']);
+      expect(callOrder).toEqual(['ideator', 'evaluator', 'verifier']);
       expect(generateConceptIdeas).toHaveBeenCalledWith(
         {
           genreVibes: 'noir',
@@ -136,10 +149,15 @@ describe('concept-service', () => {
         },
         'valid-key-12345',
       );
+      expect(verifyConcepts).toHaveBeenCalledWith(
+        { evaluatedConcepts: evaluated },
+        'valid-key-12345',
+      );
       expect(result).toEqual({
         ideatedConcepts: ideationConcepts,
         scoredConcepts: scored,
         evaluatedConcepts: evaluated,
+        verifications,
       });
       expect(stressTestConcept).not.toHaveBeenCalled();
     });
@@ -149,6 +167,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn(),
       });
 
       await expect(
@@ -169,6 +188,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn(),
       });
 
       await expect(
@@ -186,6 +206,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn().mockRejectedValue(llmError),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn(),
       });
 
       await expect(
@@ -207,6 +228,7 @@ describe('concept-service', () => {
         }),
         evaluateConcepts: jest.fn().mockRejectedValue(llmError),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn(),
       });
 
       await service
@@ -226,7 +248,7 @@ describe('concept-service', () => {
         });
     });
 
-    it('emits stage callbacks for ideation and evaluation in order', async () => {
+    it('emits stage callbacks for ideation, evaluation, and verification in order', async () => {
       const events: Array<{ stage: string; status: string; attempt: number }> = [];
       const service = createConceptService({
         generateConceptIdeas: jest.fn().mockResolvedValue({
@@ -239,6 +261,10 @@ describe('concept-service', () => {
           rawResponse: 'raw-eval',
         }),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn().mockResolvedValue({
+          verifications: [createConceptVerificationFixture(1)],
+          rawResponse: 'raw-verify',
+        }),
       });
 
       await service.generateConcepts({
@@ -259,6 +285,8 @@ describe('concept-service', () => {
         { stage: 'GENERATING_CONCEPTS', status: 'completed', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
+        { stage: 'VERIFYING_CONCEPTS', status: 'started', attempt: 1 },
+        { stage: 'VERIFYING_CONCEPTS', status: 'completed', attempt: 1 },
       ]);
     });
 
@@ -267,6 +295,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn(),
       });
 
       await expect(
@@ -304,6 +333,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: stressTester,
+        verifyConcepts: jest.fn(),
       });
 
       const input: StressTestInput = {
@@ -331,6 +361,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
+        verifyConcepts: jest.fn(),
       });
 
       await expect(
@@ -373,6 +404,7 @@ describe('concept-service', () => {
         generateConceptIdeas: jest.fn(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn().mockResolvedValue(output),
+        verifyConcepts: jest.fn(),
       });
 
       await service.stressTestConcept({

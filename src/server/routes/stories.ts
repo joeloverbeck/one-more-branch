@@ -6,7 +6,7 @@ import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
 import { StoryId } from '../../models';
 import { isConceptSpec } from '../../models/concept-generator.js';
-import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { ConceptSpec, ConceptVerification } from '../../models/concept-generator.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import { isStoryKernel } from '../../models/story-kernel.js';
@@ -90,6 +90,7 @@ storyRoutes.post(
       apiKey?: string;
       conceptSpec?: unknown;
       storyKernel?: unknown;
+      conceptVerification?: ConceptVerification;
       progressId?: unknown;
     };
 
@@ -129,6 +130,13 @@ storyRoutes.post(
       const validatedKernel: StoryKernel | undefined =
         isStoryKernel(body.storyKernel) ? body.storyKernel : undefined;
 
+      const validatedVerification: ConceptVerification | undefined =
+        body.conceptVerification &&
+        typeof body.conceptVerification === 'object' &&
+        typeof body.conceptVerification.signatureScenario === 'string'
+          ? body.conceptVerification
+          : undefined;
+
       const result = await generateStorySpines(
         {
           characterConcept,
@@ -138,6 +146,7 @@ storyRoutes.post(
           startingSituation: body.startingSituation?.trim(),
           conceptSpec: validatedConceptSpec,
           storyKernel: validatedKernel,
+          conceptVerification: validatedVerification,
         },
         apiKey
       );

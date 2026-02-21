@@ -113,6 +113,7 @@ async function buildPreparedStory(
       decomposedWorld: story.decomposedWorld!,
       conceptSpec: story.conceptSpec,
       storyKernel: story.storyKernel,
+      conceptVerification: options.conceptVerification,
     },
     options.apiKey
   );

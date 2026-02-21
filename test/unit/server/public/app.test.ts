@@ -106,6 +106,7 @@ describe('public client script', () => {
     expect(script).toContain('GENERATING_KERNELS: [');
     expect(script).toContain('EVALUATING_KERNELS: [');
     expect(script).toContain('STRESS_TESTING_CONCEPT: [');
+    expect(script).toContain('VERIFYING_CONCEPTS: [');
     expect(script).toContain('PLANNING_PAGE: [');
     expect(script).toContain('ACCOUNTING_STATE: [');
     expect(script).toContain('WRITING_OPENING_PAGE: [');
@@ -123,6 +124,7 @@ describe('public client script', () => {
     expect(script).toContain("GENERATING_KERNELS: 'IDEATING'");
     expect(script).toContain("EVALUATING_KERNELS: 'EVALUATING'");
     expect(script).toContain("STRESS_TESTING_CONCEPT: 'HARDENING'");
+    expect(script).toContain("VERIFYING_CONCEPTS: 'VERIFYING'");
   });
 
   it('ships 20+ phrase variants for each concept stage pool', () => {
@@ -133,6 +135,7 @@ describe('public client script', () => {
     expect(countStagePhrases(script, 'GENERATING_KERNELS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'EVALUATING_KERNELS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'STRESS_TESTING_CONCEPT')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'VERIFYING_CONCEPTS')).toBeGreaterThanOrEqual(20);
   });
 
   it('polls generation progress and falls back on unknown or polling failures', () => {

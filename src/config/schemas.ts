@@ -42,6 +42,7 @@ const LLMModelsConfigSchema = z
     conceptIdeator: z.string().min(1).optional(),
     conceptEvaluator: z.string().min(1).optional(),
     conceptStressTester: z.string().min(1).optional(),
+    conceptVerifier: z.string().min(1).optional(),
     spine: z.string().min(1).optional(),
     entityDecomposer: z.string().min(1).optional(),
     structure: z.string().min(1).optional(),

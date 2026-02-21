@@ -1,4 +1,4 @@
-import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { ConceptSpec, ConceptVerification } from '../../models/concept-generator.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
@@ -18,6 +18,7 @@ export interface StructureContext {
   decomposedWorld: DecomposedWorld;
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
+  conceptVerification?: ConceptVerification;
 }
 
 function buildCharacterSection(context: StructureContext): string {
@@ -63,6 +64,25 @@ Pressure source: ${conceptSpec.pressureSource}
 Deadline mechanism: ${conceptSpec.deadlineMechanism}
 
 Each act's stakes should escalate FROM these foundations. Act 1 stakes should connect to the personal dimension, Act 2 should compound both personal and systemic, Act 3 should put the systemic stakes at maximum risk.
+
+`;
+}
+
+function buildSetpieceBankSection(verification?: ConceptVerification): string {
+  if (!verification || verification.escalatingSetpieces.length === 0) {
+    return '';
+  }
+
+  const numbered = verification.escalatingSetpieces
+    .map((setpiece, i) => `${i + 1}. ${setpiece}`)
+    .join('\n');
+
+  return `CONCEPT-UNIQUE SETPIECE BANK (from upstream verification — use as beat seeds):
+${numbered}
+
+CONSTRAINT: When writing uniqueScenarioHook for escalation and turning_point beats,
+draw from or build upon these verified setpieces. You may adapt, combine, or extend
+them, but at least 3 of your beat hooks should trace back to a setpiece above.
 
 `;
 }
@@ -116,10 +136,11 @@ export function buildStructurePrompt(
   const spineSection = buildSpineSection(context.spine);
   const toneFeelSection = buildToneFeelSection(context);
   const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
+  const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
 
   const userPrompt = `Generate a story structure before the first page.
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.
