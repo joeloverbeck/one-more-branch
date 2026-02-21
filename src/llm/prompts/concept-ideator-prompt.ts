@@ -3,7 +3,6 @@ import {
   CONFLICT_AXES,
   GENRE_FRAMES,
   SETTING_SCALES,
-  STATE_COMPLEXITIES,
   type ConceptIdeatorContext,
 } from '../../models/concept-generator.js';
 import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
@@ -92,11 +91,7 @@ ${buildEnumGuidance('settingScale', SETTING_SCALES, [
   'World-scale or multi-realm implications.',
 ])}
 
-${buildEnumGuidance('stateComplexity', STATE_COMPLEXITIES, [
-  '5-8 core variables; light state load.',
-  '9-14 core variables; moderate coordination.',
-  '15-20 core variables; heavy state coupling.',
-])}`;
+`;
 }
 
 function normalize(value: string | undefined): string | undefined {

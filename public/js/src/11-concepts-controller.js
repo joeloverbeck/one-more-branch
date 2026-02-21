@@ -522,7 +522,6 @@
         setEditValue('conflictAxis', c.conflictAxis);
         setEditValue('branchingPosture', c.branchingPosture);
         setEditValue('settingScale', c.settingScale);
-        setEditValue('stateComplexity', c.stateComplexity);
         setEditValue('actionVerbs', Array.isArray(c.actionVerbs) ? c.actionVerbs.join('\n') : '');
         setEditValue('settingAxioms', Array.isArray(c.settingAxioms) ? c.settingAxioms.join('\n') : '');
         setEditValue('constraintSet', Array.isArray(c.constraintSet) ? c.constraintSet.join('\n') : '');
@@ -560,7 +559,6 @@
         conflictAxis: getEditValue('conflictAxis'),
         branchingPosture: getEditValue('branchingPosture'),
         settingScale: getEditValue('settingScale'),
-        stateComplexity: getEditValue('stateComplexity'),
         actionVerbs: linesToArray(getEditValue('actionVerbs')),
         settingAxioms: linesToArray(getEditValue('settingAxioms')),
         constraintSet: linesToArray(getEditValue('constraintSet')),

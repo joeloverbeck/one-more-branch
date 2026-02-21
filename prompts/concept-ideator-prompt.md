@@ -76,11 +76,6 @@ settingScale:
 - REGIONAL: City, territory, or regional theater.
 - GLOBAL: World-scale or multi-realm implications.
 
-stateComplexity:
-- LOW: 5-8 core variables; light state load.
-- MEDIUM: 9-14 core variables; moderate coordination.
-- HIGH: 15-20 core variables; heavy state coupling.
-
 QUALITY ANCHORS:
 - A concept is a generative engine, not a plot summary.
 - oneLineHook must be graspable without proper nouns.
@@ -181,7 +176,6 @@ OUTPUT REQUIREMENTS:
       "keyInstitutions": ["{{institution imposing pressure}}"],
       "settingScale": "{{INTIMATE|LOCAL|REGIONAL|GLOBAL}}",
       "branchingPosture": "{{TREE|RECONVERGE|STORYLETS|HUB_AND_SPOKE}}",
-      "stateComplexity": "{{LOW|MEDIUM|HIGH}}",
       "whatIfQuestion": "{{single dramatic question ending in ?}}",
       "ironicTwist": "{{1-2 sentence irony}}",
       "playerFantasy": "{{1 sentence player fantasy}}"

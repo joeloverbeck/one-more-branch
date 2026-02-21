@@ -5,7 +5,6 @@ import {
   DRIFT_RISK_MITIGATION_TYPES,
   GENRE_FRAMES,
   SETTING_SCALES,
-  STATE_COMPLEXITIES,
   computeOverallScore,
   isBranchingPosture,
   isConflictAxis,
@@ -13,7 +12,6 @@ import {
   isDriftRiskMitigationType,
   isGenreFrame,
   isSettingScale,
-  isStateComplexity,
   type ConceptDimensionScores,
 } from '../../src/models/concept-generator';
 import { createConceptSpecFixture } from '../fixtures/concept-generator';
@@ -43,7 +41,6 @@ describe('concept-generator types', () => {
     expectTypeGuardBehavior(CONFLICT_AXES, isConflictAxis);
     expectTypeGuardBehavior(BRANCHING_POSTURES, isBranchingPosture);
     expectTypeGuardBehavior(SETTING_SCALES, isSettingScale);
-    expectTypeGuardBehavior(STATE_COMPLEXITIES, isStateComplexity);
     expectTypeGuardBehavior(DRIFT_RISK_MITIGATION_TYPES, isDriftRiskMitigationType);
   });
 
@@ -52,7 +49,6 @@ describe('concept-generator types', () => {
     expect(CONFLICT_AXES).toHaveLength(8);
     expect(BRANCHING_POSTURES).toHaveLength(4);
     expect(SETTING_SCALES).toHaveLength(4);
-    expect(STATE_COMPLEXITIES).toHaveLength(3);
     expect(DRIFT_RISK_MITIGATION_TYPES).toHaveLength(4);
   });
 

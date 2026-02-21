@@ -4392,7 +4392,6 @@ function createRecapModalController(initialData) {
 
       // Structure & Design
       setSelectedById('branchingPosture', conceptSpec.branchingPosture);
-      setSelectedById('stateComplexity', conceptSpec.stateComplexity);
 
       openAllCollapsibleSections();
     }
@@ -4439,7 +4438,6 @@ function createRecapModalController(initialData) {
         keyInstitutions: collectDynamicListEntries('keyInstitutions'),
         settingScale: getValueById('settingScale'),
         branchingPosture: getValueById('branchingPosture'),
-        stateComplexity: getValueById('stateComplexity'),
         whatIfQuestion: getValueById('whatIfQuestion'),
         ironicTwist: getValueById('ironicTwist'),
         playerFantasy: getValueById('playerFantasy'),
@@ -5462,7 +5460,6 @@ function createRecapModalController(initialData) {
         setEditValue('conflictAxis', c.conflictAxis);
         setEditValue('branchingPosture', c.branchingPosture);
         setEditValue('settingScale', c.settingScale);
-        setEditValue('stateComplexity', c.stateComplexity);
         setEditValue('actionVerbs', Array.isArray(c.actionVerbs) ? c.actionVerbs.join('\n') : '');
         setEditValue('settingAxioms', Array.isArray(c.settingAxioms) ? c.settingAxioms.join('\n') : '');
         setEditValue('constraintSet', Array.isArray(c.constraintSet) ? c.constraintSet.join('\n') : '');
@@ -5500,7 +5497,6 @@ function createRecapModalController(initialData) {
         conflictAxis: getEditValue('conflictAxis'),
         branchingPosture: getEditValue('branchingPosture'),
         settingScale: getEditValue('settingScale'),
-        stateComplexity: getEditValue('stateComplexity'),
         actionVerbs: linesToArray(getEditValue('actionVerbs')),
         settingAxioms: linesToArray(getEditValue('settingAxioms')),
         constraintSet: linesToArray(getEditValue('constraintSet')),
