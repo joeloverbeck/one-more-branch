@@ -3,27 +3,8 @@ import type { ConceptSpec, ConceptVerification } from '../models/concept-generat
 import type { StorySpine } from '../models/story-spine.js';
 import type { StoryKernel } from '../models/story-kernel.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
-
-export const GENERATION_STAGES = [
-  'GENERATING_SPINE',
-  'PLANNING_PAGE',
-  'ACCOUNTING_STATE',
-  'CURATING_CONTEXT',
-  'WRITING_OPENING_PAGE',
-  'WRITING_CONTINUING_PAGE',
-  'ANALYZING_SCENE',
-  'RESOLVING_AGENDAS',
-  'DECOMPOSING_ENTITIES',
-  'STRUCTURING_STORY',
-  'RESTRUCTURING_STORY',
-  'GENERATING_KERNELS',
-  'EVALUATING_KERNELS',
-  'GENERATING_CONCEPTS',
-  'EVOLVING_CONCEPTS',
-  'EVALUATING_CONCEPTS',
-  'STRESS_TESTING_CONCEPT',
-  'VERIFYING_CONCEPTS',
-] as const;
+export { GENERATION_STAGES } from './generated-generation-stages.js';
+import { GENERATION_STAGES } from './generated-generation-stages.js';
 
 export type GenerationStage = (typeof GENERATION_STAGES)[number];
 export type GenerationStageStatus = 'started' | 'completed';

@@ -6,7 +6,7 @@
   "scripts": {
     "copy:views": "node -e \"require('fs').cpSync('src/server/views', 'dist/server/views', {recursive: true})\"",
     "copy:public": "node -e \"require('fs').cpSync('public', 'dist/public', {recursive: true})\"",
-    "concat:js": "node scripts/concat-client-js.js",
+    "concat:js": "node scripts/sync-stage-metadata.js && node scripts/concat-client-js.js",
     "build": "tsc && npm run concat:js && npm run copy:views && npm run copy:public",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn src/index.ts",
