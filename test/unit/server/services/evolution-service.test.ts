@@ -201,13 +201,17 @@ describe('evolution-service', () => {
 
     it('propagates evolver errors', async () => {
       const llmError = new LLMError('Evolver failed', 'HTTP_429', true);
+      const evaluateConcepts = jest.fn();
+      const verifyConcepts = jest.fn();
       const service = createEvolutionService({
         evolveConceptIdeas: jest.fn().mockRejectedValue(llmError),
-        evaluateConcepts: jest.fn(),
-        verifyConcepts: jest.fn(),
+        evaluateConcepts,
+        verifyConcepts,
       });
 
       await expect(service.evolveConcepts(createInput())).rejects.toBe(llmError);
+      expect(evaluateConcepts).not.toHaveBeenCalled();
+      expect(verifyConcepts).not.toHaveBeenCalled();
     });
 
     it('propagates evaluator errors and does not invoke verifier (fail-fast invariant)', async () => {
