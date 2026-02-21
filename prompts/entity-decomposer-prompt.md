@@ -108,19 +108,45 @@ Use the spine's need-want tension to inform character decomposition. The protago
 {{/if}}
 
 {{#if conceptSpec}}
-CONCEPT ANALYSIS (use to inform decomposition):
-Narrative Identity: {{conceptSpec.narrativeIdentity}}
-Protagonist Role: {{conceptSpec.protagonistRole}}
-Protagonist Competence: {{conceptSpec.protagonistCompetence}}
-Protagonist Fatal Flaw: {{conceptSpec.protagonistFlaw}}
-Protagonist Action Verbs: {{conceptSpec.protagonistActionVerbs joined by ', '}}
-Inciting Disruption: {{conceptSpec.incitingDisruption}}
-Escape Valve: {{conceptSpec.escapeValve}}
-Pressure Source: {{conceptSpec.pressureSource}}
-Setting Axioms: {{conceptSpec.settingAxioms joined by '; '}}
-Key Institutions: {{conceptSpec.keyInstitutions joined by ', '}}
+CONCEPT ANALYSIS (use to ground character decomposition):
 
-Use protagonist fields to inform speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization.
+NARRATIVE IDENTITY:
+One-line hook: {{conceptSpec.oneLineHook}}
+Elevator pitch: {{conceptSpec.elevatorParagraph}}
+Player fantasy: {{conceptSpec.playerFantasy}}
+What-if question: {{conceptSpec.whatIfQuestion}}
+Ironic twist: {{conceptSpec.ironicTwist}}
+
+GENRE FRAME:
+Genre: {{conceptSpec.genreFrame}} (Subversion: {{conceptSpec.genreSubversion}})
+
+PROTAGONIST:
+Role: {{conceptSpec.protagonistRole}}
+Core competence: {{conceptSpec.coreCompetence}}
+Core flaw: {{conceptSpec.coreFlaw}}
+Action verbs: {{conceptSpec.actionVerbs joined by ', '}}
+
+CONFLICT ENGINE:
+Core conflict loop: {{conceptSpec.coreConflictLoop}}
+Thematic tension axis: {{conceptSpec.conflictAxis}}
+Structural opposition: {{conceptSpec.conflictType}}
+Pressure source: {{conceptSpec.pressureSource}}
+Personal stakes: {{conceptSpec.stakesPersonal}}
+Systemic stakes: {{conceptSpec.stakesSystemic}}
+Deadline mechanism: {{conceptSpec.deadlineMechanism}}
+Inciting disruption: {{conceptSpec.incitingDisruption}}
+Escape valve: {{conceptSpec.escapeValve}}
+
+WORLD ARCHITECTURE:
+Setting axioms: {{conceptSpec.settingAxioms joined by '; '}}
+Constraints: {{conceptSpec.constraintSet joined by '; '}}
+Key institutions: {{conceptSpec.keyInstitutions joined by '; '}}
+Setting scale: {{conceptSpec.settingScale}}
+
+STRUCTURAL METADATA:
+Branching posture: {{conceptSpec.branchingPosture}}
+
+CONSTRAINT: Use genre frame to calibrate character vocabulary and world fact tone. Use conflict engine to inform NPC motivations and relationships. Use inciting disruption to define protagonist's initial knowledge boundaries and emotional state. Use escape valve to embed alternative engagement hooks in NPCs and world facts. Use protagonist fields to shape speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms, constraints, and scale.
 {{/if}}
 
 {{#if storyKernel}}
@@ -240,7 +266,7 @@ The entity decomposer (`entity-decomposer.ts`) applies the following post-proces
 | `toneAvoid` | Words/moods to avoid (optional, from spine) |
 | `npcs` | All NPC definitions (name + description pairs) |
 | `spine` | Story spine (optional) — narrative backbone with dramatic question, need-want, antagonistic force |
-| `conceptSpec` | Concept specification (optional) — 23-field concept spec when concept-based |
+| `conceptSpec` | Concept specification (optional) — 25-field concept spec when concept-based |
 | `storyKernel` | Story kernel (optional) — thematic kernel when kernel-based |
 | `startingSituation` | Starting situation (optional) — initial scene context |
 

@@ -92,6 +92,8 @@ export interface ConceptSpec {
   readonly whatIfQuestion: string;
   readonly ironicTwist: string;
   readonly playerFantasy: string;
+  readonly incitingDisruption: string;
+  readonly escapeValve: string;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -148,7 +150,9 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isBranchingPosture(concept['branchingPosture']) &&
     isNonEmptyString(concept['whatIfQuestion']) &&
     isNonEmptyString(concept['ironicTwist']) &&
-    isNonEmptyString(concept['playerFantasy'])
+    isNonEmptyString(concept['playerFantasy']) &&
+    isNonEmptyString(concept['incitingDisruption']) &&
+    isNonEmptyString(concept['escapeValve'])
   );
 }
 
