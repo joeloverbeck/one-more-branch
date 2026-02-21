@@ -112,6 +112,12 @@ describe('concept-evolver', () => {
   }
 
   describe('parseConceptEvolutionResponse', () => {
+    it('rejects non-object responses', () => {
+      expect(() => parseConceptEvolutionResponse('invalid')).toThrow(
+        'response must be an object',
+      );
+    });
+
     it('returns ConceptSpec[] for valid payload', () => {
       const parsed = parseConceptEvolutionResponse(createValidPayload());
       expect(parsed).toHaveLength(6);
@@ -164,6 +170,23 @@ describe('concept-evolver', () => {
       expect(userMessage).toContain('"strengths"');
       expect(userMessage).toContain('"weaknesses"');
       expect(userMessage).toContain('"tradeoffSummary"');
+    });
+
+    it('includes all parents when context has 3 parent concepts', () => {
+      const context = {
+        ...createContext(),
+        parentConcepts: [
+          createEvaluatedConceptFixture(1),
+          createEvaluatedConceptFixture(2),
+          createEvaluatedConceptFixture(3),
+        ],
+      };
+      const messages = buildConceptEvolverPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+
+      expect(userMessage).toContain('"parentId": "parent_1"');
+      expect(userMessage).toContain('"parentId": "parent_2"');
+      expect(userMessage).toContain('"parentId": "parent_3"');
     });
   });
 
