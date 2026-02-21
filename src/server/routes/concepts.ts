@@ -15,7 +15,7 @@ import {
 } from '../../persistence/concept-repository.js';
 import { loadKernel } from '../../persistence/kernel-repository.js';
 import { ConceptEvaluationStageError, conceptService } from '../services/index.js';
-import { formatLLMError, wrapAsyncRoute } from '../utils/index.js';
+import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const conceptRoutes = Router();
@@ -170,42 +170,9 @@ conceptRoutes.post(
       }
 
       if (rootError instanceof LLMError) {
-        const formattedError = formatLLMError(rootError);
-        progress.fail(formattedError);
-        const errorResponse: {
-          success: false;
-          error: string;
-          code: string;
-          retryable: boolean;
-          debug?: {
-            httpStatus?: number;
-            model?: string;
-            rawError?: string;
-            parseStage?: string;
-            contentShape?: string;
-            contentPreview?: string;
-            rawContent?: string;
-          };
-        } = {
-          success: false,
-          error: formattedError,
-          code: rootError.code,
-          retryable: rootError.retryable,
-        };
-
-        if (process.env['NODE_ENV'] !== 'production') {
-          errorResponse.debug = {
-            httpStatus: rootError.context?.['httpStatus'] as number | undefined,
-            model: rootError.context?.['model'] as string | undefined,
-            rawError: rootError.context?.['rawErrorBody'] as string | undefined,
-            parseStage: rootError.context?.['parseStage'] as string | undefined,
-            contentShape: rootError.context?.['contentShape'] as string | undefined,
-            contentPreview: rootError.context?.['contentPreview'] as string | undefined,
-            rawContent: rootError.context?.['rawContent'] as string | undefined,
-          };
-        }
-
-        return res.status(500).json(errorResponse);
+        const { publicMessage, response } = buildLlmRouteErrorResult(rootError);
+        progress.fail(publicMessage);
+        return res.status(500).json(response);
       }
 
       const err = rootError instanceof Error ? rootError : new Error(String(rootError));
@@ -368,14 +335,9 @@ conceptRoutes.post(
       });
     } catch (error) {
       if (error instanceof LLMError) {
-        const formattedError = formatLLMError(error);
-        progress.fail(formattedError);
-        return res.status(500).json({
-          success: false,
-          error: formattedError,
-          code: error.code,
-          retryable: error.retryable,
-        });
+        const { publicMessage, response } = buildLlmRouteErrorResult(error, { includeDebug: false });
+        progress.fail(publicMessage);
+        return res.status(500).json(response);
       }
 
       const err = error instanceof Error ? error : new Error(String(error));
