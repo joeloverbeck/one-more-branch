@@ -156,6 +156,7 @@ export function createMockStoryStructure(
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             id: '1.2',
@@ -165,6 +166,7 @@ export function createMockStoryStructure(
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },

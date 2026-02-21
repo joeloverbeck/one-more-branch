@@ -50,6 +50,7 @@ function buildTestStructure(): StoryStructure {
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             id: '1.2',
@@ -59,6 +60,7 @@ function buildTestStructure(): StoryStructure {
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -108,6 +110,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             id: '1.2',
@@ -117,6 +120,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             role: 'escalation',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -457,7 +461,7 @@ describe('story-repository', () => {
           dynamic: 'ally',
           history: 'Fought together in the war.',
           currentTension: 'Vera suspects betrayal.',
-          leverage: 'Knows protagonist\'s secret.',
+          leverage: "Knows protagonist's secret.",
         },
       ],
     });
@@ -474,7 +478,7 @@ describe('story-repository', () => {
         dynamic: 'ally',
         history: 'Fought together in the war.',
         currentTension: 'Vera suspects betrayal.',
-        leverage: 'Knows protagonist\'s secret.',
+        leverage: "Knows protagonist's secret.",
       },
     ]);
   });

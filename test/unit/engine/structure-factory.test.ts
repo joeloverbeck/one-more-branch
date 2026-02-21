@@ -1,4 +1,4 @@
-import { createStoryStructure } from '../../../src/engine/structure-factory';
+import { createStoryStructure, parseApproachVectors } from '../../../src/engine/structure-factory';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 
 function createGenerationResult(): StructureGenerationResult {
@@ -85,6 +85,81 @@ describe('structure-factory', () => {
 
       expect(result.acts[0]?.beats[0]?.objective).toBe('Hear the warning');
       expect(result.acts[0]?.beats[1]?.objective).toBe('Leave home');
+    });
+
+    it('sets approachVectors to null when not provided', () => {
+      const result = createStoryStructure(createGenerationResult());
+
+      expect(result.acts[0]?.beats[0]?.approachVectors).toBeNull();
+      expect(result.acts[0]?.beats[1]?.approachVectors).toBeNull();
+    });
+
+    it('parses valid approachVectors from generation result', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[1]!.beats[0]!.approachVectors = [
+        'DIRECT_FORCE',
+        'ANALYTICAL_REASONING',
+      ];
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[1]?.beats[0]?.approachVectors).toEqual([
+        'DIRECT_FORCE',
+        'ANALYTICAL_REASONING',
+      ]);
+    });
+
+    it('filters out invalid approachVectors', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[1]!.beats[0]!.approachVectors = [
+        'DIRECT_FORCE',
+        'INVALID_VECTOR',
+        'STEALTH_SUBTERFUGE',
+      ];
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[1]?.beats[0]?.approachVectors).toEqual([
+        'DIRECT_FORCE',
+        'STEALTH_SUBTERFUGE',
+      ]);
+    });
+  });
+
+  describe('parseApproachVectors', () => {
+    it('returns null for non-array input', () => {
+      expect(parseApproachVectors(null)).toBeNull();
+      expect(parseApproachVectors(undefined)).toBeNull();
+      expect(parseApproachVectors('DIRECT_FORCE')).toBeNull();
+      expect(parseApproachVectors(42)).toBeNull();
+    });
+
+    it('returns null for empty array', () => {
+      expect(parseApproachVectors([])).toBeNull();
+    });
+
+    it('returns valid vectors from mixed input', () => {
+      expect(
+        parseApproachVectors(['DIRECT_FORCE', 'INVALID', 'EMPATHIC_CONNECTION'])
+      ).toEqual(['DIRECT_FORCE', 'EMPATHIC_CONNECTION']);
+    });
+
+    it('returns null when all values are invalid', () => {
+      expect(parseApproachVectors(['INVALID', 'ALSO_INVALID'])).toBeNull();
+    });
+
+    it('returns all 10 valid vectors', () => {
+      const all = [
+        'DIRECT_FORCE',
+        'SWIFT_ACTION',
+        'STEALTH_SUBTERFUGE',
+        'ANALYTICAL_REASONING',
+        'CAREFUL_OBSERVATION',
+        'INTUITIVE_LEAP',
+        'PERSUASION_INFLUENCE',
+        'EMPATHIC_CONNECTION',
+        'ENDURANCE_RESILIENCE',
+        'SELF_EXPRESSION',
+      ];
+      expect(parseApproachVectors(all)).toEqual(all);
     });
   });
 });

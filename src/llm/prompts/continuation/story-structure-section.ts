@@ -124,8 +124,12 @@ export function buildWriterStructureContext(
         const hookLine = beat.uniqueScenarioHook
           ? `\n    Scenario hook: ${beat.uniqueScenarioHook}`
           : '';
+        const approachLine =
+          beat.approachVectors && beat.approachVectors.length > 0
+            ? `\n    Approach vectors: ${beat.approachVectors.join(', ')}`
+            : '';
         return `  [>] ACTIVE (${beat.role}): ${beat.description}
-    Objective: ${beat.objective}${escalationLine}${hookLine}`;
+    Objective: ${beat.objective}${escalationLine}${hookLine}${approachLine}`;
       }
       return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })

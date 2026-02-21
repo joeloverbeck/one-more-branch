@@ -89,6 +89,7 @@ export interface StoryStructureFileData {
       role: string;
       escalationType?: string | null;
       uniqueScenarioHook?: string | null;
+      approachVectors?: string[] | null;
     }>;
   }>;
   overallTheme: string;

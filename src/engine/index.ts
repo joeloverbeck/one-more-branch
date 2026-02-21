@@ -67,7 +67,7 @@ export type { StructureProgressionResult, StructureGenerationResult } from './st
 export { parseBeatIndices, getBeatOrThrow, upsertBeatProgression } from './beat-utils';
 
 // Structure factory
-export { createStoryStructure, parseEscalationType } from './structure-factory';
+export { createStoryStructure, parseApproachVectors, parseEscalationType } from './structure-factory';
 
 // Structure state machine
 export {

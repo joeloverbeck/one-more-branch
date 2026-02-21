@@ -93,6 +93,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'role',
                     'escalationType',
                     'uniqueScenarioHook',
+                    'approachVectors',
                   ],
                   properties: {
                     name: { type: 'string' },
@@ -124,6 +125,26 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       type: ['string', 'null'],
                       description:
                         'For escalation/turning_point beats: one sentence describing what makes this beat unique to THIS story. Null for setup/resolution beats.',
+                    },
+                    approachVectors: {
+                      type: ['array', 'null'],
+                      description:
+                        'For escalation/turning_point beats: 2-3 approach vectors suggesting HOW the protagonist could tackle this beat. Null for setup/resolution beats.',
+                      items: {
+                        type: 'string',
+                        enum: [
+                          'DIRECT_FORCE',
+                          'SWIFT_ACTION',
+                          'STEALTH_SUBTERFUGE',
+                          'ANALYTICAL_REASONING',
+                          'CAREFUL_OBSERVATION',
+                          'INTUITIVE_LEAP',
+                          'PERSUASION_INFLUENCE',
+                          'EMPATHIC_CONNECTION',
+                          'ENDURANCE_RESILIENCE',
+                          'SELF_EXPRESSION',
+                        ],
+                      },
                     },
                   },
                 },

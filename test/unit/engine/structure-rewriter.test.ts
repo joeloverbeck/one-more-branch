@@ -26,14 +26,19 @@ import { LLMError } from '../../../src/llm/llm-client-types';
 import type { StructureRewriteContext } from '../../../src/llm/structure-rewrite-types';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import type { StoryStructure } from '../../../src/models/story-arc';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 function createRewriteContext(
   overrides?: Partial<StructureRewriteContext>
 ): StructureRewriteContext {
   return {
     tone: 'dark nautical intrigue',
-    decomposedCharacters: [buildMinimalDecomposedCharacter('A disgraced captain seeking absolution')],
+    decomposedCharacters: [
+      buildMinimalDecomposedCharacter('A disgraced captain seeking absolution'),
+    ],
     decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     completedBeats: [
       {
@@ -46,6 +51,7 @@ function createRewriteContext(
         role: 'setup',
         escalationType: null,
         uniqueScenarioHook: null,
+        approachVectors: null,
         resolution: 'The captain escaped with proof of betrayal.',
       },
     ],
@@ -82,6 +88,7 @@ function createGeneratedStructure(
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Neutral passage pact',
@@ -90,6 +97,7 @@ function createGeneratedStructure(
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -106,6 +114,7 @@ function createGeneratedStructure(
             role: 'escalation',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Council exposure',
@@ -114,6 +123,7 @@ function createGeneratedStructure(
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -130,6 +140,7 @@ function createGeneratedStructure(
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             name: 'Judgment of rivals',
@@ -138,6 +149,7 @@ function createGeneratedStructure(
             role: 'resolution',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -169,6 +181,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             id: '1.2',
@@ -178,6 +191,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -196,6 +210,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             role: 'escalation',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             id: '2.2',
@@ -205,6 +220,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -223,6 +239,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
           {
             id: '3.2',
@@ -232,6 +249,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             role: 'resolution',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
           },
         ],
       },
@@ -279,6 +297,7 @@ describe('structure-rewriter', () => {
         role: 'setup',
         escalationType: null,
         uniqueScenarioHook: null,
+        approachVectors: null,
       });
       expect(result.structure.acts[0]?.beats[1]).toEqual({
         id: '1.2',
@@ -288,6 +307,7 @@ describe('structure-rewriter', () => {
         role: 'turning_point',
         escalationType: null,
         uniqueScenarioHook: null,
+        approachVectors: null,
       });
     });
 
@@ -304,8 +324,22 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
             beats: [
-              { name: 'Beat 1', description: 'Desc 1', objective: 'Goal 1', role: 'setup', escalationType: null, uniqueScenarioHook: null },
-              { name: 'Beat 2', description: 'Desc 2', objective: 'Goal 2', role: 'turning_point', escalationType: null, uniqueScenarioHook: null },
+              {
+                name: 'Beat 1',
+                description: 'Desc 1',
+                objective: 'Goal 1',
+                role: 'setup',
+                escalationType: null,
+                uniqueScenarioHook: null,
+              },
+              {
+                name: 'Beat 2',
+                description: 'Desc 2',
+                objective: 'Goal 2',
+                role: 'turning_point',
+                escalationType: null,
+                uniqueScenarioHook: null,
+              },
             ],
           },
           {
@@ -314,8 +348,22 @@ describe('structure-rewriter', () => {
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
             beats: [
-              { name: 'Beat 3', description: 'Desc 3', objective: 'Goal 3', role: 'escalation', escalationType: null, uniqueScenarioHook: null },
-              { name: 'Beat 4', description: 'Desc 4', objective: 'Goal 4', role: 'resolution', escalationType: null, uniqueScenarioHook: null },
+              {
+                name: 'Beat 3',
+                description: 'Desc 3',
+                objective: 'Goal 3',
+                role: 'escalation',
+                escalationType: null,
+                uniqueScenarioHook: null,
+              },
+              {
+                name: 'Beat 4',
+                description: 'Desc 4',
+                objective: 'Goal 4',
+                role: 'resolution',
+                escalationType: null,
+                uniqueScenarioHook: null,
+              },
             ],
           },
         ],
@@ -359,6 +407,7 @@ describe('structure-rewriter', () => {
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
             resolution: 'Resolved already',
           },
         ],
@@ -376,6 +425,7 @@ describe('structure-rewriter', () => {
         role: 'setup',
         escalationType: null,
         uniqueScenarioHook: null,
+        approachVectors: null,
       });
 
       for (const [actIndex, act] of merged.acts.entries()) {
@@ -403,6 +453,7 @@ describe('structure-rewriter', () => {
                 role: 'setup',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
               {
                 id: '1.2',
@@ -412,6 +463,7 @@ describe('structure-rewriter', () => {
                 role: 'turning_point',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -430,6 +482,7 @@ describe('structure-rewriter', () => {
                 role: 'escalation',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
               {
                 id: '2.2',
@@ -439,6 +492,7 @@ describe('structure-rewriter', () => {
                 role: 'turning_point',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -457,6 +511,7 @@ describe('structure-rewriter', () => {
                 role: 'turning_point',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
               {
                 id: '3.2',
@@ -466,6 +521,7 @@ describe('structure-rewriter', () => {
                 role: 'resolution',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -484,6 +540,7 @@ describe('structure-rewriter', () => {
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
             resolution: 'Resolved already',
           },
         ],
@@ -499,6 +556,7 @@ describe('structure-rewriter', () => {
         role: 'turning_point',
         escalationType: null,
         uniqueScenarioHook: null,
+        approachVectors: null,
       });
       expect(merged.acts[0]?.beats[1]?.id).toBe('1.3');
     });
@@ -521,6 +579,7 @@ describe('structure-rewriter', () => {
                 role: 'setup',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
               {
                 id: '1.2',
@@ -530,6 +589,7 @@ describe('structure-rewriter', () => {
                 role: 'turning_point',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -556,6 +616,7 @@ describe('structure-rewriter', () => {
                 role: 'turning_point',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
               {
                 id: '3.2',
@@ -565,6 +626,7 @@ describe('structure-rewriter', () => {
                 role: 'resolution',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -594,6 +656,7 @@ describe('structure-rewriter', () => {
                 role: 'escalation',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -612,6 +675,7 @@ describe('structure-rewriter', () => {
                 role: 'escalation',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -630,6 +694,7 @@ describe('structure-rewriter', () => {
                 role: 'resolution',
                 escalationType: null,
                 uniqueScenarioHook: null,
+                approachVectors: null,
               },
             ],
           },
@@ -648,6 +713,7 @@ describe('structure-rewriter', () => {
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
+            approachVectors: null,
             resolution: 'Villain was defeated',
           },
         ],

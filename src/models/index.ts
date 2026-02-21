@@ -88,6 +88,7 @@ export type { TrackedPromise, PromisePayoffAssessment } from './state/index.js';
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 
 export {
+  ApproachVector,
   BeatStatus,
   BeatRole,
   EscalationType,

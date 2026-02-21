@@ -15,7 +15,7 @@ import type {
   StructureRewriteResult,
 } from '../llm/structure-rewrite-types';
 import { BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
-import { createStoryStructure, parseEscalationType } from './structure-factory';
+import { createStoryStructure, parseApproachVectors, parseEscalationType } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
 export interface StructureRewriter {
@@ -125,6 +125,7 @@ export function mergePreservedWithRegenerated(
       role: parseBeatRole(beat.role),
       escalationType: parseEscalationType(beat.escalationType),
       uniqueScenarioHook: beat.uniqueScenarioHook,
+      approachVectors: parseApproachVectors(beat.approachVectors),
     }));
 
     let nextBeatNumber = mergedBeats.reduce((max, beat) => {
@@ -153,6 +154,7 @@ export function mergePreservedWithRegenerated(
         role: beat.role,
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
+        approachVectors: beat.approachVectors ?? null,
       });
       nextBeatNumber += 1;
       seenBeatSignature.add(signature);

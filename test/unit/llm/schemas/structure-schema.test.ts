@@ -63,6 +63,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'role',
       'escalationType',
       'uniqueScenarioHook',
+      'approachVectors',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });
