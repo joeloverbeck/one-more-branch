@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="evolution-page">
+    <section class="form-section">
+      <h1>Evolve Concepts</h1>
+      <p class="spine-section-subtitle">Select 2-3 parent concepts from one kernel, then evolve offspring.</p>
+
+      <section id="evolution-kernel-section">
+        <h2>1. Select Kernel</h2>
+        <div class="form-group">
+          <label for="evolution-kernel-selector">Story Kernel *</label>
+          <select id="evolution-kernel-selector" required>
+            <option value="">Select a saved kernel...</option>
+          </select>
+        </div>
+
+        <article
+          id="evolution-selected-kernel-summary"
+          class="spine-card"
+          style="display: none; margin-bottom: 1rem;"
+        >
+          <h3 class="spine-cdq">Selected Kernel</h3>
+          <p class="spine-field"><span class="spine-label">Dramatic Thesis:</span> <span id="evolution-kernel-dramatic-thesis"></span></p>
+          <p class="spine-field"><span class="spine-label">Value At Stake:</span> <span id="evolution-kernel-value-at-stake"></span></p>
+          <p class="spine-field"><span class="spine-label">Opposing Force:</span> <span id="evolution-kernel-opposing-force"></span></p>
+          <p class="spine-field"><span class="spine-label">Thematic Question:</span> <span id="evolution-kernel-thematic-question"></span></p>
+          <p class="spine-field"><span class="spine-label">Overall Score:</span> <span id="evolution-kernel-overall-score"></span></p>
+        </article>
+      </section>
+
+      <section id="evolution-parent-concepts-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">2. Select Parent Concepts</h2>
+        <p id="evolution-selection-counter" class="spine-section-subtitle">Selected: 0/3 (select 2-3 concepts)</p>
+        <div id="evolution-parent-concepts" class="spine-options-container"></div>
+      </section>
+
+      <section id="evolution-actions-section" class="spine-section">
+        <h2 class="spine-section-title">3. Evolve</h2>
+        <div class="form-group">
+          <label for="evolutionApiKey">OpenRouter API Key *</label>
+          <input
+            type="password"
+            id="evolutionApiKey"
+            required
+            placeholder="sk-or-..."
+            autocomplete="off"
+          >
+          <p class="form-help">
+            Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+            Your key is never stored on the server.
+          </p>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="evolve-btn" class="btn btn-primary btn-large" disabled>Evolve Concepts</button>
+        </div>
+      </section>
+
+      <section id="evolution-results-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Evolved Concepts</h2>
+        <p class="spine-section-subtitle">Click "Save" on any concept to add it to your library.</p>
+        <div id="evolution-cards" class="spine-options-container"></div>
+      </section>
+    </section>
+
+    <div class="loading-overlay" id="evolution-loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Working...</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

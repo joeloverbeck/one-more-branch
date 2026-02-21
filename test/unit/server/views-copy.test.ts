@@ -36,6 +36,7 @@ describeIfBuilt('EJS Views Availability', () => {
     'pages/play.ejs',
     'pages/briefing.ejs',
     'pages/kernels.ejs',
+    'pages/evolution.ejs',
     'layouts/main.ejs',
     'partials/header.ejs',
     'partials/footer.ejs',

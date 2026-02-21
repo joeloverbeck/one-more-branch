@@ -16,6 +16,7 @@ describe('view partial templates', () => {
     expect(template).toContain('<a href="/">Stories</a>');
     expect(template).toContain('<a href="/kernels">Kernels</a>');
     expect(template).toContain('<a href="/concepts">Concepts</a>');
+    expect(template).toContain('<a href="/evolve">Evolve</a>');
     expect(template).toContain('<a href="/stories/new">New Adventure</a>');
 
     expect(template.indexOf('<a href="/">Stories</a>')).toBeLessThan(
@@ -25,6 +26,9 @@ describe('view partial templates', () => {
       template.indexOf('<a href="/concepts">Concepts</a>')
     );
     expect(template.indexOf('<a href="/concepts">Concepts</a>')).toBeLessThan(
+      template.indexOf('<a href="/evolve">Evolve</a>')
+    );
+    expect(template.indexOf('<a href="/evolve">Evolve</a>')).toBeLessThan(
       template.indexOf('<a href="/stories/new">New Adventure</a>')
     );
   });
