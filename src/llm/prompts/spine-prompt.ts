@@ -112,6 +112,8 @@ function buildConceptVerificationSection(verification?: ConceptVerification): st
     'CONSTRAINT: Your centralDramaticQuestion should make the signature scenario',
     'inevitable — this is the most iconic decision moment the concept enables.',
     'The dramatic question should steer toward it, not away from it.',
+    "The antagonistic force's pressure mechanism should logically produce the conditions",
+    'described in the inevitability statement — the force is what makes this outcome inescapable.',
   ];
 
   return lines.join('\n') + '\n\n';
