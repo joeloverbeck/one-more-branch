@@ -29,6 +29,8 @@ export interface StructureGenerationResult {
       description: string;
       objective: string;
       role: string;
+      escalationType?: string | null;
+      uniqueScenarioHook?: string | null;
     }>;
   }>;
   initialNpcAgendas?: NpcAgenda[];
@@ -115,12 +117,18 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
       }
 
       const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
+      const escalationType =
+        typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
+      const uniqueScenarioHook =
+        typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
 
       return {
         name: beatData['name'],
         description: beatData['description'],
         objective: beatData['objective'],
         role,
+        escalationType,
+        uniqueScenarioHook,
       };
     });
 

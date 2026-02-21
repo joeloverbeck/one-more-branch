@@ -44,6 +44,8 @@ export function extractCompletedBeats(
       description: beat.description,
       objective: beat.objective,
       role: beat.role,
+      escalationType: beat.escalationType,
+      uniqueScenarioHook: beat.uniqueScenarioHook,
       resolution: progression.resolution ?? '',
     });
   }
@@ -110,6 +112,8 @@ export function extractPlannedBeats(
         description: beat.description,
         objective: beat.objective,
         role: beat.role,
+        escalationType: beat.escalationType,
+        uniqueScenarioHook: beat.uniqueScenarioHook,
       });
     }
   }

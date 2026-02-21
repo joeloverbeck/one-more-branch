@@ -154,6 +154,8 @@ export function createMockStoryStructure(
             description: 'The protagonist receives a call to action',
             objective: 'Accept the quest',
             role: 'setup',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
           {
             id: '1.2',
@@ -161,6 +163,8 @@ export function createMockStoryStructure(
             description: 'The protagonist crosses into the unknown',
             objective: 'Leave safety behind',
             role: 'turning_point',
+            escalationType: null,
+            uniqueScenarioHook: null,
           },
         ],
       },

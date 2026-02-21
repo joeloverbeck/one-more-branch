@@ -133,6 +133,8 @@ BEATS IN THIS ACT:
     Resolution: {{beatProgression.resolution}}
   [>] ACTIVE ({{beat.role}}): {{beat.description}}
     Objective: {{beat.objective}}
+    {{#if beat.escalationType}}Escalation mechanism: {{beat.escalationType}}{{/if}}
+    {{#if beat.uniqueScenarioHook}}Scenario hook: {{beat.uniqueScenarioHook}}{{/if}}
   [ ] PENDING ({{beat.role}}): {{beat.description}}
 
 REMAINING ACTS:
@@ -200,20 +202,26 @@ PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions when 
 === ESCALATION QUALITY CHECK ===
 The active beat role is "escalation". When evaluating this beat:
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+{{#if activeBeat.escalationType}}The expected escalation mechanism is {{activeBeat.escalationType}}. Assess whether the narrative delivered this specific type of escalation — not just any stakes increase.{{/if}}
+{{#if activeBeat.uniqueScenarioHook}}The scene should reflect this unique scenario hook: "{{activeBeat.uniqueScenarioHook}}". Assess whether the scene leveraged this story's specific elements.{{/if}}
 - Assess whether the narrative actually raised stakes beyond the previous beat
 - Stakes are raised when new consequences, threats, or costs were introduced that did not exist before
 - Stakes are NOT raised if the scene only added complexity without raising the cost of failure
 - If beatConcluded is true but stakes were not genuinely raised, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without genuine escalation — scene added complexity but did not raise the cost of failure"
+{{#if activeBeat.escalationType}}- If the escalation type does not match what actually happened (e.g., expected {{activeBeat.escalationType}} but got generic tension), note the mismatch in pacingIssueReason{{/if}}
 {{/if}}
 
 {{#if activeBeatRole === 'turning_point'}}
 === TURNING POINT QUALITY CHECK ===
 The active beat role is "turning_point". When evaluating this beat:
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+{{#if activeBeat.escalationType}}The expected turning point mechanism is {{activeBeat.escalationType}}. Assess whether the narrative delivered this specific type of shift — not just any irreversible change.{{/if}}
+{{#if activeBeat.uniqueScenarioHook}}The scene should reflect this unique scenario hook: "{{activeBeat.uniqueScenarioHook}}". Assess whether the scene leveraged this story's specific elements.{{/if}}
 - Assess whether the narrative delivered an irreversible shift
 - An irreversible shift means a decision, revelation, or consequence that permanently changes available options
 - A scene that only adds complications without destroying the status quo is NOT a turning point
 - If beatConcluded is true but no irreversible shift occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without irreversible shift — status quo was not permanently altered"
+{{#if activeBeat.escalationType}}- If the turning point type does not match what actually happened (e.g., expected {{activeBeat.escalationType}} but got generic change), note the mismatch in pacingIssueReason{{/if}}
 {{/if}}
 (Only present when active beat role is escalation or turning_point.)
 

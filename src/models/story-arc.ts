@@ -2,12 +2,25 @@ export type BeatStatus = 'pending' | 'active' | 'concluded';
 
 export type BeatRole = 'setup' | 'escalation' | 'turning_point' | 'resolution';
 
+export type EscalationType =
+  | 'THREAT_ESCALATION'
+  | 'REVELATION_SHIFT'
+  | 'REVERSAL_OF_FORTUNE'
+  | 'BETRAYAL_OR_ALLIANCE_SHIFT'
+  | 'RESOURCE_OR_CAPABILITY_LOSS'
+  | 'MORAL_OR_ETHICAL_PRESSURE'
+  | 'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE'
+  | 'COMPLICATION_CASCADE'
+  | 'COMPETENCE_DEMAND_SPIKE';
+
 export interface StoryBeat {
   readonly id: string;
   readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly role: BeatRole;
+  readonly escalationType: EscalationType | null;
+  readonly uniqueScenarioHook: string | null;
 }
 
 export interface StoryAct {

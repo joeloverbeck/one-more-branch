@@ -25,6 +25,20 @@ function getActsToRegenerate(currentActIndex: number, totalActs: number): string
   return `remaining beats in ${currentActLabel}, plus all of Acts ${numberList}`;
 }
 
+function formatEscalationFields(
+  escalationType: string | null,
+  uniqueScenarioHook: string | null
+): string {
+  const parts: string[] = [];
+  if (escalationType) {
+    parts.push(`    Escalation mechanism: ${escalationType}`);
+  }
+  if (uniqueScenarioHook) {
+    parts.push(`    Scenario hook: ${uniqueScenarioHook}`);
+  }
+  return parts.length > 0 ? '\n' + parts.join('\n') : '';
+}
+
 function formatCompletedBeats(completedBeats: StructureRewriteContext['completedBeats']): string {
   if (completedBeats.length === 0) {
     return '  - None (story is at the beginning)';
@@ -35,7 +49,7 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}
+    Objective: ${beat.objective}${formatEscalationFields(beat.escalationType, beat.uniqueScenarioHook)}
     Resolution: ${beat.resolution}`
     )
     .join('\n');
@@ -47,7 +61,7 @@ function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats'
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}`
+    Objective: ${beat.objective}${formatEscalationFields(beat.escalationType, beat.uniqueScenarioHook)}`
     )
     .join('\n');
 }
@@ -137,6 +151,18 @@ REQUIREMENTS (follow ALL):
    - Preserve beat roles from completed beats unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
+11. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+   - THREAT_ESCALATION: Opposition magnitude increases
+   - REVELATION_SHIFT: Hidden truth recontextualizes everything
+   - REVERSAL_OF_FORTUNE: Progress inverts into setback
+   - BETRAYAL_OR_ALLIANCE_SHIFT: Social topology changes
+   - RESOURCE_OR_CAPABILITY_LOSS: Protagonist loses a dependency
+   - MORAL_OR_ETHICAL_PRESSURE: Every option requires value compromise
+   - TEMPORAL_OR_ENVIRONMENTAL_PRESSURE: External conditions constrict
+   - COMPLICATION_CASCADE: Consequences compound into crises
+   - COMPETENCE_DEMAND_SPIKE: Challenge exceeds demonstrated capability
+   For "setup" and "resolution" beats, set escalationType to null. Preserve escalationType from completed beats unchanged.
+12. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup" and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
 
 OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)
@@ -164,7 +190,9 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "Deal with the situation" (no specific action, no obstacle, nothing to verify)
           "Move the story forward" (meta-commentary, not a protagonist goal)
           "Experience the consequences" (passive, no action verb, unverifiable)
-      - role: "setup" | "escalation" | "turning_point" | "resolution"`;
+      - role: "setup" | "escalation" | "turning_point" | "resolution"
+      - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
+      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

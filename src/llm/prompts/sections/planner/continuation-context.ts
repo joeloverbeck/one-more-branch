@@ -279,6 +279,12 @@ export function buildEscalationDirective(
     if (previousResolution) {
       lines.push(`Previous beat resolved: "${previousResolution}"`);
     }
+    if (activeBeat.escalationType) {
+      lines.push(`Escalation mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of escalation.`);
+    }
+    if (activeBeat.uniqueScenarioHook) {
+      lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
+    }
     lines.push('Requirements:');
     lines.push(
       '- Introduce a new consequence, threat, or irreversible change not present before'
@@ -296,6 +302,12 @@ export function buildEscalationDirective(
     );
     if (previousResolution) {
       lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    if (activeBeat.escalationType) {
+      lines.push(`Turning point mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of shift.`);
+    }
+    if (activeBeat.uniqueScenarioHook) {
+      lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
     }
     lines.push('Requirements:');
     lines.push(
