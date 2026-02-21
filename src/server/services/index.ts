@@ -7,6 +7,7 @@ export {
 } from './story-creation-service.js';
 export {
   createGenerationProgressService,
+  GENERATION_FLOW_TYPES,
   generationProgressService,
   type GenerationFlowType,
   type GenerationProgressService,
@@ -29,3 +30,10 @@ export {
   type GenerateKernelsResult,
   type KernelService,
 } from './kernel-service.js';
+export {
+  createEvolutionService,
+  evolutionService,
+  type EvolveConceptsInput,
+  type EvolveConceptsResult,
+  type EvolutionService,
+} from './evolution-service.js';

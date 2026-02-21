@@ -56,4 +56,12 @@ describe('generation-progress-route utility', () => {
     expect(completeSpy).toHaveBeenCalledWith('route-progress-1');
     expect(failSpy).toHaveBeenCalledWith('route-progress-1', 'public error');
   });
+
+  it('accepts concept-evolution as a route flow type', () => {
+    const startSpy = jest.spyOn(generationProgressService, 'start').mockImplementation(() => {});
+
+    createRouteGenerationProgress(' evolve-progress-1 ', 'concept-evolution');
+
+    expect(startSpy).toHaveBeenCalledWith('evolve-progress-1', 'concept-evolution');
+  });
 });

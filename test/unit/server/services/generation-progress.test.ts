@@ -1,5 +1,8 @@
 import type { GenerationStage } from '@/engine/types';
-import { createGenerationProgressService } from '@/server/services/generation-progress';
+import {
+  createGenerationProgressService,
+  GENERATION_FLOW_TYPES,
+} from '@/server/services/generation-progress';
 
 describe('generation-progress service', () => {
   it('returns unknown snapshot for an unknown progress ID', () => {
@@ -88,17 +91,29 @@ describe('generation-progress service', () => {
     expect(service.get('progress-3').status).toBe('unknown');
   });
 
-  it('accepts begin-adventure, concept-generation, and kernel-generation flow types', () => {
+  it('defines canonical generation flow types and accepts specialized concept flows', () => {
+    expect(GENERATION_FLOW_TYPES).toEqual([
+      'new-story',
+      'choice',
+      'begin-adventure',
+      'concept-generation',
+      'concept-evolution',
+      'kernel-generation',
+    ]);
+
     const service = createGenerationProgressService();
     service.start('progress-begin', 'begin-adventure');
     service.start('progress-concept', 'concept-generation');
+    service.start('progress-evolution', 'concept-evolution');
     service.start('progress-kernel', 'kernel-generation');
 
     const beginSnapshot = service.get('progress-begin');
     const conceptSnapshot = service.get('progress-concept');
+    const evolutionSnapshot = service.get('progress-evolution');
     const kernelSnapshot = service.get('progress-kernel');
     expect(beginSnapshot.flowType).toBe('begin-adventure');
     expect(conceptSnapshot.flowType).toBe('concept-generation');
+    expect(evolutionSnapshot.flowType).toBe('concept-evolution');
     expect(kernelSnapshot.flowType).toBe('kernel-generation');
   });
 });

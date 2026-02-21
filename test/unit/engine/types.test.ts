@@ -53,6 +53,7 @@ describe('Engine types', () => {
         'GENERATING_KERNELS',
         'EVALUATING_KERNELS',
         'GENERATING_CONCEPTS',
+        'EVOLVING_CONCEPTS',
         'EVALUATING_CONCEPTS',
         'STRESS_TESTING_CONCEPT',
         'VERIFYING_CONCEPTS',
