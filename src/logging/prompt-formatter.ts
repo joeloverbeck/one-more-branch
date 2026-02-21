@@ -6,6 +6,7 @@ export type PromptType =
   | 'kernelIdeator'
   | 'kernelEvaluator'
   | 'conceptIdeator'
+  | 'conceptEvolver'
   | 'conceptEvaluator'
   | 'conceptStressTester'
   | 'conceptVerifier'

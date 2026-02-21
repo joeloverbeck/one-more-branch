@@ -1,5 +1,6 @@
 import { getStageModel, type LlmStage } from '@/config/stage-model';
 import { getConfig, loadConfig, resetConfig } from '@/config/index';
+import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
 
 describe('getStageModel', () => {
   beforeEach(() => {
@@ -48,12 +49,14 @@ describe('getStageModel', () => {
     expect(config.llm.models?.['kernelIdeator']).toBeDefined();
     expect(config.llm.models?.['kernelEvaluator']).toBeDefined();
     expect(config.llm.models?.['conceptIdeator']).toBeDefined();
+    expect(config.llm.models?.['conceptEvolver']).toBeDefined();
     expect(config.llm.models?.['conceptEvaluator']).toBeDefined();
     expect(config.llm.models?.['conceptStressTester']).toBeDefined();
 
     expect(getStageModel('kernelIdeator')).toBe(config.llm.models?.['kernelIdeator']);
     expect(getStageModel('kernelEvaluator')).toBe(config.llm.models?.['kernelEvaluator']);
     expect(getStageModel('conceptIdeator')).toBe(config.llm.models?.['conceptIdeator']);
+    expect(getStageModel('conceptEvolver')).toBe(config.llm.models?.['conceptEvolver']);
     expect(getStageModel('conceptEvaluator')).toBe(config.llm.models?.['conceptEvaluator']);
     expect(getStageModel('conceptStressTester')).toBe(config.llm.models?.['conceptStressTester']);
   });
@@ -61,22 +64,7 @@ describe('getStageModel', () => {
   it('resolves each valid LlmStage value to a non-empty string', () => {
     loadConfig();
 
-    const stages: LlmStage[] = [
-      'kernelIdeator',
-      'kernelEvaluator',
-      'conceptIdeator',
-      'conceptEvaluator',
-      'conceptStressTester',
-      'spine',
-      'entityDecomposer',
-      'structure',
-      'planner',
-      'accountant',
-      'lorekeeper',
-      'writer',
-      'analyst',
-      'agendaResolver',
-    ];
+    const stages: readonly LlmStage[] = LLM_STAGE_KEYS;
 
     for (const stage of stages) {
       const model = getStageModel(stage);

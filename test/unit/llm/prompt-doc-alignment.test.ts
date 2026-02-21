@@ -26,6 +26,11 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/concept-ideator-prompt.md',
   },
   {
+    promptType: 'conceptEvolver',
+    sourcePath: 'src/llm/prompts/concept-evolver-prompt.ts',
+    docPath: 'prompts/concept-evolver-prompt.md',
+  },
+  {
     promptType: 'conceptEvaluator',
     sourcePath: 'src/llm/prompts/concept-evaluator-prompt.ts',
     docPath: 'prompts/concept-evaluator-prompt.md',

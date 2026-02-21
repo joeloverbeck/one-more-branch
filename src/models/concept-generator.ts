@@ -219,6 +219,16 @@ export interface ConceptIdeationResult {
   readonly rawResponse: string;
 }
 
+export interface ConceptEvolverContext {
+  readonly parentConcepts: readonly EvaluatedConcept[];
+  readonly kernel: StoryKernel;
+}
+
+export interface ConceptEvolutionResult {
+  readonly concepts: readonly ConceptSpec[];
+  readonly rawResponse: string;
+}
+
 export interface ConceptEvaluatorContext {
   readonly concepts: readonly ConceptSpec[];
   readonly userSeeds: ConceptSeedInput;

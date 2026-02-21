@@ -219,6 +219,8 @@ export type {
   PlayerBreak,
   ConceptIdeatorContext,
   ConceptIdeationResult,
+  ConceptEvolverContext,
+  ConceptEvolutionResult,
   ConceptEvaluatorContext,
   ConceptEvaluationResult,
   ConceptStressTesterContext,
