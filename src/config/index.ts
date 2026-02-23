@@ -55,7 +55,9 @@ function readConfigFile(filePath: string): Record<string, unknown> | undefined {
     return JSON.parse(content) as Record<string, unknown>;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown parse error';
-    throw new Error(`Failed to parse config file ${filePath}: ${message}`);
+    throw new Error(`Failed to parse config file ${filePath}: ${message}`, {
+      cause: error,
+    });
   }
 }
 

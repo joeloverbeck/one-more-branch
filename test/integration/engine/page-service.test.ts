@@ -59,7 +59,7 @@ jest.mock('@/llm', () => ({
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateAgendaResolver: jest.fn(),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
@@ -952,41 +952,41 @@ describe('page-service integration', () => {
       );
 
       // Verify parent state was collected and passed to LLM
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
           accumulatedInventory: expect.arrayContaining([
             expect.objectContaining({ text: 'Torch' }),
           ]),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
           accumulatedHealth: expect.arrayContaining([
             expect.objectContaining({ text: 'Minor fatigue' }),
           ]),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
           accumulatedCharacterState: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             Companion: expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
           }),
         }),
         expect.any(Object),
         expect.objectContaining({
           apiKey: 'test-api-key',
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
           writerValidationContext: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             removableIds: expect.objectContaining({
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               threats: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               constraints: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               threads: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               inventory: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               health: expect.any(Array),
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               characterState: expect.any(Array),
             }),
           }),

@@ -5,7 +5,7 @@ jest.mock('@/persistence/file-utils', (): { ensureStoriesDir: jest.Mock } => {
   const actual = jest.requireActual('@/persistence/file-utils');
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     ...actual,
     ensureStoriesDir: jest.fn(),
   };
