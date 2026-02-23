@@ -29,7 +29,6 @@ function createScores(): ConceptDimensionScores {
     conflictEngine: 4,
     agencyBreadth: 3,
     noveltyLeverage: 3,
-    branchingFitness: 4,
     llmFeasibility: 4,
   };
 }
@@ -65,7 +64,6 @@ function createScoredConcept(index = 1): ScoredConcept {
       conflictEngine: [`Conflict evidence ${index}`],
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
-      branchingFitness: [`Branching evidence ${index}`],
       llmFeasibility: [`Feasibility evidence ${index}`],
     },
     overallScore: 80,

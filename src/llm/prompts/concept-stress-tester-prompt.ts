@@ -31,9 +31,6 @@ function buildWeakDimensionList(scores: ConceptDimensionScores): readonly string
   if (scores.noveltyLeverage < CONCEPT_PASS_THRESHOLDS.noveltyLeverage) {
     weak.push('noveltyLeverage');
   }
-  if (scores.branchingFitness < CONCEPT_PASS_THRESHOLDS.branchingFitness) {
-    weak.push('branchingFitness');
-  }
   if (scores.llmFeasibility < CONCEPT_PASS_THRESHOLDS.llmFeasibility) {
     weak.push('llmFeasibility');
   }

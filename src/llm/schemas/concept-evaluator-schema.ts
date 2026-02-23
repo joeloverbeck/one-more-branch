@@ -8,7 +8,6 @@ const SCORE_SCHEMA = {
     'conflictEngine',
     'agencyBreadth',
     'noveltyLeverage',
-    'branchingFitness',
     'llmFeasibility',
   ],
   properties: {
@@ -16,7 +15,6 @@ const SCORE_SCHEMA = {
     conflictEngine: { type: 'number' },
     agencyBreadth: { type: 'number' },
     noveltyLeverage: { type: 'number' },
-    branchingFitness: { type: 'number' },
     llmFeasibility: { type: 'number' },
   },
 } as const;
@@ -29,7 +27,6 @@ const SCORE_EVIDENCE_SCHEMA = {
     'conflictEngine',
     'agencyBreadth',
     'noveltyLeverage',
-    'branchingFitness',
     'llmFeasibility',
   ],
   properties: {
@@ -37,7 +34,6 @@ const SCORE_EVIDENCE_SCHEMA = {
     conflictEngine: { type: 'array', items: { type: 'string' }, minItems: 1 },
     agencyBreadth: { type: 'array', items: { type: 'string' }, minItems: 1 },
     noveltyLeverage: { type: 'array', items: { type: 'string' }, minItems: 1 },
-    branchingFitness: { type: 'array', items: { type: 'string' }, minItems: 1 },
     llmFeasibility: { type: 'array', items: { type: 'string' }, minItems: 1 },
   },
 } as const;

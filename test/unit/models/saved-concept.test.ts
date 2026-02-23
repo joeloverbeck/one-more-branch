@@ -14,7 +14,6 @@ function createEvaluatedConcept(): EvaluatedConcept {
       conflictEngine: 5,
       agencyBreadth: 4,
       noveltyLeverage: 3,
-      branchingFitness: 4,
       llmFeasibility: 4,
     },
     overallScore: 82,
@@ -33,7 +32,6 @@ function createScoredConcept(): ScoredConcept {
       conflictEngine: 5,
       agencyBreadth: 4,
       noveltyLeverage: 3,
-      branchingFitness: 4,
       llmFeasibility: 4,
     },
     scoreEvidence: {
@@ -41,7 +39,6 @@ function createScoredConcept(): ScoredConcept {
       conflictEngine: ['Sustained pressure source'],
       agencyBreadth: ['Multiple strategic options'],
       noveltyLeverage: ['Memory economy angle'],
-      branchingFitness: ['Decision loops can reconverge'],
       llmFeasibility: ['Clear constraints and institutions'],
     },
     overallScore: 82,

@@ -85,7 +85,6 @@ function isConceptDimensionScores(value: unknown): boolean {
     isFiniteScore(value['conflictEngine']) &&
     isFiniteScore(value['agencyBreadth']) &&
     isFiniteScore(value['noveltyLeverage']) &&
-    isFiniteScore(value['branchingFitness']) &&
     isFiniteScore(value['llmFeasibility'])
   );
 }
@@ -100,7 +99,6 @@ function isScoreEvidence(value: unknown): boolean {
     isStringArray(value['conflictEngine']) &&
     isStringArray(value['agencyBreadth']) &&
     isStringArray(value['noveltyLeverage']) &&
-    isStringArray(value['branchingFitness']) &&
     isStringArray(value['llmFeasibility'])
   );
 }

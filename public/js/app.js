@@ -2415,7 +2415,6 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     { key: 'conflictEngine', label: 'Conflict' },
     { key: 'agencyBreadth', label: 'Agency' },
     { key: 'noveltyLeverage', label: 'Novelty' },
-    { key: 'branchingFitness', label: 'Branching' },
     { key: 'llmFeasibility', label: 'Feasibility' },
   ];
 
