@@ -1,6 +1,7 @@
 import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
   advanceStructureState,
+  advanceWithBeatSkip,
   applyStructureProgression,
 } from '../../../src/engine/structure-state';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
@@ -294,6 +295,205 @@ describe('structure-state', () => {
 
       expect(state.pagesInCurrentBeat).toBe(0);
       expect(state.pacingNudge).toBeNull();
+    });
+  });
+
+  describe('advanceWithBeatSkip', () => {
+    function createMultiBeatStructure(): StoryStructure {
+      return createStoryStructure({
+        overallTheme: 'Epic journey',
+        premise: 'A hero crosses many thresholds.',
+        pacingBudget: { targetPagesMin: 20, targetPagesMax: 50 },
+        acts: [
+          {
+            name: 'Act One',
+            objective: 'Begin journey',
+            stakes: 'Miss the chance',
+            entryCondition: 'Call arrives',
+            beats: [
+              { name: 'Call', description: 'Hear the call', objective: 'Hear it', role: 'setup' },
+              { name: 'Prep', description: 'Prepare', objective: 'Gather supplies', role: 'escalation' },
+              { name: 'Depart', description: 'Leave home', objective: 'Cross threshold', role: 'turning_point' },
+              { name: 'First trial', description: 'Face trial', objective: 'Survive trial', role: 'escalation' },
+            ],
+          },
+          {
+            name: 'Act Two',
+            objective: 'Survive',
+            stakes: 'Kingdom falls',
+            entryCondition: 'Enter the wilds',
+            beats: [
+              { name: 'Ally', description: 'Meet ally', objective: 'Gain trust', role: 'setup' },
+              { name: 'Betrayal', description: 'Betrayal', objective: 'Survive betrayal', role: 'turning_point' },
+            ],
+          },
+        ],
+        rawResponse: '{}',
+      });
+    }
+
+    it('skips intermediate beats to reach the target beat within the same act', () => {
+      const structure = createMultiBeatStructure();
+      const state = createInitialStructureState(structure);
+
+      // At beat 1.1, skip to beat 1.4
+      const result = advanceWithBeatSkip(
+        structure,
+        state,
+        'Call answered.',
+        '1.4',
+        'Implicitly resolved by narrative advancement'
+      );
+
+      expect(result.isComplete).toBe(false);
+      expect(result.updatedState.currentActIndex).toBe(0);
+      expect(result.updatedState.currentBeatIndex).toBe(3);
+      expect(result.updatedState.beatProgressions).toContainEqual({
+        beatId: '1.1',
+        status: 'concluded',
+        resolution: 'Call answered.',
+      });
+      expect(result.updatedState.beatProgressions).toContainEqual({
+        beatId: '1.2',
+        status: 'concluded',
+        resolution: 'Implicitly resolved by narrative advancement',
+      });
+      expect(result.updatedState.beatProgressions).toContainEqual({
+        beatId: '1.3',
+        status: 'concluded',
+        resolution: 'Implicitly resolved by narrative advancement',
+      });
+      expect(result.updatedState.beatProgressions).toContainEqual({
+        beatId: '1.4',
+        status: 'active',
+      });
+      expect(result.beatAdvanced).toBe(true);
+      expect(result.actAdvanced).toBe(false);
+    });
+
+    it('skips across act boundaries to reach a target in a later act', () => {
+      const structure = createMultiBeatStructure();
+      const state = createInitialStructureState(structure);
+
+      // At beat 1.1, skip to beat 2.1
+      const result = advanceWithBeatSkip(
+        structure,
+        state,
+        'Call answered.',
+        '2.1',
+        'Bridged'
+      );
+
+      expect(result.isComplete).toBe(false);
+      expect(result.updatedState.currentActIndex).toBe(1);
+      expect(result.updatedState.currentBeatIndex).toBe(0);
+      expect(result.actAdvanced).toBe(true);
+      expect(result.beatAdvanced).toBe(true);
+    });
+
+    it('returns complete when the target is the last beat and it gets concluded along the way', () => {
+      const structure = createMultiBeatStructure();
+      // Start at beat 2.1 (last act, first beat)
+      const state: AccumulatedStructureState = {
+        currentActIndex: 1,
+        currentBeatIndex: 0,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.3', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.4', status: 'concluded', resolution: 'Done.' },
+          { beatId: '2.1', status: 'active' },
+          { beatId: '2.2', status: 'pending' },
+        ],
+        pagesInCurrentBeat: 2,
+        pacingNudge: null,
+      };
+
+      // Skip from 2.1 past 2.2 — since 2.2 is the last beat, this triggers completion
+      const result = advanceWithBeatSkip(
+        structure,
+        state,
+        'Trust gained.',
+        '2.2',
+        'Bridged'
+      );
+
+      // Should land on 2.2 as active (not complete, since target reached)
+      expect(result.updatedState.currentActIndex).toBe(1);
+      expect(result.updatedState.currentBeatIndex).toBe(1);
+      expect(result.isComplete).toBe(false);
+    });
+
+    it('falls back to normal advancement for invalid beat ID format', () => {
+      const structure = createMultiBeatStructure();
+      const state = createInitialStructureState(structure);
+
+      const result = advanceWithBeatSkip(
+        structure,
+        state,
+        'Call answered.',
+        'invalid',
+        'Bridged'
+      );
+
+      // Should just do a normal single advance
+      expect(result.updatedState.currentBeatIndex).toBe(1);
+      expect(result.beatAdvanced).toBe(true);
+    });
+  });
+
+  describe('applyStructureProgression with alignmentSkip', () => {
+    it('uses normal advancement when alignmentSkip is undefined', () => {
+      const structure = createStructure();
+      const parentState = createInitialStructureState(structure);
+
+      const result = applyStructureProgression(
+        structure,
+        parentState,
+        true,
+        'Beat resolved.',
+        undefined
+      );
+
+      expect(result.currentBeatIndex).toBe(1);
+    });
+
+    it('uses beat skip when alignmentSkip is provided', () => {
+      const multiStructure = createStoryStructure({
+        overallTheme: 'Journey',
+        premise: 'A hero.',
+        pacingBudget: { targetPagesMin: 10, targetPagesMax: 30 },
+        acts: [
+          {
+            name: 'Act One',
+            objective: 'Begin',
+            stakes: 'Fail',
+            entryCondition: 'Start',
+            beats: [
+              { name: 'B1', description: 'First', objective: 'Start', role: 'setup' },
+              { name: 'B2', description: 'Second', objective: 'Middle', role: 'escalation' },
+              { name: 'B3', description: 'Third', objective: 'End', role: 'turning_point' },
+            ],
+          },
+        ],
+        rawResponse: '{}',
+      });
+      const parentState = createInitialStructureState(multiStructure);
+
+      const result = applyStructureProgression(
+        multiStructure,
+        parentState,
+        true,
+        'First beat resolved.',
+        { targetBeatId: '1.3', bridgedResolution: 'Skipped' }
+      );
+
+      expect(result.currentBeatIndex).toBe(2);
+      expect(result.beatProgressions).toContainEqual({
+        beatId: '1.2',
+        status: 'concluded',
+        resolution: 'Skipped',
+      });
     });
   });
 

@@ -30,7 +30,7 @@ Be conservative. Minor variations are acceptable; only mark true deviation for g
 export function getRemainingBeats(
   structure: StoryStructure,
   state: AccumulatedStructureState
-): Array<{ id: string; description: string }> {
+): Array<{ id: string; description: string; objective: string }> {
   const concludedBeatIds = new Set(
     state.beatProgressions
       .filter((progression) => progression.status === 'concluded')
@@ -40,7 +40,7 @@ export function getRemainingBeats(
   return structure.acts.flatMap((act) =>
     act.beats
       .filter((beat) => !concludedBeatIds.has(beat.id))
-      .map((beat) => ({ id: beat.id, description: beat.description }))
+      .map((beat) => ({ id: beat.id, description: beat.description, objective: beat.objective }))
   );
 }
 
@@ -299,7 +299,8 @@ export function buildAnalystStructureEvaluation(
         return `  [>] ACTIVE (${beat.role}): ${beat.description}
     Objective: ${beat.objective}`;
       }
-      return `  [ ] PENDING (${beat.role}): ${beat.description}`;
+      return `  [ ] PENDING (${beat.role}): ${beat.description}
+    Objective: ${beat.objective}`;
     })
     .join('\n');
 
@@ -314,7 +315,7 @@ export function buildAnalystStructureEvaluation(
   const remainingBeatsSection =
     remainingBeats.length > 0
       ? `REMAINING BEATS TO EVALUATE FOR DEVIATION:\n${remainingBeats
-          .map((beat) => `  - ${beat.id}: ${beat.description}`)
+          .map((beat) => `  - ${beat.id}: ${beat.description}\n    Objective: ${beat.objective}`)
           .join('\n')}`
       : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
@@ -329,7 +330,7 @@ export function buildAnalystStructureEvaluation(
     state.currentActIndex < structure.acts.length - 1;
   const beatComparisonHint = hasPendingBeats
     ? `
-PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions when classifying structuralPositionSignal. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate.
+PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions and objectives when classifying structuralPositionSignal and alignedBeatId. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate. Also identify which specific pending beat the narrative aligns with via alignedBeatId.
 `
     : '';
 
@@ -431,7 +432,23 @@ Negative guards:
 
 If the completion gate is not satisfied, set beatConcluded: false.
 
-${beatComparisonHint}${escalationCheckSection}${DEVIATION_DETECTION_SECTION}
+${beatComparisonHint}=== BEAT ALIGNMENT DETECTION ===
+After classifying structuralPositionSignal, if the signal is NOT WITHIN_ACTIVE_BEAT, identify which PENDING beat the narrative most closely aligns with.
+
+Compare the current narrative state against ALL pending beat objectives (shown above). Select the beat whose objective best describes what the narrative is currently delivering or has just delivered.
+
+- alignedBeatId: The beat ID (e.g., "1.4", "2.1") that best matches the current narrative territory. null if WITHIN_ACTIVE_BEAT or no clear match.
+- beatAlignmentConfidence:
+  - HIGH: The narrative clearly satisfies or is actively delivering most conditions of the target beat's objective. Multiple objective elements are present.
+  - MEDIUM: The narrative has elements that overlap with the target beat but also fits nearby beats. Ambiguous.
+  - LOW: Weak or uncertain alignment. The narrative may have moved past the active beat but the target is unclear.
+- beatAlignmentReason: One sentence explaining the alignment judgment.
+
+If the aligned beat is the NEXT sequential beat (i.e., the one immediately after the active beat), this is normal progression — still report it but confidence assessment remains standard.
+
+If the aligned beat is 2+ beats ahead of the active beat, this indicates a narrative leap. Be especially careful with HIGH confidence — only assign it when the evidence is unambiguous.
+
+${escalationCheckSection}${DEVIATION_DETECTION_SECTION}
 ${remainingBeatsSection}
 
 ${pacingEvaluationSection}`;

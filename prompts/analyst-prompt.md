@@ -136,6 +136,7 @@ BEATS IN THIS ACT:
     {{#if beat.escalationType}}Escalation mechanism: {{beat.escalationType}}{{/if}}
     {{#if beat.uniqueScenarioHook}}Scenario hook: {{beat.uniqueScenarioHook}}{{/if}}
   [ ] PENDING ({{beat.role}}): {{beat.description}}
+    Objective: {{beat.objective}}
 
 REMAINING ACTS:
   - Act {{N}}: {{act.name}} - {{act.objective}}
@@ -195,8 +196,24 @@ Negative guards:
 
 If the completion gate is not satisfied, set beatConcluded: false.
 
-PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions when classifying structuralPositionSignal. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate.
+PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions and objectives when classifying structuralPositionSignal and alignedBeatId. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate. Also identify which specific pending beat the narrative aligns with via alignedBeatId.
 (Only present when there are pending beats remaining.)
+
+=== BEAT ALIGNMENT DETECTION ===
+After classifying structuralPositionSignal, if the signal is NOT WITHIN_ACTIVE_BEAT, identify which PENDING beat the narrative most closely aligns with.
+
+Compare the current narrative state against ALL pending beat objectives (shown above). Select the beat whose objective best describes what the narrative is currently delivering or has just delivered.
+
+- alignedBeatId: The beat ID (e.g., "1.4", "2.1") that best matches the current narrative territory. null if WITHIN_ACTIVE_BEAT or no clear match.
+- beatAlignmentConfidence:
+  - HIGH: The narrative clearly satisfies or is actively delivering most conditions of the target beat's objective. Multiple objective elements are present.
+  - MEDIUM: The narrative has elements that overlap with the target beat but also fits nearby beats. Ambiguous.
+  - LOW: Weak or uncertain alignment. The narrative may have moved past the active beat but the target is unclear.
+- beatAlignmentReason: One sentence explaining the alignment judgment.
+
+If the aligned beat is the NEXT sequential beat (i.e., the one immediately after the active beat), this is normal progression — still report it but confidence assessment remains standard.
+
+If the aligned beat is 2+ beats ahead of the active beat, this indicates a narrative leap. Be especially careful with HIGH confidence — only assign it when the evidence is unambiguous.
 
 {{#if activeBeatRole === 'escalation'}}
 === ESCALATION QUALITY CHECK ===
@@ -247,6 +264,7 @@ Be conservative. Minor variations are acceptable; only mark true deviation for g
 
 REMAINING BEATS TO EVALUATE FOR DEVIATION:
   - {{beat.id}}: {{beat.description}}
+    Objective: {{beat.objective}}
 
 === PACING EVALUATION ===
 Pages spent on current beat: {{state.pagesInCurrentBeat}}
@@ -366,7 +384,10 @@ The tone reminder is injected into the user prompt (before the narrative) in add
   "pacingDirective": "{{1-3 sentence natural-language pacing briefing for the page planner}}",
   "spineDeviationDetected": {{true|false}},
   "spineDeviationReason": "{{string, empty when no spine deviation}}",
-  "spineInvalidatedElement": "{{dramatic_question|antagonistic_force|need_want|null}}"
+  "spineInvalidatedElement": "{{dramatic_question|antagonistic_force|need_want|null}}",
+  "alignedBeatId": "{{beat ID like 1.4 or 2.1, null when WITHIN_ACTIVE_BEAT or no clear match}}",
+  "beatAlignmentConfidence": "{{LOW|MEDIUM|HIGH}}",
+  "beatAlignmentReason": "{{one sentence explaining alignment judgment, empty when alignedBeatId is null}}"
 }
 ```
 
@@ -383,3 +404,6 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 - `spineDeviationDetected`: Whether a story spine element has been irreversibly invalidated. Defaults to `false`. This is distinct from the existing beat-level `deviationDetected` field, forming a **two-tier deviation system**: beat deviation triggers structure rewrites within the existing spine, while spine deviation signals that the narrative backbone itself needs regeneration.
 - `spineDeviationReason`: When `spineDeviationDetected` is `true`, explains which element was invalidated and why. Empty string when no spine deviation.
 - `spineInvalidatedElement`: The specific spine element that was invalidated: `"dramatic_question"` (central question definitively answered), `"antagonistic_force"` (permanently eliminated with no successor), or `"need_want"` (need-want tension fully resolved prematurely). `null` when no spine deviation detected. Only one element can be flagged per evaluation.
+- `alignedBeatId`: When `structuralPositionSignal` is not `WITHIN_ACTIVE_BEAT`, identifies which pending beat (by ID, e.g., `"1.4"` or `"2.1"`) the narrative most closely aligns with. `null` when `WITHIN_ACTIVE_BEAT` or when no clear alignment exists. Invalid beat ID formats are normalized to `null` by the response transformer. When beat alignment detection identifies a HIGH-confidence skip to a beat 2+ positions ahead, the engine mechanically advances the structure state past intermediate beats, concluding each with a synthetic resolution ("Implicitly resolved by narrative advancement"). This is gated by the `enableBeatAlignmentSkip` config flag.
+- `beatAlignmentConfidence`: Confidence in the `alignedBeatId` judgment. `HIGH` means the narrative clearly satisfies most conditions of the target beat's objective. `MEDIUM` means the narrative has overlapping elements but is ambiguous. `LOW` means uncertain alignment. Only `HIGH` confidence triggers mechanical beat skipping; `MEDIUM` is logged but does not alter structure progression.
+- `beatAlignmentReason`: One sentence explaining the alignment judgment. Empty string when `alignedBeatId` is `null`.

@@ -68,6 +68,11 @@ const ThreadPayoffAssessmentSchema = z.object({
   reasoning: z.string().default(''),
 });
 
+const BeatAlignmentConfidenceSchema = z
+  .enum(['LOW', 'MEDIUM', 'HIGH'])
+  .catch('LOW')
+  .default('LOW');
+
 const DetectedRelationshipShiftSchema = z.object({
   npcName: z.string().default(''),
   shiftDescription: z.string().default(''),
@@ -111,4 +116,7 @@ export const AnalystResultSchema = z.object({
     .nullable()
     .catch(null)
     .default(null),
+  alignedBeatId: z.string().nullable().catch(null).default(null),
+  beatAlignmentConfidence: BeatAlignmentConfidenceSchema,
+  beatAlignmentReason: z.string().catch('').default(''),
 });

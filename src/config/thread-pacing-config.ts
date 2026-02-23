@@ -11,3 +11,8 @@ export const THREAD_PACING = {
   },
   MAX_ACTIVE_PROMISES: 8,
 } as const;
+
+export const BEAT_ALIGNMENT_CONFIG = {
+  enableBeatAlignmentSkip: true,
+  bridgedBeatResolution: 'Implicitly resolved by narrative advancement',
+} as const;

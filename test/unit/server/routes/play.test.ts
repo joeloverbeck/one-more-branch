@@ -1350,6 +1350,9 @@ describe('playRoutes', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '{}',
       };
       const resultPage = createPage({

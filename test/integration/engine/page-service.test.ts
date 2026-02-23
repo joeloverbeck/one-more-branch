@@ -353,6 +353,9 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
+    alignedBeatId: null,
+    beatAlignmentConfidence: 'LOW',
+    beatAlignmentReason: '',
     rawResponse: 'analyst-raw',
     ...overrides,
   });

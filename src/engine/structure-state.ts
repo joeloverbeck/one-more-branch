@@ -2,7 +2,7 @@ import type {
   AccumulatedStructureState,
   StoryStructure,
 } from '../models/story-arc';
-import { getBeatOrThrow, upsertBeatProgression } from './beat-utils';
+import { getBeatOrThrow, parseBeatIndices, upsertBeatProgression } from './beat-utils';
 import type { StructureProgressionResult } from './structure-types';
 
 /**
@@ -80,6 +80,54 @@ export function advanceStructureState(
 }
 
 /**
+ * Advances structure state past multiple beats when beat alignment detection
+ * indicates the narrative has leaped ahead. Concludes intermediate beats
+ * with a synthetic "bridged" resolution, then activates the target beat.
+ */
+export function advanceWithBeatSkip(
+  structure: StoryStructure,
+  currentState: AccumulatedStructureState,
+  beatResolution: string,
+  targetBeatId: string,
+  bridgedResolution: string
+): StructureProgressionResult {
+  const target = parseBeatIndices(targetBeatId);
+  if (!target) {
+    return advanceStructureState(structure, currentState, beatResolution);
+  }
+
+  // First, advance normally from the current beat
+  let result = advanceStructureState(structure, currentState, beatResolution);
+  if (result.isComplete) return result;
+
+  // Then advance through intermediate beats until we reach the target
+  let state = result.updatedState;
+
+  while (
+    !isAtTarget(state, target.actIndex, target.beatIndex) &&
+    !result.isComplete
+  ) {
+    result = advanceStructureState(structure, state, bridgedResolution);
+    state = result.updatedState;
+  }
+
+  return {
+    updatedState: state,
+    actAdvanced: state.currentActIndex !== currentState.currentActIndex,
+    beatAdvanced: true,
+    isComplete: result.isComplete,
+  };
+}
+
+function isAtTarget(
+  state: AccumulatedStructureState,
+  targetActIdx: number,
+  targetBeatIdx: number
+): boolean {
+  return state.currentActIndex === targetActIdx && state.currentBeatIndex === targetBeatIdx;
+}
+
+/**
  * Applies structure state inheritance (parent -> child page).
  * If beatConcluded, advances the state.
  */
@@ -87,13 +135,25 @@ export function applyStructureProgression(
   structure: StoryStructure,
   parentState: AccumulatedStructureState,
   beatConcluded: boolean,
-  beatResolution: string
+  beatResolution: string,
+  alignmentSkip?: { targetBeatId: string; bridgedResolution: string }
 ): AccumulatedStructureState {
   if (!beatConcluded) {
     return {
       ...parentState,
       pagesInCurrentBeat: parentState.pagesInCurrentBeat + 1,
     };
+  }
+
+  if (alignmentSkip) {
+    const result = advanceWithBeatSkip(
+      structure,
+      parentState,
+      beatResolution,
+      alignmentSkip.targetBeatId,
+      alignmentSkip.bridgedResolution
+    );
+    return result.updatedState;
   }
 
   const result = advanceStructureState(structure, parentState, beatResolution);

@@ -381,4 +381,110 @@ describe('validateAnalystResponse', () => {
       expect(result.npcCoherenceIssues).toBe('Kael acted out of character');
     });
   });
+
+  describe('beat alignment fields', () => {
+    it('parses valid beat alignment fields', () => {
+      const input = {
+        alignedBeatId: '1.4',
+        beatAlignmentConfidence: 'HIGH',
+        beatAlignmentReason: 'Narrative clearly in trial territory.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.alignedBeatId).toBe('1.4');
+      expect(result.beatAlignmentConfidence).toBe('HIGH');
+      expect(result.beatAlignmentReason).toBe('Narrative clearly in trial territory.');
+    });
+
+    it('defaults alignedBeatId to null when missing', () => {
+      const result = validateAnalystResponse({}, RAW_RESPONSE);
+
+      expect(result.alignedBeatId).toBeNull();
+    });
+
+    it('defaults beatAlignmentConfidence to LOW when missing', () => {
+      const result = validateAnalystResponse({}, RAW_RESPONSE);
+
+      expect(result.beatAlignmentConfidence).toBe('LOW');
+    });
+
+    it('defaults beatAlignmentReason to empty string when missing', () => {
+      const result = validateAnalystResponse({}, RAW_RESPONSE);
+
+      expect(result.beatAlignmentReason).toBe('');
+    });
+
+    it('nullifies invalid beat ID format', () => {
+      const input = {
+        alignedBeatId: 'not-a-beat-id',
+        beatAlignmentConfidence: 'HIGH',
+        beatAlignmentReason: 'Some reason.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.alignedBeatId).toBeNull();
+    });
+
+    it('nullifies beat ID with extra segments like "1.2.3"', () => {
+      const input = {
+        alignedBeatId: '1.2.3',
+        beatAlignmentConfidence: 'HIGH',
+        beatAlignmentReason: 'Some reason.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.alignedBeatId).toBeNull();
+    });
+
+    it('trims whitespace from alignedBeatId', () => {
+      const input = {
+        alignedBeatId: '  1.4  ',
+        beatAlignmentConfidence: 'HIGH',
+        beatAlignmentReason: 'Aligned.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.alignedBeatId).toBe('1.4');
+    });
+
+    it('trims whitespace from beatAlignmentReason', () => {
+      const input = {
+        alignedBeatId: '1.4',
+        beatAlignmentConfidence: 'HIGH',
+        beatAlignmentReason: '  The narrative leaped ahead  ',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.beatAlignmentReason).toBe('The narrative leaped ahead');
+    });
+
+    it('defaults invalid beatAlignmentConfidence to LOW', () => {
+      const input = {
+        alignedBeatId: '1.4',
+        beatAlignmentConfidence: 'SUPER_HIGH',
+        beatAlignmentReason: 'Some reason.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.beatAlignmentConfidence).toBe('LOW');
+    });
+
+    it('accepts MEDIUM confidence', () => {
+      const input = {
+        alignedBeatId: '1.3',
+        beatAlignmentConfidence: 'MEDIUM',
+        beatAlignmentReason: 'Ambiguous alignment.',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.beatAlignmentConfidence).toBe('MEDIUM');
+    });
+  });
 });

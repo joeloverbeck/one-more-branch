@@ -150,6 +150,13 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     spineDeviationDetected: validated.spineDeviationDetected,
     spineDeviationReason: validated.spineDeviationReason.trim(),
     spineInvalidatedElement: validated.spineInvalidatedElement,
+    alignedBeatId: validated.alignedBeatId
+      ? (BEAT_ID_PATTERN.test(validated.alignedBeatId.trim())
+        ? validated.alignedBeatId.trim()
+        : null)
+      : null,
+    beatAlignmentConfidence: validated.beatAlignmentConfidence,
+    beatAlignmentReason: validated.beatAlignmentReason.trim(),
     rawResponse,
   };
 }
