@@ -1,3 +1,4 @@
+import { BEAT_ALIGNMENT_CONFIG } from '../config/thread-pacing-config';
 import { generateAnalystEvaluation } from '../llm';
 import type { AnalystResult, PacingRecommendedAction } from '../llm/analyst-types';
 import type { ContinuationGenerationResult, StageDegradation } from '../llm/generation-pipeline-types';
@@ -17,6 +18,7 @@ import type { StorySpine } from '../models/story-spine';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { getCurrentBeat, isDeviation } from '../models';
+import { parseBeatIndices } from './beat-utils';
 import { handleDeviation, isActualDeviation } from './deviation-handler';
 import { emitGenerationStage } from './generation-pipeline-helpers';
 import { rewriteSpine } from './spine-rewriter';
@@ -426,6 +428,7 @@ export interface StructureProgressionContext {
   readonly parentStructureState: AccumulatedStructureState;
   readonly beatConcluded: boolean;
   readonly beatResolution: string;
+  readonly alignmentSkip?: { targetBeatId: string; bridgedResolution: string };
 }
 
 export function resolveStructureProgression(
@@ -439,8 +442,67 @@ export function resolveStructureProgression(
     activeStructure,
     context.parentStructureState,
     context.beatConcluded,
-    context.beatResolution
+    context.beatResolution,
+    context.alignmentSkip
   );
+}
+
+// --- Beat Alignment Skip ---
+
+function computeNextSequentialBeatId(state: AccumulatedStructureState): string | null {
+  // Next beat in same act
+  const nextBeatIndex = state.currentBeatIndex + 1;
+  return `${state.currentActIndex + 1}.${nextBeatIndex + 1}`;
+}
+
+function isBeatIdAhead(candidateId: string, referenceId: string): boolean {
+  const candidate = parseBeatIndices(candidateId);
+  const reference = parseBeatIndices(referenceId);
+  if (!candidate || !reference) return false;
+
+  if (candidate.actIndex > reference.actIndex) return true;
+  if (candidate.actIndex === reference.actIndex) {
+    return candidate.beatIndex > reference.beatIndex;
+  }
+  return false;
+}
+
+export function resolveBeatAlignmentSkip(
+  analystResult: AnalystResult | null,
+  beatConcluded: boolean,
+  parentStructureState: AccumulatedStructureState
+): { targetBeatId: string; bridgedResolution: string } | undefined {
+  if (
+    !BEAT_ALIGNMENT_CONFIG.enableBeatAlignmentSkip ||
+    !beatConcluded ||
+    !analystResult?.alignedBeatId ||
+    analystResult.beatAlignmentConfidence !== 'HIGH'
+  ) {
+    return undefined;
+  }
+
+  // Check if the aligned beat is past the next sequential beat
+  const nextBeatId = computeNextSequentialBeatId(parentStructureState);
+  if (!nextBeatId || analystResult.alignedBeatId === nextBeatId) {
+    return undefined; // Normal progression, no skip needed
+  }
+
+  // Verify the aligned beat is actually ahead (not behind or equal)
+  if (!isBeatIdAhead(analystResult.alignedBeatId, nextBeatId)) {
+    return undefined;
+  }
+
+  logger.info('Beat alignment skip detected', {
+    alignedBeatId: analystResult.alignedBeatId,
+    nextSequentialBeatId: nextBeatId,
+    confidence: analystResult.beatAlignmentConfidence,
+    reason: analystResult.beatAlignmentReason,
+  });
+
+  return {
+    targetBeatId: analystResult.alignedBeatId,
+    bridgedResolution: BEAT_ALIGNMENT_CONFIG.bridgedBeatResolution,
+  };
 }
 
 export function resolveActiveBeat(

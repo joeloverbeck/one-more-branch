@@ -704,6 +704,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -1380,6 +1383,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -1703,6 +1709,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -1811,6 +1820,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -1924,6 +1936,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -2027,6 +2042,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -2133,6 +2151,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -2279,6 +2300,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
+          alignedBeatId: null,
+          beatAlignmentConfidence: 'LOW',
+          beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
         })
         .mockResolvedValueOnce({
@@ -2313,6 +2337,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
+          alignedBeatId: null,
+          beatAlignmentConfidence: 'LOW',
+          beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
         });
 
@@ -2421,6 +2448,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -2568,6 +2598,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -2772,6 +2805,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -3027,6 +3063,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -3126,6 +3165,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -3230,6 +3272,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 
@@ -3493,6 +3538,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
+          alignedBeatId: null,
+          beatAlignmentConfidence: 'LOW',
+          beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
         });
 
@@ -3535,6 +3583,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
+          alignedBeatId: null,
+          beatAlignmentConfidence: 'LOW',
+          beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
         });
 
@@ -3577,6 +3628,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
+          alignedBeatId: null,
+          beatAlignmentConfidence: 'LOW',
+          beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
         });
 
@@ -3716,6 +3770,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
+          alignedBeatId: null,
+          beatAlignmentConfidence: 'LOW',
+          beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
         });
 
@@ -4177,6 +4234,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
       });
 

@@ -627,6 +627,9 @@ describe('page-builder', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '',
       };
     }
@@ -740,6 +743,9 @@ describe('page-builder', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '',
       };
     }

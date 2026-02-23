@@ -166,6 +166,9 @@ export interface AnalystResultFileData {
   spineDeviationDetected?: boolean;
   spineDeviationReason?: string;
   spineInvalidatedElement?: string | null;
+  alignedBeatId?: string | null;
+  beatAlignmentConfidence?: string;
+  beatAlignmentReason?: string;
 }
 
 export interface PageFileData {

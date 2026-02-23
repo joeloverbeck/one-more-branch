@@ -30,6 +30,7 @@ export type StructuralPositionSignal =
   | 'BRIDGING_TO_NEXT_BEAT'
   | 'CLEARLY_IN_NEXT_BEAT';
 export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
+export type BeatAlignmentConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface DetectedPromise {
   readonly description: string;
@@ -78,6 +79,9 @@ export interface AnalystResult {
   spineDeviationDetected: boolean;
   spineDeviationReason: string;
   spineInvalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want' | null;
+  alignedBeatId: string | null;
+  beatAlignmentConfidence: BeatAlignmentConfidence;
+  beatAlignmentReason: string;
   rawResponse: string;
 }
 

@@ -27,6 +27,7 @@ import {
   handleSpineDeviationIfDetected,
   collectRemainingBeatIds,
   resolveBeatConclusion,
+  resolveBeatAlignmentSkip,
   applyPacingResponse,
   resolveStructureProgression,
   resolveActiveBeat,
@@ -253,6 +254,13 @@ export async function processPostGeneration(
     parentPageId: parentPage?.id ?? parsePageId(1),
   });
 
+  // --- Beat alignment skip ---
+  const alignmentSkip = resolveBeatAlignmentSkip(
+    analystResult,
+    beatConcluded,
+    parentStructureState
+  );
+
   // --- Structure progression ---
   const progressedState = resolveStructureProgression({
     activeStructureVersion,
@@ -260,6 +268,7 @@ export async function processPostGeneration(
     parentStructureState,
     beatConcluded,
     beatResolution,
+    alignmentSkip,
   });
 
   // --- Pacing response ---

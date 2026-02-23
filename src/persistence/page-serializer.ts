@@ -139,6 +139,9 @@ function serializeAnalystResult(analystResult: AnalystResult | null): AnalystRes
     spineDeviationDetected: analystResult.spineDeviationDetected,
     spineDeviationReason: analystResult.spineDeviationReason,
     spineInvalidatedElement: analystResult.spineInvalidatedElement,
+    alignedBeatId: analystResult.alignedBeatId,
+    beatAlignmentConfidence: analystResult.beatAlignmentConfidence,
+    beatAlignmentReason: analystResult.beatAlignmentReason,
   };
 }
 
@@ -208,6 +211,10 @@ function deserializeAnalystResult(
     spineDeviationReason: data.spineDeviationReason ?? '',
     spineInvalidatedElement:
       (data.spineInvalidatedElement as AnalystResult['spineInvalidatedElement']) ?? null,
+    alignedBeatId: (data.alignedBeatId as AnalystResult['alignedBeatId']) ?? null,
+    beatAlignmentConfidence:
+      (data.beatAlignmentConfidence as AnalystResult['beatAlignmentConfidence']) ?? 'LOW',
+    beatAlignmentReason: (data.beatAlignmentReason as string) ?? '',
     rawResponse: '',
   };
 }

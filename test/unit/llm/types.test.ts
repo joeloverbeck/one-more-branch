@@ -840,6 +840,9 @@ describe('LLM types', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -881,6 +884,9 @@ describe('LLM types', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '{"deviationDetected":true}',
       };
 

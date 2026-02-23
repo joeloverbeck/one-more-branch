@@ -490,6 +490,9 @@ describe('story-engine integration', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -523,6 +526,9 @@ describe('story-engine integration', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'analyst-raw',
       });
 
@@ -681,6 +687,9 @@ describe('story-engine integration', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -714,6 +723,9 @@ describe('story-engine integration', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
@@ -747,6 +759,9 @@ describe('story-engine integration', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: 'analyst-raw',
       });
 

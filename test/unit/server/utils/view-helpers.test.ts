@@ -1015,6 +1015,9 @@ describe('getMilestoneInfo', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '',
       },
       accumulatedStructureState: {
@@ -1086,6 +1089,9 @@ describe('getMilestoneInfo', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
         rawResponse: '',
       },
     };
@@ -1126,6 +1132,9 @@ describe('getMilestoneInfo', () => {
       spineDeviationDetected: false,
       spineDeviationReason: '',
       spineInvalidatedElement: null,
+      alignedBeatId: null,
+      beatAlignmentConfidence: 'LOW',
+      beatAlignmentReason: '',
       rawResponse: '',
     };
   }

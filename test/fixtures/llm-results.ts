@@ -68,6 +68,9 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
+    alignedBeatId: null,
+    beatAlignmentConfidence: 'LOW',
+    beatAlignmentReason: '',
     rawResponse: '{}',
     ...overrides,
   };

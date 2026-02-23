@@ -284,6 +284,22 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'Which spine element was invalidated: "dramatic_question" if the CDQ was definitively answered, "antagonistic_force" if the primary opposition was permanently eliminated, "need_want" if the protagonist arc was fully resolved prematurely. null when no spine deviation.',
         },
+        alignedBeatId: {
+          anyOf: [{ type: 'string' }, { type: 'null' }],
+          description:
+            'When structuralPositionSignal is not WITHIN_ACTIVE_BEAT, identify which pending beat (by ID, e.g. "1.4" or "2.1") the narrative most closely aligns with. null when WITHIN_ACTIVE_BEAT or when no clear alignment exists.',
+        },
+        beatAlignmentConfidence: {
+          type: 'string',
+          enum: ['LOW', 'MEDIUM', 'HIGH'],
+          description:
+            'Confidence in the alignedBeatId judgment. HIGH = narrative clearly satisfies most conditions of the target beat objective. MEDIUM = narrative has elements of the target beat but is ambiguous. LOW = structural position is uncertain.',
+        },
+        beatAlignmentReason: {
+          type: 'string',
+          description:
+            'One sentence explaining why the narrative aligns with the identified beat. Empty string when alignedBeatId is null.',
+        },
       },
       required: [
         'beatConcluded',
@@ -317,6 +333,9 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'spineDeviationDetected',
         'spineDeviationReason',
         'spineInvalidatedElement',
+        'alignedBeatId',
+        'beatAlignmentConfidence',
+        'beatAlignmentReason',
       ],
       additionalProperties: false,
     },
