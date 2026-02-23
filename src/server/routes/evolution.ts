@@ -10,6 +10,21 @@ import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const evolutionRoutes = Router();
 
+function logEvolutionLlmError(error: LLMError): void {
+  logger.error('LLM error evolving concepts:', {
+    message: error.message,
+    code: error.code,
+    retryable: error.retryable,
+    httpStatus: error.context?.['httpStatus'],
+    model: error.context?.['model'],
+    parsedError: error.context?.['parsedError'],
+    rawErrorBody: error.context?.['rawErrorBody'],
+    parseStage: error.context?.['parseStage'],
+    contentShape: error.context?.['contentShape'],
+    contentPreview: error.context?.['contentPreview'],
+  });
+}
+
 function parseConceptIds(input: unknown): string[] {
   if (!Array.isArray(input)) {
     return [];
@@ -128,6 +143,7 @@ evolutionRoutes.post(
       });
     } catch (error) {
       if (error instanceof LLMError) {
+        logEvolutionLlmError(error);
         const { publicMessage, response } = buildLlmRouteErrorResult(error);
         progress.fail(publicMessage);
         return res.status(500).json(response);

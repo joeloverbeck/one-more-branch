@@ -11,6 +11,7 @@ import {
   getConceptGenerationFilePath,
   getConceptsDir,
 } from './file-utils.js';
+import { parseSavedConcept } from './concept-payload-parser.js';
 import { createJsonBatchSaver, createJsonEntityRepository } from './json-entity-repository.js';
 
 const CONCEPT_LOCK_PREFIX = 'concept:';
@@ -23,6 +24,7 @@ const conceptRepository = createJsonEntityRepository<SavedConcept>({
   getDir: getConceptsDir,
   getFilePath: getConceptFilePath,
   isEntity: isSavedConcept,
+  parseEntity: parseSavedConcept,
 });
 
 const saveConceptBatch = createJsonBatchSaver<GeneratedConceptBatch>({

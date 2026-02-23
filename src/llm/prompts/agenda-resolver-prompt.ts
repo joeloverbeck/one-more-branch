@@ -17,7 +17,7 @@ const AGENDA_RESOLVER_SYSTEM_PROMPT = `You are the NPC Agenda Resolver for an in
 
 RULES:
 1. Only update agendas whose situation materially changed due to the scene's events. If nothing relevant happened to an NPC, do NOT include them in updatedAgendas.
-2. Off-screen NPCs still evolve: their goals progress, leverage shifts, and off-screen behavior reflects time passing and their own pursuits.
+2. Off-screen NPCs are not exempt from updates: if a scene's events materially affect an absent NPC's situation (e.g., their ally was killed, their plan was exposed, a resource they depend on was destroyed), include them. When you do, reflect that their goals, leverage, and off-screen behavior have continued to evolve in response.
 3. Keep each field to 1-2 sentences maximum.
 4. Respect story structure pacing: do NOT let NPCs resolve Act 3 conflicts during Act 1. NPCs should be setting up, maneuvering, and positioning - not achieving endgame goals prematurely.
 5. Off-screen behavior must be plausible given the NPC's leverage and fear. An NPC who fears exposure won't be acting boldly in public.

@@ -93,17 +93,82 @@
         <% } %>
         <div id="saved-concepts-list" class="spine-options-container">
           <% for (const concept of concepts) { %>
+          <% const cc = concept.evaluatedConcept.concept; %>
           <article class="spine-card concept-card saved-concept-card" data-concept-id="<%= concept.id %>">
             <div class="spine-badges">
-              <span class="spine-badge spine-badge-type"><%= (concept.evaluatedConcept.concept.genreFrame || '').replace(/_/g, ' ') %></span>
-              <span class="spine-badge spine-badge-conflict"><%= (concept.evaluatedConcept.concept.conflictAxis || '').replace(/_/g, ' ') %></span>
+              <span class="spine-badge spine-badge-type"><%= (cc.genreFrame || '').replace(/_/g, ' ') %></span>
+              <span class="spine-badge spine-badge-conflict"><%= (cc.conflictAxis || '').replace(/_/g, ' ') %></span>
+              <% if (cc.conflictType) { %><span class="spine-badge spine-badge-conflict"><%= cc.conflictType.replace(/_/g, ' ') %></span><% } %>
+              <% if (cc.settingScale) { %><span class="spine-badge spine-badge-type"><%= cc.settingScale.replace(/_/g, ' ') %></span><% } %>
               <span class="spine-badge spine-badge-arc">Score <%= Math.round(concept.evaluatedConcept.overallScore || 0) %></span>
               <% if (concept.hardenedAt) { %>
               <span class="spine-badge spine-badge-type" style="background: var(--accent-green, #2ecc71);">Hardened</span>
               <% } %>
             </div>
             <h3 class="spine-cdq"><%= concept.name %></h3>
-            <p class="spine-field"><%= concept.evaluatedConcept.concept.elevatorParagraph || '' %></p>
+            <p class="spine-field"><%= cc.elevatorParagraph || '' %></p>
+            <div class="spine-field"><span class="spine-label">Protagonist:</span> <%= cc.protagonistRole || '' %></div>
+            <% if (cc.coreCompetence) { %><div class="spine-field"><span class="spine-label">Core Competence:</span> <%= cc.coreCompetence %></div><% } %>
+            <% if (cc.coreFlaw) { %><div class="spine-field"><span class="spine-label">Core Flaw:</span> <%= cc.coreFlaw %></div><% } %>
+            <% if (cc.coreConflictLoop) { %><div class="spine-field"><span class="spine-label">Conflict Loop:</span> <%= cc.coreConflictLoop %></div><% } %>
+            <% if (cc.pressureSource) { %><div class="spine-field"><span class="spine-label">Pressure Source:</span> <%= cc.pressureSource %></div><% } %>
+            <% if (cc.stakesPersonal) { %><div class="spine-field"><span class="spine-label">Personal Stakes:</span> <%= cc.stakesPersonal %></div><% } %>
+            <% if (cc.stakesSystemic) { %><div class="spine-field"><span class="spine-label">Systemic Stakes:</span> <%= cc.stakesSystemic %></div><% } %>
+            <% if (cc.deadlineMechanism) { %><div class="spine-field"><span class="spine-label">Deadline Mechanism:</span> <%= cc.deadlineMechanism %></div><% } %>
+            <% if (cc.genreSubversion) { %><div class="spine-field"><span class="spine-label">Genre Subversion:</span> <%= cc.genreSubversion %></div><% } %>
+            <% if (cc.whatIfQuestion) { %><p class="spine-field concept-what-if"><span class="spine-label">What If:</span> <em><%= cc.whatIfQuestion %></em></p><% } %>
+            <% if (cc.ironicTwist) { %><div class="spine-field"><span class="spine-label">Ironic Twist:</span> <%= cc.ironicTwist %></div><% } %>
+            <% if (cc.playerFantasy) { %><p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em><%= cc.playerFantasy %></em></p><% } %>
+            <% if (cc.incitingDisruption) { %><div class="spine-field"><span class="spine-label">Inciting Disruption:</span> <%= cc.incitingDisruption %></div><% } %>
+            <% if (cc.escapeValve) { %><div class="spine-field"><span class="spine-label">Escape Valve:</span> <%= cc.escapeValve %></div><% } %>
+            <% if (Array.isArray(cc.actionVerbs) && cc.actionVerbs.length > 0) { %><div class="spine-field"><span class="spine-label">Action Verbs:</span> <%= cc.actionVerbs.join(', ') %></div><% } %>
+            <% if (Array.isArray(cc.settingAxioms) && cc.settingAxioms.length > 0) { %><div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul><% cc.settingAxioms.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+            <% if (Array.isArray(cc.constraintSet) && cc.constraintSet.length > 0) { %><div class="spine-field"><span class="spine-label">Constraints:</span><ul><% cc.constraintSet.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+            <% if (Array.isArray(cc.keyInstitutions) && cc.keyInstitutions.length > 0) { %><div class="spine-field"><span class="spine-label">Key Institutions:</span><ul><% cc.keyInstitutions.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+            <%
+              const ev = concept.evaluatedConcept;
+              const scoreFields = [
+                { key: 'hookStrength', label: 'Hook' },
+                { key: 'conflictEngine', label: 'Conflict' },
+                { key: 'agencyBreadth', label: 'Agency' },
+                { key: 'noveltyLeverage', label: 'Novelty' },
+                { key: 'branchingFitness', label: 'Branching' },
+                { key: 'llmFeasibility', label: 'Feasibility' },
+              ];
+              function getScoreColor(s) { if (s <= 2) return 'low'; if (s <= 3) return 'mid'; return 'high'; }
+            %>
+            <div class="concept-scores">
+              <div class="concept-scores-grid">
+                <% scoreFields.forEach(function(sf) {
+                  const raw = Number(ev.scores && ev.scores[sf.key]);
+                  const safe = Number.isFinite(raw) ? Math.max(0, Math.min(5, raw)) : 0;
+                  const color = getScoreColor(safe);
+                  const full = Math.floor(safe);
+                  const hasHalf = (safe % 1) >= 0.25;
+                %>
+                <div class="concept-score-cell">
+                  <span class="concept-score-label"><%= sf.label %></span>
+                  <span class="concept-score-value concept-score-value--<%= color %>"><%= safe.toFixed(1) %></span>
+                  <div class="concept-score-pips">
+                    <% for (let i = 0; i < 5; i++) { %>
+                      <% if (i < full) { %>
+                        <span class="concept-pip concept-pip--filled concept-pip--<%= color %>"></span>
+                      <% } else if (i === full && hasHalf) { %>
+                        <span class="concept-pip concept-pip--half concept-pip--<%= color %>"></span>
+                      <% } else { %>
+                        <span class="concept-pip concept-pip--empty"></span>
+                      <% } %>
+                    <% } %>
+                  </div>
+                </div>
+                <% }); %>
+              </div>
+            </div>
+            <% if (ev.tradeoffSummary) { %><div class="spine-field"><span class="spine-label">Tradeoff:</span> <%= ev.tradeoffSummary %></div><% } %>
+            <div class="concept-feedback">
+              <div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul><% if (Array.isArray(ev.strengths) && ev.strengths.length > 0) { ev.strengths.forEach(function(s) { %><li><%= s %></li><% }); } else { %><li class="concept-list-empty">None</li><% } %></ul></div>
+              <div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul><% if (Array.isArray(ev.weaknesses) && ev.weaknesses.length > 0) { ev.weaknesses.forEach(function(w) { %><li><%= w %></li><% }); } else { %><li class="concept-list-empty">None</li><% } %></ul></div>
+            </div>
             <div class="spine-field">
               <span class="spine-label">Created:</span> <%= new Date(concept.createdAt).toLocaleDateString() %>
               <% if (concept.updatedAt !== concept.createdAt) { %>
@@ -170,6 +235,26 @@
           <input type="text" id="edit-deadlineMechanism">
         </div>
         <div class="form-group">
+          <label for="edit-incitingDisruption">Inciting Disruption</label>
+          <textarea id="edit-incitingDisruption" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-escapeValve">Escape Valve</label>
+          <textarea id="edit-escapeValve" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-whatIfQuestion">What-If Question</label>
+          <input type="text" id="edit-whatIfQuestion">
+        </div>
+        <div class="form-group">
+          <label for="edit-ironicTwist">Ironic Twist</label>
+          <textarea id="edit-ironicTwist" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-playerFantasy">Player Fantasy</label>
+          <input type="text" id="edit-playerFantasy">
+        </div>
+        <div class="form-group">
           <label for="edit-genreSubversion">Genre Subversion</label>
           <input type="text" id="edit-genreSubversion">
         </div>
@@ -205,6 +290,19 @@
             <option value="POWER_VS_MORALITY">Power vs Morality</option>
             <option value="LOYALTY_VS_SURVIVAL">Loyalty vs Survival</option>
             <option value="IDENTITY_VS_BELONGING">Identity vs Belonging</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-conflictType">Conflict Type</label>
+          <select id="edit-conflictType">
+            <option value="">-- Select type --</option>
+            <option value="PERSON_VS_PERSON">Person vs Person</option>
+            <option value="PERSON_VS_SELF">Person vs Self</option>
+            <option value="PERSON_VS_SOCIETY">Person vs Society</option>
+            <option value="PERSON_VS_NATURE">Person vs Nature</option>
+            <option value="PERSON_VS_TECHNOLOGY">Person vs Technology</option>
+            <option value="PERSON_VS_SUPERNATURAL">Person vs Supernatural</option>
+            <option value="PERSON_VS_FATE">Person vs Fate</option>
           </select>
         </div>
         <div class="form-group">

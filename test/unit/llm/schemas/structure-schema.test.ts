@@ -120,4 +120,46 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     expect(roleSchema.type).toBe('string');
     expect(roleSchema.enum).toEqual(['setup', 'escalation', 'turning_point', 'resolution']);
   });
+
+  it('should define escalationType with a nullable anyOf enum for provider compatibility', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    escalationType: {
+                      anyOf: Array<{ type: string; enum?: string[] }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const escalationTypeSchema =
+      schema.properties.acts.items.properties.beats.items.properties.escalationType;
+    expect(escalationTypeSchema.anyOf).toEqual([
+      {
+        type: 'string',
+        enum: [
+          'THREAT_ESCALATION',
+          'REVELATION_SHIFT',
+          'REVERSAL_OF_FORTUNE',
+          'BETRAYAL_OR_ALLIANCE_SHIFT',
+          'RESOURCE_OR_CAPABILITY_LOSS',
+          'MORAL_OR_ETHICAL_PRESSURE',
+          'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
+          'COMPLICATION_CASCADE',
+          'COMPETENCE_DEMAND_SPIKE',
+        ],
+      },
+      { type: 'null' },
+    ]);
+  });
 });

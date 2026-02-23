@@ -130,23 +130,23 @@ const ConstraintIntentAddSchema = z.object({
 });
 
 export const TextIntentMutationsSchema = z.object({
-  add: z.array(z.string()),
-  removeIds: z.array(z.string()),
+  add: z.array(z.string()).default([]),
+  removeIds: z.array(z.string()).default([]),
 });
 
 export const ThreatIntentMutationsSchema = z.object({
-  add: z.array(ThreatIntentAddSchema),
-  removeIds: z.array(z.string()),
+  add: z.array(ThreatIntentAddSchema).default([]),
+  removeIds: z.array(z.string()).default([]),
 });
 
 export const ConstraintIntentMutationsSchema = z.object({
-  add: z.array(ConstraintIntentAddSchema),
-  removeIds: z.array(z.string()),
+  add: z.array(ConstraintIntentAddSchema).default([]),
+  removeIds: z.array(z.string()).default([]),
 });
 
 export const ThreadIntentMutationsSchema = z.object({
-  add: z.array(ThreadIntentAddSchema),
-  resolveIds: z.array(z.string()),
+  add: z.array(ThreadIntentAddSchema).default([]),
+  resolveIds: z.array(z.string()).default([]),
 });
 
 const CharacterStateIntentAddSchema = z.object({
@@ -155,8 +155,8 @@ const CharacterStateIntentAddSchema = z.object({
 });
 
 export const CharacterStateIntentMutationsSchema = z.object({
-  add: z.array(CharacterStateIntentAddSchema),
-  removeIds: z.array(z.string()),
+  add: z.array(CharacterStateIntentAddSchema).default([]),
+  removeIds: z.array(z.string()).default([]),
 });
 
 const CanonWorldAddItemSchema = z.object({
@@ -165,24 +165,24 @@ const CanonWorldAddItemSchema = z.object({
 });
 
 export const CanonIntentsSchema = z.object({
-  worldAdd: z.array(CanonWorldAddItemSchema),
+  worldAdd: z.array(CanonWorldAddItemSchema).default([]),
   characterAdd: z.array(
     z.object({
       characterName: z.string(),
       facts: z.array(z.string()),
     })
-  ),
+  ).default([]),
 });
 
 export const StateIntentsSchema = z.object({
   currentLocation: z.string(),
-  threats: ThreatIntentMutationsSchema,
-  constraints: ConstraintIntentMutationsSchema,
-  threads: ThreadIntentMutationsSchema,
-  inventory: TextIntentMutationsSchema,
-  health: TextIntentMutationsSchema,
-  characterState: CharacterStateIntentMutationsSchema,
-  canon: CanonIntentsSchema,
+  threats: ThreatIntentMutationsSchema.default({ add: [], removeIds: [] }),
+  constraints: ConstraintIntentMutationsSchema.default({ add: [], removeIds: [] }),
+  threads: ThreadIntentMutationsSchema.default({ add: [], resolveIds: [] }),
+  inventory: TextIntentMutationsSchema.default({ add: [], removeIds: [] }),
+  health: TextIntentMutationsSchema.default({ add: [], removeIds: [] }),
+  characterState: CharacterStateIntentMutationsSchema.default({ add: [], removeIds: [] }),
+  canon: CanonIntentsSchema.default({ worldAdd: [], characterAdd: [] }),
 });
 
 export function addStateIntentRefinements(

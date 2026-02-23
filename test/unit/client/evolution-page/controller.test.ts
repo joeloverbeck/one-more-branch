@@ -227,4 +227,101 @@ describe('evolution page controller', () => {
     expect(saveBtn.textContent).toBe('Saved');
     expect(sessionStorage.getItem('omb_api_key')).toBe('sk-or-valid-test-key-12345');
   });
+
+  it('logs API debug details when evolve request fails with structured error payload', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = getUrl(input);
+      if (url === '/kernels/api/list') {
+        return Promise.resolve(mockJsonResponse({
+          success: true,
+          kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
+        }));
+      }
+      if (url === '/kernels/api/kernel-1') {
+        return Promise.resolve(mockJsonResponse({
+          success: true,
+          kernel: {
+            id: 'kernel-1',
+            name: 'Kernel 1',
+            evaluatedKernel: {
+              kernel: {
+                dramaticThesis: 'Thesis',
+                valueAtStake: 'Value',
+                opposingForce: 'Force',
+                thematicQuestion: 'Question',
+              },
+              overallScore: 82,
+            },
+          },
+        }));
+      }
+      if (url === '/evolve/api/concepts-by-kernel/kernel-1') {
+        return Promise.resolve(mockJsonResponse({
+          success: true,
+          concepts: [
+            { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
+            { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
+          ],
+        }));
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'failed' }));
+      }
+      if (url === '/evolve/api/evolve') {
+        return Promise.resolve(mockJsonResponse(
+          {
+            success: false,
+            error: 'API request error: Provider returned error',
+            code: 'HTTP_400',
+            retryable: false,
+            debug: {
+              model: 'openai/gpt-4o-mini',
+              rawError: '{"error":{"message":"Provider rejected content","code":"provider_error"}}',
+            },
+          },
+          false,
+          500,
+        ));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+    });
+
+    document.body.innerHTML = buildEvolutionPageHtml();
+    loadAppAndInit();
+
+    const kernelSelector = document.getElementById('evolution-kernel-selector') as HTMLSelectElement;
+    const apiKeyInput = document.getElementById('evolutionApiKey') as HTMLInputElement;
+    const evolveBtn = document.getElementById('evolve-btn') as HTMLButtonElement;
+
+    await flushPromises();
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    apiKeyInput.dispatchEvent(new Event('input'));
+    kernelSelector.value = 'kernel-1';
+    kernelSelector.dispatchEvent(new Event('change'));
+    await flushPromises();
+
+    const parentCards = Array.from(document.querySelectorAll('#evolution-parent-concepts .concept-card'));
+    parentCards[0]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    parentCards[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    evolveBtn.click();
+    await flushPromises();
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Concept evolution error code:',
+      'HTTP_400',
+      '| Retryable:',
+      false,
+    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Concept evolution debug info:',
+      expect.objectContaining({
+        model: 'openai/gpt-4o-mini',
+      }),
+    );
+  });
 });

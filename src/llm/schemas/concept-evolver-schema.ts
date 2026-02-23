@@ -13,8 +13,7 @@ export const CONCEPT_EVOLUTION_SCHEMA: JsonSchema = {
       properties: {
         concepts: {
           type: 'array',
-          minItems: 6,
-          maxItems: 6,
+          minItems: 1,
           items: CONCEPT_SPEC_SCHEMA,
         },
       },

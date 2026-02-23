@@ -105,18 +105,22 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       description: 'Dramatic function of this beat in the story structure.',
                     },
                     escalationType: {
-                      type: ['string', 'null'],
-                      enum: [
-                        'THREAT_ESCALATION',
-                        'REVELATION_SHIFT',
-                        'REVERSAL_OF_FORTUNE',
-                        'BETRAYAL_OR_ALLIANCE_SHIFT',
-                        'RESOURCE_OR_CAPABILITY_LOSS',
-                        'MORAL_OR_ETHICAL_PRESSURE',
-                        'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
-                        'COMPLICATION_CASCADE',
-                        'COMPETENCE_DEMAND_SPIKE',
-                        null,
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [
+                            'THREAT_ESCALATION',
+                            'REVELATION_SHIFT',
+                            'REVERSAL_OF_FORTUNE',
+                            'BETRAYAL_OR_ALLIANCE_SHIFT',
+                            'RESOURCE_OR_CAPABILITY_LOSS',
+                            'MORAL_OR_ETHICAL_PRESSURE',
+                            'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
+                            'COMPLICATION_CASCADE',
+                            'COMPETENCE_DEMAND_SPIKE',
+                          ],
+                        },
+                        { type: 'null' },
                       ],
                       description:
                         'For escalation/turning_point beats: HOW stakes rise. Null for setup/resolution beats.',

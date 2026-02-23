@@ -35,7 +35,7 @@ describe('buildAgendaResolverPrompt', () => {
 
     expect(system).toContain('NPC Agenda Resolver');
     expect(system).toContain('materially changed');
-    expect(system).toContain('Off-screen NPCs still evolve');
+    expect(system).toContain('Off-screen NPCs are not exempt from updates');
   });
 
   it('includes character definitions in user prompt', () => {
