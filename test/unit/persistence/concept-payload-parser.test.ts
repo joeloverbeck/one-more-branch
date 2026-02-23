@@ -3,6 +3,7 @@ import {
   createConceptSpecFixture,
   createEvaluatedConceptFixture,
 } from '../../fixtures/concept-generator';
+import { computeOverallScore, passesConceptThresholds } from '../../../src/models/concept-generator';
 import type { SavedConcept } from '../../../src/models/saved-concept';
 
 function createSavedConceptFixture(overrides?: Partial<SavedConcept>): SavedConcept {
@@ -147,5 +148,61 @@ describe('parseSavedConcept', () => {
     expect(() => parseSavedConcept(value, '/bad/path.json')).toThrow(
       'Invalid SavedConcept payload at /bad/path.json'
     );
+  });
+
+  it('migrates legacy payload with branchingFitness in scores and scoreEvidence', () => {
+    const modernEval = createEvaluatedConceptFixture();
+    const legacyScores = {
+      ...modernEval.scores,
+      branchingFitness: 4,
+    };
+    const legacyEval = {
+      ...modernEval,
+      scores: legacyScores,
+      overallScore: 999,
+      passes: false,
+    };
+    const legacy = {
+      id: 'concept-legacy',
+      name: 'Legacy Concept',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      seeds: { genreVibes: 'noir' },
+      evaluatedConcept: legacyEval,
+    };
+
+    const result = parseSavedConcept(legacy, '/test/legacy.json');
+
+    expect((result.evaluatedConcept.scores as unknown as Record<string, unknown>)['branchingFitness']).toBeUndefined();
+    expect(result.evaluatedConcept.overallScore).toBe(computeOverallScore(modernEval.scores));
+    expect(result.evaluatedConcept.passes).toBe(passesConceptThresholds(modernEval.scores));
+  });
+
+  it('migrates legacy preHardenedConcept with branchingFitness', () => {
+    const modernEval = createEvaluatedConceptFixture();
+    const legacyScores = {
+      ...modernEval.scores,
+      branchingFitness: 3,
+    };
+    const legacyEval = {
+      ...modernEval,
+      scores: legacyScores,
+      overallScore: 0,
+      passes: false,
+    };
+    const legacy = {
+      id: 'concept-legacy-2',
+      name: 'Legacy Hardened',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConceptFixture(),
+      preHardenedConcept: legacyEval,
+    };
+
+    const result = parseSavedConcept(legacy, '/test/legacy2.json');
+
+    expect((result.preHardenedConcept!.scores as unknown as Record<string, unknown>)['branchingFitness']).toBeUndefined();
+    expect(result.preHardenedConcept!.overallScore).toBe(computeOverallScore(modernEval.scores));
   });
 });

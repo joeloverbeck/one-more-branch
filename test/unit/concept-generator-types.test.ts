@@ -54,7 +54,6 @@ describe('concept-generator types', () => {
       conflictEngine: 5,
       agencyBreadth: 5,
       noveltyLeverage: 5,
-      branchingFitness: 5,
       llmFeasibility: 5,
     };
 
@@ -67,7 +66,6 @@ describe('concept-generator types', () => {
       conflictEngine: 0,
       agencyBreadth: 0,
       noveltyLeverage: 0,
-      branchingFitness: 0,
       llmFeasibility: 0,
     };
 
@@ -80,11 +78,10 @@ describe('concept-generator types', () => {
       conflictEngine: 4,
       agencyBreadth: 3,
       noveltyLeverage: 2,
-      branchingFitness: 1,
       llmFeasibility: 0,
     };
 
-    expect(computeOverallScore(scores)).toBe(45);
+    expect(computeOverallScore(scores)).toBeCloseTo(51.8);
   });
 
   it('keeps scoring weights normalized to 100', () => {

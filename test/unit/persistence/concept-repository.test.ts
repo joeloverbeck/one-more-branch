@@ -33,7 +33,6 @@ function createSavedConcept(id: string): SavedConcept {
         conflictEngine: 5,
         agencyBreadth: 4,
         noveltyLeverage: 3,
-        branchingFitness: 4,
         llmFeasibility: 4,
       },
       overallScore: 82,

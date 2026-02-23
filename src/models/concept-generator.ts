@@ -151,7 +151,6 @@ export interface ConceptDimensionScores {
   readonly conflictEngine: number;
   readonly agencyBreadth: number;
   readonly noveltyLeverage: number;
-  readonly branchingFitness: number;
   readonly llmFeasibility: number;
 }
 
@@ -160,7 +159,6 @@ export interface ConceptScoreEvidence {
   readonly conflictEngine: readonly string[];
   readonly agencyBreadth: readonly string[];
   readonly noveltyLeverage: readonly string[];
-  readonly branchingFitness: readonly string[];
   readonly llmFeasibility: readonly string[];
 }
 
@@ -277,12 +275,11 @@ export interface ConceptVerificationResult {
 }
 
 export const CONCEPT_SCORING_WEIGHTS = {
-  hookStrength: 12,
-  conflictEngine: 20,
-  agencyBreadth: 15,
-  noveltyLeverage: 10,
-  branchingFitness: 20,
-  llmFeasibility: 23,
+  hookStrength: 15,
+  conflictEngine: 25,
+  agencyBreadth: 20,
+  noveltyLeverage: 12,
+  llmFeasibility: 28,
 } as const;
 
 export const CONCEPT_PASS_THRESHOLDS = {
@@ -290,7 +287,6 @@ export const CONCEPT_PASS_THRESHOLDS = {
   conflictEngine: 3,
   agencyBreadth: 3,
   noveltyLeverage: 2,
-  branchingFitness: 3,
   llmFeasibility: 3,
 } as const;
 
@@ -300,7 +296,6 @@ export function computeOverallScore(scores: ConceptDimensionScores): number {
     (scores.conflictEngine * CONCEPT_SCORING_WEIGHTS.conflictEngine) / 5 +
     (scores.agencyBreadth * CONCEPT_SCORING_WEIGHTS.agencyBreadth) / 5 +
     (scores.noveltyLeverage * CONCEPT_SCORING_WEIGHTS.noveltyLeverage) / 5 +
-    (scores.branchingFitness * CONCEPT_SCORING_WEIGHTS.branchingFitness) / 5 +
     (scores.llmFeasibility * CONCEPT_SCORING_WEIGHTS.llmFeasibility) / 5
   );
 }
@@ -311,7 +306,6 @@ export function passesConceptThresholds(scores: ConceptDimensionScores): boolean
     scores.conflictEngine >= CONCEPT_PASS_THRESHOLDS.conflictEngine &&
     scores.agencyBreadth >= CONCEPT_PASS_THRESHOLDS.agencyBreadth &&
     scores.noveltyLeverage >= CONCEPT_PASS_THRESHOLDS.noveltyLeverage &&
-    scores.branchingFitness >= CONCEPT_PASS_THRESHOLDS.branchingFitness &&
     scores.llmFeasibility >= CONCEPT_PASS_THRESHOLDS.llmFeasibility
   );
 }

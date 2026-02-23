@@ -41,7 +41,6 @@ function createScoredConceptPayload(index: number): {
     conflictEngine: number;
     agencyBreadth: number;
     noveltyLeverage: number;
-    branchingFitness: number;
     llmFeasibility: number;
   };
   scoreEvidence: {
@@ -49,7 +48,6 @@ function createScoredConceptPayload(index: number): {
     conflictEngine: readonly string[];
     agencyBreadth: readonly string[];
     noveltyLeverage: readonly string[];
-    branchingFitness: readonly string[];
     llmFeasibility: readonly string[];
   };
 } {
@@ -60,7 +58,6 @@ function createScoredConceptPayload(index: number): {
       conflictEngine: 4,
       agencyBreadth: 3,
       noveltyLeverage: 3,
-      branchingFitness: 4,
       llmFeasibility: 5,
     },
     scoreEvidence: {
@@ -68,7 +65,6 @@ function createScoredConceptPayload(index: number): {
       conflictEngine: [`Conflict evidence ${index}`],
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
-      branchingFitness: [`Branching evidence ${index}`],
       llmFeasibility: [`Feasibility evidence ${index}`],
     },
   };

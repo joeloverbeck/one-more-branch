@@ -83,7 +83,6 @@ function parseScores(value: unknown, index: number): ConceptDimensionScores {
     conflictEngine: parseClampedScore(data['conflictEngine'], 'conflictEngine', label),
     agencyBreadth: parseClampedScore(data['agencyBreadth'], 'agencyBreadth', label),
     noveltyLeverage: parseClampedScore(data['noveltyLeverage'], 'noveltyLeverage', label),
-    branchingFitness: parseClampedScore(data['branchingFitness'], 'branchingFitness', label),
     llmFeasibility: parseClampedScore(data['llmFeasibility'], 'llmFeasibility', label),
   };
 }
@@ -110,11 +109,6 @@ function parseScoreEvidence(value: unknown, index: number): ConceptScoreEvidence
     noveltyLeverage: requireNonEmptyStringArray(
       data['noveltyLeverage'],
       'noveltyLeverage',
-      `${label} scoreEvidence`,
-    ),
-    branchingFitness: requireNonEmptyStringArray(
-      data['branchingFitness'],
-      'branchingFitness',
       `${label} scoreEvidence`,
     ),
     llmFeasibility: requireNonEmptyStringArray(

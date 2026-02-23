@@ -35,7 +35,6 @@ function createContext(): ConceptStressTesterContext {
       conflictEngine: 4,
       agencyBreadth: 2,
       noveltyLeverage: 1,
-      branchingFitness: 3,
       llmFeasibility: 2,
     },
     weaknesses: ['Weak pressure loop enforcement', 'State drift likely in long scenes'],

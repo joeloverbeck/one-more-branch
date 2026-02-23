@@ -34,7 +34,6 @@ SCORING RUBRIC (0-5):
 - conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, ironicTwist quality, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
-- branchingFitness: Branch scalability, reconvergence viability, and state manageability.
 - llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
 
 DIMENSION WEIGHTS:
@@ -42,7 +41,6 @@ DIMENSION WEIGHTS:
 - conflictEngine: weight {{CONCEPT_SCORING_WEIGHTS.conflictEngine}}
 - agencyBreadth: weight {{CONCEPT_SCORING_WEIGHTS.agencyBreadth}}
 - noveltyLeverage: weight {{CONCEPT_SCORING_WEIGHTS.noveltyLeverage}}
-- branchingFitness: weight {{CONCEPT_SCORING_WEIGHTS.branchingFitness}}
 - llmFeasibility: weight {{CONCEPT_SCORING_WEIGHTS.llmFeasibility}}
 
 SCORING RULES:
@@ -97,7 +95,6 @@ OUTPUT REQUIREMENTS:
         "conflictEngine": 0,
         "agencyBreadth": 0,
         "noveltyLeverage": 0,
-        "branchingFitness": 0,
         "llmFeasibility": 0
       },
       "scoreEvidence": {
@@ -105,7 +102,6 @@ OUTPUT REQUIREMENTS:
         "conflictEngine": ["..."],
         "agencyBreadth": ["..."],
         "noveltyLeverage": ["..."],
-        "branchingFitness": ["..."],
         "llmFeasibility": ["..."]
       }
     }
@@ -134,7 +130,6 @@ SCORING RUBRIC (0-5):
 - conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, ironicTwist quality, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
-- branchingFitness: Branch scalability, reconvergence viability, and state manageability.
 - llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
 
 DIMENSION WEIGHTS:
@@ -142,7 +137,6 @@ DIMENSION WEIGHTS:
 - conflictEngine: weight {{CONCEPT_SCORING_WEIGHTS.conflictEngine}}
 - agencyBreadth: weight {{CONCEPT_SCORING_WEIGHTS.agencyBreadth}}
 - noveltyLeverage: weight {{CONCEPT_SCORING_WEIGHTS.noveltyLeverage}}
-- branchingFitness: weight {{CONCEPT_SCORING_WEIGHTS.branchingFitness}}
 - llmFeasibility: weight {{CONCEPT_SCORING_WEIGHTS.llmFeasibility}}
 
 DEEP EVALUATION RULES:

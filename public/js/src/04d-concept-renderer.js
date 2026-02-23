@@ -5,7 +5,6 @@
     { key: 'conflictEngine', label: 'Conflict' },
     { key: 'agencyBreadth', label: 'Agency' },
     { key: 'noveltyLeverage', label: 'Novelty' },
-    { key: 'branchingFitness', label: 'Branching' },
     { key: 'llmFeasibility', label: 'Feasibility' },
   ];
 
