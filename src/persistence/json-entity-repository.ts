@@ -10,6 +10,7 @@ export interface JsonEntityRepositoryOptions<TEntity extends { readonly id: stri
   readonly getDir: () => string;
   readonly getFilePath: (id: string) => string;
   readonly isEntity: (value: unknown) => value is TEntity;
+  readonly parseEntity?: (value: unknown, sourcePath: string) => TEntity;
 }
 
 function createEntityAsserter<TEntity>(
@@ -38,7 +39,8 @@ export interface JsonEntityRepository<TEntity extends { readonly id: string; rea
 export function createJsonEntityRepository<
   TEntity extends { readonly id: string; readonly updatedAt: string },
 >(options: JsonEntityRepositoryOptions<TEntity>): JsonEntityRepository<TEntity> {
-  const assertEntity = createEntityAsserter(options.isEntity, options.entityLabel);
+  const fallbackAssertEntity = createEntityAsserter(options.isEntity, options.entityLabel);
+  const assertEntity = options.parseEntity ?? fallbackAssertEntity;
 
   return {
     assertEntity,

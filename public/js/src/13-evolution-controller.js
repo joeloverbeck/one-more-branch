@@ -325,6 +325,14 @@
         }
 
         if (!response.ok || !data || !data.success) {
+          if (data && typeof data === 'object') {
+            if (data.code) {
+              console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
+            }
+            if (data.debug) {
+              console.error('Concept evolution debug info:', data.debug);
+            }
+          }
           throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
         }
 

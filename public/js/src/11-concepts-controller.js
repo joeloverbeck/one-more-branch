@@ -290,20 +290,60 @@
       card.dataset.conceptId = concept.id;
 
       var c = concept.evaluatedConcept.concept;
-      card.innerHTML =
+      var conflictTypeBadge = c.conflictType
+        ? '<span class="spine-badge spine-badge-conflict">' + escapeHtml(String(c.conflictType).replace(/_/g, ' ')) + '</span>'
+        : '';
+      var settingScaleBadge = c.settingScale
+        ? '<span class="spine-badge spine-badge-type">' + escapeHtml(String(c.settingScale).replace(/_/g, ' ')) + '</span>'
+        : '';
+
+      var cardHtml =
         '<div class="spine-badges">' +
           '<span class="spine-badge spine-badge-type">' + escapeHtml((c.genreFrame || '').replace(/_/g, ' ')) + '</span>' +
           '<span class="spine-badge spine-badge-conflict">' + escapeHtml((c.conflictAxis || '').replace(/_/g, ' ')) + '</span>' +
+          conflictTypeBadge + settingScaleBadge +
           '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(concept.evaluatedConcept.overallScore || 0).toString()) + '</span>' +
         '</div>' +
         '<h3 class="spine-cdq">' + escapeHtml(concept.name) + '</h3>' +
         '<p class="spine-field">' + escapeHtml(c.elevatorParagraph || '') + '</p>' +
+        '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(c.protagonistRole || '') + '</div>';
+
+      if (c.coreCompetence) cardHtml += '<div class="spine-field"><span class="spine-label">Core Competence:</span> ' + escapeHtml(c.coreCompetence) + '</div>';
+      if (c.coreFlaw) cardHtml += '<div class="spine-field"><span class="spine-label">Core Flaw:</span> ' + escapeHtml(c.coreFlaw) + '</div>';
+      if (c.coreConflictLoop) cardHtml += '<div class="spine-field"><span class="spine-label">Conflict Loop:</span> ' + escapeHtml(c.coreConflictLoop) + '</div>';
+      if (c.pressureSource) cardHtml += '<div class="spine-field"><span class="spine-label">Pressure Source:</span> ' + escapeHtml(c.pressureSource) + '</div>';
+      if (c.stakesPersonal) cardHtml += '<div class="spine-field"><span class="spine-label">Personal Stakes:</span> ' + escapeHtml(c.stakesPersonal) + '</div>';
+      if (c.stakesSystemic) cardHtml += '<div class="spine-field"><span class="spine-label">Systemic Stakes:</span> ' + escapeHtml(c.stakesSystemic) + '</div>';
+      if (c.deadlineMechanism) cardHtml += '<div class="spine-field"><span class="spine-label">Deadline Mechanism:</span> ' + escapeHtml(c.deadlineMechanism) + '</div>';
+      if (c.genreSubversion) cardHtml += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(c.genreSubversion) + '</div>';
+      if (c.whatIfQuestion) cardHtml += '<p class="spine-field concept-what-if"><span class="spine-label">What If:</span> <em>' + escapeHtml(c.whatIfQuestion) + '</em></p>';
+      if (c.ironicTwist) cardHtml += '<div class="spine-field"><span class="spine-label">Ironic Twist:</span> ' + escapeHtml(c.ironicTwist) + '</div>';
+      if (c.playerFantasy) cardHtml += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(c.playerFantasy) + '</em></p>';
+      if (c.incitingDisruption) cardHtml += '<div class="spine-field"><span class="spine-label">Inciting Disruption:</span> ' + escapeHtml(c.incitingDisruption) + '</div>';
+      if (c.escapeValve) cardHtml += '<div class="spine-field"><span class="spine-label">Escape Valve:</span> ' + escapeHtml(c.escapeValve) + '</div>';
+      if (Array.isArray(c.actionVerbs) && c.actionVerbs.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Action Verbs:</span> ' + escapeHtml(c.actionVerbs.join(', ')) + '</div>';
+      if (Array.isArray(c.settingAxioms) && c.settingAxioms.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(c.settingAxioms) + '</ul></div>';
+      if (Array.isArray(c.constraintSet) && c.constraintSet.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(c.constraintSet) + '</ul></div>';
+      if (Array.isArray(c.keyInstitutions) && c.keyInstitutions.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Key Institutions:</span><ul>' + renderListItems(c.keyInstitutions) + '</ul></div>';
+
+      var ev = concept.evaluatedConcept;
+      cardHtml += '<div class="concept-scores">' + renderScoreGrid(ev.scores) + '</div>';
+      if (ev.tradeoffSummary) cardHtml += '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(ev.tradeoffSummary) + '</div>';
+      cardHtml +=
+        '<div class="concept-feedback">' +
+          '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(ev.strengths) + '</ul></div>' +
+          '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(ev.weaknesses) + '</ul></div>' +
+        '</div>';
+
+      cardHtml +=
         '<div class="spine-field"><span class="spine-label">Created:</span> ' + escapeHtml(new Date(concept.createdAt).toLocaleDateString()) + '</div>' +
         '<div class="form-actions" style="margin-top: 0.5rem;">' +
           '<button type="button" class="btn btn-secondary btn-small concept-edit-btn" data-concept-id="' + escapeHtml(concept.id) + '">Edit</button>' +
           '<button type="button" class="btn btn-primary btn-small concept-harden-btn" data-concept-id="' + escapeHtml(concept.id) + '">Harden</button>' +
           '<button type="button" class="btn btn-danger btn-small concept-delete-btn" data-concept-id="' + escapeHtml(concept.id) + '">Delete</button>' +
         '</div>';
+
+      card.innerHTML = cardHtml;
 
       savedConceptsList.prepend(card);
     }
@@ -472,6 +512,12 @@
         setEditValue('settingAxioms', Array.isArray(c.settingAxioms) ? c.settingAxioms.join('\n') : '');
         setEditValue('constraintSet', Array.isArray(c.constraintSet) ? c.constraintSet.join('\n') : '');
         setEditValue('keyInstitutions', Array.isArray(c.keyInstitutions) ? c.keyInstitutions.join('\n') : '');
+        setEditValue('incitingDisruption', c.incitingDisruption);
+        setEditValue('escapeValve', c.escapeValve);
+        setEditValue('conflictType', c.conflictType);
+        setEditValue('whatIfQuestion', c.whatIfQuestion);
+        setEditValue('ironicTwist', c.ironicTwist);
+        setEditValue('playerFantasy', c.playerFantasy);
 
         editModal.style.display = 'flex';
       } catch (error) {
@@ -500,9 +546,15 @@
         stakesPersonal: getEditValue('stakesPersonal'),
         stakesSystemic: getEditValue('stakesSystemic'),
         deadlineMechanism: getEditValue('deadlineMechanism'),
+        incitingDisruption: getEditValue('incitingDisruption'),
+        escapeValve: getEditValue('escapeValve'),
         genreSubversion: getEditValue('genreSubversion'),
+        whatIfQuestion: getEditValue('whatIfQuestion'),
+        ironicTwist: getEditValue('ironicTwist'),
+        playerFantasy: getEditValue('playerFantasy'),
         genreFrame: getEditValue('genreFrame'),
         conflictAxis: getEditValue('conflictAxis'),
+        conflictType: getEditValue('conflictType'),
         settingScale: getEditValue('settingScale'),
         actionVerbs: linesToArray(getEditValue('actionVerbs')),
         settingAxioms: linesToArray(getEditValue('settingAxioms')),

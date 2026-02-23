@@ -308,9 +308,15 @@ Page JSON includes serialized active state, inventory, health, character state, 
 - **Branch Isolation**: State changes don't leak across branches
 - **Ending Consistency**: `isEnding === true` <=> `choices.length === 0`
 - **Choice Minimum**: Non-ending pages have 2-5 choices
+- **Async Route Safety**: `wrapAsyncRoute` must forward rejected async handlers to Express `next(error)` (no unhandled rejections)
 - **API Key Security**: Never persisted to disk, only in browser session storage
 - **Keyed State IDs**: Server-assigned sequential IDs (e.g., `inv-1`, `hp-2`, `th-3`) - LLM never invents IDs
 - **Structure Versioning**: Structure rewrites create new versions; pages reference their version via `structureVersionId`
+
+## Persistence Compatibility
+
+- `createJsonEntityRepository` supports per-entity parsing via optional `parseEntity(value, sourcePath)` for compatibility/upcasting before strict validation.
+- `SavedConcept` persistence uses this hook to upcast legacy payloads missing newer concept fields (`incitingDisruption`, `escapeValve`) before applying `isSavedConcept` validation.
 
 ## Implementation Status
 
@@ -383,6 +389,9 @@ Completed specs are archived in `archive/specs/`.
 - **Conditional**: **Spine rewrite prompt** (`spine-rewriter.ts`): Rewrites spine on spine-level deviation
 - **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on beat-level deviation (or forced by spine rewrite)
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
+- For Anthropic/Bedrock compatibility, represent nullable enums with `anyOf`/`oneOf` branches:
+  - Valid: `anyOf: [{ type: 'string', enum: [...] }, { type: 'null' }]`
+  - Avoid: mixed nullable enum form like `type: ['string', 'null']` with `enum: [..., null]`
 - Response transformers in `schemas/` convert raw LLM JSON to typed results
 - Validation pipeline in `validation/` repairs malformed writer output (e.g., ID prefix repair)
 - Retry with exponential backoff on transient failures (429, 5xx)

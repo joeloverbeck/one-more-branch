@@ -114,4 +114,25 @@ describe('validateStateAccountantResponse', () => {
       );
     }
   });
+
+  it('repairs missing characterState.removeIds and canon to safe empty defaults', () => {
+    const rawJson = createValidStatePayload();
+    const stateIntents = rawJson.stateIntents as {
+      characterState: { add: Array<{ characterName: string; states: string[] }> };
+      canon?: unknown;
+    };
+
+    stateIntents.characterState = {
+      add: [{ characterName: 'Clay Stoneman', states: ['Remains close to Rowan in the room'] }],
+    };
+    delete stateIntents.canon;
+
+    const result = validateStateAccountantResponse(rawJson, '{"raw":"accountant"}');
+
+    expect(result.stateIntents.characterState.removeIds).toEqual([]);
+    expect(result.stateIntents.canon).toEqual({ worldAdd: [], characterAdd: [] });
+    expect(result.stateIntents.characterState.add).toEqual([
+      { characterName: 'Clay Stoneman', states: ['Remains close to Rowan in the room'] },
+    ]);
+  });
 });

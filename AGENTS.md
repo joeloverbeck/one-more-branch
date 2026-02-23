@@ -43,7 +43,7 @@
 - Run targeted suites: `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`, `npm run test:performance`, `npm run test:memory`, `npm run test:client`.
 
 ### Async Route Handler Testing
-Routes use `wrapAsyncRoute()` which fire-and-forgets via `void handler(req, res)`. **Do not use `await` on handlers** - it won't wait. Instead:
+Routes use `wrapAsyncRoute()` which fire-and-forgets via `void handler(req, res)` and forwards async errors to Express via `next(error)`. **Do not use `await` on handlers** - it won't wait. Instead:
 - **Unit tests**: Call handler, then `await flushPromises()` (uses `setImmediate`)
 - **Integration tests**: Call handler, then `await waitForMock(responseMock)` (polling pattern)
 

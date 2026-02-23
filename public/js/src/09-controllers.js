@@ -534,6 +534,8 @@
       setValueById('stakesPersonal', conceptSpec.stakesPersonal || '');
       setValueById('stakesSystemic', conceptSpec.stakesSystemic || '');
       setValueById('deadlineMechanism', conceptSpec.deadlineMechanism || '');
+      setValueById('incitingDisruption', conceptSpec.incitingDisruption || '');
+      setValueById('escapeValve', conceptSpec.escapeValve || '');
 
       // World
       populateDynamicList('settingAxioms', conceptSpec.settingAxioms);
@@ -559,6 +561,8 @@
       var stakesPersonal = getValueById('stakesPersonal');
       var stakesSystemic = getValueById('stakesSystemic');
       var deadlineMechanism = getValueById('deadlineMechanism');
+      var incitingDisruption = getValueById('incitingDisruption');
+      var escapeValve = getValueById('escapeValve');
 
       // Only build a conceptSpec if we have enough meaningful fields
       if (!oneLineHook && !coreConflictLoop && !conflictAxis) {
@@ -581,6 +585,8 @@
         stakesPersonal: stakesPersonal,
         stakesSystemic: stakesSystemic,
         deadlineMechanism: deadlineMechanism,
+        incitingDisruption: incitingDisruption,
+        escapeValve: escapeValve,
         settingAxioms: collectDynamicListEntries('settingAxioms'),
         constraintSet: collectDynamicListEntries('constraintSet'),
         keyInstitutions: collectDynamicListEntries('keyInstitutions'),

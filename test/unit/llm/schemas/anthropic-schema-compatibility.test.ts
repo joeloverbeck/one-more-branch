@@ -4,6 +4,7 @@ import {
   CONCEPT_EVALUATION_DEEP_SCHEMA,
   CONCEPT_EVALUATION_SCORING_SCHEMA,
 } from '../../../../src/llm/schemas/concept-evaluator-schema';
+import { CONCEPT_EVOLUTION_SCHEMA } from '../../../../src/llm/schemas/concept-evolver-schema';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../../src/llm/schemas/concept-ideator-schema';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../../src/llm/schemas/concept-stress-tester-schema';
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/entity-decomposer-schema';
@@ -25,6 +26,35 @@ type SchemaIssue = {
   path: string;
   message: string;
 };
+
+function getJsonType(value: unknown): 'null' | 'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' {
+  if (value === null) {
+    return 'null';
+  }
+  if (Array.isArray(value)) {
+    return 'array';
+  }
+  if (typeof value === 'string') {
+    return 'string';
+  }
+  if (typeof value === 'boolean') {
+    return 'boolean';
+  }
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? 'integer' : 'number';
+  }
+  return 'object';
+}
+
+function getDeclaredTypes(typeValue: unknown): string[] {
+  if (typeof typeValue === 'string') {
+    return [typeValue];
+  }
+  if (Array.isArray(typeValue)) {
+    return typeValue.filter((type): type is string => typeof type === 'string');
+  }
+  return [];
+}
 
 function findAnthropicArrayConstraintIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
   if (typeof node !== 'object' || node === null) {
@@ -54,9 +84,49 @@ function findAnthropicArrayConstraintIssues(node: unknown, path: string, issues:
   }
 }
 
+function findEnumTypeIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
+  if (typeof node !== 'object' || node === null) {
+    return;
+  }
+
+  const record = node as Record<string, unknown>;
+  const declaredTypes = getDeclaredTypes(record['type']);
+  const enumValues = Array.isArray(record['enum']) ? record['enum'] : null;
+
+  if (declaredTypes.length > 0 && enumValues) {
+    for (const enumValue of enumValues) {
+      const enumType = getJsonType(enumValue);
+      const matchesType =
+        declaredTypes.includes(enumType) || (enumType === 'integer' && declaredTypes.includes('number'));
+      if (!matchesType) {
+        issues.push({
+          path,
+          message: `enum value ${JSON.stringify(enumValue)} does not match declared type(s) [${declaredTypes.join(', ')}]`,
+        });
+      }
+    }
+
+    const hasNullInEnum = enumValues.some((enumValue) => enumValue === null);
+    const hasNonNullInEnum = enumValues.some((enumValue) => enumValue !== null);
+    const isNullableUnion = declaredTypes.includes('null') && declaredTypes.length > 1;
+    if (isNullableUnion && hasNullInEnum && hasNonNullInEnum) {
+      issues.push({
+        path,
+        message:
+          'nullable enums should use anyOf/oneOf branches instead of mixed enum values for Anthropic/Bedrock compatibility',
+      });
+    }
+  }
+
+  for (const [key, value] of Object.entries(record)) {
+    findEnumTypeIssues(value, `${path}.${key}`, issues);
+  }
+}
+
 function getIssues(schema: JsonSchema): SchemaIssue[] {
   const issues: SchemaIssue[] = [];
   findAnthropicArrayConstraintIssues(schema.json_schema.schema, 'schema', issues);
+  findEnumTypeIssues(schema.json_schema.schema, 'schema', issues);
   return issues;
 }
 
@@ -79,9 +149,10 @@ describe('Anthropic schema compatibility', () => {
     { name: 'KERNEL_EVALUATION_DEEP_SCHEMA', schema: KERNEL_EVALUATION_DEEP_SCHEMA },
     { name: 'CONCEPT_EVALUATION_SCORING_SCHEMA', schema: CONCEPT_EVALUATION_SCORING_SCHEMA },
     { name: 'CONCEPT_EVALUATION_DEEP_SCHEMA', schema: CONCEPT_EVALUATION_DEEP_SCHEMA },
+    { name: 'CONCEPT_EVOLUTION_SCHEMA', schema: CONCEPT_EVOLUTION_SCHEMA },
   ];
 
-  it.each(llmResponseSchemas)('%s should avoid unsupported array constraints', ({ schema }) => {
+  it.each(llmResponseSchemas)('%s should satisfy Anthropic schema compatibility checks', ({ schema }) => {
     expect(getIssues(schema)).toEqual([]);
   });
 });

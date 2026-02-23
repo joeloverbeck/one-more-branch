@@ -94,6 +94,20 @@
         '</em></p>';
     }
 
+    if (concept && typeof concept.incitingDisruption === 'string' && concept.incitingDisruption.trim()) {
+      parts +=
+        '<div class="spine-field"><span class="spine-label">Inciting Disruption:</span> ' +
+        escapeHtml(concept.incitingDisruption.trim()) +
+        '</div>';
+    }
+
+    if (concept && typeof concept.escapeValve === 'string' && concept.escapeValve.trim()) {
+      parts +=
+        '<div class="spine-field"><span class="spine-label">Escape Valve:</span> ' +
+        escapeHtml(concept.escapeValve.trim()) +
+        '</div>';
+    }
+
     return parts;
   }
 
@@ -109,17 +123,67 @@
       ? '<span class="spine-badge ' + (entry.passes ? 'spine-badge-pass' : 'spine-badge-fail') + '">' + (entry.passes ? 'PASS' : 'FAIL') + '</span>'
       : '';
 
+    var conflictTypeBadge = concept.conflictType
+      ? '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictType)) + '</span>'
+      : '';
+    var settingScaleBadge = concept.settingScale
+      ? '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.settingScale)) + '</span>'
+      : '';
+
     var html =
       '<div class="spine-badges">' +
         '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(concept.genreFrame)) + '</span>' +
         '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(concept.conflictAxis)) + '</span>' +
+        conflictTypeBadge +
+        settingScaleBadge +
         '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
         passBadge +
       '</div>' +
       '<h3 class="spine-cdq">' + escapeHtml(concept.oneLineHook || '') + '</h3>' +
       '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
-      '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>' +
-      renderConceptEnrichment(concept) +
+      '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(concept.protagonistRole || '') + '</div>';
+
+    if (concept.coreCompetence) {
+      html += '<div class="spine-field"><span class="spine-label">Core Competence:</span> ' + escapeHtml(concept.coreCompetence) + '</div>';
+    }
+    if (concept.coreFlaw) {
+      html += '<div class="spine-field"><span class="spine-label">Core Flaw:</span> ' + escapeHtml(concept.coreFlaw) + '</div>';
+    }
+    if (concept.coreConflictLoop) {
+      html += '<div class="spine-field"><span class="spine-label">Conflict Loop:</span> ' + escapeHtml(concept.coreConflictLoop) + '</div>';
+    }
+    if (concept.pressureSource) {
+      html += '<div class="spine-field"><span class="spine-label">Pressure Source:</span> ' + escapeHtml(concept.pressureSource) + '</div>';
+    }
+    if (concept.stakesPersonal) {
+      html += '<div class="spine-field"><span class="spine-label">Personal Stakes:</span> ' + escapeHtml(concept.stakesPersonal) + '</div>';
+    }
+    if (concept.stakesSystemic) {
+      html += '<div class="spine-field"><span class="spine-label">Systemic Stakes:</span> ' + escapeHtml(concept.stakesSystemic) + '</div>';
+    }
+    if (concept.deadlineMechanism) {
+      html += '<div class="spine-field"><span class="spine-label">Deadline Mechanism:</span> ' + escapeHtml(concept.deadlineMechanism) + '</div>';
+    }
+    if (concept.genreSubversion) {
+      html += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(concept.genreSubversion) + '</div>';
+    }
+
+    html += renderConceptEnrichment(concept);
+
+    if (Array.isArray(concept.actionVerbs) && concept.actionVerbs.length > 0) {
+      html += '<div class="spine-field"><span class="spine-label">Action Verbs:</span> ' + escapeHtml(concept.actionVerbs.join(', ')) + '</div>';
+    }
+    if (Array.isArray(concept.settingAxioms) && concept.settingAxioms.length > 0) {
+      html += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(concept.settingAxioms) + '</ul></div>';
+    }
+    if (Array.isArray(concept.constraintSet) && concept.constraintSet.length > 0) {
+      html += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(concept.constraintSet) + '</ul></div>';
+    }
+    if (Array.isArray(concept.keyInstitutions) && concept.keyInstitutions.length > 0) {
+      html += '<div class="spine-field"><span class="spine-label">Key Institutions:</span><ul>' + renderListItems(concept.keyInstitutions) + '</ul></div>';
+    }
+
+    html +=
       '<div class="concept-scores">' + renderScoreGrid(entry && entry.scores) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(entry && entry.tradeoffSummary ? entry.tradeoffSummary : '') + '</div>' +
       '<div class="concept-feedback">' +
