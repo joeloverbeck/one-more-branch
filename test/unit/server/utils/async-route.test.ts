@@ -27,11 +27,9 @@ describe('wrapAsyncRoute', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('forwards synchronous errors thrown inside async handler', async () => {
+  it('forwards rejected errors from handler', async () => {
     const error = new Error('sync');
-    const handler = wrapAsyncRoute(async () => {
-      throw error;
-    });
+    const handler = wrapAsyncRoute(() => Promise.reject(error));
 
     const next = jest.fn() as NextFunction;
     handler({} as Request, {} as Response, next);
@@ -40,14 +38,15 @@ describe('wrapAsyncRoute', () => {
     expect(next).toHaveBeenCalledWith(error);
   });
 
-  it('forwards non-Error rejections', async () => {
-    const handler = wrapAsyncRoute(() => Promise.reject('oops'));
+  it('forwards rejected Error values', async () => {
+    const error = new Error('oops');
+    const handler = wrapAsyncRoute(() => Promise.reject(error));
 
     const next = jest.fn() as NextFunction;
     handler({} as Request, {} as Response, next);
     await flushPromises();
 
-    expect(next).toHaveBeenCalledWith('oops');
+    expect(next).toHaveBeenCalledWith(error);
   });
 
   it('returns a function with Express middleware signature (req, res, next)', () => {

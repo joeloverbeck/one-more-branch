@@ -17,6 +17,14 @@ function createSavedConceptFixture(overrides?: Partial<SavedConcept>): SavedConc
   };
 }
 
+function omitKeys<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
+  const clone: Partial<T> = { ...obj };
+  for (const key of keys) {
+    delete clone[key];
+  }
+  return clone as Omit<T, K>;
+}
+
 describe('parseSavedConcept', () => {
   it('returns a valid modern payload unchanged', () => {
     const valid = createSavedConceptFixture();
@@ -28,7 +36,7 @@ describe('parseSavedConcept', () => {
 
   it('migrates legacy payload missing incitingDisruption from coreConflictLoop', () => {
     const concept = createConceptSpecFixture();
-    const { incitingDisruption: _, ...legacyConcept } = concept;
+    const legacyConcept = omitKeys(concept, 'incitingDisruption');
     const legacy = createSavedConceptFixture({
       evaluatedConcept: {
         ...createEvaluatedConceptFixture(),
@@ -43,7 +51,7 @@ describe('parseSavedConcept', () => {
 
   it('migrates legacy payload missing escapeValve from whatIfQuestion', () => {
     const concept = createConceptSpecFixture();
-    const { escapeValve: _, ...legacyConcept } = concept;
+    const legacyConcept = omitKeys(concept, 'escapeValve');
     const legacy = createSavedConceptFixture({
       evaluatedConcept: {
         ...createEvaluatedConceptFixture(),
@@ -58,7 +66,7 @@ describe('parseSavedConcept', () => {
 
   it('migrates legacy payload missing both new fields', () => {
     const concept = createConceptSpecFixture();
-    const { incitingDisruption: _a, escapeValve: _b, ...legacyConcept } = concept;
+    const legacyConcept = omitKeys(concept, 'incitingDisruption', 'escapeValve');
     const legacy = createSavedConceptFixture({
       evaluatedConcept: {
         ...createEvaluatedConceptFixture(),
@@ -74,7 +82,7 @@ describe('parseSavedConcept', () => {
 
   it('throws when coreConflictLoop is empty even after migration fills incitingDisruption', () => {
     const concept = createConceptSpecFixture();
-    const { incitingDisruption: _, ...legacyConcept } = concept;
+    const legacyConcept = omitKeys(concept, 'incitingDisruption');
     const withEmptyLoop = { ...legacyConcept, coreConflictLoop: '' };
     const legacy = createSavedConceptFixture({
       evaluatedConcept: {
@@ -90,7 +98,7 @@ describe('parseSavedConcept', () => {
 
   it('throws when whatIfQuestion is empty even after migration fills escapeValve', () => {
     const concept = createConceptSpecFixture();
-    const { escapeValve: _, ...legacyConcept } = concept;
+    const legacyConcept = omitKeys(concept, 'escapeValve');
     const withEmptyQuestion = { ...legacyConcept, whatIfQuestion: '' };
     const legacy = createSavedConceptFixture({
       evaluatedConcept: {
@@ -106,7 +114,7 @@ describe('parseSavedConcept', () => {
 
   it('migrates nested preHardenedConcept when present', () => {
     const concept = createConceptSpecFixture(2);
-    const { incitingDisruption: _a, escapeValve: _b, ...legacyConcept } = concept;
+    const legacyConcept = omitKeys(concept, 'incitingDisruption', 'escapeValve');
     const legacy = createSavedConceptFixture({
       evaluatedConcept: createEvaluatedConceptFixture(),
       preHardenedConcept: {
