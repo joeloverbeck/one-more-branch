@@ -1,5 +1,12 @@
 import { Request, Response, Router } from 'express';
+import { collectAncestorContext } from '../../engine/ancestor-collector.js';
 import { collectRecapSummaries, storyEngine } from '../../engine/index.js';
+import { collectParentState } from '../../engine/parent-state-collector.js';
+import { generateSceneDirections } from '../../llm/scene-ideator.js';
+import type {
+  SceneIdeatorOpeningContext,
+  SceneIdeatorContinuationContext,
+} from '../../llm/scene-ideator-types.js';
 import { logger } from '../../logging/index.js';
 import {
   CHOICE_TYPE_COLORS,
@@ -13,6 +20,7 @@ import {
   buildPagePanelData,
   parseRequestedPageId,
   normalizeProtagonistGuidance,
+  normalizeSelectedSceneDirection,
   extractNpcBriefings,
   extractProtagonistBriefing,
   getActDisplayInfo,
@@ -29,6 +37,7 @@ type ChoiceBody = {
   apiKey?: string;
   progressId?: unknown;
   protagonistGuidance?: unknown;
+  selectedSceneDirection?: unknown;
 };
 
 export const playRoutes = Router();
@@ -89,15 +98,117 @@ playRoutes.get(
   })
 );
 
+type IdeateSceneBody = {
+  apiKey?: string;
+  mode?: string;
+  pageId?: number;
+  choiceIndex?: number;
+};
+
+playRoutes.post(
+  '/:storyId/ideate-scene',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const { storyId } = req.params;
+    const { apiKey, mode, pageId, choiceIndex } = req.body as IdeateSceneBody;
+
+    if (typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
+    }
+
+    try {
+      const story = await storyEngine.loadStory(storyId as StoryId);
+      if (!story) {
+        return res.status(404).json({ success: false, error: 'Story not found' });
+      }
+
+      if (!story.decomposedCharacters || !story.decomposedWorld) {
+        return res.status(400).json({ success: false, error: 'Story is not fully prepared' });
+      }
+
+      if (mode === 'continuation') {
+        if (pageId === undefined || choiceIndex === undefined) {
+          return res
+            .status(400)
+            .json({ success: false, error: 'Missing pageId or choiceIndex for continuation' });
+        }
+
+        const parentPage = await storyEngine.getPage(storyId as StoryId, pageId as PageId);
+        if (!parentPage) {
+          return res.status(404).json({ success: false, error: 'Parent page not found' });
+        }
+
+        const choice = parentPage.choices[choiceIndex];
+        if (!choice) {
+          return res.status(400).json({ success: false, error: 'Invalid choice index' });
+        }
+
+        const parentState = collectParentState(parentPage);
+        const ancestorContext = await collectAncestorContext(storyId as StoryId, parentPage);
+
+        const context: SceneIdeatorContinuationContext = {
+          mode: 'continuation',
+          tone: story.tone,
+          toneFeel: story.toneFeel,
+          toneAvoid: story.toneAvoid,
+          spine: story.spine,
+          structure: story.structure ?? undefined,
+          accumulatedStructureState: parentState.structureState,
+          decomposedCharacters: story.decomposedCharacters,
+          decomposedWorld: story.decomposedWorld,
+          previousNarrative: parentPage.narrativeText,
+          selectedChoice: choice.text,
+          activeState: parentState.accumulatedActiveState,
+          ancestorSummaries: ancestorContext.ancestorSummaries,
+          threadAges: parentPage.threadAges,
+          accumulatedPromises: parentPage.accumulatedPromises ?? [],
+          accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
+          accumulatedNpcRelationships: parentState.accumulatedNpcRelationships,
+          accumulatedInventory: [...parentState.accumulatedInventory],
+          accumulatedHealth: [...parentState.accumulatedHealth],
+        };
+
+        const result = await generateSceneDirections(context, apiKey);
+        return res.json({ success: true, options: result.options });
+      }
+
+      // Opening mode (default)
+      const context: SceneIdeatorOpeningContext = {
+        mode: 'opening',
+        tone: story.tone,
+        toneFeel: story.toneFeel,
+        toneAvoid: story.toneAvoid,
+        spine: story.spine,
+        structure: story.structure ?? undefined,
+        decomposedCharacters: story.decomposedCharacters,
+        decomposedWorld: story.decomposedWorld,
+        startingSituation: story.startingSituation,
+      };
+
+      const result = await generateSceneDirections(context, apiKey);
+      return res.json({ success: true, options: result.options });
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Scene ideation failed:', { error: err.message, stack: err.stack });
+      return res.status(500).json({ success: false, error: 'Scene ideation failed' });
+    }
+  })
+);
+
 playRoutes.post(
   '/:storyId/begin',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { storyId } = req.params;
-    const { apiKey, progressId: rawProgressId } = req.body as {
+    const {
+      apiKey,
+      progressId: rawProgressId,
+      selectedSceneDirection: rawSceneDirection,
+    } = req.body as {
       apiKey?: string;
       progressId?: unknown;
+      selectedSceneDirection?: unknown;
     };
     const progress = createRouteGenerationProgress(rawProgressId, 'begin-adventure');
+    const selectedSceneDirection = normalizeSelectedSceneDirection(rawSceneDirection);
 
     if (typeof apiKey !== 'string' || apiKey.trim().length === 0) {
       progress.fail('OpenRouter API key is required');
@@ -111,7 +222,8 @@ playRoutes.post(
       const result = await storyEngine.generateOpeningPage(
         storyId as StoryId,
         apiKey,
-        progress.onGenerationStage
+        progress.onGenerationStage,
+        selectedSceneDirection
       );
 
       progress.complete();
@@ -211,9 +323,11 @@ playRoutes.post(
       apiKey,
       progressId: rawProgressId,
       protagonistGuidance: rawGuidance,
+      selectedSceneDirection: rawSceneDirection,
     } = req.body as ChoiceBody;
     const progress = createRouteGenerationProgress(rawProgressId, 'choice');
     const protagonistGuidance = normalizeProtagonistGuidance(rawGuidance);
+    const selectedSceneDirection = normalizeSelectedSceneDirection(rawSceneDirection);
 
     if (pageId === undefined || choiceIndex === undefined) {
       progress.fail('Missing pageId or choiceIndex');
@@ -228,6 +342,7 @@ playRoutes.post(
         apiKey: apiKey ?? undefined,
         onGenerationStage: progress.onGenerationStage,
         ...(protagonistGuidance !== undefined ? { protagonistGuidance } : {}),
+        ...(selectedSceneDirection !== undefined ? { selectedSceneDirection } : {}),
       });
 
       const story = await storyEngine.loadStory(storyId as StoryId);

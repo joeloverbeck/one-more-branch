@@ -38,7 +38,7 @@ describe('active constraints panel', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 }],
         isEnding: false,
         openThreads: [],
         openThreadOverflowSummary: null,
@@ -69,7 +69,12 @@ describe('active constraints panel', () => {
   }
 
   it('renders constraints after AJAX choice response', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const constraints = [
@@ -89,7 +94,12 @@ describe('active constraints panel', () => {
   });
 
   it('limits to 6 visible items with overflow summary', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const constraints = Array.from({ length: 8 }, (_, i) => ({
@@ -111,6 +121,9 @@ describe('active constraints panel', () => {
   it('removes panel when constraints array is empty', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       activeConstraints: [{ id: 'cn-1', text: 'Existing constraint' }],
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+      ],
     });
     loadAppAndInit();
 
@@ -121,7 +134,12 @@ describe('active constraints panel', () => {
   });
 
   it('updates panel in-place on subsequent renders', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     await clickChoiceAndResolve(
@@ -143,7 +161,12 @@ describe('active constraints panel', () => {
   });
 
   it('filters out invalid entries', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const constraints = [
@@ -162,7 +185,12 @@ describe('active constraints panel', () => {
   });
 
   it('does not render when no constraints in response', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     await clickChoiceAndResolve(makeChoiceResponseWithConstraints([]));
@@ -172,7 +200,12 @@ describe('active constraints panel', () => {
   });
 
   it('applies correct CSS classes', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     await clickChoiceAndResolve(

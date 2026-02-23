@@ -1,6 +1,7 @@
 import type { FullPipelineMetrics } from '../llm';
 import type { Page, Story } from '../models';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
+import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import { storage } from '../persistence';
 import { assembleGenerationContext } from './generation-context-assembler';
 import { processPostGeneration } from './post-generation-processor';
@@ -12,6 +13,7 @@ export interface GeneratePageContinuationParams {
   readonly parentPage: Page;
   readonly choiceIndex: number;
   readonly protagonistGuidance?: ProtagonistGuidance;
+  readonly selectedSceneDirection?: SelectedSceneDirection;
 }
 
 export async function generatePage(
@@ -19,14 +21,18 @@ export async function generatePage(
   story: Story,
   apiKey: string,
   continuationParams?: GeneratePageContinuationParams,
-  onGenerationStage?: GenerationStageCallback
+  onGenerationStage?: GenerationStageCallback,
+  selectedSceneDirection?: SelectedSceneDirection
 ): Promise<{
   page: Page;
   updatedStory: Story;
   metrics: FullPipelineMetrics;
   deviationInfo?: DeviationInfo;
 }> {
+
   const totalStart = Date.now();
+  const effectiveSceneDirection =
+    selectedSceneDirection ?? continuationParams?.selectedSceneDirection;
 
   // --- Phase 1: Assemble generation context ---
   const contextAssemblyStart = Date.now();
@@ -35,7 +41,8 @@ export async function generatePage(
     story,
     apiKey,
     continuationParams,
-    onGenerationStage
+    onGenerationStage,
+    effectiveSceneDirection
   );
   const contextAssemblyDurationMs = Date.now() - contextAssemblyStart;
 
@@ -131,7 +138,8 @@ export async function getOrGeneratePage(
   choiceIndex: number,
   apiKey?: string,
   onGenerationStage?: GenerationStageCallback,
-  protagonistGuidance?: ProtagonistGuidance
+  protagonistGuidance?: ProtagonistGuidance,
+  selectedSceneDirection?: SelectedSceneDirection
 ): Promise<{
   page: Page;
   story: Story;
@@ -167,7 +175,7 @@ export async function getOrGeneratePage(
     'continuation',
     story,
     apiKey,
-    { parentPage, choiceIndex, protagonistGuidance },
+    { parentPage, choiceIndex, protagonistGuidance, selectedSceneDirection },
     onGenerationStage
   );
 

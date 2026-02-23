@@ -545,6 +545,7 @@ export function buildBriefingPageHtml(options: BriefingPageOptions = {}): string
           <button id="begin-adventure-btn" class="btn btn-primary btn-large">Begin Adventure</button>
           <div class="alert alert-error briefing-error" id="briefing-error" style="display: none;" role="alert" aria-live="polite"></div>
         </section>
+        <div id="scene-ideation-container"></div>
       </div>
       <div class="loading-overlay" id="loading" style="display: none;">
         <div class="loading-stage" aria-live="polite"></div>

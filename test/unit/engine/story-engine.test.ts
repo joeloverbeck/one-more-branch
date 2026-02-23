@@ -153,7 +153,12 @@ describe('story-engine', () => {
         story,
         page,
       });
-      expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(STORY_ID, 'test-key', undefined);
+      expect(mockedGenerateOpeningPage).toHaveBeenCalledWith(
+        STORY_ID,
+        'test-key',
+        undefined,
+        undefined
+      );
     });
   });
 
@@ -263,7 +268,8 @@ describe('story-engine', () => {
         0,
         'test-key',
         expect.any(Function),
-        { suggestedSpeech: 'We should stay quiet.' }
+        { suggestedSpeech: 'We should stay quiet.' },
+        undefined
       );
     });
   });

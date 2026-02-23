@@ -2991,3 +2991,127 @@ main {
 .concept-pip--empty {
   background: rgba(255, 255, 255, 0.12);
 }
+
+/* ── Scene Direction / Ideation ─────────────────────────────────── */
+
+.scene-ideation-wrapper {
+  margin-top: 1.5rem;
+}
+
+.scene-ideation-heading {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.scene-ideation-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.scene-direction-options {
+  display: grid;
+  gap: 1rem;
+}
+
+.scene-direction-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(22, 33, 62, 0.88), rgba(15, 52, 96, 0.85));
+  padding: 1.1rem 1.2rem;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.scene-direction-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 16px rgba(233, 69, 96, 0.15);
+  transform: translateY(-2px);
+}
+
+.scene-direction-card-selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 20px rgba(233, 69, 96, 0.22);
+}
+
+.scene-direction-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.scene-direction-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.scene-direction-badge-purpose {
+  background: rgba(233, 69, 96, 0.2);
+  color: var(--color-primary-hover);
+  border: 1px solid rgba(233, 69, 96, 0.35);
+}
+
+.scene-direction-badge-polarity {
+  background: rgba(83, 52, 131, 0.25);
+  color: #b89ede;
+  border: 1px solid rgba(83, 52, 131, 0.4);
+}
+
+.scene-direction-badge-pacing {
+  background: rgba(56, 163, 165, 0.2);
+  color: #5ec4c6;
+  border: 1px solid rgba(56, 163, 165, 0.35);
+}
+
+.scene-direction-field {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.scene-direction-label {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-right: 0.3rem;
+}
+
+.scene-direction-text-display,
+.scene-direction-justification-display {
+  display: inline;
+}
+
+.scene-direction-editable {
+  width: 100%;
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  resize: vertical;
+}
+
+.scene-direction-editable:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.scene-ideation-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.scene-ideation-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

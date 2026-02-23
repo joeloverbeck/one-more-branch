@@ -84,7 +84,14 @@ describe('play page choice click handler', () => {
   }
 
   it('sends fetch with correct body on choice click', async () => {
-    setupAndInit({ storyId: 'story-abc', pageId: 3 });
+    setupAndInit({
+      storyId: 'story-abc',
+      pageId: 3,
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     // Progress polling + choice POST
     fetchMock
@@ -108,7 +115,12 @@ describe('play page choice click handler', () => {
   });
 
   it('updates narrative DOM on successful choice', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -138,7 +150,14 @@ describe('play page choice click handler', () => {
   });
 
   it('updates page indicator and URL on successful choice', async () => {
-    setupAndInit({ storyId: 'story-xyz', pageId: 1 });
+    setupAndInit({
+      storyId: 'story-xyz',
+      pageId: 1,
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -154,7 +173,12 @@ describe('play page choice click handler', () => {
   });
 
   it('updates act indicator on successful choice with actDisplayInfo', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -174,7 +198,12 @@ describe('play page choice click handler', () => {
   });
 
   it('hides loading overlay after fetch completes', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -188,7 +217,12 @@ describe('play page choice click handler', () => {
   });
 
   it('shows error message on failed response', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -209,7 +243,12 @@ describe('play page choice click handler', () => {
   });
 
   it('renders ending banner when isEnding is true', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -263,7 +302,12 @@ describe('play page choice click handler', () => {
   });
 
   it('includes protagonistGuidance in body when provided', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     const speechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
     const thoughtsInput = document.querySelector('#guidance-thoughts') as HTMLTextAreaElement;
@@ -288,7 +332,12 @@ describe('play page choice click handler', () => {
   });
 
   it('does not include protagonistGuidance when all fields are empty', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -305,7 +354,12 @@ describe('play page choice click handler', () => {
   });
 
   it('clears protagonist guidance after generated response', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     const speechInput = document.querySelector('#guidance-speech') as HTMLTextAreaElement;
     const emotionsInput = document.querySelector('#guidance-emotions') as HTMLTextAreaElement;
@@ -329,7 +383,12 @@ describe('play page choice click handler', () => {
   });
 
   it('renders state changes section on successful choice', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
@@ -361,7 +420,12 @@ describe('play page choice click handler', () => {
   });
 
   it('renders deviation banner when deviation info is present', async () => {
-    setupAndInit();
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
 
     fetchMock
       .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))

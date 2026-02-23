@@ -9,10 +9,12 @@ export {
 export {
   MAX_CUSTOM_CHOICE_TEXT_LENGTH,
   MAX_GUIDANCE_FIELD_LENGTH,
+  MAX_SCENE_DIRECTION_TEXT_LENGTH,
   parseCustomChoiceText,
   parseProgressId,
   parseRequestedPageId,
   normalizeProtagonistGuidance,
+  normalizeSelectedSceneDirection,
 } from './request-normalizers.js';
 export { buildPagePanelData, buildInsightsThreadMeta } from './page-panel-data.js';
 export { buildBeginErrorResponse, buildChoiceErrorResponse } from './play-error-handler.js';

@@ -16,6 +16,7 @@ export const LLM_STAGE_KEYS = [
   'writer',
   'analyst',
   'agendaResolver',
+  'sceneIdeator',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];

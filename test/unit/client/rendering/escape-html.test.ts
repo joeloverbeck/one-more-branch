@@ -31,7 +31,12 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
   });
 
   function clickAndGetNarrative(narrativeText: string): Promise<string> {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     fetchMock
@@ -88,7 +93,12 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
   });
 
   it('escapes HTML in state changes', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     fetchMock
