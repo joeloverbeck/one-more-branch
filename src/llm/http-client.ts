@@ -209,7 +209,7 @@ export function parseMessageJsonContent(
 }
 
 export async function readJsonResponse(response: Response): Promise<OpenRouterResponse> {
-  let rawBody = '';
+  let rawBody: string;
 
   if (typeof response.text === 'function') {
     try {
@@ -257,7 +257,7 @@ export async function readJsonResponse(response: Response): Promise<OpenRouterRe
 }
 
 export async function readErrorMessage(response: Response): Promise<string> {
-  let errorText = '';
+  let errorText: string;
 
   try {
     errorText = await response.text();
@@ -278,7 +278,7 @@ export async function readErrorMessage(response: Response): Promise<string> {
 }
 
 export async function readErrorDetails(response: Response): Promise<ErrorDetails> {
-  let rawBody = '';
+  let rawBody: string;
 
   try {
     rawBody = await response.text();

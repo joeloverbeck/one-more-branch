@@ -51,7 +51,7 @@ jest.mock('../../../src/llm', () => ({
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
   mergePageWriterAndReconciledStateWithAnalystResults:
     jest.requireActual('../../../src/llm').mergePageWriterAndReconciledStateWithAnalystResults, // eslint-disable-line @typescript-eslint/no-unsafe-member-access
 }));

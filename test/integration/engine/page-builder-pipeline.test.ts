@@ -170,7 +170,6 @@ describe('page-builder pipeline integration', () => {
       // --- Verify SCENE scope expiry: create a chain where SCENE promise ages past threshold ---
       // SCENE expiry threshold is 4 (from THREAD_PACING.PROMISE_SCOPE_EXPIRY.SCENE)
       // After page1(age=0) -> page2(age=1) -> page3(age=2) -> page4(age=3) -> page5(age=4) -> page6 would be age 5 > 4, expired
-      let currentPage = page1;
       // Simulate aging the SCENE promise (pr-1) through pages. Reset from page1 to avoid resolution.
       // Build a fresh chain where SCENE promise survives to expiry.
       const scenePage1 = buildPage(
@@ -189,7 +188,7 @@ describe('page-builder pipeline integration', () => {
       );
 
       // Age through pages 2-5 (age 0 -> 1 -> 2 -> 3 -> 4)
-      currentPage = scenePage1;
+      let currentPage = scenePage1;
       for (let i = 2; i <= 6; i++) {
         currentPage = buildPage(
           createMockFinalResult(),

@@ -16,6 +16,11 @@ type RouterLayer = {
   name?: string;
 };
 
+function getAppStack(app: unknown): RouterLayer[] {
+  const expressApp = app as { router?: { stack?: RouterLayer[] } };
+  return expressApp.router?.stack ?? [];
+}
+
 function findGetRootHandler(
   layers: RouterLayer[]
 ): ((req: Request, res: Response) => unknown) | null {
@@ -91,7 +96,7 @@ describe('server app setup', () => {
     });
 
     const app = createApp();
-    const stack = (app as unknown as { _router: { stack: Array<{ name: string }> } })._router.stack;
+    const stack = getAppStack(app);
 
     expect(stack.some((layer) => layer.name === 'serveStatic')).toBe(true);
   });
@@ -102,7 +107,7 @@ describe('server app setup', () => {
     });
 
     const app = createApp();
-    const stack = (app as unknown as { _router: { stack: Array<{ name: string }> } })._router.stack;
+    const stack = getAppStack(app);
 
     expect(stack.some((layer) => layer.name === 'jsonParser')).toBe(true);
     expect(stack.some((layer) => layer.name === 'urlencodedParser')).toBe(true);
@@ -114,7 +119,7 @@ describe('server app setup', () => {
     });
 
     const app = createApp();
-    const stack = (app as unknown as { _router: { stack: Array<{ name: string }> } })._router.stack;
+    const stack = getAppStack(app);
     const routerIndex = stack.findIndex((layer) => layer.name === 'router');
     const errorHandlerIndex = stack.findIndex((layer) => layer.name === 'errorHandler');
 
@@ -129,7 +134,7 @@ describe('server app setup', () => {
     jest.spyOn(storyEngine, 'listStories').mockResolvedValue([]);
 
     const app = createApp();
-    const stack = (app as unknown as { _router: { stack: RouterLayer[] } })._router.stack;
+    const stack = getAppStack(app);
     const homeHandler = findGetRootHandler(stack);
 
     const status = jest.fn().mockReturnThis();
