@@ -1,6 +1,13 @@
 import type { ProtagonistGuidance } from '../../models/protagonist-guidance.js';
+import type { SelectedSceneDirection } from '../../models/scene-direction.js';
+import {
+  isScenePurpose,
+  isValuePolarityShift,
+  isPacingMode,
+} from '../../models/scene-direction-taxonomy.js';
 
 export const MAX_GUIDANCE_FIELD_LENGTH = 500;
+export const MAX_SCENE_DIRECTION_TEXT_LENGTH = 2000;
 export const MAX_CUSTOM_CHOICE_TEXT_LENGTH = 500;
 
 export function parseProgressId(input: unknown): string | undefined {
@@ -82,4 +89,50 @@ export function parseCustomChoiceText(input: unknown): { value?: string; error?:
   }
 
   return { value: trimmed };
+}
+
+export function normalizeSelectedSceneDirection(
+  raw: unknown
+): SelectedSceneDirection | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return undefined;
+  }
+
+  const obj = raw as Record<string, unknown>;
+
+  const scenePurpose = typeof obj['scenePurpose'] === 'string' ? obj['scenePurpose'] : '';
+  const valuePolarityShift =
+    typeof obj['valuePolarityShift'] === 'string' ? obj['valuePolarityShift'] : '';
+  const pacingMode = typeof obj['pacingMode'] === 'string' ? obj['pacingMode'] : '';
+
+  if (!isScenePurpose(scenePurpose)) {
+    return undefined;
+  }
+  if (!isValuePolarityShift(valuePolarityShift)) {
+    return undefined;
+  }
+  if (!isPacingMode(pacingMode)) {
+    return undefined;
+  }
+
+  const sceneDirection =
+    typeof obj['sceneDirection'] === 'string'
+      ? obj['sceneDirection'].trim().slice(0, MAX_SCENE_DIRECTION_TEXT_LENGTH)
+      : '';
+  const dramaticJustification =
+    typeof obj['dramaticJustification'] === 'string'
+      ? obj['dramaticJustification'].trim().slice(0, MAX_SCENE_DIRECTION_TEXT_LENGTH)
+      : '';
+
+  if (sceneDirection.length === 0 || dramaticJustification.length === 0) {
+    return undefined;
+  }
+
+  return {
+    scenePurpose,
+    valuePolarityShift,
+    pacingMode,
+    sceneDirection,
+    dramaticJustification,
+  };
 }

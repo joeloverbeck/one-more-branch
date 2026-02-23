@@ -133,7 +133,9 @@ describe('story lore modal', () => {
   });
 
   it('renders tagged CanonFact objects received via AJAX choice response', async () => {
-    document.body.innerHTML = buildPlayPageHtml({ choices: [{ text: 'Continue' }] });
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [{ text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 2 }],
+    });
     loadAppAndInit();
 
     fetchMock
@@ -209,7 +211,9 @@ describe('story lore modal', () => {
   });
 
   it('updates lore count/content from choice response and keeps trigger at sidebar bottom', async () => {
-    document.body.innerHTML = buildPlayPageHtml({ choices: [{ text: 'Continue' }] });
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [{ text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 2 }],
+    });
     loadAppAndInit();
 
     fetchMock

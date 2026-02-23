@@ -1,4 +1,5 @@
 import { Page, PageId, Story, StoryId, StoryMetadata } from '../models';
+import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import { storage } from '../persistence';
 import { getOrGeneratePage } from './page-service';
 import {
@@ -37,9 +38,10 @@ export class StoryEngine {
   async generateOpeningPage(
     storyId: StoryId,
     apiKey: string,
-    onGenerationStage?: StartStoryOptions['onGenerationStage']
+    onGenerationStage?: StartStoryOptions['onGenerationStage'],
+    selectedSceneDirection?: SelectedSceneDirection
   ): Promise<StartStoryResult> {
-    return generateOpeningPage(storyId, apiKey, onGenerationStage);
+    return generateOpeningPage(storyId, apiKey, onGenerationStage, selectedSceneDirection);
   }
 
   async makeChoice(options: MakeChoiceOptions): Promise<MakeChoiceResult> {
@@ -73,7 +75,8 @@ export class StoryEngine {
       options.choiceIndex,
       options.apiKey,
       options.onGenerationStage,
-      options.protagonistGuidance
+      options.protagonistGuidance,
+      options.selectedSceneDirection
     );
 
     return { page, wasGenerated, deviationInfo };

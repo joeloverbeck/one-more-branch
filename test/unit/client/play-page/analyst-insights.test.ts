@@ -386,6 +386,10 @@ describe('analyst insights modal', () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult({ sceneMomentum: 'STASIS' }),
       isEnding: false,
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
     });
     loadAppAndInit();
 

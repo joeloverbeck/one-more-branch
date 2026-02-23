@@ -112,6 +112,38 @@ const STAGE_PHRASE_POOLS = {
     'Asking the cosmos to define its terms...',
     'Calibrating the exact amount of pressure that produces diamonds...',
   ],
+  IDEATING_SCENE: [
+    'Surveying the crossroads of dramatic possibility...',
+    'Laying out three paths into the next scene...',
+    'Consulting the taxonomy of narrative purpose...',
+    'Sorting scene directions by dramatic voltage...',
+    'Measuring which polarity shift fits best...',
+    'Auditioning confrontations, revelations, and escapes...',
+    'Weighing acceleration against deceleration...',
+    'Asking the story what it needs next...',
+    'Drafting three invitations to different kinds of trouble...',
+    'Calibrating scene purpose against structural position...',
+    'Offering the player a menu of dramatic directions...',
+    'Shuffling the deck of narrative possibilities...',
+    'Testing three flavors of upcoming chaos...',
+    'Arranging scene candidates by thematic fit...',
+    'Scouting ahead for the most interesting next move...',
+    'Comparing pacing modes like wine vintages...',
+    'Sampling value shifts for dramatic impact...',
+    'Sketching three different versions of what happens next...',
+    'Proposing confrontation, negotiation, and escape...',
+    'Mapping the dramatic terrain ahead...',
+    'Consulting the narrative compass for direction options...',
+    'Brainstorming scenes the protagonist doesn\'t want...',
+    'Generating options that each change the story differently...',
+    'Asking McKee and Truby for competing suggestions...',
+    'Spinning the scene purpose wheel with dramatic intent...',
+    'Presenting three doors, each a different shade of consequence...',
+    'Calculating which revelations are ripe for harvest...',
+    'Designing three trajectories through the next beat...',
+    'Offering sacrifice, betrayal, and transformation as options...',
+    'Preparing a tasting flight of narrative directions...',
+  ],
   PLANNING_PAGE: [
     'Consulting the crystal flowchart...',
     'Drawing arrows between dramatic possibilities...',
@@ -1297,6 +1329,7 @@ const STAGE_PHRASE_POOLS = {
 
 const STAGE_DISPLAY_NAMES = {
   GENERATING_SPINE: 'ENVISIONING',
+  IDEATING_SCENE: 'ENVISIONING',
   PLANNING_PAGE: 'PLANNING',
   ACCOUNTING_STATE: 'ACCOUNTING',
   CURATING_CONTEXT: 'LOREKEEPING',
@@ -2753,6 +2786,173 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     );
   }
 
+  // ── Scene Direction Renderer ─────────────────────────────────────
+
+  var SCENE_PURPOSE_LABELS = {
+    EXPOSITION: 'Exposition',
+    INCITING_INCIDENT: 'Inciting Incident',
+    RISING_COMPLICATION: 'Rising Complication',
+    REVERSAL: 'Reversal',
+    REVELATION: 'Revelation',
+    CONFRONTATION: 'Confrontation',
+    NEGOTIATION: 'Negotiation',
+    INVESTIGATION: 'Investigation',
+    PREPARATION: 'Preparation',
+    ESCAPE: 'Escape',
+    PURSUIT: 'Pursuit',
+    SACRIFICE: 'Sacrifice',
+    BETRAYAL: 'Betrayal',
+    REUNION: 'Reunion',
+    TRANSFORMATION: 'Transformation',
+    CLIMACTIC_CHOICE: 'Climactic Choice',
+    AFTERMATH: 'Aftermath',
+  };
+
+  var VALUE_POLARITY_SHIFT_LABELS = {
+    POSITIVE_TO_NEGATIVE: 'Positive \u2192 Negative',
+    NEGATIVE_TO_POSITIVE: 'Negative \u2192 Positive',
+    POSITIVE_TO_DOUBLE_NEGATIVE: 'Positive \u2192 Double Negative',
+    NEGATIVE_TO_DOUBLE_POSITIVE: 'Negative \u2192 Double Positive',
+    IRONIC_SHIFT: 'Ironic Shift',
+  };
+
+  var PACING_MODE_LABELS = {
+    ACCELERATING: 'Accelerating',
+    DECELERATING: 'Decelerating',
+    SUSTAINED_HIGH: 'Sustained High',
+    OSCILLATING: 'Oscillating',
+    BUILDING_SLOW: 'Building Slow',
+  };
+
+  var selectedSceneDirection = null;
+
+  function getSelectedSceneDirection() {
+    return selectedSceneDirection;
+  }
+
+  function clearSelectedSceneDirection() {
+    selectedSceneDirection = null;
+  }
+
+  function captureSceneDirectionEdits(container) {
+    if (!selectedSceneDirection || !container) {
+      return selectedSceneDirection;
+    }
+
+    var selectedCard = container.querySelector('.scene-direction-card-selected');
+    if (!selectedCard) {
+      return selectedSceneDirection;
+    }
+
+    var directionTextarea = selectedCard.querySelector('.scene-direction-text');
+    var justificationTextarea = selectedCard.querySelector('.scene-direction-justification');
+
+    var editedDirection = directionTextarea
+      ? directionTextarea.value.trim()
+      : selectedSceneDirection.sceneDirection;
+    var editedJustification = justificationTextarea
+      ? justificationTextarea.value.trim()
+      : selectedSceneDirection.dramaticJustification;
+
+    return {
+      scenePurpose: selectedSceneDirection.scenePurpose,
+      valuePolarityShift: selectedSceneDirection.valuePolarityShift,
+      pacingMode: selectedSceneDirection.pacingMode,
+      sceneDirection: editedDirection || selectedSceneDirection.sceneDirection,
+      dramaticJustification: editedJustification || selectedSceneDirection.dramaticJustification,
+    };
+  }
+
+  function renderSceneDirectionOptions(options, container, onSelect) {
+    container.innerHTML = '';
+    selectedSceneDirection = null;
+
+    options.forEach(function (option, index) {
+      var card = document.createElement('div');
+      card.className = 'scene-direction-card';
+      card.dataset.index = String(index);
+
+      var badges = document.createElement('div');
+      badges.className = 'scene-direction-badges';
+      badges.innerHTML =
+        '<span class="scene-direction-badge scene-direction-badge-purpose">' +
+        escapeHtml(SCENE_PURPOSE_LABELS[option.scenePurpose] || option.scenePurpose) +
+        '</span>' +
+        '<span class="scene-direction-badge scene-direction-badge-polarity">' +
+        escapeHtml(VALUE_POLARITY_SHIFT_LABELS[option.valuePolarityShift] || option.valuePolarityShift) +
+        '</span>' +
+        '<span class="scene-direction-badge scene-direction-badge-pacing">' +
+        escapeHtml(PACING_MODE_LABELS[option.pacingMode] || option.pacingMode) +
+        '</span>';
+
+      var directionSection = document.createElement('div');
+      directionSection.className = 'scene-direction-field';
+      directionSection.innerHTML =
+        '<span class="scene-direction-label">Direction:</span>' +
+        '<div class="scene-direction-text-display">' +
+        escapeHtml(option.sceneDirection) +
+        '</div>' +
+        '<textarea class="scene-direction-text scene-direction-editable" ' +
+        'style="display:none" rows="3">' +
+        escapeHtml(option.sceneDirection) +
+        '</textarea>';
+
+      var justificationSection = document.createElement('div');
+      justificationSection.className = 'scene-direction-field';
+      justificationSection.innerHTML =
+        '<span class="scene-direction-label">Justification:</span>' +
+        '<div class="scene-direction-justification-display">' +
+        escapeHtml(option.dramaticJustification) +
+        '</div>' +
+        '<textarea class="scene-direction-justification scene-direction-editable" ' +
+        'style="display:none" rows="3">' +
+        escapeHtml(option.dramaticJustification) +
+        '</textarea>';
+
+      card.appendChild(badges);
+      card.appendChild(directionSection);
+      card.appendChild(justificationSection);
+
+      card.addEventListener('click', function () {
+        var allCards = container.querySelectorAll('.scene-direction-card');
+        allCards.forEach(function (c) {
+          c.classList.remove('scene-direction-card-selected');
+          // Hide editable fields on deselected cards
+          c.querySelectorAll('.scene-direction-editable').forEach(function (el) {
+            el.style.display = 'none';
+          });
+          c.querySelectorAll('.scene-direction-text-display, .scene-direction-justification-display')
+            .forEach(function (el) {
+              el.style.display = '';
+            });
+        });
+
+        card.classList.add('scene-direction-card-selected');
+
+        // Show editable fields on selected card
+        card.querySelectorAll('.scene-direction-editable').forEach(function (el) {
+          el.style.display = '';
+        });
+        card.querySelectorAll('.scene-direction-text-display, .scene-direction-justification-display')
+          .forEach(function (el) {
+            el.style.display = 'none';
+          });
+
+        selectedSceneDirection = option;
+        if (typeof onSelect === 'function') {
+          onSelect(option);
+        }
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  function clearSceneDirectionOptions(container) {
+    container.innerHTML = '';
+    selectedSceneDirection = null;
+  }
+
   // ── Choice renderers ──────────────────────────────────────────────
 
   function renderChoiceButtons(choiceList) {
@@ -4090,6 +4290,7 @@ function createRecapModalController(initialData) {
 
     const hasChoicesUi = choicesSection instanceof HTMLElement && choices instanceof HTMLElement;
     const loadingProgress = createLoadingProgressController(loading);
+    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
 
     function ensureApiKey() {
       return new Promise((resolve, reject) => {
@@ -4227,6 +4428,204 @@ function createRecapModalController(initialData) {
       bindCustomChoiceEvents();
     }
 
+    async function proceedWithChoice(apiKey, choiceIndex, protagonistGuidance, selectedDirection) {
+      loading.style.display = 'flex';
+      var body = {
+        pageId: currentPageId,
+        choiceIndex: choiceIndex,
+        progressId: createProgressId(),
+      };
+      if (protagonistGuidance && Object.keys(protagonistGuidance).length > 0) {
+        body.protagonistGuidance = protagonistGuidance;
+      }
+      if (selectedDirection) {
+        body.selectedSceneDirection = selectedDirection;
+      }
+      if (apiKey) {
+        body.apiKey = apiKey;
+      }
+      loadingProgress.start(body.progressId);
+
+      try {
+        var response = await fetch('/play/' + storyId + '/choice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        var data = await response.json();
+
+        if (!response.ok) {
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          if (data.debug) {
+            console.error('Debug info:', data.debug);
+          }
+          throw new Error(data.error || 'Failed to process choice');
+        }
+
+        if (!data.page) {
+          throw new Error('Invalid response from server');
+        }
+
+        handleChoiceSuccess(data);
+      } catch (error) {
+        console.error('Error:', error);
+        if (choicesSection) {
+          showPlayError(
+            error instanceof Error ? error.message : 'Something went wrong. Please try again.',
+            choicesSection
+          );
+        }
+        setChoicesDisabled(false);
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+      }
+    }
+
+    function handleChoiceSuccess(data) {
+      insightsController.update(data.page.analystResult, {
+        actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
+        sceneSummary: data.page.sceneSummary || null,
+        resolvedThreadMeta: data.page.resolvedThreadMeta || {},
+        resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
+      });
+      recapController.update(data.recapSummaries || []);
+
+      currentPageId = data.page.id;
+      container.dataset.pageId = String(currentPageId);
+
+      history.pushState({}, '', '/play/' + storyId + '?page=' + currentPageId);
+
+      narrative.innerHTML = '<div class="narrative-text">' + escapeHtmlWithBreaks(data.page.narrativeText || '') + '</div>';
+      var leftSidebarContainer = ensureLeftSidebarContainer();
+      renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
+      renderNpcRelationshipsPanel(data.page.npcRelationships, leftSidebarContainer);
+      renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
+      renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
+      cleanupEmptyLeftSidebar();
+      loreController.update(data.globalCanon || [], data.globalCharacterCanon || {});
+      var sidebarContainer = ensureSidebarContainer();
+      renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
+      renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
+      renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
+      renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
+      cleanupEmptySidebar();
+      renderStateChanges(data.page.stateChanges, narrative);
+      renderMilestoneBanner(data.milestoneInfo, narrative);
+      renderDeviationBanner(data.deviationInfo, choicesSection);
+
+      var pageIndicator = document.querySelector('.page-indicator');
+      if (pageIndicator) {
+        pageIndicator.textContent = 'Page ' + currentPageId;
+      }
+
+      // Update act indicator based on response
+      var existingWrapper = document.getElementById('act-indicator-wrapper');
+      if (data.actDisplayInfo) {
+        var newActNumber = data.actDisplayInfo.actNumber;
+        var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
+
+        var detailsHtml = '';
+        if (data.actDisplayInfo.actObjective || data.actDisplayInfo.actStakes || data.actDisplayInfo.beatObjective) {
+          detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
+          if (data.actDisplayInfo.actObjective) {
+            detailsHtml += '<div class="act-structure-details__item">'
+              + '<span class="act-structure-details__label">Act Objective</span>'
+              + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actObjective) + '</span>'
+              + '</div>';
+          }
+          if (data.actDisplayInfo.actStakes) {
+            detailsHtml += '<div class="act-structure-details__item">'
+              + '<span class="act-structure-details__label">Stakes</span>'
+              + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actStakes) + '</span>'
+              + '</div>';
+          }
+          if (data.actDisplayInfo.beatObjective) {
+            detailsHtml += '<div class="act-structure-details__item">'
+              + '<span class="act-structure-details__label">Beat Objective</span>'
+              + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.beatObjective) + '</span>'
+              + '</div>';
+          }
+          detailsHtml += '</div>';
+        }
+
+        var wrapperHtml = '<span class="act-indicator act-indicator--clickable" id="act-indicator"'
+          + ' role="button" tabindex="0" aria-expanded="false"'
+          + ' aria-controls="act-structure-details">'
+          + '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>'
+          + escapeHtml(data.actDisplayInfo.displayString)
+          + '</span>';
+
+        if (existingWrapper) {
+          existingWrapper.innerHTML = wrapperHtml;
+          existingWrapper.dataset.actNumber = String(newActNumber);
+        } else {
+          var storyTitleSection = document.querySelector('.story-title-section');
+          if (storyTitleSection) {
+            var newWrapper = document.createElement('div');
+            newWrapper.className = 'act-indicator-wrapper';
+            newWrapper.id = 'act-indicator-wrapper';
+            newWrapper.dataset.actNumber = String(newActNumber);
+            newWrapper.innerHTML = wrapperHtml;
+            storyTitleSection.appendChild(newWrapper);
+          }
+        }
+
+        // Place details panel after .story-header (outside the flex row)
+        var existingDetails = document.getElementById('act-structure-details');
+        if (existingDetails) {
+          existingDetails.remove();
+        }
+        if (detailsHtml) {
+          var storyHeader = document.getElementById('story-header');
+          if (storyHeader) {
+            storyHeader.insertAdjacentHTML('afterend', detailsHtml);
+          }
+        }
+
+        initActIndicator();
+        if (actChanged) {
+          expandActStructureDetails();
+        }
+        previousActNumber = newActNumber;
+      } else if (existingWrapper) {
+        existingWrapper.remove();
+        var orphanedDetails = document.getElementById('act-structure-details');
+        if (orphanedDetails) {
+          orphanedDetails.remove();
+        }
+        previousActNumber = null;
+      }
+
+      if (data.page.isEnding) {
+        choicesSection.innerHTML =
+          '<div class="ending-banner">' +
+          '<h3>THE END</h3>' +
+          '<div class="ending-actions">' +
+          '<a href="/play/' + storyId + '/restart" class="btn btn-primary">Play Again</a>' +
+          '<a href="/" class="btn btn-secondary">Back to Stories</a>' +
+          '</div></div>';
+      } else {
+        var guidanceForRebuild = data.wasGenerated === true
+          ? { emotions: '', thoughts: '', speech: '' }
+          : getProtagonistGuidanceValues();
+        rebuildChoicesSection(
+          data.page.choices,
+          guidanceForRebuild,
+          choices,
+          choicesSection,
+          bindCustomChoiceEvents
+        );
+      }
+
+      var scrollTarget = document.getElementById('story-header') || narrative;
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
     if (hasChoicesUi) {
       choices.addEventListener('click', async (event) => {
         const clickedElement = event.target;
@@ -4249,14 +4648,7 @@ function createRecapModalController(initialData) {
           const isExplored = button.dataset.explored === 'true';
           const apiKey = isExplored ? getApiKey() : await ensureApiKey();
 
-        setChoicesDisabled(true);
-        loading.style.display = 'flex';
-
-        const body = {
-          pageId: currentPageId,
-          choiceIndex,
-          progressId: createProgressId(),
-        };
+        // Capture guidance values before any DOM swap
         const guidanceValues = getProtagonistGuidanceValues();
         const protagonistGuidance = {};
         if (guidanceValues.emotions.trim().length > 0) {
@@ -4268,6 +4660,70 @@ function createRecapModalController(initialData) {
         if (guidanceValues.speech.trim().length > 0) {
           protagonistGuidance.suggestedSpeech = guidanceValues.speech.trim();
         }
+
+        // For unexplored choices, intercept with scene ideation
+        if (!isExplored) {
+          setChoicesDisabled(true);
+          loading.style.display = 'flex';
+          try {
+            var ideationOptions = await ideationCtrl.fetchSceneOptions(
+              apiKey, 'continuation', currentPageId, choiceIndex
+            );
+            loading.style.display = 'none';
+
+            await new Promise(function (resolveIdeation) {
+              ideationCtrl.renderIdeationUI(
+                choicesSection,
+                ideationOptions,
+                function onConfirm(selectedDirection) {
+                  resolveIdeation(selectedDirection);
+                },
+                function onRegenerate() {
+                  loading.style.display = 'flex';
+                  ideationCtrl.fetchSceneOptions(
+                    apiKey, 'continuation', currentPageId, choiceIndex
+                  ).then(function (newOptions) {
+                    loading.style.display = 'none';
+                    ideationCtrl.renderIdeationUI(
+                      choicesSection, newOptions,
+                      function onConfirm2(dir) { resolveIdeation(dir); },
+                      function () { /* nested regenerate handled by UI re-render */ }
+                    );
+                  }).catch(function (err) {
+                    loading.style.display = 'none';
+                    showPlayError(
+                      err instanceof Error ? err.message : 'Regeneration failed',
+                      choicesSection
+                    );
+                  });
+                }
+              );
+            }).then(function (selectedDirection) {
+              proceedWithChoice(
+                apiKey, choiceIndex, protagonistGuidance, selectedDirection
+              );
+            });
+            return;
+          } catch (ideationErr) {
+            loading.style.display = 'none';
+            setChoicesDisabled(false);
+            showPlayError(
+              ideationErr instanceof Error ? ideationErr.message : 'Scene ideation failed',
+              choicesSection
+            );
+            return;
+          }
+        }
+
+        // Explored choice - skip ideation, go directly
+        setChoicesDisabled(true);
+        loading.style.display = 'flex';
+
+        const body = {
+          pageId: currentPageId,
+          choiceIndex,
+          progressId: createProgressId(),
+        };
         if (Object.keys(protagonistGuidance).length > 0) {
           body.protagonistGuidance = protagonistGuidance;
         }
@@ -4300,149 +4756,8 @@ function createRecapModalController(initialData) {
         if (!data.page) {
           throw new Error('Invalid response from server');
         }
-        insightsController.update(data.page.analystResult, {
-          actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
-          sceneSummary: data.page.sceneSummary || null,
-          resolvedThreadMeta: data.page.resolvedThreadMeta || {},
-          resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
-        });
-        recapController.update(data.recapSummaries || []);
 
-        currentPageId = data.page.id;
-        container.dataset.pageId = String(currentPageId);
-
-        history.pushState({}, '', `/play/${storyId}?page=${currentPageId}`);
-
-        narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
-        var leftSidebarContainer = ensureLeftSidebarContainer();
-        renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
-        renderNpcRelationshipsPanel(data.page.npcRelationships, leftSidebarContainer);
-        renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
-        renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
-        cleanupEmptyLeftSidebar();
-        loreController.update(data.globalCanon || [], data.globalCharacterCanon || {});
-        var sidebarContainer = ensureSidebarContainer();
-        renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
-        renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
-        renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
-        renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
-        cleanupEmptySidebar();
-        renderStateChanges(data.page.stateChanges, narrative);
-        renderMilestoneBanner(data.milestoneInfo, narrative);
-        renderDeviationBanner(data.deviationInfo, choicesSection);
-
-        const pageIndicator = document.querySelector('.page-indicator');
-        if (pageIndicator) {
-          pageIndicator.textContent = `Page ${currentPageId}`;
-        }
-
-        // Update act indicator based on response
-        var existingWrapper = document.getElementById('act-indicator-wrapper');
-        if (data.actDisplayInfo) {
-          var newActNumber = data.actDisplayInfo.actNumber;
-          var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
-
-          var detailsHtml = '';
-          if (data.actDisplayInfo.actObjective || data.actDisplayInfo.actStakes || data.actDisplayInfo.beatObjective) {
-            detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
-            if (data.actDisplayInfo.actObjective) {
-              detailsHtml += '<div class="act-structure-details__item">'
-                + '<span class="act-structure-details__label">Act Objective</span>'
-                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actObjective) + '</span>'
-                + '</div>';
-            }
-            if (data.actDisplayInfo.actStakes) {
-              detailsHtml += '<div class="act-structure-details__item">'
-                + '<span class="act-structure-details__label">Stakes</span>'
-                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actStakes) + '</span>'
-                + '</div>';
-            }
-            if (data.actDisplayInfo.beatObjective) {
-              detailsHtml += '<div class="act-structure-details__item">'
-                + '<span class="act-structure-details__label">Beat Objective</span>'
-                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.beatObjective) + '</span>'
-                + '</div>';
-            }
-            detailsHtml += '</div>';
-          }
-
-          var wrapperHtml = '<span class="act-indicator act-indicator--clickable" id="act-indicator"'
-            + ' role="button" tabindex="0" aria-expanded="false"'
-            + ' aria-controls="act-structure-details">'
-            + '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>'
-            + escapeHtml(data.actDisplayInfo.displayString)
-            + '</span>';
-
-          if (existingWrapper) {
-            existingWrapper.innerHTML = wrapperHtml;
-            existingWrapper.dataset.actNumber = String(newActNumber);
-          } else {
-            var storyTitleSection = document.querySelector('.story-title-section');
-            if (storyTitleSection) {
-              var newWrapper = document.createElement('div');
-              newWrapper.className = 'act-indicator-wrapper';
-              newWrapper.id = 'act-indicator-wrapper';
-              newWrapper.dataset.actNumber = String(newActNumber);
-              newWrapper.innerHTML = wrapperHtml;
-              storyTitleSection.appendChild(newWrapper);
-            }
-          }
-
-          // Place details panel after .story-header (outside the flex row)
-          var existingDetails = document.getElementById('act-structure-details');
-          if (existingDetails) {
-            existingDetails.remove();
-          }
-          if (detailsHtml) {
-            var storyHeader = document.getElementById('story-header');
-            if (storyHeader) {
-              storyHeader.insertAdjacentHTML('afterend', detailsHtml);
-            }
-          }
-
-          initActIndicator();
-          if (actChanged) {
-            expandActStructureDetails();
-          }
-          previousActNumber = newActNumber;
-        } else if (existingWrapper) {
-          existingWrapper.remove();
-          var orphanedDetails = document.getElementById('act-structure-details');
-          if (orphanedDetails) {
-            orphanedDetails.remove();
-          }
-          previousActNumber = null;
-        }
-
-        if (data.page.isEnding) {
-          choicesSection.innerHTML = `
-            <div class="ending-banner">
-              <h3>THE END</h3>
-              <div class="ending-actions">
-                <a href="/play/${storyId}/restart" class="btn btn-primary">Play Again</a>
-                <a href="/" class="btn btn-secondary">Back to Stories</a>
-              </div>
-            </div>
-          `;
-        } else {
-          const guidanceForRebuild = data.wasGenerated === true
-            ? { emotions: '', thoughts: '', speech: '' }
-            : getProtagonistGuidanceValues();
-          rebuildChoicesSection(
-            data.page.choices,
-            guidanceForRebuild,
-            choices,
-            choicesSection,
-            bindCustomChoiceEvents
-          );
-        }
-
-        var storyHeader = document.getElementById('story-header');
-        if (storyHeader) {
-          storyHeader.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          narrative.scrollIntoView({ behavior: 'smooth' });
-        }
+        handleChoiceSuccess(data);
         } catch (error) {
           console.error('Error:', error);
           // Log additional debug info if available
@@ -5023,6 +5338,8 @@ function createRecapModalController(initialData) {
     }
 
     var loadingProgress = createLoadingProgressController(loading);
+    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
+    var ideationContainer = document.getElementById('scene-ideation-container');
 
     function setError(message) {
       if (!errorBlock) {
@@ -5096,7 +5413,7 @@ function createRecapModalController(initialData) {
       });
     }
 
-    async function beginAdventure(apiKey) {
+    async function beginAdventure(apiKey, selectedDirection) {
       beginBtn.disabled = true;
       clearError();
       loading.style.display = 'flex';
@@ -5104,13 +5421,18 @@ function createRecapModalController(initialData) {
       loadingProgress.start(progressId);
 
       try {
+        var body = {
+          apiKey: apiKey,
+          progressId: progressId,
+        };
+        if (selectedDirection) {
+          body.selectedSceneDirection = selectedDirection;
+        }
+
         var response = await fetch('/play/' + storyId + '/begin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+          body: JSON.stringify(body),
         });
         var data = await response.json();
 
@@ -5128,10 +5450,37 @@ function createRecapModalController(initialData) {
       }
     }
 
+    async function startIdeation(apiKey) {
+      clearError();
+      beginBtn.disabled = true;
+      loading.style.display = 'flex';
+
+      try {
+        var options = await ideationCtrl.fetchSceneOptions(apiKey, 'opening');
+        loading.style.display = 'none';
+
+        var target = ideationContainer || briefingContainer;
+        ideationCtrl.renderIdeationUI(
+          target,
+          options,
+          function onConfirm(selectedDirection) {
+            beginAdventure(apiKey, selectedDirection);
+          },
+          function onRegenerate() {
+            startIdeation(apiKey);
+          }
+        );
+      } catch (error) {
+        loading.style.display = 'none';
+        setError(error instanceof Error ? error.message : 'Scene ideation failed');
+        beginBtn.disabled = false;
+      }
+    }
+
     beginBtn.addEventListener('click', async function() {
       try {
         var apiKey = await ensureApiKey();
-        await beginAdventure(apiKey);
+        await startIdeation(apiKey);
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to begin adventure');
       }
@@ -6700,6 +7049,92 @@ function createRecapModalController(initialData) {
     updateSelectionCounter();
     updateEvolveButtonState();
     void loadKernelOptions();
+  }
+
+  // ── Scene Ideation Controller ────────────────────────────────────
+
+  function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
+    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex) {
+      var body = { apiKey: apiKey, mode: mode || 'opening' };
+      if (mode === 'continuation') {
+        body.pageId = pageId;
+        body.choiceIndex = choiceIndex;
+      }
+
+      return fetch('/play/' + storyId + '/ideate-scene', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+        .then(function (response) {
+          return response.json().then(function (data) {
+            if (!response.ok || !data.success) {
+              throw new Error(data.error || 'Scene ideation failed');
+            }
+            return data.options;
+          });
+        });
+    }
+
+    function renderIdeationUI(targetContainer, options, onConfirm, onRegenerate) {
+      targetContainer.innerHTML = '';
+
+      var wrapper = document.createElement('div');
+      wrapper.className = 'scene-ideation-wrapper';
+
+      var heading = document.createElement('h3');
+      heading.className = 'scene-ideation-heading';
+      heading.textContent = 'Choose a Scene Direction';
+      wrapper.appendChild(heading);
+
+      var subtitle = document.createElement('p');
+      subtitle.className = 'scene-ideation-subtitle';
+      subtitle.textContent =
+        'Select a direction for the next scene. You can edit the text fields after selecting.';
+      wrapper.appendChild(subtitle);
+
+      var cardsContainer = document.createElement('div');
+      cardsContainer.className = 'scene-direction-options';
+      wrapper.appendChild(cardsContainer);
+
+      renderSceneDirectionOptions(options, cardsContainer, function () {
+        confirmBtn.disabled = false;
+      });
+
+      var actions = document.createElement('div');
+      actions.className = 'scene-ideation-actions';
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn btn-primary scene-ideation-confirm';
+      confirmBtn.textContent = 'Confirm Direction';
+      confirmBtn.disabled = true;
+      confirmBtn.addEventListener('click', function () {
+        var edited = captureSceneDirectionEdits(cardsContainer);
+        if (edited && typeof onConfirm === 'function') {
+          onConfirm(edited);
+        }
+      });
+
+      var regenerateBtn = document.createElement('button');
+      regenerateBtn.className = 'btn btn-secondary scene-ideation-regenerate';
+      regenerateBtn.textContent = 'Regenerate Options';
+      regenerateBtn.addEventListener('click', function () {
+        if (typeof onRegenerate === 'function') {
+          onRegenerate();
+        }
+      });
+
+      actions.appendChild(confirmBtn);
+      actions.appendChild(regenerateBtn);
+      wrapper.appendChild(actions);
+
+      targetContainer.appendChild(wrapper);
+    }
+
+    return {
+      fetchSceneOptions: fetchSceneOptions,
+      renderIdeationUI: renderIdeationUI,
+    };
   }
 
   // ── Kernel Evolution Page Controller ────────────────────────────

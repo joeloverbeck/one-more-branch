@@ -77,3 +77,11 @@ export type {
   EntityDecomposerContext,
   EntityDecompositionResult,
 } from './entity-decomposer-types.js';
+
+export { generateSceneDirections } from './scene-ideator.js';
+export type {
+  SceneIdeatorContext,
+  SceneIdeatorOpeningContext,
+  SceneIdeatorContinuationContext,
+  SceneIdeationResult,
+} from './scene-ideator-types.js';

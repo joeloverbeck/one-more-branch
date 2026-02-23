@@ -38,7 +38,7 @@ describe('active threats panel', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 }],
         isEnding: false,
         openThreads: [],
         openThreadOverflowSummary: null,
@@ -69,7 +69,12 @@ describe('active threats panel', () => {
   }
 
   it('renders threats after AJAX choice response', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const threats = [
@@ -89,7 +94,12 @@ describe('active threats panel', () => {
   });
 
   it('limits to 6 visible items with overflow summary', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const threats = Array.from({ length: 9 }, (_, i) => ({
@@ -109,7 +119,12 @@ describe('active threats panel', () => {
   });
 
   it('uses server-provided overflow summary when present', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const threats = Array.from({ length: 8 }, (_, i) => ({
@@ -127,6 +142,9 @@ describe('active threats panel', () => {
   it('removes panel when threats array is empty', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       activeThreats: [{ id: 'at-1', text: 'Existing threat' }],
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+      ],
     });
     loadAppAndInit();
 
@@ -137,7 +155,12 @@ describe('active threats panel', () => {
   });
 
   it('updates panel in-place on subsequent renders', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     await clickChoiceAndResolve(
@@ -159,7 +182,12 @@ describe('active threats panel', () => {
   });
 
   it('filters out invalid entries', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     const threats = [
@@ -178,7 +206,12 @@ describe('active threats panel', () => {
   });
 
   it('does not render when no threats in response', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     await clickChoiceAndResolve(makeChoiceResponseWithThreats([]));
@@ -188,7 +221,12 @@ describe('active threats panel', () => {
   });
 
   it('applies correct CSS classes', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     await clickChoiceAndResolve(

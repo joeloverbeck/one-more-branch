@@ -132,6 +132,9 @@ describe('story recap modal', () => {
   it('updates recap modal after choice response', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       recapSummaries: [{ pageId: 1, summary: 'Scene one summary.' }],
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+      ],
     });
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {

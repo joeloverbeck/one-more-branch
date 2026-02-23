@@ -25,6 +25,7 @@ import {
   validateContinuationStructureVersion,
   validateFirstPageStructureVersion,
 } from './structure-version-validator';
+import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import type { GenerationStageCallback } from './types';
 import { EngineError } from './types';
 import type { GeneratePageContinuationParams } from './page-service';
@@ -51,7 +52,8 @@ export async function assembleGenerationContext(
   story: Story,
   apiKey: string,
   continuationParams?: GeneratePageContinuationParams,
-  onGenerationStage?: GenerationStageCallback
+  onGenerationStage?: GenerationStageCallback,
+  selectedSceneDirection?: SelectedSceneDirection
 ): Promise<GenerationContextAssemblyResult> {
   const isOpening = mode === 'opening';
 
@@ -170,6 +172,7 @@ export async function assembleGenerationContext(
           decomposedCharacters: story.decomposedCharacters!,
           decomposedWorld: story.decomposedWorld!,
           reconciliationFailureReasons: failureReasons,
+          selectedSceneDirection,
         })
     : (() => {
         const continuationContext = buildContinuationContext(
@@ -185,6 +188,7 @@ export async function assembleGenerationContext(
           ...continuationContext,
           mode: 'continuation' as const,
           reconciliationFailureReasons: failureReasons,
+          selectedSceneDirection,
         });
       })();
 

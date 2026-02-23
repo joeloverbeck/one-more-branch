@@ -1,6 +1,7 @@
 import type { CanonFact } from '../models/state/canon.js';
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
+import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import type { ProtagonistAffect } from '../models/protagonist-affect.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type {
@@ -35,6 +36,7 @@ export interface OpeningContext {
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
+  selectedSceneDirection?: SelectedSceneDirection;
 }
 
 export interface ContinuationContext {
@@ -81,6 +83,7 @@ export interface ContinuationContext {
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
+  selectedSceneDirection?: SelectedSceneDirection;
 }
 
 export interface OpeningPagePlanContext extends OpeningContext {
