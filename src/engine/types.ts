@@ -3,6 +3,7 @@ import type { ConceptSpec, ConceptVerification } from '../models/concept-generat
 import type { StorySpine } from '../models/story-spine.js';
 import type { StoryKernel } from '../models/story-kernel.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
+import type { SelectedSceneDirection } from '../models/scene-direction.js';
 export { GENERATION_STAGES } from './generated-generation-stages.js';
 import { GENERATION_STAGES } from './generated-generation-stages.js';
 
@@ -67,6 +68,7 @@ export interface MakeChoiceOptions {
   readonly choiceIndex: number;
   readonly apiKey?: string;
   readonly protagonistGuidance?: ProtagonistGuidance;
+  readonly selectedSceneDirection?: SelectedSceneDirection;
   readonly onGenerationStage?: GenerationStageCallback;
 }
 

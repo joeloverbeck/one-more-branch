@@ -276,3 +276,22 @@ export { isSavedConcept, isGeneratedConceptBatch } from './saved-concept';
 
 export type { SavedKernel, GeneratedKernelBatch } from './saved-kernel';
 export { isSavedKernel, isGeneratedKernelBatch } from './saved-kernel';
+
+export type {
+  ScenePurpose,
+  ValuePolarityShift,
+  PacingMode,
+} from './scene-direction-taxonomy';
+export {
+  SCENE_PURPOSE_VALUES,
+  VALUE_POLARITY_SHIFT_VALUES,
+  PACING_MODE_VALUES,
+  isScenePurpose,
+  isValuePolarityShift,
+  isPacingMode,
+  SCENE_PURPOSE_LABELS,
+  VALUE_POLARITY_SHIFT_LABELS,
+  PACING_MODE_LABELS,
+} from './scene-direction-taxonomy';
+
+export type { SceneDirectionOption, SelectedSceneDirection } from './scene-direction';

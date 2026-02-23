@@ -31,7 +31,12 @@ describe('choice rendering', () => {
   });
 
   function setupAndClick(responseChoices: Array<Record<string, unknown>>): Promise<void> {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     fetchMock

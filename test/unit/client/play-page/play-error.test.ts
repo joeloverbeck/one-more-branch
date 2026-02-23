@@ -62,7 +62,13 @@ describe('showPlayError and clearPlayError', () => {
   });
 
   it('creates error block dynamically when missing', async () => {
-    document.body.innerHTML = buildPlayPageHtml({ hasCustomChoiceInput: false });
+    document.body.innerHTML = buildPlayPageHtml({
+      hasCustomChoiceInput: false,
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     // No #play-error block in the DOM initially (no custom choice input)
@@ -131,7 +137,12 @@ describe('showPlayError and clearPlayError', () => {
   });
 
   it('clears error before choice click', async () => {
-    document.body.innerHTML = buildPlayPageHtml();
+    document.body.innerHTML = buildPlayPageHtml({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
     loadAppAndInit();
 
     // First: trigger a custom choice error

@@ -183,9 +183,9 @@ describe('public client script', () => {
     expect(script).toContain('function getProtagonistGuidanceValues()');
     expect(script).toContain('const protagonistGuidance = {};');
     expect(script).toContain('body.protagonistGuidance = protagonistGuidance;');
-    expect(script).toContain('const guidanceForRebuild = data.wasGenerated === true');
-    expect(script).toContain("            ? { emotions: '', thoughts: '', speech: '' }");
-    expect(script).toContain('            : getProtagonistGuidanceValues();');
+    expect(script).toContain('var guidanceForRebuild = data.wasGenerated === true');
+    expect(script).toContain("          ? { emotions: '', thoughts: '', speech: '' }");
+    expect(script).toContain('          : getProtagonistGuidanceValues();');
     expect(script).toContain(
       'rebuildChoicesSection('
     );

@@ -43,6 +43,7 @@
 
     const hasChoicesUi = choicesSection instanceof HTMLElement && choices instanceof HTMLElement;
     const loadingProgress = createLoadingProgressController(loading);
+    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
 
     function ensureApiKey() {
       return new Promise((resolve, reject) => {
@@ -180,6 +181,204 @@
       bindCustomChoiceEvents();
     }
 
+    async function proceedWithChoice(apiKey, choiceIndex, protagonistGuidance, selectedDirection) {
+      loading.style.display = 'flex';
+      var body = {
+        pageId: currentPageId,
+        choiceIndex: choiceIndex,
+        progressId: createProgressId(),
+      };
+      if (protagonistGuidance && Object.keys(protagonistGuidance).length > 0) {
+        body.protagonistGuidance = protagonistGuidance;
+      }
+      if (selectedDirection) {
+        body.selectedSceneDirection = selectedDirection;
+      }
+      if (apiKey) {
+        body.apiKey = apiKey;
+      }
+      loadingProgress.start(body.progressId);
+
+      try {
+        var response = await fetch('/play/' + storyId + '/choice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        var data = await response.json();
+
+        if (!response.ok) {
+          if (data.code) {
+            console.error('Error code:', data.code, '| Retryable:', data.retryable);
+          }
+          if (data.debug) {
+            console.error('Debug info:', data.debug);
+          }
+          throw new Error(data.error || 'Failed to process choice');
+        }
+
+        if (!data.page) {
+          throw new Error('Invalid response from server');
+        }
+
+        handleChoiceSuccess(data);
+      } catch (error) {
+        console.error('Error:', error);
+        if (choicesSection) {
+          showPlayError(
+            error instanceof Error ? error.message : 'Something went wrong. Please try again.',
+            choicesSection
+          );
+        }
+        setChoicesDisabled(false);
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+      }
+    }
+
+    function handleChoiceSuccess(data) {
+      insightsController.update(data.page.analystResult, {
+        actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
+        sceneSummary: data.page.sceneSummary || null,
+        resolvedThreadMeta: data.page.resolvedThreadMeta || {},
+        resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
+      });
+      recapController.update(data.recapSummaries || []);
+
+      currentPageId = data.page.id;
+      container.dataset.pageId = String(currentPageId);
+
+      history.pushState({}, '', '/play/' + storyId + '?page=' + currentPageId);
+
+      narrative.innerHTML = '<div class="narrative-text">' + escapeHtmlWithBreaks(data.page.narrativeText || '') + '</div>';
+      var leftSidebarContainer = ensureLeftSidebarContainer();
+      renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
+      renderNpcRelationshipsPanel(data.page.npcRelationships, leftSidebarContainer);
+      renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
+      renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
+      cleanupEmptyLeftSidebar();
+      loreController.update(data.globalCanon || [], data.globalCharacterCanon || {});
+      var sidebarContainer = ensureSidebarContainer();
+      renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
+      renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
+      renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
+      renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
+      cleanupEmptySidebar();
+      renderStateChanges(data.page.stateChanges, narrative);
+      renderMilestoneBanner(data.milestoneInfo, narrative);
+      renderDeviationBanner(data.deviationInfo, choicesSection);
+
+      var pageIndicator = document.querySelector('.page-indicator');
+      if (pageIndicator) {
+        pageIndicator.textContent = 'Page ' + currentPageId;
+      }
+
+      // Update act indicator based on response
+      var existingWrapper = document.getElementById('act-indicator-wrapper');
+      if (data.actDisplayInfo) {
+        var newActNumber = data.actDisplayInfo.actNumber;
+        var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
+
+        var detailsHtml = '';
+        if (data.actDisplayInfo.actObjective || data.actDisplayInfo.actStakes || data.actDisplayInfo.beatObjective) {
+          detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
+          if (data.actDisplayInfo.actObjective) {
+            detailsHtml += '<div class="act-structure-details__item">'
+              + '<span class="act-structure-details__label">Act Objective</span>'
+              + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actObjective) + '</span>'
+              + '</div>';
+          }
+          if (data.actDisplayInfo.actStakes) {
+            detailsHtml += '<div class="act-structure-details__item">'
+              + '<span class="act-structure-details__label">Stakes</span>'
+              + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actStakes) + '</span>'
+              + '</div>';
+          }
+          if (data.actDisplayInfo.beatObjective) {
+            detailsHtml += '<div class="act-structure-details__item">'
+              + '<span class="act-structure-details__label">Beat Objective</span>'
+              + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.beatObjective) + '</span>'
+              + '</div>';
+          }
+          detailsHtml += '</div>';
+        }
+
+        var wrapperHtml = '<span class="act-indicator act-indicator--clickable" id="act-indicator"'
+          + ' role="button" tabindex="0" aria-expanded="false"'
+          + ' aria-controls="act-structure-details">'
+          + '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>'
+          + escapeHtml(data.actDisplayInfo.displayString)
+          + '</span>';
+
+        if (existingWrapper) {
+          existingWrapper.innerHTML = wrapperHtml;
+          existingWrapper.dataset.actNumber = String(newActNumber);
+        } else {
+          var storyTitleSection = document.querySelector('.story-title-section');
+          if (storyTitleSection) {
+            var newWrapper = document.createElement('div');
+            newWrapper.className = 'act-indicator-wrapper';
+            newWrapper.id = 'act-indicator-wrapper';
+            newWrapper.dataset.actNumber = String(newActNumber);
+            newWrapper.innerHTML = wrapperHtml;
+            storyTitleSection.appendChild(newWrapper);
+          }
+        }
+
+        // Place details panel after .story-header (outside the flex row)
+        var existingDetails = document.getElementById('act-structure-details');
+        if (existingDetails) {
+          existingDetails.remove();
+        }
+        if (detailsHtml) {
+          var storyHeader = document.getElementById('story-header');
+          if (storyHeader) {
+            storyHeader.insertAdjacentHTML('afterend', detailsHtml);
+          }
+        }
+
+        initActIndicator();
+        if (actChanged) {
+          expandActStructureDetails();
+        }
+        previousActNumber = newActNumber;
+      } else if (existingWrapper) {
+        existingWrapper.remove();
+        var orphanedDetails = document.getElementById('act-structure-details');
+        if (orphanedDetails) {
+          orphanedDetails.remove();
+        }
+        previousActNumber = null;
+      }
+
+      if (data.page.isEnding) {
+        choicesSection.innerHTML =
+          '<div class="ending-banner">' +
+          '<h3>THE END</h3>' +
+          '<div class="ending-actions">' +
+          '<a href="/play/' + storyId + '/restart" class="btn btn-primary">Play Again</a>' +
+          '<a href="/" class="btn btn-secondary">Back to Stories</a>' +
+          '</div></div>';
+      } else {
+        var guidanceForRebuild = data.wasGenerated === true
+          ? { emotions: '', thoughts: '', speech: '' }
+          : getProtagonistGuidanceValues();
+        rebuildChoicesSection(
+          data.page.choices,
+          guidanceForRebuild,
+          choices,
+          choicesSection,
+          bindCustomChoiceEvents
+        );
+      }
+
+      var scrollTarget = document.getElementById('story-header') || narrative;
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
     if (hasChoicesUi) {
       choices.addEventListener('click', async (event) => {
         const clickedElement = event.target;
@@ -202,14 +401,7 @@
           const isExplored = button.dataset.explored === 'true';
           const apiKey = isExplored ? getApiKey() : await ensureApiKey();
 
-        setChoicesDisabled(true);
-        loading.style.display = 'flex';
-
-        const body = {
-          pageId: currentPageId,
-          choiceIndex,
-          progressId: createProgressId(),
-        };
+        // Capture guidance values before any DOM swap
         const guidanceValues = getProtagonistGuidanceValues();
         const protagonistGuidance = {};
         if (guidanceValues.emotions.trim().length > 0) {
@@ -221,6 +413,70 @@
         if (guidanceValues.speech.trim().length > 0) {
           protagonistGuidance.suggestedSpeech = guidanceValues.speech.trim();
         }
+
+        // For unexplored choices, intercept with scene ideation
+        if (!isExplored) {
+          setChoicesDisabled(true);
+          loading.style.display = 'flex';
+          try {
+            var ideationOptions = await ideationCtrl.fetchSceneOptions(
+              apiKey, 'continuation', currentPageId, choiceIndex
+            );
+            loading.style.display = 'none';
+
+            await new Promise(function (resolveIdeation) {
+              ideationCtrl.renderIdeationUI(
+                choicesSection,
+                ideationOptions,
+                function onConfirm(selectedDirection) {
+                  resolveIdeation(selectedDirection);
+                },
+                function onRegenerate() {
+                  loading.style.display = 'flex';
+                  ideationCtrl.fetchSceneOptions(
+                    apiKey, 'continuation', currentPageId, choiceIndex
+                  ).then(function (newOptions) {
+                    loading.style.display = 'none';
+                    ideationCtrl.renderIdeationUI(
+                      choicesSection, newOptions,
+                      function onConfirm2(dir) { resolveIdeation(dir); },
+                      function () { /* nested regenerate handled by UI re-render */ }
+                    );
+                  }).catch(function (err) {
+                    loading.style.display = 'none';
+                    showPlayError(
+                      err instanceof Error ? err.message : 'Regeneration failed',
+                      choicesSection
+                    );
+                  });
+                }
+              );
+            }).then(function (selectedDirection) {
+              proceedWithChoice(
+                apiKey, choiceIndex, protagonistGuidance, selectedDirection
+              );
+            });
+            return;
+          } catch (ideationErr) {
+            loading.style.display = 'none';
+            setChoicesDisabled(false);
+            showPlayError(
+              ideationErr instanceof Error ? ideationErr.message : 'Scene ideation failed',
+              choicesSection
+            );
+            return;
+          }
+        }
+
+        // Explored choice - skip ideation, go directly
+        setChoicesDisabled(true);
+        loading.style.display = 'flex';
+
+        const body = {
+          pageId: currentPageId,
+          choiceIndex,
+          progressId: createProgressId(),
+        };
         if (Object.keys(protagonistGuidance).length > 0) {
           body.protagonistGuidance = protagonistGuidance;
         }
@@ -253,149 +509,8 @@
         if (!data.page) {
           throw new Error('Invalid response from server');
         }
-        insightsController.update(data.page.analystResult, {
-          actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
-          sceneSummary: data.page.sceneSummary || null,
-          resolvedThreadMeta: data.page.resolvedThreadMeta || {},
-          resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
-        });
-        recapController.update(data.recapSummaries || []);
 
-        currentPageId = data.page.id;
-        container.dataset.pageId = String(currentPageId);
-
-        history.pushState({}, '', `/play/${storyId}?page=${currentPageId}`);
-
-        narrative.innerHTML = `<div class="narrative-text">${escapeHtmlWithBreaks(data.page.narrativeText || '')}</div>`;
-        var leftSidebarContainer = ensureLeftSidebarContainer();
-        renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
-        renderNpcRelationshipsPanel(data.page.npcRelationships, leftSidebarContainer);
-        renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
-        renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
-        cleanupEmptyLeftSidebar();
-        loreController.update(data.globalCanon || [], data.globalCharacterCanon || {});
-        var sidebarContainer = ensureSidebarContainer();
-        renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);
-        renderActiveThreatsPanel(data.page.activeThreats, data.page.threatsOverflowSummary, sidebarContainer);
-        renderActiveConstraintsPanel(data.page.activeConstraints, data.page.constraintsOverflowSummary, sidebarContainer);
-        renderTrackedPromisesPanel(data.page.trackedPromises, data.page.trackedPromisesOverflowSummary, sidebarContainer);
-        cleanupEmptySidebar();
-        renderStateChanges(data.page.stateChanges, narrative);
-        renderMilestoneBanner(data.milestoneInfo, narrative);
-        renderDeviationBanner(data.deviationInfo, choicesSection);
-
-        const pageIndicator = document.querySelector('.page-indicator');
-        if (pageIndicator) {
-          pageIndicator.textContent = `Page ${currentPageId}`;
-        }
-
-        // Update act indicator based on response
-        var existingWrapper = document.getElementById('act-indicator-wrapper');
-        if (data.actDisplayInfo) {
-          var newActNumber = data.actDisplayInfo.actNumber;
-          var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
-
-          var detailsHtml = '';
-          if (data.actDisplayInfo.actObjective || data.actDisplayInfo.actStakes || data.actDisplayInfo.beatObjective) {
-            detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
-            if (data.actDisplayInfo.actObjective) {
-              detailsHtml += '<div class="act-structure-details__item">'
-                + '<span class="act-structure-details__label">Act Objective</span>'
-                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actObjective) + '</span>'
-                + '</div>';
-            }
-            if (data.actDisplayInfo.actStakes) {
-              detailsHtml += '<div class="act-structure-details__item">'
-                + '<span class="act-structure-details__label">Stakes</span>'
-                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.actStakes) + '</span>'
-                + '</div>';
-            }
-            if (data.actDisplayInfo.beatObjective) {
-              detailsHtml += '<div class="act-structure-details__item">'
-                + '<span class="act-structure-details__label">Beat Objective</span>'
-                + '<span class="act-structure-details__text">' + escapeHtml(data.actDisplayInfo.beatObjective) + '</span>'
-                + '</div>';
-            }
-            detailsHtml += '</div>';
-          }
-
-          var wrapperHtml = '<span class="act-indicator act-indicator--clickable" id="act-indicator"'
-            + ' role="button" tabindex="0" aria-expanded="false"'
-            + ' aria-controls="act-structure-details">'
-            + '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>'
-            + escapeHtml(data.actDisplayInfo.displayString)
-            + '</span>';
-
-          if (existingWrapper) {
-            existingWrapper.innerHTML = wrapperHtml;
-            existingWrapper.dataset.actNumber = String(newActNumber);
-          } else {
-            var storyTitleSection = document.querySelector('.story-title-section');
-            if (storyTitleSection) {
-              var newWrapper = document.createElement('div');
-              newWrapper.className = 'act-indicator-wrapper';
-              newWrapper.id = 'act-indicator-wrapper';
-              newWrapper.dataset.actNumber = String(newActNumber);
-              newWrapper.innerHTML = wrapperHtml;
-              storyTitleSection.appendChild(newWrapper);
-            }
-          }
-
-          // Place details panel after .story-header (outside the flex row)
-          var existingDetails = document.getElementById('act-structure-details');
-          if (existingDetails) {
-            existingDetails.remove();
-          }
-          if (detailsHtml) {
-            var storyHeader = document.getElementById('story-header');
-            if (storyHeader) {
-              storyHeader.insertAdjacentHTML('afterend', detailsHtml);
-            }
-          }
-
-          initActIndicator();
-          if (actChanged) {
-            expandActStructureDetails();
-          }
-          previousActNumber = newActNumber;
-        } else if (existingWrapper) {
-          existingWrapper.remove();
-          var orphanedDetails = document.getElementById('act-structure-details');
-          if (orphanedDetails) {
-            orphanedDetails.remove();
-          }
-          previousActNumber = null;
-        }
-
-        if (data.page.isEnding) {
-          choicesSection.innerHTML = `
-            <div class="ending-banner">
-              <h3>THE END</h3>
-              <div class="ending-actions">
-                <a href="/play/${storyId}/restart" class="btn btn-primary">Play Again</a>
-                <a href="/" class="btn btn-secondary">Back to Stories</a>
-              </div>
-            </div>
-          `;
-        } else {
-          const guidanceForRebuild = data.wasGenerated === true
-            ? { emotions: '', thoughts: '', speech: '' }
-            : getProtagonistGuidanceValues();
-          rebuildChoicesSection(
-            data.page.choices,
-            guidanceForRebuild,
-            choices,
-            choicesSection,
-            bindCustomChoiceEvents
-          );
-        }
-
-        var storyHeader = document.getElementById('story-header');
-        if (storyHeader) {
-          storyHeader.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          narrative.scrollIntoView({ behavior: 'smooth' });
-        }
+        handleChoiceSuccess(data);
         } catch (error) {
           console.error('Error:', error);
           // Log additional debug info if available

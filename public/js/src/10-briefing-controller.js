@@ -17,6 +17,8 @@
     }
 
     var loadingProgress = createLoadingProgressController(loading);
+    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
+    var ideationContainer = document.getElementById('scene-ideation-container');
 
     function setError(message) {
       if (!errorBlock) {
@@ -90,7 +92,7 @@
       });
     }
 
-    async function beginAdventure(apiKey) {
+    async function beginAdventure(apiKey, selectedDirection) {
       beginBtn.disabled = true;
       clearError();
       loading.style.display = 'flex';
@@ -98,13 +100,18 @@
       loadingProgress.start(progressId);
 
       try {
+        var body = {
+          apiKey: apiKey,
+          progressId: progressId,
+        };
+        if (selectedDirection) {
+          body.selectedSceneDirection = selectedDirection;
+        }
+
         var response = await fetch('/play/' + storyId + '/begin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+          body: JSON.stringify(body),
         });
         var data = await response.json();
 
@@ -122,10 +129,37 @@
       }
     }
 
+    async function startIdeation(apiKey) {
+      clearError();
+      beginBtn.disabled = true;
+      loading.style.display = 'flex';
+
+      try {
+        var options = await ideationCtrl.fetchSceneOptions(apiKey, 'opening');
+        loading.style.display = 'none';
+
+        var target = ideationContainer || briefingContainer;
+        ideationCtrl.renderIdeationUI(
+          target,
+          options,
+          function onConfirm(selectedDirection) {
+            beginAdventure(apiKey, selectedDirection);
+          },
+          function onRegenerate() {
+            startIdeation(apiKey);
+          }
+        );
+      } catch (error) {
+        loading.style.display = 'none';
+        setError(error instanceof Error ? error.message : 'Scene ideation failed');
+        beginBtn.disabled = false;
+      }
+    }
+
     beginBtn.addEventListener('click', async function() {
       try {
         var apiKey = await ensureApiKey();
-        await beginAdventure(apiKey);
+        await startIdeation(apiKey);
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to begin adventure');
       }

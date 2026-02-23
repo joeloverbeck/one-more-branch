@@ -1,4 +1,5 @@
 import { decomposeEntities, generateStoryStructure } from '../llm';
+import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import { buildInitialNpcRelationships } from '../models/state/npc-relationship';
 import {
   createStory,
@@ -168,7 +169,8 @@ export async function prepareStory(options: StartStoryOptions): Promise<PrepareS
 export async function generateOpeningPage(
   storyId: StoryId,
   apiKey: string,
-  onGenerationStage?: StartStoryOptions['onGenerationStage']
+  onGenerationStage?: StartStoryOptions['onGenerationStage'],
+  selectedSceneDirection?: SelectedSceneDirection
 ): Promise<StartStoryResult> {
   if (apiKey.trim().length === 0) {
     throw new EngineError('API key is required', 'VALIDATION_FAILED');
@@ -185,7 +187,9 @@ export async function generateOpeningPage(
     return { story, page: existingPage };
   }
 
-  const { page, updatedStory } = await generatePage('opening', story, apiKey, undefined, onGenerationStage);
+  const { page, updatedStory } = await generatePage(
+    'opening', story, apiKey, undefined, onGenerationStage, selectedSceneDirection
+  );
 
   await storage.savePage(storyId, page);
   if (updatedStory !== story) {
