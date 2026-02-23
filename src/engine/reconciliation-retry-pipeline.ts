@@ -120,7 +120,7 @@ export async function generateWithReconciliationRetry({
     }
     const plannerDuration = Date.now() - plannerStart;
     plannerDurationMs += plannerDuration;
-    emitGenerationStage(onGenerationStage, 'PLANNING_PAGE', 'completed', attempt);
+    emitGenerationStage(onGenerationStage, 'PLANNING_PAGE', 'completed', attempt, plannerDuration);
     logger.info('Generation stage completed', {
       ...baseLogContext,
       attempt,
@@ -170,7 +170,13 @@ export async function generateWithReconciliationRetry({
     }
     const accountantDuration = Date.now() - accountantStart;
     accountantDurationMs += accountantDuration;
-    emitGenerationStage(onGenerationStage, 'ACCOUNTING_STATE', 'completed', attempt);
+    emitGenerationStage(
+      onGenerationStage,
+      'ACCOUNTING_STATE',
+      'completed',
+      attempt,
+      accountantDuration
+    );
     logger.info('Generation stage completed', {
       ...baseLogContext,
       attempt,
@@ -216,7 +222,7 @@ export async function generateWithReconciliationRetry({
     }
     const writerDuration = Date.now() - writerStart;
     writerDurationMs += writerDuration;
-    emitGenerationStage(onGenerationStage, writerStage, 'completed', attempt);
+    emitGenerationStage(onGenerationStage, writerStage, 'completed', attempt, writerDuration);
     logger.info('Generation stage completed', {
       ...baseLogContext,
       attempt,

@@ -352,6 +352,7 @@ describe('evolutionRoutes', () => {
       'evolve-progress-1',
       'EVOLVING_CONCEPTS',
       1,
+      undefined,
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('evolve-progress-1');
     expect(status).not.toHaveBeenCalled();

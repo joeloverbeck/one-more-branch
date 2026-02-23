@@ -455,14 +455,22 @@ describe('page-service', () => {
       expect(writerRequestIdAttemptOne).toBe(writerRequestIdAttemptTwo);
       expect(metrics).toEqual(
         expect.objectContaining({
-          plannerDurationMs: expect.any(Number),
-          writerDurationMs: expect.any(Number),
-          reconcilerDurationMs: expect.any(Number),
-          plannerValidationIssueCount: 0,
-          writerValidationIssueCount: 0,
-          reconcilerIssueCount: 1,
-          reconcilerRetried: true,
-          finalStatus: 'success',
+          contextAssemblyDurationMs: expect.any(Number),
+          coreGeneration: expect.objectContaining({
+            plannerDurationMs: expect.any(Number),
+            writerDurationMs: expect.any(Number),
+            reconcilerDurationMs: expect.any(Number),
+            plannerValidationIssueCount: 0,
+            writerValidationIssueCount: 0,
+            reconcilerIssueCount: 1,
+            reconcilerRetried: true,
+            finalStatus: 'success',
+          }),
+          postGeneration: expect.objectContaining({
+            pageBuildDurationMs: expect.any(Number),
+            degradedStages: expect.any(Array),
+          }),
+          totalDurationMs: expect.any(Number),
         })
       );
       expect(mockedLogger.info.mock.calls).toEqual(
@@ -523,23 +531,23 @@ describe('page-service', () => {
       );
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
-        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 2 }],
-        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2 }],
+        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2, durationMs: expect.any(Number) }],
         [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 2 }],
-        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 2 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 2, durationMs: expect.any(Number) }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2 }],
+        [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2, durationMs: expect.any(Number) }],
       ]);
     });
 
@@ -1379,16 +1387,16 @@ describe('page-service', () => {
 
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
-        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1 }],
+        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'ANALYZING_SCENE', status: 'started', attempt: 1 }],
-        [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1 }],
+        [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
       ]);
       expect(mockedLogger.info).toHaveBeenCalledWith(
         'Generation stage started',
@@ -1560,9 +1568,11 @@ describe('page-service', () => {
       expect(updatedStory.globalCanon).toContainEqual({ text: 'Clocktower guards rotate every ten minutes', factType: 'LAW' });
       expect(metrics).toEqual(
         expect.objectContaining({
-          reconcilerRetried: false,
-          reconcilerIssueCount: 0,
-          finalStatus: 'success',
+          coreGeneration: expect.objectContaining({
+            reconcilerRetried: false,
+            reconcilerIssueCount: 0,
+            finalStatus: 'success',
+          }),
         })
       );
     });
@@ -2598,7 +2608,7 @@ describe('page-service', () => {
       expect(onGenerationStage.mock.calls).toEqual(
         expect.arrayContaining([
           [{ stage: 'RESTRUCTURING_STORY', status: 'started', attempt: 1 }],
-          [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1 }],
+          [{ stage: 'RESTRUCTURING_STORY', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         ])
       );
       expect(mockedLogger.info).toHaveBeenCalledWith(
@@ -3839,7 +3849,9 @@ describe('page-service', () => {
       expect(result.wasGenerated).toBe(true);
       expect(result.metrics).toEqual(
         expect.objectContaining({
-          finalStatus: 'success',
+          coreGeneration: expect.objectContaining({
+            finalStatus: 'success',
+          }),
         })
       );
       expect(result.page.id).toBe(2);

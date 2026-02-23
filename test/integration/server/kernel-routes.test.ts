@@ -238,6 +238,7 @@ describe('Kernel Route Integration', () => {
       'kernel-progress-1',
       'EVALUATING_KERNELS',
       1,
+      undefined,
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('kernel-progress-1');
     expect(mockedSaveKernelGenerationBatch).toHaveBeenCalledWith(

@@ -1167,7 +1167,8 @@ describe('playRoutes', () => {
       expect(progressStageCompletedSpy).toHaveBeenCalledWith(
         'choice-success-1',
         'WRITING_CONTINUING_PAGE',
-        1
+        1,
+        undefined
       );
       expect(progressCompleteSpy).toHaveBeenCalledWith('choice-success-1');
       expect(progressFailSpy).not.toHaveBeenCalled();

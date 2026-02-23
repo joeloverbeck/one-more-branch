@@ -198,6 +198,7 @@ describe('Concept Route Integration', () => {
       'route-progress-1',
       'VERIFYING_CONCEPTS',
       1,
+      undefined,
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-1');
     expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);

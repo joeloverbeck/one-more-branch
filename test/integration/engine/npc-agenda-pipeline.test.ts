@@ -71,18 +71,20 @@ describe('resolveNpcAgendas', () => {
   it('returns null when story has no NPCs', async () => {
     const context = createBaseContext({ decomposedCharacters: [] });
 
-    const result = await resolveNpcAgendas(context);
+    const outcome = await resolveNpcAgendas(context);
 
-    expect(result).toBeNull();
+    expect(outcome.result).toBeNull();
+    expect(outcome.durationMs).toBeNull();
     expect(mockedGenerateAgendaResolver).not.toHaveBeenCalled();
   });
 
   it('returns null when NPCs array is empty', async () => {
     const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist')] });
 
-    const result = await resolveNpcAgendas(context);
+    const outcome = await resolveNpcAgendas(context);
 
-    expect(result).toBeNull();
+    expect(outcome.result).toBeNull();
+    expect(outcome.durationMs).toBeNull();
     expect(mockedGenerateAgendaResolver).not.toHaveBeenCalled();
   });
 
@@ -90,9 +92,11 @@ describe('resolveNpcAgendas', () => {
     mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
     const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters] });
 
-    const result = await resolveNpcAgendas(context);
+    const outcome = await resolveNpcAgendas(context);
 
-    expect(result).toEqual(mockAgendaResult);
+    expect(outcome.result).toEqual(mockAgendaResult);
+    expect(outcome.durationMs).toEqual(expect.any(Number));
+    expect(outcome.degradation).toBeUndefined();
     expect(mockedGenerateAgendaResolver).toHaveBeenCalledTimes(1);
     expect(mockedGenerateAgendaResolver).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -104,13 +108,22 @@ describe('resolveNpcAgendas', () => {
     );
   });
 
-  it('returns null and logs warning on failure', async () => {
+  it('returns null result with degradation on failure', async () => {
     mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
     const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters] });
 
-    const result = await resolveNpcAgendas(context);
+    const outcome = await resolveNpcAgendas(context);
 
-    expect(result).toBeNull();
+    expect(outcome.result).toBeNull();
+    expect(outcome.durationMs).toEqual(expect.any(Number));
+    expect(outcome.degradation).toEqual(
+      expect.objectContaining({
+        stage: 'agendaResolver',
+        errorCode: 'LLM_FAILURE',
+        message: 'LLM timeout',
+      })
+    );
+    expect(outcome.degradation?.durationMs).toEqual(expect.any(Number));
   });
 
   it('emits RESOLVING_AGENDAS started and completed stages on success', async () => {
@@ -126,11 +139,17 @@ describe('resolveNpcAgendas', () => {
       status: 'started',
       attempt: 1,
     });
-    expect(stageCallback).toHaveBeenNthCalledWith(2, {
-      stage: 'RESOLVING_AGENDAS',
-      status: 'completed',
-      attempt: 1,
-    });
+    expect(stageCallback).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        stage: 'RESOLVING_AGENDAS',
+        status: 'completed',
+        attempt: 1,
+      })
+    );
+    const completedCalls = (stageCallback as jest.Mock).mock.calls as unknown[][];
+    const completedEvent = completedCalls[1]?.[0] as { durationMs?: number } | undefined;
+    expect(completedEvent?.durationMs).toEqual(expect.any(Number));
   });
 
   it('forwards deviationContext to generateAgendaResolver', async () => {

@@ -33,7 +33,12 @@ export function createRouteGenerationProgress(
       if (event.status === 'started') {
         generationProgressService.markStageStarted(progressId, event.stage, event.attempt);
       } else {
-        generationProgressService.markStageCompleted(progressId, event.stage, event.attempt);
+        generationProgressService.markStageCompleted(
+          progressId,
+          event.stage,
+          event.attempt,
+          event.durationMs
+        );
       }
     },
     complete: (): void => {

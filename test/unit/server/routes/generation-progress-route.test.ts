@@ -45,6 +45,7 @@ describe('generation-progress-route utility', () => {
       stage: 'EVALUATING_KERNELS',
       status: 'completed',
       attempt: 1,
+      durationMs: 500,
     });
     progress.complete();
     progress.fail('public error');
@@ -52,7 +53,7 @@ describe('generation-progress-route utility', () => {
     expect(progress.progressId).toBe('route-progress-1');
     expect(startSpy).toHaveBeenCalledWith('route-progress-1', 'kernel-generation');
     expect(markStartedSpy).toHaveBeenCalledWith('route-progress-1', 'GENERATING_KERNELS', 1);
-    expect(markCompletedSpy).toHaveBeenCalledWith('route-progress-1', 'EVALUATING_KERNELS', 1);
+    expect(markCompletedSpy).toHaveBeenCalledWith('route-progress-1', 'EVALUATING_KERNELS', 1, 500);
     expect(completeSpy).toHaveBeenCalledWith('route-progress-1');
     expect(failSpy).toHaveBeenCalledWith('route-progress-1', 'public error');
   });

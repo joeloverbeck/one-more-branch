@@ -270,6 +270,7 @@ playRoutes.post(
         milestoneInfo,
         wasGenerated: result.wasGenerated,
         deviationInfo: result.deviationInfo,
+        ...(result.wasGenerated && result.metrics ? { metrics: result.metrics } : {}),
       });
     } catch (error) {
       const errPayload = buildChoiceErrorResponse(error, (msg) => progress.fail(msg));

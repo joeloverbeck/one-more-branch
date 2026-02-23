@@ -1,4 +1,4 @@
-import type { GenerationPipelineMetrics } from '../llm';
+import type { FullPipelineMetrics } from '../llm';
 import type { Page, Story } from '../models';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import { storage } from '../persistence';
@@ -23,10 +23,13 @@ export async function generatePage(
 ): Promise<{
   page: Page;
   updatedStory: Story;
-  metrics: GenerationPipelineMetrics;
+  metrics: FullPipelineMetrics;
   deviationInfo?: DeviationInfo;
 }> {
+  const totalStart = Date.now();
+
   // --- Phase 1: Assemble generation context ---
+  const contextAssemblyStart = Date.now();
   const ctx = await assembleGenerationContext(
     mode,
     story,
@@ -34,12 +37,13 @@ export async function generatePage(
     continuationParams,
     onGenerationStage
   );
+  const contextAssemblyDurationMs = Date.now() - contextAssemblyStart;
 
   // --- Phase 2: Run reconciliation retry loop (planner -> writer -> reconciler) ---
   const {
     writerResult,
     reconciliation,
-    metrics,
+    metrics: coreGeneration,
   } = await generateWithReconciliationRetry({
     mode,
     storyId: story.id,
@@ -53,7 +57,7 @@ export async function generatePage(
   });
 
   // --- Phase 3: Post-generation processing ---
-  const { page, updatedStory, deviationInfo } = await processPostGeneration({
+  const { page, updatedStory, deviationInfo, postMetrics } = await processPostGeneration({
     mode,
     story,
     apiKey,
@@ -69,6 +73,15 @@ export async function generatePage(
     onGenerationStage,
   });
 
+  const totalDurationMs = Date.now() - totalStart;
+
+  const metrics: FullPipelineMetrics = {
+    contextAssemblyDurationMs,
+    coreGeneration,
+    postGeneration: postMetrics,
+    totalDurationMs,
+  };
+
   return { page, updatedStory, metrics, deviationInfo };
 }
 
@@ -79,7 +92,7 @@ export async function generateFirstPage(
   story: Story,
   apiKey: string,
   onGenerationStage?: GenerationStageCallback
-): Promise<{ page: Page; updatedStory: Story; metrics: GenerationPipelineMetrics }> {
+): Promise<{ page: Page; updatedStory: Story; metrics: FullPipelineMetrics }> {
   return generatePage('opening', story, apiKey, undefined, onGenerationStage);
 }
 
@@ -95,7 +108,7 @@ export async function generateNextPage(
 ): Promise<{
   page: Page;
   updatedStory: Story;
-  metrics: GenerationPipelineMetrics;
+  metrics: FullPipelineMetrics;
   deviationInfo?: DeviationInfo;
 }> {
   const choice = parentPage.choices[choiceIndex];
@@ -123,7 +136,7 @@ export async function getOrGeneratePage(
   page: Page;
   story: Story;
   wasGenerated: boolean;
-  metrics?: GenerationPipelineMetrics;
+  metrics?: FullPipelineMetrics;
   deviationInfo?: DeviationInfo;
 }> {
   const choice = parentPage.choices[choiceIndex];

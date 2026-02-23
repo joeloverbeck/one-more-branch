@@ -19,6 +19,7 @@ describe('generation-progress service', () => {
       completedStages: [],
       updatedAt: 1_000,
       flowType: null,
+      stageDurations: {},
     });
   });
 
@@ -45,6 +46,7 @@ describe('generation-progress service', () => {
       completedStages: ['PLANNING_PAGE'],
       updatedAt: 40,
       flowType: 'new-story',
+      stageDurations: {},
     });
   });
 
@@ -74,6 +76,7 @@ describe('generation-progress service', () => {
       completedStages: ['ANALYZING_SCENE'],
       updatedAt: 90,
       flowType: 'choice',
+      stageDurations: {},
     });
   });
 

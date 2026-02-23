@@ -10,10 +10,13 @@ export type {
 export type {
   AncestorSummary,
   ContinuationGenerationResult,
+  FullPipelineMetrics,
   GenerationOptions,
   GenerationPipelineMetrics,
+  PostGenerationMetrics,
   PromptOptions,
   ReconciliationFailureReason,
+  StageDegradation,
 } from './generation-pipeline-types.js';
 export { LLMError } from './llm-client-types.js';
 export type { ChatMessage, JsonSchema } from './llm-client-types.js';
