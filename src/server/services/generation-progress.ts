@@ -20,6 +20,7 @@ export interface GenerationProgressSnapshot {
   readonly completedStages: GenerationStage[];
   readonly updatedAt: number;
   readonly flowType: GenerationFlowType | null;
+  readonly stageDurations: Readonly<Record<string, number>>;
 }
 
 interface StoredProgressRecord {
@@ -30,6 +31,7 @@ interface StoredProgressRecord {
   flowType: GenerationFlowType;
   expiresAt: number;
   publicMessage?: string;
+  stageDurations: Record<string, number>;
 }
 
 interface GenerationProgressServiceOptions {
@@ -40,7 +42,12 @@ interface GenerationProgressServiceOptions {
 export interface GenerationProgressService {
   start(progressId: string, flowType: GenerationFlowType): void;
   markStageStarted(progressId: string, stage: GenerationStage, attempt?: number): void;
-  markStageCompleted(progressId: string, stage: GenerationStage, attempt?: number): void;
+  markStageCompleted(
+    progressId: string,
+    stage: GenerationStage,
+    attempt?: number,
+    durationMs?: number
+  ): void;
   complete(progressId: string): void;
   fail(progressId: string, publicMessage?: string): void;
   get(progressId: string): GenerationProgressSnapshot;
@@ -68,6 +75,7 @@ class InMemoryGenerationProgressService implements GenerationProgressService {
       updatedAt,
       flowType,
       expiresAt: updatedAt + this.ttlMs,
+      stageDurations: {},
     });
   }
 
@@ -82,7 +90,12 @@ class InMemoryGenerationProgressService implements GenerationProgressService {
     this.touch(entry);
   }
 
-  markStageCompleted(progressId: string, stage: GenerationStage, _attempt?: number): void {
+  markStageCompleted(
+    progressId: string,
+    stage: GenerationStage,
+    _attempt?: number,
+    durationMs?: number
+  ): void {
     this.evictExpired();
     const entry = this.entries.get(progressId);
     if (entry?.status !== 'running') {
@@ -91,6 +104,9 @@ class InMemoryGenerationProgressService implements GenerationProgressService {
 
     if (!entry.completedStages.includes(stage)) {
       entry.completedStages.push(stage);
+    }
+    if (durationMs !== undefined) {
+      entry.stageDurations[stage] = durationMs;
     }
     entry.activeStage = null;
     this.touch(entry);
@@ -131,6 +147,7 @@ class InMemoryGenerationProgressService implements GenerationProgressService {
         completedStages: [],
         updatedAt: this.now(),
         flowType: null,
+        stageDurations: {},
       };
     }
 
@@ -140,6 +157,7 @@ class InMemoryGenerationProgressService implements GenerationProgressService {
       completedStages: [...entry.completedStages],
       updatedAt: entry.updatedAt,
       flowType: entry.flowType,
+      stageDurations: { ...entry.stageDurations },
     };
   }
 

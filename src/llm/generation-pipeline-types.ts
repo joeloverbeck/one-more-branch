@@ -72,6 +72,32 @@ export interface WriterValidationContext {
   };
 }
 
+// Structured degradation record for stages that fail gracefully
+export interface StageDegradation {
+  readonly stage: string;
+  readonly errorCode: string;
+  readonly message: string;
+  readonly durationMs: number;
+}
+
+// Metrics for post-generation processing (Phase 3)
+export interface PostGenerationMetrics {
+  readonly analystDurationMs: number | null;
+  readonly spineRewriteDurationMs: number | null;
+  readonly structureRewriteDurationMs: number | null;
+  readonly agendaResolverDurationMs: number | null;
+  readonly pageBuildDurationMs: number;
+  readonly degradedStages: readonly StageDegradation[];
+}
+
+// Complete pipeline metrics (Phase 1 + Phase 2 + Phase 3)
+export interface FullPipelineMetrics {
+  readonly contextAssemblyDurationMs: number;
+  readonly coreGeneration: GenerationPipelineMetrics;
+  readonly postGeneration: PostGenerationMetrics;
+  readonly totalDurationMs: number;
+}
+
 export interface GenerationOptions {
   apiKey: string;
   model?: string;

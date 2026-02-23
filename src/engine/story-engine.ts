@@ -69,7 +69,7 @@ export class StoryEngine {
       );
     }
 
-    const { page, wasGenerated, deviationInfo } = await getOrGeneratePage(
+    const { page, wasGenerated, metrics, deviationInfo } = await getOrGeneratePage(
       story,
       currentPage,
       options.choiceIndex,
@@ -79,7 +79,7 @@ export class StoryEngine {
       options.selectedSceneDirection
     );
 
-    return { page, wasGenerated, deviationInfo };
+    return { page, wasGenerated, metrics, deviationInfo };
   }
 
   async loadStory(storyId: StoryId): Promise<Story | null> {

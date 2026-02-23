@@ -557,12 +557,14 @@ describe('page-service integration', () => {
       expect(mockedReconcileState).toHaveBeenCalledTimes(2);
       expect(metrics).toEqual(
         expect.objectContaining({
-          plannerDurationMs: expect.any(Number),
-          writerDurationMs: expect.any(Number),
-          reconcilerDurationMs: expect.any(Number),
-          finalStatus: 'success',
-          reconcilerRetried: true,
-          reconcilerIssueCount: 1,
+          coreGeneration: expect.objectContaining({
+            plannerDurationMs: expect.any(Number),
+            writerDurationMs: expect.any(Number),
+            reconcilerDurationMs: expect.any(Number),
+            finalStatus: 'success',
+            reconcilerRetried: true,
+            reconcilerIssueCount: 1,
+          }),
         })
       );
       expect(mockedLogger.info.mock.calls).toEqual(

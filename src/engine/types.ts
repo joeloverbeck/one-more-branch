@@ -1,3 +1,4 @@
+import type { FullPipelineMetrics } from '../llm/generation-pipeline-types.js';
 import { Npc, Page, PageId, Story, StoryId } from '../models';
 import type { ConceptSpec, ConceptVerification } from '../models/concept-generator.js';
 import type { StorySpine } from '../models/story-spine.js';
@@ -14,6 +15,7 @@ export interface GenerationStageEvent {
   readonly stage: GenerationStage;
   readonly status: GenerationStageStatus;
   readonly attempt: number;
+  readonly durationMs?: number;
 }
 
 export type GenerationStageCallback = (event: GenerationStageEvent) => void;
@@ -38,6 +40,7 @@ export interface DeviationInfo {
 export interface MakeChoiceResult {
   readonly page: Page;
   readonly wasGenerated: boolean;
+  readonly metrics?: FullPipelineMetrics;
   readonly deviationInfo?: DeviationInfo;
 }
 

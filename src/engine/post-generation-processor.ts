@@ -1,5 +1,5 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../llm';
-import type { AnalystResult } from '../llm/analyst-types';
+import type { PostGenerationMetrics, StageDegradation } from '../llm/generation-pipeline-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PageWriterResult } from '../llm/writer-types';
 import {
@@ -56,6 +56,7 @@ export interface PostGenerationResult {
   readonly page: Page;
   readonly updatedStory: Story;
   readonly deviationInfo?: DeviationInfo;
+  readonly postMetrics: PostGenerationMetrics;
 }
 
 function buildInitialNpcAgendaRecord(
@@ -113,6 +114,8 @@ export async function processPostGeneration(
     ? buildInitialNpcRelationshipRecord(story.initialNpcRelationships)
     : parentState!.accumulatedNpcRelationships;
 
+  const degradedStages: StageDegradation[] = [];
+
   // --- Run analyst evaluation ---
   const parentStructureState = isOpening
     ? (story.structure
@@ -121,7 +124,7 @@ export async function processPostGeneration(
     : parentState!.structureState;
 
   const activeStructureForAnalyst = currentStructureVersion?.structure ?? story.structure;
-  const analystResult: AnalystResult | null =
+  const analystEval =
     activeStructureForAnalyst && parentStructureState
       ? await runAnalystEvaluation({
           writerNarrative: writerResult.narrative,
@@ -149,6 +152,11 @@ export async function processPostGeneration(
           onGenerationStage,
         })
       : null;
+  const analystResult = analystEval?.result ?? null;
+  const analystDurationMs = analystEval?.durationMs ?? null;
+  if (analystEval?.degradation) {
+    degradedStages.push(analystEval.degradation);
+  }
 
   // --- Merge results ---
   let result = mergePageWriterAndReconciledStateWithAnalystResults(
@@ -165,6 +173,10 @@ export async function processPostGeneration(
     logContext,
   });
   const storyAfterSpine = spineDeviationResult.updatedStory;
+  const spineRewriteDurationMs = spineDeviationResult.durationMs;
+  if (spineDeviationResult.degradation) {
+    degradedStages.push(spineDeviationResult.degradation);
+  }
 
   // If spine was rewritten but no beat deviation was detected, force a
   // structure rewrite by injecting a synthetic deviation with all remaining
@@ -194,8 +206,12 @@ export async function processPostGeneration(
   // --- Handle deviation ---
   const newPageId = isOpening ? parsePageId(1) : generatePageId(maxPageId!);
 
-  const { storyForPage, activeStructureVersion, deviationInfo: rawDeviationInfo } =
-    await handleDeviationIfDetected({
+  const {
+    storyForPage,
+    activeStructureVersion,
+    deviationInfo: rawDeviationInfo,
+    structureRewriteDurationMs,
+  } = await handleDeviationIfDetected({
       result,
       story: storyAfterSpine,
       currentStructureVersion,
@@ -255,7 +271,7 @@ export async function processPostGeneration(
   });
 
   // --- NPC agenda resolver ---
-  const agendaResolverResult = await resolveNpcAgendas({
+  const agendaResolverOutcome = await resolveNpcAgendas({
     decomposedCharacters: story.decomposedCharacters!,
     writerNarrative: writerResult.narrative,
     writerSceneSummary: writerResult.sceneSummary,
@@ -293,8 +309,14 @@ export async function processPostGeneration(
     apiKey,
     onGenerationStage,
   });
+  const agendaResolverResult = agendaResolverOutcome.result;
+  const agendaResolverDurationMs = agendaResolverOutcome.durationMs;
+  if (agendaResolverOutcome.degradation) {
+    degradedStages.push(agendaResolverOutcome.degradation);
+  }
 
   // --- Build page ---
+  const pageBuildStart = Date.now();
   const latestVersion = getLatestStructureVersion(storyForPage);
 
   const page = buildPage(result, {
@@ -328,6 +350,8 @@ export async function processPostGeneration(
     pageBeatIndex: parentStructureState.currentBeatIndex,
   });
 
+  const pageBuildDurationMs = Date.now() - pageBuildStart;
+
   // --- Update canon ---
   const updatedStory = updateStoryWithAllCanon(
     storyForPage,
@@ -335,5 +359,14 @@ export async function processPostGeneration(
     result.newCharacterCanonFacts
   );
 
-  return { page, updatedStory, deviationInfo };
+  const postMetrics: PostGenerationMetrics = {
+    analystDurationMs,
+    spineRewriteDurationMs,
+    structureRewriteDurationMs,
+    agendaResolverDurationMs,
+    pageBuildDurationMs,
+    degradedStages,
+  };
+
+  return { page, updatedStory, deviationInfo, postMetrics };
 }

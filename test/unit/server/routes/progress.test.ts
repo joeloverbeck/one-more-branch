@@ -37,6 +37,7 @@ describe('progressRoutes', () => {
       completedStages: [],
       updatedAt: 1_234,
       flowType: null,
+      stageDurations: {},
     });
 
     getRouteHandler('get', '/:progressId')(
@@ -51,6 +52,7 @@ describe('progressRoutes', () => {
       completedStages: [],
       updatedAt: 1_234,
       flowType: null,
+      stageDurations: {},
     });
   });
 
@@ -62,6 +64,7 @@ describe('progressRoutes', () => {
       completedStages: ['RESTRUCTURING_STORY'],
       updatedAt: 9_999,
       flowType: 'new-story',
+      stageDurations: {},
     });
 
     getRouteHandler('get', '/:progressId')(
@@ -75,6 +78,7 @@ describe('progressRoutes', () => {
       completedStages: ['RESTRUCTURING_STORY'],
       updatedAt: 9_999,
       flowType: 'new-story',
+      stageDurations: {},
     });
   });
 
@@ -86,6 +90,7 @@ describe('progressRoutes', () => {
       completedStages: ['PLANNING_PAGE'],
       updatedAt: 4_321,
       flowType: 'choice',
+      stageDurations: {},
       publicMessage: 'should not leak',
       rawPromptPayload: 'sensitive',
     } as unknown as ReturnType<typeof generationProgressService.get>);
@@ -102,6 +107,7 @@ describe('progressRoutes', () => {
       'activeStage',
       'completedStages',
       'flowType',
+      'stageDurations',
       'status',
       'updatedAt',
     ]);
@@ -111,6 +117,7 @@ describe('progressRoutes', () => {
       completedStages: ['PLANNING_PAGE'],
       updatedAt: 4_321,
       flowType: 'choice',
+      stageDurations: {},
     });
   });
 });

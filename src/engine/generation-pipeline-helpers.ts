@@ -27,9 +27,15 @@ export function emitGenerationStage(
   onGenerationStage: GenerationStageCallback | undefined,
   stage: GenerationStage,
   status: 'started' | 'completed',
-  attempt: number
+  attempt: number,
+  durationMs?: number
 ): void {
-  onGenerationStage?.({ stage, status, attempt });
+  const event: { stage: GenerationStage; status: 'started' | 'completed'; attempt: number; durationMs?: number } =
+    { stage, status, attempt };
+  if (durationMs !== undefined) {
+    event.durationMs = durationMs;
+  }
+  onGenerationStage?.(event);
 }
 
 export function resolveWriterStage(mode: PagePlanContext['mode']): GenerationStage {

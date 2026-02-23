@@ -1,5 +1,6 @@
 import { generateAgendaResolver } from '../llm';
 import type { AgendaResolverResult } from '../llm';
+import type { StageDegradation } from '../llm/generation-pipeline-types';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { ActiveState } from '../models/state/active-state';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
@@ -41,13 +42,20 @@ export interface NpcAgendaContext {
   readonly onGenerationStage?: GenerationStageCallback;
 }
 
+export interface NpcAgendaResolverResult {
+  readonly result: AgendaResolverResult | null;
+  readonly durationMs: number | null;
+  readonly degradation?: StageDegradation;
+}
+
 export async function resolveNpcAgendas(
   context: NpcAgendaContext
-): Promise<AgendaResolverResult | null> {
+): Promise<NpcAgendaResolverResult> {
   if (context.decomposedCharacters.length <= 1) {
-    return null; // Only protagonist, no NPCs to resolve agendas for
+    return { result: null, durationMs: null }; // Only protagonist, no NPCs to resolve agendas for
   }
 
+  const agendaStart = Date.now();
   try {
     emitGenerationStage(context.onGenerationStage, 'RESOLVING_AGENDAS', 'started', 1);
     const result = await generateAgendaResolver(
@@ -71,10 +79,31 @@ export async function resolveNpcAgendas(
       context.decomposedCharacters,
       { apiKey: context.apiKey }
     );
-    emitGenerationStage(context.onGenerationStage, 'RESOLVING_AGENDAS', 'completed', 1);
-    return result;
+    const durationMs = Date.now() - agendaStart;
+    emitGenerationStage(
+      context.onGenerationStage,
+      'RESOLVING_AGENDAS',
+      'completed',
+      1,
+      durationMs
+    );
+    return { result, durationMs };
   } catch (error) {
-    logger.warn('Agenda resolver failed, continuing without agenda updates', { error });
-    return null;
+    const durationMs = Date.now() - agendaStart;
+    logger.warn('Agenda resolver failed, continuing without agenda updates', {
+      error,
+      durationMs,
+    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      result: null,
+      durationMs,
+      degradation: {
+        stage: 'agendaResolver',
+        errorCode: 'LLM_FAILURE',
+        message: errorMessage,
+        durationMs,
+      },
+    };
   }
 }

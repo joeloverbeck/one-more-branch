@@ -1,6 +1,6 @@
 import { generateAnalystEvaluation } from '../llm';
 import type { AnalystResult, PacingRecommendedAction } from '../llm/analyst-types';
-import type { ContinuationGenerationResult } from '../llm/generation-pipeline-types';
+import type { ContinuationGenerationResult, StageDegradation } from '../llm/generation-pipeline-types';
 import { logger } from '../logging/index.js';
 import type {
   AccumulatedStructureState,
@@ -44,9 +44,15 @@ export interface AnalystEvaluationContext {
   readonly onGenerationStage?: GenerationStageCallback;
 }
 
+export interface AnalystEvaluationResult {
+  readonly result: AnalystResult | null;
+  readonly durationMs: number;
+  readonly degradation?: StageDegradation;
+}
+
 export async function runAnalystEvaluation(
   context: AnalystEvaluationContext
-): Promise<AnalystResult | null> {
+): Promise<AnalystEvaluationResult> {
   const analystStructureState: AccumulatedStructureState = {
     ...context.parentStructureState,
     pagesInCurrentBeat: context.parentStructureState.pagesInCurrentBeat + 1,
@@ -78,26 +84,42 @@ export async function runAnalystEvaluation(
       },
       { apiKey: context.apiKey }
     );
-    const analystDurationMs = Date.now() - analystStart;
-    emitGenerationStage(context.onGenerationStage, 'ANALYZING_SCENE', 'completed', analystAttempt);
+    const durationMs = Date.now() - analystStart;
+    emitGenerationStage(
+      context.onGenerationStage,
+      'ANALYZING_SCENE',
+      'completed',
+      analystAttempt,
+      durationMs
+    );
     logger.info('Generation stage completed', {
       ...context.logContext,
       attempt: analystAttempt,
       stage: 'analyst',
-      durationMs: analystDurationMs,
+      durationMs,
     });
-    return analystResult;
+    return { result: analystResult, durationMs };
   } catch (error) {
-    const analystDurationMs = Date.now() - analystStart;
+    const durationMs = Date.now() - analystStart;
     logger.warn('Generation stage failed', {
       ...context.logContext,
       attempt: analystAttempt,
       stage: 'analyst',
-      durationMs: analystDurationMs,
+      durationMs,
       error,
     });
     logger.warn('Analyst evaluation failed, continuing with defaults', { error });
-    return null;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      result: null,
+      durationMs,
+      degradation: {
+        stage: 'analyst',
+        errorCode: 'LLM_FAILURE',
+        message: errorMessage,
+        durationMs,
+      },
+    };
   }
 }
 
@@ -118,6 +140,7 @@ export interface DeviationProcessingResult {
   readonly storyForPage: Story;
   readonly activeStructureVersion: VersionedStoryStructure | null;
   readonly deviationInfo?: DeviationInfo;
+  readonly structureRewriteDurationMs: number | null;
 }
 
 export async function handleDeviationIfDetected(
@@ -130,6 +153,7 @@ export async function handleDeviationIfDetected(
     return {
       storyForPage: context.story,
       activeStructureVersion: context.currentStructureVersion,
+      structureRewriteDurationMs: null,
     };
   }
 
@@ -170,7 +194,8 @@ export async function handleDeviationIfDetected(
     context.onGenerationStage,
     'RESTRUCTURING_STORY',
     'completed',
-    rewriteAttempt
+    rewriteAttempt,
+    rewriteDurationMs
   );
   logger.info('Generation stage completed', {
     ...context.logContext,
@@ -183,6 +208,7 @@ export async function handleDeviationIfDetected(
     storyForPage: devResult.updatedStory,
     activeStructureVersion: devResult.activeVersion,
     deviationInfo: devResult.deviationInfo,
+    structureRewriteDurationMs: rewriteDurationMs,
   };
 }
 
@@ -199,6 +225,8 @@ export interface SpineDeviationResult {
   readonly updatedStory: Story;
   readonly spineRewritten: boolean;
   readonly spineInvalidatedElement: string | undefined;
+  readonly durationMs: number | null;
+  readonly degradation?: StageDegradation;
 }
 
 /**
@@ -216,7 +244,12 @@ export async function handleSpineDeviationIfDetected(
     !analystResult.spineInvalidatedElement ||
     !story.spine
   ) {
-    return { updatedStory: story, spineRewritten: false, spineInvalidatedElement: undefined };
+    return {
+      updatedStory: story,
+      spineRewritten: false,
+      spineInvalidatedElement: undefined,
+      durationMs: null,
+    };
   }
 
   logger.warn('Spine deviation detected — rewriting spine', {
@@ -225,6 +258,7 @@ export async function handleSpineDeviationIfDetected(
     reason: analystResult.spineDeviationReason,
   });
 
+  const spineStart = Date.now();
   try {
     const spineResult = await rewriteSpine(
       {
@@ -238,11 +272,13 @@ export async function handleSpineDeviationIfDetected(
       },
       context.apiKey
     );
+    const durationMs = Date.now() - spineStart;
 
     const updatedStory: Story = { ...story, spine: spineResult.spine };
 
     logger.info('Spine rewritten successfully', {
       ...context.logContext,
+      durationMs,
       newSpineType: spineResult.spine.storySpineType,
       newConflictType: spineResult.spine.conflictType,
     });
@@ -251,13 +287,28 @@ export async function handleSpineDeviationIfDetected(
       updatedStory,
       spineRewritten: true,
       spineInvalidatedElement: analystResult.spineInvalidatedElement,
+      durationMs,
     };
   } catch (error) {
+    const durationMs = Date.now() - spineStart;
     logger.error('Spine rewrite failed, continuing with original spine', {
       ...context.logContext,
+      durationMs,
       error,
     });
-    return { updatedStory: story, spineRewritten: false, spineInvalidatedElement: undefined };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      updatedStory: story,
+      spineRewritten: false,
+      spineInvalidatedElement: undefined,
+      durationMs,
+      degradation: {
+        stage: 'spineRewrite',
+        errorCode: 'LLM_FAILURE',
+        message: errorMessage,
+        durationMs,
+      },
+    };
   }
 }
 

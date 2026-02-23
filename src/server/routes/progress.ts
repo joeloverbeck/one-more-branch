@@ -13,5 +13,6 @@ progressRoutes.get('/:progressId', (req: Request, res: Response) => {
     completedStages: snapshot.completedStages,
     updatedAt: snapshot.updatedAt,
     flowType: snapshot.flowType,
+    stageDurations: snapshot.stageDurations,
   });
 });
