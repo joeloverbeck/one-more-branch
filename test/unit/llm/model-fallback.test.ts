@@ -33,6 +33,7 @@ describe('withModelFallback', () => {
   });
 
   it('falls back to default model on HTTP 429 when primary differs from default', async () => {
+    const warnSpy = jest.spyOn(logger, 'warn');
     const fn = jest
       .fn()
       .mockRejectedValueOnce(new LLMError('Rate limited', 'HTTP_429', true))
@@ -44,7 +45,7 @@ describe('withModelFallback', () => {
     expect(fn).toHaveBeenCalledTimes(2);
     expect(fn).toHaveBeenNthCalledWith(1, 'z-ai/glm-5');
     expect(fn).toHaveBeenNthCalledWith(2, 'anthropic/claude-sonnet-4.6');
-    expect(logger.warn).toHaveBeenCalledWith(
+    expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('rate-limited (429)')
     );
   });
@@ -97,6 +98,7 @@ describe('withModelFallback', () => {
   });
 
   it('logs the stage name and both models in the warning', async () => {
+    const warnSpy = jest.spyOn(logger, 'warn');
     const fn = jest
       .fn()
       .mockRejectedValueOnce(new LLMError('Rate limited', 'HTTP_429', true))
@@ -104,7 +106,7 @@ describe('withModelFallback', () => {
 
     await withModelFallback(fn, 'z-ai/glm-5', 'entityDecomposer');
 
-    expect(logger.warn).toHaveBeenCalledWith(
+    expect(warnSpy).toHaveBeenCalledWith(
       expect.stringMatching(/entityDecomposer.*z-ai\/glm-5.*anthropic\/claude-sonnet-4\.6/)
     );
   });
