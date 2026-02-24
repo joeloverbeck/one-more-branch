@@ -450,4 +450,116 @@ describe('play page choice click handler', () => {
     expect(banner?.innerHTML).toContain('The story took an unexpected turn.');
     expect(banner?.innerHTML).toContain('3 story beats replanned');
   });
+
+  it('does not stop loading prematurely when ideation path is taken', async () => {
+    setupAndInit({
+      choices: [
+        { text: 'Unexplored path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+        { text: 'Another path', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+      ],
+    });
+
+    // The ideation fetch returns options with correct shape
+    const ideationResponse = {
+      success: true,
+      options: [
+        {
+          scenePurpose: 'RISING_COMPLICATION',
+          valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+          pacingMode: 'ACCELERATING',
+          sceneDirection: 'The hero faces a dark cave',
+          dramaticJustification: 'Builds tension',
+        },
+        {
+          scenePurpose: 'REVELATION',
+          valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+          pacingMode: 'DECELERATING',
+          sceneDirection: 'A hidden ally appears',
+          dramaticJustification: 'Provides relief',
+        },
+        {
+          scenePurpose: 'CONFRONTATION',
+          valuePolarityShift: 'IRONIC_SHIFT',
+          pacingMode: 'SUSTAINED_HIGH',
+          sceneDirection: 'A confrontation with the rival',
+          dramaticJustification: 'Heightens conflict',
+        },
+      ],
+    };
+
+    let choicePostCalled = false;
+
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (typeof url === 'string' && url.includes('ideate-scene')) {
+        return Promise.resolve(mockJsonResponse(ideationResponse));
+      }
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      if (init?.method === 'POST' && typeof url === 'string' && url.includes('/choice')) {
+        choicePostCalled = true;
+        return Promise.resolve(mockJsonResponse(makeSuccessfulChoiceResponse()));
+      }
+      return Promise.resolve(mockJsonResponse({ error: 'No mock' }, 500));
+    });
+
+    // Click the unexplored choice - triggers ideation
+    clickChoice(0);
+    await jest.runAllTimersAsync();
+
+    // Ideation UI should be rendered - select a card first
+    const card = document.querySelector('.scene-direction-card') as HTMLElement;
+    expect(card).not.toBeNull();
+    card.click();
+    await jest.runAllTimersAsync();
+
+    // Now click the confirm button
+    const confirmBtn = document.querySelector('.scene-ideation-confirm') as HTMLButtonElement;
+    expect(confirmBtn).not.toBeNull();
+    expect(confirmBtn.disabled).toBe(false);
+    confirmBtn.click();
+    await jest.runAllTimersAsync();
+
+    // The choice POST should have been made (proceedWithChoice ran to completion)
+    expect(choicePostCalled).toBe(true);
+  });
+
+  it('choice click works after #choices has been detached and restored', async () => {
+    setupAndInit({
+      choices: [
+        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+      ],
+    });
+
+    // Simulate ideation detaching #choices and then restoring it
+    const choicesSection = document.getElementById('choices-section')!;
+    const originalChoices = document.getElementById('choices')!;
+    originalChoices.remove();
+
+    // Re-create #choices with new buttons (simulating what rebuildChoicesSection does)
+    const newChoicesDiv = document.createElement('div');
+    newChoicesDiv.id = 'choices';
+    newChoicesDiv.className = 'choices';
+    newChoicesDiv.innerHTML =
+      '<div class="choice-row"><button class="choice-btn" data-choice-index="0" data-explored="true"><span class="choice-text">Restored choice</span></button></div>' +
+      '<div class="choice-row"><button class="choice-btn" data-choice-index="1" data-explored="true"><span class="choice-text">Another choice</span></button></div>';
+    choicesSection.prepend(newChoicesDiv);
+
+    // Mock the fetch for the explored choice path
+    fetchMock
+      .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
+      .mockResolvedValueOnce(mockJsonResponse(makeSuccessfulChoiceResponse()));
+
+    // Click the new choice button - should work because delegation is on choicesSection
+    const newButton = newChoicesDiv.querySelector('.choice-btn[data-choice-index="0"]') as HTMLButtonElement;
+    newButton.click();
+    await jest.runAllTimersAsync();
+
+    // Verify the choice was processed
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => call[1]?.method === 'POST'
+    );
+    expect(postCall).toBeDefined();
+  });
 });

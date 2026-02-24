@@ -1701,6 +1701,57 @@ describe('playRoutes', () => {
     });
   });
 
+  describe('POST /:storyId/ideate-scene', () => {
+    it('returns 400 when choice already has nextPageId set', async () => {
+      const parentPage = createPage({
+        id: 2,
+        narrativeText: 'The story begins.',
+        sceneSummary: 'Opening scene.',
+        choices: [createChoice('Go left', 5), createChoice('Go right')],
+        isEnding: false,
+        parentPageId: 1,
+        parentChoiceIndex: 0,
+      });
+
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({
+        ...createStory({
+          title: 'Test',
+          characterConcept: 'Hero',
+          worldbuilding: 'World',
+          tone: 'Dark',
+        }),
+        id: storyId,
+        decomposedCharacters: [],
+        decomposedWorld: [],
+      } as never);
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(parentPage);
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      const handler = getRouteHandler('post', '/:storyId/ideate-scene');
+      void handler(
+        {
+          params: { storyId },
+          body: {
+            apiKey: 'sk-or-test-key',
+            mode: 'continuation',
+            pageId: 1,
+            choiceIndex: 0,
+          },
+        } as unknown as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Choice already explored; scene ideation is only available for unexplored choices',
+      });
+    });
+  });
+
   describe('GET /:storyId/restart', () => {
     it('redirects to page 1 for that story', async () => {
       const status = jest.fn().mockReturnThis();

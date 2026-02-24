@@ -123,6 +123,13 @@
   }
 
   function rebuildChoicesSection(choiceList, guidanceValues, choicesEl, choicesSectionEl, bindFn) {
+    // If #choices was detached (e.g., by ideation UI clearing innerHTML), re-create it
+    if (!choicesSectionEl.contains(choicesEl)) {
+      choicesEl = document.createElement('div');
+      choicesEl.id = 'choices';
+      choicesEl.className = 'choices';
+      choicesSectionEl.prepend(choicesEl);
+    }
     choicesEl.innerHTML = renderChoiceButtons(choiceList);
     const existingGuidance = choicesSectionEl.querySelector('.protagonist-guidance');
     if (existingGuidance) {

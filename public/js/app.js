@@ -3150,6 +3150,13 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
   }
 
   function rebuildChoicesSection(choiceList, guidanceValues, choicesEl, choicesSectionEl, bindFn) {
+    // If #choices was detached (e.g., by ideation UI clearing innerHTML), re-create it
+    if (!choicesSectionEl.contains(choicesEl)) {
+      choicesEl = document.createElement('div');
+      choicesEl.id = 'choices';
+      choicesEl.className = 'choices';
+      choicesSectionEl.prepend(choicesEl);
+    }
     choicesEl.innerHTML = renderChoiceButtons(choiceList);
     const existingGuidance = choicesSectionEl.querySelector('.protagonist-guidance');
     if (existingGuidance) {
@@ -4417,10 +4424,10 @@ function createRecapModalController(initialData) {
     }
 
     function setChoicesDisabled(disabled) {
-      if (!choices) {
+      if (!choicesSection) {
         return;
       }
-      const allButtons = choices.querySelectorAll('.choice-btn');
+      const allButtons = choicesSection.querySelectorAll('.choice-btn');
       allButtons.forEach((button) => {
         button.disabled = disabled;
       });
@@ -4699,7 +4706,7 @@ function createRecapModalController(initialData) {
     }
 
     if (hasChoicesUi) {
-      choices.addEventListener('click', async (event) => {
+      choicesSection.addEventListener('click', async (event) => {
         const clickedElement = event.target;
         if (!(clickedElement instanceof HTMLElement)) {
           return;
@@ -4714,6 +4721,8 @@ function createRecapModalController(initialData) {
         if (!Number.isFinite(choiceIndex) || choiceIndex < 0) {
           return;
         }
+
+        var ideationHandled = false;
 
         try {
           clearPlayError(choicesSection);
@@ -4743,12 +4752,12 @@ function createRecapModalController(initialData) {
             );
             loading.style.display = 'none';
 
-            await new Promise(function (resolveIdeation) {
+            var selectedDirection = await new Promise(function (resolveIdeation) {
               ideationCtrl.renderIdeationUI(
                 choicesSection,
                 ideationOptions,
-                function onConfirm(selectedDirection) {
-                  resolveIdeation(selectedDirection);
+                function onConfirm(dir) {
+                  resolveIdeation(dir);
                 },
                 function onRegenerate() {
                   loading.style.display = 'flex';
@@ -4770,15 +4779,20 @@ function createRecapModalController(initialData) {
                   });
                 }
               );
-            }).then(function (selectedDirection) {
-              proceedWithChoice(
-                apiKey, choiceIndex, protagonistGuidance, selectedDirection
-              );
             });
+
+            // Mark ideation as handled so the finally block does not interfere
+            // with proceedWithChoice's own loading/cleanup lifecycle
+            ideationHandled = true;
+            await proceedWithChoice(
+              apiKey, choiceIndex, protagonistGuidance, selectedDirection
+            );
             return;
           } catch (ideationErr) {
-            loading.style.display = 'none';
-            setChoicesDisabled(false);
+            if (!ideationHandled) {
+              loading.style.display = 'none';
+              setChoicesDisabled(false);
+            }
             showPlayError(
               ideationErr instanceof Error ? ideationErr.message : 'Scene ideation failed',
               choicesSection
@@ -4844,8 +4858,10 @@ function createRecapModalController(initialData) {
           }
           setChoicesDisabled(false);
         } finally {
-          loadingProgress.stop();
-          loading.style.display = 'none';
+          if (!ideationHandled) {
+            loadingProgress.stop();
+            loading.style.display = 'none';
+          }
         }
       });
     }

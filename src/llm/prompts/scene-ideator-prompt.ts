@@ -6,7 +6,9 @@ import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildNpcAgendasSection, buildNpcRelationshipsSection } from './sections/shared/npc-state-sections.js';
 import { buildInventorySection, buildHealthSection } from './sections/shared/resource-state-sections.js';
+import type { ThreadEntry, TrackedPromise } from '../../models/state/keyed-entry.js';
 import { Urgency } from '../../models/state/keyed-entry.js';
+import { getOverdueThreads } from './sections/planner/index.js';
 import type {
   SceneIdeatorContext,
   SceneIdeatorContinuationContext,
@@ -87,6 +89,47 @@ function buildActiveStateSection(
   return lines.join('\n');
 }
 
+const SCOPE_PRIORITY: Readonly<Record<string, number>> = {
+  SCENE: 0,
+  BEAT: 1,
+  ACT: 2,
+  STORY: 3,
+};
+
+export function formatOverdueThreadsSection(
+  openThreads: readonly ThreadEntry[],
+  threadAges: Readonly<Record<string, number>>
+): string {
+  const overdue = getOverdueThreads(openThreads, threadAges);
+  if (overdue.length === 0) return '';
+  const sorted = [...overdue]
+    .sort((a, b) => (threadAges[b.id] ?? 0) - (threadAges[a.id] ?? 0))
+    .slice(0, 5);
+  const list = sorted
+    .map((t) => `${t.text} (${t.threadType}, ${t.urgency}, ${threadAges[t.id] ?? 0} pages)`)
+    .join('; ');
+  return `OVERDUE THREADS (consider addressing): ${list}\n`;
+}
+
+export function formatPendingPromisesSection(
+  accumulatedPromises: readonly TrackedPromise[]
+): string {
+  const filtered = accumulatedPromises.filter(
+    (p) => p.suggestedUrgency === Urgency.HIGH || p.age >= 5
+  );
+  if (filtered.length === 0) return '';
+  const sorted = [...filtered]
+    .sort((a, b) => {
+      const scopeDelta = (SCOPE_PRIORITY[a.scope] ?? 4) - (SCOPE_PRIORITY[b.scope] ?? 4);
+      return scopeDelta !== 0 ? scopeDelta : b.age - a.age;
+    })
+    .slice(0, 5);
+  const list = sorted
+    .map((p) => `${p.description} [${p.promiseType}, ${p.scope}, age: ${p.age}]`)
+    .join('; ');
+  return `PENDING PROMISES (consider fulfilling): ${list}\n`;
+}
+
 function buildContinuationSections(
   context: SceneIdeatorContinuationContext
 ): string {
@@ -111,28 +154,13 @@ function buildContinuationSections(
     sections.push(`RECENT STORY CONTEXT:\n${summaryText}\n`);
   }
 
-  if (context.threadAges && Object.keys(context.threadAges).length > 0) {
-    const aged = Object.entries(context.threadAges)
-      .filter(([, age]) => age >= 3)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5);
-    if (aged.length > 0) {
-      const threadList = aged.map(([id, age]) => `${id} (${age} pages)`).join('; ');
-      sections.push(`OVERDUE THREADS (consider addressing): ${threadList}\n`);
-    }
+  if (context.threadAges) {
+    sections.push(
+      formatOverdueThreadsSection(context.activeState.openThreads, context.threadAges)
+    );
   }
 
-  if (context.accumulatedPromises.length > 0) {
-    const urgent = context.accumulatedPromises
-      .filter((p) => p.suggestedUrgency === Urgency.HIGH || p.age >= 5)
-      .slice(0, 5);
-    if (urgent.length > 0) {
-      const promiseList = urgent
-        .map((p) => `${p.description} [${p.promiseType}, age: ${p.age}]`)
-        .join('; ');
-      sections.push(`PENDING PROMISES (consider fulfilling): ${promiseList}\n`);
-    }
-  }
+  sections.push(formatPendingPromisesSection(context.accumulatedPromises));
 
   return sections.filter((s) => s.length > 0).join('\n');
 }

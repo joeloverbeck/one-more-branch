@@ -12,7 +12,7 @@ const URGENCY_THRESHOLDS: Record<string, number> = {
   LOW: THREAD_PACING.LOW_URGENCY_OVERDUE_PAGES,
 };
 
-function getOverdueThreads(
+export function getOverdueThreads(
   openThreads: readonly ThreadEntry[],
   threadAges: Readonly<Record<string, number>>
 ): readonly ThreadEntry[] {
