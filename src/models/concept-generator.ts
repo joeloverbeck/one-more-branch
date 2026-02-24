@@ -242,6 +242,7 @@ export interface ConceptStressTesterContext {
   readonly concept: ConceptSpec;
   readonly scores: ConceptDimensionScores;
   readonly weaknesses: readonly string[];
+  readonly verification?: ConceptVerification;
 }
 
 export interface ConceptStressTestResult {

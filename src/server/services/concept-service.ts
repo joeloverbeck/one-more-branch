@@ -33,6 +33,7 @@ export interface StressTestInput {
   readonly concept: ConceptSpec;
   readonly scores: ConceptDimensionScores;
   readonly weaknesses: readonly string[];
+  readonly verification?: ConceptVerification;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }
@@ -111,6 +112,7 @@ function requireStressTestInput(input: StressTestInput): {
   concept: ConceptSpec;
   scores: ConceptDimensionScores;
   weaknesses: readonly string[];
+  verification?: ConceptVerification;
   apiKey: string;
 } {
   const apiKey = requireApiKey(input.apiKey);
@@ -137,6 +139,7 @@ function requireStressTestInput(input: StressTestInput): {
     concept: input.concept,
     scores: input.scores,
     weaknesses: normalizedWeaknesses,
+    verification: input.verification,
     apiKey,
   };
 }
@@ -221,6 +224,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
           concept: normalized.concept,
           scores: normalized.scores,
           weaknesses: normalized.weaknesses,
+          verification: normalized.verification,
         },
         normalized.apiKey,
       );
