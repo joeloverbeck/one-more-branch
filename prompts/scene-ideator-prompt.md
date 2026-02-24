@@ -5,7 +5,7 @@
 - Output schema source: `src/llm/schemas/scene-ideator-schema.ts`
 - Types: `src/llm/scene-ideator-types.ts`, `src/models/scene-direction.ts`
 - Taxonomy enums: `src/models/scene-direction-taxonomy.ts`
-- Shared sections: `src/llm/prompts/sections/shared/tone-block.ts`, `src/llm/prompts/sections/shared/spine-section.ts`
+- Shared sections: `src/llm/prompts/sections/shared/tone-block.ts`, `src/llm/prompts/sections/shared/spine-section.ts`, `src/llm/prompts/sections/shared/npc-state-sections.ts`, `src/llm/prompts/sections/shared/resource-state-sections.ts`
 - Decomposed data formatters: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
 
 ## Pipeline Position
@@ -149,6 +149,32 @@ Act {{currentActIndex + 1}}/{{structure.acts.length}}: {{currentAct.objective}}
 Beat: {{currentBeat.name}} ({{currentBeat.role}}) — {{currentBeat.description}}
 {{/if}}
 
+{{#if accumulatedNpcAgendas has entries}}
+NPC AGENDAS (what each NPC wants and will do):
+[{{npcName}}]
+  Goal: {{currentGoal}}
+  Leverage: {{leverage}}
+  Fear: {{fear}}
+  Off-screen: {{offScreenBehavior}}
+{{/if}}
+
+{{#if accumulatedNpcRelationships has entries}}
+NPC-PROTAGONIST RELATIONSHIPS (current dynamics):
+[{{npcName}}]
+  Dynamic: {{dynamic}} | Valence: {{valence}}
+  Tension: {{currentTension}}
+{{/if}}
+
+{{#if accumulatedInventory.length}}
+YOUR INVENTORY:
+{{inventory items as "- [id] text" lines}}
+{{/if}}
+
+{{#if accumulatedHealth.length}}
+YOUR HEALTH:
+{{health items as "- [id] text" lines}}
+{{/if}}
+
 {{#if ancestorSummaries.length (last 3)}}
 RECENT STORY CONTEXT:
 {{last 3 ancestorSummaries as "- summary" lines}}
@@ -223,10 +249,10 @@ OUTPUT SHAPE:
 | `ancestorSummaries` | `AncestorSummary[]` | Scene summaries from ancestor pages |
 | `threadAges` | `Record<string, number>` (optional) | Pages since each thread was opened |
 | `accumulatedPromises` | `TrackedPromise[]` | Active narrative promises with lifecycle state |
-| `accumulatedNpcAgendas` | `AccumulatedNpcAgendas` (optional) | NPC agenda state (not currently rendered in prompt) |
-| `accumulatedNpcRelationships` | `AccumulatedNpcRelationships` (optional) | NPC relationship state (not currently rendered in prompt) |
-| `accumulatedInventory` | `KeyedEntry[]` | Current inventory items (not currently rendered in prompt) |
-| `accumulatedHealth` | `KeyedEntry[]` | Current health conditions (not currently rendered in prompt) |
+| `accumulatedNpcAgendas` | `AccumulatedNpcAgendas` (optional) | NPC agenda state |
+| `accumulatedNpcRelationships` | `AccumulatedNpcRelationships` (optional) | NPC relationship state |
+| `accumulatedInventory` | `KeyedEntry[]` | Current inventory items |
+| `accumulatedHealth` | `KeyedEntry[]` | Current health conditions |
 
 ## Taxonomy Reference
 
@@ -279,7 +305,6 @@ OUTPUT SHAPE:
 - Continuation mode limits ancestor summaries to the last 3 entries for context efficiency.
 - Overdue threads are filtered to those with age >= 3 pages, sorted descending by age, capped at 5.
 - Pending promises are filtered to HIGH urgency or age >= 5, capped at 5.
-- NPC agendas, NPC relationships, inventory, and health are available on the continuation context type but are not currently rendered into the prompt text.
 - Prompt logging uses `promptType: 'sceneIdeator'` via `logPrompt()`.
 - Model routing uses stage key `sceneIdeator` in `getStageModel(...)`.
 - Response parsing enforces exactly 3 options, valid enums, non-empty strings, and diversity constraint (no duplicate `scenePurpose + valuePolarityShift` pairs).
