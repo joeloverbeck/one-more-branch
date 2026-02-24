@@ -178,6 +178,21 @@ describe('planner opening context section', () => {
     expect(result).toContain('Off-screen: Planting devices in maintenance shafts');
   });
 
+  it('excludes protagonist directive when includeProtagonistDirective is false', () => {
+    const context: OpeningPagePlanContext = {
+      mode: 'opening',
+      tone: 'sci-fi suspense',
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A stranded deep-space courier')],
+    };
+
+    const result = buildPlannerOpeningContextSection(context, {
+      includeProtagonistDirective: false,
+    });
+
+    expect(result).not.toContain('PROTAGONIST IDENTITY');
+  });
+
   it('omits NPC agendas section when no agendas exist', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',

@@ -101,7 +101,7 @@ export function parseConceptSpec(
     stakesSystemic: requireNonEmptyString(data['stakesSystemic'], 'stakesSystemic', label),
     deadlineMechanism: requireNonEmptyString(data['deadlineMechanism'], 'deadlineMechanism', label),
     settingAxioms: requireStringArray(data['settingAxioms'], 'settingAxioms', label, 2, 5),
-    constraintSet: requireStringArray(data['constraintSet'], 'constraintSet', label, 3, 5),
+    constraintSet: requireStringArray(data['constraintSet'], 'constraintSet', label, 2, 5),
     keyInstitutions: requireStringArray(data['keyInstitutions'], 'keyInstitutions', label, 2, 4),
     settingScale: data['settingScale'],
     whatIfQuestion: requireNonEmptyString(data['whatIfQuestion'], 'whatIfQuestion', label),

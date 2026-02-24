@@ -1,6 +1,9 @@
 export { buildPlannerOpeningContextSection } from './opening-context.js';
-export { buildPlannerContinuationContextSection } from './continuation-context.js';
-export { PLANNER_STATE_INTENT_RULES } from './state-intent-rules.js';
+export {
+  buildPlannerContinuationContextSection,
+  type PlannerContextOptions,
+} from './continuation-context.js';
+export { ACCOUNTANT_STATE_INTENT_RULES } from './state-intent-rules.js';
 export {
   getOverdueThreads,
   buildThreadAgingSection,

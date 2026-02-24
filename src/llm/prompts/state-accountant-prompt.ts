@@ -9,7 +9,7 @@ import {
 import {
   buildPlannerContinuationContextSection,
   buildPlannerOpeningContextSection,
-  PLANNER_STATE_INTENT_RULES,
+  ACCOUNTANT_STATE_INTENT_RULES,
   buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
   buildThreadAgingSection,
@@ -84,10 +84,11 @@ export function buildStateAccountantPrompt(
   context: PagePlanContext,
   reducedPlan: ReducedPagePlanResult
 ): ChatMessage[] {
+  const noProtagonist = { includeProtagonistDirective: false } as const;
   const contextSection =
     context.mode === 'opening'
-      ? buildPlannerOpeningContextSection(context)
-      : buildPlannerContinuationContextSection(context);
+      ? buildPlannerOpeningContextSection(context, noProtagonist)
+      : buildPlannerContinuationContextSection(context, noProtagonist);
 
   const reconciliationRetrySection =
     context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0
@@ -138,7 +139,7 @@ ${reconciliationRetrySection}
 === REDUCED PLANNER OUTPUT ===
 ${formatReducedPlanForAccountant(reducedPlan)}
 
-${PLANNER_STATE_INTENT_RULES}
+${ACCOUNTANT_STATE_INTENT_RULES}
 ${qualityCriteriaSection}${threadAgingSection}${trackedPromisesSection}${payoffFeedbackSection}${toneReminderLine}
 
 Return JSON only.`;

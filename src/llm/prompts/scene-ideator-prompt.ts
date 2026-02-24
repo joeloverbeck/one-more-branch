@@ -1,5 +1,7 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
+import type { ProtagonistGuidance } from '../../models/protagonist-guidance.js';
+import { isProtagonistGuidanceEmpty } from '../../models/protagonist-guidance.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
@@ -130,6 +132,40 @@ export function formatPendingPromisesSection(
   return `PENDING PROMISES (consider fulfilling): ${list}\n`;
 }
 
+export function buildIdeatorGuidanceSection(
+  guidance: ProtagonistGuidance | undefined
+): string {
+  if (isProtagonistGuidanceEmpty(guidance)) {
+    return '';
+  }
+
+  const lines: string[] = [
+    '=== PROTAGONIST GUIDANCE (CONSTRAINT) ===',
+    'The player has provided intent for the protagonist. Use this as a compatibility filter: generate directions where this guidance can be fulfilled, not directions that contradict it.\n',
+  ];
+
+  if (guidance!.suggestedEmotions) {
+    lines.push(
+      `Emotions: The player intends the protagonist to feel: "${guidance!.suggestedEmotions}". Generate scene directions where this emotional arc can naturally emerge. Avoid directions that would require contradictory emotions.`
+    );
+  }
+
+  if (guidance!.suggestedThoughts) {
+    lines.push(
+      `Thoughts: The player intends the protagonist to think: "${guidance!.suggestedThoughts}". Generate scene directions that create circumstances where these reflections would naturally arise. Avoid directions that make these thoughts irrelevant.`
+    );
+  }
+
+  if (guidance!.suggestedSpeech) {
+    lines.push(
+      `Speech: The player intends the protagonist to say something like: "${guidance!.suggestedSpeech}". At least one scene direction should create a natural moment for this kind of statement. Avoid directions where there is no plausible context for it.`
+    );
+  }
+
+  lines.push('');
+  return lines.join('\n');
+}
+
 function buildContinuationSections(
   context: SceneIdeatorContinuationContext
 ): string {
@@ -161,6 +197,8 @@ function buildContinuationSections(
   }
 
   sections.push(formatPendingPromisesSection(context.accumulatedPromises));
+
+  sections.push(buildIdeatorGuidanceSection(context.protagonistGuidance));
 
   return sections.filter((s) => s.length > 0).join('\n');
 }

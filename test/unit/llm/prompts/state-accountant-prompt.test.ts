@@ -64,14 +64,15 @@ describe('buildStateAccountantPrompt', () => {
     accumulatedPromises: [],
   };
 
-  it('includes reduced planner output and state-intent rules', () => {
+  it('includes reduced planner output and state accountant rules', () => {
     const messages = buildStateAccountantPrompt(openingContext, reducedPlan);
     const user = getUserMessage(messages);
 
     expect(messages).toHaveLength(2);
     expect(user).toContain('=== REDUCED PLANNER OUTPUT ===');
     expect(user).toContain(reducedPlan.sceneIntent);
-    expect(user).toContain('PLANNER RULES:');
+    expect(user).toContain('STATE ACCOUNTANT RULES:');
+    expect(user).not.toContain('PLANNER RULES:');
     expect(user).toContain('Return JSON only.');
   });
 
@@ -81,5 +82,29 @@ describe('buildStateAccountantPrompt', () => {
 
     expect(user).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
     expect(user).toContain("PLAYER'S CHOICE:");
+  });
+
+  it('excludes protagonist directive and guidance in continuation mode', () => {
+    const contextWithGuidance: ContinuationPagePlanContext = {
+      ...continuationContext,
+      protagonistGuidance: {
+        suggestedEmotions: 'Furious but controlled.',
+        suggestedThoughts: 'This is a trap.',
+        suggestedSpeech: 'Stand down.',
+      },
+    };
+
+    const messages = buildStateAccountantPrompt(contextWithGuidance, reducedPlan);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('PROTAGONIST IDENTITY');
+    expect(user).not.toContain('PROTAGONIST GUIDANCE');
+  });
+
+  it('excludes protagonist directive in opening mode', () => {
+    const messages = buildStateAccountantPrompt(openingContext, reducedPlan);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('PROTAGONIST IDENTITY');
   });
 });

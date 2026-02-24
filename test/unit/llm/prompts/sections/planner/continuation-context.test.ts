@@ -568,6 +568,43 @@ describe('planner continuation context section', () => {
     expect(result).not.toContain('NPC AGENDAS');
   });
 
+  it('excludes protagonist directive and guidance when includeProtagonistDirective is false', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      protagonistGuidance: {
+        suggestedEmotions: 'Furious but controlled.',
+        suggestedThoughts: 'This deal is a setup.',
+        suggestedSpeech: 'Drop the weapon.',
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context, {
+      includeProtagonistDirective: false,
+    });
+
+    expect(result).not.toContain('PROTAGONIST IDENTITY');
+    expect(result).not.toContain('PROTAGONIST GUIDANCE');
+  });
+
   it('includes escalation directive when active beat role is escalation', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

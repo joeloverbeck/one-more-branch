@@ -103,13 +103,17 @@ type IdeateSceneBody = {
   mode?: string;
   pageId?: number;
   choiceIndex?: number;
+  protagonistGuidance?: unknown;
 };
 
 playRoutes.post(
   '/:storyId/ideate-scene',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { storyId } = req.params;
-    const { apiKey, mode, pageId, choiceIndex } = req.body as IdeateSceneBody;
+    const { apiKey, mode, pageId, choiceIndex, protagonistGuidance: rawGuidance } =
+      req.body as IdeateSceneBody;
+
+    const protagonistGuidance = normalizeProtagonistGuidance(rawGuidance);
 
     if (typeof apiKey !== 'string' || apiKey.trim().length === 0) {
       return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
@@ -172,6 +176,7 @@ playRoutes.post(
           accumulatedNpcRelationships: parentState.accumulatedNpcRelationships,
           accumulatedInventory: [...parentState.accumulatedInventory],
           accumulatedHealth: [...parentState.accumulatedHealth],
+          protagonistGuidance,
         };
 
         const result = await generateSceneDirections(context, apiKey);

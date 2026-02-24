@@ -57,9 +57,6 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     return { valid: false, error: 'OpenRouter API key is required' };
   }
 
-  if (input.conceptSpec !== undefined && !isConceptSpec(input.conceptSpec)) {
-    return { valid: false, error: 'Concept payload is invalid' };
-  }
   const conceptSpec = isConceptSpec(input.conceptSpec) ? input.conceptSpec : undefined;
   const storyKernel = isStoryKernel(input.storyKernel) ? input.storyKernel : undefined;
 

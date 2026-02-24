@@ -1,5 +1,6 @@
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
+import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type { ActiveState, TrackedPromise } from '../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
@@ -41,6 +42,7 @@ export interface SceneIdeatorContinuationContext {
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
   readonly accumulatedInventory: readonly KeyedEntry[];
   readonly accumulatedHealth: readonly KeyedEntry[];
+  readonly protagonistGuidance?: ProtagonistGuidance;
 }
 
 export type SceneIdeatorContext =

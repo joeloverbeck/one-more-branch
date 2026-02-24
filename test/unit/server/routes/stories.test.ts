@@ -815,10 +815,27 @@ describe('storyRoutes', () => {
       });
     });
 
-    it('returns 400 JSON when conceptSpec payload is invalid', async () => {
+    it('gracefully drops invalid conceptSpec and proceeds with story creation', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
-      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
+      const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
+      const story = createStory({
+        title: 'Test Title',
+        characterConcept: 'A long enough character concept',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'Page text',
+        sceneSummary: 'Test summary.',
+        choices: [createChoice('Go left'), createChoice('Go right')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+      });
+      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockResolvedValue({
+        story: { ...story, id: storyId },
+        page,
+      });
 
       await getRouteHandler('post', '/create-ajax')(
         {
@@ -835,11 +852,13 @@ describe('storyRoutes', () => {
         { status, json } as unknown as Response
       );
 
-      expect(status).toHaveBeenCalledWith(400);
-      expect(prepareStorySpy).not.toHaveBeenCalled();
+      expect(status).not.toHaveBeenCalled();
+      expect(prepareStorySpy).toHaveBeenCalled();
+      const callArgs = prepareStorySpy.mock.calls[0][0] as Record<string, unknown>;
+      expect(callArgs.conceptSpec).toBeUndefined();
       expect(json).toHaveBeenCalledWith({
-        success: false,
-        error: 'Concept payload is invalid',
+        success: true,
+        storyId: '550e8400-e29b-41d4-a716-446655440000',
       });
     });
   });

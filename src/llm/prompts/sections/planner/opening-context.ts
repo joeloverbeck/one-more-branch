@@ -5,8 +5,12 @@ import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-wo
 import { createInitialStructureState } from '../../../../models/story-arc.js';
 import type { OpeningPagePlanContext } from '../../../context-types.js';
 import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
+import type { PlannerContextOptions } from './continuation-context.js';
 
-export function buildPlannerOpeningContextSection(context: OpeningPagePlanContext): string {
+export function buildPlannerOpeningContextSection(
+  context: OpeningPagePlanContext,
+  options?: PlannerContextOptions
+): string {
   const worldSection = context.decomposedWorld.facts.length > 0
     ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
 
@@ -58,8 +62,10 @@ ${initialAgendas
       ? `\nTone avoid: ${context.toneAvoid.join(', ')}`
       : '';
 
+  const includeProtagonist = options?.includeProtagonistDirective ?? true;
+
   const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
-  const protagonistDirective = protagonistName
+  const protagonistDirective = includeProtagonist && protagonistName
     ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
     : '';
 

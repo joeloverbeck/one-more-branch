@@ -188,6 +188,15 @@ OVERDUE THREADS (consider addressing): {{top 5 aged threads as "id (age pages)" 
 PENDING PROMISES (consider fulfilling): {{top 5 urgent promises as "description [promiseType, age: N]" joined by '; '}}
 {{/if}}
 
+{{#if protagonistGuidance (non-empty)}}
+=== PROTAGONIST GUIDANCE (CONSTRAINT) ===
+The player has provided intent for the protagonist. Use this as a compatibility filter: generate directions where this guidance can be fulfilled, not directions that contradict it.
+
+{{#if suggestedEmotions}}Emotions: The player intends the protagonist to feel: "{{suggestedEmotions}}". Generate scene directions where this emotional arc can naturally emerge. Avoid directions that would require contradictory emotions.{{/if}}
+{{#if suggestedThoughts}}Thoughts: The player intends the protagonist to think: "{{suggestedThoughts}}". Generate scene directions that create circumstances where these reflections would naturally arise. Avoid directions that make these thoughts irrelevant.{{/if}}
+{{#if suggestedSpeech}}Speech: The player intends the protagonist to say something like: "{{suggestedSpeech}}". At least one scene direction should create a natural moment for this kind of statement. Avoid directions where there is no plausible context for it.{{/if}}
+{{/if}}
+
 Generate 3 scene directions that follow naturally from the player's choice while advancing the story in meaningfully different ways.
 
 OUTPUT SHAPE:
@@ -253,6 +262,7 @@ OUTPUT SHAPE:
 | `accumulatedNpcRelationships` | `AccumulatedNpcRelationships` (optional) | NPC relationship state |
 | `accumulatedInventory` | `KeyedEntry[]` | Current inventory items |
 | `accumulatedHealth` | `KeyedEntry[]` | Current health conditions |
+| `protagonistGuidance` | `ProtagonistGuidance` (optional) | Player-provided protagonist intent (emotions, thoughts, speech) used as compatibility filter for scene directions |
 
 ## Taxonomy Reference
 

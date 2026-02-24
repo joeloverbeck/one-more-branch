@@ -1,13 +1,10 @@
-export const PLANNER_STATE_INTENT_RULES = `PLANNER RULES:
-You are a planning model. Generate intent only.
+export const ACCOUNTANT_STATE_INTENT_RULES = `STATE ACCOUNTANT RULES:
+Generate state intents only.
 
 MUST DO:
-- Decide immediate scene direction as sceneIntent.
-- Propose continuityAnchors that must stay true in the next page.
 - Set stateIntents.currentLocation to where the protagonist is at the END of the next scene.
   - If the location does not change, repeat the current location from context exactly.
 - Propose stateIntents as mutations to consider, not final applied state.
-- Provide writerBrief guidance for the writer model.
 
 STATE PERSISTENCE CONTRACT:
 - Treat all provided state sections as persistent continuity records, not scene-only summaries.
@@ -162,12 +159,4 @@ CANON SELF-CHECK (before you finalize JSON):
 - For each canon.characterAdd: Would this be true even if the player had made completely different choices? Is this genuinely new - not a variant of existing character canon?
 - For each canon.worldAdd: Does this describe a permanent world feature? Is there already a similar fact in ESTABLISHED WORLD FACTS?
 - If a fact describes something that happened THIS playthrough, move it to characterState.add instead.
-- If a fact elaborates on existing canon rather than establishing something new, drop it entirely.
-
-CHOICE INTENT RULES:
-- Propose 2-4 choiceIntents aligned with the scene's dramatic question.
-- Each intent must have a unique (choiceType, primaryDelta) combination.
-- hook: a 1-sentence description of what the choice offers, not the final choice text.
-- choiceType and primaryDelta must be valid enum values from the schema.
-- Intents are guidance for the writer, not mandates. The writer may adjust if the narrative diverges.
-- dramaticQuestion must be a single sentence framing the core tension the choices answer.`;
+- If a fact elaborates on existing canon rather than establishing something new, drop it entirely.`;
