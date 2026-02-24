@@ -4,6 +4,8 @@ import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
+import { buildNpcAgendasSection, buildNpcRelationshipsSection } from './sections/shared/npc-state-sections.js';
+import { buildInventorySection, buildHealthSection } from './sections/shared/resource-state-sections.js';
 import { Urgency } from '../../models/state/keyed-entry.js';
 import type {
   SceneIdeatorContext,
@@ -95,6 +97,11 @@ function buildContinuationSections(
 
   sections.push(buildActiveStateSection(context));
   sections.push(buildStructurePositionSection(context));
+
+  sections.push(buildNpcAgendasSection(context.accumulatedNpcAgendas));
+  sections.push(buildNpcRelationshipsSection(context.accumulatedNpcRelationships));
+  sections.push(buildInventorySection(context.accumulatedInventory));
+  sections.push(buildHealthSection(context.accumulatedHealth));
 
   if (context.ancestorSummaries.length > 0) {
     const recent = context.ancestorSummaries.slice(-3);

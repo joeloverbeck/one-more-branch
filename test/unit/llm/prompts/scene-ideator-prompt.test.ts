@@ -85,5 +85,78 @@ describe('buildSceneIdeatorPrompt', () => {
       const messages = buildSceneIdeatorPrompt(continuationContext);
       expect(messages[1].content).toContain("PLAYER'S CHOSEN ACTION");
     });
+
+    it('renders NPC agendas when present', () => {
+      const ctx: SceneIdeatorContinuationContext = {
+        ...continuationContext,
+        accumulatedNpcAgendas: {
+          elena: {
+            npcName: 'Elena',
+            currentGoal: 'Find the artifact',
+            leverage: 'Knowledge of the ruins',
+            fear: 'Being abandoned',
+            offScreenBehavior: 'Researching ancient texts',
+          },
+        },
+      };
+      const messages = buildSceneIdeatorPrompt(ctx);
+      expect(messages[1].content).toContain('NPC AGENDAS');
+      expect(messages[1].content).toContain('[Elena]');
+      expect(messages[1].content).toContain('Goal: Find the artifact');
+    });
+
+    it('renders NPC relationships when present', () => {
+      const ctx: SceneIdeatorContinuationContext = {
+        ...continuationContext,
+        accumulatedNpcRelationships: {
+          elena: {
+            npcName: 'Elena',
+            valence: 3,
+            dynamic: 'ally',
+            history: 'Old friends.',
+            currentTension: 'Disagrees about the plan.',
+            leverage: 'Trust.',
+          },
+        },
+      };
+      const messages = buildSceneIdeatorPrompt(ctx);
+      expect(messages[1].content).toContain('NPC-PROTAGONIST RELATIONSHIPS');
+      expect(messages[1].content).toContain('[Elena]');
+      expect(messages[1].content).toContain('Dynamic: ally | Valence: 3');
+    });
+
+    it('renders inventory when present', () => {
+      const ctx: SceneIdeatorContinuationContext = {
+        ...continuationContext,
+        accumulatedInventory: [
+          { id: 'inv-1', text: 'Iron sword' },
+          { id: 'inv-2', text: 'Healing potion' },
+        ],
+      };
+      const messages = buildSceneIdeatorPrompt(ctx);
+      expect(messages[1].content).toContain('YOUR INVENTORY:');
+      expect(messages[1].content).toContain('- [inv-1] Iron sword');
+      expect(messages[1].content).toContain('- [inv-2] Healing potion');
+    });
+
+    it('renders health conditions when present', () => {
+      const ctx: SceneIdeatorContinuationContext = {
+        ...continuationContext,
+        accumulatedHealth: [
+          { id: 'hp-1', text: 'Broken arm' },
+        ],
+      };
+      const messages = buildSceneIdeatorPrompt(ctx);
+      expect(messages[1].content).toContain('YOUR HEALTH:');
+      expect(messages[1].content).toContain('- [hp-1] Broken arm');
+    });
+
+    it('omits NPC/inventory/health sections when empty', () => {
+      const messages = buildSceneIdeatorPrompt(continuationContext);
+      expect(messages[1].content).not.toContain('NPC AGENDAS');
+      expect(messages[1].content).not.toContain('NPC-PROTAGONIST RELATIONSHIPS');
+      expect(messages[1].content).not.toContain('YOUR INVENTORY:');
+      expect(messages[1].content).not.toContain('YOUR HEALTH:');
+    });
   });
 });

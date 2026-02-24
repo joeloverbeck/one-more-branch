@@ -21,3 +21,7 @@ export { formatStoryBibleSection } from './story-bible-section.js';
 export { buildSceneCharacterVoicesSection } from './scene-character-voices.js';
 
 export { buildSpineSection } from './spine-section.js';
+
+export { buildNpcAgendasSection, buildNpcRelationshipsSection } from './npc-state-sections.js';
+
+export { buildInventorySection, buildHealthSection } from './resource-state-sections.js';

@@ -4,8 +4,6 @@ import {
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
 import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
-import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
-import type { AccumulatedNpcRelationships } from '../../../../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../../../models/story-arc.js';
 import { formatCanonForPrompt } from '../../../../engine/canon-manager.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
@@ -17,6 +15,10 @@ import {
   buildTrackedPromisesSection,
   buildPayoffFeedbackSection,
 } from './thread-pacing-directive.js';
+import {
+  buildNpcAgendasSection,
+  buildNpcRelationshipsSection,
+} from '../shared/npc-state-sections.js';
 
 function formatCharacterCanon(characterCanon: Readonly<Record<string, readonly string[]>>): string {
   const entries = Object.entries(characterCanon);
@@ -128,55 +130,6 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
   return lines.join('\n') + '\n';
 }
 
-function buildNpcAgendasSection(agendas?: AccumulatedNpcAgendas): string {
-  if (!agendas) {
-    return '';
-  }
-
-  const entries = Object.values(agendas);
-  if (entries.length === 0) {
-    return '';
-  }
-
-  const lines = entries.map(
-    (a) =>
-      `[${a.npcName}]
-  Goal: ${a.currentGoal}
-  Leverage: ${a.leverage}
-  Fear: ${a.fear}
-  Off-screen: ${a.offScreenBehavior}`
-  );
-
-  return `NPC AGENDAS (what each NPC wants and will do):
-${lines.join('\n\n')}
-
-`;
-}
-
-function buildNpcRelationshipsSection(
-  relationships?: AccumulatedNpcRelationships
-): string {
-  if (!relationships) {
-    return '';
-  }
-
-  const entries = Object.values(relationships);
-  if (entries.length === 0) {
-    return '';
-  }
-
-  const lines = entries.map(
-    (r) =>
-      `[${r.npcName}]
-  Dynamic: ${r.dynamic} | Valence: ${r.valence}
-  Tension: ${r.currentTension}`
-  );
-
-  return `NPC-PROTAGONIST RELATIONSHIPS (current dynamics):
-${lines.join('\n\n')}
-
-`;
-}
 
 function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
   if (isProtagonistGuidanceEmpty(guidance)) {
