@@ -7,11 +7,11 @@ const ROLE_INTRO =
 const VERIFICATION_DIRECTIVES = `VERIFICATION DIRECTIVES:
 - Do not praise concepts. Probe their specificity.
 - For each concept, produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
-- All scenarios and setpieces must be ONLY possible because of this specific concept's differentiator (genreSubversion + coreFlaw + coreConflictLoop). If a scenario could appear in a generic story of the same genre, reject it and write one that couldn't.
-- The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's differentiator.
+- All scenarios and setpieces must be ONLY possible because of this specific concept's premise — both its conflict engine (genreSubversion, coreFlaw, coreConflictLoop) and its world-specific elements (settingAxioms, constraintSet, keyInstitutions, deadlineMechanism, pressureSource, escapeValve). Each setpiece must exploit at least one world-specific element, not just the conflict engine. If a setpiece could appear in a generic story of the same genre with different world rules, reject it and write one that couldn't.
+- The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise (both its conflict engine and its world-specific elements).
 - The 6 escalating setpieces must form a rising intensity arc from opening hook to climax. Each must be concept-unique.
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
-- The load-bearing check is a negative test: remove the core differentiator and determine whether the story collapses into generic genre.`;
+- The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.`;
 
 function buildUserPayload(context: ConceptVerifierContext): string {
   const conceptInputs = context.evaluatedConcepts.map((evaluated, index) => ({
@@ -27,6 +27,10 @@ function buildUserPayload(context: ConceptVerifierContext): string {
     pressureSource: evaluated.concept.pressureSource,
     settingAxioms: evaluated.concept.settingAxioms,
     constraintSet: evaluated.concept.constraintSet,
+    deadlineMechanism: evaluated.concept.deadlineMechanism,
+    keyInstitutions: evaluated.concept.keyInstitutions,
+    escapeValve: evaluated.concept.escapeValve,
+    incitingDisruption: evaluated.concept.incitingDisruption,
     playerFantasy: evaluated.concept.playerFantasy,
     strengths: evaluated.strengths,
     weaknesses: evaluated.weaknesses,

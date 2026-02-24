@@ -72,5 +72,9 @@ describe('buildConceptVerifierPrompt', () => {
     expect(user).toContain('playerFantasy');
     expect(user).toContain('strengths');
     expect(user).toContain('weaknesses');
+    expect(user).toContain('deadlineMechanism');
+    expect(user).toContain('keyInstitutions');
+    expect(user).toContain('escapeValve');
+    expect(user).toContain('incitingDisruption');
   });
 });
