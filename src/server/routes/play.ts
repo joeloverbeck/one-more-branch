@@ -142,6 +142,13 @@ playRoutes.post(
           return res.status(400).json({ success: false, error: 'Invalid choice index' });
         }
 
+        if (choice.nextPageId !== null) {
+          return res.status(400).json({
+            success: false,
+            error: 'Choice already explored; scene ideation is only available for unexplored choices',
+          });
+        }
+
         const parentState = collectParentState(parentPage);
         const ancestorContext = await collectAncestorContext(storyId as StoryId, parentPage);
 

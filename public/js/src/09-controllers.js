@@ -98,10 +98,10 @@
     }
 
     function setChoicesDisabled(disabled) {
-      if (!choices) {
+      if (!choicesSection) {
         return;
       }
-      const allButtons = choices.querySelectorAll('.choice-btn');
+      const allButtons = choicesSection.querySelectorAll('.choice-btn');
       allButtons.forEach((button) => {
         button.disabled = disabled;
       });
@@ -380,7 +380,7 @@
     }
 
     if (hasChoicesUi) {
-      choices.addEventListener('click', async (event) => {
+      choicesSection.addEventListener('click', async (event) => {
         const clickedElement = event.target;
         if (!(clickedElement instanceof HTMLElement)) {
           return;
@@ -395,6 +395,8 @@
         if (!Number.isFinite(choiceIndex) || choiceIndex < 0) {
           return;
         }
+
+        var ideationHandled = false;
 
         try {
           clearPlayError(choicesSection);
@@ -424,12 +426,12 @@
             );
             loading.style.display = 'none';
 
-            await new Promise(function (resolveIdeation) {
+            var selectedDirection = await new Promise(function (resolveIdeation) {
               ideationCtrl.renderIdeationUI(
                 choicesSection,
                 ideationOptions,
-                function onConfirm(selectedDirection) {
-                  resolveIdeation(selectedDirection);
+                function onConfirm(dir) {
+                  resolveIdeation(dir);
                 },
                 function onRegenerate() {
                   loading.style.display = 'flex';
@@ -451,15 +453,20 @@
                   });
                 }
               );
-            }).then(function (selectedDirection) {
-              proceedWithChoice(
-                apiKey, choiceIndex, protagonistGuidance, selectedDirection
-              );
             });
+
+            // Mark ideation as handled so the finally block does not interfere
+            // with proceedWithChoice's own loading/cleanup lifecycle
+            ideationHandled = true;
+            await proceedWithChoice(
+              apiKey, choiceIndex, protagonistGuidance, selectedDirection
+            );
             return;
           } catch (ideationErr) {
-            loading.style.display = 'none';
-            setChoicesDisabled(false);
+            if (!ideationHandled) {
+              loading.style.display = 'none';
+              setChoicesDisabled(false);
+            }
             showPlayError(
               ideationErr instanceof Error ? ideationErr.message : 'Scene ideation failed',
               choicesSection
@@ -525,8 +532,10 @@
           }
           setChoicesDisabled(false);
         } finally {
-          loadingProgress.stop();
-          loading.style.display = 'none';
+          if (!ideationHandled) {
+            loadingProgress.stop();
+            loading.style.display = 'none';
+          }
         }
       });
     }

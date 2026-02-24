@@ -130,6 +130,43 @@ describe('rebuildChoicesSection', () => {
     expect(newThoughtsInput.value).toBe('This might be a trap.');
   });
 
+  it('re-creates #choices div if it has been detached from choicesSectionEl', async () => {
+    document.body.innerHTML = buildPlayPageHtml();
+    loadAppAndInit();
+
+    // Detach #choices (simulating ideation UI replacing content) without
+    // destroying the custom choice buttons and their event handlers
+    const choicesSection = document.getElementById('choices-section')!;
+    const choicesEl = choicesSection.querySelector('#choices')!;
+    choicesEl.remove();
+
+    // Verify #choices is gone
+    expect(choicesSection.querySelector('#choices')).toBeNull();
+
+    const newChoices = [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
+    ];
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('custom-choice')) {
+        return Promise.resolve(mockJsonResponse({ choices: newChoices }));
+      }
+      return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+    });
+
+    const input = choicesSection.querySelector('.custom-choice-input') as HTMLInputElement;
+    input.value = 'Test choice';
+    (choicesSection.querySelector('.custom-choice-btn') as HTMLButtonElement).click();
+    await jest.runAllTimersAsync();
+
+    // The #choices div should be re-created and contain the new choices
+    const recreatedChoices = choicesSection.querySelector('#choices');
+    expect(recreatedChoices).not.toBeNull();
+    const buttons = recreatedChoices!.querySelectorAll('.choice-btn');
+    expect(buttons.length).toBe(2);
+    expect(buttons[0].querySelector('.choice-text')?.textContent).toBe('Option A');
+  });
+
   it('binds custom choice events after rebuild', async () => {
     document.body.innerHTML = buildPlayPageHtml();
     loadAppAndInit();
