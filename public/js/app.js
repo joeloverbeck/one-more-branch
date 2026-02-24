@@ -4803,6 +4803,7 @@ function createRecapModalController(initialData) {
     }
     const loadingProgress = createLoadingProgressController(loading);
     var selectedConceptSpec = null;
+    var selectedContentPreferences = null;
     var selectedKernelForStory = null;
     var loadedConceptsMap = {};
 
@@ -5131,6 +5132,9 @@ function createRecapModalController(initialData) {
         var savedConcept = loadedConceptsMap[conceptId];
         if (savedConcept && savedConcept.evaluatedConcept && savedConcept.evaluatedConcept.concept) {
           selectedConceptSpec = savedConcept.evaluatedConcept.concept;
+          selectedContentPreferences = savedConcept.seeds && savedConcept.seeds.contentPreferences
+            ? savedConcept.seeds.contentPreferences
+            : null;
           prefillFromConceptSpec(selectedConceptSpec);
 
           // Auto-load linked kernel if available
@@ -5167,6 +5171,7 @@ function createRecapModalController(initialData) {
           startingSituation: formValues.startingSituation,
           apiKey: formValues.apiKey,
           conceptSpec: conceptSpecFromFields || undefined,
+          contentPreferences: selectedContentPreferences || undefined,
           progressId: progressId,
         };
         if (selectedKernelForStory) {
@@ -5279,6 +5284,7 @@ function createRecapModalController(initialData) {
       skipConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
         selectedConceptSpec = null;
+        selectedContentPreferences = null;
         revealManualStorySection();
       });
     }

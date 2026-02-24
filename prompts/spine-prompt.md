@@ -12,6 +12,8 @@ The spine runs **before entity decomposition and structure generation**, as the 
 
 The spine defines the invariant narrative backbone: the central dramatic question, the protagonist's inner transformation vs outer goal, the antagonistic force, and the primary narrative pattern. All downstream prompts receive the selected spine via `buildSpineSection()` from `src/llm/prompts/sections/shared/spine-section.ts`.
 
+When a `contentPreferences` string is provided (from the `ConceptSeeds` of a selected saved concept), the prompt includes a CONTENT PREFERENCES section containing the user's free-text creative direction (e.g., "I want the protagonist to have a cool gun", "no romance subplot"). This section appears between the STARTING SITUATION and CONCEPT ANALYSIS blocks.
+
 When a `conceptSpec` is provided (from the `/concepts` page), the prompt includes a CONCEPT ANALYSIS section with all 23 concept fields organized by group (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata). When a `storyKernel` is also available (linked via `sourceKernelId` on the concept or manually selected), a THEMATIC KERNEL section is added between the concept analysis and the tone/genre line, providing the philosophical foundation for the spine. When a `conceptVerification` is available, a CONCEPT VERIFICATION section is included with the `signatureScenario` and `inevitabilityStatement`, constraining the spine's dramatic question to make the signature scenario inevitable and the antagonistic force's pressure mechanism to logically produce the inevitability conditions.
 
 ## Messages Sent To Model
@@ -72,6 +74,11 @@ NPCS (Available Characters):
 {{#if startingSituation}}
 STARTING SITUATION:
 {{startingSituation}}
+{{/if}}
+
+{{#if contentPreferences}}
+CONTENT PREFERENCES (user creative direction — incorporate into spine design):
+{{contentPreferences}}
 {{/if}}
 
 {{#if conceptSpec}}
@@ -207,6 +214,7 @@ OUTPUT SHAPE:
 - `protagonistNeedVsWant.dynamic` describes the relationship between need and want: `CONVERGENT` (achieving want fulfills need), `DIVERGENT` (want leads away from need), `SUBSTITUTIVE` (need replaces want), `IRRECONCILABLE` (cannot satisfy both).
 - `characterArcType` describes the trajectory: `POSITIVE_CHANGE` (grows), `FLAT` (tests existing belief), `DISILLUSIONMENT` (learns hard truth), `FALL` (loses way), `CORRUPTION` (becomes what they opposed).
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
+- When `contentPreferences` is provided (from `ConceptSeeds` of a selected saved concept), the CONTENT PREFERENCES section is included with the user's free-text creative direction. This influences spine design but does not constrain enum values or structural fields.
 - When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with all 23 concept fields organized into 6 groups (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata) and hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will usually share the concept's `conflictAxis` and `conflictType`, so divergence must come from `storySpineType` and/or deeper fields such as need/want dynamic, antagonistic force, pressure mechanism, and dramatic question framing. When no concept is present (manual story creation), spine generation works as before with no concept section.
 - When a `storyKernel` is provided (linked via `sourceKernelId` on the saved concept or manually selected), the THEMATIC KERNEL section is included with 5 kernel fields (dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion) and a constraint that the spine's central dramatic question should operationalize the kernel. The kernel defines the thematic "why" while the spine defines the structural "how".
 - When a `conceptVerification` is provided, the CONCEPT VERIFICATION section is included with `signatureScenario` and `inevitabilityStatement`. Two constraints bind the spine to these verification outputs: (1) the `centralDramaticQuestion` must make the signature scenario inevitable, and (2) the antagonistic force's pressure mechanism must logically produce the conditions described in the inevitability statement.

@@ -69,13 +69,15 @@ EVALUATED CONCEPTS INPUT:
 
 OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "verifications": ConceptVerification[] }.
-- verifications array must have exactly N items, one per input concept, in the same order.
+- verifications array must have exactly N items, one per input concept.
 - Each verification must include:
+  - conceptId: string (must match exactly one provided input conceptId)
   - signatureScenario: string
   - escalatingSetpieces: string[] (exactly 6)
   - inevitabilityStatement: string
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }
   - conceptIntegrityScore: number 0-100
+- Every input conceptId must appear exactly once in the output. No duplicates, no omissions, no unknown IDs.
 - All text fields must be non-empty.
 - Each escalatingSetpieces array must contain exactly 6 strings.
 ```
@@ -86,6 +88,7 @@ OUTPUT REQUIREMENTS:
 {
   "verifications": [
     {
+      "conceptId": "concept_1",
       "signatureScenario": "description of the most iconic interactive decision moment",
       "escalatingSetpieces": [
         "setpiece 1 (opening intensity)",
@@ -107,7 +110,7 @@ OUTPUT REQUIREMENTS:
 }
 ```
 
-- `parseConceptVerificationResponse(...)` requires exactly N verifications matching the input count.
+- `parseConceptVerificationResponse(...)` requires exactly N verifications with conceptIds matching the input set (exact coverage: no duplicates, no omissions, no unknown IDs).
 - `escalatingSetpieces` must have exactly 6 items.
 - `conceptIntegrityScore` is clamped to 0-100 and rounded.
 - All text fields must be non-empty after trimming.

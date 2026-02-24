@@ -15,6 +15,7 @@ const CONCEPT_VERIFICATION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: [
+    'conceptId',
     'signatureScenario',
     'escalatingSetpieces',
     'inevitabilityStatement',
@@ -22,6 +23,7 @@ const CONCEPT_VERIFICATION_SCHEMA = {
     'conceptIntegrityScore',
   ],
   properties: {
+    conceptId: { type: 'string', minLength: 1 },
     signatureScenario: { type: 'string' },
     escalatingSetpieces: {
       type: 'array',

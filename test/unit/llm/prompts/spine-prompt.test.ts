@@ -54,6 +54,34 @@ describe('buildSpinePrompt', () => {
     );
   });
 
+  it('includes content preferences section when contentPreferences is provided', () => {
+    const messages = buildSpinePrompt({
+      ...baseContext,
+      contentPreferences: 'I want the protagonist to have a cool gun',
+    });
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('CONTENT PREFERENCES');
+    expect(user).toContain('I want the protagonist to have a cool gun');
+  });
+
+  it('omits content preferences section when contentPreferences is absent', () => {
+    const messages = buildSpinePrompt(baseContext);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('CONTENT PREFERENCES');
+  });
+
+  it('omits content preferences section when contentPreferences is empty string', () => {
+    const messages = buildSpinePrompt({
+      ...baseContext,
+      contentPreferences: '   ',
+    });
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('CONTENT PREFERENCES');
+  });
+
   it('includes NC-21 content policy in system message', () => {
     const messages = buildSpinePrompt(baseContext);
     const system = getSystemMessage(messages);
