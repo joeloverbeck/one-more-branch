@@ -4,7 +4,7 @@
 - Orchestration: `src/llm/concept-verifier.ts`
 - Shared stage runner: `src/llm/llm-stage-runner.ts`
 - Output schema source: `src/llm/schemas/concept-verifier-schema.ts`
-- Types: `src/models/concept-generator.ts` (`ConceptVerification`, `LoadBearingCheck`, `ConceptVerifierContext`, `ConceptVerificationResult`)
+- Types: `src/models/concept-generator.ts` (`ConceptVerification`, `LoadBearingCheck`, `KernelFidelityCheck`, `ConceptVerifierContext`, `ConceptVerificationResult`)
 
 ## Pipeline Position
 
@@ -22,7 +22,8 @@ The evaluator scores concepts on quality dimensions and the stress tester harden
 2. **Escalating Setpieces**: Producing 6 concept-unique situations in rising intensity that serve as downstream beat seeds for structure generation.
 3. **Inevitability Statement**: Capturing what kind of story MUST happen (not could happen) given the premise's internal logic.
 4. **Load-Bearing Check**: A negative test — removing the core differentiator and checking whether the story collapses into generic genre.
-5. **Concept Integrity Score**: 0-100 based on how many setpieces are truly concept-unique.
+5. **Kernel Fidelity Check**: A negative test — removing the story kernel and checking whether the concept's conflict engine still implies the same value-at-stake and opposing force, or could serve any kernel equally well.
+6. **Concept Integrity Score**: 0-100 based on how many setpieces are truly concept-unique.
 
 ## Messages Sent To Model
 
@@ -39,6 +40,12 @@ VERIFICATION DIRECTIVES:
 - The 6 escalating setpieces must form a rising intensity arc from opening hook to climax. Each must be concept-unique.
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.
+
+KERNEL FIDELITY DIRECTIVE:
+- For each concept, determine whether the kernel's valueAtStake and opposingForce are STRUCTURALLY embedded in the concept's conflict engine, or merely cosmetically referenced.
+- The test: Remove the story kernel entirely. Does the concept's conflict engine (coreConflictLoop, pressureSource, stakesPersonal, stakesSystemic) still clearly imply the same value-at-stake and opposing force? If NOT, the operationalization is genuine — the kernel's thematic logic is load-bearing in the concept. If it COULD serve any kernel equally well, the operationalization is superficial.
+- kernelFidelityCheck.passes = true means the concept has genuinely grounded the kernel.
+- kernelFidelityCheck.kernelDrift describes what kernel elements are absent, weakly mapped, or superficially parroted.
 ```
 
 ### 2) User Message
@@ -71,6 +78,13 @@ EVALUATED CONCEPTS INPUT:
   }
 ]
 
+STORY KERNEL (shared by all concepts):
+- dramaticThesis: ...
+- valueAtStake: ...
+- opposingForce: ...
+- directionOfChange: ...
+- thematicQuestion: ...
+
 OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "verifications": ConceptVerification[] }.
 - verifications array must have exactly N items, one per input concept.
@@ -80,6 +94,10 @@ OUTPUT REQUIREMENTS:
   - escalatingSetpieces: string[] (exactly 6)
   - inevitabilityStatement: string
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }
+  - kernelFidelityCheck: { passes: boolean, reasoning: string, kernelDrift: string }
+    - passes: true if the concept's conflict engine genuinely embeds the kernel's valueAtStake and opposingForce
+    - reasoning: explain how the kernel is structurally grounded (or why it isn't)
+    - kernelDrift: describe what kernel elements are absent, weak, or superficially applied
   - conceptIntegrityScore: number 0-100
 - Every input conceptId must appear exactly once in the output. No duplicates, no omissions, no unknown IDs.
 - All text fields must be non-empty.
@@ -108,6 +126,11 @@ OUTPUT REQUIREMENTS:
         "reasoning": "why the concept is load-bearing",
         "genericCollapse": "what it becomes without its differentiator"
       },
+      "kernelFidelityCheck": {
+        "passes": true,
+        "reasoning": "how the kernel is structurally grounded in the concept",
+        "kernelDrift": "what kernel elements are absent, weak, or superficially applied"
+      },
       "conceptIntegrityScore": 85
     }
   ]
@@ -124,6 +147,7 @@ OUTPUT REQUIREMENTS:
 | Context Field | Description |
 |---|---|
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
+| `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` — always required |
 
 Each concept exposes: `oneLineHook`, `genreFrame`, `genreSubversion`, `protagonistRole`, `coreFlaw`, `coreConflictLoop`, `conflictAxis`, `conflictType`, `pressureSource`, `settingAxioms`, `constraintSet`, `deadlineMechanism`, `keyInstitutions`, `escapeValve`, `incitingDisruption`, `playerFantasy`, `strengths`, `weaknesses`.
 

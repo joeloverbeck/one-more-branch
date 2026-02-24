@@ -2,6 +2,7 @@ import type {
   ConceptVerification,
   ConceptVerificationResult,
   ConceptVerifierContext,
+  KernelFidelityCheck,
   LoadBearingCheck,
 } from '../models/index.js';
 import { runLlmStage } from './llm-stage-runner.js';
@@ -84,6 +85,39 @@ function parseLoadBearingCheck(value: unknown, label: string): LoadBearingCheck 
   };
 }
 
+function parseKernelFidelityCheck(value: unknown, label: string): KernelFidelityCheck {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new LLMError(
+      `${label} kernelFidelityCheck must be an object`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const data = value as Record<string, unknown>;
+  if (typeof data['passes'] !== 'boolean') {
+    throw new LLMError(
+      `${label} kernelFidelityCheck has invalid passes`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  return {
+    passes: data['passes'],
+    reasoning: requireNonEmptyString(
+      data['reasoning'],
+      'reasoning',
+      `${label} kernelFidelityCheck`,
+    ),
+    kernelDrift: requireNonEmptyString(
+      data['kernelDrift'],
+      'kernelDrift',
+      `${label} kernelFidelityCheck`,
+    ),
+  };
+}
+
 function parseSetpieces(value: unknown, label: string): readonly string[] {
   if (!Array.isArray(value)) {
     throw new LLMError(
@@ -140,6 +174,7 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
       label,
     ),
     loadBearingCheck: parseLoadBearingCheck(data['loadBearingCheck'], label),
+    kernelFidelityCheck: parseKernelFidelityCheck(data['kernelFidelityCheck'], label),
     conceptIntegrityScore: clampedScore,
   };
 }

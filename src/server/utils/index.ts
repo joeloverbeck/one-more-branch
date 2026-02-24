@@ -32,6 +32,8 @@ export {
   getThreatPanelData,
   getTrackedPromisesPanelData,
 } from './view-helpers.js';
+export { groupConceptsByGenre } from './group-concepts-by-genre.js';
+export type { GenreGroup } from './group-concepts-by-genre.js';
 export type {
   ActDisplayInfo,
   ConstraintPanelData,

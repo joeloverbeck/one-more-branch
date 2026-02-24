@@ -118,28 +118,34 @@
         return;
       }
 
-      concepts.forEach(function (savedConcept) {
-        var evaluatedConcept = savedConcept && savedConcept.evaluatedConcept ? savedConcept.evaluatedConcept : null;
-        var concept = evaluatedConcept && evaluatedConcept.concept ? evaluatedConcept.concept : {};
-        var card = document.createElement('article');
-        card.className = 'spine-card concept-card';
-        card.setAttribute('data-concept-id', String(savedConcept.id || ''));
-        card.innerHTML =
-          '<div class="spine-badges">' +
-            '<span class="spine-badge spine-badge-type">' +
-              escapeHtml(String((concept.genreFrame || '')).replace(/_/g, ' ')) +
-            '</span>' +
-            '<span class="spine-badge spine-badge-conflict">' +
-              escapeHtml(String((concept.conflictAxis || '')).replace(/_/g, ' ')) +
-            '</span>' +
-            '<span class="spine-badge spine-badge-arc">Score ' +
-              escapeHtml(String(Math.round(Number(evaluatedConcept && evaluatedConcept.overallScore) || 0))) +
-            '</span>' +
-          '</div>' +
-          '<h3 class="spine-cdq">' + escapeHtml(savedConcept.name || concept.oneLineHook || 'Untitled Concept') + '</h3>' +
-          '<p class="spine-field">' + escapeHtml(concept.oneLineHook || '') + '</p>' +
-          '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>';
-        parentContainer.appendChild(card);
+      var groups = groupConceptsByGenreClient(concepts);
+      groups.forEach(function (group) {
+        var html = renderGenreSectionHeader(group.genre, group.displayLabel, group.concepts.length, true);
+
+        group.concepts.forEach(function (savedConcept) {
+          var evaluatedConcept = savedConcept && savedConcept.evaluatedConcept ? savedConcept.evaluatedConcept : null;
+          var concept = evaluatedConcept && evaluatedConcept.concept ? evaluatedConcept.concept : {};
+          html +=
+            '<article class="spine-card concept-card" data-concept-id="' + escapeHtml(String(savedConcept.id || '')) + '">' +
+              '<div class="spine-badges">' +
+                '<span class="spine-badge spine-badge-type">' +
+                  escapeHtml(String((concept.genreFrame || '')).replace(/_/g, ' ')) +
+                '</span>' +
+                '<span class="spine-badge spine-badge-conflict">' +
+                  escapeHtml(String((concept.conflictAxis || '')).replace(/_/g, ' ')) +
+                '</span>' +
+                '<span class="spine-badge spine-badge-arc">Score ' +
+                  escapeHtml(String(Math.round(Number(evaluatedConcept && evaluatedConcept.overallScore) || 0))) +
+                '</span>' +
+              '</div>' +
+              '<h3 class="spine-cdq">' + escapeHtml(savedConcept.name || concept.oneLineHook || 'Untitled Concept') + '</h3>' +
+              '<p class="spine-field">' + escapeHtml(concept.oneLineHook || '') + '</p>' +
+              '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
+            '</article>';
+        });
+
+        html += renderGenreSectionFooter();
+        parentContainer.insertAdjacentHTML('beforeend', html);
       });
 
       if (parentSection) {

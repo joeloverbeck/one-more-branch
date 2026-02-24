@@ -91,8 +91,16 @@
         <% if (concepts.length === 0) { %>
           <p class="spine-section-subtitle">No saved concepts yet. Generate some above!</p>
         <% } %>
-        <div id="saved-concepts-list" class="spine-options-container">
-          <% for (const concept of concepts) { %>
+        <% const groupedConcepts = typeof genreGroups !== 'undefined' && Array.isArray(genreGroups) ? genreGroups : []; %>
+        <div id="saved-concepts-list">
+          <% for (const group of groupedConcepts) { %>
+          <details class="genre-group" open data-genre="<%= group.genre %>">
+            <summary class="genre-group__header">
+              <span class="genre-group__label"><%= group.displayLabel %></span>
+              <span class="genre-group__count">(<%= group.concepts.length %>)</span>
+            </summary>
+            <div class="genre-group__body spine-options-container">
+          <% for (const concept of group.concepts) { %>
           <% const cc = concept.evaluatedConcept.concept; %>
           <article class="spine-card concept-card saved-concept-card" data-concept-id="<%= concept.id %>">
             <div class="spine-badges">
@@ -200,6 +208,9 @@
               <button type="button" class="btn btn-danger btn-small concept-delete-btn" data-concept-id="<%= concept.id %>">Delete</button>
             </div>
           </article>
+          <% } %>
+            </div>
+          </details>
           <% } %>
         </div>
       </section>

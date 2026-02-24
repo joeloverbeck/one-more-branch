@@ -1,12 +1,24 @@
 import { buildConceptVerifierPrompt } from '../../../../src/llm/prompts/concept-verifier-prompt';
 import type { ConceptVerifierContext } from '../../../../src/models';
+import type { StoryKernel } from '../../../../src/models/story-kernel';
 import { createEvaluatedConceptFixture } from '../../../fixtures/concept-generator';
+
+function createStoryKernel(): StoryKernel {
+  return {
+    dramaticThesis: 'Control destroys trust',
+    valueAtStake: 'Trust',
+    opposingForce: 'Fear of uncertainty',
+    directionOfChange: 'IRONIC',
+    thematicQuestion: 'Can safety exist without control?',
+  };
+}
 
 function createContext(count = 2): ConceptVerifierContext {
   return {
     evaluatedConcepts: Array.from({ length: count }, (_, i) =>
       createEvaluatedConceptFixture(i + 1),
     ),
+    kernel: createStoryKernel(),
   };
 }
 
@@ -32,6 +44,17 @@ describe('buildConceptVerifierPrompt', () => {
     expect(system).toContain('inevitability statement');
   });
 
+  it('system message contains kernel fidelity directive', () => {
+    const messages = buildConceptVerifierPrompt(createContext());
+    const system = messages[0].content;
+
+    expect(system).toContain('KERNEL FIDELITY DIRECTIVE');
+    expect(system).toContain('valueAtStake');
+    expect(system).toContain('opposingForce');
+    expect(system).toContain('kernelFidelityCheck.passes');
+    expect(system).toContain('kernelFidelityCheck.kernelDrift');
+  });
+
   it('user message contains evaluated concept data', () => {
     const messages = buildConceptVerifierPrompt(createContext());
     const user = messages[1].content;
@@ -44,6 +67,18 @@ describe('buildConceptVerifierPrompt', () => {
     expect(user).toContain('NOIR');
   });
 
+  it('user message includes story kernel fields', () => {
+    const messages = buildConceptVerifierPrompt(createContext());
+    const user = messages[1].content;
+
+    expect(user).toContain('STORY KERNEL');
+    expect(user).toContain('dramaticThesis: Control destroys trust');
+    expect(user).toContain('valueAtStake: Trust');
+    expect(user).toContain('opposingForce: Fear of uncertainty');
+    expect(user).toContain('directionOfChange: IRONIC');
+    expect(user).toContain('thematicQuestion: Can safety exist without control?');
+  });
+
   it('user message includes output requirements with correct count', () => {
     const messages = buildConceptVerifierPrompt(createContext(3));
     const user = messages[1].content;
@@ -54,6 +89,7 @@ describe('buildConceptVerifierPrompt', () => {
     expect(user).toContain('escalatingSetpieces');
     expect(user).toContain('inevitabilityStatement');
     expect(user).toContain('loadBearingCheck');
+    expect(user).toContain('kernelFidelityCheck');
     expect(user).toContain('conceptIntegrityScore');
     expect(user).toContain('exactly 6 strings');
   });

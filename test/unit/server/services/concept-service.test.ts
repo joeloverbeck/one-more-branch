@@ -142,7 +142,7 @@ describe('concept-service', () => {
         'valid-key-12345',
       );
       expect(verifyConcepts).toHaveBeenCalledWith(
-        { evaluatedConcepts: evaluated },
+        { evaluatedConcepts: evaluated, kernel: createStoryKernel() },
         'valid-key-12345',
       );
       expect(result).toEqual({

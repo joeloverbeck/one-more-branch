@@ -3115,3 +3115,169 @@ main {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── Genre Group (collapsible sections) ───────────────────────── */
+.genre-group {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.25);
+  margin-bottom: 1rem;
+}
+
+.genre-group__header {
+  cursor: pointer;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--color-primary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.genre-group__header::-webkit-details-marker {
+  display: none;
+}
+
+.genre-group__header::before {
+  content: '\25B6';
+  font-size: 0.65em;
+  transition: transform var(--transition);
+}
+
+.genre-group[open] > .genre-group__header::before {
+  transform: rotate(90deg);
+}
+
+.genre-group__header:hover {
+  color: var(--color-primary-hover);
+}
+
+.genre-group__label {
+  text-transform: capitalize;
+}
+
+.genre-group__count {
+  font-weight: 400;
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+.genre-group__body {
+  padding: 0 0.75rem 0.75rem;
+}
+
+/* ── Concept Dropdown (custom searchable) ─────────────────────── */
+.concept-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.concept-dropdown__trigger {
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.75);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+
+.concept-dropdown__trigger:hover,
+.concept-dropdown__trigger:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.concept-dropdown__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(10, 18, 40, 0.97);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+.concept-dropdown__search {
+  padding: 0.5rem 0.8rem;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.concept-dropdown__search::placeholder {
+  color: var(--color-muted);
+}
+
+.concept-dropdown__list {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 300px;
+}
+
+.concept-dropdown__genre-header {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--color-primary);
+  background: rgba(14, 24, 49, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.concept-dropdown__option {
+  padding: 0.45rem 0.8rem 0.45rem 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background var(--transition);
+}
+
+.concept-dropdown__option:hover,
+.concept-dropdown__option--focused {
+  background: rgba(233, 69, 96, 0.15);
+}
+
+.concept-dropdown__option--selected {
+  color: var(--color-primary);
+}
+
+.concept-dropdown__option-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.concept-dropdown__option-score {
+  font-size: 0.8em;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.concept-dropdown__empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-muted);
+  font-style: italic;
+}

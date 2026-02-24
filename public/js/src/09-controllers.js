@@ -550,7 +550,7 @@
     const loading = document.getElementById('loading');
     const conceptSelectorSection = document.getElementById('concept-selector-section');
     const manualStorySection = document.getElementById('manual-story-section');
-    const conceptSelector = document.getElementById('concept-selector');
+    const conceptDropdownMount = document.getElementById('concept-dropdown-mount');
     const useConceptBtn = document.getElementById('use-concept-btn');
     const skipConceptBtn = document.getElementById('skip-concept-btn');
     const generateSpineBtn = document.getElementById('generate-spine-btn');
@@ -856,41 +856,42 @@
 
     // ── Concept selector logic ─────────────────────────────────────
 
+    var conceptDropdownInstance = null;
+
     async function loadConceptList() {
       try {
         var response = await fetch('/concepts/api/list');
         var data = await response.json();
         if (!response.ok || !data.success) return;
 
-        if (conceptSelector && Array.isArray(data.concepts)) {
+        if (conceptDropdownMount && Array.isArray(data.concepts)) {
           data.concepts.forEach(function (c) {
             loadedConceptsMap[c.id] = c;
-            var option = document.createElement('option');
-            option.value = c.id;
-            option.textContent = c.name + ' (' + Math.round(c.evaluatedConcept.overallScore || 0) + ')';
-            conceptSelector.appendChild(option);
           });
+
+          conceptDropdownInstance = createConceptDropdown(
+            conceptDropdownMount,
+            data.concepts,
+            function (conceptId) {
+              if (useConceptBtn) {
+                useConceptBtn.disabled = !conceptId;
+              }
+            }
+          );
         }
       } catch (e) {
         // Non-fatal: concepts list unavailable
       }
     }
 
-    if (conceptSelector) {
+    if (conceptDropdownMount) {
       loadConceptList();
-
-      conceptSelector.addEventListener('change', function () {
-        var conceptId = conceptSelector.value;
-        if (useConceptBtn) {
-          useConceptBtn.disabled = !conceptId;
-        }
-      });
     }
 
     if (useConceptBtn) {
       useConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        var conceptId = conceptSelector ? conceptSelector.value : '';
+        var conceptId = conceptDropdownInstance ? conceptDropdownInstance.getSelectedId() : '';
         if (!conceptId) return;
 
         var savedConcept = loadedConceptsMap[conceptId];

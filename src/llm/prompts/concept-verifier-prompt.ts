@@ -13,6 +13,12 @@ const VERIFICATION_DIRECTIVES = `VERIFICATION DIRECTIVES:
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.`;
 
+const KERNEL_FIDELITY_DIRECTIVE = `KERNEL FIDELITY DIRECTIVE:
+- For each concept, determine whether the kernel's valueAtStake and opposingForce are STRUCTURALLY embedded in the concept's conflict engine, or merely cosmetically referenced.
+- The test: Remove the story kernel entirely. Does the concept's conflict engine (coreConflictLoop, pressureSource, stakesPersonal, stakesSystemic) still clearly imply the same value-at-stake and opposing force? If NOT, the operationalization is genuine — the kernel's thematic logic is load-bearing in the concept. If it COULD serve any kernel equally well, the operationalization is superficial.
+- kernelFidelityCheck.passes = true means the concept has genuinely grounded the kernel.
+- kernelFidelityCheck.kernelDrift describes what kernel elements are absent, weakly mapped, or superficially parroted.`;
+
 function buildUserPayload(context: ConceptVerifierContext): string {
   const conceptInputs = context.evaluatedConcepts.map((evaluated, index) => ({
     conceptId: `concept_${index + 1}`,
@@ -40,11 +46,19 @@ function buildUserPayload(context: ConceptVerifierContext): string {
 }
 
 export function buildConceptVerifierPrompt(context: ConceptVerifierContext): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, VERIFICATION_DIRECTIVES];
+  const systemSections: string[] = [ROLE_INTRO, VERIFICATION_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
+
+  const kernelSection = `STORY KERNEL (shared by all concepts):
+- dramaticThesis: ${context.kernel.dramaticThesis}
+- valueAtStake: ${context.kernel.valueAtStake}
+- opposingForce: ${context.kernel.opposingForce}
+- directionOfChange: ${context.kernel.directionOfChange}
+- thematicQuestion: ${context.kernel.thematicQuestion}`;
 
   const userSections: string[] = [
     'Verify the specificity and load-bearing integrity of each evaluated concept below.',
     `EVALUATED CONCEPTS INPUT:\n${buildUserPayload(context)}`,
+    kernelSection,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "verifications": ConceptVerification[] }.
 - verifications array must have exactly ${context.evaluatedConcepts.length} items, one per input concept.
@@ -57,6 +71,10 @@ export function buildConceptVerifierPrompt(context: ConceptVerifierContext): Cha
     - passes: true if the concept is genuinely load-bearing (removing differentiator DOES collapse it)
     - reasoning: explain what makes it unique or why it fails
     - genericCollapse: describe what the concept collapses INTO when its differentiator is removed
+  - kernelFidelityCheck: { passes: boolean, reasoning: string, kernelDrift: string }
+    - passes: true if the concept's conflict engine genuinely embeds the kernel's valueAtStake and opposingForce
+    - reasoning: explain how the kernel is structurally grounded (or why it isn't)
+    - kernelDrift: describe what kernel elements are absent, weak, or superficially applied
   - conceptIntegrityScore: number 0-100 (how many of the 6 setpieces are truly concept-unique; 100 = all 6 are impossible in any other story)
 - Every input conceptId must appear exactly once in the output. No duplicates, no omissions, no unknown IDs.
 - All text fields must be non-empty.

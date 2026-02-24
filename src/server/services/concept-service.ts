@@ -193,7 +193,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         attempt: 1,
       });
       const verification = await deps.verifyConcepts(
-        { evaluatedConcepts: evaluation.evaluatedConcepts },
+        { evaluatedConcepts: evaluation.evaluatedConcepts, kernel },
         apiKey,
       );
       onGenerationStage?.({

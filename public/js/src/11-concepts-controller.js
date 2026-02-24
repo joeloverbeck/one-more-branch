@@ -281,6 +281,56 @@
       }
     }
 
+    function findOrCreateGenreGroup(genre) {
+      if (!savedConceptsList) return null;
+      var existing = savedConceptsList.querySelector('details.genre-group[data-genre="' + genre + '"]');
+      if (existing) return existing;
+
+      // Create new genre group
+      var details = document.createElement('details');
+      details.className = 'genre-group';
+      details.setAttribute('open', '');
+      details.setAttribute('data-genre', genre);
+
+      var summary = document.createElement('summary');
+      summary.className = 'genre-group__header';
+      summary.innerHTML =
+        '<span class="genre-group__label">' + escapeHtml(formatGenreDisplayLabel(genre)) + '</span>' +
+        '<span class="genre-group__count">(0)</span>';
+
+      var body = document.createElement('div');
+      body.className = 'genre-group__body spine-options-container';
+
+      details.appendChild(summary);
+      details.appendChild(body);
+
+      // Insert alphabetically
+      var label = formatGenreDisplayLabel(genre).toLowerCase();
+      var groups = savedConceptsList.querySelectorAll('details.genre-group');
+      var inserted = false;
+      for (var i = 0; i < groups.length; i++) {
+        var groupLabel = (groups[i].getAttribute('data-genre') || '').replace(/_/g, ' ').toLowerCase();
+        if (label < groupLabel) {
+          savedConceptsList.insertBefore(details, groups[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) {
+        savedConceptsList.appendChild(details);
+      }
+
+      return details;
+    }
+
+    function updateGenreGroupCount(genreGroup) {
+      if (!genreGroup) return;
+      var body = genreGroup.querySelector('.genre-group__body');
+      var count = body ? body.querySelectorAll('.saved-concept-card').length : 0;
+      var countSpan = genreGroup.querySelector('.genre-group__count');
+      if (countSpan) countSpan.textContent = '(' + count + ')';
+    }
+
     function appendSavedConceptCard(concept) {
       if (!savedConceptsList) return;
 
@@ -355,7 +405,18 @@
 
       card.innerHTML = cardHtml;
 
-      savedConceptsList.prepend(card);
+      var genre =
+        c.genreFrame || 'UNKNOWN';
+      var genreGroup = findOrCreateGenreGroup(genre);
+      if (genreGroup) {
+        var body = genreGroup.querySelector('.genre-group__body');
+        if (body) {
+          body.prepend(card);
+        }
+        updateGenreGroupCount(genreGroup);
+      } else {
+        savedConceptsList.prepend(card);
+      }
     }
 
     // ── Delete concept ─────────────────────────────────────────────
@@ -402,7 +463,15 @@
         }
 
         var card = btn.closest('.saved-concept-card');
+        var parentGenreGroup = card ? card.closest('.genre-group') : null;
         if (card) card.remove();
+        if (parentGenreGroup) {
+          updateGenreGroupCount(parentGenreGroup);
+          var remainingCards = parentGenreGroup.querySelectorAll('.saved-concept-card');
+          if (remainingCards.length === 0) {
+            parentGenreGroup.remove();
+          }
+        }
       } catch (error) {
         btn.disabled = false;
         showError(error instanceof Error ? error.message : 'Failed to delete');

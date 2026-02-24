@@ -123,6 +123,11 @@ export function createConceptVerificationFixture(index = 1): ConceptVerification
       reasoning: `Concept ${index} is load-bearing because its differentiator is unique`,
       genericCollapse: `Without the differentiator, concept ${index} becomes a generic genre story`,
     },
+    kernelFidelityCheck: {
+      passes: true,
+      reasoning: `Concept ${index} structurally embeds the kernel's value-at-stake`,
+      kernelDrift: `No significant kernel drift detected for concept ${index}`,
+    },
     conceptIntegrityScore: 85,
   };
 }

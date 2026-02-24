@@ -112,6 +112,91 @@ describe('saved-concept model guards', () => {
     expect(isSavedConcept(value)).toBe(false);
   });
 
+  it('accepts SavedConcept with verificationResult that has kernelFidelityCheck', () => {
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConcept(),
+      verificationResult: {
+        conceptId: 'concept_1',
+        signatureScenario: 'Iconic moment',
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        inevitabilityStatement: 'Must happen',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Load-bearing',
+          genericCollapse: 'Collapses',
+        },
+        kernelFidelityCheck: {
+          passes: true,
+          reasoning: 'Kernel grounded',
+          kernelDrift: 'No drift',
+        },
+        conceptIntegrityScore: 85,
+      },
+    };
+
+    expect(isSavedConcept(value)).toBe(true);
+  });
+
+  it('accepts SavedConcept with verificationResult WITHOUT kernelFidelityCheck (backward compat)', () => {
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConcept(),
+      verificationResult: {
+        conceptId: 'concept_1',
+        signatureScenario: 'Iconic moment',
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        inevitabilityStatement: 'Must happen',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Load-bearing',
+          genericCollapse: 'Collapses',
+        },
+        conceptIntegrityScore: 85,
+      },
+    };
+
+    expect(isSavedConcept(value)).toBe(true);
+  });
+
+  it('rejects SavedConcept with malformed kernelFidelityCheck in verificationResult', () => {
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConcept(),
+      verificationResult: {
+        conceptId: 'concept_1',
+        signatureScenario: 'Iconic moment',
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        inevitabilityStatement: 'Must happen',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Load-bearing',
+          genericCollapse: 'Collapses',
+        },
+        kernelFidelityCheck: {
+          passes: 'yes',
+          reasoning: 'Kernel grounded',
+          kernelDrift: 'No drift',
+        },
+        conceptIntegrityScore: 85,
+      },
+    };
+
+    expect(isSavedConcept(value)).toBe(false);
+  });
+
   it('rejects SavedConcept payloads with invalid stress test shapes', () => {
     const value = {
       id: 'concept-1',

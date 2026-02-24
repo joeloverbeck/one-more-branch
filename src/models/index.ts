@@ -226,6 +226,7 @@ export type {
   ConceptStressTesterContext,
   ConceptStressTestResult,
   LoadBearingCheck,
+  KernelFidelityCheck,
   ConceptVerification,
   ConceptVerifierContext,
   ConceptVerificationResult,

@@ -113,7 +113,7 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
         attempt: 1,
       });
       const verification = await deps.verifyConcepts(
-        { evaluatedConcepts: evaluation.evaluatedConcepts },
+        { evaluatedConcepts: evaluation.evaluatedConcepts, kernel },
         apiKey,
       );
       onGenerationStage?.({
