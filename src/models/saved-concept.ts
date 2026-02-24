@@ -147,6 +147,18 @@ function isLoadBearingCheck(value: unknown): boolean {
   );
 }
 
+function isKernelFidelityCheck(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value['passes'] === 'boolean' &&
+    isNonEmptyString(value['reasoning']) &&
+    isNonEmptyString(value['kernelDrift'])
+  );
+}
+
 function isConceptVerification(value: unknown): value is ConceptVerification {
   if (!isObjectRecord(value)) {
     return false;
@@ -159,6 +171,7 @@ function isConceptVerification(value: unknown): value is ConceptVerification {
     value['escalatingSetpieces'].every((item: unknown) => isNonEmptyString(item)) &&
     isNonEmptyString(value['inevitabilityStatement']) &&
     isLoadBearingCheck(value['loadBearingCheck']) &&
+    (value['kernelFidelityCheck'] === undefined || isKernelFidelityCheck(value['kernelFidelityCheck'])) &&
     typeof value['conceptIntegrityScore'] === 'number' &&
     Number.isFinite(value['conceptIntegrityScore']) &&
     value['conceptIntegrityScore'] >= 0 &&

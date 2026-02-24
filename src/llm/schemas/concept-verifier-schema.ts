@@ -11,6 +11,17 @@ const LOAD_BEARING_CHECK_SCHEMA = {
   },
 } as const;
 
+const KERNEL_FIDELITY_CHECK_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['passes', 'reasoning', 'kernelDrift'],
+  properties: {
+    passes: { type: 'boolean' },
+    reasoning: { type: 'string' },
+    kernelDrift: { type: 'string' },
+  },
+} as const;
+
 const CONCEPT_VERIFICATION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -20,6 +31,7 @@ const CONCEPT_VERIFICATION_SCHEMA = {
     'escalatingSetpieces',
     'inevitabilityStatement',
     'loadBearingCheck',
+    'kernelFidelityCheck',
     'conceptIntegrityScore',
   ],
   properties: {
@@ -31,6 +43,7 @@ const CONCEPT_VERIFICATION_SCHEMA = {
     },
     inevitabilityStatement: { type: 'string' },
     loadBearingCheck: LOAD_BEARING_CHECK_SCHEMA,
+    kernelFidelityCheck: KERNEL_FIDELITY_CHECK_SCHEMA,
     conceptIntegrityScore: { type: 'number' },
   },
 } as const;

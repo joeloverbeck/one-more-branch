@@ -268,17 +268,25 @@ export interface LoadBearingCheck {
   readonly genericCollapse: string;
 }
 
+export interface KernelFidelityCheck {
+  readonly passes: boolean;
+  readonly reasoning: string;
+  readonly kernelDrift: string;
+}
+
 export interface ConceptVerification {
   readonly conceptId: string;
   readonly signatureScenario: string;
   readonly escalatingSetpieces: readonly string[];
   readonly inevitabilityStatement: string;
   readonly loadBearingCheck: LoadBearingCheck;
+  readonly kernelFidelityCheck?: KernelFidelityCheck;
   readonly conceptIntegrityScore: number;
 }
 
 export interface ConceptVerifierContext {
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
+  readonly kernel: StoryKernel;
 }
 
 export interface ConceptVerificationResult {

@@ -38,6 +38,7 @@ import { verifyConcepts } from '@/llm/concept-verifier';
 import { conceptRoutes } from '@/server/routes/concepts';
 import { generationProgressService } from '@/server/services';
 import {
+  listConcepts,
   loadConcept,
   saveConcept,
   saveConceptGenerationBatch,
@@ -91,6 +92,7 @@ describe('Concept Route Integration', () => {
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
   const mockedVerifyConcepts = verifyConcepts as jest.MockedFunction<typeof verifyConcepts>;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
+  const mockedListConcepts = listConcepts as jest.MockedFunction<typeof listConcepts>;
   const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
   const mockedSaveConceptGenerationBatch = saveConceptGenerationBatch as jest.MockedFunction<
     typeof saveConceptGenerationBatch
@@ -128,6 +130,93 @@ describe('Concept Route Integration', () => {
         tradeoffSummary: 'Clear and generative.',
       },
     });
+  });
+
+  it('GET / renders concepts grouped by genre for the view', async () => {
+    const evaluatedConceptA = createEvaluatedConceptFixture(1);
+    const evaluatedConceptB = createEvaluatedConceptFixture(2);
+    const evaluatedConceptC = createEvaluatedConceptFixture(3);
+
+    const savedConcepts = [
+      {
+        id: 'concept-1',
+        name: 'Concept 1',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        seeds: {},
+        evaluatedConcept: {
+          ...evaluatedConceptA,
+          concept: { ...evaluatedConceptA.concept, genreFrame: 'DARK_FANTASY' },
+        },
+      },
+      {
+        id: 'concept-2',
+        name: 'Concept 2',
+        createdAt: '2025-01-02T00:00:00.000Z',
+        updatedAt: '2025-01-02T00:00:00.000Z',
+        seeds: {},
+        evaluatedConcept: {
+          ...evaluatedConceptB,
+          concept: { ...evaluatedConceptB.concept, genreFrame: 'SPACE_OPERA' },
+        },
+      },
+      {
+        id: 'concept-3',
+        name: 'Concept 3',
+        createdAt: '2025-01-03T00:00:00.000Z',
+        updatedAt: '2025-01-03T00:00:00.000Z',
+        seeds: {},
+        evaluatedConcept: {
+          ...evaluatedConceptC,
+          concept: { ...evaluatedConceptC.concept, genreFrame: 'DARK_FANTASY' },
+        },
+      },
+    ];
+
+    mockedListConcepts.mockResolvedValue(savedConcepts);
+    const render = jest.fn().mockReturnThis();
+
+    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response);
+    await flushPromises();
+
+    expect(render).toHaveBeenCalledWith(
+      'pages/concepts',
+      expect.objectContaining({
+        title: 'Concepts - One More Branch',
+        concepts: savedConcepts,
+      }),
+    );
+
+    const renderCalls = render.mock.calls as Array<
+      [string, { genreGroups: Array<{ genre: string; displayLabel: string; concepts: Array<unknown> }> }]
+    >;
+    const viewModel = renderCalls[0]?.[1];
+    expect(viewModel).toBeDefined();
+    if (!viewModel) {
+      throw new Error('Expected view model to be passed to render');
+    }
+    expect(Array.isArray(viewModel.genreGroups)).toBe(true);
+    expect(Object.fromEntries(viewModel.genreGroups.map((group) => [group.genre, group.concepts.length]))).toEqual({
+      DARK_FANTASY: 2,
+      SPACE_OPERA: 1,
+    });
+  });
+
+  it('GET / always provides an array for genreGroups', async () => {
+    mockedListConcepts.mockResolvedValue([]);
+    const render = jest.fn().mockReturnThis();
+
+    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response);
+    await flushPromises();
+
+    const renderCalls = render.mock.calls as Array<[string, { genreGroups: unknown }]>;
+    const viewModel = renderCalls[0]?.[1];
+    expect(viewModel).toBeDefined();
+    if (!viewModel) {
+      throw new Error('Expected view model to be passed to render');
+    }
+    expect(Array.isArray(viewModel.genreGroups)).toBe(true);
+    expect(viewModel.genreGroups).toEqual([]);
   });
 
   it('POST /api/generate delegates through service and returns evaluated concepts', async () => {

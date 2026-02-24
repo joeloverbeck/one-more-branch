@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { render as renderEjs } from 'ejs';
 
 describe('concepts page template', () => {
   const conceptsPath = path.join(__dirname, '../../../../src/server/views/pages/concepts.ejs');
@@ -31,5 +32,25 @@ describe('concepts page template', () => {
     const template = fs.readFileSync(conceptsPath, 'utf8');
     expect(template).toContain('id="edit-name"');
     expect(template).not.toMatch(/id="edit-name"[^>]*maxlength=/);
+  });
+
+  it('renders safely when genreGroups is omitted', () => {
+    const template = fs.readFileSync(conceptsPath, 'utf8');
+    const renderTemplate = renderEjs as (
+      source: string,
+      data: { title: string; concepts: unknown[] },
+      options: { filename: string }
+    ) => string;
+
+    expect(() =>
+      renderTemplate(
+        template,
+        {
+          title: 'Concepts - One More Branch',
+          concepts: [],
+        },
+        { filename: conceptsPath }
+      )
+    ).not.toThrow();
   });
 });

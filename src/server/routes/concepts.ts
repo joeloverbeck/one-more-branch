@@ -15,7 +15,7 @@ import {
 } from '../../persistence/concept-repository.js';
 import { loadKernel } from '../../persistence/kernel-repository.js';
 import { ConceptEvaluationStageError, conceptService } from '../services/index.js';
-import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
+import { buildLlmRouteErrorResult, groupConceptsByGenre, wrapAsyncRoute } from '../utils/index.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const conceptRoutes = Router();
@@ -52,9 +52,11 @@ conceptRoutes.get(
   '/',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const concepts = await listConcepts();
+    const genreGroups = groupConceptsByGenre(concepts);
     return res.render('pages/concepts', {
       title: 'Concepts - One More Branch',
       concepts,
+      genreGroups,
     });
   })
 );

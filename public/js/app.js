@@ -3025,6 +3025,264 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     selectedSceneDirection = null;
   }
 
+  // ── Genre Grouper ──────────────────────────────────────────────
+
+  function formatGenreDisplayLabel(genre) {
+    return (genre || 'UNKNOWN').replace(/_/g, ' ');
+  }
+
+  function groupConceptsByGenreClient(concepts) {
+    var map = {};
+    (concepts || []).forEach(function (concept) {
+      var genre =
+        concept.evaluatedConcept &&
+        concept.evaluatedConcept.concept &&
+        concept.evaluatedConcept.concept.genreFrame
+          ? concept.evaluatedConcept.concept.genreFrame
+          : 'UNKNOWN';
+      if (!map[genre]) {
+        map[genre] = [];
+      }
+      map[genre].push(concept);
+    });
+
+    return Object.keys(map)
+      .sort(function (a, b) {
+        return formatGenreDisplayLabel(a).localeCompare(formatGenreDisplayLabel(b));
+      })
+      .map(function (genre) {
+        return {
+          genre: genre,
+          displayLabel: formatGenreDisplayLabel(genre),
+          concepts: map[genre],
+        };
+      });
+  }
+
+  function renderGenreSectionHeader(genre, displayLabel, count, open) {
+    var openAttr = open !== false ? ' open' : '';
+    return (
+      '<details class="genre-group" data-genre="' + escapeHtml(genre) + '"' + openAttr + '>' +
+        '<summary class="genre-group__header">' +
+          '<span class="genre-group__label">' + escapeHtml(displayLabel) + '</span>' +
+          '<span class="genre-group__count">(' + count + ')</span>' +
+        '</summary>' +
+        '<div class="genre-group__body spine-options-container">'
+    );
+  }
+
+  function renderGenreSectionFooter() {
+    return '</div></details>';
+  }
+
+  // ── Concept Dropdown (custom searchable, genre-grouped) ────────
+
+  function createConceptDropdown(containerEl, concepts, onSelect) {
+    var selectedId = '';
+    var isOpen = false;
+    var focusedIndex = -1;
+    var filteredOptions = [];
+    var genreGroups = groupConceptsByGenreClient(concepts);
+
+    // Build DOM
+    var wrapper = document.createElement('div');
+    wrapper.className = 'concept-dropdown';
+
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'concept-dropdown__trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.textContent = '-- Select a saved concept --';
+
+    var panel = document.createElement('div');
+    panel.className = 'concept-dropdown__panel';
+    panel.style.display = 'none';
+
+    var searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'concept-dropdown__search';
+    searchInput.placeholder = 'Search concepts...';
+    searchInput.setAttribute('aria-label', 'Search concepts');
+
+    var list = document.createElement('div');
+    list.className = 'concept-dropdown__list';
+    list.setAttribute('role', 'listbox');
+
+    var emptyMsg = document.createElement('div');
+    emptyMsg.className = 'concept-dropdown__empty';
+    emptyMsg.textContent = 'No matching concepts';
+    emptyMsg.style.display = 'none';
+
+    panel.appendChild(searchInput);
+    panel.appendChild(list);
+    panel.appendChild(emptyMsg);
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(panel);
+    containerEl.appendChild(wrapper);
+
+    function buildOptionId(concept) {
+      return 'cdd-opt-' + concept.id;
+    }
+
+    function renderList(filter) {
+      list.innerHTML = '';
+      filteredOptions = [];
+      focusedIndex = -1;
+      var query = (filter || '').toLowerCase().trim();
+      var hasResults = false;
+
+      genreGroups.forEach(function (group) {
+        var matchingConcepts = group.concepts.filter(function (c) {
+          if (!query) return true;
+          var name = (c.name || '').toLowerCase();
+          var hook =
+            c.evaluatedConcept && c.evaluatedConcept.concept
+              ? (c.evaluatedConcept.concept.oneLineHook || '').toLowerCase()
+              : '';
+          var genre = group.displayLabel.toLowerCase();
+          return name.indexOf(query) >= 0 || hook.indexOf(query) >= 0 || genre.indexOf(query) >= 0;
+        });
+
+        if (matchingConcepts.length === 0) return;
+        hasResults = true;
+
+        var header = document.createElement('div');
+        header.className = 'concept-dropdown__genre-header';
+        header.textContent = group.displayLabel + ' (' + matchingConcepts.length + ')';
+        list.appendChild(header);
+
+        matchingConcepts.forEach(function (c) {
+          var option = document.createElement('div');
+          option.className = 'concept-dropdown__option';
+          option.id = buildOptionId(c);
+          option.setAttribute('role', 'option');
+          option.setAttribute('aria-selected', c.id === selectedId ? 'true' : 'false');
+          option.setAttribute('data-concept-id', c.id);
+
+          var score = c.evaluatedConcept ? Math.round(c.evaluatedConcept.overallScore || 0) : 0;
+          option.innerHTML =
+            '<span class="concept-dropdown__option-name">' + escapeHtml(c.name || 'Untitled') + '</span>' +
+            '<span class="concept-dropdown__option-score">(' + score + ')</span>';
+
+          if (c.id === selectedId) {
+            option.classList.add('concept-dropdown__option--selected');
+          }
+
+          list.appendChild(option);
+          filteredOptions.push({ element: option, concept: c });
+        });
+      });
+
+      emptyMsg.style.display = hasResults ? 'none' : 'block';
+    }
+
+    function selectConcept(concept) {
+      selectedId = concept ? concept.id : '';
+      trigger.textContent = concept
+        ? concept.name + ' (' + Math.round((concept.evaluatedConcept && concept.evaluatedConcept.overallScore) || 0) + ')'
+        : '-- Select a saved concept --';
+      closePanel();
+      if (onSelect) onSelect(selectedId, concept);
+    }
+
+    function openPanel() {
+      isOpen = true;
+      panel.style.display = 'block';
+      trigger.setAttribute('aria-expanded', 'true');
+      searchInput.value = '';
+      renderList('');
+      searchInput.focus();
+    }
+
+    function closePanel() {
+      isOpen = false;
+      panel.style.display = 'none';
+      trigger.setAttribute('aria-expanded', 'false');
+      focusedIndex = -1;
+    }
+
+    function setFocus(index) {
+      if (filteredOptions.length === 0) return;
+      if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
+        filteredOptions[focusedIndex].element.classList.remove('concept-dropdown__option--focused');
+      }
+      focusedIndex = Math.max(0, Math.min(index, filteredOptions.length - 1));
+      var el = filteredOptions[focusedIndex].element;
+      el.classList.add('concept-dropdown__option--focused');
+      el.scrollIntoView({ block: 'nearest' });
+    }
+
+    // Events
+    trigger.addEventListener('click', function () {
+      if (isOpen) {
+        closePanel();
+      } else {
+        openPanel();
+      }
+    });
+
+    searchInput.addEventListener('input', function () {
+      renderList(searchInput.value);
+    });
+
+    list.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+      var option = target.closest('.concept-dropdown__option');
+      if (!option) return;
+      var conceptId = option.getAttribute('data-concept-id');
+      var found = concepts.filter(function (c) { return c.id === conceptId; })[0];
+      if (found) selectConcept(found);
+    });
+
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocus(focusedIndex + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocus(focusedIndex - 1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
+          selectConcept(filteredOptions[focusedIndex].concept);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closePanel();
+        trigger.focus();
+      }
+    });
+
+    // Close on outside click
+    document.addEventListener('click', function (e) {
+      if (isOpen && !wrapper.contains(e.target)) {
+        closePanel();
+      }
+    });
+
+    // Public API
+    return {
+      getSelectedId: function () { return selectedId; },
+      setSelectedId: function (id) {
+        var found = concepts.filter(function (c) { return c.id === id; })[0];
+        if (found) {
+          selectedId = id;
+          trigger.textContent = found.name + ' (' + Math.round((found.evaluatedConcept && found.evaluatedConcept.overallScore) || 0) + ')';
+        } else {
+          selectedId = '';
+          trigger.textContent = '-- Select a saved concept --';
+        }
+      },
+      destroy: function () {
+        if (wrapper.parentNode) {
+          wrapper.parentNode.removeChild(wrapper);
+        }
+      },
+    };
+  }
+
   // ── Choice renderers ──────────────────────────────────────────────
 
   function renderChoiceButtons(choiceList) {
@@ -4876,7 +5134,7 @@ function createRecapModalController(initialData) {
     const loading = document.getElementById('loading');
     const conceptSelectorSection = document.getElementById('concept-selector-section');
     const manualStorySection = document.getElementById('manual-story-section');
-    const conceptSelector = document.getElementById('concept-selector');
+    const conceptDropdownMount = document.getElementById('concept-dropdown-mount');
     const useConceptBtn = document.getElementById('use-concept-btn');
     const skipConceptBtn = document.getElementById('skip-concept-btn');
     const generateSpineBtn = document.getElementById('generate-spine-btn');
@@ -5182,41 +5440,42 @@ function createRecapModalController(initialData) {
 
     // ── Concept selector logic ─────────────────────────────────────
 
+    var conceptDropdownInstance = null;
+
     async function loadConceptList() {
       try {
         var response = await fetch('/concepts/api/list');
         var data = await response.json();
         if (!response.ok || !data.success) return;
 
-        if (conceptSelector && Array.isArray(data.concepts)) {
+        if (conceptDropdownMount && Array.isArray(data.concepts)) {
           data.concepts.forEach(function (c) {
             loadedConceptsMap[c.id] = c;
-            var option = document.createElement('option');
-            option.value = c.id;
-            option.textContent = c.name + ' (' + Math.round(c.evaluatedConcept.overallScore || 0) + ')';
-            conceptSelector.appendChild(option);
           });
+
+          conceptDropdownInstance = createConceptDropdown(
+            conceptDropdownMount,
+            data.concepts,
+            function (conceptId) {
+              if (useConceptBtn) {
+                useConceptBtn.disabled = !conceptId;
+              }
+            }
+          );
         }
       } catch (e) {
         // Non-fatal: concepts list unavailable
       }
     }
 
-    if (conceptSelector) {
+    if (conceptDropdownMount) {
       loadConceptList();
-
-      conceptSelector.addEventListener('change', function () {
-        var conceptId = conceptSelector.value;
-        if (useConceptBtn) {
-          useConceptBtn.disabled = !conceptId;
-        }
-      });
     }
 
     if (useConceptBtn) {
       useConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        var conceptId = conceptSelector ? conceptSelector.value : '';
+        var conceptId = conceptDropdownInstance ? conceptDropdownInstance.getSelectedId() : '';
         if (!conceptId) return;
 
         var savedConcept = loadedConceptsMap[conceptId];
@@ -5873,6 +6132,56 @@ function createRecapModalController(initialData) {
       }
     }
 
+    function findOrCreateGenreGroup(genre) {
+      if (!savedConceptsList) return null;
+      var existing = savedConceptsList.querySelector('details.genre-group[data-genre="' + genre + '"]');
+      if (existing) return existing;
+
+      // Create new genre group
+      var details = document.createElement('details');
+      details.className = 'genre-group';
+      details.setAttribute('open', '');
+      details.setAttribute('data-genre', genre);
+
+      var summary = document.createElement('summary');
+      summary.className = 'genre-group__header';
+      summary.innerHTML =
+        '<span class="genre-group__label">' + escapeHtml(formatGenreDisplayLabel(genre)) + '</span>' +
+        '<span class="genre-group__count">(0)</span>';
+
+      var body = document.createElement('div');
+      body.className = 'genre-group__body spine-options-container';
+
+      details.appendChild(summary);
+      details.appendChild(body);
+
+      // Insert alphabetically
+      var label = formatGenreDisplayLabel(genre).toLowerCase();
+      var groups = savedConceptsList.querySelectorAll('details.genre-group');
+      var inserted = false;
+      for (var i = 0; i < groups.length; i++) {
+        var groupLabel = (groups[i].getAttribute('data-genre') || '').replace(/_/g, ' ').toLowerCase();
+        if (label < groupLabel) {
+          savedConceptsList.insertBefore(details, groups[i]);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) {
+        savedConceptsList.appendChild(details);
+      }
+
+      return details;
+    }
+
+    function updateGenreGroupCount(genreGroup) {
+      if (!genreGroup) return;
+      var body = genreGroup.querySelector('.genre-group__body');
+      var count = body ? body.querySelectorAll('.saved-concept-card').length : 0;
+      var countSpan = genreGroup.querySelector('.genre-group__count');
+      if (countSpan) countSpan.textContent = '(' + count + ')';
+    }
+
     function appendSavedConceptCard(concept) {
       if (!savedConceptsList) return;
 
@@ -5947,7 +6256,18 @@ function createRecapModalController(initialData) {
 
       card.innerHTML = cardHtml;
 
-      savedConceptsList.prepend(card);
+      var genre =
+        c.genreFrame || 'UNKNOWN';
+      var genreGroup = findOrCreateGenreGroup(genre);
+      if (genreGroup) {
+        var body = genreGroup.querySelector('.genre-group__body');
+        if (body) {
+          body.prepend(card);
+        }
+        updateGenreGroupCount(genreGroup);
+      } else {
+        savedConceptsList.prepend(card);
+      }
     }
 
     // ── Delete concept ─────────────────────────────────────────────
@@ -5994,7 +6314,15 @@ function createRecapModalController(initialData) {
         }
 
         var card = btn.closest('.saved-concept-card');
+        var parentGenreGroup = card ? card.closest('.genre-group') : null;
         if (card) card.remove();
+        if (parentGenreGroup) {
+          updateGenreGroupCount(parentGenreGroup);
+          var remainingCards = parentGenreGroup.querySelectorAll('.saved-concept-card');
+          if (remainingCards.length === 0) {
+            parentGenreGroup.remove();
+          }
+        }
       } catch (error) {
         btn.disabled = false;
         showError(error instanceof Error ? error.message : 'Failed to delete');
@@ -6827,28 +7155,34 @@ function createRecapModalController(initialData) {
         return;
       }
 
-      concepts.forEach(function (savedConcept) {
-        var evaluatedConcept = savedConcept && savedConcept.evaluatedConcept ? savedConcept.evaluatedConcept : null;
-        var concept = evaluatedConcept && evaluatedConcept.concept ? evaluatedConcept.concept : {};
-        var card = document.createElement('article');
-        card.className = 'spine-card concept-card';
-        card.setAttribute('data-concept-id', String(savedConcept.id || ''));
-        card.innerHTML =
-          '<div class="spine-badges">' +
-            '<span class="spine-badge spine-badge-type">' +
-              escapeHtml(String((concept.genreFrame || '')).replace(/_/g, ' ')) +
-            '</span>' +
-            '<span class="spine-badge spine-badge-conflict">' +
-              escapeHtml(String((concept.conflictAxis || '')).replace(/_/g, ' ')) +
-            '</span>' +
-            '<span class="spine-badge spine-badge-arc">Score ' +
-              escapeHtml(String(Math.round(Number(evaluatedConcept && evaluatedConcept.overallScore) || 0))) +
-            '</span>' +
-          '</div>' +
-          '<h3 class="spine-cdq">' + escapeHtml(savedConcept.name || concept.oneLineHook || 'Untitled Concept') + '</h3>' +
-          '<p class="spine-field">' + escapeHtml(concept.oneLineHook || '') + '</p>' +
-          '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>';
-        parentContainer.appendChild(card);
+      var groups = groupConceptsByGenreClient(concepts);
+      groups.forEach(function (group) {
+        var html = renderGenreSectionHeader(group.genre, group.displayLabel, group.concepts.length, true);
+
+        group.concepts.forEach(function (savedConcept) {
+          var evaluatedConcept = savedConcept && savedConcept.evaluatedConcept ? savedConcept.evaluatedConcept : null;
+          var concept = evaluatedConcept && evaluatedConcept.concept ? evaluatedConcept.concept : {};
+          html +=
+            '<article class="spine-card concept-card" data-concept-id="' + escapeHtml(String(savedConcept.id || '')) + '">' +
+              '<div class="spine-badges">' +
+                '<span class="spine-badge spine-badge-type">' +
+                  escapeHtml(String((concept.genreFrame || '')).replace(/_/g, ' ')) +
+                '</span>' +
+                '<span class="spine-badge spine-badge-conflict">' +
+                  escapeHtml(String((concept.conflictAxis || '')).replace(/_/g, ' ')) +
+                '</span>' +
+                '<span class="spine-badge spine-badge-arc">Score ' +
+                  escapeHtml(String(Math.round(Number(evaluatedConcept && evaluatedConcept.overallScore) || 0))) +
+                '</span>' +
+              '</div>' +
+              '<h3 class="spine-cdq">' + escapeHtml(savedConcept.name || concept.oneLineHook || 'Untitled Concept') + '</h3>' +
+              '<p class="spine-field">' + escapeHtml(concept.oneLineHook || '') + '</p>' +
+              '<p class="spine-field">' + escapeHtml(concept.elevatorParagraph || '') + '</p>' +
+            '</article>';
+        });
+
+        html += renderGenreSectionFooter();
+        parentContainer.insertAdjacentHTML('beforeend', html);
       });
 
       if (parentSection) {

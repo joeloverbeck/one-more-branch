@@ -20,16 +20,28 @@ jest.mock('../../../src/logging/index.js', () => ({
 import { parseConceptVerificationResponse, verifyConcepts } from '../../../src/llm/concept-verifier';
 import { CONCEPT_VERIFIER_SCHEMA } from '../../../src/llm/schemas/concept-verifier-schema';
 import type { ConceptVerifierContext } from '../../../src/models';
+import type { StoryKernel } from '../../../src/models/story-kernel';
 import {
   createEvaluatedConceptFixture,
   createConceptVerificationFixture,
 } from '../../fixtures/concept-generator';
+
+function createStoryKernel(): StoryKernel {
+  return {
+    dramaticThesis: 'Control destroys trust',
+    valueAtStake: 'Trust',
+    opposingForce: 'Fear of uncertainty',
+    directionOfChange: 'IRONIC',
+    thematicQuestion: 'Can safety exist without control?',
+  };
+}
 
 function createContext(count = 2): ConceptVerifierContext {
   return {
     evaluatedConcepts: Array.from({ length: count }, (_, i) =>
       createEvaluatedConceptFixture(i + 1),
     ),
+    kernel: createStoryKernel(),
   };
 }
 
@@ -49,6 +61,7 @@ function createVerificationData(index = 1): {
   escalatingSetpieces: string[];
   inevitabilityStatement: string;
   loadBearingCheck: { passes: boolean; reasoning: string; genericCollapse: string };
+  kernelFidelityCheck: { passes: boolean; reasoning: string; kernelDrift: string };
   conceptIntegrityScore: number;
 } {
   return {
@@ -67,6 +80,11 @@ function createVerificationData(index = 1): {
       passes: true,
       reasoning: `Reasoning ${index}`,
       genericCollapse: `Collapse ${index}`,
+    },
+    kernelFidelityCheck: {
+      passes: true,
+      reasoning: `Kernel reasoning ${index}`,
+      kernelDrift: `Kernel drift ${index}`,
     },
     conceptIntegrityScore: 85,
   };
@@ -129,6 +147,9 @@ describe('concept-verifier', () => {
       expect(result[0].loadBearingCheck.passes).toBe(true);
       expect(result[0].loadBearingCheck.reasoning).toBe('Reasoning 1');
       expect(result[0].loadBearingCheck.genericCollapse).toBe('Collapse 1');
+      expect(result[0].kernelFidelityCheck?.passes).toBe(true);
+      expect(result[0].kernelFidelityCheck?.reasoning).toBe('Kernel reasoning 1');
+      expect(result[0].kernelFidelityCheck?.kernelDrift).toBe('Kernel drift 1');
       expect(result[0].conceptIntegrityScore).toBe(85);
       expect(result[1].conceptId).toBe('concept_2');
     });
@@ -340,6 +361,50 @@ describe('concept-verifier', () => {
 
       const result = parseConceptVerificationResponse(payload, expectedIds(1));
       expect(result[0].loadBearingCheck.passes).toBe(false);
+    });
+
+    it('rejects non-object kernelFidelityCheck', () => {
+      const payload = createValidPayload(1);
+      (payload.verifications[0] as Record<string, unknown>)['kernelFidelityCheck'] = 'bad';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'kernelFidelityCheck must be an object',
+      );
+    });
+
+    it('rejects non-boolean passes in kernelFidelityCheck', () => {
+      const payload = createValidPayload(1);
+      (payload.verifications[0].kernelFidelityCheck as Record<string, unknown>)['passes'] = 'yes';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'kernelFidelityCheck has invalid passes',
+      );
+    });
+
+    it('rejects empty reasoning in kernelFidelityCheck', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].kernelFidelityCheck.reasoning = '';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid reasoning',
+      );
+    });
+
+    it('rejects empty kernelDrift in kernelFidelityCheck', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].kernelFidelityCheck.kernelDrift = '  ';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid kernelDrift',
+      );
+    });
+
+    it('accepts kernelFidelityCheck with passes: false', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].kernelFidelityCheck.passes = false;
+
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
+      expect(result[0].kernelFidelityCheck?.passes).toBe(false);
     });
 
     it('trims string fields', () => {
