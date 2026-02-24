@@ -104,7 +104,7 @@ describe('resolveNpcAgendas', () => {
         sceneSummary: 'Hero enters tavern.',
       }),
       expect.arrayContaining(testDecomposedCharacters),
-      { apiKey: 'test-key' }
+      expect.objectContaining({ apiKey: 'test-key' })
     );
   });
 
@@ -172,7 +172,7 @@ describe('resolveNpcAgendas', () => {
         deviationContext,
       }),
       expect.any(Array),
-      { apiKey: 'test-key' }
+      expect.objectContaining({ apiKey: 'test-key' })
     );
   });
 

@@ -1,8 +1,10 @@
+import { getStageModel } from '../config/stage-model.js';
 import { logger, logPrompt } from '../logging/index.js';
 import { generateAccountantWithFallback } from './accountant-generation.js';
 import { generateAnalystWithFallback } from './analyst-generation.js';
 import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
 import { OPENROUTER_API_URL } from './http-client.js';
+import { withModelFallback } from './model-fallback.js';
 import { resolvePromptOptions } from './options.js';
 import { generatePlannerWithFallback } from './planner-generation.js';
 import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
@@ -42,7 +44,14 @@ export async function generateOpeningPage(
   logPrompt(logger, 'opening', messages);
 
   const resolvedOptions = { ...options, promptOptions };
-  return withRetry(() => generateWriterWithFallback(messages, resolvedOptions));
+  const primaryModel = resolvedOptions.model ?? getStageModel('writer');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateWriterWithFallback(messages, { ...resolvedOptions, model: m }),
+      primaryModel,
+      'writer'
+    )
+  );
 }
 
 export async function generateWriterPage(
@@ -55,7 +64,14 @@ export async function generateWriterPage(
   logPrompt(logger, 'writer', messages);
 
   const resolvedOptions = { ...options, promptOptions };
-  return withRetry(() => generateWriterWithFallback(messages, resolvedOptions));
+  const primaryModel = resolvedOptions.model ?? getStageModel('writer');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateWriterWithFallback(messages, { ...resolvedOptions, model: m }),
+      primaryModel,
+      'writer'
+    )
+  );
 }
 
 export async function generatePageWriterOutput(
@@ -75,7 +91,14 @@ export async function generateAnalystEvaluation(
   logPrompt(logger, 'analyst', messages);
 
   const analystOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
-  return withRetry(() => generateAnalystWithFallback(messages, analystOptions));
+  const primaryModel = analystOptions.model ?? getStageModel('analyst');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateAnalystWithFallback(messages, { ...analystOptions, model: m }),
+      primaryModel,
+      'analyst'
+    )
+  );
 }
 
 export async function generatePagePlan(
@@ -86,7 +109,14 @@ export async function generatePagePlan(
 
   logPrompt(logger, 'planner', messages);
 
-  return withRetry(() => generatePlannerWithFallback(messages, options));
+  const primaryModel = options.model ?? getStageModel('planner');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generatePlannerWithFallback(messages, { ...options, model: m }),
+      primaryModel,
+      'planner'
+    )
+  );
 }
 
 export async function generateStateAccountant(
@@ -98,7 +128,14 @@ export async function generateStateAccountant(
 
   logPrompt(logger, 'accountant', messages);
 
-  return withRetry(() => generateAccountantWithFallback(messages, options));
+  const primaryModel = options.model ?? getStageModel('accountant');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateAccountantWithFallback(messages, { ...options, model: m }),
+      primaryModel,
+      'accountant'
+    )
+  );
 }
 
 export async function generateLorekeeperBible(
@@ -110,7 +147,14 @@ export async function generateLorekeeperBible(
   logPrompt(logger, 'lorekeeper', messages);
 
   const lorekeeperOptions = { ...options, temperature: 0.3, maxTokens: 2048 };
-  return withRetry(() => generateLorekeeperWithFallback(messages, lorekeeperOptions));
+  const primaryModel = lorekeeperOptions.model ?? getStageModel('lorekeeper');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateLorekeeperWithFallback(messages, { ...lorekeeperOptions, model: m }),
+      primaryModel,
+      'lorekeeper'
+    )
+  );
 }
 
 export async function validateApiKey(apiKey: string): Promise<boolean> {

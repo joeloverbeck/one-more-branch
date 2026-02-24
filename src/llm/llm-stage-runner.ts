@@ -9,6 +9,7 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { LLMError, type ChatMessage, type JsonSchema } from './llm-client-types.js';
+import { withModelFallback } from './model-fallback.js';
 import { withRetry } from './retry.js';
 
 export interface LlmStageRunnerParams<TParsed> {
@@ -38,76 +39,89 @@ interface RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult> {
   }) => TResult;
 }
 
+async function fetchAndParseLlmStage<TParsed>(
+  params: LlmStageRunnerParams<TParsed>,
+  model: string,
+  temperature: number,
+  maxTokens: number,
+): Promise<LlmStageRunnerResult<TParsed>> {
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${params.apiKey}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'One More Branch',
+    },
+    body: JSON.stringify({
+      model,
+      messages: params.messages,
+      temperature,
+      max_tokens: maxTokens,
+      response_format: params.schema,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await readErrorDetails(response);
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
+  }
+
+  const data = await readJsonResponse(response);
+  const choice = data.choices[0];
+  const content = choice?.message?.content;
+  if (!choice || !content) {
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+  if (choice.finish_reason === 'length') {
+    throw new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', true, {
+      model,
+      finishReason: choice.finish_reason,
+    });
+  }
+
+  const parsedMessage = parseMessageJsonContent(content, {
+    allowRepair: params.allowJsonRepair ?? true,
+  });
+  const responseText = parsedMessage.rawText;
+  try {
+    return {
+      parsed: params.parseResponse(parsedMessage.parsed),
+      rawResponse: responseText,
+    };
+  } catch (error) {
+    if (error instanceof LLMError) {
+      throw new LLMError(error.message, error.code, error.retryable, {
+        rawContent: responseText,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function runLlmStage<TParsed>(
   params: LlmStageRunnerParams<TParsed>,
 ): Promise<LlmStageRunnerResult<TParsed>> {
   const config = getConfig().llm;
-  const model = params.options?.model ?? getStageModel(params.stageModel);
+  const primaryModel = params.options?.model ?? getStageModel(params.stageModel);
   const temperature = params.options?.temperature ?? config.temperature;
   const maxTokens = params.options?.maxTokens ?? config.maxTokens;
 
   logPrompt(logger, params.promptType, params.messages);
 
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${params.apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages: params.messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: params.schema,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const data = await readJsonResponse(response);
-    const choice = data.choices[0];
-    const content = choice?.message?.content;
-    if (!choice || !content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-    if (choice.finish_reason === 'length') {
-      throw new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', true, {
-        model,
-        finishReason: choice.finish_reason,
-      });
-    }
-
-    const parsedMessage = parseMessageJsonContent(content, {
-      allowRepair: params.allowJsonRepair ?? true,
-    });
-    const responseText = parsedMessage.rawText;
-    try {
-      return {
-        parsed: params.parseResponse(parsedMessage.parsed),
-        rawResponse: responseText,
-      };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
-  });
+  return withRetry(() =>
+    withModelFallback(
+      (m) => fetchAndParseLlmStage(params, m, temperature, maxTokens),
+      primaryModel,
+      params.stageModel,
+    )
+  );
 }
 
 export async function runTwoPhaseLlmStage<TFirstParsed, TSecondParsed, TResult>(

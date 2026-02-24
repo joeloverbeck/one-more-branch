@@ -10,6 +10,7 @@ import {
 import type { NpcAgenda } from '../models/state/npc-agenda.js';
 import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
+import { withModelFallback } from './model-fallback.js';
 import { withRetry } from './retry.js';
 import { STRUCTURE_GENERATION_SCHEMA } from './schemas/structure-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -205,6 +206,62 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
   };
 }
 
+async function fetchStructure(
+  apiKey: string,
+  model: string,
+  messages: ReturnType<typeof buildStructurePrompt>,
+  temperature: number,
+  maxTokens: number,
+): Promise<StructureGenerationResult> {
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'One More Branch',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      response_format: STRUCTURE_GENERATION_SCHEMA,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await readErrorDetails(response);
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
+  }
+
+  const data = await readJsonResponse(response);
+  const content = data.choices[0]?.message?.content;
+  if (!content) {
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  const parsedMessage = parseMessageJsonContent(content);
+  const responseText = parsedMessage.rawText;
+  try {
+    const parsed = parseStructureResponse(parsedMessage.parsed);
+    return { ...parsed, rawResponse: responseText };
+  } catch (error) {
+    if (error instanceof LLMError) {
+      throw new LLMError(error.message, error.code, error.retryable, {
+        rawContent: responseText,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function generateStoryStructure(
   context: StructureContext,
   apiKey: string,
@@ -216,60 +273,18 @@ export async function generateStoryStructure(
   };
   const promptOptions = resolvePromptOptions(resolvedOptions);
   const config = getConfig().llm;
-  const model = options?.model ?? getStageModel('structure');
+  const primaryModel = options?.model ?? getStageModel('structure');
   const temperature = options?.temperature ?? config.temperature;
   const maxTokens = options?.maxTokens ?? config.maxTokens;
 
   const messages = buildStructurePrompt(context, promptOptions);
   logPrompt(logger, 'structure', messages);
 
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: STRUCTURE_GENERATION_SCHEMA,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const data = await readJsonResponse(response);
-    const content = data.choices[0]?.message?.content;
-    if (!content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-
-    const parsedMessage = parseMessageJsonContent(content);
-    const responseText = parsedMessage.rawText;
-    try {
-      const parsed = parseStructureResponse(parsedMessage.parsed);
-      return { ...parsed, rawResponse: responseText };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
-  });
+  return withRetry(() =>
+    withModelFallback(
+      (m) => fetchStructure(apiKey, m, messages, temperature, maxTokens),
+      primaryModel,
+      'structure',
+    )
+  );
 }

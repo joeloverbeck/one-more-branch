@@ -24,6 +24,7 @@ import type {
   EntityDecompositionResult,
 } from './entity-decomposer-types.js';
 import { LLMError } from './llm-client-types.js';
+import { withModelFallback } from './model-fallback.js';
 import { buildEntityDecomposerPrompt } from './prompts/entity-decomposer-prompt.js';
 import { withRetry } from './retry.js';
 import { ENTITY_DECOMPOSITION_SCHEMA } from './schemas/entity-decomposer-schema.js';
@@ -239,65 +240,79 @@ function parseDecompositionResponse(
   return { decomposedCharacters, decomposedWorld };
 }
 
+async function fetchEntityDecomposition(
+  context: EntityDecomposerContext,
+  apiKey: string,
+  model: string,
+  temperature: number,
+  maxTokens: number,
+): Promise<EntityDecompositionResult> {
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'One More Branch',
+    },
+    body: JSON.stringify({
+      model,
+      messages: buildEntityDecomposerPrompt(context),
+      temperature,
+      max_tokens: maxTokens,
+      response_format: ENTITY_DECOMPOSITION_SCHEMA,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await readErrorDetails(response);
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
+  }
+
+  const responseData = await readJsonResponse(response);
+  const content = responseData.choices[0]?.message?.content;
+  if (!content) {
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  const parsedMessage = parseMessageJsonContent(content);
+  const responseText = parsedMessage.rawText;
+  try {
+    const result = parseDecompositionResponse(parsedMessage.parsed, context);
+    return { ...result, rawResponse: responseText };
+  } catch (error) {
+    if (error instanceof LLMError) {
+      throw new LLMError(error.message, error.code, error.retryable, {
+        rawContent: responseText,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function decomposeEntities(
   context: EntityDecomposerContext,
   apiKey: string
 ): Promise<EntityDecompositionResult> {
   const config = getConfig().llm;
-  const model = getStageModel('entityDecomposer');
+  const primaryModel = getStageModel('entityDecomposer');
   const temperature = config.temperature;
   const maxTokens = config.maxTokens;
 
   const messages = buildEntityDecomposerPrompt(context);
   logPrompt(logger, 'entity-decomposer', messages);
 
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: ENTITY_DECOMPOSITION_SCHEMA,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const responseData = await readJsonResponse(response);
-    const content = responseData.choices[0]?.message?.content;
-    if (!content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-
-    const parsedMessage = parseMessageJsonContent(content);
-    const responseText = parsedMessage.rawText;
-    try {
-      const result = parseDecompositionResponse(parsedMessage.parsed, context);
-      return { ...result, rawResponse: responseText };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
-  });
+  return withRetry(() =>
+    withModelFallback(
+      (m) => fetchEntityDecomposition(context, apiKey, m, temperature, maxTokens),
+      primaryModel,
+      'entityDecomposer',
+    )
+  );
 }

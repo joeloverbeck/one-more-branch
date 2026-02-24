@@ -8,6 +8,7 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { buildSpinePrompt, type SpinePromptContext } from './prompts/spine-prompt.js';
+import { withModelFallback } from './model-fallback.js';
 import { withRetry } from './retry.js';
 import { SPINE_GENERATION_SCHEMA } from './schemas/spine-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -198,66 +199,80 @@ function parseSpineResponse(parsed: unknown): readonly SpineOption[] {
   return data['options'].map((option, index) => parseSpineOption(option, index));
 }
 
+async function fetchSpine(
+  apiKey: string,
+  model: string,
+  messages: ReturnType<typeof buildSpinePrompt>,
+  temperature: number,
+  maxTokens: number,
+): Promise<SpineGenerationResult> {
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'One More Branch',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      response_format: SPINE_GENERATION_SCHEMA,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await readErrorDetails(response);
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
+  }
+
+  const data = await readJsonResponse(response);
+  const content = data.choices[0]?.message?.content;
+  if (!content) {
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  const parsedMessage = parseMessageJsonContent(content);
+  const responseText = parsedMessage.rawText;
+  try {
+    const spineOptions = parseSpineResponse(parsedMessage.parsed);
+    return { options: spineOptions, rawResponse: responseText };
+  } catch (error) {
+    if (error instanceof LLMError) {
+      throw new LLMError(error.message, error.code, error.retryable, {
+        rawContent: responseText,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function generateStorySpines(
   context: SpinePromptContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<SpineGenerationResult> {
   const config = getConfig().llm;
-  const model = options?.model ?? getStageModel('spine');
+  const primaryModel = options?.model ?? getStageModel('spine');
   const temperature = options?.temperature ?? config.temperature;
   const maxTokens = options?.maxTokens ?? config.maxTokens;
 
   const messages = buildSpinePrompt(context);
   logPrompt(logger, 'spine', messages);
 
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: SPINE_GENERATION_SCHEMA,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const data = await readJsonResponse(response);
-    const content = data.choices[0]?.message?.content;
-    if (!content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-
-    const parsedMessage = parseMessageJsonContent(content);
-    const responseText = parsedMessage.rawText;
-    try {
-      const spineOptions = parseSpineResponse(parsedMessage.parsed);
-      return { options: spineOptions, rawResponse: responseText };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
-  });
+  return withRetry(() =>
+    withModelFallback(
+      (m) => fetchSpine(apiKey, m, messages, temperature, maxTokens),
+      primaryModel,
+      'spine',
+    )
+  );
 }
