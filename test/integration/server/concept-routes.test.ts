@@ -187,9 +187,14 @@ describe('Concept Route Integration', () => {
       }),
     );
 
-    const viewModel = render.mock.calls[0]?.[1] as {
-      genreGroups: Array<{ genre: string; displayLabel: string; concepts: Array<unknown> }>;
-    };
+    const renderCalls = render.mock.calls as Array<
+      [string, { genreGroups: Array<{ genre: string; displayLabel: string; concepts: Array<unknown> }> }]
+    >;
+    const viewModel = renderCalls[0]?.[1];
+    expect(viewModel).toBeDefined();
+    if (!viewModel) {
+      throw new Error('Expected view model to be passed to render');
+    }
     expect(Array.isArray(viewModel.genreGroups)).toBe(true);
     expect(Object.fromEntries(viewModel.genreGroups.map((group) => [group.genre, group.concepts.length]))).toEqual({
       DARK_FANTASY: 2,
@@ -204,7 +209,12 @@ describe('Concept Route Integration', () => {
     void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response);
     await flushPromises();
 
-    const viewModel = render.mock.calls[0]?.[1] as { genreGroups: unknown };
+    const renderCalls = render.mock.calls as Array<[string, { genreGroups: unknown }]>;
+    const viewModel = renderCalls[0]?.[1];
+    expect(viewModel).toBeDefined();
+    if (!viewModel) {
+      throw new Error('Expected view model to be passed to render');
+    }
     expect(Array.isArray(viewModel.genreGroups)).toBe(true);
     expect(viewModel.genreGroups).toEqual([]);
   });

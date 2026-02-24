@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import ejs from 'ejs';
+import { render as renderEjs } from 'ejs';
 
 describe('concepts page template', () => {
   const conceptsPath = path.join(__dirname, '../../../../src/server/views/pages/concepts.ejs');
@@ -36,9 +36,14 @@ describe('concepts page template', () => {
 
   it('renders safely when genreGroups is omitted', () => {
     const template = fs.readFileSync(conceptsPath, 'utf8');
+    const renderTemplate = renderEjs as (
+      source: string,
+      data: { title: string; concepts: unknown[] },
+      options: { filename: string }
+    ) => string;
 
     expect(() =>
-      ejs.render(
+      renderTemplate(
         template,
         {
           title: 'Concepts - One More Branch',
