@@ -8,6 +8,7 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { buildSceneIdeatorPrompt } from './prompts/scene-ideator-prompt.js';
+import { withModelFallback } from './model-fallback.js';
 import { withRetry } from './retry.js';
 import { SCENE_IDEATOR_SCHEMA } from './schemas/scene-ideator-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -141,68 +142,82 @@ function parseSceneIdeatorResponse(
   return options;
 }
 
+async function fetchSceneDirections(
+  apiKey: string,
+  model: string,
+  messages: ReturnType<typeof buildSceneIdeatorPrompt>,
+  temperature: number,
+  maxTokens: number,
+): Promise<SceneIdeationResult> {
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'One More Branch',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      response_format: SCENE_IDEATOR_SCHEMA,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await readErrorDetails(response);
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
+      httpStatus: response.status,
+      model,
+      rawErrorBody: errorDetails.rawBody,
+      parsedError: errorDetails.parsedError,
+    });
+  }
+
+  const data = await readJsonResponse(response);
+  const content = data.choices[0]?.message?.content;
+  if (!content) {
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
+  }
+
+  const parsedMessage = parseMessageJsonContent(content);
+  const responseText = parsedMessage.rawText;
+  try {
+    const sceneOptions = parseSceneIdeatorResponse(parsedMessage.parsed);
+    return { options: sceneOptions, rawResponse: responseText };
+  } catch (error) {
+    if (error instanceof LLMError) {
+      throw new LLMError(error.message, error.code, error.retryable, {
+        rawContent: responseText,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function generateSceneDirections(
   context: SceneIdeatorContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<SceneIdeationResult> {
   const config = getConfig().llm;
-  const model = options?.model ?? getStageModel('sceneIdeator');
+  const primaryModel = options?.model ?? getStageModel('sceneIdeator');
   const temperature = options?.temperature ?? config.temperature;
   const maxTokens = options?.maxTokens ?? config.maxTokens;
 
   const messages = buildSceneIdeatorPrompt(context);
   logPrompt(logger, 'sceneIdeator', messages);
 
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: SCENE_IDEATOR_SCHEMA,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const data = await readJsonResponse(response);
-    const content = data.choices[0]?.message?.content;
-    if (!content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-
-    const parsedMessage = parseMessageJsonContent(content);
-    const responseText = parsedMessage.rawText;
-    try {
-      const sceneOptions = parseSceneIdeatorResponse(parsedMessage.parsed);
-      return { options: sceneOptions, rawResponse: responseText };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
-  });
+  return withRetry(() =>
+    withModelFallback(
+      (m) => fetchSceneDirections(apiKey, m, messages, temperature, maxTokens),
+      primaryModel,
+      'sceneIdeator',
+    )
+  );
 }
 
 export { parseSceneIdeatorResponse, parseSceneDirectionOption, validateDiversity };

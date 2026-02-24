@@ -1,6 +1,8 @@
+import { getStageModel } from '../config/stage-model.js';
 import { generateAgendaResolver } from '../llm';
 import type { AgendaResolverResult } from '../llm';
 import type { StageDegradation } from '../llm/generation-pipeline-types';
+import { withModelFallback } from '../llm/model-fallback.js';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { ActiveState } from '../models/state/active-state';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
@@ -58,26 +60,32 @@ export async function resolveNpcAgendas(
   const agendaStart = Date.now();
   try {
     emitGenerationStage(context.onGenerationStage, 'RESOLVING_AGENDAS', 'started', 1);
-    const result = await generateAgendaResolver(
-      {
-        narrative: context.writerNarrative,
-        sceneSummary: context.writerSceneSummary,
-        decomposedCharacters: context.decomposedCharacters,
-        currentAgendas: context.parentAccumulatedNpcAgendas,
-        structure:
-          context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
-        spine: context.spine,
-        activeState: context.parentActiveState,
-        analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
-        currentRelationships: context.parentAccumulatedNpcRelationships,
-        analystRelationshipShifts: context.analystRelationshipShifts,
-        deviationContext: context.deviationContext,
-        tone: context.tone,
-        toneFeel: context.toneFeel,
-        toneAvoid: context.toneAvoid,
-      },
-      context.decomposedCharacters,
-      { apiKey: context.apiKey }
+    const promptContext = {
+      narrative: context.writerNarrative,
+      sceneSummary: context.writerSceneSummary,
+      decomposedCharacters: context.decomposedCharacters,
+      currentAgendas: context.parentAccumulatedNpcAgendas,
+      structure:
+        context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
+      spine: context.spine,
+      activeState: context.parentActiveState,
+      analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
+      currentRelationships: context.parentAccumulatedNpcRelationships,
+      analystRelationshipShifts: context.analystRelationshipShifts,
+      deviationContext: context.deviationContext,
+      tone: context.tone,
+      toneFeel: context.toneFeel,
+      toneAvoid: context.toneAvoid,
+    };
+    const primaryModel = getStageModel('agendaResolver');
+    const result = await withModelFallback(
+      (m) =>
+        generateAgendaResolver(promptContext, context.decomposedCharacters, {
+          apiKey: context.apiKey,
+          model: m,
+        }),
+      primaryModel,
+      'agendaResolver',
     );
     const durationMs = Date.now() - agendaStart;
     emitGenerationStage(
