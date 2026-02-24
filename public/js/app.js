@@ -5006,7 +5006,7 @@ function createRecapModalController(initialData) {
           loading.style.display = 'flex';
           try {
             var ideationOptions = await ideationCtrl.fetchSceneOptions(
-              apiKey, 'continuation', currentPageId, choiceIndex
+              apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance
             );
             loading.style.display = 'none';
 
@@ -5020,7 +5020,7 @@ function createRecapModalController(initialData) {
                 function onRegenerate() {
                   loading.style.display = 'flex';
                   ideationCtrl.fetchSceneOptions(
-                    apiKey, 'continuation', currentPageId, choiceIndex
+                    apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance
                   ).then(function (newOptions) {
                     loading.style.display = 'none';
                     ideationCtrl.renderIdeationUI(
@@ -5260,6 +5260,7 @@ function createRecapModalController(initialData) {
       var oneLineHook = getValueById('oneLineHook');
       var elevatorParagraph = getValueById('elevatorParagraph');
       var genreFrame = getValueById('genreFrame');
+      var genreSubversion = getValueById('genreSubversion');
       var protagonistRole = getValueById('protagonistRole');
       var coreCompetence = getValueById('coreCompetence');
       var coreFlaw = getValueById('coreFlaw');
@@ -5273,17 +5274,24 @@ function createRecapModalController(initialData) {
       var deadlineMechanism = getValueById('deadlineMechanism');
       var incitingDisruption = getValueById('incitingDisruption');
       var escapeValve = getValueById('escapeValve');
+      var settingAxioms = collectDynamicListEntries('settingAxioms');
+      var constraintSet = collectDynamicListEntries('constraintSet');
+      var keyInstitutions = collectDynamicListEntries('keyInstitutions');
+      var settingScale = getValueById('settingScale');
+      var whatIfQuestion = getValueById('whatIfQuestion');
+      var ironicTwist = getValueById('ironicTwist');
+      var playerFantasy = getValueById('playerFantasy');
 
       // Only build a conceptSpec if we have enough meaningful fields
-      if (!oneLineHook && !coreConflictLoop && !conflictAxis) {
+      if (!oneLineHook || !coreConflictLoop || !conflictAxis) {
         return null;
       }
 
-      return {
+      var spec = {
         oneLineHook: oneLineHook,
         elevatorParagraph: elevatorParagraph,
         genreFrame: genreFrame,
-        genreSubversion: getValueById('genreSubversion'),
+        genreSubversion: genreSubversion,
         protagonistRole: protagonistRole,
         coreCompetence: coreCompetence,
         coreFlaw: coreFlaw,
@@ -5297,14 +5305,16 @@ function createRecapModalController(initialData) {
         deadlineMechanism: deadlineMechanism,
         incitingDisruption: incitingDisruption,
         escapeValve: escapeValve,
-        settingAxioms: collectDynamicListEntries('settingAxioms'),
-        constraintSet: collectDynamicListEntries('constraintSet'),
-        keyInstitutions: collectDynamicListEntries('keyInstitutions'),
-        settingScale: getValueById('settingScale'),
-        whatIfQuestion: getValueById('whatIfQuestion'),
-        ironicTwist: getValueById('ironicTwist'),
-        playerFantasy: getValueById('playerFantasy'),
+        settingAxioms: settingAxioms,
+        constraintSet: constraintSet,
+        keyInstitutions: keyInstitutions,
+        settingScale: settingScale,
+        whatIfQuestion: whatIfQuestion,
+        ironicTwist: ironicTwist,
+        playerFantasy: playerFantasy,
       };
+
+      return spec;
     }
 
     function collectFormData() {
@@ -7463,11 +7473,14 @@ function createRecapModalController(initialData) {
   // ── Scene Ideation Controller ────────────────────────────────────
 
   function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
-    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex) {
+    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance) {
       var body = { apiKey: apiKey, mode: mode || 'opening' };
       if (mode === 'continuation') {
         body.pageId = pageId;
         body.choiceIndex = choiceIndex;
+      }
+      if (protagonistGuidance && Object.keys(protagonistGuidance).length > 0) {
+        body.protagonistGuidance = protagonistGuidance;
       }
 
       return fetch('/play/' + storyId + '/ideate-scene', {

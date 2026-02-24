@@ -308,8 +308,13 @@ function findPreviousBeatResolution(
   return null;
 }
 
+export interface PlannerContextOptions {
+  readonly includeProtagonistDirective?: boolean;
+}
+
 export function buildPlannerContinuationContextSection(
-  context: ContinuationPagePlanContext
+  context: ContinuationPagePlanContext,
+  options?: PlannerContextOptions
 ): string {
   const worldSection = context.decomposedWorld.facts.length > 0
     ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
@@ -415,9 +420,15 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
       ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
       : '';
 
+  const includeProtagonist = options?.includeProtagonistDirective ?? true;
+
   const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
-  const protagonistDirective = protagonistName
+  const protagonistDirective = includeProtagonist && protagonistName
     ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
+    : '';
+
+  const guidanceSection = includeProtagonist
+    ? buildProtagonistGuidanceSection(context.protagonistGuidance)
     : '';
 
   return `=== PLANNER CONTEXT: CONTINUATION ===
@@ -453,6 +464,6 @@ ${threadsSection}
 ${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
-${protagonistDirective}${buildProtagonistGuidanceSection(context.protagonistGuidance)}PLAYER'S CHOICE:
+${protagonistDirective}${guidanceSection}PLAYER'S CHOICE:
 ${context.selectedChoice}`;
 }

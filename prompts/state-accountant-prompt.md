@@ -81,7 +81,7 @@ Dramatic Question: {{dramaticQuestion}}
 Choice Intents:
 1. [{{choiceType}} / {{primaryDelta}}] {{hook}}
 
-PLANNER RULES:
+STATE ACCOUNTANT RULES:
 {{state intent rules block from state-intent-rules.ts}}
 
 {{#if mode === 'continuation'}}
@@ -162,3 +162,5 @@ Return JSON only.
 - `canon.worldAdd` items are objects with `text` (the fact) and `factType` (epistemic classification: LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). The factType reflects how the protagonist learned this fact, not omniscient narrator knowledge.
 - In continuation mode, the accountant additionally receives `CONTINUATION_CANON_QUALITY` criteria with detailed epistemic classification guidance.
 - The planner context sections (`opening-context.ts`, `continuation-context.ts`) always use decomposed character profiles and decomposed world facts — raw `characterConcept`/`worldbuilding`/`npcs` fields are no longer passed. The accountant inherits this change automatically through the shared planner context builders.
+- The accountant passes `{ includeProtagonistDirective: false }` to the shared planner context builders. This means the `PROTAGONIST IDENTITY` directive and protagonist guidance section are excluded from the accountant's context — those are planner-only concerns. The accountant focuses solely on state intents.
+- The state intent rules block (`ACCOUNTANT_STATE_INTENT_RULES` in `state-intent-rules.ts`) contains only state-mutation rules. Planner-specific rules (sceneIntent, writerBrief, choice intent rules, dramaticQuestion) were removed since those are the planner's responsibility, not the accountant's.

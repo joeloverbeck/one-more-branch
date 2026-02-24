@@ -87,7 +87,7 @@ OUTPUT REQUIREMENTS:
 - actionVerbs must contain at least 6 concise, distinct verbs.
 - conflictType must be structurally coherent with conflictAxis.
 - settingAxioms must contain 2-5 enforceable rules.
-- constraintSet must contain 3-5 meaningful limits.
+- constraintSet must contain 2-5 meaningful limits.
 - keyInstitutions must contain 2-4 pressure-producing institutions.
 ```
 

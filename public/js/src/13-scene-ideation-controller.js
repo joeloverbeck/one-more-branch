@@ -1,11 +1,14 @@
   // ── Scene Ideation Controller ────────────────────────────────────
 
   function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
-    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex) {
+    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance) {
       var body = { apiKey: apiKey, mode: mode || 'opening' };
       if (mode === 'continuation') {
         body.pageId = pageId;
         body.choiceIndex = choiceIndex;
+      }
+      if (protagonistGuidance && Object.keys(protagonistGuidance).length > 0) {
+        body.protagonistGuidance = protagonistGuidance;
       }
 
       return fetch('/play/' + storyId + '/ideate-scene', {

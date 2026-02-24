@@ -5,6 +5,7 @@ import type {
 } from '../../../../src/llm/scene-ideator-types';
 import {
   buildSceneIdeatorPrompt,
+  buildIdeatorGuidanceSection,
   formatOverdueThreadsSection,
   formatPendingPromisesSection,
 } from '../../../../src/llm/prompts/scene-ideator-prompt';
@@ -444,5 +445,142 @@ describe('formatPendingPromisesSection', () => {
     const promise = mkPromise({ id: 'pr-1', suggestedUrgency: Urgency.HIGH, age: 3 });
     const result = formatPendingPromisesSection([promise]);
     expect(result).toMatch(/^PENDING PROMISES \(consider fulfilling\):/);
+  });
+});
+
+describe('buildIdeatorGuidanceSection', () => {
+  it('returns empty string when guidance is undefined', () => {
+    expect(buildIdeatorGuidanceSection(undefined)).toBe('');
+  });
+
+  it('returns empty string when all guidance fields are empty strings', () => {
+    expect(
+      buildIdeatorGuidanceSection({
+        suggestedEmotions: '',
+        suggestedThoughts: '',
+        suggestedSpeech: '',
+      })
+    ).toBe('');
+  });
+
+  it('returns empty string when all guidance fields are whitespace-only', () => {
+    expect(
+      buildIdeatorGuidanceSection({
+        suggestedEmotions: '   ',
+        suggestedThoughts: '  ',
+        suggestedSpeech: ' ',
+      })
+    ).toBe('');
+  });
+
+  it('includes header and framing line when any field is present', () => {
+    const result = buildIdeatorGuidanceSection({
+      suggestedEmotions: 'fearful and conflicted',
+    });
+    expect(result).toContain('=== PROTAGONIST GUIDANCE (CONSTRAINT) ===');
+    expect(result).toContain('compatibility filter');
+  });
+
+  it('includes emotions constraint when suggestedEmotions is provided', () => {
+    const result = buildIdeatorGuidanceSection({
+      suggestedEmotions: 'fearful and conflicted',
+    });
+    expect(result).toContain('"fearful and conflicted"');
+    expect(result).toContain('emotional arc');
+    expect(result).toContain('contradictory emotions');
+  });
+
+  it('includes thoughts constraint when suggestedThoughts is provided', () => {
+    const result = buildIdeatorGuidanceSection({
+      suggestedThoughts: 'wondering if the deal was worth it',
+    });
+    expect(result).toContain('"wondering if the deal was worth it"');
+    expect(result).toContain('reflections would naturally arise');
+    expect(result).toContain('irrelevant');
+  });
+
+  it('includes speech constraint when suggestedSpeech is provided', () => {
+    const result = buildIdeatorGuidanceSection({
+      suggestedSpeech: 'I never asked for this.',
+    });
+    expect(result).toContain('"I never asked for this."');
+    expect(result).toContain('natural moment');
+    expect(result).toContain('no plausible context');
+  });
+
+  it('includes all three constraints when all fields are provided', () => {
+    const result = buildIdeatorGuidanceSection({
+      suggestedEmotions: 'rage',
+      suggestedThoughts: 'betrayal',
+      suggestedSpeech: 'You lied to me.',
+    });
+    expect(result).toContain('Emotions:');
+    expect(result).toContain('Thoughts:');
+    expect(result).toContain('Speech:');
+    expect(result).toContain('"rage"');
+    expect(result).toContain('"betrayal"');
+    expect(result).toContain('"You lied to me."');
+  });
+
+  it('omits absent fields without mentioning them', () => {
+    const result = buildIdeatorGuidanceSection({
+      suggestedEmotions: 'fearful',
+    });
+    expect(result).toContain('Emotions:');
+    expect(result).not.toContain('Thoughts:');
+    expect(result).not.toContain('Speech:');
+  });
+});
+
+describe('buildSceneIdeatorPrompt with protagonist guidance', () => {
+  const baseContinuationContext: SceneIdeatorContinuationContext = {
+    mode: 'continuation',
+    tone: 'dark fantasy',
+    decomposedCharacters: [],
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    previousNarrative: 'The castle crumbled around them.',
+    selectedChoice: 'Run into the forest.',
+    activeState: {
+      currentLocation: 'Castle ruins',
+      activeThreats: [],
+      activeConstraints: [],
+      openThreads: [],
+    },
+    ancestorSummaries: [],
+    accumulatedPromises: [],
+    accumulatedInventory: [],
+    accumulatedHealth: [],
+  };
+
+  it('includes guidance section in user message when guidance is provided', () => {
+    const ctx: SceneIdeatorContinuationContext = {
+      ...baseContinuationContext,
+      protagonistGuidance: {
+        suggestedEmotions: 'hesitant and conflicted',
+        suggestedSpeech: 'I am not sure about this.',
+      },
+    };
+    const messages = buildSceneIdeatorPrompt(ctx);
+    expect(messages[1].content).toContain('PROTAGONIST GUIDANCE (CONSTRAINT)');
+    expect(messages[1].content).toContain('"hesitant and conflicted"');
+    expect(messages[1].content).toContain('"I am not sure about this."');
+  });
+
+  it('omits guidance section when guidance is undefined', () => {
+    const messages = buildSceneIdeatorPrompt(baseContinuationContext);
+    expect(messages[1].content).not.toContain('PROTAGONIST GUIDANCE');
+  });
+
+  it('omits guidance section when guidance is empty', () => {
+    const ctx: SceneIdeatorContinuationContext = {
+      ...baseContinuationContext,
+      protagonistGuidance: {
+        suggestedEmotions: '',
+        suggestedThoughts: '',
+        suggestedSpeech: '',
+      },
+    };
+    const messages = buildSceneIdeatorPrompt(ctx);
+    expect(messages[1].content).not.toContain('PROTAGONIST GUIDANCE');
   });
 });

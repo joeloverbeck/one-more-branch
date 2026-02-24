@@ -180,7 +180,7 @@ describe('story-creation-service', () => {
       }
     });
 
-    it('rejects invalid conceptSpec payload', () => {
+    it('gracefully drops invalid conceptSpec payload instead of rejecting', () => {
       const result = validateStoryInput({
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
@@ -190,9 +190,27 @@ describe('story-creation-service', () => {
         },
       });
 
-      expect(result.valid).toBe(false);
-      if (!result.valid) {
-        expect(result.error).toBe('Concept payload is invalid');
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.trimmed.conceptSpec).toBeUndefined();
+      }
+    });
+
+    it('gracefully drops partial conceptSpec with empty string fields', () => {
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        apiKey: 'sk-valid-api-key-12345',
+        conceptSpec: {
+          oneLineHook: 'A hook',
+          coreConflictLoop: '',
+          conflictAxis: '',
+        },
+      });
+
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.trimmed.conceptSpec).toBeUndefined();
       }
     });
 

@@ -220,6 +220,58 @@ describe('new story form submit', () => {
     expect(body.conceptSpec).toBeUndefined();
   });
 
+  it('does not send partial conceptSpec when only oneLineHook is filled', async () => {
+    setupPage();
+    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
+    fillForm();
+
+    // Add concept spec fields dynamically to the DOM (they exist in the real EJS template)
+    const manualSection = document.getElementById('manual-story-section') as HTMLElement;
+    const hookInput = document.createElement('input');
+    hookInput.id = 'oneLineHook';
+    hookInput.value = 'A thrilling hook line';
+    manualSection.appendChild(hookInput);
+
+    const loopTextarea = document.createElement('textarea');
+    loopTextarea.id = 'coreConflictLoop';
+    loopTextarea.value = '';
+    manualSection.appendChild(loopTextarea);
+
+    const axisSelect = document.createElement('select');
+    axisSelect.id = 'conflictAxis';
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    axisSelect.appendChild(emptyOption);
+    manualSection.appendChild(axisSelect);
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      if (typeof url === 'string' && url.includes('generate-spines')) {
+        return Promise.resolve(
+          mockJsonResponse({ success: true, options: MOCK_SPINE_OPTIONS })
+        );
+      }
+      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
+    });
+
+    clickGenerateSpine();
+    await jest.runAllTimersAsync();
+
+    const card = document.querySelector('.spine-card') as HTMLElement;
+    card.click();
+    await jest.runAllTimersAsync();
+
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
+    );
+    expect(postCall).toBeDefined();
+
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
+    expect(body.conceptSpec).toBeUndefined();
+  });
+
   it('shows error banner on failed spine generation', async () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
