@@ -46,6 +46,30 @@ EVALUATED CONCEPT INPUT:
   "weaknesses": ["{{weakness}}"]
 }
 
+{{if verification is available}}
+
+## VERIFICATION INTELLIGENCE
+
+### Signature Scenario (PROTECT THIS)
+{{verification.signatureScenario}}
+
+### Setpiece Bank (PRESERVE UNIQUENESS)
+1. {{setpiece}}
+2. {{setpiece}}
+...
+
+### Load-Bearing Check
+- Passes: {{verification.loadBearingCheck.passes}}
+- Generic collapse risk: "{{verification.loadBearingCheck.genericCollapse}}"
+- Integrity score: {{verification.conceptIntegrityScore}}/100
+
+DIRECTIVES:
+- Your hardened concept MUST NOT invalidate the signature scenario.
+- Your drift risk mitigations MUST NOT erode any setpiece's world-specific elements.
+- If load-bearing check identified generic collapse into "{{genericCollapse}}", your hardening must WIDEN the distance from that generic form, not narrow it.
+
+{{end if}}
+
 OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "hardenedConcept": ConceptSpec, "driftRisks": DriftRisk[], "playerBreaks": PlayerBreak[] }.
 - driftRisks and playerBreaks must both be non-empty arrays.
@@ -89,6 +113,7 @@ OUTPUT REQUIREMENTS:
 | `concept` | Evaluated concept to harden |
 | `scores` | Dimension scores for that concept |
 | `weaknesses` | Evaluator-provided weak points/tradeoffs |
+| `verification` | (Optional) Verifier output: signature scenario, setpiece bank, load-bearing check. When present, injects a VERIFICATION INTELLIGENCE section into the user prompt to make hardening premise-protective. |
 
 ## Notes
 

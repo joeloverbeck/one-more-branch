@@ -304,6 +304,7 @@ conceptRoutes.post(
         concept: existing.evaluatedConcept.concept,
         scores: existing.evaluatedConcept.scores,
         weaknesses: [...existing.evaluatedConcept.weaknesses],
+        verification: existing.verificationResult,
         apiKey,
         onGenerationStage: progress.onGenerationStage,
       });

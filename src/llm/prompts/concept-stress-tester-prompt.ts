@@ -2,6 +2,7 @@ import {
   CONCEPT_PASS_THRESHOLDS,
   type ConceptDimensionScores,
   type ConceptStressTesterContext,
+  type ConceptVerification,
 } from '../../models/concept-generator.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
@@ -50,6 +51,30 @@ function buildUserPayload(context: ConceptStressTesterContext): string {
   );
 }
 
+function buildVerificationIntelligenceSection(verification: ConceptVerification): string {
+  const setpieces = verification.escalatingSetpieces
+    .map((s, i) => `${i + 1}. ${s}`)
+    .join('\n');
+
+  return `## VERIFICATION INTELLIGENCE
+
+### Signature Scenario (PROTECT THIS)
+${verification.signatureScenario}
+
+### Setpiece Bank (PRESERVE UNIQUENESS)
+${setpieces}
+
+### Load-Bearing Check
+- Passes: ${verification.loadBearingCheck.passes}
+- Generic collapse risk: "${verification.loadBearingCheck.genericCollapse}"
+- Integrity score: ${verification.conceptIntegrityScore}/100
+
+DIRECTIVES:
+- Your hardened concept MUST NOT invalidate the signature scenario.
+- Your drift risk mitigations MUST NOT erode any setpiece's world-specific elements.
+- If load-bearing check identified generic collapse into "${verification.loadBearingCheck.genericCollapse}", your hardening must WIDEN the distance from that generic form, not narrow it.`;
+}
+
 export function buildConceptStressTesterPrompt(context: ConceptStressTesterContext): ChatMessage[] {
   const weakDimensions = buildWeakDimensionList(context.scores);
   const weakDimensionsLine =
@@ -66,12 +91,17 @@ export function buildConceptStressTesterPrompt(context: ConceptStressTesterConte
   const userSections: string[] = [
     'Stress-test this evaluated concept and return a hardened version plus concrete risk handling.',
     `EVALUATED CONCEPT INPUT:\n${buildUserPayload(context)}`,
-    `OUTPUT REQUIREMENTS:
+  ];
+
+  if (context.verification) {
+    userSections.push(buildVerificationIntelligenceSection(context.verification));
+  }
+
+  userSections.push(`OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "hardenedConcept": ConceptSpec, "driftRisks": DriftRisk[], "playerBreaks": PlayerBreak[] }.
 - driftRisks and playerBreaks must both be non-empty arrays.
 - mitigationType must be one of: STATE_CONSTRAINT, WORLD_AXIOM, SCENE_RULE, RETRIEVAL_SCOPE.
-- All text fields must be concrete and non-empty.`,
-  ];
+- All text fields must be concrete and non-empty.`);
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },
