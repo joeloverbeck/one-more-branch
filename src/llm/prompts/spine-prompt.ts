@@ -16,6 +16,7 @@ export interface SpinePromptContext {
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
   conceptVerification?: ConceptVerification;
+  contentPreferences?: string;
 }
 
 const SPINE_ROLE_INTRO = `You are a story architect designing the thematic spine of interactive branching fiction. Your job is to identify the invariant causal chain and thematic logic that will anchor the entire story — the dramatic question, the protagonist's inner transformation, and the force that opposes them.`;
@@ -96,6 +97,14 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
   return lines.join('\n') + '\n\n';
 }
 
+function buildContentPreferencesSection(contentPreferences?: string): string {
+  if (!contentPreferences || contentPreferences.trim().length === 0) {
+    return '';
+  }
+
+  return `CONTENT PREFERENCES (user creative direction — incorporate into spine design):\n${contentPreferences.trim()}\n\n`;
+}
+
 function buildConceptVerificationSection(verification?: ConceptVerification): string {
   if (!verification) {
     return '';
@@ -139,6 +148,7 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
     ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
     : '';
 
+  const contentPreferencesSection = buildContentPreferencesSection(context.contentPreferences);
   const conceptSection = buildConceptAnalysisSection(context.conceptSpec);
   const kernelSection = buildKernelGroundingSection(context.storyKernel);
   const verificationSection = buildConceptVerificationSection(context.conceptVerification);
@@ -148,7 +158,7 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
 CHARACTER CONCEPT:
 ${context.characterConcept}
 
-${worldSection}${npcsSection}${startingSituationSection}${conceptSection}${kernelSection}${verificationSection}TONE/GENRE: ${context.tone}
+${worldSection}${npcsSection}${startingSituationSection}${contentPreferencesSection}${conceptSection}${kernelSection}${verificationSection}TONE/GENRE: ${context.tone}
 
 DIVERGENCE CONSTRAINT:
 Generate exactly 3 spine options. Each MUST differ in at least one of:

@@ -258,6 +258,7 @@ export interface LoadBearingCheck {
 }
 
 export interface ConceptVerification {
+  readonly conceptId: string;
   readonly signatureScenario: string;
   readonly escalatingSetpieces: readonly string[];
   readonly inevitabilityStatement: string;

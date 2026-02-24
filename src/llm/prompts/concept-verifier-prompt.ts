@@ -43,8 +43,9 @@ export function buildConceptVerifierPrompt(context: ConceptVerifierContext): Cha
     `EVALUATED CONCEPTS INPUT:\n${buildUserPayload(context)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "verifications": ConceptVerification[] }.
-- verifications array must have exactly ${context.evaluatedConcepts.length} items, one per input concept, in the same order.
+- verifications array must have exactly ${context.evaluatedConcepts.length} items, one per input concept.
 - Each verification must include:
+  - conceptId: string (must match exactly one provided input conceptId)
   - signatureScenario: string (the single most iconic interactive decision moment unique to this concept)
   - escalatingSetpieces: string[] (exactly 6 concept-unique situations in rising intensity)
   - inevitabilityStatement: string (what kind of story MUST happen given the premise's internal logic)
@@ -53,6 +54,7 @@ export function buildConceptVerifierPrompt(context: ConceptVerifierContext): Cha
     - reasoning: explain what makes it unique or why it fails
     - genericCollapse: describe what the concept collapses INTO when its differentiator is removed
   - conceptIntegrityScore: number 0-100 (how many of the 6 setpieces are truly concept-unique; 100 = all 6 are impossible in any other story)
+- Every input conceptId must appear exactly once in the output. No duplicates, no omissions, no unknown IDs.
 - All text fields must be non-empty.
 - Each escalatingSetpieces array must contain exactly 6 strings.`,
   ];

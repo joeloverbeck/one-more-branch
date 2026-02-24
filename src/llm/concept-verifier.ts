@@ -18,6 +18,51 @@ function requireNonEmptyString(value: unknown, fieldName: string, label: string)
   return value.trim();
 }
 
+function requireConceptId(value: unknown, label: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new LLMError(`${label} has invalid conceptId`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  return value.trim();
+}
+
+function getConceptId(index: number): string {
+  return `concept_${index + 1}`;
+}
+
+function ensureExactIdCoverage(
+  parsedConceptIds: readonly string[],
+  expectedConceptIds: readonly string[],
+  label: string,
+): void {
+  if (parsedConceptIds.length !== expectedConceptIds.length) {
+    throw new LLMError(
+      `${label} must include exactly ${expectedConceptIds.length} verifications (received: ${parsedConceptIds.length})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const expected = new Set(expectedConceptIds);
+  const received = new Set(parsedConceptIds);
+
+  if (received.size !== parsedConceptIds.length) {
+    throw new LLMError(
+      `${label} contains duplicate conceptIds`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  if (expected.size !== received.size || [...expected].some((key) => !received.has(key))) {
+    throw new LLMError(
+      `${label} concept set does not match requested candidates`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+}
+
 function parseLoadBearingCheck(value: unknown, label: string): LoadBearingCheck {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new LLMError(`${label} loadBearingCheck must be an object`, 'STRUCTURE_PARSE_ERROR', true);
@@ -69,6 +114,7 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
   }
 
   const data = value as Record<string, unknown>;
+  const conceptId = requireConceptId(data['conceptId'], label);
   const score = data['conceptIntegrityScore'];
   if (typeof score !== 'number' || !Number.isFinite(score)) {
     throw new LLMError(
@@ -81,6 +127,7 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
   const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
 
   return {
+    conceptId,
     signatureScenario: requireNonEmptyString(
       data['signatureScenario'],
       'signatureScenario',
@@ -99,7 +146,7 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
 
 export function parseConceptVerificationResponse(
   parsed: unknown,
-  expectedCount: number,
+  expectedConceptIds: readonly string[],
 ): readonly ConceptVerification[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
@@ -118,15 +165,17 @@ export function parseConceptVerificationResponse(
     );
   }
 
-  if (data['verifications'].length !== expectedCount) {
-    throw new LLMError(
-      `Concept verification response must have exactly ${expectedCount} verifications (received: ${data['verifications'].length})`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
-  }
+  const verifications = data['verifications'].map((item, index) =>
+    parseConceptVerification(item, index),
+  );
 
-  return data['verifications'].map((item, index) => parseConceptVerification(item, index));
+  ensureExactIdCoverage(
+    verifications.map((v) => v.conceptId),
+    expectedConceptIds,
+    'Concept verification response',
+  );
+
+  return verifications;
 }
 
 export async function verifyConcepts(
@@ -134,7 +183,7 @@ export async function verifyConcepts(
   apiKey: string,
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptVerificationResult> {
-  const expectedCount = context.evaluatedConcepts.length;
+  const expectedConceptIds = context.evaluatedConcepts.map((_, index) => getConceptId(index));
   const messages = buildConceptVerifierPrompt(context);
   const result = await runLlmStage({
     stageModel: 'conceptVerifier',
@@ -143,7 +192,7 @@ export async function verifyConcepts(
     options,
     schema: CONCEPT_VERIFIER_SCHEMA,
     messages,
-    parseResponse: (parsed) => parseConceptVerificationResponse(parsed, expectedCount),
+    parseResponse: (parsed) => parseConceptVerificationResponse(parsed, expectedConceptIds),
   });
 
   return {

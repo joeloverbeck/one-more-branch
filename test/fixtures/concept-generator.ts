@@ -107,6 +107,7 @@ export function createConceptSeedInputFixture(): ConceptSeedInput {
 
 export function createConceptVerificationFixture(index = 1): ConceptVerification {
   return {
+    conceptId: `concept_${index}`,
     signatureScenario: `Signature scenario for concept ${index}`,
     escalatingSetpieces: [
       `Setpiece 1 for concept ${index}`,

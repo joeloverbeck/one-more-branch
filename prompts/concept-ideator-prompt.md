@@ -10,7 +10,7 @@
 
 The concept ideator is the first LLM call in the `/concepts` generation flow. It expands user seed inputs into a diverse candidate set of concept engines and, when provided, must operationalize the selected story kernel.
 
-**Pipeline position**: **Concept Ideator** -> Concept Evaluator -> (optional per-concept) Concept Stress Tester
+**Pipeline position**: **Concept Ideator** -> Concept Evaluator -> Concept Verifier
 
 Generation stage emitted by `conceptService`: `GENERATING_CONCEPTS`.
 

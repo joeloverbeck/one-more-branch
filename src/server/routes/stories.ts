@@ -96,6 +96,7 @@ storyRoutes.post(
       conceptSpec?: unknown;
       storyKernel?: unknown;
       conceptVerification?: ConceptVerification;
+      contentPreferences?: string;
       progressId?: unknown;
     };
 
@@ -142,6 +143,12 @@ storyRoutes.post(
           ? body.conceptVerification
           : undefined;
 
+      const rawContentPreferences = body.contentPreferences?.trim();
+      const trimmedContentPreferences =
+        rawContentPreferences && rawContentPreferences.length > 0
+          ? rawContentPreferences
+          : undefined;
+
       const result = await generateStorySpines(
         {
           characterConcept,
@@ -152,6 +159,7 @@ storyRoutes.post(
           conceptSpec: validatedConceptSpec,
           storyKernel: validatedKernel,
           conceptVerification: validatedVerification,
+          contentPreferences: trimmedContentPreferences,
         },
         apiKey
       );

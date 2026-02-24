@@ -16,7 +16,7 @@ The concept evaluator is the second stage in the `/concepts` flow and runs in **
 
 Pass/fail is computed code-side via `passesConceptThresholds(scores)` and stored as a `passes: boolean` field on `ScoredConcept` and `EvaluatedConcept`. Thresholds are NOT exposed to the LLM to avoid anchoring bias.
 
-**Pipeline position**: Concept Ideator -> **Concept Evaluator (Scoring -> Deep Eval)** -> (optional per-concept) Concept Stress Tester
+**Pipeline position**: Concept Ideator -> **Concept Evaluator (Scoring -> Deep Eval)** -> Concept Verifier
 
 Generation stage emitted by `conceptService`: `EVALUATING_CONCEPTS`.
 

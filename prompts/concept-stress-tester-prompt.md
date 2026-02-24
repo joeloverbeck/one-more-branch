@@ -10,7 +10,7 @@
 
 The stress tester is an on-demand LLM call (triggered by `/concepts/api/:conceptId/harden`) that pressure-tests one evaluated concept and returns a hardened replacement plus concrete risk handling.
 
-**Pipeline position**: Concept Ideator -> Concept Evaluator -> **Concept Stress Tester** (optional per concept)
+**Pipeline position**: Concept Ideator -> Concept Evaluator -> Concept Verifier -> **Concept Stress Tester** (optional, on-demand `/concepts/api/:conceptId/harden`)
 
 Generation stage emitted by `conceptService`: `STRESS_TESTING_CONCEPT`.
 

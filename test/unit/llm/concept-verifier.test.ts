@@ -33,6 +33,10 @@ function createContext(count = 2): ConceptVerifierContext {
   };
 }
 
+function expectedIds(count: number): string[] {
+  return Array.from({ length: count }, (_, i) => `concept_${i + 1}`);
+}
+
 function createValidPayload(count = 2): { verifications: ReturnType<typeof createVerificationData>[] } {
   return {
     verifications: Array.from({ length: count }, (_, i) => createVerificationData(i + 1)),
@@ -40,6 +44,7 @@ function createValidPayload(count = 2): { verifications: ReturnType<typeof creat
 }
 
 function createVerificationData(index = 1): {
+  conceptId: string;
   signatureScenario: string;
   escalatingSetpieces: string[];
   inevitabilityStatement: string;
@@ -47,6 +52,7 @@ function createVerificationData(index = 1): {
   conceptIntegrityScore: number;
 } {
   return {
+    conceptId: `concept_${index}`,
     signatureScenario: `Signature scenario ${index}`,
     escalatingSetpieces: [
       `Setpiece 1-${index}`,
@@ -111,11 +117,12 @@ describe('concept-verifier', () => {
   }
 
   describe('parseConceptVerificationResponse', () => {
-    it('parses valid response with correct count', () => {
+    it('parses valid response with correct concept IDs', () => {
       const payload = createValidPayload(2);
-      const result = parseConceptVerificationResponse(payload, 2);
+      const result = parseConceptVerificationResponse(payload, expectedIds(2));
 
       expect(result).toHaveLength(2);
+      expect(result[0].conceptId).toBe('concept_1');
       expect(result[0].signatureScenario).toBe('Signature scenario 1');
       expect(result[0].escalatingSetpieces).toHaveLength(6);
       expect(result[0].inevitabilityStatement).toBe('Inevitability 1');
@@ -123,13 +130,25 @@ describe('concept-verifier', () => {
       expect(result[0].loadBearingCheck.reasoning).toBe('Reasoning 1');
       expect(result[0].loadBearingCheck.genericCollapse).toBe('Collapse 1');
       expect(result[0].conceptIntegrityScore).toBe(85);
+      expect(result[1].conceptId).toBe('concept_2');
+    });
+
+    it('parses reordered output correctly when conceptIds match', () => {
+      const payload = createValidPayload(2);
+      payload.verifications.reverse();
+
+      const result = parseConceptVerificationResponse(payload, expectedIds(2));
+
+      expect(result).toHaveLength(2);
+      expect(result[0].conceptId).toBe('concept_2');
+      expect(result[1].conceptId).toBe('concept_1');
     });
 
     it('clamps score above 100 to 100', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].conceptIntegrityScore = 150;
 
-      const result = parseConceptVerificationResponse(payload, 1);
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
       expect(result[0].conceptIntegrityScore).toBe(100);
     });
 
@@ -137,7 +156,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].conceptIntegrityScore = -10;
 
-      const result = parseConceptVerificationResponse(payload, 1);
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
       expect(result[0].conceptIntegrityScore).toBe(0);
     });
 
@@ -145,46 +164,82 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].conceptIntegrityScore = 72.6;
 
-      const result = parseConceptVerificationResponse(payload, 1);
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
       expect(result[0].conceptIntegrityScore).toBe(73);
     });
 
     it('rejects non-object response', () => {
-      expect(() => parseConceptVerificationResponse('invalid', 1)).toThrow(
+      expect(() => parseConceptVerificationResponse('invalid', expectedIds(1))).toThrow(
         'must be an object',
       );
     });
 
     it('rejects null response', () => {
-      expect(() => parseConceptVerificationResponse(null, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(null, expectedIds(1))).toThrow(
         'must be an object',
       );
     });
 
     it('rejects missing verifications array', () => {
-      expect(() => parseConceptVerificationResponse({}, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse({}, expectedIds(1))).toThrow(
         'missing verifications array',
       );
     });
 
     it('rejects count mismatch', () => {
       const payload = createValidPayload(2);
-      expect(() => parseConceptVerificationResponse(payload, 3)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(3))).toThrow(
         'exactly 3 verifications (received: 2)',
       );
     });
 
     it('rejects non-object verification item', () => {
       expect(() =>
-        parseConceptVerificationResponse({ verifications: ['bad'] }, 1),
+        parseConceptVerificationResponse({ verifications: ['bad'] }, expectedIds(1)),
       ).toThrow('Verification 1 must be an object');
+    });
+
+    it('rejects missing conceptId', () => {
+      const payload = createValidPayload(1);
+      delete (payload.verifications[0] as Record<string, unknown>)['conceptId'];
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid conceptId',
+      );
+    });
+
+    it('rejects empty conceptId', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].conceptId = '   ';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid conceptId',
+      );
+    });
+
+    it('rejects unknown conceptId', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].conceptId = 'concept_999';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'concept set does not match requested candidates',
+      );
+    });
+
+    it('rejects duplicate conceptIds', () => {
+      const payload = createValidPayload(2);
+      payload.verifications[1].conceptId = 'concept_1';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(2))).toThrow(
+        'duplicate conceptIds',
+      );
     });
 
     it('rejects empty signatureScenario', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].signatureScenario = '   ';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid signatureScenario',
       );
     });
@@ -193,7 +248,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].inevitabilityStatement = '';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid inevitabilityStatement',
       );
     });
@@ -202,7 +257,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       (payload.verifications[0] as Record<string, unknown>)['escalatingSetpieces'] = 'not-array';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'escalatingSetpieces must be an array',
       );
     });
@@ -211,7 +266,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].escalatingSetpieces = ['a', 'b', 'c'];
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'exactly 6 items (received: 3)',
       );
     });
@@ -220,7 +275,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].escalatingSetpieces[2] = '  ';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid escalatingSetpieces[2]',
       );
     });
@@ -229,7 +284,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       (payload.verifications[0].loadBearingCheck as Record<string, unknown>)['passes'] = 'yes';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'loadBearingCheck has invalid passes',
       );
     });
@@ -238,7 +293,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].loadBearingCheck.reasoning = '';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid reasoning',
       );
     });
@@ -247,7 +302,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].loadBearingCheck.genericCollapse = '  ';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid genericCollapse',
       );
     });
@@ -256,7 +311,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       (payload.verifications[0] as Record<string, unknown>)['conceptIntegrityScore'] = 'high';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid conceptIntegrityScore',
       );
     });
@@ -265,7 +320,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].conceptIntegrityScore = NaN;
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'invalid conceptIntegrityScore',
       );
     });
@@ -274,7 +329,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       (payload.verifications[0] as Record<string, unknown>)['loadBearingCheck'] = 'bad';
 
-      expect(() => parseConceptVerificationResponse(payload, 1)).toThrow(
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'loadBearingCheck must be an object',
       );
     });
@@ -283,7 +338,7 @@ describe('concept-verifier', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].loadBearingCheck.passes = false;
 
-      const result = parseConceptVerificationResponse(payload, 1);
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
       expect(result[0].loadBearingCheck.passes).toBe(false);
     });
 
@@ -292,7 +347,7 @@ describe('concept-verifier', () => {
       payload.verifications[0].signatureScenario = '  padded scenario  ';
       payload.verifications[0].inevitabilityStatement = '  padded inevitability  ';
 
-      const result = parseConceptVerificationResponse(payload, 1);
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
       expect(result[0].signatureScenario).toBe('padded scenario');
       expect(result[0].inevitabilityStatement).toBe('padded inevitability');
     });
@@ -308,6 +363,7 @@ describe('concept-verifier', () => {
 
       expect(result.rawResponse).toBe(rawContent);
       expect(result.verifications).toHaveLength(2);
+      expect(result.verifications[0].conceptId).toBe('concept_1');
       expect(result.verifications[0].signatureScenario).toBe('Signature scenario 1');
       expect(result.verifications[1].conceptIntegrityScore).toBe(85);
       expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -322,6 +378,7 @@ describe('concept-verifier', () => {
   describe('createConceptVerificationFixture', () => {
     it('produces a valid fixture', () => {
       const fixture = createConceptVerificationFixture();
+      expect(fixture.conceptId).toBe('concept_1');
       expect(fixture.signatureScenario).toBeTruthy();
       expect(fixture.escalatingSetpieces).toHaveLength(6);
       expect(fixture.inevitabilityStatement).toBeTruthy();
