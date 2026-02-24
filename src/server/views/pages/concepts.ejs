@@ -168,6 +168,26 @@
               <div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul><% if (Array.isArray(ev.strengths) && ev.strengths.length > 0) { ev.strengths.forEach(function(s) { %><li><%= s %></li><% }); } else { %><li class="concept-list-empty">None</li><% } %></ul></div>
               <div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul><% if (Array.isArray(ev.weaknesses) && ev.weaknesses.length > 0) { ev.weaknesses.forEach(function(w) { %><li><%= w %></li><% }); } else { %><li class="concept-list-empty">None</li><% } %></ul></div>
             </div>
+            <% if (concept.verificationResult) { %>
+            <% const vr = concept.verificationResult; %>
+            <div class="concept-verification-section" style="margin-top: 0.75rem; border-top: 1px solid var(--border-subtle, #333); padding-top: 0.75rem;">
+              <div class="spine-label" style="margin-bottom: 0.5rem; font-weight: 600;">Verification</div>
+              <% if (vr.signatureScenario) { %><div class="spine-field"><span class="spine-label">Signature Scenario:</span> <%= vr.signatureScenario %></div><% } %>
+              <% if (vr.inevitabilityStatement) { %><div class="spine-field"><span class="spine-label">Inevitability:</span> <%= vr.inevitabilityStatement %></div><% } %>
+              <% if (Number.isFinite(Number(vr.conceptIntegrityScore))) { %><div class="spine-field"><span class="spine-label">Integrity Score:</span> <%= Math.max(0, Math.min(100, Math.round(Number(vr.conceptIntegrityScore)))) %>/100</div><% } %>
+              <% if (Array.isArray(vr.escalatingSetpieces) && vr.escalatingSetpieces.length > 0) { %>
+              <div class="spine-field"><span class="spine-label">Escalating Setpieces:</span>
+                <ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;"><% vr.escalatingSetpieces.forEach(function(sp) { %><li><%= sp %></li><% }); %></ol>
+              </div>
+              <% } %>
+              <% if (vr.loadBearingCheck && typeof vr.loadBearingCheck === 'object') { %>
+              <% const lbc = vr.loadBearingCheck; %>
+              <div class="spine-field"><span class="spine-label">Load-Bearing Check:</span> <% if (typeof lbc.passes === 'boolean') { %><span class="spine-badge <%= lbc.passes ? 'spine-badge-pass' : 'spine-badge-fail' %>" style="font-size: 0.75rem;"><%= lbc.passes ? 'PASS' : 'GENERIC RISK' %></span><% } %></div>
+              <% if (lbc.reasoning) { %><div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Reasoning:</span> <%= lbc.reasoning %></div><% } %>
+              <% if (lbc.genericCollapse) { %><div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Generic Collapse:</span> <%= lbc.genericCollapse %></div><% } %>
+              <% } %>
+            </div>
+            <% } %>
             <div class="spine-field">
               <span class="spine-label">Created:</span> <%= new Date(concept.createdAt).toLocaleDateString() %>
               <% if (concept.updatedAt !== concept.createdAt) { %>

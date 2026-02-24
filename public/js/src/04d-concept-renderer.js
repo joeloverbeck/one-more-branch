@@ -110,6 +110,75 @@
     return parts;
   }
 
+  function renderVerificationSection(verification) {
+    if (!verification || typeof verification !== 'object') {
+      return '';
+    }
+
+    var html = '<div class="concept-verification-section" style="margin-top: 0.75rem; border-top: 1px solid var(--border-subtle, #333); padding-top: 0.75rem;">';
+    html += '<div class="spine-label" style="margin-bottom: 0.5rem; font-weight: 600;">Verification</div>';
+
+    if (verification.signatureScenario) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Signature Scenario:</span> ' +
+        escapeHtml(verification.signatureScenario) +
+        '</div>';
+    }
+
+    if (verification.inevitabilityStatement) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Inevitability:</span> ' +
+        escapeHtml(verification.inevitabilityStatement) +
+        '</div>';
+    }
+
+    var integrityScore = Number(verification.conceptIntegrityScore);
+    if (Number.isFinite(integrityScore)) {
+      var safeScore = Math.max(0, Math.min(100, Math.round(integrityScore)));
+      html +=
+        '<div class="spine-field"><span class="spine-label">Integrity Score:</span> ' +
+        escapeHtml(String(safeScore)) +
+        '/100</div>';
+    }
+
+    var setpieces = Array.isArray(verification.escalatingSetpieces) ? verification.escalatingSetpieces : [];
+    if (setpieces.length > 0) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Escalating Setpieces:</span>' +
+        '<ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;">';
+      setpieces.forEach(function (sp) {
+        html += '<li>' + escapeHtml(String(sp)) + '</li>';
+      });
+      html += '</ol></div>';
+    }
+
+    var lbc = verification.loadBearingCheck;
+    if (lbc && typeof lbc === 'object') {
+      var passFail = typeof lbc.passes === 'boolean'
+        ? (lbc.passes
+          ? '<span class="spine-badge spine-badge-pass" style="font-size: 0.75rem;">PASS</span>'
+          : '<span class="spine-badge spine-badge-fail" style="font-size: 0.75rem;">GENERIC RISK</span>')
+        : '';
+      html +=
+        '<div class="spine-field"><span class="spine-label">Load-Bearing Check:</span> ' + passFail + '</div>';
+      if (lbc.reasoning) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Reasoning:</span> ' +
+          escapeHtml(lbc.reasoning) +
+          '</div>';
+      }
+      if (lbc.genericCollapse) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Generic Collapse:</span> ' +
+          escapeHtml(lbc.genericCollapse) +
+          '</div>';
+      }
+    }
+
+    html += '</div>';
+    return html;
+  }
+
   function renderConceptCardBody(entry, options) {
     var concept = entry && entry.concept ? entry.concept : {};
     var includeSelectionToggle = !options || options.includeSelectionToggle !== false;
@@ -189,6 +258,10 @@
         '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
         '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
       '</div>';
+
+    if (options && options.verification) {
+      html += renderVerificationSection(options.verification);
+    }
 
     if (includeSelectionToggle) {
       html +=

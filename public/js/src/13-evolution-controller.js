@@ -148,45 +148,7 @@
     }
 
     function renderVerificationBlock(verification) {
-      if (!verification || typeof verification !== 'object') {
-        return '';
-      }
-
-      var integrityScore = Number(verification.conceptIntegrityScore);
-      var safeIntegrityScore = Number.isFinite(integrityScore)
-        ? Math.max(0, Math.min(100, Math.round(integrityScore)))
-        : null;
-      var setpieces = Array.isArray(verification.escalatingSetpieces)
-        ? verification.escalatingSetpieces
-        : [];
-
-      var html = '<div class="spine-field" style="margin-top: 0.75rem;">';
-      if (verification.signatureScenario) {
-        html +=
-          '<div><span class="spine-label">Signature Scenario:</span> ' +
-          escapeHtml(verification.signatureScenario) +
-          '</div>';
-      }
-      if (verification.inevitabilityStatement) {
-        html +=
-          '<div><span class="spine-label">Inevitability:</span> ' +
-          escapeHtml(verification.inevitabilityStatement) +
-          '</div>';
-      }
-      if (safeIntegrityScore !== null) {
-        html +=
-          '<div><span class="spine-label">Integrity:</span> ' +
-          escapeHtml(String(safeIntegrityScore)) +
-          '/100</div>';
-      }
-      if (setpieces.length > 0) {
-        html +=
-          '<div><span class="spine-label">Setpieces:</span> ' +
-          escapeHtml(String(setpieces.length)) +
-          '</div>';
-      }
-      html += '</div>';
-      return html;
+      return renderVerificationSection(verification);
     }
 
     function renderEvolvedConcepts(nextConcepts, nextVerifications) {

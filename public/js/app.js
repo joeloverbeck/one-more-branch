@@ -2520,6 +2520,75 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     return parts;
   }
 
+  function renderVerificationSection(verification) {
+    if (!verification || typeof verification !== 'object') {
+      return '';
+    }
+
+    var html = '<div class="concept-verification-section" style="margin-top: 0.75rem; border-top: 1px solid var(--border-subtle, #333); padding-top: 0.75rem;">';
+    html += '<div class="spine-label" style="margin-bottom: 0.5rem; font-weight: 600;">Verification</div>';
+
+    if (verification.signatureScenario) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Signature Scenario:</span> ' +
+        escapeHtml(verification.signatureScenario) +
+        '</div>';
+    }
+
+    if (verification.inevitabilityStatement) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Inevitability:</span> ' +
+        escapeHtml(verification.inevitabilityStatement) +
+        '</div>';
+    }
+
+    var integrityScore = Number(verification.conceptIntegrityScore);
+    if (Number.isFinite(integrityScore)) {
+      var safeScore = Math.max(0, Math.min(100, Math.round(integrityScore)));
+      html +=
+        '<div class="spine-field"><span class="spine-label">Integrity Score:</span> ' +
+        escapeHtml(String(safeScore)) +
+        '/100</div>';
+    }
+
+    var setpieces = Array.isArray(verification.escalatingSetpieces) ? verification.escalatingSetpieces : [];
+    if (setpieces.length > 0) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Escalating Setpieces:</span>' +
+        '<ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;">';
+      setpieces.forEach(function (sp) {
+        html += '<li>' + escapeHtml(String(sp)) + '</li>';
+      });
+      html += '</ol></div>';
+    }
+
+    var lbc = verification.loadBearingCheck;
+    if (lbc && typeof lbc === 'object') {
+      var passFail = typeof lbc.passes === 'boolean'
+        ? (lbc.passes
+          ? '<span class="spine-badge spine-badge-pass" style="font-size: 0.75rem;">PASS</span>'
+          : '<span class="spine-badge spine-badge-fail" style="font-size: 0.75rem;">GENERIC RISK</span>')
+        : '';
+      html +=
+        '<div class="spine-field"><span class="spine-label">Load-Bearing Check:</span> ' + passFail + '</div>';
+      if (lbc.reasoning) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Reasoning:</span> ' +
+          escapeHtml(lbc.reasoning) +
+          '</div>';
+      }
+      if (lbc.genericCollapse) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Generic Collapse:</span> ' +
+          escapeHtml(lbc.genericCollapse) +
+          '</div>';
+      }
+    }
+
+    html += '</div>';
+    return html;
+  }
+
   function renderConceptCardBody(entry, options) {
     var concept = entry && entry.concept ? entry.concept : {};
     var includeSelectionToggle = !options || options.includeSelectionToggle !== false;
@@ -2599,6 +2668,10 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
         '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(entry && entry.strengths) + '</ul></div>' +
         '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(entry && entry.weaknesses) + '</ul></div>' +
       '</div>';
+
+    if (options && options.verification) {
+      html += renderVerificationSection(options.verification);
+    }
 
     if (includeSelectionToggle) {
       html +=
@@ -4803,6 +4876,7 @@ function createRecapModalController(initialData) {
     }
     const loadingProgress = createLoadingProgressController(loading);
     var selectedConceptSpec = null;
+    var selectedConceptVerification = null;
     var selectedContentPreferences = null;
     var selectedKernelForStory = null;
     var loadedConceptsMap = {};
@@ -5132,6 +5206,7 @@ function createRecapModalController(initialData) {
         var savedConcept = loadedConceptsMap[conceptId];
         if (savedConcept && savedConcept.evaluatedConcept && savedConcept.evaluatedConcept.concept) {
           selectedConceptSpec = savedConcept.evaluatedConcept.concept;
+          selectedConceptVerification = savedConcept.verificationResult || null;
           selectedContentPreferences = savedConcept.seeds && savedConcept.seeds.contentPreferences
             ? savedConcept.seeds.contentPreferences
             : null;
@@ -5176,6 +5251,9 @@ function createRecapModalController(initialData) {
         };
         if (selectedKernelForStory) {
           spineBody.storyKernel = selectedKernelForStory;
+        }
+        if (selectedConceptVerification) {
+          spineBody.conceptVerification = selectedConceptVerification;
         }
 
         var response = await fetch('/stories/generate-spines', {
@@ -5243,6 +5321,9 @@ function createRecapModalController(initialData) {
         if (selectedKernelForStory) {
           createBody.storyKernel = selectedKernelForStory;
         }
+        if (selectedConceptVerification) {
+          createBody.conceptVerification = selectedConceptVerification;
+        }
 
         var response = await fetch('/stories/create-ajax', {
           method: 'POST',
@@ -5284,6 +5365,7 @@ function createRecapModalController(initialData) {
       skipConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
         selectedConceptSpec = null;
+        selectedConceptVerification = null;
         selectedContentPreferences = null;
         revealManualStorySection();
       });
@@ -5524,6 +5606,7 @@ function createRecapModalController(initialData) {
     var loadingProgress = createLoadingProgressController(loading);
     var currentEditConceptId = null;
     var lastGeneratedConcepts = null;
+    var lastVerifications = [];
     var lastSeeds = null;
     var selectedKernelId = '';
     var kernelSummaryFields = {
@@ -5677,6 +5760,7 @@ function createRecapModalController(initialData) {
 
         setApiKey(apiKey);
         lastGeneratedConcepts = data.evaluatedConcepts;
+        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
         lastSeeds = seeds;
 
         renderGeneratedConcepts(data.evaluatedConcepts, seeds);
@@ -5706,8 +5790,9 @@ function createRecapModalController(initialData) {
         var card = document.createElement('article');
         card.className = 'spine-card concept-card';
         card.dataset.index = String(index);
+        var verificationForCard = lastVerifications[index] || null;
         card.innerHTML =
-          renderConceptCardBody(entry, { includeSelectionToggle: false, index: index }) +
+          renderConceptCardBody(entry, { includeSelectionToggle: false, index: index, verification: verificationForCard }) +
           '<div class="form-actions" style="margin-top: 0.5rem;">' +
             '<button type="button" class="btn btn-primary btn-small concept-save-generated-btn" data-gen-index="' + index + '">Save to Library</button>' +
           '</div>';
@@ -5733,11 +5818,11 @@ function createRecapModalController(initialData) {
 
         btn.disabled = true;
         btn.textContent = 'Saving...';
-        saveGeneratedConcept(lastGeneratedConcepts[index], lastSeeds, btn);
+        saveGeneratedConcept(lastGeneratedConcepts[index], lastSeeds, lastVerifications[index], btn);
       });
     }
 
-    async function saveGeneratedConcept(evaluatedConcept, seeds, btn) {
+    async function saveGeneratedConcept(evaluatedConcept, seeds, verification, btn) {
       try {
         var saveBody = {
           evaluatedConcept: evaluatedConcept,
@@ -5745,6 +5830,9 @@ function createRecapModalController(initialData) {
         };
         if (selectedKernelId) {
           saveBody.sourceKernelId = selectedKernelId;
+        }
+        if (verification) {
+          saveBody.verificationResult = verification;
         }
         var response = await fetch('/concepts/api/save', {
           method: 'POST',
@@ -5828,6 +5916,10 @@ function createRecapModalController(initialData) {
           '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(ev.strengths) + '</ul></div>' +
           '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(ev.weaknesses) + '</ul></div>' +
         '</div>';
+
+      if (concept.verificationResult) {
+        cardHtml += renderVerificationSection(concept.verificationResult);
+      }
 
       cardHtml +=
         '<div class="spine-field"><span class="spine-label">Created:</span> ' + escapeHtml(new Date(concept.createdAt).toLocaleDateString()) + '</div>' +
@@ -6749,45 +6841,7 @@ function createRecapModalController(initialData) {
     }
 
     function renderVerificationBlock(verification) {
-      if (!verification || typeof verification !== 'object') {
-        return '';
-      }
-
-      var integrityScore = Number(verification.conceptIntegrityScore);
-      var safeIntegrityScore = Number.isFinite(integrityScore)
-        ? Math.max(0, Math.min(100, Math.round(integrityScore)))
-        : null;
-      var setpieces = Array.isArray(verification.escalatingSetpieces)
-        ? verification.escalatingSetpieces
-        : [];
-
-      var html = '<div class="spine-field" style="margin-top: 0.75rem;">';
-      if (verification.signatureScenario) {
-        html +=
-          '<div><span class="spine-label">Signature Scenario:</span> ' +
-          escapeHtml(verification.signatureScenario) +
-          '</div>';
-      }
-      if (verification.inevitabilityStatement) {
-        html +=
-          '<div><span class="spine-label">Inevitability:</span> ' +
-          escapeHtml(verification.inevitabilityStatement) +
-          '</div>';
-      }
-      if (safeIntegrityScore !== null) {
-        html +=
-          '<div><span class="spine-label">Integrity:</span> ' +
-          escapeHtml(String(safeIntegrityScore)) +
-          '/100</div>';
-      }
-      if (setpieces.length > 0) {
-        html +=
-          '<div><span class="spine-label">Setpieces:</span> ' +
-          escapeHtml(String(setpieces.length)) +
-          '</div>';
-      }
-      html += '</div>';
-      return html;
+      return renderVerificationSection(verification);
     }
 
     function renderEvolvedConcepts(nextConcepts, nextVerifications) {

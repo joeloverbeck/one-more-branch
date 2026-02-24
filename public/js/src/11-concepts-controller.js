@@ -30,6 +30,7 @@
     var loadingProgress = createLoadingProgressController(loading);
     var currentEditConceptId = null;
     var lastGeneratedConcepts = null;
+    var lastVerifications = [];
     var lastSeeds = null;
     var selectedKernelId = '';
     var kernelSummaryFields = {
@@ -183,6 +184,7 @@
 
         setApiKey(apiKey);
         lastGeneratedConcepts = data.evaluatedConcepts;
+        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
         lastSeeds = seeds;
 
         renderGeneratedConcepts(data.evaluatedConcepts, seeds);
@@ -212,8 +214,9 @@
         var card = document.createElement('article');
         card.className = 'spine-card concept-card';
         card.dataset.index = String(index);
+        var verificationForCard = lastVerifications[index] || null;
         card.innerHTML =
-          renderConceptCardBody(entry, { includeSelectionToggle: false, index: index }) +
+          renderConceptCardBody(entry, { includeSelectionToggle: false, index: index, verification: verificationForCard }) +
           '<div class="form-actions" style="margin-top: 0.5rem;">' +
             '<button type="button" class="btn btn-primary btn-small concept-save-generated-btn" data-gen-index="' + index + '">Save to Library</button>' +
           '</div>';
@@ -239,11 +242,11 @@
 
         btn.disabled = true;
         btn.textContent = 'Saving...';
-        saveGeneratedConcept(lastGeneratedConcepts[index], lastSeeds, btn);
+        saveGeneratedConcept(lastGeneratedConcepts[index], lastSeeds, lastVerifications[index], btn);
       });
     }
 
-    async function saveGeneratedConcept(evaluatedConcept, seeds, btn) {
+    async function saveGeneratedConcept(evaluatedConcept, seeds, verification, btn) {
       try {
         var saveBody = {
           evaluatedConcept: evaluatedConcept,
@@ -251,6 +254,9 @@
         };
         if (selectedKernelId) {
           saveBody.sourceKernelId = selectedKernelId;
+        }
+        if (verification) {
+          saveBody.verificationResult = verification;
         }
         var response = await fetch('/concepts/api/save', {
           method: 'POST',
@@ -334,6 +340,10 @@
           '<div class="concept-feedback-block"><span class="spine-label">Strengths</span><ul>' + renderListItems(ev.strengths) + '</ul></div>' +
           '<div class="concept-feedback-block"><span class="spine-label">Weaknesses</span><ul>' + renderListItems(ev.weaknesses) + '</ul></div>' +
         '</div>';
+
+      if (concept.verificationResult) {
+        cardHtml += renderVerificationSection(concept.verificationResult);
+      }
 
       cardHtml +=
         '<div class="spine-field"><span class="spine-label">Created:</span> ' + escapeHtml(new Date(concept.createdAt).toLocaleDateString()) + '</div>' +

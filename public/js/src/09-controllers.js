@@ -557,6 +557,7 @@
     }
     const loadingProgress = createLoadingProgressController(loading);
     var selectedConceptSpec = null;
+    var selectedConceptVerification = null;
     var selectedContentPreferences = null;
     var selectedKernelForStory = null;
     var loadedConceptsMap = {};
@@ -886,6 +887,7 @@
         var savedConcept = loadedConceptsMap[conceptId];
         if (savedConcept && savedConcept.evaluatedConcept && savedConcept.evaluatedConcept.concept) {
           selectedConceptSpec = savedConcept.evaluatedConcept.concept;
+          selectedConceptVerification = savedConcept.verificationResult || null;
           selectedContentPreferences = savedConcept.seeds && savedConcept.seeds.contentPreferences
             ? savedConcept.seeds.contentPreferences
             : null;
@@ -930,6 +932,9 @@
         };
         if (selectedKernelForStory) {
           spineBody.storyKernel = selectedKernelForStory;
+        }
+        if (selectedConceptVerification) {
+          spineBody.conceptVerification = selectedConceptVerification;
         }
 
         var response = await fetch('/stories/generate-spines', {
@@ -997,6 +1002,9 @@
         if (selectedKernelForStory) {
           createBody.storyKernel = selectedKernelForStory;
         }
+        if (selectedConceptVerification) {
+          createBody.conceptVerification = selectedConceptVerification;
+        }
 
         var response = await fetch('/stories/create-ajax', {
           method: 'POST',
@@ -1038,6 +1046,7 @@
       skipConceptBtn.addEventListener('click', function (event) {
         event.preventDefault();
         selectedConceptSpec = null;
+        selectedConceptVerification = null;
         selectedContentPreferences = null;
         revealManualStorySection();
       });
