@@ -139,8 +139,11 @@ export async function generateStoryStructure(
   const messages = buildStructurePrompt(context, promptOptions);
   logPrompt(logger, 'structure', messages);
   const hasConceptVerification = (context.conceptVerification?.escalatingSetpieces.length ?? 0) > 0;
-  const expectedGenreObligations = context.conceptSpec
+  const expectedGenreObligationEntries = context.conceptSpec
     ? getGenreObligationTags(context.conceptSpec.genreFrame)
+    : null;
+  const expectedGenreObligations = expectedGenreObligationEntries
+    ? expectedGenreObligationEntries.map((e) => e.tag)
     : null;
 
   return withRetry(() =>

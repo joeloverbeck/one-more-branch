@@ -752,7 +752,7 @@ describe('structure-generator', () => {
     );
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Structure missing genre obligation tags: key_clue_recontextualized, culprit_unmasked'
+      'Structure missing genre obligation tags: key_witness_or_suspect_confronted, key_clue_recontextualized, detective_synthesis_moment, culprit_unmasked'
     );
   });
 
@@ -760,7 +760,9 @@ describe('structure-generator', () => {
     const payload = createValidStructurePayload();
     payload.acts[0]!.beats[0]!.obligatorySceneTag = 'crime_or_puzzle_presented';
     payload.acts[0]!.beats[1]!.obligatorySceneTag = 'red_herring_planted';
-    payload.acts[1]!.beats[0]!.obligatorySceneTag = 'key_clue_recontextualized';
+    payload.acts[1]!.beats[0]!.obligatorySceneTag = 'key_witness_or_suspect_confronted';
+    payload.acts[1]!.beats[1]!.obligatorySceneTag = 'key_clue_recontextualized';
+    payload.acts[2]!.beats[0]!.obligatorySceneTag = 'detective_synthesis_moment';
     payload.acts[2]!.beats[1]!.obligatorySceneTag = 'culprit_unmasked';
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 

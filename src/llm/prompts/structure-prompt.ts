@@ -132,7 +132,7 @@ function buildGenreObligationsSection(conceptSpec?: ConceptSpec): string {
     return '';
   }
 
-  const listed = obligations.map((tag) => `- ${tag}`).join('\n');
+  const listed = obligations.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n');
   return `GENRE OBLIGATION CONTRACT (for ${conceptSpec.genreFrame}):
 ${listed}
 
