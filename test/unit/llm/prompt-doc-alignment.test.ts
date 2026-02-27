@@ -60,9 +60,24 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/promise-tracker-prompt.md',
   },
   {
-    promptType: 'sceneQuality',
-    sourcePath: 'src/llm/prompts/scene-quality-prompt.ts',
-    docPath: 'prompts/scene-quality-prompt.md',
+    promptType: 'proseQuality',
+    sourcePath: 'src/llm/prompts/prose-quality-prompt.ts',
+    docPath: 'prompts/prose-quality-prompt.md',
+  },
+  {
+    promptType: 'npcIntelligence',
+    sourcePath: 'src/llm/prompts/npc-intelligence-prompt.ts',
+    docPath: 'prompts/npc-intelligence-prompt.md',
+  },
+  {
+    promptType: 'conceptSpecificity',
+    sourcePath: 'src/llm/prompts/concept-specificity-prompt.ts',
+    docPath: 'prompts/concept-specificity-prompt.md',
+  },
+  {
+    promptType: 'conceptScenario',
+    sourcePath: 'src/llm/prompts/concept-scenario-prompt.ts',
+    docPath: 'prompts/concept-scenario-prompt.md',
   },
   {
     promptType: 'planner',

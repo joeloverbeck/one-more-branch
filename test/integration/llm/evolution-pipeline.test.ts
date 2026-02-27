@@ -96,15 +96,41 @@ describe('Evolution Pipeline Integration', () => {
       })),
     };
 
-    const verificationPayload = {
-      verifications: Array.from({ length: 6 }, (_, i) => createConceptVerificationFixture(i + 1)),
+    const specificityPayload = {
+      specificityAnalyses: Array.from({ length: 6 }, (_, i) => {
+        const v = createConceptVerificationFixture(i + 1);
+        return {
+          conceptId: v.conceptId,
+          signatureScenario: v.signatureScenario,
+          loglineCompressible: v.loglineCompressible,
+          logline: v.logline,
+          premisePromises: v.premisePromises,
+          inevitabilityStatement: v.inevitabilityStatement,
+          loadBearingCheck: v.loadBearingCheck,
+          kernelFidelityCheck: v.kernelFidelityCheck,
+        };
+      }),
+    };
+
+    const scenarioPayload = {
+      scenarioAnalyses: Array.from({ length: 6 }, (_, i) => {
+        const v = createConceptVerificationFixture(i + 1);
+        return {
+          conceptId: v.conceptId,
+          escalatingSetpieces: v.escalatingSetpieces,
+          setpieceCausalChainBroken: v.setpieceCausalChainBroken,
+          setpieceCausalLinks: v.setpieceCausalLinks,
+          conceptIntegrityScore: v.conceptIntegrityScore,
+        };
+      }),
     };
 
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(evolvedPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)))
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(verificationPayload)));
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(specificityPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scenarioPayload)));
 
     const result = await service.evolveConcepts({
       parentConcepts: [createEvaluatedConceptFixture(1), createEvaluatedConceptFixture(2)],
@@ -122,7 +148,7 @@ describe('Evolution Pipeline Integration', () => {
       },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(result.evolvedConcepts).toHaveLength(6);
     expect(result.evaluatedConcepts).toHaveLength(6);
     expect(result.verifications).toHaveLength(6);
@@ -140,8 +166,8 @@ describe('Evolution Pipeline Integration', () => {
       { stage: 'EVOLVING_CONCEPTS', status: 'completed', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
-      { stage: 'VERIFYING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'VERIFYING_CONCEPTS', status: 'completed', attempt: 1 },
+      { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },
+      { stage: 'GENERATING_SCENARIOS', status: 'completed', attempt: 1 },
     ]);
   });
 });

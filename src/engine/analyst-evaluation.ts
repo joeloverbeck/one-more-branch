@@ -1,12 +1,14 @@
 import {
   generateStructureEvaluation,
   generatePromiseTracking,
-  generateSceneQualityEvaluation,
+  generateProseQualityEvaluation,
+  generateNpcIntelligenceEvaluation,
 } from '../llm/client.js';
 import type { AnalystResult } from '../llm/analyst-types.js';
 import type { StructureEvaluatorResult } from '../llm/structure-evaluator-types.js';
 import type { PromiseTrackerResult } from '../llm/promise-tracker-types.js';
-import type { SceneQualityResult } from '../llm/scene-quality-types.js';
+import type { ProseQualityResult } from '../llm/prose-quality-types.js';
+import type { NpcIntelligenceResult } from '../llm/npc-intelligence-types.js';
 import type { StageDegradation } from '../llm/generation-pipeline-types.js';
 import { logger } from '../logging/index.js';
 import type {
@@ -59,16 +61,18 @@ export interface AnalystEvaluationResult {
 function mergeEvaluatorResults(
   structureResult: (StructureEvaluatorResult & { rawResponse: string }) | null,
   promiseResult: (PromiseTrackerResult & { rawResponse: string }) | null,
-  qualityResult: (SceneQualityResult & { rawResponse: string }) | null
+  proseResult: (ProseQualityResult & { rawResponse: string }) | null,
+  npcResult: (NpcIntelligenceResult & { rawResponse: string }) | null
 ): AnalystResult | null {
-  if (!structureResult && !promiseResult && !qualityResult) {
+  if (!structureResult && !promiseResult && !proseResult && !npcResult) {
     return null;
   }
 
   const rawParts: string[] = [];
   if (structureResult?.rawResponse) rawParts.push(structureResult.rawResponse);
   if (promiseResult?.rawResponse) rawParts.push(promiseResult.rawResponse);
-  if (qualityResult?.rawResponse) rawParts.push(qualityResult.rawResponse);
+  if (proseResult?.rawResponse) rawParts.push(proseResult.rawResponse);
+  if (npcResult?.rawResponse) rawParts.push(npcResult.rawResponse);
 
   const defaultStructure: StructureEvaluatorResult = {
     beatConcluded: false,
@@ -109,12 +113,15 @@ function mergeEvaluatorResults(
     delayedConsequencesCreated: [],
   };
 
-  const defaultQuality: SceneQualityResult = {
+  const defaultProse: ProseQualityResult = {
     toneAdherent: true,
     toneDriftDescription: '',
     thematicCharge: 'AMBIGUOUS',
     thematicChargeDescription: '',
     narrativeFocus: 'BALANCED',
+  };
+
+  const defaultNpc: NpcIntelligenceResult = {
     npcCoherenceAdherent: true,
     npcCoherenceIssues: '',
     relationshipShiftsDetected: [],
@@ -124,12 +131,14 @@ function mergeEvaluatorResults(
 
   const { rawResponse: _sr, ...structureFields } = structureResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
   const { rawResponse: _pr, ...promiseFields } = promiseResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
-  const { rawResponse: _qr, ...qualityFields } = qualityResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { rawResponse: _pqr, ...proseFields } = proseResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { rawResponse: _nr, ...npcFields } = npcResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
 
   return {
     ...(structureResult ? structureFields : defaultStructure),
     ...(promiseResult ? promiseFields : defaultPromise),
-    ...(qualityResult ? qualityFields : defaultQuality),
+    ...(proseResult ? proseFields : defaultProse),
+    ...(npcResult ? npcFields : defaultNpc),
     rawResponse: rawParts.join('\n---\n'),
   } as AnalystResult;
 }
@@ -153,7 +162,7 @@ export async function runAnalystEvaluation(
 
   const apiOptions = { apiKey: context.apiKey };
 
-  // Build the 3 focused contexts
+  // Build the 4 focused contexts
   const structureCtx = {
     narrative: context.writerNarrative,
     structure: context.activeStructure,
@@ -180,7 +189,7 @@ export async function runAnalystEvaluation(
     activeBeatObligationTag,
   };
 
-  const qualityCtx = {
+  const proseCtx = {
     narrative: context.writerNarrative,
     tone: context.tone,
     toneFeel: context.toneFeel,
@@ -189,20 +198,32 @@ export async function runAnalystEvaluation(
     antithesis: context.antithesis,
     spine: context.spine,
     genreFrame: context.genreFrame,
-    accumulatedNpcAgendas: context.accumulatedNpcAgendas,
-    accumulatedNpcRelationships: context.accumulatedNpcRelationships,
   };
 
-  // Run all 3 evaluators in parallel
-  const stageNames = ['EVALUATING_STRUCTURE', 'TRACKING_PROMISES', 'ASSESSING_QUALITY'] as const;
+  const npcCtx = {
+    narrative: context.writerNarrative,
+    accumulatedNpcAgendas: context.accumulatedNpcAgendas,
+    accumulatedNpcRelationships: context.accumulatedNpcRelationships,
+    spine: context.spine,
+    genreFrame: context.genreFrame,
+  };
+
+  // Run all 4 evaluators in parallel
+  const stageNames = [
+    'EVALUATING_STRUCTURE',
+    'TRACKING_PROMISES',
+    'ASSESSING_PROSE',
+    'EVALUATING_NPC_INTELLIGENCE',
+  ] as const;
   for (const stage of stageNames) {
     emitGenerationStage(context.onGenerationStage, stage, 'started', 1);
   }
 
-  const [structureSettled, promiseSettled, qualitySettled] = await Promise.allSettled([
+  const [structureSettled, promiseSettled, proseSettled, npcSettled] = await Promise.allSettled([
     generateStructureEvaluation(structureCtx, apiOptions),
     generatePromiseTracking(promiseCtx, apiOptions),
-    generateSceneQualityEvaluation(qualityCtx, apiOptions),
+    generateProseQualityEvaluation(proseCtx, apiOptions),
+    generateNpcIntelligenceEvaluation(npcCtx, apiOptions),
   ]);
 
   const durationMs = Date.now() - analystStart;
@@ -212,8 +233,10 @@ export async function runAnalystEvaluation(
     structureSettled.status === 'fulfilled' ? structureSettled.value : null;
   const promiseResult =
     promiseSettled.status === 'fulfilled' ? promiseSettled.value : null;
-  const qualityResult =
-    qualitySettled.status === 'fulfilled' ? qualitySettled.value : null;
+  const proseResult =
+    proseSettled.status === 'fulfilled' ? proseSettled.value : null;
+  const npcResult =
+    npcSettled.status === 'fulfilled' ? npcSettled.value : null;
 
   // Emit completion/failure for each stage
   if (structureSettled.status === 'fulfilled') {
@@ -234,16 +257,25 @@ export async function runAnalystEvaluation(
     });
   }
 
-  if (qualitySettled.status === 'fulfilled') {
-    emitGenerationStage(context.onGenerationStage, 'ASSESSING_QUALITY', 'completed', 1, durationMs);
+  if (proseSettled.status === 'fulfilled') {
+    emitGenerationStage(context.onGenerationStage, 'ASSESSING_PROSE', 'completed', 1, durationMs);
   } else {
-    logger.warn('Scene quality evaluator failed', {
+    logger.warn('Prose quality evaluator failed', {
       ...context.logContext,
-      error: qualitySettled.reason,
+      error: proseSettled.reason,
     });
   }
 
-  const merged = mergeEvaluatorResults(structureResult, promiseResult, qualityResult);
+  if (npcSettled.status === 'fulfilled') {
+    emitGenerationStage(context.onGenerationStage, 'EVALUATING_NPC_INTELLIGENCE', 'completed', 1, durationMs);
+  } else {
+    logger.warn('NPC intelligence evaluator failed', {
+      ...context.logContext,
+      error: npcSettled.reason,
+    });
+  }
+
+  const merged = mergeEvaluatorResults(structureResult, promiseResult, proseResult, npcResult);
 
   if (merged) {
     logger.info('Generation stage completed', {
@@ -252,12 +284,13 @@ export async function runAnalystEvaluation(
       durationMs,
       structureOk: structureSettled.status === 'fulfilled',
       promiseOk: promiseSettled.status === 'fulfilled',
-      qualityOk: qualitySettled.status === 'fulfilled',
+      proseOk: proseSettled.status === 'fulfilled',
+      npcOk: npcSettled.status === 'fulfilled',
     });
     return { result: merged, durationMs };
   }
 
-  // All 3 failed
+  // All 4 failed
   logger.warn('All analyst evaluators failed, continuing with defaults', {
     ...context.logContext,
     durationMs,
@@ -266,7 +299,8 @@ export async function runAnalystEvaluation(
   const failures = [
     structureSettled.status === 'rejected' ? structureSettled.reason : null,
     promiseSettled.status === 'rejected' ? promiseSettled.reason : null,
-    qualitySettled.status === 'rejected' ? qualitySettled.reason : null,
+    proseSettled.status === 'rejected' ? proseSettled.reason : null,
+    npcSettled.status === 'rejected' ? npcSettled.reason : null,
   ].filter(Boolean);
 
   const errorMessage = failures

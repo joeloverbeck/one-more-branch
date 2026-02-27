@@ -4,9 +4,6 @@ import type { AccumulatedNpcRelationships } from '../models/state/npc-relationsh
 import type { GenreFrame } from '../models/concept-generator.js';
 import type { StorySpine } from '../models/story-spine.js';
 
-export type ThematicCharge = 'THESIS_SUPPORTING' | 'ANTITHESIS_SUPPORTING' | 'AMBIGUOUS';
-export type NarrativeFocus = 'DEEPENING' | 'BROADENING' | 'BALANCED';
-
 export interface DetectedRelationshipShift {
   readonly npcName: string;
   readonly shiftDescription: string;
@@ -14,12 +11,7 @@ export interface DetectedRelationshipShift {
   readonly suggestedNewDynamic: string;
 }
 
-export interface SceneQualityResult {
-  toneAdherent: boolean;
-  toneDriftDescription: string;
-  thematicCharge: ThematicCharge;
-  thematicChargeDescription: string;
-  narrativeFocus: NarrativeFocus;
+export interface NpcIntelligenceResult {
   npcCoherenceAdherent: boolean;
   npcCoherenceIssues: string;
   relationshipShiftsDetected: DetectedRelationshipShift[];
@@ -27,15 +19,10 @@ export interface SceneQualityResult {
   dramaticIronyOpportunities: string[];
 }
 
-export interface SceneQualityContext {
+export interface NpcIntelligenceContext {
   readonly narrative: string;
-  readonly tone: string;
-  readonly toneFeel?: readonly string[];
-  readonly toneAvoid?: readonly string[];
-  readonly thematicQuestion: string;
-  readonly antithesis: string;
-  readonly spine?: StorySpine;
-  readonly genreFrame?: GenreFrame;
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
+  readonly spine?: StorySpine;
+  readonly genreFrame?: GenreFrame;
 }

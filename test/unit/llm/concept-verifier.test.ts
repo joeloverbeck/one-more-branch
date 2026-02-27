@@ -17,8 +17,13 @@ jest.mock('../../../src/logging/index.js', () => ({
   },
 }));
 
-import { parseConceptVerificationResponse, verifyConcepts } from '../../../src/llm/concept-verifier';
-import { CONCEPT_VERIFIER_SCHEMA } from '../../../src/llm/schemas/concept-verifier-schema';
+import {
+  parseConceptSpecificityResponse,
+  parseConceptScenarioResponse,
+  verifyConcepts,
+} from '../../../src/llm/concept-verifier';
+import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../src/llm/schemas/concept-specificity-schema';
+import { CONCEPT_SCENARIO_SCHEMA } from '../../../src/llm/schemas/concept-scenario-schema';
 import type { ConceptVerifierContext } from '../../../src/models';
 import type { StoryKernel } from '../../../src/models/story-kernel';
 import {
@@ -50,25 +55,15 @@ function expectedIds(count: number): string[] {
   return Array.from({ length: count }, (_, i) => `concept_${i + 1}`);
 }
 
-function createValidPayload(count = 2): { verifications: ReturnType<typeof createVerificationData>[] } {
-  return {
-    verifications: Array.from({ length: count }, (_, i) => createVerificationData(i + 1)),
-  };
-}
-
-function createVerificationData(index = 1): {
+function createSpecificityData(index = 1): {
   conceptId: string;
   signatureScenario: string;
   loglineCompressible: boolean;
   logline: string;
   premisePromises: string[];
-  escalatingSetpieces: string[];
-  setpieceCausalChainBroken: boolean;
-  setpieceCausalLinks: string[];
   inevitabilityStatement: string;
   loadBearingCheck: { passes: boolean; reasoning: string; genericCollapse: string };
   kernelFidelityCheck: { passes: boolean; reasoning: string; kernelDrift: string };
-  conceptIntegrityScore: number;
 } {
   return {
     conceptId: `concept_${index}`,
@@ -80,6 +75,29 @@ function createVerificationData(index = 1): {
       `Premise promise 2-${index}`,
       `Premise promise 3-${index}`,
     ],
+    inevitabilityStatement: `Inevitability ${index}`,
+    loadBearingCheck: {
+      passes: true,
+      reasoning: `Reasoning ${index}`,
+      genericCollapse: `Collapse ${index}`,
+    },
+    kernelFidelityCheck: {
+      passes: true,
+      reasoning: `Kernel reasoning ${index}`,
+      kernelDrift: `Kernel drift ${index}`,
+    },
+  };
+}
+
+function createScenarioData(index = 1): {
+  conceptId: string;
+  escalatingSetpieces: string[];
+  setpieceCausalChainBroken: boolean;
+  setpieceCausalLinks: string[];
+  conceptIntegrityScore: number;
+} {
+  return {
+    conceptId: `concept_${index}`,
     escalatingSetpieces: [
       `Setpiece 1-${index}`,
       `Setpiece 2-${index}`,
@@ -96,18 +114,23 @@ function createVerificationData(index = 1): {
       `Setpiece 4 causes setpiece 5 for concept ${index}`,
       `Setpiece 5 causes setpiece 6 for concept ${index}`,
     ],
-    inevitabilityStatement: `Inevitability ${index}`,
-    loadBearingCheck: {
-      passes: true,
-      reasoning: `Reasoning ${index}`,
-      genericCollapse: `Collapse ${index}`,
-    },
-    kernelFidelityCheck: {
-      passes: true,
-      reasoning: `Kernel reasoning ${index}`,
-      kernelDrift: `Kernel drift ${index}`,
-    },
     conceptIntegrityScore: 85,
+  };
+}
+
+function createValidSpecificityPayload(
+  count = 2,
+): { specificityAnalyses: ReturnType<typeof createSpecificityData>[] } {
+  return {
+    specificityAnalyses: Array.from({ length: count }, (_, i) => createSpecificityData(i + 1)),
+  };
+}
+
+function createValidScenarioPayload(
+  count = 2,
+): { scenarioAnalyses: ReturnType<typeof createScenarioData>[] } {
+  return {
+    scenarioAnalyses: Array.from({ length: count }, (_, i) => createScenarioData(i + 1)),
   };
 }
 
@@ -141,24 +164,10 @@ describe('concept-verifier', () => {
     global.fetch = originalFetch;
   });
 
-  function getRequestBody(callIndex = 0): Record<string, unknown> {
-    const call = fetchMock.mock.calls[callIndex];
-    if (!call) {
-      return {};
-    }
-
-    const init = call[1];
-    if (!init || typeof init.body !== 'string') {
-      return {};
-    }
-
-    return JSON.parse(init.body) as Record<string, unknown>;
-  }
-
-  describe('parseConceptVerificationResponse', () => {
+  describe('parseConceptSpecificityResponse', () => {
     it('parses valid response with correct concept IDs', () => {
-      const payload = createValidPayload(2);
-      const result = parseConceptVerificationResponse(payload, expectedIds(2));
+      const payload = createValidSpecificityPayload(2);
+      const result = parseConceptSpecificityResponse(payload, expectedIds(2));
 
       expect(result).toHaveLength(2);
       expect(result[0].conceptId).toBe('concept_1');
@@ -170,9 +179,6 @@ describe('concept-verifier', () => {
         'Premise promise 2-1',
         'Premise promise 3-1',
       ]);
-      expect(result[0].escalatingSetpieces).toHaveLength(6);
-      expect(result[0].setpieceCausalChainBroken).toBe(false);
-      expect(result[0].setpieceCausalLinks).toHaveLength(5);
       expect(result[0].inevitabilityStatement).toBe('Inevitability 1');
       expect(result[0].loadBearingCheck.passes).toBe(true);
       expect(result[0].loadBearingCheck.reasoning).toBe('Reasoning 1');
@@ -180,401 +186,442 @@ describe('concept-verifier', () => {
       expect(result[0].kernelFidelityCheck.passes).toBe(true);
       expect(result[0].kernelFidelityCheck.reasoning).toBe('Kernel reasoning 1');
       expect(result[0].kernelFidelityCheck.kernelDrift).toBe('Kernel drift 1');
-      expect(result[0].conceptIntegrityScore).toBe(85);
       expect(result[1].conceptId).toBe('concept_2');
     });
 
     it('parses reordered output correctly when conceptIds match', () => {
-      const payload = createValidPayload(2);
-      payload.verifications.reverse();
+      const payload = createValidSpecificityPayload(2);
+      payload.specificityAnalyses.reverse();
 
-      const result = parseConceptVerificationResponse(payload, expectedIds(2));
+      const result = parseConceptSpecificityResponse(payload, expectedIds(2));
 
       expect(result).toHaveLength(2);
       expect(result[0].conceptId).toBe('concept_2');
       expect(result[1].conceptId).toBe('concept_1');
     });
 
-    it('clamps score above 100 to 100', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].conceptIntegrityScore = 150;
-
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
-      expect(result[0].conceptIntegrityScore).toBe(100);
-    });
-
-    it('clamps negative score to 0', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].conceptIntegrityScore = -10;
-
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
-      expect(result[0].conceptIntegrityScore).toBe(0);
-    });
-
-    it('rounds fractional scores', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].conceptIntegrityScore = 72.6;
-
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
-      expect(result[0].conceptIntegrityScore).toBe(73);
-    });
-
     it('rejects non-object response', () => {
-      expect(() => parseConceptVerificationResponse('invalid', expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse('invalid', expectedIds(1))).toThrow(
         'must be an object',
       );
     });
 
     it('rejects null response', () => {
-      expect(() => parseConceptVerificationResponse(null, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(null, expectedIds(1))).toThrow(
         'must be an object',
       );
     });
 
-    it('rejects missing verifications array', () => {
-      expect(() => parseConceptVerificationResponse({}, expectedIds(1))).toThrow(
-        'missing verifications array',
+    it('rejects missing specificityAnalyses array', () => {
+      expect(() => parseConceptSpecificityResponse({}, expectedIds(1))).toThrow(
+        'missing specificityAnalyses array',
       );
     });
 
     it('rejects count mismatch', () => {
-      const payload = createValidPayload(2);
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(3))).toThrow(
-        'exactly 3 verifications (received: 2)',
+      const payload = createValidSpecificityPayload(2);
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(3))).toThrow(
+        'exactly 3 items (received: 2)',
       );
     });
 
-    it('rejects non-object verification item', () => {
+    it('rejects non-object analysis item', () => {
       expect(() =>
-        parseConceptVerificationResponse({ verifications: ['bad'] }, expectedIds(1)),
-      ).toThrow('Verification 1 must be an object');
+        parseConceptSpecificityResponse({ specificityAnalyses: ['bad'] }, expectedIds(1)),
+      ).toThrow('Specificity 1 must be an object');
     });
 
     it('rejects missing conceptId', () => {
-      const payload = createValidPayload(1);
-      delete (payload.verifications[0] as Record<string, unknown>)['conceptId'];
+      const payload = createValidSpecificityPayload(1);
+      delete (payload.specificityAnalyses[0] as Record<string, unknown>)['conceptId'];
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid conceptId',
       );
     });
 
     it('rejects empty conceptId', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].conceptId = '   ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].conceptId = '   ';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid conceptId',
       );
     });
 
     it('rejects unknown conceptId', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].conceptId = 'concept_999';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].conceptId = 'concept_999';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'concept set does not match requested candidates',
       );
     });
 
     it('rejects duplicate conceptIds', () => {
-      const payload = createValidPayload(2);
-      payload.verifications[1].conceptId = 'concept_1';
+      const payload = createValidSpecificityPayload(2);
+      payload.specificityAnalyses[1].conceptId = 'concept_1';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(2))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(2))).toThrow(
         'duplicate conceptIds',
       );
     });
 
     it('rejects empty signatureScenario', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].signatureScenario = '   ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].signatureScenario = '   ';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid signatureScenario',
       );
     });
 
     it('rejects non-boolean loglineCompressible', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['loglineCompressible'] = 'yes';
+      const payload = createValidSpecificityPayload(1);
+      (payload.specificityAnalyses[0] as Record<string, unknown>)['loglineCompressible'] = 'yes';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid loglineCompressible',
       );
     });
 
     it('rejects empty logline', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].logline = '  ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].logline = '  ';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid logline',
       );
     });
 
     it('rejects logline over 27 words', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].logline =
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].logline =
         'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'logline must be 27 words or fewer',
       );
     });
 
     it('rejects empty inevitabilityStatement', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].inevitabilityStatement = '';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].inevitabilityStatement = '';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid inevitabilityStatement',
       );
     });
 
-    it('rejects non-array escalatingSetpieces', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['escalatingSetpieces'] = 'not-array';
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'escalatingSetpieces must be an array',
-      );
-    });
-
     it('rejects missing premisePromises array', () => {
-      const payload = createValidPayload(1);
-      delete (payload.verifications[0] as Record<string, unknown>)['premisePromises'];
+      const payload = createValidSpecificityPayload(1);
+      delete (payload.specificityAnalyses[0] as Record<string, unknown>)['premisePromises'];
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'premisePromises must be an array',
       );
     });
 
     it('rejects too few premisePromises', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].premisePromises = ['one', 'two'];
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].premisePromises = ['one', 'two'];
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'premisePromises must have 3-5 items',
       );
     });
 
     it('rejects too many premisePromises', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].premisePromises = ['1', '2', '3', '4', '5', '6'];
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].premisePromises = ['1', '2', '3', '4', '5', '6'];
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'premisePromises must have 3-5 items',
       );
     });
 
     it('rejects empty premisePromise entry', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].premisePromises[1] = '   ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].premisePromises[1] = '   ';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid premisePromises[1]',
       );
     });
 
     it('trims premisePromises entries', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].premisePromises = ['  first  ', 'second', '  third'];
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].premisePromises = ['  first  ', 'second', '  third'];
 
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
+      const result = parseConceptSpecificityResponse(payload, expectedIds(1));
       expect(result[0].premisePromises).toEqual(['first', 'second', 'third']);
     });
 
-    it('rejects wrong number of setpieces', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].escalatingSetpieces = ['a', 'b', 'c'];
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'exactly 6 items (received: 3)',
-      );
-    });
-
-    it('rejects non-boolean setpieceCausalChainBroken', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['setpieceCausalChainBroken'] = 'no';
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'invalid setpieceCausalChainBroken',
-      );
-    });
-
-    it('rejects non-array setpieceCausalLinks', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['setpieceCausalLinks'] = 'broken';
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'setpieceCausalLinks must be an array',
-      );
-    });
-
-    it('rejects wrong number of setpieceCausalLinks', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].setpieceCausalLinks = ['1->2', '2->3'];
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'setpieceCausalLinks must have exactly 5 items',
-      );
-    });
-
-    it('rejects empty setpieceCausalLinks entry', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].setpieceCausalLinks[3] = '   ';
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'invalid setpieceCausalLinks[3]',
-      );
-    });
-
-    it('rejects empty string in setpieces', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].escalatingSetpieces[2] = '  ';
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'invalid escalatingSetpieces[2]',
-      );
-    });
-
     it('rejects non-boolean passes in loadBearingCheck', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0].loadBearingCheck as Record<string, unknown>)['passes'] = 'yes';
+      const payload = createValidSpecificityPayload(1);
+      (payload.specificityAnalyses[0].loadBearingCheck as Record<string, unknown>)['passes'] =
+        'yes';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'loadBearingCheck has invalid passes',
       );
     });
 
     it('rejects empty reasoning in loadBearingCheck', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].loadBearingCheck.reasoning = '';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].loadBearingCheck.reasoning = '';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid reasoning',
       );
     });
 
     it('rejects empty genericCollapse in loadBearingCheck', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].loadBearingCheck.genericCollapse = '  ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].loadBearingCheck.genericCollapse = '  ';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid genericCollapse',
       );
     });
 
-    it('rejects non-number conceptIntegrityScore', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['conceptIntegrityScore'] = 'high';
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'invalid conceptIntegrityScore',
-      );
-    });
-
-    it('rejects NaN conceptIntegrityScore', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].conceptIntegrityScore = NaN;
-
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
-        'invalid conceptIntegrityScore',
-      );
-    });
-
     it('rejects non-object loadBearingCheck', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['loadBearingCheck'] = 'bad';
+      const payload = createValidSpecificityPayload(1);
+      (payload.specificityAnalyses[0] as Record<string, unknown>)['loadBearingCheck'] = 'bad';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'loadBearingCheck must be an object',
       );
     });
 
     it('accepts passes: false', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].loadBearingCheck.passes = false;
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].loadBearingCheck.passes = false;
 
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
+      const result = parseConceptSpecificityResponse(payload, expectedIds(1));
       expect(result[0].loadBearingCheck.passes).toBe(false);
     });
 
     it('rejects non-object kernelFidelityCheck', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0] as Record<string, unknown>)['kernelFidelityCheck'] = 'bad';
+      const payload = createValidSpecificityPayload(1);
+      (payload.specificityAnalyses[0] as Record<string, unknown>)['kernelFidelityCheck'] = 'bad';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'kernelFidelityCheck must be an object',
       );
     });
 
     it('rejects non-boolean passes in kernelFidelityCheck', () => {
-      const payload = createValidPayload(1);
-      (payload.verifications[0].kernelFidelityCheck as Record<string, unknown>)['passes'] = 'yes';
+      const payload = createValidSpecificityPayload(1);
+      (payload.specificityAnalyses[0].kernelFidelityCheck as Record<string, unknown>)['passes'] =
+        'yes';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'kernelFidelityCheck has invalid passes',
       );
     });
 
     it('rejects empty reasoning in kernelFidelityCheck', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].kernelFidelityCheck.reasoning = '';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].kernelFidelityCheck.reasoning = '';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid reasoning',
       );
     });
 
     it('rejects empty kernelDrift in kernelFidelityCheck', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].kernelFidelityCheck.kernelDrift = '  ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].kernelFidelityCheck.kernelDrift = '  ';
 
-      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+      expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
         'invalid kernelDrift',
       );
     });
 
     it('accepts kernelFidelityCheck with passes: false', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].kernelFidelityCheck.passes = false;
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].kernelFidelityCheck.passes = false;
 
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
+      const result = parseConceptSpecificityResponse(payload, expectedIds(1));
       expect(result[0].kernelFidelityCheck.passes).toBe(false);
     });
 
     it('trims string fields', () => {
-      const payload = createValidPayload(1);
-      payload.verifications[0].signatureScenario = '  padded scenario  ';
-      payload.verifications[0].inevitabilityStatement = '  padded inevitability  ';
+      const payload = createValidSpecificityPayload(1);
+      payload.specificityAnalyses[0].signatureScenario = '  padded scenario  ';
+      payload.specificityAnalyses[0].inevitabilityStatement = '  padded inevitability  ';
 
-      const result = parseConceptVerificationResponse(payload, expectedIds(1));
+      const result = parseConceptSpecificityResponse(payload, expectedIds(1));
       expect(result[0].signatureScenario).toBe('padded scenario');
       expect(result[0].inevitabilityStatement).toBe('padded inevitability');
     });
   });
 
+  describe('parseConceptScenarioResponse', () => {
+    it('parses valid response with correct concept IDs', () => {
+      const payload = createValidScenarioPayload(2);
+      const result = parseConceptScenarioResponse(payload, expectedIds(2));
+
+      expect(result).toHaveLength(2);
+      expect(result[0].conceptId).toBe('concept_1');
+      expect(result[0].escalatingSetpieces).toHaveLength(6);
+      expect(result[0].setpieceCausalChainBroken).toBe(false);
+      expect(result[0].setpieceCausalLinks).toHaveLength(5);
+      expect(result[0].conceptIntegrityScore).toBe(85);
+      expect(result[1].conceptId).toBe('concept_2');
+    });
+
+    it('clamps score above 100 to 100', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].conceptIntegrityScore = 150;
+
+      const result = parseConceptScenarioResponse(payload, expectedIds(1));
+      expect(result[0].conceptIntegrityScore).toBe(100);
+    });
+
+    it('clamps negative score to 0', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].conceptIntegrityScore = -10;
+
+      const result = parseConceptScenarioResponse(payload, expectedIds(1));
+      expect(result[0].conceptIntegrityScore).toBe(0);
+    });
+
+    it('rounds fractional scores', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].conceptIntegrityScore = 72.6;
+
+      const result = parseConceptScenarioResponse(payload, expectedIds(1));
+      expect(result[0].conceptIntegrityScore).toBe(73);
+    });
+
+    it('rejects non-object response', () => {
+      expect(() => parseConceptScenarioResponse('invalid', expectedIds(1))).toThrow(
+        'must be an object',
+      );
+    });
+
+    it('rejects missing scenarioAnalyses array', () => {
+      expect(() => parseConceptScenarioResponse({}, expectedIds(1))).toThrow(
+        'missing scenarioAnalyses array',
+      );
+    });
+
+    it('rejects non-array escalatingSetpieces', () => {
+      const payload = createValidScenarioPayload(1);
+      (payload.scenarioAnalyses[0] as Record<string, unknown>)['escalatingSetpieces'] = 'not-array';
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'escalatingSetpieces must be an array',
+      );
+    });
+
+    it('rejects wrong number of setpieces', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].escalatingSetpieces = ['a', 'b', 'c'];
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'exactly 6 items (received: 3)',
+      );
+    });
+
+    it('rejects non-boolean setpieceCausalChainBroken', () => {
+      const payload = createValidScenarioPayload(1);
+      (payload.scenarioAnalyses[0] as Record<string, unknown>)['setpieceCausalChainBroken'] = 'no';
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'invalid setpieceCausalChainBroken',
+      );
+    });
+
+    it('rejects non-array setpieceCausalLinks', () => {
+      const payload = createValidScenarioPayload(1);
+      (payload.scenarioAnalyses[0] as Record<string, unknown>)['setpieceCausalLinks'] = 'broken';
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'setpieceCausalLinks must be an array',
+      );
+    });
+
+    it('rejects wrong number of setpieceCausalLinks', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].setpieceCausalLinks = ['1->2', '2->3'];
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'setpieceCausalLinks must have exactly 5 items',
+      );
+    });
+
+    it('rejects empty setpieceCausalLinks entry', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].setpieceCausalLinks[3] = '   ';
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'invalid setpieceCausalLinks[3]',
+      );
+    });
+
+    it('rejects empty string in setpieces', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].escalatingSetpieces[2] = '  ';
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'invalid escalatingSetpieces[2]',
+      );
+    });
+
+    it('rejects non-number conceptIntegrityScore', () => {
+      const payload = createValidScenarioPayload(1);
+      (payload.scenarioAnalyses[0] as Record<string, unknown>)['conceptIntegrityScore'] = 'high';
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'invalid conceptIntegrityScore',
+      );
+    });
+
+    it('rejects NaN conceptIntegrityScore', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].conceptIntegrityScore = NaN;
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'invalid conceptIntegrityScore',
+      );
+    });
+  });
+
   describe('verifyConcepts', () => {
-    it('sends request and returns parsed result', async () => {
-      const payload = createValidPayload(2);
-      const rawContent = JSON.stringify(payload);
-      fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+    it('sends two sequential requests and returns combined result', async () => {
+      const specificityPayload = createValidSpecificityPayload(2);
+      const scenarioPayload = createValidScenarioPayload(2);
+
+      fetchMock
+        .mockResolvedValueOnce(
+          responseWithMessageContent(JSON.stringify(specificityPayload)),
+        )
+        .mockResolvedValueOnce(
+          responseWithMessageContent(JSON.stringify(scenarioPayload)),
+        );
 
       const result = await verifyConcepts(createContext(2), 'test-api-key');
 
-      expect(result.rawResponse).toBe(rawContent);
       expect(result.verifications).toHaveLength(2);
       expect(result.verifications[0].conceptId).toBe('concept_1');
       expect(result.verifications[0].signatureScenario).toBe('Signature scenario 1');
+      expect(result.verifications[0].escalatingSetpieces).toHaveLength(6);
       expect(result.verifications[1].conceptIntegrityScore).toBe(85);
-      expect(fetchMock).toHaveBeenCalledTimes(1);
-
-      const requestBody = getRequestBody();
-      expect(requestBody['response_format']).toEqual(CONCEPT_VERIFIER_SCHEMA);
-      expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptVerifier', expect.any(Array));
-      expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(mockLogPrompt).toHaveBeenCalledWith(
+        mockLogger,
+        'conceptSpecificity',
+        expect.any(Array),
+      );
+      expect(mockLogPrompt).toHaveBeenCalledWith(
+        mockLogger,
+        'conceptScenario',
+        expect.any(Array),
+      );
+      expect(mockLogPrompt).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -596,11 +643,11 @@ describe('concept-verifier', () => {
     });
   });
 
-  describe('CONCEPT_VERIFIER_SCHEMA contract', () => {
-    it('requires logline + setpiece causal chain fields', () => {
-      const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
+  describe('CONCEPT_SPECIFICITY_SCHEMA contract', () => {
+    it('requires logline and premise promises fields', () => {
+      const rootSchema = CONCEPT_SPECIFICITY_SCHEMA.json_schema.schema as {
         properties: {
-          verifications: {
+          specificityAnalyses: {
             items: {
               required: string[];
               properties: Record<string, unknown>;
@@ -608,51 +655,27 @@ describe('concept-verifier', () => {
           };
         };
       };
-      const verificationSchema = rootSchema.properties.verifications.items;
+      const analysisSchema = rootSchema.properties.specificityAnalyses.items;
 
-      expect(verificationSchema.required).toContain('loglineCompressible');
-      expect(verificationSchema.required).toContain('logline');
-      expect(verificationSchema.required).toContain('setpieceCausalChainBroken');
-      expect(verificationSchema.required).toContain('setpieceCausalLinks');
-      expect(verificationSchema.properties['loglineCompressible']).toEqual({ type: 'boolean' });
-      expect(verificationSchema.properties['logline']).toEqual({ type: 'string', minLength: 1 });
-      expect(verificationSchema.properties['setpieceCausalChainBroken']).toEqual({
-        type: 'boolean',
-      });
-      expect(verificationSchema.properties['setpieceCausalLinks']).toEqual({
-        type: 'array',
-        minItems: 5,
-        maxItems: 5,
-        items: { type: 'string', minLength: 1 },
-      });
-    });
-
-    it('requires premisePromises as a 3-5 item string array', () => {
-      const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
-        properties: {
-          verifications: {
-            items: {
-              required: string[];
-              properties: Record<string, unknown>;
-            };
-          };
-        };
-      };
-      const verificationSchema = rootSchema.properties.verifications.items;
-
-      expect(verificationSchema.required).toContain('premisePromises');
-      expect(verificationSchema.properties['premisePromises']).toEqual({
+      expect(analysisSchema.required).toContain('loglineCompressible');
+      expect(analysisSchema.required).toContain('logline');
+      expect(analysisSchema.required).toContain('premisePromises');
+      expect(analysisSchema.properties['loglineCompressible']).toEqual({ type: 'boolean' });
+      expect(analysisSchema.properties['logline']).toEqual({ type: 'string', minLength: 1 });
+      expect(analysisSchema.properties['premisePromises']).toEqual({
         type: 'array',
         minItems: 3,
         maxItems: 5,
         items: { type: 'string', minLength: 1 },
       });
     });
+  });
 
-    it('requires escalatingSetpieces as exactly 6 items', () => {
-      const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
+  describe('CONCEPT_SCENARIO_SCHEMA contract', () => {
+    it('requires setpieces and causal chain fields', () => {
+      const rootSchema = CONCEPT_SCENARIO_SCHEMA.json_schema.schema as {
         properties: {
-          verifications: {
+          scenarioAnalyses: {
             items: {
               required: string[];
               properties: Record<string, unknown>;
@@ -660,14 +683,26 @@ describe('concept-verifier', () => {
           };
         };
       };
-      const verificationSchema = rootSchema.properties.verifications.items;
+      const analysisSchema = rootSchema.properties.scenarioAnalyses.items;
 
-      expect(verificationSchema.required).toContain('escalatingSetpieces');
-      expect(verificationSchema.properties['escalatingSetpieces']).toEqual({
+      expect(analysisSchema.required).toContain('escalatingSetpieces');
+      expect(analysisSchema.required).toContain('setpieceCausalChainBroken');
+      expect(analysisSchema.required).toContain('setpieceCausalLinks');
+      expect(analysisSchema.required).toContain('conceptIntegrityScore');
+      expect(analysisSchema.properties['escalatingSetpieces']).toEqual({
         type: 'array',
         minItems: 6,
         maxItems: 6,
         items: { type: 'string' },
+      });
+      expect(analysisSchema.properties['setpieceCausalChainBroken']).toEqual({
+        type: 'boolean',
+      });
+      expect(analysisSchema.properties['setpieceCausalLinks']).toEqual({
+        type: 'array',
+        minItems: 5,
+        maxItems: 5,
+        items: { type: 'string', minLength: 1 },
       });
     });
   });

@@ -98,6 +98,7 @@
       '</div>' +
       '<h3 class="spine-cdq">' + escapeHtml(title) + '</h3>' +
       '<div class="spine-field"><span class="spine-label">Dramatic Thesis:</span> ' + escapeHtml(kernel.dramaticThesis || '') + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Antithesis:</span> <em>' + escapeHtml(kernel.antithesis || '') + '</em></div>' +
       '<div class="spine-field"><span class="spine-label">Value at Stake:</span> ' + escapeHtml(kernel.valueAtStake || '') + '</div>' +
       '<div class="spine-field"><span class="spine-label">Opposing Force:</span> ' + escapeHtml(kernel.opposingForce || '') + '</div>' +
       '<div class="spine-field"><span class="spine-label">Thematic Question:</span> <em>' + escapeHtml(kernel.thematicQuestion || '') + '</em></div>' +

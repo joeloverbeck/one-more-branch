@@ -276,8 +276,8 @@ describe('concept-service', () => {
         { stage: 'GENERATING_CONCEPTS', status: 'completed', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
-        { stage: 'VERIFYING_CONCEPTS', status: 'started', attempt: 1 },
-        { stage: 'VERIFYING_CONCEPTS', status: 'completed', attempt: 1 },
+        { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },
+        { stage: 'GENERATING_SCENARIOS', status: 'completed', attempt: 1 },
       ]);
     });
 

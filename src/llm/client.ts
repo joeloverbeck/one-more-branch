@@ -4,14 +4,16 @@ import { generateAccountantWithFallback } from './accountant-generation.js';
 import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
 import { generateStructureEvaluatorWithFallback } from './structure-evaluator-generation.js';
 import { generatePromiseTrackerWithFallback } from './promise-tracker-generation.js';
-import { generateSceneQualityWithFallback } from './scene-quality-generation.js';
+import { generateProseQualityWithFallback } from './prose-quality-generation.js';
+import { generateNpcIntelligenceWithFallback } from './npc-intelligence-generation.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { withModelFallback } from './model-fallback.js';
 import { resolvePromptOptions } from './options.js';
 import { generatePlannerWithFallback } from './planner-generation.js';
 import { buildStructureEvaluatorPrompt } from './prompts/structure-evaluator-prompt.js';
 import { buildPromiseTrackerPrompt } from './prompts/promise-tracker-prompt.js';
-import { buildSceneQualityPrompt } from './prompts/scene-quality-prompt.js';
+import { buildProseQualityPrompt } from './prompts/prose-quality-prompt.js';
+import { buildNpcIntelligencePrompt } from './prompts/npc-intelligence-prompt.js';
 import { buildLorekeeperPrompt } from './prompts/lorekeeper-prompt.js';
 import {
   buildContinuationPrompt,
@@ -23,7 +25,8 @@ import { withRetry } from './retry.js';
 import type { StateAccountantGenerationResult } from './accountant-types.js';
 import type { StructureEvaluatorContext, StructureEvaluatorResult } from './structure-evaluator-types.js';
 import type { PromiseTrackerContext, PromiseTrackerResult } from './promise-tracker-types.js';
-import type { SceneQualityContext, SceneQualityResult } from './scene-quality-types.js';
+import type { ProseQualityContext, ProseQualityResult } from './prose-quality-types.js';
+import type { NpcIntelligenceContext, NpcIntelligenceResult } from './npc-intelligence-types.js';
 import type {
   ContinuationContext,
   LorekeeperContext,
@@ -126,21 +129,40 @@ export async function generatePromiseTracking(
   );
 }
 
-export async function generateSceneQualityEvaluation(
-  context: SceneQualityContext,
+export async function generateProseQualityEvaluation(
+  context: ProseQualityContext,
   options: GenerationOptions
-): Promise<SceneQualityResult & { rawResponse: string }> {
-  const messages = buildSceneQualityPrompt(context);
+): Promise<ProseQualityResult & { rawResponse: string }> {
+  const messages = buildProseQualityPrompt(context);
 
-  logPrompt(logger, 'sceneQuality', messages);
+  logPrompt(logger, 'proseQuality', messages);
 
-  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
-  const primaryModel = evalOptions.model ?? getStageModel('sceneQuality');
+  const evalOptions = { ...options, temperature: 0.3, maxTokens: 4096 };
+  const primaryModel = evalOptions.model ?? getStageModel('proseQuality');
   return withRetry(() =>
     withModelFallback(
-      (m) => generateSceneQualityWithFallback(messages, { ...evalOptions, model: m }),
+      (m) => generateProseQualityWithFallback(messages, { ...evalOptions, model: m }),
       primaryModel,
-      'sceneQuality'
+      'proseQuality'
+    )
+  );
+}
+
+export async function generateNpcIntelligenceEvaluation(
+  context: NpcIntelligenceContext,
+  options: GenerationOptions
+): Promise<NpcIntelligenceResult & { rawResponse: string }> {
+  const messages = buildNpcIntelligencePrompt(context);
+
+  logPrompt(logger, 'npcIntelligence', messages);
+
+  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const primaryModel = evalOptions.model ?? getStageModel('npcIntelligence');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateNpcIntelligenceWithFallback(messages, { ...evalOptions, model: m }),
+      primaryModel,
+      'npcIntelligence'
     )
   );
 }

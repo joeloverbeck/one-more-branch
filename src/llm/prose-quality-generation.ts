@@ -7,22 +7,22 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
-import { SCENE_QUALITY_SCHEMA } from './schemas/scene-quality-schema.js';
-import { validateSceneQualityResponse } from './schemas/scene-quality-response-transformer.js';
-import type { SceneQualityResult } from './scene-quality-types.js';
+import { PROSE_QUALITY_SCHEMA } from './schemas/prose-quality-schema.js';
+import { validateProseQualityResponse } from './schemas/prose-quality-response-transformer.js';
+import type { ProseQualityResult } from './prose-quality-types.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 
-const DEFAULT_SCENE_QUALITY_TEMPERATURE = 0.3;
-const DEFAULT_SCENE_QUALITY_MAX_TOKENS = 8192;
+const DEFAULT_PROSE_QUALITY_TEMPERATURE = 0.3;
+const DEFAULT_PROSE_QUALITY_MAX_TOKENS = 4096;
 
-async function callSceneQualityStructured(
+async function callProseQualityStructured(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<SceneQualityResult & { rawResponse: string }> {
-  const model = options.model ?? getStageModel('sceneQuality');
-  const temperature = options.temperature ?? DEFAULT_SCENE_QUALITY_TEMPERATURE;
-  const maxTokens = options.maxTokens ?? DEFAULT_SCENE_QUALITY_MAX_TOKENS;
+): Promise<ProseQualityResult & { rawResponse: string }> {
+  const model = options.model ?? getStageModel('proseQuality');
+  const temperature = options.temperature ?? DEFAULT_PROSE_QUALITY_TEMPERATURE;
+  const maxTokens = options.maxTokens ?? DEFAULT_PROSE_QUALITY_MAX_TOKENS;
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -36,7 +36,7 @@ async function callSceneQualityStructured(
       messages,
       temperature,
       max_tokens: maxTokens,
-      response_format: SCENE_QUALITY_SCHEMA,
+      response_format: PROSE_QUALITY_SCHEMA,
     }),
   });
 
@@ -58,7 +58,7 @@ async function callSceneQualityStructured(
   if (!content) {
     const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
     const usage = data.usage;
-    logger.warn('Scene quality evaluator received empty content from OpenRouter', {
+    logger.warn('Prose quality evaluator received empty content from OpenRouter', {
       finishReason,
       usage,
       model,
@@ -76,9 +76,9 @@ async function callSceneQualityStructured(
   const rawContent = parsedMessage.rawText;
 
   try {
-    return validateSceneQualityResponse(parsed, rawContent);
+    return validateProseQualityResponse(parsed, rawContent);
   } catch (error) {
-    logger.error('Scene quality structured response validation failed', {
+    logger.error('Prose quality structured response validation failed', {
       rawResponse: rawContent,
     });
 
@@ -92,15 +92,15 @@ async function callSceneQualityStructured(
   }
 }
 
-export async function generateSceneQualityWithFallback(
+export async function generateProseQualityWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<SceneQualityResult & { rawResponse: string }> {
+): Promise<ProseQualityResult & { rawResponse: string }> {
   try {
-    return await callSceneQualityStructured(messages, options);
+    return await callProseQualityStructured(messages, options);
   } catch (error) {
     if (isStructuredOutputNotSupported(error)) {
-      const model = options.model ?? getStageModel('sceneQuality');
+      const model = options.model ?? getStageModel('proseQuality');
       throw new LLMError(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',

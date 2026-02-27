@@ -1,6 +1,6 @@
 import type { KnowledgeAsymmetry } from '../../models/state/index.js';
-import type { DetectedRelationshipShift, SceneQualityResult } from '../scene-quality-types.js';
-import { SceneQualityResultSchema } from './scene-quality-validation-schema.js';
+import type { DetectedRelationshipShift, NpcIntelligenceResult } from '../npc-intelligence-types.js';
+import { NpcIntelligenceResultSchema } from './npc-intelligence-validation-schema.js';
 
 function normalizeRelationshipShifts(
   value: readonly {
@@ -48,23 +48,18 @@ function normalizeDramaticIronyOpportunities(value: readonly string[]): string[]
   return value.map((item) => item.trim()).filter((item) => item.length > 0);
 }
 
-export function validateSceneQualityResponse(
+export function validateNpcIntelligenceResponse(
   rawJson: unknown,
   rawResponse: string
-): SceneQualityResult & { rawResponse: string } {
+): NpcIntelligenceResult & { rawResponse: string } {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {
     parsed = JSON.parse(parsed);
   }
 
-  const validated = SceneQualityResultSchema.parse(parsed);
+  const validated = NpcIntelligenceResultSchema.parse(parsed);
 
   return {
-    toneAdherent: validated.toneAdherent,
-    toneDriftDescription: validated.toneDriftDescription.trim(),
-    thematicCharge: validated.thematicCharge,
-    thematicChargeDescription: validated.thematicChargeDescription.trim(),
-    narrativeFocus: validated.narrativeFocus,
     npcCoherenceAdherent: validated.npcCoherenceAdherent,
     npcCoherenceIssues: validated.npcCoherenceIssues.trim(),
     relationshipShiftsDetected: normalizeRelationshipShifts(validated.relationshipShiftsDetected),

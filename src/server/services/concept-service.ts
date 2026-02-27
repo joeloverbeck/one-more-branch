@@ -188,7 +188,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       });
 
       onGenerationStage?.({
-        stage: 'VERIFYING_CONCEPTS',
+        stage: 'ANALYZING_SPECIFICITY',
         status: 'started',
         attempt: 1,
       });
@@ -197,7 +197,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         apiKey,
       );
       onGenerationStage?.({
-        stage: 'VERIFYING_CONCEPTS',
+        stage: 'GENERATING_SCENARIOS',
         status: 'completed',
         attempt: 1,
       });
