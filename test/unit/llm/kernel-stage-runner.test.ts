@@ -1,5 +1,6 @@
 import { runKernelStage } from '../../../src/llm/kernel-stage-runner';
 import { logger } from '../../../src/logging';
+import type { LogEntry } from '../../../src/logging';
 import type {
   EvaluatedKernel,
   KernelDimensionScores,
@@ -14,7 +15,7 @@ function createKernel(index: number): StoryKernel {
     opposingForce: `Force ${index}`,
     directionOfChange: 'POSITIVE',
     thematicQuestion: `Question ${index}?`,
-  antithesis: 'Counter-argument challenges the thesis.',
+    antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 
@@ -54,6 +55,19 @@ function createEvaluatedKernel(kernel: StoryKernel): EvaluatedKernel {
     weaknesses: ['Could sharpen universality', 'Depth can be expanded'],
     tradeoffSummary: 'Strong dramatic engine with moderate thematic breadth.',
   };
+}
+
+function findStageEntry(
+  entries: LogEntry[],
+  message: string,
+  stage: string,
+): LogEntry | undefined {
+  return entries.find(
+    (entry) =>
+      entry.message === message &&
+      typeof entry.context?.stage === 'string' &&
+      entry.context.stage === stage,
+  );
 }
 
 describe('kernel-stage-runner', () => {
@@ -125,48 +139,29 @@ describe('kernel-stage-runner', () => {
       rawEvaluatorResponse: 'evaluator raw',
     });
 
-    expect(logger.getEntries()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          level: 'info',
-          message: 'Generation stage started',
-          context: expect.objectContaining({
-            flow: 'kernel-generation',
-            stage: 'kernel-ideator',
-            attempt: 1,
-          }),
-        }),
-        expect.objectContaining({
-          level: 'info',
-          message: 'Generation stage completed',
-          context: expect.objectContaining({
-            flow: 'kernel-generation',
-            stage: 'kernel-ideator',
-            attempt: 1,
-            durationMs: expect.any(Number),
-          }),
-        }),
-        expect.objectContaining({
-          level: 'info',
-          message: 'Generation stage started',
-          context: expect.objectContaining({
-            flow: 'kernel-generation',
-            stage: 'kernel-evaluator',
-            attempt: 1,
-          }),
-        }),
-        expect.objectContaining({
-          level: 'info',
-          message: 'Generation stage completed',
-          context: expect.objectContaining({
-            flow: 'kernel-generation',
-            stage: 'kernel-evaluator',
-            attempt: 1,
-            durationMs: expect.any(Number),
-          }),
-        }),
-      ]),
-    );
+    const entries = logger.getEntries();
+    const ideatorStart = findStageEntry(entries, 'Generation stage started', 'kernel-ideator');
+    const ideatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-ideator');
+    const evaluatorStart = findStageEntry(entries, 'Generation stage started', 'kernel-evaluator');
+    const evaluatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-evaluator');
+
+    expect(ideatorStart?.level).toBe('info');
+    expect(ideatorStart?.context?.flow).toBe('kernel-generation');
+    expect(ideatorStart?.context?.attempt).toBe(1);
+
+    expect(ideatorComplete?.level).toBe('info');
+    expect(ideatorComplete?.context?.flow).toBe('kernel-generation');
+    expect(ideatorComplete?.context?.attempt).toBe(1);
+    expect(typeof ideatorComplete?.context?.durationMs).toBe('number');
+
+    expect(evaluatorStart?.level).toBe('info');
+    expect(evaluatorStart?.context?.flow).toBe('kernel-generation');
+    expect(evaluatorStart?.context?.attempt).toBe(1);
+
+    expect(evaluatorComplete?.level).toBe('info');
+    expect(evaluatorComplete?.context?.flow).toBe('kernel-generation');
+    expect(evaluatorComplete?.context?.attempt).toBe(1);
+    expect(typeof evaluatorComplete?.context?.durationMs).toBe('number');
   });
 
   it('throws for short api keys before invoking dependencies', async () => {
@@ -208,19 +203,15 @@ describe('kernel-stage-runner', () => {
     ).rejects.toThrow('ideation failed');
 
     expect(evaluateKernels).not.toHaveBeenCalled();
-    expect(logger.getEntries()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          level: 'error',
-          message: 'Generation stage failed',
-          context: expect.objectContaining({
-            flow: 'kernel-generation',
-            stage: 'kernel-ideator',
-            attempt: 1,
-            durationMs: expect.any(Number),
-          }),
-        }),
-      ]),
+    const failureEntry = findStageEntry(
+      logger.getEntries(),
+      'Generation stage failed',
+      'kernel-ideator',
     );
+
+    expect(failureEntry?.level).toBe('error');
+    expect(failureEntry?.context?.flow).toBe('kernel-generation');
+    expect(failureEntry?.context?.attempt).toBe(1);
+    expect(typeof failureEntry?.context?.durationMs).toBe('number');
   });
 });
