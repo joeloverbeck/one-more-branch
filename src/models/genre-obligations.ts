@@ -14,6 +14,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     { tag: 'treasure_with_cost', gloss: 'The prize is won but at meaningful expense' },
     { tag: 'return_transformed', gloss: 'The protagonist comes back changed by the journey' },
   ],
+  COMING_OF_AGE: [
+    {
+      tag: 'departure_from_known_world',
+      gloss: 'The protagonist leaves or is expelled from their sheltered environment',
+    },
+    {
+      tag: 'mentor_or_model_encountered',
+      gloss: 'A figure embodies what the protagonist might become',
+    },
+    {
+      tag: 'first_major_disillusionment',
+      gloss: 'A belief the protagonist held is shattered by experience',
+    },
+    {
+      tag: 'social_values_clash',
+      gloss: "The protagonist's emerging identity conflicts with expectations of family or society",
+    },
+    {
+      tag: 'trial_of_self_definition',
+      gloss: 'The protagonist must choose who they are becoming',
+    },
+    {
+      tag: 'maturity_earned_through_loss',
+      gloss: 'Understanding comes at a cost: innocence, a relationship, or a dream',
+    },
+  ],
   COSMIC_HORROR: [
     {
       tag: 'forbidden_knowledge_discovered',
@@ -32,6 +58,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     {
       tag: 'truth_worse_than_ignorance',
       gloss: 'The final revelation makes things worse, not better',
+    },
+  ],
+  CULTIVATION: [
+    {
+      tag: 'cultivation_breakthrough',
+      gloss: 'The protagonist advances through a defined power level through tribulation or insight',
+    },
+    {
+      tag: 'heavenly_tribulation_survived',
+      gloss: "The universe itself tests the protagonist's worthiness to advance",
+    },
+    {
+      tag: 'sect_conflict_or_tournament',
+      gloss: 'Competition between cultivators or sects provides structure',
+    },
+    {
+      tag: 'ancient_inheritance_discovered',
+      gloss: 'A powerful legacy from a long-dead cultivator is found',
+    },
+    {
+      tag: 'realm_ascension',
+      gloss: 'The protagonist moves to a higher realm with stronger beings',
+    },
+    {
+      tag: 'dao_comprehension_moment',
+      gloss: 'A philosophical or spiritual insight unlocks power',
     },
   ],
   CYBERPUNK: [
@@ -113,6 +165,29 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
     { tag: 'forbidden_knowledge_accessed', gloss: 'The protagonist learns what the system hides' },
     { tag: 'system_price_of_survival', gloss: 'Surviving within the system demands moral cost' },
+  ],
+  EROTICA: [
+    { tag: 'desire_awakened', gloss: 'A character becomes aware of a specific, consuming want' },
+    {
+      tag: 'boundary_tested',
+      gloss: 'A limit—physical, emotional, or social—is approached and negotiated',
+    },
+    {
+      tag: 'intimacy_escalation',
+      gloss: 'Physical encounters intensify in vulnerability or stakes',
+    },
+    {
+      tag: 'fantasy_made_real',
+      gloss: 'Something only imagined is acted upon for the first time',
+    },
+    {
+      tag: 'consequence_of_surrender',
+      gloss: 'Yielding to desire produces a meaningful change in circumstances',
+    },
+    {
+      tag: 'reckoning_with_want',
+      gloss: 'A character confronts what their desires reveal about themselves',
+    },
   ],
   ESPIONAGE: [
     {
@@ -199,6 +274,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     { tag: 'no_clean_victory', gloss: 'The best outcome still costs dearly' },
     { tag: 'survival_over_heroism', gloss: 'Living trumps doing the right thing' },
   ],
+  HEIST: [
+    {
+      tag: 'team_assembly',
+      gloss: 'Recruitment of specialists with distinct, complementary skills',
+    },
+    {
+      tag: 'plan_reveal',
+      gloss: 'The scheme is presented with sufficient detail to create investment',
+    },
+    {
+      tag: 'execution_with_complication',
+      gloss: 'The plan goes into motion and something goes wrong',
+    },
+    {
+      tag: 'hidden_plan_reveal',
+      gloss: 'The protagonists had a deeper plan than what was shown',
+    },
+    {
+      tag: 'betrayal_or_double_cross',
+      gloss: 'Someone has a hidden agenda or is outmaneuvered',
+    },
+    {
+      tag: 'satisfaction_payoff',
+      gloss: 'The final reveal reframes earlier events',
+    },
+  ],
   HISTORICAL: [
     {
       tag: 'period_pressure_established',
@@ -229,6 +330,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
       gloss: 'The true nature or scale of the threat becomes clear',
     },
     { tag: 'final_confrontation_with_cost', gloss: 'The climax demands a price for survival' },
+  ],
+  ISEKAI: [
+    {
+      tag: 'world_displacement_event',
+      gloss: 'The protagonist is torn from their ordinary existence',
+    },
+    {
+      tag: 'rules_of_new_world_discovered',
+      gloss: 'The mechanics or laws of the new reality are revealed',
+    },
+    {
+      tag: 'outsider_advantage_demonstrated',
+      gloss: 'Knowledge from the old world solves a problem others cannot',
+    },
+    {
+      tag: 'old_identity_challenged',
+      gloss: 'Who the protagonist was no longer fits who they must become',
+    },
+    {
+      tag: 'new_world_stakes_made_personal',
+      gloss: 'The protagonist gains something worth protecting in this world',
+    },
+    {
+      tag: 'point_of_no_return',
+      gloss: 'Returning to the old world becomes impossible or undesirable',
+    },
   ],
   LITERARY: [
     { tag: 'ordinary_disruption', gloss: "A small event fractures the protagonist's routine" },
@@ -412,6 +539,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
     { tag: 'conceptual_payoff', gloss: "The story's central idea reaches its fullest expression" },
   ],
+  SPACE_OPERA: [
+    {
+      tag: 'galaxy_threatening_crisis',
+      gloss: 'An existential threat to multiple civilizations',
+    },
+    {
+      tag: 'unlikely_alliance_forged',
+      gloss: 'Factions that distrust each other cooperate against the greater threat',
+    },
+    {
+      tag: 'space_battle_at_turning_point',
+      gloss: 'A large-scale engagement determines the trajectory of events',
+    },
+    {
+      tag: 'personal_sacrifice_for_galactic_stakes',
+      gloss: 'An individual choice with cosmic consequences',
+    },
+    {
+      tag: 'bridge_confrontation',
+      gloss: 'A climactic face-to-face encounter between protagonist and antagonist in a seat of power',
+    },
+    {
+      tag: 'hope_preserved_through_action',
+      gloss: 'Resolution affirms that individual courage matters at any scale',
+    },
+  ],
   SURREAL: [
     { tag: 'reality_dislocation', gloss: 'The world shifts away from the familiar' },
     { tag: 'dream_logic_sequence', gloss: 'Events follow emotional rather than causal order' },
@@ -437,6 +590,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     { tag: 'false_ending', gloss: 'An apparent resolution proves premature' },
     { tag: 'last_second_reversal', gloss: 'The climax turns on a final unexpected shift' },
   ],
+  TRAGEDY: [
+    {
+      tag: 'hamartia_demonstrated',
+      gloss: 'The fatal flaw is established through concrete action',
+    },
+    {
+      tag: 'stature_established',
+      gloss: "The protagonist's position, capability, or worth is shown before the fall",
+    },
+    {
+      tag: 'escalation_through_character',
+      gloss: "Each escalation flows from the protagonist's nature, not external machinations",
+    },
+    {
+      tag: 'point_of_no_return_by_own_hand',
+      gloss: 'The protagonist crosses an irreversible threshold through their own choices',
+    },
+    {
+      tag: 'peripeteia',
+      gloss: "A sudden reversal of fortune caused by the protagonist's own actions",
+    },
+    {
+      tag: 'anagnorisis',
+      gloss: 'The protagonist sees, too late, the truth of their situation and their role in causing it',
+    },
+  ],
   WESTERN: [
     {
       tag: 'frontier_code_conflict',
@@ -455,6 +634,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     {
       tag: 'duel_or_standoff_resolution',
       gloss: 'The climax centers on a direct confrontation',
+    },
+  ],
+  WUXIA: [
+    {
+      tag: 'training_or_cultivation_breakthrough',
+      gloss: 'The protagonist achieves a martial advancement through discipline',
+    },
+    {
+      tag: 'honor_code_tested',
+      gloss: 'Following xia principles conflicts with survival or personal desire',
+    },
+    {
+      tag: 'martial_demonstration',
+      gloss: 'Martial prowess is tested publicly against other practitioners',
+    },
+    {
+      tag: 'master_or_lineage_debt',
+      gloss: 'The protagonist must honor a debt to their teacher or school',
+    },
+    {
+      tag: 'jianghu_justice_sought',
+      gloss: "Justice must be pursued through the martial community's own mechanisms",
+    },
+    {
+      tag: 'secret_technique_sought',
+      gloss: 'A specific martial technique or manual becomes a contested prize',
     },
   ],
 } as const satisfies Record<GenreFrame, readonly GenreObligationEntry[]>;
