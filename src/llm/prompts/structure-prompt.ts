@@ -87,6 +87,21 @@ them, but at least 3 of your beat hooks should trace back to a setpiece above.
 `;
 }
 
+function buildKernelSection(storyKernel?: StoryKernel): string {
+  if (!storyKernel) {
+    return '';
+  }
+
+  return `THEMATIC KERNEL:
+Dramatic thesis: ${storyKernel.dramaticThesis}
+Antithesis: ${storyKernel.antithesis}
+Thematic question: ${storyKernel.thematicQuestion}
+
+Use this thesis/antithesis tension to shape escalating conflicts and turning-point choices.
+
+`;
+}
+
 export function buildDirectionalGuidanceSection(storyKernel?: StoryKernel): string {
   if (!storyKernel) {
     return 'Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice';
@@ -137,10 +152,11 @@ export function buildStructurePrompt(
   const toneFeelSection = buildToneFeelSection(context);
   const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
   const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
+  const kernelSection = buildKernelSection(context.storyKernel);
 
   const userPrompt = `Generate a story structure before the first page.
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${kernelSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.

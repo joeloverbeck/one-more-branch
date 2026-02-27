@@ -27,6 +27,7 @@ export interface AnalystEvaluationContext {
   readonly tone: string;
   readonly toneFeel?: readonly string[];
   readonly toneAvoid?: readonly string[];
+  readonly antithesis: string;
   readonly spine?: StorySpine;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
@@ -69,6 +70,7 @@ export async function runAnalystEvaluation(
         tone: context.tone,
         toneFeel: context.toneFeel,
         toneAvoid: context.toneAvoid,
+        antithesis: context.antithesis,
         spine: context.spine,
       },
       { apiKey: context.apiKey }

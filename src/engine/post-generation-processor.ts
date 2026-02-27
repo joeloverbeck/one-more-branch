@@ -147,6 +147,7 @@ export async function processPostGeneration(
           tone: story.tone,
           toneFeel: story.toneFeel,
           toneAvoid: story.toneAvoid,
+          antithesis: story.storyKernel?.antithesis ?? '',
           spine: story.spine,
           apiKey,
           logContext,

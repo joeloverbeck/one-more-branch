@@ -115,6 +115,7 @@ describe('Concept Route Integration', () => {
           opposingForce: 'Fear of uncertainty',
           directionOfChange: 'IRONIC',
           thematicQuestion: 'Can safety exist without control?',
+        antithesis: 'Counter-argument challenges the thesis.',
         },
         scores: {
           dramaticClarity: 4,
@@ -272,6 +273,7 @@ describe('Concept Route Integration', () => {
           opposingForce: 'Fear of uncertainty',
           directionOfChange: 'IRONIC',
           thematicQuestion: 'Can safety exist without control?',
+        antithesis: 'Counter-argument challenges the thesis.',
         },
       },
       'valid-key-12345',

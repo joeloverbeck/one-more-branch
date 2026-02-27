@@ -56,6 +56,7 @@ export function buildConceptEvolverPrompt(context: ConceptEvolverContext): ChatM
     'Evolve the provided parents into exactly 6 offspring concepts.',
     `STORY KERNEL:
 - dramaticThesis: ${context.kernel.dramaticThesis}
+- antithesis: ${context.kernel.antithesis}
 - valueAtStake: ${context.kernel.valueAtStake}
 - opposingForce: ${context.kernel.opposingForce}
 - directionOfChange: ${context.kernel.directionOfChange}

@@ -85,6 +85,7 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
   const lines: string[] = [
     'THEMATIC KERNEL (the spine\'s philosophical foundation):',
     `Dramatic thesis: ${storyKernel.dramaticThesis}`,
+    `Antithesis: ${storyKernel.antithesis}`,
     `Value at stake: ${storyKernel.valueAtStake}`,
     `Opposing force: ${storyKernel.opposingForce}`,
     `Direction of change: ${storyKernel.directionOfChange}`,

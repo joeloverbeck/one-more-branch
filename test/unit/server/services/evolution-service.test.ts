@@ -15,6 +15,7 @@ function createStoryKernel(): StoryKernel {
     opposingForce: 'Fear of uncertainty',
     directionOfChange: 'IRONIC',
     thematicQuestion: 'Can safety exist without control?',
+  antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 
@@ -193,6 +194,7 @@ describe('evolution-service', () => {
               opposingForce: '',
               directionOfChange: 'IRONIC',
               thematicQuestion: '',
+            antithesis: 'Counter-argument challenges the thesis.',
             },
           }),
         ),

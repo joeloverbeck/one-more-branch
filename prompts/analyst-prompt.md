@@ -158,6 +158,11 @@ ACTIVE TRACKED PROMISES:
 
 Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.
 
+=== THEMATIC ANTITHESIS ===
+(Only present when analyst context includes antithesis)
+THEMATIC ANTITHESIS:
+{{antithesis}}
+
 === THREAD PAYOFF QUALITY ===
 (Only present when threads were resolved this scene)
 Threads were resolved this scene: {{threadsResolved}}

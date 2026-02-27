@@ -184,6 +184,7 @@ describe('buildStructurePrompt - minimal system prompt', () => {
 describe('buildDirectionalGuidanceSection', () => {
   const makeKernel = (direction: StoryKernel['directionOfChange']): StoryKernel => ({
     dramaticThesis: 'Power corrupts',
+    antithesis: 'Power is necessary to preserve order',
     valueAtStake: 'integrity',
     opposingForce: 'ambition',
     directionOfChange: direction,
@@ -249,6 +250,7 @@ describe('buildStructurePrompt - directional guidance integration', () => {
 
   const kernel: StoryKernel = {
     dramaticThesis: 'Power corrupts',
+    antithesis: 'Power is necessary to preserve order',
     valueAtStake: 'integrity',
     opposingForce: 'ambition',
     directionOfChange: 'NEGATIVE',
@@ -268,5 +270,7 @@ describe('buildStructurePrompt - directional guidance integration', () => {
 
     expect(lastUser).toContain('consummate the fall');
     expect(lastUser).not.toContain('impossible choice or sacrifice');
+    expect(lastUser).toContain('THEMATIC KERNEL:');
+    expect(lastUser).toContain('Antithesis: Power is necessary to preserve order');
   });
 });

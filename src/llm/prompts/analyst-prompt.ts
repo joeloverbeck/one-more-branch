@@ -172,6 +172,15 @@ function buildActivePromisesSection(context: AnalystContext): string {
   return `${lines.join('\n')}\n`;
 }
 
+function buildKernelAntithesisSection(context: AnalystContext): string {
+  const antithesis = context.antithesis?.trim() ?? '';
+  if (antithesis.length === 0) {
+    return '';
+  }
+
+  return `THEMATIC ANTITHESIS:\n${antithesis}\n\n`;
+}
+
 /**
  * Builds the analyst prompt messages for the analyst LLM call.
  * Returns a system message with analyst instructions and a user message
@@ -193,10 +202,11 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const activePromisesSection = buildActivePromisesSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
+  const kernelAntithesisSection = buildKernelAntithesisSection(context);
 
   const spineSection = buildSpineSection(context.spine);
 
-  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${kernelAntithesisSection}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

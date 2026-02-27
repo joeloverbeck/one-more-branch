@@ -70,6 +70,7 @@ function createEvaluatedKernel(index = 1): EvaluatedKernel {
       opposingForce: `Force ${index}`,
       directionOfChange: 'POSITIVE' as const,
       thematicQuestion: `Question ${index}?`,
+    antithesis: 'Counter-argument challenges the thesis.',
     },
     scores: {
       dramaticClarity: 4,
