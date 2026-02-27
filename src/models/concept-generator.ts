@@ -7,18 +7,23 @@ export { CONFLICT_AXES, isConflictAxis };
 
 export const GENRE_FRAMES = [
   'ADVENTURE',
+  'COMING_OF_AGE',
   'COSMIC_HORROR',
+  'CULTIVATION',
   'CYBERPUNK',
   'DARK_COMEDY',
   'DRAMA',
   'DYSTOPIAN',
+  'EROTICA',
   'ESPIONAGE',
   'FABLE',
   'FANTASY',
   'GOTHIC',
   'GRIMDARK',
+  'HEIST',
   'HISTORICAL',
   'HORROR',
+  'ISEKAI',
   'LITERARY',
   'MAGICAL_REALISM',
   'MYSTERY',
@@ -29,9 +34,12 @@ export const GENRE_FRAMES = [
   'ROMANCE',
   'SATIRE',
   'SCI_FI',
+  'SPACE_OPERA',
   'SURREAL',
   'THRILLER',
+  'TRAGEDY',
   'WESTERN',
+  'WUXIA',
 ] as const;
 
 export type GenreFrame = (typeof GENRE_FRAMES)[number];

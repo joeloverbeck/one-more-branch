@@ -10,18 +10,23 @@ export function buildConceptTaxonomyGuidance(): string {
   return `TAXONOMY GUIDANCE:
 ${buildEnumGuidance('genreFrame', GENRE_FRAMES, [
   'Physical peril, exotic locations, and protagonist resourcefulness.',
+  'Youth protagonist journey from naivete through disillusionment to maturity.',
   'Incomprehensible reality, insignificance of humanity, knowledge as madness.',
+  'Daoist-cosmology power progression through tiered cultivation realms and tribulations.',
   'Low-life and high tech; street survival against corporate megastructures.',
   'Gallows humor and absurd irony amid genuinely dire stakes.',
   'Interpersonal and social conflict realism.',
   'Systemic collapse and controlled oppression.',
+  'Physical desire as narrative engine; intimacy as character revelation.',
   'Deception, cover identities, and loyalty-versus-mission tension.',
   'Moral allegory with symbolic clarity.',
   'Mythic or magical rule-bound worlds.',
   'Decay, obsession, and oppressive atmosphere.',
   'Moral nihilism where right action is impossible or futile.',
+  'Team-assembled scheme with plan-execution-twist structure and competence spectacle.',
   'Real-period settings with era-specific customs, constraints, and dilemmas.',
   'Fear, dread, and destabilization.',
+  'Transported protagonist adapting to a new world with outsider knowledge.',
   'Character interiority and social nuance focus.',
   'Mundane world where the impossible is treated as ordinary.',
   'Investigation and hidden truth recovery.',
@@ -32,9 +37,12 @@ ${buildEnumGuidance('genreFrame', GENRE_FRAMES, [
   'Intimacy, attachment, and relational stakes.',
   'Societal critique through exaggeration or irony.',
   'Speculative systems and technological consequences.',
+  'Galactic-scale character drama with epic emotional stakes and cosmic spectacle.',
   'Dream-logic, symbolic dislocation, altered reality.',
   'Sustained danger and tightening pressure.',
+  'Self-caused downfall through fatal flaw; peripeteia and catharsis.',
   'Frontier law, territory, and legacy conflict.',
+  'Martial-arts honor code, jianghu underworld, qi cultivation, and sect politics.',
 ])}
 
 ${buildEnumGuidance('conflictAxis', CONFLICT_AXES, [

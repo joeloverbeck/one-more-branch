@@ -32,6 +32,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: 'Travel changes the traveler',
     },
   ],
+  COMING_OF_AGE: [
+    {
+      tag: 'naivete_as_starting_condition',
+      gloss: 'The protagonist begins with a limited, sheltered worldview',
+    },
+    {
+      tag: 'formative_relationships_shape_identity',
+      gloss: 'Mentors, first loves, and rivals function as identity-shapers',
+    },
+    {
+      tag: 'world_expands_progressively',
+      gloss: "The protagonist's sphere of experience broadens across the story",
+    },
+    {
+      tag: 'social_pressure_toward_conformity',
+      gloss: 'Society pushes the protagonist toward a role they must negotiate',
+    },
+    {
+      tag: 'bodily_and_emotional_awakening',
+      gloss: 'Physical maturation and emotional development intertwine',
+    },
+    {
+      tag: 'loss_of_innocence_as_central_event',
+      gloss: 'Something irrevocable reveals the world is not what the protagonist believed',
+    },
+  ],
   COSMIC_HORROR: [
     {
       tag: 'human_knowledge_is_dangerous',
@@ -56,6 +82,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'sanity_as_resource',
       gloss: 'Mental stability erodes under pressure',
+    },
+  ],
+  CULTIVATION: [
+    {
+      tag: 'cultivation_realms_as_power_hierarchy',
+      gloss: 'A rigidly stratified system of power levels structures all social interactions',
+    },
+    {
+      tag: 'heavenly_dao_as_impersonal_force',
+      gloss: 'The universe has laws that govern advancement and impose tribulations',
+    },
+    {
+      tag: 'immortality_as_ultimate_goal',
+      gloss: 'Characters pursue transcendence of mortality',
+    },
+    {
+      tag: 'cosmic_scale_power_escalation',
+      gloss: 'Power progresses from individual martial arts to reality-warping scales',
+    },
+    {
+      tag: 'sect_as_cultivation_institution',
+      gloss: 'Sects are training institutions, political powers, and social hierarchies simultaneously',
+    },
+    {
+      tag: 'treasures_and_pills_as_cultivation_aids',
+      gloss: 'Spirit stones, elixirs, and artifacts accelerate advancement',
     },
   ],
   CYBERPUNK: [
@@ -160,6 +212,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'memory_of_before_is_contested',
       gloss: 'History is controlled or erased',
+    },
+  ],
+  EROTICA: [
+    {
+      tag: 'desire_drives_narrative',
+      gloss: 'Physical and emotional desire is the primary engine of plot',
+    },
+    {
+      tag: 'intimacy_as_character_revelation',
+      gloss: 'Sexual encounters expose who characters truly are',
+    },
+    {
+      tag: 'consent_as_dramatic_architecture',
+      gloss: 'Negotiation of boundaries creates tension and trust',
+    },
+    {
+      tag: 'body_as_emotional_landscape',
+      gloss: 'Physical sensation carries psychological meaning',
+    },
+    {
+      tag: 'escalating_vulnerability_through_closeness',
+      gloss: 'Each encounter demands deeper exposure',
+    },
+    {
+      tag: 'power_dynamics_shape_every_interaction',
+      gloss: 'Control, surrender, and equality are always at play',
     },
   ],
   ESPIONAGE: [
@@ -292,6 +370,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: 'No option is clearly right',
     },
   ],
+  HEIST: [
+    {
+      tag: 'competence_as_spectacle',
+      gloss: 'Characters are defined by being extraordinarily good at specific skills',
+    },
+    {
+      tag: 'plan_as_dramatic_architecture',
+      gloss: 'The heist plan itself structures the narrative',
+    },
+    {
+      tag: 'information_asymmetry_favoring_protagonist',
+      gloss: 'The protagonists are the ones with the scheme',
+    },
+    {
+      tag: 'criminal_protagonists_as_sympathetic',
+      gloss: 'The audience roots for the people committing the crime',
+    },
+    {
+      tag: 'precision_and_timing_atmosphere',
+      gloss: 'Every scene operates with clockwork exactness',
+    },
+    {
+      tag: 'target_as_character',
+      gloss: 'The thing being robbed has its own defenses that function as an antagonist',
+    },
+  ],
   HISTORICAL: [
     {
       tag: 'period_detail_grounds_action',
@@ -342,6 +446,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'survival_demands_sacrifice',
       gloss: 'Escaping costs something precious',
+    },
+  ],
+  ISEKAI: [
+    {
+      tag: 'mundane_origin_as_contrast',
+      gloss: "The protagonist's ordinary past highlights the new world's strangeness",
+    },
+    {
+      tag: 'outsider_knowledge_as_advantage',
+      gloss: 'Skills or understanding from the old world give unexpected leverage',
+    },
+    {
+      tag: 'new_world_operates_by_learnable_rules',
+      gloss: 'The setting has discoverable systems the protagonist can master',
+    },
+    {
+      tag: 'identity_rebuilt_from_scratch',
+      gloss: 'The protagonist defines who they are without old-world status',
+    },
+    {
+      tag: 'displacement_as_liberation_and_loss',
+      gloss: 'Being uprooted is simultaneously freeing and disorienting',
+    },
+    {
+      tag: 'progression_through_adaptation',
+      gloss: "Growth comes from learning the new world's logic",
     },
   ],
   LITERARY: [
@@ -604,6 +734,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: 'Discovery is thrilling and unsettling',
     },
   ],
+  SPACE_OPERA: [
+    {
+      tag: 'galactic_scale_civilizations',
+      gloss: 'Multiple spacefaring species or factions with complex political relationships',
+    },
+    {
+      tag: 'technology_as_backdrop_not_premise',
+      gloss: 'FTL travel, energy weapons, and AI exist but are not the point',
+    },
+    {
+      tag: 'epic_emotional_stakes',
+      gloss: 'Love, family, and honor drive decisions with galaxy-spanning consequences',
+    },
+    {
+      tag: 'idealism_under_pressure',
+      gloss: 'Protagonists believe in something and fight for it',
+    },
+    {
+      tag: 'spectacle_and_wonder_scale',
+      gloss: 'Massive space battles, alien worlds, and cosmic vistas are expected',
+    },
+    {
+      tag: 'mythic_resonance_in_space',
+      gloss: 'Prophecies, chosen ones, and galactic destiny operate without specific mythology',
+    },
+  ],
   SURREAL: [
     {
       tag: 'dream_logic_replaces_causality',
@@ -656,6 +812,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: 'The threat targets what the hero loves',
     },
   ],
+  TRAGEDY: [
+    {
+      tag: 'protagonist_elevated_then_destroyed',
+      gloss: 'The protagonist begins with genuine stature that makes their fall meaningful',
+    },
+    {
+      tag: 'hamartia_drives_all_events',
+      gloss: 'A specific character flaw, not external forces, is the causal engine of destruction',
+    },
+    {
+      tag: 'inevitability_atmosphere',
+      gloss: 'Tension comes from watching an unstoppable trajectory, not from surprise',
+    },
+    {
+      tag: 'catharsis_through_suffering',
+      gloss: 'The emotional contract is purgation through pity and fear',
+    },
+    {
+      tag: 'dignity_in_destruction',
+      gloss: 'The fall has grandeur; the destruction matters because the person mattered',
+    },
+    {
+      tag: 'fate_and_free_will_entangled',
+      gloss: 'The protagonist both causes and cannot escape their doom',
+    },
+  ],
   WESTERN: [
     {
       tag: 'frontier_as_moral_testing_ground',
@@ -680,6 +862,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'civilization_vs_wilderness_tension',
       gloss: 'Settlement and wildness are in opposition',
+    },
+  ],
+  WUXIA: [
+    {
+      tag: 'jianghu_as_parallel_world',
+      gloss: 'The martial underworld operates by its own laws outside official society',
+    },
+    {
+      tag: 'martial_honor_code_xia',
+      gloss: 'A chivalric code: protect the weak, right wrongs, maintain integrity',
+    },
+    {
+      tag: 'qi_cultivation_as_human_potential',
+      gloss: 'Power comes from disciplined internal training, not external magic',
+    },
+    {
+      tag: 'master_disciple_transmission',
+      gloss: 'Knowledge passes through lineage relationships that carry obligations',
+    },
+    {
+      tag: 'sect_and_school_politics',
+      gloss: 'Martial sects function as political factions with rivalries and hierarchies',
+    },
+    {
+      tag: 'revenge_and_vendetta_cycles',
+      gloss: 'Grudges between individuals and sects drive multi-generational conflicts',
     },
   ],
 } as const satisfies Record<GenreFrame, readonly GenreConventionEntry[]>;
