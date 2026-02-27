@@ -50,6 +50,14 @@ THEMATIC CHARGE CLASSIFICATION:
 - Set thematicChargeDescription to 1-2 sentences citing concrete scene evidence.
 - If THEMATIC KERNEL context is absent, default to thematicCharge = AMBIGUOUS with a concise neutral description.
 
+NARRATIVE FOCUS CLASSIFICATION:
+- Classify scene focus as exactly one:
+  - DEEPENING: primarily develops existing conflicts, promises, relationships, or known constraints.
+  - BROADENING: primarily introduces new factions, mysteries, goals, locations, or major scope expansions.
+  - BALANCED: meaningfully deepens existing threads while adding limited new elements.
+- Prefer DEEPENING when uncertain between DEEPENING and BALANCED.
+- Prefer BALANCED when uncertain between BALANCED and BROADENING.
+
 MIDPOINT EVALUATION:
 - If the active beat is midpoint-tagged, enforce midpoint delivery quality:
   - FALSE_VICTORY: apparent win with hidden structural cost or instability.

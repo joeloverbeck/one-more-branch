@@ -5,6 +5,15 @@
 import type { AnalystResult } from '../../llm/analyst-types';
 import type { AnalystResultFileData } from '../page-serializer-types';
 
+function parseNarrativeFocus(
+  value: string
+): AnalystResult['narrativeFocus'] {
+  if (value === 'DEEPENING' || value === 'BROADENING' || value === 'BALANCED') {
+    return value;
+  }
+  throw new Error(`Invalid analyst narrativeFocus persisted value: ${value}`);
+}
+
 export function analystResultToFileData(
   analystResult: AnalystResult | null
 ): AnalystResultFileData | null {
@@ -68,6 +77,7 @@ export function analystResultToFileData(
     beatAlignmentConfidence: analystResult.beatAlignmentConfidence,
     beatAlignmentReason: analystResult.beatAlignmentReason,
     thematicCharge: analystResult.thematicCharge,
+    narrativeFocus: analystResult.narrativeFocus,
     thematicChargeDescription: analystResult.thematicChargeDescription,
     obligatorySceneFulfilled: analystResult.obligatorySceneFulfilled,
     premisePromiseFulfilled: analystResult.premisePromiseFulfilled,
@@ -147,6 +157,7 @@ export function fileDataToAnalystResult(
     beatAlignmentReason: (data.beatAlignmentReason as string) ?? '',
     thematicCharge:
       (data.thematicCharge as AnalystResult['thematicCharge']) ?? 'AMBIGUOUS',
+    narrativeFocus: parseNarrativeFocus(data.narrativeFocus),
     thematicChargeDescription: data.thematicChargeDescription ?? '',
     obligatorySceneFulfilled: data.obligatorySceneFulfilled ?? null,
     premisePromiseFulfilled: data.premisePromiseFulfilled ?? null,

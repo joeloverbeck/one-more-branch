@@ -182,6 +182,14 @@ describe('buildAnalystPrompt', () => {
     expect(messages[0].content).toContain('AMBIGUOUS');
   });
 
+  it('system message includes narrative focus classification rules', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('NARRATIVE FOCUS CLASSIFICATION:');
+    expect(messages[0].content).toContain('DEEPENING');
+    expect(messages[0].content).toContain('BROADENING');
+    expect(messages[0].content).toContain('BALANCED');
+  });
+
   it('system message includes premise promise fulfillment rules', () => {
     const messages = buildAnalystPrompt(testContext);
     expect(messages[0].content).toContain('PREMISE PROMISE FULFILLMENT:');

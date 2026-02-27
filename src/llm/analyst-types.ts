@@ -33,6 +33,7 @@ export type StructuralPositionSignal =
 export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
 export type BeatAlignmentConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
 export type ThematicCharge = 'THESIS_SUPPORTING' | 'ANTITHESIS_SUPPORTING' | 'AMBIGUOUS';
+export type NarrativeFocus = 'DEEPENING' | 'BROADENING' | 'BALANCED';
 
 export interface DetectedPromise {
   readonly description: string;
@@ -85,6 +86,7 @@ export interface AnalystResult {
   beatAlignmentConfidence: BeatAlignmentConfidence;
   beatAlignmentReason: string;
   thematicCharge: ThematicCharge;
+  narrativeFocus: NarrativeFocus;
   thematicChargeDescription: string;
   obligatorySceneFulfilled: string | null;
   premisePromiseFulfilled: string | null;

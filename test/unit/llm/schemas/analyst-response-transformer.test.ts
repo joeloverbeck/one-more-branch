@@ -41,6 +41,7 @@ describe('validateAnalystResponse', () => {
     ]);
     expect(result.completionGateSatisfied).toBe(true);
     expect(result.thematicCharge).toBe('AMBIGUOUS');
+    expect(result.narrativeFocus).toBe('BALANCED');
     expect(result.thematicChargeDescription).toBe('');
     expect(result.obligatorySceneFulfilled).toBeNull();
     expect(result.delayedConsequencesTriggered).toEqual([]);
@@ -101,6 +102,7 @@ describe('validateAnalystResponse', () => {
     expect(result.completionGateSatisfied).toBe(false);
     expect(result.completionGateFailureReason).toBe('');
     expect(result.thematicCharge).toBe('AMBIGUOUS');
+    expect(result.narrativeFocus).toBe('BALANCED');
     expect(result.thematicChargeDescription).toBe('');
     expect(result.obligatorySceneFulfilled).toBeNull();
     expect(result.delayedConsequencesTriggered).toEqual([]);
@@ -389,6 +391,18 @@ describe('validateAnalystResponse', () => {
 
       expect(result.thematicCharge).toBe('AMBIGUOUS');
       expect(result.thematicChargeDescription).toBe('Mixed evidence');
+    });
+  });
+
+  describe('narrative focus fields', () => {
+    it('parses valid narrative focus enum', () => {
+      const result = validateAnalystResponse({ narrativeFocus: 'DEEPENING' }, RAW_RESPONSE);
+      expect(result.narrativeFocus).toBe('DEEPENING');
+    });
+
+    it('defaults invalid narrative focus enum to BALANCED', () => {
+      const result = validateAnalystResponse({ narrativeFocus: 'INVALID' }, RAW_RESPONSE);
+      expect(result.narrativeFocus).toBe('BALANCED');
     });
   });
 

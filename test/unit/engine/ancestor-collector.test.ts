@@ -1,10 +1,13 @@
 import { collectAncestorContext } from '@/engine/ancestor-collector';
 import { createChoice, createPage, parseStoryId } from '@/models';
 import type { Page } from '@/models';
-import type { AnalystResult, ThematicCharge } from '@/llm/analyst-types';
+import type { AnalystResult, NarrativeFocus, ThematicCharge } from '@/llm/analyst-types';
 import { storage } from '@/persistence';
 
-function buildAnalystResult(thematicCharge: ThematicCharge): AnalystResult {
+function buildAnalystResult(
+  thematicCharge: ThematicCharge,
+  narrativeFocus: NarrativeFocus
+): AnalystResult {
   return {
     beatConcluded: false,
     beatResolution: '',
@@ -41,6 +44,7 @@ function buildAnalystResult(thematicCharge: ThematicCharge): AnalystResult {
     beatAlignmentConfidence: 'LOW',
     beatAlignmentReason: '',
     thematicCharge,
+    narrativeFocus,
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
@@ -52,7 +56,8 @@ function buildAnalystResult(thematicCharge: ThematicCharge): AnalystResult {
 function buildPage(
   id: number,
   parentPageId: number | null,
-  thematicCharge: ThematicCharge
+  thematicCharge: ThematicCharge,
+  narrativeFocus: NarrativeFocus
 ): Page {
   return createPage({
     id,
@@ -62,7 +67,7 @@ function buildPage(
     isEnding: false,
     parentPageId,
     parentChoiceIndex: parentPageId === null ? null : 0,
-    analystResult: buildAnalystResult(thematicCharge),
+    analystResult: buildAnalystResult(thematicCharge, narrativeFocus),
   });
 }
 
@@ -74,23 +79,24 @@ describe('ancestor-collector', () => {
   });
 
   it('includes parent thematic valence in trajectory for a root-parent branch', async () => {
-    const parentPage = buildPage(1, null, 'THESIS_SUPPORTING');
+    const parentPage = buildPage(1, null, 'THESIS_SUPPORTING', 'DEEPENING');
 
     const result = await collectAncestorContext(storyId, parentPage);
 
     expect(result.thematicValenceTrajectory).toEqual([
       { pageId: 1, thematicValence: 'THESIS_SUPPORTING' },
     ]);
+    expect(result.narrativeFocusTrajectory).toEqual([{ pageId: 1, narrativeFocus: 'DEEPENING' }]);
   });
 
   it('builds thematic trajectory in chronological order capped to recent 5 scenes', async () => {
-    const parentPage = buildPage(7, 6, 'ANTITHESIS_SUPPORTING');
-    const page6 = buildPage(6, 5, 'THESIS_SUPPORTING');
-    const page5 = buildPage(5, 4, 'THESIS_SUPPORTING');
-    const page4 = buildPage(4, 3, 'ANTITHESIS_SUPPORTING');
-    const page3 = buildPage(3, 2, 'AMBIGUOUS');
-    const page2 = buildPage(2, 1, 'THESIS_SUPPORTING');
-    const page1 = buildPage(1, null, 'ANTITHESIS_SUPPORTING');
+    const parentPage = buildPage(7, 6, 'ANTITHESIS_SUPPORTING', 'BROADENING');
+    const page6 = buildPage(6, 5, 'THESIS_SUPPORTING', 'DEEPENING');
+    const page5 = buildPage(5, 4, 'THESIS_SUPPORTING', 'DEEPENING');
+    const page4 = buildPage(4, 3, 'ANTITHESIS_SUPPORTING', 'BALANCED');
+    const page3 = buildPage(3, 2, 'AMBIGUOUS', 'BROADENING');
+    const page2 = buildPage(2, 1, 'THESIS_SUPPORTING', 'BALANCED');
+    const page1 = buildPage(1, null, 'ANTITHESIS_SUPPORTING', 'DEEPENING');
 
     jest.spyOn(storage, 'loadPage').mockImplementation((_, pageId) => {
       const pages = new Map([
@@ -112,6 +118,13 @@ describe('ancestor-collector', () => {
       { pageId: 5, thematicValence: 'THESIS_SUPPORTING' },
       { pageId: 6, thematicValence: 'THESIS_SUPPORTING' },
       { pageId: 7, thematicValence: 'ANTITHESIS_SUPPORTING' },
+    ]);
+    expect(result.narrativeFocusTrajectory).toEqual([
+      { pageId: 3, narrativeFocus: 'BROADENING' },
+      { pageId: 4, narrativeFocus: 'BALANCED' },
+      { pageId: 5, narrativeFocus: 'DEEPENING' },
+      { pageId: 6, narrativeFocus: 'DEEPENING' },
+      { pageId: 7, narrativeFocus: 'BROADENING' },
     ]);
   });
 });

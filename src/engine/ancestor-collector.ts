@@ -3,6 +3,8 @@ import type {
   AncestorSummary,
   MomentumDataPoint,
   MomentumTrajectory,
+  NarrativeFocusDataPoint,
+  NarrativeFocusTrajectory,
   ThematicValenceDataPoint,
   ThematicValenceTrajectory,
 } from '../llm/generation-pipeline-types';
@@ -17,6 +19,7 @@ export interface AncestorContext {
   readonly ancestorSummaries: readonly AncestorSummary[];
   readonly momentumTrajectory: MomentumTrajectory;
   readonly thematicValenceTrajectory: ThematicValenceTrajectory;
+  readonly narrativeFocusTrajectory: NarrativeFocusTrajectory;
 }
 
 /**
@@ -67,6 +70,23 @@ function buildThematicValenceTrajectory(
   return points;
 }
 
+function buildNarrativeFocusTrajectory(parentPage: Page, ancestors: Page[]): NarrativeFocusTrajectory {
+  const allPages = [...ancestors].reverse();
+  allPages.push(parentPage);
+
+  const recentPages = allPages.slice(-MAX_TRAJECTORY_PAGES);
+
+  const points: NarrativeFocusDataPoint[] = [];
+  for (const page of recentPages) {
+    points.push({
+      pageId: page.id,
+      narrativeFocus: page.analystResult?.narrativeFocus ?? 'BALANCED',
+    });
+  }
+
+  return points;
+}
+
 /**
  * Walks the ancestor chain from a parent page and collects hierarchical context:
  * - Full text for parent (always available as parentPage.narrativeText)
@@ -90,6 +110,7 @@ export async function collectAncestorContext(
       ancestorSummaries: [],
       momentumTrajectory: buildMomentumTrajectory(parentPage, []),
       thematicValenceTrajectory: buildThematicValenceTrajectory(parentPage, []),
+      narrativeFocusTrajectory: buildNarrativeFocusTrajectory(parentPage, []),
     };
   }
 
@@ -127,5 +148,6 @@ export async function collectAncestorContext(
     ancestorSummaries,
     momentumTrajectory: buildMomentumTrajectory(parentPage, ancestors),
     thematicValenceTrajectory: buildThematicValenceTrajectory(parentPage, ancestors),
+    narrativeFocusTrajectory: buildNarrativeFocusTrajectory(parentPage, ancestors),
   };
 }

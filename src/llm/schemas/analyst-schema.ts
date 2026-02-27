@@ -306,6 +306,12 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'Scene-level thematic valence relative to the thematic question and antithesis. THESIS_SUPPORTING when scene outcomes support the thesis-direction answer, ANTITHESIS_SUPPORTING when outcomes support the antithesis-direction answer, AMBIGUOUS when evidence is mixed or unresolved.',
         },
+        narrativeFocus: {
+          type: 'string',
+          enum: ['DEEPENING', 'BROADENING', 'BALANCED'],
+          description:
+            'Scene-level depth-vs-breadth focus. DEEPENING develops existing threads/relationships/conflicts; BROADENING introduces new elements or expands scope; BALANCED does both without strong dominance.',
+        },
         thematicChargeDescription: {
           type: 'string',
           description:
@@ -364,6 +370,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'beatAlignmentConfidence',
         'beatAlignmentReason',
         'thematicCharge',
+        'narrativeFocus',
         'thematicChargeDescription',
         'obligatorySceneFulfilled',
         'premisePromiseFulfilled',

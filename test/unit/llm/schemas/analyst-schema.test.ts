@@ -52,6 +52,24 @@ describe('ANALYST_SCHEMA', () => {
     );
   });
 
+  it('includes narrativeFocus enum in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    const narrativeFocus = schema.properties['narrativeFocus'] as {
+      enum?: string[];
+      type?: string;
+    };
+
+    expect(narrativeFocus).toBeDefined();
+    expect(narrativeFocus.type).toBe('string');
+    expect(narrativeFocus.enum).toEqual(
+      expect.arrayContaining(['DEEPENING', 'BROADENING', 'BALANCED'])
+    );
+    expect(schema.required).toContain('narrativeFocus');
+  });
+
   it('includes premisePromiseFulfilled as nullable string in properties and required list', () => {
     const schema = ANALYST_SCHEMA.json_schema.schema as {
       properties: Record<string, unknown>;

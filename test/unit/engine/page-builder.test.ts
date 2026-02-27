@@ -100,6 +100,7 @@ function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResu
     beatAlignmentConfidence: 'LOW',
     beatAlignmentReason: '',
     thematicCharge: 'AMBIGUOUS',
+    narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
@@ -951,11 +952,12 @@ describe('page-builder', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
+        narrativeFocus: 'BALANCED',
         thematicChargeDescription: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-    delayedConsequencesTriggered: [],
-    rawResponse: '',
+        delayedConsequencesTriggered: [],
+        rawResponse: '',
       };
     }
 
@@ -1072,11 +1074,12 @@ describe('page-builder', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
+        narrativeFocus: 'BALANCED',
         thematicChargeDescription: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-    delayedConsequencesTriggered: [],
-    rawResponse: '',
+        delayedConsequencesTriggered: [],
+        rawResponse: '',
       };
     }
 
