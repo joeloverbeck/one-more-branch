@@ -60,7 +60,7 @@ export interface Page {
   readonly analystResult: AnalystResult | null;
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
-  readonly accumulatedFulfilledPremisePromises: readonly string[];
+  readonly accumulatedFulfilledPremisePromises?: readonly string[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
   readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
@@ -216,8 +216,9 @@ export function isPage(value: unknown): value is Page {
     Array.isArray(accumulatedPromises) && accumulatedPromises.every(isTrackedPromise);
   const accumulatedFulfilledPremisePromises = obj['accumulatedFulfilledPremisePromises'];
   const accumulatedFulfilledPremisePromisesValid =
-    Array.isArray(accumulatedFulfilledPremisePromises) &&
-    accumulatedFulfilledPremisePromises.every((item) => typeof item === 'string');
+    accumulatedFulfilledPremisePromises === undefined ||
+    (Array.isArray(accumulatedFulfilledPremisePromises) &&
+      accumulatedFulfilledPremisePromises.every((item) => typeof item === 'string'));
 
   return (
     typeof obj['id'] === 'number' &&

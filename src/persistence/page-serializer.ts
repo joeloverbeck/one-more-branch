@@ -91,7 +91,9 @@ export function serializePage(page: Page): PageFileData {
       suggestedUrgency: p.suggestedUrgency,
       age: p.age,
     })),
-    accumulatedFulfilledPremisePromises: [...(page.accumulatedFulfilledPremisePromises ?? [])],
+    ...(page.accumulatedFulfilledPremisePromises !== undefined
+      ? { accumulatedFulfilledPremisePromises: [...page.accumulatedFulfilledPremisePromises] }
+      : {}),
     resolvedThreadMeta: { ...page.resolvedThreadMeta },
     resolvedPromiseMeta: { ...page.resolvedPromiseMeta },
     npcAgendaUpdates: npcAgendaArrayToFileData(page.npcAgendaUpdates),
@@ -184,7 +186,9 @@ export function deserializePage(data: PageFileData): Page {
       suggestedUrgency: p.suggestedUrgency as TrackedPromise['suggestedUrgency'],
       age: p.age,
     })),
-    accumulatedFulfilledPremisePromises: data.accumulatedFulfilledPremisePromises ?? [],
+    ...(data.accumulatedFulfilledPremisePromises !== undefined
+      ? { accumulatedFulfilledPremisePromises: [...data.accumulatedFulfilledPremisePromises] }
+      : {}),
     resolvedThreadMeta: data.resolvedThreadMeta,
     resolvedPromiseMeta: Object.fromEntries(
       Object.entries(data.resolvedPromiseMeta).map(([id, meta]) => [

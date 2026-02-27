@@ -55,7 +55,7 @@ export function buildContinuationContext(
     threadAges: parentPage.threadAges,
     accumulatedPromises: parentPage.accumulatedPromises,
     premisePromises: story.premisePromises,
-    fulfilledPremisePromises: parentPage.accumulatedFulfilledPremisePromises,
+    fulfilledPremisePromises: parentPage.accumulatedFulfilledPremisePromises ?? [],
     parentThreadPayoffAssessments: parentPage.analystResult?.threadPayoffAssessments ?? [],
   };
 }

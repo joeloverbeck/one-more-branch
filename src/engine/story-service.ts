@@ -45,18 +45,20 @@ async function buildPreparedStory(
   const premisePromises = (options.conceptVerification?.premisePromises ?? [])
     .map((promise) => promise.trim())
     .filter((promise) => promise.length > 0);
+  const trimmedTitle = options.title.trim();
+  const trimmedCharacterConcept = options.characterConcept.trim();
 
   let story: Story = {
     ...createStory({
-      title: options.title.trim(),
-      characterConcept: options.characterConcept.trim(),
+      title: trimmedTitle,
+      characterConcept: trimmedCharacterConcept,
       worldbuilding: options.worldbuilding,
       tone: options.tone,
-      npcs: options.npcs,
-      startingSituation: options.startingSituation,
-      conceptSpec: options.conceptSpec,
-      storyKernel: options.storyKernel,
-      premisePromises,
+      ...(options.npcs ? { npcs: options.npcs } : {}),
+      ...(options.startingSituation ? { startingSituation: options.startingSituation } : {}),
+      ...(options.conceptSpec ? { conceptSpec: options.conceptSpec } : {}),
+      ...(options.storyKernel ? { storyKernel: options.storyKernel } : {}),
+      ...(premisePromises.length > 0 ? { premisePromises } : {}),
     }),
     spine: options.spine,
     toneFeel: options.spine.toneFeel,
