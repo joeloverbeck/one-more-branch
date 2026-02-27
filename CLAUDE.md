@@ -100,7 +100,12 @@ src/
 │   ├── structure-rewriter.ts        # Rewrites story structure on deviation
 │   ├── spine-rewriter.ts            # Rewrites story spine on spine-level deviation
 │   ├── deviation-handler.ts         # Detects and handles story deviations
-│   ├── continuation-post-processing.ts  # Analyst eval, deviation, beat conclusion, pacing
+│   ├── analyst-evaluation.ts             # Analyst LLM evaluation orchestration
+│   ├── deviation-processing.ts          # Beat-level deviation detection + rewrite
+│   ├── spine-deviation-processing.ts    # Spine deviation + remaining beat collection
+│   ├── beat-conclusion.ts               # Beat conclusion with turning-point gate
+│   ├── pacing-response.ts               # Pacing recommendation application
+│   ├── beat-alignment.ts                # Beat alignment skip logic
 │   ├── continuation-context-builder.ts  # Builds continuation context for planner/writer
 │   ├── lorekeeper-writer-pipeline.ts    # Lorekeeper→writer pipeline orchestration
 │   ├── npc-agenda-pipeline.ts       # NPC agenda resolver orchestration
