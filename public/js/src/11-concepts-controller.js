@@ -298,10 +298,19 @@
         '<span class="genre-group__label">' + escapeHtml(formatGenreDisplayLabel(genre)) + '</span>' +
         '<span class="genre-group__count">(0)</span>';
 
+      details.appendChild(summary);
+
+      // Insert genre info panel (conventions & obligations)
+      var conventions = GENRE_CONVENTIONS_GLOSSES[genre] || [];
+      var obligations = GENRE_OBLIGATIONS_GLOSSES[genre] || [];
+      var panelHtml = renderGenreInfoPanelHtml(conventions, obligations);
+      if (panelHtml) {
+        details.insertAdjacentHTML('beforeend', panelHtml);
+      }
+
       var body = document.createElement('div');
       body.className = 'genre-group__body spine-options-container';
 
-      details.appendChild(summary);
       details.appendChild(body);
 
       // Insert alphabetically

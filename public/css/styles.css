@@ -3170,6 +3170,65 @@ main {
   padding: 0 0.75rem 0.75rem;
 }
 
+/* Genre info panel — conventions & obligations */
+.genre-info-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  background: rgba(83, 52, 131, 0.12);
+  border: 1px solid rgba(83, 52, 131, 0.25);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0.75rem 0.75rem;
+}
+
+.genre-info-panel__heading {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
+.genre-info-panel__divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0 0 0.4rem;
+}
+
+.genre-info-panel__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.genre-info-panel__list li {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  padding: 0.15rem 0;
+}
+
+.genre-info-panel__list li::before {
+  content: '\00B7';
+  color: var(--color-primary);
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .genre-info-panel {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .genre-info-panel__column:last-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.75rem;
+  }
+}
+
 /* ── Concept Dropdown (custom searchable) ─────────────────────── */
 .concept-dropdown {
   position: relative;
