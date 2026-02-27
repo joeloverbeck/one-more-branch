@@ -119,6 +119,7 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
     tone: context.tone,
     toneFeel: context.toneFeel,
     toneAvoid: context.toneAvoid,
+    genreFrame: context.genreFrame,
   };
   const messages: ChatMessage[] = [{ role: 'system', content: buildOpeningSystemPrompt(toneParams) }];
 
