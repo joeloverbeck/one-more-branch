@@ -7,6 +7,7 @@ export interface GeneratedBeat {
   causalLink: string;
   role: string;
   escalationType?: string | null;
+  secondaryEscalationType?: string | null;
   crisisType?: string | null;
   isMidpoint?: boolean;
   midpointType?: string | null;

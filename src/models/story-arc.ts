@@ -55,6 +55,7 @@ export interface StoryBeat {
   readonly causalLink: string;
   readonly role: BeatRole;
   readonly escalationType: EscalationType | null;
+  readonly secondaryEscalationType: EscalationType | null;
   readonly crisisType: CrisisType | null;
   readonly isMidpoint: boolean;
   readonly midpointType: MidpointType | null;

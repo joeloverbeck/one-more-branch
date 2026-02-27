@@ -154,6 +154,7 @@ describe('story-serializer', () => {
                   objective: 'Introduce hero',
                   causalLink: 'Introduces the protagonist and launches the narrative trajectory.',
                   role: 'setup',
+                  secondaryEscalationType: 'REVELATION_SHIFT',
                 },
               ],
             },
@@ -171,6 +172,7 @@ describe('story-serializer', () => {
       expect(result.structure!.acts).toHaveLength(1);
       expect(result.structure!.acts[0].beats).toHaveLength(1);
       expect(result.structure!.acts[0].beats[0].role).toBe('setup');
+      expect(result.structure!.acts[0].beats[0].secondaryEscalationType).toBe('REVELATION_SHIFT');
       expect(result.structure!.overallTheme).toBe('Redemption');
       expect(result.structure!.generatedAt).toEqual(new Date('2025-01-01T12:00:00.000Z'));
     });

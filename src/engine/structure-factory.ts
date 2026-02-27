@@ -115,6 +115,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
         causalLink: parseCausalLink(beatData.causalLink, beatId),
         role: parseBeatRole(beatData.role),
         escalationType: parseEscalationType(beatData.escalationType),
+        secondaryEscalationType: parseEscalationType(beatData.secondaryEscalationType),
         crisisType: parseCrisisType(beatData.crisisType),
         isMidpoint,
         midpointType,

@@ -36,6 +36,7 @@ interface StructurePayload {
       objective: string;
       role: string;
       escalationType?: string | null;
+      secondaryEscalationType?: string | null;
       crisisType?: string | null;
       isMidpoint?: boolean;
       midpointType?: string | null;
@@ -66,6 +67,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'setup',
             escalationType: null,
+            secondaryEscalationType: null,
             crisisType: null,
             isMidpoint: false,
             midpointType: null,
@@ -80,6 +82,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'turning_point',
             escalationType: null,
+            secondaryEscalationType: null,
             crisisType: null,
             isMidpoint: false,
             midpointType: null,
@@ -102,6 +105,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'escalation',
             escalationType: null,
+            secondaryEscalationType: null,
             crisisType: null,
             isMidpoint: false,
             midpointType: null,
@@ -116,6 +120,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'turning_point',
             escalationType: null,
+            secondaryEscalationType: null,
             crisisType: null,
             isMidpoint: true,
             midpointType: 'FALSE_DEFEAT',
@@ -138,6 +143,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'turning_point',
             escalationType: null,
+            secondaryEscalationType: null,
             crisisType: null,
             isMidpoint: false,
             midpointType: null,
@@ -152,6 +158,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'resolution',
             escalationType: null,
+            secondaryEscalationType: null,
             crisisType: null,
             isMidpoint: false,
             midpointType: null,

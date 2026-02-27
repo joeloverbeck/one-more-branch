@@ -14,6 +14,7 @@ export interface CompletedBeat {
   readonly causalLink: string;
   readonly role: string;
   readonly escalationType: string | null;
+  readonly secondaryEscalationType: string | null;
   readonly crisisType: string | null;
   readonly isMidpoint: boolean;
   readonly midpointType: string | null;
@@ -33,6 +34,7 @@ export interface PlannedBeat {
   readonly causalLink: string;
   readonly role: string;
   readonly escalationType: string | null;
+  readonly secondaryEscalationType: string | null;
   readonly crisisType: string | null;
   readonly isMidpoint: boolean;
   readonly midpointType: string | null;
