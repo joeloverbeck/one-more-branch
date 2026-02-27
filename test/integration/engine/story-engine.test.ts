@@ -251,6 +251,8 @@ function buildAnalystResult(narrative: string): AnalystResult {
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Adapt without losing your moral center.',
+    openingImage: 'A lone operative in a rain-soaked alley beneath a tribunal banner.',
+    closingImage: 'That operative on courthouse steps at sunrise as banners are torn down.',
     acts: [
       {
         name: 'Act I Reframed',

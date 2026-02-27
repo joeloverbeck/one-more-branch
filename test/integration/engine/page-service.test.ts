@@ -433,6 +433,9 @@ function buildStateAccountantResult(
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Survive after betrayal.',
+    openingImage: 'A courier hiding under a rain-black bridge while searchlights sweep overhead.',
+    closingImage:
+      'The same courier walking openly across the bridge at dawn as the searchlights go dark.',
     acts: [
       {
         name: 'Act I Reframed',
