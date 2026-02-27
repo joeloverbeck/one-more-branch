@@ -189,7 +189,7 @@ describe('story-repository', () => {
     expect(loaded?.updatedAt.toISOString()).toBe(updatedAt.toISOString());
   });
 
-  it('saveStory/loadStory preserves structure fields and omits legacy storyArc', async () => {
+  it('saveStory/loadStory preserves structure fields', async () => {
     const story = buildTestStory({
       structure: buildTestStructure(),
     });
@@ -206,7 +206,6 @@ describe('story-repository', () => {
     const structure = parsed['structure'] as { acts: Array<{ beats: Array<{ name: string }> }> };
     expect(structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
     expect(parsed['structure']).toBeDefined();
-    expect(parsed['storyArc']).toBeUndefined();
   });
 
   it('saveStory/loadStory preserves structureVersions and version chain fields', async () => {
@@ -508,90 +507,6 @@ describe('story-repository', () => {
         leverage: 'Controls the supply route',
         fear: 'Losing the tavern to raiders',
         offScreenBehavior: 'Fortifying defenses and gathering allies',
-      },
-    ]);
-  });
-
-  it('loadStory derives initialNpcRelationships from decomposedCharacters for old stories', async () => {
-    const story = buildTestStory({
-      decomposedCharacters: [
-        {
-          name: 'Protagonist',
-          speechFingerprint: {
-            catchphrases: [],
-            vocabularyProfile: 'casual',
-            sentencePatterns: 'short',
-            verbalTics: [],
-            dialogueSamples: [],
-            metaphorFrames: 'nature',
-            antiExamples: [],
-            discourseMarkers: [],
-            registerShifts: 'none',
-          },
-          coreTraits: ['brave'],
-          motivations: 'survive',
-          protagonistRelationship: null,
-          knowledgeBoundaries: 'limited',
-          decisionPattern: 'impulsive',
-          coreBeliefs: ['justice'],
-          conflictPriority: 'survival',
-          appearance: 'scarred',
-          rawDescription: 'The protagonist',
-        },
-        {
-          name: 'Mira',
-          speechFingerprint: {
-            catchphrases: ['Indeed'],
-            vocabularyProfile: 'formal',
-            sentencePatterns: 'complex',
-            verbalTics: ['hmm'],
-            dialogueSamples: ['Indeed, the path is clear.'],
-            metaphorFrames: 'mechanical',
-            antiExamples: ['yo'],
-            discourseMarkers: ['furthermore'],
-            registerShifts: 'formal-to-casual',
-          },
-          coreTraits: ['cunning'],
-          motivations: 'power',
-          protagonistRelationship: {
-            valence: -2,
-            dynamic: 'rival',
-            history: 'Old rivals from school.',
-            currentTension: 'Competing for the throne.',
-            leverage: 'Holds damaging information.',
-          },
-          knowledgeBoundaries: 'extensive',
-          decisionPattern: 'calculating',
-          coreBeliefs: ['ends justify means'],
-          conflictPriority: 'dominance',
-          appearance: 'elegant',
-          rawDescription: 'A cunning rival',
-        },
-      ],
-    });
-    createdStoryIds.add(story.id);
-
-    // Save without initialNpcRelationships — simulates an old story
-    await saveStory(story);
-
-    // Manually strip initialNpcRelationships from the persisted JSON to simulate old format
-    const filePath = getStoryFilePath(story.id);
-    const raw = await fsPromises.readFile(filePath, 'utf-8');
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    delete parsed['initialNpcRelationships'];
-    await fsPromises.writeFile(filePath, JSON.stringify(parsed), 'utf-8');
-
-    const loaded = await loadStory(story.id);
-
-    expect(loaded).not.toBeNull();
-    expect(loaded?.initialNpcRelationships).toEqual([
-      {
-        npcName: 'Mira',
-        valence: -2,
-        dynamic: 'rival',
-        history: 'Old rivals from school.',
-        currentTension: 'Competing for the throne.',
-        leverage: 'Holds damaging information.',
       },
     ]);
   });

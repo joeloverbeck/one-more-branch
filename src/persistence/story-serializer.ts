@@ -24,10 +24,8 @@ import type {
   NeedWantDynamic,
 } from '../models/story-spine';
 import { isConflictAxis } from '../models/story-spine';
-import type { NpcRelationship } from '../models/state/npc-relationship';
 import type {
   CanonFactFileData,
-  DecomposedCharacterFileData,
   StoryFileData,
   StoryStructureFileData,
   VersionedStoryStructureFileData,
@@ -131,25 +129,6 @@ function deserializeCanonFact(raw: CanonFactFileData): CanonFact {
       ? (raw.factType as WorldFactType)
       : ('NORM' as WorldFactType);
   return { text: raw.text, factType };
-}
-
-function deriveInitialNpcRelationshipsFromDecomposed(
-  decomposedCharacters?: DecomposedCharacterFileData[]
-): { initialNpcRelationships: NpcRelationship[] } | Record<string, never> {
-  if (!decomposedCharacters) return {};
-  const relationships: NpcRelationship[] = [];
-  for (const char of decomposedCharacters) {
-    if (!char.protagonistRelationship) continue;
-    relationships.push({
-      npcName: char.name,
-      valence: char.protagonistRelationship.valence,
-      dynamic: char.protagonistRelationship.dynamic,
-      history: char.protagonistRelationship.history,
-      currentTension: char.protagonistRelationship.currentTension,
-      leverage: char.protagonistRelationship.leverage,
-    });
-  }
-  return relationships.length > 0 ? { initialNpcRelationships: relationships } : {};
 }
 
 export function serializeStory(story: Story): StoryFileData {
@@ -299,11 +278,11 @@ export function deserializeStory(data: StoryFileData): Story {
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
-    ...((data.toneFeel ?? data.toneKeywords)
-      ? { toneFeel: [...(data.toneFeel ?? data.toneKeywords ?? [])] }
+    ...(data.toneFeel
+      ? { toneFeel: [...data.toneFeel] }
       : {}),
-    ...((data.toneAvoid ?? data.toneAntiKeywords)
-      ? { toneAvoid: [...(data.toneAvoid ?? data.toneAntiKeywords ?? [])] }
+    ...(data.toneAvoid
+      ? { toneAvoid: [...data.toneAvoid] }
       : {}),
     ...(data.npcs !== null && data.npcs.length > 0
       ? { npcs: data.npcs.map((npc) => ({ name: npc.name, description: npc.description })) }
@@ -332,8 +311,8 @@ export function deserializeStory(data: StoryFileData): Story {
               : (data.conceptSpec?.conflictAxis ?? 'INDIVIDUAL_VS_SYSTEM'),
             conflictType: data.spine.conflictType as ConflictType,
             characterArcType: data.spine.characterArcType as CharacterArcType,
-            toneFeel: data.spine.toneFeel ?? data.spine.toneKeywords ?? [],
-            toneAvoid: data.spine.toneAvoid ?? data.spine.toneAntiKeywords ?? [],
+            toneFeel: data.spine.toneFeel ?? [],
+            toneAvoid: data.spine.toneAvoid ?? [],
           } as StorySpine,
         }
       : {}),
@@ -399,7 +378,7 @@ export function deserializeStory(data: StoryFileData): Story {
       : {}),
     ...(data.initialNpcRelationships && data.initialNpcRelationships.length > 0
       ? { initialNpcRelationships: data.initialNpcRelationships }
-      : deriveInitialNpcRelationshipsFromDecomposed(data.decomposedCharacters)),
+      : {}),
     createdAt: new Date(data.createdAt),
     updatedAt: new Date(data.updatedAt),
   };

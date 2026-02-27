@@ -47,7 +47,6 @@ export interface ContinuationContext {
   decomposedWorld: DecomposedWorld;
   globalCanon: readonly CanonFact[];
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
-  storyArc?: string | null;
   structure?: StoryStructure;
   spine?: StorySpine;
   accumulatedStructureState?: AccumulatedStructureState;

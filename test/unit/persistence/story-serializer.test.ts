@@ -9,7 +9,7 @@ import type { DecomposedCharacter } from '@/models/decomposed-character';
 import type { DecomposedWorld } from '@/models/decomposed-world';
 import type { CanonFact } from '@/models/state/canon';
 import type { NpcRelationship } from '@/models/state/npc-relationship';
-import { serializeStory, deserializeStory, StoryFileData } from '@/persistence/story-serializer';
+import { serializeStory, deserializeStory } from '@/persistence/story-serializer';
 
 const TEST_STORY_ID = generateStoryId();
 
@@ -297,45 +297,6 @@ describe('story-serializer', () => {
     });
   });
 
-  describe('legacy field fallbacks', () => {
-    it('falls back toneKeywords to toneFeel', () => {
-      const fileData: StoryFileData = {
-        ...serializeStory(buildMinimalStory()),
-        toneKeywords: ['moody', 'tense'],
-      };
-      delete fileData.toneFeel;
-      const result = deserializeStory(fileData);
-
-      expect(result.toneFeel).toEqual(['moody', 'tense']);
-    });
-
-    it('falls back toneAntiKeywords to toneAvoid', () => {
-      const fileData: StoryFileData = {
-        ...serializeStory(buildMinimalStory()),
-        toneAntiKeywords: ['happy'],
-      };
-      delete fileData.toneAvoid;
-      const result = deserializeStory(fileData);
-
-      expect(result.toneAvoid).toEqual(['happy']);
-    });
-
-    it('falls back spine toneKeywords to toneFeel', () => {
-      const story = buildMinimalStory({ spine: buildSpine() });
-      const fileData = serializeStory(story);
-      // Simulate legacy: rename toneFeel/toneAvoid to toneKeywords/toneAntiKeywords on spine
-      fileData.spine!.toneKeywords = fileData.spine!.toneFeel;
-      fileData.spine!.toneAntiKeywords = fileData.spine!.toneAvoid;
-      delete fileData.spine!.toneFeel;
-      delete fileData.spine!.toneAvoid;
-
-      const result = deserializeStory(fileData);
-
-      expect(result.spine!.toneFeel).toEqual(['dark', 'brooding']);
-      expect(result.spine!.toneAvoid).toEqual(['silly', 'whimsical']);
-    });
-  });
-
   describe('optional field handling', () => {
     it('handles absent spine gracefully', () => {
       const story = buildMinimalStory();
@@ -389,33 +350,6 @@ describe('story-serializer', () => {
       const result = deserializeStory(fileData);
 
       expect(result.globalCanon[0].factType).toBe('NORM');
-    });
-  });
-
-  describe('deriveInitialNpcRelationshipsFromDecomposed', () => {
-    it('derives relationships from decomposed characters when initialNpcRelationships is absent', () => {
-      const char = buildDecomposedCharacter();
-      const story = buildMinimalStory({ decomposedCharacters: [char] });
-      const fileData = serializeStory(story);
-      // Remove explicit relationships to trigger legacy derivation
-      delete fileData.initialNpcRelationships;
-
-      const result = deserializeStory(fileData);
-
-      expect(result.initialNpcRelationships).toBeDefined();
-      expect(result.initialNpcRelationships).toHaveLength(1);
-      expect(result.initialNpcRelationships![0].npcName).toBe('Gandalf');
-      expect(result.initialNpcRelationships![0].valence).toBe(3);
-    });
-
-    it('does not derive if decomposedCharacters is absent', () => {
-      const fileData = serializeStory(buildMinimalStory());
-      delete fileData.initialNpcRelationships;
-      delete fileData.decomposedCharacters;
-
-      const result = deserializeStory(fileData);
-
-      expect(result.initialNpcRelationships).toBeUndefined();
     });
   });
 

@@ -36,10 +36,6 @@ import {
 import type { PageBuildResult } from './state-change-mapper';
 import { mapToActiveStateChanges } from './state-change-mapper';
 
-// Re-export for backward compatibility
-export { computeContinuationThreadAges, augmentThreadsResolvedFromAnalyst } from './thread-lifecycle';
-export { computeAccumulatedPromises, getMaxPromiseIdNumber } from './promise-lifecycle';
-
 /**
  * Unified context for building any page (opening or continuation).
  * For opening pages: parentPageId is null, parent accumulated states are empty/defaults.
