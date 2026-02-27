@@ -287,7 +287,7 @@ describe('Concept Route Integration', () => {
     );
     expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
       'route-progress-1',
-      'VERIFYING_CONCEPTS',
+      'GENERATING_SCENARIOS',
       1,
       undefined,
     );

@@ -3,7 +3,8 @@ import {
   generatePageWriterOutput,
   generateStructureEvaluation,
   generatePromiseTracking,
-  generateSceneQualityEvaluation,
+  generateProseQualityEvaluation,
+  generateNpcIntelligenceEvaluation,
   generateOpeningPage,
   generatePagePlan,
   generateStateAccountant,
@@ -13,7 +14,8 @@ import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { StructureEvaluatorResult } from '@/llm/structure-evaluator-types';
 import type { PromiseTrackerResult } from '@/llm/promise-tracker-types';
-import type { SceneQualityResult } from '@/llm/scene-quality-types';
+import type { ProseQualityResult } from '@/llm/prose-quality-types';
+import type { NpcIntelligenceResult } from '@/llm/npc-intelligence-types';
 import type { PageWriterResult } from '@/llm/writer-types';
 import type { StorySpine } from '@/models';
 import {
@@ -28,7 +30,8 @@ jest.mock('@/llm/client', () => {
     ...jest.requireActual('@/llm/client'),
     generateStructureEvaluation: jest.fn(),
     generatePromiseTracking: jest.fn(),
-    generateSceneQualityEvaluation: jest.fn(),
+    generateProseQualityEvaluation: jest.fn(),
+    generateNpcIntelligenceEvaluation: jest.fn(),
   };
 });
 
@@ -37,7 +40,8 @@ jest.mock('@/llm', () => ({
   generatePageWriterOutput: jest.fn(),
   generateStructureEvaluation: jest.fn(),
   generatePromiseTracking: jest.fn(),
-  generateSceneQualityEvaluation: jest.fn(),
+  generateProseQualityEvaluation: jest.fn(),
+  generateNpcIntelligenceEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -67,11 +71,13 @@ const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction
 const llmClient = require('@/llm/client') as {
   generateStructureEvaluation: jest.MockedFunction<typeof generateStructureEvaluation>;
   generatePromiseTracking: jest.MockedFunction<typeof generatePromiseTracking>;
-  generateSceneQualityEvaluation: jest.MockedFunction<typeof generateSceneQualityEvaluation>;
+  generateProseQualityEvaluation: jest.MockedFunction<typeof generateProseQualityEvaluation>;
+  generateNpcIntelligenceEvaluation: jest.MockedFunction<typeof generateNpcIntelligenceEvaluation>;
 };
 const mockedGenerateStructureEvaluation = llmClient.generateStructureEvaluation;
 const mockedGeneratePromiseTracking = llmClient.generatePromiseTracking;
-const mockedGenerateSceneQualityEvaluation = llmClient.generateSceneQualityEvaluation;
+const mockedGenerateProseQualityEvaluation = llmClient.generateProseQualityEvaluation;
+const mockedGenerateNpcIntelligenceEvaluation = llmClient.generateNpcIntelligenceEvaluation;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
   typeof generateStateAccountant
@@ -129,15 +135,23 @@ function extractPromiseResult(
   };
 }
 
-function extractQualityResult(
+function extractProseQualityResult(
   ar: AnalystResult
-): SceneQualityResult & { rawResponse: string } {
+): ProseQualityResult & { rawResponse: string } {
   return {
     toneAdherent: ar.toneAdherent,
     toneDriftDescription: ar.toneDriftDescription,
     thematicCharge: ar.thematicCharge,
     thematicChargeDescription: ar.thematicChargeDescription,
     narrativeFocus: ar.narrativeFocus,
+    rawResponse: ar.rawResponse,
+  };
+}
+
+function extractNpcIntelligenceResult(
+  ar: AnalystResult
+): NpcIntelligenceResult & { rawResponse: string } {
+  return {
     npcCoherenceAdherent: ar.npcCoherenceAdherent,
     npcCoherenceIssues: ar.npcCoherenceIssues,
     relationshipShiftsDetected: ar.relationshipShiftsDetected,
@@ -480,9 +494,13 @@ describe('Structured Story E2E', () => {
       const ar = buildAnalystResult(context.narrative, continuationCount + 1);
       return Promise.resolve(extractPromiseResult(ar));
     });
-    mockedGenerateSceneQualityEvaluation.mockImplementation((context) => {
+    mockedGenerateProseQualityEvaluation.mockImplementation((context) => {
       const ar = buildAnalystResult(context.narrative, continuationCount + 1);
-      return Promise.resolve(extractQualityResult(ar));
+      return Promise.resolve(extractProseQualityResult(ar));
+    });
+    mockedGenerateNpcIntelligenceEvaluation.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative, continuationCount + 1);
+      return Promise.resolve(extractNpcIntelligenceResult(ar));
     });
   });
 

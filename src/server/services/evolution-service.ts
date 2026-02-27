@@ -108,7 +108,7 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
       });
 
       onGenerationStage?.({
-        stage: 'VERIFYING_CONCEPTS',
+        stage: 'ANALYZING_SPECIFICITY',
         status: 'started',
         attempt: 1,
       });
@@ -117,7 +117,7 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
         apiKey,
       );
       onGenerationStage?.({
-        stage: 'VERIFYING_CONCEPTS',
+        stage: 'GENERATING_SCENARIOS',
         status: 'completed',
         attempt: 1,
       });

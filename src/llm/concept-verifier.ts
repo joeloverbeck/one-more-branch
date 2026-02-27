@@ -6,11 +6,15 @@ import type {
   LoadBearingCheck,
 } from '../models/index.js';
 import { CONCEPT_VERIFICATION_CONSTRAINTS as VERIFICATION_CONSTRAINTS } from '../models/index.js';
-import { runLlmStage } from './llm-stage-runner.js';
+import { runTwoPhaseLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
-import { buildConceptVerifierPrompt } from './prompts/concept-verifier-prompt.js';
-import { CONCEPT_VERIFIER_SCHEMA } from './schemas/concept-verifier-schema.js';
+import { buildConceptSpecificityPrompt } from './prompts/concept-specificity-prompt.js';
+import { buildConceptScenarioPrompt } from './prompts/concept-scenario-prompt.js';
+import { CONCEPT_SPECIFICITY_SCHEMA } from './schemas/concept-specificity-schema.js';
+import { CONCEPT_SCENARIO_SCHEMA } from './schemas/concept-scenario-schema.js';
+import type { ConceptSpecificityAnalysis } from './concept-specificity-types.js';
+import type { ConceptScenarioAnalysis } from './concept-scenario-types.js';
 
 function requireNonEmptyString(value: unknown, fieldName: string, label: string): string {
   if (typeof value !== 'string' || value.trim().length === 0) {
@@ -51,7 +55,7 @@ function ensureExactIdCoverage(
 ): void {
   if (parsedConceptIds.length !== expectedConceptIds.length) {
     throw new LLMError(
-      `${label} must include exactly ${expectedConceptIds.length} verifications (received: ${parsedConceptIds.length})`,
+      `${label} must include exactly ${expectedConceptIds.length} items (received: ${parsedConceptIds.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );
@@ -200,8 +204,8 @@ function parseSetpieceCausalLinks(value: unknown, label: string): readonly strin
   );
 }
 
-function parseConceptVerification(value: unknown, index: number): ConceptVerification {
-  const label = `Verification ${index + 1}`;
+function parseSpecificityAnalysis(value: unknown, index: number): ConceptSpecificityAnalysis {
+  const label = `Specificity ${index + 1}`;
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new LLMError(`${label} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
@@ -209,16 +213,6 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
 
   const data = value as Record<string, unknown>;
   const conceptId = requireConceptId(data['conceptId'], label);
-  const score = data['conceptIntegrityScore'];
-  if (typeof score !== 'number' || !Number.isFinite(score)) {
-    throw new LLMError(
-      `${label} has invalid conceptIntegrityScore`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
-  }
-
-  const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
   const logline = requireNonEmptyString(data['logline'], 'logline', label);
 
   if (countWords(logline) > VERIFICATION_CONSTRAINTS.loglineMaxWords) {
@@ -239,13 +233,6 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
     loglineCompressible: requireBoolean(data['loglineCompressible'], 'loglineCompressible', label),
     logline,
     premisePromises: parsePremisePromises(data['premisePromises'], label),
-    escalatingSetpieces: parseSetpieces(data['escalatingSetpieces'], label),
-    setpieceCausalChainBroken: requireBoolean(
-      data['setpieceCausalChainBroken'],
-      'setpieceCausalChainBroken',
-      label,
-    ),
-    setpieceCausalLinks: parseSetpieceCausalLinks(data['setpieceCausalLinks'], label),
     inevitabilityStatement: requireNonEmptyString(
       data['inevitabilityStatement'],
       'inevitabilityStatement',
@@ -253,42 +240,141 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
     ),
     loadBearingCheck: parseLoadBearingCheck(data['loadBearingCheck'], label),
     kernelFidelityCheck: parseKernelFidelityCheck(data['kernelFidelityCheck'], label),
+  };
+}
+
+function parseScenarioAnalysis(value: unknown, index: number): ConceptScenarioAnalysis {
+  const label = `Scenario ${index + 1}`;
+
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new LLMError(`${label} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  const data = value as Record<string, unknown>;
+  const conceptId = requireConceptId(data['conceptId'], label);
+  const score = data['conceptIntegrityScore'];
+  if (typeof score !== 'number' || !Number.isFinite(score)) {
+    throw new LLMError(
+      `${label} has invalid conceptIntegrityScore`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
+
+  return {
+    conceptId,
+    escalatingSetpieces: parseSetpieces(data['escalatingSetpieces'], label),
+    setpieceCausalChainBroken: requireBoolean(
+      data['setpieceCausalChainBroken'],
+      'setpieceCausalChainBroken',
+      label,
+    ),
+    setpieceCausalLinks: parseSetpieceCausalLinks(data['setpieceCausalLinks'], label),
     conceptIntegrityScore: clampedScore,
   };
 }
 
-export function parseConceptVerificationResponse(
+export function parseConceptSpecificityResponse(
   parsed: unknown,
   expectedConceptIds: readonly string[],
-): readonly ConceptVerification[] {
+): readonly ConceptSpecificityAnalysis[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
-      'Concept verification response must be an object',
+      'Concept specificity response must be an object',
       'STRUCTURE_PARSE_ERROR',
       true,
     );
   }
 
   const data = parsed as Record<string, unknown>;
-  if (!Array.isArray(data['verifications'])) {
+  if (!Array.isArray(data['specificityAnalyses'])) {
     throw new LLMError(
-      'Concept verification response missing verifications array',
+      'Concept specificity response missing specificityAnalyses array',
       'STRUCTURE_PARSE_ERROR',
       true,
     );
   }
 
-  const verifications = data['verifications'].map((item, index) =>
-    parseConceptVerification(item, index),
+  const analyses = data['specificityAnalyses'].map((item, index) =>
+    parseSpecificityAnalysis(item, index),
   );
 
   ensureExactIdCoverage(
-    verifications.map((v) => v.conceptId),
+    analyses.map((a) => a.conceptId),
     expectedConceptIds,
-    'Concept verification response',
+    'Concept specificity response',
   );
 
-  return verifications;
+  return analyses;
+}
+
+export function parseConceptScenarioResponse(
+  parsed: unknown,
+  expectedConceptIds: readonly string[],
+): readonly ConceptScenarioAnalysis[] {
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new LLMError(
+      'Concept scenario response must be an object',
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const data = parsed as Record<string, unknown>;
+  if (!Array.isArray(data['scenarioAnalyses'])) {
+    throw new LLMError(
+      'Concept scenario response missing scenarioAnalyses array',
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const analyses = data['scenarioAnalyses'].map((item, index) =>
+    parseScenarioAnalysis(item, index),
+  );
+
+  ensureExactIdCoverage(
+    analyses.map((a) => a.conceptId),
+    expectedConceptIds,
+    'Concept scenario response',
+  );
+
+  return analyses;
+}
+
+function combineVerifications(
+  specificityAnalyses: readonly ConceptSpecificityAnalysis[],
+  scenarioAnalyses: readonly ConceptScenarioAnalysis[],
+): readonly ConceptVerification[] {
+  const scenarioByConceptId = new Map(scenarioAnalyses.map((s) => [s.conceptId, s]));
+
+  return specificityAnalyses.map((specificity) => {
+    const scenario = scenarioByConceptId.get(specificity.conceptId);
+    if (!scenario) {
+      throw new LLMError(
+        `Scenario analysis missing for ${specificity.conceptId}`,
+        'STRUCTURE_PARSE_ERROR',
+        true,
+      );
+    }
+
+    return {
+      conceptId: specificity.conceptId,
+      signatureScenario: specificity.signatureScenario,
+      loglineCompressible: specificity.loglineCompressible,
+      logline: specificity.logline,
+      premisePromises: specificity.premisePromises,
+      escalatingSetpieces: scenario.escalatingSetpieces,
+      setpieceCausalChainBroken: scenario.setpieceCausalChainBroken,
+      setpieceCausalLinks: scenario.setpieceCausalLinks,
+      inevitabilityStatement: specificity.inevitabilityStatement,
+      loadBearingCheck: specificity.loadBearingCheck,
+      kernelFidelityCheck: specificity.kernelFidelityCheck,
+      conceptIntegrityScore: scenario.conceptIntegrityScore,
+    };
+  });
 }
 
 export async function verifyConcepts(
@@ -297,19 +383,42 @@ export async function verifyConcepts(
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptVerificationResult> {
   const expectedConceptIds = context.evaluatedConcepts.map((_, index) => getConceptId(index));
-  const messages = buildConceptVerifierPrompt(context);
-  const result = await runLlmStage({
-    stageModel: 'conceptVerifier',
-    promptType: 'conceptVerifier',
-    apiKey,
-    options,
-    schema: CONCEPT_VERIFIER_SCHEMA,
-    messages,
-    parseResponse: (parsed) => parseConceptVerificationResponse(parsed, expectedConceptIds),
+
+  const result = await runTwoPhaseLlmStage<
+    readonly ConceptSpecificityAnalysis[],
+    readonly ConceptScenarioAnalysis[],
+    ConceptVerificationResult
+  >({
+    firstStage: {
+      stageModel: 'conceptSpecificity',
+      promptType: 'conceptSpecificity',
+      apiKey,
+      options,
+      schema: CONCEPT_SPECIFICITY_SCHEMA,
+      messages: buildConceptSpecificityPrompt(context),
+      parseResponse: (parsed) => parseConceptSpecificityResponse(parsed, expectedConceptIds),
+    },
+    secondStage: (specificityAnalyses) => ({
+      stageModel: 'conceptScenario',
+      promptType: 'conceptScenario',
+      apiKey,
+      options,
+      schema: CONCEPT_SCENARIO_SCHEMA,
+      messages: buildConceptScenarioPrompt(context, specificityAnalyses),
+      parseResponse: (
+        parsed,
+      ): readonly ConceptScenarioAnalysis[] => parseConceptScenarioResponse(parsed, expectedConceptIds),
+    }),
+    combineResult: ({
+      firstStageParsed,
+      firstStageRawResponse,
+      secondStageParsed,
+      secondStageRawResponse,
+    }) => ({
+      verifications: combineVerifications(firstStageParsed, secondStageParsed),
+      rawResponse: `${firstStageRawResponse}\n---\n${secondStageRawResponse}`,
+    }),
   });
 
-  return {
-    verifications: result.parsed,
-    rawResponse: result.rawResponse,
-  };
+  return result;
 }

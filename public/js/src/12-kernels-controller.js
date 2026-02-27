@@ -290,6 +290,7 @@
       wrapper.innerHTML =
         '<div class="form-group"><label>Name</label><input type="text" class="kernel-edit-name" value="' + escapeHtml(savedKernel.name || '') + '"></div>' +
         '<div class="form-group"><label>Dramatic Thesis</label><textarea class="kernel-edit-dramaticThesis" rows="2">' + escapeHtml(kernel.dramaticThesis || '') + '</textarea></div>' +
+        '<div class="form-group"><label>Antithesis</label><textarea class="kernel-edit-antithesis" rows="2">' + escapeHtml(kernel.antithesis || '') + '</textarea></div>' +
         '<div class="form-group"><label>Value at Stake</label><input type="text" class="kernel-edit-valueAtStake" value="' + escapeHtml(kernel.valueAtStake || '') + '"></div>' +
         '<div class="form-group"><label>Opposing Force</label><textarea class="kernel-edit-opposingForce" rows="2">' + escapeHtml(kernel.opposingForce || '') + '</textarea></div>' +
         '<div class="form-group"><label>Thematic Question</label><input type="text" class="kernel-edit-thematicQuestion" value="' + escapeHtml(kernel.thematicQuestion || '') + '"></div>' +
@@ -318,6 +319,7 @@
         name: getInputValue('.kernel-edit-name'),
         kernelFields: {
           dramaticThesis: getInputValue('.kernel-edit-dramaticThesis'),
+          antithesis: getInputValue('.kernel-edit-antithesis'),
           valueAtStake: getInputValue('.kernel-edit-valueAtStake'),
           opposingForce: getInputValue('.kernel-edit-opposingForce'),
           thematicQuestion: getInputValue('.kernel-edit-thematicQuestion'),
@@ -330,6 +332,7 @@
       return (
         payload.name.length > 0 &&
         payload.kernelFields.dramaticThesis.length > 0 &&
+        payload.kernelFields.antithesis.length > 0 &&
         payload.kernelFields.valueAtStake.length > 0 &&
         payload.kernelFields.opposingForce.length > 0 &&
         payload.kernelFields.thematicQuestion.length > 0 &&

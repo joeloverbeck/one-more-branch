@@ -5,7 +5,8 @@
 import {
   generateStructureEvaluation,
   generatePromiseTracking,
-  generateSceneQualityEvaluation,
+  generateProseQualityEvaluation,
+  generateNpcIntelligenceEvaluation,
 } from '../../../src/llm';
 import { runAnalystEvaluation } from '../../../src/engine/analyst-evaluation';
 import { resolveActiveBeat } from '../../../src/engine/beat-utils';
@@ -28,7 +29,8 @@ import type { Story, VersionedStoryStructure } from '../../../src/models';
 jest.mock('../../../src/llm/client', () => ({
   generateStructureEvaluation: jest.fn(),
   generatePromiseTracking: jest.fn(),
-  generateSceneQualityEvaluation: jest.fn(),
+  generateProseQualityEvaluation: jest.fn(),
+  generateNpcIntelligenceEvaluation: jest.fn(),
 }));
 
 jest.mock('../../../src/engine/generation-pipeline-helpers', () => ({
@@ -60,9 +62,13 @@ const mockedGenerateStructureEvaluation = generateStructureEvaluation as jest.Mo
 const mockedGeneratePromiseTracking = generatePromiseTracking as jest.MockedFunction<
   typeof generatePromiseTracking
 >;
-const mockedGenerateSceneQualityEvaluation = generateSceneQualityEvaluation as jest.MockedFunction<
-  typeof generateSceneQualityEvaluation
+const mockedGenerateProseQualityEvaluation = generateProseQualityEvaluation as jest.MockedFunction<
+  typeof generateProseQualityEvaluation
 >;
+const mockedGenerateNpcIntelligenceEvaluation =
+  generateNpcIntelligenceEvaluation as jest.MockedFunction<
+    typeof generateNpcIntelligenceEvaluation
+  >;
 const mockedIsActualDeviation = isActualDeviation as jest.MockedFunction<typeof isActualDeviation>;
 const mockedHandleDeviation = handleDeviation as jest.MockedFunction<typeof handleDeviation>;
 const mockedRewriteSpine = rewriteSpine as jest.MockedFunction<typeof rewriteSpine>;
@@ -146,18 +152,21 @@ describe('runAnalystEvaluation', () => {
       delayedConsequencesCreated: [],
       rawResponse: '{"promise":"ok"}',
     });
-    mockedGenerateSceneQualityEvaluation.mockResolvedValue({
+    mockedGenerateProseQualityEvaluation.mockResolvedValue({
       toneAdherent: true,
       toneDriftDescription: '',
       thematicCharge: 'AMBIGUOUS',
       thematicChargeDescription: '',
       narrativeFocus: 'BALANCED',
+      rawResponse: '{"prose":"ok"}',
+    });
+    mockedGenerateNpcIntelligenceEvaluation.mockResolvedValue({
       npcCoherenceAdherent: true,
       npcCoherenceIssues: '',
       relationshipShiftsDetected: [],
       knowledgeAsymmetryDetected: [],
       dramaticIronyOpportunities: [],
-      rawResponse: '{"quality":"ok"}',
+      rawResponse: '{"npc":"ok"}',
     });
 
     const evalResult = await runAnalystEvaluation(baseContext);
@@ -171,7 +180,8 @@ describe('runAnalystEvaluation', () => {
   it('returns null result with degradation on LLM failure', async () => {
     mockedGenerateStructureEvaluation.mockRejectedValue(new Error('LLM timeout'));
     mockedGeneratePromiseTracking.mockRejectedValue(new Error('LLM timeout'));
-    mockedGenerateSceneQualityEvaluation.mockRejectedValue(new Error('LLM timeout'));
+    mockedGenerateProseQualityEvaluation.mockRejectedValue(new Error('LLM timeout'));
+    mockedGenerateNpcIntelligenceEvaluation.mockRejectedValue(new Error('LLM timeout'));
 
     const evalResult = await runAnalystEvaluation(baseContext);
 

@@ -2,17 +2,14 @@ import type { ConceptVerifierContext } from '../../models/concept-generator.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
 const ROLE_INTRO =
-  'You are a concept integrity analyst for interactive branching fiction. Your job is to prove whether each concept is genuinely specific and load-bearing, or a dressed-up genre template.';
+  'You are a concept specificity analyst for interactive branching fiction. Your job is to prove whether each concept is genuinely specific and load-bearing, or a dressed-up genre template. You perform destructive analytical testing — probing, breaking, and exposing weaknesses.';
 
-const VERIFICATION_DIRECTIVES = `VERIFICATION DIRECTIVES:
+const SPECIFICITY_DIRECTIVES = `SPECIFICITY DIRECTIVES:
 - Do not praise concepts. Probe their specificity.
 - For each concept, produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
-- All scenarios and setpieces must be ONLY possible because of this specific concept's premise — both its conflict engine (genreSubversion, coreFlaw, coreConflictLoop) and its world-specific elements (settingAxioms, constraintSet, keyInstitutions, deadlineMechanism, pressureSource, escapeValve). Each setpiece must exploit at least one world-specific element, not just the conflict engine. If a setpiece could appear in a generic story of the same genre with different world rules, reject it and write one that couldn't.
 - The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise (both its conflict engine and its world-specific elements).
 - logline compression test: assess whether the full concept compresses into a compelling <=27-word logline. Set loglineCompressible and provide the compressed logline text in logline.
 - premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
-- The 6 escalating setpieces must form a rising intensity arc from opening hook to climax. Each must be concept-unique.
-- setpiece causal chain test: analyze whether each setpiece outcome CAUSES the next setpiece setup. If links are weak or missing, set setpieceCausalChainBroken=true and still provide the strongest possible 5 causal links (between setpieces 1->2 through 5->6).
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.`;
 
@@ -48,8 +45,8 @@ function buildUserPayload(context: ConceptVerifierContext): string {
   return JSON.stringify(conceptInputs, null, 2);
 }
 
-export function buildConceptVerifierPrompt(context: ConceptVerifierContext): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, VERIFICATION_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
+export function buildConceptSpecificityPrompt(context: ConceptVerifierContext): ChatMessage[] {
+  const systemSections: string[] = [ROLE_INTRO, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
 
   const kernelSection = `STORY KERNEL (shared by all concepts):
 - dramaticThesis: ${context.kernel.dramaticThesis}
@@ -59,21 +56,18 @@ export function buildConceptVerifierPrompt(context: ConceptVerifierContext): Cha
 - thematicQuestion: ${context.kernel.thematicQuestion}`;
 
   const userSections: string[] = [
-    'Verify the specificity and load-bearing integrity of each evaluated concept below.',
+    'Analyze the specificity and load-bearing integrity of each evaluated concept below.',
     `EVALUATED CONCEPTS INPUT:\n${buildUserPayload(context)}`,
     kernelSection,
     `OUTPUT REQUIREMENTS:
-- Return JSON with shape: { "verifications": ConceptVerification[] }.
-- verifications array must have exactly ${context.evaluatedConcepts.length} items, one per input concept.
-- Each verification must include:
+- Return JSON with shape: { "specificityAnalyses": ConceptSpecificityAnalysis[] }.
+- specificityAnalyses array must have exactly ${context.evaluatedConcepts.length} items, one per input concept.
+- Each analysis must include:
   - conceptId: string (must match exactly one provided input conceptId)
   - signatureScenario: string (the single most iconic interactive decision moment unique to this concept)
   - loglineCompressible: boolean (true iff concept can compress to a compelling <=27-word logline)
   - logline: string (the compressed logline itself, <=27 words)
   - premisePromises: string[] (exactly 3-5 specific audience expectations; not beat names)
-  - escalatingSetpieces: string[] (exactly 6 concept-unique situations in rising intensity)
-  - setpieceCausalChainBroken: boolean (true iff causal chain between setpieces is weak/broken)
-  - setpieceCausalLinks: string[] (exactly 5 causal links: 1->2, 2->3, 3->4, 4->5, 5->6)
   - inevitabilityStatement: string (what kind of story MUST happen given the premise's internal logic)
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }
     - passes: true if the concept is genuinely load-bearing (removing differentiator DOES collapse it)
@@ -83,12 +77,9 @@ export function buildConceptVerifierPrompt(context: ConceptVerifierContext): Cha
     - passes: true if the concept's conflict engine genuinely embeds the kernel's valueAtStake and opposingForce
     - reasoning: explain how the kernel is structurally grounded (or why it isn't)
     - kernelDrift: describe what kernel elements are absent, weak, or superficially applied
-  - conceptIntegrityScore: number 0-100 (how many of the 6 setpieces are truly concept-unique; 100 = all 6 are impossible in any other story)
 - Every input conceptId must appear exactly once in the output. No duplicates, no omissions, no unknown IDs.
 - All text fields must be non-empty.
-- logline must be <=27 words.
-- Each escalatingSetpieces array must contain exactly 6 strings.
-- Each setpieceCausalLinks array must contain exactly 5 non-empty strings.`,
+- logline must be <=27 words.`,
   ];
 
   return [

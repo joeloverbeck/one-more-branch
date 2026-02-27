@@ -23,7 +23,7 @@ const KERNEL_FIDELITY_CHECK_SCHEMA = {
   },
 } as const;
 
-const CONCEPT_VERIFICATION_SCHEMA = {
+const CONCEPT_SPECIFICITY_ANALYSIS_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: [
@@ -32,13 +32,9 @@ const CONCEPT_VERIFICATION_SCHEMA = {
     'loglineCompressible',
     'logline',
     'premisePromises',
-    'escalatingSetpieces',
-    'setpieceCausalChainBroken',
-    'setpieceCausalLinks',
     'inevitabilityStatement',
     'loadBearingCheck',
     'kernelFidelityCheck',
-    'conceptIntegrityScore',
   ],
   properties: {
     conceptId: { type: 'string', minLength: 1 },
@@ -51,39 +47,25 @@ const CONCEPT_VERIFICATION_SCHEMA = {
       maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.premisePromisesMax,
       items: { type: 'string', minLength: 1 },
     },
-    escalatingSetpieces: {
-      type: 'array',
-      minItems: CONCEPT_VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount,
-      maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount,
-      items: { type: 'string' },
-    },
-    setpieceCausalChainBroken: { type: 'boolean' },
-    setpieceCausalLinks: {
-      type: 'array',
-      minItems: CONCEPT_VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount,
-      maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount,
-      items: { type: 'string', minLength: 1 },
-    },
     inevitabilityStatement: { type: 'string' },
     loadBearingCheck: LOAD_BEARING_CHECK_SCHEMA,
     kernelFidelityCheck: KERNEL_FIDELITY_CHECK_SCHEMA,
-    conceptIntegrityScore: { type: 'number' },
   },
 } as const;
 
-export const CONCEPT_VERIFIER_SCHEMA: JsonSchema = {
+export const CONCEPT_SPECIFICITY_SCHEMA: JsonSchema = {
   type: 'json_schema',
   json_schema: {
-    name: 'concept_verification',
+    name: 'concept_specificity_analysis',
     strict: true,
     schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['verifications'],
+      required: ['specificityAnalyses'],
       properties: {
-        verifications: {
+        specificityAnalyses: {
           type: 'array',
-          items: CONCEPT_VERIFICATION_SCHEMA,
+          items: CONCEPT_SPECIFICITY_ANALYSIS_SCHEMA,
         },
       },
     },

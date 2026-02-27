@@ -48,7 +48,8 @@ describe('Engine types', () => {
         'WRITING_CONTINUING_PAGE',
         'EVALUATING_STRUCTURE',
         'TRACKING_PROMISES',
-        'ASSESSING_QUALITY',
+        'ASSESSING_PROSE',
+        'EVALUATING_NPC_INTELLIGENCE',
         'RESOLVING_AGENDAS',
         'DECOMPOSING_ENTITIES',
         'STRUCTURING_STORY',
@@ -60,7 +61,8 @@ describe('Engine types', () => {
         'EVOLVING_CONCEPTS',
         'EVALUATING_CONCEPTS',
         'STRESS_TESTING_CONCEPT',
-        'VERIFYING_CONCEPTS',
+        'ANALYZING_SPECIFICITY',
+        'GENERATING_SCENARIOS',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);

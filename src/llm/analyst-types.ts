@@ -7,7 +7,8 @@ import type { AccumulatedStructureState, StoryStructure } from '../models/story-
 import type { StorySpine } from '../models/story-spine.js';
 import type { StructureEvaluatorResult } from './structure-evaluator-types.js';
 import type { PromiseTrackerResult } from './promise-tracker-types.js';
-import type { SceneQualityResult } from './scene-quality-types.js';
+import type { ProseQualityResult } from './prose-quality-types.js';
+import type { NpcIntelligenceResult } from './npc-intelligence-types.js';
 
 // Re-export sub-result types and their enums for backward compatibility
 export type {
@@ -29,22 +30,27 @@ export type {
 export type {
   ThematicCharge,
   NarrativeFocus,
+  ProseQualityResult,
+} from './prose-quality-types.js';
+
+export type {
   DetectedRelationshipShift,
-  SceneQualityResult,
-} from './scene-quality-types.js';
+  NpcIntelligenceResult,
+} from './npc-intelligence-types.js';
 
 /**
- * Combined analyst result composed from the 3 focused evaluator stages.
+ * Combined analyst result composed from the 4 focused evaluator stages.
  * Backward-compatible: consumers still reference AnalystResult fields directly.
  */
 export type AnalystResult = StructureEvaluatorResult &
   PromiseTrackerResult &
-  SceneQualityResult & {
+  ProseQualityResult &
+  NpcIntelligenceResult & {
     rawResponse: string;
   };
 
 /**
- * @deprecated Use StructureEvaluatorContext, PromiseTrackerContext, or SceneQualityContext instead.
+ * @deprecated Use StructureEvaluatorContext, PromiseTrackerContext, ProseQualityContext, or NpcIntelligenceContext instead.
  * Kept for backward compatibility during migration.
  */
 export interface AnalystContext {

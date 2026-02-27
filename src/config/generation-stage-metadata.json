@@ -735,34 +735,49 @@
       ]
     },
     {
-      "id": "ASSESSING_QUALITY",
-      "displayName": "APPRAISING",
+      "id": "ASSESSING_PROSE",
+      "displayName": "APPRAISING PROSE",
       "phrases": [
         "Listening for tonal drift in the prose...",
-        "Verifying NPC behavior against their agendas...",
         "Sensing the thematic undercurrents of the scene...",
         "Checking if the narrative mood matches the target tone...",
-        "Evaluating whether NPC actions align with their goals...",
         "Classifying the scene's thematic charge...",
         "Scanning for unauthorized genre drift in the writing...",
         "Assessing narrative focus: deepening or broadening?...",
+        "Evaluating whether the tone vocabulary feels right...",
+        "Measuring thematic coherence across scene evidence...",
+        "Assessing whether the emotional register stayed on key...",
+        "Evaluating whether scene focus serves the story...",
+        "Verifying that tone keywords match the prose mood...",
+        "Weighing the prose against the intended atmosphere...",
+        "Testing whether the thematic question found new facets...",
+        "Checking if antithesis and thesis are still in tension...",
+        "Calibrating the emotional temperature of the narrative...",
+        "Measuring how deeply the scene engages existing threads..."
+      ]
+    },
+    {
+      "id": "EVALUATING_NPC_INTELLIGENCE",
+      "displayName": "READING MINDS",
+      "phrases": [
+        "Verifying NPC behavior against their agendas...",
+        "Evaluating whether NPC actions align with their goals...",
         "Checking NPC consistency against stated fears and goals...",
         "Detecting relationship shifts between characters...",
         "Mapping knowledge asymmetry across the cast...",
         "Hunting for dramatic irony opportunities...",
-        "Evaluating whether the tone vocabulary feels right...",
         "Checking if any NPC broke character without reason...",
-        "Measuring thematic coherence across scene evidence...",
         "Scanning for relationship dynamics that shifted...",
         "Cataloging who knows what and who's wrong about it...",
-        "Assessing whether the emotional register stayed on key...",
         "Checking agenda coherence for every NPC who appeared...",
         "Detecting false beliefs that could fuel future conflict...",
-        "Evaluating whether scene focus serves the story...",
-        "Verifying that tone keywords match the prose mood...",
         "Tracking secrets held by characters in the scene...",
         "Assessing whether relationship shifts feel earned...",
-        "Scanning for moments where dramatic irony could shine..."
+        "Scanning for moments where dramatic irony could shine...",
+        "Probing what each NPC thinks the others know...",
+        "Testing whether NPC motivations held under pressure...",
+        "Checking for knowledge leaks that break character...",
+        "Evaluating whether secrets stayed properly hidden..."
       ]
     },
     {
@@ -1357,29 +1372,46 @@
       ]
     },
     {
-      "id": "VERIFYING_CONCEPTS",
-      "displayName": "VERIFYING",
+      "id": "ANALYZING_SPECIFICITY",
+      "displayName": "ANALYZING",
       "phrases": [
         "Probing concept integrity for genre collapse...",
         "Stress-testing specificity against generic templates...",
         "Searching for the signature interactive moment...",
-        "Generating concept-unique setpieces that can't exist elsewhere...",
         "Running the load-bearing differentiator check...",
         "Removing the core twist to see what collapses...",
-        "Verifying that no setpiece could survive a genre swap...",
         "Testing whether the premise forces a specific story...",
         "Checking if the concept is irreducibly unique...",
         "Building the inevitability chain from premise to climax...",
-        "Scoring concept integrity across all six setpieces...",
         "Exposing dressed-up genre templates before they escape...",
         "Demanding proof that this concept is load-bearing...",
         "Auditing the differentiator stack for structural weakness...",
-        "Confirming concept uniqueness under adversarial analysis...",
         "Verifying that removing the subversion kills the story...",
-        "Testing the escalation arc for concept-specific pressure...",
         "Measuring how much story survives without the twist...",
         "Checking whether the conflict loop is truly irreplaceable...",
-        "Finalizing concept integrity assessment..."
+        "Testing kernel fidelity against thematic drift...",
+        "Compressing concept into a single logline..."
+      ]
+    },
+    {
+      "id": "GENERATING_SCENARIOS",
+      "displayName": "ENVISIONING",
+      "phrases": [
+        "Generating concept-unique setpieces that can't exist elsewhere...",
+        "Verifying that no setpiece could survive a genre swap...",
+        "Testing the escalation arc for concept-specific pressure...",
+        "Scoring concept integrity across all six setpieces...",
+        "Confirming concept uniqueness under adversarial analysis...",
+        "Forging rising-intensity setpieces from premise logic...",
+        "Building causal chains between escalating moments...",
+        "Testing whether each setpiece demands this specific world...",
+        "Anchoring setpieces to the signature interactive moment...",
+        "Checking causal links between setpieces for breaks...",
+        "Measuring how concept-unique each escalating situation is...",
+        "Stress-testing the setpiece arc for generic leakage...",
+        "Verifying world-specific elements in each setpiece...",
+        "Scoring integrity: how many setpieces are truly irreplaceable...",
+        "Finalizing concept scenario assessment..."
       ]
     }
   ]

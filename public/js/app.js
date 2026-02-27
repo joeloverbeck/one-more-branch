@@ -708,32 +708,43 @@ const STAGE_PHRASE_POOLS = {
     'Evaluating whether that payoff was rushed or earned...',
     'Scanning for setups that should echo in future scenes...',
   ],
-  ASSESSING_QUALITY: [
+  ASSESSING_PROSE: [
     'Listening for tonal drift in the prose...',
-    'Verifying NPC behavior against their agendas...',
     'Sensing the thematic undercurrents of the scene...',
     'Checking if the narrative mood matches the target tone...',
-    'Evaluating whether NPC actions align with their goals...',
     'Classifying the scene\'s thematic charge...',
     'Scanning for unauthorized genre drift in the writing...',
     'Assessing narrative focus: deepening or broadening?...',
+    'Evaluating whether the tone vocabulary feels right...',
+    'Measuring thematic coherence across scene evidence...',
+    'Assessing whether the emotional register stayed on key...',
+    'Evaluating whether scene focus serves the story...',
+    'Verifying that tone keywords match the prose mood...',
+    'Weighing the prose against the intended atmosphere...',
+    'Testing whether the thematic question found new facets...',
+    'Checking if antithesis and thesis are still in tension...',
+    'Calibrating the emotional temperature of the narrative...',
+    'Measuring how deeply the scene engages existing threads...',
+  ],
+  EVALUATING_NPC_INTELLIGENCE: [
+    'Verifying NPC behavior against their agendas...',
+    'Evaluating whether NPC actions align with their goals...',
     'Checking NPC consistency against stated fears and goals...',
     'Detecting relationship shifts between characters...',
     'Mapping knowledge asymmetry across the cast...',
     'Hunting for dramatic irony opportunities...',
-    'Evaluating whether the tone vocabulary feels right...',
     'Checking if any NPC broke character without reason...',
-    'Measuring thematic coherence across scene evidence...',
     'Scanning for relationship dynamics that shifted...',
     'Cataloging who knows what and who\'s wrong about it...',
-    'Assessing whether the emotional register stayed on key...',
     'Checking agenda coherence for every NPC who appeared...',
     'Detecting false beliefs that could fuel future conflict...',
-    'Evaluating whether scene focus serves the story...',
-    'Verifying that tone keywords match the prose mood...',
     'Tracking secrets held by characters in the scene...',
     'Assessing whether relationship shifts feel earned...',
     'Scanning for moments where dramatic irony could shine...',
+    'Probing what each NPC thinks the others know...',
+    'Testing whether NPC motivations held under pressure...',
+    'Checking for knowledge leaks that break character...',
+    'Evaluating whether secrets stayed properly hidden...',
   ],
   RESOLVING_AGENDAS: [
     'Eavesdropping on NPCs whispering behind closed doors...',
@@ -1282,27 +1293,40 @@ const STAGE_PHRASE_POOLS = {
     'Hardening concept structure for noisy real play...',
     'Completing adversarial pass before final handoff...',
   ],
-  VERIFYING_CONCEPTS: [
+  ANALYZING_SPECIFICITY: [
     'Probing concept integrity for genre collapse...',
     'Stress-testing specificity against generic templates...',
     'Searching for the signature interactive moment...',
-    'Generating concept-unique setpieces that can\'t exist elsewhere...',
     'Running the load-bearing differentiator check...',
     'Removing the core twist to see what collapses...',
-    'Verifying that no setpiece could survive a genre swap...',
     'Testing whether the premise forces a specific story...',
     'Checking if the concept is irreducibly unique...',
     'Building the inevitability chain from premise to climax...',
-    'Scoring concept integrity across all six setpieces...',
     'Exposing dressed-up genre templates before they escape...',
     'Demanding proof that this concept is load-bearing...',
     'Auditing the differentiator stack for structural weakness...',
-    'Confirming concept uniqueness under adversarial analysis...',
     'Verifying that removing the subversion kills the story...',
-    'Testing the escalation arc for concept-specific pressure...',
     'Measuring how much story survives without the twist...',
     'Checking whether the conflict loop is truly irreplaceable...',
-    'Finalizing concept integrity assessment...',
+    'Testing kernel fidelity against thematic drift...',
+    'Compressing concept into a single logline...',
+  ],
+  GENERATING_SCENARIOS: [
+    'Generating concept-unique setpieces that can\'t exist elsewhere...',
+    'Verifying that no setpiece could survive a genre swap...',
+    'Testing the escalation arc for concept-specific pressure...',
+    'Scoring concept integrity across all six setpieces...',
+    'Confirming concept uniqueness under adversarial analysis...',
+    'Forging rising-intensity setpieces from premise logic...',
+    'Building causal chains between escalating moments...',
+    'Testing whether each setpiece demands this specific world...',
+    'Anchoring setpieces to the signature interactive moment...',
+    'Checking causal links between setpieces for breaks...',
+    'Measuring how concept-unique each escalating situation is...',
+    'Stress-testing the setpiece arc for generic leakage...',
+    'Verifying world-specific elements in each setpiece...',
+    'Scoring integrity: how many setpieces are truly irreplaceable...',
+    'Finalizing concept scenario assessment...',
   ],
 };
 
@@ -1316,7 +1340,8 @@ const STAGE_DISPLAY_NAMES = {
   WRITING_CONTINUING_PAGE: 'WRITING',
   EVALUATING_STRUCTURE: 'EVALUATING',
   TRACKING_PROMISES: 'TRACKING',
-  ASSESSING_QUALITY: 'APPRAISING',
+  ASSESSING_PROSE: 'APPRAISING PROSE',
+  EVALUATING_NPC_INTELLIGENCE: 'READING MINDS',
   RESOLVING_AGENDAS: 'SCHEMING',
   DECOMPOSING_ENTITIES: 'STUDYING',
   STRUCTURING_STORY: 'STRUCTURING',
@@ -1328,7 +1353,8 @@ const STAGE_DISPLAY_NAMES = {
   EVOLVING_CONCEPTS: 'EVOLVING',
   EVALUATING_CONCEPTS: 'EVALUATING',
   STRESS_TESTING_CONCEPT: 'HARDENING',
-  VERIFYING_CONCEPTS: 'VERIFYING',
+  ANALYZING_SPECIFICITY: 'ANALYZING',
+  GENERATING_SCENARIOS: 'ENVISIONING',
 };
 
 // ── Configuration ──────────────────────────────────────────────────
@@ -2825,6 +2851,7 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       '</div>' +
       '<h3 class="spine-cdq">' + escapeHtml(title) + '</h3>' +
       '<div class="spine-field"><span class="spine-label">Dramatic Thesis:</span> ' + escapeHtml(kernel.dramaticThesis || '') + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Antithesis:</span> <em>' + escapeHtml(kernel.antithesis || '') + '</em></div>' +
       '<div class="spine-field"><span class="spine-label">Value at Stake:</span> ' + escapeHtml(kernel.valueAtStake || '') + '</div>' +
       '<div class="spine-field"><span class="spine-label">Opposing Force:</span> ' + escapeHtml(kernel.opposingForce || '') + '</div>' +
       '<div class="spine-field"><span class="spine-label">Thematic Question:</span> <em>' + escapeHtml(kernel.thematicQuestion || '') + '</em></div>' +
@@ -6931,6 +6958,7 @@ function createRecapModalController(initialData) {
       wrapper.innerHTML =
         '<div class="form-group"><label>Name</label><input type="text" class="kernel-edit-name" value="' + escapeHtml(savedKernel.name || '') + '"></div>' +
         '<div class="form-group"><label>Dramatic Thesis</label><textarea class="kernel-edit-dramaticThesis" rows="2">' + escapeHtml(kernel.dramaticThesis || '') + '</textarea></div>' +
+        '<div class="form-group"><label>Antithesis</label><textarea class="kernel-edit-antithesis" rows="2">' + escapeHtml(kernel.antithesis || '') + '</textarea></div>' +
         '<div class="form-group"><label>Value at Stake</label><input type="text" class="kernel-edit-valueAtStake" value="' + escapeHtml(kernel.valueAtStake || '') + '"></div>' +
         '<div class="form-group"><label>Opposing Force</label><textarea class="kernel-edit-opposingForce" rows="2">' + escapeHtml(kernel.opposingForce || '') + '</textarea></div>' +
         '<div class="form-group"><label>Thematic Question</label><input type="text" class="kernel-edit-thematicQuestion" value="' + escapeHtml(kernel.thematicQuestion || '') + '"></div>' +
@@ -6959,6 +6987,7 @@ function createRecapModalController(initialData) {
         name: getInputValue('.kernel-edit-name'),
         kernelFields: {
           dramaticThesis: getInputValue('.kernel-edit-dramaticThesis'),
+          antithesis: getInputValue('.kernel-edit-antithesis'),
           valueAtStake: getInputValue('.kernel-edit-valueAtStake'),
           opposingForce: getInputValue('.kernel-edit-opposingForce'),
           thematicQuestion: getInputValue('.kernel-edit-thematicQuestion'),
@@ -6971,6 +7000,7 @@ function createRecapModalController(initialData) {
       return (
         payload.name.length > 0 &&
         payload.kernelFields.dramaticThesis.length > 0 &&
+        payload.kernelFields.antithesis.length > 0 &&
         payload.kernelFields.valueAtStake.length > 0 &&
         payload.kernelFields.opposingForce.length > 0 &&
         payload.kernelFields.thematicQuestion.length > 0 &&
