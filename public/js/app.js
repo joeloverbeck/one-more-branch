@@ -2542,11 +2542,32 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
         '</div>';
     }
 
+    if (verification.logline) {
+      var compBadge = typeof verification.loglineCompressible === 'boolean'
+        ? (verification.loglineCompressible
+          ? ' <span class="spine-badge spine-badge-pass" style="font-size: 0.75rem;">PASS</span>'
+          : ' <span class="spine-badge spine-badge-fail" style="font-size: 0.75rem;">FAIL</span>')
+        : '';
+      html +=
+        '<div class="spine-field"><span class="spine-label">Logline:</span> <em>' +
+        escapeHtml(verification.logline) +
+        '</em>' + compBadge + '</div>';
+    }
+
     if (verification.inevitabilityStatement) {
       html +=
         '<div class="spine-field"><span class="spine-label">Inevitability:</span> ' +
         escapeHtml(verification.inevitabilityStatement) +
         '</div>';
+    }
+
+    var premisePromises = Array.isArray(verification.premisePromises) ? verification.premisePromises : [];
+    if (premisePromises.length > 0) {
+      html +=
+        '<div class="spine-field"><span class="spine-label">Premise Promises:</span>' +
+        '<ul style="margin: 0.25rem 0 0 1.25rem; padding: 0;">' +
+        renderListItems(premisePromises) +
+        '</ul></div>';
     }
 
     var integrityScore = Number(verification.conceptIntegrityScore);
@@ -2565,6 +2586,22 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
         '<ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;">';
       setpieces.forEach(function (sp) {
         html += '<li>' + escapeHtml(String(sp)) + '</li>';
+      });
+      html += '</ol></div>';
+    }
+
+    var causalLinks = Array.isArray(verification.setpieceCausalLinks) ? verification.setpieceCausalLinks : [];
+    if (causalLinks.length > 0) {
+      var chainBadge = typeof verification.setpieceCausalChainBroken === 'boolean'
+        ? (verification.setpieceCausalChainBroken
+          ? ' <span class="spine-badge spine-badge-fail" style="font-size: 0.75rem;">BROKEN</span>'
+          : ' <span class="spine-badge spine-badge-pass" style="font-size: 0.75rem;">PASS</span>')
+        : '';
+      html +=
+        '<div class="spine-field"><span class="spine-label">Causal Links:</span>' + chainBadge +
+        '<ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;">';
+      causalLinks.forEach(function (link) {
+        html += '<li>' + escapeHtml(String(link)) + '</li>';
       });
       html += '</ol></div>';
     }
@@ -2590,6 +2627,74 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
           escapeHtml(lbc.genericCollapse) +
           '</div>';
       }
+    }
+
+    var kfc = verification.kernelFidelityCheck;
+    if (kfc && typeof kfc === 'object') {
+      var kfcBadge = typeof kfc.passes === 'boolean'
+        ? (kfc.passes
+          ? '<span class="spine-badge spine-badge-pass" style="font-size: 0.75rem;">PASS</span>'
+          : '<span class="spine-badge spine-badge-fail" style="font-size: 0.75rem;">FAIL</span>')
+        : '';
+      html +=
+        '<div class="spine-field"><span class="spine-label">Kernel Fidelity Check:</span> ' + kfcBadge + '</div>';
+      if (kfc.reasoning) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Reasoning:</span> ' +
+          escapeHtml(kfc.reasoning) +
+          '</div>';
+      }
+      if (kfc.kernelDrift) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Kernel Drift:</span> ' +
+          escapeHtml(kfc.kernelDrift) +
+          '</div>';
+      }
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderStressTestSection(stressTestResult) {
+    if (!stressTestResult || typeof stressTestResult !== 'object') {
+      return '';
+    }
+
+    var driftRisks = Array.isArray(stressTestResult.driftRisks) ? stressTestResult.driftRisks : [];
+    var playerBreaks = Array.isArray(stressTestResult.playerBreaks) ? stressTestResult.playerBreaks : [];
+
+    if (driftRisks.length === 0 && playerBreaks.length === 0) {
+      return '';
+    }
+
+    var html = '<div class="concept-verification-section" style="margin-top: 0.75rem; border-top: 1px solid var(--border-subtle, #333); padding-top: 0.75rem;">';
+    html += '<div class="spine-label" style="margin-bottom: 0.5rem; font-weight: 600;">Stress Test Results</div>';
+
+    if (driftRisks.length > 0) {
+      html += '<div class="spine-field"><span class="spine-label">Drift Risks:</span></div>';
+      driftRisks.forEach(function (dr) {
+        var typeBadge = dr.mitigationType
+          ? ' <span class="spine-badge spine-badge-type" style="font-size: 0.75rem;">' + escapeHtml(formatConceptLabel(dr.mitigationType)) + '</span>'
+          : '';
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem; margin-bottom: 0.5rem;">' +
+            '<div><span class="spine-label">Risk:</span> ' + escapeHtml(String(dr.risk || '')) + '</div>' +
+            '<div><span class="spine-label">Mitigation:</span> ' + escapeHtml(String(dr.mitigation || '')) + typeBadge + '</div>' +
+          '</div>';
+      });
+    }
+
+    if (playerBreaks.length > 0) {
+      html += '<div class="spine-field"><span class="spine-label">Player Breaks:</span></div>';
+      playerBreaks.forEach(function (pb) {
+        html +=
+          '<div class="spine-field" style="margin-left: 0.5rem; margin-bottom: 0.5rem;">' +
+            '<div><span class="spine-label">Scenario:</span> ' + escapeHtml(String(pb.scenario || '')) + '</div>' +
+            '<div><span class="spine-label">Handling:</span> ' + escapeHtml(String(pb.handling || '')) + '</div>' +
+            '<div><span class="spine-label">Constraint Used:</span> ' + escapeHtml(String(pb.constraintUsed || '')) + '</div>' +
+          '</div>';
+      });
     }
 
     html += '</div>';
@@ -2678,6 +2783,10 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
 
     if (options && options.verification) {
       html += renderVerificationSection(options.verification);
+    }
+
+    if (options && options.stressTestResult) {
+      html += renderStressTestSection(options.stressTestResult);
     }
 
     if (includeSelectionToggle) {
@@ -6360,6 +6469,10 @@ function createRecapModalController(initialData) {
         cardHtml += renderVerificationSection(concept.verificationResult);
       }
 
+      if (concept.stressTestResult) {
+        cardHtml += renderStressTestSection(concept.stressTestResult);
+      }
+
       cardHtml +=
         '<div class="spine-field"><span class="spine-label">Created:</span> ' + escapeHtml(new Date(concept.createdAt).toLocaleDateString()) + '</div>' +
         '<div class="form-actions" style="margin-top: 0.5rem;">' +
@@ -6486,6 +6599,22 @@ function createRecapModalController(initialData) {
             hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
             hardenBadge.textContent = 'Hardened';
             badges.appendChild(hardenBadge);
+          }
+
+          // Render stress test results if present
+          var stressResult = data.driftRisks || data.playerBreaks
+            ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
+            : null;
+          if (stressResult) {
+            var stressHtml = renderStressTestSection(stressResult);
+            if (stressHtml) {
+              var timestampField = card.querySelector('.form-actions');
+              if (timestampField) {
+                timestampField.insertAdjacentHTML('beforebegin', stressHtml);
+              } else {
+                card.insertAdjacentHTML('beforeend', stressHtml);
+              }
+            }
           }
         }
       } catch (error) {
