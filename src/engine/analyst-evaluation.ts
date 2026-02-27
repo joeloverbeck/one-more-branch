@@ -122,9 +122,9 @@ function mergeEvaluatorResults(
     dramaticIronyOpportunities: [],
   };
 
-  const { rawResponse: _sr, ...structureFields } = structureResult ?? { rawResponse: '' };
-  const { rawResponse: _pr, ...promiseFields } = promiseResult ?? { rawResponse: '' };
-  const { rawResponse: _qr, ...qualityFields } = qualityResult ?? { rawResponse: '' };
+  const { rawResponse: _sr, ...structureFields } = structureResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { rawResponse: _pr, ...promiseFields } = promiseResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { rawResponse: _qr, ...qualityFields } = qualityResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
 
   return {
     ...(structureResult ? structureFields : defaultStructure),

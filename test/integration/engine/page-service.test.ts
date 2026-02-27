@@ -5,7 +5,6 @@ import {
   generatePagePlan,
   generateStateAccountant,
   generatePageWriterOutput,
-  generateLorekeeperBible,
 } from '@/llm';
 import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
 import type { AnalystEvaluationResult } from '@/engine/analyst-evaluation';
@@ -101,9 +100,6 @@ const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunc
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
 const mockedGenerateAgendaResolver = generateAgendaResolver as jest.MockedFunction<
   typeof generateAgendaResolver
->;
-const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<
-  typeof generateLorekeeperBible
 >;
 const mockedLogger = logger as {
   info: jest.Mock;

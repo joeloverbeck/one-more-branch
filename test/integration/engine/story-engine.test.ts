@@ -24,11 +24,9 @@ import {
 import type { StorySpine } from '@/models';
 
 jest.mock('@/llm/client', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const actual = jest.requireActual('@/llm/client');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    ...actual,
+    ...jest.requireActual('@/llm/client'),
     generateStructureEvaluation: jest.fn(),
     generatePromiseTracking: jest.fn(),
     generateSceneQualityEvaluation: jest.fn(),
