@@ -10,6 +10,7 @@ import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
 export interface StructureContext {
   tone: string;
@@ -193,12 +194,13 @@ export function buildStructurePrompt(
   const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
   const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
   const premisePromiseSection = buildPremisePromiseSection(context.conceptVerification);
+  const genreConventionsSection = buildGenreConventionsSection(context.conceptSpec?.genreFrame);
   const genreObligationsSection = buildGenreObligationsSection(context.conceptSpec);
   const kernelSection = buildKernelSection(context.storyKernel);
 
   const userPrompt = `Generate a story structure before the first page.
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${premisePromiseSection}${genreObligationsSection}${kernelSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${premisePromiseSection}${genreConventionsSection}${genreObligationsSection}${kernelSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.
