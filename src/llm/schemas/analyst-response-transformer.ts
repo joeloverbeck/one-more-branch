@@ -1,4 +1,8 @@
-import type { PromisePayoffAssessment, ThreadPayoffAssessment } from '../../models/state/index.js';
+import type {
+  KnowledgeAsymmetry,
+  PromisePayoffAssessment,
+  ThreadPayoffAssessment,
+} from '../../models/state/index.js';
 import type { AnalystResult, DetectedPromise, DetectedRelationshipShift } from '../analyst-types.js';
 import { isCanonicalIdForPrefix, STATE_ID_PREFIXES } from '../validation/state-id-prefixes.js';
 import { AnalystResultSchema } from './analyst-validation-schema.js';
@@ -105,6 +109,34 @@ function normalizeRelationshipShifts(
     }));
 }
 
+function normalizeKnowledgeAsymmetryDetected(
+  value: readonly {
+    characterName: string;
+    knownFacts: readonly string[];
+    falseBeliefs: readonly string[];
+    secrets: readonly string[];
+  }[]
+): KnowledgeAsymmetry[] {
+  return value
+    .map((entry) => ({
+      characterName: entry.characterName.trim(),
+      knownFacts: entry.knownFacts
+        .map((fact) => fact.trim())
+        .filter((fact) => fact.length > 0),
+      falseBeliefs: entry.falseBeliefs
+        .map((belief) => belief.trim())
+        .filter((belief) => belief.length > 0),
+      secrets: entry.secrets
+        .map((secret) => secret.trim())
+        .filter((secret) => secret.length > 0),
+    }))
+    .filter((entry) => entry.characterName.length > 0);
+}
+
+function normalizeDramaticIronyOpportunities(value: readonly string[]): string[] {
+  return value.map((item) => item.trim()).filter((item) => item.length > 0);
+}
+
 export function validateAnalystResponse(rawJson: unknown, rawResponse: string): AnalystResult {
   let parsed: unknown = rawJson;
   if (typeof parsed === 'string') {
@@ -176,6 +208,12 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
         : null,
     delayedConsequencesTriggered: normalizeDelayedConsequencesTriggered(
       validated.delayedConsequencesTriggered
+    ),
+    knowledgeAsymmetryDetected: normalizeKnowledgeAsymmetryDetected(
+      validated.knowledgeAsymmetryDetected
+    ),
+    dramaticIronyOpportunities: normalizeDramaticIronyOpportunities(
+      validated.dramaticIronyOpportunities
     ),
     rawResponse,
   };

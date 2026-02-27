@@ -54,6 +54,7 @@ export {
   isUrgency,
   isPromiseType,
   isDelayedConsequence,
+  isKnowledgeAsymmetry,
   isTrackedPromise,
   extractIdNumber,
   getMaxIdNumber,
@@ -84,7 +85,12 @@ export {
   applyAgendaUpdates,
 } from './state/index.js';
 
-export type { TrackedPromise, PromisePayoffAssessment, DelayedConsequence } from './state/index.js';
+export type {
+  TrackedPromise,
+  PromisePayoffAssessment,
+  DelayedConsequence,
+  KnowledgeAsymmetry,
+} from './state/index.js';
 
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 

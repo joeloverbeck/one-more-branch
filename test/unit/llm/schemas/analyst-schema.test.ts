@@ -117,4 +117,42 @@ describe('ANALYST_SCHEMA', () => {
     expect(delayedConsequencesTriggered.items).toEqual({ type: 'string' });
     expect(schema.required).toContain('delayedConsequencesTriggered');
   });
+
+  it('includes knowledgeAsymmetryDetected object array in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    const knowledgeAsymmetryDetected = schema.properties['knowledgeAsymmetryDetected'] as {
+      type?: string;
+      items?: {
+        type?: string;
+        required?: string[];
+      };
+    };
+
+    expect(knowledgeAsymmetryDetected).toBeDefined();
+    expect(knowledgeAsymmetryDetected.type).toBe('array');
+    expect(knowledgeAsymmetryDetected.items?.type).toBe('object');
+    expect(knowledgeAsymmetryDetected.items?.required).toEqual(
+      expect.arrayContaining(['characterName', 'knownFacts', 'falseBeliefs', 'secrets'])
+    );
+    expect(schema.required).toContain('knowledgeAsymmetryDetected');
+  });
+
+  it('includes dramaticIronyOpportunities string array in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    const dramaticIronyOpportunities = schema.properties['dramaticIronyOpportunities'] as {
+      type?: string;
+      items?: Record<string, unknown>;
+    };
+
+    expect(dramaticIronyOpportunities).toBeDefined();
+    expect(dramaticIronyOpportunities.type).toBe('array');
+    expect(dramaticIronyOpportunities.items).toEqual({ type: 'string' });
+    expect(schema.required).toContain('dramaticIronyOpportunities');
+  });
 });

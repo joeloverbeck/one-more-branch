@@ -45,6 +45,8 @@ describe('validateAnalystResponse', () => {
     expect(result.thematicChargeDescription).toBe('');
     expect(result.obligatorySceneFulfilled).toBeNull();
     expect(result.delayedConsequencesTriggered).toEqual([]);
+    expect(result.knowledgeAsymmetryDetected).toEqual([]);
+    expect(result.dramaticIronyOpportunities).toEqual([]);
     expect(result.rawResponse).toBe(RAW_RESPONSE);
   });
 
@@ -106,6 +108,8 @@ describe('validateAnalystResponse', () => {
     expect(result.thematicChargeDescription).toBe('');
     expect(result.obligatorySceneFulfilled).toBeNull();
     expect(result.delayedConsequencesTriggered).toEqual([]);
+    expect(result.knowledgeAsymmetryDetected).toEqual([]);
+    expect(result.dramaticIronyOpportunities).toEqual([]);
   });
 
   it('normalizes delayedConsequencesTriggered to canonical dc-* ids', () => {
@@ -115,6 +119,42 @@ describe('validateAnalystResponse', () => {
     );
 
     expect(result.delayedConsequencesTriggered).toEqual(['dc-1', 'dc-07']);
+  });
+
+  it('normalizes knowledgeAsymmetryDetected and dramaticIronyOpportunities', () => {
+    const result = validateAnalystResponse(
+      {
+        knowledgeAsymmetryDetected: [
+          {
+            characterName: '  Warden Sol  ',
+            knownFacts: ['  Knows the vault code  ', ''],
+            falseBeliefs: ['  Believes the envoy is dead  '],
+            secrets: ['  Took the ledger  ', '   '],
+          },
+          {
+            characterName: '   ',
+            knownFacts: ['ignored'],
+            falseBeliefs: [],
+            secrets: [],
+          },
+        ],
+        dramaticIronyOpportunities: ['  The hero trusts Sol.  ', ' ', 'NPC sets an ambush'],
+      },
+      RAW_RESPONSE
+    );
+
+    expect(result.knowledgeAsymmetryDetected).toEqual([
+      {
+        characterName: 'Warden Sol',
+        knownFacts: ['Knows the vault code'],
+        falseBeliefs: ['Believes the envoy is dead'],
+        secrets: ['Took the ledger'],
+      },
+    ]);
+    expect(result.dramaticIronyOpportunities).toEqual([
+      'The hero trusts Sol.',
+      'NPC sets an ambush',
+    ]);
   });
 
   it('trims obligatorySceneFulfilled and normalizes empty values to null', () => {

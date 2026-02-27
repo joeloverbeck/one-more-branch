@@ -1,5 +1,6 @@
 import type {
   ActiveState,
+  KnowledgeAsymmetry,
   PromisePayoffAssessment,
   PromiseScope,
   PromiseType,
@@ -92,6 +93,8 @@ export interface AnalystResult {
   obligatorySceneFulfilled: string | null;
   premisePromiseFulfilled: string | null;
   delayedConsequencesTriggered: string[];
+  knowledgeAsymmetryDetected: KnowledgeAsymmetry[];
+  dramaticIronyOpportunities: string[];
   rawResponse: string;
 }
 

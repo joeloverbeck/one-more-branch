@@ -105,7 +105,9 @@ function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResu
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
-    rawResponse: '',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '',
     ...overrides,
   };
 }
@@ -957,7 +959,9 @@ describe('page-builder', () => {
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-        rawResponse: '',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '',
       };
     }
 
@@ -1079,7 +1083,9 @@ describe('page-builder', () => {
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-        rawResponse: '',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '',
       };
     }
 

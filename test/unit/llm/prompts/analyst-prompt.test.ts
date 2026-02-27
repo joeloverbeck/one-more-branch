@@ -256,6 +256,13 @@ describe('buildAnalystPrompt', () => {
     expect(messages[1].content).toContain('The scene includes a checkpoint scan.');
   });
 
+  it('system message includes information asymmetry detection rules', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('INFORMATION ASYMMETRY DETECTION:');
+    expect(messages[0].content).toContain('knowledgeAsymmetryDetected');
+    expect(messages[0].content).toContain('dramaticIronyOpportunities');
+  });
+
   it('omits fulfilled premise promises from pending list', () => {
     const fulfilledPromise = 'The hero will infiltrate the sky-forge tribunal.';
     const messages = buildAnalystPrompt({

@@ -116,6 +116,14 @@ DELAYED CONSEQUENCE TRIGGERING:
 - Return `delayedConsequencesTriggered: []` when no eligible consequence triggers.
 - Never invent IDs and never include non-eligible consequences.
 
+INFORMATION ASYMMETRY DETECTION:
+- Emit `knowledgeAsymmetryDetected` as an array of per-character observations grounded in scene evidence.
+- Each entry must include: `characterName`, `knownFacts`, `falseBeliefs`, `secrets`.
+- Use empty arrays for any bucket without evidence.
+- Include only characters with meaningful updates or clearly evidenced knowledge state in this scene.
+- Emit `dramaticIronyOpportunities` as concrete opportunities created by knowledge gaps in this scene.
+- Return `dramaticIronyOpportunities: []` when no clear opportunity exists.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.

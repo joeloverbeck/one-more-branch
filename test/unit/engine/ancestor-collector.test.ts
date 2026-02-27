@@ -49,7 +49,9 @@ function buildAnalystResult(
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
-    rawResponse: '',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '',
   };
 }
 
