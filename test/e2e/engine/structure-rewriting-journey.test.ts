@@ -192,6 +192,8 @@ const openingResult = createMockFinalResult({
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Protect the city while exposing institutional betrayal.',
+    openingImage: 'Flooded parliament steps under emergency sirens.',
+    closingImage: 'A daylight civic forum after emergency powers are revoked.',
     acts: [
       {
         name: 'Act I Reframed',

@@ -9,6 +9,7 @@ const VERIFICATION_DIRECTIVES = `VERIFICATION DIRECTIVES:
 - For each concept, produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
 - All scenarios and setpieces must be ONLY possible because of this specific concept's premise — both its conflict engine (genreSubversion, coreFlaw, coreConflictLoop) and its world-specific elements (settingAxioms, constraintSet, keyInstitutions, deadlineMechanism, pressureSource, escapeValve). Each setpiece must exploit at least one world-specific element, not just the conflict engine. If a setpiece could appear in a generic story of the same genre with different world rules, reject it and write one that couldn't.
 - The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise (both its conflict engine and its world-specific elements).
+- premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
 - The 6 escalating setpieces must form a rising intensity arc from opening hook to climax. Each must be concept-unique.
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.`;
@@ -65,6 +66,7 @@ export function buildConceptVerifierPrompt(context: ConceptVerifierContext): Cha
 - Each verification must include:
   - conceptId: string (must match exactly one provided input conceptId)
   - signatureScenario: string (the single most iconic interactive decision moment unique to this concept)
+  - premisePromises: string[] (exactly 3-5 specific audience expectations; not beat names)
   - escalatingSetpieces: string[] (exactly 6 concept-unique situations in rising intensity)
   - inevitabilityStatement: string (what kind of story MUST happen given the premise's internal logic)
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }

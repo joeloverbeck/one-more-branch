@@ -59,6 +59,7 @@ function createValidPayload(count = 2): { verifications: ReturnType<typeof creat
 function createVerificationData(index = 1): {
   conceptId: string;
   signatureScenario: string;
+  premisePromises: string[];
   escalatingSetpieces: string[];
   inevitabilityStatement: string;
   loadBearingCheck: { passes: boolean; reasoning: string; genericCollapse: string };
@@ -68,6 +69,11 @@ function createVerificationData(index = 1): {
   return {
     conceptId: `concept_${index}`,
     signatureScenario: `Signature scenario ${index}`,
+    premisePromises: [
+      `Premise promise 1-${index}`,
+      `Premise promise 2-${index}`,
+      `Premise promise 3-${index}`,
+    ],
     escalatingSetpieces: [
       `Setpiece 1-${index}`,
       `Setpiece 2-${index}`,
@@ -143,6 +149,11 @@ describe('concept-verifier', () => {
       expect(result).toHaveLength(2);
       expect(result[0].conceptId).toBe('concept_1');
       expect(result[0].signatureScenario).toBe('Signature scenario 1');
+      expect(result[0].premisePromises).toEqual([
+        'Premise promise 1-1',
+        'Premise promise 2-1',
+        'Premise promise 3-1',
+      ]);
       expect(result[0].escalatingSetpieces).toHaveLength(6);
       expect(result[0].inevitabilityStatement).toBe('Inevitability 1');
       expect(result[0].loadBearingCheck.passes).toBe(true);
@@ -282,6 +293,50 @@ describe('concept-verifier', () => {
       expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'escalatingSetpieces must be an array',
       );
+    });
+
+    it('rejects missing premisePromises array', () => {
+      const payload = createValidPayload(1);
+      delete (payload.verifications[0] as Record<string, unknown>)['premisePromises'];
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'premisePromises must be an array',
+      );
+    });
+
+    it('rejects too few premisePromises', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].premisePromises = ['one', 'two'];
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'premisePromises must have 3-5 items',
+      );
+    });
+
+    it('rejects too many premisePromises', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].premisePromises = ['1', '2', '3', '4', '5', '6'];
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'premisePromises must have 3-5 items',
+      );
+    });
+
+    it('rejects empty premisePromise entry', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].premisePromises[1] = '   ';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid premisePromises[1]',
+      );
+    });
+
+    it('trims premisePromises entries', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].premisePromises = ['  first  ', 'second', '  third'];
+
+      const result = parseConceptVerificationResponse(payload, expectedIds(1));
+      expect(result[0].premisePromises).toEqual(['first', 'second', 'third']);
     });
 
     it('rejects wrong number of setpieces', () => {
@@ -446,10 +501,35 @@ describe('concept-verifier', () => {
       const fixture = createConceptVerificationFixture();
       expect(fixture.conceptId).toBe('concept_1');
       expect(fixture.signatureScenario).toBeTruthy();
+      expect(fixture.premisePromises).toHaveLength(3);
       expect(fixture.escalatingSetpieces).toHaveLength(6);
       expect(fixture.inevitabilityStatement).toBeTruthy();
       expect(fixture.loadBearingCheck.passes).toBe(true);
       expect(fixture.conceptIntegrityScore).toBe(85);
+    });
+  });
+
+  describe('CONCEPT_VERIFIER_SCHEMA contract', () => {
+    it('requires premisePromises as a 3-5 item string array', () => {
+      const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
+        properties: {
+          verifications: {
+            items: {
+              required: string[];
+              properties: Record<string, unknown>;
+            };
+          };
+        };
+      };
+      const verificationSchema = rootSchema.properties.verifications.items;
+
+      expect(verificationSchema.required).toContain('premisePromises');
+      expect(verificationSchema.properties['premisePromises']).toEqual({
+        type: 'array',
+        minItems: 3,
+        maxItems: 5,
+        items: { type: 'string', minLength: 1 },
+      });
     });
   });
 });
