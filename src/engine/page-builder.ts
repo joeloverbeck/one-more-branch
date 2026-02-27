@@ -5,7 +5,6 @@ import {
   createChoice,
   createEmptyAccumulatedStructureState,
   createPage,
-  getMaxIdNumber,
   Health,
   Inventory,
   Page,
@@ -22,17 +21,7 @@ import type { StoryBible } from '../llm/lorekeeper-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
-import {
-  computeFirstPageThreadAges,
-  computeContinuationThreadAges,
-  augmentThreadsResolvedFromAnalyst,
-  buildResolvedThreadMeta,
-} from './thread-lifecycle';
-import {
-  computeAccumulatedPromises,
-  getMaxPromiseIdNumber,
-  buildResolvedPromiseMeta,
-} from './promise-lifecycle';
+import { computeNarrativeStateLifecycle } from './state-lifecycle';
 import type { PageBuildResult } from './state-change-mapper';
 import { mapToActiveStateChanges } from './state-change-mapper';
 
@@ -106,57 +95,26 @@ export interface ContinuationPageBuildContext {
  */
 export function buildPage(result: PageBuildResult, context: PageBuildContext): Page {
   const isOpening = context.parentPageId === null;
-
-  const effectiveThreadsResolved = isOpening
-    ? result.threadsResolved
-    : augmentThreadsResolvedFromAnalyst(
-        result.threadsResolved,
-        context.analystResult,
-        context.parentAccumulatedActiveState.openThreads
-      );
-
-  const threadAges = isOpening
-    ? computeFirstPageThreadAges(result.threadsAdded)
-    : computeContinuationThreadAges(
-        context.parentThreadAges,
-        context.parentAccumulatedActiveState.openThreads.map((t) => t.id),
-        result.threadsAdded,
-        effectiveThreadsResolved,
-        getMaxIdNumber(context.parentAccumulatedActiveState.openThreads, 'td')
-      );
-
-  const accumulatedPromises = computeAccumulatedPromises(
-    isOpening ? [] : context.parentAccumulatedPromises,
-    isOpening ? [] : context.analystPromisesResolved,
-    context.analystPromisesDetected,
-    getMaxPromiseIdNumber(isOpening ? [] : context.parentAccumulatedPromises)
-  );
-
-  const accumulatedFulfilledPremisePromises = (() : readonly string[] => {
-    const inherited = isOpening ? [] : context.parentAccumulatedFulfilledPremisePromises;
-    const fulfilledNow = (isOpening ? null : context.analystPremisePromiseFulfilled)?.trim() ?? '';
-    if (fulfilledNow.length === 0 || inherited.includes(fulfilledNow)) {
-      return inherited;
-    }
-    return [...inherited, fulfilledNow];
-  })();
-
-  const resolvedThreadMeta = buildResolvedThreadMeta(
-    effectiveThreadsResolved,
-    context.parentAccumulatedActiveState.openThreads
-  );
-
-  const resolvedPromiseMeta = buildResolvedPromiseMeta(
-    isOpening ? [] : context.analystPromisesResolved,
-    isOpening ? [] : context.parentAccumulatedPromises
-  );
+  const lifecycle = computeNarrativeStateLifecycle({
+    isOpening,
+    parentOpenThreads: context.parentAccumulatedActiveState.openThreads,
+    parentThreadAges: context.parentThreadAges,
+    parentAccumulatedPromises: context.parentAccumulatedPromises,
+    parentAccumulatedFulfilledPremisePromises: context.parentAccumulatedFulfilledPremisePromises,
+    threadsAdded: result.threadsAdded,
+    threadsResolved: result.threadsResolved,
+    analystResult: context.analystResult,
+    analystPromisesDetected: context.analystPromisesDetected,
+    analystPromisesResolved: context.analystPromisesResolved,
+    analystPremisePromiseFulfilled: context.analystPremisePromiseFulfilled,
+  });
 
   return createPage({
     id: context.pageId,
     narrativeText: result.narrative,
     sceneSummary: result.sceneSummary,
     choices: result.choices.map((c) => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
-    activeStateChanges: mapToActiveStateChanges(result, effectiveThreadsResolved),
+    activeStateChanges: mapToActiveStateChanges(result, lifecycle.effectiveThreadsResolved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),
     characterStateChanges: createCharacterStateChanges(
@@ -177,11 +135,11 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     structureVersionId: context.structureVersionId,
     storyBible: context.storyBible,
     analystResult: context.analystResult,
-    threadAges,
-    accumulatedPromises,
-    accumulatedFulfilledPremisePromises,
-    resolvedThreadMeta,
-    resolvedPromiseMeta,
+    threadAges: lifecycle.threadAges,
+    accumulatedPromises: lifecycle.accumulatedPromises,
+    accumulatedFulfilledPremisePromises: lifecycle.accumulatedFulfilledPremisePromises,
+    resolvedThreadMeta: lifecycle.resolvedThreadMeta,
+    resolvedPromiseMeta: lifecycle.resolvedPromiseMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
     npcRelationshipUpdates: context.npcRelationshipUpdates,

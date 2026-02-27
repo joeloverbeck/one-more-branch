@@ -37,6 +37,13 @@ export type { RecapEntry } from './recap-collector';
 // Page building
 export { buildPage, buildFirstPage, buildContinuationPage, createEmptyStructureContext } from './page-builder';
 export type { PageBuildContext, FirstPageBuildContext, ContinuationPageBuildContext } from './page-builder';
+export {
+  computeNarrativeStateLifecycle,
+} from './state-lifecycle';
+export type {
+  NarrativeStateLifecycleInput,
+  NarrativeStateLifecycleOutput,
+} from './state-lifecycle';
 
 // Structure version validation
 export {
