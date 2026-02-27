@@ -60,6 +60,15 @@ STORY SPINE (invariant narrative backbone — every scene must serve this):
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
+{{#if genreFrame}}
+GENRE CONVENTIONS ({{genreFrame}} — maintain throughout):
+{{#each genreConventions}}
+- {{this.tag}}: {{this.gloss}}
+{{/each}}
+
+These conventions define the genre's atmosphere, character dynamics, and tonal expectations. They are NOT specific scenes — they are persistent creative constraints that every scene should honor.
+{{/if}}
+
 === PLANNER CONTEXT: OPENING|CONTINUATION ===
 {{opening or continuation context block from planner context section builder}}
 
@@ -297,6 +306,7 @@ Source: `buildPendingConsequencesSection()` in `src/llm/prompts/sections/planner
 
 ## Notes
 
+- When `genreFrame` is present on `PagePlanContext`, a **GENRE CONVENTIONS** block is injected into the user prompt between the spine section and the planner context section. The conventions come from `buildGenreConventionsSection(context.genreFrame)` in `src/llm/prompts/sections/shared/genre-conventions-section.ts`.
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
 - Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), thematic trajectory warnings, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant share the same context builders (`buildPlannerOpeningContextSection`, `buildPlannerContinuationContextSection`) but with different options. The planner uses default options (protagonist directive and guidance included). The accountant passes `{ includeProtagonistDirective: false }` to exclude protagonist-specific sections. The `PlannerContextOptions` interface in `continuation-context.ts` controls this behavior.

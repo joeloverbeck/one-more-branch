@@ -68,6 +68,15 @@ PROTAGONIST PROFILE:
 WORLDBUILDING:
 {{decomposedWorld formatted as structured world facts, or '(no worldbuilding)'}}
 
+{{#if genreFrame}}
+GENRE CONVENTIONS ({{genreFrame}} — maintain throughout):
+{{#each genreConventions}}
+- {{this.tag}}: {{this.gloss}}
+{{/each}}
+
+These conventions define the genre's atmosphere, character dynamics, and tonal expectations. They are NOT specific scenes — they are persistent creative constraints that every scene should honor.
+{{/if}}
+
 CURRENT (BROKEN) SPINE:
 STORY SPINE (invariant narrative backbone — every scene must serve this):
 Story Pattern: {{currentSpine.storySpineType}}
@@ -91,7 +100,7 @@ NARRATIVE SUMMARY (what has happened so far):
 Generate a single new spine that evolves naturally from this narrative state. The {{invalidated element label}} MUST change meaningfully. Other fields may remain if they still serve the story.
 ```
 
-The current spine is formatted by `buildSpineSection()` from `src/llm/prompts/sections/shared/spine-section.ts`. The `invalidatedElement` value (`dramatic_question`, `antagonistic_force`, or `need_want`) is mapped to a human-readable label for the prompt.
+The current spine is formatted by `buildSpineSection()` from `src/llm/prompts/sections/shared/spine-section.ts`. The `invalidatedElement` value (`dramatic_question`, `antagonistic_force`, or `need_want`) is mapped to a human-readable label for the prompt. When `genreFrame` is present on `SpineRewriteContext`, a **GENRE CONVENTIONS** block is injected between the worldbuilding section and the current spine section via `buildGenreConventionsSection(context.genreFrame)`.
 
 ## JSON Response Shape
 

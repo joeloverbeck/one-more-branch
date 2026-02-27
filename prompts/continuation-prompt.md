@@ -95,6 +95,8 @@ When writing endings (character death, victory, conclusion):
 
 The tone block is injected between the role intro and content policy. When tone keywords are available (from the spine), the `Target feel` and `Avoid` lines are included; otherwise only the `Tone` line appears.
 
+When `genreFrame` is present on the context, a **GENRE CONVENTIONS** block is injected into the system prompt immediately after the tone directive (before content policy). This block lists 6 persistent genre-level atmospheric and tonal constraints as `- tag: gloss` entries. The `genreFrame` field is passed to the system prompt builder via `ToneParams`.
+
 ### 2) User Message
 
 ```text
