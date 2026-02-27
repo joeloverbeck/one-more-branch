@@ -1,5 +1,10 @@
 import type { JsonSchema } from '../llm-client-types.js';
-import { BEAT_ROLES } from '../../models/story-arc.js';
+import {
+  APPROACH_VECTORS,
+  BEAT_ROLES,
+  CRISIS_TYPES,
+  ESCALATION_TYPES,
+} from '../../models/story-arc.js';
 
 export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -94,6 +99,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'causalLink',
                     'role',
                     'escalationType',
+                    'crisisType',
                     'uniqueScenarioHook',
                     'approachVectors',
                     'setpieceSourceIndex',
@@ -116,22 +122,23 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       anyOf: [
                         {
                           type: 'string',
-                          enum: [
-                            'THREAT_ESCALATION',
-                            'REVELATION_SHIFT',
-                            'REVERSAL_OF_FORTUNE',
-                            'BETRAYAL_OR_ALLIANCE_SHIFT',
-                            'RESOURCE_OR_CAPABILITY_LOSS',
-                            'MORAL_OR_ETHICAL_PRESSURE',
-                            'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
-                            'COMPLICATION_CASCADE',
-                            'COMPETENCE_DEMAND_SPIKE',
-                          ],
+                          enum: [...ESCALATION_TYPES],
                         },
                         { type: 'null' },
                       ],
                       description:
                         'For escalation/turning_point beats: HOW stakes rise. Null for setup/reflection/resolution beats.',
+                    },
+                    crisisType: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [...CRISIS_TYPES],
+                        },
+                        { type: 'null' },
+                      ],
+                      description:
+                        'For escalation/turning_point beats: dilemma shape for the beat. Null for setup/reflection/resolution beats.',
                     },
                     uniqueScenarioHook: {
                       type: ['string', 'null'],
@@ -144,18 +151,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         'For escalation/turning_point beats: 2-3 approach vectors suggesting HOW the protagonist could tackle this beat. Null for setup/reflection/resolution beats.',
                       items: {
                         type: 'string',
-                        enum: [
-                          'DIRECT_FORCE',
-                          'SWIFT_ACTION',
-                          'STEALTH_SUBTERFUGE',
-                          'ANALYTICAL_REASONING',
-                          'CAREFUL_OBSERVATION',
-                          'INTUITIVE_LEAP',
-                          'PERSUASION_INFLUENCE',
-                          'EMPATHIC_CONNECTION',
-                          'ENDURANCE_RESILIENCE',
-                          'SELF_EXPRESSION',
-                        ],
+                        enum: [...APPROACH_VECTORS],
                       },
                     },
                     setpieceSourceIndex: {

@@ -25,6 +25,7 @@ describe('buildAnalystPrompt', () => {
             description: 'Secure evidence',
             objective: 'Protect evidence',
             role: 'escalation',
+            crisisType: 'BEST_BAD_CHOICE',
           },
         ],
       },
@@ -94,6 +95,22 @@ describe('buildAnalystPrompt', () => {
     const messages = buildAnalystPrompt(testContext);
     expect(messages[1].content).toContain('=== STORY STRUCTURE ===');
     expect(messages[1].content).toContain('=== BEAT EVALUATION ===');
+  });
+
+  it('includes crisis type checks when active beat has crisisType', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      accumulatedStructureState: {
+        ...testState,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      },
+    });
+
+    expect(messages[1].content).toContain('The expected crisis type is BEST_BAD_CHOICE');
   });
 
   it('user message contains "NARRATIVE TO EVALUATE:" followed by the narrative text', () => {

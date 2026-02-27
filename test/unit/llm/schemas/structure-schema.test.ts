@@ -63,6 +63,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'causalLink',
       'role',
       'escalationType',
+      'crisisType',
       'uniqueScenarioHook',
       'approachVectors',
       'setpieceSourceIndex',
@@ -221,6 +222,37 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
 
     expect(setpieceSourceIndexSchema.anyOf).toEqual([
       { type: 'integer', minimum: 0, maximum: 5 },
+      { type: 'null' },
+    ]);
+  });
+
+  it('should define crisisType with a nullable anyOf enum', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    crisisType: {
+                      anyOf: Array<{ type: string; enum?: string[] }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const crisisTypeSchema = schema.properties.acts.items.properties.beats.items.properties.crisisType;
+    expect(crisisTypeSchema.anyOf).toEqual([
+      {
+        type: 'string',
+        enum: ['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS'],
+      },
       { type: 'null' },
     ]);
   });

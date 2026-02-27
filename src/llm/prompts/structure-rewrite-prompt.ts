@@ -28,12 +28,16 @@ function getActsToRegenerate(currentActIndex: number, totalActs: number): string
 function formatEscalationFields(
   causalLink: string,
   escalationType: string | null,
+  crisisType: string | null,
   uniqueScenarioHook: string | null,
   approachVectors?: readonly string[] | null
 ): string {
   const parts: string[] = [`    Causal link: ${causalLink}`];
   if (escalationType) {
     parts.push(`    Escalation mechanism: ${escalationType}`);
+  }
+  if (crisisType) {
+    parts.push(`    Crisis type: ${crisisType}`);
   }
   if (uniqueScenarioHook) {
     parts.push(`    Scenario hook: ${uniqueScenarioHook}`);
@@ -54,7 +58,7 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.uniqueScenarioHook, beat.approachVectors)}
+    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.crisisType, beat.uniqueScenarioHook, beat.approachVectors)}
     Resolution: ${beat.resolution}`
     )
     .join('\n');
@@ -66,7 +70,7 @@ function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats'
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.uniqueScenarioHook, beat.approachVectors)}`
+    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.crisisType, beat.uniqueScenarioHook, beat.approachVectors)}`
     )
     .join('\n');
 }
@@ -168,9 +172,13 @@ REQUIREMENTS (follow ALL):
    - COMPLICATION_CASCADE: Consequences compound into crises
    - COMPETENCE_DEMAND_SPIKE: Challenge exceeds demonstrated capability
    For "setup", "reflection", and "resolution" beats, set escalationType to null. Preserve escalationType from completed beats unchanged.
-   When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
-13. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-14. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+13. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
+   - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
+   - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
+   For "setup", "reflection", and "resolution" beats, set crisisType to null. Preserve crisisType from completed beats unchanged.
+   When choosing escalation types and crisis types together, ensure the crisis expresses a real decision pressure, not just environmental difficulty.
+14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
+15. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION
    For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
 
@@ -203,6 +211,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
       - causalLink: one sentence explaining the cause of this beat's situation
       - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
+      - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats`;
 

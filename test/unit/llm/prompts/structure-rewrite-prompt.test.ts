@@ -182,6 +182,9 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain(
       'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
     );
+    expect(user).toContain(
+      'crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null'
+    );
   });
 
   it('includes causal linkage requirement for regenerated beats', () => {

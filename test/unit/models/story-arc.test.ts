@@ -1,6 +1,7 @@
 import {
   AccumulatedStructureState,
   BeatRole,
+  CrisisType,
   PacingBudget,
   StoryBeat,
   createBeatDeviation,
@@ -116,6 +117,13 @@ describe('story-arc model utilities', () => {
       };
       const copy = { ...beat };
       expect(copy.role).toBe('turning_point');
+    });
+  });
+
+  describe('CrisisType type', () => {
+    it('accepts all valid crisis types', () => {
+      const crisisTypes: CrisisType[] = ['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS'];
+      expect(crisisTypes).toEqual(['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS']);
     });
   });
 

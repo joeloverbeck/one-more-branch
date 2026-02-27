@@ -164,6 +164,7 @@ When the active beat role is `escalation`, `turning_point`, or `reflection`, the
 The active beat role is "escalation". This scene MUST raise stakes beyond the previous beat.
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
 {{#if activeBeat.escalationType}}Escalation mechanism: {{activeBeat.escalationType}} — plan a scene that delivers this specific type of escalation.{{/if}}
+{{#if activeBeat.crisisType}}Crisis type: {{activeBeat.crisisType}} — shape choiceIntents so the dilemma matches this crisis form.{{/if}}
 {{#if activeBeat.uniqueScenarioHook}}Unique scenario hook: {{activeBeat.uniqueScenarioHook}}{{/if}}
 {{#if activeBeat.approachVectors}}Approach vectors: {{activeBeat.approachVectors joined by ', '}} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.{{/if}}
 Requirements:
@@ -177,6 +178,7 @@ Requirements:
 The active beat role is "turning_point". This scene MUST deliver an irreversible shift.
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
 {{#if activeBeat.escalationType}}Turning point mechanism: {{activeBeat.escalationType}} — plan a scene that delivers this specific type of shift.{{/if}}
+{{#if activeBeat.crisisType}}Crisis type: {{activeBeat.crisisType}} — shape choiceIntents so the pivotal decision matches this crisis form.{{/if}}
 {{#if activeBeat.uniqueScenarioHook}}Unique scenario hook: {{activeBeat.uniqueScenarioHook}}{{/if}}
 {{#if activeBeat.approachVectors}}Approach vectors: {{activeBeat.approachVectors joined by ', '}} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.{{/if}}
 Requirements:
@@ -196,7 +198,7 @@ Requirements:
 {{/if}}
 ```
 
-The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point beat is the first beat in the act, the previous resolution line is omitted. The escalation mechanism, unique scenario hook, and approach vectors lines are emitted only when those fields are present on the active beat.
+The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point beat is the first beat in the act, the previous resolution line is omitted. The escalation mechanism, crisis type, unique scenario hook, and approach vectors lines are emitted only when those fields are present on the active beat.
 
 Source: `buildEscalationDirective()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 

@@ -1,29 +1,22 @@
 import type {
   ApproachVector,
   BeatRole,
+  CrisisType,
   EscalationType,
   StoryAct,
   StoryBeat,
   StoryStructure,
 } from '../models/story-arc';
+import {
+  APPROACH_VECTORS,
+  BEAT_ROLES,
+  CRISIS_TYPES,
+  ESCALATION_TYPES,
+} from '../models/story-arc';
 import type { StructureGenerationResult } from './structure-types';
 
-import { BEAT_ROLES as VALID_BEAT_ROLES } from '../models/story-arc';
-
-const VALID_ESCALATION_TYPES: readonly string[] = [
-  'THREAT_ESCALATION',
-  'REVELATION_SHIFT',
-  'REVERSAL_OF_FORTUNE',
-  'BETRAYAL_OR_ALLIANCE_SHIFT',
-  'RESOURCE_OR_CAPABILITY_LOSS',
-  'MORAL_OR_ETHICAL_PRESSURE',
-  'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
-  'COMPLICATION_CASCADE',
-  'COMPETENCE_DEMAND_SPIKE',
-];
-
 function parseBeatRole(role: string): BeatRole {
-  if (VALID_BEAT_ROLES.includes(role as BeatRole)) {
+  if (BEAT_ROLES.includes(role as BeatRole)) {
     return role as BeatRole;
   }
   return 'escalation';
@@ -33,24 +26,21 @@ export function parseEscalationType(value: string | null | undefined): Escalatio
   if (value == null) {
     return null;
   }
-  if (VALID_ESCALATION_TYPES.includes(value)) {
+  if (ESCALATION_TYPES.includes(value as EscalationType)) {
     return value as EscalationType;
   }
   return null;
 }
 
-const VALID_APPROACH_VECTORS: readonly string[] = [
-  'DIRECT_FORCE',
-  'SWIFT_ACTION',
-  'STEALTH_SUBTERFUGE',
-  'ANALYTICAL_REASONING',
-  'CAREFUL_OBSERVATION',
-  'INTUITIVE_LEAP',
-  'PERSUASION_INFLUENCE',
-  'EMPATHIC_CONNECTION',
-  'ENDURANCE_RESILIENCE',
-  'SELF_EXPRESSION',
-];
+export function parseCrisisType(value: string | null | undefined): CrisisType | null {
+  if (value == null) {
+    return null;
+  }
+  if (CRISIS_TYPES.includes(value as CrisisType)) {
+    return value as CrisisType;
+  }
+  return null;
+}
 
 export function parseApproachVectors(
   value: unknown
@@ -59,7 +49,7 @@ export function parseApproachVectors(
     return null;
   }
   const valid = value.filter(
-    (v): v is string => typeof v === 'string' && VALID_APPROACH_VECTORS.includes(v)
+    (v): v is string => typeof v === 'string' && APPROACH_VECTORS.includes(v as ApproachVector)
   ) as ApproachVector[];
   return valid.length > 0 ? valid : null;
 }
@@ -101,6 +91,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       causalLink: parseCausalLink(beatData.causalLink, `${actId}.${beatIndex + 1}`),
       role: parseBeatRole(beatData.role),
       escalationType: parseEscalationType(beatData.escalationType),
+      crisisType: parseCrisisType(beatData.crisisType),
       uniqueScenarioHook:
         typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
       approachVectors: parseApproachVectors(beatData.approachVectors),

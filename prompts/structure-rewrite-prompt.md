@@ -134,8 +134,12 @@ REQUIREMENTS (follow ALL):
    - COMPETENCE_DEMAND_SPIKE: Challenge exceeds demonstrated capability
    For "setup", "reflection", and "resolution" beats, set escalationType to null. Preserve escalationType from completed beats unchanged.
    When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
-13. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-14. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
+13. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
+   - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
+   - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
+   For "setup", "reflection", and "resolution" beats, set crisisType to null. Preserve crisisType from completed beats unchanged.
+14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
+15. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
@@ -168,6 +172,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
       - causalLink: one sentence explaining the cause of this beat's situation
       - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
+      - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
 ```
@@ -196,6 +201,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "causalLink": "{{because-of causal sentence}}",
           "role": "{{setup|escalation|turning_point|reflection|resolution}}",
           "escalationType": "{{THREAT_ESCALATION|REVELATION_SHIFT|REVERSAL_OF_FORTUNE|BETRAYAL_OR_ALLIANCE_SHIFT|RESOURCE_OR_CAPABILITY_LOSS|MORAL_OR_ETHICAL_PRESSURE|TEMPORAL_OR_ENVIRONMENTAL_PRESSURE|COMPLICATION_CASCADE|COMPETENCE_DEMAND_SPIKE|null}}",
+          "crisisType": "{{BEST_BAD_CHOICE|IRRECONCILABLE_GOODS|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
           "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|...}}"]
         }

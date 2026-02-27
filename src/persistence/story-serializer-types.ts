@@ -86,6 +86,7 @@ export interface StoryStructureFileData {
       causalLink: string;
       role: string;
       escalationType?: string | null;
+      crisisType?: string | null;
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
       setpieceSourceIndex?: number | null;

@@ -170,6 +170,9 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain(
       'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
     );
+    expect(lastUser).toContain(
+      'crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null'
+    );
   });
 });
 

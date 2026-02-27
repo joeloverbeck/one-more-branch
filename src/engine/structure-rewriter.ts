@@ -15,7 +15,12 @@ import type {
   StructureRewriteResult,
 } from '../llm/structure-rewrite-types';
 import { BEAT_ROLES, BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
-import { createStoryStructure, parseApproachVectors, parseEscalationType } from './structure-factory';
+import {
+  createStoryStructure,
+  parseApproachVectors,
+  parseCrisisType,
+  parseEscalationType,
+} from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
 export interface StructureRewriter {
@@ -118,6 +123,7 @@ export function mergePreservedWithRegenerated(
       causalLink: beat.causalLink,
       role: parseBeatRole(beat.role),
       escalationType: parseEscalationType(beat.escalationType),
+      crisisType: parseCrisisType(beat.crisisType),
       uniqueScenarioHook: beat.uniqueScenarioHook,
       approachVectors: parseApproachVectors(beat.approachVectors),
       setpieceSourceIndex: beat.setpieceSourceIndex,
@@ -149,6 +155,7 @@ export function mergePreservedWithRegenerated(
         causalLink: beat.causalLink,
         role: beat.role,
         escalationType: beat.escalationType,
+        crisisType: beat.crisisType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ?? null,
         setpieceSourceIndex: beat.setpieceSourceIndex ?? null,
@@ -272,6 +279,8 @@ function parseStructureResponse(
       const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
       const escalationType =
         typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
+      const crisisType =
+        typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
       const uniqueScenarioHook =
         typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
       const approachVectors = Array.isArray(beatData['approachVectors'])
@@ -294,6 +303,7 @@ function parseStructureResponse(
         causalLink: beatData['causalLink'],
         role,
         escalationType,
+        crisisType,
         uniqueScenarioHook,
         approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
         setpieceSourceIndex,
