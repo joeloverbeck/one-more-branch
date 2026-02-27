@@ -28,6 +28,8 @@ export interface GeneratedAct {
 export interface StructureGenerationResult {
   overallTheme: string;
   premise: string;
+  openingImage: string;
+  closingImage: string;
   pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   acts: GeneratedAct[];
   initialNpcAgendas?: NpcAgenda[];

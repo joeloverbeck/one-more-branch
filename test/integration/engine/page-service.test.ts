@@ -176,6 +176,8 @@ function buildStructure(): StoryStructure {
   return createMockStoryStructure({
     overallTheme: 'Navigate political intrigue in a city of shadows.',
     premise: 'A courier uncovers a conspiracy while navigating rival factions.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 12, targetPagesMax: 24 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -431,6 +433,9 @@ function buildStateAccountantResult(
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Survive after betrayal.',
+    openingImage: 'A courier hiding under a rain-black bridge while searchlights sweep overhead.',
+    closingImage:
+      'The same courier walking openly across the bridge at dawn as the searchlights go dark.',
     acts: [
       {
         name: 'Act I Reframed',

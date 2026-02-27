@@ -80,6 +80,8 @@ const mockSpine: StorySpine = {
 const mockedStructureResult = {
   overallTheme: 'Uncover the harbor conspiracy before dawn.',
   premise: 'A disgraced guard must infiltrate the tribunal that framed her.',
+  openingImage: 'An opening image placeholder.',
+  closingImage: 'A closing image placeholder.',
   pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
   acts: [
     {
@@ -249,6 +251,8 @@ function buildAnalystResult(narrative: string): AnalystResult {
 function createRewriteFetchResponse(): Response {
   const rewrittenStructure = {
     overallTheme: 'Adapt without losing your moral center.',
+    openingImage: 'A lone operative in a rain-soaked alley beneath a tribunal banner.',
+    closingImage: 'That operative on courthouse steps at sunrise as banners are torn down.',
     acts: [
       {
         name: 'Act I Reframed',

@@ -7,6 +7,8 @@ describe('buildAnalystPrompt integration - active state summary', () => {
   const structure: StoryStructure = {
     overallTheme: 'Survive the occupation long enough to spark resistance.',
     premise: 'A courier must keep a rebel network alive under martial law.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [

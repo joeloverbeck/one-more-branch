@@ -86,6 +86,8 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
     })),
     overallTheme: structure.overallTheme,
     premise: structure.premise,
+    openingImage: structure.openingImage,
+    closingImage: structure.closingImage,
     pacingBudget: structure.pacingBudget,
     generatedAt: structure.generatedAt.toISOString(),
   };
@@ -139,6 +141,8 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     acts,
     overallTheme: data.overallTheme,
     premise: data.premise,
+    openingImage: data.openingImage,
+    closingImage: data.closingImage,
     pacingBudget: data.pacingBudget,
     generatedAt: new Date(data.generatedAt),
   };

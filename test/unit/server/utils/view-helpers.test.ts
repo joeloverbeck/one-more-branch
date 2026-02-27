@@ -45,6 +45,8 @@ function createTestStructure(acts: Array<{ id: string; name: string }>): StorySt
     })),
     overallTheme: 'Test theme',
     premise: 'Test premise',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: {
       targetPagesMin: 1,
       targetPagesMax: 2,
@@ -218,6 +220,8 @@ describe('getActDisplayInfo', () => {
         ],
         overallTheme: 'Theme',
         premise: 'Premise',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 1, targetPagesMax: 5 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
       };
@@ -264,6 +268,8 @@ describe('getActDisplayInfo', () => {
         ],
         overallTheme: 'Theme',
         premise: 'Premise',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 1, targetPagesMax: 5 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
       };
@@ -968,6 +974,8 @@ describe('getMilestoneInfo', () => {
       ],
       overallTheme: 'Survival',
       premise: 'A dark journey',
+      openingImage: 'An opening image placeholder.',
+      closingImage: 'A closing image placeholder.',
       pacingBudget: { targetPagesMin: 5, targetPagesMax: 15 },
       generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };
@@ -1272,6 +1280,8 @@ describe('getMilestoneInfo', () => {
       ],
       overallTheme: 'Theme',
       premise: 'Premise',
+      openingImage: 'An opening image placeholder.',
+      closingImage: 'A closing image placeholder.',
       pacingBudget: { targetPagesMin: 1, targetPagesMax: 5 },
       generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };

@@ -86,7 +86,8 @@ export function createStructureRewriter(
       const structure = mergePreservedWithRegenerated(
         context.completedBeats,
         regeneratedStructure,
-        context.originalTheme
+        context.originalTheme,
+        context.originalOpeningImage
       );
 
       return {
@@ -101,7 +102,8 @@ export function createStructureRewriter(
 export function mergePreservedWithRegenerated(
   preservedBeats: readonly CompletedBeat[],
   regeneratedStructure: StoryStructure,
-  originalTheme: string
+  originalTheme: string,
+  originalOpeningImage: string
 ): StoryStructure {
   const preservedByAct = new Map<number, CompletedBeat[]>();
   for (const beat of preservedBeats) {
@@ -217,6 +219,8 @@ export function mergePreservedWithRegenerated(
     acts: mergedActs,
     overallTheme: originalTheme,
     premise: regeneratedStructure.premise,
+    openingImage: originalOpeningImage,
+    closingImage: regeneratedStructure.closingImage,
     pacingBudget: regeneratedStructure.pacingBudget,
     generatedAt: new Date(),
   };

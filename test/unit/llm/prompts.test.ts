@@ -18,6 +18,8 @@ describe('buildOpeningPrompt', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Survive the uprising and expose its true architect',
     premise: 'A fugitive must uncover the uprising architect before being silenced forever.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -288,8 +290,9 @@ describe('buildOpeningPrompt', () => {
 describe('buildContinuationPrompt', () => {
   const structure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
-    premise:
-      'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [

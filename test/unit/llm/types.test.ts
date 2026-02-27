@@ -925,6 +925,8 @@ describe('LLM types', () => {
           ],
           overallTheme: 'Courage under pressure',
           premise: 'A lone warrior must breach an unbreakable gate to save a captive ally.',
+          openingImage: 'An opening image placeholder.',
+          closingImage: 'A closing image placeholder.',
           pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
           generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         },
@@ -1028,6 +1030,8 @@ describe('LLM types', () => {
       ],
       overallTheme: 'Hope under pressure',
       premise: 'A team under siege must hold together when every option demands sacrifice.',
+      openingImage: 'An opening image placeholder.',
+      closingImage: 'A closing image placeholder.',
       pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
       generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };

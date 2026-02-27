@@ -199,6 +199,8 @@ function buildStructure(): StoryStructure {
   return {
     overallTheme: 'Outmaneuver the imperial intelligence network.',
     premise: 'A courier must smuggle evidence through occupied territory without being caught.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -231,6 +233,8 @@ function buildTurningPointFirstBeatStructure(): StoryStructure {
   return {
     overallTheme: 'Expose the conspiracy before the regime consolidates power.',
     premise: 'A courier must force a public commitment that irreversibly changes the conflict.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -2487,6 +2491,8 @@ describe('page-service', () => {
       const rewrittenStructure: StoryStructure = {
         overallTheme: 'Outmaneuver the imperial intelligence network.',
         premise: 'A courier defects to the empire and must prove loyalty.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
@@ -2679,6 +2685,8 @@ describe('page-service', () => {
       const structureV2: StoryStructure = {
         overallTheme: 'Rewritten theme from another branch.',
         premise: 'A different path through the occupied territory.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
@@ -2962,6 +2970,8 @@ describe('page-service', () => {
       const rewrittenStructure: StoryStructure = {
         overallTheme: 'New path theme.',
         premise: 'After betraying allies, the protagonist forges a new identity.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [
@@ -3665,6 +3675,8 @@ describe('page-service', () => {
         const rewrittenStructure: StoryStructure = {
           overallTheme: 'After the defection.',
           premise: 'The courier chose a new path after defecting.',
+          openingImage: 'An opening image placeholder.',
+          closingImage: 'A closing image placeholder.',
           pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
           generatedAt: new Date('2026-01-02T00:00:00.000Z'),
           acts: [
@@ -4139,6 +4151,8 @@ describe('page-service', () => {
       const rewrittenStructure: StoryStructure = {
         overallTheme: 'Rewritten after deviation.',
         premise: 'The story takes an unexpected turn after the protagonist deviates.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 15, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-02T00:00:00.000Z'),
         acts: [

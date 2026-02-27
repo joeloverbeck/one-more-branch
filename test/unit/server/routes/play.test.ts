@@ -339,6 +339,8 @@ describe('playRoutes', () => {
         ],
         overallTheme: 'Test theme',
         premise: 'Test premise',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: {
           targetPagesMin: 1,
           targetPagesMax: 3,
@@ -459,6 +461,8 @@ describe('playRoutes', () => {
           acts: [],
           overallTheme: 'Trust is a weapon',
           premise: 'Forge alliances before the summit collapses',
+          openingImage: 'An opening image placeholder.',
+          closingImage: 'A closing image placeholder.',
           pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
           generatedAt: new Date(),
         },
@@ -1428,6 +1432,8 @@ describe('playRoutes', () => {
         ],
         overallTheme: 'Test theme',
         premise: 'Test premise',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: {
           targetPagesMin: 2,
           targetPagesMax: 4,

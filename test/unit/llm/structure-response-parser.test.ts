@@ -5,6 +5,8 @@ function createValidParsedStructure(): Record<string, unknown> {
   return {
     overallTheme: 'Trust must survive orchestrated betrayal.',
     premise: 'A captain must expose the tribunal before the fleet fractures.',
+    openingImage: 'A lone captain under storm-lantern light at an empty war table.',
+    closingImage: 'The captain under dawn light as the fleet lowers tribunal banners.',
     pacingBudget: { targetPagesMin: 18, targetPagesMax: 36 },
     acts: [
       {
@@ -121,6 +123,18 @@ describe('structure-response-parser', () => {
     });
     expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
     expect(result.acts[0]?.beats[1]?.expectedGapMagnitude).toBe('WIDE');
+    expect(result.openingImage).toContain('storm-lantern');
+    expect(result.closingImage).toContain('dawn light');
+  });
+
+  it('throws when openingImage is missing', () => {
+    const parsed = createValidParsedStructure();
+    delete parsed['openingImage'];
+
+    expect(() => parseStructureResponseObject(parsed)).toThrow(LLMError);
+    expect(() => parseStructureResponseObject(parsed)).toThrow(
+      'Structure response missing openingImage'
+    );
   });
 
   it('throws when midpointType exists but isMidpoint is false', () => {

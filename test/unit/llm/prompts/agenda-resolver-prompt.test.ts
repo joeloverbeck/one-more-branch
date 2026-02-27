@@ -137,6 +137,8 @@ describe('buildAgendaResolverPrompt', () => {
       structure: {
         overallTheme: 'Survival at any cost',
         premise: 'A smuggler must escape a quarantined city.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         acts: [],
@@ -265,6 +267,8 @@ describe('buildAgendaResolverPrompt', () => {
         structure: {
           overallTheme: 'Survival at any cost',
           premise: 'A smuggler must escape.',
+          openingImage: 'An opening image placeholder.',
+          closingImage: 'A closing image placeholder.',
           pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
           generatedAt: new Date('2026-01-01T00:00:00.000Z'),
           acts: [],

@@ -81,6 +81,8 @@ function buildTestStructure(): StoryStructure {
     ],
     overallTheme: 'Hope against fear',
     premise: 'A sheltered survivor must leave home to stop a spreading ruin.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 35 },
     generatedAt: new Date('2025-01-01T00:00:00.000Z'),
   };
@@ -429,6 +431,8 @@ describe('story-repository', () => {
         ],
         overallTheme: 'Theme',
         premise: 'Premise',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
         generatedAt: '2025-01-01T00:00:00.000Z',
       },

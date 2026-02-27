@@ -192,6 +192,8 @@ describe('planner continuation context section', () => {
       structure: {
         overallTheme: 'Loyalty under impossible pressure',
         premise: 'A smuggler must expose corruption before a citywide purge.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         acts: [
@@ -634,6 +636,8 @@ describe('planner continuation context section', () => {
       structure: {
         overallTheme: 'Loyalty under pressure',
         premise: 'A smuggler must escape.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         acts: [
@@ -697,6 +701,8 @@ describe('buildEscalationDirective', () => {
   ): StoryStructure => ({
     overallTheme: 'Test',
     premise: 'Test',
+    openingImage: 'A lone figure at a shattered gate.',
+    closingImage: 'That figure returns through a rebuilt gate at dawn.',
     pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [
@@ -739,8 +745,69 @@ describe('buildEscalationDirective', () => {
     expect(buildEscalationDirective(structure, state)).toBe('');
   });
 
-  it('returns empty string when beat role is resolution', () => {
-    const structure = makeStructure([{ id: '1.1', role: 'resolution' }]);
+  it('returns empty string for non-final resolution beats', () => {
+    const structure: StoryStructure = {
+      overallTheme: 'Test',
+      premise: 'Test',
+      openingImage: 'A lone figure at a shattered gate.',
+      closingImage: 'That figure returns through a rebuilt gate at dawn.',
+      pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+      generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      acts: [
+        {
+          id: '1',
+          name: 'Act 1',
+          objective: 'Obj',
+          stakes: 'Stakes',
+          entryCondition: 'Start',
+          beats: [
+            {
+              id: '1.1',
+              name: 'Beat 1.1',
+              description: 'Desc',
+              objective: 'Obj',
+              causalLink: 'Because setup.',
+              role: 'resolution',
+              escalationType: null,
+              secondaryEscalationType: null,
+              crisisType: null,
+              expectedGapMagnitude: null,
+              isMidpoint: false,
+              midpointType: null,
+              uniqueScenarioHook: null,
+              approachVectors: null,
+              setpieceSourceIndex: null,
+            },
+          ],
+        },
+        {
+          id: '2',
+          name: 'Act 2',
+          objective: 'Obj 2',
+          stakes: 'Stakes 2',
+          entryCondition: 'Continue',
+          beats: [
+            {
+              id: '2.1',
+              name: 'Beat 2.1',
+              description: 'Desc 2',
+              objective: 'Obj 2',
+              causalLink: 'Because continue.',
+              role: 'resolution',
+              escalationType: null,
+              secondaryEscalationType: null,
+              crisisType: null,
+              expectedGapMagnitude: null,
+              isMidpoint: false,
+              midpointType: null,
+              uniqueScenarioHook: null,
+              approachVectors: null,
+              setpieceSourceIndex: null,
+            },
+          ],
+        },
+      ],
+    };
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
       currentBeatIndex: 0,
@@ -750,6 +817,22 @@ describe('buildEscalationDirective', () => {
     };
 
     expect(buildEscalationDirective(structure, state)).toBe('');
+  });
+
+  it('returns final resolution image directive for last beat of final act', () => {
+    const structure = makeStructure([{ id: '1.1', role: 'resolution' }]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+    expect(result).toContain('=== FINAL RESOLUTION IMAGE DIRECTIVE ===');
+    expect(result).toContain('closing image');
+    expect(result).toContain('mirrors or contrasts the opening image');
   });
 
   it('returns reflection directive when beat role is reflection', () => {

@@ -18,6 +18,7 @@ The following sections are **always included** regardless of Story Bible presenc
 - Starting situation (user-provided grounding, independent of the story bible)
 - Protagonist speech fingerprint (decomposed characters are always present)
 - NPC voice fingerprints (when story bible + decomposed characters are available; falls back to lorekeeper's `speechPatterns` for unmatched NPCs)
+- Opening image contract (when `context.structure.openingImage` is available)
 - Planner guidance and choice intents
 - Reconciliation failure reasons (if retry)
 
@@ -35,6 +36,18 @@ When both a `storyBible` and `decomposedCharacters` are available, an `NPC VOICE
 This bypasses the lossy compression that previously buried structured speech data inside a single lorekeeper string, while keeping the lorekeeper responsible for **selecting** which NPCs are scene-relevant.
 
 When `storyBible` is absent (lorekeeper failure), all original sections appear as documented below.
+
+## Opening Image Contract
+
+When `context.structure` is present and `openingImage` is non-empty, the user prompt includes:
+
+```text
+OPENING IMAGE CONTRACT:
+Anchor this opening scene to this concrete image: {{structure.openingImage}}
+Use this as a visual spine for setting, action framing, or emotional atmosphere.
+```
+
+This establishes a deterministic opening visual target coming from structure generation.
 
 ## Messages Sent To Model
 

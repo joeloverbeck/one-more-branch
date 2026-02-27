@@ -98,6 +98,8 @@ export interface StoryStructureFileData {
   }>;
   overallTheme: string;
   premise: string;
+  openingImage: string;
+  closingImage: string;
   pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   generatedAt: string;
 }

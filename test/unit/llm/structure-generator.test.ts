@@ -51,8 +51,9 @@ interface StructurePayload {
 function createValidStructurePayload(): StructurePayload {
   return {
     overallTheme: 'Expose the tribunal and reclaim your honor.',
-    premise:
-      'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
+    premise: 'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     acts: [
       {

@@ -60,6 +60,8 @@ export interface StructureRewriteContext {
   readonly currentBeatIndex: number;
   readonly deviationReason: string;
   readonly originalTheme: string;
+  readonly originalOpeningImage: string;
+  readonly originalClosingImage: string;
   readonly totalActCount: number;
 }
 

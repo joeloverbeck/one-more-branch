@@ -75,8 +75,9 @@ function createGeneratedStructure(
 ): StructureGenerationResult {
   return {
     overallTheme: 'Rewritten theme candidate',
-    premise:
-      'A disgraced captain must unite rival fleets before storm season destroys the archipelago.',
+    premise: 'A disgraced captain must unite rival fleets before storm season destroys the archipelago.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
@@ -191,6 +192,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
   return {
     overallTheme: 'Generated structure theme',
     premise: 'A test premise for the generated structure.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     generatedAt: new Date('2026-02-07T00:00:00.000Z'),
     acts: [
@@ -382,6 +385,8 @@ describe('structure-rewriter', () => {
       const twoActPayload = {
         overallTheme: 'Some theme',
         premise: 'Some premise',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
         acts: [
           {

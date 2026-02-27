@@ -267,3 +267,28 @@ describe('buildOpeningPrompt protagonist name', () => {
     expect(protagonistIndex).toBeLessThan(fingerprintIndex);
   });
 });
+
+describe('buildOpeningPrompt opening image contract', () => {
+  it('includes opening image contract when structure provides openingImage', () => {
+    const context: OpeningContext = {
+      tone: 'dark fantasy',
+      decomposedCharacters: [makeMinimalDecomposedCharacter('Jon Ureña')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      structure: {
+        overallTheme: 'Power extracted from sacrifice corrupts both ruler and realm.',
+        premise: 'A disgraced heir must reclaim a cursed crown before the empire implodes.',
+        openingImage: 'A crown half-buried in ash beside a kneeling heir.',
+        closingImage: 'The same crown reforged and raised over a rebuilt city gate.',
+        pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        acts: [],
+      },
+    };
+
+    const messages = buildOpeningPrompt(context);
+    const userMessage = messages.find((m) => m.role === 'user')!.content;
+
+    expect(userMessage).toContain('OPENING IMAGE CONTRACT:');
+    expect(userMessage).toContain('A crown half-buried in ash beside a kneeling heir.');
+  });
+});

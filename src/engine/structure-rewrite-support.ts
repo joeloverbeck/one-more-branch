@@ -165,6 +165,8 @@ export function buildRewriteContext(
     currentBeatIndex: structureState.currentBeatIndex,
     deviationReason: deviation.reason,
     originalTheme: structure.overallTheme,
+    originalOpeningImage: structure.openingImage,
+    originalClosingImage: structure.closingImage,
     totalActCount: structure.acts.length,
   };
 }
