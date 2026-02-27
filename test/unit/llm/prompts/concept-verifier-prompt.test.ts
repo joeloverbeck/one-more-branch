@@ -42,6 +42,8 @@ describe('buildConceptVerifierPrompt', () => {
     expect(system).toContain('irreducibly unique');
     expect(system).toContain('load-bearing check');
     expect(system).toContain('escalating setpieces');
+    expect(system).toContain('logline compression test');
+    expect(system).toContain('setpiece causal chain test');
     expect(system).toContain('premise promises');
     expect(system).toContain('inevitability statement');
   });
@@ -88,6 +90,8 @@ describe('buildConceptVerifierPrompt', () => {
     expect(user).toContain('OUTPUT REQUIREMENTS');
     expect(user).toContain('exactly 3 items');
     expect(user).toContain('signatureScenario');
+    expect(user).toContain('loglineCompressible');
+    expect(user).toContain('setpieceCausalLinks');
     expect(user).toContain('premisePromises');
     expect(user).toContain('exactly 3-5');
     expect(user).toContain('escalatingSetpieces');

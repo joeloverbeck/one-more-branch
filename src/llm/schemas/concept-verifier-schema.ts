@@ -1,4 +1,5 @@
 import type { JsonSchema } from '../llm-client-types.js';
+import { CONCEPT_VERIFICATION_CONSTRAINTS } from '../../models/concept-generator.js';
 
 const LOAD_BEARING_CHECK_SCHEMA = {
   type: 'object',
@@ -28,8 +29,12 @@ const CONCEPT_VERIFICATION_SCHEMA = {
   required: [
     'conceptId',
     'signatureScenario',
+    'loglineCompressible',
+    'logline',
     'premisePromises',
     'escalatingSetpieces',
+    'setpieceCausalChainBroken',
+    'setpieceCausalLinks',
     'inevitabilityStatement',
     'loadBearingCheck',
     'kernelFidelityCheck',
@@ -38,15 +43,26 @@ const CONCEPT_VERIFICATION_SCHEMA = {
   properties: {
     conceptId: { type: 'string', minLength: 1 },
     signatureScenario: { type: 'string' },
+    loglineCompressible: { type: 'boolean' },
+    logline: { type: 'string', minLength: 1 },
     premisePromises: {
       type: 'array',
-      minItems: 3,
-      maxItems: 5,
+      minItems: CONCEPT_VERIFICATION_CONSTRAINTS.premisePromisesMin,
+      maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.premisePromisesMax,
       items: { type: 'string', minLength: 1 },
     },
     escalatingSetpieces: {
       type: 'array',
+      minItems: CONCEPT_VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount,
+      maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount,
       items: { type: 'string' },
+    },
+    setpieceCausalChainBroken: { type: 'boolean' },
+    setpieceCausalLinks: {
+      type: 'array',
+      minItems: CONCEPT_VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount,
+      maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount,
+      items: { type: 'string', minLength: 1 },
     },
     inevitabilityStatement: { type: 'string' },
     loadBearingCheck: LOAD_BEARING_CHECK_SCHEMA,

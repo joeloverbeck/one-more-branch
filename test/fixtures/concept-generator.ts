@@ -109,6 +109,8 @@ export function createConceptVerificationFixture(index = 1): ConceptVerification
   return {
     conceptId: `concept_${index}`,
     signatureScenario: `Signature scenario for concept ${index}`,
+    loglineCompressible: true,
+    logline: `A haunted courier must choose truth over control before the city fractures.`,
     premisePromises: [
       `Premise promise 1 for concept ${index}`,
       `Premise promise 2 for concept ${index}`,
@@ -121,6 +123,14 @@ export function createConceptVerificationFixture(index = 1): ConceptVerification
       `Setpiece 4 for concept ${index}`,
       `Setpiece 5 for concept ${index}`,
       `Setpiece 6 for concept ${index}`,
+    ],
+    setpieceCausalChainBroken: false,
+    setpieceCausalLinks: [
+      `Setpiece 1 forces the setup for setpiece 2 in concept ${index}`,
+      `Setpiece 2 triggers the pressure behind setpiece 3 in concept ${index}`,
+      `Setpiece 3 causes the escalation in setpiece 4 for concept ${index}`,
+      `Setpiece 4 creates the trap leading to setpiece 5 for concept ${index}`,
+      `Setpiece 5 directly drives the climax in setpiece 6 for concept ${index}`,
     ],
     inevitabilityStatement: `Given this premise, X must happen for concept ${index}`,
     loadBearingCheck: {

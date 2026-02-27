@@ -19,12 +19,14 @@ Generation stage emitted by `conceptService`: `VERIFYING_CONCEPTS`.
 The evaluator scores concepts on quality dimensions and the stress tester hardens them against drift/player-break, but neither asks "is this concept specific enough to generate unique scenarios?" The verifier fills this gap by:
 
 1. **Signature Scenario**: Identifying the single most iconic interactive decision moment that ONLY exists because of this concept's differentiator.
-2. **Premise Promises**: Listing 3-5 specific audience expectations the premise promises to deliver (not structure beats).
-3. **Escalating Setpieces**: Producing 6 concept-unique situations in rising intensity that serve as downstream beat seeds for structure generation.
-4. **Inevitability Statement**: Capturing what kind of story MUST happen (not could happen) given the premise's internal logic.
-5. **Load-Bearing Check**: A negative test — removing the core differentiator and checking whether the story collapses into generic genre.
-6. **Kernel Fidelity Check**: A negative test — removing the story kernel and checking whether the concept's conflict engine still implies the same value-at-stake and opposing force, or could serve any kernel equally well.
-7. **Concept Integrity Score**: 0-100 based on how many setpieces are truly concept-unique.
+2. **Logline Compression Test**: Verifying the concept can compress into a compelling <=27-word logline.
+3. **Premise Promises**: Listing 3-5 specific audience expectations the premise promises to deliver (not structure beats).
+4. **Escalating Setpieces**: Producing 6 concept-unique situations in rising intensity that serve as downstream beat seeds for structure generation.
+5. **Setpiece Causal Chain Test**: Producing 5 causal links (1->2 through 5->6) and flagging whether the chain is broken.
+6. **Inevitability Statement**: Capturing what kind of story MUST happen (not could happen) given the premise's internal logic.
+7. **Load-Bearing Check**: A negative test — removing the core differentiator and checking whether the story collapses into generic genre.
+8. **Kernel Fidelity Check**: A negative test — removing the story kernel and checking whether the concept's conflict engine still implies the same value-at-stake and opposing force, or could serve any kernel equally well.
+9. **Concept Integrity Score**: 0-100 based on how many setpieces are truly concept-unique.
 
 ## Messages Sent To Model
 
@@ -38,8 +40,10 @@ VERIFICATION DIRECTIVES:
 - For each concept, produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
 - All scenarios and setpieces must be ONLY possible because of this specific concept's premise — both its conflict engine (genreSubversion, coreFlaw, coreConflictLoop) and its world-specific elements (settingAxioms, constraintSet, keyInstitutions, deadlineMechanism, pressureSource, escapeValve). Each setpiece must exploit at least one world-specific element, not just the conflict engine. If a setpiece could appear in a generic story of the same genre with different world rules, reject it and write one that couldn't.
 - The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise (both its conflict engine and its world-specific elements).
+- logline compression test: assess whether the full concept compresses into a compelling <=27-word logline. Set loglineCompressible and provide the compressed logline text in logline.
 - premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
 - The 6 escalating setpieces must form a rising intensity arc from opening hook to climax. Each must be concept-unique.
+- setpiece causal chain test: analyze whether each setpiece outcome CAUSES the next setpiece setup. If links are weak or missing, set setpieceCausalChainBroken=true and still provide the strongest possible 5 causal links (between setpieces 1->2 through 5->6).
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.
 
@@ -93,8 +97,12 @@ OUTPUT REQUIREMENTS:
 - Each verification must include:
   - conceptId: string (must match exactly one provided input conceptId)
   - signatureScenario: string
+  - loglineCompressible: boolean (true iff concept can compress to a compelling <=27-word logline)
+  - logline: string (the compressed logline itself, <=27 words)
   - premisePromises: string[] (exactly 3-5 specific audience expectations; not beat names)
   - escalatingSetpieces: string[] (exactly 6)
+  - setpieceCausalChainBroken: boolean (true iff causal chain between setpieces is weak/broken)
+  - setpieceCausalLinks: string[] (exactly 5 causal links: 1->2, 2->3, 3->4, 4->5, 5->6)
   - inevitabilityStatement: string
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }
   - kernelFidelityCheck: { passes: boolean, reasoning: string, kernelDrift: string }
@@ -104,7 +112,9 @@ OUTPUT REQUIREMENTS:
   - conceptIntegrityScore: number 0-100
 - Every input conceptId must appear exactly once in the output. No duplicates, no omissions, no unknown IDs.
 - All text fields must be non-empty.
+- logline must be <=27 words.
 - Each escalatingSetpieces array must contain exactly 6 strings.
+- Each setpieceCausalLinks array must contain exactly 5 non-empty strings.
 ```
 
 ## JSON Response Shape
@@ -115,6 +125,8 @@ OUTPUT REQUIREMENTS:
     {
       "conceptId": "concept_1",
       "signatureScenario": "description of the most iconic interactive decision moment",
+      "loglineCompressible": true,
+      "logline": "a <=27-word compressed concept logline",
       "premisePromises": [
         "audience expectation 1",
         "audience expectation 2",
@@ -127,6 +139,14 @@ OUTPUT REQUIREMENTS:
         "setpiece 4",
         "setpiece 5",
         "setpiece 6 (climax intensity)"
+      ],
+      "setpieceCausalChainBroken": false,
+      "setpieceCausalLinks": [
+        "setpiece 1 causes setpiece 2",
+        "setpiece 2 causes setpiece 3",
+        "setpiece 3 causes setpiece 4",
+        "setpiece 4 causes setpiece 5",
+        "setpiece 5 causes setpiece 6"
       ],
       "inevitabilityStatement": "given this premise, X kind of story MUST happen",
       "loadBearingCheck": {
@@ -148,6 +168,8 @@ OUTPUT REQUIREMENTS:
 - `parseConceptVerificationResponse(...)` requires exactly N verifications with conceptIds matching the input set (exact coverage: no duplicates, no omissions, no unknown IDs).
 - `premisePromises` must contain 3-5 non-empty strings.
 - `escalatingSetpieces` must have exactly 6 items.
+- `setpieceCausalLinks` must have exactly 5 non-empty strings.
+- `logline` must contain at most 27 words.
 - `conceptIntegrityScore` is clamped to 0-100 and rounded.
 - All text fields must be non-empty after trimming.
 

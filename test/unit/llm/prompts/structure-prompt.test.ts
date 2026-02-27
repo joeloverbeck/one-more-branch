@@ -198,7 +198,12 @@ describe('buildStructurePrompt', () => {
       conceptVerification: {
         conceptId: 'concept_1',
         signatureScenario: 'A harbor trial collapses into ritual violence.',
+        loglineCompressible: true,
+        logline: 'An investigator must weaponize tribunal ritual before the tide courts bury the city\'s evidence.',
+        premisePromises: ['promise 1', 'promise 2', 'promise 3'],
         escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'The city cannot avoid public reckoning.',
         loadBearingCheck: {
           passes: true,
@@ -226,12 +231,16 @@ describe('buildStructurePrompt', () => {
       conceptVerification: {
         conceptId: 'concept_1',
         signatureScenario: 'A harbor trial collapses into ritual violence.',
+        loglineCompressible: true,
+        logline: 'An investigator must weaponize tribunal ritual before the tide courts bury the city\'s evidence.',
         premisePromises: [
           'The protagonist must weaponize a public legal ritual.',
           'A trusted ally becomes complicit in the purge machinery.',
           'The final confrontation unfolds under a rising tide siren.',
         ],
         escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'The city cannot avoid public reckoning.',
         loadBearingCheck: {
           passes: true,

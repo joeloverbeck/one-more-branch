@@ -123,7 +123,12 @@ describe('saved-concept model guards', () => {
       verificationResult: {
         conceptId: 'concept_1',
         signatureScenario: 'Iconic moment',
+        loglineCompressible: true,
+        logline: 'A courier must expose the archive before her own edits erase the truth.',
+        premisePromises: ['p1', 'p2', 'p3'],
         escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'Must happen',
         loadBearingCheck: {
           passes: true,
@@ -142,7 +147,7 @@ describe('saved-concept model guards', () => {
     expect(isSavedConcept(value)).toBe(true);
   });
 
-  it('accepts SavedConcept with verificationResult WITHOUT kernelFidelityCheck (backward compat)', () => {
+  it('rejects SavedConcept with verificationResult missing required kernelFidelityCheck', () => {
     const value = {
       id: 'concept-1',
       name: 'Memory Courier',
@@ -153,7 +158,12 @@ describe('saved-concept model guards', () => {
       verificationResult: {
         conceptId: 'concept_1',
         signatureScenario: 'Iconic moment',
+        loglineCompressible: true,
+        logline: 'A courier must expose the archive before her own edits erase the truth.',
+        premisePromises: ['p1', 'p2', 'p3'],
         escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'Must happen',
         loadBearingCheck: {
           passes: true,
@@ -164,7 +174,7 @@ describe('saved-concept model guards', () => {
       },
     };
 
-    expect(isSavedConcept(value)).toBe(true);
+    expect(isSavedConcept(value)).toBe(false);
   });
 
   it('rejects SavedConcept with malformed kernelFidelityCheck in verificationResult', () => {
@@ -178,7 +188,12 @@ describe('saved-concept model guards', () => {
       verificationResult: {
         conceptId: 'concept_1',
         signatureScenario: 'Iconic moment',
+        loglineCompressible: true,
+        logline: 'A courier must expose the archive before her own edits erase the truth.',
+        premisePromises: ['p1', 'p2', 'p3'],
         escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'Must happen',
         loadBearingCheck: {
           passes: true,
@@ -187,6 +202,76 @@ describe('saved-concept model guards', () => {
         },
         kernelFidelityCheck: {
           passes: 'yes',
+          reasoning: 'Kernel grounded',
+          kernelDrift: 'No drift',
+        },
+        conceptIntegrityScore: 85,
+      },
+    };
+
+    expect(isSavedConcept(value)).toBe(false);
+  });
+
+  it('rejects SavedConcept with verificationResult missing setpieceCausalLinks', () => {
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConcept(),
+      verificationResult: {
+        conceptId: 'concept_1',
+        signatureScenario: 'Iconic moment',
+        loglineCompressible: true,
+        logline: 'A courier must expose the archive before her own edits erase the truth.',
+        premisePromises: ['p1', 'p2', 'p3'],
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        inevitabilityStatement: 'Must happen',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Load-bearing',
+          genericCollapse: 'Collapses',
+        },
+        kernelFidelityCheck: {
+          passes: true,
+          reasoning: 'Kernel grounded',
+          kernelDrift: 'No drift',
+        },
+        conceptIntegrityScore: 85,
+      },
+    };
+
+    expect(isSavedConcept(value)).toBe(false);
+  });
+
+  it('rejects SavedConcept with verificationResult logline over 27 words', () => {
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: createEvaluatedConcept(),
+      verificationResult: {
+        conceptId: 'concept_1',
+        signatureScenario: 'Iconic moment',
+        loglineCompressible: true,
+        logline:
+          'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight',
+        premisePromises: ['p1', 'p2', 'p3'],
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
+        inevitabilityStatement: 'Must happen',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Load-bearing',
+          genericCollapse: 'Collapses',
+        },
+        kernelFidelityCheck: {
+          passes: true,
           reasoning: 'Kernel grounded',
           kernelDrift: 'No drift',
         },

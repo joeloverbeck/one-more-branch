@@ -274,14 +274,26 @@ export interface KernelFidelityCheck {
   readonly kernelDrift: string;
 }
 
+export const CONCEPT_VERIFICATION_CONSTRAINTS = {
+  premisePromisesMin: 3,
+  premisePromisesMax: 5,
+  escalatingSetpiecesCount: 6,
+  setpieceCausalLinksCount: 5,
+  loglineMaxWords: 27,
+} as const;
+
 export interface ConceptVerification {
   readonly conceptId: string;
   readonly signatureScenario: string;
+  readonly loglineCompressible: boolean;
+  readonly logline: string;
   readonly premisePromises: readonly string[];
   readonly escalatingSetpieces: readonly string[];
+  readonly setpieceCausalChainBroken: boolean;
+  readonly setpieceCausalLinks: readonly string[];
   readonly inevitabilityStatement: string;
   readonly loadBearingCheck: LoadBearingCheck;
-  readonly kernelFidelityCheck?: KernelFidelityCheck;
+  readonly kernelFidelityCheck: KernelFidelityCheck;
   readonly conceptIntegrityScore: number;
 }
 

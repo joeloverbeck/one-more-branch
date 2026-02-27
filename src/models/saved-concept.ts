@@ -1,12 +1,16 @@
 import type {
-  ConceptSpec,
   ConceptVerification,
+  ConceptSpec,
   DriftRisk,
   EvaluatedConcept,
   PlayerBreak,
   ScoredConcept,
 } from './concept-generator.js';
-import { isConceptSpec, isDriftRiskMitigationType } from './concept-generator.js';
+import {
+  CONCEPT_VERIFICATION_CONSTRAINTS as VERIFICATION_CONSTRAINTS,
+  isConceptSpec,
+  isDriftRiskMitigationType,
+} from './concept-generator.js';
 
 export interface ConceptSeeds {
   readonly genreVibes?: string;
@@ -51,6 +55,13 @@ function isNonEmptyString(value: unknown): value is string {
 
 function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => isNonEmptyString(item));
+}
+
+function hasAtMostWords(value: string, maxWords: number): boolean {
+  return value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length <= maxWords;
 }
 
 function isFiniteScore(value: unknown): value is number {
@@ -165,13 +176,25 @@ function isConceptVerification(value: unknown): value is ConceptVerification {
   }
 
   return (
+    isNonEmptyString(value['conceptId']) &&
     isNonEmptyString(value['signatureScenario']) &&
+    typeof value['loglineCompressible'] === 'boolean' &&
+    isNonEmptyString(value['logline']) &&
+    hasAtMostWords(value['logline'], VERIFICATION_CONSTRAINTS.loglineMaxWords) &&
+    Array.isArray(value['premisePromises']) &&
+    value['premisePromises'].length >= VERIFICATION_CONSTRAINTS.premisePromisesMin &&
+    value['premisePromises'].length <= VERIFICATION_CONSTRAINTS.premisePromisesMax &&
+    value['premisePromises'].every((item: unknown) => isNonEmptyString(item)) &&
     Array.isArray(value['escalatingSetpieces']) &&
-    value['escalatingSetpieces'].length === 6 &&
+    value['escalatingSetpieces'].length === VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount &&
     value['escalatingSetpieces'].every((item: unknown) => isNonEmptyString(item)) &&
+    typeof value['setpieceCausalChainBroken'] === 'boolean' &&
+    Array.isArray(value['setpieceCausalLinks']) &&
+    value['setpieceCausalLinks'].length === VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount &&
+    value['setpieceCausalLinks'].every((item: unknown) => isNonEmptyString(item)) &&
     isNonEmptyString(value['inevitabilityStatement']) &&
     isLoadBearingCheck(value['loadBearingCheck']) &&
-    (value['kernelFidelityCheck'] === undefined || isKernelFidelityCheck(value['kernelFidelityCheck'])) &&
+    isKernelFidelityCheck(value['kernelFidelityCheck']) &&
     typeof value['conceptIntegrityScore'] === 'number' &&
     Number.isFinite(value['conceptIntegrityScore']) &&
     value['conceptIntegrityScore'] >= 0 &&
