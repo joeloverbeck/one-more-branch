@@ -8,6 +8,7 @@ import { LOREKEEPER_CURATION_PRINCIPLES } from '../lorekeeper-contract.js';
 import { buildWriterStructureContext } from './continuation/index.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
 function formatNumberedLines(lines: readonly string[]): string {
   return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
@@ -220,6 +221,8 @@ ${plan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${int
       ? `\nCHARACTERS REFERENCED IN THIS PLAN (must appear in relevantCharacters):\n${mentionedCharacters.map((n) => `- ${n}`).join('\n')}\n`
       : '';
 
+  const genreConventionsSection = buildGenreConventionsSection(context.genreFrame);
+
   const userPrompt = `Curate a Story Bible for the upcoming scene based on the planner's guidance and all available context.
 
 === PLANNER GUIDANCE ===
@@ -234,7 +237,7 @@ ${context.decomposedWorld.facts.length > 0 ? formatDecomposedWorldForPrompt(cont
 
 ${buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)}
 
-${buildSpineSection(context.spine)}${npcsSection}${npcAgendasSection}${npcRelationshipsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
+${buildSpineSection(context.spine)}${genreConventionsSection}${npcsSection}${npcAgendasSection}${npcRelationshipsSection}${structureSection}${canonSection}${characterCanonSection}${characterStateSection}${activeStateSection}${startingSituationSection}${ancestorSummarySection}${grandparentSection}${parentNarrativeSection}
 
 === INSTRUCTIONS ===
 Return a Story Bible containing ONLY what the writer needs for this specific scene:
