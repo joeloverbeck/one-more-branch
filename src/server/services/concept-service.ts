@@ -153,13 +153,23 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       const onGenerationStage = input.onGenerationStage;
 
       onGenerationStage?.({
-        stage: 'GENERATING_CONCEPTS',
+        stage: 'SEEDING_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
+      onGenerationStage?.({
+        stage: 'ARCHITECTING_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
+      onGenerationStage?.({
+        stage: 'ENGINEERING_CONCEPTS',
         status: 'started',
         attempt: 1,
       });
       const ideation = await deps.generateConceptIdeas({ ...seeds, kernel }, apiKey);
       onGenerationStage?.({
-        stage: 'GENERATING_CONCEPTS',
+        stage: 'ENGINEERING_CONCEPTS',
         status: 'completed',
         attempt: 1,
       });

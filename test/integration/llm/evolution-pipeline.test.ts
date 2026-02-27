@@ -1,11 +1,13 @@
 import { createEvolutionService } from '@/server/services/evolution-service';
-import type { ConceptSpec, ConflictAxis, GenreFrame } from '@/models';
+import type { ConceptSeedFields, ConflictAxis, GenreFrame } from '@/models';
 import {
   createConceptScoresFixture,
-  createConceptSpecFixture,
   createConceptVerificationFixture,
   createEvaluatedConceptFixture,
   createScoredConceptFixture,
+  createConceptSeedFixture,
+  createConceptCharacterWorldFixture,
+  createConceptEngineFixture,
 } from '../../fixtures/concept-generator';
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -24,13 +26,13 @@ function responseWithMessageContent(content: string): Response {
   });
 }
 
-function createEvolvedConcept(
+function createEvolvedSeed(
   index: number,
   genreFrame: GenreFrame,
   conflictAxis: ConflictAxis,
-): ConceptSpec {
+): ConceptSeedFields {
   return {
-    ...createConceptSpecFixture(index),
+    ...createConceptSeedFixture(index),
     oneLineHook: `Evolved Hook ${index}`,
     genreFrame,
     conflictAxis,
@@ -68,15 +70,22 @@ describe('Evolution Pipeline Integration', () => {
     const service = createEvolutionService();
     const stageEvents: Array<{ stage: string; status: string; attempt: number }> = [];
 
-    const evolvedPayload = {
+    const evolverSeederPayload = {
       concepts: [
-        createEvolvedConcept(1, 'NOIR', 'TRUTH_VS_STABILITY'),
-        createEvolvedConcept(2, 'SCI_FI', 'INDIVIDUAL_VS_SYSTEM'),
-        createEvolvedConcept(3, 'FANTASY', 'POWER_VS_MORALITY'),
-        createEvolvedConcept(4, 'THRILLER', 'DUTY_VS_DESIRE'),
-        createEvolvedConcept(5, 'DRAMA', 'FREEDOM_VS_SAFETY'),
-        createEvolvedConcept(6, 'GOTHIC', 'IDENTITY_VS_BELONGING'),
+        createEvolvedSeed(1, 'NOIR', 'TRUTH_VS_STABILITY'),
+        createEvolvedSeed(2, 'SCI_FI', 'INDIVIDUAL_VS_SYSTEM'),
+        createEvolvedSeed(3, 'FANTASY', 'POWER_VS_MORALITY'),
+        createEvolvedSeed(4, 'THRILLER', 'DUTY_VS_DESIRE'),
+        createEvolvedSeed(5, 'DRAMA', 'FREEDOM_VS_SAFETY'),
+        createEvolvedSeed(6, 'GOTHIC', 'IDENTITY_VS_BELONGING'),
       ],
+    };
+
+    const architectPayload = {
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptCharacterWorldFixture(index + 1)),
+    };
+    const engineerPayload = {
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptEngineFixture(index + 1)),
     };
 
     const scoringPayload = {
@@ -126,7 +135,9 @@ describe('Evolution Pipeline Integration', () => {
     };
 
     fetchMock
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(evolvedPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(evolverSeederPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(architectPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(engineerPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(specificityPayload)))
@@ -148,22 +159,25 @@ describe('Evolution Pipeline Integration', () => {
       },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchMock).toHaveBeenCalledTimes(7);
     expect(result.evolvedConcepts).toHaveLength(6);
     expect(result.evaluatedConcepts).toHaveLength(6);
     expect(result.verifications).toHaveLength(6);
 
-    const scoringRequestBody = getRequestBody(1);
+    // Call indices: 0=seeder, 1=architect, 2=engineer, 3=scoring, 4=deep, 5=specificity, 6=scenario
+    const scoringRequestBody = getRequestBody(3);
     const scoringMessages = JSON.stringify(scoringRequestBody['messages']);
     expect(scoringMessages).toContain('Evolved Hook 1');
 
-    const verifierRequestBody = getRequestBody(3);
+    const verifierRequestBody = getRequestBody(5);
     const verifierMessages = JSON.stringify(verifierRequestBody['messages']);
     expect(verifierMessages).toContain('Strength 1');
 
     expect(stageEvents).toEqual([
-      { stage: 'EVOLVING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'EVOLVING_CONCEPTS', status: 'completed', attempt: 1 },
+      { stage: 'SEEDING_EVOLVED_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
       { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },

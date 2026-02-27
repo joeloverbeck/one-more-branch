@@ -49,7 +49,7 @@ describe('logPrompt', () => {
     const promptTypes: PromptType[] = [
       'kernelIdeator',
       'kernelEvaluator',
-      'conceptIdeator',
+      'conceptSeeder',
       'conceptEvaluator',
       'conceptStressTester',
       'opening',

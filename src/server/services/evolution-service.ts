@@ -78,13 +78,23 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
       const onGenerationStage = input.onGenerationStage;
 
       onGenerationStage?.({
-        stage: 'EVOLVING_CONCEPTS',
+        stage: 'SEEDING_EVOLVED_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
+      onGenerationStage?.({
+        stage: 'ARCHITECTING_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
+      onGenerationStage?.({
+        stage: 'ENGINEERING_CONCEPTS',
         status: 'started',
         attempt: 1,
       });
       const evolution = await deps.evolveConceptIdeas({ parentConcepts, kernel }, apiKey);
       onGenerationStage?.({
-        stage: 'EVOLVING_CONCEPTS',
+        stage: 'ENGINEERING_CONCEPTS',
         status: 'completed',
         attempt: 1,
       });

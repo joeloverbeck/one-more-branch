@@ -54,6 +54,24 @@ describe('buildLlmRouteErrorResult', () => {
     });
   });
 
+  it('includes stage in debug payload for OUTPUT_TRUNCATED errors', () => {
+    process.env['NODE_ENV'] = 'test';
+    const error = new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', false, {
+      model: 'qwen/qwen3.5-397b-a17b',
+      stage: 'conceptSeeder',
+    });
+
+    const result = buildLlmRouteErrorResult(error);
+
+    expect(result.response.retryable).toBe(false);
+    expect(result.response.debug).toEqual(
+      expect.objectContaining({
+        model: 'qwen/qwen3.5-397b-a17b',
+        stage: 'conceptSeeder',
+      }),
+    );
+  });
+
   it('supports explicit debug opt-out', () => {
     process.env['NODE_ENV'] = 'test';
     const error = new LLMError('rate limited', 'HTTP_429', true, { httpStatus: 429 });

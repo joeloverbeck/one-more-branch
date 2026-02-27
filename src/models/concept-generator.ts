@@ -223,6 +223,85 @@ export interface PlayerBreak {
   readonly constraintUsed: string;
 }
 
+export type ConceptSeedFields = Pick<
+  ConceptSpec,
+  | 'oneLineHook'
+  | 'genreFrame'
+  | 'genreSubversion'
+  | 'conflictAxis'
+  | 'conflictType'
+  | 'whatIfQuestion'
+  | 'playerFantasy'
+>;
+
+export type ConceptCharacterWorldFields = Pick<
+  ConceptSpec,
+  | 'protagonistRole'
+  | 'coreCompetence'
+  | 'coreFlaw'
+  | 'actionVerbs'
+  | 'coreConflictLoop'
+  | 'settingAxioms'
+  | 'constraintSet'
+  | 'keyInstitutions'
+  | 'settingScale'
+>;
+
+export type ConceptEngineFields = Pick<
+  ConceptSpec,
+  | 'pressureSource'
+  | 'stakesPersonal'
+  | 'stakesSystemic'
+  | 'deadlineMechanism'
+  | 'ironicTwist'
+  | 'incitingDisruption'
+  | 'escapeValve'
+  | 'elevatorParagraph'
+>;
+
+export interface ConceptSeederContext {
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
+  readonly kernel?: StoryKernel;
+}
+
+export interface ConceptSeederResult {
+  readonly seeds: readonly ConceptSeedFields[];
+  readonly rawResponse: string;
+}
+
+export interface ConceptEvolverSeederContext {
+  readonly parentConcepts: readonly EvaluatedConcept[];
+  readonly kernel: StoryKernel;
+}
+
+export interface ConceptEvolverSeederResult {
+  readonly seeds: readonly ConceptSeedFields[];
+  readonly rawResponse: string;
+}
+
+export interface ConceptArchitectContext {
+  readonly seeds: readonly ConceptSeedFields[];
+  readonly kernel?: StoryKernel;
+}
+
+export interface ConceptArchitectResult {
+  readonly characterWorlds: readonly ConceptCharacterWorldFields[];
+  readonly rawResponse: string;
+}
+
+export interface ConceptEngineerContext {
+  readonly seeds: readonly ConceptSeedFields[];
+  readonly characterWorlds: readonly ConceptCharacterWorldFields[];
+  readonly kernel?: StoryKernel;
+}
+
+export interface ConceptEngineerResult {
+  readonly engines: readonly ConceptEngineFields[];
+  readonly rawResponse: string;
+}
+
 export interface ConceptIdeatorContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;

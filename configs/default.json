@@ -10,8 +10,10 @@
     "models": {
       "kernelIdeator": "qwen/qwen3.5-397b-a17b",
       "kernelEvaluator": "qwen/qwen3.5-397b-a17b",
-      "conceptIdeator": "qwen/qwen3.5-397b-a17b",
-      "conceptEvolver": "qwen/qwen3.5-397b-a17b",
+      "conceptSeeder": "qwen/qwen3.5-397b-a17b",
+      "conceptEvolverSeeder": "qwen/qwen3.5-397b-a17b",
+      "conceptArchitect": "qwen/qwen3.5-397b-a17b",
+      "conceptEngineer": "qwen/qwen3.5-397b-a17b",
       "conceptEvaluator": "qwen/qwen3.5-397b-a17b",
       "kernelEvolver": "qwen/qwen3.5-397b-a17b",
       "conceptStressTester": "qwen/qwen3.5-397b-a17b",

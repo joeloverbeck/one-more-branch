@@ -7,6 +7,9 @@ import {
   createConceptSpecFixture,
   createConceptStressTestFixture,
   createConceptVerificationFixture,
+  createConceptSeedFixture,
+  createConceptCharacterWorldFixture,
+  createConceptEngineFixture,
 } from '../../fixtures/concept-generator';
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -43,8 +46,14 @@ describe('Concept Pipeline Integration', () => {
     const seeds = createConceptSeedInputFixture();
     const stageEvents: Array<{ stage: string; status: string; attempt: number }> = [];
 
-    const ideationPayload = {
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
+    const seederPayload = {
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptSeedFixture(index + 1)),
+    };
+    const architectPayload = {
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptCharacterWorldFixture(index + 1)),
+    };
+    const engineerPayload = {
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptEngineFixture(index + 1)),
     };
 
     const lowScore = { ...createConceptScoresFixture(), hookStrength: 3 };
@@ -152,7 +161,9 @@ describe('Concept Pipeline Integration', () => {
     };
 
     fetchMock
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(ideationPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(seederPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(architectPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(engineerPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)))
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(specificityPayload)))
@@ -173,7 +184,7 @@ describe('Concept Pipeline Integration', () => {
       },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchMock).toHaveBeenCalledTimes(7);
     expect(result.evaluatedConcepts).toHaveLength(6);
     expect(result.scoredConcepts).toHaveLength(6);
     expect(result.verifications).toHaveLength(6);
@@ -182,8 +193,10 @@ describe('Concept Pipeline Integration', () => {
     expect(result.evaluatedConcepts[2]?.overallScore).toBe(computeOverallScore(lowScore));
     expect(result.evaluatedConcepts[0]?.overallScore).not.toBe(1);
     expect(stageEvents).toEqual([
-      { stage: 'GENERATING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'GENERATING_CONCEPTS', status: 'completed', attempt: 1 },
+      { stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 },
+      { stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
       { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
       { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },

@@ -50,6 +50,12 @@ export function formatLLMError(error: LLMError): string {
     return 'OpenRouter service is temporarily unavailable. Please try again later.';
   }
 
+  if (error.code === 'OUTPUT_TRUNCATED') {
+    const stage = error.context?.['stage'] as string | undefined;
+    const stageLabel = stage ? ` during ${stage}` : '';
+    return `Model output was too large to complete${stageLabel}. Try a different model or reduce input complexity.`;
+  }
+
   if (error.code === 'INVALID_JSON') {
     if (parseStage === 'response_body') {
       return 'API error: OpenRouter returned a non-JSON HTTP response. Please try again.';

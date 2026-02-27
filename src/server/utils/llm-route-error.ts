@@ -4,6 +4,7 @@ import { formatLLMError } from './llm-error-formatter.js';
 export interface LlmRouteErrorDebug {
   readonly httpStatus?: number;
   readonly model?: string;
+  readonly stage?: string;
   readonly rawError?: string;
   readonly parseStage?: string;
   readonly contentShape?: string;
@@ -38,6 +39,7 @@ export function buildLlmRouteErrorResult(
     ? {
         httpStatus: error.context?.['httpStatus'] as number | undefined,
         model: error.context?.['model'] as string | undefined,
+        stage: error.context?.['stage'] as string | undefined,
         rawError: error.context?.['rawErrorBody'] as string | undefined,
         parseStage: error.context?.['parseStage'] as string | undefined,
         contentShape: error.context?.['contentShape'] as string | undefined,

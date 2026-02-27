@@ -38,10 +38,15 @@ function responseWithMessageContent(content: string): Response {
   });
 }
 
-function responseWithChoice(content: string, finishReason: string): Response {
+function responseWithChoice(
+  content: string,
+  finishReason: string,
+  usage?: { completion_tokens: number; prompt_tokens: number },
+): Response {
   return createJsonResponse(200, {
     id: 'or-llm-stage-runner-2',
     choices: [{ message: { content }, finish_reason: finishReason }],
+    ...(usage ? { usage } : {}),
   });
 }
 
@@ -83,8 +88,8 @@ describe('llm-stage-runner', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
 
     const result = await runLlmStage({
-      stageModel: 'conceptIdeator',
-      promptType: 'conceptIdeator',
+      stageModel: 'conceptSeeder',
+      promptType: 'conceptSeeder',
       apiKey: 'test-api-key',
       schema: CONCEPT_IDEATION_SCHEMA,
       messages: [{ role: 'user', content: 'test message' }],
@@ -94,29 +99,41 @@ describe('llm-stage-runner', () => {
     expect(result.parsed).toEqual({ ok: true });
     expect(result.rawResponse).toBe(rawContent);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptIdeator', expect.any(Array));
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptSeeder', expect.any(Array));
   });
 
-  it('fails with OUTPUT_TRUNCATED when model stops for length', async () => {
-    fetchMock.mockResolvedValue(responseWithChoice('{"ok":true}', 'length'));
+  it('fails with OUTPUT_TRUNCATED when model stops for length (non-retryable)', async () => {
+    fetchMock.mockResolvedValue(
+      responseWithChoice('{"ok":true}', 'length', {
+        completion_tokens: 8192,
+        prompt_tokens: 3000,
+      }),
+    );
 
-    const pending = runLlmStage({
-      stageModel: 'conceptIdeator',
-      promptType: 'conceptIdeator',
-      apiKey: 'test-api-key',
-      schema: CONCEPT_IDEATION_SCHEMA,
-      messages: [{ role: 'user', content: 'test message' }],
-      parseResponse: (parsed) => parsed as { ok: boolean },
-    });
-
-    const expectation = expect(pending).rejects.toMatchObject({
+    await expect(
+      runLlmStage({
+        stageModel: 'conceptSeeder',
+        promptType: 'conceptSeeder',
+        apiKey: 'test-api-key',
+        schema: CONCEPT_IDEATION_SCHEMA,
+        messages: [{ role: 'user', content: 'test message' }],
+        parseResponse: (parsed) => parsed as { ok: boolean },
+      }),
+    ).rejects.toMatchObject({
       code: 'OUTPUT_TRUNCATED',
-      retryable: true,
+      retryable: false,
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+      context: expect.objectContaining({
+        model: expect.any(String),
+        stage: 'conceptSeeder',
+        promptType: 'conceptSeeder',
+        completionTokens: 8192,
+        promptTokens: 3000,
+        maxTokens: expect.any(Number),
+      }),
+      /* eslint-enable @typescript-eslint/no-unsafe-assignment */
     });
-
-    await advanceRetryDelays();
-    await expectation;
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('wraps parser LLMError with raw response content context', async () => {

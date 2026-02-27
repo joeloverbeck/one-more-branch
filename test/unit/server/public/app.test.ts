@@ -101,9 +101,11 @@ describe('public client script', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
     expect(script).toContain('const STAGE_PHRASE_POOLS = {');
-    expect(script).toContain('GENERATING_CONCEPTS: [');
+    expect(script).toContain('SEEDING_CONCEPTS: [');
+    expect(script).toContain('SEEDING_EVOLVED_CONCEPTS: [');
+    expect(script).toContain('ARCHITECTING_CONCEPTS: [');
+    expect(script).toContain('ENGINEERING_CONCEPTS: [');
     expect(script).toContain('EVALUATING_CONCEPTS: [');
-    expect(script).toContain('EVOLVING_CONCEPTS: [');
     expect(script).toContain('GENERATING_KERNELS: [');
     expect(script).toContain('EVALUATING_KERNELS: [');
     expect(script).toContain('STRESS_TESTING_CONCEPT: [');
@@ -124,9 +126,11 @@ describe('public client script', () => {
   it('defines display names for concept generation stages', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain("GENERATING_CONCEPTS: 'IDEATING'");
+    expect(script).toContain("SEEDING_CONCEPTS: 'SEEDING'");
+    expect(script).toContain("SEEDING_EVOLVED_CONCEPTS: 'SEEDING'");
+    expect(script).toContain("ARCHITECTING_CONCEPTS: 'ARCHITECTING'");
+    expect(script).toContain("ENGINEERING_CONCEPTS: 'ENGINEERING'");
     expect(script).toContain("EVALUATING_CONCEPTS: 'EVALUATING'");
-    expect(script).toContain("EVOLVING_CONCEPTS: 'EVOLVING'");
     expect(script).toContain("GENERATING_KERNELS: 'IDEATING'");
     expect(script).toContain("EVALUATING_KERNELS: 'EVALUATING'");
     expect(script).toContain("STRESS_TESTING_CONCEPT: 'HARDENING'");
@@ -137,9 +141,11 @@ describe('public client script', () => {
   it('ships 20+ phrase variants for each concept stage pool', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(countStagePhrases(script, 'GENERATING_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'SEEDING_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'SEEDING_EVOLVED_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'ARCHITECTING_CONCEPTS')).toBeGreaterThanOrEqual(20);
+    expect(countStagePhrases(script, 'ENGINEERING_CONCEPTS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'EVALUATING_CONCEPTS')).toBeGreaterThanOrEqual(20);
-    expect(countStagePhrases(script, 'EVOLVING_CONCEPTS')).toBeGreaterThanOrEqual(5);
     expect(countStagePhrases(script, 'GENERATING_KERNELS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'EVALUATING_KERNELS')).toBeGreaterThanOrEqual(20);
     expect(countStagePhrases(script, 'STRESS_TESTING_CONCEPT')).toBeGreaterThanOrEqual(20);

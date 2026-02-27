@@ -1,57 +1,47 @@
-const mockLogPrompt = jest.fn();
-const mockLogger = {
-  info: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  getEntries: jest.fn().mockReturnValue([]),
-  clear: jest.fn(),
-};
-
-jest.mock('../../../src/logging/index.js', () => ({
-  get logger(): typeof mockLogger {
-    return mockLogger;
-  },
-  get logPrompt(): typeof mockLogPrompt {
-    return mockLogPrompt;
-  },
+jest.mock('../../../src/llm/concept-evolver-seeder.js', () => ({
+  generateEvolvedConceptSeeds: jest.fn(),
 }));
 
-import { CONTENT_POLICY } from '../../../src/llm/content-policy';
-import { evolveConceptIdeas, parseConceptEvolutionResponse } from '../../../src/llm/concept-evolver';
-import { buildConceptEvolverPrompt } from '../../../src/llm/prompts/concept-evolver-prompt';
-import { CONCEPT_EVOLUTION_SCHEMA } from '../../../src/llm/schemas/concept-evolver-schema';
-import type { ConceptEvolverContext, ConceptSpec, ConflictAxis, GenreFrame } from '../../../src/models';
-import { createConceptSpecFixture, createEvaluatedConceptFixture } from '../../fixtures/concept-generator';
+jest.mock('../../../src/llm/concept-architect.js', () => ({
+  generateConceptCharacterWorlds: jest.fn(),
+}));
 
-function createEvolvedConcept(
-  index: number,
-  genreFrame: GenreFrame,
-  conflictAxis: ConflictAxis,
-): ConceptSpec {
-  return {
-    ...createConceptSpecFixture(index),
-    genreFrame,
-    conflictAxis,
-  };
+jest.mock('../../../src/llm/concept-engineer.js', () => ({
+  generateConceptEngines: jest.fn(),
+}));
+
+import { evolveConceptIdeas } from '../../../src/llm/concept-evolver';
+import { generateEvolvedConceptSeeds } from '../../../src/llm/concept-evolver-seeder';
+import { generateConceptCharacterWorlds } from '../../../src/llm/concept-architect';
+import { generateConceptEngines } from '../../../src/llm/concept-engineer';
+import type { ConceptEvolverContext } from '../../../src/models';
+import {
+  createConceptSeedFixture,
+  createConceptCharacterWorldFixture,
+  createConceptEngineFixture,
+  createEvaluatedConceptFixture,
+} from '../../fixtures/concept-generator';
+
+const mockGenerateEvolvedSeeds = generateEvolvedConceptSeeds as jest.MockedFunction<
+  typeof generateEvolvedConceptSeeds
+>;
+const mockGenerateCharacterWorlds = generateConceptCharacterWorlds as jest.MockedFunction<
+  typeof generateConceptCharacterWorlds
+>;
+const mockGenerateEngines = generateConceptEngines as jest.MockedFunction<
+  typeof generateConceptEngines
+>;
+
+function createSeeds(count: number) {
+  return Array.from({ length: count }, (_, i) => createConceptSeedFixture(i + 1));
 }
 
-function createValidPayload(): { concepts: ConceptSpec[] } {
-  const genreFrames: GenreFrame[] = ['NOIR', 'SCI_FI', 'FANTASY', 'THRILLER', 'DRAMA', 'GOTHIC'];
-  const conflictAxes: ConflictAxis[] = [
-    'TRUTH_VS_STABILITY',
-    'INDIVIDUAL_VS_SYSTEM',
-    'POWER_VS_MORALITY',
-    'DUTY_VS_DESIRE',
-    'FREEDOM_VS_SAFETY',
-    'IDENTITY_VS_BELONGING',
-  ];
+function createCharacterWorlds(count: number) {
+  return Array.from({ length: count }, (_, i) => createConceptCharacterWorldFixture(i + 1));
+}
 
-  return {
-    concepts: Array.from({ length: 6 }, (_, index) =>
-      createEvolvedConcept(index + 1, genreFrames[index], conflictAxes[index]),
-    ),
-  };
+function createEngines(count: number) {
+  return Array.from({ length: count }, (_, i) => createConceptEngineFixture(i + 1));
 }
 
 function createContext(): ConceptEvolverContext {
@@ -62,151 +52,127 @@ function createContext(): ConceptEvolverContext {
       opposingForce: 'Fear of uncertainty',
       directionOfChange: 'IRONIC',
       thematicQuestion: 'Can safety exist without control?',
-    antithesis: 'Counter-argument challenges the thesis.',
+      antithesis: 'Counter-argument challenges the thesis.',
     },
     parentConcepts: [createEvaluatedConceptFixture(1), createEvaluatedConceptFixture(2)],
   };
 }
 
-function createJsonResponse(status: number, body: unknown): Response {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: jest.fn().mockResolvedValue(body),
-    text: jest.fn().mockResolvedValue(typeof body === 'string' ? body : JSON.stringify(body)),
-  } as unknown as Response;
-}
-
-function responseWithMessageContent(content: string): Response {
-  return createJsonResponse(200, {
-    id: 'or-evolver-1',
-    choices: [{ message: { content }, finish_reason: 'stop' }],
-  });
-}
-
 describe('concept-evolver', () => {
-  const fetchMock: jest.MockedFunction<typeof fetch> = jest.fn();
-  const originalFetch = global.fetch;
-
   beforeEach(() => {
-    fetchMock.mockReset();
-    mockLogPrompt.mockReset();
-    global.fetch = fetchMock as unknown as typeof fetch;
-  });
-
-  afterAll(() => {
-    global.fetch = originalFetch;
-  });
-
-  function getRequestBody(callIndex = 0): Record<string, unknown> {
-    const call = fetchMock.mock.calls[callIndex];
-    if (!call) {
-      return {};
-    }
-
-    const init = call[1];
-    if (!init || typeof init.body !== 'string') {
-      return {};
-    }
-
-    return JSON.parse(init.body) as Record<string, unknown>;
-  }
-
-  describe('parseConceptEvolutionResponse', () => {
-    it('rejects non-object responses', () => {
-      expect(() => parseConceptEvolutionResponse('invalid')).toThrow(
-        'response must be an object',
-      );
-    });
-
-    it('returns ConceptSpec[] for valid payload', () => {
-      const parsed = parseConceptEvolutionResponse(createValidPayload());
-      expect(parsed).toHaveLength(6);
-      expect(parsed[0]?.genreFrame).toBe('NOIR');
-    });
-
-    it('rejects missing concepts array', () => {
-      expect(() => parseConceptEvolutionResponse({})).toThrow('missing concepts array');
-    });
-
-    it('rejects responses with non-6 count', () => {
-      const payload = createValidPayload();
-      payload.concepts = payload.concepts.slice(0, 5);
-      expect(() => parseConceptEvolutionResponse(payload)).toThrow('exactly 6 concepts');
-    });
-
-    it('rejects duplicate genreFrame+conflictAxis pairs', () => {
-      const payload = createValidPayload();
-      payload.concepts[5] = {
-        ...payload.concepts[5],
-        genreFrame: payload.concepts[0].genreFrame,
-        conflictAxis: payload.concepts[0].conflictAxis,
-      };
-
-      expect(() => parseConceptEvolutionResponse(payload)).toThrow(
-        'duplicate genreFrame+conflictAxis pair',
-      );
-    });
-
-    it('reuses concept spec parser validation', () => {
-      const payload = createValidPayload();
-      (payload.concepts[0] as Record<string, unknown>)['genreFrame'] = 'INVALID';
-      expect(() => parseConceptEvolutionResponse(payload)).toThrow('invalid genreFrame');
-    });
-  });
-
-  describe('buildConceptEvolverPrompt', () => {
-    it('includes kernel and parent evaluation data', () => {
-      const context = createContext();
-      const messages = buildConceptEvolverPrompt(context);
-      expect(messages).toHaveLength(2);
-
-      const systemMessage = messages[0]?.content ?? '';
-      const userMessage = messages[1]?.content ?? '';
-      expect(systemMessage).toContain(CONTENT_POLICY);
-      expect(systemMessage).toContain('MUTATION STRATEGIES');
-      expect(systemMessage).toContain('DIVERSITY CONSTRAINTS');
-      expect(userMessage).toContain('STORY KERNEL');
-      expect(userMessage).toContain('dramaticThesis: Control corrodes trust');
-      expect(userMessage).toContain('"strengths"');
-      expect(userMessage).toContain('"weaknesses"');
-      expect(userMessage).toContain('"tradeoffSummary"');
-    });
-
-    it('includes all parents when context has 3 parent concepts', () => {
-      const context = {
-        ...createContext(),
-        parentConcepts: [
-          createEvaluatedConceptFixture(1),
-          createEvaluatedConceptFixture(2),
-          createEvaluatedConceptFixture(3),
-        ],
-      };
-      const messages = buildConceptEvolverPrompt(context);
-      const userMessage = messages[1]?.content ?? '';
-
-      expect(userMessage).toContain('"parentId": "parent_1"');
-      expect(userMessage).toContain('"parentId": "parent_2"');
-      expect(userMessage).toContain('"parentId": "parent_3"');
-    });
+    jest.clearAllMocks();
   });
 
   describe('evolveConceptIdeas', () => {
-    it('sends request and returns parsed result', async () => {
-      const payload = createValidPayload();
-      const rawContent = JSON.stringify(payload);
-      fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+    it('calls evolver-seeder → architect → engineer in sequence and merges results', async () => {
+      const callOrder: string[] = [];
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateEvolvedSeeds.mockImplementation(() => {
+        callOrder.push('evolver-seeder');
+        return Promise.resolve({ seeds, rawResponse: 'raw-evolved-seeds' });
+      });
+      mockGenerateCharacterWorlds.mockImplementation(() => {
+        callOrder.push('architect');
+        return Promise.resolve({ characterWorlds, rawResponse: 'raw-architect' });
+      });
+      mockGenerateEngines.mockImplementation(() => {
+        callOrder.push('engineer');
+        return Promise.resolve({ engines, rawResponse: 'raw-engineer' });
+      });
 
       const result = await evolveConceptIdeas(createContext(), 'test-api-key');
 
-      expect(result.rawResponse).toBe(rawContent);
+      expect(callOrder).toEqual(['evolver-seeder', 'architect', 'engineer']);
       expect(result.concepts).toHaveLength(6);
-      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(result.rawResponse).toBe('raw-engineer');
+    });
 
-      const requestBody = getRequestBody();
-      expect(requestBody['response_format']).toEqual(CONCEPT_EVOLUTION_SCHEMA);
-      expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptEvolver', expect.any(Array));
-      expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+    it('passes context and apiKey to evolver seeder', async () => {
+      const context = createContext();
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await evolveConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateEvolvedSeeds).toHaveBeenCalledWith(context, 'test-api-key', undefined);
+    });
+
+    it('passes seeds and kernel to architect', async () => {
+      const context = createContext();
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await evolveConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
+        { seeds, kernel: context.kernel },
+        'test-api-key',
+        undefined,
+      );
+    });
+
+    it('passes seeds, characterWorlds, and kernel to engineer', async () => {
+      const context = createContext();
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await evolveConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateEngines).toHaveBeenCalledWith(
+        { seeds, characterWorlds, kernel: context.kernel },
+        'test-api-key',
+        undefined,
+      );
+    });
+
+    it('propagates evolver-seeder errors without calling downstream stages', async () => {
+      const error = new Error('Evolver seeder failed');
+      mockGenerateEvolvedSeeds.mockRejectedValue(error);
+
+      await expect(evolveConceptIdeas(createContext(), 'test-api-key')).rejects.toBe(error);
+      expect(mockGenerateCharacterWorlds).not.toHaveBeenCalled();
+      expect(mockGenerateEngines).not.toHaveBeenCalled();
+    });
+
+    it('propagates architect errors without calling engineer', async () => {
+      const seeds = createSeeds(6);
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+
+      const error = new Error('Architect failed');
+      mockGenerateCharacterWorlds.mockRejectedValue(error);
+
+      await expect(evolveConceptIdeas(createContext(), 'test-api-key')).rejects.toBe(error);
+      expect(mockGenerateEngines).not.toHaveBeenCalled();
+    });
+
+    it('propagates engineer errors', async () => {
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+
+      const error = new Error('Engineer failed');
+      mockGenerateEngines.mockRejectedValue(error);
+
+      await expect(evolveConceptIdeas(createContext(), 'test-api-key')).rejects.toBe(error);
     });
   });
 });

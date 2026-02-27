@@ -80,9 +80,14 @@ async function fetchAndParseLlmStage<TParsed>(
     throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
   }
   if (choice.finish_reason === 'length') {
-    throw new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', true, {
+    throw new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', false, {
       model,
       finishReason: choice.finish_reason,
+      stage: params.stageModel,
+      promptType: params.promptType,
+      completionTokens: data.usage?.completion_tokens,
+      promptTokens: data.usage?.prompt_tokens,
+      maxTokens,
     });
   }
 

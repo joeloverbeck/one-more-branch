@@ -172,6 +172,12 @@ conceptRoutes.post(
       }
 
       if (rootError instanceof LLMError) {
+        logger.error('LLM error during concept generation', {
+          code: rootError.code,
+          stage: rootError.context?.['stage'],
+          model: rootError.context?.['model'],
+          retryable: rootError.retryable,
+        });
         const { publicMessage, response } = buildLlmRouteErrorResult(rootError);
         progress.fail(publicMessage);
         return res.status(500).json(response);
@@ -338,6 +344,12 @@ conceptRoutes.post(
       });
     } catch (error) {
       if (error instanceof LLMError) {
+        logger.error('LLM error during concept hardening', {
+          code: error.code,
+          stage: error.context?.['stage'],
+          model: error.context?.['model'],
+          retryable: error.retryable,
+        });
         const { publicMessage, response } = buildLlmRouteErrorResult(error, { includeDebug: false });
         progress.fail(publicMessage);
         return res.status(500).json(response);
