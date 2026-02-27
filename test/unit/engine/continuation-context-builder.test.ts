@@ -57,6 +57,9 @@ function makeParentState(overrides: Partial<CollectedParentState> = {}): Collect
       Guide: [{ id: 'cs-1', text: 'Nervous' }],
     },
     structureState: createEmptyAccumulatedStructureState(),
+    accumulatedDelayedConsequences: [],
+    accumulatedNpcAgendas: {},
+    accumulatedNpcRelationships: {},
     ...overrides,
   };
 }
@@ -122,6 +125,7 @@ describe('continuation-context-builder', () => {
       expect(result.parentProtagonistAffect).toBe(parentPage.protagonistAffect);
       expect(result.thematicValenceTrajectory).toEqual([]);
       expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
+      expect(result.accumulatedDelayedConsequences).toEqual([]);
       expect(result.premisePromises).toEqual(story.premisePromises);
       expect(result.fulfilledPremisePromises).toEqual(
         parentPage.accumulatedFulfilledPremisePromises
@@ -285,6 +289,54 @@ describe('continuation-context-builder', () => {
       expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
       expect(result.accumulatedPromises).toHaveLength(1);
       expect(result.accumulatedPromises[0]?.id).toBe('pr-1');
+    });
+
+    it('threads and ages parent delayed consequences for continuation planning context', () => {
+      const story = makeStory();
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You hear boots in the corridor.',
+        sceneSummary: 'Boots close in.',
+        choices: [createChoice('Hide'), createChoice('Run')],
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+      });
+
+      const result = buildContinuationContext(
+        story,
+        parentPage,
+        'Hide',
+        makeParentState({
+          accumulatedDelayedConsequences: [
+            {
+              id: 'dc-3',
+              description: 'The guard captain has your sigil.',
+              triggerCondition: 'A guard inspection happens.',
+              minPagesDelay: 1,
+              maxPagesDelay: 3,
+              currentAge: 1,
+              triggered: false,
+              sourcePageId: parsePageId(1),
+            },
+          ],
+        }),
+        makeAncestorContext(),
+        null
+      );
+
+      expect(result.accumulatedDelayedConsequences).toEqual([
+        {
+          id: 'dc-3',
+          description: 'The guard captain has your sigil.',
+          triggerCondition: 'A guard inspection happens.',
+          minPagesDelay: 1,
+          maxPagesDelay: 3,
+          currentAge: 2,
+          triggered: false,
+          sourcePageId: parsePageId(1),
+        },
+      ]);
     });
   });
 

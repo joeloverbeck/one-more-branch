@@ -210,6 +210,28 @@ function buildPremisePromiseWarningSection(context: ContinuationPagePlanContext)
   return lines.join('\n') + '\n';
 }
 
+function buildPendingConsequencesSection(context: ContinuationPagePlanContext): string {
+  const pending = (context.accumulatedDelayedConsequences ?? []).filter(
+    (consequence) => !consequence.triggered
+  );
+
+  const lines = ['PENDING CONSEQUENCES:'];
+  if (pending.length === 0) {
+    lines.push('(none)');
+  } else {
+    lines.push(
+      ...pending.map(
+        (consequence) =>
+          `- [${consequence.id}] ${consequence.description} ` +
+          `(age ${consequence.currentAge}, trigger window ${consequence.minPagesDelay}-${consequence.maxPagesDelay})\n` +
+          `  Trigger condition: ${consequence.triggerCondition}`
+      )
+    );
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
 
 function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
   if (isProtagonistGuidanceEmpty(guidance)) {
@@ -559,6 +581,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   const payoffFeedbackSection = buildPayoffFeedbackSection(
     context.parentThreadPayoffAssessments ?? []
   );
+  const pendingConsequencesSection = buildPendingConsequencesSection(context);
 
   const toneFeelLine =
     context.toneFeel && context.toneFeel.length > 0
@@ -614,7 +637,7 @@ ${constraintsSection}
 OPEN NARRATIVE THREADS:
 ${threadsSection}
 
-${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
+${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${pendingConsequencesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
 ${protagonistDirective}${guidanceSection}PLAYER'S CHOICE:

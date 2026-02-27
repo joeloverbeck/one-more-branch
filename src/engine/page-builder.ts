@@ -13,7 +13,10 @@ import {
   StructureVersionId,
   type DelayedConsequence,
 } from '../models';
-import { incrementDelayedConsequenceAges } from './consequence-lifecycle.js';
+import {
+  applyTriggeredDelayedConsequences,
+  incrementDelayedConsequenceAges,
+} from './consequence-lifecycle.js';
 import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
@@ -116,10 +119,14 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
   const agedDelayedConsequences = incrementDelayedConsequenceAges(
     context.parentAccumulatedDelayedConsequences ?? []
   );
+  const triggeredDelayedConsequences = applyTriggeredDelayedConsequences(
+    agedDelayedConsequences,
+    context.analystResult?.delayedConsequencesTriggered ?? []
+  );
   const createdDelayedConsequences = materializeDelayedConsequenceDrafts(
     result.delayedConsequencesCreated ?? [],
     context.pageId,
-    getMaxDelayedConsequenceIdNumber(agedDelayedConsequences)
+    getMaxDelayedConsequenceIdNumber(triggeredDelayedConsequences)
   );
 
   return createPage({
@@ -150,7 +157,10 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     analystResult: context.analystResult,
     threadAges: lifecycle.threadAges,
     accumulatedPromises: lifecycle.accumulatedPromises,
-    accumulatedDelayedConsequences: [...agedDelayedConsequences, ...createdDelayedConsequences],
+    accumulatedDelayedConsequences: [
+      ...triggeredDelayedConsequences,
+      ...createdDelayedConsequences,
+    ],
     accumulatedFulfilledPremisePromises: lifecycle.accumulatedFulfilledPremisePromises,
     resolvedThreadMeta: lifecycle.resolvedThreadMeta,
     resolvedPromiseMeta: lifecycle.resolvedPromiseMeta,

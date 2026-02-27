@@ -264,6 +264,20 @@ This section appears after `NPC AGENDAS` and before `YOUR INVENTORY:`. It provid
 
 Source: `buildNpcRelationshipsSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
+## Continuation Context: Pending Consequences
+
+Continuation context now includes pending delayed consequences to surface deferred-payoff opportunities:
+
+```text
+PENDING CONSEQUENCES:
+- [{{id}}] {{description}} (age {{currentAge}}, trigger window {{minPagesDelay}}-{{maxPagesDelay}})
+  Trigger condition: {{triggerCondition}}
+```
+
+Only untriggered consequences are listed. When none are pending, the section renders `(none)`.
+
+Source: `buildPendingConsequencesSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.

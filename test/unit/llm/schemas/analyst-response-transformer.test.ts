@@ -43,6 +43,7 @@ describe('validateAnalystResponse', () => {
     expect(result.thematicCharge).toBe('AMBIGUOUS');
     expect(result.thematicChargeDescription).toBe('');
     expect(result.obligatorySceneFulfilled).toBeNull();
+    expect(result.delayedConsequencesTriggered).toEqual([]);
     expect(result.rawResponse).toBe(RAW_RESPONSE);
   });
 
@@ -102,6 +103,16 @@ describe('validateAnalystResponse', () => {
     expect(result.thematicCharge).toBe('AMBIGUOUS');
     expect(result.thematicChargeDescription).toBe('');
     expect(result.obligatorySceneFulfilled).toBeNull();
+    expect(result.delayedConsequencesTriggered).toEqual([]);
+  });
+
+  it('normalizes delayedConsequencesTriggered to canonical dc-* ids', () => {
+    const result = validateAnalystResponse(
+      { delayedConsequencesTriggered: [' dc-1 ', 'bad', 'th-2', 'dc-07'] },
+      RAW_RESPONSE
+    );
+
+    expect(result.delayedConsequencesTriggered).toEqual(['dc-1', 'dc-07']);
   });
 
   it('trims obligatorySceneFulfilled and normalizes empty values to null', () => {

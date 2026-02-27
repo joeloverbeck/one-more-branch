@@ -4,6 +4,7 @@ import type { ContinuationContext } from '../llm/context-types';
 import type { WriterValidationContext } from '../llm/generation-pipeline-types';
 import type { AncestorContext } from './ancestor-collector';
 import type { CollectedParentState } from './parent-state-collector';
+import { incrementDelayedConsequenceAges } from './consequence-lifecycle';
 
 /**
  * Assembles the 14-property ContinuationContext object from story, parent page,
@@ -18,6 +19,10 @@ export function buildContinuationContext(
   currentStructureVersion: VersionedStoryStructure | null,
   protagonistGuidance?: ProtagonistGuidance
 ): ContinuationContext {
+  const agedDelayedConsequences = incrementDelayedConsequenceAges(
+    parentState.accumulatedDelayedConsequences
+  );
+
   return {
     tone: story.tone,
     toneFeel: story.toneFeel,
@@ -55,6 +60,7 @@ export function buildContinuationContext(
 
     threadAges: parentPage.threadAges,
     accumulatedPromises: parentPage.accumulatedPromises,
+    accumulatedDelayedConsequences: agedDelayedConsequences,
     premisePromises: story.premisePromises,
     fulfilledPremisePromises: parentPage.accumulatedFulfilledPremisePromises ?? [],
     parentThreadPayoffAssessments: parentPage.analystResult?.threadPayoffAssessments ?? [],

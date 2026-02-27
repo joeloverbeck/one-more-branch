@@ -79,6 +79,10 @@ function normalizePromisesResolved(value: readonly string[]): string[] {
   return value.map((id) => id.trim()).filter((id) => isCanonicalPromiseId(id));
 }
 
+function normalizeDelayedConsequencesTriggered(value: readonly string[]): string[] {
+  return value.map((id) => id.trim()).filter((id) => /^dc-\d+$/.test(id));
+}
+
 function normalizeAnchorEvidence(value: readonly string[]): string[] {
   return value.map((item: string) => item.trim()).slice(0, MAX_OBJECTIVE_ANCHORS);
 }
@@ -169,6 +173,9 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
       premisePromiseFulfilled && premisePromiseFulfilled.length > 0
         ? premisePromiseFulfilled
         : null,
+    delayedConsequencesTriggered: normalizeDelayedConsequencesTriggered(
+      validated.delayedConsequencesTriggered
+    ),
     rawResponse,
   };
 }

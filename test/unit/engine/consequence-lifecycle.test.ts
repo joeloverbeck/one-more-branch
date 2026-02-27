@@ -1,5 +1,6 @@
 import { parsePageId } from '../../../src/models/id.js';
 import {
+  applyTriggeredDelayedConsequences,
   getTriggerEligibleDelayedConsequences,
   incrementDelayedConsequenceAges,
 } from '../../../src/engine/consequence-lifecycle.js';
@@ -74,5 +75,29 @@ describe('getTriggerEligibleDelayedConsequences', () => {
     const result = getTriggerEligibleDelayedConsequences(consequences);
 
     expect(result.map((item) => item.id)).toEqual(['dc-4']);
+  });
+});
+
+describe('applyTriggeredDelayedConsequences', () => {
+  it('marks only matching IDs as triggered', () => {
+    const consequences = [
+      makeConsequence({ id: 'dc-1', triggered: false }),
+      makeConsequence({ id: 'dc-2', triggered: false }),
+    ];
+
+    const result = applyTriggeredDelayedConsequences(consequences, ['dc-2']);
+
+    expect(result).toEqual([
+      makeConsequence({ id: 'dc-1', triggered: false }),
+      makeConsequence({ id: 'dc-2', triggered: true }),
+    ]);
+  });
+
+  it('returns original list unchanged when no IDs are provided', () => {
+    const consequences = [makeConsequence({ id: 'dc-1', triggered: false })];
+
+    const result = applyTriggeredDelayedConsequences(consequences, []);
+
+    expect(result).toBe(consequences);
   });
 });

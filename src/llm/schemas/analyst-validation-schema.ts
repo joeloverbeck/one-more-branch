@@ -128,4 +128,5 @@ export const AnalystResultSchema = z.object({
   thematicChargeDescription: z.string().catch('').default(''),
   obligatorySceneFulfilled: z.string().nullable().catch(null).default(null),
   premisePromiseFulfilled: z.string().nullable().catch(null).default(null),
+  delayedConsequencesTriggered: z.array(z.string()).catch([]).default([]),
 });

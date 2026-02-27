@@ -9,6 +9,7 @@ import type {
 } from '../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
+import type { DelayedConsequence } from '../models/state/delayed-consequence.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { StorySpine } from '../models/story-spine.js';
 
@@ -87,6 +88,7 @@ export interface AnalystResult {
   thematicChargeDescription: string;
   obligatorySceneFulfilled: string | null;
   premisePromiseFulfilled: string | null;
+  delayedConsequencesTriggered: string[];
   rawResponse: string;
 }
 
@@ -104,6 +106,7 @@ export interface AnalystContext {
   antithesis: string;
   premisePromises: readonly string[];
   fulfilledPremisePromises: readonly string[];
+  delayedConsequencesEligible?: readonly DelayedConsequence[];
   spine?: StorySpine;
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;
