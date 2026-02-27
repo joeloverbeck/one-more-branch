@@ -88,6 +88,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       ...overrides,
     };
   }

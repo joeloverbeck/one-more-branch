@@ -365,6 +365,7 @@ export async function processPostGeneration(
     parentThreadAges: parentPage?.threadAges ?? {},
     parentAccumulatedPromises: parentPage?.accumulatedPromises ?? [],
     parentAccumulatedDelayedConsequences: parentPage?.accumulatedDelayedConsequences ?? [],
+    parentAccumulatedKnowledgeState: parentPage?.accumulatedKnowledgeState ?? [],
     parentAccumulatedFulfilledPremisePromises:
       parentPage?.accumulatedFulfilledPremisePromises ?? [],
     analystPromisesDetected: analystResult?.promisesDetected ?? [],

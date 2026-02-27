@@ -50,6 +50,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     threadAges: {},
     accumulatedPromises: [],
     accumulatedDelayedConsequences: [],
+    accumulatedKnowledgeState: [],
     resolvedThreadMeta: {},
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],
@@ -108,6 +109,7 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
     threadAges: {},
     accumulatedPromises: [],
     accumulatedDelayedConsequences: [],
+    accumulatedKnowledgeState: [],
     resolvedThreadMeta: {},
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],
@@ -242,6 +244,29 @@ describe('page-serializer', () => {
           currentAge: 3,
           triggered: false,
           sourcePageId: 1,
+        },
+      ]);
+    });
+
+    it('serializes accumulatedKnowledgeState', () => {
+      const page = buildTestPage({
+        accumulatedKnowledgeState: [
+          {
+            characterName: 'Captain Voss',
+            knownFacts: ['The gate lock is tied to reactor pressure.'],
+            falseBeliefs: ['The protagonist betrayed the crew.'],
+            secrets: ['Voss hid the evacuation codes.'],
+          },
+        ],
+      });
+
+      const fileData = serializePage(page);
+      expect(fileData.accumulatedKnowledgeState).toEqual([
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['The gate lock is tied to reactor pressure.'],
+          falseBeliefs: ['The protagonist betrayed the crew.'],
+          secrets: ['Voss hid the evacuation codes.'],
         },
       ]);
     });
@@ -420,6 +445,29 @@ describe('page-serializer', () => {
           currentAge: 1,
           triggered: false,
           sourcePageId: parsePageId(2),
+        },
+      ]);
+    });
+
+    it('deserializes accumulatedKnowledgeState', () => {
+      const fileData = buildTestFileData({
+        accumulatedKnowledgeState: [
+          {
+            characterName: 'Captain Voss',
+            knownFacts: ['The gate lock is tied to reactor pressure.'],
+            falseBeliefs: ['The protagonist betrayed the crew.'],
+            secrets: ['Voss hid the evacuation codes.'],
+          },
+        ],
+      });
+
+      const page = deserializePage(fileData);
+      expect(page.accumulatedKnowledgeState).toEqual([
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['The gate lock is tied to reactor pressure.'],
+          falseBeliefs: ['The protagonist betrayed the crew.'],
+          secrets: ['Voss hid the evacuation codes.'],
         },
       ]);
     });

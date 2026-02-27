@@ -63,6 +63,7 @@ export function buildContinuationContext(
     threadAges: parentPage.threadAges,
     accumulatedPromises: parentPage.accumulatedPromises,
     accumulatedDelayedConsequences: agedDelayedConsequences,
+    accumulatedKnowledgeState: parentState.accumulatedKnowledgeState,
     premisePromises: story.premisePromises,
     fulfilledPremisePromises: parentPage.accumulatedFulfilledPremisePromises ?? [],
     parentThreadPayoffAssessments: parentPage.analystResult?.threadPayoffAssessments ?? [],

@@ -914,6 +914,80 @@ describe('page-builder', () => {
     });
   });
 
+  describe('buildPage accumulated knowledge state', () => {
+    it('preserves prior character knowledge and replaces updated character entries', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: buildMockAnalystResult({
+          knowledgeAsymmetryDetected: [
+            {
+              characterName: 'Captain Voss',
+              knownFacts: ['The reactor lock is unstable.'],
+              falseBeliefs: ['The protagonist cut the coolant line.'],
+              secrets: ['Voss disabled the alarm himself.'],
+            },
+          ],
+        }),
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedKnowledgeState: [
+          {
+            characterName: 'Captain Voss',
+            knownFacts: ['The old lock protocol still works.'],
+            falseBeliefs: ['The protagonist has no allies.'],
+            secrets: ['Voss forged the access seal.'],
+          },
+          {
+            characterName: 'Engineer Tala',
+            knownFacts: ['The service tunnel floods every hour.'],
+            falseBeliefs: [],
+            secrets: ['Tala hid a bypass key in medbay.'],
+          },
+        ],
+        parentAccumulatedFulfilledPremisePromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: null,
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+
+      expect(page.accumulatedKnowledgeState).toEqual([
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['The reactor lock is unstable.'],
+          falseBeliefs: ['The protagonist cut the coolant line.'],
+          secrets: ['Voss disabled the alarm himself.'],
+        },
+        {
+          characterName: 'Engineer Tala',
+          knownFacts: ['The service tunnel floods every hour.'],
+          falseBeliefs: [],
+          secrets: ['Tala hid a bypass key in medbay.'],
+        },
+      ]);
+    });
+  });
+
   describe('augmentThreadsResolvedFromAnalyst', () => {
     function makeAnalystResult(
       threadPayoffAssessments: AnalystResult['threadPayoffAssessments']

@@ -197,6 +197,23 @@ This section is omitted when there are fewer than 3 trajectory points or when re
 
 Source: `buildNarrativeFocusWarningSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
+## Dramatic Irony Opportunities
+
+When continuation context includes accumulated knowledge asymmetry data, the planner context includes:
+
+```text
+=== DRAMATIC IRONY OPPORTUNITIES ===
+Exploit information asymmetry to create tension where the protagonist and other characters act on conflicting beliefs.
+- {{characterName}}
+  False beliefs: {{...}}
+  Secrets: {{...}}
+  Known facts: {{...}}
+```
+
+This section is omitted when `accumulatedKnowledgeState` is empty.
+
+Source: `buildDramaticIronyOpportunitiesSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Structural Directive
 
 When the active beat role is `escalation`, `turning_point`, or `reflection` (or when the active beat is midpoint-tagged), the continuation context includes structural directive sections (placed after the pacing briefing and before thread aging):

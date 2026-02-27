@@ -50,6 +50,7 @@ const mockContinuationContext: ContinuationContext = {
   grandparentNarrative: null,
   ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
 };
 
 const mockPagePlan: PagePlanGenerationResult = {
