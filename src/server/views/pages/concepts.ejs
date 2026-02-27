@@ -99,6 +99,28 @@
               <span class="genre-group__label"><%= group.displayLabel %></span>
               <span class="genre-group__count">(<%= group.concepts.length %>)</span>
             </summary>
+            <% if (group.conventions.length > 0 || group.obligations.length > 0) { %>
+            <div class="genre-info-panel">
+              <div class="genre-info-panel__column">
+                <h4 class="genre-info-panel__heading">Conventions</h4>
+                <hr class="genre-info-panel__divider">
+                <ul class="genre-info-panel__list">
+                  <% for (const gloss of group.conventions) { %>
+                  <li><%= gloss %></li>
+                  <% } %>
+                </ul>
+              </div>
+              <div class="genre-info-panel__column">
+                <h4 class="genre-info-panel__heading">Obligations</h4>
+                <hr class="genre-info-panel__divider">
+                <ul class="genre-info-panel__list">
+                  <% for (const gloss of group.obligations) { %>
+                  <li><%= gloss %></li>
+                  <% } %>
+                </ul>
+              </div>
+            </div>
+            <% } %>
             <div class="genre-group__body spine-options-container">
           <% for (const concept of group.concepts) { %>
           <% const cc = concept.evaluatedConcept.concept; %>

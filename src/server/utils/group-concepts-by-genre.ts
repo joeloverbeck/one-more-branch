@@ -1,9 +1,22 @@
+import type { GenreFrame } from '../../models/concept-generator.js';
+import { GENRE_CONVENTIONS_BY_GENRE } from '../../models/genre-conventions.js';
+import { GENRE_OBLIGATION_TAGS_BY_GENRE } from '../../models/genre-obligations.js';
 import type { SavedConcept } from '../../models/saved-concept.js';
 
 export interface GenreGroup {
   readonly genre: string;
   readonly displayLabel: string;
   readonly concepts: readonly SavedConcept[];
+  readonly conventions: readonly string[];
+  readonly obligations: readonly string[];
+}
+
+function lookupGlosses(
+  genre: string,
+  source: Record<string, readonly { readonly gloss: string }[]>,
+): readonly string[] {
+  const entries = source[genre as GenreFrame];
+  return entries ? entries.map((e) => e.gloss) : [];
 }
 
 export function groupConceptsByGenre(concepts: readonly SavedConcept[]): GenreGroup[] {
@@ -24,6 +37,8 @@ export function groupConceptsByGenre(concepts: readonly SavedConcept[]): GenreGr
       genre,
       displayLabel: genre.replace(/_/g, ' '),
       concepts: grouped,
+      conventions: lookupGlosses(genre, GENRE_CONVENTIONS_BY_GENRE),
+      obligations: lookupGlosses(genre, GENRE_OBLIGATION_TAGS_BY_GENRE),
     }))
     .sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
 }
