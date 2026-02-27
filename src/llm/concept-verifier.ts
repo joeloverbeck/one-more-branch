@@ -140,6 +140,28 @@ function parseSetpieces(value: unknown, label: string): readonly string[] {
   );
 }
 
+function parsePremisePromises(value: unknown, label: string): readonly string[] {
+  if (!Array.isArray(value)) {
+    throw new LLMError(
+      `${label} premisePromises must be an array`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  if (value.length < 3 || value.length > 5) {
+    throw new LLMError(
+      `${label} premisePromises must have 3-5 items (received: ${value.length})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  return value.map((item, index) =>
+    requireNonEmptyString(item, `premisePromises[${index}]`, label),
+  );
+}
+
 function parseConceptVerification(value: unknown, index: number): ConceptVerification {
   const label = `Verification ${index + 1}`;
 
@@ -167,6 +189,7 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
       'signatureScenario',
       label,
     ),
+    premisePromises: parsePremisePromises(data['premisePromises'], label),
     escalatingSetpieces: parseSetpieces(data['escalatingSetpieces'], label),
     inevitabilityStatement: requireNonEmptyString(
       data['inevitabilityStatement'],

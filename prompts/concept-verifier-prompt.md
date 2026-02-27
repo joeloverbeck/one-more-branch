@@ -19,11 +19,12 @@ Generation stage emitted by `conceptService`: `VERIFYING_CONCEPTS`.
 The evaluator scores concepts on quality dimensions and the stress tester hardens them against drift/player-break, but neither asks "is this concept specific enough to generate unique scenarios?" The verifier fills this gap by:
 
 1. **Signature Scenario**: Identifying the single most iconic interactive decision moment that ONLY exists because of this concept's differentiator.
-2. **Escalating Setpieces**: Producing 6 concept-unique situations in rising intensity that serve as downstream beat seeds for structure generation.
-3. **Inevitability Statement**: Capturing what kind of story MUST happen (not could happen) given the premise's internal logic.
-4. **Load-Bearing Check**: A negative test — removing the core differentiator and checking whether the story collapses into generic genre.
-5. **Kernel Fidelity Check**: A negative test — removing the story kernel and checking whether the concept's conflict engine still implies the same value-at-stake and opposing force, or could serve any kernel equally well.
-6. **Concept Integrity Score**: 0-100 based on how many setpieces are truly concept-unique.
+2. **Premise Promises**: Listing 3-5 specific audience expectations the premise promises to deliver (not structure beats).
+3. **Escalating Setpieces**: Producing 6 concept-unique situations in rising intensity that serve as downstream beat seeds for structure generation.
+4. **Inevitability Statement**: Capturing what kind of story MUST happen (not could happen) given the premise's internal logic.
+5. **Load-Bearing Check**: A negative test — removing the core differentiator and checking whether the story collapses into generic genre.
+6. **Kernel Fidelity Check**: A negative test — removing the story kernel and checking whether the concept's conflict engine still implies the same value-at-stake and opposing force, or could serve any kernel equally well.
+7. **Concept Integrity Score**: 0-100 based on how many setpieces are truly concept-unique.
 
 ## Messages Sent To Model
 
@@ -37,6 +38,7 @@ VERIFICATION DIRECTIVES:
 - For each concept, produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
 - All scenarios and setpieces must be ONLY possible because of this specific concept's premise — both its conflict engine (genreSubversion, coreFlaw, coreConflictLoop) and its world-specific elements (settingAxioms, constraintSet, keyInstitutions, deadlineMechanism, pressureSource, escapeValve). Each setpiece must exploit at least one world-specific element, not just the conflict engine. If a setpiece could appear in a generic story of the same genre with different world rules, reject it and write one that couldn't.
 - The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise (both its conflict engine and its world-specific elements).
+- premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
 - The 6 escalating setpieces must form a rising intensity arc from opening hook to climax. Each must be concept-unique.
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.
@@ -91,6 +93,7 @@ OUTPUT REQUIREMENTS:
 - Each verification must include:
   - conceptId: string (must match exactly one provided input conceptId)
   - signatureScenario: string
+  - premisePromises: string[] (exactly 3-5 specific audience expectations; not beat names)
   - escalatingSetpieces: string[] (exactly 6)
   - inevitabilityStatement: string
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }
@@ -112,6 +115,11 @@ OUTPUT REQUIREMENTS:
     {
       "conceptId": "concept_1",
       "signatureScenario": "description of the most iconic interactive decision moment",
+      "premisePromises": [
+        "audience expectation 1",
+        "audience expectation 2",
+        "audience expectation 3"
+      ],
       "escalatingSetpieces": [
         "setpiece 1 (opening intensity)",
         "setpiece 2",
@@ -138,6 +146,7 @@ OUTPUT REQUIREMENTS:
 ```
 
 - `parseConceptVerificationResponse(...)` requires exactly N verifications with conceptIds matching the input set (exact coverage: no duplicates, no omissions, no unknown IDs).
+- `premisePromises` must contain 3-5 non-empty strings.
 - `escalatingSetpieces` must have exactly 6 items.
 - `conceptIntegrityScore` is clamped to 0-100 and rounded.
 - All text fields must be non-empty after trimming.

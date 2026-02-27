@@ -28,6 +28,7 @@ const CONCEPT_VERIFICATION_SCHEMA = {
   required: [
     'conceptId',
     'signatureScenario',
+    'premisePromises',
     'escalatingSetpieces',
     'inevitabilityStatement',
     'loadBearingCheck',
@@ -37,6 +38,12 @@ const CONCEPT_VERIFICATION_SCHEMA = {
   properties: {
     conceptId: { type: 'string', minLength: 1 },
     signatureScenario: { type: 'string' },
+    premisePromises: {
+      type: 'array',
+      minItems: 3,
+      maxItems: 5,
+      items: { type: 'string', minLength: 1 },
+    },
     escalatingSetpieces: {
       type: 'array',
       items: { type: 'string' },

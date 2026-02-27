@@ -109,6 +109,11 @@ export function createConceptVerificationFixture(index = 1): ConceptVerification
   return {
     conceptId: `concept_${index}`,
     signatureScenario: `Signature scenario for concept ${index}`,
+    premisePromises: [
+      `Premise promise 1 for concept ${index}`,
+      `Premise promise 2 for concept ${index}`,
+      `Premise promise 3 for concept ${index}`,
+    ],
     escalatingSetpieces: [
       `Setpiece 1 for concept ${index}`,
       `Setpiece 2 for concept ${index}`,

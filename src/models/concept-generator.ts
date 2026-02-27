@@ -277,6 +277,7 @@ export interface KernelFidelityCheck {
 export interface ConceptVerification {
   readonly conceptId: string;
   readonly signatureScenario: string;
+  readonly premisePromises: readonly string[];
   readonly escalatingSetpieces: readonly string[];
   readonly inevitabilityStatement: string;
   readonly loadBearingCheck: LoadBearingCheck;
