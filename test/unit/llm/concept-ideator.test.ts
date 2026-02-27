@@ -1,240 +1,224 @@
-const mockLogPrompt = jest.fn();
-const mockLogger = {
-  info: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  getEntries: jest.fn().mockReturnValue([]),
-  clear: jest.fn(),
-};
-
-jest.mock('../../../src/logging/index.js', () => ({
-  get logger(): typeof mockLogger {
-    return mockLogger;
-  },
-  get logPrompt(): typeof mockLogPrompt {
-    return mockLogPrompt;
-  },
+jest.mock('../../../src/llm/concept-seeder.js', () => ({
+  generateConceptSeeds: jest.fn(),
 }));
 
-import { CONTENT_POLICY } from '../../../src/llm/content-policy';
-import { generateConceptIdeas, parseConceptIdeationResponse } from '../../../src/llm/concept-ideator';
-import { buildConceptIdeatorPrompt } from '../../../src/llm/prompts/concept-ideator-prompt';
-import { CONCEPT_IDEATION_SCHEMA } from '../../../src/llm/schemas/concept-ideator-schema';
-import type { ConceptSpec } from '../../../src/models';
-import { createConceptSpecFixture } from '../../fixtures/concept-generator';
+jest.mock('../../../src/llm/concept-architect.js', () => ({
+  generateConceptCharacterWorlds: jest.fn(),
+}));
 
-function createValidConcept(index: number): ConceptSpec {
-  return createConceptSpecFixture(index);
+jest.mock('../../../src/llm/concept-engineer.js', () => ({
+  generateConceptEngines: jest.fn(),
+}));
+
+import { generateConceptIdeas, mergeConceptStages } from '../../../src/llm/concept-ideator';
+import { generateConceptSeeds } from '../../../src/llm/concept-seeder';
+import { generateConceptCharacterWorlds } from '../../../src/llm/concept-architect';
+import { generateConceptEngines } from '../../../src/llm/concept-engineer';
+import type { ConceptIdeatorContext } from '../../../src/models';
+import {
+  createConceptSeedFixture,
+  createConceptCharacterWorldFixture,
+  createConceptEngineFixture,
+} from '../../fixtures/concept-generator';
+
+const mockGenerateSeeds = generateConceptSeeds as jest.MockedFunction<typeof generateConceptSeeds>;
+const mockGenerateCharacterWorlds = generateConceptCharacterWorlds as jest.MockedFunction<
+  typeof generateConceptCharacterWorlds
+>;
+const mockGenerateEngines = generateConceptEngines as jest.MockedFunction<
+  typeof generateConceptEngines
+>;
+
+function createSeeds(count: number) {
+  return Array.from({ length: count }, (_, i) => createConceptSeedFixture(i + 1));
 }
 
-function createValidPayload(): { concepts: ReturnType<typeof createValidConcept>[] } {
-  return {
-    concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
-  };
+function createCharacterWorlds(count: number) {
+  return Array.from({ length: count }, (_, i) => createConceptCharacterWorldFixture(i + 1));
 }
 
-function createJsonResponse(status: number, body: unknown): Response {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: jest.fn().mockResolvedValue(body),
-    text: jest.fn().mockResolvedValue(typeof body === 'string' ? body : JSON.stringify(body)),
-  } as unknown as Response;
-}
-
-function responseWithMessageContent(content: string): Response {
-  return createJsonResponse(200, {
-    id: 'or-concept-1',
-    choices: [{ message: { content }, finish_reason: 'stop' }],
-  });
-}
-
-function createErrorResponse(status: number, message: string): Response {
-  return {
-    ok: false,
-    status,
-    json: jest.fn(),
-    text: jest.fn().mockResolvedValue(message),
-  } as unknown as Response;
-}
-
-async function advanceRetryDelays(): Promise<void> {
-  await jest.advanceTimersByTimeAsync(1000);
-  await jest.advanceTimersByTimeAsync(2000);
+function createEngines(count: number) {
+  return Array.from({ length: count }, (_, i) => createConceptEngineFixture(i + 1));
 }
 
 describe('concept-ideator', () => {
-  const fetchMock: jest.MockedFunction<typeof fetch> = jest.fn();
-  const originalFetch = global.fetch;
-
   beforeEach(() => {
-    jest.useFakeTimers();
-    fetchMock.mockReset();
-    mockLogPrompt.mockReset();
-    global.fetch = fetchMock as unknown as typeof fetch;
+    jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
+  describe('mergeConceptStages', () => {
+    it('merges seed, characterWorld, and engine fields into ConceptSpec[]', () => {
+      const seeds = createSeeds(2);
+      const characterWorlds = createCharacterWorlds(2);
+      const engines = createEngines(2);
+
+      const result = mergeConceptStages(seeds, characterWorlds, engines);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ ...seeds[0], ...characterWorlds[0], ...engines[0] });
+      expect(result[1]).toEqual({ ...seeds[1], ...characterWorlds[1], ...engines[1] });
+    });
+
+    it('preserves all 24 fields from the three stages', () => {
+      const seeds = createSeeds(1);
+      const characterWorlds = createCharacterWorlds(1);
+      const engines = createEngines(1);
+
+      const [concept] = mergeConceptStages(seeds, characterWorlds, engines);
+
+      expect(concept).toHaveProperty('oneLineHook');
+      expect(concept).toHaveProperty('genreFrame');
+      expect(concept).toHaveProperty('protagonistRole');
+      expect(concept).toHaveProperty('actionVerbs');
+      expect(concept).toHaveProperty('pressureSource');
+      expect(concept).toHaveProperty('elevatorParagraph');
+    });
   });
 
-  afterAll(() => {
-    global.fetch = originalFetch;
-  });
-
-  function getRequestBody(callIndex = 0): Record<string, unknown> {
-    const call = fetchMock.mock.calls[callIndex];
-    if (!call) {
-      return {};
-    }
-
-    const init = call[1];
-    if (!init || typeof init.body !== 'string') {
-      return {};
-    }
-
-    return JSON.parse(init.body) as Record<string, unknown>;
-  }
-
-  it('parseConceptIdeationResponse returns ConceptSpec[] for valid payload', () => {
-    const parsed = parseConceptIdeationResponse(createValidPayload());
-    expect(parsed).toHaveLength(6);
-    expect(parsed[0]?.genreFrame).toBe('NOIR');
-    expect(parsed[0]?.actionVerbs).toHaveLength(6);
-  });
-
-  it('parseConceptIdeationResponse rejects missing concepts array', () => {
-    expect(() => parseConceptIdeationResponse({})).toThrow('missing concepts array');
-  });
-
-  it('parseConceptIdeationResponse rejects invalid enum values', () => {
-    const payload = createValidPayload();
-    (payload.concepts[0] as Record<string, unknown>)['genreFrame'] = 'INVALID';
-    expect(() => parseConceptIdeationResponse(payload)).toThrow('invalid genreFrame');
-  });
-
-  it('parseConceptIdeationResponse rejects empty actionVerbs', () => {
-    const payload = createValidPayload();
-    (payload.concepts[0] as Record<string, unknown>)['actionVerbs'] = [];
-    expect(() => parseConceptIdeationResponse(payload)).toThrow('actionVerbs must contain 6+ items');
-  });
-
-  it.each([
-    ['whatIfQuestion', 'invalid whatIfQuestion'],
-    ['ironicTwist', 'invalid ironicTwist'],
-    ['playerFantasy', 'invalid playerFantasy'],
-  ])('parseConceptIdeationResponse rejects missing %s', (fieldName, errorMatch) => {
-    const payload = createValidPayload();
-    delete (payload.concepts[0] as Record<string, unknown>)[fieldName];
-    expect(() => parseConceptIdeationResponse(payload)).toThrow(errorMatch);
-  });
-
-  it('parseConceptIdeationResponse rejects concept counts outside 6-8', () => {
-    const payload = createValidPayload();
-    payload.concepts = payload.concepts.slice(0, 5);
-    expect(() => parseConceptIdeationResponse(payload)).toThrow('must include 6-8 concepts');
-  });
-
-  it('buildConceptIdeatorPrompt includes all seed fields when provided', () => {
-    const messages = buildConceptIdeatorPrompt({
-      genreVibes: 'sci-fi noir',
-      moodKeywords: 'tense, paranoid',
-      contentPreferences: 'No explicit sexual violence',
+  describe('generateConceptIdeas', () => {
+    const context: ConceptIdeatorContext = {
+      genreVibes: 'noir',
       kernel: {
         dramaticThesis: 'Control destroys trust',
         valueAtStake: 'Trust',
         opposingForce: 'Fear of uncertainty',
         directionOfChange: 'IRONIC',
         thematicQuestion: 'Can safety exist without control?',
-      antithesis: 'Counter-argument challenges the thesis.',
+        antithesis: 'Counter-argument challenges the thesis.',
       },
-    });
+    };
 
-    expect(messages).toHaveLength(2);
-    const systemMessage = messages[0]?.content ?? '';
-    const userMessage = messages[1]?.content ?? '';
+    it('calls seeder → architect → engineer in sequence and merges results', async () => {
+      const callOrder: string[] = [];
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
 
-    expect(systemMessage).toContain(CONTENT_POLICY);
-    expect(systemMessage).toContain('TAXONOMY GUIDANCE');
-    expect(userMessage).toContain('GENRE VIBES');
-    expect(userMessage).toContain('MOOD KEYWORDS');
-    expect(userMessage).toContain('CONTENT PREFERENCES');
-    expect(systemMessage).toContain('KERNEL CONSTRAINTS');
-    expect(userMessage).toContain('SELECTED STORY KERNEL');
-    expect(userMessage).toContain('dramaticThesis: Control destroys trust');
-  });
-
-  it('buildConceptIdeatorPrompt omits empty seed fields', () => {
-    const messages = buildConceptIdeatorPrompt({
-      genreVibes: '   ',
-      moodKeywords: undefined,
-      contentPreferences: undefined,
-    });
-    const userMessage = messages[1]?.content ?? '';
-
-    expect(userMessage).not.toContain('GENRE VIBES');
-    expect(userMessage).not.toContain('MOOD KEYWORDS');
-    expect(userMessage).not.toContain('CONTENT PREFERENCES');
-  });
-
-  it('buildConceptIdeatorPrompt includes content policy', () => {
-    const messages = buildConceptIdeatorPrompt({});
-    expect(messages[0]?.content).toContain(CONTENT_POLICY);
-  });
-
-  it('buildConceptIdeatorPrompt includes quality anchors for enrichment fields', () => {
-    const messages = buildConceptIdeatorPrompt({});
-    const systemMessage = messages[0]?.content ?? '';
-
-    expect(systemMessage).toContain('whatIfQuestion must be a single question ending with');
-    expect(systemMessage).toContain('ironicTwist must be 1-2 sentences');
-    expect(systemMessage).toContain('playerFantasy must be 1 sentence');
-  });
-
-  it('buildConceptIdeatorPrompt omits kernel constraints when kernel is absent', () => {
-    const messages = buildConceptIdeatorPrompt({
-      genreVibes: 'noir',
-    });
-    const systemMessage = messages[0]?.content ?? '';
-    const userMessage = messages[1]?.content ?? '';
-
-    expect(systemMessage).not.toContain('KERNEL CONSTRAINTS');
-    expect(userMessage).not.toContain('SELECTED STORY KERNEL');
-  });
-
-  it('generateConceptIdeas returns parsed ideation result', async () => {
-    const payload = createValidPayload();
-    const rawContent = JSON.stringify(payload);
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
-
-    const result = await generateConceptIdeas({ genreVibes: 'noir' }, 'test-api-key');
-
-    expect(result.rawResponse).toBe(rawContent);
-    expect(result.concepts).toHaveLength(6);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    const requestBody = getRequestBody();
-    expect(requestBody['response_format']).toEqual(CONCEPT_IDEATION_SCHEMA);
-    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptIdeator', expect.any(Array));
-    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
-  });
-
-  it.each([429, 503])(
-    'generateConceptIdeas handles HTTP %i as retryable LLMError',
-    async (statusCode) => {
-      fetchMock.mockResolvedValue(createErrorResponse(statusCode, 'Server overloaded'));
-
-      const pending = generateConceptIdeas({}, 'test-api-key');
-      const expectation = expect(pending).rejects.toMatchObject({
-        code: `HTTP_${statusCode}`,
-        retryable: true,
+      mockGenerateSeeds.mockImplementation(() => {
+        callOrder.push('seeder');
+        return Promise.resolve({ seeds, rawResponse: 'raw-seeds' });
+      });
+      mockGenerateCharacterWorlds.mockImplementation(() => {
+        callOrder.push('architect');
+        return Promise.resolve({ characterWorlds, rawResponse: 'raw-architect' });
+      });
+      mockGenerateEngines.mockImplementation(() => {
+        callOrder.push('engineer');
+        return Promise.resolve({ engines, rawResponse: 'raw-engineer' });
       });
 
-      await advanceRetryDelays();
-      await expectation;
+      const result = await generateConceptIdeas(context, 'test-api-key');
 
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-    },
-  );
+      expect(callOrder).toEqual(['seeder', 'architect', 'engineer']);
+      expect(result.concepts).toHaveLength(6);
+      expect(result.rawResponse).toBe('raw-engineer');
+    });
+
+    it('passes context and apiKey to seeder', async () => {
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await generateConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateSeeds).toHaveBeenCalledWith(context, 'test-api-key', undefined);
+    });
+
+    it('passes seeds and kernel to architect', async () => {
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await generateConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
+        { seeds, kernel: context.kernel },
+        'test-api-key',
+        undefined,
+      );
+    });
+
+    it('passes seeds, characterWorlds, and kernel to engineer', async () => {
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await generateConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateEngines).toHaveBeenCalledWith(
+        { seeds, characterWorlds, kernel: context.kernel },
+        'test-api-key',
+        undefined,
+      );
+    });
+
+    it('propagates seeder errors without calling downstream stages', async () => {
+      const error = new Error('Seeder failed');
+      mockGenerateSeeds.mockRejectedValue(error);
+
+      await expect(generateConceptIdeas(context, 'test-api-key')).rejects.toBe(error);
+      expect(mockGenerateCharacterWorlds).not.toHaveBeenCalled();
+      expect(mockGenerateEngines).not.toHaveBeenCalled();
+    });
+
+    it('propagates architect errors without calling engineer', async () => {
+      const seeds = createSeeds(6);
+      mockGenerateSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+
+      const error = new Error('Architect failed');
+      mockGenerateCharacterWorlds.mockRejectedValue(error);
+
+      await expect(generateConceptIdeas(context, 'test-api-key')).rejects.toBe(error);
+      expect(mockGenerateEngines).not.toHaveBeenCalled();
+    });
+
+    it('propagates engineer errors', async () => {
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      mockGenerateSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+
+      const error = new Error('Engineer failed');
+      mockGenerateEngines.mockRejectedValue(error);
+
+      await expect(generateConceptIdeas(context, 'test-api-key')).rejects.toBe(error);
+    });
+
+    it('forwards generation options to all stages', async () => {
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+      const options = { temperature: 0.8 };
+
+      mockGenerateSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await generateConceptIdeas(context, 'test-api-key', options);
+
+      expect(mockGenerateSeeds).toHaveBeenCalledWith(context, 'test-api-key', options);
+      expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
+        expect.any(Object),
+        'test-api-key',
+        options,
+      );
+      expect(mockGenerateEngines).toHaveBeenCalledWith(
+        expect.any(Object),
+        'test-api-key',
+        options,
+      );
+    });
+  });
 });

@@ -124,8 +124,10 @@ describe('evolution-service', () => {
       );
 
       expect(events).toEqual([
-        { stage: 'EVOLVING_CONCEPTS', status: 'started', attempt: 1 },
-        { stage: 'EVOLVING_CONCEPTS', status: 'completed', attempt: 1 },
+        { stage: 'SEEDING_EVOLVED_CONCEPTS', status: 'started', attempt: 1 },
+        { stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 },
+        { stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 },
+        { stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
         { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
         { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },

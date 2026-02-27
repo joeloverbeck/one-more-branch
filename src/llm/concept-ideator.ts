@@ -1,34 +1,30 @@
-import type { ConceptIdeationResult, ConceptIdeatorContext, ConceptSpec } from '../models/index.js';
+import type {
+  ConceptIdeationResult,
+  ConceptIdeatorContext,
+  ConceptSpec,
+  ConceptSeedFields,
+  ConceptCharacterWorldFields,
+  ConceptEngineFields,
+} from '../models/index.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
-import { LLMError } from './llm-client-types.js';
-import { runLlmStage } from './llm-stage-runner.js';
-import { parseConceptSpec } from './concept-spec-parser.js';
-import { buildConceptIdeatorPrompt } from './prompts/concept-ideator-prompt.js';
-import { CONCEPT_IDEATION_SCHEMA } from './schemas/concept-ideator-schema.js';
+import { generateConceptSeeds } from './concept-seeder.js';
+import { generateConceptCharacterWorlds } from './concept-architect.js';
+import { generateConceptEngines } from './concept-engineer.js';
 
-export function parseConceptIdeationResponse(parsed: unknown): readonly ConceptSpec[] {
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Concept ideation response must be an object', 'STRUCTURE_PARSE_ERROR', true);
-  }
-
-  const data = parsed as Record<string, unknown>;
-  if (!Array.isArray(data['concepts'])) {
-    throw new LLMError(
-      'Concept ideation response missing concepts array',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
-  }
-
-  if (data['concepts'].length < 6 || data['concepts'].length > 8) {
-    throw new LLMError(
-      `Concept ideation response must include 6-8 concepts (received: ${data['concepts'].length})`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
-  }
-
-  return data['concepts'].map((concept, index) => parseConceptSpec(concept, index));
+export function mergeConceptStages(
+  seeds: readonly ConceptSeedFields[],
+  characterWorlds: readonly ConceptCharacterWorldFields[],
+  engines: readonly ConceptEngineFields[],
+): readonly ConceptSpec[] {
+  return seeds.map((seed, index): ConceptSpec => {
+    const cw = characterWorlds[index] as ConceptCharacterWorldFields;
+    const eng = engines[index] as ConceptEngineFields;
+    return {
+      ...seed,
+      ...cw,
+      ...eng,
+    };
+  });
 }
 
 export async function generateConceptIdeas(
@@ -36,19 +32,32 @@ export async function generateConceptIdeas(
   apiKey: string,
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptIdeationResult> {
-  const messages = buildConceptIdeatorPrompt(context);
-  const result = await runLlmStage({
-    stageModel: 'conceptIdeator',
-    promptType: 'conceptIdeator',
+  const seedResult = await generateConceptSeeds(context, apiKey, options);
+
+  const architectResult = await generateConceptCharacterWorlds(
+    { seeds: seedResult.seeds, kernel: context.kernel },
     apiKey,
     options,
-    schema: CONCEPT_IDEATION_SCHEMA,
-    messages,
-    parseResponse: parseConceptIdeationResponse,
-  });
+  );
+
+  const engineResult = await generateConceptEngines(
+    {
+      seeds: seedResult.seeds,
+      characterWorlds: architectResult.characterWorlds,
+      kernel: context.kernel,
+    },
+    apiKey,
+    options,
+  );
+
+  const concepts = mergeConceptStages(
+    seedResult.seeds,
+    architectResult.characterWorlds,
+    engineResult.engines,
+  );
 
   return {
-    concepts: result.parsed,
-    rawResponse: result.rawResponse,
+    concepts,
+    rawResponse: engineResult.rawResponse,
   };
 }

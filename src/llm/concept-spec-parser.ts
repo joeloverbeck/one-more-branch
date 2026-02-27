@@ -1,4 +1,9 @@
-import type { ConceptSpec } from '../models/index.js';
+import type {
+  ConceptSpec,
+  ConceptSeedFields,
+  ConceptCharacterWorldFields,
+  ConceptEngineFields,
+} from '../models/index.js';
 import {
   isConflictAxis,
   isGenreFrame,
@@ -113,5 +118,118 @@ export function parseConceptSpec(
       label,
     ),
     escapeValve: requireNonEmptyString(data['escapeValve'], 'escapeValve', label),
+  };
+}
+
+export function parseConceptSeed(
+  raw: unknown,
+  index: number,
+  prefix: string = 'Seed',
+): ConceptSeedFields {
+  const label = `${prefix} ${index + 1}`;
+
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    throw new LLMError(`${label} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  const data = raw as Record<string, unknown>;
+
+  if (!isGenreFrame(data['genreFrame'])) {
+    throw new LLMError(
+      `${label} has invalid genreFrame: ${String(data['genreFrame'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+  if (!isConflictAxis(data['conflictAxis'])) {
+    throw new LLMError(
+      `${label} has invalid conflictAxis: ${String(data['conflictAxis'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+  if (!isConflictType(data['conflictType'])) {
+    throw new LLMError(
+      `${label} has invalid conflictType: ${String(data['conflictType'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  return {
+    oneLineHook: requireNonEmptyString(data['oneLineHook'], 'oneLineHook', label),
+    genreFrame: data['genreFrame'],
+    genreSubversion: requireNonEmptyString(data['genreSubversion'], 'genreSubversion', label),
+    conflictAxis: data['conflictAxis'],
+    conflictType: data['conflictType'],
+    whatIfQuestion: requireNonEmptyString(data['whatIfQuestion'], 'whatIfQuestion', label),
+    playerFantasy: requireNonEmptyString(data['playerFantasy'], 'playerFantasy', label),
+  };
+}
+
+export function parseConceptCharacterWorld(
+  raw: unknown,
+  index: number,
+  prefix: string = 'CharacterWorld',
+): ConceptCharacterWorldFields {
+  const label = `${prefix} ${index + 1}`;
+
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    throw new LLMError(`${label} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  const data = raw as Record<string, unknown>;
+
+  if (!isSettingScale(data['settingScale'])) {
+    throw new LLMError(
+      `${label} has invalid settingScale: ${String(data['settingScale'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  return {
+    protagonistRole: requireNonEmptyString(data['protagonistRole'], 'protagonistRole', label),
+    coreCompetence: requireNonEmptyString(data['coreCompetence'], 'coreCompetence', label),
+    coreFlaw: requireNonEmptyString(data['coreFlaw'], 'coreFlaw', label),
+    actionVerbs: requireStringArray(data['actionVerbs'], 'actionVerbs', label, 6),
+    coreConflictLoop: requireNonEmptyString(data['coreConflictLoop'], 'coreConflictLoop', label),
+    settingAxioms: requireStringArray(data['settingAxioms'], 'settingAxioms', label, 2, 5),
+    constraintSet: requireStringArray(data['constraintSet'], 'constraintSet', label, 2, 5),
+    keyInstitutions: requireStringArray(data['keyInstitutions'], 'keyInstitutions', label, 2, 4),
+    settingScale: data['settingScale'],
+  };
+}
+
+export function parseConceptEngine(
+  raw: unknown,
+  index: number,
+  prefix: string = 'Engine',
+): ConceptEngineFields {
+  const label = `${prefix} ${index + 1}`;
+
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    throw new LLMError(`${label} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  const data = raw as Record<string, unknown>;
+
+  return {
+    pressureSource: requireNonEmptyString(data['pressureSource'], 'pressureSource', label),
+    stakesPersonal: requireNonEmptyString(data['stakesPersonal'], 'stakesPersonal', label),
+    stakesSystemic: requireNonEmptyString(data['stakesSystemic'], 'stakesSystemic', label),
+    deadlineMechanism: requireNonEmptyString(data['deadlineMechanism'], 'deadlineMechanism', label),
+    ironicTwist: requireNonEmptyString(data['ironicTwist'], 'ironicTwist', label),
+    incitingDisruption: requireNonEmptyString(
+      data['incitingDisruption'],
+      'incitingDisruption',
+      label,
+    ),
+    escapeValve: requireNonEmptyString(data['escapeValve'], 'escapeValve', label),
+    elevatorParagraph: requireNonEmptyString(
+      data['elevatorParagraph'],
+      'elevatorParagraph',
+      label,
+    ),
   };
 }

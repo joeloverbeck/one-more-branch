@@ -25,14 +25,24 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/kernel-evaluator-prompt.md',
   },
   {
-    promptType: 'conceptIdeator',
-    sourcePath: 'src/llm/prompts/concept-ideator-prompt.ts',
-    docPath: 'prompts/concept-ideator-prompt.md',
+    promptType: 'conceptSeeder',
+    sourcePath: 'src/llm/prompts/concept-seeder-prompt.ts',
+    docPath: 'prompts/concept-seeder-prompt.md',
   },
   {
-    promptType: 'conceptEvolver',
-    sourcePath: 'src/llm/prompts/concept-evolver-prompt.ts',
-    docPath: 'prompts/concept-evolver-prompt.md',
+    promptType: 'conceptEvolverSeeder',
+    sourcePath: 'src/llm/prompts/concept-evolver-seeder-prompt.ts',
+    docPath: 'prompts/concept-evolver-seeder-prompt.md',
+  },
+  {
+    promptType: 'conceptArchitect',
+    sourcePath: 'src/llm/prompts/concept-architect-prompt.ts',
+    docPath: 'prompts/concept-architect-prompt.md',
+  },
+  {
+    promptType: 'conceptEngineer',
+    sourcePath: 'src/llm/prompts/concept-engineer-prompt.ts',
+    docPath: 'prompts/concept-engineer-prompt.md',
   },
   {
     promptType: 'conceptEvaluator',

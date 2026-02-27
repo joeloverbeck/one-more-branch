@@ -187,8 +187,8 @@ describe('config schemas', () => {
             models: {
               kernelIdeator: 'anthropic/claude-sonnet-4.6',
               kernelEvaluator: 'z-ai/glm-5',
-              conceptIdeator: 'anthropic/claude-sonnet-4.6',
-              conceptEvolver: 'anthropic/claude-sonnet-4.6',
+              conceptSeeder: 'anthropic/claude-sonnet-4.6',
+              conceptEvolverSeeder: 'anthropic/claude-sonnet-4.6',
               invalidStageName: 'z-ai/glm-5',
             },
           },

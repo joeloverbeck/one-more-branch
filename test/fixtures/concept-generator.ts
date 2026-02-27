@@ -6,6 +6,9 @@ import type {
   ScoredConcept,
   ConceptStressTestResult,
   EvaluatedConcept,
+  ConceptSeedFields,
+  ConceptCharacterWorldFields,
+  ConceptEngineFields,
 } from '@/models';
 
 export function createConceptSpecFixture(index = 1): ConceptSpec {
@@ -102,6 +105,45 @@ export function createConceptSeedInputFixture(): ConceptSeedInput {
     moodKeywords: 'tense, melancholic',
     contentPreferences: 'no romance subplot',
     apiKey: 'valid-key-12345',
+  };
+}
+
+export function createConceptSeedFixture(index = 1): ConceptSeedFields {
+  return {
+    oneLineHook: `Hook ${index}`,
+    genreFrame: 'NOIR',
+    genreSubversion: `Subversion ${index}`,
+    conflictAxis: 'TRUTH_VS_STABILITY',
+    conflictType: 'PERSON_VS_SOCIETY',
+    whatIfQuestion: `What if question ${index}?`,
+    playerFantasy: `Player fantasy ${index}.`,
+  };
+}
+
+export function createConceptCharacterWorldFixture(index = 1): ConceptCharacterWorldFields {
+  return {
+    protagonistRole: `Role ${index}`,
+    coreCompetence: `Competence ${index}`,
+    coreFlaw: `Flaw ${index}`,
+    actionVerbs: ['negotiate', 'investigate', 'sabotage', 'deceive', 'protect', 'infiltrate'],
+    coreConflictLoop: `Conflict loop ${index}`,
+    settingAxioms: ['Axiom 1', 'Axiom 2'],
+    constraintSet: ['Constraint 1', 'Constraint 2', 'Constraint 3'],
+    keyInstitutions: ['Institution 1', 'Institution 2'],
+    settingScale: 'LOCAL',
+  };
+}
+
+export function createConceptEngineFixture(index = 1): ConceptEngineFields {
+  return {
+    pressureSource: `Pressure ${index}`,
+    stakesPersonal: `Personal stakes ${index}`,
+    stakesSystemic: `Systemic stakes ${index}`,
+    deadlineMechanism: `Deadline ${index}`,
+    ironicTwist: `Ironic twist ${index}.`,
+    incitingDisruption: `Inciting disruption ${index}.`,
+    escapeValve: `Escape valve ${index}.`,
+    elevatorParagraph: `Elevator paragraph ${index}`,
   };
 }
 

@@ -48,15 +48,19 @@ describe('getStageModel', () => {
     const config = getConfig();
     expect(config.llm.models?.['kernelIdeator']).toBeDefined();
     expect(config.llm.models?.['kernelEvaluator']).toBeDefined();
-    expect(config.llm.models?.['conceptIdeator']).toBeDefined();
-    expect(config.llm.models?.['conceptEvolver']).toBeDefined();
+    expect(config.llm.models?.['conceptSeeder']).toBeDefined();
+    expect(config.llm.models?.['conceptEvolverSeeder']).toBeDefined();
+    expect(config.llm.models?.['conceptArchitect']).toBeDefined();
+    expect(config.llm.models?.['conceptEngineer']).toBeDefined();
     expect(config.llm.models?.['conceptEvaluator']).toBeDefined();
     expect(config.llm.models?.['conceptStressTester']).toBeDefined();
 
     expect(getStageModel('kernelIdeator')).toBe(config.llm.models?.['kernelIdeator']);
     expect(getStageModel('kernelEvaluator')).toBe(config.llm.models?.['kernelEvaluator']);
-    expect(getStageModel('conceptIdeator')).toBe(config.llm.models?.['conceptIdeator']);
-    expect(getStageModel('conceptEvolver')).toBe(config.llm.models?.['conceptEvolver']);
+    expect(getStageModel('conceptSeeder')).toBe(config.llm.models?.['conceptSeeder']);
+    expect(getStageModel('conceptEvolverSeeder')).toBe(config.llm.models?.['conceptEvolverSeeder']);
+    expect(getStageModel('conceptArchitect')).toBe(config.llm.models?.['conceptArchitect']);
+    expect(getStageModel('conceptEngineer')).toBe(config.llm.models?.['conceptEngineer']);
     expect(getStageModel('conceptEvaluator')).toBe(config.llm.models?.['conceptEvaluator']);
     expect(getStageModel('conceptStressTester')).toBe(config.llm.models?.['conceptStressTester']);
   });

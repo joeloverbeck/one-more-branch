@@ -313,8 +313,8 @@ describe('evolutionRoutes', () => {
     const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
 
     mockedEvolveConcepts.mockImplementation(({ onGenerationStage }) => {
-      onGenerationStage?.({ stage: 'EVOLVING_CONCEPTS', status: 'started', attempt: 1 });
-      onGenerationStage?.({ stage: 'EVOLVING_CONCEPTS', status: 'completed', attempt: 1 });
+      onGenerationStage?.({ stage: 'SEEDING_EVOLVED_CONCEPTS', status: 'started', attempt: 1 });
+      onGenerationStage?.({ stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 });
       return Promise.resolve({
         evolvedConcepts: evaluatedConcepts.map((entry) => entry.concept),
         scoredConcepts: [],
@@ -346,12 +346,12 @@ describe('evolutionRoutes', () => {
     expect(progressStartSpy).toHaveBeenCalledWith('evolve-progress-1', 'concept-evolution');
     expect(progressMarkStartedSpy).toHaveBeenCalledWith(
       'evolve-progress-1',
-      'EVOLVING_CONCEPTS',
+      'SEEDING_EVOLVED_CONCEPTS',
       1,
     );
     expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
       'evolve-progress-1',
-      'EVOLVING_CONCEPTS',
+      'ENGINEERING_CONCEPTS',
       1,
       undefined,
     );

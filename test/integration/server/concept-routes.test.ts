@@ -282,7 +282,7 @@ describe('Concept Route Integration', () => {
     expect(progressStartSpy).toHaveBeenCalledWith('route-progress-1', 'concept-generation');
     expect(progressMarkStartedSpy).toHaveBeenCalledWith(
       'route-progress-1',
-      'GENERATING_CONCEPTS',
+      'SEEDING_CONCEPTS',
       1,
     );
     expect(progressMarkCompletedSpy).toHaveBeenCalledWith(

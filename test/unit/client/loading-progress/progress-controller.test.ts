@@ -217,7 +217,7 @@ describe('loading progress controller', () => {
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(
-          mockJsonResponse({ status: 'running', activeStage: 'EVOLVING_CONCEPTS' })
+          mockJsonResponse({ status: 'running', activeStage: 'SEEDING_EVOLVED_CONCEPTS' })
         );
       }
       return Promise.resolve(
@@ -242,7 +242,7 @@ describe('loading progress controller', () => {
     button.click();
     await jest.runAllTimersAsync();
 
-    expect(stageValues).toContain('EVOLVING');
+    expect(stageValues).toContain('SEEDING');
   });
 
   it('uses evolving stage phrase pool instead of fallback text', async () => {
@@ -256,7 +256,7 @@ describe('loading progress controller', () => {
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(
-          mockJsonResponse({ status: 'running', activeStage: 'EVOLVING_CONCEPTS' })
+          mockJsonResponse({ status: 'running', activeStage: 'SEEDING_EVOLVED_CONCEPTS' })
         );
       }
       return pendingPost;
@@ -266,14 +266,29 @@ describe('loading progress controller', () => {
     button.click();
     await jest.advanceTimersByTimeAsync(0);
 
-    const evolvingPhrases = [
-      'Breeding offspring concepts...',
-      'Recombining parent traits...',
-      'Mutating concept engines...',
-      'Cross-pollinating ideas...',
-      'Evolving new variations...',
+    const seedingEvolvedPhrases = [
+      'Breeding offspring concept seeds...',
+      'Recombining parent hooks and conflicts...',
+      'Mutating concept seeds from proven parents...',
+      'Cross-pollinating genre frames and conflict axes...',
+      'Evolving new seed variations from parent strengths...',
+      'Inverting parent assumptions into fresh hooks...',
+      'Escalating parent tensions to new extremes...',
+      'Transplanting working conflicts into new genres...',
+      'Hybridizing parent identities into third patterns...',
+      'Radicalizing parent differentiators to logical extremes...',
+      'Fusing strongest parent mechanics into cohesive seeds...',
+      'Selecting mutations that maximize generative spread...',
+      'Preserving parent strengths while attacking weaknesses...',
+      'Generating offspring seeds with maximum diversity...',
+      'Applying mutation strategies to parent concept DNA...',
+      'Testing whether offspring seeds escape parent shadows...',
+      'Calibrating seed diversity across genre and conflict space...',
+      'Drafting evolved hooks that outperform their parents...',
+      'Splicing parent fantasy and pressure into new seeds...',
+      'Germinating next-generation concept candidates...',
     ];
-    expect(evolvingPhrases).toContain(getStatusText());
+    expect(seedingEvolvedPhrases).toContain(getStatusText());
     expect(getStatusText()).not.toBe('Crafting your story...');
 
     resolvePost(
