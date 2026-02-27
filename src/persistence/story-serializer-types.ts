@@ -87,6 +87,8 @@ export interface StoryStructureFileData {
       role: string;
       escalationType?: string | null;
       crisisType?: string | null;
+      isMidpoint: boolean;
+      midpointType: string | null;
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
       setpieceSourceIndex?: number | null;

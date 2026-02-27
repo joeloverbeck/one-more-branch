@@ -12,7 +12,12 @@ import {
   parseStoryId,
   parseStructureVersionId,
 } from '../models';
-import { parseApproachVectors, parseCrisisType, parseEscalationType } from '../engine/structure-factory';
+import {
+  parseApproachVectors,
+  parseCrisisType,
+  parseEscalationType,
+  parseMidpointType,
+} from '../engine/structure-factory';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
@@ -69,6 +74,8 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         role: beat.role,
         escalationType: beat.escalationType,
         crisisType: beat.crisisType,
+        isMidpoint: beat.isMidpoint === true,
+        midpointType: parseMidpointType(beat.midpointType) ?? null,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
         setpieceSourceIndex: beat.setpieceSourceIndex,
@@ -82,14 +89,24 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
 }
 
 function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
-  return {
-    acts: data.acts.map((act) => ({
-      id: act.id,
-      name: act.name,
-      objective: act.objective,
-      stakes: act.stakes,
-      entryCondition: act.entryCondition,
-      beats: act.beats.map((beat) => ({
+  const acts = data.acts.map((act) => ({
+    id: act.id,
+    name: act.name,
+    objective: act.objective,
+    stakes: act.stakes,
+    entryCondition: act.entryCondition,
+    beats: act.beats.map((beat) => {
+      const midpointType = parseMidpointType(beat.midpointType);
+      const isMidpoint = beat.isMidpoint === true;
+      if (isMidpoint) {
+        if (midpointType === null) {
+          throw new Error(`Persisted story beat ${beat.id} is midpoint-tagged but missing midpointType`);
+        }
+      } else if (midpointType !== null) {
+        throw new Error(`Persisted story beat ${beat.id} has midpointType but isMidpoint is false`);
+      }
+
+      return {
         id: beat.id,
         name: beat.name,
         description: beat.description,
@@ -98,6 +115,8 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         role: beat.role as BeatRole,
         escalationType: parseEscalationType(beat.escalationType),
         crisisType: parseCrisisType(beat.crisisType),
+        isMidpoint,
+        midpointType,
         uniqueScenarioHook: beat.uniqueScenarioHook ?? null,
         approachVectors: parseApproachVectors(beat.approachVectors) ?? null,
         setpieceSourceIndex:
@@ -107,8 +126,12 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
           beat.setpieceSourceIndex <= 5
             ? beat.setpieceSourceIndex
             : null,
-      })),
-    })),
+      };
+    }),
+  }));
+
+  return {
+    acts,
     overallTheme: data.overallTheme,
     premise: data.premise,
     pacingBudget: data.pacingBudget,

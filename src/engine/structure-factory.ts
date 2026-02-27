@@ -3,6 +3,7 @@ import type {
   BeatRole,
   CrisisType,
   EscalationType,
+  MidpointType,
   StoryAct,
   StoryBeat,
   StoryStructure,
@@ -12,6 +13,7 @@ import {
   BEAT_ROLES,
   CRISIS_TYPES,
   ESCALATION_TYPES,
+  MIDPOINT_TYPES,
 } from '../models/story-arc';
 import type { StructureGenerationResult } from './structure-types';
 
@@ -38,6 +40,16 @@ export function parseCrisisType(value: string | null | undefined): CrisisType | 
   }
   if (CRISIS_TYPES.includes(value as CrisisType)) {
     return value as CrisisType;
+  }
+  return null;
+}
+
+export function parseMidpointType(value: string | null | undefined): MidpointType | null {
+  if (value == null) {
+    return null;
+  }
+  if (MIDPOINT_TYPES.includes(value as MidpointType)) {
+    return value as MidpointType;
   }
   return null;
 }
@@ -83,20 +95,35 @@ function parseCausalLink(value: unknown, beatId: string): string {
 export function createStoryStructure(result: StructureGenerationResult): StoryStructure {
   const acts: StoryAct[] = result.acts.map((actData, actIndex) => {
     const actId = String(actIndex + 1);
-    const beats: StoryBeat[] = actData.beats.map((beatData, beatIndex) => ({
-      id: `${actId}.${beatIndex + 1}`,
-      name: beatData.name,
-      description: beatData.description,
-      objective: beatData.objective,
-      causalLink: parseCausalLink(beatData.causalLink, `${actId}.${beatIndex + 1}`),
-      role: parseBeatRole(beatData.role),
-      escalationType: parseEscalationType(beatData.escalationType),
-      crisisType: parseCrisisType(beatData.crisisType),
-      uniqueScenarioHook:
-        typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
-      approachVectors: parseApproachVectors(beatData.approachVectors),
-      setpieceSourceIndex: parseSetpieceSourceIndex(beatData.setpieceSourceIndex),
-    }));
+    const beats: StoryBeat[] = actData.beats.map((beatData, beatIndex) => {
+      const beatId = `${actId}.${beatIndex + 1}`;
+      const midpointType = parseMidpointType(beatData.midpointType);
+      const isMidpoint = beatData.isMidpoint === true;
+
+      if (isMidpoint && midpointType === null) {
+        throw new Error(`Structure beat ${beatId} is midpoint-tagged but missing midpointType`);
+      }
+      if (!isMidpoint && midpointType !== null) {
+        throw new Error(`Structure beat ${beatId} has midpointType but isMidpoint is false`);
+      }
+
+      return {
+        id: beatId,
+        name: beatData.name,
+        description: beatData.description,
+        objective: beatData.objective,
+        causalLink: parseCausalLink(beatData.causalLink, beatId),
+        role: parseBeatRole(beatData.role),
+        escalationType: parseEscalationType(beatData.escalationType),
+        crisisType: parseCrisisType(beatData.crisisType),
+        isMidpoint,
+        midpointType,
+        uniqueScenarioHook:
+          typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
+        approachVectors: parseApproachVectors(beatData.approachVectors),
+        setpieceSourceIndex: parseSetpieceSourceIndex(beatData.setpieceSourceIndex),
+      };
+    });
 
     return {
       id: actId,

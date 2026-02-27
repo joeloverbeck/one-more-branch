@@ -213,11 +213,11 @@ export function buildEscalationDirective(
     return '';
   }
 
-  if (
-    activeBeat.role !== 'escalation' &&
-    activeBeat.role !== 'turning_point' &&
-    activeBeat.role !== 'reflection'
-  ) {
+  const hasRoleDirective =
+    activeBeat.role === 'escalation' ||
+    activeBeat.role === 'turning_point' ||
+    activeBeat.role === 'reflection';
+  if (!hasRoleDirective && !activeBeat.isMidpoint) {
     return '';
   }
 
@@ -288,7 +288,7 @@ export function buildEscalationDirective(
     lines.push(
       '- "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed'
     );
-  } else {
+  } else if (activeBeat.role === 'reflection') {
     lines.push('=== REFLECTION DIRECTIVE ===');
     lines.push(
       'The active beat role is "reflection". This scene MUST deliver thematic or internal deepening without forced escalation.'
@@ -305,6 +305,23 @@ export function buildEscalationDirective(
     );
     lines.push(
       '- Reflection is NOT recap: avoid merely restating known facts without new interpretation or commitment'
+    );
+  }
+
+  if (activeBeat.isMidpoint) {
+    lines.push('=== MIDPOINT DIRECTIVE ===');
+    lines.push(
+      'This beat is the structural midpoint. The scene should deliver a central reversal that reorients the trajectory of the story.'
+    );
+    lines.push(`Midpoint type: ${activeBeat.midpointType ?? 'UNSPECIFIED'}`);
+    lines.push(
+      '- FALSE_VICTORY: apparent success that conceals cost, instability, or strategic error'
+    );
+    lines.push(
+      '- FALSE_DEFEAT: apparent failure that plants leverage or insight for later recovery'
+    );
+    lines.push(
+      '- Choice intents should force the protagonist to commit under the new understanding created by the midpoint turn'
     );
   }
 

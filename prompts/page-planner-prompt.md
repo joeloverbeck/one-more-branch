@@ -154,9 +154,9 @@ The briefing is omitted entirely when no directive, nudge, or trajectory warning
 
 Source: `buildPacingBriefingSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
-## Escalation Directive
+## Structural Directive
 
-When the active beat role is `escalation`, `turning_point`, or `reflection`, the continuation context includes a directive section (placed after the pacing briefing and before thread aging):
+When the active beat role is `escalation`, `turning_point`, or `reflection` (or when the active beat is midpoint-tagged), the continuation context includes structural directive sections (placed after the pacing briefing and before thread aging):
 
 ```text
 {{#if activeBeatRole === 'escalation'}}
@@ -196,9 +196,18 @@ Requirements:
 - Produce a meaningful internal or relational shift that changes how the next conflict will be approached
 - Reflection is NOT recap: avoid merely restating known facts without new interpretation or commitment
 {{/if}}
+
+{{#if activeBeat.isMidpoint}}
+=== MIDPOINT DIRECTIVE ===
+This beat is the structural midpoint. The scene should deliver a central reversal that reorients the trajectory of the story.
+Midpoint type: {{activeBeat.midpointType}}
+- FALSE_VICTORY: apparent success that conceals cost, instability, or strategic error
+- FALSE_DEFEAT: apparent failure that plants leverage or insight for later recovery
+- Choice intents should force the protagonist to commit under the new understanding created by the midpoint turn
+{{/if}}
 ```
 
-The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point beat is the first beat in the act, the previous resolution line is omitted. The escalation mechanism, crisis type, unique scenario hook, and approach vectors lines are emitted only when those fields are present on the active beat.
+The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point/reflection beat is the first beat in the act, the previous resolution line is omitted. The escalation mechanism, crisis type, unique scenario hook, and approach vectors lines are emitted only when those fields are present on the active beat.
 
 Source: `buildEscalationDirective()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 

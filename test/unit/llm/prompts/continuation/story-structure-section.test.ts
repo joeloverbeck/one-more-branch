@@ -26,13 +26,22 @@ describe('story-structure-section', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          {
+            id: '1.1',
+            description: 'Reach safehouse',
+            objective: 'Get inside',
+            role: 'setup',
+            isMidpoint: false,
+            midpointType: null,
+          },
           {
             id: '1.2',
             description: 'Secure evidence',
             objective: 'Protect evidence',
             role: 'escalation',
             crisisType: 'BEST_BAD_CHOICE',
+            isMidpoint: true,
+            midpointType: 'FALSE_VICTORY',
           },
           {
             id: '1.3',
@@ -40,6 +49,8 @@ describe('story-structure-section', () => {
             objective: 'Commit to ally',
             role: 'turning_point',
             crisisType: 'IRRECONCILABLE_GOODS',
+            isMidpoint: false,
+            midpointType: null,
           },
         ],
       },
@@ -55,12 +66,16 @@ describe('story-structure-section', () => {
             description: 'Break through checkpoints',
             objective: 'Find route north',
             role: 'escalation',
+            isMidpoint: false,
+            midpointType: null,
           },
           {
             id: '2.2',
             description: 'Defend witnesses',
             objective: 'Keep witnesses alive',
             role: 'turning_point',
+            isMidpoint: false,
+            midpointType: null,
           },
         ],
       },
@@ -76,12 +91,16 @@ describe('story-structure-section', () => {
             description: 'Reach relay core',
             objective: 'Seize control room',
             role: 'escalation',
+            isMidpoint: false,
+            midpointType: null,
           },
           {
             id: '3.2',
             description: 'Deliver proof',
             objective: 'Transmit evidence',
             role: 'resolution',
+            isMidpoint: false,
+            midpointType: null,
           },
         ],
       },
@@ -379,6 +398,8 @@ describe('story-structure-section', () => {
                 description: 'Escalate',
                 objective: 'Raise stakes',
                 role: 'escalation' as const,
+                isMidpoint: false,
+                midpointType: null,
               },
             ],
           },
@@ -393,6 +414,24 @@ describe('story-structure-section', () => {
 
       expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
       expect(result).not.toContain('Previous beat resolved:');
+    });
+
+    it('adds midpoint quality guidance when the active beat is midpoint-tagged', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      };
+
+      const result = buildEscalationCheckSection('escalation', testStructure.acts[0]!.beats, state);
+
+      expect(result).toContain('=== MIDPOINT QUALITY CHECK ===');
+      expect(result).toContain('Expected midpoint type: FALSE_VICTORY');
     });
   });
 });

@@ -28,6 +28,10 @@ export const CRISIS_TYPES = ['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS'] as const
 
 export type CrisisType = (typeof CRISIS_TYPES)[number];
 
+export const MIDPOINT_TYPES = ['FALSE_VICTORY', 'FALSE_DEFEAT'] as const;
+
+export type MidpointType = (typeof MIDPOINT_TYPES)[number];
+
 export const APPROACH_VECTORS = [
   'DIRECT_FORCE',
   'SWIFT_ACTION',
@@ -52,6 +56,8 @@ export interface StoryBeat {
   readonly role: BeatRole;
   readonly escalationType: EscalationType | null;
   readonly crisisType: CrisisType | null;
+  readonly isMidpoint: boolean;
+  readonly midpointType: MidpointType | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly ApproachVector[] | null;
   readonly setpieceSourceIndex: number | null;

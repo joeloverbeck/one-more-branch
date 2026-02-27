@@ -64,6 +64,8 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'role',
       'escalationType',
       'crisisType',
+      'isMidpoint',
+      'midpointType',
       'uniqueScenarioHook',
       'approachVectors',
       'setpieceSourceIndex',
@@ -252,6 +254,62 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       {
         type: 'string',
         enum: ['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS'],
+      },
+      { type: 'null' },
+    ]);
+  });
+
+  it('should define isMidpoint as a required boolean', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    isMidpoint: { type: string; description: string };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const isMidpointSchema = schema.properties.acts.items.properties.beats.items.properties.isMidpoint;
+    expect(isMidpointSchema.type).toBe('boolean');
+    expect(isMidpointSchema.description).toContain('midpoint');
+  });
+
+  it('should define midpointType with a nullable anyOf enum', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    midpointType: {
+                      anyOf: Array<{ type: string; enum?: string[] }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const midpointTypeSchema =
+      schema.properties.acts.items.properties.beats.items.properties.midpointType;
+    expect(midpointTypeSchema.anyOf).toEqual([
+      {
+        type: 'string',
+        enum: ['FALSE_VICTORY', 'FALSE_DEFEAT'],
       },
       { type: 'null' },
     ]);

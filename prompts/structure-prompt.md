@@ -149,8 +149,12 @@ REQUIREMENTS (follow ALL):
    - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
    For "setup", "reflection", and "resolution" beats, set crisisType to null.
-16. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
-17. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null.
+16. Flag exactly one beat across the full structure as `isMidpoint: true`. This beat should sit near the structural center and deliver a major reveal/reversal. Set `midpointType` to:
+   - FALSE_VICTORY: apparent win that conceals instability/cost
+   - FALSE_DEFEAT: apparent loss that plants a seed of recovery
+   For all other beats, set `isMidpoint: false` and `midpointType: null`.
+17. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
+18. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null.
 
 TONE REMINDER: All output must fit the tone: {{tone}}.
 
@@ -191,6 +195,8 @@ OUTPUT SHAPE:
       - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
       - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
+      - isMidpoint: boolean (true for exactly one beat in the full structure)
+      - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
       - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null
@@ -230,6 +236,8 @@ OUTPUT SHAPE:
           "role": "{{setup|escalation|turning_point|reflection|resolution}}",
           "escalationType": "{{THREAT_ESCALATION|REVELATION_SHIFT|REVERSAL_OF_FORTUNE|BETRAYAL_OR_ALLIANCE_SHIFT|RESOURCE_OR_CAPABILITY_LOSS|MORAL_OR_ETHICAL_PRESSURE|TEMPORAL_OR_ENVIRONMENTAL_PRESSURE|COMPLICATION_CASCADE|COMPETENCE_DEMAND_SPIKE|null}}",
           "crisisType": "{{BEST_BAD_CHOICE|IRRECONCILABLE_GOODS|null}}",
+          "isMidpoint": "{{true|false}}",
+          "midpointType": "{{FALSE_VICTORY|FALSE_DEFEAT|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
           "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|STEALTH_SUBTERFUGE|ANALYTICAL_REASONING|CAREFUL_OBSERVATION|INTUITIVE_LEAP|PERSUASION_INFLUENCE|EMPATHIC_CONNECTION|ENDURANCE_RESILIENCE|SELF_EXPRESSION}}"],
           "setpieceSourceIndex": "{{0|1|2|3|4|5|null}}"

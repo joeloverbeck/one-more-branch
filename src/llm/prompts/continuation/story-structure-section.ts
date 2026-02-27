@@ -124,6 +124,9 @@ export function buildWriterStructureContext(
         const crisisLine = beat.crisisType
           ? `\n    Crisis type: ${beat.crisisType}`
           : '';
+        const midpointLine = beat.isMidpoint
+          ? `\n    Midpoint: true (${beat.midpointType ?? 'UNSPECIFIED'})`
+          : '';
         const hookLine = beat.uniqueScenarioHook
           ? `\n    Scenario hook: ${beat.uniqueScenarioHook}`
           : '';
@@ -132,7 +135,7 @@ export function buildWriterStructureContext(
             ? `\n    Approach vectors: ${beat.approachVectors.join(', ')}`
             : '';
         return `  [>] ACTIVE (${beat.role}): ${beat.description}
-    Objective: ${beat.objective}${escalationLine}${crisisLine}${hookLine}${approachLine}`;
+    Objective: ${beat.objective}${escalationLine}${crisisLine}${midpointLine}${hookLine}${approachLine}`;
       }
       return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })
@@ -167,17 +170,24 @@ export function buildEscalationCheckSection(
   beats: readonly StoryBeat[],
   state: AccumulatedStructureState
 ): string {
-  if (
-    !activeBeatRole ||
-    (activeBeatRole !== 'escalation' &&
-      activeBeatRole !== 'turning_point' &&
-      activeBeatRole !== 'reflection')
-  ) {
+  if (!activeBeatRole) {
+    return '';
+  }
+
+  const activeBeat = beats[state.currentBeatIndex];
+  if (!activeBeat) {
+    return '';
+  }
+
+  const hasRoleQualityCheck =
+    activeBeatRole === 'escalation' ||
+    activeBeatRole === 'turning_point' ||
+    activeBeatRole === 'reflection';
+  if (!hasRoleQualityCheck && !activeBeat.isMidpoint) {
     return '';
   }
 
   const previousResolution = findPreviousConcludedResolution(beats, state);
-  const activeBeat = beats[state.currentBeatIndex];
 
   const lines: string[] = [];
 
@@ -271,7 +281,7 @@ export function buildEscalationCheckSection(
         `- If turning-point choices do not reflect crisis type ${activeBeat.crisisType}, note the mismatch in pacingIssueReason`
       );
     }
-  } else {
+  } else if (activeBeatRole === 'reflection') {
     lines.push('=== REFLECTION QUALITY CHECK ===');
     lines.push(
       'The active beat role is "reflection". When evaluating this beat:'
@@ -290,6 +300,26 @@ export function buildEscalationCheckSection(
     );
     lines.push(
       '- If beatConcluded is true but no meaningful thematic/internal movement occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without thematic/internal deepening — scene recapped prior material without changing interpretation or commitment"'
+    );
+  }
+
+  if (activeBeat.isMidpoint) {
+    lines.push('=== MIDPOINT QUALITY CHECK ===');
+    lines.push(
+      'The active beat is midpoint-tagged. Evaluate whether this scene delivers a true structural midpoint reversal.'
+    );
+    lines.push(`Expected midpoint type: ${activeBeat.midpointType ?? 'UNSPECIFIED'}`);
+    lines.push(
+      '- FALSE_VICTORY: apparent win with hidden cost, instability, or misread consequence'
+    );
+    lines.push(
+      '- FALSE_DEFEAT: apparent loss that plants a credible seed of future success'
+    );
+    lines.push(
+      '- If beatConcluded is true but no midpoint-grade reversal occurs, set pacingIssueDetected: true and note midpoint underdelivery in pacingIssueReason'
+    );
+    lines.push(
+      '- Tie midpoint evaluation to structural function, not just emotional intensity'
     );
   }
 
