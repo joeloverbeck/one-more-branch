@@ -239,6 +239,9 @@ export function buildEscalationDirective(
     if (activeBeat.escalationType) {
       lines.push(`Escalation mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of escalation.`);
     }
+    if (activeBeat.secondaryEscalationType) {
+      lines.push(`Secondary escalation mechanism: ${activeBeat.secondaryEscalationType} — layer this as an additional pressure axis in the same scene.`);
+    }
     if (activeBeat.crisisType) {
       lines.push(`Crisis type: ${activeBeat.crisisType} — shape choiceIntents so the dilemma matches this crisis form.`);
     }
@@ -268,6 +271,9 @@ export function buildEscalationDirective(
     }
     if (activeBeat.escalationType) {
       lines.push(`Turning point mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of shift.`);
+    }
+    if (activeBeat.secondaryEscalationType) {
+      lines.push(`Secondary turning point mechanism: ${activeBeat.secondaryEscalationType} — ensure the irreversible shift lands across both escalation axes.`);
     }
     if (activeBeat.crisisType) {
       lines.push(`Crisis type: ${activeBeat.crisisType} — shape choiceIntents so the pivotal decision matches this crisis form.`);

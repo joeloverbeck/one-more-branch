@@ -107,6 +107,10 @@ export function parseStructureResponseObject(
       const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
       const escalationType =
         typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
+      const secondaryEscalationType =
+        typeof beatData['secondaryEscalationType'] === 'string'
+          ? beatData['secondaryEscalationType']
+          : null;
       const crisisType = typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
       const isMidpoint = beatData['isMidpoint'] === true;
       const midpointType = parseMidpointType(beatData['midpointType']);
@@ -143,6 +147,7 @@ export function parseStructureResponseObject(
         causalLink: beatData['causalLink'],
         role,
         escalationType,
+        secondaryEscalationType,
         crisisType,
         isMidpoint,
         midpointType,

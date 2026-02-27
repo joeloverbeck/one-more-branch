@@ -28,6 +28,7 @@ function createValidParsedStructure(): Record<string, unknown> {
             objective: 'Recover missing tribunal ledgers.',
             causalLink: 'Because the smuggler reveals where ledgers moved.',
             role: 'turning_point',
+            secondaryEscalationType: 'REVELATION_SHIFT',
             isMidpoint: false,
             midpointType: null,
           },
@@ -117,6 +118,7 @@ describe('structure-response-parser', () => {
       isMidpoint: true,
       midpointType: 'FALSE_VICTORY',
     });
+    expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
   });
 
   it('throws when midpointType exists but isMidpoint is false', () => {

@@ -63,6 +63,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'causalLink',
       'role',
       'escalationType',
+      'secondaryEscalationType',
       'crisisType',
       'isMidpoint',
       'midpointType',
@@ -180,6 +181,48 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     const escalationTypeSchema =
       schema.properties.acts.items.properties.beats.items.properties.escalationType;
     expect(escalationTypeSchema.anyOf).toEqual([
+      {
+        type: 'string',
+        enum: [
+          'THREAT_ESCALATION',
+          'REVELATION_SHIFT',
+          'REVERSAL_OF_FORTUNE',
+          'BETRAYAL_OR_ALLIANCE_SHIFT',
+          'RESOURCE_OR_CAPABILITY_LOSS',
+          'MORAL_OR_ETHICAL_PRESSURE',
+          'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
+          'COMPLICATION_CASCADE',
+          'COMPETENCE_DEMAND_SPIKE',
+        ],
+      },
+      { type: 'null' },
+    ]);
+  });
+
+  it('should define secondaryEscalationType with a nullable anyOf enum', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    secondaryEscalationType: {
+                      anyOf: Array<{ type: string; enum?: string[] }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const secondaryEscalationTypeSchema =
+      schema.properties.acts.items.properties.beats.items.properties.secondaryEscalationType;
+    expect(secondaryEscalationTypeSchema.anyOf).toEqual([
       {
         type: 'string',
         enum: [

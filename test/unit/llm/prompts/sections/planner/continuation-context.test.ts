@@ -689,6 +689,7 @@ describe('buildEscalationDirective', () => {
       id: string;
       role: BeatRole;
       escalationType?: string | null;
+      secondaryEscalationType?: string | null;
       crisisType?: string | null;
       isMidpoint?: boolean;
       midpointType?: string | null;
@@ -712,6 +713,7 @@ describe('buildEscalationDirective', () => {
           objective: `Obj for ${b.id}`,
           role: b.role,
           escalationType: b.escalationType ?? null,
+          secondaryEscalationType: b.secondaryEscalationType ?? null,
           crisisType: b.crisisType ?? null,
           isMidpoint: b.isMidpoint ?? false,
           midpointType: b.midpointType ?? null,
@@ -847,6 +849,35 @@ describe('buildEscalationDirective', () => {
     expect(result).toContain('Turning point mechanism: REVELATION_SHIFT');
     expect(result).toContain(
       'Crisis type: IRRECONCILABLE_GOODS — shape choiceIntents so the pivotal decision matches this crisis form.'
+    );
+  });
+
+  it('includes secondary escalation guidance when present on active beat', () => {
+    const structure = makeStructure([
+      { id: '1.1', role: 'setup' },
+      {
+        id: '1.2',
+        role: 'turning_point',
+        escalationType: 'THREAT_ESCALATION',
+        secondaryEscalationType: 'REVELATION_SHIFT',
+      },
+    ]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 1,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Route found' },
+        { beatId: '1.2', status: 'active' },
+      ],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('Turning point mechanism: THREAT_ESCALATION');
+    expect(result).toContain(
+      'Secondary turning point mechanism: REVELATION_SHIFT — ensure the irreversible shift lands across both escalation axes.'
     );
   });
 

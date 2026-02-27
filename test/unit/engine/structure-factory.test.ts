@@ -128,6 +128,17 @@ describe('structure-factory', () => {
       expect(result.acts[1]?.beats[0]?.crisisType).toBeNull();
     });
 
+    it('maps valid secondaryEscalationType and coerces invalid values to null', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[0]!.beats[1]!.secondaryEscalationType = 'REVELATION_SHIFT';
+      genResult.acts[1]!.beats[0]!.secondaryEscalationType = 'INVALID_ESCALATION';
+
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
+      expect(result.acts[1]?.beats[0]?.secondaryEscalationType).toBeNull();
+    });
+
     it('parses valid approachVectors from generation result', () => {
       const genResult = createGenerationResult();
       genResult.acts[1]!.beats[0]!.approachVectors = [

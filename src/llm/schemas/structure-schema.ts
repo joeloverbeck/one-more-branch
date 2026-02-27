@@ -100,6 +100,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'causalLink',
                     'role',
                     'escalationType',
+                    'secondaryEscalationType',
                     'crisisType',
                     'isMidpoint',
                     'midpointType',
@@ -131,6 +132,17 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       ],
                       description:
                         'For escalation/turning_point beats: HOW stakes rise. Null for setup/reflection/resolution beats.',
+                    },
+                    secondaryEscalationType: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [...ESCALATION_TYPES],
+                        },
+                        { type: 'null' },
+                      ],
+                      description:
+                        'Optional second escalation axis for escalation/turning_point beats when pressure rises along two dimensions at once. Null otherwise.',
                     },
                     crisisType: {
                       anyOf: [
