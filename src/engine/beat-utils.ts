@@ -1,4 +1,10 @@
-import type { BeatProgression, StoryBeat, StoryStructure } from '../models/story-arc';
+import type {
+  AccumulatedStructureState,
+  BeatProgression,
+  StoryBeat,
+  StoryStructure,
+} from '../models/story-arc';
+import { getCurrentBeat } from '../models';
 
 /**
  * Parses beat ID (e.g., "1.2") into act and beat indices.
@@ -64,4 +70,42 @@ export function upsertBeatProgression(
   }
 
   return updated;
+}
+
+/**
+ * Computes the next sequential beat ID from the current structure state.
+ */
+export function computeNextSequentialBeatId(state: AccumulatedStructureState): string | null {
+  const nextBeatIndex = state.currentBeatIndex + 1;
+  return `${state.currentActIndex + 1}.${nextBeatIndex + 1}`;
+}
+
+/**
+ * Returns true if candidateId is ahead of referenceId in beat ordering.
+ */
+export function isBeatIdAhead(candidateId: string, referenceId: string): boolean {
+  const candidate = parseBeatIndices(candidateId);
+  const reference = parseBeatIndices(referenceId);
+  if (!candidate || !reference) return false;
+
+  if (candidate.actIndex > reference.actIndex) return true;
+  if (candidate.actIndex === reference.actIndex) {
+    return candidate.beatIndex > reference.beatIndex;
+  }
+  return false;
+}
+
+/**
+ * Resolves the currently active beat from the structure and state.
+ */
+export function resolveActiveBeat(
+  activeStructureVersion: import('../models').VersionedStoryStructure | null,
+  storyStructure: StoryStructure | null,
+  parentStructureState: AccumulatedStructureState
+): StoryBeat | undefined {
+  const activeStructure = activeStructureVersion?.structure ?? storyStructure;
+  if (!activeStructure || !parentStructureState) {
+    return undefined;
+  }
+  return getCurrentBeat(activeStructure, parentStructureState);
 }

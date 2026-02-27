@@ -2,6 +2,7 @@ import type {
   AccumulatedStructureState,
   StoryStructure,
 } from '../models/story-arc';
+import type { VersionedStoryStructure } from '../models/structure-version';
 import { getBeatOrThrow, parseBeatIndices, upsertBeatProgression } from './beat-utils';
 import type { StructureProgressionResult } from './structure-types';
 
@@ -158,4 +159,29 @@ export function applyStructureProgression(
 
   const result = advanceStructureState(structure, parentState, beatResolution);
   return result.updatedState;
+}
+
+export interface StructureProgressionContext {
+  readonly activeStructureVersion: VersionedStoryStructure | null;
+  readonly storyStructure: StoryStructure | null;
+  readonly parentStructureState: AccumulatedStructureState;
+  readonly beatConcluded: boolean;
+  readonly beatResolution: string;
+  readonly alignmentSkip?: { targetBeatId: string; bridgedResolution: string };
+}
+
+export function resolveStructureProgression(
+  context: StructureProgressionContext
+): AccumulatedStructureState {
+  const activeStructure = context.activeStructureVersion?.structure ?? context.storyStructure;
+  if (!activeStructure) {
+    return context.parentStructureState;
+  }
+  return applyStructureProgression(
+    activeStructure,
+    context.parentStructureState,
+    context.beatConcluded,
+    context.beatResolution,
+    context.alignmentSkip
+  );
 }

@@ -21,17 +21,17 @@ import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/sta
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { updateStoryWithAllCanon } from './canon-manager';
+import { runAnalystEvaluation } from './analyst-evaluation';
+import { resolveActiveBeat } from './beat-utils';
+import { resolveBeatAlignmentSkip } from './beat-alignment';
+import { resolveBeatConclusion } from './beat-conclusion';
+import { handleDeviationIfDetected } from './deviation-processing';
+import { applyPacingResponse } from './pacing-response';
 import {
-  runAnalystEvaluation,
-  handleDeviationIfDetected,
   handleSpineDeviationIfDetected,
   collectRemainingBeatIds,
-  resolveBeatConclusion,
-  resolveBeatAlignmentSkip,
-  applyPacingResponse,
-  resolveStructureProgression,
-  resolveActiveBeat,
-} from './continuation-post-processing';
+} from './spine-deviation-processing';
+import { resolveStructureProgression } from './structure-state';
 import { resolveNpcAgendas } from './npc-agenda-pipeline';
 import { buildPage } from './page-builder';
 import type { CollectedParentState } from './parent-state-collector';

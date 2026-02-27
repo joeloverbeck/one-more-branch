@@ -1,4 +1,4 @@
-import { resolveBeatAlignmentSkip } from '../../../src/engine/continuation-post-processing';
+import { resolveBeatAlignmentSkip } from '../../../src/engine/beat-alignment';
 import { createMockAnalystResult } from '../../fixtures/llm-results';
 import type { AccumulatedStructureState } from '../../../src/models/story-arc';
 
