@@ -255,7 +255,17 @@ The active beat role is "turning_point". When evaluating this beat:
 - If beatConcluded is true but no irreversible shift occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without irreversible shift — status quo was not permanently altered"
 {{#if activeBeat.escalationType}}- If the turning point type does not match what actually happened (e.g., expected {{activeBeat.escalationType}} but got generic change), note the mismatch in pacingIssueReason{{/if}}
 {{/if}}
-(Only present when active beat role is escalation or turning_point.)
+
+{{#if activeBeatRole === 'reflection'}}
+=== REFLECTION QUALITY CHECK ===
+The active beat role is "reflection". When evaluating this beat:
+{{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+- Assess whether the narrative delivered thematic or internal deepening tied to the protagonist's current dilemma
+- Reflection should produce a meaningful shift in interpretation, emotional commitment, or relational stance
+- Reflection is NOT recap: repeating known facts or mood without new meaning does not satisfy this beat role
+- If beatConcluded is true but no meaningful thematic/internal movement occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without thematic/internal deepening — scene recapped prior material without changing interpretation or commitment"
+{{/if}}
+(Only present when active beat role is escalation, turning_point, or reflection.)
 
 === BEAT DEVIATION EVALUATION ===
 After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.

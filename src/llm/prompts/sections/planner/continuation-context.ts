@@ -213,7 +213,11 @@ export function buildEscalationDirective(
     return '';
   }
 
-  if (activeBeat.role !== 'escalation' && activeBeat.role !== 'turning_point') {
+  if (
+    activeBeat.role !== 'escalation' &&
+    activeBeat.role !== 'turning_point' &&
+    activeBeat.role !== 'reflection'
+  ) {
     return '';
   }
 
@@ -251,7 +255,7 @@ export function buildEscalationDirective(
     lines.push(
       '- "More complicated" is NOT escalation — escalation means "more costly to fail"'
     );
-  } else {
+  } else if (activeBeat.role === 'turning_point') {
     lines.push('=== TURNING POINT DIRECTIVE ===');
     lines.push(
       'The active beat role is "turning_point". This scene MUST deliver an irreversible shift.'
@@ -277,6 +281,24 @@ export function buildEscalationDirective(
     );
     lines.push(
       '- "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed'
+    );
+  } else {
+    lines.push('=== REFLECTION DIRECTIVE ===');
+    lines.push(
+      'The active beat role is "reflection". This scene MUST deliver thematic or internal deepening without forced escalation.'
+    );
+    if (previousResolution) {
+      lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    lines.push('Requirements:');
+    lines.push(
+      '- Deepen the protagonist\'s understanding, conviction, fear, or value conflict tied to the current dramatic question'
+    );
+    lines.push(
+      '- Produce a meaningful internal or relational shift that changes how the next conflict will be approached'
+    );
+    lines.push(
+      '- Reflection is NOT recap: avoid merely restating known facts without new interpretation or commitment'
     );
   }
 

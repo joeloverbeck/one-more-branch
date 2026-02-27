@@ -127,7 +127,7 @@ REQUIREMENTS (follow ALL):
    - At least one beat in Act 1 should be a "turning_point" representing a point of no return
    - The midpoint of the story (typically late Act 1 or mid Act 2) should include a reveal or reversal that reframes prior events
    - {{directionalGuidance}} (see Directional Guidance below)
-   - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "resolution" for denouement
+   - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "reflection" for thematic/internal deepening without forced escalation, "resolution" for denouement
 9. When designing beat descriptions and objectives, connect them to the protagonist's Need (inner transformation) vs Want (outer goal) from the spine. Setup beats should establish the need/want gap. Escalation beats should widen it — making the Want harder to achieve or the Need more urgent. Turning points should force the protagonist to confront the gap directly. Resolution beats should resolve or transform the tension.
 10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
 11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
@@ -143,10 +143,10 @@ REQUIREMENTS (follow ALL):
    - TEMPORAL_OR_ENVIRONMENTAL_PRESSURE: External conditions constrict — a deadline tightens, an environment becomes hostile, escape routes close
    - COMPLICATION_CASCADE: Consequences of earlier choices compound into simultaneous crises that cannot all be addressed
    - COMPETENCE_DEMAND_SPIKE: The challenge now exceeds the protagonist's demonstrated capability, forcing growth or improvisation
-   For "setup" and "resolution" beats, set escalationType to null.
+   For "setup", "reflection", and "resolution" beats, set escalationType to null.
    When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
-15. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup" and "resolution" beats, set uniqueScenarioHook to null.
-16. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup" and "resolution" beats, set approachVectors to null.
+15. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
+16. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null.
 
 TONE REMINDER: All output must fit the tone: {{tone}}.
 
@@ -184,10 +184,10 @@ OUTPUT SHAPE:
           "Move the story forward" (meta-commentary, not a protagonist goal)
           "Experience the consequences" (passive, no action verb, unverifiable)
       - causalLink: one sentence explaining the cause of this beat's situation
-      - role: "setup" | "escalation" | "turning_point" | "resolution"
-      - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
-      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats
-      - approachVectors: 2-3 approach vector enums, or null for setup/resolution beats
+      - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
+      - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
+      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
+      - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
       - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null
 ```
 
@@ -222,7 +222,7 @@ OUTPUT SHAPE:
           "description": "{{beat description}}",
           "objective": "{{beat objective}}",
           "causalLink": "{{because-of causal sentence}}",
-          "role": "{{setup|escalation|turning_point|resolution}}",
+          "role": "{{setup|escalation|turning_point|reflection|resolution}}",
           "escalationType": "{{THREAT_ESCALATION|REVELATION_SHIFT|REVERSAL_OF_FORTUNE|BETRAYAL_OR_ALLIANCE_SHIFT|RESOURCE_OR_CAPABILITY_LOSS|MORAL_OR_ETHICAL_PRESSURE|TEMPORAL_OR_ENVIRONMENTAL_PRESSURE|COMPLICATION_CASCADE|COMPETENCE_DEMAND_SPIKE|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
           "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|STEALTH_SUBTERFUGE|ANALYTICAL_REASONING|CAREFUL_OBSERVATION|INTUITIVE_LEAP|PERSUASION_INFLUENCE|EMPATHIC_CONNECTION|ENDURANCE_RESILIENCE|SELF_EXPRESSION}}"],

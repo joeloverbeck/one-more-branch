@@ -8,7 +8,7 @@ import type {
 } from '../models/story-arc';
 import type { StructureGenerationResult } from './structure-types';
 
-const VALID_BEAT_ROLES: readonly string[] = ['setup', 'escalation', 'turning_point', 'resolution'];
+import { BEAT_ROLES as VALID_BEAT_ROLES } from '../models/story-arc';
 
 const VALID_ESCALATION_TYPES: readonly string[] = [
   'THREAT_ESCALATION',
@@ -23,7 +23,7 @@ const VALID_ESCALATION_TYPES: readonly string[] = [
 ];
 
 function parseBeatRole(role: string): BeatRole {
-  if (VALID_BEAT_ROLES.includes(role)) {
+  if (VALID_BEAT_ROLES.includes(role as BeatRole)) {
     return role as BeatRole;
   }
   return 'escalation';
