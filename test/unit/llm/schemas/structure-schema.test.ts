@@ -120,7 +120,13 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
 
     const roleSchema = schema.properties.acts.items.properties.beats.items.properties.role;
     expect(roleSchema.type).toBe('string');
-    expect(roleSchema.enum).toEqual(['setup', 'escalation', 'turning_point', 'resolution']);
+    expect(roleSchema.enum).toEqual([
+      'setup',
+      'escalation',
+      'turning_point',
+      'reflection',
+      'resolution',
+    ]);
   });
 
   it('should define causalLink as a required string', () => {

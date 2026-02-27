@@ -164,7 +164,12 @@ export function buildEscalationCheckSection(
   beats: readonly StoryBeat[],
   state: AccumulatedStructureState
 ): string {
-  if (!activeBeatRole || (activeBeatRole !== 'escalation' && activeBeatRole !== 'turning_point')) {
+  if (
+    !activeBeatRole ||
+    (activeBeatRole !== 'escalation' &&
+      activeBeatRole !== 'turning_point' &&
+      activeBeatRole !== 'reflection')
+  ) {
     return '';
   }
 
@@ -208,7 +213,7 @@ export function buildEscalationCheckSection(
         `- If the escalation type does not match what actually happened (e.g., expected ${activeBeat.escalationType} but got generic tension), note the mismatch in pacingIssueReason`
       );
     }
-  } else {
+  } else if (activeBeatRole === 'turning_point') {
     lines.push('=== TURNING POINT QUALITY CHECK ===');
     lines.push(
       'The active beat role is "turning_point". When evaluating this beat:'
@@ -243,6 +248,26 @@ export function buildEscalationCheckSection(
         `- If the turning point type does not match what actually happened (e.g., expected ${activeBeat.escalationType} but got generic change), note the mismatch in pacingIssueReason`
       );
     }
+  } else {
+    lines.push('=== REFLECTION QUALITY CHECK ===');
+    lines.push(
+      'The active beat role is "reflection". When evaluating this beat:'
+    );
+    if (previousResolution) {
+      lines.push(`Previous beat resolved: "${previousResolution}"`);
+    }
+    lines.push(
+      '- Assess whether the narrative delivered thematic or internal deepening tied to the protagonist\'s current dilemma'
+    );
+    lines.push(
+      '- Reflection should produce a meaningful shift in interpretation, emotional commitment, or relational stance'
+    );
+    lines.push(
+      '- Reflection is NOT recap: repeating known facts or mood without new meaning does not satisfy this beat role'
+    );
+    lines.push(
+      '- If beatConcluded is true but no meaningful thematic/internal movement occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without thematic/internal deepening — scene recapped prior material without changing interpretation or commitment"'
+    );
   }
 
   lines.push('');

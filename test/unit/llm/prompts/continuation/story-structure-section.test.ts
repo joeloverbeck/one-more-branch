@@ -313,6 +313,46 @@ describe('story-structure-section', () => {
       expect(result).toContain('status quo was not permanently altered');
     });
 
+    it('returns reflection check for reflection role', () => {
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 2,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
+          { beatId: '1.2', status: 'concluded', resolution: 'Evidence protected' },
+          { beatId: '1.3', status: 'active' },
+        ],
+      };
+
+      const reflectionStructure = {
+        ...testStructure,
+        acts: [
+          {
+            ...testStructure.acts[0]!,
+            beats: [
+              { ...testStructure.acts[0]!.beats[0]! },
+              { ...testStructure.acts[0]!.beats[1]! },
+              { ...testStructure.acts[0]!.beats[2]!, role: 'reflection' as const },
+            ],
+          },
+          ...testStructure.acts.slice(1),
+        ],
+      };
+
+      const result = buildEscalationCheckSection(
+        'reflection',
+        reflectionStructure.acts[0]!.beats,
+        state
+      );
+
+      expect(result).toContain('=== REFLECTION QUALITY CHECK ===');
+      expect(result).toContain('thematic or internal deepening');
+      expect(result).toContain('Previous beat resolved: "Evidence protected"');
+      expect(result).toContain('Reflection is NOT recap');
+    });
+
     it('omits previous resolution when first beat in act', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,

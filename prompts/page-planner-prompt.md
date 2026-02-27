@@ -156,7 +156,7 @@ Source: `buildPacingBriefingSection()` in `src/llm/prompts/sections/planner/cont
 
 ## Escalation Directive
 
-When the active beat role is `escalation` or `turning_point`, the continuation context includes a directive section (placed after the pacing briefing and before thread aging):
+When the active beat role is `escalation`, `turning_point`, or `reflection`, the continuation context includes a directive section (placed after the pacing briefing and before thread aging):
 
 ```text
 {{#if activeBeatRole === 'escalation'}}
@@ -183,6 +183,16 @@ Requirements:
 - Create a point of no return — a decision, revelation, or consequence that cannot be undone
 - The protagonist's available options must fundamentally change after this scene
 - "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed
+{{/if}}
+
+{{#if activeBeatRole === 'reflection'}}
+=== REFLECTION DIRECTIVE ===
+The active beat role is "reflection". This scene MUST deliver thematic or internal deepening without forced escalation.
+{{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
+Requirements:
+- Deepen the protagonist's understanding, conviction, fear, or value conflict tied to the current dramatic question
+- Produce a meaningful internal or relational shift that changes how the next conflict will be approached
+- Reflection is NOT recap: avoid merely restating known facts without new interpretation or commitment
 {{/if}}
 ```
 

@@ -1,6 +1,14 @@
 export type BeatStatus = 'pending' | 'active' | 'concluded';
 
-export type BeatRole = 'setup' | 'escalation' | 'turning_point' | 'resolution';
+export const BEAT_ROLES = [
+  'setup',
+  'escalation',
+  'turning_point',
+  'reflection',
+  'resolution',
+] as const;
+
+export type BeatRole = (typeof BEAT_ROLES)[number];
 
 export type EscalationType =
   | 'THREAT_ESCALATION'

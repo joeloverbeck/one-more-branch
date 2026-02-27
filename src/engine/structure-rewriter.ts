@@ -14,7 +14,7 @@ import type {
   StructureRewriteContext,
   StructureRewriteResult,
 } from '../llm/structure-rewrite-types';
-import { BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
+import { BEAT_ROLES, BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
 import { createStoryStructure, parseApproachVectors, parseEscalationType } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
@@ -30,15 +30,8 @@ export type StructureRewriteGenerator = (
   apiKey: string
 ) => Promise<StructureGenerationResult>;
 
-const VALID_BEAT_ROLES: readonly BeatRole[] = [
-  'setup',
-  'escalation',
-  'turning_point',
-  'resolution',
-];
-
 function parseBeatRole(role: string): BeatRole {
-  if (VALID_BEAT_ROLES.includes(role as BeatRole)) {
+  if (BEAT_ROLES.includes(role as BeatRole)) {
     return role as BeatRole;
   }
   return 'escalation';

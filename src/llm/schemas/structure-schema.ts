@@ -1,4 +1,5 @@
 import type { JsonSchema } from '../llm-client-types.js';
+import { BEAT_ROLES } from '../../models/story-arc.js';
 
 export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -108,7 +109,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     },
                     role: {
                       type: 'string',
-                      enum: ['setup', 'escalation', 'turning_point', 'resolution'],
+                      enum: [...BEAT_ROLES],
                       description: 'Dramatic function of this beat in the story structure.',
                     },
                     escalationType: {
@@ -130,17 +131,17 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         { type: 'null' },
                       ],
                       description:
-                        'For escalation/turning_point beats: HOW stakes rise. Null for setup/resolution beats.',
+                        'For escalation/turning_point beats: HOW stakes rise. Null for setup/reflection/resolution beats.',
                     },
                     uniqueScenarioHook: {
                       type: ['string', 'null'],
                       description:
-                        'For escalation/turning_point beats: one sentence describing what makes this beat unique to THIS story. Null for setup/resolution beats.',
+                        'For escalation/turning_point beats: one sentence describing what makes this beat unique to THIS story. Null for setup/reflection/resolution beats.',
                     },
                     approachVectors: {
                       type: ['array', 'null'],
                       description:
-                        'For escalation/turning_point beats: 2-3 approach vectors suggesting HOW the protagonist could tackle this beat. Null for setup/resolution beats.',
+                        'For escalation/turning_point beats: 2-3 approach vectors suggesting HOW the protagonist could tackle this beat. Null for setup/reflection/resolution beats.',
                       items: {
                         type: 'string',
                         enum: [

@@ -93,13 +93,14 @@ describe('buildStructurePrompt', () => {
     expect(systemMessage).toContain(CONTENT_POLICY);
   });
 
-  it('contains dramatic role guidance with all four beat roles', () => {
+  it('contains dramatic role guidance with all beat roles including reflection', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
     expect(lastUser).toContain('setup');
     expect(lastUser).toContain('escalation');
     expect(lastUser).toContain('turning_point');
+    expect(lastUser).toContain('reflection');
     expect(lastUser).toContain('resolution');
     expect(lastUser).toContain('dramatic roles');
   });
@@ -166,7 +167,9 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('premise: string');
     expect(lastUser).toContain('pacingBudget:');
     expect(lastUser).toContain('name: short evocative beat title');
-    expect(lastUser).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
+    expect(lastUser).toContain(
+      'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
+    );
   });
 });
 

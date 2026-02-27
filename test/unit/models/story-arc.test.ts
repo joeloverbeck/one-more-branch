@@ -89,7 +89,13 @@ function createTestStructure(): StoryStructure {
 describe('story-arc model utilities', () => {
   describe('BeatRole type', () => {
     it('accepts all valid beat roles on StoryBeat', () => {
-      const roles: BeatRole[] = ['setup', 'escalation', 'turning_point', 'resolution'];
+      const roles: BeatRole[] = [
+        'setup',
+        'escalation',
+        'turning_point',
+        'reflection',
+        'resolution',
+      ];
       for (const role of roles) {
         const beat: StoryBeat = {
           id: '1.1',

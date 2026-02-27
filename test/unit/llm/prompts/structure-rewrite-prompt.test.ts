@@ -179,7 +179,9 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('name: short evocative beat title');
     expect(user).toContain('description: what should happen in this beat');
     expect(user).toContain('causalLink: one sentence explaining the cause');
-    expect(user).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
+    expect(user).toContain(
+      'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
+    );
   });
 
   it('includes causal linkage requirement for regenerated beats', () => {

@@ -4,7 +4,11 @@ import {
   ThreadType,
   Urgency,
 } from '../../../../../../src/models/state/index.js';
-import type { AccumulatedStructureState, StoryStructure } from '../../../../../../src/models/story-arc.js';
+import type {
+  AccumulatedStructureState,
+  BeatRole,
+  StoryStructure,
+} from '../../../../../../src/models/story-arc.js';
 import type { ContinuationPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import {
   buildPlannerContinuationContextSection,
@@ -681,7 +685,7 @@ describe('planner continuation context section', () => {
 
 describe('buildEscalationDirective', () => {
   const makeStructure = (
-    beatRoles: Array<{ id: string; role: 'setup' | 'escalation' | 'turning_point' | 'resolution' }>
+    beatRoles: Array<{ id: string; role: BeatRole }>
   ): StoryStructure => ({
     overallTheme: 'Test',
     premise: 'Test',
@@ -733,6 +737,30 @@ describe('buildEscalationDirective', () => {
     };
 
     expect(buildEscalationDirective(structure, state)).toBe('');
+  });
+
+  it('returns reflection directive when beat role is reflection', () => {
+    const structure = makeStructure([
+      { id: '1.1', role: 'turning_point' },
+      { id: '1.2', role: 'reflection' },
+    ]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 1,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Hard truth accepted' },
+        { beatId: '1.2', status: 'active' },
+      ],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('=== REFLECTION DIRECTIVE ===');
+    expect(result).toContain('thematic or internal deepening');
+    expect(result).toContain('Previous beat resolved: "Hard truth accepted"');
+    expect(result).toContain('Reflection is NOT recap');
   });
 
   it('returns escalation directive with previous beat resolution', () => {
