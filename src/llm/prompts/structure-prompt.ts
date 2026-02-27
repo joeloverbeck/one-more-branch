@@ -123,7 +123,7 @@ Use this thesis/antithesis tension to shape escalating conflicts and turning-poi
 `;
 }
 
-function buildGenreObligationsSection(conceptSpec?: ConceptSpec): string {
+export function buildGenreObligationsSection(conceptSpec?: ConceptSpec): string {
   if (!conceptSpec) {
     return '';
   }
