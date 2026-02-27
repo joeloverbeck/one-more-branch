@@ -104,6 +104,7 @@ const validStructuredPayload = {
     dominantMotivation: 'Uncover the source of the chanting',
   },
   sceneSummary: 'Test summary of the scene events and consequences.',
+  delayedConsequencesCreated: [],
   isEnding: false,
 };
 
@@ -199,7 +200,6 @@ describe('llm client', () => {
     mockLogger.warn.mockReset();
     mockLogger.error.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
-    jest.useFakeTimers();
   });
 
   afterEach(() => {
@@ -233,6 +233,11 @@ describe('llm client', () => {
     }
 
     return JSON.parse(init.body) as Record<string, unknown>;
+  }
+
+  async function advanceRetryDelays(): Promise<void> {
+    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(2000);
   }
 
   it('should call OpenRouter with correct headers', async () => {
@@ -311,6 +316,7 @@ describe('llm client', () => {
   });
 
   it('should throw LLMError with retryable=true for 429', async () => {
+    jest.useFakeTimers();
     fetchMock.mockResolvedValue(createErrorResponse(429, 'rate limited'));
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -322,13 +328,13 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
   });
 
   it('should throw LLMError with retryable=true for 500', async () => {
+    jest.useFakeTimers();
     fetchMock.mockResolvedValue(createErrorResponse(500, 'server error'));
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -340,8 +346,7 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
   });
@@ -358,6 +363,7 @@ describe('llm client', () => {
   });
 
   it('should throw LLMError for empty response', async () => {
+    jest.useFakeTimers();
     fetchMock.mockResolvedValue(
       createJsonResponse(200, {
         id: 'or-1',
@@ -373,13 +379,13 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
   });
 
   it('should throw LLMError for invalid JSON', async () => {
+    jest.useFakeTimers();
     fetchMock.mockResolvedValue(responseWithStructuredContent('{"narrative": '));
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -390,8 +396,7 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
   });
@@ -431,6 +436,7 @@ describe('llm client', () => {
   });
 
   it('should retry up to maxRetries times for retryable errors', async () => {
+    jest.useFakeTimers();
     fetchMock.mockResolvedValue(createErrorResponse(500, 'server error'));
 
     const promise = generateOpeningPage(openingContext, { apiKey: 'test-key' });
@@ -439,8 +445,7 @@ describe('llm client', () => {
     const expectation = expect(promise).rejects.toBeInstanceOf(LLMError);
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
 
@@ -458,6 +463,7 @@ describe('llm client', () => {
   });
 
   it('should treat schema validation failures as retryable', async () => {
+    jest.useFakeTimers();
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: [
@@ -502,8 +508,7 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -541,6 +546,7 @@ describe('llm client', () => {
   });
 
   it('should NOT fall back for generic validation errors (model supports structured output)', async () => {
+    jest.useFakeTimers();
     // This error indicates the model DOES support structured output but validation failed
     // It should NOT trigger fallback, but should retry and eventually fail
     fetchMock.mockResolvedValue(
@@ -560,8 +566,7 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays (3 attempts total)
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
 
@@ -600,6 +605,7 @@ describe('llm client', () => {
   });
 
   it('should log raw response when structured validation fails', async () => {
+    jest.useFakeTimers();
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
       choices: [
@@ -643,8 +649,7 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
 
@@ -678,6 +683,7 @@ describe('llm client', () => {
   });
 
   it('emits validator failure counters with observability identifiers when provided', async () => {
+    jest.useFakeTimers();
     const invalidStructuredPayload = {
       ...validStructuredPayload,
       choices: [
@@ -704,8 +710,7 @@ describe('llm client', () => {
     });
 
     // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
 
@@ -841,6 +846,7 @@ describe('llm client', () => {
   });
 
   it('should retry planner generation for retryable errors', async () => {
+    jest.useFakeTimers();
     fetchMock.mockResolvedValue(createErrorResponse(500, 'server error'));
 
     const promise = generatePagePlan(plannerOpeningContext, { apiKey: 'test-key' });
@@ -850,8 +856,7 @@ describe('llm client', () => {
       retryable: true,
     });
 
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
+    await advanceRetryDelays();
 
     await expectation;
     expect(fetchMock).toHaveBeenCalledTimes(3);
