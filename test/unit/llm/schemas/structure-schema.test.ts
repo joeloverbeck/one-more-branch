@@ -65,6 +65,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'escalationType',
       'secondaryEscalationType',
       'crisisType',
+      'expectedGapMagnitude',
       'isMidpoint',
       'midpointType',
       'uniqueScenarioHook',
@@ -297,6 +298,38 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       {
         type: 'string',
         enum: ['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS'],
+      },
+      { type: 'null' },
+    ]);
+  });
+
+  it('should define expectedGapMagnitude with a nullable anyOf enum', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    expectedGapMagnitude: {
+                      anyOf: Array<{ type: string; enum?: string[] }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const expectedGapMagnitudeSchema =
+      schema.properties.acts.items.properties.beats.items.properties.expectedGapMagnitude;
+    expect(expectedGapMagnitudeSchema.anyOf).toEqual([
+      {
+        type: 'string',
+        enum: ['NARROW', 'MODERATE', 'WIDE', 'CHASM'],
       },
       { type: 'null' },
     ]);

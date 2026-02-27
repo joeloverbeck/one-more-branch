@@ -40,6 +40,7 @@ describe('story-structure-section', () => {
             objective: 'Protect evidence',
             role: 'escalation',
             crisisType: 'BEST_BAD_CHOICE',
+            expectedGapMagnitude: 'WIDE',
             isMidpoint: true,
             midpointType: 'FALSE_VICTORY',
           },
@@ -49,6 +50,7 @@ describe('story-structure-section', () => {
             objective: 'Commit to ally',
             role: 'turning_point',
             crisisType: 'IRRECONCILABLE_GOODS',
+            expectedGapMagnitude: 'CHASM',
             isMidpoint: false,
             midpointType: null,
           },
@@ -306,6 +308,8 @@ describe('story-structure-section', () => {
       expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
       expect(result).toContain('Previous beat resolved: "Reached safehouse"');
       expect(result).toContain('The expected crisis type is BEST_BAD_CHOICE');
+      expect(result).toContain('The expected gap magnitude is WIDE');
+      expect(result).toContain('delivered divergence does not match expected gap magnitude WIDE');
       expect(result).toContain('cost of failure');
       expect(result).toContain('pacingIssueDetected: true');
     });
@@ -333,6 +337,10 @@ describe('story-structure-section', () => {
       expect(result).toContain('irreversible shift');
       expect(result).toContain('Previous beat resolved: "Evidence protected"');
       expect(result).toContain('The expected crisis type is IRRECONCILABLE_GOODS');
+      expect(result).toContain('The expected gap magnitude is CHASM');
+      expect(result).toContain(
+        'turning-point divergence does not reflect expected gap magnitude CHASM'
+      );
       expect(result).toContain('status quo was not permanently altered');
     });
 

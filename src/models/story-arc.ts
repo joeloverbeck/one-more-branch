@@ -32,6 +32,10 @@ export const MIDPOINT_TYPES = ['FALSE_VICTORY', 'FALSE_DEFEAT'] as const;
 
 export type MidpointType = (typeof MIDPOINT_TYPES)[number];
 
+export const GAP_MAGNITUDES = ['NARROW', 'MODERATE', 'WIDE', 'CHASM'] as const;
+
+export type GapMagnitude = (typeof GAP_MAGNITUDES)[number];
+
 export const APPROACH_VECTORS = [
   'DIRECT_FORCE',
   'SWIFT_ACTION',
@@ -57,6 +61,7 @@ export interface StoryBeat {
   readonly escalationType: EscalationType | null;
   readonly secondaryEscalationType: EscalationType | null;
   readonly crisisType: CrisisType | null;
+  readonly expectedGapMagnitude: GapMagnitude | null;
   readonly isMidpoint: boolean;
   readonly midpointType: MidpointType | null;
   readonly uniqueScenarioHook: string | null;

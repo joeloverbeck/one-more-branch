@@ -16,6 +16,7 @@ export interface CompletedBeat {
   readonly escalationType: string | null;
   readonly secondaryEscalationType: string | null;
   readonly crisisType: string | null;
+  readonly expectedGapMagnitude: string | null;
   readonly isMidpoint: boolean;
   readonly midpointType: string | null;
   readonly uniqueScenarioHook: string | null;
@@ -36,6 +37,7 @@ export interface PlannedBeat {
   readonly escalationType: string | null;
   readonly secondaryEscalationType: string | null;
   readonly crisisType: string | null;
+  readonly expectedGapMagnitude: string | null;
   readonly isMidpoint: boolean;
   readonly midpointType: string | null;
   readonly uniqueScenarioHook: string | null;

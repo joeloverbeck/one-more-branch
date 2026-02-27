@@ -16,6 +16,7 @@ import {
   parseApproachVectors,
   parseCrisisType,
   parseEscalationType,
+  parseGapMagnitude,
   parseMidpointType,
 } from '../engine/structure-factory';
 import type { CanonFact } from '../models/state/canon';
@@ -75,6 +76,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         escalationType: beat.escalationType,
         secondaryEscalationType: beat.secondaryEscalationType,
         crisisType: beat.crisisType,
+        expectedGapMagnitude: beat.expectedGapMagnitude,
         isMidpoint: beat.isMidpoint === true,
         midpointType: parseMidpointType(beat.midpointType) ?? null,
         uniqueScenarioHook: beat.uniqueScenarioHook,
@@ -117,6 +119,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         escalationType: parseEscalationType(beat.escalationType),
         secondaryEscalationType: parseEscalationType(beat.secondaryEscalationType),
         crisisType: parseCrisisType(beat.crisisType),
+        expectedGapMagnitude: parseGapMagnitude(beat.expectedGapMagnitude),
         isMidpoint,
         midpointType,
         uniqueScenarioHook: beat.uniqueScenarioHook ?? null,

@@ -124,6 +124,9 @@ export function buildWriterStructureContext(
         const crisisLine = beat.crisisType
           ? `\n    Crisis type: ${beat.crisisType}`
           : '';
+        const gapLine = beat.expectedGapMagnitude
+          ? `\n    Expected gap magnitude: ${beat.expectedGapMagnitude}`
+          : '';
         const midpointLine = beat.isMidpoint
           ? `\n    Midpoint: true (${beat.midpointType ?? 'UNSPECIFIED'})`
           : '';
@@ -135,7 +138,7 @@ export function buildWriterStructureContext(
             ? `\n    Approach vectors: ${beat.approachVectors.join(', ')}`
             : '';
         return `  [>] ACTIVE (${beat.role}): ${beat.description}
-    Objective: ${beat.objective}${escalationLine}${crisisLine}${midpointLine}${hookLine}${approachLine}`;
+    Objective: ${beat.objective}${escalationLine}${crisisLine}${gapLine}${midpointLine}${hookLine}${approachLine}`;
       }
       return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })
@@ -209,6 +212,11 @@ export function buildEscalationCheckSection(
         `The expected crisis type is ${activeBeat.crisisType}. Assess whether choices created this dilemma shape.`
       );
     }
+    if (activeBeat?.expectedGapMagnitude) {
+      lines.push(
+        `The expected gap magnitude is ${activeBeat.expectedGapMagnitude}. Assess whether outcome divergence from protagonist expectations matches this scale.`
+      );
+    }
     if (activeBeat?.uniqueScenarioHook) {
       lines.push(
         `The scene should reflect this unique scenario hook: "${activeBeat.uniqueScenarioHook}". Assess whether the scene leveraged this story's specific elements.`
@@ -236,6 +244,11 @@ export function buildEscalationCheckSection(
         `- If choice pressure does not match crisis type ${activeBeat.crisisType}, note the mismatch in pacingIssueReason`
       );
     }
+    if (activeBeat?.expectedGapMagnitude) {
+      lines.push(
+        `- If delivered divergence does not match expected gap magnitude ${activeBeat.expectedGapMagnitude}, note the mismatch in pacingIssueReason`
+      );
+    }
   } else if (activeBeatRole === 'turning_point') {
     lines.push('=== TURNING POINT QUALITY CHECK ===');
     lines.push(
@@ -252,6 +265,11 @@ export function buildEscalationCheckSection(
     if (activeBeat?.crisisType) {
       lines.push(
         `The expected crisis type is ${activeBeat.crisisType}. Assess whether the turning-point decision pressure matched this dilemma shape.`
+      );
+    }
+    if (activeBeat?.expectedGapMagnitude) {
+      lines.push(
+        `The expected gap magnitude is ${activeBeat.expectedGapMagnitude}. Assess whether the turning-point outcome diverged from expectations at this scale.`
       );
     }
     if (activeBeat?.uniqueScenarioHook) {
@@ -279,6 +297,11 @@ export function buildEscalationCheckSection(
     if (activeBeat?.crisisType) {
       lines.push(
         `- If turning-point choices do not reflect crisis type ${activeBeat.crisisType}, note the mismatch in pacingIssueReason`
+      );
+    }
+    if (activeBeat?.expectedGapMagnitude) {
+      lines.push(
+        `- If turning-point divergence does not reflect expected gap magnitude ${activeBeat.expectedGapMagnitude}, note the mismatch in pacingIssueReason`
       );
     }
   } else if (activeBeatRole === 'reflection') {

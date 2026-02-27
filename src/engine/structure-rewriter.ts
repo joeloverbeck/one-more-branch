@@ -21,6 +21,7 @@ import {
   parseApproachVectors,
   parseCrisisType,
   parseEscalationType,
+  parseGapMagnitude,
   parseMidpointType,
 } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
@@ -137,6 +138,7 @@ export function mergePreservedWithRegenerated(
         escalationType: parseEscalationType(beat.escalationType),
         secondaryEscalationType: parseEscalationType(beat.secondaryEscalationType),
         crisisType: parseCrisisType(beat.crisisType),
+        expectedGapMagnitude: parseGapMagnitude(beat.expectedGapMagnitude),
         isMidpoint,
         midpointType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
@@ -173,6 +175,7 @@ export function mergePreservedWithRegenerated(
         escalationType: beat.escalationType,
         secondaryEscalationType: beat.secondaryEscalationType,
         crisisType: beat.crisisType,
+        expectedGapMagnitude: beat.expectedGapMagnitude,
         isMidpoint: beat.isMidpoint,
         midpointType: beat.midpointType,
         uniqueScenarioHook: beat.uniqueScenarioHook,

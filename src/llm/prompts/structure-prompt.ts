@@ -199,12 +199,18 @@ REQUIREMENTS (follow ALL):
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
    For "setup", "reflection", and "resolution" beats, set crisisType to null.
 16. For each beat with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the beat escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" beats, set secondaryEscalationType to null.
-17. Flag exactly one beat across the full structure as isMidpoint: true. This beat should sit near the structural center and deliver a major reveal or reversal. For that beat, set midpointType to:
+17. For each beat with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from:
+   - NARROW: outcome is close to expectation with modest divergence
+   - MODERATE: outcome diverges in a meaningful but manageable way
+   - WIDE: outcome sharply diverges, creating major strategic/emotional dislocation
+   - CHASM: outcome radically diverges, fundamentally re-framing stakes or trajectory
+   Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" beats, set expectedGapMagnitude to null.
+18. Flag exactly one beat across the full structure as isMidpoint: true. This beat should sit near the structural center and deliver a major reveal or reversal. For that beat, set midpointType to:
    - FALSE_VICTORY: the protagonist appears to win, but the win is unstable, misleading, or carries hidden cost
    - FALSE_DEFEAT: the protagonist appears to lose, but the loss plants the seed of eventual success
    For all non-midpoint beats, set isMidpoint to false and midpointType to null.
-18. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
-19. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+19. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
+20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE: Confronting head-on with power, aggression, or physical dominance
    - SWIFT_ACTION: Speed, reflexes, seizing initiative before others react
    - STEALTH_SUBTERFUGE: Deception, misdirection, stealth, operating under false pretenses
@@ -256,6 +262,7 @@ OUTPUT SHAPE:
       - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
       - secondaryEscalationType: one of the 9 escalation types above when dual-axis escalation is present, else null
       - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
+      - expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null (null for setup/reflection/resolution beats)
       - isMidpoint: boolean (true for exactly one beat in the full structure)
       - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats

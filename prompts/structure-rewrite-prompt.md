@@ -138,13 +138,14 @@ REQUIREMENTS (follow ALL):
    - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
    For "setup", "reflection", and "resolution" beats, set crisisType to null. Preserve crisisType from completed beats unchanged.
-14. Midpoint invariant:
+14. For each beat with role "escalation" or "turning_point", assign `expectedGapMagnitude` to indicate expected expectation-vs-result divergence. Choose from NARROW | MODERATE | WIDE | CHASM. Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" beats, set `expectedGapMagnitude` to null. Preserve `expectedGapMagnitude` from completed beats unchanged.
+15. Midpoint invariant:
    - Preserve midpoint fields from completed beats unchanged
    - Ensure exactly one beat in the full output has `isMidpoint: true`
    - Midpoint beat must set `midpointType` to `FALSE_VICTORY` or `FALSE_DEFEAT`
    - Non-midpoint beats must set `isMidpoint: false` and `midpointType: null`
-15. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-16. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
+16. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
+17. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
@@ -178,6 +179,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
       - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
       - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
+      - expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null (null for setup/reflection/resolution beats)
       - isMidpoint: boolean (true for exactly one beat in the full structure)
       - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
@@ -209,6 +211,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "role": "{{setup|escalation|turning_point|reflection|resolution}}",
           "escalationType": "{{THREAT_ESCALATION|REVELATION_SHIFT|REVERSAL_OF_FORTUNE|BETRAYAL_OR_ALLIANCE_SHIFT|RESOURCE_OR_CAPABILITY_LOSS|MORAL_OR_ETHICAL_PRESSURE|TEMPORAL_OR_ENVIRONMENTAL_PRESSURE|COMPLICATION_CASCADE|COMPETENCE_DEMAND_SPIKE|null}}",
           "crisisType": "{{BEST_BAD_CHOICE|IRRECONCILABLE_GOODS|null}}",
+          "expectedGapMagnitude": "{{NARROW|MODERATE|WIDE|CHASM|null}}",
           "isMidpoint": "{{true|false}}",
           "midpointType": "{{FALSE_VICTORY|FALSE_DEFEAT|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
