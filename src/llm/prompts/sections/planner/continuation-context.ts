@@ -130,6 +130,42 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
   return lines.join('\n') + '\n';
 }
 
+function isLateAct(
+  accumulatedStructureState: AccumulatedStructureState | undefined,
+  structure: StoryStructure | undefined
+): boolean {
+  if (!accumulatedStructureState || !structure || structure.acts.length === 0) {
+    return false;
+  }
+  const lateActStart = Math.max(1, structure.acts.length - 2);
+  return accumulatedStructureState.currentActIndex >= lateActStart;
+}
+
+function buildPremisePromiseWarningSection(context: ContinuationPagePlanContext): string {
+  if (!isLateAct(context.accumulatedStructureState, context.structure)) {
+    return '';
+  }
+
+  const premisePromises = context.premisePromises ?? [];
+  if (premisePromises.length === 0) {
+    return '';
+  }
+
+  const fulfilled = new Set((context.fulfilledPremisePromises ?? []).map((item) => item.trim()));
+  const unfulfilled = premisePromises.filter((item) => !fulfilled.has(item.trim()));
+  if (unfulfilled.length === 0) {
+    return '';
+  }
+
+  const lines = ['=== PREMISE PROMISE WARNING (LATE ACT) ==='];
+  lines.push(
+    'The story is in a late act and these premise promises remain unfulfilled. This plan should advance or pay off at least one when narratively viable.'
+  );
+  lines.push(...unfulfilled.map((promise) => `- ${promise}`));
+  lines.push('');
+  return lines.join('\n') + '\n';
+}
+
 
 function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
   if (isProtagonistGuidanceEmpty(guidance)) {
@@ -465,6 +501,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
     context.structure,
     context.accumulatedStructureState
   );
+  const premisePromiseWarningSection = buildPremisePromiseWarningSection(context);
 
   const threadAgingSection = buildThreadAgingSection(context.activeState.openThreads, threadAges);
 
@@ -503,7 +540,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   return `=== PLANNER CONTEXT: CONTINUATION ===
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
 
-${structureSection}${pacingSection}${escalationDirective}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${escalationDirective}${premisePromiseWarningSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):

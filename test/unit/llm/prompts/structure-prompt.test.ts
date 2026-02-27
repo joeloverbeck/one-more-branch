@@ -171,6 +171,39 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('first item = 0, last item = 5');
   });
 
+  it('includes premise promise contract when concept verification includes premise promises', () => {
+    const messages = buildStructurePrompt({
+      ...baseContext,
+      conceptVerification: {
+        conceptId: 'concept_1',
+        signatureScenario: 'A harbor trial collapses into ritual violence.',
+        premisePromises: [
+          'The protagonist must weaponize a public legal ritual.',
+          'A trusted ally becomes complicit in the purge machinery.',
+          'The final confrontation unfolds under a rising tide siren.',
+        ],
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        inevitabilityStatement: 'The city cannot avoid public reckoning.',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Specific to setting institutions.',
+          genericCollapse: 'Would fail without tide tribunal mechanics.',
+        },
+        kernelFidelityCheck: {
+          passes: true,
+          reasoning: 'Aligned to thesis.',
+          kernelDrift: 'None.',
+        },
+        conceptIntegrityScore: 92,
+      },
+    });
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('PREMISE PROMISE CONTRACT');
+    expect(lastUser).toContain('The protagonist must weaponize a public legal ritual.');
+    expect(lastUser).toContain('Avoid generic escalation that ignores the concept');
+  });
+
   it('OUTPUT SHAPE includes premise, pacingBudget, beat name, and beat role', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';

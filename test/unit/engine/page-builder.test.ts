@@ -546,6 +546,7 @@ describe('page-builder', () => {
         analystResult: null,
         parentThreadAges: {},
         parentAccumulatedPromises: [],
+        parentAccumulatedFulfilledPremisePromises: [],
         analystPromisesDetected: [
           {
             description: 'A mysterious key glints in the shadows',
@@ -563,7 +564,11 @@ describe('page-builder', () => {
           },
         ],
         analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: null,
         parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -587,6 +592,78 @@ describe('page-builder', () => {
         suggestedUrgency: Urgency.HIGH,
         age: 0,
       });
+    });
+  });
+
+  describe('buildPage premise promise accumulation', () => {
+    it('appends analyst-fulfilled premise promise on continuation pages', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedFulfilledPremisePromises: ['Promise A'],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: 'Promise B',
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+      expect(page.accumulatedFulfilledPremisePromises).toEqual(['Promise A', 'Promise B']);
+    });
+
+    it('does not duplicate a premise promise already fulfilled in parent state', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedFulfilledPremisePromises: ['Promise A'],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: 'Promise A',
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+      expect(page.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
     });
   });
 
@@ -629,6 +706,9 @@ describe('page-builder', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
+        thematicCharge: 'AMBIGUOUS',
+        thematicChargeDescription: '',
+        premisePromiseFulfilled: null,
         rawResponse: '',
       };
     }
@@ -745,6 +825,9 @@ describe('page-builder', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
+        thematicCharge: 'AMBIGUOUS',
+        thematicChargeDescription: '',
+        premisePromiseFulfilled: null,
         rawResponse: '',
       };
     }

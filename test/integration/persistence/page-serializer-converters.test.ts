@@ -136,6 +136,9 @@ function buildFullAnalystResult(): AnalystResult {
     alignedBeatId: '1.3',
     beatAlignmentConfidence: 'HIGH',
     beatAlignmentReason: 'Clear evidence of progression',
+    thematicCharge: 'AMBIGUOUS',
+    thematicChargeDescription: '',
+    premisePromiseFulfilled: null,
     rawResponse: '',
   };
 }

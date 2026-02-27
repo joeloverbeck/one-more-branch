@@ -242,6 +242,7 @@ export function serializeStory(story: Story): StoryFileData {
           },
         }
       : {}),
+    premisePromises: [...(story.premisePromises ?? [])],
     ...(story.decomposedCharacters
       ? {
           decomposedCharacters: story.decomposedCharacters.map((char) => ({
@@ -382,6 +383,7 @@ export function deserializeStory(data: StoryFileData): Story {
           },
         }
       : {}),
+    premisePromises: [...(data.premisePromises ?? [])],
     ...(data.decomposedCharacters
       ? {
           decomposedCharacters: data.decomposedCharacters.map(

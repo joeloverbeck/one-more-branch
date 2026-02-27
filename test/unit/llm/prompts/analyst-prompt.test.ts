@@ -82,6 +82,8 @@ describe('buildAnalystPrompt', () => {
     threadAges: {},
     thematicQuestion: 'Can freedom survive under constant surveillance?',
     antithesis: '',
+    premisePromises: [],
+    fulfilledPremisePromises: [],
     tone: '',
     activeTrackedPromises: [],
   };
@@ -177,6 +179,37 @@ describe('buildAnalystPrompt', () => {
     expect(messages[0].content).toContain('THESIS_SUPPORTING');
     expect(messages[0].content).toContain('ANTITHESIS_SUPPORTING');
     expect(messages[0].content).toContain('AMBIGUOUS');
+  });
+
+  it('system message includes premise promise fulfillment rules', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('PREMISE PROMISE FULFILLMENT:');
+    expect(messages[0].content).toContain('premisePromiseFulfilled');
+    expect(messages[0].content).toContain('PENDING PREMISE PROMISES');
+  });
+
+  it('includes premise promise tracking section when premise promises exist', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      premisePromises: ['The hero will infiltrate the sky-forge tribunal.'],
+      fulfilledPremisePromises: [],
+    });
+    expect(messages[1].content).toContain('PREMISE PROMISE TRACKING:');
+    expect(messages[1].content).toContain('PENDING PREMISE PROMISES:');
+    expect(messages[1].content).toContain('The hero will infiltrate the sky-forge tribunal.');
+  });
+
+  it('omits fulfilled premise promises from pending list', () => {
+    const fulfilledPromise = 'The hero will infiltrate the sky-forge tribunal.';
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      premisePromises: [fulfilledPromise, 'The relic chamber floods at dawn.'],
+      fulfilledPremisePromises: [fulfilledPromise],
+    });
+    const userContent = messages[1].content;
+    const pendingSection = userContent.split('ALREADY FULFILLED PREMISE PROMISES:')[0] ?? '';
+    expect(pendingSection).toContain('The relic chamber floods at dawn.');
+    expect(pendingSection).not.toContain(fulfilledPromise);
   });
 
   it('system message mentions "story structure analyst"', () => {

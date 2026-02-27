@@ -171,6 +171,7 @@ export interface AnalystResultFileData {
   beatAlignmentReason?: string;
   thematicCharge: string;
   thematicChargeDescription: string;
+  premisePromiseFulfilled?: string | null;
 }
 
 export interface PageFileData {
@@ -223,6 +224,7 @@ export interface PageFileData {
   analystResult: AnalystResultFileData | null;
   threadAges: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
+  accumulatedFulfilledPremisePromises?: string[];
   resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
   resolvedPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;
   npcAgendaUpdates: NpcAgendaFileData[];

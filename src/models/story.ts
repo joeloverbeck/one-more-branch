@@ -39,6 +39,7 @@ export interface Story {
   readonly spine?: StorySpine;
   readonly conceptSpec?: ConceptSpec;
   readonly storyKernel?: StoryKernel;
+  readonly premisePromises: readonly string[];
   readonly decomposedCharacters?: readonly DecomposedCharacter[];
   readonly decomposedWorld?: DecomposedWorld;
   readonly createdAt: Date;
@@ -54,6 +55,7 @@ export interface CreateStoryData {
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
+  premisePromises?: readonly string[];
 }
 
 export interface StoryMetadata {
@@ -98,6 +100,7 @@ export function createStory(data: CreateStoryData): Story {
       startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
     conceptSpec: data.conceptSpec,
     ...(data.storyKernel ? { storyKernel: data.storyKernel } : {}),
+    premisePromises: data.premisePromises ?? [],
     globalCanon: [],
     globalCharacterCanon: {},
     structure: null,
@@ -163,6 +166,8 @@ export function isStory(value: unknown): value is Story {
     Array.isArray(obj['globalCanon']) &&
     (obj['conceptSpec'] === undefined || isConceptSpec(obj['conceptSpec'])) &&
     (obj['storyKernel'] === undefined || isStoryKernel(obj['storyKernel'])) &&
+    (Array.isArray(obj['premisePromises']) &&
+      (obj['premisePromises'] as unknown[]).every((item) => typeof item === 'string')) &&
     isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
     (structure === null || isStoryStructure(structure)) &&
     (structureVersions === undefined ||

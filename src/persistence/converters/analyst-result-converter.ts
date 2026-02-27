@@ -69,6 +69,7 @@ export function analystResultToFileData(
     beatAlignmentReason: analystResult.beatAlignmentReason,
     thematicCharge: analystResult.thematicCharge,
     thematicChargeDescription: analystResult.thematicChargeDescription,
+    premisePromiseFulfilled: analystResult.premisePromiseFulfilled,
   };
 }
 
@@ -142,8 +143,10 @@ export function fileDataToAnalystResult(
     beatAlignmentConfidence:
       (data.beatAlignmentConfidence as AnalystResult['beatAlignmentConfidence']) ?? 'LOW',
     beatAlignmentReason: (data.beatAlignmentReason as string) ?? '',
-    thematicCharge: data.thematicCharge as AnalystResult['thematicCharge'],
-    thematicChargeDescription: data.thematicChargeDescription,
+    thematicCharge:
+      (data.thematicCharge as AnalystResult['thematicCharge']) ?? 'AMBIGUOUS',
+    thematicChargeDescription: data.thematicChargeDescription ?? '',
+    premisePromiseFulfilled: data.premisePromiseFulfilled ?? null,
     rawResponse: '',
   };
 }

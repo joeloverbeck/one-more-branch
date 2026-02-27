@@ -28,6 +28,7 @@ function makeStory(overrides: Partial<Story> = {}): Story {
     globalCharacterCanon: { Guide: ['Knows the way'] },
     structure: null,
     structureVersions: [],
+    premisePromises: ['A hidden tribunal ledger must surface in public.'],
     createdAt: new Date().toISOString(),
     ...overrides,
   };
@@ -82,6 +83,9 @@ describe('continuation-context-builder', () => {
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
+        accumulatedFulfilledPremisePromises: [
+          'A hidden tribunal ledger must surface in public.',
+        ],
       });
       const parentState = makeParentState();
       const ancestorContext = makeAncestorContext();
@@ -116,6 +120,10 @@ describe('continuation-context-builder', () => {
       expect(result.ancestorSummaries).toEqual(ancestorContext.ancestorSummaries);
       expect(result.parentProtagonistAffect).toBe(parentPage.protagonistAffect);
       expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
+      expect(result.premisePromises).toEqual(story.premisePromises);
+      expect(result.fulfilledPremisePromises).toEqual(
+        parentPage.accumulatedFulfilledPremisePromises
+      );
       expect(result.parentThreadPayoffAssessments).toEqual([]);
     });
 

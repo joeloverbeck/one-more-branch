@@ -71,6 +71,13 @@ PROMISE EVALUATION:
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
 - Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
 
+PREMISE PROMISE FULFILLMENT:
+- PREMISE PROMISES are high-level audience expectations from concept verification.
+- If this scene clearly delivers one of the pending premise promises, set premisePromiseFulfilled to the EXACT matching promise text.
+- If no premise promise is fulfilled, set premisePromiseFulfilled to null.
+- Never invent or paraphrase promise text. Choose only from the provided PENDING PREMISE PROMISES list.
+- Do not select a promise already listed as fulfilled.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
@@ -204,6 +211,36 @@ function buildThematicKernelSection(context: AnalystContext): string {
   return `${lines.join('\n')}\n\n`;
 }
 
+function buildPremisePromiseSection(context: AnalystContext): string {
+  const allPromises = context.premisePromises ?? [];
+  if (allPromises.length === 0) {
+    return '';
+  }
+
+  const fulfilled = new Set((context.fulfilledPremisePromises ?? []).map((promise) => promise.trim()));
+  const pending = allPromises.filter((promise) => !fulfilled.has(promise.trim()));
+
+  const lines = ['PREMISE PROMISE TRACKING:'];
+  lines.push('PENDING PREMISE PROMISES:');
+  if (pending.length === 0) {
+    lines.push('- (none)');
+  } else {
+    lines.push(...pending.map((promise) => `- ${promise}`));
+  }
+  lines.push('');
+  lines.push('ALREADY FULFILLED PREMISE PROMISES:');
+  if (fulfilled.size === 0) {
+    lines.push('- (none)');
+  } else {
+    lines.push(...[...fulfilled].map((promise) => `- ${promise}`));
+  }
+  lines.push('');
+  lines.push(
+    'Set premisePromiseFulfilled to one exact pending promise string when fulfilled by this scene, otherwise null.'
+  );
+  return `${lines.join('\n')}\n\n`;
+}
+
 /**
  * Builds the analyst prompt messages for the analyst LLM call.
  * Returns a system message with analyst instructions and a user message
@@ -223,13 +260,14 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
 
   const toneReminder = '';
   const activePromisesSection = buildActivePromisesSection(context);
+  const premisePromisesSection = buildPremisePromiseSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
   const thematicKernelSection = buildThematicKernelSection(context);
 
   const spineSection = buildSpineSection(context.spine);
 
-  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

@@ -89,6 +89,13 @@ PROMISE EVALUATION:
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
 - Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
 
+PREMISE PROMISE FULFILLMENT:
+- PREMISE PROMISES are high-level audience expectations from concept verification.
+- If this scene clearly delivers one pending premise promise, set `premisePromiseFulfilled` to the EXACT matching promise text.
+- If no premise promise is fulfilled, set `premisePromiseFulfilled` to `null`.
+- Never invent or paraphrase promise text; choose only from `PENDING PREMISE PROMISES`.
+- Never mark an already-fulfilled premise promise again.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
@@ -173,6 +180,16 @@ ACTIVE TRACKED PROMISES:
   Resolution criterion: {{promise.resolutionHint}}
 
 Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.
+
+=== PREMISE PROMISE TRACKING ===
+(Only present when premise promises exist on story metadata)
+PENDING PREMISE PROMISES:
+- {{promise text}}
+
+ALREADY FULFILLED PREMISE PROMISES:
+- {{promise text}}
+
+Set premisePromiseFulfilled to one exact pending promise string when fulfilled by this scene, otherwise null.
 
 === THEMATIC KERNEL ===
 (Only present when analyst context includes thematicQuestion or antithesis)

@@ -130,6 +130,7 @@ export interface StoryFileData {
   structureVersions: VersionedStoryStructureFileData[];
   spine?: SpineFileData;
   conceptSpec?: ConceptSpec;
+  premisePromises: string[];
   decomposedCharacters?: DecomposedCharacterFileData[];
   decomposedWorld?: DecomposedWorldFileData;
   initialNpcAgendas?: Array<{
