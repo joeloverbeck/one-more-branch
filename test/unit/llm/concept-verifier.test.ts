@@ -59,8 +59,12 @@ function createValidPayload(count = 2): { verifications: ReturnType<typeof creat
 function createVerificationData(index = 1): {
   conceptId: string;
   signatureScenario: string;
+  loglineCompressible: boolean;
+  logline: string;
   premisePromises: string[];
   escalatingSetpieces: string[];
+  setpieceCausalChainBroken: boolean;
+  setpieceCausalLinks: string[];
   inevitabilityStatement: string;
   loadBearingCheck: { passes: boolean; reasoning: string; genericCollapse: string };
   kernelFidelityCheck: { passes: boolean; reasoning: string; kernelDrift: string };
@@ -69,6 +73,8 @@ function createVerificationData(index = 1): {
   return {
     conceptId: `concept_${index}`,
     signatureScenario: `Signature scenario ${index}`,
+    loglineCompressible: true,
+    logline: `An exiled tactician must outmaneuver her own surveillance regime before a staged peace summit erupts into civil war.`,
     premisePromises: [
       `Premise promise 1-${index}`,
       `Premise promise 2-${index}`,
@@ -81,6 +87,14 @@ function createVerificationData(index = 1): {
       `Setpiece 4-${index}`,
       `Setpiece 5-${index}`,
       `Setpiece 6-${index}`,
+    ],
+    setpieceCausalChainBroken: false,
+    setpieceCausalLinks: [
+      `Setpiece 1 causes setpiece 2 for concept ${index}`,
+      `Setpiece 2 causes setpiece 3 for concept ${index}`,
+      `Setpiece 3 causes setpiece 4 for concept ${index}`,
+      `Setpiece 4 causes setpiece 5 for concept ${index}`,
+      `Setpiece 5 causes setpiece 6 for concept ${index}`,
     ],
     inevitabilityStatement: `Inevitability ${index}`,
     loadBearingCheck: {
@@ -149,19 +163,23 @@ describe('concept-verifier', () => {
       expect(result).toHaveLength(2);
       expect(result[0].conceptId).toBe('concept_1');
       expect(result[0].signatureScenario).toBe('Signature scenario 1');
+      expect(result[0].loglineCompressible).toBe(true);
+      expect(result[0].logline).toContain('tactician');
       expect(result[0].premisePromises).toEqual([
         'Premise promise 1-1',
         'Premise promise 2-1',
         'Premise promise 3-1',
       ]);
       expect(result[0].escalatingSetpieces).toHaveLength(6);
+      expect(result[0].setpieceCausalChainBroken).toBe(false);
+      expect(result[0].setpieceCausalLinks).toHaveLength(5);
       expect(result[0].inevitabilityStatement).toBe('Inevitability 1');
       expect(result[0].loadBearingCheck.passes).toBe(true);
       expect(result[0].loadBearingCheck.reasoning).toBe('Reasoning 1');
       expect(result[0].loadBearingCheck.genericCollapse).toBe('Collapse 1');
-      expect(result[0].kernelFidelityCheck?.passes).toBe(true);
-      expect(result[0].kernelFidelityCheck?.reasoning).toBe('Kernel reasoning 1');
-      expect(result[0].kernelFidelityCheck?.kernelDrift).toBe('Kernel drift 1');
+      expect(result[0].kernelFidelityCheck.passes).toBe(true);
+      expect(result[0].kernelFidelityCheck.reasoning).toBe('Kernel reasoning 1');
+      expect(result[0].kernelFidelityCheck.kernelDrift).toBe('Kernel drift 1');
       expect(result[0].conceptIntegrityScore).toBe(85);
       expect(result[1].conceptId).toBe('concept_2');
     });
@@ -277,6 +295,34 @@ describe('concept-verifier', () => {
       );
     });
 
+    it('rejects non-boolean loglineCompressible', () => {
+      const payload = createValidPayload(1);
+      (payload.verifications[0] as Record<string, unknown>)['loglineCompressible'] = 'yes';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid loglineCompressible',
+      );
+    });
+
+    it('rejects empty logline', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].logline = '  ';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid logline',
+      );
+    });
+
+    it('rejects logline over 27 words', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].logline =
+        'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'logline must be 27 words or fewer',
+      );
+    });
+
     it('rejects empty inevitabilityStatement', () => {
       const payload = createValidPayload(1);
       payload.verifications[0].inevitabilityStatement = '';
@@ -345,6 +391,42 @@ describe('concept-verifier', () => {
 
       expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
         'exactly 6 items (received: 3)',
+      );
+    });
+
+    it('rejects non-boolean setpieceCausalChainBroken', () => {
+      const payload = createValidPayload(1);
+      (payload.verifications[0] as Record<string, unknown>)['setpieceCausalChainBroken'] = 'no';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid setpieceCausalChainBroken',
+      );
+    });
+
+    it('rejects non-array setpieceCausalLinks', () => {
+      const payload = createValidPayload(1);
+      (payload.verifications[0] as Record<string, unknown>)['setpieceCausalLinks'] = 'broken';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'setpieceCausalLinks must be an array',
+      );
+    });
+
+    it('rejects wrong number of setpieceCausalLinks', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].setpieceCausalLinks = ['1->2', '2->3'];
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'setpieceCausalLinks must have exactly 5 items',
+      );
+    });
+
+    it('rejects empty setpieceCausalLinks entry', () => {
+      const payload = createValidPayload(1);
+      payload.verifications[0].setpieceCausalLinks[3] = '   ';
+
+      expect(() => parseConceptVerificationResponse(payload, expectedIds(1))).toThrow(
+        'invalid setpieceCausalLinks[3]',
       );
     });
 
@@ -460,7 +542,7 @@ describe('concept-verifier', () => {
       payload.verifications[0].kernelFidelityCheck.passes = false;
 
       const result = parseConceptVerificationResponse(payload, expectedIds(1));
-      expect(result[0].kernelFidelityCheck?.passes).toBe(false);
+      expect(result[0].kernelFidelityCheck.passes).toBe(false);
     });
 
     it('trims string fields', () => {
@@ -501,15 +583,50 @@ describe('concept-verifier', () => {
       const fixture = createConceptVerificationFixture();
       expect(fixture.conceptId).toBe('concept_1');
       expect(fixture.signatureScenario).toBeTruthy();
+      expect(typeof fixture.loglineCompressible).toBe('boolean');
+      expect(fixture.logline).toBeTruthy();
       expect(fixture.premisePromises).toHaveLength(3);
       expect(fixture.escalatingSetpieces).toHaveLength(6);
+      expect(fixture.setpieceCausalChainBroken).toBe(false);
+      expect(fixture.setpieceCausalLinks).toHaveLength(5);
       expect(fixture.inevitabilityStatement).toBeTruthy();
       expect(fixture.loadBearingCheck.passes).toBe(true);
+      expect(fixture.kernelFidelityCheck.passes).toBe(true);
       expect(fixture.conceptIntegrityScore).toBe(85);
     });
   });
 
   describe('CONCEPT_VERIFIER_SCHEMA contract', () => {
+    it('requires logline + setpiece causal chain fields', () => {
+      const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
+        properties: {
+          verifications: {
+            items: {
+              required: string[];
+              properties: Record<string, unknown>;
+            };
+          };
+        };
+      };
+      const verificationSchema = rootSchema.properties.verifications.items;
+
+      expect(verificationSchema.required).toContain('loglineCompressible');
+      expect(verificationSchema.required).toContain('logline');
+      expect(verificationSchema.required).toContain('setpieceCausalChainBroken');
+      expect(verificationSchema.required).toContain('setpieceCausalLinks');
+      expect(verificationSchema.properties['loglineCompressible']).toEqual({ type: 'boolean' });
+      expect(verificationSchema.properties['logline']).toEqual({ type: 'string', minLength: 1 });
+      expect(verificationSchema.properties['setpieceCausalChainBroken']).toEqual({
+        type: 'boolean',
+      });
+      expect(verificationSchema.properties['setpieceCausalLinks']).toEqual({
+        type: 'array',
+        minItems: 5,
+        maxItems: 5,
+        items: { type: 'string', minLength: 1 },
+      });
+    });
+
     it('requires premisePromises as a 3-5 item string array', () => {
       const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
         properties: {
@@ -529,6 +646,28 @@ describe('concept-verifier', () => {
         minItems: 3,
         maxItems: 5,
         items: { type: 'string', minLength: 1 },
+      });
+    });
+
+    it('requires escalatingSetpieces as exactly 6 items', () => {
+      const rootSchema = CONCEPT_VERIFIER_SCHEMA.json_schema.schema as {
+        properties: {
+          verifications: {
+            items: {
+              required: string[];
+              properties: Record<string, unknown>;
+            };
+          };
+        };
+      };
+      const verificationSchema = rootSchema.properties.verifications.items;
+
+      expect(verificationSchema.required).toContain('escalatingSetpieces');
+      expect(verificationSchema.properties['escalatingSetpieces']).toEqual({
+        type: 'array',
+        minItems: 6,
+        maxItems: 6,
+        items: { type: 'string' },
       });
     });
   });

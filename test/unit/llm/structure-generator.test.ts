@@ -700,7 +700,12 @@ describe('structure-generator', () => {
         conceptVerification: {
           conceptId: 'concept_1',
           signatureScenario: 'A trial begins in the flooded docks.',
+          loglineCompressible: true,
+          logline: 'A disgraced advocate weaponizes ritual law before the harbor courts erase every witness.',
+          premisePromises: ['promise 1', 'promise 2', 'promise 3'],
           escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+          setpieceCausalChainBroken: false,
+          setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
           inevitabilityStatement: 'Escalation is unavoidable.',
           loadBearingCheck: {
             passes: true,

@@ -5,6 +5,7 @@ import type {
   KernelFidelityCheck,
   LoadBearingCheck,
 } from '../models/index.js';
+import { CONCEPT_VERIFICATION_CONSTRAINTS as VERIFICATION_CONSTRAINTS } from '../models/index.js';
 import { runLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
@@ -17,6 +18,18 @@ function requireNonEmptyString(value: unknown, fieldName: string, label: string)
   }
 
   return value.trim();
+}
+
+function requireBoolean(value: unknown, fieldName: string, label: string): boolean {
+  if (typeof value !== 'boolean') {
+    throw new LLMError(`${label} has invalid ${fieldName}`, 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  return value;
+}
+
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 function requireConceptId(value: unknown, label: string): string {
@@ -127,9 +140,9 @@ function parseSetpieces(value: unknown, label: string): readonly string[] {
     );
   }
 
-  if (value.length !== 6) {
+  if (value.length !== VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount) {
     throw new LLMError(
-      `${label} escalatingSetpieces must have exactly 6 items (received: ${value.length})`,
+      `${label} escalatingSetpieces must have exactly ${VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );
@@ -149,9 +162,12 @@ function parsePremisePromises(value: unknown, label: string): readonly string[] 
     );
   }
 
-  if (value.length < 3 || value.length > 5) {
+  if (
+    value.length < VERIFICATION_CONSTRAINTS.premisePromisesMin ||
+    value.length > VERIFICATION_CONSTRAINTS.premisePromisesMax
+  ) {
     throw new LLMError(
-      `${label} premisePromises must have 3-5 items (received: ${value.length})`,
+      `${label} premisePromises must have ${VERIFICATION_CONSTRAINTS.premisePromisesMin}-${VERIFICATION_CONSTRAINTS.premisePromisesMax} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );
@@ -159,6 +175,28 @@ function parsePremisePromises(value: unknown, label: string): readonly string[] 
 
   return value.map((item, index) =>
     requireNonEmptyString(item, `premisePromises[${index}]`, label),
+  );
+}
+
+function parseSetpieceCausalLinks(value: unknown, label: string): readonly string[] {
+  if (!Array.isArray(value)) {
+    throw new LLMError(
+      `${label} setpieceCausalLinks must be an array`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  if (value.length !== VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount) {
+    throw new LLMError(
+      `${label} setpieceCausalLinks must have exactly ${VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount} items (received: ${value.length})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  return value.map((item, index) =>
+    requireNonEmptyString(item, `setpieceCausalLinks[${index}]`, label),
   );
 }
 
@@ -181,6 +219,15 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
   }
 
   const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
+  const logline = requireNonEmptyString(data['logline'], 'logline', label);
+
+  if (countWords(logline) > VERIFICATION_CONSTRAINTS.loglineMaxWords) {
+    throw new LLMError(
+      `${label} logline must be ${VERIFICATION_CONSTRAINTS.loglineMaxWords} words or fewer`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
 
   return {
     conceptId,
@@ -189,8 +236,16 @@ function parseConceptVerification(value: unknown, index: number): ConceptVerific
       'signatureScenario',
       label,
     ),
+    loglineCompressible: requireBoolean(data['loglineCompressible'], 'loglineCompressible', label),
+    logline,
     premisePromises: parsePremisePromises(data['premisePromises'], label),
     escalatingSetpieces: parseSetpieces(data['escalatingSetpieces'], label),
+    setpieceCausalChainBroken: requireBoolean(
+      data['setpieceCausalChainBroken'],
+      'setpieceCausalChainBroken',
+      label,
+    ),
+    setpieceCausalLinks: parseSetpieceCausalLinks(data['setpieceCausalLinks'], label),
     inevitabilityStatement: requireNonEmptyString(
       data['inevitabilityStatement'],
       'inevitabilityStatement',
