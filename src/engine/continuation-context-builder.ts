@@ -54,6 +54,7 @@ export function buildContinuationContext(
       parentPage.analystResult?.objectiveEvidenceStrength ?? undefined,
     momentumTrajectory: ancestorContext.momentumTrajectory,
     thematicValenceTrajectory: ancestorContext.thematicValenceTrajectory,
+    narrativeFocusTrajectory: ancestorContext.narrativeFocusTrajectory,
 
     accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
     accumulatedNpcRelationships: parentState.accumulatedNpcRelationships,

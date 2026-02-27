@@ -844,11 +844,12 @@ describe('LLM types', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
+        narrativeFocus: 'BALANCED',
         thematicChargeDescription: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-    delayedConsequencesTriggered: [],
-    rawResponse: '{"beatConcluded":true}',
+        delayedConsequencesTriggered: [],
+        rawResponse: '{"beatConcluded":true}',
       };
 
       expect(result.beatConcluded).toBe(true);
@@ -893,11 +894,12 @@ describe('LLM types', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         thematicCharge: 'ANTITHESIS_SUPPORTING',
+        narrativeFocus: 'BALANCED',
         thematicChargeDescription: 'The protagonist embraces coercive control to restore order.',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-    delayedConsequencesTriggered: [],
-    rawResponse: '{"deviationDetected":true}',
+        delayedConsequencesTriggered: [],
+        rawResponse: '{"deviationDetected":true}',
       };
 
       expect(result.deviationDetected).toBe(true);

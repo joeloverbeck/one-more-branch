@@ -19,6 +19,7 @@ import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.j
 import type {
   AncestorSummary,
   MomentumTrajectory,
+  NarrativeFocusTrajectory,
   ReconciliationFailureReason,
   ThematicValenceTrajectory,
 } from './generation-pipeline-types.js';
@@ -74,6 +75,7 @@ export interface ContinuationContext {
   parentObjectiveEvidenceStrength?: ObjectiveEvidenceStrength;
   momentumTrajectory?: MomentumTrajectory;
   thematicValenceTrajectory?: ThematicValenceTrajectory;
+  narrativeFocusTrajectory?: NarrativeFocusTrajectory;
 
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises: readonly TrackedPromise[];

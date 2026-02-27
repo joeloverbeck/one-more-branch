@@ -9,6 +9,7 @@ import { formatCanonForPrompt } from '../../../../engine/canon-manager.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type {
   MomentumTrajectory,
+  NarrativeFocusTrajectory,
   ThematicValenceTrajectory,
 } from '../../../generation-pipeline-types.js';
 import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
@@ -133,45 +134,87 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
   return lines.join('\n') + '\n';
 }
 
+interface TrajectoryPointWithPageId {
+  readonly pageId: number;
+}
+
+function buildConsecutiveTrajectoryWarningSection<
+  TPoint extends TrajectoryPointWithPageId,
+  TValue extends string,
+>(
+  trajectory: readonly TPoint[] | undefined,
+  options: {
+    readonly minimumConsecutive: number;
+    readonly sectionHeader: string;
+    readonly historyLabel: string;
+    readonly valueForPoint: (point: TPoint) => TValue;
+    readonly detectValues: readonly TValue[];
+    readonly warningLine: (dominantValue: TValue, count: number) => string;
+  }
+): string {
+  if (!trajectory || trajectory.length < options.minimumConsecutive) {
+    return '';
+  }
+
+  let dominantValue: TValue | null = null;
+  let dominantCount = 0;
+
+  for (const value of options.detectValues) {
+    const count = countConsecutiveFromEnd(trajectory, (point) => options.valueForPoint(point) === value);
+    if (count > dominantCount) {
+      dominantCount = count;
+      dominantValue = value;
+    }
+  }
+
+  if (dominantValue === null || dominantCount < options.minimumConsecutive) {
+    return '';
+  }
+
+  const lines: string[] = [options.sectionHeader];
+  lines.push(options.historyLabel);
+  lines.push(
+    trajectory.map((point) => `- [${point.pageId}] ${options.valueForPoint(point)}`).join('\n')
+  );
+  lines.push('');
+  lines.push(options.warningLine(dominantValue, dominantCount));
+  lines.push('');
+  return lines.join('\n') + '\n';
+}
+
 function buildThematicTrajectoryWarningSection(
   thematicValenceTrajectory: ThematicValenceTrajectory | undefined
 ): string {
-  if (!thematicValenceTrajectory || thematicValenceTrajectory.length < 3) {
-    return '';
-  }
+  return buildConsecutiveTrajectoryWarningSection(thematicValenceTrajectory, {
+    minimumConsecutive: 3,
+    sectionHeader: '=== THEMATIC TRAJECTORY ===',
+    historyLabel: 'Recent scene valence history:',
+    valueForPoint: (point) => point.thematicValence,
+    detectValues: ['THESIS_SUPPORTING', 'ANTITHESIS_SUPPORTING'] as const,
+    warningLine: (dominantValence, count) => {
+      const opposingValence =
+        dominantValence === 'THESIS_SUPPORTING' ? 'ANTITHESIS_SUPPORTING' : 'THESIS_SUPPORTING';
+      return (
+        `WARNING: The last ${count} scenes all trend ${dominantValence}. ` +
+        `Plan should pressure-test the opposing argument (${opposingValence}) through action and consequence to avoid thematic monotony.`
+      );
+    },
+  });
+}
 
-  const consecutiveThesis = countConsecutiveFromEnd(
-    thematicValenceTrajectory,
-    (point) => point.thematicValence === 'THESIS_SUPPORTING'
-  );
-  const consecutiveAntithesis = countConsecutiveFromEnd(
-    thematicValenceTrajectory,
-    (point) => point.thematicValence === 'ANTITHESIS_SUPPORTING'
-  );
-
-  if (consecutiveThesis < 3 && consecutiveAntithesis < 3) {
-    return '';
-  }
-
-  const dominantValence =
-    consecutiveThesis >= 3 ? 'THESIS_SUPPORTING' : 'ANTITHESIS_SUPPORTING';
-  const opposingValence =
-    dominantValence === 'THESIS_SUPPORTING' ? 'ANTITHESIS_SUPPORTING' : 'THESIS_SUPPORTING';
-
-  const lines: string[] = ['=== THEMATIC TRAJECTORY ==='];
-  lines.push('Recent scene valence history:');
-  lines.push(
-    thematicValenceTrajectory
-      .map((point) => `- [${point.pageId}] ${point.thematicValence}`)
-      .join('\n')
-  );
-  lines.push('');
-  lines.push(
-    `WARNING: The last ${Math.max(consecutiveThesis, consecutiveAntithesis)} scenes all trend ${dominantValence}. ` +
-      `Plan should pressure-test the opposing argument (${opposingValence}) through action and consequence to avoid thematic monotony.`
-  );
-  lines.push('');
-  return lines.join('\n') + '\n';
+function buildNarrativeFocusWarningSection(
+  narrativeFocusTrajectory: NarrativeFocusTrajectory | undefined
+): string {
+  return buildConsecutiveTrajectoryWarningSection(narrativeFocusTrajectory, {
+    minimumConsecutive: 3,
+    sectionHeader: '=== DEPTH VS BREADTH TRAJECTORY ===',
+    historyLabel: 'Recent scene focus history:',
+    valueForPoint: (point) => point.narrativeFocus,
+    detectValues: ['BROADENING'] as const,
+    warningLine: (_dominantFocus, count) =>
+      `WARNING: The last ${count} scenes trend BROADENING. ` +
+      'Plan should prioritize DEEPENING: advance existing threads, intensify known relationships, or force consequence payoffs before introducing major new scope.',
+  });
 }
 
 function isLateAct(
@@ -565,6 +608,9 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   const thematicTrajectorySection = buildThematicTrajectoryWarningSection(
     context.thematicValenceTrajectory
   );
+  const narrativeFocusWarningSection = buildNarrativeFocusWarningSection(
+    context.narrativeFocusTrajectory
+  );
 
   const escalationDirective = buildEscalationDirective(
     context.structure,
@@ -610,7 +656,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   return `=== PLANNER CONTEXT: CONTINUATION ===
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
 
-${structureSection}${pacingSection}${thematicTrajectorySection}${escalationDirective}${premisePromiseWarningSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${thematicTrajectorySection}${narrativeFocusWarningSection}${escalationDirective}${premisePromiseWarningSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):

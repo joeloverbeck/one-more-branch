@@ -40,6 +40,7 @@ function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResul
     beatAlignmentConfidence: 'LOW',
     beatAlignmentReason: '',
     thematicCharge: 'AMBIGUOUS',
+    narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,

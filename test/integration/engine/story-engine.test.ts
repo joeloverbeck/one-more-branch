@@ -539,7 +539,10 @@ describe('story-engine integration', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
-        rawResponse: 'analyst-raw',
+thematicCharge: 'AMBIGUOUS',
+narrativeFocus: 'BALANCED',
+thematicChargeDescription: '',
+rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
         beatConcluded: true,
@@ -575,7 +578,10 @@ describe('story-engine integration', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
-        rawResponse: 'analyst-raw',
+thematicCharge: 'AMBIGUOUS',
+narrativeFocus: 'BALANCED',
+thematicChargeDescription: '',
+rawResponse: 'analyst-raw',
       });
 
     const start = await storyEngine.startStory({
@@ -736,7 +742,10 @@ describe('story-engine integration', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
-        rawResponse: 'analyst-raw',
+thematicCharge: 'AMBIGUOUS',
+narrativeFocus: 'BALANCED',
+thematicChargeDescription: '',
+rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
         beatConcluded: true,
@@ -772,7 +781,10 @@ describe('story-engine integration', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
-        rawResponse: 'analyst-raw',
+thematicCharge: 'AMBIGUOUS',
+narrativeFocus: 'BALANCED',
+thematicChargeDescription: '',
+rawResponse: 'analyst-raw',
       })
       .mockResolvedValueOnce({
         beatConcluded: false,
@@ -808,7 +820,10 @@ describe('story-engine integration', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
-        rawResponse: 'analyst-raw',
+thematicCharge: 'AMBIGUOUS',
+narrativeFocus: 'BALANCED',
+thematicChargeDescription: '',
+rawResponse: 'analyst-raw',
       });
 
     const start = await storyEngine.startStory({

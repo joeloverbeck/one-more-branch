@@ -171,6 +171,23 @@ This section is omitted when there are fewer than 3 trajectory points or when re
 
 Source: `buildThematicTrajectoryWarningSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
+## Depth Vs Breadth Warning
+
+When continuation context includes narrative focus trajectory data and 3+ recent scenes are consecutive `BROADENING`, the planner context includes:
+
+```text
+=== DEPTH VS BREADTH TRAJECTORY ===
+Recent scene focus history:
+- [{{pageId}}] {{narrativeFocus}}
+...
+
+WARNING: The last N scenes trend BROADENING. Plan should prioritize DEEPENING: advance existing threads, intensify known relationships, or force consequence payoffs before introducing major new scope.
+```
+
+This section is omitted when there are fewer than 3 trajectory points or when recent focus is mixed/non-broadening.
+
+Source: `buildNarrativeFocusWarningSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Structural Directive
 
 When the active beat role is `escalation`, `turning_point`, or `reflection` (or when the active beat is midpoint-tagged), the continuation context includes structural directive sections (placed after the pacing briefing and before thread aging):

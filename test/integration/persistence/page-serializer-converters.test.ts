@@ -138,6 +138,7 @@ function buildFullAnalystResult(): AnalystResult {
     beatAlignmentConfidence: 'HIGH',
     beatAlignmentReason: 'Clear evidence of progression',
     thematicCharge: 'AMBIGUOUS',
+    narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,

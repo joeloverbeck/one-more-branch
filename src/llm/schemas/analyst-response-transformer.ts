@@ -164,6 +164,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     beatAlignmentConfidence: validated.beatAlignmentConfidence,
     beatAlignmentReason: validated.beatAlignmentReason.trim(),
     thematicCharge: validated.thematicCharge,
+    narrativeFocus: validated.narrativeFocus,
     thematicChargeDescription: validated.thematicChargeDescription.trim(),
     obligatorySceneFulfilled:
       obligatorySceneFulfilled && obligatorySceneFulfilled.length > 0

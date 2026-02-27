@@ -71,6 +71,7 @@ function makeAncestorContext(overrides: Partial<AncestorContext> = {}): Ancestor
     ancestorSummaries: [{ pageId: parsePageId(1), summary: 'Summary of page 1' }],
     momentumTrajectory: [],
     thematicValenceTrajectory: [],
+    narrativeFocusTrajectory: [],
     ...overrides,
   };
 }
@@ -124,6 +125,7 @@ describe('continuation-context-builder', () => {
       expect(result.ancestorSummaries).toEqual(ancestorContext.ancestorSummaries);
       expect(result.parentProtagonistAffect).toBe(parentPage.protagonistAffect);
       expect(result.thematicValenceTrajectory).toEqual([]);
+      expect(result.narrativeFocusTrajectory).toEqual([]);
       expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
       expect(result.accumulatedDelayedConsequences).toEqual([]);
       expect(result.premisePromises).toEqual(story.premisePromises);
@@ -164,6 +166,37 @@ describe('continuation-context-builder', () => {
       expect(result.thematicValenceTrajectory).toEqual(
         ancestorContext.thematicValenceTrajectory
       );
+    });
+
+    it('threads narrative focus trajectory from ancestor context', () => {
+      const story = makeStory();
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You pause in the corridor.',
+        sceneSummary: 'You pause in the corridor.',
+        choices: [createChoice('Proceed'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+      });
+
+      const ancestorContext = makeAncestorContext({
+        narrativeFocusTrajectory: [
+          { pageId: parsePageId(1), narrativeFocus: 'BROADENING' },
+          { pageId: parsePageId(2), narrativeFocus: 'DEEPENING' },
+        ],
+      });
+
+      const result = buildContinuationContext(
+        story,
+        parentPage,
+        'Proceed',
+        makeParentState(),
+        ancestorContext,
+        null
+      );
+
+      expect(result.narrativeFocusTrajectory).toEqual(ancestorContext.narrativeFocusTrajectory);
     });
 
     it('uses structure from version when available', () => {

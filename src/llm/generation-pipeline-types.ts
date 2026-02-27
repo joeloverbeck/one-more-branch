@@ -2,6 +2,7 @@ import type { PageId } from '../models/id.js';
 import type { DeviationResult } from '../models/story-arc.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 import type {
+  NarrativeFocus,
   ObjectiveEvidenceStrength,
   PacingRecommendedAction,
   SceneMomentum,
@@ -28,6 +29,13 @@ export interface ThematicValenceDataPoint {
 }
 
 export type ThematicValenceTrajectory = readonly ThematicValenceDataPoint[];
+
+export interface NarrativeFocusDataPoint {
+  readonly pageId: PageId;
+  readonly narrativeFocus: NarrativeFocus;
+}
+
+export type NarrativeFocusTrajectory = readonly NarrativeFocusDataPoint[];
 
 export interface ContinuationGenerationResult
   extends PageWriterResult,

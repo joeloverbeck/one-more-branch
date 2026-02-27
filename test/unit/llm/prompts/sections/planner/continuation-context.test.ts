@@ -118,6 +118,42 @@ describe('planner continuation context section', () => {
     expect(result).toContain('opposing argument (ANTITHESIS_SUPPORTING)');
   });
 
+  it('adds depth-vs-breadth warning on 3+ consecutive broadening scenes', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      narrativeFocusTrajectory: [
+        { pageId: 2, narrativeFocus: 'BROADENING' },
+        { pageId: 3, narrativeFocus: 'BROADENING' },
+        { pageId: 4, narrativeFocus: 'BROADENING' },
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== DEPTH VS BREADTH TRAJECTORY ===');
+    expect(result).toContain('WARNING: The last 3 scenes trend BROADENING.');
+    expect(result).toContain('Plan should prioritize DEEPENING');
+  });
+
   it('adds late-act premise promise warning when promises remain unfulfilled', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

@@ -78,6 +78,11 @@ const ThematicChargeSchema = z
   .catch('AMBIGUOUS')
   .default('AMBIGUOUS');
 
+const NarrativeFocusSchema = z
+  .enum(['DEEPENING', 'BROADENING', 'BALANCED'])
+  .catch('BALANCED')
+  .default('BALANCED');
+
 const DetectedRelationshipShiftSchema = z.object({
   npcName: z.string().default(''),
   shiftDescription: z.string().default(''),
@@ -125,6 +130,7 @@ export const AnalystResultSchema = z.object({
   beatAlignmentConfidence: BeatAlignmentConfidenceSchema,
   beatAlignmentReason: z.string().catch('').default(''),
   thematicCharge: ThematicChargeSchema,
+  narrativeFocus: NarrativeFocusSchema,
   thematicChargeDescription: z.string().catch('').default(''),
   obligatorySceneFulfilled: z.string().nullable().catch(null).default(null),
   premisePromiseFulfilled: z.string().nullable().catch(null).default(null),

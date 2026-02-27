@@ -72,6 +72,7 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     beatAlignmentConfidence: 'LOW',
     beatAlignmentReason: '',
     thematicCharge: 'AMBIGUOUS',
+    narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
