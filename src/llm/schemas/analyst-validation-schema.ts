@@ -73,6 +73,11 @@ const BeatAlignmentConfidenceSchema = z
   .catch('LOW')
   .default('LOW');
 
+const ThematicChargeSchema = z
+  .enum(['THESIS_SUPPORTING', 'ANTITHESIS_SUPPORTING', 'AMBIGUOUS'])
+  .catch('AMBIGUOUS')
+  .default('AMBIGUOUS');
+
 const DetectedRelationshipShiftSchema = z.object({
   npcName: z.string().default(''),
   shiftDescription: z.string().default(''),
@@ -119,4 +124,6 @@ export const AnalystResultSchema = z.object({
   alignedBeatId: z.string().nullable().catch(null).default(null),
   beatAlignmentConfidence: BeatAlignmentConfidenceSchema,
   beatAlignmentReason: z.string().catch('').default(''),
+  thematicCharge: ThematicChargeSchema,
+  thematicChargeDescription: z.string().catch('').default(''),
 });

@@ -59,6 +59,15 @@ TONE EVALUATION:
 - When toneAdherent is false, write a brief toneDriftDescription explaining what feels off and what the tone should be instead.
 - When toneAdherent is true, set toneDriftDescription to an empty string.
 
+THEMATIC CHARGE CLASSIFICATION:
+- If THEMATIC KERNEL context is present, classify scene-level thematic valence:
+  - THESIS_SUPPORTING: scene consequences/actions support the thesis-direction answer to the thematic question.
+  - ANTITHESIS_SUPPORTING: scene consequences/actions support the antithesis-direction answer.
+  - AMBIGUOUS: evidence is mixed, unresolved, or equally supports both sides.
+- Set thematicCharge to exactly one enum value.
+- Set thematicChargeDescription to 1-2 sentences citing concrete scene evidence.
+- If THEMATIC KERNEL context is absent, default to thematicCharge = AMBIGUOUS with a concise neutral description.
+
 PROMISE EVALUATION:
 - A narrative promise is a forward-looking obligation the reader expects answered.
 - LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.
@@ -158,10 +167,11 @@ ACTIVE TRACKED PROMISES:
 
 Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.
 
-=== THEMATIC ANTITHESIS ===
-(Only present when analyst context includes antithesis)
-THEMATIC ANTITHESIS:
-{{antithesis}}
+=== THEMATIC KERNEL ===
+(Only present when analyst context includes thematicQuestion or antithesis)
+THEMATIC KERNEL:
+Thematic question: {{thematicQuestion}}
+Antithesis: {{antithesis}}
 
 === THREAD PAYOFF QUALITY ===
 (Only present when threads were resolved this scene)

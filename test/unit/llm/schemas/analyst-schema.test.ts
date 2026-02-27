@@ -38,4 +38,17 @@ describe('ANALYST_SCHEMA', () => {
       expect(nullVariant).toBeDefined();
     });
   });
+
+  it('includes thematic charge fields in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+
+    expect(schema.properties).toHaveProperty('thematicCharge');
+    expect(schema.properties).toHaveProperty('thematicChargeDescription');
+    expect(schema.required).toEqual(
+      expect.arrayContaining(['thematicCharge', 'thematicChargeDescription'])
+    );
+  });
 });

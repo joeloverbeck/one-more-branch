@@ -84,6 +84,8 @@ describe('runAnalystEvaluation', () => {
     threadAges: {} as Record<string, number>,
     activeTrackedPromises: [] as readonly import('../../../src/models').TrackedPromise[],
     tone: 'dark fantasy',
+    thematicQuestion: 'Can power be used without corruption?',
+    antithesis: 'Order requires domination, not restraint.',
     apiKey: 'test-key',
     logContext: { storyId: 's1' },
   };

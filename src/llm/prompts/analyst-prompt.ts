@@ -41,6 +41,15 @@ TONE EVALUATION:
 - When toneAdherent is false, write a brief toneDriftDescription explaining what feels off and what the tone should be instead.
 - When toneAdherent is true, set toneDriftDescription to an empty string.
 
+THEMATIC CHARGE CLASSIFICATION:
+- If THEMATIC KERNEL context is present, classify scene-level thematic valence:
+  - THESIS_SUPPORTING: scene consequences/actions support the thesis-direction answer to the thematic question.
+  - ANTITHESIS_SUPPORTING: scene consequences/actions support the antithesis-direction answer.
+  - AMBIGUOUS: evidence is mixed, unresolved, or equally supports both sides.
+- Set thematicCharge to exactly one enum value.
+- Set thematicChargeDescription to 1-2 sentences citing concrete scene evidence.
+- If THEMATIC KERNEL context is absent, default to thematicCharge = AMBIGUOUS with a concise neutral description.
+
 PROMISE EVALUATION:
 - A narrative promise is a forward-looking obligation the reader expects answered.
 - LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.
@@ -172,13 +181,21 @@ function buildActivePromisesSection(context: AnalystContext): string {
   return `${lines.join('\n')}\n`;
 }
 
-function buildKernelAntithesisSection(context: AnalystContext): string {
+function buildThematicKernelSection(context: AnalystContext): string {
+  const thematicQuestion = context.thematicQuestion?.trim() ?? '';
   const antithesis = context.antithesis?.trim() ?? '';
-  if (antithesis.length === 0) {
+  if (thematicQuestion.length === 0 && antithesis.length === 0) {
     return '';
   }
 
-  return `THEMATIC ANTITHESIS:\n${antithesis}\n\n`;
+  const lines = ['THEMATIC KERNEL:'];
+  if (thematicQuestion.length > 0) {
+    lines.push(`Thematic question: ${thematicQuestion}`);
+  }
+  if (antithesis.length > 0) {
+    lines.push(`Antithesis: ${antithesis}`);
+  }
+  return `${lines.join('\n')}\n\n`;
 }
 
 /**
@@ -202,11 +219,11 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const activePromisesSection = buildActivePromisesSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
-  const kernelAntithesisSection = buildKernelAntithesisSection(context);
+  const thematicKernelSection = buildThematicKernelSection(context);
 
   const spineSection = buildSpineSection(context.spine);
 
-  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${kernelAntithesisSection}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

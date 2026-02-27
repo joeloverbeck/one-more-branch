@@ -31,6 +31,7 @@ export type StructuralPositionSignal =
   | 'CLEARLY_IN_NEXT_BEAT';
 export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
 export type BeatAlignmentConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
+export type ThematicCharge = 'THESIS_SUPPORTING' | 'ANTITHESIS_SUPPORTING' | 'AMBIGUOUS';
 
 export interface DetectedPromise {
   readonly description: string;
@@ -82,6 +83,8 @@ export interface AnalystResult {
   alignedBeatId: string | null;
   beatAlignmentConfidence: BeatAlignmentConfidence;
   beatAlignmentReason: string;
+  thematicCharge: ThematicCharge;
+  thematicChargeDescription: string;
   rawResponse: string;
 }
 
@@ -95,6 +98,7 @@ export interface AnalystContext {
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
+  thematicQuestion: string;
   antithesis: string;
   spine?: StorySpine;
   activeTrackedPromises: readonly TrackedPromise[];
