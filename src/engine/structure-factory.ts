@@ -76,6 +76,16 @@ function parseSetpieceSourceIndex(value: unknown): number | null {
   return null;
 }
 
+function parseCausalLink(value: unknown, beatId: string): string {
+  if (typeof value === 'string') {
+    const normalized = value.trim();
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  }
+  throw new Error(`Structure beat ${beatId} must include a non-empty causalLink`);
+}
+
 /**
  * Creates StoryStructure from raw generation result.
  * Assigns hierarchical IDs to beats (e.g., "1.1", "1.2", "2.1").
@@ -88,6 +98,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       name: beatData.name,
       description: beatData.description,
       objective: beatData.objective,
+      causalLink: parseCausalLink(beatData.causalLink, `${actId}.${beatIndex + 1}`),
       role: parseBeatRole(beatData.role),
       escalationType: parseEscalationType(beatData.escalationType),
       uniqueScenarioHook:

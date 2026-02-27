@@ -4,6 +4,7 @@ export interface GeneratedBeat {
   name: string;
   description: string;
   objective: string;
+  causalLink: string;
   role: string;
   escalationType?: string | null;
   uniqueScenarioHook?: string | null;

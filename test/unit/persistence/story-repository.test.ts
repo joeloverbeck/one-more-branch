@@ -47,6 +47,7 @@ function buildTestStructure(): StoryStructure {
             name: 'Guide encounter',
             description: 'Meet the guide',
             objective: 'Find an ally',
+            causalLink: 'Because a call to action appears at the village gate.',
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
@@ -58,6 +59,7 @@ function buildTestStructure(): StoryStructure {
             name: 'Threshold crossing',
             description: 'Cross the threshold',
             objective: 'Leave safety',
+            causalLink: 'Because the guide exposes the cost of staying behind.',
             role: 'turning_point',
             escalationType: null,
             uniqueScenarioHook: null,
@@ -109,6 +111,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             name: 'Ambush escape',
             description: 'Escape the ambush',
             objective: 'Survive',
+            causalLink: 'Because the original route is compromised by betrayal.',
             role: 'setup',
             escalationType: null,
             uniqueScenarioHook: null,
@@ -120,6 +123,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             name: 'New lead',
             description: 'Find a new lead',
             objective: 'Regain momentum',
+            causalLink: 'Because the ambush reveals an alternate conspirator.',
             role: 'escalation',
             escalationType: null,
             uniqueScenarioHook: null,
@@ -363,6 +367,59 @@ describe('story-repository', () => {
 
     await expect(loadStory(MISMATCH_REQUEST_ID)).rejects.toThrow(
       `Story ID mismatch: expected ${MISMATCH_REQUEST_ID}, found ${MISMATCH_FILE_ID}`
+    );
+  });
+
+  it('loadStory throws when persisted structure beat is missing causalLink', async () => {
+    const story = buildTestStory();
+    createdStoryIds.add(story.id);
+    await ensureDirectory(getStoryDir(story.id));
+
+    await writeJsonFile(getStoryFilePath(story.id), {
+      id: story.id,
+      title: `${TEST_PREFIX} missing causal link`,
+      characterConcept: `${TEST_PREFIX} missing causal link concept`,
+      worldbuilding: 'Mismatch world',
+      tone: 'Mismatch tone',
+      globalCanon: [],
+      globalCharacterCanon: {},
+      structure: {
+        acts: [
+          {
+            id: '1',
+            name: 'Act I',
+            objective: 'Objective',
+            stakes: 'Stakes',
+            entryCondition: 'Entry',
+            beats: [
+              {
+                id: '1.1',
+                name: 'Beat',
+                description: 'Description',
+                objective: 'Objective',
+                role: 'setup',
+                escalationType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Theme',
+        premise: 'Premise',
+        pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+        generatedAt: '2025-01-01T00:00:00.000Z',
+      },
+      structureVersions: [],
+      npcs: null,
+      startingSituation: null,
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+    });
+
+    await expect(loadStory(story.id)).rejects.toThrow(
+      'Persisted story beat 1.1 is missing required causalLink'
     );
   });
 

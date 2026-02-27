@@ -42,6 +42,16 @@ const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
   'MYSTERY',
 ]);
 
+function parsePersistedCausalLink(value: unknown, beatId: string): string {
+  if (typeof value === 'string') {
+    const normalized = value.trim();
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  }
+  throw new Error(`Persisted story beat ${beatId} is missing required causalLink`);
+}
+
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
   return {
     acts: structure.acts.map((act) => ({
@@ -55,6 +65,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         name: beat.name,
         description: beat.description,
         objective: beat.objective,
+        causalLink: beat.causalLink,
         role: beat.role,
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
@@ -82,6 +93,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         name: beat.name,
         description: beat.description,
         objective: beat.objective,
+        causalLink: parsePersistedCausalLink(beat.causalLink, beat.id),
         role: beat.role as BeatRole,
         escalationType: parseEscalationType(beat.escalationType),
         uniqueScenarioHook: beat.uniqueScenarioHook ?? null,

@@ -352,6 +352,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'First anomaly discovery',
           description: 'Discover the first anomaly.',
           objective: 'Confirm the threat is real.',
+          causalLink: 'Because of prior events.',
           role: 'setup',
         },
         {
@@ -359,6 +360,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Immediate ally recruitment',
           description: 'Gather immediate allies.',
           objective: 'Avoid isolation.',
+          causalLink: 'Because of prior events.',
           role: 'escalation',
         },
       ],
@@ -375,6 +377,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Risky infiltration attempt',
           description: 'Attempt a risky infiltration.',
           objective: 'Extract actionable proof.',
+          causalLink: 'Because of prior events.',
           role: 'escalation',
         },
         {
@@ -382,6 +385,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Retaliation endurance',
           description: 'Survive retaliation.',
           objective: 'Preserve capability to continue.',
+          causalLink: 'Because of prior events.',
           role: 'turning_point',
         },
       ],
@@ -398,6 +402,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Final strategy commitment',
           description: 'Commit to final strategy.',
           objective: 'Align allies and resources.',
+          causalLink: 'Because of prior events.',
           role: 'escalation',
         },
         {
@@ -405,6 +410,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Decisive action delivery',
           description: 'Deliver decisive action.',
           objective: 'Resolve primary conflict.',
+          causalLink: 'Because of prior events.',
           role: 'resolution',
         },
       ],

@@ -102,8 +102,16 @@ const mockedStructureResult = {
       stakes: 'Failure hides the true pattern.',
       entryCondition: 'The constellation appears at dawn.',
       beats: [
-        { description: 'Track mirrored stars', objective: 'Map first pattern.' },
-        { description: 'Verify source', objective: 'Confirm where distortions begin.' },
+        {
+          description: 'Track mirrored stars',
+          objective: 'Map first pattern.',
+          causalLink: 'Observing the anomaly provides the data needed to validate its source.',
+        },
+        {
+          description: 'Verify source',
+          objective: 'Confirm where distortions begin.',
+          causalLink: 'Mapped evidence narrows the investigation to a concrete origin.',
+        },
       ],
     },
     {
@@ -112,8 +120,16 @@ const mockedStructureResult = {
       stakes: 'Failure loses time before festival ends.',
       entryCondition: 'The first pattern reveals hidden routes.',
       beats: [
-        { description: 'Test hidden route', objective: 'Access restricted area.' },
-        { description: 'Protect evidence', objective: 'Avoid losing collected proof.' },
+        {
+          description: 'Test hidden route',
+          objective: 'Access restricted area.',
+          causalLink: 'Confirmed origin points to concealed access paths that must be tested.',
+        },
+        {
+          description: 'Protect evidence',
+          objective: 'Avoid losing collected proof.',
+          causalLink: 'Entering restricted areas exposes evidence to interference and demands protection.',
+        },
       ],
     },
     {
@@ -122,8 +138,16 @@ const mockedStructureResult = {
       stakes: 'Failure leaves Brightwater unstable.',
       entryCondition: 'All key clues align.',
       beats: [
-        { description: 'Choose final interpretation', objective: 'Commit to a theory.' },
-        { description: 'Resolve the anomaly', objective: 'Stabilize the city.' },
+        {
+          description: 'Choose final interpretation',
+          objective: 'Commit to a theory.',
+          causalLink: 'Protected evidence enables a defensible final interpretation.',
+        },
+        {
+          description: 'Resolve the anomaly',
+          objective: 'Stabilize the city.',
+          causalLink: 'A committed interpretation guides the final stabilization action.',
+        },
       ],
     },
   ],

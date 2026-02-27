@@ -30,7 +30,12 @@ describe('buildStructureRewritePrompt', () => {
         name: 'Sluice Flight',
         description: 'Escape the tribunal ambush in the port quarter',
         objective: 'Survive and recover a smuggled ledger',
+        causalLink: 'Because the protagonist leaked evidence in the prior hearing.',
         role: 'setup',
+        escalationType: null,
+        uniqueScenarioHook: null,
+        approachVectors: null,
+        setpieceSourceIndex: null,
         resolution: 'You escaped through maintenance sluices with the ledger intact.',
       },
     ],
@@ -74,6 +79,7 @@ describe('buildStructureRewritePrompt', () => {
 
     expect(user).toContain('CANON - DO NOT CHANGE');
     expect(user).toContain('Act 1, Beat 1 (1.1) [setup] "Sluice Flight"');
+    expect(user).toContain('Causal link: Because the protagonist leaked evidence in the prior hearing.');
     expect(user).toContain(
       'Resolution: You escaped through maintenance sluices with the ledger intact.'
     );
@@ -172,7 +178,16 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('beats: 2-4 items');
     expect(user).toContain('name: short evocative beat title');
     expect(user).toContain('description: what should happen in this beat');
+    expect(user).toContain('causalLink: one sentence explaining the cause');
     expect(user).toContain('role: "setup" | "escalation" | "turning_point" | "resolution"');
+  });
+
+  it('includes causal linkage requirement for regenerated beats', () => {
+    const user = getUserMessage(buildStructureRewritePrompt(baseContext));
+
+    expect(user).toContain('write a causalLink sentence');
+    expect(user).toContain('avoid "and then" sequencing');
+    expect(user).toContain('Preserve causalLink from completed beats unchanged');
   });
 
   it('instructs to preserve completed beats in the output', () => {
@@ -198,7 +213,12 @@ describe('buildStructureRewritePrompt', () => {
           name: 'Betrayal Revealed',
           description: 'A hidden betrayal comes to light',
           objective: 'Confront the traitor and decide their fate',
+          causalLink: 'Because convoy records expose a forged alliance charter.',
           role: 'turning_point',
+          escalationType: null,
+          uniqueScenarioHook: null,
+          approachVectors: null,
+          setpieceSourceIndex: null,
         },
         {
           actIndex: 2,
@@ -207,7 +227,12 @@ describe('buildStructureRewritePrompt', () => {
           name: 'Final Gambit',
           description: 'The last move before everything changes',
           objective: 'Set up the endgame',
+          causalLink: 'Because the betrayal severs the council coalition.',
           role: 'escalation',
+          escalationType: null,
+          uniqueScenarioHook: null,
+          approachVectors: null,
+          setpieceSourceIndex: null,
         },
       ],
     };
@@ -236,7 +261,12 @@ describe('buildStructureRewritePrompt', () => {
           name: 'Endgame',
           description: 'The final confrontation',
           objective: 'Resolve the conflict',
+          causalLink: 'Because every ally has chosen a side.',
           role: 'resolution',
+          escalationType: null,
+          uniqueScenarioHook: null,
+          approachVectors: null,
+          setpieceSourceIndex: null,
         },
       ],
     };

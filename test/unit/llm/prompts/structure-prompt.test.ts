@@ -121,6 +121,15 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('targetPagesMax');
   });
 
+  it('includes causal linkage requirement and output field', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('write a causalLink sentence');
+    expect(lastUser).toContain('avoid "and then" sequencing');
+    expect(lastUser).toContain('causalLink: one sentence explaining the cause');
+  });
+
   it('includes setpiece traceability instructions when concept verification is provided', () => {
     const messages = buildStructurePrompt({
       ...baseContext,

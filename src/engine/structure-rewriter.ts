@@ -122,6 +122,7 @@ export function mergePreservedWithRegenerated(
       name: beat.name,
       description: beat.description,
       objective: beat.objective,
+      causalLink: beat.causalLink,
       role: parseBeatRole(beat.role),
       escalationType: parseEscalationType(beat.escalationType),
       uniqueScenarioHook: beat.uniqueScenarioHook,
@@ -152,6 +153,7 @@ export function mergePreservedWithRegenerated(
         name: beat.name,
         description: beat.description,
         objective: beat.objective,
+        causalLink: beat.causalLink,
         role: beat.role,
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
@@ -264,7 +266,8 @@ function parseStructureResponse(
       if (
         typeof beatData['name'] !== 'string' ||
         typeof beatData['description'] !== 'string' ||
-        typeof beatData['objective'] !== 'string'
+        typeof beatData['objective'] !== 'string' ||
+        typeof beatData['causalLink'] !== 'string'
       ) {
         throw new LLMError(
           `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
@@ -274,12 +277,33 @@ function parseStructureResponse(
       }
 
       const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
+      const escalationType =
+        typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
+      const uniqueScenarioHook =
+        typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
+      const approachVectors = Array.isArray(beatData['approachVectors'])
+        ? (beatData['approachVectors'] as unknown[]).filter(
+            (v): v is string => typeof v === 'string'
+          )
+        : null;
+      const setpieceSourceIndex =
+        typeof beatData['setpieceSourceIndex'] === 'number' &&
+        Number.isInteger(beatData['setpieceSourceIndex']) &&
+        beatData['setpieceSourceIndex'] >= 0 &&
+        beatData['setpieceSourceIndex'] <= 5
+          ? beatData['setpieceSourceIndex']
+          : null;
 
       return {
         name: beatData['name'],
         description: beatData['description'],
         objective: beatData['objective'],
+        causalLink: beatData['causalLink'],
         role,
+        escalationType,
+        uniqueScenarioHook,
+        approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
+        setpieceSourceIndex,
       };
     });
 

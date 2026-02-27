@@ -83,6 +83,7 @@ export interface StoryStructureFileData {
       name: string;
       description: string;
       objective: string;
+      causalLink: string;
       role: string;
       escalationType?: string | null;
       uniqueScenarioHook?: string | null;

@@ -104,8 +104,20 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         stakes: 'Failure means imprisonment.',
         entryCondition: 'A witness vanishes.',
         beats: [
-          { name: 'First Contact', description: 'Meet an informant', objective: 'Gain first evidence.', role: 'setup' },
-          { name: 'Sealed Files', description: 'Break into records office', objective: 'Recover sealed files.', role: 'turning_point' },
+          {
+            name: 'First Contact',
+            description: 'Meet an informant',
+            objective: 'Gain first evidence.',
+            causalLink: 'Because the opening disturbance reveals a potential witness.',
+            role: 'setup',
+          },
+          {
+            name: 'Sealed Files',
+            description: 'Break into records office',
+            objective: 'Recover sealed files.',
+            causalLink: 'Because the informant confirms records were altered.',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -114,8 +126,20 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         stakes: 'Failure lets the tribunal lock down the city.',
         entryCondition: 'The files identify corrupt officials.',
         beats: [
-          { name: 'Rival House', description: 'Confront rival house', objective: 'Secure temporary alliance.', role: 'escalation' },
-          { name: 'Ambush', description: 'Escape an ambush', objective: 'Keep evidence intact.', role: 'turning_point' },
+          {
+            name: 'Rival House',
+            description: 'Confront rival house',
+            objective: 'Secure temporary alliance.',
+            causalLink: 'Because stolen files implicate rival brokers.',
+            role: 'escalation',
+          },
+          {
+            name: 'Ambush',
+            description: 'Escape an ambush',
+            objective: 'Keep evidence intact.',
+            causalLink: 'Because rival negotiations are leaked to hostile forces.',
+            role: 'turning_point',
+          },
         ],
       },
       {
@@ -124,8 +148,20 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         stakes: 'Failure cements authoritarian rule.',
         entryCondition: 'Public hearing is announced.',
         beats: [
-          { name: 'Testimony', description: 'Force open testimony', objective: 'Reveal the conspiracy.', role: 'turning_point' },
-          { name: 'Final Justice', description: 'Decide final justice', objective: 'Settle the conflict.', role: 'resolution' },
+          {
+            name: 'Testimony',
+            description: 'Force open testimony',
+            objective: 'Reveal the conspiracy.',
+            causalLink: 'Because surviving the ambush compels a public hearing.',
+            role: 'turning_point',
+          },
+          {
+            name: 'Final Justice',
+            description: 'Decide final justice',
+            objective: 'Settle the conflict.',
+            causalLink: 'Because testimony validates the conspiracy claims.',
+            role: 'resolution',
+          },
         ],
       },
     ],
