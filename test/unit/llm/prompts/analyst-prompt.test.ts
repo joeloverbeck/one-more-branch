@@ -68,6 +68,7 @@ describe('buildAnalystPrompt', () => {
     activeState: testActiveState,
     threadsResolved: [],
     threadAges: {},
+    thematicQuestion: 'Can freedom survive under constant surveillance?',
     antithesis: '',
     tone: '',
     activeTrackedPromises: [],
@@ -103,15 +104,34 @@ describe('buildAnalystPrompt', () => {
     );
   });
 
-  it('includes thematic antithesis section when antithesis is provided', () => {
+  it('includes thematic kernel section when thematic context is provided', () => {
     const messages = buildAnalystPrompt({
       ...testContext,
+      thematicQuestion: 'Can security justify total control?',
       antithesis: 'Security matters more than freedom in times of crisis.',
     });
-    expect(messages[1].content).toContain('THEMATIC ANTITHESIS:');
+    expect(messages[1].content).toContain('THEMATIC KERNEL:');
+    expect(messages[1].content).toContain('Thematic question: Can security justify total control?');
     expect(messages[1].content).toContain(
-      'Security matters more than freedom in times of crisis.'
+      'Antithesis: Security matters more than freedom in times of crisis.'
     );
+  });
+
+  it('omits thematic kernel section when thematic question and antithesis are both empty', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      thematicQuestion: '',
+      antithesis: '',
+    });
+    expect(messages[1].content).not.toContain('THEMATIC KERNEL:');
+  });
+
+  it('system message includes thematic charge classification rules', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('THEMATIC CHARGE CLASSIFICATION:');
+    expect(messages[0].content).toContain('THESIS_SUPPORTING');
+    expect(messages[0].content).toContain('ANTITHESIS_SUPPORTING');
+    expect(messages[0].content).toContain('AMBIGUOUS');
   });
 
   it('system message mentions "story structure analyst"', () => {

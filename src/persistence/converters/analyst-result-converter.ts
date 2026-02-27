@@ -67,6 +67,8 @@ export function analystResultToFileData(
     alignedBeatId: analystResult.alignedBeatId,
     beatAlignmentConfidence: analystResult.beatAlignmentConfidence,
     beatAlignmentReason: analystResult.beatAlignmentReason,
+    thematicCharge: analystResult.thematicCharge,
+    thematicChargeDescription: analystResult.thematicChargeDescription,
   };
 }
 
@@ -140,6 +142,8 @@ export function fileDataToAnalystResult(
     beatAlignmentConfidence:
       (data.beatAlignmentConfidence as AnalystResult['beatAlignmentConfidence']) ?? 'LOW',
     beatAlignmentReason: (data.beatAlignmentReason as string) ?? '',
+    thematicCharge: data.thematicCharge as AnalystResult['thematicCharge'],
+    thematicChargeDescription: data.thematicChargeDescription,
     rawResponse: '',
   };
 }

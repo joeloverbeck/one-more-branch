@@ -40,6 +40,8 @@ describe('validateAnalystResponse', () => {
       'gate opened in final paragraph',
     ]);
     expect(result.completionGateSatisfied).toBe(true);
+    expect(result.thematicCharge).toBe('AMBIGUOUS');
+    expect(result.thematicChargeDescription).toBe('');
     expect(result.rawResponse).toBe(RAW_RESPONSE);
   });
 
@@ -96,6 +98,8 @@ describe('validateAnalystResponse', () => {
     expect(result.anchorEvidence).toEqual([]);
     expect(result.completionGateSatisfied).toBe(false);
     expect(result.completionGateFailureReason).toBe('');
+    expect(result.thematicCharge).toBe('AMBIGUOUS');
+    expect(result.thematicChargeDescription).toBe('');
   });
 
   it('returns rawResponse in the result', () => {
@@ -336,6 +340,34 @@ describe('validateAnalystResponse', () => {
       expect(result.pacingIssueDetected).toBe(true);
       expect(result.pacingIssueReason).toBe('Beat stalled');
       expect(result.recommendedAction).toBe('nudge');
+    });
+  });
+
+  describe('thematic charge fields', () => {
+    it('parses and trims thematic charge fields from valid response', () => {
+      const input = {
+        thematicCharge: 'THESIS_SUPPORTING',
+        thematicChargeDescription: '  The protagonist chooses trust over control.  ',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.thematicCharge).toBe('THESIS_SUPPORTING');
+      expect(result.thematicChargeDescription).toBe(
+        'The protagonist chooses trust over control.'
+      );
+    });
+
+    it('defaults invalid thematic charge enum to AMBIGUOUS', () => {
+      const input = {
+        thematicCharge: 'INVALID',
+        thematicChargeDescription: 'Mixed evidence',
+      };
+
+      const result = validateAnalystResponse(input, RAW_RESPONSE);
+
+      expect(result.thematicCharge).toBe('AMBIGUOUS');
+      expect(result.thematicChargeDescription).toBe('Mixed evidence');
     });
   });
 

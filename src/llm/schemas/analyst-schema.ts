@@ -300,6 +300,17 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'One sentence explaining why the narrative aligns with the identified beat. Empty string when alignedBeatId is null.',
         },
+        thematicCharge: {
+          type: 'string',
+          enum: ['THESIS_SUPPORTING', 'ANTITHESIS_SUPPORTING', 'AMBIGUOUS'],
+          description:
+            'Scene-level thematic valence relative to the thematic question and antithesis. THESIS_SUPPORTING when scene outcomes support the thesis-direction answer, ANTITHESIS_SUPPORTING when outcomes support the antithesis-direction answer, AMBIGUOUS when evidence is mixed or unresolved.',
+        },
+        thematicChargeDescription: {
+          type: 'string',
+          description:
+            '1-2 sentences explaining the thematicCharge classification with concrete scene evidence.',
+        },
       },
       required: [
         'beatConcluded',
@@ -336,6 +347,8 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'alignedBeatId',
         'beatAlignmentConfidence',
         'beatAlignmentReason',
+        'thematicCharge',
+        'thematicChargeDescription',
       ],
       additionalProperties: false,
     },

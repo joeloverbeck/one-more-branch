@@ -169,6 +169,8 @@ export interface AnalystResultFileData {
   alignedBeatId?: string | null;
   beatAlignmentConfidence?: string;
   beatAlignmentReason?: string;
+  thematicCharge: string;
+  thematicChargeDescription: string;
 }
 
 export interface PageFileData {

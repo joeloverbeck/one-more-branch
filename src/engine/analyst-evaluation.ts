@@ -27,6 +27,7 @@ export interface AnalystEvaluationContext {
   readonly tone: string;
   readonly toneFeel?: readonly string[];
   readonly toneAvoid?: readonly string[];
+  readonly thematicQuestion: string;
   readonly antithesis: string;
   readonly spine?: StorySpine;
   readonly apiKey: string;
@@ -70,6 +71,7 @@ export async function runAnalystEvaluation(
         tone: context.tone,
         toneFeel: context.toneFeel,
         toneAvoid: context.toneAvoid,
+        thematicQuestion: context.thematicQuestion,
         antithesis: context.antithesis,
         spine: context.spine,
       },

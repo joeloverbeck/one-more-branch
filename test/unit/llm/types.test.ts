@@ -843,6 +843,8 @@ describe('LLM types', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
+        thematicCharge: 'AMBIGUOUS',
+        thematicChargeDescription: '',
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -887,6 +889,8 @@ describe('LLM types', () => {
         alignedBeatId: null,
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
+        thematicCharge: 'ANTITHESIS_SUPPORTING',
+        thematicChargeDescription: 'The protagonist embraces coercive control to restore order.',
         rawResponse: '{"deviationDetected":true}',
       };
 
@@ -937,6 +941,11 @@ describe('LLM types', () => {
           activeConstraints: [],
           openThreads: [],
         },
+        threadsResolved: [],
+        threadAges: {},
+        thematicQuestion: 'Can duty coexist with compassion?',
+        antithesis: 'Order requires sacrificing compassion.',
+        activeTrackedPromises: [],
       };
 
       expect(context.narrative).toContain('guardian');

@@ -106,7 +106,9 @@ describe('buildAnalystPrompt integration - active state summary', () => {
       activeState,
       threadsResolved: [],
       threadAges: {},
+      thematicQuestion: 'Can resistance stay humane under occupation?',
       antithesis: '',
+      activeTrackedPromises: [],
     };
 
     const messages = buildAnalystPrompt(context);

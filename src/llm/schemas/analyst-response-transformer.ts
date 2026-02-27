@@ -157,6 +157,8 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
       : null,
     beatAlignmentConfidence: validated.beatAlignmentConfidence,
     beatAlignmentReason: validated.beatAlignmentReason.trim(),
+    thematicCharge: validated.thematicCharge,
+    thematicChargeDescription: validated.thematicChargeDescription.trim(),
     rawResponse,
   };
 }

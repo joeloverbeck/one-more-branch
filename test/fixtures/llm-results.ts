@@ -33,7 +33,7 @@ export function createMockProtagonistAffect(
 }
 
 /**
- * Creates a mock AnalystResult with all 26 required fields.
+ * Creates a mock AnalystResult with all required fields.
  */
 export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
   return {
@@ -71,6 +71,8 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     alignedBeatId: null,
     beatAlignmentConfidence: 'LOW',
     beatAlignmentReason: '',
+    thematicCharge: 'AMBIGUOUS',
+    thematicChargeDescription: '',
     rawResponse: '{}',
     ...overrides,
   };
