@@ -108,6 +108,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
   }
 
   const validated = AnalystResultSchema.parse(parsed);
+  const obligatorySceneFulfilled = validated.obligatorySceneFulfilled?.trim();
   const premisePromiseFulfilled = validated.premisePromiseFulfilled?.trim();
   const objectiveAnchors = normalizeAnchors(validated.objectiveAnchors);
   const rawAnchorEvidence = normalizeAnchorEvidence(validated.anchorEvidence);
@@ -160,6 +161,10 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     beatAlignmentReason: validated.beatAlignmentReason.trim(),
     thematicCharge: validated.thematicCharge,
     thematicChargeDescription: validated.thematicChargeDescription.trim(),
+    obligatorySceneFulfilled:
+      obligatorySceneFulfilled && obligatorySceneFulfilled.length > 0
+        ? obligatorySceneFulfilled
+        : null,
     premisePromiseFulfilled:
       premisePromiseFulfilled && premisePromiseFulfilled.length > 0
         ? premisePromiseFulfilled

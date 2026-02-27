@@ -42,6 +42,7 @@ describe('validateAnalystResponse', () => {
     expect(result.completionGateSatisfied).toBe(true);
     expect(result.thematicCharge).toBe('AMBIGUOUS');
     expect(result.thematicChargeDescription).toBe('');
+    expect(result.obligatorySceneFulfilled).toBeNull();
     expect(result.rawResponse).toBe(RAW_RESPONSE);
   });
 
@@ -100,6 +101,15 @@ describe('validateAnalystResponse', () => {
     expect(result.completionGateFailureReason).toBe('');
     expect(result.thematicCharge).toBe('AMBIGUOUS');
     expect(result.thematicChargeDescription).toBe('');
+    expect(result.obligatorySceneFulfilled).toBeNull();
+  });
+
+  it('trims obligatorySceneFulfilled and normalizes empty values to null', () => {
+    const trimmed = validateAnalystResponse({ obligatorySceneFulfilled: '  culprit_unmasked  ' }, RAW_RESPONSE);
+    const empty = validateAnalystResponse({ obligatorySceneFulfilled: '   ' }, RAW_RESPONSE);
+
+    expect(trimmed.obligatorySceneFulfilled).toBe('culprit_unmasked');
+    expect(empty.obligatorySceneFulfilled).toBeNull();
   });
 
   it('returns rawResponse in the result', () => {

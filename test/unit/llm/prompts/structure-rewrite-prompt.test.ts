@@ -87,6 +87,56 @@ describe('buildStructureRewritePrompt', () => {
     );
   });
 
+  it('includes genre obligation preservation and remaining coverage requirements when conceptSpec exists', () => {
+    const user = getUserMessage(
+      buildStructureRewritePrompt({
+        ...baseContext,
+        conceptSpec: {
+          oneLineHook: 'A detective hunts a killer in a flooded city.',
+          elevatorParagraph: 'A noir investigation spirals into civic collapse.',
+          genreFrame: 'MYSTERY',
+          genreSubversion: 'The detective is complicit in the opening crime.',
+          protagonistRole: 'Disgraced detective',
+          coreCompetence: 'Pattern recognition under pressure',
+          coreFlaw: 'Compulsive self-justification',
+          actionVerbs: ['investigate', 'interrogate', 'infiltrate', 'evade', 'expose', 'choose'],
+          coreConflictLoop: 'Truth vs self-preservation under institutional pressure',
+          conflictAxis: 'TRUTH_VS_STABILITY',
+          conflictType: 'PERSON_VS_SOCIETY',
+          pressureSource: 'A tribunal cover-up',
+          stakesPersonal: 'Loss of remaining allies',
+          stakesSystemic: 'Permanent rule by corrupt tribunals',
+          deadlineMechanism: 'Evidence destruction at dawn',
+          settingAxioms: [
+            'Tidal districts flood nightly',
+            'Courts are controlled by merchant families',
+          ],
+          constraintSet: ['No direct violence in tribunal halls', 'Witnesses disappear after curfew'],
+          keyInstitutions: ['Harbor Tribunal', 'Tide Guard'],
+          settingScale: 'LOCAL',
+          whatIfQuestion: 'What if justice requires admitting your own guilt?',
+          ironicTwist: 'The case can only be solved by proving the detective framed someone else.',
+          playerFantasy: 'Outsmarting corrupt institutions',
+          incitingDisruption: 'A protected witness is murdered publicly',
+          escapeValve: 'A smuggler route beneath the court archive',
+        },
+        completedBeats: [
+          {
+            ...baseContext.completedBeats[0]!,
+            obligatorySceneTag: 'crime_or_puzzle_presented',
+          },
+        ],
+      })
+    );
+
+    expect(user).toContain('GENRE OBLIGATION CONTRACT (for MYSTERY)');
+    expect(user).toContain('Already fulfilled in completed canon beats');
+    expect(user).toContain('- crime_or_puzzle_presented');
+    expect(user).toContain('Remaining obligation tags to cover in regenerated beats');
+    expect(user).toContain('Preserve obligatorySceneTag on completed beats unchanged');
+    expect(user).toContain('obligatorySceneTag: genre obligation tag');
+  });
+
   it('shows explicit None text when no completed beats exist', () => {
     const user = getUserMessage(
       buildStructureRewritePrompt({

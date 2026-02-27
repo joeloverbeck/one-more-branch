@@ -311,6 +311,11 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             '1-2 sentences explaining the thematicCharge classification with concrete scene evidence.',
         },
+        obligatorySceneFulfilled: {
+          anyOf: [{ type: 'string' }, { type: 'null' }],
+          description:
+            'Exact obligatorySceneTag fulfilled by this scene for the active beat, or null when no obligatory scene obligation was fulfilled.',
+        },
         premisePromiseFulfilled: {
           anyOf: [{ type: 'string' }, { type: 'null' }],
           description:
@@ -354,6 +359,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'beatAlignmentReason',
         'thematicCharge',
         'thematicChargeDescription',
+        'obligatorySceneFulfilled',
         'premisePromiseFulfilled',
       ],
       additionalProperties: false,

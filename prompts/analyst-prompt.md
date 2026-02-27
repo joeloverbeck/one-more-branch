@@ -96,6 +96,12 @@ PREMISE PROMISE FULFILLMENT:
 - Never invent or paraphrase promise text; choose only from `PENDING PREMISE PROMISES`.
 - Never mark an already-fulfilled premise promise again.
 
+OBLIGATORY SCENE FULFILLMENT:
+- If ACTIVE BEAT OBLIGATION context is present, evaluate whether this scene fulfills that exact obligatory scene tag.
+- Set `obligatorySceneFulfilled` to the EXACT obligation tag only when scene events satisfy the active beat's obligation in substance.
+- If the scene does not fulfill the active obligation, set `obligatorySceneFulfilled` to `null`.
+- If no active beat obligation context is provided, always set `obligatorySceneFulfilled` to `null`.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
@@ -190,6 +196,12 @@ ALREADY FULFILLED PREMISE PROMISES:
 - {{promise text}}
 
 Set premisePromiseFulfilled to one exact pending promise string when fulfilled by this scene, otherwise null.
+
+=== ACTIVE BEAT OBLIGATION ===
+(Only present when active beat has an obligatorySceneTag)
+ACTIVE BEAT OBLIGATION:
+ACTIVE BEAT OBLIGATION TAG: {{obligatorySceneTag}}
+Set obligatorySceneFulfilled to this exact tag only if this scene fulfills it; otherwise set obligatorySceneFulfilled to null.
 
 === THEMATIC KERNEL ===
 (Only present when analyst context includes thematicQuestion or antithesis)
@@ -450,7 +462,9 @@ The tone reminder is injected into the user prompt (before the narrative) in add
   "spineInvalidatedElement": "{{dramatic_question|antagonistic_force|need_want|null}}",
   "alignedBeatId": "{{beat ID like 1.4 or 2.1, null when WITHIN_ACTIVE_BEAT or no clear match}}",
   "beatAlignmentConfidence": "{{LOW|MEDIUM|HIGH}}",
-  "beatAlignmentReason": "{{one sentence explaining alignment judgment, empty when alignedBeatId is null}}"
+  "beatAlignmentReason": "{{one sentence explaining alignment judgment, empty when alignedBeatId is null}}",
+  "obligatorySceneFulfilled": "{{exact obligatorySceneTag or null}}",
+  "premisePromiseFulfilled": "{{exact pending premise promise text or null}}"
 }
 ```
 
@@ -468,5 +482,6 @@ The tone reminder is injected into the user prompt (before the narrative) in add
 - `spineDeviationReason`: When `spineDeviationDetected` is `true`, explains which element was invalidated and why. Empty string when no spine deviation.
 - `spineInvalidatedElement`: The specific spine element that was invalidated: `"dramatic_question"` (central question definitively answered), `"antagonistic_force"` (permanently eliminated with no successor), or `"need_want"` (need-want tension fully resolved prematurely). `null` when no spine deviation detected. Only one element can be flagged per evaluation.
 - `alignedBeatId`: When `structuralPositionSignal` is not `WITHIN_ACTIVE_BEAT`, identifies which pending beat (by ID, e.g., `"1.4"` or `"2.1"`) the narrative most closely aligns with. `null` when `WITHIN_ACTIVE_BEAT` or when no clear alignment exists. Invalid beat ID formats are normalized to `null` by the response transformer. When beat alignment detection identifies a HIGH-confidence skip to a beat 2+ positions ahead, the engine mechanically advances the structure state past intermediate beats, concluding each with a synthetic resolution ("Implicitly resolved by narrative advancement"). This is gated by the `enableBeatAlignmentSkip` config flag.
+- `obligatorySceneFulfilled`: Exact active-beat `obligatorySceneTag` fulfilled by this scene, or `null` when no obligation was fulfilled.
 - `beatAlignmentConfidence`: Confidence in the `alignedBeatId` judgment. `HIGH` means the narrative clearly satisfies most conditions of the target beat's objective. `MEDIUM` means the narrative has overlapping elements but is ambiguous. `LOW` means uncertain alignment. Only `HIGH` confidence triggers mechanical beat skipping; `MEDIUM` is logged but does not alter structure progression.
 - `beatAlignmentReason`: One sentence explaining the alignment judgment. Empty string when `alignedBeatId` is `null`.

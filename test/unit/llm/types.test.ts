@@ -845,6 +845,8 @@ describe('LLM types', () => {
         beatAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
         thematicChargeDescription: '',
+        obligatorySceneFulfilled: null,
+        premisePromiseFulfilled: null,
         rawResponse: '{"beatConcluded":true}',
       };
 
@@ -891,6 +893,8 @@ describe('LLM types', () => {
         beatAlignmentReason: '',
         thematicCharge: 'ANTITHESIS_SUPPORTING',
         thematicChargeDescription: 'The protagonist embraces coercive control to restore order.',
+        obligatorySceneFulfilled: null,
+        premisePromiseFulfilled: null,
         rawResponse: '{"deviationDetected":true}',
       };
 

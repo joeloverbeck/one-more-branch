@@ -78,6 +78,12 @@ PREMISE PROMISE FULFILLMENT:
 - Never invent or paraphrase promise text. Choose only from the provided PENDING PREMISE PROMISES list.
 - Do not select a promise already listed as fulfilled.
 
+OBLIGATORY SCENE FULFILLMENT:
+- If ACTIVE BEAT OBLIGATION context is present, evaluate whether this scene fulfills that exact obligatory scene tag.
+- Set obligatorySceneFulfilled to the EXACT obligation tag only when scene events satisfy the active beat's obligation in substance.
+- If the scene does not fulfill the active obligation, set obligatorySceneFulfilled to null.
+- If no active beat obligation context is provided, always set obligatorySceneFulfilled to null.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
@@ -241,6 +247,22 @@ function buildPremisePromiseSection(context: AnalystContext): string {
   return `${lines.join('\n')}\n\n`;
 }
 
+function buildObligatorySceneSection(context: AnalystContext): string {
+  const activeAct = context.structure.acts[context.accumulatedStructureState.currentActIndex];
+  const activeBeat = activeAct?.beats[context.accumulatedStructureState.currentBeatIndex];
+  const activeTag = activeBeat?.obligatorySceneTag;
+
+  if (!activeTag) {
+    return '';
+  }
+
+  return `ACTIVE BEAT OBLIGATION:
+ACTIVE BEAT OBLIGATION TAG: ${activeTag}
+Set obligatorySceneFulfilled to this exact tag only if this scene fulfills it; otherwise set obligatorySceneFulfilled to null.
+
+`;
+}
+
 /**
  * Builds the analyst prompt messages for the analyst LLM call.
  * Returns a system message with analyst instructions and a user message
@@ -261,13 +283,14 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const toneReminder = '';
   const activePromisesSection = buildActivePromisesSection(context);
   const premisePromisesSection = buildPremisePromiseSection(context);
+  const obligatorySceneSection = buildObligatorySceneSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
   const thematicKernelSection = buildThematicKernelSection(context);
 
   const spineSection = buildSpineSection(context.spine);
 
-  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${obligatorySceneSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

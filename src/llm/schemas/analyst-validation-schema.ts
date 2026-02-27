@@ -126,5 +126,6 @@ export const AnalystResultSchema = z.object({
   beatAlignmentReason: z.string().catch('').default(''),
   thematicCharge: ThematicChargeSchema,
   thematicChargeDescription: z.string().catch('').default(''),
+  obligatorySceneFulfilled: z.string().nullable().catch(null).default(null),
   premisePromiseFulfilled: z.string().nullable().catch(null).default(null),
 });
