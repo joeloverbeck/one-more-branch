@@ -64,6 +64,18 @@ export function parseApproachVectors(
   return valid.length > 0 ? valid : null;
 }
 
+function parseSetpieceSourceIndex(value: unknown): number | null {
+  if (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= 5
+  ) {
+    return value;
+  }
+  return null;
+}
+
 /**
  * Creates StoryStructure from raw generation result.
  * Assigns hierarchical IDs to beats (e.g., "1.1", "1.2", "2.1").
@@ -81,6 +93,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       uniqueScenarioHook:
         typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
       approachVectors: parseApproachVectors(beatData.approachVectors),
+      setpieceSourceIndex: parseSetpieceSourceIndex(beatData.setpieceSourceIndex),
     }));
 
     return {

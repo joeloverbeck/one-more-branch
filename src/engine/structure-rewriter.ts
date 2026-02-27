@@ -126,6 +126,7 @@ export function mergePreservedWithRegenerated(
       escalationType: parseEscalationType(beat.escalationType),
       uniqueScenarioHook: beat.uniqueScenarioHook,
       approachVectors: parseApproachVectors(beat.approachVectors),
+      setpieceSourceIndex: beat.setpieceSourceIndex,
     }));
 
     let nextBeatNumber = mergedBeats.reduce((max, beat) => {
@@ -155,6 +156,7 @@ export function mergePreservedWithRegenerated(
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ?? null,
+        setpieceSourceIndex: beat.setpieceSourceIndex ?? null,
       });
       nextBeatNumber += 1;
       seenBeatSignature.add(signature);

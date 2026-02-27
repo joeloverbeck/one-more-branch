@@ -52,6 +52,7 @@ function createRewriteContext(
         escalationType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
+            setpieceSourceIndex: null,
         resolution: 'The captain escaped with proof of betrayal.',
       },
     ],
@@ -89,6 +90,7 @@ function createGeneratedStructure(
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             name: 'Neutral passage pact',
@@ -98,6 +100,7 @@ function createGeneratedStructure(
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -115,6 +118,7 @@ function createGeneratedStructure(
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             name: 'Council exposure',
@@ -124,6 +128,7 @@ function createGeneratedStructure(
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -141,6 +146,7 @@ function createGeneratedStructure(
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             name: 'Judgment of rivals',
@@ -150,6 +156,7 @@ function createGeneratedStructure(
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -182,6 +189,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             id: '1.2',
@@ -192,6 +200,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -211,6 +220,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             id: '2.2',
@@ -221,6 +231,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -240,6 +251,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             id: '3.2',
@@ -250,6 +262,7 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -298,6 +311,7 @@ describe('structure-rewriter', () => {
         escalationType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
+            setpieceSourceIndex: null,
       });
       expect(result.structure.acts[0]?.beats[1]).toEqual({
         id: '1.2',
@@ -308,6 +322,7 @@ describe('structure-rewriter', () => {
         escalationType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
+            setpieceSourceIndex: null,
       });
     });
 
@@ -408,6 +423,7 @@ describe('structure-rewriter', () => {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
             resolution: 'Resolved already',
           },
         ],
@@ -426,6 +442,7 @@ describe('structure-rewriter', () => {
         escalationType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
+            setpieceSourceIndex: null,
       });
 
       for (const [actIndex, act] of merged.acts.entries()) {
@@ -454,6 +471,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
               {
                 id: '1.2',
@@ -464,6 +482,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -483,6 +502,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
               {
                 id: '2.2',
@@ -493,6 +513,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -512,6 +533,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
               {
                 id: '3.2',
@@ -522,6 +544,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -541,6 +564,7 @@ describe('structure-rewriter', () => {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
             resolution: 'Resolved already',
           },
         ],
@@ -557,6 +581,7 @@ describe('structure-rewriter', () => {
         escalationType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
+            setpieceSourceIndex: null,
       });
       expect(merged.acts[0]?.beats[1]?.id).toBe('1.3');
     });
@@ -580,6 +605,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
               {
                 id: '1.2',
@@ -590,6 +616,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -617,6 +644,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
               {
                 id: '3.2',
@@ -627,6 +655,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -657,6 +686,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -676,6 +706,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -695,6 +726,7 @@ describe('structure-rewriter', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },
@@ -714,6 +746,7 @@ describe('structure-rewriter', () => {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
             resolution: 'Villain was defeated',
           },
         ],

@@ -41,6 +41,7 @@ function buildStructure(): StoryStructure {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             id: '1.2',
@@ -51,6 +52,7 @@ function buildStructure(): StoryStructure {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -167,6 +169,7 @@ describe('story-repository integration', () => {
               escalationType: null,
               uniqueScenarioHook: null,
               approachVectors: null,
+              setpieceSourceIndex: null,
             },
             {
               id: '1.2',
@@ -177,6 +180,7 @@ describe('story-repository integration', () => {
               escalationType: null,
               uniqueScenarioHook: null,
               approachVectors: null,
+              setpieceSourceIndex: null,
             },
           ],
         },
@@ -196,6 +200,7 @@ describe('story-repository integration', () => {
               escalationType: null,
               uniqueScenarioHook: null,
               approachVectors: null,
+              setpieceSourceIndex: null,
             },
             {
               id: '2.2',
@@ -206,6 +211,7 @@ describe('story-repository integration', () => {
               escalationType: null,
               uniqueScenarioHook: null,
               approachVectors: null,
+              setpieceSourceIndex: null,
             },
           ],
         },
@@ -225,6 +231,7 @@ describe('story-repository integration', () => {
               escalationType: null,
               uniqueScenarioHook: null,
               approachVectors: null,
+              setpieceSourceIndex: null,
             },
             {
               id: '3.2',
@@ -235,6 +242,7 @@ describe('story-repository integration', () => {
               escalationType: null,
               uniqueScenarioHook: null,
               approachVectors: null,
+              setpieceSourceIndex: null,
             },
           ],
         },

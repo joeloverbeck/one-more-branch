@@ -1,5 +1,5 @@
 import type { AccumulatedStructureState } from '../models/story-arc';
-import type { NpcAgenda } from '../models/state/npc-agenda';
+import type { StructureGenerationResult } from '../models/structure-generation';
 
 /**
  * Result of advancing the structure state machine.
@@ -11,28 +11,4 @@ export interface StructureProgressionResult {
   isComplete: boolean;
 }
 
-/**
- * Raw result from LLM structure generation.
- */
-export interface StructureGenerationResult {
-  overallTheme: string;
-  premise: string;
-  pacingBudget: { targetPagesMin: number; targetPagesMax: number };
-  acts: Array<{
-    name: string;
-    objective: string;
-    stakes: string;
-    entryCondition: string;
-    beats: Array<{
-      name: string;
-      description: string;
-      objective: string;
-      role: string;
-      escalationType?: string | null;
-      uniqueScenarioHook?: string | null;
-      approachVectors?: string[] | null;
-    }>;
-  }>;
-  initialNpcAgendas?: NpcAgenda[];
-  rawResponse: string;
-}
+export type { StructureGenerationResult };

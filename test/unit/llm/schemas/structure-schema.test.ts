@@ -64,6 +64,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'escalationType',
       'uniqueScenarioHook',
       'approachVectors',
+      'setpieceSourceIndex',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });
@@ -159,6 +160,36 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
           'COMPETENCE_DEMAND_SPIKE',
         ],
       },
+      { type: 'null' },
+    ]);
+  });
+
+  it('should define setpieceSourceIndex as nullable integer 0-5', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    setpieceSourceIndex: {
+                      anyOf: Array<{ type: string; minimum?: number; maximum?: number }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const setpieceSourceIndexSchema =
+      schema.properties.acts.items.properties.beats.items.properties.setpieceSourceIndex;
+
+    expect(setpieceSourceIndexSchema.anyOf).toEqual([
+      { type: 'integer', minimum: 0, maximum: 5 },
       { type: 'null' },
     ]);
   });

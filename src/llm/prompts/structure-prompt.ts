@@ -82,7 +82,10 @@ ${numbered}
 
 CONSTRAINT: When writing uniqueScenarioHook for escalation and turning_point beats,
 draw from or build upon these verified setpieces. You may adapt, combine, or extend
-them, but at least 3 of your beat hooks should trace back to a setpiece above.
+them, but at least 4 of your beat hooks MUST trace back to a setpiece above.
+When a beat traces to a setpiece, set setpieceSourceIndex to that setpiece's zero-based
+index in this list (first item = 0, last item = 5). If a beat does not trace to a
+setpiece, set setpieceSourceIndex to null.
 
 `;
 }
@@ -241,7 +244,8 @@ OUTPUT SHAPE:
       - role: "setup" | "escalation" | "turning_point" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats
-      - approachVectors: 2-3 approach vector enums from the list above, or null for setup/resolution beats`;
+      - approachVectors: 2-3 approach vector enums from the list above, or null for setup/resolution beats
+      - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

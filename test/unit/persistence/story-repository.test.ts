@@ -51,6 +51,7 @@ function buildTestStructure(): StoryStructure {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             id: '1.2',
@@ -61,6 +62,7 @@ function buildTestStructure(): StoryStructure {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -111,6 +113,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             id: '1.2',
@@ -121,6 +124,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },

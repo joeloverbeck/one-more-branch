@@ -7,7 +7,7 @@ import {
   readErrorDetails,
   readJsonResponse,
 } from './http-client.js';
-import type { NpcAgenda } from '../models/state/npc-agenda.js';
+import type { StructureGenerationResult } from '../models/structure-generation.js';
 import { resolvePromptOptions } from './options.js';
 import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
 import { withModelFallback } from './model-fallback.js';
@@ -16,27 +16,30 @@ import { STRUCTURE_GENERATION_SCHEMA } from './schemas/structure-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 
-export interface StructureGenerationResult {
-  overallTheme: string;
-  premise: string;
-  pacingBudget: { targetPagesMin: number; targetPagesMax: number };
-  acts: Array<{
-    name: string;
-    objective: string;
-    stakes: string;
-    entryCondition: string;
-    beats: Array<{
-      name: string;
-      description: string;
-      objective: string;
-      role: string;
-      escalationType?: string | null;
-      uniqueScenarioHook?: string | null;
-      approachVectors?: string[] | null;
-    }>;
-  }>;
-  initialNpcAgendas?: NpcAgenda[];
-  rawResponse: string;
+const MIN_UNIQUE_TRACED_SETPIECES = 4;
+
+function parseSetpieceSourceIndex(value: unknown): number | null {
+  if (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= 5
+  ) {
+    return value;
+  }
+  return null;
+}
+
+function countUniqueSetpieceIndices(result: Omit<StructureGenerationResult, 'rawResponse'>): number {
+  const unique = new Set<number>();
+  for (const act of result.acts) {
+    for (const beat of act.beats) {
+      if (typeof beat.setpieceSourceIndex === 'number') {
+        unique.add(beat.setpieceSourceIndex);
+      }
+    }
+  }
+  return unique.size;
 }
 
 function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult, 'rawResponse'> {
@@ -128,6 +131,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
             (v): v is string => typeof v === 'string'
           )
         : null;
+      const setpieceSourceIndex = parseSetpieceSourceIndex(beatData['setpieceSourceIndex']);
 
       return {
         name: beatData['name'],
@@ -137,6 +141,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
         escalationType,
         uniqueScenarioHook,
         approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
+        setpieceSourceIndex,
       };
     });
 
@@ -212,6 +217,7 @@ async function fetchStructure(
   messages: ReturnType<typeof buildStructurePrompt>,
   temperature: number,
   maxTokens: number,
+  hasConceptVerification: boolean,
 ): Promise<StructureGenerationResult> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -251,6 +257,14 @@ async function fetchStructure(
   const responseText = parsedMessage.rawText;
   try {
     const parsed = parseStructureResponse(parsedMessage.parsed);
+    if (hasConceptVerification) {
+      const uniqueSetpiecesUsed = countUniqueSetpieceIndices(parsed);
+      if (uniqueSetpiecesUsed < MIN_UNIQUE_TRACED_SETPIECES) {
+        logger.warn(
+          `Structure setpiece tracing below target: ${uniqueSetpiecesUsed}/${MIN_UNIQUE_TRACED_SETPIECES} unique setpieces mapped`
+        );
+      }
+    }
     return { ...parsed, rawResponse: responseText };
   } catch (error) {
     if (error instanceof LLMError) {
@@ -279,10 +293,12 @@ export async function generateStoryStructure(
 
   const messages = buildStructurePrompt(context, promptOptions);
   logPrompt(logger, 'structure', messages);
+  const hasConceptVerification = (context.conceptVerification?.escalatingSetpieces.length ?? 0) > 0;
 
   return withRetry(() =>
     withModelFallback(
-      (m) => fetchStructure(apiKey, m, messages, temperature, maxTokens),
+      (m) =>
+        fetchStructure(apiKey, m, messages, temperature, maxTokens, hasConceptVerification),
       primaryModel,
       'structure',
     )
