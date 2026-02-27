@@ -77,6 +77,7 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
+    delayedConsequencesCreated: [],
     knowledgeAsymmetryDetected: [],
     dramaticIronyOpportunities: [],
     rawResponse: '{}',

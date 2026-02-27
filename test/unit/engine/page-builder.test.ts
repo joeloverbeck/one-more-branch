@@ -54,7 +54,6 @@ function buildMockGenerationResult(
       secondaryEmotions: [],
       dominantMotivation: 'Discover what lies ahead',
     },
-    delayedConsequencesCreated: [],
     isEnding: false,
     sceneSummary: 'Test summary of the scene events and consequences.',
     rawResponse: 'raw-response',
@@ -105,9 +104,10 @@ function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResu
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '',
+    delayedConsequencesCreated: [],
+    knowledgeAsymmetryDetected: [],
+    dramaticIronyOpportunities: [],
+    rawResponse: '',
     ...overrides,
   };
 }
@@ -266,16 +266,7 @@ describe('page-builder', () => {
 
   describe('buildPage delayed consequences', () => {
     it('ages inherited delayed consequences and appends newly created ones', () => {
-      const result = buildMockGenerationResult({
-        delayedConsequencesCreated: [
-          {
-            description: 'The tower watch compiles a suspect ledger.',
-            triggerCondition: 'The protagonist re-enters the city ward.',
-            minPagesDelay: 2,
-            maxPagesDelay: 5,
-          },
-        ],
-      });
+      const result = buildMockGenerationResult();
       const context: PageBuildContext = {
         pageId: parsePageId(4),
         parentPageId: parsePageId(3),
@@ -292,7 +283,16 @@ describe('page-builder', () => {
         structureState: createEmptyAccumulatedStructureState(),
         structureVersionId: null,
         storyBible: null,
-        analystResult: null,
+        analystResult: buildMockAnalystResult({
+          delayedConsequencesCreated: [
+            {
+              description: 'The tower watch compiles a suspect ledger.',
+              triggerCondition: 'The protagonist re-enters the city ward.',
+              minPagesDelay: 2,
+              maxPagesDelay: 5,
+            },
+          ],
+        }),
         parentThreadAges: {},
         parentAccumulatedPromises: [],
         parentAccumulatedDelayedConsequences: [

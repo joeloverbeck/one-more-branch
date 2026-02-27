@@ -1,38 +1,40 @@
-# Analyst Prompt (Production Template)
+# Structure Evaluator Prompt (Production Template)
 
-- Source: `src/llm/prompts/analyst-prompt.ts`
-- Structure evaluation section source: `src/llm/prompts/continuation/story-structure-section.ts`
-- Output schema source: `src/llm/schemas/analyst-schema.ts`
+- Source: `src/llm/prompts/structure-evaluator-prompt.ts`
+- Output schema source: `src/llm/schemas/structure-evaluator-schema.ts`
 
 ## Pipeline Position
 
-The analyst runs for **both opening and continuation pages** as part of the unified generation pipeline:
+The Structure Evaluator runs as part of the parallel evaluation phase following the Writer stage:
 
-**Pipeline position**: Planner -> Lorekeeper -> Writer -> **Analyst** -> Agenda Resolver
+**Pipeline position**: Planner -> Lorekeeper -> Writer -> **[Structure Evaluator | Promise Tracker | Scene Quality]** (parallel) -> Agenda Resolver
 
-The analyst is conditional on the story having a structure. If no structure exists, the analyst step is skipped.
+The Structure Evaluator is conditional on the story having a structure. If no structure exists, this step is skipped.
+
+## Single Responsibility
+
+The Structure Evaluator has ONE focused responsibility: evaluate beat completion, structural progression, pacing, and spine integrity.
+
+The Structure Evaluator does NOT evaluate:
+- Tone adherence
+- NPC coherence (handled by Promise Tracker)
+- Narrative promises (handled by Promise Tracker)
+- Prose quality (handled by Scene Quality)
+
+This split allows each evaluator to specialize on its domain without context pollution.
 
 ## Messages Sent To Model
 
 ### 1) System Message
 
 ```text
-You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
-1. Whether the current story beat has been concluded
-2. Whether the narrative has deviated from the planned beats
-3. Whether the narrative adheres to the target tone
+You are a story structure evaluator for interactive fiction. Your SINGLE responsibility is to evaluate whether the narrative satisfies structural objectives — beat completion, deviation, pacing, and spine integrity.
 
-TONE/GENRE IDENTITY:
-Tone: {{tone}}
-{{#if toneFeel}}Target feel: {{toneFeel joined by ', '}}{{/if}}
-{{#if toneAvoid}}Avoid: {{toneAvoid joined by ', '}}{{/if}}
-
-You analyze structure progression, deviation, and tone adherence. You do NOT write narrative or make creative decisions.
+You do NOT evaluate tone, NPC coherence, narrative promises, or quality. Those are handled by other evaluators.
 
 Use this strict sequence:
 Step A: Classify scene signals using the provided enums.
 Step B: Apply the completion gate against the active beat objective before deciding beatConcluded.
-Step C: Evaluate whether the narrative prose matches the target TONE/GENRE.
 
 Before setting beatConcluded, extract 1-3 objective anchors from activeBeat.objective and map each anchor to concrete evidence.
 
@@ -53,89 +55,11 @@ Example 2 — Objective: "Convince the rival houses to commit support without re
 Evidence is cumulative across the current narrative and active state.
 If no anchor has explicit evidence, beatConcluded must be false.
 
-TONE EVALUATION:
-- Set toneAdherent to true if the narrative's mood, vocabulary, and emotional register match the target tone.
-- Set toneAdherent to false if the narrative drifts toward a different genre feel (e.g., grimdark when tone should be comedic).
-- When toneAdherent is false, write a brief toneDriftDescription explaining what feels off and what the tone should be instead.
-- When toneAdherent is true, set toneDriftDescription to an empty string.
-
-THEMATIC CHARGE CLASSIFICATION:
-- If THEMATIC KERNEL context is present, classify scene-level thematic valence:
-  - THESIS_SUPPORTING: scene consequences/actions support the thesis-direction answer to the thematic question.
-  - ANTITHESIS_SUPPORTING: scene consequences/actions support the antithesis-direction answer.
-  - AMBIGUOUS: evidence is mixed, unresolved, or equally supports both sides.
-- Set thematicCharge to exactly one enum value.
-- Set thematicChargeDescription to 1-2 sentences citing concrete scene evidence.
-- If THEMATIC KERNEL context is absent, default to thematicCharge = AMBIGUOUS with a concise neutral description.
-
-NARRATIVE FOCUS CLASSIFICATION:
-- Classify scene focus as exactly one:
-  - DEEPENING: primarily develops existing conflicts, promises, relationships, or known constraints.
-  - BROADENING: primarily introduces new factions, mysteries, goals, locations, or major scope expansions.
-  - BALANCED: meaningfully deepens existing threads while adding limited new elements.
-- Prefer DEEPENING when uncertain between DEEPENING and BALANCED.
-- Prefer BALANCED when uncertain between BALANCED and BROADENING.
-
 MIDPOINT EVALUATION:
 - If the active beat is midpoint-tagged, enforce midpoint delivery quality:
   - FALSE_VICTORY: apparent win with hidden structural cost or instability.
   - FALSE_DEFEAT: apparent loss that plants credible recovery potential.
 - If beatConcluded is true without midpoint-grade reversal function, mark pacingIssueDetected true and explain the midpoint miss.
-
-PROMISE EVALUATION:
-- A narrative promise is a forward-looking obligation the reader expects answered.
-- LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.
-- NOT a promise: motifs, atmosphere, characterization, backstory, self-contained emotions, worldbuilding facts, mood-setting details.
-- If you cannot write a clear resolutionHint question, it is NOT a promise.
-- Before adding a new promise, check if an existing active promise already covers the territory. Expand the existing one rather than duplicating.
-- Detect at most 2 new promises in promisesDetected.
-- Each promise MUST include:
-  - promiseType: CHEKHOV_GUN (concrete object/ability/rule with narrative emphasis), FORESHADOWING (hint at a specific future event), UNRESOLVED_TENSION (emotional/relational setup demanding closure), DRAMATIC_QUESTION (story/act-level question reader expects answered), MYSTERY_HOOK (deliberate information gap), TICKING_CLOCK (time-bound urgency constraint).
-  - scope: SCENE (resolve within 1-3 pages), BEAT (resolve within current beat), ACT (resolve within current act), STORY (resolve at climax/ending). Match the weight of the setup.
-  - resolutionHint: A specific question (e.g., "Will the attacker return?", "What is inside the locked box?").
-- RESOLUTION: Only include a promise in promisesResolved when the resolutionHint question has been ANSWERED, not merely referenced.
-- Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
-- Only provide promisePayoffAssessments entries for promises that appear in promisesResolved.
-
-PREMISE PROMISE FULFILLMENT:
-- PREMISE PROMISES are high-level audience expectations from concept verification.
-- If this scene clearly delivers one pending premise promise, set `premisePromiseFulfilled` to the EXACT matching promise text.
-- If no premise promise is fulfilled, set `premisePromiseFulfilled` to `null`.
-- Never invent or paraphrase promise text; choose only from `PENDING PREMISE PROMISES`.
-- Never mark an already-fulfilled premise promise again.
-
-OBLIGATORY SCENE FULFILLMENT:
-- If ACTIVE BEAT OBLIGATION context is present, evaluate whether this scene fulfills that exact obligatory scene tag.
-- Set `obligatorySceneFulfilled` to the EXACT obligation tag only when scene events satisfy the active beat's obligation in substance.
-- If the scene does not fulfill the active obligation, set `obligatorySceneFulfilled` to `null`.
-- If no active beat obligation context is provided, always set `obligatorySceneFulfilled` to `null`.
-
-DELAYED CONSEQUENCE TRIGGERING:
-- Evaluate only consequences listed in `TRIGGER-ELIGIBLE DELAYED CONSEQUENCES`.
-- Set `delayedConsequencesTriggered` to exact IDs from that list when their trigger condition is clearly satisfied in the scene.
-- Return `delayedConsequencesTriggered: []` when no eligible consequence triggers.
-- Never invent IDs and never include non-eligible consequences.
-
-INFORMATION ASYMMETRY DETECTION:
-- Emit `knowledgeAsymmetryDetected` as an array of per-character observations grounded in scene evidence.
-- Each entry must include: `characterName`, `knownFacts`, `falseBeliefs`, `secrets`.
-- Use empty arrays for any bucket without evidence.
-- Include only characters with meaningful updates or clearly evidenced knowledge state in this scene.
-- Emit `dramaticIronyOpportunities` as concrete opportunities created by knowledge gaps in this scene.
-- Return `dramaticIronyOpportunities: []` when no clear opportunity exists.
-
-NPC AGENDA COHERENCE:
-- If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
-- Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
-- Set npcCoherenceAdherent to false if any NPC acts contrary to their stated goal or fear without narrative justification.
-- When npcCoherenceAdherent is false, write a brief npcCoherenceIssues description naming the NPC and explaining the inconsistency.
-- When npcCoherenceAdherent is true or no NPC agendas are provided, set npcCoherenceIssues to an empty string.
-
-NPC RELATIONSHIP SHIFT DETECTION:
-- If NPC-protagonist relationships are provided, evaluate whether any relationship shifted significantly during the scene.
-- Only flag meaningful shifts — routine interactions are not shifts.
-- For each detected shift, provide: the NPC name, a description of what changed, a suggested valence change (-3 to +3), and a new dynamic label if the relationship dynamic itself changed (empty string if unchanged).
-- These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.
 
 SPINE INTEGRITY EVALUATION:
 - If a STORY SPINE section is present, evaluate whether any spine element has been IRREVERSIBLY invalidated by the narrative.
@@ -164,8 +88,6 @@ If no pacing concern exists, still provide rhythm guidance: "After this tense re
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
 ```
-
-The tone block is injected between the role intro and the analysis rules. When tone is not available (shouldn't happen in practice), the tone block is omitted.
 
 ### 2) User Message
 
@@ -200,53 +122,6 @@ CURRENT STATE (for beat evaluation):
   [{{thread.id}}] ({{thread.threadType}}/{{thread.urgency}}, {{threadAges[thread.id]}} pages old) {{thread.text}}
 - Threads resolved this scene: {{threadsResolved}}
 (Consider these when evaluating beat completion)
-
-=== ACTIVE TRACKED PROMISES ===
-(Only present when there are active promises)
-ACTIVE TRACKED PROMISES:
-- [{{promise.id}}] ({{promise.promiseType}}/{{promise.scope}}/{{promise.suggestedUrgency}}, {{promise.age}} pages old) {{promise.description}}
-  Resolution criterion: {{promise.resolutionHint}}
-
-Use these IDs for promisesResolved when the resolution criterion question has been ANSWERED in this scene.
-
-=== PREMISE PROMISE TRACKING ===
-(Only present when premise promises exist on story metadata)
-PENDING PREMISE PROMISES:
-- {{promise text}}
-
-ALREADY FULFILLED PREMISE PROMISES:
-- {{promise text}}
-
-Set premisePromiseFulfilled to one exact pending promise string when fulfilled by this scene, otherwise null.
-
-=== ACTIVE BEAT OBLIGATION ===
-(Only present when active beat has an obligatorySceneTag)
-ACTIVE BEAT OBLIGATION:
-ACTIVE BEAT OBLIGATION TAG: {{obligatorySceneTag}}
-Set obligatorySceneFulfilled to this exact tag only if this scene fulfills it; otherwise set obligatorySceneFulfilled to null.
-
-=== TRIGGER-ELIGIBLE DELAYED CONSEQUENCES ===
-TRIGGER-ELIGIBLE DELAYED CONSEQUENCES:
-- [{{id}}] {{description}} (age {{currentAge}}, trigger window {{minPagesDelay}}-{{maxPagesDelay}})
-  Trigger condition: {{triggerCondition}}
-
-Set delayedConsequencesTriggered to IDs from this list only when their trigger condition is clearly satisfied in the scene.
-
-=== THEMATIC KERNEL ===
-(Only present when analyst context includes thematicQuestion or antithesis)
-THEMATIC KERNEL:
-Thematic question: {{thematicQuestion}}
-Antithesis: {{antithesis}}
-
-=== THREAD PAYOFF QUALITY ===
-(Only present when threads were resolved this scene)
-Threads were resolved this scene: {{threadsResolved}}
-For each resolved thread, assess payoff quality:
-- RUSHED: Resolved via exposition, off-screen action, or a single sentence without buildup
-- ADEQUATE: Resolved through action but without significant dramatic development
-- WELL_EARNED: Resolution developed through action, consequence, and emotional payoff
-
-Populate threadPayoffAssessments for each resolved thread.
 
 === BEAT EVALUATION ===
 Evaluate the following narrative against this structure to determine beat completion.
@@ -388,22 +263,6 @@ If pacingIssueDetected is true:
 
 If no pacing issue: pacingIssueDetected: false, pacingIssueReason: "", recommendedAction: "none"
 
-{{#if accumulatedNpcAgendas}}
-NPC AGENDAS (evaluate behavior consistency):
-[{{npc.npcName}}]
-  Goal: {{npc.currentGoal}}
-  Fear: {{npc.fear}}
-{{/if}}
-
-{{#if accumulatedNpcRelationships has entries}}
-NPC-PROTAGONIST RELATIONSHIPS (evaluate for shifts):
-[{{rel.npcName}}]
-  Dynamic: {{rel.dynamic}} | Valence: {{rel.valence}}
-  Tension: {{rel.currentTension}}
-{{/if}}
-
-TONE REMINDER: All output must fit the tone: {{tone}}.{{#if toneFeel}} Target feel: {{toneFeel joined by ', '}}.{{/if}}{{#if toneAvoid}} Avoid: {{toneAvoid joined by ', '}}.{{/if}}
-
 {{#if spine}}
 STORY SPINE (invariant narrative backbone — every scene must serve this):
 Story Pattern: {{spine.storySpineType}}
@@ -419,22 +278,9 @@ Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
-{{#if genreFrame}}
-GENRE CONVENTIONS ({{genreFrame}} — maintain throughout):
-{{#each genreConventions}}
-- {{this.tag}}: {{this.gloss}}
-{{/each}}
-
-These conventions define the genre's atmosphere, character dynamics, and tonal expectations. They are NOT specific scenes — they are persistent creative constraints that every scene should honor.
-{{/if}}
-
 NARRATIVE TO EVALUATE:
 {{narrative}}
 ```
-
-The tone reminder is injected into the user prompt (before the narrative) in addition to the tone block in the system prompt, exploiting recency attention for tone evaluation accuracy.
-
-When `genreFrame` is present on `AnalystContext`, a **GENRE CONVENTIONS** block is injected into the user content between the spine section and the thematic kernel section via `buildGenreConventionsSection(context.genreFrame)`. This provides the analyst with genre-level atmospheric constraints to evaluate tone adherence against.
 
 ## JSON Response Shape
 
@@ -442,13 +288,6 @@ When `genreFrame` is present on `AnalystContext`, a **GENRE CONVENTIONS** block 
 {
   "beatConcluded": {{true|false}},
   "beatResolution": "{{string, required; may be empty when beatConcluded=false}}",
-  "deviationDetected": {{true|false}},
-  "deviationReason": "{{string, empty when no deviation}}",
-  "invalidatedBeatIds": ["{{beatId like 2.1}}"],
-  "narrativeSummary": "{{short state summary, empty when no deviation}}",
-  "pacingIssueDetected": {{true|false}},
-  "pacingIssueReason": "{{string, empty when no pacing issue}}",
-  "recommendedAction": "{{none|nudge|rewrite}}",
   "sceneMomentum": "{{STASIS|INCREMENTAL_PROGRESS|MAJOR_PROGRESS|REVERSAL_OR_SETBACK|SCOPE_SHIFT}}",
   "objectiveEvidenceStrength": "{{NONE|WEAK_IMPLICIT|CLEAR_EXPLICIT}}",
   "commitmentStrength": "{{NONE|TENTATIVE|EXPLICIT_REVERSIBLE|EXPLICIT_IRREVERSIBLE}}",
@@ -458,70 +297,47 @@ When `genreFrame` is present on `AnalystContext`, a **GENRE CONVENTIONS** block 
   "anchorEvidence": ["{{explicit evidence mapped to anchor}}"],
   "completionGateSatisfied": {{true|false}},
   "completionGateFailureReason": "{{string}}",
-  "toneAdherent": {{true|false}},
-  "toneDriftDescription": "{{string, empty when toneAdherent is true}}",
-  "npcCoherenceAdherent": {{true|false}},
-  "npcCoherenceIssues": "{{string, empty when coherent or no agendas}}",
-  "promisesDetected": [
-    {
-      "description": "{{what was planted with emphasis}}",
-      "promiseType": "{{CHEKHOV_GUN|FORESHADOWING|UNRESOLVED_TENSION|DRAMATIC_QUESTION|MYSTERY_HOOK|TICKING_CLOCK}}",
-      "scope": "{{SCENE|BEAT|ACT|STORY}}",
-      "resolutionHint": "{{specific question this promise asks, e.g. 'Will the attacker return?'}}",
-      "suggestedUrgency": "{{LOW|MEDIUM|HIGH}}"
-    }
-  ],
-  "promisesResolved": ["{{pr-N}}"],
-  "promisePayoffAssessments": [
-    {
-      "promiseId": "{{pr-N}}",
-      "description": "{{the resolved promise description}}",
-      "satisfactionLevel": "{{RUSHED|ADEQUATE|WELL_EARNED}}",
-      "reasoning": "{{why this satisfaction level}}"
-    }
-  ],
-  "threadPayoffAssessments": [
-    {
-      "threadId": "{{td-N}}",
-      "threadText": "{{the thread text}}",
-      "satisfactionLevel": "{{RUSHED|ADEQUATE|WELL_EARNED}}",
-      "reasoning": "{{why this satisfaction level}}"
-    }
-  ],
-  "relationshipShiftsDetected": [
-    {
-      "npcName": "{{exact NPC name}}",
-      "shiftDescription": "{{what changed in the relationship, 1-2 sentences}}",
-      "suggestedValenceChange": "{{-3 to +3, positive=warmer, negative=colder}}",
-      "suggestedNewDynamic": "{{new dynamic label if changed, empty string if unchanged}}"
-    }
-  ],
-  "pacingDirective": "{{1-3 sentence natural-language pacing briefing for the page planner}}",
+  "deviationDetected": {{true|false}},
+  "deviationReason": "{{string, empty when no deviation}}",
+  "invalidatedBeatIds": ["{{beatId like 2.1}}"],
   "spineDeviationDetected": {{true|false}},
   "spineDeviationReason": "{{string, empty when no spine deviation}}",
   "spineInvalidatedElement": "{{dramatic_question|antagonistic_force|need_want|null}}",
   "alignedBeatId": "{{beat ID like 1.4 or 2.1, null when WITHIN_ACTIVE_BEAT or no clear match}}",
   "beatAlignmentConfidence": "{{LOW|MEDIUM|HIGH}}",
   "beatAlignmentReason": "{{one sentence explaining alignment judgment, empty when alignedBeatId is null}}",
-  "obligatorySceneFulfilled": "{{exact obligatorySceneTag or null}}",
-  "premisePromiseFulfilled": "{{exact pending premise promise text or null}}"
+  "pacingIssueDetected": {{true|false}},
+  "pacingIssueReason": "{{string, empty when no pacing issue}}",
+  "recommendedAction": "{{none|nudge|rewrite}}",
+  "pacingDirective": "{{1-3 sentence natural-language pacing briefing for the page planner}}",
+  "narrativeSummary": "{{short state summary, always populated}}"
 }
 ```
 
-- `toneAdherent`: Whether the narrative matches the target tone's mood, vocabulary, and emotional register. Defaults to `true`.
-- `toneDriftDescription`: When `toneAdherent` is `false`, describes what feels off and what the tone should be. Empty string when adherent. This feedback propagates to the planner's continuation context for course correction.
-- `npcCoherenceAdherent`: Whether NPCs in the scene acted consistently with their stated agendas. Defaults to `true` when no NPC agendas are provided.
-- `npcCoherenceIssues`: When `npcCoherenceAdherent` is `false`, briefly names the NPC and explains the inconsistency. Empty string when coherent or no agendas. This feedback is forwarded to the agenda resolver to distinguish intentional NPC evolution from writer error.
-- `promisesDetected`: Array of newly detected narrative promises (max 2). Empty array if none detected. Each promise must pass the litmus test: phrasable as a specific question the reader expects answered and would feel disappointed if never addressed. Each entry includes `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, UNRESOLVED_TENSION, DRAMATIC_QUESTION, MYSTERY_HOOK, TICKING_CLOCK), `scope` (SCENE, BEAT, ACT, STORY — matching the weight of the setup), `resolutionHint` (a specific question), and `suggestedUrgency`. Promises with empty `resolutionHint` are filtered out by the response transformer.
-- `promisesResolved`: Array of resolved promise IDs (`pr-N`) from active tracked promises. A promise is resolved when its `resolutionHint` question has been ANSWERED, not merely referenced. Empty array when no tracked promises were paid off.
-- `promisePayoffAssessments`: Array of payoff quality assessments for resolved promises. Empty array when no promises were resolved.
-- `threadPayoffAssessments`: Array of payoff quality assessments for threads resolved this scene. Empty array when no threads were resolved. Only populated when `threadsResolved` is non-empty in the analyst context.
-- `relationshipShiftsDetected`: Array of NPC-protagonist relationship shifts observed in this scene. Empty array if no significant shifts detected. Only flag meaningful changes, not routine interactions. `suggestedValenceChange` is clamped to -3..+3 by the response transformer. These signals are forwarded to the Agenda Resolver to materialize into relationship mutations.
-- `pacingDirective`: A holistic 1-3 sentence natural-language pacing briefing for the page planner. Synthesizes sceneMomentum, objectiveEvidenceStrength, commitmentStrength, structuralPositionSignal, entryConditionReadiness, and pacing budget context into a single actionable instruction. Addresses rhythm (breathe or accelerate?), structural position (how close is beat conclusion?), and what narrative movement the next page should deliver. Written as if briefing a fiction writer, not classifying signals. This field replaces the raw enum display in the planner's pacing briefing — enums are retained internally for beat-conclusion gating but no longer forwarded to the planner as raw labels.
-- `spineDeviationDetected`: Whether a story spine element has been irreversibly invalidated. Defaults to `false`. This is distinct from the existing beat-level `deviationDetected` field, forming a **two-tier deviation system**: beat deviation triggers structure rewrites within the existing spine, while spine deviation signals that the narrative backbone itself needs regeneration.
-- `spineDeviationReason`: When `spineDeviationDetected` is `true`, explains which element was invalidated and why. Empty string when no spine deviation.
-- `spineInvalidatedElement`: The specific spine element that was invalidated: `"dramatic_question"` (central question definitively answered), `"antagonistic_force"` (permanently eliminated with no successor), or `"need_want"` (need-want tension fully resolved prematurely). `null` when no spine deviation detected. Only one element can be flagged per evaluation.
-- `alignedBeatId`: When `structuralPositionSignal` is not `WITHIN_ACTIVE_BEAT`, identifies which pending beat (by ID, e.g., `"1.4"` or `"2.1"`) the narrative most closely aligns with. `null` when `WITHIN_ACTIVE_BEAT` or when no clear alignment exists. Invalid beat ID formats are normalized to `null` by the response transformer. When beat alignment detection identifies a HIGH-confidence skip to a beat 2+ positions ahead, the engine mechanically advances the structure state past intermediate beats, concluding each with a synthetic resolution ("Implicitly resolved by narrative advancement"). This is gated by the `enableBeatAlignmentSkip` config flag.
-- `obligatorySceneFulfilled`: Exact active-beat `obligatorySceneTag` fulfilled by this scene, or `null` when no obligation was fulfilled.
-- `beatAlignmentConfidence`: Confidence in the `alignedBeatId` judgment. `HIGH` means the narrative clearly satisfies most conditions of the target beat's objective. `MEDIUM` means the narrative has overlapping elements but is ambiguous. `LOW` means uncertain alignment. Only `HIGH` confidence triggers mechanical beat skipping; `MEDIUM` is logged but does not alter structure progression.
-- `beatAlignmentReason`: One sentence explaining the alignment judgment. Empty string when `alignedBeatId` is `null`.
+## Output Field Reference
+
+- `beatConcluded`: True when active beat objective is achieved or narrative has progressed beyond beat scope into later territory. Gated by `completionGateSatisfied`.
+- `beatResolution`: Brief description of how beat was resolved. Required when `beatConcluded` is true.
+- `sceneMomentum`: Classification of narrative momentum (STASIS, INCREMENTAL_PROGRESS, MAJOR_PROGRESS, REVERSAL_OR_SETBACK, SCOPE_SHIFT).
+- `objectiveEvidenceStrength`: Strength of evidence that active beat objective was achieved (NONE, WEAK_IMPLICIT, CLEAR_EXPLICIT).
+- `commitmentStrength`: Strength of protagonist commitment visible in the scene (NONE, TENTATIVE, EXPLICIT_REVERSIBLE, EXPLICIT_IRREVERSIBLE).
+- `structuralPositionSignal`: Narrative position relative to beat boundaries (WITHIN_ACTIVE_BEAT, BRIDGING_TO_NEXT_BEAT, CLEARLY_IN_NEXT_BEAT).
+- `entryConditionReadiness`: Readiness of next beat's entry condition (NOT_READY, PARTIAL, READY).
+- `objectiveAnchors`: 1-3 distinct verifiable conditions extracted from the active beat objective. Each anchor represents one thing protagonist must accomplish.
+- `anchorEvidence`: Corresponding evidence for each anchor mapped from narrative and active state.
+- `completionGateSatisfied`: Boolean flag indicating whether completion gate requirements are met. `beatConcluded` is AND-ed with this flag.
+- `completionGateFailureReason`: Explanation of why gate failed, if applicable.
+- `deviationDetected`: True when future beats are now impossible or nonsensical due to narrative direction change.
+- `deviationReason`: Explanation of deviation; empty when no deviation detected.
+- `invalidatedBeatIds`: Beat IDs (format: X.Y) that were invalidated by deviation. Empty when no deviation.
+- `spineDeviationDetected`: True ONLY when a spine element has been IRREVERSIBLY invalidated. Extremely rare — most narrative changes are beat-level deviations, not spine-level. This is distinct from beat-level `deviationDetected`, forming a two-tier deviation system.
+- `spineDeviationReason`: Explanation of which spine element was invalidated and why; empty when no spine deviation.
+- `spineInvalidatedElement`: Which spine element was invalidated: `"dramatic_question"` (CDQ definitively answered), `"antagonistic_force"` (permanently eliminated), `"need_want"` (need-want tension fully resolved prematurely), or `null`.
+- `alignedBeatId`: When `structuralPositionSignal` is not WITHIN_ACTIVE_BEAT, identifies which pending beat (by ID, e.g., "1.4" or "2.1") the narrative aligns with. Null when WITHIN_ACTIVE_BEAT or no clear alignment.
+- `beatAlignmentConfidence`: Confidence in `alignedBeatId` (LOW, MEDIUM, HIGH). Only HIGH confidence triggers mechanical beat skipping in the engine.
+- `beatAlignmentReason`: One sentence explaining alignment judgment. Empty when `alignedBeatId` is null.
+- `pacingIssueDetected`: True when beat is stalling beyond expected page count or story has passed midpoint without meaningful turning-point beat conclusion.
+- `pacingIssueReason`: Explanation of pacing problem; empty when no issue detected.
+- `recommendedAction`: Engine response to pacing issue. "none" if no issue. "nudge" to inject directive into next continuation prompt. "rewrite" to trigger structure rewrite pulling turning points closer.
+- `pacingDirective`: Holistic 1-3 sentence natural-language pacing briefing for the page planner. Synthesizes all scene signals into actionable instruction. Addresses rhythm (breathe or accelerate?), structural position (how close to beat conclusion?), and what narrative movement next page should deliver. Written as if briefing a writer, not classifying signals.
+- `narrativeSummary`: Short summary of current narrative state. Always populated — used for planner context compression and rewrite context.

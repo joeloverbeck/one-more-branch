@@ -24,7 +24,9 @@
       "accountant": "z-ai/glm-5",
       "lorekeeper": "z-ai/glm-5",
       "writer": "qwen/qwen3.5-397b-a17b",
-      "analyst": "z-ai/glm-5",
+      "structureEvaluator": "z-ai/glm-5",
+      "promiseTracker": "z-ai/glm-5",
+      "sceneQuality": "z-ai/glm-5",
       "agendaResolver": "z-ai/glm-5"
     },
     "temperature": 0.8,

@@ -215,6 +215,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     dramaticIronyOpportunities: normalizeDramaticIronyOpportunities(
       validated.dramaticIronyOpportunities
     ),
+    delayedConsequencesCreated: [],
     rawResponse,
   };
 }

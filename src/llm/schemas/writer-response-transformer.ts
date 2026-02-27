@@ -23,12 +23,6 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): P
     },
     isEnding: validated.isEnding,
     sceneSummary: validated.sceneSummary.trim(),
-    delayedConsequencesCreated: validated.delayedConsequencesCreated.map((consequence) => ({
-      description: consequence.description.trim(),
-      triggerCondition: consequence.triggerCondition.trim(),
-      minPagesDelay: consequence.minPagesDelay,
-      maxPagesDelay: consequence.maxPagesDelay,
-    })),
     rawResponse,
   };
 }

@@ -112,7 +112,9 @@ describe('public client script', () => {
     expect(script).toContain('ACCOUNTING_STATE: [');
     expect(script).toContain('WRITING_OPENING_PAGE: [');
     expect(script).toContain('WRITING_CONTINUING_PAGE: [');
-    expect(script).toContain('ANALYZING_SCENE: [');
+    expect(script).toContain('EVALUATING_STRUCTURE: [');
+    expect(script).toContain('TRACKING_PROMISES: [');
+    expect(script).toContain('ASSESSING_QUALITY: [');
     expect(script).toContain('STRUCTURING_STORY: [');
     expect(script).toContain('RESTRUCTURING_STORY: [');
   });

@@ -143,8 +143,9 @@ function buildFullAnalystResult(): AnalystResult {
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
+    delayedConsequencesCreated: [],
     delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
+    knowledgeAsymmetryDetected: [],
 dramaticIronyOpportunities: [],
 rawResponse: '',
   };

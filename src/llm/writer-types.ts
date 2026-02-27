@@ -21,7 +21,6 @@ export interface PageWriterResult {
   choices: Array<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }>;
   sceneSummary: string;
   protagonistAffect: ProtagonistAffect;
-  delayedConsequencesCreated: DelayedConsequenceDraft[];
   isEnding: boolean;
   rawResponse: string;
 }

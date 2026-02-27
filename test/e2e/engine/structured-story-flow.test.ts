@@ -1,7 +1,9 @@
 import { storyEngine } from '@/engine';
 import {
   generatePageWriterOutput,
-  generateAnalystEvaluation,
+  generateStructureEvaluation,
+  generatePromiseTracking,
+  generateSceneQualityEvaluation,
   generateOpeningPage,
   generatePagePlan,
   generateStateAccountant,
@@ -9,6 +11,9 @@ import {
 } from '@/llm';
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
+import type { StructureEvaluatorResult } from '@/llm/structure-evaluator-types';
+import type { PromiseTrackerResult } from '@/llm/promise-tracker-types';
+import type { SceneQualityResult } from '@/llm/scene-quality-types';
 import type { PageWriterResult } from '@/llm/writer-types';
 import type { StorySpine } from '@/models';
 import {
@@ -17,10 +22,24 @@ import {
   createMockStoryStructure,
 } from '../../fixtures/llm-results';
 
+jest.mock('@/llm/client', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const actual = jest.requireActual('@/llm/client');
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    ...actual,
+    generateStructureEvaluation: jest.fn(),
+    generatePromiseTracking: jest.fn(),
+    generateSceneQualityEvaluation: jest.fn(),
+  };
+});
+
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
-  generateAnalystEvaluation: jest.fn(),
+  generateStructureEvaluation: jest.fn(),
+  generatePromiseTracking: jest.fn(),
+  generateSceneQualityEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -46,9 +65,15 @@ const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
   typeof generatePageWriterOutput
 >;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
->;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const llmClient = require('@/llm/client') as {
+  generateStructureEvaluation: jest.MockedFunction<typeof generateStructureEvaluation>;
+  generatePromiseTracking: jest.MockedFunction<typeof generatePromiseTracking>;
+  generateSceneQualityEvaluation: jest.MockedFunction<typeof generateSceneQualityEvaluation>;
+};
+const mockedGenerateStructureEvaluation = llmClient.generateStructureEvaluation;
+const mockedGeneratePromiseTracking = llmClient.generatePromiseTracking;
+const mockedGenerateSceneQualityEvaluation = llmClient.generateSceneQualityEvaluation;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
   typeof generateStateAccountant
@@ -56,6 +81,73 @@ const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunc
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+
+function extractStructureResult(
+  ar: AnalystResult
+): StructureEvaluatorResult & { rawResponse: string } {
+  return {
+    beatConcluded: ar.beatConcluded,
+    beatResolution: ar.beatResolution,
+    sceneMomentum: ar.sceneMomentum,
+    objectiveEvidenceStrength: ar.objectiveEvidenceStrength,
+    commitmentStrength: ar.commitmentStrength,
+    structuralPositionSignal: ar.structuralPositionSignal,
+    entryConditionReadiness: ar.entryConditionReadiness,
+    objectiveAnchors: ar.objectiveAnchors,
+    anchorEvidence: ar.anchorEvidence,
+    completionGateSatisfied: ar.completionGateSatisfied,
+    completionGateFailureReason: ar.completionGateFailureReason,
+    deviationDetected: ar.deviationDetected,
+    deviationReason: ar.deviationReason,
+    invalidatedBeatIds: ar.invalidatedBeatIds,
+    spineDeviationDetected: ar.spineDeviationDetected,
+    spineDeviationReason: ar.spineDeviationReason,
+    spineInvalidatedElement: ar.spineInvalidatedElement,
+    alignedBeatId: ar.alignedBeatId,
+    beatAlignmentConfidence: ar.beatAlignmentConfidence,
+    beatAlignmentReason: ar.beatAlignmentReason,
+    pacingIssueDetected: ar.pacingIssueDetected,
+    pacingIssueReason: ar.pacingIssueReason,
+    recommendedAction: ar.recommendedAction,
+    pacingDirective: ar.pacingDirective ?? '',
+    narrativeSummary: ar.narrativeSummary,
+    rawResponse: ar.rawResponse,
+  };
+}
+
+function extractPromiseResult(
+  ar: AnalystResult
+): PromiseTrackerResult & { rawResponse: string } {
+  return {
+    promisesDetected: ar.promisesDetected,
+    promisesResolved: ar.promisesResolved,
+    promisePayoffAssessments: ar.promisePayoffAssessments,
+    threadPayoffAssessments: ar.threadPayoffAssessments,
+    premisePromiseFulfilled: ar.premisePromiseFulfilled ?? null,
+    obligatorySceneFulfilled: ar.obligatorySceneFulfilled ?? null,
+    delayedConsequencesTriggered: ar.delayedConsequencesTriggered ?? [],
+    delayedConsequencesCreated: ar.delayedConsequencesCreated ?? [],
+    rawResponse: ar.rawResponse,
+  };
+}
+
+function extractQualityResult(
+  ar: AnalystResult
+): SceneQualityResult & { rawResponse: string } {
+  return {
+    toneAdherent: ar.toneAdherent,
+    toneDriftDescription: ar.toneDriftDescription,
+    thematicCharge: ar.thematicCharge,
+    thematicChargeDescription: ar.thematicChargeDescription,
+    narrativeFocus: ar.narrativeFocus,
+    npcCoherenceAdherent: ar.npcCoherenceAdherent,
+    npcCoherenceIssues: ar.npcCoherenceIssues,
+    relationshipShiftsDetected: ar.relationshipShiftsDetected,
+    knowledgeAsymmetryDetected: ar.knowledgeAsymmetryDetected ?? [],
+    dramaticIronyOpportunities: ar.dramaticIronyOpportunities ?? [],
+    rawResponse: ar.rawResponse,
+  };
+}
 
 const TEST_PREFIX = 'E2E TEST STRSTOARCSYS-016';
 
@@ -382,8 +474,17 @@ describe('Structured Story E2E', () => {
       continuationCount += 1;
       return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCount + 1));
     });
-    mockedGenerateAnalystEvaluation.mockImplementation((context) => {
-      return Promise.resolve(buildAnalystResult(context.narrative, continuationCount + 1));
+    mockedGenerateStructureEvaluation.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative, continuationCount + 1);
+      return Promise.resolve(extractStructureResult(ar));
+    });
+    mockedGeneratePromiseTracking.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative, continuationCount + 1);
+      return Promise.resolve(extractPromiseResult(ar));
+    });
+    mockedGenerateSceneQualityEvaluation.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative, continuationCount + 1);
+      return Promise.resolve(extractQualityResult(ar));
     });
   });
 

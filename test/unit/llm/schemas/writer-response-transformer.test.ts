@@ -28,7 +28,7 @@ describe('validateWriterResponse', () => {
           dominantMotivation: 'Survive and escape',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
+
         isEnding: false,
       },
       'raw json response'
@@ -73,14 +73,6 @@ describe('validateWriterResponse', () => {
           dominantMotivation: '  Survive  ',
         },
         sceneSummary: '  Test summary of the scene events and consequences.  ',
-        delayedConsequencesCreated: [
-          {
-            description: '  The alarm network logs your voice print.  ',
-            triggerCondition: '  Security review catches the anomaly.  ',
-            minPagesDelay: 2,
-            maxPagesDelay: 4,
-          },
-        ],
         isEnding: false,
       },
       'raw json response'
@@ -96,14 +88,6 @@ describe('validateWriterResponse', () => {
     ]);
     expect(result.protagonistAffect.dominantMotivation).toBe('Survive');
     expect(result.sceneSummary).toBe('Test summary of the scene events and consequences.');
-    expect(result.delayedConsequencesCreated).toEqual([
-      {
-        description: 'The alarm network logs your voice print.',
-        triggerCondition: 'Security review catches the anomaly.',
-        minPagesDelay: 2,
-        maxPagesDelay: 4,
-      },
-    ]);
   });
 
   it('rejects malformed single-string choices array (no compatibility recovery)', () => {
@@ -117,7 +101,6 @@ describe('validateWriterResponse', () => {
           narrative: VALID_NARRATIVE,
           choices: malformedChoices,
           sceneSummary: 'Test summary of the scene events and consequences.',
-          delayedConsequencesCreated: [],
           isEnding: false,
         },
         'raw json response'
@@ -134,7 +117,7 @@ describe('validateWriterResponse', () => {
           { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
         ],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
+
         isEnding: false,
       },
       'raw json response'
@@ -159,7 +142,7 @@ describe('validateWriterResponse', () => {
           { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
         ],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
+
         isEnding: false,
       },
       rawResponse
@@ -185,7 +168,7 @@ describe('validateWriterResponse', () => {
         newCanonFacts: [{ text: 'Legacy canon', factType: 'LAW' }],
         inventoryAdded: ['Legacy inventory'],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
+
         isEnding: false,
       },
       'raw json response'
@@ -224,7 +207,7 @@ describe('validateWriterResponse', () => {
           },
         ],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
+
         isEnding: false,
       },
       'raw json response'
@@ -243,7 +226,7 @@ describe('validateWriterResponse', () => {
             { text: 'Go back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
           ],
           sceneSummary: 'Test summary of the scene events and consequences.',
-          delayedConsequencesCreated: [],
+  
           isEnding: false,
         },
         'raw json response'
@@ -258,7 +241,7 @@ describe('validateWriterResponse', () => {
           narrative: VALID_NARRATIVE,
           choices: [],
           sceneSummary: 'Test summary of the scene events and consequences.',
-          delayedConsequencesCreated: [],
+  
           isEnding: false,
         },
         'raw json response'
@@ -270,7 +253,7 @@ describe('validateWriterResponse', () => {
         narrative: VALID_NARRATIVE,
         choices: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
+
         isEnding: true,
       },
       'raw json response'

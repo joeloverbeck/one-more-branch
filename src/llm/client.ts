@@ -1,13 +1,17 @@
 import { getStageModel } from '../config/stage-model.js';
 import { logger, logPrompt } from '../logging/index.js';
 import { generateAccountantWithFallback } from './accountant-generation.js';
-import { generateAnalystWithFallback } from './analyst-generation.js';
 import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
+import { generateStructureEvaluatorWithFallback } from './structure-evaluator-generation.js';
+import { generatePromiseTrackerWithFallback } from './promise-tracker-generation.js';
+import { generateSceneQualityWithFallback } from './scene-quality-generation.js';
 import { OPENROUTER_API_URL } from './http-client.js';
 import { withModelFallback } from './model-fallback.js';
 import { resolvePromptOptions } from './options.js';
 import { generatePlannerWithFallback } from './planner-generation.js';
-import { buildAnalystPrompt } from './prompts/analyst-prompt.js';
+import { buildStructureEvaluatorPrompt } from './prompts/structure-evaluator-prompt.js';
+import { buildPromiseTrackerPrompt } from './prompts/promise-tracker-prompt.js';
+import { buildSceneQualityPrompt } from './prompts/scene-quality-prompt.js';
 import { buildLorekeeperPrompt } from './prompts/lorekeeper-prompt.js';
 import {
   buildContinuationPrompt,
@@ -17,7 +21,9 @@ import {
 } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import type { StateAccountantGenerationResult } from './accountant-types.js';
-import type { AnalystContext, AnalystResult } from './analyst-types.js';
+import type { StructureEvaluatorContext, StructureEvaluatorResult } from './structure-evaluator-types.js';
+import type { PromiseTrackerContext, PromiseTrackerResult } from './promise-tracker-types.js';
+import type { SceneQualityContext, SceneQualityResult } from './scene-quality-types.js';
 import type {
   ContinuationContext,
   LorekeeperContext,
@@ -82,21 +88,59 @@ export async function generatePageWriterOutput(
   return generateWriterPage({ ...context, pagePlan: plan }, options);
 }
 
-export async function generateAnalystEvaluation(
-  context: AnalystContext,
+export async function generateStructureEvaluation(
+  context: StructureEvaluatorContext,
   options: GenerationOptions
-): Promise<AnalystResult> {
-  const messages = buildAnalystPrompt(context);
+): Promise<StructureEvaluatorResult & { rawResponse: string }> {
+  const messages = buildStructureEvaluatorPrompt(context);
 
-  logPrompt(logger, 'analyst', messages);
+  logPrompt(logger, 'structureEvaluator', messages);
 
-  const analystOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
-  const primaryModel = analystOptions.model ?? getStageModel('analyst');
+  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const primaryModel = evalOptions.model ?? getStageModel('structureEvaluator');
   return withRetry(() =>
     withModelFallback(
-      (m) => generateAnalystWithFallback(messages, { ...analystOptions, model: m }),
+      (m) => generateStructureEvaluatorWithFallback(messages, { ...evalOptions, model: m }),
       primaryModel,
-      'analyst'
+      'structureEvaluator'
+    )
+  );
+}
+
+export async function generatePromiseTracking(
+  context: PromiseTrackerContext,
+  options: GenerationOptions
+): Promise<PromiseTrackerResult & { rawResponse: string }> {
+  const messages = buildPromiseTrackerPrompt(context);
+
+  logPrompt(logger, 'promiseTracker', messages);
+
+  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const primaryModel = evalOptions.model ?? getStageModel('promiseTracker');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generatePromiseTrackerWithFallback(messages, { ...evalOptions, model: m }),
+      primaryModel,
+      'promiseTracker'
+    )
+  );
+}
+
+export async function generateSceneQualityEvaluation(
+  context: SceneQualityContext,
+  options: GenerationOptions
+): Promise<SceneQualityResult & { rawResponse: string }> {
+  const messages = buildSceneQualityPrompt(context);
+
+  logPrompt(logger, 'sceneQuality', messages);
+
+  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const primaryModel = evalOptions.model ?? getStageModel('sceneQuality');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateSceneQualityWithFallback(messages, { ...evalOptions, model: m }),
+      primaryModel,
+      'sceneQuality'
     )
   );
 }

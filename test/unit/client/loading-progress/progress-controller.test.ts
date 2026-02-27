@@ -120,7 +120,7 @@ describe('loading progress controller', () => {
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(
-          mockJsonResponse({ status: 'running', activeStage: 'ANALYZING_SCENE' })
+          mockJsonResponse({ status: 'running', activeStage: 'EVALUATING_STRUCTURE' })
         );
       }
       return Promise.resolve(
@@ -145,8 +145,8 @@ describe('loading progress controller', () => {
     button.click();
     await jest.runAllTimersAsync();
 
-    // The progress controller should have mapped ANALYZING_SCENE to 'ANALYZING'
-    expect(stageValues).toContain('ANALYZING');
+    // The progress controller should have mapped EVALUATING_STRUCTURE to 'EVALUATING'
+    expect(stageValues).toContain('EVALUATING');
   });
 
   it('maps kernel stage names for kernel generation polling', async () => {
@@ -440,7 +440,7 @@ describe('loading progress controller', () => {
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(
-          mockJsonResponse({ status: 'running', activeStage: 'ANALYZING_SCENE' })
+          mockJsonResponse({ status: 'running', activeStage: 'EVALUATING_STRUCTURE' })
         );
       }
       return Promise.resolve(

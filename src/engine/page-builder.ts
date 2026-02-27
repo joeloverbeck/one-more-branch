@@ -132,7 +132,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     context.analystResult?.delayedConsequencesTriggered ?? []
   );
   const createdDelayedConsequences = materializeDelayedConsequenceDrafts(
-    result.delayedConsequencesCreated ?? [],
+    context.analystResult?.delayedConsequencesCreated ?? [],
     context.pageId,
     getMaxDelayedConsequenceIdNumber(triggeredDelayedConsequences)
   );

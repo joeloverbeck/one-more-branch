@@ -138,6 +138,7 @@ export async function processPostGeneration(
     activeStructureForAnalyst && parentStructureState
       ? await runAnalystEvaluation({
           writerNarrative: writerResult.narrative,
+          writerSceneSummary: writerResult.sceneSummary,
           activeStructure: activeStructureForAnalyst,
           parentStructureState,
           parentActiveState: isOpening
