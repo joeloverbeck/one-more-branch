@@ -17,6 +17,7 @@ import {
   GAP_MAGNITUDES,
   MIDPOINT_TYPES,
 } from '../models/story-arc';
+import { isGenreObligationTag } from '../models/genre-obligations';
 import type { StructureGenerationResult } from './structure-types';
 
 function parseBeatRole(role: string): BeatRole {
@@ -66,9 +67,7 @@ export function parseGapMagnitude(value: string | null | undefined): GapMagnitud
   return null;
 }
 
-export function parseApproachVectors(
-  value: unknown
-): readonly ApproachVector[] | null {
+export function parseApproachVectors(value: unknown): readonly ApproachVector[] | null {
   if (!Array.isArray(value)) {
     return null;
   }
@@ -79,15 +78,18 @@ export function parseApproachVectors(
 }
 
 function parseSetpieceSourceIndex(value: unknown): number | null {
-  if (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value <= 5
-  ) {
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5) {
     return value;
   }
   return null;
+}
+
+function parseObligatorySceneTag(value: unknown): string | null {
+  if (!isGenreObligationTag(value)) {
+    return null;
+  }
+
+  return value;
 }
 
 function parseCausalLink(value: unknown, beatId: string): string {
@@ -136,6 +138,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
           typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
         approachVectors: parseApproachVectors(beatData.approachVectors),
         setpieceSourceIndex: parseSetpieceSourceIndex(beatData.setpieceSourceIndex),
+        obligatorySceneTag: parseObligatorySceneTag(beatData.obligatorySceneTag),
       };
     });
 

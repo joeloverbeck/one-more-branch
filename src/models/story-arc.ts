@@ -67,6 +67,7 @@ export interface StoryBeat {
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly ApproachVector[] | null;
   readonly setpieceSourceIndex: number | null;
+  readonly obligatorySceneTag: string | null;
 }
 
 export interface StoryAct {

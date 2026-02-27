@@ -44,6 +44,7 @@ interface StructurePayload {
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
       setpieceSourceIndex?: number | null;
+      obligatorySceneTag?: string | null;
     }>;
   }>;
 }
@@ -51,7 +52,8 @@ interface StructurePayload {
 function createValidStructurePayload(): StructurePayload {
   return {
     overallTheme: 'Expose the tribunal and reclaim your honor.',
-    premise: 'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
+    premise:
+      'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
     openingImage: 'An opening image placeholder.',
     closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
@@ -77,6 +79,7 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
           {
             name: 'Archive theft',
@@ -93,6 +96,7 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 0,
+            obligatorySceneTag: null,
           },
         ],
       },
@@ -117,6 +121,7 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 1,
+            obligatorySceneTag: null,
           },
           {
             name: 'Rigged hearing',
@@ -133,6 +138,7 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 2,
+            obligatorySceneTag: null,
           },
         ],
       },
@@ -157,6 +163,7 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 3,
+            obligatorySceneTag: null,
           },
           {
             name: 'Tribunal reckoning',
@@ -173,10 +180,40 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
         ],
       },
     ],
+  };
+}
+
+function createMysteryConceptSpec(): import('../../../src/models/concept-generator').ConceptSpec {
+  return {
+    oneLineHook: 'Detective story',
+    elevatorParagraph: 'A detective unravels civic corruption.',
+    genreFrame: 'MYSTERY' as const,
+    genreSubversion: 'Detective caused the inciting incident.',
+    protagonistRole: 'Disgraced detective',
+    coreCompetence: 'Pattern recognition',
+    coreFlaw: 'Self-deception',
+    actionVerbs: ['investigate', 'interrogate', 'infiltrate', 'evade', 'expose', 'choose'],
+    coreConflictLoop: 'Truth versus institutional power',
+    conflictAxis: 'TRUTH_VS_STABILITY' as const,
+    conflictType: 'PERSON_VS_SOCIETY' as const,
+    pressureSource: 'Tribunal suppression',
+    stakesPersonal: 'Loss of allies',
+    stakesSystemic: 'Permanent authoritarian control',
+    deadlineMechanism: 'Evidence purge at sunrise',
+    settingAxioms: ['Harbor districts flood nightly', 'Tribunals control shipping courts'],
+    constraintSet: ['No weapons in tribunal halls', 'Witnesses vanish after curfew'],
+    keyInstitutions: ['Harbor Tribunal', 'Tide Guard'],
+    settingScale: 'LOCAL' as const,
+    whatIfQuestion: 'Can truth survive corrupt institutions?',
+    ironicTwist: 'The detective must expose their own lie first.',
+    playerFantasy: 'Outmaneuvering corrupt elites',
+    incitingDisruption: 'A witness is killed in public',
+    escapeValve: 'Smuggler tunnels beneath the docks',
   };
 }
 
@@ -697,5 +734,47 @@ describe('structure-generator', () => {
     await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
     expect(mockLogger.warn).not.toHaveBeenCalled();
+  });
+
+  it('logs warning when genre obligations are missing from beat tags', async () => {
+    const payload = createValidStructurePayload();
+    payload.acts[0]!.beats[1]!.obligatorySceneTag = 'crime_or_puzzle_presented';
+    payload.acts[1]!.beats[0]!.obligatorySceneTag = 'red_herring_planted';
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+
+    await generateStoryStructure(
+      {
+        ...context,
+        conceptSpec: createMysteryConceptSpec(),
+      },
+      'test-api-key',
+      { promptOptions: {} }
+    );
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Structure missing genre obligation tags: key_clue_recontextualized, culprit_unmasked'
+    );
+  });
+
+  it('does not log genre obligation warning when all obligations are tagged', async () => {
+    const payload = createValidStructurePayload();
+    payload.acts[0]!.beats[0]!.obligatorySceneTag = 'crime_or_puzzle_presented';
+    payload.acts[0]!.beats[1]!.obligatorySceneTag = 'red_herring_planted';
+    payload.acts[1]!.beats[0]!.obligatorySceneTag = 'key_clue_recontextualized';
+    payload.acts[2]!.beats[1]!.obligatorySceneTag = 'culprit_unmasked';
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+
+    await generateStoryStructure(
+      {
+        ...context,
+        conceptSpec: createMysteryConceptSpec(),
+      },
+      'test-api-key',
+      { promptOptions: {} }
+    );
+
+    expect(mockLogger.warn).not.toHaveBeenCalledWith(
+      expect.stringContaining('Structure missing genre obligation tags:')
+    );
   });
 });

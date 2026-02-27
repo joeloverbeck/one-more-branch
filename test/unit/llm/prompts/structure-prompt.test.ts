@@ -20,8 +20,18 @@ function getUserMessages(messages: { role: string; content: string }[]): string[
 describe('buildStructurePrompt', () => {
   const baseContext = {
     tone: 'stormy maritime thriller',
-    decomposedCharacters: [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
-    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'An archipelago where each island is ruled by rival tide cults.', scope: 'global' }], rawWorldbuilding: 'An archipelago where each island is ruled by rival tide cults.' },
+    decomposedCharacters:
+      [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
+    decomposedWorld: {
+      facts: [
+        {
+          domain: 'geography' as const,
+          fact: 'An archipelago where each island is ruled by rival tide cults.',
+          scope: 'global',
+        },
+      ],
+      rawWorldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
+    },
   };
 
   it('returns chat messages with system message first and a user prompt', () => {
@@ -112,9 +122,7 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('assign expectedGapMagnitude');
     expect(lastUser).toContain('NARROW');
     expect(lastUser).toContain('CHASM');
-    expect(lastUser).toContain(
-      'expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null'
-    );
+    expect(lastUser).toContain('expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null');
   });
 
   it('contains premise instruction', () => {
@@ -132,6 +140,47 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('pacing budget');
     expect(lastUser).toContain('targetPagesMin');
     expect(lastUser).toContain('targetPagesMax');
+  });
+
+  it('includes genre obligation contract when conceptSpec.genreFrame is provided', () => {
+    const messages = buildStructurePrompt({
+      ...baseContext,
+      conceptSpec: {
+        oneLineHook: 'A disgraced detective hunts a ritual killer in a flooded city.',
+        elevatorParagraph: 'A noir investigation spirals into civic collapse.',
+        genreFrame: 'MYSTERY',
+        genreSubversion: 'The detective is complicit in the opening crime.',
+        protagonistRole: 'Disgraced detective',
+        coreCompetence: 'Pattern recognition under pressure',
+        coreFlaw: 'Compulsive self-justification',
+        actionVerbs: ['investigate', 'interrogate', 'infiltrate', 'evade', 'expose', 'choose'],
+        coreConflictLoop: 'Truth vs self-preservation under institutional pressure',
+        conflictAxis: 'TRUTH_VS_STABILITY',
+        conflictType: 'PERSON_VS_SOCIETY',
+        pressureSource: 'A tribunal cover-up',
+        stakesPersonal: 'Loss of remaining allies',
+        stakesSystemic: 'Permanent rule by corrupt tribunals',
+        deadlineMechanism: 'Evidence destruction at dawn',
+        settingAxioms: [
+          'Tidal districts flood nightly',
+          'Courts are controlled by merchant families',
+        ],
+        constraintSet: ['No direct violence in tribunal halls', 'Witnesses disappear after curfew'],
+        keyInstitutions: ['Harbor Tribunal', 'Tide Guard'],
+        settingScale: 'LOCAL',
+        whatIfQuestion: 'What if justice requires admitting your own guilt?',
+        ironicTwist: 'The case can only be solved by proving the detective framed someone else.',
+        playerFantasy: 'Outsmarting corrupt institutions',
+        incitingDisruption: 'A protected witness is murdered publicly',
+        escapeValve: 'A smuggler route beneath the court archive',
+      },
+    });
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('GENRE OBLIGATION CONTRACT (for MYSTERY)');
+    expect(lastUser).toContain('crime_or_puzzle_presented');
+    expect(lastUser).toContain('obligatorySceneTag');
+    expect(lastUser).toContain('At least one beat must be tagged with each obligation');
   });
 
   it('includes causal linkage requirement and output field', () => {
@@ -215,17 +264,26 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain(
       'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
     );
-    expect(lastUser).toContain(
-      'crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null'
-    );
+    expect(lastUser).toContain('crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null');
+    expect(lastUser).toContain('obligatorySceneTag: genre obligation tag');
   });
 });
 
 describe('buildStructurePrompt - minimal system prompt', () => {
   const baseContext = {
     tone: 'stormy maritime thriller',
-    decomposedCharacters: [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
-    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'An archipelago where each island is ruled by rival tide cults.', scope: 'global' }], rawWorldbuilding: 'An archipelago where each island is ruled by rival tide cults.' },
+    decomposedCharacters:
+      [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
+    decomposedWorld: {
+      facts: [
+        {
+          domain: 'geography' as const,
+          fact: 'An archipelago where each island is ruled by rival tide cults.',
+          scope: 'global',
+        },
+      ],
+      rawWorldbuilding: 'An archipelago where each island is ruled by rival tide cults.',
+    },
   };
 
   it('does NOT include state management instructions', () => {
@@ -295,7 +353,7 @@ describe('buildDirectionalGuidanceSection', () => {
     expect(result).toContain('consummate the victory');
   });
 
-  it('returns NEGATIVE guidance emphasizing the protagonist\'s fall', () => {
+  it("returns NEGATIVE guidance emphasizing the protagonist's fall", () => {
     const result = buildDirectionalGuidanceSection(makeKernel('NEGATIVE'));
 
     expect(result).toContain('trap');
@@ -332,8 +390,12 @@ describe('buildDirectionalGuidanceSection', () => {
 describe('buildStructurePrompt - directional guidance integration', () => {
   const baseContext = {
     tone: 'dark fantasy',
-    decomposedCharacters: [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
-    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A cursed kingdom.', scope: 'global' }], rawWorldbuilding: 'A cursed kingdom.' },
+    decomposedCharacters:
+      [] as import('../../../../src/models/decomposed-character').DecomposedCharacter[],
+    decomposedWorld: {
+      facts: [{ domain: 'geography' as const, fact: 'A cursed kingdom.', scope: 'global' }],
+      rawWorldbuilding: 'A cursed kingdom.',
+    },
   };
 
   const kernel: StoryKernel = {

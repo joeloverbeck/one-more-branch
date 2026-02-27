@@ -1,4 +1,5 @@
 import type { StructureGenerationResult } from '../models/structure-generation.js';
+import { isGenreObligationTag } from '../models/genre-obligations.js';
 import { LLMError } from './llm-client-types.js';
 
 function parseMidpointType(value: unknown): 'FALSE_VICTORY' | 'FALSE_DEFEAT' | null {
@@ -9,22 +10,27 @@ function parseMidpointType(value: unknown): 'FALSE_VICTORY' | 'FALSE_DEFEAT' | n
 }
 
 function parseSetpieceSourceIndex(value: unknown): number | null {
-  if (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value <= 5
-  ) {
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5) {
     return value;
   }
   return null;
 }
 
-function parseExpectedGapMagnitude(value: unknown): 'NARROW' | 'MODERATE' | 'WIDE' | 'CHASM' | null {
+function parseExpectedGapMagnitude(
+  value: unknown
+): 'NARROW' | 'MODERATE' | 'WIDE' | 'CHASM' | null {
   if (value === 'NARROW' || value === 'MODERATE' || value === 'WIDE' || value === 'CHASM') {
     return value;
   }
   return null;
+}
+
+function parseObligatorySceneTag(value: unknown): string | null {
+  if (!isGenreObligationTag(value)) {
+    return null;
+  }
+
+  return value;
 }
 
 export function parseStructureResponseObject(
@@ -136,6 +142,7 @@ export function parseStructureResponseObject(
           )
         : null;
       const setpieceSourceIndex = parseSetpieceSourceIndex(beatData['setpieceSourceIndex']);
+      const obligatorySceneTag = parseObligatorySceneTag(beatData['obligatorySceneTag']);
 
       if (isMidpoint) {
         midpointCount += 1;
@@ -169,6 +176,7 @@ export function parseStructureResponseObject(
         uniqueScenarioHook,
         approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
         setpieceSourceIndex,
+        obligatorySceneTag,
       };
     });
 

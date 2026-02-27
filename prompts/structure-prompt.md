@@ -87,6 +87,16 @@ Deadline mechanism: {{conceptSpec.deadlineMechanism}}
 Each act's stakes should escalate FROM these foundations. Act 1 stakes should connect to the personal dimension, Act 2 should compound both personal and systemic, Act 3 should put the systemic stakes at maximum risk.
 {{/if}}
 
+{{#if conceptSpec.genreFrame}}
+GENRE OBLIGATION CONTRACT (for {{conceptSpec.genreFrame}}):
+{{#each genreObligations}}
+- {{this}}
+{{/each}}
+
+CONSTRAINT: At least one beat must be tagged with each obligation above using `obligatorySceneTag`.
+If a beat does not fulfill any obligation, set `obligatorySceneTag` to `null`.
+{{/if}}
+
 {{#if conceptVerification.escalatingSetpieces.length}}
 CONCEPT-UNIQUE SETPIECE BANK (from upstream verification — use as beat seeds):
 {{#each conceptVerification.escalatingSetpieces}}
@@ -163,6 +173,7 @@ REQUIREMENTS (follow ALL):
    For all other beats, set `isMidpoint: false` and `midpointType: null`.
 19. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
 20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null.
+21. If a genre obligation contract is provided, assign `obligatorySceneTag` on beats that fulfill those obligations. Use one of the listed tags verbatim. At least one beat must cover each listed obligation. For beats that do not fulfill an obligation, set `obligatorySceneTag` to null.
 
 TONE REMINDER: All output must fit the tone: {{tone}}.
 
@@ -212,6 +223,7 @@ OUTPUT SHAPE:
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
       - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null
+      - obligatorySceneTag: genre obligation tag when this beat fulfills one, else null
 ```
 
 ## JSON Response Shape
@@ -256,7 +268,8 @@ OUTPUT SHAPE:
           "midpointType": "{{FALSE_VICTORY|FALSE_DEFEAT|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
           "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|STEALTH_SUBTERFUGE|ANALYTICAL_REASONING|CAREFUL_OBSERVATION|INTUITIVE_LEAP|PERSUASION_INFLUENCE|EMPATHIC_CONNECTION|ENDURANCE_RESILIENCE|SELF_EXPRESSION}}"],
-          "setpieceSourceIndex": "{{0|1|2|3|4|5|null}}"
+          "setpieceSourceIndex": "{{0|1|2|3|4|5|null}}",
+          "obligatorySceneTag": "{{genre obligation tag|null}}"
         }
       ]
     }
@@ -275,12 +288,12 @@ OUTPUT SHAPE:
 
 The Act 3 `turning_point` beat guidance varies based on the story kernel's `directionOfChange`. This is produced by `buildDirectionalGuidanceSection()` in `structure-prompt.ts`.
 
-| Direction | Act 3 Crisis Guidance |
-|-----------|----------------------|
-| *(no kernel)* | Generic: "an impossible choice or sacrifice" |
-| `POSITIVE` | Supreme test of growth; beat architecture allows triumph through sacrifice; resolution consummates victory |
-| `NEGATIVE` | Trap sealing loss; every option leads to compromise or defeat; resolution consummates the fall |
-| `IRONIC` | Pyrrhic crossroads; victory costs something essential; resolution feels hollow or bittersweet |
-| `AMBIGUOUS` | Open question; outcomes genuinely uncertain; resolution leaves dramatic question resonating |
+| Direction     | Act 3 Crisis Guidance                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| _(no kernel)_ | Generic: "an impossible choice or sacrifice"                                                               |
+| `POSITIVE`    | Supreme test of growth; beat architecture allows triumph through sacrifice; resolution consummates victory |
+| `NEGATIVE`    | Trap sealing loss; every option leads to compromise or defeat; resolution consummates the fall             |
+| `IRONIC`      | Pyrrhic crossroads; victory costs something essential; resolution feels hollow or bittersweet              |
+| `AMBIGUOUS`   | Open question; outcomes genuinely uncertain; resolution leaves dramatic question resonating                |
 
 The directional guidance replaces only the Act 3 crisis line within requirement #8. All other dramatic role instructions (Act 1 turning point, midpoint reveal, beat role definitions) remain unchanged.

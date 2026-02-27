@@ -1,4 +1,5 @@
 import type { ConceptSpec, ConceptVerification } from '../../models/concept-generator.js';
+import { getGenreObligationTags } from '../../models/genre-obligations.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
@@ -121,6 +122,26 @@ Use this thesis/antithesis tension to shape escalating conflicts and turning-poi
 `;
 }
 
+function buildGenreObligationsSection(conceptSpec?: ConceptSpec): string {
+  if (!conceptSpec) {
+    return '';
+  }
+
+  const obligations = getGenreObligationTags(conceptSpec.genreFrame);
+  if (obligations.length === 0) {
+    return '';
+  }
+
+  const listed = obligations.map((tag) => `- ${tag}`).join('\n');
+  return `GENRE OBLIGATION CONTRACT (for ${conceptSpec.genreFrame}):
+${listed}
+
+CONSTRAINT: At least one beat must be tagged with each obligation above using obligatorySceneTag.
+If a beat does not fulfill any obligation, set obligatorySceneTag to null.
+
+`;
+}
+
 export function buildDirectionalGuidanceSection(storyKernel?: StoryKernel): string {
   if (!storyKernel) {
     return 'Act 3 should include a "turning_point" beat representing a crisis -- an impossible choice or sacrifice';
@@ -172,11 +193,12 @@ export function buildStructurePrompt(
   const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
   const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
   const premisePromiseSection = buildPremisePromiseSection(context.conceptVerification);
+  const genreObligationsSection = buildGenreObligationsSection(context.conceptSpec);
   const kernelSection = buildKernelSection(context.storyKernel);
 
   const userPrompt = `Generate a story structure before the first page.
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${premisePromiseSection}${kernelSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${premisePromiseSection}${genreObligationsSection}${kernelSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.
@@ -241,6 +263,7 @@ REQUIREMENTS (follow ALL):
    - SELF_EXPRESSION: Defining identity through the act itself; the approach IS the message
    For "setup", "reflection", and "resolution" beats, set approachVectors to null.
    Select vectors that create meaningful diversity — avoid repeating the same combination across beats. The planner will use these as suggestions when designing player choices.
+22. If a genre obligation contract is provided, assign obligatorySceneTag on beats that fulfill those obligations. Use one of the listed obligation tags verbatim. At least one beat must cover each listed obligation. For beats that do not fulfill an obligation, set obligatorySceneTag to null.
 
 OUTPUT SHAPE:
 - overallTheme: string
@@ -287,7 +310,8 @@ OUTPUT SHAPE:
       - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums from the list above, or null for setup/reflection/resolution beats
-      - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null`;
+      - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null
+      - obligatorySceneTag: genre obligation tag when this beat fulfills one, else null`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

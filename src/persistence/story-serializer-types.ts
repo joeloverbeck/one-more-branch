@@ -94,6 +94,7 @@ export interface StoryStructureFileData {
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
       setpieceSourceIndex?: number | null;
+      obligatorySceneTag?: string | null;
     }>;
   }>;
   overallTheme: string;

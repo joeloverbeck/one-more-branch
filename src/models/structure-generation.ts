@@ -15,6 +15,7 @@ export interface GeneratedBeat {
   uniqueScenarioHook?: string | null;
   approachVectors?: string[] | null;
   setpieceSourceIndex?: number | null;
+  obligatorySceneTag?: string | null;
 }
 
 export interface GeneratedAct {

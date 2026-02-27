@@ -121,6 +121,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'uniqueScenarioHook',
                     'approachVectors',
                     'setpieceSourceIndex',
+                    'obligatorySceneTag',
                   ],
                   properties: {
                     name: { type: 'string' },
@@ -221,6 +222,11 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       ],
                       description:
                         'Index of concept verification setpiece (0-5) this beat traces to; null when no setpiece mapping is used.',
+                    },
+                    obligatorySceneTag: {
+                      anyOf: [{ type: 'string' }, { type: 'null' }],
+                      description:
+                        'Genre obligation tag assigned to this beat when it fulfills a required obligatory scene; null otherwise.',
                     },
                   },
                 },
