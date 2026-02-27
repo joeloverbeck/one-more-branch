@@ -42,6 +42,7 @@ function createGenerationResult(): StructureGenerationResult {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
           {
             name: 'Choose departure',
@@ -56,6 +57,7 @@ function createGenerationResult(): StructureGenerationResult {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
         ],
       },
@@ -78,6 +80,7 @@ function createGenerationResult(): StructureGenerationResult {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
         ],
       },
@@ -136,6 +139,7 @@ describe('structure-rewrite-support', () => {
           uniqueScenarioHook: null,
           approachVectors: null,
           setpieceSourceIndex: null,
+          obligatorySceneTag: null,
           resolution: 'Heard the warning.',
         },
         {
@@ -156,6 +160,7 @@ describe('structure-rewrite-support', () => {
           uniqueScenarioHook: null,
           approachVectors: null,
           setpieceSourceIndex: null,
+          obligatorySceneTag: null,
           resolution: 'Left home.',
         },
         {
@@ -176,6 +181,7 @@ describe('structure-rewrite-support', () => {
           uniqueScenarioHook: null,
           approachVectors: null,
           setpieceSourceIndex: null,
+          obligatorySceneTag: null,
           resolution: 'Recovered from loss.',
         },
       ]);
@@ -280,6 +286,7 @@ describe('structure-rewrite-support', () => {
           uniqueScenarioHook: null,
           approachVectors: null,
           setpieceSourceIndex: null,
+          obligatorySceneTag: null,
         },
       ]);
     });
@@ -425,6 +432,7 @@ describe('structure-rewrite-support', () => {
           uniqueScenarioHook: null,
           approachVectors: null,
           setpieceSourceIndex: null,
+          obligatorySceneTag: null,
           resolution: 'Accepted the call.',
         },
       ]);
@@ -448,6 +456,7 @@ describe('structure-rewrite-support', () => {
           uniqueScenarioHook: null,
           approachVectors: null,
           setpieceSourceIndex: null,
+          obligatorySceneTag: null,
         },
       ]);
     });
@@ -643,10 +652,11 @@ describe('structure-rewrite-support', () => {
                 objective: 'New objective',
                 role: 'escalation' as const,
                 escalationType: null,
-            crisisType: null,
+                crisisType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
-            setpieceSourceIndex: null,
+                setpieceSourceIndex: null,
+                obligatorySceneTag: null,
               },
             ],
           },
