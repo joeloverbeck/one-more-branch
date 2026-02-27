@@ -73,6 +73,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'uniqueScenarioHook',
       'approachVectors',
       'setpieceSourceIndex',
+      'obligatorySceneTag',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });
@@ -161,7 +162,8 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       };
     };
 
-    const causalLinkSchema = schema.properties.acts.items.properties.beats.items.properties.causalLink;
+    const causalLinkSchema =
+      schema.properties.acts.items.properties.beats.items.properties.causalLink;
     expect(causalLinkSchema.type).toBe('string');
     expect(causalLinkSchema.description).toContain('cause');
   });
@@ -280,6 +282,32 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     ]);
   });
 
+  it('should define obligatorySceneTag as nullable string', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    obligatorySceneTag: {
+                      anyOf: Array<{ type: string }>;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const obligatorySceneTagSchema =
+      schema.properties.acts.items.properties.beats.items.properties.obligatorySceneTag;
+    expect(obligatorySceneTagSchema.anyOf).toEqual([{ type: 'string' }, { type: 'null' }]);
+  });
+
   it('should define crisisType with a nullable anyOf enum', () => {
     const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
       properties: {
@@ -301,7 +329,8 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       };
     };
 
-    const crisisTypeSchema = schema.properties.acts.items.properties.beats.items.properties.crisisType;
+    const crisisTypeSchema =
+      schema.properties.acts.items.properties.beats.items.properties.crisisType;
     expect(crisisTypeSchema.anyOf).toEqual([
       {
         type: 'string',
@@ -362,7 +391,8 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       };
     };
 
-    const isMidpointSchema = schema.properties.acts.items.properties.beats.items.properties.isMidpoint;
+    const isMidpointSchema =
+      schema.properties.acts.items.properties.beats.items.properties.isMidpoint;
     expect(isMidpointSchema.type).toBe('boolean');
     expect(isMidpointSchema.description).toContain('midpoint');
   });

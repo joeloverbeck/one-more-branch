@@ -124,7 +124,9 @@ export function mergePreservedWithRegenerated(
       const isMidpoint = beat.isMidpoint === true;
       const midpointType = parseMidpointType(beat.midpointType);
       if (isMidpoint && midpointType === null) {
-        throw new Error(`Preserved beat ${beat.beatId} is midpoint-tagged but missing midpointType`);
+        throw new Error(
+          `Preserved beat ${beat.beatId} is midpoint-tagged but missing midpointType`
+        );
       }
       if (!isMidpoint && midpointType !== null) {
         throw new Error(`Preserved beat ${beat.beatId} has midpointType but isMidpoint is false`);
@@ -146,6 +148,7 @@ export function mergePreservedWithRegenerated(
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: parseApproachVectors(beat.approachVectors),
         setpieceSourceIndex: beat.setpieceSourceIndex,
+        obligatorySceneTag: beat.obligatorySceneTag,
       };
     });
 
@@ -183,6 +186,7 @@ export function mergePreservedWithRegenerated(
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ?? null,
         setpieceSourceIndex: beat.setpieceSourceIndex ?? null,
+        obligatorySceneTag: beat.obligatorySceneTag ?? null,
       });
       nextBeatNumber += 1;
       seenBeatSignature.add(signature);
@@ -212,7 +216,9 @@ export function mergePreservedWithRegenerated(
     0
   );
   if (totalMidpoints > 1) {
-    throw new Error(`Merged structure contains multiple midpoint beats (received: ${totalMidpoints})`);
+    throw new Error(
+      `Merged structure contains multiple midpoint beats (received: ${totalMidpoints})`
+    );
   }
 
   return {

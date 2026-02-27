@@ -1,6 +1,7 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
+import { getGenreObligationTags } from '../models/genre-obligations.js';
 import {
   OPENROUTER_API_URL,
   parseMessageJsonContent,
@@ -19,7 +20,9 @@ import { parseStructureResponseObject } from './structure-response-parser.js';
 
 const MIN_UNIQUE_TRACED_SETPIECES = 4;
 
-function countUniqueSetpieceIndices(result: Omit<StructureGenerationResult, 'rawResponse'>): number {
+function countUniqueSetpieceIndices(
+  result: Omit<StructureGenerationResult, 'rawResponse'>
+): number {
   const unique = new Set<number>();
   for (const act of result.acts) {
     for (const beat of act.beats) {
@@ -31,6 +34,20 @@ function countUniqueSetpieceIndices(result: Omit<StructureGenerationResult, 'raw
   return unique.size;
 }
 
+function collectTaggedObligations(
+  result: Omit<StructureGenerationResult, 'rawResponse'>
+): Set<string> {
+  const tagged = new Set<string>();
+  for (const act of result.acts) {
+    for (const beat of act.beats) {
+      if (typeof beat.obligatorySceneTag === 'string') {
+        tagged.add(beat.obligatorySceneTag);
+      }
+    }
+  }
+  return tagged;
+}
+
 async function fetchStructure(
   apiKey: string,
   model: string,
@@ -38,6 +55,7 @@ async function fetchStructure(
   temperature: number,
   maxTokens: number,
   hasConceptVerification: boolean,
+  expectedGenreObligations: readonly string[] | null
 ): Promise<StructureGenerationResult> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -85,6 +103,13 @@ async function fetchStructure(
         );
       }
     }
+    if (expectedGenreObligations && expectedGenreObligations.length > 0) {
+      const tagged = collectTaggedObligations(parsed);
+      const missing = expectedGenreObligations.filter((tag) => !tagged.has(tag));
+      if (missing.length > 0) {
+        logger.warn(`Structure missing genre obligation tags: ${missing.join(', ')}`);
+      }
+    }
     return { ...parsed, rawResponse: responseText };
   } catch (error) {
     if (error instanceof LLMError) {
@@ -114,13 +139,24 @@ export async function generateStoryStructure(
   const messages = buildStructurePrompt(context, promptOptions);
   logPrompt(logger, 'structure', messages);
   const hasConceptVerification = (context.conceptVerification?.escalatingSetpieces.length ?? 0) > 0;
+  const expectedGenreObligations = context.conceptSpec
+    ? getGenreObligationTags(context.conceptSpec.genreFrame)
+    : null;
 
   return withRetry(() =>
     withModelFallback(
       (m) =>
-        fetchStructure(apiKey, m, messages, temperature, maxTokens, hasConceptVerification),
+        fetchStructure(
+          apiKey,
+          m,
+          messages,
+          temperature,
+          maxTokens,
+          hasConceptVerification,
+          expectedGenreObligations
+        ),
       primaryModel,
-      'structure',
+      'structure'
     )
   );
 }

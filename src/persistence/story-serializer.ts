@@ -19,6 +19,7 @@ import {
   parseGapMagnitude,
   parseMidpointType,
 } from '../engine/structure-factory';
+import { isGenreObligationTag } from '../models/genre-obligations';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
@@ -82,6 +83,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
         setpieceSourceIndex: beat.setpieceSourceIndex,
+        obligatorySceneTag: beat.obligatorySceneTag,
       })),
     })),
     overallTheme: structure.overallTheme,
@@ -105,7 +107,9 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
       const isMidpoint = beat.isMidpoint === true;
       if (isMidpoint) {
         if (midpointType === null) {
-          throw new Error(`Persisted story beat ${beat.id} is midpoint-tagged but missing midpointType`);
+          throw new Error(
+            `Persisted story beat ${beat.id} is midpoint-tagged but missing midpointType`
+          );
         }
       } else if (midpointType !== null) {
         throw new Error(`Persisted story beat ${beat.id} has midpointType but isMidpoint is false`);
@@ -133,6 +137,9 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
           beat.setpieceSourceIndex <= 5
             ? beat.setpieceSourceIndex
             : null,
+        obligatorySceneTag: isGenreObligationTag(beat.obligatorySceneTag)
+          ? beat.obligatorySceneTag
+          : null,
       };
     }),
   }));
@@ -334,12 +341,8 @@ export function deserializeStory(data: StoryFileData): Story {
     characterConcept: data.characterConcept,
     worldbuilding: data.worldbuilding,
     tone: data.tone,
-    ...(data.toneFeel
-      ? { toneFeel: [...data.toneFeel] }
-      : {}),
-    ...(data.toneAvoid
-      ? { toneAvoid: [...data.toneAvoid] }
-      : {}),
+    ...(data.toneFeel ? { toneFeel: [...data.toneFeel] } : {}),
+    ...(data.toneAvoid ? { toneAvoid: [...data.toneAvoid] } : {}),
     ...(data.npcs !== null && data.npcs.length > 0
       ? { npcs: data.npcs.map((npc) => ({ name: npc.name, description: npc.description })) }
       : {}),

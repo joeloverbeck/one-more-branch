@@ -54,6 +54,7 @@ export function extractCompletedBeats(
       uniqueScenarioHook: beat.uniqueScenarioHook,
       approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
       setpieceSourceIndex: beat.setpieceSourceIndex,
+      obligatorySceneTag: beat.obligatorySceneTag,
       resolution: progression.resolution ?? '',
     });
   }
@@ -79,9 +80,7 @@ export function extractPlannedBeats(
   structureState: AccumulatedStructureState
 ): readonly PlannedBeat[] {
   const concludedBeatIds = new Set(
-    structureState.beatProgressions
-      .filter((p) => p.status === 'concluded')
-      .map((p) => p.beatId)
+    structureState.beatProgressions.filter((p) => p.status === 'concluded').map((p) => p.beatId)
   );
 
   const currentBeatId = `${structureState.currentActIndex + 1}.${structureState.currentBeatIndex + 1}`;
@@ -130,6 +129,7 @@ export function extractPlannedBeats(
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
         setpieceSourceIndex: beat.setpieceSourceIndex,
+        obligatorySceneTag: beat.obligatorySceneTag,
       });
     }
   }
