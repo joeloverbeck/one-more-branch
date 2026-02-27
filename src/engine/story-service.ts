@@ -42,6 +42,10 @@ async function buildPreparedStory(
 ): Promise<Story> {
   validateStartStoryOptions(options);
 
+  const premisePromises = (options.conceptVerification?.premisePromises ?? [])
+    .map((promise) => promise.trim())
+    .filter((promise) => promise.length > 0);
+
   let story: Story = {
     ...createStory({
       title: options.title.trim(),
@@ -52,6 +56,7 @@ async function buildPreparedStory(
       startingSituation: options.startingSituation,
       conceptSpec: options.conceptSpec,
       storyKernel: options.storyKernel,
+      premisePromises,
     }),
     spine: options.spine,
     toneFeel: options.spine.toneFeel,

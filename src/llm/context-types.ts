@@ -74,6 +74,8 @@ export interface ContinuationContext {
 
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises: readonly TrackedPromise[];
+  premisePromises: readonly string[];
+  fulfilledPremisePromises: readonly string[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
 
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

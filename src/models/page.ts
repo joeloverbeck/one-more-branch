@@ -60,6 +60,7 @@ export interface Page {
   readonly analystResult: AnalystResult | null;
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
+  readonly accumulatedFulfilledPremisePromises: readonly string[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
   readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
@@ -96,6 +97,7 @@ export interface CreatePageData {
   analystResult?: AnalystResult | null;
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises?: readonly TrackedPromise[];
+  accumulatedFulfilledPremisePromises?: readonly string[];
   resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
   resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   npcAgendaUpdates?: readonly NpcAgenda[];
@@ -158,6 +160,7 @@ export function createPage(data: CreatePageData): Page {
     analystResult: data.analystResult ?? null,
     threadAges: data.threadAges ?? {},
     accumulatedPromises: data.accumulatedPromises ?? [],
+    accumulatedFulfilledPremisePromises: data.accumulatedFulfilledPremisePromises ?? [],
     resolvedThreadMeta: data.resolvedThreadMeta ?? {},
     resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
     npcAgendaUpdates: data.npcAgendaUpdates ?? [],
@@ -211,6 +214,10 @@ export function isPage(value: unknown): value is Page {
   const accumulatedPromises = obj['accumulatedPromises'];
   const accumulatedPromisesValid =
     Array.isArray(accumulatedPromises) && accumulatedPromises.every(isTrackedPromise);
+  const accumulatedFulfilledPremisePromises = obj['accumulatedFulfilledPremisePromises'];
+  const accumulatedFulfilledPremisePromisesValid =
+    Array.isArray(accumulatedFulfilledPremisePromises) &&
+    accumulatedFulfilledPremisePromises.every((item) => typeof item === 'string');
 
   return (
     typeof obj['id'] === 'number' &&
@@ -224,6 +231,7 @@ export function isPage(value: unknown): value is Page {
     accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
     accumulatedPromisesValid &&
+    accumulatedFulfilledPremisePromisesValid &&
     protagonistAffectValid &&
     structureVersionIdValid &&
     typeof obj['isEnding'] === 'boolean'

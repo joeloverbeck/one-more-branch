@@ -85,6 +85,7 @@ export interface AnalystResult {
   beatAlignmentReason: string;
   thematicCharge: ThematicCharge;
   thematicChargeDescription: string;
+  premisePromiseFulfilled: string | null;
   rawResponse: string;
 }
 
@@ -100,6 +101,8 @@ export interface AnalystContext {
   toneAvoid?: readonly string[];
   thematicQuestion: string;
   antithesis: string;
+  premisePromises: readonly string[];
+  fulfilledPremisePromises: readonly string[];
   spine?: StorySpine;
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

@@ -220,6 +220,18 @@ The previous beat resolution is found by walking backward through concluded beat
 
 Source: `buildEscalationDirective()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
+## Late-Act Premise Promise Warning
+
+When continuation context includes story-level `premisePromises`, page-level `fulfilledPremisePromises`, and the current act is in the late window (last two acts), the planner context adds:
+
+```text
+=== PREMISE PROMISE WARNING (LATE ACT) ===
+The story is in a late act and these premise promises remain unfulfilled. This plan should advance or pay off at least one when narratively viable.
+- {{unfulfilled premise promise}}
+```
+
+This section is omitted when there are no premise promises, none are pending, or the story is not in a late act.
+
 ## Continuation Context: NPC Relationship Data
 
 When `accumulatedNpcRelationships` has entries, the continuation context includes:

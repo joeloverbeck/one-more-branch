@@ -51,4 +51,20 @@ describe('ANALYST_SCHEMA', () => {
       expect.arrayContaining(['thematicCharge', 'thematicChargeDescription'])
     );
   });
+
+  it('includes premisePromiseFulfilled as nullable string in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    const premisePromiseFulfilled = schema.properties['premisePromiseFulfilled'] as {
+      anyOf?: Array<Record<string, unknown>>;
+    };
+
+    expect(premisePromiseFulfilled).toBeDefined();
+    expect(premisePromiseFulfilled.anyOf).toEqual(
+      expect.arrayContaining([{ type: 'string' }, { type: 'null' }])
+    );
+    expect(schema.required).toContain('premisePromiseFulfilled');
+  });
 });

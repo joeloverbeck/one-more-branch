@@ -269,6 +269,7 @@ OUTPUT SHAPE:
 - `storyKernel` is optional on `StructureContext`. When present, its `directionOfChange` drives Act 3 crisis guidance (see below).
 - `storyKernel` is optional on `StructureContext`. When present, the prompt now includes a THEMATIC KERNEL block (dramatic thesis, antithesis, thematic question) and uses `directionOfChange` to drive Act 3 crisis guidance (see below).
 - `conceptVerification` is optional on `StructureContext`. When present and `escalatingSetpieces` is non-empty, a CONCEPT-UNIQUE SETPIECE BANK section is included with numbered setpieces and a constraint that at least 4 `uniqueScenarioHook` values should trace back to a setpiece, with `setpieceSourceIndex` recording the source mapping.
+- `conceptVerification` premise promises now drive a **PREMISE PROMISE CONTRACT** section. When `premisePromises` is non-empty, the prompt lists them and adds a constraint to shape act stakes and escalation/turning-point objectives around those promised audience experiences.
 
 ## Directional Guidance (Act 3 Crisis)
 

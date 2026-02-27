@@ -55,8 +55,10 @@ export interface PageBuildContext {
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
+  readonly parentAccumulatedFulfilledPremisePromises: readonly string[];
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
+  readonly analystPremisePromiseFulfilled: string | null;
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
   readonly parentAccumulatedNpcRelationships: AccumulatedNpcRelationships;
@@ -91,8 +93,10 @@ export interface ContinuationPageBuildContext {
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
+  readonly parentAccumulatedFulfilledPremisePromises?: readonly string[];
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
+  readonly analystPremisePromiseFulfilled?: string | null;
   readonly parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
 }
@@ -127,6 +131,15 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     context.analystPromisesDetected,
     getMaxPromiseIdNumber(isOpening ? [] : context.parentAccumulatedPromises)
   );
+
+  const accumulatedFulfilledPremisePromises = (() : readonly string[] => {
+    const inherited = isOpening ? [] : context.parentAccumulatedFulfilledPremisePromises;
+    const fulfilledNow = (isOpening ? null : context.analystPremisePromiseFulfilled)?.trim() ?? '';
+    if (fulfilledNow.length === 0 || inherited.includes(fulfilledNow)) {
+      return inherited;
+    }
+    return [...inherited, fulfilledNow];
+  })();
 
   const resolvedThreadMeta = buildResolvedThreadMeta(
     effectiveThreadsResolved,
@@ -166,6 +179,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     analystResult: context.analystResult,
     threadAges,
     accumulatedPromises,
+    accumulatedFulfilledPremisePromises,
     resolvedThreadMeta,
     resolvedPromiseMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
@@ -206,8 +220,10 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     analystResult: null,
     parentThreadAges: {},
     parentAccumulatedPromises: [],
+    parentAccumulatedFulfilledPremisePromises: [],
     analystPromisesDetected: [],
     analystPromisesResolved: [],
+    analystPremisePromiseFulfilled: null,
     parentAccumulatedNpcAgendas: agendaRecord,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: 0,
@@ -236,8 +252,11 @@ export function buildContinuationPage(
     analystResult: context.analystResult,
     parentThreadAges: context.parentThreadAges,
     parentAccumulatedPromises: context.parentAccumulatedPromises,
+    parentAccumulatedFulfilledPremisePromises:
+      context.parentAccumulatedFulfilledPremisePromises ?? [],
     analystPromisesDetected: context.analystPromisesDetected,
     analystPromisesResolved: context.analystPromisesResolved,
+    analystPremisePromiseFulfilled: context.analystPremisePromiseFulfilled ?? null,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),

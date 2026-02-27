@@ -108,6 +108,7 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
   }
 
   const validated = AnalystResultSchema.parse(parsed);
+  const premisePromiseFulfilled = validated.premisePromiseFulfilled?.trim();
   const objectiveAnchors = normalizeAnchors(validated.objectiveAnchors);
   const rawAnchorEvidence = normalizeAnchorEvidence(validated.anchorEvidence);
   const anchorEvidence = objectiveAnchors.map(
@@ -159,6 +160,10 @@ export function validateAnalystResponse(rawJson: unknown, rawResponse: string): 
     beatAlignmentReason: validated.beatAlignmentReason.trim(),
     thematicCharge: validated.thematicCharge,
     thematicChargeDescription: validated.thematicChargeDescription.trim(),
+    premisePromiseFulfilled:
+      premisePromiseFulfilled && premisePromiseFulfilled.length > 0
+        ? premisePromiseFulfilled
+        : null,
     rawResponse,
   };
 }

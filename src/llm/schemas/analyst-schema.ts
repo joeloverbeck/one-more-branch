@@ -311,6 +311,11 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             '1-2 sentences explaining the thematicCharge classification with concrete scene evidence.',
         },
+        premisePromiseFulfilled: {
+          anyOf: [{ type: 'string' }, { type: 'null' }],
+          description:
+            'Exact premise promise text fulfilled by this scene, or null when no premise promise was fulfilled.',
+        },
       },
       required: [
         'beatConcluded',
@@ -349,6 +354,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'beatAlignmentReason',
         'thematicCharge',
         'thematicChargeDescription',
+        'premisePromiseFulfilled',
       ],
       additionalProperties: false,
     },

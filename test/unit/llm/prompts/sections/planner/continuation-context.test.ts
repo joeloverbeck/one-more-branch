@@ -82,6 +82,83 @@ describe('planner continuation context section', () => {
     expect(result).toContain('Trigger the blackout relay');
   });
 
+  it('adds late-act premise promise warning when promises remain unfulfilled', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      premisePromises: [
+        'A tribunal ritual is turned into a tactical weapon.',
+        'The protagonist must expose the purge ledger in public.',
+      ],
+      fulfilledPremisePromises: ['A tribunal ritual is turned into a tactical weapon.'],
+      structure: {
+        overallTheme: 'Loyalty under impossible pressure',
+        premise: 'A smuggler must expose corruption before a citywide purge.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
+        pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        acts: [
+          {
+            id: '1',
+            name: 'Act 1',
+            objective: 'Setup',
+            stakes: 'Failure',
+            entryCondition: 'Start',
+            beats: [{ id: '1.1', name: 'Beat 1', description: 'Setup', objective: 'Setup', causalLink: 'Because setup.', role: 'setup', escalationType: null, secondaryEscalationType: null, crisisType: null, expectedGapMagnitude: null, isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: null, setpieceSourceIndex: null }],
+          },
+          {
+            id: '2',
+            name: 'Act 2',
+            objective: 'Escalate',
+            stakes: 'Failure',
+            entryCondition: 'Escalate',
+            beats: [{ id: '2.1', name: 'Beat 2', description: 'Escalate', objective: 'Escalate', causalLink: 'Because escalate.', role: 'escalation', escalationType: 'THREAT_ESCALATION', secondaryEscalationType: null, crisisType: 'BEST_BAD_CHOICE', expectedGapMagnitude: 'MODERATE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['DIRECT_FORCE', 'ANALYTICAL_REASONING'], setpieceSourceIndex: null }],
+          },
+          {
+            id: '3',
+            name: 'Act 3',
+            objective: 'Resolve',
+            stakes: 'Collapse',
+            entryCondition: 'Final',
+            beats: [{ id: '3.1', name: 'Beat 3', description: 'Resolve', objective: 'Resolve', causalLink: 'Because final.', role: 'turning_point', escalationType: 'REVELATION_SHIFT', secondaryEscalationType: null, crisisType: 'IRRECONCILABLE_GOODS', expectedGapMagnitude: 'WIDE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['ANALYTICAL_REASONING', 'PERSUASION_INFLUENCE'], setpieceSourceIndex: null }],
+          },
+        ],
+      },
+      accumulatedStructureState: {
+        currentActIndex: 2,
+        currentBeatIndex: 0,
+        pagesInCurrentBeat: 1,
+        pacingNudge: null,
+        beatProgressions: [{ beatId: '3.1', status: 'active' }],
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== PREMISE PROMISE WARNING (LATE ACT) ===');
+    expect(result).toContain('The protagonist must expose the purge ledger in public.');
+    expect(result).not.toContain('A tribunal ritual is turned into a tactical weapon.');
+  });
+
   it('omits character concept and marks protagonist when structured characters are present', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

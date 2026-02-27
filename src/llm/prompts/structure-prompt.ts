@@ -90,6 +90,22 @@ setpiece, set setpieceSourceIndex to null.
 `;
 }
 
+function buildPremisePromiseSection(verification?: ConceptVerification): string {
+  const premisePromises = verification?.premisePromises ?? [];
+  if (premisePromises.length === 0) {
+    return '';
+  }
+
+  const listed = premisePromises.map((promise) => `- ${promise}`).join('\n');
+  return `PREMISE PROMISE CONTRACT (from upstream concept verification):
+${listed}
+
+CONSTRAINT: Design act stakes and escalation/turning_point beat objectives so the story can credibly deliver these audience expectations over time.
+Avoid generic escalation that ignores the concept's promised experience.
+
+`;
+}
+
 function buildKernelSection(storyKernel?: StoryKernel): string {
   if (!storyKernel) {
     return '';
@@ -155,11 +171,12 @@ export function buildStructurePrompt(
   const toneFeelSection = buildToneFeelSection(context);
   const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
   const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
+  const premisePromiseSection = buildPremisePromiseSection(context.conceptVerification);
   const kernelSection = buildKernelSection(context.storyKernel);
 
   const userPrompt = `Generate a story structure before the first page.
 
-${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${kernelSection}TONE/GENRE: ${context.tone}
+${worldSection}${characterSection}${startingSituationSection}${spineSection}${toneFeelSection}${conceptStakesSection}${setpieceBankSection}${premisePromiseSection}${kernelSection}TONE/GENRE: ${context.tone}
 
 REQUIREMENTS (follow ALL):
 1. Return 3-5 acts following setup, confrontation, and resolution. STRONGLY prefer 3 acts as the default. Only use 4 acts when the narrative complexity genuinely demands a fourth major movement. Use 5 acts only in exceptional cases where the story absolutely requires it.
