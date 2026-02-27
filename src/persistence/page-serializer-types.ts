@@ -96,6 +96,17 @@ export interface TrackedPromiseFileData extends DetectedPromiseFileData {
   age: number;
 }
 
+export interface DelayedConsequenceFileData {
+  id: string;
+  description: string;
+  triggerCondition: string;
+  minPagesDelay: number;
+  maxPagesDelay: number;
+  currentAge: number;
+  triggered: boolean;
+  sourcePageId: number;
+}
+
 export interface ThreadPayoffAssessmentFileData {
   threadId: string;
   threadText: string;
@@ -226,6 +237,7 @@ export interface PageFileData {
   thematicValence: string;
   threadAges: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
+  accumulatedDelayedConsequences: DelayedConsequenceFileData[];
   accumulatedFulfilledPremisePromises?: string[];
   resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
   resolvedPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;

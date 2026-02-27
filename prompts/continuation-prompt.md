@@ -130,6 +130,7 @@ FIELD SEPARATION:
   - choices
   - sceneSummary
   - protagonistAffect
+  - delayedConsequencesCreated
   - isEnding
 - READ-ONLY CONTEXT:
   - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.
@@ -456,7 +457,8 @@ REQUIREMENTS (follow all):
 6. Ensure choices are divergent via their enum tags - each must change a different dimension of the story
 7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
-9. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
+9. Set delayedConsequencesCreated to an array. Use [] when no delayed consequence is created. Only add an item when this scene introduces a setup that should pay off later (include description, triggerCondition, minPagesDelay, maxPagesDelay with min<=max).
+10. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
 
 REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
@@ -495,8 +497,17 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
     "dominantMotivation": "{{what protagonist wants now}}"
   },
   "sceneSummary": "{{2-3 sentence factual summary}}",
+  "delayedConsequencesCreated": [
+    {
+      "description": "{{future payoff setup}}",
+      "triggerCondition": "{{when this should surface}}",
+      "minPagesDelay": {{integer >= 1}},
+      "maxPagesDelay": {{integer >= minPagesDelay}}
+    }
+  ],
   "isEnding": {{true|false}}
 }
 ```
 
 - `choices` is 2-4 items when `isEnding=false`; exactly `[]` when `isEnding=true`.
+- `delayedConsequencesCreated` is always present and may be `[]`.

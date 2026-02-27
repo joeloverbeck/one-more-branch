@@ -56,6 +56,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     protagonistAffect: createDefaultProtagonistAffect(),
     threadAges: {},
     accumulatedPromises: [],
+    accumulatedDelayedConsequences: [],
     resolvedThreadMeta: {},
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],

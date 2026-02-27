@@ -49,6 +49,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     protagonistAffect: createDefaultProtagonistAffect(),
     threadAges: {},
     accumulatedPromises: [],
+    accumulatedDelayedConsequences: [],
     resolvedThreadMeta: {},
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],
@@ -106,6 +107,7 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
     thematicValence: 'AMBIGUOUS',
     threadAges: {},
     accumulatedPromises: [],
+    accumulatedDelayedConsequences: [],
     resolvedThreadMeta: {},
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],
@@ -211,6 +213,37 @@ describe('page-serializer', () => {
       const fileData = serializePage(page);
 
       expect(fileData.thematicValence).toBe('THESIS_SUPPORTING');
+    });
+
+    it('serializes accumulatedDelayedConsequences', () => {
+      const page = buildTestPage({
+        accumulatedDelayedConsequences: [
+          {
+            id: 'dc-1',
+            description: 'An old debt is called in.',
+            triggerCondition: 'The broker recognizes the protagonist.',
+            minPagesDelay: 2,
+            maxPagesDelay: 4,
+            currentAge: 3,
+            triggered: false,
+            sourcePageId: parsePageId(1),
+          },
+        ],
+      });
+
+      const fileData = serializePage(page);
+      expect(fileData.accumulatedDelayedConsequences).toEqual([
+        {
+          id: 'dc-1',
+          description: 'An old debt is called in.',
+          triggerCondition: 'The broker recognizes the protagonist.',
+          minPagesDelay: 2,
+          maxPagesDelay: 4,
+          currentAge: 3,
+          triggered: false,
+          sourcePageId: 1,
+        },
+      ]);
     });
 
     it('creates deep copies to prevent mutation', () => {
@@ -358,6 +391,37 @@ describe('page-serializer', () => {
 
       const page = deserializePage(fileData);
       expect(page.thematicValence).toBe('ANTITHESIS_SUPPORTING');
+    });
+
+    it('deserializes accumulatedDelayedConsequences', () => {
+      const fileData = buildTestFileData({
+        accumulatedDelayedConsequences: [
+          {
+            id: 'dc-3',
+            description: 'The forged signature is audited.',
+            triggerCondition: 'The ledger is re-opened.',
+            minPagesDelay: 1,
+            maxPagesDelay: 2,
+            currentAge: 1,
+            triggered: false,
+            sourcePageId: 2,
+          },
+        ],
+      });
+
+      const page = deserializePage(fileData);
+      expect(page.accumulatedDelayedConsequences).toEqual([
+        {
+          id: 'dc-3',
+          description: 'The forged signature is audited.',
+          triggerCondition: 'The ledger is re-opened.',
+          minPagesDelay: 1,
+          maxPagesDelay: 2,
+          currentAge: 1,
+          triggered: false,
+          sourcePageId: parsePageId(2),
+        },
+      ]);
     });
 
     it('parses structureVersionId when provided', () => {
