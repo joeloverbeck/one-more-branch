@@ -33,6 +33,7 @@ describe('buildStructureRewritePrompt', () => {
         causalLink: 'Because the protagonist leaked evidence in the prior hearing.',
         role: 'setup',
         escalationType: null,
+        expectedGapMagnitude: 'WIDE',
         uniqueScenarioHook: null,
         approachVectors: null,
         setpieceSourceIndex: null,
@@ -80,6 +81,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('CANON - DO NOT CHANGE');
     expect(user).toContain('Act 1, Beat 1 (1.1) [setup] "Sluice Flight"');
     expect(user).toContain('Causal link: Because the protagonist leaked evidence in the prior hearing.');
+    expect(user).toContain('Expected gap magnitude: WIDE');
     expect(user).toContain(
       'Resolution: You escaped through maintenance sluices with the ledger intact.'
     );
@@ -185,6 +187,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain(
       'crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null'
     );
+    expect(user).toContain('expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null');
   });
 
   it('includes causal linkage requirement for regenerated beats', () => {

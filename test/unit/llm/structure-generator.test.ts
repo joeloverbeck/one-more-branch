@@ -38,6 +38,7 @@ interface StructurePayload {
       escalationType?: string | null;
       secondaryEscalationType?: string | null;
       crisisType?: string | null;
+      expectedGapMagnitude?: string | null;
       isMidpoint?: boolean;
       midpointType?: string | null;
       uniqueScenarioHook?: string | null;
@@ -69,6 +70,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             secondaryEscalationType: null,
             crisisType: null,
+            expectedGapMagnitude: null,
             isMidpoint: false,
             midpointType: null,
             uniqueScenarioHook: null,
@@ -84,6 +86,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             secondaryEscalationType: null,
             crisisType: null,
+            expectedGapMagnitude: null,
             isMidpoint: false,
             midpointType: null,
             uniqueScenarioHook: null,
@@ -107,6 +110,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             secondaryEscalationType: null,
             crisisType: null,
+            expectedGapMagnitude: null,
             isMidpoint: false,
             midpointType: null,
             uniqueScenarioHook: null,
@@ -122,6 +126,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             secondaryEscalationType: null,
             crisisType: null,
+            expectedGapMagnitude: null,
             isMidpoint: true,
             midpointType: 'FALSE_DEFEAT',
             uniqueScenarioHook: null,
@@ -145,6 +150,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             secondaryEscalationType: null,
             crisisType: null,
+            expectedGapMagnitude: null,
             isMidpoint: false,
             midpointType: null,
             uniqueScenarioHook: null,
@@ -160,6 +166,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             secondaryEscalationType: null,
             crisisType: null,
+            expectedGapMagnitude: null,
             isMidpoint: false,
             midpointType: null,
             uniqueScenarioHook: null,

@@ -3,6 +3,7 @@ import type {
   BeatRole,
   CrisisType,
   EscalationType,
+  GapMagnitude,
   MidpointType,
   StoryAct,
   StoryBeat,
@@ -13,6 +14,7 @@ import {
   BEAT_ROLES,
   CRISIS_TYPES,
   ESCALATION_TYPES,
+  GAP_MAGNITUDES,
   MIDPOINT_TYPES,
 } from '../models/story-arc';
 import type { StructureGenerationResult } from './structure-types';
@@ -50,6 +52,16 @@ export function parseMidpointType(value: string | null | undefined): MidpointTyp
   }
   if (MIDPOINT_TYPES.includes(value as MidpointType)) {
     return value as MidpointType;
+  }
+  return null;
+}
+
+export function parseGapMagnitude(value: string | null | undefined): GapMagnitude | null {
+  if (value == null) {
+    return null;
+  }
+  if (GAP_MAGNITUDES.includes(value as GapMagnitude)) {
+    return value as GapMagnitude;
   }
   return null;
 }
@@ -117,6 +129,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
         escalationType: parseEscalationType(beatData.escalationType),
         secondaryEscalationType: parseEscalationType(beatData.secondaryEscalationType),
         crisisType: parseCrisisType(beatData.crisisType),
+        expectedGapMagnitude: parseGapMagnitude(beatData.expectedGapMagnitude),
         isMidpoint,
         midpointType,
         uniqueScenarioHook:

@@ -29,6 +29,7 @@ function createValidParsedStructure(): Record<string, unknown> {
             causalLink: 'Because the smuggler reveals where ledgers moved.',
             role: 'turning_point',
             secondaryEscalationType: 'REVELATION_SHIFT',
+            expectedGapMagnitude: 'WIDE',
             isMidpoint: false,
             midpointType: null,
           },
@@ -119,6 +120,7 @@ describe('structure-response-parser', () => {
       midpointType: 'FALSE_VICTORY',
     });
     expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
+    expect(result.acts[0]?.beats[1]?.expectedGapMagnitude).toBe('WIDE');
   });
 
   it('throws when midpointType exists but isMidpoint is false', () => {
@@ -161,5 +163,15 @@ describe('structure-response-parser', () => {
         offScreenBehavior: 'Acts off screen.',
       },
     ]);
+  });
+
+  it('coerces invalid expectedGapMagnitude values to null', () => {
+    const parsed = createValidParsedStructure();
+    const invalidBeat = (parsed.acts as Array<{ beats: Array<Record<string, unknown>> }>)[1].beats[0];
+    invalidBeat['expectedGapMagnitude'] = 'IMPOSSIBLE';
+
+    const result = parseStructureResponseObject(parsed);
+
+    expect(result.acts[1]?.beats[0]?.expectedGapMagnitude).toBeNull();
   });
 });

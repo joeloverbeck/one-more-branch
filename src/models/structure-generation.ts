@@ -9,6 +9,7 @@ export interface GeneratedBeat {
   escalationType?: string | null;
   secondaryEscalationType?: string | null;
   crisisType?: string | null;
+  expectedGapMagnitude?: string | null;
   isMidpoint?: boolean;
   midpointType?: string | null;
   uniqueScenarioHook?: string | null;

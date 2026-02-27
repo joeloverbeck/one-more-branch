@@ -4,6 +4,7 @@ import {
   BEAT_ROLES,
   CRISIS_TYPES,
   ESCALATION_TYPES,
+  GAP_MAGNITUDES,
   MIDPOINT_TYPES,
 } from '../../models/story-arc.js';
 
@@ -102,6 +103,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'escalationType',
                     'secondaryEscalationType',
                     'crisisType',
+                    'expectedGapMagnitude',
                     'isMidpoint',
                     'midpointType',
                     'uniqueScenarioHook',
@@ -154,6 +156,17 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       ],
                       description:
                         'For escalation/turning_point beats: dilemma shape for the beat. Null for setup/reflection/resolution beats.',
+                    },
+                    expectedGapMagnitude: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [...GAP_MAGNITUDES],
+                        },
+                        { type: 'null' },
+                      ],
+                      description:
+                        'For escalation/turning_point beats: expected width of expectation-vs-result divergence at this beat. Should generally widen over story progression. Null for setup/reflection/resolution beats.',
                     },
                     isMidpoint: {
                       type: 'boolean',

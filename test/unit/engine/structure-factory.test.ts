@@ -2,6 +2,7 @@ import {
   createStoryStructure,
   parseApproachVectors,
   parseCrisisType,
+  parseGapMagnitude,
   parseMidpointType,
 } from '../../../src/engine/structure-factory';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
@@ -137,6 +138,17 @@ describe('structure-factory', () => {
 
       expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
       expect(result.acts[1]?.beats[0]?.secondaryEscalationType).toBeNull();
+    });
+
+    it('maps valid expectedGapMagnitude and coerces invalid values to null', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[0]!.beats[1]!.expectedGapMagnitude = 'WIDE';
+      genResult.acts[1]!.beats[0]!.expectedGapMagnitude = 'IMPOSSIBLE';
+
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[0]?.beats[1]?.expectedGapMagnitude).toBe('WIDE');
+      expect(result.acts[1]?.beats[0]?.expectedGapMagnitude).toBeNull();
     });
 
     it('parses valid approachVectors from generation result', () => {
@@ -279,6 +291,18 @@ describe('structure-factory', () => {
       expect(parseMidpointType('UNKNOWN')).toBeNull();
       expect(parseMidpointType(null)).toBeNull();
       expect(parseMidpointType(undefined)).toBeNull();
+    });
+  });
+
+  describe('parseGapMagnitude', () => {
+    it('returns valid gap magnitudes and null for invalid values', () => {
+      expect(parseGapMagnitude('NARROW')).toBe('NARROW');
+      expect(parseGapMagnitude('MODERATE')).toBe('MODERATE');
+      expect(parseGapMagnitude('WIDE')).toBe('WIDE');
+      expect(parseGapMagnitude('CHASM')).toBe('CHASM');
+      expect(parseGapMagnitude('UNKNOWN')).toBeNull();
+      expect(parseGapMagnitude(null)).toBeNull();
+      expect(parseGapMagnitude(undefined)).toBeNull();
     });
   });
 });

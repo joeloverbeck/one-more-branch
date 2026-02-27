@@ -105,6 +105,18 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('dramatic roles');
   });
 
+  it('includes expected gap magnitude requirements and output field', () => {
+    const messages = buildStructurePrompt(baseContext);
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('assign expectedGapMagnitude');
+    expect(lastUser).toContain('NARROW');
+    expect(lastUser).toContain('CHASM');
+    expect(lastUser).toContain(
+      'expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null'
+    );
+  });
+
   it('contains premise instruction', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';

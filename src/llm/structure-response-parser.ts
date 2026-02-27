@@ -20,6 +20,13 @@ function parseSetpieceSourceIndex(value: unknown): number | null {
   return null;
 }
 
+function parseExpectedGapMagnitude(value: unknown): 'NARROW' | 'MODERATE' | 'WIDE' | 'CHASM' | null {
+  if (value === 'NARROW' || value === 'MODERATE' || value === 'WIDE' || value === 'CHASM') {
+    return value;
+  }
+  return null;
+}
+
 export function parseStructureResponseObject(
   parsed: unknown
 ): Omit<StructureGenerationResult, 'rawResponse'> {
@@ -112,6 +119,7 @@ export function parseStructureResponseObject(
           ? beatData['secondaryEscalationType']
           : null;
       const crisisType = typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
+      const expectedGapMagnitude = parseExpectedGapMagnitude(beatData['expectedGapMagnitude']);
       const isMidpoint = beatData['isMidpoint'] === true;
       const midpointType = parseMidpointType(beatData['midpointType']);
       const uniqueScenarioHook =
@@ -149,6 +157,7 @@ export function parseStructureResponseObject(
         escalationType,
         secondaryEscalationType,
         crisisType,
+        expectedGapMagnitude,
         isMidpoint,
         midpointType,
         uniqueScenarioHook,
