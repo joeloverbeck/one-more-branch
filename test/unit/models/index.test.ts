@@ -16,6 +16,11 @@ import {
   computeOverallScore as computeOverallScoreDirect,
 } from '@/models/concept-generator';
 import {
+  GENRE_OBLIGATION_TAGS_BY_GENRE as GENRE_OBLIGATION_TAGS_BY_GENRE_DIRECT,
+  getGenreObligationTags as getGenreObligationTagsDirect,
+  isGenreObligationTag as isGenreObligationTagDirect,
+} from '@/models/genre-obligations';
+import {
   DIRECTION_OF_CHANGE_VALUES as DIRECTION_OF_CHANGE_VALUES_DIRECT,
   computeKernelOverallScore as computeKernelOverallScoreDirect,
 } from '@/models/story-kernel';
@@ -44,6 +49,12 @@ describe('models barrel exports', () => {
   it('re-exports concept generator domain contracts from models barrel', () => {
     expect(models.GENRE_FRAMES).toBe(GENRE_FRAMES_DIRECT);
     expect(models.computeOverallScore).toBe(computeOverallScoreDirect);
+  });
+
+  it('re-exports genre obligation contracts from models barrel', () => {
+    expect(models.GENRE_OBLIGATION_TAGS_BY_GENRE).toBe(GENRE_OBLIGATION_TAGS_BY_GENRE_DIRECT);
+    expect(models.getGenreObligationTags).toBe(getGenreObligationTagsDirect);
+    expect(models.isGenreObligationTag).toBe(isGenreObligationTagDirect);
   });
 
   it('re-exports story kernel domain contracts from models barrel', () => {

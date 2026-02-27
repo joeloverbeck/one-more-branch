@@ -255,6 +255,12 @@ export {
   computeOverallScore,
   passesConceptThresholds,
 } from './concept-generator';
+export {
+  GENRE_OBLIGATION_TAGS_BY_GENRE,
+  isGenreObligationTag,
+  getGenreObligationTags,
+} from './genre-obligations';
+export type { GenreObligationTagsByGenre, GenreObligationTag } from './genre-obligations';
 
 export type {
   DirectionOfChange,
