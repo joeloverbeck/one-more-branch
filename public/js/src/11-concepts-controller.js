@@ -404,6 +404,10 @@
         cardHtml += renderVerificationSection(concept.verificationResult);
       }
 
+      if (concept.stressTestResult) {
+        cardHtml += renderStressTestSection(concept.stressTestResult);
+      }
+
       cardHtml +=
         '<div class="spine-field"><span class="spine-label">Created:</span> ' + escapeHtml(new Date(concept.createdAt).toLocaleDateString()) + '</div>' +
         '<div class="form-actions" style="margin-top: 0.5rem;">' +
@@ -530,6 +534,22 @@
             hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
             hardenBadge.textContent = 'Hardened';
             badges.appendChild(hardenBadge);
+          }
+
+          // Render stress test results if present
+          var stressResult = data.driftRisks || data.playerBreaks
+            ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
+            : null;
+          if (stressResult) {
+            var stressHtml = renderStressTestSection(stressResult);
+            if (stressHtml) {
+              var timestampField = card.querySelector('.form-actions');
+              if (timestampField) {
+                timestampField.insertAdjacentHTML('beforebegin', stressHtml);
+              } else {
+                card.insertAdjacentHTML('beforeend', stressHtml);
+              }
+            }
           }
         }
       } catch (error) {
