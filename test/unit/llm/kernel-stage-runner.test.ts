@@ -13,6 +13,7 @@ function createKernel(index: number): StoryKernel {
     opposingForce: `Force ${index}`,
     directionOfChange: 'POSITIVE',
     thematicQuestion: `Question ${index}?`,
+  antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 

@@ -133,6 +133,7 @@ described in the inevitability statement — the force is what makes this outcom
 {{#if storyKernel}}
 THEMATIC KERNEL (the spine's philosophical foundation):
 Dramatic thesis: {{storyKernel.dramaticThesis}}
+Antithesis: {{storyKernel.antithesis}}
 Value at stake: {{storyKernel.valueAtStake}}
 Opposing force: {{storyKernel.opposingForce}}
 Direction of change: {{storyKernel.directionOfChange}}
@@ -216,5 +217,5 @@ OUTPUT SHAPE:
 - The selected spine is stored on the `Story` model and injected into all downstream prompts via `buildSpineSection()`, which formats it as the "STORY SPINE (invariant narrative backbone)" block.
 - When `contentPreferences` is provided (from `ConceptSeeds` of a selected saved concept), the CONTENT PREFERENCES section is included with the user's free-text creative direction. This influences spine design but does not constrain enum values or structural fields.
 - When a `conceptSpec` is provided (from the `/concepts` page), the CONCEPT ANALYSIS section is included with all 23 concept fields organized into 6 groups (Narrative Identity, Protagonist, Genre Frame, Conflict Engine, World Architecture, Structural Metadata) and hard constraints on both `conflictAxis` and `conflictType`. This means all 3 spine options will usually share the concept's `conflictAxis` and `conflictType`, so divergence must come from `storySpineType` and/or deeper fields such as need/want dynamic, antagonistic force, pressure mechanism, and dramatic question framing. When no concept is present (manual story creation), spine generation works as before with no concept section.
-- When a `storyKernel` is provided (linked via `sourceKernelId` on the saved concept or manually selected), the THEMATIC KERNEL section is included with 5 kernel fields (dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion) and a constraint that the spine's central dramatic question should operationalize the kernel. The kernel defines the thematic "why" while the spine defines the structural "how".
+- When a `storyKernel` is provided (linked via `sourceKernelId` on the saved concept or manually selected), the THEMATIC KERNEL section is included with 6 kernel fields (dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion) and a constraint that the spine's central dramatic question should operationalize the kernel. The kernel defines the thematic "why" while the spine defines the structural "how".
 - When a `conceptVerification` is provided, the CONCEPT VERIFICATION section is included with `signatureScenario` and `inevitabilityStatement`. Two constraints bind the spine to these verification outputs: (1) the `centralDramaticQuestion` must make the signature scenario inevitable, and (2) the antagonistic force's pressure mechanism must logically produce the conditions described in the inevitability statement.

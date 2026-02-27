@@ -68,6 +68,7 @@ describe('buildAnalystPrompt', () => {
     activeState: testActiveState,
     threadsResolved: [],
     threadAges: {},
+    antithesis: '',
     tone: '',
     activeTrackedPromises: [],
   };
@@ -99,6 +100,17 @@ describe('buildAnalystPrompt', () => {
     expect(messages[1].content).toContain('NARRATIVE TO EVALUATE:');
     expect(messages[1].content).toContain(
       'The protagonist crept through the alley, dodging patrols.'
+    );
+  });
+
+  it('includes thematic antithesis section when antithesis is provided', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      antithesis: 'Security matters more than freedom in times of crisis.',
+    });
+    expect(messages[1].content).toContain('THEMATIC ANTITHESIS:');
+    expect(messages[1].content).toContain(
+      'Security matters more than freedom in times of crisis.'
     );
   });
 

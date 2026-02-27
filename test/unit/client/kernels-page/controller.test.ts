@@ -64,6 +64,7 @@ function createKernel(id = 'kernel-1'): KernelFixture {
         opposingForce: 'Fear of chaos',
         directionOfChange: 'NEGATIVE',
         thematicQuestion: 'Can protection exist without control?',
+      antithesis: 'Counter-argument challenges the thesis.',
       },
       scores: {
         dramaticClarity: 4,

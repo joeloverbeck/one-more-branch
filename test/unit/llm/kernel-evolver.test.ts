@@ -35,6 +35,7 @@ function createKernel(index: number, direction: DirectionOfChange = 'POSITIVE'):
     opposingForce: `Force ${index}`,
     directionOfChange: direction,
     thematicQuestion: `Question ${index}?`,
+  antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 

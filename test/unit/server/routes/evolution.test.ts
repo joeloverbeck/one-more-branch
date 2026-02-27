@@ -88,6 +88,7 @@ function createSavedKernel(kernelId = 'kernel-1'): SavedKernel {
         opposingForce: 'Control',
         directionOfChange: 'POSITIVE',
         thematicQuestion: 'Can control coexist with intimacy?',
+      antithesis: 'Counter-argument challenges the thesis.',
       },
       scores: {
         dramaticClarity: 4,

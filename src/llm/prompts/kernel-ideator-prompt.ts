@@ -7,6 +7,7 @@ const ROLE_INTRO =
 
 const QUALITY_ANCHORS = `QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
+- antithesis must be the strongest credible counter-argument to dramaticThesis.
 - valueAtStake must name a fundamental human value, not a task or objective.
 - opposingForce must be an abstract force that can operate across settings.
 - thematicQuestion must be a meaningful question that can be answered in multiple ways.
@@ -75,7 +76,7 @@ export function buildKernelIdeatorPrompt(context: KernelIdeatorContext): ChatMes
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
-- Each kernel must contain dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
+- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
 - Keep every field concise and semantically distinct across the set.`
   );
 

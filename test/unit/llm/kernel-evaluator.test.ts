@@ -35,6 +35,7 @@ function createKernel(index: number): StoryKernel {
     opposingForce: `Force ${index}`,
     directionOfChange: index % 3 === 0 ? 'NEGATIVE' : index % 2 === 0 ? 'IRONIC' : 'POSITIVE',
     thematicQuestion: `Question ${index}?`,
+  antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 

@@ -26,6 +26,7 @@ import type { StoryKernel } from '../../../src/models';
 function createValidKernel(index: number): StoryKernel {
   return {
     dramaticThesis: `Kernel thesis ${index}`,
+    antithesis: `Kernel antithesis ${index}`,
     valueAtStake: `Value ${index}`,
     opposingForce: `Opposing force ${index}`,
     directionOfChange: index % 3 === 0 ? 'NEGATIVE' : index % 2 === 0 ? 'IRONIC' : 'POSITIVE',
@@ -143,6 +144,7 @@ describe('kernel-ideator', () => {
     expect(systemMessage).toContain('Do not include setting/world details');
     expect(systemMessage).toContain('Do not include named characters');
     expect(systemMessage).toContain('Do not include plot beats');
+    expect(systemMessage).toContain('strongest credible counter-argument');
 
     expect(userMessage).toContain('THEMATIC INTERESTS');
     expect(userMessage).toContain('EMOTIONAL CORE');

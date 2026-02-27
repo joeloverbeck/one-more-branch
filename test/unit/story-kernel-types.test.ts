@@ -26,6 +26,7 @@ describe('story-kernel types', () => {
   it('validates StoryKernel objects', () => {
     const validKernel: StoryKernel = {
       dramaticThesis: 'Obsessive control destroys what it tries to protect.',
+      antithesis: 'Control is the only reliable protection against chaos.',
       valueAtStake: 'Trust',
       opposingForce: 'Fear of loss drives the need to control.',
       directionOfChange: 'IRONIC',

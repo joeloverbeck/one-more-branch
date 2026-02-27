@@ -77,6 +77,7 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
     userSections.push(
       `SELECTED STORY KERNEL:
 - dramaticThesis: ${kernel.dramaticThesis}
+- antithesis: ${kernel.antithesis}
 - valueAtStake: ${kernel.valueAtStake}
 - opposingForce: ${kernel.opposingForce}
 - directionOfChange: ${kernel.directionOfChange}

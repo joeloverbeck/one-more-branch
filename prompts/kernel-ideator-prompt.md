@@ -24,6 +24,7 @@ CONTENT GUIDELINES:
 
 QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
+- antithesis must be the strongest credible counter-argument to dramaticThesis.
 - valueAtStake must name a fundamental human value, not a task or objective.
 - opposingForce must be an abstract force that can operate across settings.
 - thematicQuestion must be a meaningful question that can be answered in multiple ways.
@@ -82,7 +83,7 @@ No seeds were provided. Derive kernels from universal human themes and conflicts
 
 OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
-- Each kernel must contain dramaticThesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
+- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
 - Keep every field concise and semantically distinct across the set.
 ```
 
@@ -93,6 +94,7 @@ OUTPUT REQUIREMENTS:
   "kernels": [
     {
       "dramaticThesis": "{{causal dramatic claim}}",
+      "antithesis": "{{strongest credible counter-argument}}",
       "valueAtStake": "{{fundamental human value}}",
       "opposingForce": "{{abstract opposing force}}",
       "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",

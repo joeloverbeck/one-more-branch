@@ -95,6 +95,7 @@ export interface AnalystContext {
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
+  antithesis: string;
   spine?: StorySpine;
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;

@@ -6,6 +6,7 @@ export const KERNEL_SCHEMA = {
   additionalProperties: false,
   required: [
     'dramaticThesis',
+    'antithesis',
     'valueAtStake',
     'opposingForce',
     'directionOfChange',
@@ -13,6 +14,7 @@ export const KERNEL_SCHEMA = {
   ],
   properties: {
     dramaticThesis: { type: 'string' },
+    antithesis: { type: 'string' },
     valueAtStake: { type: 'string' },
     opposingForce: { type: 'string' },
     directionOfChange: { type: 'string', enum: [...DIRECTION_OF_CHANGE_VALUES] },

@@ -106,6 +106,7 @@ describe('buildAnalystPrompt integration - active state summary', () => {
       activeState,
       threadsResolved: [],
       threadAges: {},
+      antithesis: '',
     };
 
     const messages = buildAnalystPrompt(context);

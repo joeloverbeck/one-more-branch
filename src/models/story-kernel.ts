@@ -8,6 +8,7 @@ export function isDirectionOfChange(value: unknown): value is DirectionOfChange 
 
 export interface StoryKernel {
   readonly dramaticThesis: string;
+  readonly antithesis: string;
   readonly valueAtStake: string;
   readonly opposingForce: string;
   readonly directionOfChange: DirectionOfChange;
@@ -106,6 +107,7 @@ export function isStoryKernel(value: unknown): value is StoryKernel {
 
   return (
     isNonEmptyString(kernel['dramaticThesis']) &&
+    isNonEmptyString(kernel['antithesis']) &&
     isNonEmptyString(kernel['valueAtStake']) &&
     isNonEmptyString(kernel['opposingForce']) &&
     isDirectionOfChange(kernel['directionOfChange']) &&

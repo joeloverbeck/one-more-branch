@@ -88,4 +88,22 @@ describe('buildSpinePrompt', () => {
 
     expect(system).toContain('NC-21');
   });
+
+  it('includes antithesis in thematic kernel section when storyKernel is provided', () => {
+    const messages = buildSpinePrompt({
+      ...baseContext,
+      storyKernel: {
+        dramaticThesis: 'Mercy breaks cycles of violence.',
+        antithesis: 'Only decisive force can end violence.',
+        valueAtStake: 'Justice',
+        opposingForce: 'Retributive social pressure',
+        directionOfChange: 'POSITIVE',
+        thematicQuestion: 'Can mercy coexist with accountability?',
+      },
+    });
+    const user = getUserMessage(messages);
+
+    expect(user).toContain('THEMATIC KERNEL');
+    expect(user).toContain('Antithesis: Only decisive force can end violence.');
+  });
 });
