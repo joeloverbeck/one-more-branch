@@ -21,6 +21,7 @@ import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import type { KnowledgeAsymmetry } from '../models/state/knowledge-state.js';
 import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
 import type { DelayedConsequenceDraft } from '../llm/writer-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
@@ -28,6 +29,7 @@ import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
 import { createInventoryChanges } from './inventory-manager';
 import { computeNarrativeStateLifecycle } from './state-lifecycle';
+import { computeAccumulatedKnowledgeState } from './state-lifecycle';
 import type { PageBuildResult } from './state-change-mapper';
 import { mapToActiveStateChanges } from './state-change-mapper';
 
@@ -51,6 +53,7 @@ export interface PageBuildContext {
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedDelayedConsequences: readonly DelayedConsequence[];
+  readonly parentAccumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
   readonly parentAccumulatedFulfilledPremisePromises: readonly string[];
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
@@ -90,6 +93,7 @@ export interface ContinuationPageBuildContext {
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedDelayedConsequences?: readonly DelayedConsequence[];
+  readonly parentAccumulatedKnowledgeState?: readonly KnowledgeAsymmetry[];
   readonly parentAccumulatedFulfilledPremisePromises?: readonly string[];
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
@@ -119,6 +123,10 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
   const agedDelayedConsequences = incrementDelayedConsequenceAges(
     context.parentAccumulatedDelayedConsequences ?? []
   );
+  const accumulatedKnowledgeState = computeAccumulatedKnowledgeState({
+    parentAccumulatedKnowledgeState: context.parentAccumulatedKnowledgeState ?? [],
+    detectedKnowledgeAsymmetry: context.analystResult?.knowledgeAsymmetryDetected ?? [],
+  });
   const triggeredDelayedConsequences = applyTriggeredDelayedConsequences(
     agedDelayedConsequences,
     context.analystResult?.delayedConsequencesTriggered ?? []
@@ -161,6 +169,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
       ...triggeredDelayedConsequences,
       ...createdDelayedConsequences,
     ],
+    accumulatedKnowledgeState,
     accumulatedFulfilledPremisePromises: lifecycle.accumulatedFulfilledPremisePromises,
     resolvedThreadMeta: lifecycle.resolvedThreadMeta,
     resolvedPromiseMeta: lifecycle.resolvedPromiseMeta,
@@ -203,6 +212,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     parentThreadAges: {},
     parentAccumulatedPromises: [],
     parentAccumulatedDelayedConsequences: [],
+    parentAccumulatedKnowledgeState: [],
     parentAccumulatedFulfilledPremisePromises: [],
     analystPromisesDetected: [],
     analystPromisesResolved: [],
@@ -236,6 +246,7 @@ export function buildContinuationPage(
     parentThreadAges: context.parentThreadAges,
     parentAccumulatedPromises: context.parentAccumulatedPromises,
     parentAccumulatedDelayedConsequences: context.parentAccumulatedDelayedConsequences ?? [],
+    parentAccumulatedKnowledgeState: context.parentAccumulatedKnowledgeState ?? [],
     parentAccumulatedFulfilledPremisePromises:
       context.parentAccumulatedFulfilledPremisePromises ?? [],
     analystPromisesDetected: context.analystPromisesDetected,

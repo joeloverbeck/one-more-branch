@@ -275,6 +275,32 @@ function buildPendingConsequencesSection(context: ContinuationPagePlanContext): 
   return lines.join('\n');
 }
 
+function buildDramaticIronyOpportunitiesSection(context: ContinuationPagePlanContext): string {
+  const accumulatedKnowledgeState = context.accumulatedKnowledgeState ?? [];
+  if (accumulatedKnowledgeState.length === 0) {
+    return '';
+  }
+
+  const lines: string[] = ['=== DRAMATIC IRONY OPPORTUNITIES ==='];
+  lines.push(
+    'Exploit information asymmetry to create tension where the protagonist and other characters act on conflicting beliefs.'
+  );
+  for (const entry of accumulatedKnowledgeState) {
+    lines.push(`- ${entry.characterName}`);
+    if (entry.falseBeliefs.length > 0) {
+      lines.push(`  False beliefs: ${entry.falseBeliefs.join(' | ')}`);
+    }
+    if (entry.secrets.length > 0) {
+      lines.push(`  Secrets: ${entry.secrets.join(' | ')}`);
+    }
+    if (entry.knownFacts.length > 0) {
+      lines.push(`  Known facts: ${entry.knownFacts.join(' | ')}`);
+    }
+  }
+  lines.push('');
+  return lines.join('\n') + '\n';
+}
+
 
 function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
   if (isProtagonistGuidanceEmpty(guidance)) {
@@ -628,6 +654,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
     context.parentThreadPayoffAssessments ?? []
   );
   const pendingConsequencesSection = buildPendingConsequencesSection(context);
+  const dramaticIronyOpportunitiesSection = buildDramaticIronyOpportunitiesSection(context);
 
   const toneFeelLine =
     context.toneFeel && context.toneFeel.length > 0
@@ -683,7 +710,7 @@ ${constraintsSection}
 OPEN NARRATIVE THREADS:
 ${threadsSection}
 
-${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${pendingConsequencesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
+${buildProtagonistAffectSection(context.parentProtagonistAffect)}${trackedPromisesSection}${pendingConsequencesSection}${dramaticIronyOpportunitiesSection}${summariesSection}${grandparentSection}PREVIOUS SCENE (full text for style continuity):
 ${context.previousNarrative}
 
 ${protagonistDirective}${guidanceSection}PLAYER'S CHOICE:

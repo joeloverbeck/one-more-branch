@@ -102,6 +102,12 @@ export function serializePage(page: Page): PageFileData {
       triggered: consequence.triggered,
       sourcePageId: consequence.sourcePageId,
     })),
+    accumulatedKnowledgeState: page.accumulatedKnowledgeState.map((entry) => ({
+      characterName: entry.characterName,
+      knownFacts: [...entry.knownFacts],
+      falseBeliefs: [...entry.falseBeliefs],
+      secrets: [...entry.secrets],
+    })),
     ...(page.accumulatedFulfilledPremisePromises !== undefined
       ? { accumulatedFulfilledPremisePromises: [...page.accumulatedFulfilledPremisePromises] }
       : {}),
@@ -207,6 +213,12 @@ export function deserializePage(data: PageFileData): Page {
       currentAge: consequence.currentAge,
       triggered: consequence.triggered,
       sourcePageId: parsePageId(consequence.sourcePageId),
+    })),
+    accumulatedKnowledgeState: data.accumulatedKnowledgeState.map((entry) => ({
+      characterName: entry.characterName,
+      knownFacts: [...entry.knownFacts],
+      falseBeliefs: [...entry.falseBeliefs],
+      secrets: [...entry.secrets],
     })),
     ...(data.accumulatedFulfilledPremisePromises !== undefined
       ? { accumulatedFulfilledPremisePromises: [...data.accumulatedFulfilledPremisePromises] }

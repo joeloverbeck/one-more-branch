@@ -1,4 +1,5 @@
 import type { AnalystResult, DetectedPromise } from '../llm/analyst-types.js';
+import type { KnowledgeAsymmetry } from '../models/state/knowledge-state.js';
 import type { TrackedPromise, ThreadEntry } from '../models/state/index.js';
 import { getMaxIdNumber } from '../models/index.js';
 import {
@@ -34,6 +35,11 @@ export interface NarrativeStateLifecycleOutput {
   readonly accumulatedFulfilledPremisePromises: readonly string[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
   readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
+}
+
+export interface KnowledgeStateLifecycleInput {
+  readonly parentAccumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
+  readonly detectedKnowledgeAsymmetry: readonly KnowledgeAsymmetry[];
 }
 
 /**
@@ -96,4 +102,21 @@ export function computeNarrativeStateLifecycle(
     resolvedThreadMeta,
     resolvedPromiseMeta,
   };
+}
+
+/**
+ * Computes accumulated knowledge asymmetry for the next page.
+ * Latest detected observation wins per character, while preserving untouched parent entries.
+ */
+export function computeAccumulatedKnowledgeState(
+  input: KnowledgeStateLifecycleInput
+): readonly KnowledgeAsymmetry[] {
+  const byCharacter = new Map<string, KnowledgeAsymmetry>();
+  for (const entry of input.parentAccumulatedKnowledgeState) {
+    byCharacter.set(entry.characterName, entry);
+  }
+  for (const entry of input.detectedKnowledgeAsymmetry) {
+    byCharacter.set(entry.characterName, entry);
+  }
+  return Array.from(byCharacter.values());
 }

@@ -249,6 +249,7 @@ export interface PageFileData {
   threadAges: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
   accumulatedDelayedConsequences: DelayedConsequenceFileData[];
+  accumulatedKnowledgeState: KnowledgeAsymmetryFileData[];
   accumulatedFulfilledPremisePromises?: string[];
   resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
   resolvedPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;

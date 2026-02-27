@@ -45,6 +45,7 @@ function makeBasePlannerContext(
     grandparentNarrative: null,
     ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     ...overrides,
   };
 }

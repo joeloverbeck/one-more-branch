@@ -134,6 +134,10 @@ describe('parent-state-collector', () => {
           Ranger: [{ id: 'cs-1', text: 'Cautious' }],
         },
         structureState: createEmptyAccumulatedStructureState(),
+        accumulatedDelayedConsequences: [],
+        accumulatedKnowledgeState: [],
+        accumulatedNpcAgendas: {},
+        accumulatedNpcRelationships: {},
       };
 
       const snapshot = createContinuationPreviousStateSnapshot(parentState);
@@ -172,6 +176,10 @@ describe('parent-state-collector', () => {
           ],
         },
         structureState: createEmptyAccumulatedStructureState(),
+        accumulatedDelayedConsequences: [],
+        accumulatedKnowledgeState: [],
+        accumulatedNpcAgendas: {},
+        accumulatedNpcRelationships: {},
       };
 
       const snapshot = createContinuationPreviousStateSnapshot(parentState);
@@ -190,6 +198,10 @@ describe('parent-state-collector', () => {
         accumulatedHealth: [],
         accumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
+        accumulatedDelayedConsequences: [],
+        accumulatedKnowledgeState: [],
+        accumulatedNpcAgendas: {},
+        accumulatedNpcRelationships: {},
       };
 
       const snapshot = createContinuationPreviousStateSnapshot(parentState);

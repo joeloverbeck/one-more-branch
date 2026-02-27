@@ -57,6 +57,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     threadAges: {},
     accumulatedPromises: [],
     accumulatedDelayedConsequences: [],
+    accumulatedKnowledgeState: [],
     resolvedThreadMeta: {},
     resolvedPromiseMeta: {},
     npcAgendaUpdates: [],

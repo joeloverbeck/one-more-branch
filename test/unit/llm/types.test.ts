@@ -183,6 +183,7 @@ describe('LLM types', () => {
         grandparentNarrative: null,
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
       };
 
       expect(context.globalCanon[0]).toContain('siege');
@@ -285,6 +286,7 @@ describe('LLM types', () => {
         grandparentNarrative: null,
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
       };
 
       const contexts: PagePlanContext[] = [openingContext, continuationContext];
@@ -354,6 +356,7 @@ describe('LLM types', () => {
         grandparentNarrative: null,
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
       };
 
       // TypeScript compile-time check - if this compiles, the type is valid
@@ -382,6 +385,7 @@ describe('LLM types', () => {
         grandparentNarrative: 'Earlier scene...',
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
       };
 
       expect(context.grandparentNarrative).toBe('Earlier scene...');
@@ -409,6 +413,7 @@ describe('LLM types', () => {
         grandparentNarrative: null,
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
       };
 
       expect(context.grandparentNarrative).toBeNull();
@@ -432,6 +437,7 @@ describe('LLM types', () => {
         grandparentNarrative: null,
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
         // Missing activeState!
       };
 
@@ -461,6 +467,7 @@ describe('LLM types', () => {
         },
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
         // Missing grandparentNarrative!
       };
 
@@ -524,6 +531,7 @@ describe('LLM types', () => {
         grandparentNarrative: 'You entered the forest at dawn...',
         ancestorSummaries: [],
         accumulatedPromises: [],
+        accumulatedKnowledgeState: [],
       };
 
       expect(context.activeState.activeThreats).toHaveLength(1);

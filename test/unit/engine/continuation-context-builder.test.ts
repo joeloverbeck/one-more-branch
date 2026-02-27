@@ -58,6 +58,7 @@ function makeParentState(overrides: Partial<CollectedParentState> = {}): Collect
     },
     structureState: createEmptyAccumulatedStructureState(),
     accumulatedDelayedConsequences: [],
+    accumulatedKnowledgeState: [],
     accumulatedNpcAgendas: {},
     accumulatedNpcRelationships: {},
     ...overrides,
@@ -128,6 +129,7 @@ describe('continuation-context-builder', () => {
       expect(result.narrativeFocusTrajectory).toEqual([]);
       expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
       expect(result.accumulatedDelayedConsequences).toEqual([]);
+      expect(result.accumulatedKnowledgeState).toEqual([]);
       expect(result.premisePromises).toEqual(story.premisePromises);
       expect(result.fulfilledPremisePromises).toEqual(
         parentPage.accumulatedFulfilledPremisePromises
@@ -373,6 +375,41 @@ describe('continuation-context-builder', () => {
     });
   });
 
+  it('threads accumulatedKnowledgeState from parent state', () => {
+    const story = makeStory();
+    const parentPage = createPage({
+      id: parsePageId(2),
+      narrativeText: 'You pause in the corridor.',
+      sceneSummary: 'You pause in the corridor.',
+      choices: [createChoice('Proceed'), createChoice('Retreat')],
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 0,
+    });
+
+    const parentState = makeParentState({
+      accumulatedKnowledgeState: [
+        {
+          characterName: 'Warden Hale',
+          knownFacts: ['The west gate is sabotaged.'],
+          falseBeliefs: ['The protagonist is still in solitary.'],
+          secrets: ['Hale signed the purge order.'],
+        },
+      ],
+    });
+
+    const result = buildContinuationContext(
+      story,
+      parentPage,
+      'Proceed',
+      parentState,
+      makeAncestorContext(),
+      null
+    );
+
+    expect(result.accumulatedKnowledgeState).toEqual(parentState.accumulatedKnowledgeState);
+  });
+
   describe('buildRemovableIds', () => {
     it('extracts all keyed IDs from parent state', () => {
       const parentState = makeParentState();
@@ -394,6 +431,10 @@ describe('continuation-context-builder', () => {
         accumulatedHealth: [],
         accumulatedCharacterState: {},
         structureState: createEmptyAccumulatedStructureState(),
+        accumulatedDelayedConsequences: [],
+        accumulatedKnowledgeState: [],
+        accumulatedNpcAgendas: {},
+        accumulatedNpcRelationships: {},
       };
 
       const removableIds = buildRemovableIds(emptyState);

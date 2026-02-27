@@ -32,6 +32,8 @@ import {
   createEmptyInventoryChanges,
   isActiveState,
   isActiveStateChanges,
+  isKnowledgeAsymmetry,
+  type KnowledgeAsymmetry,
 } from './state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from './state/npc-agenda';
 import { createEmptyAccumulatedNpcAgendas, applyAgendaUpdates } from './state/npc-agenda';
@@ -63,6 +65,7 @@ export interface Page {
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
   readonly accumulatedDelayedConsequences: readonly DelayedConsequence[];
+  readonly accumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
   readonly accumulatedFulfilledPremisePromises?: readonly string[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
   readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
@@ -101,6 +104,7 @@ export interface CreatePageData {
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises?: readonly TrackedPromise[];
   accumulatedDelayedConsequences?: readonly DelayedConsequence[];
+  accumulatedKnowledgeState?: readonly KnowledgeAsymmetry[];
   accumulatedFulfilledPremisePromises?: readonly string[];
   resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
   resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
@@ -166,6 +170,7 @@ export function createPage(data: CreatePageData): Page {
     threadAges: data.threadAges ?? {},
     accumulatedPromises: data.accumulatedPromises ?? [],
     accumulatedDelayedConsequences: data.accumulatedDelayedConsequences ?? [],
+    accumulatedKnowledgeState: data.accumulatedKnowledgeState ?? [],
     accumulatedFulfilledPremisePromises: data.accumulatedFulfilledPremisePromises ?? [],
     resolvedThreadMeta: data.resolvedThreadMeta ?? {},
     resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
@@ -224,6 +229,10 @@ export function isPage(value: unknown): value is Page {
   const accumulatedDelayedConsequencesValid =
     Array.isArray(accumulatedDelayedConsequences) &&
     accumulatedDelayedConsequences.every(isDelayedConsequence);
+  const accumulatedKnowledgeState = obj['accumulatedKnowledgeState'];
+  const accumulatedKnowledgeStateValid =
+    Array.isArray(accumulatedKnowledgeState) &&
+    accumulatedKnowledgeState.every(isKnowledgeAsymmetry);
   const thematicValence = obj['thematicValence'];
   const thematicValenceValid =
     thematicValence === 'THESIS_SUPPORTING' ||
@@ -248,6 +257,7 @@ export function isPage(value: unknown): value is Page {
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
     accumulatedPromisesValid &&
     accumulatedDelayedConsequencesValid &&
+    accumulatedKnowledgeStateValid &&
     thematicValenceValid &&
     accumulatedFulfilledPremisePromisesValid &&
     protagonistAffectValid &&

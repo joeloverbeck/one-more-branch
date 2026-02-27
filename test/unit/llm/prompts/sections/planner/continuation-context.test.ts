@@ -104,6 +104,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       thematicValenceTrajectory: [
         { pageId: 2, thematicValence: 'THESIS_SUPPORTING' },
         { pageId: 3, thematicValence: 'THESIS_SUPPORTING' },
@@ -140,6 +141,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       narrativeFocusTrajectory: [
         { pageId: 2, narrativeFocus: 'BROADENING' },
         { pageId: 3, narrativeFocus: 'BROADENING' },
@@ -152,6 +154,75 @@ describe('planner continuation context section', () => {
     expect(result).toContain('=== DEPTH VS BREADTH TRAJECTORY ===');
     expect(result).toContain('WARNING: The last 3 scenes trend BROADENING.');
     expect(result).toContain('Plan should prioritize DEEPENING');
+  });
+
+  it('adds dramatic irony section when accumulated knowledge asymmetry exists', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['The reactor lock is unstable.'],
+          falseBeliefs: ['The protagonist sabotaged the lock.'],
+          secrets: ['Voss falsified the maintenance logs.'],
+        },
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
+    expect(result).toContain('Captain Voss');
+    expect(result).toContain('False beliefs: The protagonist sabotaged the lock.');
+    expect(result).toContain('Secrets: Voss falsified the maintenance logs.');
+  });
+
+  it('omits dramatic irony section when accumulated knowledge asymmetry is empty', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+    expect(result).not.toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
   });
 
   it('adds late-act premise promise warning when promises remain unfulfilled', () => {
@@ -176,6 +247,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       premisePromises: [
         'A tribunal ritual is turned into a tactical weapon.',
         'The protagonist must expose the purge ledger in public.',
@@ -252,6 +324,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       decomposedCharacters: [
         {
           name: 'Rin',
@@ -338,6 +411,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       structure: {
         overallTheme: 'Loyalty under impossible pressure',
         premise: 'A smuggler must expose corruption before a citywide purge.',
@@ -438,6 +512,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -475,6 +550,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       accumulatedNpcAgendas: {
         Azra: {
           npcName: 'Azra',
@@ -518,6 +594,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       accumulatedDelayedConsequences: [
         {
           id: 'dc-2',
@@ -562,6 +639,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       parentProtagonistAffect: {
         primaryEmotion: 'dread',
         primaryIntensity: 'strong',
@@ -601,6 +679,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -630,6 +709,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       protagonistGuidance: {
         suggestedSpeech: 'Get lost, I never want to see you again.',
       },
@@ -665,6 +745,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -694,6 +775,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       protagonistGuidance: { suggestedSpeech: '   ' },
     };
 
@@ -724,6 +806,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
       protagonistGuidance: {
         suggestedEmotions: 'Furious but controlled.',
         suggestedThoughts: 'This deal is a setup.',
@@ -760,6 +843,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -789,6 +873,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       protagonistGuidance: {
         suggestedEmotions: 'Furious but controlled.',
         suggestedThoughts: 'This deal is a setup.',
@@ -826,6 +911,7 @@ describe('planner continuation context section', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
       accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       structure: {
         overallTheme: 'Loyalty under pressure',
         premise: 'A smuggler must escape.',

@@ -14,6 +14,7 @@ import type {
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { DelayedConsequence } from '../models/state/delayed-consequence.js';
+import type { KnowledgeAsymmetry } from '../models/state/knowledge-state.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { StorySpine } from '../models/story-spine.js';
 import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.js';
@@ -83,6 +84,7 @@ export interface ContinuationContext {
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises: readonly TrackedPromise[];
   accumulatedDelayedConsequences?: readonly DelayedConsequence[];
+  accumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
   premisePromises: readonly string[];
   fulfilledPremisePromises: readonly string[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];

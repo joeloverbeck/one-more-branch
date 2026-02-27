@@ -127,6 +127,7 @@ describe('llm barrel exports', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     };
     const message: ChatMessage = { role: 'user', content: 'Continue the story' };
     const schema: JsonSchema = WRITER_GENERATION_SCHEMA;
@@ -197,6 +198,7 @@ describe('llm barrel exports', () => {
       grandparentNarrative: null,
       ancestorSummaries: [],
     accumulatedPromises: [],
+    accumulatedKnowledgeState: [],
     };
     const plannerResult: PagePlanGenerationResult = {
       ...pagePlan,

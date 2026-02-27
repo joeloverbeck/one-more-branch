@@ -1,4 +1,7 @@
-import { computeNarrativeStateLifecycle } from '@/engine/state-lifecycle';
+import {
+  computeAccumulatedKnowledgeState,
+  computeNarrativeStateLifecycle,
+} from '@/engine/state-lifecycle';
 import { PromiseScope, PromiseType, ThreadType, Urgency } from '@/models/state/keyed-entry';
 import type { AnalystResult } from '@/llm/analyst-types';
 import type { ThreadEntry, TrackedPromise } from '@/models/state';
@@ -182,5 +185,72 @@ describe('computeNarrativeStateLifecycle', () => {
     });
 
     expect(result.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
+  });
+});
+
+describe('computeAccumulatedKnowledgeState', () => {
+  it('preserves parent entries and replaces updated character entries', () => {
+    const result = computeAccumulatedKnowledgeState({
+      parentAccumulatedKnowledgeState: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['Old fact'],
+          falseBeliefs: ['Old false belief'],
+          secrets: ['Old secret'],
+        },
+        {
+          characterName: 'Engineer Tala',
+          knownFacts: ['Tala fact'],
+          falseBeliefs: [],
+          secrets: ['Tala secret'],
+        },
+      ],
+      detectedKnowledgeAsymmetry: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['New fact'],
+          falseBeliefs: ['New false belief'],
+          secrets: ['New secret'],
+        },
+      ],
+    });
+
+    expect(result).toEqual([
+      {
+        characterName: 'Captain Voss',
+        knownFacts: ['New fact'],
+        falseBeliefs: ['New false belief'],
+        secrets: ['New secret'],
+      },
+      {
+        characterName: 'Engineer Tala',
+        knownFacts: ['Tala fact'],
+        falseBeliefs: [],
+        secrets: ['Tala secret'],
+      },
+    ]);
+  });
+
+  it('returns parent state unchanged when no new detections exist', () => {
+    const result = computeAccumulatedKnowledgeState({
+      parentAccumulatedKnowledgeState: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['Old fact'],
+          falseBeliefs: ['Old false belief'],
+          secrets: ['Old secret'],
+        },
+      ],
+      detectedKnowledgeAsymmetry: [],
+    });
+
+    expect(result).toEqual([
+      {
+        characterName: 'Captain Voss',
+        knownFacts: ['Old fact'],
+        falseBeliefs: ['Old false belief'],
+        secrets: ['Old secret'],
+      },
+    ]);
   });
 });
