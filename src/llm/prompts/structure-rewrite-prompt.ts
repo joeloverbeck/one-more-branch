@@ -1,5 +1,6 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
+import { getGenreObligationTags } from '../../models/genre-obligations.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { StructureRewriteContext } from '../structure-rewrite-types.js';
@@ -34,7 +35,9 @@ function formatEscalationFields(
   isMidpoint: boolean,
   midpointType: string | null,
   uniqueScenarioHook: string | null,
-  approachVectors?: readonly string[] | null
+  approachVectors?: readonly string[] | null,
+  setpieceSourceIndex?: number | null,
+  obligatorySceneTag?: string | null
 ): string {
   const parts: string[] = [`    Causal link: ${causalLink}`];
   if (escalationType) {
@@ -60,6 +63,12 @@ function formatEscalationFields(
   if (approachVectors && approachVectors.length > 0) {
     parts.push(`    Approach vectors: ${approachVectors.join(', ')}`);
   }
+  if (typeof setpieceSourceIndex === 'number') {
+    parts.push(`    Setpiece source index: ${setpieceSourceIndex}`);
+  }
+  if (obligatorySceneTag) {
+    parts.push(`    Obligatory scene tag: ${obligatorySceneTag}`);
+  }
   return parts.length > 0 ? '\n' + parts.join('\n') : '';
 }
 
@@ -73,7 +82,7 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.secondaryEscalationType, beat.crisisType, beat.expectedGapMagnitude, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors)}
+    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.secondaryEscalationType, beat.crisisType, beat.expectedGapMagnitude, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors, beat.setpieceSourceIndex, beat.obligatorySceneTag)}
     Resolution: ${beat.resolution}`
     )
     .join('\n');
@@ -85,9 +94,43 @@ function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats'
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.secondaryEscalationType, beat.crisisType, beat.expectedGapMagnitude, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors)}`
+    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.secondaryEscalationType, beat.crisisType, beat.expectedGapMagnitude, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors, beat.setpieceSourceIndex, beat.obligatorySceneTag)}`
     )
     .join('\n');
+}
+
+function buildGenreObligationSection(context: StructureRewriteContext): string {
+  if (!context.conceptSpec) {
+    return '';
+  }
+
+  const allObligations = getGenreObligationTags(context.conceptSpec.genreFrame);
+  if (allObligations.length === 0) {
+    return '';
+  }
+
+  const fulfilled = new Set(
+    context.completedBeats
+      .map((beat) => beat.obligatorySceneTag)
+      .filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
+  );
+  const remaining = allObligations.filter((tag) => !fulfilled.has(tag));
+
+  const allLines = allObligations.map((tag) => `- ${tag}`).join('\n');
+  const fulfilledLines =
+    fulfilled.size > 0 ? [...fulfilled].map((tag) => `- ${tag}`).join('\n') : '- (none)';
+  const remainingLines = remaining.length > 0 ? remaining.map((tag) => `- ${tag}`).join('\n') : '- (none)';
+
+  return `\nGENRE OBLIGATION CONTRACT (for ${context.conceptSpec.genreFrame}):
+All obligation tags:
+${allLines}
+
+Already fulfilled in completed canon beats (must stay fulfilled):
+${fulfilledLines}
+
+Remaining obligation tags to cover in regenerated beats:
+${remainingLines}
+`;
 }
 
 export function buildStructureRewritePrompt(
@@ -137,6 +180,7 @@ Deadline mechanism: ${context.conceptSpec.deadlineMechanism}
 
 Each act's stakes should escalate FROM these foundations, even after the deviation.\n`
     : '';
+  const genreObligationSection = buildGenreObligationSection(context);
 
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
@@ -148,7 +192,7 @@ ${worldSection}Tone: ${context.tone}
 ${toneFeelLine}${toneAvoidLine}Original Theme: ${context.originalTheme}
 Original Opening Image: ${context.originalOpeningImage}
 Original Closing Image: ${context.originalClosingImage}
-${spineSection}${conceptStakesSection}
+${spineSection}${conceptStakesSection}${genreObligationSection}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
@@ -207,6 +251,10 @@ REQUIREMENTS (follow ALL):
 20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION
    For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
+21. If a GENRE OBLIGATION CONTRACT section is present:
+   - Preserve obligatorySceneTag on completed beats unchanged.
+   - For regenerated beats, assign obligatorySceneTag using one of the listed obligation tags when a beat fulfills it; otherwise set obligatorySceneTag to null.
+   - Every tag listed under "Remaining obligation tags to cover in regenerated beats" must appear at least once in regenerated beats.
 
 OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)
@@ -245,7 +293,8 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
       - isMidpoint: boolean (true for exactly one beat in the full structure)
       - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
-      - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats`;
+      - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
+      - obligatorySceneTag: genre obligation tag when this beat fulfills one listed obligation, else null`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

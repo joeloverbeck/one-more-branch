@@ -67,4 +67,20 @@ describe('ANALYST_SCHEMA', () => {
     );
     expect(schema.required).toContain('premisePromiseFulfilled');
   });
+
+  it('includes obligatorySceneFulfilled as nullable string in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    const obligatorySceneFulfilled = schema.properties['obligatorySceneFulfilled'] as {
+      anyOf?: Array<Record<string, unknown>>;
+    };
+
+    expect(obligatorySceneFulfilled).toBeDefined();
+    expect(obligatorySceneFulfilled.anyOf).toEqual(
+      expect.arrayContaining([{ type: 'string' }, { type: 'null' }])
+    );
+    expect(schema.required).toContain('obligatorySceneFulfilled');
+  });
 });

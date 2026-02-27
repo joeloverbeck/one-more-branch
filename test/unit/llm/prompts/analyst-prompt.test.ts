@@ -35,6 +35,7 @@ describe('buildAnalystPrompt', () => {
             crisisType: 'BEST_BAD_CHOICE',
             isMidpoint: true,
             midpointType: 'FALSE_VICTORY',
+            obligatorySceneTag: 'hero_at_mercy_of_antagonist',
           },
         ],
       },
@@ -186,6 +187,30 @@ describe('buildAnalystPrompt', () => {
     expect(messages[0].content).toContain('PREMISE PROMISE FULFILLMENT:');
     expect(messages[0].content).toContain('premisePromiseFulfilled');
     expect(messages[0].content).toContain('PENDING PREMISE PROMISES');
+  });
+
+  it('system message includes obligatory scene fulfillment rules', () => {
+    const messages = buildAnalystPrompt(testContext);
+    expect(messages[0].content).toContain('OBLIGATORY SCENE FULFILLMENT:');
+    expect(messages[0].content).toContain('obligatorySceneFulfilled');
+  });
+
+  it('includes active beat obligation section when active beat has obligatorySceneTag', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      accumulatedStructureState: {
+        ...testState,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      },
+    });
+
+    expect(messages[1].content).toContain('ACTIVE BEAT OBLIGATION:');
+    expect(messages[1].content).toContain('ACTIVE BEAT OBLIGATION TAG: hero_at_mercy_of_antagonist');
+    expect(messages[1].content).toContain('Set obligatorySceneFulfilled');
   });
 
   it('includes premise promise tracking section when premise promises exist', () => {

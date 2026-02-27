@@ -708,6 +708,7 @@ describe('page-builder', () => {
         beatAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
         thematicChargeDescription: '',
+        obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         rawResponse: '',
       };
@@ -827,6 +828,7 @@ describe('page-builder', () => {
         beatAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
         thematicChargeDescription: '',
+        obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         rawResponse: '',
       };

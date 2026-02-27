@@ -48,6 +48,7 @@ function buildStructure(): StoryStructure {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
           {
             id: '1.2',
@@ -65,6 +66,7 @@ function buildStructure(): StoryStructure {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
+            obligatorySceneTag: null,
           },
         ],
       },
@@ -190,6 +192,7 @@ describe('story-repository integration', () => {
               uniqueScenarioHook: null,
               approachVectors: null,
               setpieceSourceIndex: null,
+              obligatorySceneTag: null,
             },
             {
               id: '1.2',
@@ -207,6 +210,7 @@ describe('story-repository integration', () => {
               uniqueScenarioHook: null,
               approachVectors: null,
               setpieceSourceIndex: null,
+              obligatorySceneTag: null,
             },
           ],
         },
@@ -233,6 +237,7 @@ describe('story-repository integration', () => {
               uniqueScenarioHook: null,
               approachVectors: null,
               setpieceSourceIndex: null,
+              obligatorySceneTag: null,
             },
             {
               id: '2.2',
@@ -250,6 +255,7 @@ describe('story-repository integration', () => {
               uniqueScenarioHook: null,
               approachVectors: null,
               setpieceSourceIndex: null,
+              obligatorySceneTag: null,
             },
           ],
         },
@@ -276,6 +282,7 @@ describe('story-repository integration', () => {
               uniqueScenarioHook: null,
               approachVectors: null,
               setpieceSourceIndex: null,
+              obligatorySceneTag: null,
             },
             {
               id: '3.2',
@@ -293,6 +300,7 @@ describe('story-repository integration', () => {
               uniqueScenarioHook: null,
               approachVectors: null,
               setpieceSourceIndex: null,
+              obligatorySceneTag: null,
             },
           ],
         },

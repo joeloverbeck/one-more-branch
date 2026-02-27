@@ -85,6 +85,7 @@ export interface AnalystResult {
   beatAlignmentReason: string;
   thematicCharge: ThematicCharge;
   thematicChargeDescription: string;
+  obligatorySceneFulfilled: string | null;
   premisePromiseFulfilled: string | null;
   rawResponse: string;
 }

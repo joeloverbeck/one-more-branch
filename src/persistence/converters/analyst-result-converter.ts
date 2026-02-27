@@ -69,6 +69,7 @@ export function analystResultToFileData(
     beatAlignmentReason: analystResult.beatAlignmentReason,
     thematicCharge: analystResult.thematicCharge,
     thematicChargeDescription: analystResult.thematicChargeDescription,
+    obligatorySceneFulfilled: analystResult.obligatorySceneFulfilled,
     premisePromiseFulfilled: analystResult.premisePromiseFulfilled,
   };
 }
@@ -146,6 +147,7 @@ export function fileDataToAnalystResult(
     thematicCharge:
       (data.thematicCharge as AnalystResult['thematicCharge']) ?? 'AMBIGUOUS',
     thematicChargeDescription: data.thematicChargeDescription ?? '',
+    obligatorySceneFulfilled: data.obligatorySceneFulfilled ?? null,
     premisePromiseFulfilled: data.premisePromiseFulfilled ?? null,
     rawResponse: '',
   };

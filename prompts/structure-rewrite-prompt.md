@@ -83,6 +83,18 @@ Deadline mechanism: {{conceptSpec.deadlineMechanism}}
 Each act's stakes should escalate FROM these foundations, even after the deviation.
 {{/if}}
 
+{{#if conceptSpec}}
+GENRE OBLIGATION CONTRACT (for {{conceptSpec.genreFrame}}):
+All obligation tags:
+{{genre obligation tags}}
+
+Already fulfilled in completed canon beats (must stay fulfilled):
+{{fulfilled obligation tags from completed beats, or "- (none)"}}
+
+Remaining obligation tags to cover in regenerated beats:
+{{remaining obligation tags, or "- (none)"}}
+{{/if}}
+
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
 
@@ -146,6 +158,10 @@ REQUIREMENTS (follow ALL):
    - Non-midpoint beats must set `isMidpoint: false` and `midpointType: null`
 16. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
 17. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
+18. If a GENRE OBLIGATION CONTRACT section is present:
+   - Preserve obligatorySceneTag on completed beats unchanged.
+   - For regenerated beats, assign obligatorySceneTag using one of the listed obligation tags when a beat fulfills it; otherwise set obligatorySceneTag to null.
+   - Every tag listed under "Remaining obligation tags to cover in regenerated beats" must appear at least once in regenerated beats.
 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
@@ -184,6 +200,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
       - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
+      - obligatorySceneTag: genre obligation tag when this beat fulfills one listed obligation, else null
 ```
 
 ## JSON Response Shape
@@ -215,7 +232,8 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "isMidpoint": "{{true|false}}",
           "midpointType": "{{FALSE_VICTORY|FALSE_DEFEAT|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
-          "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|...}}"]
+          "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|...}}"],
+          "obligatorySceneTag": "{{genre obligation tag|null}}"
         }
       ]
     }

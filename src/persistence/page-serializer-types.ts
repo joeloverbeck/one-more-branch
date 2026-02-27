@@ -171,6 +171,7 @@ export interface AnalystResultFileData {
   beatAlignmentReason?: string;
   thematicCharge: string;
   thematicChargeDescription: string;
+  obligatorySceneFulfilled?: string | null;
   premisePromiseFulfilled?: string | null;
 }
 
