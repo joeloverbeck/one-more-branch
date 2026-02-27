@@ -9,11 +9,19 @@ export interface ThreadAdd {
   urgency: Urgency;
 }
 
+export interface DelayedConsequenceDraft {
+  description: string;
+  triggerCondition: string;
+  minPagesDelay: number;
+  maxPagesDelay: number;
+}
+
 export interface PageWriterResult {
   narrative: string;
   choices: Array<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }>;
   sceneSummary: string;
   protagonistAffect: ProtagonistAffect;
+  delayedConsequencesCreated: DelayedConsequenceDraft[];
   isEnding: boolean;
   rawResponse: string;
 }

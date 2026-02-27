@@ -76,6 +76,7 @@ describe('llm client integration (mocked fetch)', () => {
         dominantMotivation: 'Understand the observatory',
       },
       sceneSummary: 'Test summary of the scene events and consequences.',
+      delayedConsequencesCreated: [],
       isEnding: false,
     };
 
@@ -135,6 +136,7 @@ describe('llm client integration (mocked fetch)', () => {
         dominantMotivation: 'Understand the observatory',
       },
       sceneSummary: 'Test summary of the scene events and consequences.',
+      delayedConsequencesCreated: [],
       isEnding: false,
     };
 
@@ -198,6 +200,7 @@ describe('llm client integration (mocked fetch)', () => {
         dominantMotivation: 'Stay in control of the room',
       },
       sceneSummary: 'Mechanical defenses activate and force an immediate tactical decision.',
+      delayedConsequencesCreated: [],
       isEnding: false,
     };
 

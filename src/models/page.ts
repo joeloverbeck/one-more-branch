@@ -8,6 +8,7 @@ import {
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import { isTrackedPromise, type TrackedPromise } from './state/keyed-entry';
+import { isDelayedConsequence, type DelayedConsequence } from './state/delayed-consequence.js';
 import type { AnalystResult, ThematicCharge } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import {
@@ -61,6 +62,7 @@ export interface Page {
   readonly thematicValence: ThematicCharge;
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
+  readonly accumulatedDelayedConsequences: readonly DelayedConsequence[];
   readonly accumulatedFulfilledPremisePromises?: readonly string[];
   readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
   readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
@@ -98,6 +100,7 @@ export interface CreatePageData {
   analystResult?: AnalystResult | null;
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises?: readonly TrackedPromise[];
+  accumulatedDelayedConsequences?: readonly DelayedConsequence[];
   accumulatedFulfilledPremisePromises?: readonly string[];
   resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
   resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
@@ -162,6 +165,7 @@ export function createPage(data: CreatePageData): Page {
     thematicValence: data.analystResult?.thematicCharge ?? 'AMBIGUOUS',
     threadAges: data.threadAges ?? {},
     accumulatedPromises: data.accumulatedPromises ?? [],
+    accumulatedDelayedConsequences: data.accumulatedDelayedConsequences ?? [],
     accumulatedFulfilledPremisePromises: data.accumulatedFulfilledPremisePromises ?? [],
     resolvedThreadMeta: data.resolvedThreadMeta ?? {},
     resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
@@ -216,6 +220,10 @@ export function isPage(value: unknown): value is Page {
   const accumulatedPromises = obj['accumulatedPromises'];
   const accumulatedPromisesValid =
     Array.isArray(accumulatedPromises) && accumulatedPromises.every(isTrackedPromise);
+  const accumulatedDelayedConsequences = obj['accumulatedDelayedConsequences'];
+  const accumulatedDelayedConsequencesValid =
+    Array.isArray(accumulatedDelayedConsequences) &&
+    accumulatedDelayedConsequences.every(isDelayedConsequence);
   const thematicValence = obj['thematicValence'];
   const thematicValenceValid =
     thematicValence === 'THESIS_SUPPORTING' ||
@@ -239,6 +247,7 @@ export function isPage(value: unknown): value is Page {
     accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
     accumulatedPromisesValid &&
+    accumulatedDelayedConsequencesValid &&
     thematicValenceValid &&
     accumulatedFulfilledPremisePromisesValid &&
     protagonistAffectValid &&

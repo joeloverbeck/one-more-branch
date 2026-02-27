@@ -38,6 +38,7 @@ describe('Active state pipeline integration', () => {
       dominantMotivation: 'Save the innkeeper before the roof caves in',
     },
     sceneSummary: 'Test summary of the scene events and consequences.',
+    delayedConsequencesCreated: [],
     isEnding: false,
   };
 
@@ -206,6 +207,7 @@ describe('Active state pipeline integration', () => {
         dominantMotivation: 'Survive',
       },
       sceneSummary: 'Test summary of the scene events and consequences.',
+      delayedConsequencesCreated: [],
       isEnding: false,
     };
 

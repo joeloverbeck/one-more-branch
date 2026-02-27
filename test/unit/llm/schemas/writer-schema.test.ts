@@ -18,6 +18,7 @@ describe('WRITER_GENERATION_SCHEMA', () => {
       'choices',
       'protagonistAffect',
       'sceneSummary',
+      'delayedConsequencesCreated',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);
@@ -49,6 +50,7 @@ describe('WRITER_GENERATION_SCHEMA', () => {
     ]);
     expect(schema.properties.protagonistAffect.type).toBe('object');
     expect(schema.properties.sceneSummary.type).toBe('string');
+    expect(schema.properties.delayedConsequencesCreated.type).toBe('array');
     expect(schema.properties.isEnding.type).toBe('boolean');
   });
 

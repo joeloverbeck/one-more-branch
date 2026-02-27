@@ -112,6 +112,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Find the plague archives',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -145,6 +146,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Get inside before guards rotate',
         },
         sceneSummary: 'You choose a stealthy route while watching guard patterns at the gate.',
+        delayedConsequencesCreated: [],
         isEnding: false,
         threatsAdded: ['Legacy field should be rejected by strict schema'],
       };
@@ -180,6 +182,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Learn from the elder',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -213,6 +216,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Secure the findings and continue exploring',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -251,6 +255,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Rest at last',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: true,
       };
 
@@ -287,6 +292,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Resolve the error',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: true,
       };
 
@@ -318,6 +324,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Resolve the error',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -394,6 +401,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: '  Decode the ledger  ',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -437,6 +445,7 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Proceed carefully',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -458,6 +467,7 @@ describe('schema pipeline integration', () => {
           { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
         ],
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -482,6 +492,7 @@ describe('schema pipeline integration', () => {
         ],
         newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -497,6 +508,7 @@ describe('schema pipeline integration', () => {
         ],
         newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -516,6 +528,7 @@ describe('schema pipeline integration', () => {
         ],
         newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -536,6 +549,7 @@ describe('schema pipeline integration', () => {
         threadsAdded: ['legacy-thread-shape'],
         newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -558,6 +572,7 @@ describe('schema pipeline integration', () => {
         constraintsRemoved: ['th-1'],
         newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
+        delayedConsequencesCreated: [],
         isEnding: false,
       };
 

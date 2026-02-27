@@ -11,12 +11,15 @@ import {
   PageId,
   parsePageId,
   StructureVersionId,
+  type DelayedConsequence,
 } from '../models';
+import { incrementDelayedConsequenceAges } from './consequence-lifecycle.js';
 import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
+import type { DelayedConsequenceDraft } from '../llm/writer-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import { createCharacterStateChanges } from './character-state-manager';
 import { createHealthChanges } from './health-manager';
@@ -44,6 +47,7 @@ export interface PageBuildContext {
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
+  readonly parentAccumulatedDelayedConsequences: readonly DelayedConsequence[];
   readonly parentAccumulatedFulfilledPremisePromises: readonly string[];
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
@@ -82,6 +86,7 @@ export interface ContinuationPageBuildContext {
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
+  readonly parentAccumulatedDelayedConsequences?: readonly DelayedConsequence[];
   readonly parentAccumulatedFulfilledPremisePromises?: readonly string[];
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
@@ -108,6 +113,14 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     analystPromisesResolved: context.analystPromisesResolved,
     analystPremisePromiseFulfilled: context.analystPremisePromiseFulfilled,
   });
+  const agedDelayedConsequences = incrementDelayedConsequenceAges(
+    context.parentAccumulatedDelayedConsequences ?? []
+  );
+  const createdDelayedConsequences = materializeDelayedConsequenceDrafts(
+    result.delayedConsequencesCreated ?? [],
+    context.pageId,
+    getMaxDelayedConsequenceIdNumber(agedDelayedConsequences)
+  );
 
   return createPage({
     id: context.pageId,
@@ -137,6 +150,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     analystResult: context.analystResult,
     threadAges: lifecycle.threadAges,
     accumulatedPromises: lifecycle.accumulatedPromises,
+    accumulatedDelayedConsequences: [...agedDelayedConsequences, ...createdDelayedConsequences],
     accumulatedFulfilledPremisePromises: lifecycle.accumulatedFulfilledPremisePromises,
     resolvedThreadMeta: lifecycle.resolvedThreadMeta,
     resolvedPromiseMeta: lifecycle.resolvedPromiseMeta,
@@ -178,6 +192,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     analystResult: null,
     parentThreadAges: {},
     parentAccumulatedPromises: [],
+    parentAccumulatedDelayedConsequences: [],
     parentAccumulatedFulfilledPremisePromises: [],
     analystPromisesDetected: [],
     analystPromisesResolved: [],
@@ -210,6 +225,7 @@ export function buildContinuationPage(
     analystResult: context.analystResult,
     parentThreadAges: context.parentThreadAges,
     parentAccumulatedPromises: context.parentAccumulatedPromises,
+    parentAccumulatedDelayedConsequences: context.parentAccumulatedDelayedConsequences ?? [],
     parentAccumulatedFulfilledPremisePromises:
       context.parentAccumulatedFulfilledPremisePromises ?? [],
     analystPromisesDetected: context.analystPromisesDetected,
@@ -231,4 +247,35 @@ export function createEmptyStructureContext(): FirstPageBuildContext {
     structureState: createEmptyAccumulatedStructureState(),
     structureVersionId: null,
   };
+}
+
+function getMaxDelayedConsequenceIdNumber(
+  consequences: readonly DelayedConsequence[]
+): number {
+  let maxId = 0;
+  for (const consequence of consequences) {
+    const match = /^dc-(\d+)$/.exec(consequence.id);
+    const numericId = match?.[1] ? Number.parseInt(match[1], 10) : NaN;
+    if (Number.isFinite(numericId) && numericId > maxId) {
+      maxId = numericId;
+    }
+  }
+  return maxId;
+}
+
+function materializeDelayedConsequenceDrafts(
+  drafts: readonly DelayedConsequenceDraft[],
+  sourcePageId: PageId,
+  currentMaxId: number
+): readonly DelayedConsequence[] {
+  return drafts.map((draft, index) => ({
+    id: `dc-${currentMaxId + index + 1}`,
+    description: draft.description,
+    triggerCondition: draft.triggerCondition,
+    minPagesDelay: draft.minPagesDelay,
+    maxPagesDelay: draft.maxPagesDelay,
+    currentAge: 0,
+    triggered: false,
+    sourcePageId,
+  }));
 }

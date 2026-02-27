@@ -92,6 +92,16 @@ export function serializePage(page: Page): PageFileData {
       suggestedUrgency: p.suggestedUrgency,
       age: p.age,
     })),
+    accumulatedDelayedConsequences: page.accumulatedDelayedConsequences.map((consequence) => ({
+      id: consequence.id,
+      description: consequence.description,
+      triggerCondition: consequence.triggerCondition,
+      minPagesDelay: consequence.minPagesDelay,
+      maxPagesDelay: consequence.maxPagesDelay,
+      currentAge: consequence.currentAge,
+      triggered: consequence.triggered,
+      sourcePageId: consequence.sourcePageId,
+    })),
     ...(page.accumulatedFulfilledPremisePromises !== undefined
       ? { accumulatedFulfilledPremisePromises: [...page.accumulatedFulfilledPremisePromises] }
       : {}),
@@ -187,6 +197,16 @@ export function deserializePage(data: PageFileData): Page {
       resolutionHint: p.resolutionHint ?? '',
       suggestedUrgency: p.suggestedUrgency as TrackedPromise['suggestedUrgency'],
       age: p.age,
+    })),
+    accumulatedDelayedConsequences: data.accumulatedDelayedConsequences.map((consequence) => ({
+      id: consequence.id,
+      description: consequence.description,
+      triggerCondition: consequence.triggerCondition,
+      minPagesDelay: consequence.minPagesDelay,
+      maxPagesDelay: consequence.maxPagesDelay,
+      currentAge: consequence.currentAge,
+      triggered: consequence.triggered,
+      sourcePageId: parsePageId(consequence.sourcePageId),
     })),
     ...(data.accumulatedFulfilledPremisePromises !== undefined
       ? { accumulatedFulfilledPremisePromises: [...data.accumulatedFulfilledPremisePromises] }

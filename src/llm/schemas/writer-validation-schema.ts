@@ -29,12 +29,30 @@ const ChoiceObjectSchema = z.object({
   primaryDelta: z.nativeEnum(PrimaryDelta),
 });
 
+const DelayedConsequenceDraftSchema = z
+  .object({
+    description: z.string().min(1, 'Delayed consequence description must not be empty'),
+    triggerCondition: z.string().min(1, 'Delayed consequence triggerCondition must not be empty'),
+    minPagesDelay: z.number().int().min(1, 'minPagesDelay must be >= 1'),
+    maxPagesDelay: z.number().int().min(1, 'maxPagesDelay must be >= 1'),
+  })
+  .superRefine((data, ctx) => {
+    if (data.maxPagesDelay < data.minPagesDelay) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'maxPagesDelay must be >= minPagesDelay',
+        path: ['maxPagesDelay'],
+      });
+    }
+  });
+
 export const WriterResultSchema = z
   .object({
     narrative: z.string().min(50, 'Narrative must be at least 50 characters'),
     choices: z.array(ChoiceObjectSchema),
     protagonistAffect: ProtagonistAffectSchema.optional().default(WRITER_DEFAULT_PROTAGONIST_AFFECT),
     sceneSummary: z.string().min(20),
+    delayedConsequencesCreated: z.array(DelayedConsequenceDraftSchema),
     isEnding: z.boolean(),
   })
   .superRefine((data, ctx) => {

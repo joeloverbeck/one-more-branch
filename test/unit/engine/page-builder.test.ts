@@ -54,6 +54,7 @@ function buildMockGenerationResult(
       secondaryEmotions: [],
       dominantMotivation: 'Discover what lies ahead',
     },
+    delayedConsequencesCreated: [],
     isEnding: false,
     sceneSummary: 'Test summary of the scene events and consequences.',
     rawResponse: 'raw-response',
@@ -256,6 +257,86 @@ describe('page-builder', () => {
       const page = buildPage(result, context);
 
       expect(page.thematicValence).toBe('ANTITHESIS_SUPPORTING');
+    });
+  });
+
+  describe('buildPage delayed consequences', () => {
+    it('ages inherited delayed consequences and appends newly created ones', () => {
+      const result = buildMockGenerationResult({
+        delayedConsequencesCreated: [
+          {
+            description: 'The tower watch compiles a suspect ledger.',
+            triggerCondition: 'The protagonist re-enters the city ward.',
+            minPagesDelay: 2,
+            maxPagesDelay: 5,
+          },
+        ],
+      });
+      const context: PageBuildContext = {
+        pageId: parsePageId(4),
+        parentPageId: parsePageId(3),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedDelayedConsequences: [
+          {
+            id: 'dc-7',
+            description: 'A forged badge is already circulating.',
+            triggerCondition: 'A checkpoint scan occurs.',
+            minPagesDelay: 1,
+            maxPagesDelay: 3,
+            currentAge: 1,
+            triggered: false,
+            sourcePageId: parsePageId(2),
+          },
+        ],
+        parentAccumulatedFulfilledPremisePromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: null,
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+
+      expect(page.accumulatedDelayedConsequences).toEqual([
+        {
+          id: 'dc-7',
+          description: 'A forged badge is already circulating.',
+          triggerCondition: 'A checkpoint scan occurs.',
+          minPagesDelay: 1,
+          maxPagesDelay: 3,
+          currentAge: 2,
+          triggered: false,
+          sourcePageId: parsePageId(2),
+        },
+        {
+          id: 'dc-8',
+          description: 'The tower watch compiles a suspect ledger.',
+          triggerCondition: 'The protagonist re-enters the city ward.',
+          minPagesDelay: 2,
+          maxPagesDelay: 5,
+          currentAge: 0,
+          triggered: false,
+          sourcePageId: parsePageId(4),
+        },
+      ]);
     });
   });
 

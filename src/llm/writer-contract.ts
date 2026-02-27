@@ -5,6 +5,7 @@ export const WRITER_REQUIRED_FIELDS = [
   'choices',
   'protagonistAffect',
   'sceneSummary',
+  'delayedConsequencesCreated',
   'isEnding',
 ] as const;
 

@@ -96,6 +96,40 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           description:
             'A 2-3 sentence factual summary of what happened in this scene. Focus on key events, decisions made, and consequences. This will be used as context for future scenes, so emphasize plot-relevant facts over atmospheric details.',
         },
+        delayedConsequencesCreated: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              description: {
+                type: 'string',
+                description:
+                  'What future consequence is being set up. Describe the eventual payoff in concrete story terms.',
+              },
+              triggerCondition: {
+                type: 'string',
+                description:
+                  'Condition under which this consequence should surface later in the story.',
+              },
+              minPagesDelay: {
+                type: 'integer',
+                minimum: 1,
+                description:
+                  'Minimum number of generated pages before this consequence may surface.',
+              },
+              maxPagesDelay: {
+                type: 'integer',
+                minimum: 1,
+                description:
+                  'Maximum number of generated pages after which this consequence should have surfaced.',
+              },
+            },
+            required: ['description', 'triggerCondition', 'minPagesDelay', 'maxPagesDelay'],
+            additionalProperties: false,
+          },
+          description:
+            'Delayed consequence drafts created by this scene. Use an empty array when no delayed consequence is created.',
+        },
         isEnding: {
           type: 'boolean',
           description: 'True only when the story concludes and choices is empty.',
