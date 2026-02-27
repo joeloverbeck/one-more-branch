@@ -690,6 +690,8 @@ describe('buildEscalationDirective', () => {
       role: BeatRole;
       escalationType?: string | null;
       crisisType?: string | null;
+      isMidpoint?: boolean;
+      midpointType?: string | null;
     }>
   ): StoryStructure => ({
     overallTheme: 'Test',
@@ -711,6 +713,8 @@ describe('buildEscalationDirective', () => {
           role: b.role,
           escalationType: b.escalationType ?? null,
           crisisType: b.crisisType ?? null,
+          isMidpoint: b.isMidpoint ?? false,
+          midpointType: b.midpointType ?? null,
         })),
       },
     ],
@@ -860,5 +864,24 @@ describe('buildEscalationDirective', () => {
 
     expect(result).toContain('=== ESCALATION DIRECTIVE ===');
     expect(result).not.toContain('Previous beat resolved:');
+  });
+
+  it('includes midpoint directive even when role is setup', () => {
+    const structure = makeStructure([
+      { id: '1.1', role: 'setup', isMidpoint: true, midpointType: 'FALSE_DEFEAT' },
+    ]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 0,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('=== MIDPOINT DIRECTIVE ===');
+    expect(result).toContain('Midpoint type: FALSE_DEFEAT');
+    expect(result).toContain('central reversal');
   });
 });

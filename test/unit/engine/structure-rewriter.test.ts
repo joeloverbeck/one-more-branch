@@ -336,10 +336,12 @@ describe('structure-rewriter', () => {
         causalLink: 'Because the admiral frames the captain during tribunal.',
         role: 'setup',
         escalationType: null,
-            crisisType: null,
+        crisisType: null,
+        isMidpoint: false,
+        midpointType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
-            setpieceSourceIndex: null,
+        setpieceSourceIndex: null,
       });
       expect(result.structure.acts[0]?.beats[1]).toEqual({
         id: '1.2',
@@ -349,10 +351,12 @@ describe('structure-rewriter', () => {
         causalLink: 'Because the surviving fleet is trapped by blockade tolls.',
         role: 'turning_point',
         escalationType: null,
-            crisisType: null,
+        crisisType: null,
+        isMidpoint: false,
+        midpointType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
-            setpieceSourceIndex: null,
+        setpieceSourceIndex: null,
       });
     });
 
@@ -478,6 +482,8 @@ describe('structure-rewriter', () => {
         role: 'setup',
         escalationType: null,
         crisisType: null,
+        isMidpoint: false,
+        midpointType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
         setpieceSourceIndex: null,
@@ -627,6 +633,8 @@ describe('structure-rewriter', () => {
         role: 'turning_point',
         escalationType: null,
         crisisType: null,
+        isMidpoint: false,
+        midpointType: null,
         uniqueScenarioHook: null,
         approachVectors: null,
         setpieceSourceIndex: null,

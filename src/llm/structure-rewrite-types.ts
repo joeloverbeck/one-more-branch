@@ -15,6 +15,8 @@ export interface CompletedBeat {
   readonly role: string;
   readonly escalationType: string | null;
   readonly crisisType: string | null;
+  readonly isMidpoint: boolean;
+  readonly midpointType: string | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly string[] | null;
   readonly setpieceSourceIndex: number | null;
@@ -32,6 +34,8 @@ export interface PlannedBeat {
   readonly role: string;
   readonly escalationType: string | null;
   readonly crisisType: string | null;
+  readonly isMidpoint: boolean;
+  readonly midpointType: string | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly string[] | null;
   readonly setpieceSourceIndex: number | null;

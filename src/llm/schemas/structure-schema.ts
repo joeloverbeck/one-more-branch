@@ -4,6 +4,7 @@ import {
   BEAT_ROLES,
   CRISIS_TYPES,
   ESCALATION_TYPES,
+  MIDPOINT_TYPES,
 } from '../../models/story-arc.js';
 
 export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
@@ -100,6 +101,8 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'role',
                     'escalationType',
                     'crisisType',
+                    'isMidpoint',
+                    'midpointType',
                     'uniqueScenarioHook',
                     'approachVectors',
                     'setpieceSourceIndex',
@@ -139,6 +142,22 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       ],
                       description:
                         'For escalation/turning_point beats: dilemma shape for the beat. Null for setup/reflection/resolution beats.',
+                    },
+                    isMidpoint: {
+                      type: 'boolean',
+                      description:
+                        'True for exactly one beat in the full story structure: the midpoint beat. False for all others.',
+                    },
+                    midpointType: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [...MIDPOINT_TYPES],
+                        },
+                        { type: 'null' },
+                      ],
+                      description:
+                        'FALSE_VICTORY or FALSE_DEFEAT when isMidpoint is true; null otherwise.',
                     },
                     uniqueScenarioHook: {
                       type: ['string', 'null'],

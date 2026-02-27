@@ -19,13 +19,22 @@ describe('buildAnalystPrompt', () => {
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
         beats: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          {
+            id: '1.1',
+            description: 'Reach safehouse',
+            objective: 'Get inside',
+            role: 'setup',
+            isMidpoint: false,
+            midpointType: null,
+          },
           {
             id: '1.2',
             description: 'Secure evidence',
             objective: 'Protect evidence',
             role: 'escalation',
             crisisType: 'BEST_BAD_CHOICE',
+            isMidpoint: true,
+            midpointType: 'FALSE_VICTORY',
           },
         ],
       },
@@ -41,6 +50,8 @@ describe('buildAnalystPrompt', () => {
             description: 'Break through checkpoints',
             objective: 'Find route north',
             role: 'escalation',
+            isMidpoint: false,
+            midpointType: null,
           },
         ],
       },
@@ -111,6 +122,23 @@ describe('buildAnalystPrompt', () => {
     });
 
     expect(messages[1].content).toContain('The expected crisis type is BEST_BAD_CHOICE');
+  });
+
+  it('includes midpoint quality checks when active beat is midpoint', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      accumulatedStructureState: {
+        ...testState,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { beatId: '1.2', status: 'active' },
+        ],
+      },
+    });
+
+    expect(messages[1].content).toContain('=== MIDPOINT QUALITY CHECK ===');
+    expect(messages[1].content).toContain('Expected midpoint type: FALSE_VICTORY');
   });
 
   it('user message contains "NARRATIVE TO EVALUATE:" followed by the narrative text', () => {

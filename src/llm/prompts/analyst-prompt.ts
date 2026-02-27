@@ -50,6 +50,12 @@ THEMATIC CHARGE CLASSIFICATION:
 - Set thematicChargeDescription to 1-2 sentences citing concrete scene evidence.
 - If THEMATIC KERNEL context is absent, default to thematicCharge = AMBIGUOUS with a concise neutral description.
 
+MIDPOINT EVALUATION:
+- If the active beat is midpoint-tagged, enforce midpoint delivery quality:
+  - FALSE_VICTORY: apparent win with hidden structural cost or instability.
+  - FALSE_DEFEAT: apparent loss that plants credible recovery potential.
+- If beatConcluded is true without midpoint-grade reversal function, mark pacingIssueDetected true and explain the midpoint miss.
+
 PROMISE EVALUATION:
 - A narrative promise is a forward-looking obligation the reader expects answered.
 - LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.

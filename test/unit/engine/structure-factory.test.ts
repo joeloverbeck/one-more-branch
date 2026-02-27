@@ -2,6 +2,7 @@ import {
   createStoryStructure,
   parseApproachVectors,
   parseCrisisType,
+  parseMidpointType,
 } from '../../../src/engine/structure-factory';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 
@@ -23,6 +24,8 @@ function createGenerationResult(): StructureGenerationResult {
             objective: 'Hear the warning',
             causalLink: 'Because the messenger reaches the heir in time.',
             role: 'setup',
+            isMidpoint: false,
+            midpointType: null,
           },
           {
             name: 'Crossroads decision',
@@ -30,6 +33,8 @@ function createGenerationResult(): StructureGenerationResult {
             objective: 'Leave home',
             causalLink: 'Because the warning reveals immediate danger at court.',
             role: 'turning_point',
+            isMidpoint: true,
+            midpointType: 'FALSE_DEFEAT',
           },
         ],
       },
@@ -45,6 +50,8 @@ function createGenerationResult(): StructureGenerationResult {
             objective: 'Recover from loss',
             causalLink: 'Because the heir departs without securing enough allies.',
             role: 'escalation',
+            isMidpoint: false,
+            midpointType: null,
           },
         ],
       },
@@ -166,12 +173,41 @@ describe('structure-factory', () => {
       expect(result.acts[1]?.beats[0]?.setpieceSourceIndex).toBeNull();
     });
 
+    it('maps midpoint fields and preserves midpoint type for midpoint beat', () => {
+      const result = createStoryStructure(createGenerationResult());
+
+      expect(result.acts[0]?.beats[0]?.isMidpoint).toBe(false);
+      expect(result.acts[0]?.beats[0]?.midpointType).toBeNull();
+      expect(result.acts[0]?.beats[1]?.isMidpoint).toBe(true);
+      expect(result.acts[0]?.beats[1]?.midpointType).toBe('FALSE_DEFEAT');
+    });
+
     it('throws when causalLink is blank', () => {
       const genResult = createGenerationResult();
       genResult.acts[1]!.beats[0]!.causalLink = '   ';
 
       expect(() => createStoryStructure(genResult)).toThrow(
         'Structure beat 2.1 must include a non-empty causalLink'
+      );
+    });
+
+    it('throws when midpoint beat is missing midpointType', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[0]!.beats[1]!.isMidpoint = true;
+      genResult.acts[0]!.beats[1]!.midpointType = null;
+
+      expect(() => createStoryStructure(genResult)).toThrow(
+        'Structure beat 1.2 is midpoint-tagged but missing midpointType'
+      );
+    });
+
+    it('throws when non-midpoint beat includes midpointType', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[1]!.beats[0]!.isMidpoint = false;
+      genResult.acts[1]!.beats[0]!.midpointType = 'FALSE_VICTORY';
+
+      expect(() => createStoryStructure(genResult)).toThrow(
+        'Structure beat 2.1 has midpointType but isMidpoint is false'
       );
     });
   });
@@ -222,6 +258,16 @@ describe('structure-factory', () => {
       expect(parseCrisisType('UNKNOWN')).toBeNull();
       expect(parseCrisisType(null)).toBeNull();
       expect(parseCrisisType(undefined)).toBeNull();
+    });
+  });
+
+  describe('parseMidpointType', () => {
+    it('returns valid midpoint types and null for invalid values', () => {
+      expect(parseMidpointType('FALSE_VICTORY')).toBe('FALSE_VICTORY');
+      expect(parseMidpointType('FALSE_DEFEAT')).toBe('FALSE_DEFEAT');
+      expect(parseMidpointType('UNKNOWN')).toBeNull();
+      expect(parseMidpointType(null)).toBeNull();
+      expect(parseMidpointType(undefined)).toBeNull();
     });
   });
 });

@@ -68,6 +68,12 @@ THEMATIC CHARGE CLASSIFICATION:
 - Set thematicChargeDescription to 1-2 sentences citing concrete scene evidence.
 - If THEMATIC KERNEL context is absent, default to thematicCharge = AMBIGUOUS with a concise neutral description.
 
+MIDPOINT EVALUATION:
+- If the active beat is midpoint-tagged, enforce midpoint delivery quality:
+  - FALSE_VICTORY: apparent win with hidden structural cost or instability.
+  - FALSE_DEFEAT: apparent loss that plants credible recovery potential.
+- If beatConcluded is true without midpoint-grade reversal function, mark pacingIssueDetected true and explain the midpoint miss.
+
 PROMISE EVALUATION:
 - A narrative promise is a forward-looking obligation the reader expects answered.
 - LITMUS TEST: Can you phrase it as a specific question a reader expects answered? Would a reader feel disappointed if it was never addressed? If BOTH not clearly yes, do NOT detect it.
@@ -271,6 +277,16 @@ The active beat role is "reflection". When evaluating this beat:
 - If beatConcluded is true but no meaningful thematic/internal movement occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without thematic/internal deepening — scene recapped prior material without changing interpretation or commitment"
 {{/if}}
 (Only present when active beat role is escalation, turning_point, or reflection.)
+
+{{#if activeBeat.isMidpoint}}
+=== MIDPOINT QUALITY CHECK ===
+The active beat is midpoint-tagged. Evaluate whether this scene delivers a true structural midpoint reversal.
+Expected midpoint type: {{activeBeat.midpointType}}
+- FALSE_VICTORY: apparent win with hidden cost, instability, or misread consequence
+- FALSE_DEFEAT: apparent loss that plants a credible seed of future success
+- If beatConcluded is true but no midpoint-grade reversal occurs, set pacingIssueDetected: true and note midpoint underdelivery in pacingIssueReason
+- Tie midpoint evaluation to structural function, not just emotional intensity
+{{/if}}
 
 === BEAT DEVIATION EVALUATION ===
 After evaluating beat completion, also evaluate whether the story has DEVIATED from remaining beats.

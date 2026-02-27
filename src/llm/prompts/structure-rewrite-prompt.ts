@@ -29,6 +29,8 @@ function formatEscalationFields(
   causalLink: string,
   escalationType: string | null,
   crisisType: string | null,
+  isMidpoint: boolean,
+  midpointType: string | null,
   uniqueScenarioHook: string | null,
   approachVectors?: readonly string[] | null
 ): string {
@@ -38,6 +40,11 @@ function formatEscalationFields(
   }
   if (crisisType) {
     parts.push(`    Crisis type: ${crisisType}`);
+  }
+  if (isMidpoint) {
+    parts.push(`    Midpoint: true (${midpointType ?? 'UNSPECIFIED'})`);
+  } else {
+    parts.push('    Midpoint: false');
   }
   if (uniqueScenarioHook) {
     parts.push(`    Scenario hook: ${uniqueScenarioHook}`);
@@ -58,7 +65,7 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.crisisType, beat.uniqueScenarioHook, beat.approachVectors)}
+    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.crisisType, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors)}
     Resolution: ${beat.resolution}`
     )
     .join('\n');
@@ -70,7 +77,7 @@ function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats'
       (
         beat
       ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.crisisType, beat.uniqueScenarioHook, beat.approachVectors)}`
+    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.crisisType, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors)}`
     )
     .join('\n');
 }
@@ -177,8 +184,13 @@ REQUIREMENTS (follow ALL):
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
    For "setup", "reflection", and "resolution" beats, set crisisType to null. Preserve crisisType from completed beats unchanged.
    When choosing escalation types and crisis types together, ensure the crisis expresses a real decision pressure, not just environmental difficulty.
-14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-15. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+14. Midpoint invariant:
+   - Preserve midpoint fields from completed beats unchanged
+   - Ensure exactly one beat in the full output has isMidpoint: true
+   - For midpoint beat, midpointType must be FALSE_VICTORY or FALSE_DEFEAT
+   - For non-midpoint beats, set isMidpoint: false and midpointType: null
+15. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
+16. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION
    For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
 
@@ -212,6 +224,8 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
       - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
       - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
+      - isMidpoint: boolean (true for exactly one beat in the full structure)
+      - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats`;
 

@@ -9,6 +9,7 @@ import {
 import { buildStructureRewritePrompt } from '../llm/prompts/structure-rewrite-prompt';
 import { STRUCTURE_GENERATION_SCHEMA } from '../llm/schemas/structure-schema';
 import { ChatMessage, LLMError } from '../llm/llm-client-types';
+import { parseStructureResponseObject } from '../llm/structure-response-parser';
 import type {
   CompletedBeat,
   StructureRewriteContext,
@@ -20,6 +21,7 @@ import {
   parseApproachVectors,
   parseCrisisType,
   parseEscalationType,
+  parseMidpointType,
 } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
@@ -115,19 +117,32 @@ export function mergePreservedWithRegenerated(
       return a.beatIndex - b.beatIndex;
     });
 
-    const mergedBeats: StoryBeat[] = preservedInAct.map((beat) => ({
-      id: beat.beatId,
-      name: beat.name,
-      description: beat.description,
-      objective: beat.objective,
-      causalLink: beat.causalLink,
-      role: parseBeatRole(beat.role),
-      escalationType: parseEscalationType(beat.escalationType),
-      crisisType: parseCrisisType(beat.crisisType),
-      uniqueScenarioHook: beat.uniqueScenarioHook,
-      approachVectors: parseApproachVectors(beat.approachVectors),
-      setpieceSourceIndex: beat.setpieceSourceIndex,
-    }));
+    const mergedBeats: StoryBeat[] = preservedInAct.map((beat) => {
+      const isMidpoint = beat.isMidpoint === true;
+      const midpointType = parseMidpointType(beat.midpointType);
+      if (isMidpoint && midpointType === null) {
+        throw new Error(`Preserved beat ${beat.beatId} is midpoint-tagged but missing midpointType`);
+      }
+      if (!isMidpoint && midpointType !== null) {
+        throw new Error(`Preserved beat ${beat.beatId} has midpointType but isMidpoint is false`);
+      }
+
+      return {
+        id: beat.beatId,
+        name: beat.name,
+        description: beat.description,
+        objective: beat.objective,
+        causalLink: beat.causalLink,
+        role: parseBeatRole(beat.role),
+        escalationType: parseEscalationType(beat.escalationType),
+        crisisType: parseCrisisType(beat.crisisType),
+        isMidpoint,
+        midpointType,
+        uniqueScenarioHook: beat.uniqueScenarioHook,
+        approachVectors: parseApproachVectors(beat.approachVectors),
+        setpieceSourceIndex: beat.setpieceSourceIndex,
+      };
+    });
 
     let nextBeatNumber = mergedBeats.reduce((max, beat) => {
       const beatNumber = parseBeatNumber(beat.id, actIndex);
@@ -156,6 +171,8 @@ export function mergePreservedWithRegenerated(
         role: beat.role,
         escalationType: beat.escalationType,
         crisisType: beat.crisisType,
+        isMidpoint: beat.isMidpoint,
+        midpointType: beat.midpointType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ?? null,
         setpieceSourceIndex: beat.setpieceSourceIndex ?? null,
@@ -168,6 +185,11 @@ export function mergePreservedWithRegenerated(
       throw new Error(`Merged structure is missing beats for act ${actIndex + 1}`);
     }
 
+    const actMidpoints = mergedBeats.filter((beat) => beat.isMidpoint).length;
+    if (actMidpoints > 1) {
+      throw new Error(`Merged act ${actIndex + 1} has multiple midpoint beats`);
+    }
+
     mergedActs.push({
       id: String(actIndex + 1),
       name: regeneratedAct?.name ?? `Act ${actIndex + 1}`,
@@ -178,168 +200,20 @@ export function mergePreservedWithRegenerated(
     });
   }
 
+  const totalMidpoints = mergedActs.reduce(
+    (sum, act) => sum + act.beats.filter((beat) => beat.isMidpoint).length,
+    0
+  );
+  if (totalMidpoints > 1) {
+    throw new Error(`Merged structure contains multiple midpoint beats (received: ${totalMidpoints})`);
+  }
+
   return {
     acts: mergedActs,
     overallTheme: originalTheme,
     premise: regeneratedStructure.premise,
     pacingBudget: regeneratedStructure.pacingBudget,
     generatedAt: new Date(),
-  };
-}
-
-function parseStructureResponse(
-  responseText: string
-): Omit<StructureGenerationResult, 'rawResponse'> {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(responseText) as unknown;
-  } catch {
-    throw new LLMError('Invalid JSON response from OpenRouter', 'INVALID_JSON', true);
-  }
-
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Structure response must be an object', 'STRUCTURE_PARSE_ERROR', true);
-  }
-
-  const data = parsed as Record<string, unknown>;
-  if (typeof data['overallTheme'] !== 'string') {
-    throw new LLMError('Structure response missing overallTheme', 'STRUCTURE_PARSE_ERROR', true);
-  }
-
-  if (!Array.isArray(data['acts']) || data['acts'].length < 3 || data['acts'].length > 5) {
-    const received = Array.isArray(data['acts']) ? data['acts'].length : typeof data['acts'];
-    throw new LLMError(
-      `Structure response must include 3-5 acts (received: ${received})`,
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
-  const acts = data['acts'].map((act, actIndex) => {
-    if (typeof act !== 'object' || act === null || Array.isArray(act)) {
-      throw new LLMError(
-        `Structure act ${actIndex + 1} must be an object`,
-        'STRUCTURE_PARSE_ERROR',
-        true
-      );
-    }
-
-    const actData = act as Record<string, unknown>;
-    if (
-      typeof actData['name'] !== 'string' ||
-      typeof actData['objective'] !== 'string' ||
-      typeof actData['stakes'] !== 'string' ||
-      typeof actData['entryCondition'] !== 'string'
-    ) {
-      throw new LLMError(
-        `Structure act ${actIndex + 1} is missing required fields`,
-        'STRUCTURE_PARSE_ERROR',
-        true
-      );
-    }
-
-    if (
-      !Array.isArray(actData['beats']) ||
-      actData['beats'].length < 2 ||
-      actData['beats'].length > 4
-    ) {
-      const received = Array.isArray(actData['beats'])
-        ? actData['beats'].length
-        : typeof actData['beats'];
-      throw new LLMError(
-        `Structure act ${actIndex + 1} must have 2-4 beats (received: ${received})`,
-        'STRUCTURE_PARSE_ERROR',
-        true
-      );
-    }
-
-    const beats = actData['beats'].map((beat, beatIndex) => {
-      if (typeof beat !== 'object' || beat === null || Array.isArray(beat)) {
-        throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} must be an object`,
-          'STRUCTURE_PARSE_ERROR',
-          true
-        );
-      }
-
-      const beatData = beat as Record<string, unknown>;
-      if (
-        typeof beatData['name'] !== 'string' ||
-        typeof beatData['description'] !== 'string' ||
-        typeof beatData['objective'] !== 'string' ||
-        typeof beatData['causalLink'] !== 'string'
-      ) {
-        throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
-          'STRUCTURE_PARSE_ERROR',
-          true
-        );
-      }
-
-      const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
-      const escalationType =
-        typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
-      const crisisType =
-        typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
-      const uniqueScenarioHook =
-        typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
-      const approachVectors = Array.isArray(beatData['approachVectors'])
-        ? (beatData['approachVectors'] as unknown[]).filter(
-            (v): v is string => typeof v === 'string'
-          )
-        : null;
-      const setpieceSourceIndex =
-        typeof beatData['setpieceSourceIndex'] === 'number' &&
-        Number.isInteger(beatData['setpieceSourceIndex']) &&
-        beatData['setpieceSourceIndex'] >= 0 &&
-        beatData['setpieceSourceIndex'] <= 5
-          ? beatData['setpieceSourceIndex']
-          : null;
-
-      return {
-        name: beatData['name'],
-        description: beatData['description'],
-        objective: beatData['objective'],
-        causalLink: beatData['causalLink'],
-        role,
-        escalationType,
-        crisisType,
-        uniqueScenarioHook,
-        approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
-        setpieceSourceIndex,
-      };
-    });
-
-    return {
-      name: actData['name'],
-      objective: actData['objective'],
-      stakes: actData['stakes'],
-      entryCondition: actData['entryCondition'],
-      beats,
-    };
-  });
-
-  const premise = typeof data['premise'] === 'string' ? data['premise'] : data['overallTheme'];
-  const rawBudget = data['pacingBudget'];
-  const pacingBudget =
-    typeof rawBudget === 'object' && rawBudget !== null
-      ? {
-          targetPagesMin:
-            typeof (rawBudget as Record<string, unknown>)['targetPagesMin'] === 'number'
-              ? ((rawBudget as Record<string, unknown>)['targetPagesMin'] as number)
-              : 15,
-          targetPagesMax:
-            typeof (rawBudget as Record<string, unknown>)['targetPagesMax'] === 'number'
-              ? ((rawBudget as Record<string, unknown>)['targetPagesMax'] as number)
-              : 50,
-        }
-      : { targetPagesMin: 15, targetPagesMax: 50 };
-
-  return {
-    overallTheme: data['overallTheme'],
-    premise,
-    pacingBudget,
-    acts,
   };
 }
 
@@ -390,7 +264,7 @@ async function generateRewrittenStructure(
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;
   try {
-    const parsed = parseStructureResponse(responseText);
+    const parsed = parseStructureResponseObject(parsedMessage.parsed);
     return { ...parsed, rawResponse: responseText };
   } catch (error) {
     if (error instanceof LLMError) {

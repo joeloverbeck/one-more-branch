@@ -37,6 +37,8 @@ interface StructurePayload {
       role: string;
       escalationType?: string | null;
       crisisType?: string | null;
+      isMidpoint?: boolean;
+      midpointType?: string | null;
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
       setpieceSourceIndex?: number | null;
@@ -65,6 +67,8 @@ function createValidStructurePayload(): StructurePayload {
             role: 'setup',
             escalationType: null,
             crisisType: null,
+            isMidpoint: false,
+            midpointType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
@@ -77,6 +81,8 @@ function createValidStructurePayload(): StructurePayload {
             role: 'turning_point',
             escalationType: null,
             crisisType: null,
+            isMidpoint: false,
+            midpointType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 0,
@@ -97,6 +103,8 @@ function createValidStructurePayload(): StructurePayload {
             role: 'escalation',
             escalationType: null,
             crisisType: null,
+            isMidpoint: false,
+            midpointType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 1,
@@ -109,6 +117,8 @@ function createValidStructurePayload(): StructurePayload {
             role: 'turning_point',
             escalationType: null,
             crisisType: null,
+            isMidpoint: true,
+            midpointType: 'FALSE_DEFEAT',
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 2,
@@ -129,6 +139,8 @@ function createValidStructurePayload(): StructurePayload {
             role: 'turning_point',
             escalationType: null,
             crisisType: null,
+            isMidpoint: false,
+            midpointType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 3,
@@ -141,6 +153,8 @@ function createValidStructurePayload(): StructurePayload {
             role: 'resolution',
             escalationType: null,
             crisisType: null,
+            isMidpoint: false,
+            midpointType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
