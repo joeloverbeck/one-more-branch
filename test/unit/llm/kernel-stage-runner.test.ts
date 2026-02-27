@@ -1,4 +1,5 @@
 import { runKernelStage } from '../../../src/llm/kernel-stage-runner';
+import { logger } from '../../../src/logging';
 import type {
   EvaluatedKernel,
   KernelDimensionScores,
@@ -123,6 +124,49 @@ describe('kernel-stage-runner', () => {
       rawIdeatorResponse: 'ideator raw',
       rawEvaluatorResponse: 'evaluator raw',
     });
+
+    expect(logger.getEntries()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          level: 'info',
+          message: 'Generation stage started',
+          context: expect.objectContaining({
+            flow: 'kernel-generation',
+            stage: 'kernel-ideator',
+            attempt: 1,
+          }),
+        }),
+        expect.objectContaining({
+          level: 'info',
+          message: 'Generation stage completed',
+          context: expect.objectContaining({
+            flow: 'kernel-generation',
+            stage: 'kernel-ideator',
+            attempt: 1,
+            durationMs: expect.any(Number),
+          }),
+        }),
+        expect.objectContaining({
+          level: 'info',
+          message: 'Generation stage started',
+          context: expect.objectContaining({
+            flow: 'kernel-generation',
+            stage: 'kernel-evaluator',
+            attempt: 1,
+          }),
+        }),
+        expect.objectContaining({
+          level: 'info',
+          message: 'Generation stage completed',
+          context: expect.objectContaining({
+            flow: 'kernel-generation',
+            stage: 'kernel-evaluator',
+            attempt: 1,
+            durationMs: expect.any(Number),
+          }),
+        }),
+      ]),
+    );
   });
 
   it('throws for short api keys before invoking dependencies', async () => {
@@ -144,5 +188,39 @@ describe('kernel-stage-runner', () => {
 
     expect(generateKernels).not.toHaveBeenCalled();
     expect(evaluateKernels).not.toHaveBeenCalled();
+  });
+
+  it('logs a failed stage when ideation throws', async () => {
+    const error = new Error('ideation failed');
+    const evaluateKernels = jest.fn();
+
+    await expect(
+      runKernelStage(
+        {
+          apiKey: 'test-api-key-123',
+        },
+        undefined,
+        {
+          generateKernels: jest.fn().mockRejectedValue(error),
+          evaluateKernels,
+        },
+      ),
+    ).rejects.toThrow('ideation failed');
+
+    expect(evaluateKernels).not.toHaveBeenCalled();
+    expect(logger.getEntries()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          level: 'error',
+          message: 'Generation stage failed',
+          context: expect.objectContaining({
+            flow: 'kernel-generation',
+            stage: 'kernel-ideator',
+            attempt: 1,
+            durationMs: expect.any(Number),
+          }),
+        }),
+      ]),
+    );
   });
 });

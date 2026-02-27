@@ -1,4 +1,5 @@
 import type { GenerationStageCallback } from '../engine/types.js';
+import { logger } from '../logging/index.js';
 import {
   type EvaluatedKernel,
   type KernelEvaluationResult,
@@ -41,6 +42,55 @@ function requireApiKey(apiKey: string): string {
   return trimmed;
 }
 
+interface KernelStageExecutionContext {
+  readonly stageEvent: 'GENERATING_KERNELS' | 'EVALUATING_KERNELS';
+  readonly logStage: 'kernel-ideator' | 'kernel-evaluator';
+  readonly onStage?: GenerationStageCallback;
+}
+
+async function executeKernelStage<T>(
+  context: KernelStageExecutionContext,
+  work: () => Promise<T>,
+): Promise<T> {
+  const attempt = 1;
+  context.onStage?.({
+    stage: context.stageEvent,
+    status: 'started',
+    attempt,
+  });
+  logger.info('Generation stage started', {
+    flow: 'kernel-generation',
+    stage: context.logStage,
+    attempt,
+  });
+
+  const startTime = Date.now();
+  try {
+    const result = await work();
+    logger.info('Generation stage completed', {
+      flow: 'kernel-generation',
+      stage: context.logStage,
+      attempt,
+      durationMs: Date.now() - startTime,
+    });
+    context.onStage?.({
+      stage: context.stageEvent,
+      status: 'completed',
+      attempt,
+    });
+    return result;
+  } catch (error) {
+    logger.error('Generation stage failed', {
+      flow: 'kernel-generation',
+      stage: context.logStage,
+      attempt,
+      durationMs: Date.now() - startTime,
+      error,
+    });
+    throw error;
+  }
+}
+
 export async function runKernelStage(
   input: KernelSeedInput,
   onStage?: GenerationStageCallback,
@@ -53,38 +103,33 @@ export async function runKernelStage(
     sparkLine: trimSeed(input.sparkLine),
   };
 
-  onStage?.({
-    stage: 'GENERATING_KERNELS',
-    status: 'started',
-    attempt: 1,
-  });
-  const ideation = await deps.generateKernels(seeds, apiKey);
-  onStage?.({
-    stage: 'GENERATING_KERNELS',
-    status: 'completed',
-    attempt: 1,
-  });
-
-  onStage?.({
-    stage: 'EVALUATING_KERNELS',
-    status: 'started',
-    attempt: 1,
-  });
-  const evaluation: KernelEvaluationResult = await deps.evaluateKernels(
+  const ideation = await executeKernelStage(
     {
-      kernels: ideation.kernels,
-      userSeeds: {
-        ...seeds,
-        apiKey,
-      },
+      stageEvent: 'GENERATING_KERNELS',
+      logStage: 'kernel-ideator',
+      onStage,
     },
-    apiKey,
+    () => deps.generateKernels(seeds, apiKey),
   );
-  onStage?.({
-    stage: 'EVALUATING_KERNELS',
-    status: 'completed',
-    attempt: 1,
-  });
+
+  const evaluation: KernelEvaluationResult = await executeKernelStage(
+    {
+      stageEvent: 'EVALUATING_KERNELS',
+      logStage: 'kernel-evaluator',
+      onStage,
+    },
+    () =>
+      deps.evaluateKernels(
+        {
+          kernels: ideation.kernels,
+          userSeeds: {
+            ...seeds,
+            apiKey,
+          },
+        },
+        apiKey,
+      ),
+  );
 
   return {
     ideatedKernels: ideation.kernels,

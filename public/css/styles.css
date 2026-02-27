@@ -2688,6 +2688,16 @@ main {
   background: rgba(196, 94, 122, 0.12);
 }
 
+/* Kernel evaluation phases (blue family) */
+.log-entry.log-type-kernel-evaluator-scoring {
+  border-left: 4px solid #4e7fd8;
+  background: rgba(78, 127, 216, 0.14);
+}
+.log-entry.log-type-kernel-evaluator-deep {
+  border-left: 4px solid #2f5fb5;
+  background: rgba(47, 95, 181, 0.16);
+}
+
 .log-message {
   background: var(--color-bg-muted);
   border: 1px solid var(--border-color);
