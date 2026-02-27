@@ -6,6 +6,7 @@ import type { ChatMessage } from '../llm-client-types.js';
 import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
 function getActsToRegenerate(currentActIndex: number, totalActs: number): string {
   const currentActLabel = `Act ${currentActIndex + 1}`;
@@ -114,12 +115,12 @@ function buildGenreObligationSection(context: StructureRewriteContext): string {
       .map((beat) => beat.obligatorySceneTag)
       .filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
   );
-  const remaining = allObligations.filter((tag) => !fulfilled.has(tag));
+  const remaining = allObligations.filter((entry) => !fulfilled.has(entry.tag));
 
-  const allLines = allObligations.map((tag) => `- ${tag}`).join('\n');
+  const allLines = allObligations.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n');
   const fulfilledLines =
     fulfilled.size > 0 ? [...fulfilled].map((tag) => `- ${tag}`).join('\n') : '- (none)';
-  const remainingLines = remaining.length > 0 ? remaining.map((tag) => `- ${tag}`).join('\n') : '- (none)';
+  const remainingLines = remaining.length > 0 ? remaining.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n') : '- (none)';
 
   return `\nGENRE OBLIGATION CONTRACT (for ${context.conceptSpec.genreFrame}):
 All obligation tags:
@@ -182,6 +183,8 @@ Each act's stakes should escalate FROM these foundations, even after the deviati
     : '';
   const genreObligationSection = buildGenreObligationSection(context);
 
+  const genreConventionsSection = buildGenreConventionsSection(context.conceptSpec?.genreFrame);
+
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
 The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
@@ -192,8 +195,7 @@ ${worldSection}Tone: ${context.tone}
 ${toneFeelLine}${toneAvoidLine}Original Theme: ${context.originalTheme}
 Original Opening Image: ${context.originalOpeningImage}
 Original Closing Image: ${context.originalClosingImage}
-${spineSection}${conceptStakesSection}${genreObligationSection}
-
+${spineSection}${conceptStakesSection}${genreConventionsSection}${genreObligationSection}
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
 The following beats have been completed. Their resolutions are permanent and must be respected.
 
