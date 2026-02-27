@@ -14,6 +14,7 @@ export interface CompletedBeat {
   readonly causalLink: string;
   readonly role: string;
   readonly escalationType: string | null;
+  readonly crisisType: string | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly string[] | null;
   readonly setpieceSourceIndex: number | null;
@@ -30,6 +31,7 @@ export interface PlannedBeat {
   readonly causalLink: string;
   readonly role: string;
   readonly escalationType: string | null;
+  readonly crisisType: string | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly string[] | null;
   readonly setpieceSourceIndex: number | null;

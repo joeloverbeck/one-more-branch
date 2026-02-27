@@ -36,6 +36,7 @@ interface StructurePayload {
       objective: string;
       role: string;
       escalationType?: string | null;
+      crisisType?: string | null;
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
       setpieceSourceIndex?: number | null;
@@ -63,6 +64,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'setup',
             escalationType: null,
+            crisisType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
@@ -74,6 +76,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'turning_point',
             escalationType: null,
+            crisisType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 0,
@@ -93,6 +96,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'escalation',
             escalationType: null,
+            crisisType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 1,
@@ -104,6 +108,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'turning_point',
             escalationType: null,
+            crisisType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 2,
@@ -123,6 +128,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'turning_point',
             escalationType: null,
+            crisisType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: 3,
@@ -134,6 +140,7 @@ function createValidStructurePayload(): StructurePayload {
             causalLink: 'Because of prior events.',
             role: 'resolution',
             escalationType: null,
+            crisisType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,

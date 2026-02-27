@@ -685,7 +685,12 @@ describe('planner continuation context section', () => {
 
 describe('buildEscalationDirective', () => {
   const makeStructure = (
-    beatRoles: Array<{ id: string; role: BeatRole }>
+    beatRoles: Array<{
+      id: string;
+      role: BeatRole;
+      escalationType?: string | null;
+      crisisType?: string | null;
+    }>
   ): StoryStructure => ({
     overallTheme: 'Test',
     premise: 'Test',
@@ -704,6 +709,8 @@ describe('buildEscalationDirective', () => {
           description: `Desc for ${b.id}`,
           objective: `Obj for ${b.id}`,
           role: b.role,
+          escalationType: b.escalationType ?? null,
+          crisisType: b.crisisType ?? null,
         })),
       },
     ],
@@ -808,6 +815,35 @@ describe('buildEscalationDirective', () => {
     expect(result).toContain('irreversible shift');
     expect(result).toContain('Previous beat resolved: "Route found"');
     expect(result).toContain('status quo is permanently destroyed');
+  });
+
+  it('includes crisis type guidance when present on active beat', () => {
+    const structure = makeStructure([
+      { id: '1.1', role: 'setup' },
+      {
+        id: '1.2',
+        role: 'turning_point',
+        escalationType: 'REVELATION_SHIFT',
+        crisisType: 'IRRECONCILABLE_GOODS',
+      },
+    ]);
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentBeatIndex: 1,
+      pagesInCurrentBeat: 1,
+      pacingNudge: null,
+      beatProgressions: [
+        { beatId: '1.1', status: 'concluded', resolution: 'Route found' },
+        { beatId: '1.2', status: 'active' },
+      ],
+    };
+
+    const result = buildEscalationDirective(structure, state);
+
+    expect(result).toContain('Turning point mechanism: REVELATION_SHIFT');
+    expect(result).toContain(
+      'Crisis type: IRRECONCILABLE_GOODS — shape choiceIntents so the pivotal decision matches this crisis form.'
+    );
   });
 
   it('handles first beat in act with no previous resolution', () => {

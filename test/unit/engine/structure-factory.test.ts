@@ -1,4 +1,8 @@
-import { createStoryStructure, parseApproachVectors } from '../../../src/engine/structure-factory';
+import {
+  createStoryStructure,
+  parseApproachVectors,
+  parseCrisisType,
+} from '../../../src/engine/structure-factory';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 
 function createGenerationResult(): StructureGenerationResult {
@@ -107,6 +111,16 @@ describe('structure-factory', () => {
       expect(result.acts[0]?.beats[1]?.setpieceSourceIndex).toBeNull();
     });
 
+    it('maps valid crisisType and coerces invalid values to null', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[0]!.beats[1]!.crisisType = 'BEST_BAD_CHOICE';
+      genResult.acts[1]!.beats[0]!.crisisType = 'INVALID_CRISIS';
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[0]?.beats[1]?.crisisType).toBe('BEST_BAD_CHOICE');
+      expect(result.acts[1]?.beats[0]?.crisisType).toBeNull();
+    });
+
     it('parses valid approachVectors from generation result', () => {
       const genResult = createGenerationResult();
       genResult.acts[1]!.beats[0]!.approachVectors = [
@@ -198,6 +212,16 @@ describe('structure-factory', () => {
         'SELF_EXPRESSION',
       ];
       expect(parseApproachVectors(all)).toEqual(all);
+    });
+  });
+
+  describe('parseCrisisType', () => {
+    it('returns valid crisis types and null for invalid values', () => {
+      expect(parseCrisisType('BEST_BAD_CHOICE')).toBe('BEST_BAD_CHOICE');
+      expect(parseCrisisType('IRRECONCILABLE_GOODS')).toBe('IRRECONCILABLE_GOODS');
+      expect(parseCrisisType('UNKNOWN')).toBeNull();
+      expect(parseCrisisType(null)).toBeNull();
+      expect(parseCrisisType(undefined)).toBeNull();
     });
   });
 });

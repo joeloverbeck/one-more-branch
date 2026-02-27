@@ -32,12 +32,14 @@ describe('story-structure-section', () => {
             description: 'Secure evidence',
             objective: 'Protect evidence',
             role: 'escalation',
+            crisisType: 'BEST_BAD_CHOICE',
           },
           {
             id: '1.3',
             description: 'Choose ally',
             objective: 'Commit to ally',
             role: 'turning_point',
+            crisisType: 'IRRECONCILABLE_GOODS',
           },
         ],
       },
@@ -284,6 +286,7 @@ describe('story-structure-section', () => {
 
       expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
       expect(result).toContain('Previous beat resolved: "Reached safehouse"');
+      expect(result).toContain('The expected crisis type is BEST_BAD_CHOICE');
       expect(result).toContain('cost of failure');
       expect(result).toContain('pacingIssueDetected: true');
     });
@@ -310,6 +313,7 @@ describe('story-structure-section', () => {
       expect(result).toContain('=== TURNING POINT QUALITY CHECK ===');
       expect(result).toContain('irreversible shift');
       expect(result).toContain('Previous beat resolved: "Evidence protected"');
+      expect(result).toContain('The expected crisis type is IRRECONCILABLE_GOODS');
       expect(result).toContain('status quo was not permanently altered');
     });
 

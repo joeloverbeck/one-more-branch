@@ -239,6 +239,9 @@ export function buildEscalationDirective(
     if (activeBeat.escalationType) {
       lines.push(`Escalation mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of escalation.`);
     }
+    if (activeBeat.crisisType) {
+      lines.push(`Crisis type: ${activeBeat.crisisType} — shape choiceIntents so the dilemma matches this crisis form.`);
+    }
     if (activeBeat.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
     }
@@ -265,6 +268,9 @@ export function buildEscalationDirective(
     }
     if (activeBeat.escalationType) {
       lines.push(`Turning point mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of shift.`);
+    }
+    if (activeBeat.crisisType) {
+      lines.push(`Crisis type: ${activeBeat.crisisType} — shape choiceIntents so the pivotal decision matches this crisis form.`);
     }
     if (activeBeat.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);

@@ -121,6 +121,9 @@ export function buildWriterStructureContext(
         const escalationLine = beat.escalationType
           ? `\n    Escalation mechanism: ${beat.escalationType}`
           : '';
+        const crisisLine = beat.crisisType
+          ? `\n    Crisis type: ${beat.crisisType}`
+          : '';
         const hookLine = beat.uniqueScenarioHook
           ? `\n    Scenario hook: ${beat.uniqueScenarioHook}`
           : '';
@@ -129,7 +132,7 @@ export function buildWriterStructureContext(
             ? `\n    Approach vectors: ${beat.approachVectors.join(', ')}`
             : '';
         return `  [>] ACTIVE (${beat.role}): ${beat.description}
-    Objective: ${beat.objective}${escalationLine}${hookLine}${approachLine}`;
+    Objective: ${beat.objective}${escalationLine}${crisisLine}${hookLine}${approachLine}`;
       }
       return `  [ ] PENDING (${beat.role}): ${beat.description}`;
     })
@@ -191,6 +194,11 @@ export function buildEscalationCheckSection(
         `The expected escalation mechanism is ${activeBeat.escalationType}. Assess whether the narrative delivered this specific type of escalation — not just any stakes increase.`
       );
     }
+    if (activeBeat?.crisisType) {
+      lines.push(
+        `The expected crisis type is ${activeBeat.crisisType}. Assess whether choices created this dilemma shape.`
+      );
+    }
     if (activeBeat?.uniqueScenarioHook) {
       lines.push(
         `The scene should reflect this unique scenario hook: "${activeBeat.uniqueScenarioHook}". Assess whether the scene leveraged this story's specific elements.`
@@ -213,6 +221,11 @@ export function buildEscalationCheckSection(
         `- If the escalation type does not match what actually happened (e.g., expected ${activeBeat.escalationType} but got generic tension), note the mismatch in pacingIssueReason`
       );
     }
+    if (activeBeat?.crisisType) {
+      lines.push(
+        `- If choice pressure does not match crisis type ${activeBeat.crisisType}, note the mismatch in pacingIssueReason`
+      );
+    }
   } else if (activeBeatRole === 'turning_point') {
     lines.push('=== TURNING POINT QUALITY CHECK ===');
     lines.push(
@@ -224,6 +237,11 @@ export function buildEscalationCheckSection(
     if (activeBeat?.escalationType) {
       lines.push(
         `The expected turning point mechanism is ${activeBeat.escalationType}. Assess whether the narrative delivered this specific type of shift — not just any irreversible change.`
+      );
+    }
+    if (activeBeat?.crisisType) {
+      lines.push(
+        `The expected crisis type is ${activeBeat.crisisType}. Assess whether the turning-point decision pressure matched this dilemma shape.`
       );
     }
     if (activeBeat?.uniqueScenarioHook) {
@@ -246,6 +264,11 @@ export function buildEscalationCheckSection(
     if (activeBeat?.escalationType) {
       lines.push(
         `- If the turning point type does not match what actually happened (e.g., expected ${activeBeat.escalationType} but got generic change), note the mismatch in pacingIssueReason`
+      );
+    }
+    if (activeBeat?.crisisType) {
+      lines.push(
+        `- If turning-point choices do not reflect crisis type ${activeBeat.crisisType}, note the mismatch in pacingIssueReason`
       );
     }
   } else {

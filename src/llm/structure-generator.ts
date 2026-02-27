@@ -125,6 +125,8 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
       const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
       const escalationType =
         typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
+      const crisisType =
+        typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
       const uniqueScenarioHook =
         typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
       const approachVectors = Array.isArray(beatData['approachVectors'])
@@ -141,6 +143,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
         causalLink: beatData['causalLink'],
         role,
         escalationType,
+        crisisType,
         uniqueScenarioHook,
         approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
         setpieceSourceIndex,

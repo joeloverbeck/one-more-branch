@@ -12,7 +12,7 @@ import {
   parseStoryId,
   parseStructureVersionId,
 } from '../models';
-import { parseApproachVectors, parseEscalationType } from '../engine/structure-factory';
+import { parseApproachVectors, parseCrisisType, parseEscalationType } from '../engine/structure-factory';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
@@ -68,6 +68,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         causalLink: beat.causalLink,
         role: beat.role,
         escalationType: beat.escalationType,
+        crisisType: beat.crisisType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
         setpieceSourceIndex: beat.setpieceSourceIndex,
@@ -96,6 +97,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         causalLink: parsePersistedCausalLink(beat.causalLink, beat.id),
         role: beat.role as BeatRole,
         escalationType: parseEscalationType(beat.escalationType),
+        crisisType: parseCrisisType(beat.crisisType),
         uniqueScenarioHook: beat.uniqueScenarioHook ?? null,
         approachVectors: parseApproachVectors(beat.approachVectors) ?? null,
         setpieceSourceIndex:

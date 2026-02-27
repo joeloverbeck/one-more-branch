@@ -10,28 +10,38 @@ export const BEAT_ROLES = [
 
 export type BeatRole = (typeof BEAT_ROLES)[number];
 
-export type EscalationType =
-  | 'THREAT_ESCALATION'
-  | 'REVELATION_SHIFT'
-  | 'REVERSAL_OF_FORTUNE'
-  | 'BETRAYAL_OR_ALLIANCE_SHIFT'
-  | 'RESOURCE_OR_CAPABILITY_LOSS'
-  | 'MORAL_OR_ETHICAL_PRESSURE'
-  | 'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE'
-  | 'COMPLICATION_CASCADE'
-  | 'COMPETENCE_DEMAND_SPIKE';
+export const ESCALATION_TYPES = [
+  'THREAT_ESCALATION',
+  'REVELATION_SHIFT',
+  'REVERSAL_OF_FORTUNE',
+  'BETRAYAL_OR_ALLIANCE_SHIFT',
+  'RESOURCE_OR_CAPABILITY_LOSS',
+  'MORAL_OR_ETHICAL_PRESSURE',
+  'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
+  'COMPLICATION_CASCADE',
+  'COMPETENCE_DEMAND_SPIKE',
+] as const;
 
-export type ApproachVector =
-  | 'DIRECT_FORCE'
-  | 'SWIFT_ACTION'
-  | 'STEALTH_SUBTERFUGE'
-  | 'ANALYTICAL_REASONING'
-  | 'CAREFUL_OBSERVATION'
-  | 'INTUITIVE_LEAP'
-  | 'PERSUASION_INFLUENCE'
-  | 'EMPATHIC_CONNECTION'
-  | 'ENDURANCE_RESILIENCE'
-  | 'SELF_EXPRESSION';
+export type EscalationType = (typeof ESCALATION_TYPES)[number];
+
+export const CRISIS_TYPES = ['BEST_BAD_CHOICE', 'IRRECONCILABLE_GOODS'] as const;
+
+export type CrisisType = (typeof CRISIS_TYPES)[number];
+
+export const APPROACH_VECTORS = [
+  'DIRECT_FORCE',
+  'SWIFT_ACTION',
+  'STEALTH_SUBTERFUGE',
+  'ANALYTICAL_REASONING',
+  'CAREFUL_OBSERVATION',
+  'INTUITIVE_LEAP',
+  'PERSUASION_INFLUENCE',
+  'EMPATHIC_CONNECTION',
+  'ENDURANCE_RESILIENCE',
+  'SELF_EXPRESSION',
+] as const;
+
+export type ApproachVector = (typeof APPROACH_VECTORS)[number];
 
 export interface StoryBeat {
   readonly id: string;
@@ -41,6 +51,7 @@ export interface StoryBeat {
   readonly causalLink: string;
   readonly role: BeatRole;
   readonly escalationType: EscalationType | null;
+  readonly crisisType: CrisisType | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly ApproachVector[] | null;
   readonly setpieceSourceIndex: number | null;
