@@ -17,12 +17,14 @@ function createGenerationResult(): StructureGenerationResult {
             name: 'Messenger warning',
             description: 'A warning arrives',
             objective: 'Hear the warning',
+            causalLink: 'Because the messenger reaches the heir in time.',
             role: 'setup',
           },
           {
             name: 'Crossroads decision',
             description: 'A difficult choice',
             objective: 'Leave home',
+            causalLink: 'Because the warning reveals immediate danger at court.',
             role: 'turning_point',
           },
         ],
@@ -37,6 +39,7 @@ function createGenerationResult(): StructureGenerationResult {
             name: 'First major setback',
             description: 'First major setback',
             objective: 'Recover from loss',
+            causalLink: 'Because the heir departs without securing enough allies.',
             role: 'escalation',
           },
         ],
@@ -85,6 +88,9 @@ describe('structure-factory', () => {
 
       expect(result.acts[0]?.beats[0]?.objective).toBe('Hear the warning');
       expect(result.acts[0]?.beats[1]?.objective).toBe('Leave home');
+      expect(result.acts[0]?.beats[0]?.causalLink).toBe(
+        'Because the messenger reaches the heir in time.'
+      );
     });
 
     it('sets approachVectors to null when not provided', () => {
@@ -144,6 +150,15 @@ describe('structure-factory', () => {
       const result = createStoryStructure(genResult);
 
       expect(result.acts[1]?.beats[0]?.setpieceSourceIndex).toBeNull();
+    });
+
+    it('throws when causalLink is blank', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[1]!.beats[0]!.causalLink = '   ';
+
+      expect(() => createStoryStructure(genResult)).toThrow(
+        'Structure beat 2.1 must include a non-empty causalLink'
+      );
     });
   });
 

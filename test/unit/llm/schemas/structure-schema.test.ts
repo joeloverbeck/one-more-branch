@@ -60,6 +60,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'name',
       'description',
       'objective',
+      'causalLink',
       'role',
       'escalationType',
       'uniqueScenarioHook',
@@ -120,6 +121,30 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     const roleSchema = schema.properties.acts.items.properties.beats.items.properties.role;
     expect(roleSchema.type).toBe('string');
     expect(roleSchema.enum).toEqual(['setup', 'escalation', 'turning_point', 'resolution']);
+  });
+
+  it('should define causalLink as a required string', () => {
+    const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
+      properties: {
+        acts: {
+          items: {
+            properties: {
+              beats: {
+                items: {
+                  properties: {
+                    causalLink: { type: string; description: string };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    const causalLinkSchema = schema.properties.acts.items.properties.beats.items.properties.causalLink;
+    expect(causalLinkSchema.type).toBe('string');
+    expect(causalLinkSchema.description).toContain('cause');
   });
 
   it('should define escalationType with a nullable anyOf enum for provider compatibility', () => {

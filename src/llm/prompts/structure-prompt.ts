@@ -181,7 +181,8 @@ REQUIREMENTS (follow ALL):
 10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
 11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
 12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
-13. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+13. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first beats in an act that have no prior beat in that act, reference the initiating condition (inciting incident, carry-over pressure, or prior-act consequence).
+14. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
    - THREAT_ESCALATION: Opposition magnitude increases — enemies grow stronger, more numerous, or more resourceful
    - REVELATION_SHIFT: Hidden truth recontextualizes everything — what seemed safe is dangerous, what seemed true is false
    - REVERSAL_OF_FORTUNE: Progress inverts into setback — a victory becomes a trap, an ally's help becomes a liability
@@ -193,8 +194,8 @@ REQUIREMENTS (follow ALL):
    - COMPETENCE_DEMAND_SPIKE: The challenge now exceeds the protagonist's demonstrated capability, forcing growth or improvisation
    For "setup" and "resolution" beats, set escalationType to null.
    When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
-14. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup" and "resolution" beats, set uniqueScenarioHook to null.
-15. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+15. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup" and "resolution" beats, set uniqueScenarioHook to null.
+16. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE: Confronting head-on with power, aggression, or physical dominance
    - SWIFT_ACTION: Speed, reflexes, seizing initiative before others react
    - STEALTH_SUBTERFUGE: Deception, misdirection, stealth, operating under false pretenses
@@ -241,6 +242,7 @@ OUTPUT SHAPE:
           "Deal with the situation" (no specific action, no obstacle, nothing to verify)
           "Move the story forward" (meta-commentary, not a protagonist goal)
           "Experience the consequences" (passive, no action verb, unverifiable)
+      - causalLink: one sentence explaining the cause of this beat's situation
       - role: "setup" | "escalation" | "turning_point" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats

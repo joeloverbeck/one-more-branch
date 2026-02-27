@@ -11,6 +11,7 @@ export interface CompletedBeat {
   readonly name: string;
   readonly description: string;
   readonly objective: string;
+  readonly causalLink: string;
   readonly role: string;
   readonly escalationType: string | null;
   readonly uniqueScenarioHook: string | null;
@@ -26,6 +27,7 @@ export interface PlannedBeat {
   readonly name: string;
   readonly description: string;
   readonly objective: string;
+  readonly causalLink: string;
   readonly role: string;
   readonly escalationType: string | null;
   readonly uniqueScenarioHook: string | null;

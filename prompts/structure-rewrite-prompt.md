@@ -121,7 +121,8 @@ REQUIREMENTS (follow ALL):
    - Preserve beat roles from completed beats unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
-11. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+11. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first regenerated beats in an act, reference the initiating condition from canon or current narrative state. Preserve causalLink from completed beats unchanged.
+12. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
    - THREAT_ESCALATION: Opposition magnitude increases
    - REVELATION_SHIFT: Hidden truth recontextualizes everything
    - REVERSAL_OF_FORTUNE: Progress inverts into setback
@@ -133,8 +134,8 @@ REQUIREMENTS (follow ALL):
    - COMPETENCE_DEMAND_SPIKE: Challenge exceeds demonstrated capability
    For "setup" and "resolution" beats, set escalationType to null. Preserve escalationType from completed beats unchanged.
    When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
-12. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup" and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-13. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup" and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
+13. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup" and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
+14. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup" and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
@@ -164,6 +165,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "Deal with the situation" (no specific action, no obstacle, nothing to verify)
           "Move the story forward" (meta-commentary, not a protagonist goal)
           "Experience the consequences" (passive, no action verb, unverifiable)
+      - causalLink: one sentence explaining the cause of this beat's situation
       - role: "setup" | "escalation" | "turning_point" | "resolution"
       - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats
@@ -191,6 +193,7 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "name": "{{beat title}}",
           "description": "{{beat description}}",
           "objective": "{{beat objective}}",
+          "causalLink": "{{because-of causal sentence}}",
           "role": "{{setup|escalation|turning_point|resolution}}",
           "escalationType": "{{THREAT_ESCALATION|REVELATION_SHIFT|REVERSAL_OF_FORTUNE|BETRAYAL_OR_ALLIANCE_SHIFT|RESOURCE_OR_CAPABILITY_LOSS|MORAL_OR_ETHICAL_PRESSURE|TEMPORAL_OR_ENVIRONMENTAL_PRESSURE|COMPLICATION_CASCADE|COMPETENCE_DEMAND_SPIKE|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",

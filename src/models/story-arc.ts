@@ -30,6 +30,7 @@ export interface StoryBeat {
   readonly name: string;
   readonly description: string;
   readonly objective: string;
+  readonly causalLink: string;
   readonly role: BeatRole;
   readonly escalationType: EscalationType | null;
   readonly uniqueScenarioHook: string | null;

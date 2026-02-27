@@ -90,6 +90,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'name',
                     'description',
                     'objective',
+                    'causalLink',
                     'role',
                     'escalationType',
                     'uniqueScenarioHook',
@@ -100,6 +101,11 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     name: { type: 'string' },
                     description: { type: 'string' },
                     objective: { type: 'string' },
+                    causalLink: {
+                      type: 'string',
+                      description:
+                        'One sentence describing the cause of this beat. Use prior beat outcomes where possible; first beats should reference inciting conditions.',
+                    },
                     role: {
                       type: 'string',
                       enum: ['setup', 'escalation', 'turning_point', 'resolution'],

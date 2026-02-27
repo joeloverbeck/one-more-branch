@@ -231,6 +231,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
               name: 'Opening beat',
               description: 'Initial pressure appears',
               objective: 'Stabilize',
+              causalLink: 'Because of prior events.',
               role: 'setup',
             },
           ],

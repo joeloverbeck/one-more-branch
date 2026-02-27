@@ -152,6 +152,7 @@ describe('story-serializer', () => {
                   name: 'Opening',
                   description: 'The beginning',
                   objective: 'Introduce hero',
+                  causalLink: 'Introduces the protagonist and launches the narrative trajectory.',
                   role: 'setup',
                 },
               ],

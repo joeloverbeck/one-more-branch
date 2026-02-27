@@ -89,6 +89,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Public anomaly witness',
           description: 'Witness a manipulated event in public.',
           objective: 'Collect undeniable first evidence.',
+          causalLink: 'Because of prior events.',
           role: 'setup',
         },
         {
@@ -96,6 +97,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Trusted contact secured',
           description: 'Find a trustworthy contact.',
           objective: 'Avoid facing the threat alone.',
+          causalLink: 'Because of prior events.',
           role: 'escalation',
         },
       ],
@@ -112,6 +114,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Archive node infiltration',
           description: 'Infiltrate an archive node.',
           objective: 'Extract operational records.',
+          causalLink: 'Because of prior events.',
           role: 'escalation',
         },
         {
@@ -119,6 +122,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Retaliation survival',
           description: 'Survive retaliation and regroup.',
           objective: 'Preserve momentum into the final phase.',
+          causalLink: 'Because of prior events.',
           role: 'turning_point',
         },
       ],
@@ -135,6 +139,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Public reveal coordination',
           description: 'Coordinate allies for a public reveal.',
           objective: 'Synchronize final action.',
+          causalLink: 'Because of prior events.',
           role: 'escalation',
         },
         {
@@ -142,6 +147,7 @@ const mockedStructureResult = createMockStoryStructure({
           name: 'Final confrontation',
           description: 'Execute the final confrontation.',
           objective: 'Resolve the central conflict.',
+          causalLink: 'Because of prior events.',
           role: 'resolution',
         },
       ],

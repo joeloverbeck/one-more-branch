@@ -82,8 +82,16 @@ const mockedStructureResult = {
       stakes: 'Failure traps the protagonist early.',
       entryCondition: 'A disruptive event forces movement.',
       beats: [
-        { description: 'Assess first threat', objective: 'Avoid immediate collapse.' },
-        { description: 'Choose initial direction', objective: 'Set investigation path.' },
+        {
+          description: 'Assess first threat',
+          objective: 'Avoid immediate collapse.',
+          causalLink: 'Because the disruptive event forces immediate triage.',
+        },
+        {
+          description: 'Choose initial direction',
+          objective: 'Set investigation path.',
+          causalLink: 'Because first triage reveals multiple dangerous leads.',
+        },
       ],
     },
     {
@@ -92,8 +100,16 @@ const mockedStructureResult = {
       stakes: 'Failure empowers hostile forces.',
       entryCondition: 'The first choices expose broader conflict.',
       beats: [
-        { description: 'Take a risky action', objective: 'Gain critical information.' },
-        { description: 'Absorb consequences', objective: 'Preserve forward progress.' },
+        {
+          description: 'Take a risky action',
+          objective: 'Gain critical information.',
+          causalLink: 'Because the chosen path exposes a narrow opportunity window.',
+        },
+        {
+          description: 'Absorb consequences',
+          objective: 'Preserve forward progress.',
+          causalLink: 'Because the risky action triggers hostile pushback.',
+        },
       ],
     },
     {
@@ -102,8 +118,16 @@ const mockedStructureResult = {
       stakes: 'Failure leaves permanent damage.',
       entryCondition: 'Enough information exists for decisive action.',
       beats: [
-        { description: 'Commit final approach', objective: 'Align resources.' },
-        { description: 'Deliver final move', objective: 'Resolve central conflict.' },
+        {
+          description: 'Commit final approach',
+          objective: 'Align resources.',
+          causalLink: 'Because consequences reveal the true center of power.',
+        },
+        {
+          description: 'Deliver final move',
+          objective: 'Resolve central conflict.',
+          causalLink: 'Because final approach alignment enables decisive action.',
+        },
       ],
     },
   ],

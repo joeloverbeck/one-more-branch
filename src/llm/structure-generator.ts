@@ -112,7 +112,8 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
       if (
         typeof beatData['name'] !== 'string' ||
         typeof beatData['description'] !== 'string' ||
-        typeof beatData['objective'] !== 'string'
+        typeof beatData['objective'] !== 'string' ||
+        typeof beatData['causalLink'] !== 'string'
       ) {
         throw new LLMError(
           `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
@@ -137,6 +138,7 @@ function parseStructureResponse(parsed: unknown): Omit<StructureGenerationResult
         name: beatData['name'],
         description: beatData['description'],
         objective: beatData['objective'],
+        causalLink: beatData['causalLink'],
         role,
         escalationType,
         uniqueScenarioHook,

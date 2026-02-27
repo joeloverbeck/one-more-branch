@@ -88,8 +88,16 @@ const mockedStructureResult = {
       stakes: 'Failure leaves the hero blind to danger.',
       entryCondition: 'A disturbing event forces involvement.',
       beats: [
-        { description: 'Find first clue', objective: 'Confirm the mystery is real.' },
-        { description: 'Secure local help', objective: 'Gain support to continue.' },
+        {
+          description: 'Find first clue',
+          objective: 'Confirm the mystery is real.',
+          causalLink: 'Because the opening incident exposes an immediate anomaly.',
+        },
+        {
+          description: 'Secure local help',
+          objective: 'Gain support to continue.',
+          causalLink: 'Because the first clue reveals the need for local access.',
+        },
       ],
     },
     {
@@ -98,8 +106,16 @@ const mockedStructureResult = {
       stakes: 'Failure strengthens the antagonist.',
       entryCondition: 'The first clues reveal a wider network.',
       beats: [
-        { description: 'Infiltrate hostile zone', objective: 'Collect decisive evidence.' },
-        { description: 'Survive counterattack', objective: 'Keep momentum.' },
+        {
+          description: 'Infiltrate hostile zone',
+          objective: 'Collect decisive evidence.',
+          causalLink: 'Because local support identifies a vulnerable entry point.',
+        },
+        {
+          description: 'Survive counterattack',
+          objective: 'Keep momentum.',
+          causalLink: 'Because hostile-zone infiltration alerts regime defenders.',
+        },
       ],
     },
     {
@@ -108,8 +124,16 @@ const mockedStructureResult = {
       stakes: 'Failure causes irreversible loss.',
       entryCondition: 'Evidence is strong enough to act publicly.',
       beats: [
-        { description: 'Commit final plan', objective: 'Coordinate allies.' },
-        { description: 'Execute resolution', objective: 'End central threat.' },
+        {
+          description: 'Commit final plan',
+          objective: 'Coordinate allies.',
+          causalLink: 'Because surviving counterattack reveals regime deployment gaps.',
+        },
+        {
+          description: 'Execute resolution',
+          objective: 'End central threat.',
+          causalLink: 'Because the final plan aligns allied pressure at once.',
+        },
       ],
     },
   ],
@@ -236,11 +260,13 @@ function createRewriteFetchResponse(): Response {
             name: 'Trust rebuild',
             description: 'Rebuild trust with one key ally',
             objective: 'Secure a credible witness.',
+            causalLink: 'Because the public betrayal isolates the protagonist.',
           },
           {
             name: 'First lie exposed',
             description: 'Expose the first lie in the new regime',
             objective: 'Open a path to a counter-move.',
+            causalLink: 'Because trust rebuild provides a reliable witness trail.',
           },
         ],
       },
@@ -254,11 +280,13 @@ function createRewriteFetchResponse(): Response {
             name: 'Supply disruption',
             description: 'Disrupt supply chains feeding the regime',
             objective: 'Force visible concessions.',
+            causalLink: 'Because exposing the first lie identifies vulnerable supply nodes.',
           },
           {
             name: 'Retaliation survival',
             description: 'Survive coordinated retaliation',
             objective: 'Keep allies united under pressure.',
+            causalLink: 'Because supply disruption provokes regime retaliation.',
           },
         ],
       },
@@ -272,11 +300,13 @@ function createRewriteFetchResponse(): Response {
             name: 'Public reckoning',
             description: 'Force a public reckoning',
             objective: 'Reveal proof to the city.',
+            causalLink: 'Because retaliation creates undeniable public evidence.',
           },
           {
             name: 'Accountable power',
             description: 'Conclude with accountable power',
             objective: 'Prevent a return to old corruption.',
+            causalLink: 'Because public reckoning collapses the old command legitimacy.',
           },
         ],
       },
