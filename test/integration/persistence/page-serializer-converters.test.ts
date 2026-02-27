@@ -141,6 +141,7 @@ function buildFullAnalystResult(): AnalystResult {
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
+    delayedConsequencesTriggered: [],
     rawResponse: '',
   };
 }

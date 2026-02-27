@@ -103,6 +103,7 @@ function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResu
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
+    delayedConsequencesTriggered: [],
     rawResponse: '',
     ...overrides,
   };
@@ -335,6 +336,85 @@ describe('page-builder', () => {
           currentAge: 0,
           triggered: false,
           sourcePageId: parsePageId(4),
+        },
+      ]);
+    });
+
+    it('marks analyst-triggered delayed consequences as triggered after aging', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(5),
+        parentPageId: parsePageId(4),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: buildMockAnalystResult({ delayedConsequencesTriggered: ['dc-2'] }),
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedDelayedConsequences: [
+          {
+            id: 'dc-1',
+            description: 'A false passphrase has circulated.',
+            triggerCondition: 'A gate challenge happens.',
+            minPagesDelay: 1,
+            maxPagesDelay: 4,
+            currentAge: 2,
+            triggered: false,
+            sourcePageId: parsePageId(2),
+          },
+          {
+            id: 'dc-2',
+            description: 'Checkpoint guards are now searching for the protagonist.',
+            triggerCondition: 'A checkpoint interaction occurs.',
+            minPagesDelay: 1,
+            maxPagesDelay: 3,
+            currentAge: 1,
+            triggered: false,
+            sourcePageId: parsePageId(3),
+          },
+        ],
+        parentAccumulatedFulfilledPremisePromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: null,
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+
+      expect(page.accumulatedDelayedConsequences).toEqual([
+        {
+          id: 'dc-1',
+          description: 'A false passphrase has circulated.',
+          triggerCondition: 'A gate challenge happens.',
+          minPagesDelay: 1,
+          maxPagesDelay: 4,
+          currentAge: 3,
+          triggered: false,
+          sourcePageId: parsePageId(2),
+        },
+        {
+          id: 'dc-2',
+          description: 'Checkpoint guards are now searching for the protagonist.',
+          triggerCondition: 'A checkpoint interaction occurs.',
+          minPagesDelay: 1,
+          maxPagesDelay: 3,
+          currentAge: 2,
+          triggered: true,
+          sourcePageId: parsePageId(3),
         },
       ]);
     });
@@ -874,7 +954,8 @@ describe('page-builder', () => {
         thematicChargeDescription: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-        rawResponse: '',
+    delayedConsequencesTriggered: [],
+    rawResponse: '',
       };
     }
 
@@ -994,7 +1075,8 @@ describe('page-builder', () => {
         thematicChargeDescription: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-        rawResponse: '',
+    delayedConsequencesTriggered: [],
+    rawResponse: '',
       };
     }
 

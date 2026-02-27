@@ -460,6 +460,50 @@ describe('planner continuation context section', () => {
     expect(result).toContain('Off-screen: Disabling surveillance cameras');
   });
 
+  it('includes pending consequences section when delayed consequences are present', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedDelayedConsequences: [
+        {
+          id: 'dc-2',
+          description: 'A patrol ledger has flagged the protagonist.',
+          triggerCondition: 'A checkpoint performs identity verification.',
+          minPagesDelay: 1,
+          maxPagesDelay: 4,
+          currentAge: 2,
+          triggered: false,
+          sourcePageId: 1,
+        },
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('PENDING CONSEQUENCES:');
+    expect(result).toContain('[dc-2]');
+    expect(result).toContain('trigger window 1-4');
+    expect(result).toContain('A checkpoint performs identity verification.');
+  });
+
   it('includes protagonist affect section when parentProtagonistAffect is provided', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

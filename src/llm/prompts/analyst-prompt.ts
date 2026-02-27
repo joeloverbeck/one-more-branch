@@ -84,6 +84,13 @@ OBLIGATORY SCENE FULFILLMENT:
 - If the scene does not fulfill the active obligation, set obligatorySceneFulfilled to null.
 - If no active beat obligation context is provided, always set obligatorySceneFulfilled to null.
 
+DELAYED CONSEQUENCE TRIGGERING:
+- Evaluate only consequences listed in TRIGGER-ELIGIBLE DELAYED CONSEQUENCES.
+- Add a consequence ID to delayedConsequencesTriggered only when scene events clearly satisfy its triggerCondition.
+- Use exact IDs from the provided list (e.g., "dc-4").
+- If no listed consequence is triggered, return delayedConsequencesTriggered as [].
+- Do not invent IDs and do not include consequences not listed as trigger-eligible.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
@@ -263,6 +270,29 @@ Set obligatorySceneFulfilled to this exact tag only if this scene fulfills it; o
 `;
 }
 
+function buildDelayedConsequencesSection(context: AnalystContext): string {
+  const eligible = context.delayedConsequencesEligible ?? [];
+
+  const lines = ['TRIGGER-ELIGIBLE DELAYED CONSEQUENCES:'];
+  if (eligible.length === 0) {
+    lines.push('- (none)');
+  } else {
+    lines.push(
+      ...eligible.map(
+        (consequence) =>
+          `- [${consequence.id}] ${consequence.description} ` +
+          `(age ${consequence.currentAge}, trigger window ${consequence.minPagesDelay}-${consequence.maxPagesDelay})\n` +
+          `  Trigger condition: ${consequence.triggerCondition}`
+      )
+    );
+  }
+  lines.push('');
+  lines.push(
+    'Set delayedConsequencesTriggered to IDs from this list only when their trigger condition is clearly satisfied in the scene.'
+  );
+  return `${lines.join('\n')}\n\n`;
+}
+
 /**
  * Builds the analyst prompt messages for the analyst LLM call.
  * Returns a system message with analyst instructions and a user message
@@ -284,13 +314,14 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const activePromisesSection = buildActivePromisesSection(context);
   const premisePromisesSection = buildPremisePromiseSection(context);
   const obligatorySceneSection = buildObligatorySceneSection(context);
+  const delayedConsequencesSection = buildDelayedConsequencesSection(context);
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
   const thematicKernelSection = buildThematicKernelSection(context);
 
   const spineSection = buildSpineSection(context.spine);
 
-  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${obligatorySceneSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${obligatorySceneSection}${delayedConsequencesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,

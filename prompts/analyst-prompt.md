@@ -102,6 +102,12 @@ OBLIGATORY SCENE FULFILLMENT:
 - If the scene does not fulfill the active obligation, set `obligatorySceneFulfilled` to `null`.
 - If no active beat obligation context is provided, always set `obligatorySceneFulfilled` to `null`.
 
+DELAYED CONSEQUENCE TRIGGERING:
+- Evaluate only consequences listed in `TRIGGER-ELIGIBLE DELAYED CONSEQUENCES`.
+- Set `delayedConsequencesTriggered` to exact IDs from that list when their trigger condition is clearly satisfied in the scene.
+- Return `delayedConsequencesTriggered: []` when no eligible consequence triggers.
+- Never invent IDs and never include non-eligible consequences.
+
 NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.
 - Set npcCoherenceAdherent to true if all NPCs who appear or act in the scene behave consistently with their agendas.
@@ -202,6 +208,13 @@ Set premisePromiseFulfilled to one exact pending promise string when fulfilled b
 ACTIVE BEAT OBLIGATION:
 ACTIVE BEAT OBLIGATION TAG: {{obligatorySceneTag}}
 Set obligatorySceneFulfilled to this exact tag only if this scene fulfills it; otherwise set obligatorySceneFulfilled to null.
+
+=== TRIGGER-ELIGIBLE DELAYED CONSEQUENCES ===
+TRIGGER-ELIGIBLE DELAYED CONSEQUENCES:
+- [{{id}}] {{description}} (age {{currentAge}}, trigger window {{minPagesDelay}}-{{maxPagesDelay}})
+  Trigger condition: {{triggerCondition}}
+
+Set delayedConsequencesTriggered to IDs from this list only when their trigger condition is clearly satisfied in the scene.
 
 === THEMATIC KERNEL ===
 (Only present when analyst context includes thematicQuestion or antithesis)

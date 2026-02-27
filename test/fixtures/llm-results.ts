@@ -75,6 +75,7 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
+    delayedConsequencesTriggered: [],
     rawResponse: '{}',
     ...overrides,
   };

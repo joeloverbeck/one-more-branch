@@ -44,6 +44,7 @@ function buildAnalystResult(thematicCharge: ThematicCharge): AnalystResult {
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
+    delayedConsequencesTriggered: [],
     rawResponse: '',
   };
 }

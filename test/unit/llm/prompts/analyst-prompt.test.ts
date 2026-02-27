@@ -224,6 +224,30 @@ describe('buildAnalystPrompt', () => {
     expect(messages[1].content).toContain('The hero will infiltrate the sky-forge tribunal.');
   });
 
+  it('includes trigger-eligible delayed consequences context and triggering rules', () => {
+    const messages = buildAnalystPrompt({
+      ...testContext,
+      delayedConsequencesEligible: [
+        {
+          id: 'dc-2',
+          description: 'Checkpoint captain circulates your face.',
+          triggerCondition: 'The scene includes a checkpoint scan.',
+          minPagesDelay: 1,
+          maxPagesDelay: 3,
+          currentAge: 2,
+          triggered: false,
+          sourcePageId: 1,
+        },
+      ],
+    });
+
+    expect(messages[0].content).toContain('DELAYED CONSEQUENCE TRIGGERING:');
+    expect(messages[0].content).toContain('delayedConsequencesTriggered');
+    expect(messages[1].content).toContain('TRIGGER-ELIGIBLE DELAYED CONSEQUENCES:');
+    expect(messages[1].content).toContain('[dc-2]');
+    expect(messages[1].content).toContain('The scene includes a checkpoint scan.');
+  });
+
   it('omits fulfilled premise promises from pending list', () => {
     const fulfilledPromise = 'The hero will infiltrate the sky-forge tribunal.';
     const messages = buildAnalystPrompt({

@@ -83,4 +83,20 @@ describe('ANALYST_SCHEMA', () => {
     );
     expect(schema.required).toContain('obligatorySceneFulfilled');
   });
+
+  it('includes delayedConsequencesTriggered as array in properties and required list', () => {
+    const schema = ANALYST_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+      required: string[];
+    };
+    const delayedConsequencesTriggered = schema.properties['delayedConsequencesTriggered'] as {
+      type?: string;
+      items?: Record<string, unknown>;
+    };
+
+    expect(delayedConsequencesTriggered).toBeDefined();
+    expect(delayedConsequencesTriggered.type).toBe('array');
+    expect(delayedConsequencesTriggered.items).toEqual({ type: 'string' });
+    expect(schema.required).toContain('delayedConsequencesTriggered');
+  });
 });

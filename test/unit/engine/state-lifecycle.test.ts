@@ -43,6 +43,7 @@ function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResul
     thematicChargeDescription: '',
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
+    delayedConsequencesTriggered: [],
     rawResponse: '',
     ...overrides,
   };

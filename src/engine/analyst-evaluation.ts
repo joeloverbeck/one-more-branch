@@ -11,6 +11,7 @@ import type {
 import type { StorySpine } from '../models/story-spine';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import type { DelayedConsequence } from '../models/state/delayed-consequence';
 import { emitGenerationStage } from './generation-pipeline-helpers';
 import type { GenerationStageCallback } from './types';
 
@@ -22,6 +23,7 @@ export interface AnalystEvaluationContext {
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
   readonly activeTrackedPromises: readonly TrackedPromise[];
+  readonly delayedConsequencesEligible: readonly DelayedConsequence[];
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
   readonly tone: string;
@@ -68,6 +70,7 @@ export async function runAnalystEvaluation(
         threadsResolved: context.threadsResolved,
         threadAges: context.threadAges,
         activeTrackedPromises: context.activeTrackedPromises,
+        delayedConsequencesEligible: context.delayedConsequencesEligible,
         accumulatedNpcAgendas: context.accumulatedNpcAgendas,
         accumulatedNpcRelationships: context.accumulatedNpcRelationships,
         tone: context.tone,

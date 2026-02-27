@@ -29,3 +29,20 @@ export function getTriggerEligibleDelayedConsequences(
       consequence.currentAge <= consequence.maxPagesDelay
   );
 }
+
+/**
+ * Marks delayed consequences as triggered when their IDs are selected by analyst evaluation.
+ */
+export function applyTriggeredDelayedConsequences(
+  consequences: readonly DelayedConsequence[],
+  triggeredIds: readonly string[]
+): readonly DelayedConsequence[] {
+  if (triggeredIds.length === 0) {
+    return consequences;
+  }
+
+  const triggeredSet = new Set(triggeredIds);
+  return consequences.map((consequence) =>
+    triggeredSet.has(consequence.id) ? { ...consequence, triggered: true } : consequence
+  );
+}

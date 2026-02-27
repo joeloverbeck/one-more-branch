@@ -184,6 +184,7 @@ export interface AnalystResultFileData {
   thematicChargeDescription: string;
   obligatorySceneFulfilled?: string | null;
   premisePromiseFulfilled?: string | null;
+  delayedConsequencesTriggered: string[];
 }
 
 export interface PageFileData {

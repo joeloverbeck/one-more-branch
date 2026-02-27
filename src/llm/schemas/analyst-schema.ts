@@ -321,6 +321,12 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'Exact premise promise text fulfilled by this scene, or null when no premise promise was fulfilled.',
         },
+        delayedConsequencesTriggered: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'IDs of trigger-eligible delayed consequences that this scene clearly triggers (e.g., "dc-2"). Empty array when none are triggered.',
+        },
       },
       required: [
         'beatConcluded',
@@ -361,6 +367,7 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'thematicChargeDescription',
         'obligatorySceneFulfilled',
         'premisePromiseFulfilled',
+        'delayedConsequencesTriggered',
       ],
       additionalProperties: false,
     },

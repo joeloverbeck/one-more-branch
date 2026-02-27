@@ -71,6 +71,7 @@ export function analystResultToFileData(
     thematicChargeDescription: analystResult.thematicChargeDescription,
     obligatorySceneFulfilled: analystResult.obligatorySceneFulfilled,
     premisePromiseFulfilled: analystResult.premisePromiseFulfilled,
+    delayedConsequencesTriggered: [...(analystResult.delayedConsequencesTriggered ?? [])],
   };
 }
 
@@ -149,6 +150,7 @@ export function fileDataToAnalystResult(
     thematicChargeDescription: data.thematicChargeDescription ?? '',
     obligatorySceneFulfilled: data.obligatorySceneFulfilled ?? null,
     premisePromiseFulfilled: data.premisePromiseFulfilled ?? null,
+    delayedConsequencesTriggered: [...(data.delayedConsequencesTriggered ?? [])],
     rawResponse: '',
   };
 }

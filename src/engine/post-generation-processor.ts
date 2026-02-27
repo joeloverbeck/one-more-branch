@@ -35,6 +35,10 @@ import { resolveStructureProgression } from './structure-state';
 import { resolveNpcAgendas } from './npc-agenda-pipeline';
 import { buildPage } from './page-builder';
 import type { CollectedParentState } from './parent-state-collector';
+import {
+  getTriggerEligibleDelayedConsequences,
+  incrementDelayedConsequenceAges,
+} from './consequence-lifecycle';
 import type { DeviationInfo, GenerationStageCallback } from './types';
 
 export interface PostGenerationContext {
@@ -125,6 +129,11 @@ export async function processPostGeneration(
     : parentState!.structureState;
 
   const activeStructureForAnalyst = currentStructureVersion?.structure ?? story.structure;
+  const delayedConsequencesEligible = isOpening
+    ? []
+    : getTriggerEligibleDelayedConsequences(
+        incrementDelayedConsequenceAges(parentPage?.accumulatedDelayedConsequences ?? [])
+      );
   const analystEval =
     activeStructureForAnalyst && parentStructureState
       ? await runAnalystEvaluation({
@@ -142,6 +151,7 @@ export async function processPostGeneration(
           threadsResolved: reconciliation.threadsResolved,
           threadAges: parentPage?.threadAges ?? {},
           activeTrackedPromises: parentPage?.accumulatedPromises ?? [],
+          delayedConsequencesEligible,
           accumulatedNpcAgendas: parentAccumulatedNpcAgendas,
           accumulatedNpcRelationships: parentAccumulatedNpcRelationships,
           tone: story.tone,

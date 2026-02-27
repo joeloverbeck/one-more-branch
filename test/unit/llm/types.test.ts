@@ -847,7 +847,8 @@ describe('LLM types', () => {
         thematicChargeDescription: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-        rawResponse: '{"beatConcluded":true}',
+    delayedConsequencesTriggered: [],
+    rawResponse: '{"beatConcluded":true}',
       };
 
       expect(result.beatConcluded).toBe(true);
@@ -895,7 +896,8 @@ describe('LLM types', () => {
         thematicChargeDescription: 'The protagonist embraces coercive control to restore order.',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
-        rawResponse: '{"deviationDetected":true}',
+    delayedConsequencesTriggered: [],
+    rawResponse: '{"deviationDetected":true}',
       };
 
       expect(result.deviationDetected).toBe(true);
