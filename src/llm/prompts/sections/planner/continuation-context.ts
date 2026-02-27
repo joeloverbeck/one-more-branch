@@ -7,7 +7,10 @@ import type { ProtagonistGuidance } from '../../../../models/protagonist-guidanc
 import type { AccumulatedStructureState, StoryStructure } from '../../../../models/story-arc.js';
 import { formatCanonForPrompt } from '../../../../engine/canon-manager.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
-import type { MomentumTrajectory } from '../../../generation-pipeline-types.js';
+import type {
+  MomentumTrajectory,
+  ThematicValenceTrajectory,
+} from '../../../generation-pipeline-types.js';
 import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
 import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 import {
@@ -126,6 +129,47 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
     lines.push(trajectoryWarnings);
   }
 
+  lines.push('');
+  return lines.join('\n') + '\n';
+}
+
+function buildThematicTrajectoryWarningSection(
+  thematicValenceTrajectory: ThematicValenceTrajectory | undefined
+): string {
+  if (!thematicValenceTrajectory || thematicValenceTrajectory.length < 3) {
+    return '';
+  }
+
+  const consecutiveThesis = countConsecutiveFromEnd(
+    thematicValenceTrajectory,
+    (point) => point.thematicValence === 'THESIS_SUPPORTING'
+  );
+  const consecutiveAntithesis = countConsecutiveFromEnd(
+    thematicValenceTrajectory,
+    (point) => point.thematicValence === 'ANTITHESIS_SUPPORTING'
+  );
+
+  if (consecutiveThesis < 3 && consecutiveAntithesis < 3) {
+    return '';
+  }
+
+  const dominantValence =
+    consecutiveThesis >= 3 ? 'THESIS_SUPPORTING' : 'ANTITHESIS_SUPPORTING';
+  const opposingValence =
+    dominantValence === 'THESIS_SUPPORTING' ? 'ANTITHESIS_SUPPORTING' : 'THESIS_SUPPORTING';
+
+  const lines: string[] = ['=== THEMATIC TRAJECTORY ==='];
+  lines.push('Recent scene valence history:');
+  lines.push(
+    thematicValenceTrajectory
+      .map((point) => `- [${point.pageId}] ${point.thematicValence}`)
+      .join('\n')
+  );
+  lines.push('');
+  lines.push(
+    `WARNING: The last ${Math.max(consecutiveThesis, consecutiveAntithesis)} scenes all trend ${dominantValence}. ` +
+      `Plan should pressure-test the opposing argument (${opposingValence}) through action and consequence to avoid thematic monotony.`
+  );
   lines.push('');
   return lines.join('\n') + '\n';
 }
@@ -496,6 +540,9 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
       : '';
 
   const pacingSection = buildPacingBriefingSection(context);
+  const thematicTrajectorySection = buildThematicTrajectoryWarningSection(
+    context.thematicValenceTrajectory
+  );
 
   const escalationDirective = buildEscalationDirective(
     context.structure,
@@ -540,7 +587,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   return `=== PLANNER CONTEXT: CONTINUATION ===
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
 
-${structureSection}${pacingSection}${escalationDirective}${premisePromiseWarningSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${thematicTrajectorySection}${escalationDirective}${premisePromiseWarningSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):

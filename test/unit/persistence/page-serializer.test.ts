@@ -44,6 +44,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     },
     structureVersionId: null,
     analystResult: null,
+    thematicValence: 'AMBIGUOUS',
     storyBible: null,
     protagonistAffect: createDefaultProtagonistAffect(),
     threadAges: {},
@@ -102,6 +103,7 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
     structureVersionId: null,
     storyBible: null,
     analystResult: null,
+    thematicValence: 'AMBIGUOUS',
     threadAges: {},
     accumulatedPromises: [],
     resolvedThreadMeta: {},
@@ -199,6 +201,16 @@ describe('page-serializer', () => {
 
       expect(fileData.activeStateChanges).toEqual(page.activeStateChanges);
       expect(fileData.accumulatedActiveState).toEqual(page.accumulatedActiveState);
+    });
+
+    it('serializes thematicValence', () => {
+      const page = buildTestPage({
+        thematicValence: 'THESIS_SUPPORTING',
+      });
+
+      const fileData = serializePage(page);
+
+      expect(fileData.thematicValence).toBe('THESIS_SUPPORTING');
     });
 
     it('creates deep copies to prevent mutation', () => {
@@ -339,6 +351,13 @@ describe('page-serializer', () => {
 
       const page = deserializePage(fileData);
       expect(page.structureVersionId).toBeNull();
+    });
+
+    it('deserializes thematicValence', () => {
+      const fileData = buildTestFileData({ thematicValence: 'ANTITHESIS_SUPPORTING' });
+
+      const page = deserializePage(fileData);
+      expect(page.thematicValence).toBe('ANTITHESIS_SUPPORTING');
     });
 
     it('parses structureVersionId when provided', () => {

@@ -223,6 +223,7 @@ export interface PageFileData {
   structureVersionId: string | null;
   storyBible: StoryBibleFileData | null;
   analystResult: AnalystResultFileData | null;
+  thematicValence: string;
   threadAges: Record<string, number>;
   accumulatedPromises: TrackedPromiseFileData[];
   accumulatedFulfilledPremisePromises?: string[];

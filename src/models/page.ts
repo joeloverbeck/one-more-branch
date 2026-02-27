@@ -8,7 +8,7 @@ import {
 import { StructureVersionId, isStructureVersionId } from './structure-version';
 import { AccumulatedStructureState, createEmptyAccumulatedStructureState } from './story-arc';
 import { isTrackedPromise, type TrackedPromise } from './state/keyed-entry';
-import type { AnalystResult } from '../llm/analyst-types';
+import type { AnalystResult, ThematicCharge } from '../llm/analyst-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
 import {
   ActiveState,
@@ -58,6 +58,7 @@ export interface Page {
   readonly structureVersionId: StructureVersionId | null;
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
+  readonly thematicValence: ThematicCharge;
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
   readonly accumulatedFulfilledPremisePromises?: readonly string[];
@@ -158,6 +159,7 @@ export function createPage(data: CreatePageData): Page {
     structureVersionId: data.structureVersionId ?? null,
     storyBible: data.storyBible ?? null,
     analystResult: data.analystResult ?? null,
+    thematicValence: data.analystResult?.thematicCharge ?? 'AMBIGUOUS',
     threadAges: data.threadAges ?? {},
     accumulatedPromises: data.accumulatedPromises ?? [],
     accumulatedFulfilledPremisePromises: data.accumulatedFulfilledPremisePromises ?? [],
@@ -214,6 +216,11 @@ export function isPage(value: unknown): value is Page {
   const accumulatedPromises = obj['accumulatedPromises'];
   const accumulatedPromisesValid =
     Array.isArray(accumulatedPromises) && accumulatedPromises.every(isTrackedPromise);
+  const thematicValence = obj['thematicValence'];
+  const thematicValenceValid =
+    thematicValence === 'THESIS_SUPPORTING' ||
+    thematicValence === 'ANTITHESIS_SUPPORTING' ||
+    thematicValence === 'AMBIGUOUS';
   const accumulatedFulfilledPremisePromises = obj['accumulatedFulfilledPremisePromises'];
   const accumulatedFulfilledPremisePromisesValid =
     accumulatedFulfilledPremisePromises === undefined ||
@@ -232,6 +239,7 @@ export function isPage(value: unknown): value is Page {
     accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
     accumulatedPromisesValid &&
+    thematicValenceValid &&
     accumulatedFulfilledPremisePromisesValid &&
     protagonistAffectValid &&
     structureVersionIdValid &&

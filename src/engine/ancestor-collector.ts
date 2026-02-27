@@ -3,6 +3,8 @@ import type {
   AncestorSummary,
   MomentumDataPoint,
   MomentumTrajectory,
+  ThematicValenceDataPoint,
+  ThematicValenceTrajectory,
 } from '../llm/generation-pipeline-types';
 import { storage } from '../persistence';
 
@@ -14,6 +16,7 @@ export interface AncestorContext {
   readonly grandparentNarrative: string | null;
   readonly ancestorSummaries: readonly AncestorSummary[];
   readonly momentumTrajectory: MomentumTrajectory;
+  readonly thematicValenceTrajectory: ThematicValenceTrajectory;
 }
 
 /**
@@ -44,6 +47,26 @@ function buildMomentumTrajectory(parentPage: Page, ancestors: Page[]): MomentumT
   return points;
 }
 
+function buildThematicValenceTrajectory(
+  parentPage: Page,
+  ancestors: Page[]
+): ThematicValenceTrajectory {
+  const allPages = [...ancestors].reverse();
+  allPages.push(parentPage);
+
+  const recentPages = allPages.slice(-MAX_TRAJECTORY_PAGES);
+
+  const points: ThematicValenceDataPoint[] = [];
+  for (const page of recentPages) {
+    points.push({
+      pageId: page.id,
+      thematicValence: page.thematicValence,
+    });
+  }
+
+  return points;
+}
+
 /**
  * Walks the ancestor chain from a parent page and collects hierarchical context:
  * - Full text for parent (always available as parentPage.narrativeText)
@@ -66,6 +89,7 @@ export async function collectAncestorContext(
       grandparentNarrative: null,
       ancestorSummaries: [],
       momentumTrajectory: buildMomentumTrajectory(parentPage, []),
+      thematicValenceTrajectory: buildThematicValenceTrajectory(parentPage, []),
     };
   }
 
@@ -102,5 +126,6 @@ export async function collectAncestorContext(
     grandparentNarrative,
     ancestorSummaries,
     momentumTrajectory: buildMomentumTrajectory(parentPage, ancestors),
+    thematicValenceTrajectory: buildThematicValenceTrajectory(parentPage, ancestors),
   };
 }
