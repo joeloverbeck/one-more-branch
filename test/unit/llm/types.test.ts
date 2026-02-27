@@ -849,7 +849,9 @@ describe('LLM types', () => {
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-        rawResponse: '{"beatConcluded":true}',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '{"beatConcluded":true}',
       };
 
       expect(result.beatConcluded).toBe(true);
@@ -899,7 +901,9 @@ describe('LLM types', () => {
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-        rawResponse: '{"deviationDetected":true}',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '{"deviationDetected":true}',
       };
 
       expect(result.deviationDetected).toBe(true);

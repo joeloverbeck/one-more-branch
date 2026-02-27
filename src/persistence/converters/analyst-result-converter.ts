@@ -82,6 +82,13 @@ export function analystResultToFileData(
     obligatorySceneFulfilled: analystResult.obligatorySceneFulfilled,
     premisePromiseFulfilled: analystResult.premisePromiseFulfilled,
     delayedConsequencesTriggered: [...(analystResult.delayedConsequencesTriggered ?? [])],
+    knowledgeAsymmetryDetected: (analystResult.knowledgeAsymmetryDetected ?? []).map((entry) => ({
+      characterName: entry.characterName,
+      knownFacts: [...entry.knownFacts],
+      falseBeliefs: [...entry.falseBeliefs],
+      secrets: [...entry.secrets],
+    })),
+    dramaticIronyOpportunities: [...(analystResult.dramaticIronyOpportunities ?? [])],
   };
 }
 
@@ -162,6 +169,13 @@ export function fileDataToAnalystResult(
     obligatorySceneFulfilled: data.obligatorySceneFulfilled ?? null,
     premisePromiseFulfilled: data.premisePromiseFulfilled ?? null,
     delayedConsequencesTriggered: [...(data.delayedConsequencesTriggered ?? [])],
+    knowledgeAsymmetryDetected: (data.knowledgeAsymmetryDetected ?? []).map((entry) => ({
+      characterName: entry.characterName,
+      knownFacts: [...entry.knownFacts],
+      falseBeliefs: [...entry.falseBeliefs],
+      secrets: [...entry.secrets],
+    })),
+    dramaticIronyOpportunities: [...(data.dramaticIronyOpportunities ?? [])],
     rawResponse: '',
   };
 }

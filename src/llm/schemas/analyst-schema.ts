@@ -333,6 +333,28 @@ export const ANALYST_SCHEMA: JsonSchema = {
           description:
             'IDs of trigger-eligible delayed consequences that this scene clearly triggers (e.g., "dc-2"). Empty array when none are triggered.',
         },
+        knowledgeAsymmetryDetected: {
+          type: 'array',
+          description:
+            'Per-character information-asymmetry observations evidenced by this scene. Empty array when no meaningful updates are observed.',
+          items: {
+            type: 'object',
+            properties: {
+              characterName: { type: 'string' },
+              knownFacts: { type: 'array', items: { type: 'string' } },
+              falseBeliefs: { type: 'array', items: { type: 'string' } },
+              secrets: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['characterName', 'knownFacts', 'falseBeliefs', 'secrets'],
+            additionalProperties: false,
+          },
+        },
+        dramaticIronyOpportunities: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Concrete dramatic irony opportunities surfaced by this scene (player/protagonist vs character knowledge gaps). Empty array when none.',
+        },
       },
       required: [
         'beatConcluded',
@@ -375,6 +397,8 @@ export const ANALYST_SCHEMA: JsonSchema = {
         'obligatorySceneFulfilled',
         'premisePromiseFulfilled',
         'delayedConsequencesTriggered',
+        'knowledgeAsymmetryDetected',
+        'dramaticIronyOpportunities',
       ],
       additionalProperties: false,
     },

@@ -145,6 +145,13 @@ export interface DetectedRelationshipShiftFileData {
   suggestedNewDynamic: string;
 }
 
+export interface KnowledgeAsymmetryFileData {
+  characterName: string;
+  knownFacts: string[];
+  falseBeliefs: string[];
+  secrets: string[];
+}
+
 export interface AnalystResultFileData {
   beatConcluded: boolean;
   beatResolution: string;
@@ -186,6 +193,8 @@ export interface AnalystResultFileData {
   obligatorySceneFulfilled?: string | null;
   premisePromiseFulfilled?: string | null;
   delayedConsequencesTriggered: string[];
+  knowledgeAsymmetryDetected: KnowledgeAsymmetryFileData[];
+  dramaticIronyOpportunities: string[];
 }
 
 export interface PageFileData {

@@ -82,6 +82,10 @@ export type {
 export type { DelayedConsequence } from './delayed-consequence.js';
 export { isDelayedConsequence } from './delayed-consequence.js';
 
+// Knowledge asymmetry types
+export type { KnowledgeAsymmetry } from './knowledge-state.js';
+export { isKnowledgeAsymmetry } from './knowledge-state.js';
+
 // Active state
 export {
   ActiveState,

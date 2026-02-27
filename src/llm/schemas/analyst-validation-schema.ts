@@ -90,6 +90,13 @@ const DetectedRelationshipShiftSchema = z.object({
   suggestedNewDynamic: z.string().default(''),
 });
 
+const KnowledgeAsymmetrySchema = z.object({
+  characterName: z.string().default(''),
+  knownFacts: z.array(z.string()).catch([]).default([]),
+  falseBeliefs: z.array(z.string()).catch([]).default([]),
+  secrets: z.array(z.string()).catch([]).default([]),
+});
+
 export const AnalystResultSchema = z.object({
   beatConcluded: z.boolean().default(false),
   beatResolution: z.string().default(''),
@@ -135,4 +142,6 @@ export const AnalystResultSchema = z.object({
   obligatorySceneFulfilled: z.string().nullable().catch(null).default(null),
   premisePromiseFulfilled: z.string().nullable().catch(null).default(null),
   delayedConsequencesTriggered: z.array(z.string()).catch([]).default([]),
+  knowledgeAsymmetryDetected: z.array(KnowledgeAsymmetrySchema).catch([]).default([]),
+  dramaticIronyOpportunities: z.array(z.string()).catch([]).default([]),
 });

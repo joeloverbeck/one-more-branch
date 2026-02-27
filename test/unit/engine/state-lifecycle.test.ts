@@ -45,7 +45,9 @@ function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResul
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
-    rawResponse: '',
+knowledgeAsymmetryDetected: [],
+dramaticIronyOpportunities: [],
+rawResponse: '',
     ...overrides,
   };
 }
