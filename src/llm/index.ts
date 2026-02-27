@@ -52,10 +52,8 @@ export type { SpineOption, SpineGenerationResult } from './spine-generator.js';
 
 export {
   WRITER_GENERATION_SCHEMA,
-  ANALYST_SCHEMA,
   LOREKEEPER_SCHEMA,
   validateWriterResponse,
-  validateAnalystResponse,
   validateLorekeeperResponse,
   isStructuredOutputNotSupported,
 } from './schemas/index.js';
@@ -64,7 +62,9 @@ export {
   generateOpeningPage,
   generatePageWriterOutput,
   generateWriterPage,
-  generateAnalystEvaluation,
+  generateStructureEvaluation,
+  generatePromiseTracking,
+  generateSceneQualityEvaluation,
   generateLorekeeperBible,
   generatePagePlan,
   generateStateAccountant,

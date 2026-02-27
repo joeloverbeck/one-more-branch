@@ -1,7 +1,9 @@
 import { storyEngine } from '@/engine';
 import {
   generatePageWriterOutput,
-  generateAnalystEvaluation,
+  generateStructureEvaluation,
+  generatePromiseTracking,
+  generateSceneQualityEvaluation,
   generateOpeningPage,
   generatePagePlan,
   generateStateAccountant,
@@ -10,6 +12,9 @@ import {
 } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
+import type { StructureEvaluatorResult } from '@/llm/structure-evaluator-types';
+import type { PromiseTrackerResult } from '@/llm/promise-tracker-types';
+import type { SceneQualityResult } from '@/llm/scene-quality-types';
 import type { PageWriterResult } from '@/llm/writer-types';
 import {
   createMockAnalystResult,
@@ -18,10 +23,22 @@ import {
 } from '../../fixtures/llm-results';
 import type { StorySpine } from '@/models';
 
+jest.mock('@/llm/client', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return {
+    ...jest.requireActual('@/llm/client'),
+    generateStructureEvaluation: jest.fn(),
+    generatePromiseTracking: jest.fn(),
+    generateSceneQualityEvaluation: jest.fn(),
+  };
+});
+
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
-  generateAnalystEvaluation: jest.fn(),
+  generateStructureEvaluation: jest.fn(),
+  generatePromiseTracking: jest.fn(),
+  generateSceneQualityEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
@@ -48,9 +65,17 @@ const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
   typeof generatePageWriterOutput
 >;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
->;
+// Import from the mocked @/llm/client to get the actual mock instances
+// that analyst-evaluation.ts will use
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const llmClient = require('@/llm/client') as {
+  generateStructureEvaluation: jest.MockedFunction<typeof generateStructureEvaluation>;
+  generatePromiseTracking: jest.MockedFunction<typeof generatePromiseTracking>;
+  generateSceneQualityEvaluation: jest.MockedFunction<typeof generateSceneQualityEvaluation>;
+};
+const mockedGenerateStructureEvaluation = llmClient.generateStructureEvaluation;
+const mockedGeneratePromiseTracking = llmClient.generatePromiseTracking;
+const mockedGenerateSceneQualityEvaluation = llmClient.generateSceneQualityEvaluation;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
   typeof generateStateAccountant
@@ -61,6 +86,73 @@ const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunc
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+
+function extractStructureResult(
+  ar: AnalystResult
+): StructureEvaluatorResult & { rawResponse: string } {
+  return {
+    beatConcluded: ar.beatConcluded,
+    beatResolution: ar.beatResolution,
+    sceneMomentum: ar.sceneMomentum,
+    objectiveEvidenceStrength: ar.objectiveEvidenceStrength,
+    commitmentStrength: ar.commitmentStrength,
+    structuralPositionSignal: ar.structuralPositionSignal,
+    entryConditionReadiness: ar.entryConditionReadiness,
+    objectiveAnchors: ar.objectiveAnchors,
+    anchorEvidence: ar.anchorEvidence,
+    completionGateSatisfied: ar.completionGateSatisfied,
+    completionGateFailureReason: ar.completionGateFailureReason,
+    deviationDetected: ar.deviationDetected,
+    deviationReason: ar.deviationReason,
+    invalidatedBeatIds: ar.invalidatedBeatIds,
+    spineDeviationDetected: ar.spineDeviationDetected,
+    spineDeviationReason: ar.spineDeviationReason,
+    spineInvalidatedElement: ar.spineInvalidatedElement,
+    alignedBeatId: ar.alignedBeatId,
+    beatAlignmentConfidence: ar.beatAlignmentConfidence,
+    beatAlignmentReason: ar.beatAlignmentReason,
+    pacingIssueDetected: ar.pacingIssueDetected,
+    pacingIssueReason: ar.pacingIssueReason,
+    recommendedAction: ar.recommendedAction,
+    pacingDirective: ar.pacingDirective ?? '',
+    narrativeSummary: ar.narrativeSummary,
+    rawResponse: ar.rawResponse,
+  };
+}
+
+function extractPromiseResult(
+  ar: AnalystResult
+): PromiseTrackerResult & { rawResponse: string } {
+  return {
+    promisesDetected: ar.promisesDetected,
+    promisesResolved: ar.promisesResolved,
+    promisePayoffAssessments: ar.promisePayoffAssessments,
+    threadPayoffAssessments: ar.threadPayoffAssessments,
+    premisePromiseFulfilled: ar.premisePromiseFulfilled ?? null,
+    obligatorySceneFulfilled: ar.obligatorySceneFulfilled ?? null,
+    delayedConsequencesTriggered: ar.delayedConsequencesTriggered ?? [],
+    delayedConsequencesCreated: ar.delayedConsequencesCreated ?? [],
+    rawResponse: ar.rawResponse,
+  };
+}
+
+function extractQualityResult(
+  ar: AnalystResult
+): SceneQualityResult & { rawResponse: string } {
+  return {
+    toneAdherent: ar.toneAdherent,
+    toneDriftDescription: ar.toneDriftDescription,
+    thematicCharge: ar.thematicCharge,
+    thematicChargeDescription: ar.thematicChargeDescription,
+    narrativeFocus: ar.narrativeFocus,
+    npcCoherenceAdherent: ar.npcCoherenceAdherent,
+    npcCoherenceIssues: ar.npcCoherenceIssues,
+    relationshipShiftsDetected: ar.relationshipShiftsDetected,
+    knowledgeAsymmetryDetected: ar.knowledgeAsymmetryDetected ?? [],
+    dramaticIronyOpportunities: ar.dramaticIronyOpportunities ?? [],
+    rawResponse: ar.rawResponse,
+  };
+}
 
 const TEST_PREFIX = 'TEST STOENG-008 engine integration';
 const mockSpine: StorySpine = {
@@ -402,9 +494,18 @@ describe('story-engine integration', () => {
     mockedGenerateWriterPage.mockImplementation((context) =>
       Promise.resolve(buildWriterResult(context.selectedChoice))
     );
-    mockedGenerateAnalystEvaluation.mockImplementation((context) =>
-      Promise.resolve(buildAnalystResult(context.narrative))
-    );
+    mockedGenerateStructureEvaluation.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative);
+      return Promise.resolve(extractStructureResult(ar));
+    });
+    mockedGeneratePromiseTracking.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative);
+      return Promise.resolve(extractPromiseResult(ar));
+    });
+    mockedGenerateSceneQualityEvaluation.mockImplementation((context) => {
+      const ar = buildAnalystResult(context.narrative);
+      return Promise.resolve(extractQualityResult(ar));
+    });
   });
 
   afterEach(async () => {
@@ -504,85 +605,38 @@ describe('story-engine integration', () => {
       .mockResolvedValueOnce({
         ...buildWriterResult('Enter the ash-marked chapel'),
       });
-    mockedGenerateAnalystEvaluation
-      .mockResolvedValueOnce({
-        beatConcluded: true,
-        beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: 'The protagonist continues the current scene.',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        sceneMomentum: 'STASIS' as const,
-        objectiveEvidenceStrength: 'NONE' as const,
-        commitmentStrength: 'NONE' as const,
-        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
-        entryConditionReadiness: 'NOT_READY' as const,
-        objectiveAnchors: [],
-        anchorEvidence: [],
-        completionGateSatisfied: false,
-        completionGateFailureReason: '',
-        toneAdherent: true,
-        toneDriftDescription: '',
-        npcCoherenceAdherent: true,
-        npcCoherenceIssues: '',
-        promisesDetected: [],
-        promisesResolved: [],
-        promisePayoffAssessments: [],
-        threadPayoffAssessments: [],
-        relationshipShiftsDetected: [],
-        spineDeviationDetected: false,
-        spineDeviationReason: '',
-        spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
-thematicCharge: 'AMBIGUOUS',
-narrativeFocus: 'BALANCED',
-thematicChargeDescription: '',
-rawResponse: 'analyst-raw',
-      })
-      .mockResolvedValueOnce({
-        beatConcluded: true,
-        beatResolution: 'Local allies joined and the setup arc closed.',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: 'The protagonist continues the current scene.',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        sceneMomentum: 'STASIS' as const,
-        objectiveEvidenceStrength: 'NONE' as const,
-        commitmentStrength: 'NONE' as const,
-        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
-        entryConditionReadiness: 'NOT_READY' as const,
-        objectiveAnchors: [],
-        anchorEvidence: [],
-        completionGateSatisfied: false,
-        completionGateFailureReason: '',
-        toneAdherent: true,
-        toneDriftDescription: '',
-        npcCoherenceAdherent: true,
-        npcCoherenceIssues: '',
-        promisesDetected: [],
-        promisesResolved: [],
-        promisePayoffAssessments: [],
-        threadPayoffAssessments: [],
-        relationshipShiftsDetected: [],
-        spineDeviationDetected: false,
-        spineDeviationReason: '',
-        spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
-thematicCharge: 'AMBIGUOUS',
-narrativeFocus: 'BALANCED',
-thematicChargeDescription: '',
-rawResponse: 'analyst-raw',
-      });
+    // Opening page analyst result (no beat conclusion)
+    const openingAnalyst = createMockAnalystResult({ rawResponse: 'analyst-raw' });
+    const analystResult1 = createMockAnalystResult({
+      beatConcluded: true,
+      beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
+      narrativeSummary: 'The protagonist continues the current scene.',
+      sceneMomentum: 'STASIS',
+      objectiveEvidenceStrength: 'NONE',
+      commitmentStrength: 'NONE',
+      rawResponse: 'analyst-raw',
+    });
+    const analystResult2 = createMockAnalystResult({
+      beatConcluded: true,
+      beatResolution: 'Local allies joined and the setup arc closed.',
+      narrativeSummary: 'The protagonist continues the current scene.',
+      sceneMomentum: 'STASIS',
+      objectiveEvidenceStrength: 'NONE',
+      commitmentStrength: 'NONE',
+      rawResponse: 'analyst-raw',
+    });
+    mockedGenerateStructureEvaluation
+      .mockResolvedValueOnce(extractStructureResult(openingAnalyst))
+      .mockResolvedValueOnce(extractStructureResult(analystResult1))
+      .mockResolvedValueOnce(extractStructureResult(analystResult2));
+    mockedGeneratePromiseTracking
+      .mockResolvedValueOnce(extractPromiseResult(openingAnalyst))
+      .mockResolvedValueOnce(extractPromiseResult(analystResult1))
+      .mockResolvedValueOnce(extractPromiseResult(analystResult2));
+    mockedGenerateSceneQualityEvaluation
+      .mockResolvedValueOnce(extractQualityResult(openingAnalyst))
+      .mockResolvedValueOnce(extractQualityResult(analystResult1))
+      .mockResolvedValueOnce(extractQualityResult(analystResult2));
 
     const start = await storyEngine.startStory({
       title: `${TEST_PREFIX} Title`,
@@ -706,125 +760,45 @@ rawResponse: 'analyst-raw',
       .mockResolvedValueOnce({
         ...buildWriterResult('Enter the ash-marked chapel'),
       });
-    mockedGenerateAnalystEvaluation
-      .mockResolvedValueOnce({
-        // Opening page analyst - no beat conclusion, no deviation
-        beatConcluded: false,
-        beatResolution: '',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: 'The protagonist arrives on the scene.',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        sceneMomentum: 'STASIS' as const,
-        objectiveEvidenceStrength: 'NONE' as const,
-        commitmentStrength: 'NONE' as const,
-        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
-        entryConditionReadiness: 'NOT_READY' as const,
-        objectiveAnchors: [],
-        anchorEvidence: [],
-        completionGateSatisfied: false,
-        completionGateFailureReason: '',
-        toneAdherent: true,
-        toneDriftDescription: '',
-        npcCoherenceAdherent: true,
-        npcCoherenceIssues: '',
-        promisesDetected: [],
-        promisesResolved: [],
-        promisePayoffAssessments: [],
-        threadPayoffAssessments: [],
-        relationshipShiftsDetected: [],
-        spineDeviationDetected: false,
-        spineDeviationReason: '',
-        spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
-thematicCharge: 'AMBIGUOUS',
-narrativeFocus: 'BALANCED',
-thematicChargeDescription: '',
-rawResponse: 'analyst-raw',
-      })
-      .mockResolvedValueOnce({
-        beatConcluded: true,
-        beatResolution: 'The harbor cartel link is proven beyond doubt.',
-        deviationDetected: false,
-        deviationReason: '',
-        invalidatedBeatIds: [],
-        narrativeSummary: 'The protagonist continues the current scene.',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        sceneMomentum: 'STASIS' as const,
-        objectiveEvidenceStrength: 'NONE' as const,
-        commitmentStrength: 'NONE' as const,
-        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
-        entryConditionReadiness: 'NOT_READY' as const,
-        objectiveAnchors: [],
-        anchorEvidence: [],
-        completionGateSatisfied: false,
-        completionGateFailureReason: '',
-        toneAdherent: true,
-        toneDriftDescription: '',
-        npcCoherenceAdherent: true,
-        npcCoherenceIssues: '',
-        promisesDetected: [],
-        promisesResolved: [],
-        promisePayoffAssessments: [],
-        threadPayoffAssessments: [],
-        relationshipShiftsDetected: [],
-        spineDeviationDetected: false,
-        spineDeviationReason: '',
-        spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
-thematicCharge: 'AMBIGUOUS',
-narrativeFocus: 'BALANCED',
-thematicChargeDescription: '',
-rawResponse: 'analyst-raw',
-      })
-      .mockResolvedValueOnce({
-        beatConcluded: false,
-        beatResolution: '',
-        deviationDetected: true,
-        deviationReason: 'The protagonist publicly defects, invalidating infiltration beats.',
-        invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
-        narrativeSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
-        pacingIssueDetected: false,
-        pacingIssueReason: '',
-        recommendedAction: 'none' as const,
-        sceneMomentum: 'STASIS' as const,
-        objectiveEvidenceStrength: 'NONE' as const,
-        commitmentStrength: 'NONE' as const,
-        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT' as const,
-        entryConditionReadiness: 'NOT_READY' as const,
-        objectiveAnchors: [],
-        anchorEvidence: [],
-        completionGateSatisfied: false,
-        completionGateFailureReason: '',
-        toneAdherent: true,
-        toneDriftDescription: '',
-        npcCoherenceAdherent: true,
-        npcCoherenceIssues: '',
-        promisesDetected: [],
-        promisesResolved: [],
-        promisePayoffAssessments: [],
-        threadPayoffAssessments: [],
-        relationshipShiftsDetected: [],
-        spineDeviationDetected: false,
-        spineDeviationReason: '',
-        spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
-thematicCharge: 'AMBIGUOUS',
-narrativeFocus: 'BALANCED',
-thematicChargeDescription: '',
-rawResponse: 'analyst-raw',
-      });
+    const rewriteAnalyst1 = createMockAnalystResult({
+      // Opening page analyst - no beat conclusion, no deviation
+      narrativeSummary: 'The protagonist arrives on the scene.',
+      sceneMomentum: 'STASIS',
+      objectiveEvidenceStrength: 'NONE',
+      commitmentStrength: 'NONE',
+      rawResponse: 'analyst-raw',
+    });
+    const rewriteAnalyst2 = createMockAnalystResult({
+      beatConcluded: true,
+      beatResolution: 'The harbor cartel link is proven beyond doubt.',
+      narrativeSummary: 'The protagonist continues the current scene.',
+      sceneMomentum: 'STASIS',
+      objectiveEvidenceStrength: 'NONE',
+      commitmentStrength: 'NONE',
+      rawResponse: 'analyst-raw',
+    });
+    const rewriteAnalyst3 = createMockAnalystResult({
+      deviationDetected: true,
+      deviationReason: 'The protagonist publicly defects, invalidating infiltration beats.',
+      invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
+      narrativeSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
+      sceneMomentum: 'STASIS',
+      objectiveEvidenceStrength: 'NONE',
+      commitmentStrength: 'NONE',
+      rawResponse: 'analyst-raw',
+    });
+    mockedGenerateStructureEvaluation
+      .mockResolvedValueOnce(extractStructureResult(rewriteAnalyst1))
+      .mockResolvedValueOnce(extractStructureResult(rewriteAnalyst2))
+      .mockResolvedValueOnce(extractStructureResult(rewriteAnalyst3));
+    mockedGeneratePromiseTracking
+      .mockResolvedValueOnce(extractPromiseResult(rewriteAnalyst1))
+      .mockResolvedValueOnce(extractPromiseResult(rewriteAnalyst2))
+      .mockResolvedValueOnce(extractPromiseResult(rewriteAnalyst3));
+    mockedGenerateSceneQualityEvaluation
+      .mockResolvedValueOnce(extractQualityResult(rewriteAnalyst1))
+      .mockResolvedValueOnce(extractQualityResult(rewriteAnalyst2))
+      .mockResolvedValueOnce(extractQualityResult(rewriteAnalyst3));
 
     const start = await storyEngine.startStory({
       title: `${TEST_PREFIX} Title`,

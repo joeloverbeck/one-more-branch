@@ -1,12 +1,12 @@
 import { StoryEngine, storyEngine } from '@/engine';
 import {
   generatePageWriterOutput,
-  generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
   generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
+import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
 import type { PageWriterResult } from '@/llm/writer-types';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
@@ -21,7 +21,6 @@ import {
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
-  generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -35,6 +34,8 @@ jest.mock('@/llm', () => ({
     rawResponse: '{}',
   }),
 }));
+
+jest.mock('@/engine/analyst-evaluation');
 
 jest.mock('@/logging/index', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
@@ -51,8 +52,8 @@ const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
   typeof generatePageWriterOutput
 >;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
+const mockedRunAnalystEvaluation = runAnalystEvaluation as jest.MockedFunction<
+  typeof runAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
@@ -284,7 +285,7 @@ describe('story replay integration', () => {
     });
     mockedGenerateOpeningPage.mockResolvedValue(openingResult);
     mockedGenerateWriterPage.mockResolvedValue(writerResult);
-    mockedGenerateAnalystEvaluation.mockResolvedValue(defaultAnalystResult);
+    mockedRunAnalystEvaluation.mockResolvedValue({ result: defaultAnalystResult, durationMs: 0 });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
       passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );

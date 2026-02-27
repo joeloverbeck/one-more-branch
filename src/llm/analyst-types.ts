@@ -1,103 +1,52 @@
-import type {
-  ActiveState,
-  KnowledgeAsymmetry,
-  PromisePayoffAssessment,
-  PromiseScope,
-  PromiseType,
-  TrackedPromise,
-  ThreadPayoffAssessment,
-  Urgency,
-} from '../models/state/index.js';
+import type { ActiveState, TrackedPromise } from '../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { DelayedConsequence } from '../models/state/delayed-consequence.js';
 import type { GenreFrame } from '../models/concept-generator.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { StorySpine } from '../models/story-spine.js';
+import type { StructureEvaluatorResult } from './structure-evaluator-types.js';
+import type { PromiseTrackerResult } from './promise-tracker-types.js';
+import type { SceneQualityResult } from './scene-quality-types.js';
 
-export type PacingRecommendedAction = 'none' | 'nudge' | 'rewrite';
-export type SceneMomentum =
-  | 'STASIS'
-  | 'INCREMENTAL_PROGRESS'
-  | 'MAJOR_PROGRESS'
-  | 'REVERSAL_OR_SETBACK'
-  | 'SCOPE_SHIFT';
-export type ObjectiveEvidenceStrength = 'NONE' | 'WEAK_IMPLICIT' | 'CLEAR_EXPLICIT';
-export type CommitmentStrength =
-  | 'NONE'
-  | 'TENTATIVE'
-  | 'EXPLICIT_REVERSIBLE'
-  | 'EXPLICIT_IRREVERSIBLE';
-export type StructuralPositionSignal =
-  | 'WITHIN_ACTIVE_BEAT'
-  | 'BRIDGING_TO_NEXT_BEAT'
-  | 'CLEARLY_IN_NEXT_BEAT';
-export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
-export type BeatAlignmentConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
-export type ThematicCharge = 'THESIS_SUPPORTING' | 'ANTITHESIS_SUPPORTING' | 'AMBIGUOUS';
-export type NarrativeFocus = 'DEEPENING' | 'BROADENING' | 'BALANCED';
+// Re-export sub-result types and their enums for backward compatibility
+export type {
+  PacingRecommendedAction,
+  SceneMomentum,
+  ObjectiveEvidenceStrength,
+  CommitmentStrength,
+  StructuralPositionSignal,
+  EntryConditionReadiness,
+  BeatAlignmentConfidence,
+  StructureEvaluatorResult,
+} from './structure-evaluator-types.js';
 
-export interface DetectedPromise {
-  readonly description: string;
-  readonly promiseType: PromiseType;
-  readonly scope: PromiseScope;
-  readonly resolutionHint: string;
-  readonly suggestedUrgency: Urgency;
-}
+export type {
+  DetectedPromise,
+  PromiseTrackerResult,
+} from './promise-tracker-types.js';
 
-export interface DetectedRelationshipShift {
-  readonly npcName: string;
-  readonly shiftDescription: string;
-  readonly suggestedValenceChange: number;
-  readonly suggestedNewDynamic: string;
-}
+export type {
+  ThematicCharge,
+  NarrativeFocus,
+  DetectedRelationshipShift,
+  SceneQualityResult,
+} from './scene-quality-types.js';
 
-export interface AnalystResult {
-  beatConcluded: boolean;
-  beatResolution: string;
-  deviationDetected: boolean;
-  deviationReason: string;
-  invalidatedBeatIds: string[];
-  narrativeSummary: string;
-  pacingIssueDetected: boolean;
-  pacingIssueReason: string;
-  recommendedAction: PacingRecommendedAction;
-  sceneMomentum: SceneMomentum;
-  objectiveEvidenceStrength: ObjectiveEvidenceStrength;
-  commitmentStrength: CommitmentStrength;
-  structuralPositionSignal: StructuralPositionSignal;
-  entryConditionReadiness: EntryConditionReadiness;
-  pacingDirective: string;
-  objectiveAnchors: string[];
-  anchorEvidence: string[];
-  completionGateSatisfied: boolean;
-  completionGateFailureReason: string;
-  toneAdherent: boolean;
-  toneDriftDescription: string;
-  promisesDetected: DetectedPromise[];
-  promisesResolved: string[];
-  promisePayoffAssessments: PromisePayoffAssessment[];
-  threadPayoffAssessments: ThreadPayoffAssessment[];
-  npcCoherenceAdherent: boolean;
-  npcCoherenceIssues: string;
-  relationshipShiftsDetected: DetectedRelationshipShift[];
-  spineDeviationDetected: boolean;
-  spineDeviationReason: string;
-  spineInvalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want' | null;
-  alignedBeatId: string | null;
-  beatAlignmentConfidence: BeatAlignmentConfidence;
-  beatAlignmentReason: string;
-  thematicCharge: ThematicCharge;
-  narrativeFocus: NarrativeFocus;
-  thematicChargeDescription: string;
-  obligatorySceneFulfilled: string | null;
-  premisePromiseFulfilled: string | null;
-  delayedConsequencesTriggered: string[];
-  knowledgeAsymmetryDetected: KnowledgeAsymmetry[];
-  dramaticIronyOpportunities: string[];
-  rawResponse: string;
-}
+/**
+ * Combined analyst result composed from the 3 focused evaluator stages.
+ * Backward-compatible: consumers still reference AnalystResult fields directly.
+ */
+export type AnalystResult = StructureEvaluatorResult &
+  PromiseTrackerResult &
+  SceneQualityResult & {
+    rawResponse: string;
+  };
 
+/**
+ * @deprecated Use StructureEvaluatorContext, PromiseTrackerContext, or SceneQualityContext instead.
+ * Kept for backward compatibility during migration.
+ */
 export interface AnalystContext {
   narrative: string;
   structure: StoryStructure;

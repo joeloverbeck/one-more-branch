@@ -1,6 +1,13 @@
-import { generateAnalystEvaluation } from '../llm';
-import type { AnalystResult } from '../llm/analyst-types';
-import type { StageDegradation } from '../llm/generation-pipeline-types';
+import {
+  generateStructureEvaluation,
+  generatePromiseTracking,
+  generateSceneQualityEvaluation,
+} from '../llm/client.js';
+import type { AnalystResult } from '../llm/analyst-types.js';
+import type { StructureEvaluatorResult } from '../llm/structure-evaluator-types.js';
+import type { PromiseTrackerResult } from '../llm/promise-tracker-types.js';
+import type { SceneQualityResult } from '../llm/scene-quality-types.js';
+import type { StageDegradation } from '../llm/generation-pipeline-types.js';
 import { logger } from '../logging/index.js';
 import type {
   AccumulatedStructureState,
@@ -8,6 +15,7 @@ import type {
   StoryStructure,
   TrackedPromise,
 } from '../models';
+import { getCurrentBeat } from '../models';
 import type { GenreFrame } from '../models/concept-generator';
 import type { StorySpine } from '../models/story-spine';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
@@ -18,6 +26,7 @@ import type { GenerationStageCallback } from './types';
 
 export interface AnalystEvaluationContext {
   readonly writerNarrative: string;
+  readonly writerSceneSummary: string;
   readonly activeStructure: StoryStructure;
   readonly parentStructureState: AccumulatedStructureState;
   readonly parentActiveState: ActiveState;
@@ -47,6 +56,84 @@ export interface AnalystEvaluationResult {
   readonly degradation?: StageDegradation;
 }
 
+function mergeEvaluatorResults(
+  structureResult: (StructureEvaluatorResult & { rawResponse: string }) | null,
+  promiseResult: (PromiseTrackerResult & { rawResponse: string }) | null,
+  qualityResult: (SceneQualityResult & { rawResponse: string }) | null
+): AnalystResult | null {
+  if (!structureResult && !promiseResult && !qualityResult) {
+    return null;
+  }
+
+  const rawParts: string[] = [];
+  if (structureResult?.rawResponse) rawParts.push(structureResult.rawResponse);
+  if (promiseResult?.rawResponse) rawParts.push(promiseResult.rawResponse);
+  if (qualityResult?.rawResponse) rawParts.push(qualityResult.rawResponse);
+
+  const defaultStructure: StructureEvaluatorResult = {
+    beatConcluded: false,
+    beatResolution: '',
+    sceneMomentum: 'STASIS',
+    objectiveEvidenceStrength: 'NONE',
+    commitmentStrength: 'NONE',
+    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+    entryConditionReadiness: 'NOT_READY',
+    objectiveAnchors: [],
+    anchorEvidence: [],
+    completionGateSatisfied: false,
+    completionGateFailureReason: 'Structure evaluator failed',
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [],
+    spineDeviationDetected: false,
+    spineDeviationReason: '',
+    spineInvalidatedElement: null,
+    alignedBeatId: null,
+    beatAlignmentConfidence: 'LOW',
+    beatAlignmentReason: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
+    pacingDirective: '',
+    narrativeSummary: '',
+  };
+
+  const defaultPromise: PromiseTrackerResult = {
+    promisesDetected: [],
+    promisesResolved: [],
+    promisePayoffAssessments: [],
+    threadPayoffAssessments: [],
+    premisePromiseFulfilled: null,
+    obligatorySceneFulfilled: null,
+    delayedConsequencesTriggered: [],
+    delayedConsequencesCreated: [],
+  };
+
+  const defaultQuality: SceneQualityResult = {
+    toneAdherent: true,
+    toneDriftDescription: '',
+    thematicCharge: 'AMBIGUOUS',
+    thematicChargeDescription: '',
+    narrativeFocus: 'BALANCED',
+    npcCoherenceAdherent: true,
+    npcCoherenceIssues: '',
+    relationshipShiftsDetected: [],
+    knowledgeAsymmetryDetected: [],
+    dramaticIronyOpportunities: [],
+  };
+
+  const { rawResponse: _sr, ...structureFields } = structureResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { rawResponse: _pr, ...promiseFields } = promiseResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { rawResponse: _qr, ...qualityFields } = qualityResult ?? { rawResponse: '' }; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+  return {
+    ...(structureResult ? structureFields : defaultStructure),
+    ...(promiseResult ? promiseFields : defaultPromise),
+    ...(qualityResult ? qualityFields : defaultQuality),
+    rawResponse: rawParts.join('\n---\n'),
+  } as AnalystResult;
+}
+
 export async function runAnalystEvaluation(
   context: AnalystEvaluationContext
 ): Promise<AnalystEvaluationResult> {
@@ -54,74 +141,146 @@ export async function runAnalystEvaluation(
     ...context.parentStructureState,
     pagesInCurrentBeat: context.parentStructureState.pagesInCurrentBeat + 1,
   };
-  const analystAttempt = 1;
+
+  const activeBeat = getCurrentBeat(context.activeStructure, context.parentStructureState);
+  const activeBeatObligationTag = activeBeat?.obligatorySceneTag ?? undefined;
+
   logger.info('Generation stage started', {
     ...context.logContext,
-    attempt: analystAttempt,
-    stage: 'analyst',
+    stage: 'analyst-parallel',
   });
   const analystStart = Date.now();
-  try {
-    emitGenerationStage(context.onGenerationStage, 'ANALYZING_SCENE', 'started', analystAttempt);
-    const analystResult = await generateAnalystEvaluation(
-      {
-        narrative: context.writerNarrative,
-        structure: context.activeStructure,
-        accumulatedStructureState: analystStructureState,
-        activeState: context.parentActiveState,
-        threadsResolved: context.threadsResolved,
-        threadAges: context.threadAges,
-        activeTrackedPromises: context.activeTrackedPromises,
-        delayedConsequencesEligible: context.delayedConsequencesEligible,
-        accumulatedNpcAgendas: context.accumulatedNpcAgendas,
-        accumulatedNpcRelationships: context.accumulatedNpcRelationships,
-        tone: context.tone,
-        toneFeel: context.toneFeel,
-        toneAvoid: context.toneAvoid,
-        thematicQuestion: context.thematicQuestion,
-        antithesis: context.antithesis,
-        premisePromises: context.premisePromises,
-        fulfilledPremisePromises: context.fulfilledPremisePromises,
-        spine: context.spine,
-        genreFrame: context.genreFrame,
-      },
-      { apiKey: context.apiKey }
-    );
-    const durationMs = Date.now() - analystStart;
-    emitGenerationStage(
-      context.onGenerationStage,
-      'ANALYZING_SCENE',
-      'completed',
-      analystAttempt,
-      durationMs
-    );
+
+  const apiOptions = { apiKey: context.apiKey };
+
+  // Build the 3 focused contexts
+  const structureCtx = {
+    narrative: context.writerNarrative,
+    structure: context.activeStructure,
+    accumulatedStructureState: analystStructureState,
+    activeState: context.parentActiveState,
+    threadsResolved: context.threadsResolved,
+    threadAges: context.threadAges,
+    spine: context.spine,
+  };
+
+  const promiseCtx = {
+    narrative: context.writerNarrative,
+    sceneSummary: context.writerSceneSummary,
+    activeTrackedPromises: context.activeTrackedPromises,
+    threadsResolved: context.threadsResolved,
+    threadAges: context.threadAges,
+    openThreads: context.parentActiveState.openThreads.map((t) => ({
+      id: t.id,
+      text: t.text,
+    })),
+    premisePromises: context.premisePromises,
+    fulfilledPremisePromises: context.fulfilledPremisePromises,
+    delayedConsequencesEligible: context.delayedConsequencesEligible,
+    activeBeatObligationTag,
+  };
+
+  const qualityCtx = {
+    narrative: context.writerNarrative,
+    tone: context.tone,
+    toneFeel: context.toneFeel,
+    toneAvoid: context.toneAvoid,
+    thematicQuestion: context.thematicQuestion,
+    antithesis: context.antithesis,
+    spine: context.spine,
+    genreFrame: context.genreFrame,
+    accumulatedNpcAgendas: context.accumulatedNpcAgendas,
+    accumulatedNpcRelationships: context.accumulatedNpcRelationships,
+  };
+
+  // Run all 3 evaluators in parallel
+  const stageNames = ['EVALUATING_STRUCTURE', 'TRACKING_PROMISES', 'ASSESSING_QUALITY'] as const;
+  for (const stage of stageNames) {
+    emitGenerationStage(context.onGenerationStage, stage, 'started', 1);
+  }
+
+  const [structureSettled, promiseSettled, qualitySettled] = await Promise.allSettled([
+    generateStructureEvaluation(structureCtx, apiOptions),
+    generatePromiseTracking(promiseCtx, apiOptions),
+    generateSceneQualityEvaluation(qualityCtx, apiOptions),
+  ]);
+
+  const durationMs = Date.now() - analystStart;
+
+  // Extract results, logging failures
+  const structureResult =
+    structureSettled.status === 'fulfilled' ? structureSettled.value : null;
+  const promiseResult =
+    promiseSettled.status === 'fulfilled' ? promiseSettled.value : null;
+  const qualityResult =
+    qualitySettled.status === 'fulfilled' ? qualitySettled.value : null;
+
+  // Emit completion/failure for each stage
+  if (structureSettled.status === 'fulfilled') {
+    emitGenerationStage(context.onGenerationStage, 'EVALUATING_STRUCTURE', 'completed', 1, durationMs);
+  } else {
+    logger.warn('Structure evaluator failed', {
+      ...context.logContext,
+      error: structureSettled.reason,
+    });
+  }
+
+  if (promiseSettled.status === 'fulfilled') {
+    emitGenerationStage(context.onGenerationStage, 'TRACKING_PROMISES', 'completed', 1, durationMs);
+  } else {
+    logger.warn('Promise tracker failed', {
+      ...context.logContext,
+      error: promiseSettled.reason,
+    });
+  }
+
+  if (qualitySettled.status === 'fulfilled') {
+    emitGenerationStage(context.onGenerationStage, 'ASSESSING_QUALITY', 'completed', 1, durationMs);
+  } else {
+    logger.warn('Scene quality evaluator failed', {
+      ...context.logContext,
+      error: qualitySettled.reason,
+    });
+  }
+
+  const merged = mergeEvaluatorResults(structureResult, promiseResult, qualityResult);
+
+  if (merged) {
     logger.info('Generation stage completed', {
       ...context.logContext,
-      attempt: analystAttempt,
-      stage: 'analyst',
+      stage: 'analyst-parallel',
       durationMs,
+      structureOk: structureSettled.status === 'fulfilled',
+      promiseOk: promiseSettled.status === 'fulfilled',
+      qualityOk: qualitySettled.status === 'fulfilled',
     });
-    return { result: analystResult, durationMs };
-  } catch (error) {
-    const durationMs = Date.now() - analystStart;
-    logger.warn('Generation stage failed', {
-      ...context.logContext,
-      attempt: analystAttempt,
-      stage: 'analyst',
-      durationMs,
-      error,
-    });
-    logger.warn('Analyst evaluation failed, continuing with defaults', { error });
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      result: null,
-      durationMs,
-      degradation: {
-        stage: 'analyst',
-        errorCode: 'LLM_FAILURE',
-        message: errorMessage,
-        durationMs,
-      },
-    };
+    return { result: merged, durationMs };
   }
+
+  // All 3 failed
+  logger.warn('All analyst evaluators failed, continuing with defaults', {
+    ...context.logContext,
+    durationMs,
+  });
+
+  const failures = [
+    structureSettled.status === 'rejected' ? structureSettled.reason : null,
+    promiseSettled.status === 'rejected' ? promiseSettled.reason : null,
+    qualitySettled.status === 'rejected' ? qualitySettled.reason : null,
+  ].filter(Boolean);
+
+  const errorMessage = failures
+    .map((e) => (e instanceof Error ? e.message : String(e)))
+    .join('; ');
+
+  return {
+    result: null,
+    durationMs,
+    degradation: {
+      stage: 'analyst',
+      errorCode: 'LLM_FAILURE',
+      message: errorMessage,
+      durationMs,
+    },
+  };
 }

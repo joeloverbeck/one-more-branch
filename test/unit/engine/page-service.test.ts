@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
-  generateAnalystEvaluation,
   generatePagePlan,
   generateStateAccountant,
   generateOpeningPage,
   generatePageWriterOutput,
   generateLorekeeperBible,
 } from '../../../src/llm';
+import { runAnalystEvaluation } from '../../../src/engine/analyst-evaluation';
+import type { AnalystEvaluationResult } from '../../../src/engine/analyst-evaluation';
 import {
   ConstraintType,
   createChoice,
@@ -38,6 +39,7 @@ import type {
   ReducedPagePlanGenerationResult,
 } from '../../../src/llm/planner-types';
 import type { PageWriterResult } from '../../../src/llm/writer-types';
+import type { AnalystResult } from '../../../src/llm/analyst-types';
 import { logger } from '../../../src/logging/index.js';
 import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { StoryStructure } from '../../../src/models/story-arc';
@@ -47,13 +49,16 @@ import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../..
 jest.mock('../../../src/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
-  generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
 
   mergePageWriterAndReconciledStateWithAnalystResults:
     jest.requireActual('../../../src/llm').mergePageWriterAndReconciledStateWithAnalystResults, // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+}));
+
+jest.mock('../../../src/engine/analyst-evaluation', () => ({
+  runAnalystEvaluation: jest.fn(),
 }));
 
 jest.mock('../../../src/logging/index.js', () => ({
@@ -89,8 +94,8 @@ const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
   typeof generatePageWriterOutput
 >;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
+const mockedRunAnalystEvaluation = runAnalystEvaluation as jest.MockedFunction<
+  typeof runAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
@@ -327,6 +332,10 @@ function buildStateAccountantResult(
   };
 }
 
+function wrapAnalystResult(analystResult: Partial<AnalystResult>): AnalystEvaluationResult {
+  return { result: analystResult as AnalystResult, durationMs: 0 };
+}
+
 describe('page-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -339,6 +348,7 @@ describe('page-service', () => {
       relevantHistory: 'Test history',
       rawResponse: 'raw-lorekeeper',
     });
+    mockedRunAnalystEvaluation.mockResolvedValue({ result: null, durationMs: 0 });
     mockedReconcileState.mockImplementation((_plan, writer, previousState) =>
       passthroughReconciledState(writer as PageWriterResult, previousState.currentLocation)
     );
@@ -676,7 +686,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -712,11 +722,11 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       await generateFirstPage(story, 'test-key');
 
-      const firstAnalystCall = mockedGenerateAnalystEvaluation.mock.calls[0];
+      const firstAnalystCall = mockedRunAnalystEvaluation.mock.calls[0];
       expect(firstAnalystCall).toBeDefined();
       if (!firstAnalystCall) {
         return;
@@ -1121,7 +1131,7 @@ describe('page-service', () => {
       expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
       expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
       expect(mockedReconcileState).toHaveBeenCalledTimes(2);
-      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(mockedRunAnalystEvaluation).not.toHaveBeenCalled();
       expect(mockedLogger.error.mock.calls).toEqual(
         expect.arrayContaining([
           [
@@ -1355,7 +1365,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -1391,45 +1401,24 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       await generateNextPage(story, parentPage, 0, 'test-key', onGenerationStage);
 
-      expect(onGenerationStage.mock.calls).toEqual([
-        [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
-        [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
-        [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
-        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
-        [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
-        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
-        [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
-        [{ stage: 'ANALYZING_SCENE', status: 'started', attempt: 1 }],
-        [{ stage: 'ANALYZING_SCENE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
-      ]);
-      expect(mockedLogger.info).toHaveBeenCalledWith(
-        'Generation stage started',
-        expect.objectContaining({
-          mode: 'continuation',
-          storyId: story.id,
-          pageId: parentPage.id,
-          requestId: expect.any(String),
-          stage: 'analyst',
-          attempt: 1,
-        })
-      );
-      expect(mockedLogger.info).toHaveBeenCalledWith(
-        'Generation stage completed',
-        expect.objectContaining({
-          mode: 'continuation',
-          storyId: story.id,
-          pageId: parentPage.id,
-          requestId: expect.any(String),
-          stage: 'analyst',
-          attempt: 1,
-          durationMs: expect.any(Number),
-        })
+      // Analyst stages are emitted inside runAnalystEvaluation (mocked here).
+      // Only verify the planner/writer pipeline stages.
+      expect(onGenerationStage.mock.calls).toEqual(
+        expect.arrayContaining([
+          [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 1 }],
+          [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
+          [{ stage: 'ACCOUNTING_STATE', status: 'started', attempt: 1 }],
+          [{ stage: 'ACCOUNTING_STATE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
+          [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
+          [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
+          [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+          [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
+          [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
+        ])
       );
     });
 
@@ -1681,7 +1670,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: true,
         beatResolution: 'The forged transit seal got you through the checkpoint.',
         deviationDetected: false,
@@ -1717,7 +1706,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -1792,7 +1781,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: true,
         beatResolution: 'The accusation scene escalates rapidly.',
         deviationDetected: false,
@@ -1828,7 +1817,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -1908,7 +1897,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: true,
         beatResolution: 'Checkpoint bypassed successfully.',
         deviationDetected: false,
@@ -1944,7 +1933,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -2014,7 +2003,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: true,
         beatResolution: 'The accusation is publicly and irreversibly committed.',
         deviationDetected: false,
@@ -2050,7 +2039,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -2123,7 +2112,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -2159,7 +2148,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -2271,8 +2260,8 @@ describe('page-service', () => {
           rawResponse: 'raw',
         });
       // Branch 1: analyst concludes the beat; Branch 2: analyst does not
-      mockedGenerateAnalystEvaluation
-        .mockResolvedValueOnce({
+      mockedRunAnalystEvaluation
+        .mockResolvedValueOnce(wrapAnalystResult({
           beatConcluded: true,
           beatResolution: 'Checkpoint breached with forged credentials.',
           deviationDetected: false,
@@ -2308,8 +2297,8 @@ describe('page-service', () => {
           beatAlignmentConfidence: 'LOW',
           beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
-        })
-        .mockResolvedValueOnce({
+        }))
+        .mockResolvedValueOnce(wrapAnalystResult({
           beatConcluded: false,
           beatResolution: '',
           deviationDetected: false,
@@ -2345,7 +2334,7 @@ describe('page-service', () => {
           beatAlignmentConfidence: 'LOW',
           beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
-        });
+        }));
 
       const branchOne = await generateNextPage(story, parentPage, 0, 'test-key');
       const branchTwo = await generateNextPage(story, parentPage, 1, 'test-key');
@@ -2420,7 +2409,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -2456,7 +2445,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -2572,7 +2561,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: true,
@@ -2608,7 +2597,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page, updatedStory } = await generateNextPage(
         story,
@@ -2781,7 +2770,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -2817,7 +2806,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -2939,7 +2928,7 @@ describe('page-service', () => {
 
       const { page, updatedStory } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(mockedRunAnalystEvaluation).not.toHaveBeenCalled();
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
       expect(page.structureVersionId).toBeNull();
       // Story without structure has no structureVersions
@@ -3041,7 +3030,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: true,
@@ -3077,7 +3066,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { deviationInfo } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -3143,7 +3132,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -3179,7 +3168,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const { deviationInfo } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -3250,7 +3239,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: false,
@@ -3286,7 +3275,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -3294,21 +3283,21 @@ describe('page-service', () => {
         mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedReconcileState.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
+        mockedRunAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
 
-      const firstAnalystCall = mockedGenerateAnalystEvaluation.mock.calls[0];
+      const firstAnalystCall = mockedRunAnalystEvaluation.mock.calls[0];
       expect(firstAnalystCall).toBeDefined();
       if (!firstAnalystCall) {
         return;
       }
 
-      const [analystInput, analystOptions] = firstAnalystCall;
-      expect(analystInput.accumulatedStructureState.pagesInCurrentBeat).toBe(
-        parentStructureState.pagesInCurrentBeat + 1
+      const [analystInput] = firstAnalystCall;
+      expect(analystInput.parentStructureState.pagesInCurrentBeat).toBe(
+        parentStructureState.pagesInCurrentBeat
       );
       expect(analystInput.activeTrackedPromises).toEqual(parentAccumulatedPromises);
-      expect(analystOptions).toEqual({ apiKey: 'test-key' });
+      expect(analystInput.apiKey).toBe('test-key');
     });
 
     it('skips analyst call when story has no structure', async () => {
@@ -3369,7 +3358,7 @@ describe('page-service', () => {
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(mockedGenerateWriterPage).toHaveBeenCalled();
-      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(mockedRunAnalystEvaluation).not.toHaveBeenCalled();
       expect(page.narrativeText).toBe('You follow the dusty road toward the distant village.');
     });
 
@@ -3428,9 +3417,18 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockRejectedValue(new Error('API timeout'));
+      mockedRunAnalystEvaluation.mockResolvedValue({
+        result: null,
+        durationMs: 0,
+        degradation: {
+          stage: 'analyst',
+          errorCode: 'LLM_FAILURE',
+          message: 'API timeout',
+          durationMs: 0,
+        },
+      });
 
-      const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
+      const { page, metrics } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       // Page should still be generated successfully with default beat/deviation values
       expect(page.narrativeText).toBe('You burst through the door into the darkened room.');
@@ -3439,17 +3437,11 @@ describe('page-service', () => {
         pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
       });
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
-      expect(mockedLogger.warn).toHaveBeenCalledWith(
-        'Generation stage failed',
+      // Degradation is now reported via metrics, not a logger.warn call
+      expect(metrics.postGeneration.degradedStages).toContainEqual(
         expect.objectContaining({
-          mode: 'continuation',
-          storyId: story.id,
-          pageId: parentPage.id,
-          requestId: expect.any(String),
           stage: 'analyst',
-          attempt: 1,
-          durationMs: expect.any(Number),
-          error: expect.any(Error),
+          errorCode: 'LLM_FAILURE',
         })
       );
     });
@@ -3516,7 +3508,7 @@ describe('page-service', () => {
 
       it('sets pacingNudge when recommendedAction is nudge', async () => {
         const { story, parentPage } = buildPacingTestSetup();
-        mockedGenerateAnalystEvaluation.mockResolvedValue({
+        mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
           beatConcluded: false,
           beatResolution: '',
           deviationDetected: false,
@@ -3552,7 +3544,7 @@ describe('page-service', () => {
           beatAlignmentConfidence: 'LOW',
           beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
-        });
+        }));
 
         const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -3561,7 +3553,7 @@ describe('page-service', () => {
 
       it('clears pacingNudge when recommendedAction is none', async () => {
         const { story, parentPage } = buildPacingTestSetup();
-        mockedGenerateAnalystEvaluation.mockResolvedValue({
+        mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
           beatConcluded: false,
           beatResolution: '',
           deviationDetected: false,
@@ -3597,7 +3589,7 @@ describe('page-service', () => {
           beatAlignmentConfidence: 'LOW',
           beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
-        });
+        }));
 
         const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -3606,7 +3598,7 @@ describe('page-service', () => {
 
       it('logs warning for rewrite but does not trigger rewrite', async () => {
         const { story, parentPage } = buildPacingTestSetup();
-        mockedGenerateAnalystEvaluation.mockResolvedValue({
+        mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
           beatConcluded: false,
           beatResolution: '',
           deviationDetected: false,
@@ -3642,7 +3634,7 @@ describe('page-service', () => {
           beatAlignmentConfidence: 'LOW',
           beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
-        });
+        }));
 
         const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -3750,7 +3742,7 @@ describe('page-service', () => {
           isEnding: false,
           rawResponse: 'raw',
         });
-        mockedGenerateAnalystEvaluation.mockResolvedValue({
+        mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
           beatConcluded: false,
           beatResolution: '',
           deviationDetected: true,
@@ -3786,7 +3778,7 @@ describe('page-service', () => {
           beatAlignmentConfidence: 'LOW',
           beatAlignmentReason: '',
           rawResponse: 'raw-analyst',
-        });
+        }));
 
         const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
@@ -4216,7 +4208,7 @@ describe('page-service', () => {
         isEnding: false,
         rawResponse: 'raw',
       });
-      mockedGenerateAnalystEvaluation.mockResolvedValue({
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
         beatConcluded: false,
         beatResolution: '',
         deviationDetected: true,
@@ -4252,7 +4244,7 @@ describe('page-service', () => {
         beatAlignmentConfidence: 'LOW',
         beatAlignmentReason: '',
         rawResponse: 'raw-analyst',
-      });
+      }));
 
       const result = await getOrGeneratePage(story, parentPage, 0, 'test-key');
 

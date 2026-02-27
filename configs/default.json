@@ -24,8 +24,10 @@
       "accountant": "qwen/qwen3.5-397b-a17b",
       "lorekeeper": "qwen/qwen3.5-397b-a17b",
       "writer": "qwen/qwen3.5-397b-a17b",
-      "analyst": "qwen/qwen3.5-397b-a17b",
-      "agendaResolver": "qwen/qwen3.5-397b-a17b"
+      "structureEvaluator": "z-ai/glm-5",
+      "promiseTracker": "z-ai/glm-5",
+      "sceneQuality": "z-ai/glm-5",
+      "agendaResolver": "z-ai/glm-5"
     },
     "temperature": 0.8,
     "maxTokens": 8192,

@@ -2,12 +2,12 @@ import type { Request, Response, Router } from 'express';
 import { storyEngine } from '@/engine';
 import {
   generatePageWriterOutput,
-  generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
   generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
+import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StoryId, StorySpine } from '@/models';
 import { playRoutes } from '@/server/routes/play';
@@ -21,7 +21,6 @@ import {
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
-  generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -35,6 +34,8 @@ jest.mock('@/llm', () => ({
     rawResponse: '{}',
   }),
 }));
+
+jest.mock('@/engine/analyst-evaluation');
 
 jest.mock('@/logging/index', () => ({
   logger: {
@@ -58,8 +59,8 @@ const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
   typeof generatePageWriterOutput
 >;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
+const mockedRunAnalystEvaluation = runAnalystEvaluation as jest.MockedFunction<
+  typeof runAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
@@ -420,14 +421,15 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         rawResponse: 'continuation',
       })
     );
-    mockedGenerateAnalystEvaluation.mockResolvedValueOnce(
-      createMockAnalystResult({
+    mockedRunAnalystEvaluation.mockResolvedValueOnce({
+      result: createMockAnalystResult({
         beatConcluded: false,
         sceneMomentum: 'STASIS',
         objectiveEvidenceStrength: 'NONE',
         commitmentStrength: 'NONE',
-      })
-    );
+      }),
+      durationMs: 0,
+    });
 
     const choiceRes = createMockResponse();
     void chooseHandler(
@@ -538,14 +540,15 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         rawResponse: 'continuation',
       })
     );
-    mockedGenerateAnalystEvaluation.mockResolvedValueOnce(
-      createMockAnalystResult({
+    mockedRunAnalystEvaluation.mockResolvedValueOnce({
+      result: createMockAnalystResult({
         beatConcluded: false,
         sceneMomentum: 'STASIS',
         objectiveEvidenceStrength: 'NONE',
         commitmentStrength: 'NONE',
-      })
-    );
+      }),
+      durationMs: 0,
+    });
 
     const firstChoiceRes = createMockResponse();
     void chooseHandler(
@@ -740,14 +743,15 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         rawResponse: 'continuation',
       })
     );
-    mockedGenerateAnalystEvaluation.mockResolvedValueOnce(
-      createMockAnalystResult({
+    mockedRunAnalystEvaluation.mockResolvedValueOnce({
+      result: createMockAnalystResult({
         beatConcluded: false,
         sceneMomentum: 'STASIS',
         objectiveEvidenceStrength: 'NONE',
         commitmentStrength: 'NONE',
-      })
-    );
+      }),
+      durationMs: 0,
+    });
 
     const choiceRes = createMockResponse();
     void chooseHandler(

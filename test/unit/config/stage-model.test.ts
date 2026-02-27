@@ -36,9 +36,9 @@ describe('getStageModel', () => {
     loadConfig();
 
     const config = getConfig();
-    const model = getStageModel('analyst');
-    // Should match whatever the config file says for analyst
-    const expected = config.llm.models?.['analyst'] ?? config.llm.defaultModel;
+    const model = getStageModel('structureEvaluator');
+    // Should match whatever the config file says for structureEvaluator
+    const expected = config.llm.models?.['structureEvaluator'] ?? config.llm.defaultModel;
     expect(model).toBe(expected);
   });
 

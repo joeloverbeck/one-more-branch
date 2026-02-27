@@ -2,7 +2,11 @@
  * Integration tests for all exported functions from continuation-post-processing.
  * Written BEFORE refactoring to lock in behavior, then updated to import from new modules.
  */
-import { generateAnalystEvaluation } from '../../../src/llm';
+import {
+  generateStructureEvaluation,
+  generatePromiseTracking,
+  generateSceneQualityEvaluation,
+} from '../../../src/llm';
 import { runAnalystEvaluation } from '../../../src/engine/analyst-evaluation';
 import { resolveActiveBeat } from '../../../src/engine/beat-utils';
 import { resolveBeatAlignmentSkip } from '../../../src/engine/beat-alignment';
@@ -21,8 +25,10 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../src/mod
 import type { ContinuationGenerationResult } from '../../../src/llm/generation-pipeline-types';
 import type { Story, VersionedStoryStructure } from '../../../src/models';
 
-jest.mock('../../../src/llm', () => ({
-  generateAnalystEvaluation: jest.fn(),
+jest.mock('../../../src/llm/client', () => ({
+  generateStructureEvaluation: jest.fn(),
+  generatePromiseTracking: jest.fn(),
+  generateSceneQualityEvaluation: jest.fn(),
 }));
 
 jest.mock('../../../src/engine/generation-pipeline-helpers', () => ({
@@ -48,8 +54,14 @@ jest.mock('../../../src/engine/spine-rewriter', () => ({
   rewriteSpine: jest.fn(),
 }));
 
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
+const mockedGenerateStructureEvaluation = generateStructureEvaluation as jest.MockedFunction<
+  typeof generateStructureEvaluation
+>;
+const mockedGeneratePromiseTracking = generatePromiseTracking as jest.MockedFunction<
+  typeof generatePromiseTracking
+>;
+const mockedGenerateSceneQualityEvaluation = generateSceneQualityEvaluation as jest.MockedFunction<
+  typeof generateSceneQualityEvaluation
 >;
 const mockedIsActualDeviation = isActualDeviation as jest.MockedFunction<typeof isActualDeviation>;
 const mockedHandleDeviation = handleDeviation as jest.MockedFunction<typeof handleDeviation>;
@@ -72,6 +84,7 @@ const baseStructure = createMockStoryStructure();
 describe('runAnalystEvaluation', () => {
   const baseContext = {
     writerNarrative: 'The hero walked forward.',
+    writerSceneSummary: 'The hero moved through the forest.',
     activeStructure: baseStructure,
     parentStructureState: baseStructureState,
     parentActiveState: {
@@ -83,26 +96,82 @@ describe('runAnalystEvaluation', () => {
     threadsResolved: [] as string[],
     threadAges: {} as Record<string, number>,
     activeTrackedPromises: [] as readonly import('../../../src/models').TrackedPromise[],
+    delayedConsequencesEligible: [] as readonly import('../../../src/models/state/delayed-consequence').DelayedConsequence[],
     tone: 'dark fantasy',
     thematicQuestion: 'Can power be used without corruption?',
     antithesis: 'Order requires domination, not restraint.',
+    premisePromises: [] as readonly string[],
+    fulfilledPremisePromises: [] as readonly string[],
     apiKey: 'test-key',
     logContext: { storyId: 's1' },
   };
 
   it('returns result and duration on success', async () => {
-    const mockResult = createMockAnalystResult({ narrativeSummary: 'Hero progressed.' });
-    mockedGenerateAnalystEvaluation.mockResolvedValue(mockResult);
+    mockedGenerateStructureEvaluation.mockResolvedValue({
+      beatConcluded: false,
+      beatResolution: '',
+      sceneMomentum: 'INCREMENTAL_PROGRESS',
+      objectiveEvidenceStrength: 'WEAK_IMPLICIT',
+      commitmentStrength: 'TENTATIVE',
+      structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+      entryConditionReadiness: 'NOT_READY',
+      objectiveAnchors: [],
+      anchorEvidence: [],
+      completionGateSatisfied: false,
+      completionGateFailureReason: '',
+      deviationDetected: false,
+      deviationReason: '',
+      invalidatedBeatIds: [],
+      spineDeviationDetected: false,
+      spineDeviationReason: '',
+      spineInvalidatedElement: null,
+      alignedBeatId: null,
+      beatAlignmentConfidence: 'LOW',
+      beatAlignmentReason: '',
+      pacingIssueDetected: false,
+      pacingIssueReason: '',
+      recommendedAction: 'none',
+      pacingDirective: '',
+      narrativeSummary: 'Hero progressed.',
+      rawResponse: '{"structure":"ok"}',
+    });
+    mockedGeneratePromiseTracking.mockResolvedValue({
+      promisesDetected: [],
+      promisesResolved: [],
+      promisePayoffAssessments: [],
+      threadPayoffAssessments: [],
+      premisePromiseFulfilled: null,
+      obligatorySceneFulfilled: null,
+      delayedConsequencesTriggered: [],
+      delayedConsequencesCreated: [],
+      rawResponse: '{"promise":"ok"}',
+    });
+    mockedGenerateSceneQualityEvaluation.mockResolvedValue({
+      toneAdherent: true,
+      toneDriftDescription: '',
+      thematicCharge: 'AMBIGUOUS',
+      thematicChargeDescription: '',
+      narrativeFocus: 'BALANCED',
+      npcCoherenceAdherent: true,
+      npcCoherenceIssues: '',
+      relationshipShiftsDetected: [],
+      knowledgeAsymmetryDetected: [],
+      dramaticIronyOpportunities: [],
+      rawResponse: '{"quality":"ok"}',
+    });
 
     const evalResult = await runAnalystEvaluation(baseContext);
 
-    expect(evalResult.result).toBe(mockResult);
+    expect(evalResult.result).not.toBeNull();
+    expect(evalResult.result!.narrativeSummary).toBe('Hero progressed.');
     expect(evalResult.durationMs).toBeGreaterThanOrEqual(0);
     expect(evalResult.degradation).toBeUndefined();
   });
 
   it('returns null result with degradation on LLM failure', async () => {
-    mockedGenerateAnalystEvaluation.mockRejectedValue(new Error('LLM timeout'));
+    mockedGenerateStructureEvaluation.mockRejectedValue(new Error('LLM timeout'));
+    mockedGeneratePromiseTracking.mockRejectedValue(new Error('LLM timeout'));
+    mockedGenerateSceneQualityEvaluation.mockRejectedValue(new Error('LLM timeout'));
 
     const evalResult = await runAnalystEvaluation(baseContext);
 

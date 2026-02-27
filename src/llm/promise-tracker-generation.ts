@@ -7,22 +7,22 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
-import { ANALYST_SCHEMA } from './schemas/analyst-schema.js';
-import { validateAnalystResponse } from './schemas/analyst-response-transformer.js';
-import type { AnalystResult } from './analyst-types.js';
+import { PROMISE_TRACKER_SCHEMA } from './schemas/promise-tracker-schema.js';
+import { validatePromiseTrackerResponse } from './schemas/promise-tracker-response-transformer.js';
+import type { PromiseTrackerResult } from './promise-tracker-types.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 
-const DEFAULT_ANALYST_TEMPERATURE = 0.3;
-const DEFAULT_ANALYST_MAX_TOKENS = 8192;
+const DEFAULT_PROMISE_TRACKER_TEMPERATURE = 0.3;
+const DEFAULT_PROMISE_TRACKER_MAX_TOKENS = 8192;
 
-async function callAnalystStructured(
+async function callPromiseTrackerStructured(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<AnalystResult> {
-  const model = options.model ?? getStageModel('analyst');
-  const temperature = options.temperature ?? DEFAULT_ANALYST_TEMPERATURE;
-  const maxTokens = options.maxTokens ?? DEFAULT_ANALYST_MAX_TOKENS;
+): Promise<PromiseTrackerResult & { rawResponse: string }> {
+  const model = options.model ?? getStageModel('promiseTracker');
+  const temperature = options.temperature ?? DEFAULT_PROMISE_TRACKER_TEMPERATURE;
+  const maxTokens = options.maxTokens ?? DEFAULT_PROMISE_TRACKER_MAX_TOKENS;
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -36,7 +36,7 @@ async function callAnalystStructured(
       messages,
       temperature,
       max_tokens: maxTokens,
-      response_format: ANALYST_SCHEMA,
+      response_format: PROMISE_TRACKER_SCHEMA,
     }),
   });
 
@@ -58,7 +58,7 @@ async function callAnalystStructured(
   if (!content) {
     const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
     const usage = data.usage;
-    logger.warn('Analyst received empty content from OpenRouter', {
+    logger.warn('Promise tracker received empty content from OpenRouter', {
       finishReason,
       usage,
       model,
@@ -76,9 +76,11 @@ async function callAnalystStructured(
   const rawContent = parsedMessage.rawText;
 
   try {
-    return validateAnalystResponse(parsed, rawContent);
+    return validatePromiseTrackerResponse(parsed, rawContent);
   } catch (error) {
-    logger.error('Analyst structured response validation failed', { rawResponse: rawContent });
+    logger.error('Promise tracker structured response validation failed', {
+      rawResponse: rawContent,
+    });
 
     if (error instanceof LLMError) {
       throw error;
@@ -90,15 +92,15 @@ async function callAnalystStructured(
   }
 }
 
-export async function generateAnalystWithFallback(
+export async function generatePromiseTrackerWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions
-): Promise<AnalystResult> {
+): Promise<PromiseTrackerResult & { rawResponse: string }> {
   try {
-    return await callAnalystStructured(messages, options);
+    return await callPromiseTrackerStructured(messages, options);
   } catch (error) {
     if (isStructuredOutputNotSupported(error)) {
-      const model = options.model ?? getStageModel('analyst');
+      const model = options.model ?? getStageModel('promiseTracker');
       throw new LLMError(
         `Model "${model}" does not support structured outputs. Please use a compatible model like Claude Sonnet 4.5, GPT-4, or Gemini.`,
         'STRUCTURED_OUTPUT_NOT_SUPPORTED',

@@ -82,6 +82,12 @@ export function analystResultToFileData(
     obligatorySceneFulfilled: analystResult.obligatorySceneFulfilled,
     premisePromiseFulfilled: analystResult.premisePromiseFulfilled,
     delayedConsequencesTriggered: [...(analystResult.delayedConsequencesTriggered ?? [])],
+    delayedConsequencesCreated: (analystResult.delayedConsequencesCreated ?? []).map((d) => ({
+      description: d.description,
+      triggerCondition: d.triggerCondition,
+      minPagesDelay: d.minPagesDelay,
+      maxPagesDelay: d.maxPagesDelay,
+    })),
     knowledgeAsymmetryDetected: (analystResult.knowledgeAsymmetryDetected ?? []).map((entry) => ({
       characterName: entry.characterName,
       knownFacts: [...entry.knownFacts],
@@ -169,6 +175,12 @@ export function fileDataToAnalystResult(
     obligatorySceneFulfilled: data.obligatorySceneFulfilled ?? null,
     premisePromiseFulfilled: data.premisePromiseFulfilled ?? null,
     delayedConsequencesTriggered: [...(data.delayedConsequencesTriggered ?? [])],
+    delayedConsequencesCreated: (data.delayedConsequencesCreated ?? []).map((d) => ({
+      description: d.description,
+      triggerCondition: d.triggerCondition,
+      minPagesDelay: d.minPagesDelay,
+      maxPagesDelay: d.maxPagesDelay,
+    })),
     knowledgeAsymmetryDetected: (data.knowledgeAsymmetryDetected ?? []).map((entry) => ({
       characterName: entry.characterName,
       knownFacts: [...entry.knownFacts],

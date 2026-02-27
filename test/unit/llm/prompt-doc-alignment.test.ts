@@ -50,9 +50,19 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/opening-prompt.md',
   },
   {
-    promptType: 'analyst',
-    sourcePath: 'src/llm/prompts/analyst-prompt.ts',
-    docPath: 'prompts/analyst-prompt.md',
+    promptType: 'structureEvaluator',
+    sourcePath: 'src/llm/prompts/structure-evaluator-prompt.ts',
+    docPath: 'prompts/structure-evaluator-prompt.md',
+  },
+  {
+    promptType: 'promiseTracker',
+    sourcePath: 'src/llm/prompts/promise-tracker-prompt.ts',
+    docPath: 'prompts/promise-tracker-prompt.md',
+  },
+  {
+    promptType: 'sceneQuality',
+    sourcePath: 'src/llm/prompts/scene-quality-prompt.ts',
+    docPath: 'prompts/scene-quality-prompt.md',
   },
   {
     promptType: 'planner',

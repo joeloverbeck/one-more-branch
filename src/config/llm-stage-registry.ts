@@ -14,7 +14,9 @@ export const LLM_STAGE_KEYS = [
   'accountant',
   'lorekeeper',
   'writer',
-  'analyst',
+  'structureEvaluator',
+  'promiseTracker',
+  'sceneQuality',
   'agendaResolver',
   'sceneIdeator',
 ] as const;

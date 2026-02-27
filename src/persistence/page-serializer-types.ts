@@ -193,6 +193,12 @@ export interface AnalystResultFileData {
   obligatorySceneFulfilled?: string | null;
   premisePromiseFulfilled?: string | null;
   delayedConsequencesTriggered: string[];
+  delayedConsequencesCreated?: Array<{
+    description: string;
+    triggerCondition: string;
+    minPagesDelay: number;
+    maxPagesDelay: number;
+  }>;
   knowledgeAsymmetryDetected: KnowledgeAsymmetryFileData[];
   dramaticIronyOpportunities: string[];
 }

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   generateAgendaResolver,
-  generateAnalystEvaluation,
   generateOpeningPage,
   generatePagePlan,
   generateStateAccountant,
   generatePageWriterOutput,
 } from '@/llm';
+import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
+import type { AnalystEvaluationResult } from '@/engine/analyst-evaluation';
 import {
   ConstraintType,
   createChoice,
@@ -55,14 +56,18 @@ import type { TrackedPromise } from '@/models/state/keyed-entry';
 jest.mock('@/llm', () => ({
   generateOpeningPage: jest.fn(),
   generatePageWriterOutput: jest.fn(),
-  generateAnalystEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateAgendaResolver: jest.fn(),
+  generateLorekeeperBible: jest.fn(),
 
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
+}));
+
+jest.mock('@/engine/analyst-evaluation', () => ({
+  runAnalystEvaluation: jest.fn(),
 }));
 
 jest.mock('@/logging/index', () => ({
@@ -85,8 +90,8 @@ const mockedGenerateOpeningPage = generateOpeningPage as jest.MockedFunction<
 const mockedGenerateWriterPage = generatePageWriterOutput as jest.MockedFunction<
   typeof generatePageWriterOutput
 >;
-const mockedGenerateAnalystEvaluation = generateAnalystEvaluation as jest.MockedFunction<
-  typeof generateAnalystEvaluation
+const mockedRunAnalystEvaluation = runAnalystEvaluation as jest.MockedFunction<
+  typeof runAnalystEvaluation
 >;
 const mockedGeneratePagePlan = generatePagePlan as jest.MockedFunction<typeof generatePagePlan>;
 const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunction<
@@ -364,6 +369,10 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
     rawResponse: 'analyst-raw',
     ...overrides,
   });
+}
+
+function wrapAnalystResult(overrides?: Partial<AnalystResult>): AnalystEvaluationResult {
+  return { result: buildAnalystResult(overrides), durationMs: 0 };
 }
 
 function buildPagePlanResult(
@@ -921,7 +930,7 @@ describe('page-service integration', () => {
       expect(mockedGeneratePagePlan).toHaveBeenCalledTimes(2);
       expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
       expect(mockedReconcileState).toHaveBeenCalledTimes(2);
-      expect(mockedGenerateAnalystEvaluation).not.toHaveBeenCalled();
+      expect(mockedRunAnalystEvaluation).not.toHaveBeenCalled();
       expect(mockedLogger.error.mock.calls).toEqual(
         expect.arrayContaining([
           [
@@ -974,7 +983,7 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(buildAnalystResult());
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult());
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -982,7 +991,7 @@ describe('page-service integration', () => {
         mockedReconcileState.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
       expect(mockedReconcileState.mock.invocationCallOrder[0]).toBeLessThan(
-        mockedGenerateAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
+        mockedRunAnalystEvaluation.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
       );
 
       // Verify parent state was collected and passed to LLM
@@ -1328,7 +1337,7 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(buildAnalystResult());
+      mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult());
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -1364,8 +1373,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           deviationDetected: true,
           deviationReason: 'Betrayal invalidates trust-based beats.',
           invalidatedBeatIds: ['1.2', '2.1'],
@@ -1425,8 +1434,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           beatConcluded: true,
           beatResolution: 'The first clue was found successfully.',
           objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
@@ -1483,8 +1492,8 @@ describe('page-service integration', () => {
             'Gunfire tears across the boulevard as the team sprints between burning vehicles and collapsing barricades.',
         })
       );
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           beatConcluded: false,
           sceneMomentum: 'MAJOR_PROGRESS',
           objectiveEvidenceStrength: 'WEAK_IMPLICIT',
@@ -1564,8 +1573,8 @@ describe('page-service integration', () => {
             'Before the full council, you name the conspirators and swear to release the ledgers, accepting exile if you fail.',
         })
       );
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           beatConcluded: true,
           beatResolution:
             'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
@@ -1656,8 +1665,8 @@ describe('page-service integration', () => {
         mockedGenerateWriterPage.mockResolvedValue(
           buildContinuationResult({ narrative: scenario.narrative })
         );
-        mockedGenerateAnalystEvaluation.mockResolvedValue(
-          buildAnalystResult({
+        mockedRunAnalystEvaluation.mockResolvedValue(
+          wrapAnalystResult({
             beatConcluded: false,
             sceneMomentum: 'MAJOR_PROGRESS',
             objectiveEvidenceStrength: 'WEAK_IMPLICIT',
@@ -1712,7 +1721,7 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockRejectedValue(new Error('Analyst API timeout'));
+      mockedRunAnalystEvaluation.mockResolvedValue({ result: null, durationMs: 0 });
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
@@ -1732,11 +1741,8 @@ describe('page-service integration', () => {
       // No structure rewrite should occur
       expect(page.structureVersionId).toBe(storyWithStructure.structureVersions?.[0]?.id);
 
-      // Graceful degradation should log a warning
-      expect(mockedLogger.warn).toHaveBeenCalledWith(
-        'Analyst evaluation failed, continuing with defaults',
-        expect.objectContaining({ error: expect.any(Error) })
-      );
+      // Graceful degradation: analyst returned null result (errors handled internally)
+      expect(page.analystResult).toBeNull();
     });
 
     it('applies pacing nudge from analyst recommendation', async () => {
@@ -1765,8 +1771,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           recommendedAction: 'nudge',
           pacingIssueDetected: true,
           pacingIssueReason: 'scene dragging',
@@ -1804,8 +1810,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           recommendedAction: 'rewrite',
           pacingIssueDetected: true,
           pacingIssueReason: 'over budget',
@@ -1860,8 +1866,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           deviationDetected: true,
           deviationReason: 'Betrayal breaks trust arc.',
           invalidatedBeatIds: ['1.2'],
@@ -2176,8 +2182,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           spineDeviationDetected: true,
           spineDeviationReason: 'Story shifted from survival to rebellion arc.',
           spineInvalidatedElement: 'conflictType',
@@ -2239,8 +2245,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           spineDeviationDetected: true,
           spineDeviationReason: 'Spine shifted to rebellion.',
           spineInvalidatedElement: 'storySpineType',
@@ -2304,8 +2310,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           spineDeviationDetected: true,
           spineDeviationReason: 'Spine drift detected.',
           spineInvalidatedElement: 'conflictAxis',
@@ -2616,8 +2622,8 @@ describe('page-service integration', () => {
       await storage.savePage(storyWithStructure.id, parentPage);
 
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
-      mockedGenerateAnalystEvaluation.mockResolvedValue(
-        buildAnalystResult({
+      mockedRunAnalystEvaluation.mockResolvedValue(
+        wrapAnalystResult({
           promisesDetected: [
             {
               description: 'A new foreshadowing of betrayal',
