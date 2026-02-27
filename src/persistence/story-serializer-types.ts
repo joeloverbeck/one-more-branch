@@ -68,10 +68,6 @@ export interface SpineFileData {
   characterArcType: string;
   toneFeel?: string[];
   toneAvoid?: string[];
-  /** @deprecated Read-path only: old field name for backward compat */
-  toneKeywords?: string[];
-  /** @deprecated Read-path only: old field name for backward compat */
-  toneAntiKeywords?: string[];
 }
 
 export interface StoryStructureFileData {
@@ -116,10 +112,6 @@ export interface StoryFileData {
   tone: string;
   toneFeel?: string[];
   toneAvoid?: string[];
-  /** @deprecated Read-path only: old field name for backward compat */
-  toneKeywords?: string[];
-  /** @deprecated Read-path only: old field name for backward compat */
-  toneAntiKeywords?: string[];
   npcs: Array<{ name: string; description: string }> | null;
   startingSituation: string | null;
   globalCanon: CanonFactFileData[];

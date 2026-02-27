@@ -12,17 +12,16 @@ import { PromiseType, PromiseScope, Urgency } from '@/models/state/keyed-entry';
 import type { AnalystResult } from '@/llm/analyst-types';
 import { createEmptyAccumulatedNpcRelationships } from '@/models/state/npc-relationship';
 import {
-  augmentThreadsResolvedFromAnalyst,
   buildFirstPage,
   buildContinuationPage,
   buildPage,
-  computeAccumulatedPromises,
   createEmptyStructureContext,
   FirstPageBuildContext,
-  getMaxPromiseIdNumber,
   ContinuationPageBuildContext,
   PageBuildContext,
 } from '@/engine/page-builder';
+import { augmentThreadsResolvedFromAnalyst } from '@/engine/thread-lifecycle';
+import { computeAccumulatedPromises, getMaxPromiseIdNumber } from '@/engine/promise-lifecycle';
 
 function buildMockGenerationResult(
   overrides?: Partial<FinalPageGenerationResult>

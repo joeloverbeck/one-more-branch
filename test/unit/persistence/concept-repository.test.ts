@@ -131,43 +131,4 @@ describe('concept-repository persisted payload validation', () => {
     ).rejects.toThrow(`Invalid SavedConcept payload at ${getConceptFilePath(conceptId)}`);
   });
 
-  it('loads and lists legacy saved concepts missing newer concept fields', async () => {
-    const conceptId = `${TEST_PREFIX}-${randomUUID()}`;
-    createdConceptIds.add(conceptId);
-
-    const concept = createSavedConcept(conceptId);
-    const legacyConcept = {
-      ...concept,
-      evaluatedConcept: {
-        ...concept.evaluatedConcept,
-        concept: {
-          ...concept.evaluatedConcept.concept,
-        },
-      },
-    };
-
-    delete (legacyConcept.evaluatedConcept.concept as Record<string, unknown>)['incitingDisruption'];
-    delete (legacyConcept.evaluatedConcept.concept as Record<string, unknown>)['escapeValve'];
-
-    await writeJsonFile(getConceptFilePath(conceptId), legacyConcept);
-
-    const loaded = await loadConcept(conceptId);
-    expect(loaded).not.toBeNull();
-    expect(loaded?.evaluatedConcept.concept.incitingDisruption).toBe(
-      legacyConcept.evaluatedConcept.concept.coreConflictLoop,
-    );
-    expect(loaded?.evaluatedConcept.concept.escapeValve).toBe(
-      legacyConcept.evaluatedConcept.concept.whatIfQuestion,
-    );
-
-    const listed = await listConcepts();
-    const listedConcept = listed.find((entry) => entry.id === conceptId);
-    expect(listedConcept).toBeDefined();
-    expect(listedConcept?.evaluatedConcept.concept.incitingDisruption).toBe(
-      legacyConcept.evaluatedConcept.concept.coreConflictLoop,
-    );
-    expect(listedConcept?.evaluatedConcept.concept.escapeValve).toBe(
-      legacyConcept.evaluatedConcept.concept.whatIfQuestion,
-    );
-  });
 });

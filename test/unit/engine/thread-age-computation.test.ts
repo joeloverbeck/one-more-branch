@@ -1,6 +1,6 @@
 import {
   computeContinuationThreadAges,
-} from '../../../src/engine/page-builder';
+} from '../../../src/engine/thread-lifecycle';
 
 describe('computeContinuationThreadAges', () => {
   it('increments inherited thread ages by 1', () => {

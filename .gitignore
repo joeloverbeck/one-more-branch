@@ -10,7 +10,9 @@ coverage/
 
 # Runtime data
 kernels/**
+old-kernels/**
 concepts/**
+old-concepts/**
 stories/**
 !stories/.gitkeep
 old-stories/
