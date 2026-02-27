@@ -11,6 +11,8 @@ function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'Restore the broken kingdom',
     premise: 'An exiled heir must unite rival houses before the capital collapses into civil war.',
+    openingImage: 'A rain-soaked throne room with a broken crown on the steps.',
+    closingImage: 'The restored crown held aloft in first light over a united court.',
     pacingBudget: { targetPagesMin: 18, targetPagesMax: 42 },
     acts: [
       {
@@ -67,6 +69,8 @@ describe('structure-factory', () => {
       const result = createStoryStructure(createGenerationResult());
 
       expect(result.overallTheme).toBe('Restore the broken kingdom');
+      expect(result.openingImage).toContain('broken crown');
+      expect(result.closingImage).toContain('first light');
       expect(result.acts[0]?.id).toBe('1');
       expect(result.acts[1]?.id).toBe('2');
       expect(result.acts[0]?.beats[0]?.id).toBe('1.1');

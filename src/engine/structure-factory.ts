@@ -153,6 +153,8 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
     acts,
     overallTheme: result.overallTheme,
     premise: result.premise,
+    openingImage: result.openingImage,
+    closingImage: result.closingImage,
     pacingBudget: result.pacingBudget,
     generatedAt: new Date(),
   };

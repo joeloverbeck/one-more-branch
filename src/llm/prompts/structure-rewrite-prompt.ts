@@ -146,6 +146,8 @@ The story has deviated from its original plan. Generate replacement beats for in
 Character: ${protagonistSection}
 ${worldSection}Tone: ${context.tone}
 ${toneFeelLine}${toneAvoidLine}Original Theme: ${context.originalTheme}
+Original Opening Image: ${context.originalOpeningImage}
+Original Closing Image: ${context.originalClosingImage}
 ${spineSection}${conceptStakesSection}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
@@ -174,9 +176,11 @@ REQUIREMENTS (follow ALL):
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "reflection" for thematic/internal deepening without forced escalation, "resolution" for denouement
    - Preserve beat roles from completed beats unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
-10. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
-11. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first regenerated beats in an act, reference the initiating condition from canon or current narrative state. Preserve causalLink from completed beats unchanged.
-12. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+10. Keep openingImage aligned with completed canon by preserving the original opening image exactly: "${context.originalOpeningImage}".
+11. Generate closingImage for the revised structure so it still mirrors or contrasts the opening image while fitting the new direction.
+12. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
+13. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first regenerated beats in an act, reference the initiating condition from canon or current narrative state. Preserve causalLink from completed beats unchanged.
+14. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
    - THREAT_ESCALATION: Opposition magnitude increases
    - REVELATION_SHIFT: Hidden truth recontextualizes everything
    - REVERSAL_OF_FORTUNE: Progress inverts into setback
@@ -187,26 +191,28 @@ REQUIREMENTS (follow ALL):
    - COMPLICATION_CASCADE: Consequences compound into crises
    - COMPETENCE_DEMAND_SPIKE: Challenge exceeds demonstrated capability
    For "setup", "reflection", and "resolution" beats, set escalationType to null. Preserve escalationType from completed beats unchanged.
-13. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
+15. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
    - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
    For "setup", "reflection", and "resolution" beats, set crisisType to null. Preserve crisisType from completed beats unchanged.
    When choosing escalation types and crisis types together, ensure the crisis expresses a real decision pressure, not just environmental difficulty.
-14. For each beat with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the beat escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" beats, set secondaryEscalationType to null. Preserve secondaryEscalationType from completed beats unchanged.
-15. For each beat with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from NARROW | MODERATE | WIDE | CHASM. Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" beats, set expectedGapMagnitude to null. Preserve expectedGapMagnitude from completed beats unchanged.
-16. Midpoint invariant:
+16. For each beat with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the beat escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" beats, set secondaryEscalationType to null. Preserve secondaryEscalationType from completed beats unchanged.
+17. For each beat with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from NARROW | MODERATE | WIDE | CHASM. Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" beats, set expectedGapMagnitude to null. Preserve expectedGapMagnitude from completed beats unchanged.
+18. Midpoint invariant:
    - Preserve midpoint fields from completed beats unchanged
    - Ensure exactly one beat in the full output has isMidpoint: true
    - For midpoint beat, midpointType must be FALSE_VICTORY or FALSE_DEFEAT
    - For non-midpoint beats, set isMidpoint: false and midpointType: null
-17. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-18. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+19. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
+20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION
    For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
 
 OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)
 - premise: string (1-2 sentence story hook)
+- openingImage: string (must preserve original opening image exactly)
+- closingImage: string
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
 - acts: 3-5 items (STRONGLY prefer 3 acts; use 4 only when narrative complexity genuinely demands it; 5 only in exceptional cases)
 - each act has:

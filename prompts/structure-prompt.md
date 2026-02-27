@@ -130,9 +130,10 @@ REQUIREMENTS (follow ALL):
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "reflection" for thematic/internal deepening without forced escalation, "resolution" for denouement
 9. When designing beat descriptions and objectives, connect them to the protagonist's Need (inner transformation) vs Want (outer goal) from the spine. Setup beats should establish the need/want gap. Escalation beats should widen it — making the Want harder to achieve or the Need more urgent. Turning points should force the protagonist to confront the gap directly. Resolution beats should resolve or transform the tension.
 10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
-11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
-12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
-13. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first beats in an act that have no prior beat in that act, reference the initiating condition (inciting incident, carry-over pressure, or prior-act consequence).
+11. Write `openingImage` and `closingImage` as concrete visuals that mirror or contrast to show transformation across the story.
+12. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
+13. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
+14. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first beats in an act that have no prior beat in that act, reference the initiating condition (inciting incident, carry-over pressure, or prior-act consequence).
 14. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
    - THREAT_ESCALATION: Opposition magnitude increases — enemies grow stronger, more numerous, or more resourceful
    - REVELATION_SHIFT: Hidden truth recontextualizes everything — what seemed safe is dangerous, what seemed true is false
@@ -168,6 +169,8 @@ TONE REMINDER: All output must fit the tone: {{tone}}.
 OUTPUT SHAPE:
 - overallTheme: string
 - premise: string (1-2 sentence story hook)
+- openingImage: string
+- closingImage: string
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
 - initialNpcAgendas: array of NPC agendas (empty array if no NPCs)
   - each agenda has:
@@ -217,6 +220,8 @@ OUTPUT SHAPE:
 {
   "overallTheme": "{{core thematic throughline}}",
   "premise": "{{1-2 sentence dramatic hook}}",
+  "openingImage": "{{concrete opening visual bookend}}",
+  "closingImage": "{{concrete closing visual bookend}}",
   "pacingBudget": {
     "targetPagesMin": {{number}},
     "targetPagesMax": {{number}}

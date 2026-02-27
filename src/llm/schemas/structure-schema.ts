@@ -19,6 +19,8 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
       required: [
         'overallTheme',
         'premise',
+        'openingImage',
+        'closingImage',
         'pacingBudget',
         'acts',
         'initialNpcAgendas',
@@ -28,6 +30,16 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
         premise: {
           type: 'string',
           description: '1-2 sentence story hook capturing the core dramatic question.',
+        },
+        openingImage: {
+          type: 'string',
+          description:
+            'A concrete opening visual that embodies the protagonist/world state at story start.',
+        },
+        closingImage: {
+          type: 'string',
+          description:
+            'A concrete closing visual that mirrors or contrasts the opening image to show transformation.',
         },
         pacingBudget: {
           type: 'object',

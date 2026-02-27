@@ -38,6 +38,12 @@ export function parseStructureResponseObject(
   if (typeof data['overallTheme'] !== 'string') {
     throw new LLMError('Structure response missing overallTheme', 'STRUCTURE_PARSE_ERROR', true);
   }
+  if (typeof data['openingImage'] !== 'string' || data['openingImage'].trim().length === 0) {
+    throw new LLMError('Structure response missing openingImage', 'STRUCTURE_PARSE_ERROR', true);
+  }
+  if (typeof data['closingImage'] !== 'string' || data['closingImage'].trim().length === 0) {
+    throw new LLMError('Structure response missing closingImage', 'STRUCTURE_PARSE_ERROR', true);
+  }
 
   if (!Array.isArray(data['acts']) || data['acts'].length < 3 || data['acts'].length > 5) {
     const received = Array.isArray(data['acts']) ? data['acts'].length : typeof data['acts'];
@@ -234,6 +240,8 @@ export function parseStructureResponseObject(
   return {
     overallTheme: data['overallTheme'],
     premise,
+    openingImage: data['openingImage'],
+    closingImage: data['closingImage'],
     pacingBudget,
     acts,
     ...(initialNpcAgendas.length > 0 ? { initialNpcAgendas } : {}),

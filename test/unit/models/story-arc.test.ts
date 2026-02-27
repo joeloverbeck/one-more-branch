@@ -23,6 +23,8 @@ function createTestStructure(): StoryStructure {
   return {
     overallTheme: 'Survival against impossible odds',
     premise: 'A lone wanderer must unite warring clans before an ancient threat consumes the land.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     generatedAt: new Date('2026-02-07T00:00:00.000Z'),
     acts: [

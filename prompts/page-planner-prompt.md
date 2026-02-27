@@ -207,9 +207,16 @@ Midpoint type: {{activeBeat.midpointType}}
 - FALSE_DEFEAT: apparent failure that plants leverage or insight for later recovery
 - Choice intents should force the protagonist to commit under the new understanding created by the midpoint turn
 {{/if}}
+
+{{#if activeBeat.role === 'resolution' && isFinalBeatInFinalAct}}
+=== FINAL RESOLUTION IMAGE DIRECTIVE ===
+This is the final resolution beat. Plan the scene so its climactic visual lands on or clearly sets up this closing image: "{{structure.closingImage}}"
+Ensure the closing image meaningfully mirrors or contrasts the opening image: "{{structure.openingImage}}".
+- The final choice intents should create pathways that can all credibly converge to this ending visual.
+{{/if}}
 ```
 
-The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point/reflection beat is the first beat in the act, the previous resolution line is omitted. The escalation mechanism(s), crisis type, unique scenario hook, and approach vectors lines are emitted only when those fields are present on the active beat.
+The previous beat resolution is found by walking backward through concluded beats in the current act. If the escalation/turning-point/reflection beat is the first beat in the act, the previous resolution line is omitted. The escalation mechanism(s), crisis type, unique scenario hook, and approach vectors lines are emitted only when those fields are present on the active beat. The final-resolution image directive is emitted only for the last beat of the last act when that beat role is `resolution`.
 
 Source: `buildEscalationDirective()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 

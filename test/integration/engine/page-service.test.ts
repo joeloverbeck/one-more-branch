@@ -176,6 +176,8 @@ function buildStructure(): StoryStructure {
   return createMockStoryStructure({
     overallTheme: 'Navigate political intrigue in a city of shadows.',
     premise: 'A courier uncovers a conspiracy while navigating rival factions.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 12, targetPagesMax: 24 },
     generatedAt: new Date('2026-01-01T00:00:00.000Z'),
     acts: [

@@ -59,6 +59,14 @@ ${context.reconciliationFailureReasons
   const storyBibleSection = context.storyBible
     ? formatStoryBibleSection(context.storyBible)
     : '';
+  const openingImageSection =
+    context.structure && context.structure.openingImage.trim().length > 0
+      ? `OPENING IMAGE CONTRACT:
+Anchor this opening scene to this concrete image: ${context.structure.openingImage}
+Use this as a visual spine for setting, action framing, or emotional atmosphere.
+
+`
+      : '';
 
   const protagonistSpeech = context.decomposedCharacters[0] ?? null;
   const protagonistSpeechSection = protagonistSpeech
@@ -87,7 +95,7 @@ ${dataRules}
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}
 TONE/GENRE: ${context.tone}
 
-${buildSpineSection(context.spine)}${storyBibleSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
+${buildSpineSection(context.spine)}${storyBibleSection}${openingImageSection}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
 1. Introduce the protagonist in a compelling scene that reveals their personality through action
 2. Establish the world and atmosphere matching the specified tone
 3. Present an initial situation with immediate tension or intrigue that draws the player in
@@ -95,6 +103,7 @@ ${buildSpineSection(context.spine)}${storyBibleSection}${plannerSection}${choice
 5. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
 6. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 7. In portraying the protagonist, subtly establish the tension between their conscious Want (what they pursue) and their deeper Need (what they must learn or become). This should be shown through action and behavior, never stated explicitly.
+8. If an OPENING IMAGE CONTRACT is provided, ensure the scene's visual composition clearly reflects it.
 
 REMINDER: Each choice must be something this specific character would genuinely consider. protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
 

@@ -45,6 +45,8 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     expect(schema.required).toEqual([
       'overallTheme',
       'premise',
+      'openingImage',
+      'closingImage',
       'pacingBudget',
       'acts',
       'initialNpcAgendas',
@@ -77,11 +79,17 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
 
   it('should include premise as a string property', () => {
     const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
-      properties: { premise: { type: string; description: string } };
+      properties: {
+        premise: { type: string; description: string };
+        openingImage: { type: string };
+        closingImage: { type: string };
+      };
     };
 
     expect(schema.properties.premise.type).toBe('string');
     expect(schema.properties.premise.description).toContain('dramatic question');
+    expect(schema.properties.openingImage.type).toBe('string');
+    expect(schema.properties.closingImage.type).toBe('string');
   });
 
   it('should include pacingBudget as an object with targetPagesMin and targetPagesMax', () => {

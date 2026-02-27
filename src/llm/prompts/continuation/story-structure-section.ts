@@ -154,6 +154,8 @@ export function buildWriterStructureContext(
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
 Premise: ${structure.premise}
+Opening image: ${structure.openingImage}
+Closing image: ${structure.closingImage}
 
 CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure.acts.length})
 Objective: ${currentAct.objective}

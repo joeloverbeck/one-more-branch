@@ -71,6 +71,8 @@ function buildStructure(): StoryStructure {
     ],
     overallTheme: 'Trust and sacrifice',
     premise: 'A city scout races to decode a hostile transmission before dawn.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 12, targetPagesMax: 28 },
     generatedAt: new Date('2025-02-01T00:00:00.000Z'),
   };
@@ -297,6 +299,8 @@ describe('story-repository integration', () => {
       ],
       overallTheme: 'Integrity under pressure',
       premise: 'A resistance cell must expose a fabricated war narrative.',
+      openingImage: 'An opening image placeholder.',
+      closingImage: 'A closing image placeholder.',
       pacingBudget: { targetPagesMin: 18, targetPagesMax: 36 },
       generatedAt: new Date('2025-02-03T00:00:00.000Z'),
     };

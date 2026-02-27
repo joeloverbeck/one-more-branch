@@ -179,10 +179,11 @@ REQUIREMENTS (follow ALL):
    - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "reflection" for thematic/internal deepening without forced escalation, "resolution" for denouement
 9. When designing beat descriptions and objectives, connect them to the protagonist's Need (inner transformation) vs Want (outer goal) from the spine. Setup beats should establish the need/want gap. Escalation beats should widen it — making the Want harder to achieve or the Need more urgent. Turning points should force the protagonist to confront the gap directly. Resolution beats should resolve or transform the tension.
 10. Write a premise: a 1-2 sentence hook capturing the core dramatic question the story explores.
-11. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
-12. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
-13. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first beats in an act that have no prior beat in that act, reference the initiating condition (inciting incident, carry-over pressure, or prior-act consequence).
-14. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+11. Write openingImage and closingImage as concrete visuals that mirror or contrast to show protagonist/story transformation across the arc.
+12. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's scope.
+13. For each NPC, generate an initial agenda with currentGoal, leverage, fear, and offScreenBehavior. Keep each field to 1 sentence. Align with story tone and act structure. If no NPCs are defined, return an empty array.
+14. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first beats in an act that have no prior beat in that act, reference the initiating condition (inciting incident, carry-over pressure, or prior-act consequence).
+15. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
    - THREAT_ESCALATION: Opposition magnitude increases — enemies grow stronger, more numerous, or more resourceful
    - REVELATION_SHIFT: Hidden truth recontextualizes everything — what seemed safe is dangerous, what seemed true is false
    - REVERSAL_OF_FORTUNE: Progress inverts into setback — a victory becomes a trap, an ally's help becomes a liability
@@ -194,23 +195,23 @@ REQUIREMENTS (follow ALL):
    - COMPETENCE_DEMAND_SPIKE: The challenge now exceeds the protagonist's demonstrated capability, forcing growth or improvisation
    For "setup", "reflection", and "resolution" beats, set escalationType to null.
    When choosing escalation types, consider how the antagonistic force's pressure mechanism would manifest at increasing intensity across the story. Not every escalation beat must be directly antagonist-driven, but the overall arc of escalation should feel connected to the central opposition defined in the spine.
-15. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
+16. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
    - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
    For "setup", "reflection", and "resolution" beats, set crisisType to null.
-16. For each beat with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the beat escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" beats, set secondaryEscalationType to null.
-17. For each beat with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from:
+17. For each beat with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the beat escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" beats, set secondaryEscalationType to null.
+18. For each beat with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from:
    - NARROW: outcome is close to expectation with modest divergence
    - MODERATE: outcome diverges in a meaningful but manageable way
    - WIDE: outcome sharply diverges, creating major strategic/emotional dislocation
    - CHASM: outcome radically diverges, fundamentally re-framing stakes or trajectory
    Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" beats, set expectedGapMagnitude to null.
-18. Flag exactly one beat across the full structure as isMidpoint: true. This beat should sit near the structural center and deliver a major reveal or reversal. For that beat, set midpointType to:
+19. Flag exactly one beat across the full structure as isMidpoint: true. This beat should sit near the structural center and deliver a major reveal or reversal. For that beat, set midpointType to:
    - FALSE_VICTORY: the protagonist appears to win, but the win is unstable, misleading, or carries hidden cost
    - FALSE_DEFEAT: the protagonist appears to lose, but the loss plants the seed of eventual success
    For all non-midpoint beats, set isMidpoint to false and midpointType to null.
-19. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
-20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+20. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
+21. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
    - DIRECT_FORCE: Confronting head-on with power, aggression, or physical dominance
    - SWIFT_ACTION: Speed, reflexes, seizing initiative before others react
    - STEALTH_SUBTERFUGE: Deception, misdirection, stealth, operating under false pretenses
@@ -227,6 +228,8 @@ REQUIREMENTS (follow ALL):
 OUTPUT SHAPE:
 - overallTheme: string
 - premise: string (1-2 sentence story hook)
+- openingImage: string
+- closingImage: string
 - pacingBudget: { targetPagesMin: number, targetPagesMax: number }
 - initialNpcAgendas: array of NPC agendas (empty array if no NPCs)
   - each agenda has:

@@ -116,6 +116,8 @@ export function isStoryStructure(value: unknown): value is StoryStructure {
   return (
     Array.isArray(structure['acts']) &&
     typeof structure['overallTheme'] === 'string' &&
+    typeof structure['openingImage'] === 'string' &&
+    typeof structure['closingImage'] === 'string' &&
     structure['generatedAt'] instanceof Date
   );
 }

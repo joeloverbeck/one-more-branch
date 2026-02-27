@@ -180,6 +180,8 @@ export function createMockStoryStructure(
     ],
     overallTheme: 'Courage in the face of uncertainty',
     premise: 'A reluctant hero must leave safety to confront a growing threat.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 12, targetPagesMax: 28 },
     generatedAt: new Date('2025-01-01T00:00:00.000Z'),
     ...overrides,

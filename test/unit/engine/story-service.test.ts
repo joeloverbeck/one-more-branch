@@ -96,6 +96,8 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
   return {
     overallTheme: 'Expose the city tribunal and reclaim your name.',
     premise: 'A disgraced guard must infiltrate the tribunal that framed her.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     acts: [
       {

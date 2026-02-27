@@ -14,6 +14,8 @@ function createGenerationResult(): StructureGenerationResult {
   return {
     overallTheme: 'Restore the broken kingdom',
     premise: 'A reluctant hero must leave home to save a crumbling kingdom.',
+    openingImage: 'An opening image placeholder.',
+    closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 40 },
     acts: [
       {
@@ -306,6 +308,8 @@ describe('structure-state', () => {
       return createStoryStructure({
         overallTheme: 'Epic journey',
         premise: 'A hero crosses many thresholds.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 20, targetPagesMax: 50 },
         acts: [
           {
@@ -501,6 +505,8 @@ describe('structure-state', () => {
       const multiStructure = createStoryStructure({
         overallTheme: 'Journey',
         premise: 'A hero.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 10, targetPagesMax: 30 },
         acts: [
           {

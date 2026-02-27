@@ -213,11 +213,16 @@ export function buildEscalationDirective(
     return '';
   }
 
+  const isFinalResolutionBeat =
+    activeBeat.role === 'resolution' &&
+    accumulatedStructureState.currentActIndex === structure.acts.length - 1 &&
+    accumulatedStructureState.currentBeatIndex === currentAct.beats.length - 1;
+
   const hasRoleDirective =
     activeBeat.role === 'escalation' ||
     activeBeat.role === 'turning_point' ||
     activeBeat.role === 'reflection';
-  if (!hasRoleDirective && !activeBeat.isMidpoint) {
+  if (!hasRoleDirective && !activeBeat.isMidpoint && !isFinalResolutionBeat) {
     return '';
   }
 
@@ -328,6 +333,19 @@ export function buildEscalationDirective(
     );
     lines.push(
       '- Choice intents should force the protagonist to commit under the new understanding created by the midpoint turn'
+    );
+  }
+
+  if (isFinalResolutionBeat) {
+    lines.push('=== FINAL RESOLUTION IMAGE DIRECTIVE ===');
+    lines.push(
+      `This is the final resolution beat. Plan the scene so its climactic visual lands on or clearly sets up this closing image: "${structure.closingImage}"`
+    );
+    lines.push(
+      `Ensure the closing image meaningfully mirrors or contrasts the opening image: "${structure.openingImage}".`
+    );
+    lines.push(
+      '- The final choice intents should create pathways that can all credibly converge to this ending visual.'
     );
   }
 

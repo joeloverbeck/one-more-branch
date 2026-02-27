@@ -98,6 +98,8 @@ describe('planner opening context section', () => {
       structure: {
         overallTheme: 'Truth survives only if transmitted in time.',
         premise: 'A courier must publish evidence before the station implodes.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
         acts: [

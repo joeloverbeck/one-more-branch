@@ -87,6 +87,8 @@ export interface StoryStructure {
   readonly acts: readonly StoryAct[];
   readonly overallTheme: string;
   readonly premise: string;
+  readonly openingImage: string;
+  readonly closingImage: string;
   readonly pacingBudget: PacingBudget;
   readonly generatedAt: Date;
 }
