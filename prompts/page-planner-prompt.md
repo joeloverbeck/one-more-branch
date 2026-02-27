@@ -154,6 +154,23 @@ The briefing is omitted entirely when no directive, nudge, or trajectory warning
 
 Source: `buildPacingBriefingSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
 
+## Thematic Trajectory Warning
+
+When continuation context includes thematic valence trajectory data and 3+ recent scenes trend in the same direction, the planner context includes:
+
+```text
+=== THEMATIC TRAJECTORY ===
+Recent scene valence history:
+- [{{pageId}}] {{thematicValence}}
+...
+
+WARNING: The last N scenes all trend {{THESIS_SUPPORTING|ANTITHESIS_SUPPORTING}}. Plan should pressure-test the opposing argument ({{opposing valence}}) through action and consequence to avoid thematic monotony.
+```
+
+This section is omitted when there are fewer than 3 trajectory points or when recent points are mixed instead of monotonous.
+
+Source: `buildThematicTrajectoryWarningSection()` in `src/llm/prompts/sections/planner/continuation-context.ts`
+
 ## Structural Directive
 
 When the active beat role is `escalation`, `turning_point`, or `reflection` (or when the active beat is midpoint-tagged), the continuation context includes structural directive sections (placed after the pacing briefing and before thread aging):
@@ -250,7 +267,7 @@ Source: `buildNpcRelationshipsSection()` in `src/llm/prompts/sections/planner/co
 ## Notes
 
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
-- Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
+- Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), thematic trajectory warnings, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant share the same context builders (`buildPlannerOpeningContextSection`, `buildPlannerContinuationContextSection`) but with different options. The planner uses default options (protagonist directive and guidance included). The accountant passes `{ includeProtagonistDirective: false }` to exclude protagonist-specific sections. The `PlannerContextOptions` interface in `continuation-context.ts` controls this behavior.
 - Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.
 - Decomposed character and world data are required on both opening and continuation planner contexts. Raw `characterConcept`, `worldbuilding`, and `npcs` fallbacks have been removed from planner context builders.

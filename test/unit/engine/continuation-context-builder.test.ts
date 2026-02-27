@@ -67,6 +67,7 @@ function makeAncestorContext(overrides: Partial<AncestorContext> = {}): Ancestor
     grandparentNarrative: 'Grandparent narrative text',
     ancestorSummaries: [{ pageId: parsePageId(1), summary: 'Summary of page 1' }],
     momentumTrajectory: [],
+    thematicValenceTrajectory: [],
     ...overrides,
   };
 }
@@ -119,12 +120,46 @@ describe('continuation-context-builder', () => {
       expect(result.grandparentNarrative).toBe('Grandparent narrative text');
       expect(result.ancestorSummaries).toEqual(ancestorContext.ancestorSummaries);
       expect(result.parentProtagonistAffect).toBe(parentPage.protagonistAffect);
+      expect(result.thematicValenceTrajectory).toEqual([]);
       expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
       expect(result.premisePromises).toEqual(story.premisePromises);
       expect(result.fulfilledPremisePromises).toEqual(
         parentPage.accumulatedFulfilledPremisePromises
       );
       expect(result.parentThreadPayoffAssessments).toEqual([]);
+    });
+
+    it('threads thematic valence trajectory from ancestor context', () => {
+      const story = makeStory();
+      const parentPage = createPage({
+        id: parsePageId(2),
+        narrativeText: 'You pause in the corridor.',
+        sceneSummary: 'You pause in the corridor.',
+        choices: [createChoice('Proceed'), createChoice('Retreat')],
+        isEnding: false,
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+      });
+
+      const ancestorContext = makeAncestorContext({
+        thematicValenceTrajectory: [
+          { pageId: parsePageId(1), thematicValence: 'THESIS_SUPPORTING' },
+          { pageId: parsePageId(2), thematicValence: 'ANTITHESIS_SUPPORTING' },
+        ],
+      });
+
+      const result = buildContinuationContext(
+        story,
+        parentPage,
+        'Proceed',
+        makeParentState(),
+        ancestorContext,
+        null
+      );
+
+      expect(result.thematicValenceTrajectory).toEqual(
+        ancestorContext.thematicValenceTrajectory
+      );
     });
 
     it('uses structure from version when available', () => {

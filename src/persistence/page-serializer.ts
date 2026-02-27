@@ -81,6 +81,7 @@ export function serializePage(page: Page): PageFileData {
     structureVersionId: page.structureVersionId,
     storyBible: storyBibleToFileData(page.storyBible),
     analystResult: analystResultToFileData(page.analystResult),
+    thematicValence: page.thematicValence,
     threadAges: { ...page.threadAges },
     accumulatedPromises: page.accumulatedPromises.map((p) => ({
       id: p.id,
@@ -176,6 +177,7 @@ export function deserializePage(data: PageFileData): Page {
     structureVersionId,
     storyBible: fileDataToStoryBible(data.storyBible),
     analystResult: fileDataToAnalystResult(data.analystResult),
+    thematicValence: data.thematicValence as Page['thematicValence'],
     threadAges: data.threadAges,
     accumulatedPromises: data.accumulatedPromises.map((p) => ({
       id: p.id,

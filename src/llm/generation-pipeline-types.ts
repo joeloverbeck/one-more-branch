@@ -5,6 +5,7 @@ import type {
   ObjectiveEvidenceStrength,
   PacingRecommendedAction,
   SceneMomentum,
+  ThematicCharge,
 } from './analyst-types.js';
 import type { PageWriterResult } from './writer-types.js';
 
@@ -20,6 +21,13 @@ export interface MomentumDataPoint {
 }
 
 export type MomentumTrajectory = readonly MomentumDataPoint[];
+
+export interface ThematicValenceDataPoint {
+  readonly pageId: PageId;
+  readonly thematicValence: ThematicCharge;
+}
+
+export type ThematicValenceTrajectory = readonly ThematicValenceDataPoint[];
 
 export interface ContinuationGenerationResult
   extends PageWriterResult,

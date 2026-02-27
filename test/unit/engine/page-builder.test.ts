@@ -62,6 +62,51 @@ function buildMockGenerationResult(
   };
 }
 
+function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
+  return {
+    beatConcluded: false,
+    beatResolution: '',
+    deviationDetected: false,
+    deviationReason: '',
+    invalidatedBeatIds: [],
+    narrativeSummary: '',
+    pacingIssueDetected: false,
+    pacingIssueReason: '',
+    recommendedAction: 'none',
+    sceneMomentum: 'INCREMENTAL_PROGRESS',
+    objectiveEvidenceStrength: 'NONE',
+    commitmentStrength: 'NONE',
+    structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+    entryConditionReadiness: 'NOT_READY',
+    pacingDirective: '',
+    objectiveAnchors: [],
+    anchorEvidence: [],
+    completionGateSatisfied: false,
+    completionGateFailureReason: '',
+    toneAdherent: true,
+    toneDriftDescription: '',
+    promisesDetected: [],
+    promisesResolved: [],
+    promisePayoffAssessments: [],
+    threadPayoffAssessments: [],
+    npcCoherenceAdherent: true,
+    npcCoherenceIssues: '',
+    relationshipShiftsDetected: [],
+    spineDeviationDetected: false,
+    spineDeviationReason: '',
+    spineInvalidatedElement: null,
+    alignedBeatId: null,
+    beatAlignmentConfidence: 'LOW',
+    beatAlignmentReason: '',
+    thematicCharge: 'AMBIGUOUS',
+    thematicChargeDescription: '',
+    obligatorySceneFulfilled: null,
+    premisePromiseFulfilled: null,
+    rawResponse: '',
+    ...overrides,
+  };
+}
+
 describe('page-builder', () => {
   describe('buildFirstPage', () => {
     it('creates first page with keyed accumulated state', () => {
@@ -173,6 +218,44 @@ describe('page-builder', () => {
         { id: 'inv-2', text: 'Rusty key' },
       ]);
       expect(page.characterStateChanges.removed).toEqual(['cs-1']);
+    });
+  });
+
+  describe('buildPage thematic valence', () => {
+    it('sets thematicValence from analystResult.thematicCharge', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: buildMockAnalystResult({ thematicCharge: 'ANTITHESIS_SUPPORTING' }),
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedFulfilledPremisePromises: [],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: null,
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+
+      expect(page.thematicValence).toBe('ANTITHESIS_SUPPORTING');
     });
   });
 

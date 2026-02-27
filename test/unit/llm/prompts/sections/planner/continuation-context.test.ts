@@ -82,6 +82,42 @@ describe('planner continuation context section', () => {
     expect(result).toContain('Trigger the blackout relay');
   });
 
+  it('adds thematic trajectory warning on 3+ consecutive same-valence scenes', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      thematicValenceTrajectory: [
+        { pageId: 2, thematicValence: 'THESIS_SUPPORTING' },
+        { pageId: 3, thematicValence: 'THESIS_SUPPORTING' },
+        { pageId: 4, thematicValence: 'THESIS_SUPPORTING' },
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== THEMATIC TRAJECTORY ===');
+    expect(result).toContain('WARNING: The last 3 scenes all trend THESIS_SUPPORTING.');
+    expect(result).toContain('opposing argument (ANTITHESIS_SUPPORTING)');
+  });
+
   it('adds late-act premise promise warning when promises remain unfulfilled', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

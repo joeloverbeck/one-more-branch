@@ -19,6 +19,7 @@ import type {
   AncestorSummary,
   MomentumTrajectory,
   ReconciliationFailureReason,
+  ThematicValenceTrajectory,
 } from './generation-pipeline-types.js';
 import type { StoryBible } from './lorekeeper-types.js';
 import type { PagePlan } from './planner-types.js';
@@ -71,6 +72,7 @@ export interface ContinuationContext {
   parentSceneMomentum?: SceneMomentum;
   parentObjectiveEvidenceStrength?: ObjectiveEvidenceStrength;
   momentumTrajectory?: MomentumTrajectory;
+  thematicValenceTrajectory?: ThematicValenceTrajectory;
 
   threadAges?: Readonly<Record<string, number>>;
   accumulatedPromises: readonly TrackedPromise[];
