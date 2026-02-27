@@ -25,3 +25,5 @@ export { buildSpineSection } from './spine-section.js';
 export { buildNpcAgendasSection, buildNpcRelationshipsSection } from './npc-state-sections.js';
 
 export { buildInventorySection, buildHealthSection } from './resource-state-sections.js';
+
+export { buildGenreConventionsSection } from './genre-conventions-section.js';

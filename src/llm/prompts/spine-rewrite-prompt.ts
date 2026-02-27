@@ -1,3 +1,4 @@
+import type { GenreFrame } from '../../models/concept-generator.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
@@ -7,9 +8,11 @@ import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
 export interface SpineRewriteContext {
   readonly tone: string;
+  readonly genreFrame?: GenreFrame;
   readonly currentSpine: StorySpine;
   readonly invalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want';
   readonly deviationReason: string;
@@ -43,6 +46,7 @@ export function buildSpineRewritePrompt(context: SpineRewriteContext): ChatMessa
   systemSections.push(SPINE_REWRITE_GUIDELINES);
 
   const currentSpineSection = buildSpineSection(context.currentSpine);
+  const genreConventionsSection = buildGenreConventionsSection(context.genreFrame);
 
   const invalidatedLabel =
     context.invalidatedElement === 'dramatic_question'
@@ -67,7 +71,7 @@ ${protagonistSection}
 WORLDBUILDING:
 ${worldSection}
 
-CURRENT (BROKEN) SPINE:
+${genreConventionsSection}CURRENT (BROKEN) SPINE:
 ${currentSpineSection}
 INVALIDATED ELEMENT: ${invalidatedLabel}
 REASON: ${context.deviationReason}

@@ -27,6 +27,7 @@ export function buildContinuationContext(
     tone: story.tone,
     toneFeel: story.toneFeel,
     toneAvoid: story.toneAvoid,
+    genreFrame: story.conceptSpec?.genreFrame,
     decomposedCharacters: story.decomposedCharacters!,
     decomposedWorld: story.decomposedWorld!,
     globalCanon: story.globalCanon,

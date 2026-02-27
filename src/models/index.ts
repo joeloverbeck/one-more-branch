@@ -261,7 +261,21 @@ export {
   isGenreObligationTag,
   getGenreObligationTags,
 } from './genre-obligations';
-export type { GenreObligationTagsByGenre, GenreObligationTag } from './genre-obligations';
+export type {
+  GenreObligationTagsByGenre,
+  GenreObligationTag,
+  GenreObligationEntry,
+} from './genre-obligations';
+export {
+  GENRE_CONVENTIONS_BY_GENRE,
+  isGenreConventionTag,
+  getGenreConventions,
+} from './genre-conventions';
+export type {
+  GenreConventionEntry,
+  GenreConventionsByGenre,
+  GenreConventionTag,
+} from './genre-conventions';
 
 export type {
   DirectionOfChange,

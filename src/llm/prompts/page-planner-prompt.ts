@@ -14,6 +14,7 @@ import {
 } from './sections/planner/index.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
 function buildSceneDirectionSection(direction: SelectedSceneDirection): string {
   return `\n\n=== SCENE DIRECTION (selected by player) ===
@@ -66,13 +67,14 @@ ${context.reconciliationFailureReasons
   const toneReminderLine = '';
 
   const spineSection = buildSpineSection(context.spine);
+  const genreConventionsSection = buildGenreConventionsSection(context.genreFrame);
   const sceneDirectionSection = context.selectedSceneDirection
     ? buildSceneDirectionSection(context.selectedSceneDirection)
     : '';
 
   const userPrompt = `Create a page plan for the writer model.
 
-${spineSection}${contextSection}
+${spineSection}${genreConventionsSection}${contextSection}
 ${sceneDirectionSection}${reconciliationRetrySection}
 
 ${toneReminderLine}

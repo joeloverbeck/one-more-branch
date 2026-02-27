@@ -411,11 +411,22 @@ Pressure Mechanism: {{spine.primaryAntagonisticForce.pressureMechanism}}
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
+{{#if genreFrame}}
+GENRE CONVENTIONS ({{genreFrame}} — maintain throughout):
+{{#each genreConventions}}
+- {{this.tag}}: {{this.gloss}}
+{{/each}}
+
+These conventions define the genre's atmosphere, character dynamics, and tonal expectations. They are NOT specific scenes — they are persistent creative constraints that every scene should honor.
+{{/if}}
+
 NARRATIVE TO EVALUATE:
 {{narrative}}
 ```
 
 The tone reminder is injected into the user prompt (before the narrative) in addition to the tone block in the system prompt, exploiting recency attention for tone evaluation accuracy.
+
+When `genreFrame` is present on `AnalystContext`, a **GENRE CONVENTIONS** block is injected into the user content between the spine section and the thematic kernel section via `buildGenreConventionsSection(context.genreFrame)`. This provides the analyst with genre-level atmospheric constraints to evaluate tone adherence against.
 
 ## JSON Response Shape
 

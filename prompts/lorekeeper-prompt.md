@@ -84,6 +84,15 @@ STORY SPINE (invariant narrative backbone — every scene must serve this):
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 {{/if}}
 
+{{#if genreFrame}}
+GENRE CONVENTIONS ({{genreFrame}} — maintain throughout):
+{{#each genreConventions}}
+- {{this.tag}}: {{this.gloss}}
+{{/each}}
+
+These conventions define the genre's atmosphere, character dynamics, and tonal expectations. They are NOT specific scenes — they are persistent creative constraints that every scene should honor.
+{{/if}}
+
 {{#if decomposedCharacters.length > 0}}
 CHARACTERS (structured profiles with speech fingerprints):
 {{decomposedCharacters formatted as structured profiles with SPEECH FINGERPRINT blocks; index 0 marked as PROTAGONIST}}
@@ -227,7 +236,8 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 | `accumulatedNpcAgendas` | Current NPC agendas (by NPC name): goal, leverage, fear, off-screen behavior |
 | `accumulatedNpcRelationships` | Current NPC-protagonist relationships (by NPC name): dynamic, valence, tension |
 | `activeState` | Current location, threats, constraints, threads |
-| `spine` | Story spine context (optional; injected via `buildSpineSection()` between tone block and NPC sections) |
+| `genreFrame` | Optional genre frame (from concept spec); when present, a GENRE CONVENTIONS block is injected after the spine section via `buildGenreConventionsSection()` |
+| `spine` | Story spine context (optional; injected via `buildSpineSection()` between tone block and genre conventions) |
 | `startingSituation` | Starting situation text (opening pages only; replaces narrative history fields) |
 | `ancestorSummaries` | All ancestor page summaries (continuation only) |
 | `grandparentNarrative` | Full text of 2 pages ago (continuation only, if exists) |

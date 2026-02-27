@@ -83,16 +83,23 @@ Deadline mechanism: {{conceptSpec.deadlineMechanism}}
 Each act's stakes should escalate FROM these foundations, even after the deviation.
 {{/if}}
 
-{{#if conceptSpec}}
+{{#if conceptSpec.genreFrame}}
+GENRE CONVENTIONS ({{conceptSpec.genreFrame}} — maintain throughout):
+{{#each genreConventions}}
+- {{this.tag}}: {{this.gloss}}
+{{/each}}
+
+These conventions define the genre's atmosphere, character dynamics, and tonal expectations. They are NOT specific scenes — they are persistent creative constraints that every scene should honor.
+
 GENRE OBLIGATION CONTRACT (for {{conceptSpec.genreFrame}}):
 All obligation tags:
-{{genre obligation tags}}
+{{genre obligation tags as "- tag: gloss"}}
 
 Already fulfilled in completed canon beats (must stay fulfilled):
 {{fulfilled obligation tags from completed beats, or "- (none)"}}
 
 Remaining obligation tags to cover in regenerated beats:
-{{remaining obligation tags, or "- (none)"}}
+{{remaining obligation tags as "- tag: gloss", or "- (none)"}}
 {{/if}}
 
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
@@ -244,3 +251,4 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
 - `plannedBeats` are extracted by `extractPlannedBeats()` in `src/engine/structure-rewrite-support.ts` — all beats from the structure that are not concluded and come after the deviation point, excluding the currently active beat.
 - When `conceptSpec` is present on the story, the CONCEPT STAKES section is included to ground per-act stakes in the original concept's thematic foundations. The rewrite variant adds "even after the deviation" to the escalation guidance. The `conceptSpec` is passed through via `buildRewriteContext()` in `src/engine/structure-rewrite-support.ts`.
 - The rewrite context now receives `decomposedCharacters` and `decomposedWorld` (required) instead of raw `characterConcept` and `worldbuilding`. The protagonist is formatted via `formatDecomposedCharacterForPrompt()` and the world via `formatDecomposedWorldForPrompt()`. Passed through via `buildRewriteContext()` in `src/engine/structure-rewrite-support.ts`.
+- When `conceptSpec.genreFrame` is present, **GENRE CONVENTIONS** and **GENRE OBLIGATION CONTRACT** sections are injected between the concept stakes and the canon section. Genre conventions come from `buildGenreConventionsSection()` in `src/llm/prompts/sections/shared/genre-conventions-section.ts`. Genre obligations come from `buildGenreObligationsSection()` in `src/llm/prompts/structure-prompt.ts`. Both use `- tag: gloss` format. Requirement #18 (renumbered from the addition) instructs the LLM to assign `obligatorySceneTag` on new beats and preserve it from completed beats.

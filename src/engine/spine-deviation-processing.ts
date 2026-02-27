@@ -57,6 +57,7 @@ export async function handleSpineDeviationIfDetected(
     const spineResult = await rewriteSpine(
       {
         tone: story.tone,
+        genreFrame: story.conceptSpec?.genreFrame,
         currentSpine: story.spine,
         invalidatedElement: analystResult.spineInvalidatedElement,
         deviationReason: analystResult.spineDeviationReason,

@@ -162,6 +162,7 @@ export async function processPostGeneration(
           premisePromises: story.premisePromises,
           fulfilledPremisePromises: parentPage?.accumulatedFulfilledPremisePromises ?? [],
           spine: story.spine,
+          genreFrame: story.conceptSpec?.genreFrame,
           apiKey,
           logContext,
           onGenerationStage,

@@ -1,4 +1,5 @@
 import type { CanonFact } from '../models/state/canon.js';
+import type { GenreFrame } from '../models/concept-generator.js';
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
 import type { SelectedSceneDirection } from '../models/scene-direction.js';
@@ -30,6 +31,7 @@ export interface OpeningContext {
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
+  genreFrame?: GenreFrame;
   startingSituation?: string;
   structure?: StoryStructure;
   spine?: StorySpine;
@@ -46,6 +48,7 @@ export interface ContinuationContext {
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
+  genreFrame?: GenreFrame;
   decomposedCharacters: readonly DecomposedCharacter[];
   decomposedWorld: DecomposedWorld;
   globalCanon: readonly CanonFact[];
@@ -107,6 +110,7 @@ export interface LorekeeperContext {
   readonly tone: string;
   readonly toneFeel?: readonly string[];
   readonly toneAvoid?: readonly string[];
+  readonly genreFrame?: GenreFrame;
   readonly decomposedCharacters: readonly DecomposedCharacter[];
   readonly decomposedWorld: DecomposedWorld;
   readonly globalCanon: readonly CanonFact[];

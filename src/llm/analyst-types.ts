@@ -10,6 +10,7 @@ import type {
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { DelayedConsequence } from '../models/state/delayed-consequence.js';
+import type { GenreFrame } from '../models/concept-generator.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
 import type { StorySpine } from '../models/story-spine.js';
 
@@ -113,4 +114,5 @@ export interface AnalystContext {
   activeTrackedPromises: readonly TrackedPromise[];
   accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   accumulatedNpcRelationships?: AccumulatedNpcRelationships;
+  genreFrame?: GenreFrame;
 }

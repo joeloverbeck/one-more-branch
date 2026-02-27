@@ -8,6 +8,7 @@ import type {
   StoryStructure,
   TrackedPromise,
 } from '../models';
+import type { GenreFrame } from '../models/concept-generator';
 import type { StorySpine } from '../models/story-spine';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
@@ -34,6 +35,7 @@ export interface AnalystEvaluationContext {
   readonly premisePromises: readonly string[];
   readonly fulfilledPremisePromises: readonly string[];
   readonly spine?: StorySpine;
+  readonly genreFrame?: GenreFrame;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -81,6 +83,7 @@ export async function runAnalystEvaluation(
         premisePromises: context.premisePromises,
         fulfilledPremisePromises: context.fulfilledPremisePromises,
         spine: context.spine,
+        genreFrame: context.genreFrame,
       },
       { apiKey: context.apiKey }
     );

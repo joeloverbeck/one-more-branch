@@ -4,6 +4,7 @@
  * System message = creative persona; data/schema rules go in the user message.
  */
 
+import type { GenreFrame } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 
 // Shared sections
@@ -17,6 +18,7 @@ import {
   PROTAGONIST_AFFECT,
   buildToneDirective,
 } from './sections/shared/index.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
 // Continuation-specific sections
 import {
@@ -116,6 +118,7 @@ export interface ToneParams {
   tone: string;
   toneFeel?: readonly string[];
   toneAvoid?: readonly string[];
+  genreFrame?: GenreFrame;
 }
 
 /**
@@ -128,6 +131,11 @@ export function composeCreativeSystemPrompt(toneParams?: ToneParams): string {
 
   if (toneParams) {
     sections.push(buildToneDirective(toneParams.tone, toneParams.toneFeel, toneParams.toneAvoid));
+  }
+
+  const conventionsBlock = buildGenreConventionsSection(toneParams?.genreFrame);
+  if (conventionsBlock) {
+    sections.push(conventionsBlock);
   }
 
   sections.push(CONTENT_POLICY, ...CREATIVE_SECTIONS);
