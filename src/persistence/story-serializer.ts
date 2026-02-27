@@ -205,6 +205,7 @@ export function serializeStory(story: Story): StoryFileData {
             },
             coreTraits: [...char.coreTraits],
             motivations: char.motivations,
+            thematicStance: char.thematicStance,
             protagonistRelationship: char.protagonistRelationship
               ? { ...char.protagonistRelationship }
               : null,
@@ -345,6 +346,7 @@ export function deserializeStory(data: StoryFileData): Story {
               },
               coreTraits: [...char.coreTraits],
               motivations: char.motivations,
+              thematicStance: char.thematicStance,
               protagonistRelationship: char.protagonistRelationship
                 ? { ...char.protagonistRelationship }
                 : null,

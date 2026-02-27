@@ -1,5 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  ENTITY_DECOMPOSER_CORE_PRINCIPLES,
+  ENTITY_DECOMPOSER_USER_INSTRUCTIONS,
+} from '../../../src/llm/entity-decomposer-prompt-contract';
 
 const REPO_ROOT = path.resolve(__dirname, '../../..');
 
@@ -132,5 +136,17 @@ describe('prompt documentation alignment', () => {
     expect(docContent).toContain('evaluatedKernels');
     expect(docContent).toContain('dramaticClarity');
     expect(docContent).toContain('conflictTension');
+  });
+
+  it('keeps entity decomposer core principles and instructions aligned with docs', () => {
+    const docContent = readRepoFile('prompts/entity-decomposer-prompt.md');
+
+    for (const principle of ENTITY_DECOMPOSER_CORE_PRINCIPLES) {
+      expect(docContent).toContain(principle);
+    }
+
+    for (const instruction of ENTITY_DECOMPOSER_USER_INSTRUCTIONS) {
+      expect(docContent).toContain(instruction);
+    }
   });
 });

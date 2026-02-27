@@ -40,15 +40,17 @@ DECOMPOSITION PRINCIPLES:
 
 2. TRAIT DECOMPOSITION: Extract 3-5 core personality traits as concise labels. These should be the traits that most influence behavior and dialogue.
 
-3. KNOWLEDGE BOUNDARIES: Explicitly state what each character knows and does NOT know. This prevents information leaking between characters during generation.
+3. THEMATIC STANCE: For each character, state how they position relative to the story's thematic argument/value at stake. Capture whether they reinforce, resist, complicate, or evolve against the core thesis.
 
-4. FALSE BELIEFS: Identify things each character sincerely believes that are WRONG. These are genuine misconceptions that should influence their reasoning and dialogue. A character who falsely believes the king is alive will act on that belief. Empty array if none.
+4. KNOWLEDGE BOUNDARIES: Explicitly state what each character knows and does NOT know. This prevents information leaking between characters during generation.
 
-5. SECRETS KEPT: Identify things each character knows but actively conceals from others. A character hiding their noble birth will steer conversations away from lineage. Empty array if none.
+5. FALSE BELIEFS: Identify things each character sincerely believes that are WRONG. These are genuine misconceptions that should influence their reasoning and dialogue. A character who falsely believes the king is alive will act on that belief. Empty array if none.
 
-6. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured relationship object describing their dynamic with the protagonist: valence (-5 to +5), dynamic label (mentor, rival, ally, etc.), 1-2 sentence history, current tension, and leverage. Set to null for the protagonist's own entry. This structured data feeds into the runtime relationship tracking system.
+6. SECRETS KEPT: Identify things each character knows but actively conceals from others. A character hiding their noble birth will steer conversations away from lineage. Empty array if none.
 
-7. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
+7. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured relationship object describing their dynamic with the protagonist: valence (-5 to +5), dynamic label (mentor, rival, ally, etc.), 1-2 sentence history, current tension, and leverage. Set to null for the protagonist's own entry. This structured data feeds into the runtime relationship tracking system.
+
+8. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
    Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
    Epistemic status (factType) for each fact:
    - LAW: Fundamental world truths that simply ARE (magic rules, physics, cosmology). E.g. "Iron disrupts magical fields."
@@ -58,15 +60,15 @@ DECOMPOSITION PRINCIPLES:
    - RUMOR: Unverified hearsay circulating in the world. E.g. "Tavern talk claims the duke poisoned his brother."
    - MYSTERY: Intentionally unresolved unknowns. Preserve the unknown quality. E.g. "No one knows what lies beyond the Veil."
 
-8. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
+9. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
 
-9. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
+10. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
 
-10. DECISION PATTERN: Capture how each character makes choices under pressure and uncertainty.
+11. DECISION PATTERN: Capture how each character makes choices under pressure and uncertainty.
 
-11. CORE BELIEFS: Extract 2-3 operational beliefs the character actually acts on.
+12. CORE BELIEFS: Extract 2-3 operational beliefs the character actually acts on.
 
-12. CONFLICT PRIORITY: State what wins when this character's goals conflict.
+13. CONFLICT PRIORITY: State what wins when this character's goals conflict.
 ```
 
 ### 2) User Message
@@ -175,6 +177,7 @@ INSTRUCTIONS:
 8. The protagonist's protagonistRelationship MUST be null. Each NPC MUST have a non-null protagonistRelationship describing their relationship with the protagonist
 9. For false beliefs: identify sincere misconceptions from character background and context
 10. For secrets: identify truths the character actively hides from others
+11. Every character MUST include thematicStance as one sentence about their relationship to the story's thematic argument/value at stake
 ```
 
 ## JSON Response Shape
@@ -197,6 +200,7 @@ INSTRUCTIONS:
       },
       "coreTraits": ["{{trait1}}", "{{trait2}}", "{{trait3}}"],
       "motivations": "{{what drives this character}}",
+      "thematicStance": "{{how this character aligns or conflicts with the story's thematic argument}}",
       "protagonistRelationship": {
         "valence": 3,
         "dynamic": "{{mentor|rival|ally|target|dependency|protector|manipulator|etc.}}",
@@ -225,6 +229,7 @@ INSTRUCTIONS:
 ```
 
 - `characters[0]` is always the protagonist (from CHARACTER CONCEPT); subsequent entries are NPCs in definition order.
+- `thematicStance` is required for every character and should be a concise statement linking character motivation/behavior to the story's value conflict.
 - `protagonistRelationship` is `null` for the protagonist's own entry. For NPCs, it is a structured object describing their relationship with the protagonist. This feeds into the runtime NPC relationship tracking system (see `agenda-resolver-prompt.md`).
 - `worldFacts` is an empty array when no worldbuilding is provided.
 - `domain` is a strict enum of 12 values (geography, ecology, history, society, culture, religion, governance, economy, faction, technology, magic, language); invalid values are defaulted to `'culture'` by the response transformer. The `custom` domain is no longer produced by the LLM but is still accepted when reading existing stories.

@@ -30,6 +30,7 @@ export interface DecomposedCharacterFileData {
   speechFingerprint: SpeechFingerprintFileData;
   coreTraits: string[];
   motivations: string;
+  thematicStance: string;
   protagonistRelationship?: DecomposedRelationshipFileData | null;
   knowledgeBoundaries: string;
   falseBeliefs?: string[];
