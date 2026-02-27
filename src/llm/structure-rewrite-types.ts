@@ -15,6 +15,7 @@ export interface CompletedBeat {
   readonly escalationType: string | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly string[] | null;
+  readonly setpieceSourceIndex: number | null;
   readonly resolution: string;
 }
 
@@ -29,6 +30,7 @@ export interface PlannedBeat {
   readonly escalationType: string | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly string[] | null;
+  readonly setpieceSourceIndex: number | null;
 }
 
 export interface StructureRewriteContext {

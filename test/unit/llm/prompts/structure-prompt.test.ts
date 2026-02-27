@@ -121,6 +121,34 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('targetPagesMax');
   });
 
+  it('includes setpiece traceability instructions when concept verification is provided', () => {
+    const messages = buildStructurePrompt({
+      ...baseContext,
+      conceptVerification: {
+        conceptId: 'concept_1',
+        signatureScenario: 'A harbor trial collapses into ritual violence.',
+        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+        inevitabilityStatement: 'The city cannot avoid public reckoning.',
+        loadBearingCheck: {
+          passes: true,
+          reasoning: 'Specific to setting institutions.',
+          genericCollapse: 'Would fail without tide tribunal mechanics.',
+        },
+        kernelFidelityCheck: {
+          passes: true,
+          reasoning: 'Aligned to thesis.',
+          kernelDrift: 'None.',
+        },
+        conceptIntegrityScore: 92,
+      },
+    });
+    const lastUser = getUserMessages(messages).at(-1) ?? '';
+
+    expect(lastUser).toContain('at least 4 of your beat hooks MUST trace back');
+    expect(lastUser).toContain('setpieceSourceIndex');
+    expect(lastUser).toContain('first item = 0, last item = 5');
+  });
+
   it('OUTPUT SHAPE includes premise, pacingBudget, beat name, and beat role', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';

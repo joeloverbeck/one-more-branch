@@ -124,6 +124,11 @@ export {
   createRewrittenVersionedStructure,
   isVersionedStoryStructure,
 } from './structure-version';
+export type {
+  GeneratedBeat,
+  GeneratedAct,
+  StructureGenerationResult,
+} from './structure-generation';
 
 export {
   EmotionIntensity,

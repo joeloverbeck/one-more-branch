@@ -59,6 +59,7 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
+        setpieceSourceIndex: beat.setpieceSourceIndex,
       })),
     })),
     overallTheme: structure.overallTheme,
@@ -85,6 +86,13 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         escalationType: parseEscalationType(beat.escalationType),
         uniqueScenarioHook: beat.uniqueScenarioHook ?? null,
         approachVectors: parseApproachVectors(beat.approachVectors) ?? null,
+        setpieceSourceIndex:
+          typeof beat.setpieceSourceIndex === 'number' &&
+          Number.isInteger(beat.setpieceSourceIndex) &&
+          beat.setpieceSourceIndex >= 0 &&
+          beat.setpieceSourceIndex <= 5
+            ? beat.setpieceSourceIndex
+            : null,
       })),
     })),
     overallTheme: data.overallTheme,

@@ -34,6 +34,7 @@ export interface StoryBeat {
   readonly escalationType: EscalationType | null;
   readonly uniqueScenarioHook: string | null;
   readonly approachVectors: readonly ApproachVector[] | null;
+  readonly setpieceSourceIndex: number | null;
 }
 
 export interface StoryAct {

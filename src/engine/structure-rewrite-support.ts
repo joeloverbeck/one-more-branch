@@ -47,6 +47,7 @@ export function extractCompletedBeats(
       escalationType: beat.escalationType,
       uniqueScenarioHook: beat.uniqueScenarioHook,
       approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
+      setpieceSourceIndex: beat.setpieceSourceIndex,
       resolution: progression.resolution ?? '',
     });
   }
@@ -116,6 +117,7 @@ export function extractPlannedBeats(
         escalationType: beat.escalationType,
         uniqueScenarioHook: beat.uniqueScenarioHook,
         approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
+        setpieceSourceIndex: beat.setpieceSourceIndex,
       });
     }
   }

@@ -94,6 +94,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     'escalationType',
                     'uniqueScenarioHook',
                     'approachVectors',
+                    'setpieceSourceIndex',
                   ],
                   properties: {
                     name: { type: 'string' },
@@ -149,6 +150,18 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                           'SELF_EXPRESSION',
                         ],
                       },
+                    },
+                    setpieceSourceIndex: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: 0,
+                          maximum: 5,
+                        },
+                        { type: 'null' },
+                      ],
+                      description:
+                        'Index of concept verification setpiece (0-5) this beat traces to; null when no setpiece mapping is used.',
                     },
                   },
                 },

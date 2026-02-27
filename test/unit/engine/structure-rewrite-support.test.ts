@@ -37,6 +37,7 @@ function createGenerationResult(): StructureGenerationResult {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             name: 'Choose departure',
@@ -46,6 +47,7 @@ function createGenerationResult(): StructureGenerationResult {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -63,6 +65,7 @@ function createGenerationResult(): StructureGenerationResult {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -114,6 +117,7 @@ describe('structure-rewrite-support', () => {
           escalationType: null,
           uniqueScenarioHook: null,
           approachVectors: null,
+            setpieceSourceIndex: null,
           resolution: 'Heard the warning.',
         },
         {
@@ -127,6 +131,7 @@ describe('structure-rewrite-support', () => {
           escalationType: null,
           uniqueScenarioHook: null,
           approachVectors: null,
+            setpieceSourceIndex: null,
           resolution: 'Left home.',
         },
         {
@@ -140,6 +145,7 @@ describe('structure-rewrite-support', () => {
           escalationType: null,
           uniqueScenarioHook: null,
           approachVectors: null,
+            setpieceSourceIndex: null,
           resolution: 'Recovered from loss.',
         },
       ]);
@@ -237,6 +243,7 @@ describe('structure-rewrite-support', () => {
           escalationType: null,
           uniqueScenarioHook: null,
           approachVectors: null,
+            setpieceSourceIndex: null,
         },
       ]);
     });
@@ -375,6 +382,7 @@ describe('structure-rewrite-support', () => {
           escalationType: null,
           uniqueScenarioHook: null,
           approachVectors: null,
+            setpieceSourceIndex: null,
           resolution: 'Accepted the call.',
         },
       ]);
@@ -391,6 +399,7 @@ describe('structure-rewrite-support', () => {
           escalationType: null,
           uniqueScenarioHook: null,
           approachVectors: null,
+            setpieceSourceIndex: null,
         },
       ]);
     });
@@ -588,6 +597,7 @@ describe('structure-rewrite-support', () => {
                 escalationType: null,
                 uniqueScenarioHook: null,
                 approachVectors: null,
+            setpieceSourceIndex: null,
               },
             ],
           },

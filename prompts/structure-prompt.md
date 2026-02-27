@@ -95,7 +95,10 @@ CONCEPT-UNIQUE SETPIECE BANK (from upstream verification — use as beat seeds):
 
 CONSTRAINT: When writing uniqueScenarioHook for escalation and turning_point beats,
 draw from or build upon these verified setpieces. You may adapt, combine, or extend
-them, but at least 3 of your beat hooks should trace back to a setpiece above.
+them, but at least 4 of your beat hooks MUST trace back to a setpiece above.
+When a beat traces to a setpiece, set `setpieceSourceIndex` to that setpiece's zero-based
+index in this list (first item = 0, last item = 5). If a beat does not trace to a
+setpiece, set `setpieceSourceIndex` to null.
 {{/if}}
 
 {{#if storyKernel}}
@@ -183,6 +186,7 @@ OUTPUT SHAPE:
       - escalationType: one of the 9 escalation types above, or null for setup/resolution beats
       - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/resolution beats
       - approachVectors: 2-3 approach vector enums, or null for setup/resolution beats
+      - setpieceSourceIndex: integer 0-5 when the beat traces to a verified setpiece, else null
 ```
 
 ## JSON Response Shape
@@ -218,7 +222,8 @@ OUTPUT SHAPE:
           "role": "{{setup|escalation|turning_point|resolution}}",
           "escalationType": "{{THREAT_ESCALATION|REVELATION_SHIFT|REVERSAL_OF_FORTUNE|BETRAYAL_OR_ALLIANCE_SHIFT|RESOURCE_OR_CAPABILITY_LOSS|MORAL_OR_ETHICAL_PRESSURE|TEMPORAL_OR_ENVIRONMENTAL_PRESSURE|COMPLICATION_CASCADE|COMPETENCE_DEMAND_SPIKE|null}}",
           "uniqueScenarioHook": "{{story-specific hook sentence|null}}",
-          "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|STEALTH_SUBTERFUGE|ANALYTICAL_REASONING|CAREFUL_OBSERVATION|INTUITIVE_LEAP|PERSUASION_INFLUENCE|EMPATHIC_CONNECTION|ENDURANCE_RESILIENCE|SELF_EXPRESSION}}"]
+          "approachVectors": ["{{DIRECT_FORCE|SWIFT_ACTION|STEALTH_SUBTERFUGE|ANALYTICAL_REASONING|CAREFUL_OBSERVATION|INTUITIVE_LEAP|PERSUASION_INFLUENCE|EMPATHIC_CONNECTION|ENDURANCE_RESILIENCE|SELF_EXPRESSION}}"],
+          "setpieceSourceIndex": "{{0|1|2|3|4|5|null}}"
         }
       ]
     }
@@ -230,7 +235,7 @@ OUTPUT SHAPE:
 - The structure generator receives decomposed character profiles and world facts (from the entity decomposer) plus the story spine. Raw worldbuilding and NPC fallbacks have been removed; decomposed data is required on StructureContext.
 - `storyKernel` is optional on `StructureContext`. When present, its `directionOfChange` drives Act 3 crisis guidance (see below).
 - `storyKernel` is optional on `StructureContext`. When present, the prompt now includes a THEMATIC KERNEL block (dramatic thesis, antithesis, thematic question) and uses `directionOfChange` to drive Act 3 crisis guidance (see below).
-- `conceptVerification` is optional on `StructureContext`. When present and `escalatingSetpieces` is non-empty, a CONCEPT-UNIQUE SETPIECE BANK section is included with numbered setpieces and a constraint that at least 3 `uniqueScenarioHook` values should trace back to a setpiece.
+- `conceptVerification` is optional on `StructureContext`. When present and `escalatingSetpieces` is non-empty, a CONCEPT-UNIQUE SETPIECE BANK section is included with numbered setpieces and a constraint that at least 4 `uniqueScenarioHook` values should trace back to a setpiece, with `setpieceSourceIndex` recording the source mapping.
 
 ## Directional Guidance (Act 3 Crisis)
 

@@ -94,6 +94,13 @@ describe('structure-factory', () => {
       expect(result.acts[0]?.beats[1]?.approachVectors).toBeNull();
     });
 
+    it('sets setpieceSourceIndex to null when not provided', () => {
+      const result = createStoryStructure(createGenerationResult());
+
+      expect(result.acts[0]?.beats[0]?.setpieceSourceIndex).toBeNull();
+      expect(result.acts[0]?.beats[1]?.setpieceSourceIndex).toBeNull();
+    });
+
     it('parses valid approachVectors from generation result', () => {
       const genResult = createGenerationResult();
       genResult.acts[1]!.beats[0]!.approachVectors = [
@@ -121,6 +128,22 @@ describe('structure-factory', () => {
         'DIRECT_FORCE',
         'STEALTH_SUBTERFUGE',
       ]);
+    });
+
+    it('maps valid setpieceSourceIndex values', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[1]!.beats[0]!.setpieceSourceIndex = 4;
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[1]?.beats[0]?.setpieceSourceIndex).toBe(4);
+    });
+
+    it('coerces invalid setpieceSourceIndex to null', () => {
+      const genResult = createGenerationResult();
+      genResult.acts[1]!.beats[0]!.setpieceSourceIndex = 99;
+      const result = createStoryStructure(genResult);
+
+      expect(result.acts[1]?.beats[0]?.setpieceSourceIndex).toBeNull();
     });
   });
 

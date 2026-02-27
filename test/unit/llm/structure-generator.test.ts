@@ -38,6 +38,7 @@ interface StructurePayload {
       escalationType?: string | null;
       uniqueScenarioHook?: string | null;
       approachVectors?: string[] | null;
+      setpieceSourceIndex?: number | null;
     }>;
   }>;
 }
@@ -63,6 +64,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
           {
             name: 'Archive theft',
@@ -72,6 +74,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: 0,
           },
         ],
       },
@@ -89,6 +92,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: 1,
           },
           {
             name: 'Rigged hearing',
@@ -98,6 +102,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: 2,
           },
         ],
       },
@@ -115,6 +120,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: 3,
           },
           {
             name: 'Tribunal reckoning',
@@ -124,6 +130,7 @@ function createValidStructurePayload(): StructurePayload {
             escalationType: null,
             uniqueScenarioHook: null,
             approachVectors: null,
+            setpieceSourceIndex: null,
           },
         ],
       },
@@ -179,6 +186,7 @@ describe('structure-generator', () => {
     jest.useFakeTimers();
     fetchMock.mockReset();
     mockLogPrompt.mockReset();
+    mockLogger.warn.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
 
@@ -593,5 +601,53 @@ describe('structure-generator', () => {
         expect(typeof beat.role).toBe('string');
       }
     }
+  });
+
+  it('logs warning when concept verification exists and fewer than 4 unique setpieces are traced', async () => {
+    const payload = createValidStructurePayload();
+    payload.acts[2]!.beats[0]!.setpieceSourceIndex = 2;
+    payload.acts[2]!.beats[1]!.setpieceSourceIndex = null;
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+
+    await generateStoryStructure(
+      {
+        ...context,
+        conceptVerification: {
+          conceptId: 'concept_1',
+          signatureScenario: 'A trial begins in the flooded docks.',
+          escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
+          inevitabilityStatement: 'Escalation is unavoidable.',
+          loadBearingCheck: {
+            passes: true,
+            reasoning: 'Grounded in world constraints.',
+            genericCollapse: 'Cannot be detached from harbor institutions.',
+          },
+          kernelFidelityCheck: {
+            passes: true,
+            reasoning: 'Aligned with thematic direction.',
+            kernelDrift: 'None.',
+          },
+          conceptIntegrityScore: 90,
+        },
+      },
+      'test-api-key',
+      { promptOptions: {} }
+    );
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Structure setpiece tracing below target: 3/4 unique setpieces mapped'
+    );
+  });
+
+  it('does not log setpiece warning when concept verification is absent', async () => {
+    const payload = createValidStructurePayload();
+    payload.acts[1]!.beats[0]!.setpieceSourceIndex = 0;
+    payload.acts[1]!.beats[1]!.setpieceSourceIndex = null;
+    payload.acts[2]!.beats[0]!.setpieceSourceIndex = null;
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+
+    await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
+
+    expect(mockLogger.warn).not.toHaveBeenCalled();
   });
 });
