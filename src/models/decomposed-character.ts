@@ -23,6 +23,7 @@ export interface DecomposedCharacter {
   readonly speechFingerprint: SpeechFingerprint;
   readonly coreTraits: readonly string[];
   readonly motivations: string;
+  readonly thematicStance: string;
   readonly protagonistRelationship: DecomposedRelationship | null;
   readonly knowledgeBoundaries: string;
   readonly falseBeliefs?: readonly string[];
@@ -48,6 +49,7 @@ export function formatDecomposedCharacterForPrompt(
   lines.push(
     `Core Traits: ${char.coreTraits.join(', ')}`,
     `Motivations: ${char.motivations}`,
+    `Thematic Stance: ${char.thematicStance}`,
     `Appearance: ${char.appearance}`
   );
 

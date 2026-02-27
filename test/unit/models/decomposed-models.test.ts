@@ -26,6 +26,7 @@ describe('formatDecomposedCharacterForPrompt', () => {
       },
       coreTraits: ['stoic', 'loyal'],
       motivations: 'Seeks redemption',
+      thematicStance: 'Believes duty requires sacrifice, even when mercy is costly.',
       protagonistRelationship: {
         valence: 2,
         dynamic: 'former subordinate',
@@ -48,6 +49,9 @@ describe('formatDecomposedCharacterForPrompt', () => {
     expect(result).toContain('CHARACTER: Kael');
     expect(result).toContain('Core Traits: stoic, loyal');
     expect(result).toContain('Motivations: Seeks redemption');
+    expect(result).toContain(
+      'Thematic Stance: Believes duty requires sacrifice, even when mercy is costly.'
+    );
   });
 
   it('adds PROTAGONIST label when requested', () => {

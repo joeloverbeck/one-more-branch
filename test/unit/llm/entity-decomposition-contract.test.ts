@@ -8,6 +8,10 @@ import {
   SPEECH_REQUIRED_FIELDS,
   SPEECH_STRING_FIELDS,
 } from '../../../src/llm/entity-decomposition-contract';
+import {
+  ENTITY_DECOMPOSER_CORE_PRINCIPLES,
+  ENTITY_DECOMPOSER_USER_INSTRUCTIONS,
+} from '../../../src/llm/entity-decomposer-prompt-contract';
 import type { EntityDecomposerContext } from '../../../src/llm/entity-decomposer-types';
 import { buildEntityDecomposerPrompt } from '../../../src/llm/prompts/entity-decomposer-prompt';
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../src/llm/schemas/entity-decomposer-schema';
@@ -59,6 +63,7 @@ describe('entity-decomposition-contract alignment', () => {
   it('projects contract guidance into the system prompt', () => {
     const prompt = buildEntityDecomposerPrompt(buildContext());
     const system = prompt[0]?.content ?? '';
+    const user = prompt[1]?.content ?? '';
 
     for (const bullet of SPEECH_EXTRACTION_BULLETS) {
       expect(system).toContain(bullet);
@@ -66,6 +71,14 @@ describe('entity-decomposition-contract alignment', () => {
 
     for (const principle of AGENCY_PRINCIPLES) {
       expect(system).toContain(principle);
+    }
+
+    for (const principle of ENTITY_DECOMPOSER_CORE_PRINCIPLES) {
+      expect(system).toContain(principle);
+    }
+
+    for (const instruction of ENTITY_DECOMPOSER_USER_INSTRUCTIONS) {
+      expect(user).toContain(instruction);
     }
   });
 });

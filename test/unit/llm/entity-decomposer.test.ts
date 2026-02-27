@@ -40,6 +40,7 @@ interface CharacterPayload {
   };
   coreTraits: string[];
   motivations: string;
+  thematicStance: string;
   relationships: string[];
   knowledgeBoundaries: string;
   appearance: string;
@@ -75,6 +76,8 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
         },
         coreTraits: ['stoic', 'loyal', 'haunted'],
         motivations: 'Seeks redemption for a betrayal that cost lives',
+        thematicStance:
+          'Argues that duty without compassion becomes tyranny, but still defaults to order.',
         relationships: ['Former commander of the Iron Guard', 'Distrusts the tribunal'],
         knowledgeBoundaries: 'Knows military tactics but ignorant of court politics',
         appearance: 'Tall, scarred face, missing two fingers on left hand',
@@ -102,6 +105,7 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
         },
         coreTraits: ['cunning', 'theatrical', 'compassionate'],
         motivations: 'Protect her travelling troupe from the war',
+        thematicStance: 'Treats truth as performative and tests whether survival justifies deception.',
         relationships: ['Romantic tension with Kael', 'Secretly works for the resistance'],
         knowledgeBoundaries: 'Knows underground networks but not military strategy',
         appearance: 'Dark curly hair, colorful scarves, bright eyes',
@@ -211,6 +215,7 @@ describe('decomposeEntities', () => {
     expect(protagonist.speechFingerprint.discourseMarkers).toContain('Look,');
     expect(protagonist.speechFingerprint.registerShifts).toContain('public');
     expect(protagonist.coreTraits).toEqual(['stoic', 'loyal', 'haunted']);
+    expect(protagonist.thematicStance).toContain('duty without compassion');
     expect(protagonist.decisionPattern).toContain('decisively');
     expect(protagonist.coreBeliefs).toContain('Promises outlive people');
     expect(protagonist.conflictPriority).toContain('civilians');
@@ -371,6 +376,7 @@ describe('decomposeEntities', () => {
     speech['discourseMarkers'] = { bad: true };
     speech['registerShifts'] = false;
     firstCharacter['decisionPattern'] = ['invalid'];
+    firstCharacter['thematicStance'] = ['invalid'];
     firstCharacter['coreBeliefs'] = 'invalid';
     firstCharacter['conflictPriority'] = { nope: true };
 
@@ -384,6 +390,7 @@ describe('decomposeEntities', () => {
     expect(parsed.speechFingerprint.discourseMarkers).toEqual([]);
     expect(parsed.speechFingerprint.registerShifts).toBe('');
     expect(parsed.decisionPattern).toBe('');
+    expect(parsed.thematicStance).toBe('');
     expect(parsed.coreBeliefs).toEqual([]);
     expect(parsed.conflictPriority).toBe('');
   });

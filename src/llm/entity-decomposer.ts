@@ -164,6 +164,7 @@ function parseCharacter(
     speechFingerprint,
     coreTraits: character.coreTraits as string[],
     motivations: character.motivations as string,
+    thematicStance: character.thematicStance as string,
     protagonistRelationship: parseProtagonistRelationship(data['protagonistRelationship']),
     knowledgeBoundaries: character.knowledgeBoundaries as string,
     falseBeliefs: character.falseBeliefs as string[],

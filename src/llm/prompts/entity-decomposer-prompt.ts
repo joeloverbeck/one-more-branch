@@ -4,6 +4,10 @@ import type { StoryKernel } from '../../models/story-kernel.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { AGENCY_PRINCIPLES, SPEECH_EXTRACTION_BULLETS } from '../entity-decomposition-contract.js';
+import {
+  ENTITY_DECOMPOSER_CORE_PRINCIPLES,
+  ENTITY_DECOMPOSER_USER_INSTRUCTIONS,
+} from '../entity-decomposer-prompt-contract.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { EntityDecomposerContext } from '../entity-decomposer-types.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
@@ -25,15 +29,7 @@ DECOMPOSITION PRINCIPLES:
 1. SPEECH FINGERPRINT EXTRACTION: This is the MOST IMPORTANT output. Each character must be identifiable by voice alone without dialogue attribution. Extract or infer:
 ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
-2. TRAIT DECOMPOSITION: Extract 3-5 core personality traits as concise labels. These should be the traits that most influence behavior and dialogue.
-
-3. KNOWLEDGE BOUNDARIES: Explicitly state what each character knows and does NOT know. This prevents information leaking between characters during generation.
-
-4. FALSE BELIEFS: Identify things each character sincerely believes that are WRONG. These are genuine misconceptions that should influence their reasoning and dialogue. A character who falsely believes the king is alive will act on that belief. Empty array if none.
-
-5. SECRETS KEPT: Identify things each character knows but actively conceals from others. A character hiding their noble birth will steer conversations away from lineage. Empty array if none.
-
-6. PROTAGONIST RELATIONSHIP: For each NPC, produce a structured protagonistRelationship object describing the NPC's relationship WITH THE PROTAGONIST ONLY. Include valence (-5 hostile to +5 devoted), a dynamic label (mentor, rival, ally, etc.), brief history, current tension, and leverage. The protagonist's own entry MUST have protagonistRelationship: null.
+${formatNumbered(2, ENTITY_DECOMPOSER_CORE_PRINCIPLES.slice(0, 6))}
 
 7. WORLDBUILDING ATOMIZATION: Break worldbuilding prose into atomic facts with domain tags, scope annotations, and epistemic status (factType). Each fact should be a single, self-contained proposition.
    Available domains: geography (terrain, locations, climate), ecology (flora, fauna, agriculture), history (past events, eras), society (social structure, class, family), culture (customs, traditions, arts, daily life, education), religion (faiths, mythology, cosmology), governance (government, law, politics, military), economy (commerce, professions, labor, wealth), faction (organizations, guilds, alliances), technology (inventions, infrastructure, medicine), magic (supernatural systems, spells), language (languages, dialects, scripts).
@@ -45,11 +41,9 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
    - RUMOR: Unverified hearsay circulating in the world. E.g. "Tavern talk claims the duke poisoned his brother."
    - MYSTERY: Intentionally unresolved unknowns. Preserve the unknown quality. E.g. "No one knows what lies beyond the Veil."
 
-8. PRESERVE NUANCE: Do not flatten complex characters into stereotypes. If the description contains contradictions or complexity, preserve that in the decomposition.
+${formatNumbered(8, ENTITY_DECOMPOSER_CORE_PRINCIPLES.slice(6))}
 
-9. INFER MISSING DETAILS: If the raw description implies speech patterns but doesn't state them explicitly, INFER them from the character's background, personality, and social context. A grizzled sailor speaks differently from a court diplomat.
-
-${formatNumbered(10, AGENCY_PRINCIPLES)}`;
+${formatNumbered(11, AGENCY_PRINCIPLES)}`;
 
 function buildSpineContextSection(spine?: StorySpine): string {
   if (!spine) {
@@ -178,16 +172,7 @@ CHARACTER CONCEPT (protagonist):
 ${context.characterConcept}${npcsSection}${worldSection}${toneSection}${spineSection}${conceptSection}${kernelSection}${situationSection}
 
 INSTRUCTIONS:
-1. The FIRST character in the output array MUST be the protagonist (from CHARACTER CONCEPT)
-2. Remaining characters follow in NPC definition order
-3. For speech fingerprints: if the description explicitly describes how someone talks, use that. If not, INFER speech patterns from their personality, background, social class, and the story's tone/genre
-4. For worldbuilding facts: decompose into atomic propositions. If no worldbuilding is provided, return an empty worldFacts array
-5. Every character MUST have a distinct speech fingerprint - no two characters should sound alike
-6. For decision patterns and core beliefs: if not explicit, infer from behavior, background, and relationship dynamics
-7. Core beliefs should read like statements the character would actually think or say
-8. The protagonist's protagonistRelationship MUST be null. Each NPC MUST have a non-null protagonistRelationship describing their relationship with the protagonist
-9. For false beliefs: identify sincere misconceptions from character background and context
-10. For secrets: identify truths the character actively hides from others`;
+${formatNumbered(1, ENTITY_DECOMPOSER_USER_INSTRUCTIONS)}`;
 
   return [
     { role: 'system', content: ENTITY_DECOMPOSER_SYSTEM_PROMPT },

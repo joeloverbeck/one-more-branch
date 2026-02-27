@@ -67,6 +67,7 @@ function buildDecomposedCharacter(): DecomposedCharacter {
     },
     coreTraits: ['wise', 'patient'],
     motivations: 'Protect Middle Earth',
+    thematicStance: 'Believes mercy must restrain power, even in existential war.',
     protagonistRelationship: {
       valence: 3,
       dynamic: 'mentor',
@@ -211,6 +212,7 @@ describe('story-serializer', () => {
       const roundTripped = result.decomposedCharacters![0];
       expect(roundTripped.name).toBe(char.name);
       expect(roundTripped.speechFingerprint.catchphrases).toEqual([...char.speechFingerprint.catchphrases]);
+      expect(roundTripped.thematicStance).toBe(char.thematicStance);
       expect(roundTripped.protagonistRelationship).toEqual(char.protagonistRelationship);
       expect(roundTripped.falseBeliefs).toEqual([...char.falseBeliefs!]);
       expect(roundTripped.secretsKept).toEqual([...char.secretsKept!]);

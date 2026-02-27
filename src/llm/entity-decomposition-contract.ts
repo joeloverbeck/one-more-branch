@@ -97,6 +97,12 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
     type: 'string',
     description: 'What drives this character. 1-2 sentences.',
   },
+  thematicStance: {
+    type: 'string',
+    description:
+      'How this character positions relative to the story thematic argument/value at stake. ' +
+      '1 sentence expressing support, tension, contradiction, or transformation potential.',
+  },
   protagonistRelationship: {
     type: 'nullable_object',
     description:
@@ -154,6 +160,7 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
   'name',
   'coreTraits',
   'motivations',
+  'thematicStance',
   'protagonistRelationship',
   'knowledgeBoundaries',
   'appearance',
@@ -184,7 +191,14 @@ export const CHARACTER_STRING_FIELDS: ReadonlyArray<
     DecomposedCharacter,
     'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
   >
-> = ['motivations', 'knowledgeBoundaries', 'appearance', 'decisionPattern', 'conflictPriority'];
+> = [
+  'motivations',
+  'thematicStance',
+  'knowledgeBoundaries',
+  'appearance',
+  'decisionPattern',
+  'conflictPriority',
+];
 
 export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
   keyof Omit<
