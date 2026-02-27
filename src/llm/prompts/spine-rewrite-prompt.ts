@@ -1,3 +1,4 @@
+import type { GenreFrame } from '../../models/concept-generator.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
@@ -10,6 +11,7 @@ import { buildSpineSection } from './sections/shared/spine-section.js';
 
 export interface SpineRewriteContext {
   readonly tone: string;
+  readonly genreFrame?: GenreFrame;
   readonly currentSpine: StorySpine;
   readonly invalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want';
   readonly deviationReason: string;
