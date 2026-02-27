@@ -21,10 +21,42 @@
       <% } else { %>
       <p class="logs-count"><%= entries.length %> log entries</p>
 
+      <% 
+      function classifyLogEntry(entry) {
+        const systemContent = entry.messages && entry.messages[0] && typeof entry.messages[0].content === 'string'
+          ? entry.messages[0].content
+          : '';
+        const userContent = entry.messages && entry.messages[1] && typeof entry.messages[1].content === 'string'
+          ? entry.messages[1].content
+          : '';
+
+        if (entry.promptType === 'kernelEvaluator') {
+          const isDeep = systemContent.includes('DEEP EVALUATION RULES') ||
+            userContent.includes('Deep-evaluate this full kernel set selected in code');
+          if (isDeep) {
+            return {
+              typeClass: 'kernel-evaluator-deep',
+              label: 'kernelEvaluator (Deep Evaluation)',
+            };
+          }
+          return {
+            typeClass: 'kernel-evaluator-scoring',
+            label: 'kernelEvaluator (Scoring)',
+          };
+        }
+
+        return {
+          typeClass: entry.promptType,
+          label: entry.promptType,
+        };
+      }
+      %>
+
       <% entries.forEach((entry, i) => { %>
-      <details class="log-entry log-type-<%= entry.promptType %>">
+      <% const logDisplay = classifyLogEntry(entry); %>
+      <details class="log-entry log-type-<%= logDisplay.typeClass %>">
         <summary>
-          <strong><%= entry.promptType %></strong>
+          <strong><%= logDisplay.label %></strong>
           <span class="log-meta">
             <%= new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) %>
             &middot; <%= entry.messageCount %> messages
