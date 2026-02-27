@@ -2,6 +2,7 @@ import type { AnalystContext } from '../analyst-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildAnalystStructureEvaluation } from './continuation/story-structure-section.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
+import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const ANALYST_ROLE_INTRO = `You are a story structure analyst for interactive fiction. Your role is to evaluate a narrative passage against a planned story structure and determine:
@@ -328,8 +329,9 @@ export function buildAnalystPrompt(context: AnalystContext): ChatMessage[] {
   const thematicKernelSection = buildThematicKernelSection(context);
 
   const spineSection = buildSpineSection(context.spine);
+  const genreConventionsSection = buildGenreConventionsSection(context.genreFrame);
 
-  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${obligatorySceneSection}${delayedConsequencesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
+  const userContent = `${structureEvaluation}${toneReminder}${spineSection}${genreConventionsSection}${thematicKernelSection}${activePromisesSection}${premisePromisesSection}${obligatorySceneSection}${delayedConsequencesSection}${npcAgendasSection}${npcRelationshipsSection}\nNARRATIVE TO EVALUATE:\n${context.narrative}`;
 
   const systemPrompt = buildAnalystSystemPrompt(
     context.tone,
