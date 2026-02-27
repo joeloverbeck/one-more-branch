@@ -78,6 +78,10 @@ export type {
   PromisePayoffAssessment,
 } from './keyed-entry.js';
 
+// Delayed consequence types
+export type { DelayedConsequence } from './delayed-consequence.js';
+export { isDelayedConsequence } from './delayed-consequence.js';
+
 // Active state
 export {
   ActiveState,
