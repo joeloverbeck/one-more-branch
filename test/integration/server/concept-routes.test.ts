@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 
 jest.mock('@/llm/concept-ideator', () => ({
   generateConceptIdeas: jest.fn(),
+  generateConceptIdeation: jest.fn(),
+  generateConceptDevelopment: jest.fn(),
 }));
 
 jest.mock('@/llm/concept-evaluator', () => ({
@@ -32,7 +34,7 @@ jest.mock('@/persistence/kernel-repository', () => ({
 
 import { LLMError } from '@/llm/llm-client-types';
 import { evaluateConcepts } from '@/llm/concept-evaluator';
-import { generateConceptIdeas } from '@/llm/concept-ideator';
+import { generateConceptIdeation, generateConceptDevelopment } from '@/llm/concept-ideator';
 import { stressTestConcept } from '@/llm/concept-stress-tester';
 import { verifyConcepts } from '@/llm/concept-verifier';
 import { conceptRoutes } from '@/server/routes/concepts';
@@ -52,6 +54,8 @@ import {
   createConceptStressTestFixture,
   createEvaluatedConceptFixture,
   createConceptVerificationFixture,
+  createConceptSeedFixture,
+  createConceptCharacterWorldFixture,
 } from '../../fixtures/concept-generator';
 
 type RouteLayer = {
@@ -85,8 +89,11 @@ function flushPromises(): Promise<void> {
 }
 
 describe('Concept Route Integration', () => {
-  const mockedGenerateConceptIdeas = generateConceptIdeas as jest.MockedFunction<
-    typeof generateConceptIdeas
+  const mockedGenerateConceptIdeation = generateConceptIdeation as jest.MockedFunction<
+    typeof generateConceptIdeation
+  >;
+  const mockedGenerateConceptDevelopment = generateConceptDevelopment as jest.MockedFunction<
+    typeof generateConceptDevelopment
   >;
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
@@ -220,35 +227,17 @@ describe('Concept Route Integration', () => {
     expect(viewModel.genreGroups).toEqual([]);
   });
 
-  it('POST /api/generate delegates through service and returns evaluated concepts', async () => {
-    mockedGenerateConceptIdeas.mockResolvedValue({
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
-      rawResponse: 'raw-ideas',
-    });
-    const evaluatedConcepts = [
-      createEvaluatedConceptFixture(1),
-      createEvaluatedConceptFixture(2),
-      createEvaluatedConceptFixture(3),
-    ];
-    mockedEvaluateConcepts.mockResolvedValue({
-      scoredConcepts: Array.from({ length: 6 }, (_, index) => createScoredConceptFixture(index + 1)),
-      evaluatedConcepts,
-      rawResponse: 'raw-eval',
-    });
-    const verifications = evaluatedConcepts.map((_, i) => createConceptVerificationFixture(i + 1));
-    mockedVerifyConcepts.mockResolvedValue({
-      verifications,
-      rawResponse: 'raw-verify',
-    });
+  it('POST /api/generate/ideate returns seeds and characterWorlds', async () => {
+    const seeds = Array.from({ length: 6 }, (_, i) => createConceptSeedFixture(i + 1));
+    const characterWorlds = Array.from({ length: 6 }, (_, i) => createConceptCharacterWorldFixture(i + 1));
+    mockedGenerateConceptIdeation.mockResolvedValue({ seeds, characterWorlds });
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
     const progressStartSpy = jest.spyOn(generationProgressService, 'start');
-    const progressMarkStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
-    const progressMarkCompletedSpy = jest.spyOn(generationProgressService, 'markStageCompleted');
     const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
 
-    void getRouteHandler('post', '/api/generate')(
+    void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
           genreVibes: '  dark fantasy  ',
@@ -262,43 +251,15 @@ describe('Concept Route Integration', () => {
     );
     await flushPromises();
 
-    expect(mockedGenerateConceptIdeas).toHaveBeenCalledWith(
-      {
-        genreVibes: 'dark fantasy',
-        moodKeywords: 'tense',
-        contentPreferences: undefined,
-        kernel: {
-          dramaticThesis: 'Control destroys trust',
-          valueAtStake: 'Trust',
-          opposingForce: 'Fear of uncertainty',
-          directionOfChange: 'IRONIC',
-          thematicQuestion: 'Can safety exist without control?',
-        antithesis: 'Counter-argument challenges the thesis.',
-        },
-      },
-      'valid-key-12345',
-    );
-    expect(mockedEvaluateConcepts).toHaveBeenCalled();
+    expect(mockedGenerateConceptIdeation).toHaveBeenCalled();
     expect(progressStartSpy).toHaveBeenCalledWith('route-progress-1', 'concept-generation');
-    expect(progressMarkStartedSpy).toHaveBeenCalledWith(
-      'route-progress-1',
-      'SEEDING_CONCEPTS',
-      1,
-    );
-    expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
-      'route-progress-1',
-      'GENERATING_SCENARIOS',
-      1,
-      undefined,
-    );
     expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-1');
-    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
     expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts, verifications });
+    expect(json).toHaveBeenCalledWith({ success: true, seeds, characterWorlds });
   });
 
-  it('POST /api/generate maps stage failures to structured LLM errors', async () => {
-    mockedGenerateConceptIdeas.mockRejectedValue(
+  it('POST /api/generate/ideate maps LLM errors to structured error responses', async () => {
+    mockedGenerateConceptIdeation.mockRejectedValue(
       new LLMError('Rate limit exceeded', 'HTTP_429', true, { httpStatus: 429 }),
     );
 
@@ -306,7 +267,7 @@ describe('Concept Route Integration', () => {
     const json = jest.fn().mockReturnThis();
     const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
 
-    void getRouteHandler('post', '/api/generate')(
+    void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
           genreVibes: 'dark fantasy',
@@ -334,12 +295,51 @@ describe('Concept Route Integration', () => {
     );
   });
 
-  it('POST /api/generate persists ideated concepts when evaluation fails', async () => {
-    const ideatedConcepts = Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1));
-    mockedGenerateConceptIdeas.mockResolvedValue({
-      concepts: ideatedConcepts,
-      rawResponse: 'raw-ideas',
+  it('POST /api/generate/develop delegates through service and returns evaluated concepts', async () => {
+    const seeds = Array.from({ length: 3 }, (_, i) => createConceptSeedFixture(i + 1));
+    const characterWorlds = Array.from({ length: 3 }, (_, i) => createConceptCharacterWorldFixture(i + 1));
+    const concepts = Array.from({ length: 3 }, (_, i) => createConceptSpecFixture(i + 1));
+    mockedGenerateConceptDevelopment.mockResolvedValue({ concepts, rawResponse: 'raw-dev' });
+    const evaluatedConcepts = [
+      createEvaluatedConceptFixture(1),
+      createEvaluatedConceptFixture(2),
+      createEvaluatedConceptFixture(3),
+    ];
+    mockedEvaluateConcepts.mockResolvedValue({
+      scoredConcepts: Array.from({ length: 3 }, (_, i) => createScoredConceptFixture(i + 1)),
+      evaluatedConcepts,
+      rawResponse: 'raw-eval',
     });
+    const verifications = evaluatedConcepts.map((_, i) => createConceptVerificationFixture(i + 1));
+    mockedVerifyConcepts.mockResolvedValue({ verifications, rawResponse: 'raw-verify' });
+
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+
+    void getRouteHandler('post', '/api/generate/develop')(
+      {
+        body: {
+          seeds,
+          characterWorlds,
+          kernelId: 'kernel-1',
+          apiKey: 'valid-key-12345',
+          progressId: 'route-progress-3',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+    );
+    await flushPromises();
+
+    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
+    expect(status).not.toHaveBeenCalled();
+    expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts, verifications });
+  });
+
+  it('POST /api/generate/develop persists ideated concepts when evaluation fails', async () => {
+    const seeds = Array.from({ length: 3 }, (_, i) => createConceptSeedFixture(i + 1));
+    const characterWorlds = Array.from({ length: 3 }, (_, i) => createConceptCharacterWorldFixture(i + 1));
+    const ideatedConcepts = Array.from({ length: 3 }, (_, i) => createConceptSpecFixture(i + 1));
+    mockedGenerateConceptDevelopment.mockResolvedValue({ concepts: ideatedConcepts, rawResponse: 'raw' });
     mockedEvaluateConcepts.mockRejectedValue(
       new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true),
     );
@@ -347,14 +347,9 @@ describe('Concept Route Integration', () => {
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
 
-    void getRouteHandler('post', '/api/generate')(
+    void getRouteHandler('post', '/api/generate/develop')(
       {
-        body: {
-          genreVibes: 'dark fantasy',
-          moodKeywords: 'tense',
-          kernelId: 'kernel-1',
-          apiKey: 'valid-key-12345',
-        },
+        body: { seeds, characterWorlds, kernelId: 'kernel-1', apiKey: 'valid-key-12345' },
       } as Request,
       { status, json } as unknown as Response,
     );
@@ -369,67 +364,13 @@ describe('Concept Route Integration', () => {
       }),
     );
     expect(status).toHaveBeenCalledWith(500);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        error: 'API error: Scored concept 4 has invalid scores',
-        code: 'STRUCTURE_PARSE_ERROR',
-        retryable: true,
-      }),
-    );
   });
 
-  it('POST /api/generate returns debug details in non-production for LLM parsing failures', async () => {
-    mockedGenerateConceptIdeas.mockResolvedValue({
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
-      rawResponse: 'raw-ideas',
-    });
-    mockedEvaluateConcepts.mockRejectedValue(
-      new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true, {
-        parseStage: 'message_content',
-        contentShape: 'string',
-        contentPreview: '{"scoredConcepts":[...]}',
-        rawContent: '{"scoredConcepts":[{"concept":{},"scores":"N/A"}]}',
-        model: 'test-model',
-      }),
-    );
-
+  it('POST /api/generate/ideate returns 400 when kernelId is missing', async () => {
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
 
-    void getRouteHandler('post', '/api/generate')(
-      {
-        body: {
-          genreVibes: 'dark fantasy',
-          kernelId: 'kernel-1',
-          apiKey: 'valid-key-12345',
-        },
-      } as Request,
-      { status, json } as unknown as Response,
-    );
-    await flushPromises();
-
-    expect(status).toHaveBeenCalledWith(500);
-    expect(json).toHaveBeenCalledTimes(1);
-    const responseCalls = json.mock.calls as unknown[][];
-    const payload = responseCalls[0]?.[0] as Record<string, unknown>;
-    expect(payload['success']).toBe(false);
-    expect(payload['error']).toBe('API error: Scored concept 4 has invalid scores');
-    expect(payload['code']).toBe('STRUCTURE_PARSE_ERROR');
-    expect(payload['retryable']).toBe(true);
-    const debug = payload['debug'] as Record<string, unknown>;
-    expect(debug['model']).toBe('test-model');
-    expect(debug['parseStage']).toBe('message_content');
-    expect(debug['contentShape']).toBe('string');
-    expect(debug['contentPreview']).toBe('{"scoredConcepts":[...]}');
-    expect(debug['rawContent']).toBe('{"scoredConcepts":[{"concept":{},"scores":"N/A"}]}');
-  });
-
-  it('POST /api/generate returns 400 when kernelId is missing', async () => {
-    const status = jest.fn().mockReturnThis();
-    const json = jest.fn().mockReturnThis();
-
-    void getRouteHandler('post', '/api/generate')(
+    void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
           genreVibes: 'dark fantasy',
@@ -447,13 +388,13 @@ describe('Concept Route Integration', () => {
     });
   });
 
-  it('POST /api/generate returns 400 when kernel does not exist', async () => {
+  it('POST /api/generate/ideate returns 400 when kernel does not exist', async () => {
     mockedLoadKernel.mockResolvedValueOnce(null);
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
 
-    void getRouteHandler('post', '/api/generate')(
+    void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
           genreVibes: 'dark fantasy',

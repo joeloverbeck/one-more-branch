@@ -1,7 +1,7 @@
 import { parseConceptEngineerResponse } from '../../../src/llm/concept-engineer';
 import { createConceptEngineFixture } from '../../fixtures/concept-generator';
 
-function createValidPayload(count = 6) {
+function createValidPayload(count = 6): { concepts: Array<ReturnType<typeof createConceptEngineFixture>> } {
   return {
     concepts: Array.from({ length: count }, (_, i) => createConceptEngineFixture(i + 1)),
   };

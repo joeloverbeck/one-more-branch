@@ -1,7 +1,7 @@
 import { parseConceptArchitectResponse } from '../../../src/llm/concept-architect';
 import { createConceptCharacterWorldFixture } from '../../fixtures/concept-generator';
 
-function createValidPayload(count = 6) {
+function createValidPayload(count = 6): { concepts: Array<ReturnType<typeof createConceptCharacterWorldFixture>> } {
   return {
     concepts: Array.from({ length: count }, (_, i) =>
       createConceptCharacterWorldFixture(i + 1),

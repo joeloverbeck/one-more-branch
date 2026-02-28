@@ -50,8 +50,8 @@ describe('concepts page form validation', () => {
           }),
         );
       }
-      if (url === '/concepts/api/generate') {
-        return Promise.resolve(mockJsonResponse({ success: true, evaluatedConcepts: [] }));
+      if (url === '/concepts/api/generate/ideate') {
+        return Promise.resolve(mockJsonResponse({ success: true, seeds: [], characterWorlds: [] }));
       }
 
       return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
@@ -117,7 +117,7 @@ describe('concepts page form validation', () => {
         : requestInput instanceof URL
           ? requestInput.toString()
           : requestInput.url;
-      return url === '/concepts/api/generate';
+      return url === '/concepts/api/generate/ideate';
     });
     expect(hasGenerateCall).toBe(false);
     const errorDiv = document.querySelector('.alert-error');

@@ -454,6 +454,18 @@ export function buildConceptsPageHtml(): string {
             </div>
           </form>
         </section>
+        <section id="concept-selection-section" style="display: none;">
+          <h2 class="section-title">Review & Select Concepts</h2>
+          <div class="concept-selection-controls">
+            <button id="select-all-concepts-btn" type="button" class="btn btn-secondary btn-small">Select All</button>
+            <button id="deselect-all-concepts-btn" type="button" class="btn btn-secondary btn-small">Deselect All</button>
+            <span id="concept-selection-counter" class="concept-selection-counter"></span>
+          </div>
+          <div id="concept-selection-cards" class="spine-options-container"></div>
+          <div class="form-actions">
+            <button id="develop-concepts-btn" type="button" class="btn btn-primary" disabled>Continue with Selected</button>
+          </div>
+        </section>
         <section id="concept-results-section" class="spine-section" style="display: none;">
           <div id="concept-cards" class="spine-options-container"></div>
         </section>

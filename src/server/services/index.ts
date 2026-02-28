@@ -19,8 +19,12 @@ export {
   createConceptService,
   conceptService,
   type ConceptService,
+  type DevelopConceptsInput,
+  type DevelopConceptsResult,
   type GenerateConceptsInput,
   type GenerateConceptsResult,
+  type IdeateConceptsInput,
+  type IdeateConceptsResult,
   type StressTestInput,
 } from './concept-service.js';
 export {
