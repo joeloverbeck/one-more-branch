@@ -296,13 +296,13 @@ describe('concept-verifier', () => {
       );
     });
 
-    it('rejects logline over 27 words', () => {
+    it('rejects logline over 35 words', () => {
       const payload = createValidSpecificityPayload(1);
       payload.specificityAnalyses[0].logline =
-        'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight';
+        'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight twentynine thirty thirtyone thirtytwo thirtythree thirtyfour thirtyfive thirtysix';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'logline must be 27 words or fewer',
+        'logline must be 35 words or fewer',
       );
     });
 
@@ -326,19 +326,19 @@ describe('concept-verifier', () => {
 
     it('rejects too few premisePromises', () => {
       const payload = createValidSpecificityPayload(1);
-      payload.specificityAnalyses[0].premisePromises = ['one', 'two'];
+      payload.specificityAnalyses[0].premisePromises = ['one'];
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'premisePromises must have 3-5 items',
+        'premisePromises must have 2-7 items',
       );
     });
 
     it('rejects too many premisePromises', () => {
       const payload = createValidSpecificityPayload(1);
-      payload.specificityAnalyses[0].premisePromises = ['1', '2', '3', '4', '5', '6'];
+      payload.specificityAnalyses[0].premisePromises = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'premisePromises must have 3-5 items',
+        'premisePromises must have 2-7 items',
       );
     });
 
@@ -519,12 +519,23 @@ describe('concept-verifier', () => {
       );
     });
 
-    it('rejects wrong number of setpieces', () => {
+    it('rejects too few setpieces', () => {
       const payload = createValidScenarioPayload(1);
-      payload.scenarioAnalyses[0].escalatingSetpieces = ['a', 'b', 'c'];
+      payload.scenarioAnalyses[0].escalatingSetpieces = ['a', 'b'];
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'exactly 6 items (received: 3)',
+        'escalatingSetpieces must have 3-8 items (received: 2)',
+      );
+    });
+
+    it('rejects too many setpieces', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].escalatingSetpieces = [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+      ];
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'escalatingSetpieces must have 3-8 items (received: 9)',
       );
     });
 
@@ -546,12 +557,23 @@ describe('concept-verifier', () => {
       );
     });
 
-    it('rejects wrong number of setpieceCausalLinks', () => {
+    it('rejects too few setpieceCausalLinks', () => {
       const payload = createValidScenarioPayload(1);
-      payload.scenarioAnalyses[0].setpieceCausalLinks = ['1->2', '2->3'];
+      payload.scenarioAnalyses[0].setpieceCausalLinks = ['1->2'];
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'setpieceCausalLinks must have exactly 5 items',
+        'setpieceCausalLinks must have 2-7 items (received: 1)',
+      );
+    });
+
+    it('rejects too many setpieceCausalLinks', () => {
+      const payload = createValidScenarioPayload(1);
+      payload.scenarioAnalyses[0].setpieceCausalLinks = [
+        '1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9',
+      ];
+
+      expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
+        'setpieceCausalLinks must have 2-7 items (received: 8)',
       );
     });
 
@@ -666,8 +688,8 @@ describe('concept-verifier', () => {
       expect(analysisSchema.properties['logline']).toEqual({ type: 'string', minLength: 1 });
       expect(analysisSchema.properties['premisePromises']).toEqual({
         type: 'array',
-        minItems: 3,
-        maxItems: 5,
+        minItems: 2,
+        maxItems: 7,
         items: { type: 'string', minLength: 1 },
       });
     });
@@ -693,8 +715,8 @@ describe('concept-verifier', () => {
       expect(analysisSchema.required).toContain('conceptIntegrityScore');
       expect(analysisSchema.properties['escalatingSetpieces']).toEqual({
         type: 'array',
-        minItems: 6,
-        maxItems: 6,
+        minItems: 3,
+        maxItems: 8,
         items: { type: 'string' },
       });
       expect(analysisSchema.properties['setpieceCausalChainBroken']).toEqual({
@@ -702,8 +724,8 @@ describe('concept-verifier', () => {
       });
       expect(analysisSchema.properties['setpieceCausalLinks']).toEqual({
         type: 'array',
-        minItems: 5,
-        maxItems: 5,
+        minItems: 2,
+        maxItems: 7,
         items: { type: 'string', minLength: 1 },
       });
     });

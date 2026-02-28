@@ -246,7 +246,7 @@ describe('saved-concept model guards', () => {
     expect(isSavedConcept(value)).toBe(false);
   });
 
-  it('rejects SavedConcept with verificationResult logline over 27 words', () => {
+  it('rejects SavedConcept with verificationResult logline over 35 words', () => {
     const value = {
       id: 'concept-1',
       name: 'Memory Courier',
@@ -259,7 +259,7 @@ describe('saved-concept model guards', () => {
         signatureScenario: 'Iconic moment',
         loglineCompressible: true,
         logline:
-          'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight',
+          'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight twentynine thirty thirtyone thirtytwo thirtythree thirtyfour thirtyfive thirtysix',
         premisePromises: ['p1', 'p2', 'p3'],
         escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
         setpieceCausalChainBroken: false,

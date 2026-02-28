@@ -144,9 +144,12 @@ function parseSetpieces(value: unknown, label: string): readonly string[] {
     );
   }
 
-  if (value.length !== VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount) {
+  if (
+    value.length < VERIFICATION_CONSTRAINTS.escalatingSetpiecesMin ||
+    value.length > VERIFICATION_CONSTRAINTS.escalatingSetpiecesMax
+  ) {
     throw new LLMError(
-      `${label} escalatingSetpieces must have exactly ${VERIFICATION_CONSTRAINTS.escalatingSetpiecesCount} items (received: ${value.length})`,
+      `${label} escalatingSetpieces must have ${VERIFICATION_CONSTRAINTS.escalatingSetpiecesMin}-${VERIFICATION_CONSTRAINTS.escalatingSetpiecesMax} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );
@@ -191,9 +194,12 @@ function parseSetpieceCausalLinks(value: unknown, label: string): readonly strin
     );
   }
 
-  if (value.length !== VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount) {
+  if (
+    value.length < VERIFICATION_CONSTRAINTS.setpieceCausalLinksMin ||
+    value.length > VERIFICATION_CONSTRAINTS.setpieceCausalLinksMax
+  ) {
     throw new LLMError(
-      `${label} setpieceCausalLinks must have exactly ${VERIFICATION_CONSTRAINTS.setpieceCausalLinksCount} items (received: ${value.length})`,
+      `${label} setpieceCausalLinks must have ${VERIFICATION_CONSTRAINTS.setpieceCausalLinksMin}-${VERIFICATION_CONSTRAINTS.setpieceCausalLinksMax} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
       true,
     );

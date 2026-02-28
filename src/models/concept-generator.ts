@@ -377,11 +377,17 @@ export interface KernelFidelityCheck {
 }
 
 export const CONCEPT_VERIFICATION_CONSTRAINTS = {
-  premisePromisesMin: 3,
-  premisePromisesMax: 5,
+  premisePromisesMin: 2,
+  premisePromisesMax: 7,
+  escalatingSetpiecesMin: 3,
+  escalatingSetpiecesMax: 8,
+  setpieceCausalLinksMin: 2,
+  setpieceCausalLinksMax: 7,
+  loglineMaxWords: 35,
+  /** Ideal target still requested in prompts */
   escalatingSetpiecesCount: 6,
+  /** Ideal target still requested in prompts */
   setpieceCausalLinksCount: 5,
-  loglineMaxWords: 27,
 } as const;
 
 export interface ConceptVerification {
