@@ -3564,159 +3564,563 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     };
   }
 
-  // ── Concept Selection Renderer ─────────────────────────────────────
+// ── Concept Selection Renderer ─────────────────────────────────────
 
-  function renderConceptSelectionCards(seeds, characterWorlds, container) {
-    if (!container) return;
-    container.innerHTML = '';
+function buildSelectionFieldHtml(label, value, fieldKey, source, fieldType) {
+  return '<div class="spine-field" data-field-key="' + fieldKey + '" data-field-source="' + source + '" data-field-type="' + fieldType + '">' +
+    '<span class="spine-label">' + label + ':</span> ' +
+    '<span class="concept-field-value">' + escapeHtml(fieldType === 'enum' ? formatConceptLabel(value) : value) + '</span>' +
+    '</div>';
+}
 
-    if (!Array.isArray(seeds) || seeds.length === 0) {
-      container.innerHTML = '<p class="spine-section-subtitle">No concepts to select.</p>';
-      return;
+function buildSelectionListFieldHtml(label, items, fieldKey, source) {
+  return '<div class="spine-field" data-field-key="' + fieldKey + '" data-field-source="' + source + '" data-field-type="list">' +
+    '<span class="spine-label">' + label + ':</span>' +
+    '<span class="concept-field-value"><ul>' + renderListItems(items) + '</ul></span>' +
+    '</div>';
+}
+
+function renderConceptSelectionCards(seeds, characterWorlds, container, onFieldEdit) {
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (!Array.isArray(seeds) || seeds.length === 0) {
+    container.innerHTML = '<p class="spine-section-subtitle">No concepts to select.</p>';
+    return;
+  }
+
+  seeds.forEach(function (seed, index) {
+    var cw = characterWorlds[index] || {};
+    var card = document.createElement('article');
+    card.className = 'spine-card concept-card concept-selection-card';
+    card.dataset.selectionIndex = String(index);
+
+    var conflictTypeBadge = seed.conflictType
+      ? '<span class="spine-badge spine-badge-conflict" data-badge-field="conflictType">' + escapeHtml(formatConceptLabel(seed.conflictType)) + '</span>'
+      : '';
+    var settingScaleBadge = cw.settingScale
+      ? '<span class="spine-badge spine-badge-type" data-badge-field="settingScale">' + escapeHtml(formatConceptLabel(cw.settingScale)) + '</span>'
+      : '';
+
+    // Toggle column
+    var html =
+      '<div class="concept-selection-card__toggle">' +
+        '<label class="concept-selection-label">' +
+          '<input type="checkbox" class="concept-selection-checkbox" data-selection-index="' + index + '" checked>' +
+          '<span class="concept-selection-checkmark"></span>' +
+        '</label>' +
+      '</div>' +
+      '<div class="concept-selection-card__body">';
+
+    // ── Header zone (click = toggle selection) ──
+    html +=
+      '<div class="concept-selection-card__header">' +
+        '<div class="spine-badges">' +
+          '<span class="spine-badge spine-badge-type" data-badge-field="genreFrame">' + escapeHtml(formatConceptLabel(seed.genreFrame)) + '</span>' +
+          '<span class="spine-badge spine-badge-conflict" data-badge-field="conflictAxis">' + escapeHtml(formatConceptLabel(seed.conflictAxis)) + '</span>' +
+          conflictTypeBadge +
+          settingScaleBadge +
+        '</div>' +
+        '<h3 class="spine-cdq">' + escapeHtml(seed.oneLineHook || '') + '</h3>' +
+      '</div>';
+
+    // ── Fields zone (click = inline edit) ──
+    html += '<div class="concept-selection-card__fields">';
+
+    // Seed text fields
+    if (seed.oneLineHook) {
+      html += buildSelectionFieldHtml('One-Line Hook', seed.oneLineHook, 'oneLineHook', 'seed', 'text');
+    }
+    if (seed.whatIfQuestion) {
+      html += buildSelectionFieldHtml('What If', seed.whatIfQuestion, 'whatIfQuestion', 'seed', 'text');
+    }
+    if (seed.playerFantasy) {
+      html += buildSelectionFieldHtml('Player Fantasy', seed.playerFantasy, 'playerFantasy', 'seed', 'text');
+    }
+    if (seed.genreSubversion) {
+      html += buildSelectionFieldHtml('Genre Subversion', seed.genreSubversion, 'genreSubversion', 'seed', 'text');
     }
 
-    seeds.forEach(function (seed, index) {
-      var cw = characterWorlds[index] || {};
-      var card = document.createElement('article');
-      card.className = 'spine-card concept-card concept-selection-card';
-      card.dataset.selectionIndex = String(index);
+    // Seed enum fields
+    html += buildSelectionFieldHtml('Genre Frame', seed.genreFrame, 'genreFrame', 'seed', 'enum');
+    html += buildSelectionFieldHtml('Conflict Axis', seed.conflictAxis, 'conflictAxis', 'seed', 'enum');
+    if (seed.conflictType) {
+      html += buildSelectionFieldHtml('Conflict Type', seed.conflictType, 'conflictType', 'seed', 'enum');
+    }
 
-      var conflictTypeBadge = seed.conflictType
-        ? '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(seed.conflictType)) + '</span>'
-        : '';
+    // Seed list fields
+    if (Array.isArray(seed.actionVerbs) && seed.actionVerbs.length > 0) {
+      html += buildSelectionListFieldHtml('Action Verbs', seed.actionVerbs, 'actionVerbs', 'seed');
+    }
 
-      var html =
-        '<div class="concept-selection-card__toggle">' +
-          '<label class="concept-selection-label">' +
-            '<input type="checkbox" class="concept-selection-checkbox" data-selection-index="' + index + '" checked>' +
-            '<span class="concept-selection-checkmark"></span>' +
-          '</label>' +
-        '</div>' +
-        '<div class="concept-selection-card__body">' +
-          '<div class="spine-badges">' +
-            '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(seed.genreFrame)) + '</span>' +
-            '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(seed.conflictAxis)) + '</span>' +
-            conflictTypeBadge +
-          '</div>' +
-          '<h3 class="spine-cdq">' + escapeHtml(seed.oneLineHook || '') + '</h3>';
+    // Character fields from architect
+    if (cw.protagonistRole) {
+      html += buildSelectionFieldHtml('Protagonist', cw.protagonistRole, 'protagonistRole', 'cw', 'text');
+    }
+    if (cw.coreCompetence) {
+      html += buildSelectionFieldHtml('Core Competence', cw.coreCompetence, 'coreCompetence', 'cw', 'text');
+    }
+    if (cw.coreFlaw) {
+      html += buildSelectionFieldHtml('Core Flaw', cw.coreFlaw, 'coreFlaw', 'cw', 'text');
+    }
+    if (cw.coreConflictLoop) {
+      html += buildSelectionFieldHtml('Conflict Loop', cw.coreConflictLoop, 'coreConflictLoop', 'cw', 'text');
+    }
 
-      // Seed identity fields
-      if (seed.whatIfQuestion) {
-        html += '<p class="spine-field concept-what-if"><span class="spine-label">What If:</span> <em>' + escapeHtml(seed.whatIfQuestion) + '</em></p>';
-      }
-      if (seed.playerFantasy) {
-        html += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(seed.playerFantasy) + '</em></p>';
-      }
-      if (seed.genreSubversion) {
-        html += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(seed.genreSubversion) + '</div>';
-      }
+    // World fields from architect
+    if (Array.isArray(cw.settingAxioms) && cw.settingAxioms.length > 0) {
+      html += buildSelectionListFieldHtml('Setting Axioms', cw.settingAxioms, 'settingAxioms', 'cw');
+    }
+    if (Array.isArray(cw.constraintSet) && cw.constraintSet.length > 0) {
+      html += buildSelectionListFieldHtml('Constraints', cw.constraintSet, 'constraintSet', 'cw');
+    }
+    if (Array.isArray(cw.keyInstitutions) && cw.keyInstitutions.length > 0) {
+      html += buildSelectionListFieldHtml('Key Institutions', cw.keyInstitutions, 'keyInstitutions', 'cw');
+    }
+    if (cw.settingScale) {
+      html += buildSelectionFieldHtml('Setting Scale', cw.settingScale, 'settingScale', 'cw', 'enum');
+    }
 
-      // Character fields from architect
-      if (cw.protagonistRole) {
-        html += '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(cw.protagonistRole) + '</div>';
-      }
-      if (cw.coreCompetence) {
-        html += '<div class="spine-field"><span class="spine-label">Core Competence:</span> ' + escapeHtml(cw.coreCompetence) + '</div>';
-      }
-      if (cw.coreFlaw) {
-        html += '<div class="spine-field"><span class="spine-label">Core Flaw:</span> ' + escapeHtml(cw.coreFlaw) + '</div>';
-      }
-      if (cw.coreConflictLoop) {
-        html += '<div class="spine-field"><span class="spine-label">Conflict Loop:</span> ' + escapeHtml(cw.coreConflictLoop) + '</div>';
-      }
+    html += '</div>'; // end fields
+    html += '</div>'; // end body
+    card.innerHTML = html;
 
-      // World fields from architect
-      if (Array.isArray(cw.settingAxioms) && cw.settingAxioms.length > 0) {
-        html += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(cw.settingAxioms) + '</ul></div>';
-      }
-      if (Array.isArray(cw.constraintSet) && cw.constraintSet.length > 0) {
-        html += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(cw.constraintSet) + '</ul></div>';
-      }
-      if (Array.isArray(cw.keyInstitutions) && cw.keyInstitutions.length > 0) {
-        html += '<div class="spine-field"><span class="spine-label">Key Institutions:</span><ul>' + renderListItems(cw.keyInstitutions) + '</ul></div>';
-      }
-      if (cw.settingScale) {
-        html += '<div class="spine-field"><span class="spine-label">Setting Scale:</span> ' + escapeHtml(formatConceptLabel(cw.settingScale)) + '</div>';
-      }
+    // ── Checkbox toggle behavior ──
+    var checkbox = card.querySelector('.concept-selection-checkbox');
+    if (checkbox) {
+      checkbox.addEventListener('change', function () {
+        if (checkbox.checked) {
+          card.classList.remove('concept-selection-card--excluded');
+        } else {
+          card.classList.add('concept-selection-card--excluded');
+        }
+      });
 
-      html += '</div>';
-      card.innerHTML = html;
+      checkbox.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+    }
 
-      // Toggle card visual state on checkbox change
-      var checkbox = card.querySelector('.concept-selection-checkbox');
-      if (checkbox) {
-        checkbox.addEventListener('change', function () {
-          if (checkbox.checked) {
-            card.classList.remove('concept-selection-card--excluded');
-          } else {
-            card.classList.add('concept-selection-card--excluded');
-          }
-        });
-
-        checkbox.addEventListener('click', function (e) {
-          e.stopPropagation();
-        });
-      }
-
-      // Toggle checkbox on card click
-      card.addEventListener('click', function () {
+    // ── Header click → toggle checkbox ──
+    var headerEl = card.querySelector('.concept-selection-card__header');
+    if (headerEl) {
+      headerEl.addEventListener('click', function (e) {
+        e.stopPropagation();
         if (checkbox) {
           checkbox.checked = !checkbox.checked;
           checkbox.dispatchEvent(new Event('change'));
         }
       });
+    }
 
-      container.appendChild(card);
-    });
+    // ── Toggle area click → toggle checkbox ──
+    var toggleEl = card.querySelector('.concept-selection-card__toggle');
+    if (toggleEl) {
+      toggleEl.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+
+    // ── Fields area click delegation → inline editing ──
+    var fieldsEl = card.querySelector('.concept-selection-card__fields');
+    if (fieldsEl && typeof onFieldEdit === 'function') {
+      fieldsEl.addEventListener('click', function (e) {
+        e.stopPropagation();
+
+        var target = e.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        // Find the closest field value span
+        var valueEl = target.closest('.concept-field-value');
+        if (!valueEl) return;
+
+        // Don't open editor if one is already active
+        if (valueEl.querySelector('input, textarea, select, .concept-inline-list-editor')) return;
+
+        var fieldDiv = valueEl.closest('.spine-field');
+        if (!fieldDiv) return;
+
+        var fieldKey = fieldDiv.dataset.fieldKey;
+        var fieldSource = fieldDiv.dataset.fieldSource;
+        var fieldType = fieldDiv.dataset.fieldType;
+        if (!fieldKey || !fieldSource || !fieldType) return;
+
+        function commitEdit(newValue) {
+          onFieldEdit(index, fieldSource, fieldKey, newValue);
+          syncBadgeIfEnum(card, fieldKey, newValue);
+        }
+
+        if (fieldType === 'enum') {
+          var opts = getEnumOptionsForField(fieldKey);
+          if (!opts) return;
+          var currentEnum = fieldSource === 'seed' ? (seed[fieldKey] || '') : (cw[fieldKey] || '');
+          createInlineSelectEditor(valueEl, currentEnum, opts, commitEdit);
+        } else if (fieldType === 'list') {
+          var currentList = fieldSource === 'seed'
+            ? (Array.isArray(seed[fieldKey]) ? seed[fieldKey] : [])
+            : (Array.isArray(cw[fieldKey]) ? cw[fieldKey] : []);
+          createInlineListEditor(valueEl, currentList, commitEdit);
+        } else {
+          var currentText = fieldSource === 'seed' ? (seed[fieldKey] || '') : (cw[fieldKey] || '');
+          createInlineTextEditor(valueEl, currentText, commitEdit);
+        }
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function syncBadgeIfEnum(card, fieldKey, newValue) {
+  var badge = card.querySelector('[data-badge-field="' + fieldKey + '"]');
+  if (badge) {
+    badge.textContent = formatConceptLabel(newValue);
+  }
+}
+
+function getSelectedConceptIndices(container) {
+  if (!container) return [];
+  var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
+  var indices = [];
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      indices.push(Number(checkboxes[i].dataset.selectionIndex));
+    }
+  }
+  return indices;
+}
+
+function getSelectedConceptCount(container) {
+  return getSelectedConceptIndices(container).length;
+}
+
+function selectAllConcepts(container) {
+  if (!container) return;
+  var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = true;
+    var card = checkboxes[i].closest('.concept-selection-card');
+    if (card) card.classList.remove('concept-selection-card--excluded');
+  }
+}
+
+function deselectAllConcepts(container) {
+  if (!container) return;
+  var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = false;
+    var card = checkboxes[i].closest('.concept-selection-card');
+    if (card) card.classList.add('concept-selection-card--excluded');
+  }
+}
+
+function updateSelectionCounter(container, counterEl, continueBtn) {
+  if (!container) return;
+  var total = container.querySelectorAll('.concept-selection-checkbox').length;
+  var selected = getSelectedConceptCount(container);
+  if (counterEl) {
+    counterEl.textContent = selected + ' of ' + total + ' selected';
+  }
+  if (continueBtn) {
+    continueBtn.disabled = selected === 0;
+  }
+}
+
+// ── Inline Field Editor Primitives ──────────────────────────────────
+
+var GENRE_FRAME_OPTIONS = [
+  { value: 'ADVENTURE', label: 'Adventure' },
+  { value: 'COMING_OF_AGE', label: 'Coming of Age' },
+  { value: 'COSMIC_HORROR', label: 'Cosmic Horror' },
+  { value: 'CULTIVATION', label: 'Cultivation' },
+  { value: 'CYBERPUNK', label: 'Cyberpunk' },
+  { value: 'DARK_COMEDY', label: 'Dark Comedy' },
+  { value: 'DRAMA', label: 'Drama' },
+  { value: 'DYSTOPIAN', label: 'Dystopian' },
+  { value: 'EROTICA', label: 'Erotica' },
+  { value: 'ESPIONAGE', label: 'Espionage' },
+  { value: 'FABLE', label: 'Fable' },
+  { value: 'FANTASY', label: 'Fantasy' },
+  { value: 'GOTHIC', label: 'Gothic' },
+  { value: 'GRIMDARK', label: 'Grimdark' },
+  { value: 'HEIST', label: 'Heist' },
+  { value: 'HISTORICAL', label: 'Historical' },
+  { value: 'HORROR', label: 'Horror' },
+  { value: 'ISEKAI', label: 'Isekai' },
+  { value: 'LITERARY', label: 'Literary' },
+  { value: 'MAGICAL_REALISM', label: 'Magical Realism' },
+  { value: 'MYSTERY', label: 'Mystery' },
+  { value: 'MYTHIC', label: 'Mythic' },
+  { value: 'NOIR', label: 'Noir' },
+  { value: 'PICARESQUE', label: 'Picaresque' },
+  { value: 'POST_APOCALYPTIC', label: 'Post Apocalyptic' },
+  { value: 'ROMANCE', label: 'Romance' },
+  { value: 'SATIRE', label: 'Satire' },
+  { value: 'SCI_FI', label: 'Sci Fi' },
+  { value: 'SPACE_OPERA', label: 'Space Opera' },
+  { value: 'SURREAL', label: 'Surreal' },
+  { value: 'THRILLER', label: 'Thriller' },
+  { value: 'TRAGEDY', label: 'Tragedy' },
+  { value: 'WESTERN', label: 'Western' },
+  { value: 'WUXIA', label: 'Wuxia' },
+];
+
+var CONFLICT_AXIS_OPTIONS = [
+  { value: 'INDIVIDUAL_VS_SYSTEM', label: 'Individual vs System' },
+  { value: 'TRUTH_VS_STABILITY', label: 'Truth vs Stability' },
+  { value: 'DUTY_VS_DESIRE', label: 'Duty vs Desire' },
+  { value: 'FREEDOM_VS_SAFETY', label: 'Freedom vs Safety' },
+  { value: 'KNOWLEDGE_VS_INNOCENCE', label: 'Knowledge vs Innocence' },
+  { value: 'POWER_VS_MORALITY', label: 'Power vs Morality' },
+  { value: 'LOYALTY_VS_SURVIVAL', label: 'Loyalty vs Survival' },
+  { value: 'IDENTITY_VS_BELONGING', label: 'Identity vs Belonging' },
+];
+
+var CONFLICT_TYPE_OPTIONS = [
+  { value: '', label: '-- None --' },
+  { value: 'PERSON_VS_PERSON', label: 'Person vs Person' },
+  { value: 'PERSON_VS_SELF', label: 'Person vs Self' },
+  { value: 'PERSON_VS_SOCIETY', label: 'Person vs Society' },
+  { value: 'PERSON_VS_NATURE', label: 'Person vs Nature' },
+  { value: 'PERSON_VS_TECHNOLOGY', label: 'Person vs Technology' },
+  { value: 'PERSON_VS_SUPERNATURAL', label: 'Person vs Supernatural' },
+  { value: 'PERSON_VS_FATE', label: 'Person vs Fate' },
+];
+
+var SETTING_SCALE_OPTIONS = [
+  { value: 'INTIMATE', label: 'Intimate' },
+  { value: 'LOCAL', label: 'Local' },
+  { value: 'REGIONAL', label: 'Regional' },
+  { value: 'GLOBAL', label: 'Global' },
+];
+
+function getEnumOptionsForField(fieldKey) {
+  switch (fieldKey) {
+    case 'genreFrame': return GENRE_FRAME_OPTIONS;
+    case 'conflictAxis': return CONFLICT_AXIS_OPTIONS;
+    case 'conflictType': return CONFLICT_TYPE_OPTIONS;
+    case 'settingScale': return SETTING_SCALE_OPTIONS;
+    default: return null;
+  }
+}
+
+function createInlineTextEditor(valueEl, currentValue, onCommit) {
+  var original = currentValue || '';
+  var useTextarea = original.length > 100;
+  var input;
+
+  if (useTextarea) {
+    input = document.createElement('textarea');
+    input.className = 'concept-inline-textarea';
+    input.rows = 3;
+  } else {
+    input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'concept-inline-input';
   }
 
-  function getSelectedConceptIndices(container) {
-    if (!container) return [];
-    var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
-    var indices = [];
-    for (var i = 0; i < checkboxes.length; i++) {
-      if (checkboxes[i].checked) {
-        indices.push(Number(checkboxes[i].dataset.selectionIndex));
+  input.value = original;
+  valueEl.textContent = '';
+  valueEl.appendChild(input);
+  input.focus();
+  input.select();
+
+  var committed = false;
+
+  function commit() {
+    if (committed) return;
+    committed = true;
+    var newVal = input.value.trim();
+    valueEl.textContent = newVal || original;
+    if (newVal !== original) {
+      onCommit(newVal);
+    }
+  }
+
+  function revert() {
+    if (committed) return;
+    committed = true;
+    valueEl.textContent = original;
+  }
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !useTextarea) {
+      e.preventDefault();
+      commit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      revert();
+    }
+  });
+
+  input.addEventListener('blur', function () {
+    commit();
+  });
+}
+
+function createInlineSelectEditor(valueEl, currentValue, options, onCommit) {
+  var original = currentValue || '';
+  var select = document.createElement('select');
+  select.className = 'concept-inline-select';
+
+  for (var i = 0; i < options.length; i++) {
+    var opt = document.createElement('option');
+    opt.value = options[i].value;
+    opt.textContent = options[i].label;
+    if (options[i].value === original) {
+      opt.selected = true;
+    }
+    select.appendChild(opt);
+  }
+
+  valueEl.textContent = '';
+  valueEl.appendChild(select);
+  select.focus();
+
+  var committed = false;
+
+  function commit() {
+    if (committed) return;
+    committed = true;
+    var newVal = select.value;
+    valueEl.textContent = formatConceptLabel(newVal || original);
+    if (newVal !== original) {
+      onCommit(newVal);
+    }
+  }
+
+  function revert() {
+    if (committed) return;
+    committed = true;
+    valueEl.textContent = formatConceptLabel(original);
+  }
+
+  select.addEventListener('change', function () {
+    commit();
+  });
+
+  select.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      revert();
+    }
+  });
+
+  select.addEventListener('blur', function () {
+    commit();
+  });
+}
+
+function createInlineListEditor(valueEl, currentItems, onCommit) {
+  var items = Array.isArray(currentItems) ? currentItems.slice() : [];
+  var container = document.createElement('div');
+  container.className = 'concept-inline-list-editor';
+  var blurTimer = null;
+
+  function renderEditor() {
+    container.innerHTML = '';
+    for (var i = 0; i < items.length; i++) {
+      (function (idx) {
+        var row = document.createElement('div');
+        row.className = 'concept-inline-list-item';
+
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'concept-inline-input';
+        inp.value = items[idx];
+        inp.addEventListener('input', function () {
+          items[idx] = inp.value;
+        });
+        inp.addEventListener('focus', function () {
+          if (blurTimer) { clearTimeout(blurTimer); blurTimer = null; }
+        });
+        inp.addEventListener('blur', function () {
+          scheduleCollapse();
+        });
+
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'concept-inline-list-remove';
+        removeBtn.textContent = '\u00d7';
+        removeBtn.addEventListener('click', function () {
+          items.splice(idx, 1);
+          renderEditor();
+        });
+        removeBtn.addEventListener('focus', function () {
+          if (blurTimer) { clearTimeout(blurTimer); blurTimer = null; }
+        });
+        removeBtn.addEventListener('blur', function () {
+          scheduleCollapse();
+        });
+
+        row.appendChild(inp);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+      })(i);
+    }
+
+    var addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'concept-inline-list-add';
+    addBtn.textContent = '+ Add';
+    addBtn.addEventListener('click', function () {
+      items.push('');
+      renderEditor();
+      var inputs = container.querySelectorAll('.concept-inline-input');
+      if (inputs.length > 0) {
+        inputs[inputs.length - 1].focus();
+      }
+    });
+    addBtn.addEventListener('focus', function () {
+      if (blurTimer) { clearTimeout(blurTimer); blurTimer = null; }
+    });
+    addBtn.addEventListener('blur', function () {
+      scheduleCollapse();
+    });
+    container.appendChild(addBtn);
+  }
+
+  function scheduleCollapse() {
+    if (blurTimer) clearTimeout(blurTimer);
+    blurTimer = setTimeout(function () {
+      collapse();
+    }, 200);
+  }
+
+  function collapse() {
+    var cleaned = items
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length > 0; });
+    onCommit(cleaned);
+
+    // Restore to <ul> display
+    valueEl.innerHTML = '';
+    var ul = document.createElement('ul');
+    if (cleaned.length === 0) {
+      ul.innerHTML = '<li class="concept-list-empty">None</li>';
+    } else {
+      for (var j = 0; j < cleaned.length; j++) {
+        var li = document.createElement('li');
+        li.textContent = cleaned[j];
+        ul.appendChild(li);
       }
     }
-    return indices;
+    valueEl.appendChild(ul);
   }
 
-  function getSelectedConceptCount(container) {
-    return getSelectedConceptIndices(container).length;
-  }
+  // Replace current content
+  valueEl.innerHTML = '';
+  valueEl.appendChild(container);
+  renderEditor();
 
-  function selectAllConcepts(container) {
-    if (!container) return;
-    var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
-    for (var i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].checked = true;
-      var card = checkboxes[i].closest('.concept-selection-card');
-      if (card) card.classList.remove('concept-selection-card--excluded');
-    }
-  }
-
-  function deselectAllConcepts(container) {
-    if (!container) return;
-    var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
-    for (var i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].checked = false;
-      var card = checkboxes[i].closest('.concept-selection-card');
-      if (card) card.classList.add('concept-selection-card--excluded');
-    }
-  }
-
-  function updateSelectionCounter(container, counterEl, continueBtn) {
-    if (!container) return;
-    var total = container.querySelectorAll('.concept-selection-checkbox').length;
-    var selected = getSelectedConceptCount(container);
-    if (counterEl) {
-      counterEl.textContent = selected + ' of ' + total + ' selected';
-    }
-    if (continueBtn) {
-      continueBtn.disabled = selected === 0;
-    }
-  }
+  // Focus first input
+  var firstInput = container.querySelector('.concept-inline-input');
+  if (firstInput) firstInput.focus();
+}
 
   // ── Choice renderers ──────────────────────────────────────────────
 
@@ -6572,7 +6976,19 @@ function createRecapModalController(initialData) {
 
         // Show selection gate
         if (conceptSelectionCards) {
-          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards);
+          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards,
+            function (idx, source, fieldKey, newValue) {
+              if (source === 'seed' && lastIdeatedSeeds && lastIdeatedSeeds[idx]) {
+                var updated = {};
+                updated[fieldKey] = newValue;
+                lastIdeatedSeeds[idx] = Object.assign({}, lastIdeatedSeeds[idx], updated);
+              } else if (source === 'cw' && lastIdeatedCharacterWorlds && lastIdeatedCharacterWorlds[idx]) {
+                var cwUpdated = {};
+                cwUpdated[fieldKey] = newValue;
+                lastIdeatedCharacterWorlds[idx] = Object.assign({}, lastIdeatedCharacterWorlds[idx], cwUpdated);
+              }
+            }
+          );
         }
         if (conceptSelectionSection) {
           conceptSelectionSection.style.display = 'block';
@@ -6757,7 +7173,6 @@ function createRecapModalController(initialData) {
       // Create new genre group
       var details = document.createElement('details');
       details.className = 'genre-group';
-      details.setAttribute('open', '');
       details.setAttribute('data-genre', genre);
 
       var summary = document.createElement('summary');
