@@ -361,6 +361,37 @@
             </div>
           </details>
 
+          <!-- Concept Verification -->
+          <details class="form-section-collapsible" id="section-verification">
+            <summary>Concept Verification</summary>
+            <div class="form-section-collapsible__body">
+              <div class="form-group">
+                <label for="signatureScenario">Signature Scenario</label>
+                <textarea id="signatureScenario" rows="2" placeholder="The key dramatic scenario the story should build toward"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="inevitabilityStatement">Inevitability Statement</label>
+                <textarea id="inevitabilityStatement" rows="2" placeholder="Why this scenario feels inevitable given the premise"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Escalating Setpieces (3-8)</label>
+                <div id="dynamic-list-escalatingSetpieces" class="dynamic-list" data-field="escalatingSetpieces" data-min="3" data-max="8"></div>
+                <div class="dynamic-list-add">
+                  <input type="text" class="dynamic-list-input" data-field="escalatingSetpieces" placeholder="Add a setpiece...">
+                  <button type="button" class="btn btn-secondary btn-small dynamic-list-add-btn" data-field="escalatingSetpieces">Add</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Premise Promises (2-7)</label>
+                <div id="dynamic-list-premisePromises" class="dynamic-list" data-field="premisePromises" data-min="2" data-max="7"></div>
+                <div class="dynamic-list-add">
+                  <input type="text" class="dynamic-list-input" data-field="premisePromises" placeholder="Add a premise promise...">
+                  <button type="button" class="btn btn-secondary btn-small dynamic-list-add-btn" data-field="premisePromises">Add</button>
+                </div>
+              </div>
+            </div>
+          </details>
+
           <!-- Kernel Panel -->
           <details class="form-section-collapsible" id="section-kernel">
             <summary>Thematic Kernel</summary>

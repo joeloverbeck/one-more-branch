@@ -9,6 +9,7 @@ import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from 
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -277,10 +278,7 @@ async function fetchEntityDecomposition(
   }
 
   const responseData = await readJsonResponse(response);
-  const content = responseData.choices[0]?.message?.content;
-  if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
+  const content = extractResponseContent(responseData, 'entity-decomposer', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;

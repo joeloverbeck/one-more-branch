@@ -4,6 +4,7 @@ import { logger, logPrompt } from '../logging/index.js';
 import { getGenreObligationTags } from '../models/genre-obligations.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -86,10 +87,7 @@ async function fetchStructure(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-  if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
+  const content = extractResponseContent(data, 'structure', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;

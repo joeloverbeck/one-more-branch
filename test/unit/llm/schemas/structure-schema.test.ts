@@ -252,7 +252,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     ]);
   });
 
-  it('should define setpieceSourceIndex as nullable integer 0-5', () => {
+  it('should define setpieceSourceIndex as nullable integer enum 0-5', () => {
     const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
       properties: {
         acts: {
@@ -262,7 +262,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
                 items: {
                   properties: {
                     setpieceSourceIndex: {
-                      anyOf: Array<{ type: string; minimum?: number; maximum?: number }>;
+                      anyOf: Array<{ type: string; enum?: number[] }>;
                     };
                   };
                 };
@@ -277,7 +277,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       schema.properties.acts.items.properties.beats.items.properties.setpieceSourceIndex;
 
     expect(setpieceSourceIndexSchema.anyOf).toEqual([
-      { type: 'integer', minimum: 0, maximum: 5 },
+      { type: 'integer', enum: [0, 1, 2, 3, 4, 5] },
       { type: 'null' },
     ]);
   });

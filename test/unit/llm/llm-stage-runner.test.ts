@@ -126,7 +126,6 @@ describe('llm-stage-runner', () => {
       context: expect.objectContaining({
         model: expect.any(String),
         stage: 'conceptSeeder',
-        promptType: 'conceptSeeder',
         completionTokens: 8192,
         promptTokens: 3000,
         maxTokens: expect.any(Number),

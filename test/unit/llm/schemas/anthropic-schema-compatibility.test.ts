@@ -84,6 +84,33 @@ function findAnthropicArrayConstraintIssues(node: unknown, path: string, issues:
   }
 }
 
+function findAnthropicIntegerConstraintIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
+  if (typeof node !== 'object' || node === null) {
+    return;
+  }
+
+  const record = node as Record<string, unknown>;
+  if (record['type'] === 'integer') {
+    if ('minimum' in record) {
+      issues.push({
+        path,
+        message: 'minimum is not supported for integer type in Anthropic-compatible schemas',
+      });
+    }
+
+    if ('maximum' in record) {
+      issues.push({
+        path,
+        message: 'maximum is not supported for integer type in Anthropic-compatible schemas',
+      });
+    }
+  }
+
+  for (const [key, value] of Object.entries(record)) {
+    findAnthropicIntegerConstraintIssues(value, `${path}.${key}`, issues);
+  }
+}
+
 function findEnumTypeIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
   if (typeof node !== 'object' || node === null) {
     return;
@@ -126,6 +153,7 @@ function findEnumTypeIssues(node: unknown, path: string, issues: SchemaIssue[]):
 function getIssues(schema: JsonSchema): SchemaIssue[] {
   const issues: SchemaIssue[] = [];
   findAnthropicArrayConstraintIssues(schema.json_schema.schema, 'schema', issues);
+  findAnthropicIntegerConstraintIssues(schema.json_schema.schema, 'schema', issues);
   findEnumTypeIssues(schema.json_schema.schema, 'schema', issues);
   return issues;
 }

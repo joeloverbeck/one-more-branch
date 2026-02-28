@@ -1,7 +1,9 @@
+import { getConfig } from '../config/index.js';
 import { getStageModel } from '../config/stage-model.js';
 import { logger } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -14,15 +16,15 @@ import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 
 const DEFAULT_PROSE_QUALITY_TEMPERATURE = 0.3;
-const DEFAULT_PROSE_QUALITY_MAX_TOKENS = 4096;
 
 async function callProseQualityStructured(
   messages: ChatMessage[],
   options: GenerationOptions
 ): Promise<ProseQualityResult & { rawResponse: string }> {
+  const config = getConfig().llm;
   const model = options.model ?? getStageModel('proseQuality');
   const temperature = options.temperature ?? DEFAULT_PROSE_QUALITY_TEMPERATURE;
-  const maxTokens = options.maxTokens ?? DEFAULT_PROSE_QUALITY_MAX_TOKENS;
+  const maxTokens = options.maxTokens ?? config.maxTokens;
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -53,23 +55,7 @@ async function callProseQualityStructured(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-
-  if (!content) {
-    const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
-    const usage = data.usage;
-    logger.warn('Prose quality evaluator received empty content from OpenRouter', {
-      finishReason,
-      usage,
-      model,
-      choicesLength: data.choices?.length ?? 0,
-    });
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true, {
-      finishReason,
-      usage,
-      model,
-    });
-  }
+  const content = extractResponseContent(data, 'prose-quality', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const parsed = parsedMessage.parsed;

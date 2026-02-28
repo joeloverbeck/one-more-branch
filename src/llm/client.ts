@@ -99,7 +99,7 @@ export async function generateStructureEvaluation(
 
   logPrompt(logger, 'structureEvaluator', messages);
 
-  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('structureEvaluator');
   return withRetry(() =>
     withModelFallback(
@@ -118,7 +118,7 @@ export async function generatePromiseTracking(
 
   logPrompt(logger, 'promiseTracker', messages);
 
-  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('promiseTracker');
   return withRetry(() =>
     withModelFallback(
@@ -137,7 +137,7 @@ export async function generateProseQualityEvaluation(
 
   logPrompt(logger, 'proseQuality', messages);
 
-  const evalOptions = { ...options, temperature: 0.3, maxTokens: 4096 };
+  const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('proseQuality');
   return withRetry(() =>
     withModelFallback(
@@ -156,7 +156,7 @@ export async function generateNpcIntelligenceEvaluation(
 
   logPrompt(logger, 'npcIntelligence', messages);
 
-  const evalOptions = { ...options, temperature: 0.3, maxTokens: 8192 };
+  const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('npcIntelligence');
   return withRetry(() =>
     withModelFallback(
@@ -212,7 +212,7 @@ export async function generateLorekeeperBible(
 
   logPrompt(logger, 'lorekeeper', messages);
 
-  const lorekeeperOptions = { ...options, temperature: 0.3, maxTokens: 2048 };
+  const lorekeeperOptions = { ...options, temperature: 0.3 };
   const primaryModel = lorekeeperOptions.model ?? getStageModel('lorekeeper');
   return withRetry(() =>
     withModelFallback(

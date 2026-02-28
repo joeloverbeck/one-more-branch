@@ -215,8 +215,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       anyOf: [
                         {
                           type: 'integer',
-                          minimum: 0,
-                          maximum: 5,
+                          enum: [0, 1, 2, 3, 4, 5],
                         },
                         { type: 'null' },
                       ],
