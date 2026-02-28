@@ -52,7 +52,7 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
   }
 
   systemSections.push(CONTENT_POLICY);
-  systemSections.push(buildConceptTaxonomyGuidance());
+  systemSections.push(buildConceptTaxonomyGuidance(context.excludedGenres));
   const kernelConstraintBlock = buildKernelConstraintBlock(kernel);
   if (kernelConstraintBlock) {
     systemSections.push(kernelConstraintBlock);

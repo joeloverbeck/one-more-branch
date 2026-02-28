@@ -57,8 +57,19 @@ export const DRIFT_RISK_MITIGATION_TYPES = [
 
 export type DriftRiskMitigationType = (typeof DRIFT_RISK_MITIGATION_TYPES)[number];
 
+export const MIN_UNBANNED_GENRES = 6;
+
 export function isGenreFrame(value: unknown): value is GenreFrame {
   return typeof value === 'string' && (GENRE_FRAMES as readonly string[]).includes(value);
+}
+
+export function filterGenreFrames(
+  excludedGenres?: readonly GenreFrame[],
+): readonly GenreFrame[] {
+  if (!excludedGenres || excludedGenres.length === 0) {
+    return GENRE_FRAMES;
+  }
+  return GENRE_FRAMES.filter((genre) => !excludedGenres.includes(genre));
 }
 
 export function isSettingScale(value: unknown): value is SettingScale {
@@ -264,6 +275,7 @@ export interface ConceptSeederContext {
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
   readonly kernel?: StoryKernel;
+  readonly excludedGenres?: readonly GenreFrame[];
 }
 
 export interface ConceptSeederResult {
@@ -274,6 +286,7 @@ export interface ConceptSeederResult {
 export interface ConceptEvolverSeederContext {
   readonly parentConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
+  readonly excludedGenres?: readonly GenreFrame[];
 }
 
 export interface ConceptEvolverSeederResult {
@@ -307,6 +320,7 @@ export interface ConceptIdeatorContext {
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
   readonly kernel?: StoryKernel;
+  readonly excludedGenres?: readonly GenreFrame[];
 }
 
 export interface ConceptIdeationResult {
@@ -317,6 +331,7 @@ export interface ConceptIdeationResult {
 export interface ConceptEvolverContext {
   readonly parentConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
+  readonly excludedGenres?: readonly GenreFrame[];
 }
 
 export interface ConceptEvolutionResult {

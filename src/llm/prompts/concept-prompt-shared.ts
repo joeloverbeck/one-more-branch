@@ -1,4 +1,10 @@
-import { CONFLICT_AXES, GENRE_FRAMES, SETTING_SCALES } from '../../models/concept-generator.js';
+import {
+  CONFLICT_AXES,
+  GENRE_FRAMES,
+  SETTING_SCALES,
+  filterGenreFrames,
+} from '../../models/concept-generator.js';
+import type { GenreFrame } from '../../models/concept-generator.js';
 import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 
 function buildEnumGuidance(label: string, values: readonly string[], descriptions: string[]): string {
@@ -6,9 +12,7 @@ function buildEnumGuidance(label: string, values: readonly string[], description
   return `${label}:\n${rows.join('\n')}`;
 }
 
-export function buildSeederTaxonomyGuidance(): string {
-  return `TAXONOMY GUIDANCE:
-${buildEnumGuidance('genreFrame', GENRE_FRAMES, [
+const GENRE_DESCRIPTIONS: readonly string[] = [
   'Physical peril, exotic locations, and protagonist resourcefulness.',
   'Youth protagonist journey from naivete through disillusionment to maturity.',
   'Incomprehensible reality, insignificance of humanity, knowledge as madness.',
@@ -43,7 +47,23 @@ ${buildEnumGuidance('genreFrame', GENRE_FRAMES, [
   'Self-caused downfall through fatal flaw; peripeteia and catharsis.',
   'Frontier law, territory, and legacy conflict.',
   'Martial-arts honor code, jianghu underworld, qi cultivation, and sect politics.',
-])}
+];
+
+function filterGenreDescriptions(
+  excludedGenres?: readonly GenreFrame[],
+): { genres: readonly string[]; descriptions: string[] } {
+  const allowed = filterGenreFrames(excludedGenres);
+  const descriptions = allowed.map((genre) => {
+    const index = GENRE_FRAMES.indexOf(genre);
+    return GENRE_DESCRIPTIONS[index] as string;
+  });
+  return { genres: allowed, descriptions };
+}
+
+export function buildSeederTaxonomyGuidance(excludedGenres?: readonly GenreFrame[]): string {
+  const { genres, descriptions } = filterGenreDescriptions(excludedGenres);
+  return `TAXONOMY GUIDANCE:
+${buildEnumGuidance('genreFrame', genres, descriptions)}
 
 ${buildEnumGuidance('conflictAxis', CONFLICT_AXES, [
   'Personal agency against institutions.',
@@ -81,44 +101,10 @@ ${buildEnumGuidance('settingScale', SETTING_SCALES, [
 `;
 }
 
-export function buildConceptTaxonomyGuidance(): string {
+export function buildConceptTaxonomyGuidance(excludedGenres?: readonly GenreFrame[]): string {
+  const { genres, descriptions } = filterGenreDescriptions(excludedGenres);
   return `TAXONOMY GUIDANCE:
-${buildEnumGuidance('genreFrame', GENRE_FRAMES, [
-  'Physical peril, exotic locations, and protagonist resourcefulness.',
-  'Youth protagonist journey from naivete through disillusionment to maturity.',
-  'Incomprehensible reality, insignificance of humanity, knowledge as madness.',
-  'Daoist-cosmology power progression through tiered cultivation realms and tribulations.',
-  'Low-life and high tech; street survival against corporate megastructures.',
-  'Gallows humor and absurd irony amid genuinely dire stakes.',
-  'Interpersonal and social conflict realism.',
-  'Systemic collapse and controlled oppression.',
-  'Physical desire as narrative engine; intimacy as character revelation.',
-  'Deception, cover identities, and loyalty-versus-mission tension.',
-  'Moral allegory with symbolic clarity.',
-  'Mythic or magical rule-bound worlds.',
-  'Decay, obsession, and oppressive atmosphere.',
-  'Moral nihilism where right action is impossible or futile.',
-  'Team-assembled scheme with plan-execution-twist structure and competence spectacle.',
-  'Real-period settings with era-specific customs, constraints, and dilemmas.',
-  'Fear, dread, and destabilization.',
-  'Transported protagonist adapting to a new world with outsider knowledge.',
-  'Character interiority and social nuance focus.',
-  'Mundane world where the impossible is treated as ordinary.',
-  'Investigation and hidden truth recovery.',
-  'Archetypal struggle and legend-scale stakes.',
-  'Moral ambiguity, corruption, and fatalism.',
-  'Episodic rogue journey through satirical social exposure.',
-  'Collapsed civilization, survival, and rebuilding amid ruins.',
-  'Intimacy, attachment, and relational stakes.',
-  'Societal critique through exaggeration or irony.',
-  'Speculative systems and technological consequences.',
-  'Galactic-scale character drama with epic emotional stakes and cosmic spectacle.',
-  'Dream-logic, symbolic dislocation, altered reality.',
-  'Sustained danger and tightening pressure.',
-  'Self-caused downfall through fatal flaw; peripeteia and catharsis.',
-  'Frontier law, territory, and legacy conflict.',
-  'Martial-arts honor code, jianghu underworld, qi cultivation, and sect politics.',
-])}
+${buildEnumGuidance('genreFrame', genres, descriptions)}
 
 ${buildEnumGuidance('conflictAxis', CONFLICT_AXES, [
   'Personal agency against institutions.',

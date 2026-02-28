@@ -4,7 +4,7 @@ import { LLMError } from './llm-client-types.js';
 import { runLlmStage } from './llm-stage-runner.js';
 import { parseConceptSeed } from './concept-spec-parser.js';
 import { buildConceptSeederPrompt } from './prompts/concept-seeder-prompt.js';
-import { CONCEPT_SEEDER_SCHEMA } from './schemas/concept-seeder-schema.js';
+import { buildConceptSeederSchema } from './schemas/concept-seeder-schema.js';
 
 export function parseConceptSeederResponse(parsed: unknown): readonly ConceptSeedFields[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
@@ -42,7 +42,7 @@ export async function generateConceptSeeds(
     promptType: 'conceptSeeder',
     apiKey,
     options,
-    schema: CONCEPT_SEEDER_SCHEMA,
+    schema: buildConceptSeederSchema(context.excludedGenres),
     messages,
     parseResponse: parseConceptSeederResponse,
   });

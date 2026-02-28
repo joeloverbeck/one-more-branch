@@ -50,7 +50,7 @@ export function buildConceptSeederPrompt(context: ConceptSeederContext): ChatMes
   }
 
   systemSections.push(CONTENT_POLICY);
-  systemSections.push(buildSeederTaxonomyGuidance());
+  systemSections.push(buildSeederTaxonomyGuidance(context.excludedGenres));
   const kernelConstraintBlock = buildKernelConstraintBlock(kernel);
   if (kernelConstraintBlock) {
     systemSections.push(kernelConstraintBlock);
