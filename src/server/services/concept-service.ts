@@ -1,10 +1,17 @@
 import { evaluateConcepts } from '../../llm/concept-evaluator.js';
-import { generateConceptIdeas } from '../../llm/concept-ideator.js';
+import {
+  generateConceptIdeas,
+  generateConceptIdeation,
+  generateConceptDevelopment,
+} from '../../llm/concept-ideator.js';
+import type { ConceptIdeationPhaseResult } from '../../llm/concept-ideator.js';
 import { stressTestConcept as runConceptStressTest } from '../../llm/concept-stress-tester.js';
 import { verifyConcepts as runVerifyConcepts } from '../../llm/concept-verifier.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
+  ConceptCharacterWorldFields,
   ConceptDimensionScores,
+  ConceptSeedFields,
   ConceptSpec,
   ConceptVerification,
   ScoredConcept,
@@ -31,6 +38,31 @@ export interface GenerateConceptsResult {
   readonly verifications: readonly ConceptVerification[];
 }
 
+export interface IdeateConceptsInput {
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
+  readonly excludedGenres?: readonly GenreFrame[];
+  readonly kernel: StoryKernel;
+  readonly apiKey: string;
+  readonly onGenerationStage?: GenerationStageCallback;
+}
+
+export interface IdeateConceptsResult {
+  readonly seeds: readonly ConceptSeedFields[];
+  readonly characterWorlds: readonly ConceptCharacterWorldFields[];
+}
+
+export interface DevelopConceptsInput {
+  readonly seeds: readonly ConceptSeedFields[];
+  readonly characterWorlds: readonly ConceptCharacterWorldFields[];
+  readonly kernel: StoryKernel;
+  readonly apiKey: string;
+  readonly onGenerationStage?: GenerationStageCallback;
+}
+
+export type DevelopConceptsResult = GenerateConceptsResult;
+
 export interface StressTestInput {
   readonly concept: ConceptSpec;
   readonly scores: ConceptDimensionScores;
@@ -42,6 +74,8 @@ export interface StressTestInput {
 
 interface ConceptServiceDeps {
   readonly generateConceptIdeas: typeof generateConceptIdeas;
+  readonly generateConceptIdeation: typeof generateConceptIdeation;
+  readonly generateConceptDevelopment: typeof generateConceptDevelopment;
   readonly evaluateConcepts: typeof evaluateConcepts;
   readonly stressTestConcept: typeof runConceptStressTest;
   readonly verifyConcepts: typeof runVerifyConcepts;
@@ -49,6 +83,8 @@ interface ConceptServiceDeps {
 
 export interface ConceptService {
   generateConcepts(input: GenerateConceptsInput): Promise<GenerateConceptsResult>;
+  ideateConcepts(input: IdeateConceptsInput): Promise<IdeateConceptsResult>;
+  developConcepts(input: DevelopConceptsInput): Promise<DevelopConceptsResult>;
   stressTestConcept(input: StressTestInput): Promise<ConceptStressTestResult>;
 }
 
@@ -65,6 +101,8 @@ export class ConceptEvaluationStageError extends Error {
 
 const defaultDeps: ConceptServiceDeps = {
   generateConceptIdeas,
+  generateConceptIdeation,
+  generateConceptDevelopment,
   evaluateConcepts,
   stressTestConcept: runConceptStressTest,
   verifyConcepts: runVerifyConcepts,
@@ -219,6 +257,69 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
 
       return {
         ideatedConcepts: ideation.concepts,
+        scoredConcepts: evaluation.scoredConcepts,
+        evaluatedConcepts: evaluation.evaluatedConcepts,
+        verifications: verification.verifications,
+      };
+    },
+
+    async ideateConcepts(input: IdeateConceptsInput): Promise<IdeateConceptsResult> {
+      const apiKey = requireApiKey(input.apiKey);
+      const seeds = requireConceptSeeds(input);
+      const kernel = requireKernel(input.kernel);
+      const onGenerationStage = input.onGenerationStage;
+
+      onGenerationStage?.({ stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 });
+      onGenerationStage?.({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
+      const ideation: ConceptIdeationPhaseResult = await deps.generateConceptIdeation(
+        { ...seeds, excludedGenres: input.excludedGenres, kernel },
+        apiKey,
+      );
+      onGenerationStage?.({ stage: 'ARCHITECTING_CONCEPTS', status: 'completed', attempt: 1 });
+
+      return { seeds: ideation.seeds, characterWorlds: ideation.characterWorlds };
+    },
+
+    async developConcepts(input: DevelopConceptsInput): Promise<DevelopConceptsResult> {
+      const apiKey = requireApiKey(input.apiKey);
+      const kernel = requireKernel(input.kernel);
+      const onGenerationStage = input.onGenerationStage;
+
+      if (!Array.isArray(input.seeds) || input.seeds.length === 0) {
+        throw new Error('At least one concept seed is required');
+      }
+      if (!Array.isArray(input.characterWorlds) || input.characterWorlds.length !== input.seeds.length) {
+        throw new Error('characterWorlds must match seeds length');
+      }
+
+      onGenerationStage?.({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
+      const development = await deps.generateConceptDevelopment(
+        { seeds: input.seeds, characterWorlds: input.characterWorlds, kernel },
+        apiKey,
+      );
+      onGenerationStage?.({ stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 });
+
+      onGenerationStage?.({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
+      const evaluation = await deps.evaluateConcepts(
+        {
+          concepts: development.concepts,
+          userSeeds: { apiKey },
+        },
+        apiKey,
+      ).catch((error: unknown) => {
+        throw new ConceptEvaluationStageError(development.concepts, error);
+      });
+      onGenerationStage?.({ stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 });
+
+      onGenerationStage?.({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
+      const verification = await deps.verifyConcepts(
+        { evaluatedConcepts: evaluation.evaluatedConcepts, kernel },
+        apiKey,
+      );
+      onGenerationStage?.({ stage: 'GENERATING_SCENARIOS', status: 'completed', attempt: 1 });
+
+      return {
+        ideatedConcepts: development.concepts,
         scoredConcepts: evaluation.scoredConcepts,
         evaluatedConcepts: evaluation.evaluatedConcepts,
         verifications: verification.verifications,

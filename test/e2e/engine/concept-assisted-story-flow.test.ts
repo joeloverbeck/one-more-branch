@@ -7,6 +7,8 @@ jest.mock('@/llm', () => ({
 
 jest.mock('@/llm/concept-ideator', () => ({
   generateConceptIdeas: jest.fn(),
+  generateConceptIdeation: jest.fn(),
+  generateConceptDevelopment: jest.fn(),
 }));
 
 jest.mock('@/llm/concept-evaluator', () => ({
@@ -50,7 +52,11 @@ jest.mock('@/logging/index', () => ({
 import { storyEngine } from '@/engine';
 import { generateStoryStructure, decomposeEntities } from '@/llm';
 import { evaluateConcepts } from '@/llm/concept-evaluator';
-import { generateConceptIdeas } from '@/llm/concept-ideator';
+import {
+  generateConceptIdeas,
+  generateConceptIdeation,
+  generateConceptDevelopment,
+} from '@/llm/concept-ideator';
 import { stressTestConcept } from '@/llm/concept-stress-tester';
 import { verifyConcepts } from '@/llm/concept-verifier';
 import type { StoryId, StorySpine } from '@/models';
@@ -64,6 +70,8 @@ import {
 } from '@/persistence/concept-repository';
 import { loadKernel } from '@/persistence/kernel-repository';
 import {
+  createConceptCharacterWorldFixture,
+  createConceptSeedFixture,
   createConceptSpecFixture,
   createConceptStressTestFixture,
   createConceptVerificationFixture,
@@ -132,6 +140,12 @@ describe('Concept Assisted Story Flow (E2E)', () => {
   const mockedGenerateConceptIdeas = generateConceptIdeas as jest.MockedFunction<
     typeof generateConceptIdeas
   >;
+  const mockedGenerateConceptIdeation = generateConceptIdeation as jest.MockedFunction<
+    typeof generateConceptIdeation
+  >;
+  const mockedGenerateConceptDevelopment = generateConceptDevelopment as jest.MockedFunction<
+    typeof generateConceptDevelopment
+  >;
   const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
   const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
   const mockedVerifyConcepts = verifyConcepts as jest.MockedFunction<typeof verifyConcepts>;
@@ -146,7 +160,8 @@ describe('Concept Assisted Story Flow (E2E)', () => {
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
   const mockedLoadKernel = loadKernel as jest.MockedFunction<typeof loadKernel>;
 
-  const generateConceptsHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate');
+  const ideateHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate/ideate');
+  const developHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate/develop');
   const saveConceptHandler = getRouteHandler(conceptRoutes, 'post', '/api/save');
   const hardenHandler = getRouteHandler(conceptRoutes, 'post', '/api/:conceptId/harden');
   const createAjaxHandler = getRouteHandler(storyRoutes, 'post', '/create-ajax');
@@ -155,9 +170,19 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     jest.clearAllMocks();
     storyEngine.init();
 
+    const seeds = Array.from({ length: 6 }, (_, index) => createConceptSeedFixture(index + 1));
+    const characterWorlds = Array.from({ length: 6 }, (_, index) =>
+      createConceptCharacterWorldFixture(index + 1),
+    );
+
     mockedGenerateConceptIdeas.mockResolvedValue({
       concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
       rawResponse: 'raw-ideas',
+    });
+    mockedGenerateConceptIdeation.mockResolvedValue({ seeds, characterWorlds });
+    mockedGenerateConceptDevelopment.mockResolvedValue({
+      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
+      rawResponse: 'raw-develop',
     });
     mockedEvaluateConcepts.mockResolvedValue({
       scoredConcepts: Array.from({ length: 6 }, (_, index) => createScoredConceptFixture(index + 1)),
@@ -253,10 +278,10 @@ describe('Concept Assisted Story Flow (E2E)', () => {
   });
 
   it('generates concepts, saves, hardens, and persists conceptSpec on story creation', async () => {
-    // Step 1: Generate concepts
-    const generateStatus = jest.fn().mockReturnThis();
-    const generateJson = jest.fn().mockReturnThis();
-    void generateConceptsHandler(
+    // Step 1a: Ideate concepts
+    const ideateStatus = jest.fn().mockReturnThis();
+    const ideateJson = jest.fn().mockReturnThis();
+    void ideateHandler(
       {
         body: {
           genreVibes: 'dark fantasy',
@@ -265,17 +290,43 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           apiKey: 'valid-key-12345',
         },
       } as Request,
-      { status: generateStatus, json: generateJson } as unknown as Response,
+      { status: ideateStatus, json: ideateJson } as unknown as Response,
     );
-    await waitForMock(generateJson);
-    expect(generateStatus).not.toHaveBeenCalled();
+    await waitForMock(ideateJson);
+    expect(ideateStatus).not.toHaveBeenCalled();
 
-    const generatePayload = getMockCallArg(generateJson, 0, 0) as {
+    const ideatePayload = getMockCallArg(ideateJson, 0, 0) as {
+      success: boolean;
+      seeds: unknown[];
+      characterWorlds: unknown[];
+    };
+    expect(ideatePayload.success).toBe(true);
+    expect(ideatePayload.seeds).toHaveLength(6);
+    expect(ideatePayload.characterWorlds).toHaveLength(6);
+
+    // Step 1b: Develop concepts (select all)
+    const developStatus = jest.fn().mockReturnThis();
+    const developJson = jest.fn().mockReturnThis();
+    void developHandler(
+      {
+        body: {
+          seeds: ideatePayload.seeds,
+          characterWorlds: ideatePayload.characterWorlds,
+          kernelId: 'kernel-1',
+          apiKey: 'valid-key-12345',
+        },
+      } as Request,
+      { status: developStatus, json: developJson } as unknown as Response,
+    );
+    await waitForMock(developJson);
+    expect(developStatus).not.toHaveBeenCalled();
+
+    const developPayload = getMockCallArg(developJson, 0, 0) as {
       success: boolean;
       evaluatedConcepts: ReturnType<typeof createEvaluatedConceptFixture>[];
     };
     expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
-    const evaluatedConcepts = generatePayload.evaluatedConcepts;
+    const evaluatedConcepts = developPayload.evaluatedConcepts;
     expect(evaluatedConcepts).toHaveLength(3);
 
     const selected = evaluatedConcepts[0];

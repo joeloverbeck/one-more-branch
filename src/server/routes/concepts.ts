@@ -2,7 +2,13 @@ import { randomUUID } from 'node:crypto';
 import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
-import type { ConceptSpec, ConceptVerification, EvaluatedConcept } from '../../models/index.js';
+import type {
+  ConceptCharacterWorldFields,
+  ConceptSeedFields,
+  ConceptSpec,
+  ConceptVerification,
+  EvaluatedConcept,
+} from '../../models/index.js';
 import { GENRE_FRAMES, MIN_UNBANNED_GENRES, isGenreFrame } from '../../models/index.js';
 import type { GenreFrame } from '../../models/concept-generator.js';
 import type { ConceptSeeds, SavedConcept } from '../../models/saved-concept.js';
@@ -55,21 +61,6 @@ function parseExcludedGenres(input: unknown): GenreFrame[] | null {
   return validated;
 }
 
-function normalizeConceptSeeds(body: {
-  genreVibes?: string;
-  moodKeywords?: string;
-  contentPreferences?: string;
-}): {
-  genreVibes?: string;
-  moodKeywords?: string;
-  contentPreferences?: string;
-} {
-  return {
-    genreVibes: body.genreVibes?.trim(),
-    moodKeywords: body.moodKeywords?.trim(),
-    contentPreferences: body.contentPreferences?.trim(),
-  };
-}
 
 conceptRoutes.get(
   '/',
@@ -108,7 +99,7 @@ conceptRoutes.get(
 );
 
 conceptRoutes.post(
-  '/api/generate',
+  '/api/generate/ideate',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const body = req.body as {
       genreVibes?: string;
@@ -151,14 +142,90 @@ conceptRoutes.post(
 
     const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
 
-    const normalizedSeeds = normalizeConceptSeeds(body);
-
     try {
-      const result = await conceptService.generateConcepts({
+      const result = await conceptService.ideateConcepts({
         genreVibes: body.genreVibes,
         moodKeywords: body.moodKeywords,
         contentPreferences: body.contentPreferences,
         excludedGenres: excludedGenres.length > 0 ? excludedGenres : undefined,
+        kernel: savedKernel.evaluatedKernel.kernel,
+        apiKey,
+        onGenerationStage: progress.onGenerationStage,
+      });
+
+      progress.complete();
+
+      return res.json({
+        success: true,
+        seeds: result.seeds,
+        characterWorlds: result.characterWorlds,
+      });
+    } catch (error) {
+      if (error instanceof LLMError) {
+        logger.error('LLM error during concept ideation', {
+          code: error.code,
+          stage: error.context?.['stage'],
+          model: error.context?.['model'],
+          retryable: error.retryable,
+        });
+        const { publicMessage, response } = buildLlmRouteErrorResult(error);
+        progress.fail(publicMessage);
+        return res.status(500).json(response);
+      }
+
+      const err = error instanceof Error ? error : new Error(String(error));
+      progress.fail(err.message);
+      logger.error('Error during concept ideation:', { error: err.message, stack: err.stack });
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  })
+);
+
+conceptRoutes.post(
+  '/api/generate/develop',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const body = req.body as {
+      seeds?: ConceptSeedFields[];
+      characterWorlds?: ConceptCharacterWorldFields[];
+      kernelId?: string;
+      apiKey?: string;
+      progressId?: unknown;
+    };
+
+    const apiKey = body.apiKey?.trim();
+    if (!apiKey || apiKey.length < 10) {
+      return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
+    }
+
+    if (!Array.isArray(body.seeds) || body.seeds.length === 0) {
+      return res.status(400).json({ success: false, error: 'At least one seed is required' });
+    }
+
+    if (
+      !Array.isArray(body.characterWorlds) ||
+      body.characterWorlds.length !== body.seeds.length
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'characterWorlds must match seeds length' });
+    }
+
+    const kernelId = body.kernelId?.trim();
+    if (!kernelId) {
+      return res.status(400).json({ success: false, error: 'Kernel selection is required' });
+    }
+
+    const savedKernel = await loadKernel(kernelId);
+    if (!savedKernel) {
+      return res.status(400).json({ success: false, error: 'Selected kernel was not found' });
+    }
+
+    const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
+
+    try {
+      const result = await conceptService.developConcepts({
+        seeds: body.seeds,
+        characterWorlds: body.characterWorlds,
         kernel: savedKernel.evaluatedKernel.kernel,
         apiKey,
         onGenerationStage: progress.onGenerationStage,
@@ -169,7 +236,7 @@ conceptRoutes.post(
       await saveConceptGenerationBatch({
         id: generationId,
         generatedAt,
-        seeds: normalizedSeeds,
+        seeds: {},
         ideatedConcepts: result.ideatedConcepts,
         scoredConcepts: result.scoredConcepts,
         selectedConcepts: result.evaluatedConcepts,
@@ -191,7 +258,7 @@ conceptRoutes.post(
           await saveConceptGenerationBatch({
             id: randomUUID(),
             generatedAt: new Date().toISOString(),
-            seeds: normalizedSeeds,
+            seeds: {},
             ideatedConcepts: error.ideatedConcepts,
             scoredConcepts: [],
             selectedConcepts: [],
@@ -206,7 +273,7 @@ conceptRoutes.post(
       }
 
       if (rootError instanceof LLMError) {
-        logger.error('LLM error during concept generation', {
+        logger.error('LLM error during concept development', {
           code: rootError.code,
           stage: rootError.context?.['stage'],
           model: rootError.context?.['model'],
@@ -219,7 +286,7 @@ conceptRoutes.post(
 
       const err = rootError instanceof Error ? rootError : new Error(String(rootError));
       progress.fail(err.message);
-      logger.error('Error generating concepts:', { error: err.message, stack: err.stack });
+      logger.error('Error during concept development:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
   })

@@ -3564,6 +3564,160 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     };
   }
 
+  // ── Concept Selection Renderer ─────────────────────────────────────
+
+  function renderConceptSelectionCards(seeds, characterWorlds, container) {
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!Array.isArray(seeds) || seeds.length === 0) {
+      container.innerHTML = '<p class="spine-section-subtitle">No concepts to select.</p>';
+      return;
+    }
+
+    seeds.forEach(function (seed, index) {
+      var cw = characterWorlds[index] || {};
+      var card = document.createElement('article');
+      card.className = 'spine-card concept-card concept-selection-card';
+      card.dataset.selectionIndex = String(index);
+
+      var conflictTypeBadge = seed.conflictType
+        ? '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(seed.conflictType)) + '</span>'
+        : '';
+
+      var html =
+        '<div class="concept-selection-card__toggle">' +
+          '<label class="concept-selection-label">' +
+            '<input type="checkbox" class="concept-selection-checkbox" data-selection-index="' + index + '" checked>' +
+            '<span class="concept-selection-checkmark"></span>' +
+          '</label>' +
+        '</div>' +
+        '<div class="concept-selection-card__body">' +
+          '<div class="spine-badges">' +
+            '<span class="spine-badge spine-badge-type">' + escapeHtml(formatConceptLabel(seed.genreFrame)) + '</span>' +
+            '<span class="spine-badge spine-badge-conflict">' + escapeHtml(formatConceptLabel(seed.conflictAxis)) + '</span>' +
+            conflictTypeBadge +
+          '</div>' +
+          '<h3 class="spine-cdq">' + escapeHtml(seed.oneLineHook || '') + '</h3>';
+
+      // Seed identity fields
+      if (seed.whatIfQuestion) {
+        html += '<p class="spine-field concept-what-if"><span class="spine-label">What If:</span> <em>' + escapeHtml(seed.whatIfQuestion) + '</em></p>';
+      }
+      if (seed.playerFantasy) {
+        html += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(seed.playerFantasy) + '</em></p>';
+      }
+      if (seed.genreSubversion) {
+        html += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(seed.genreSubversion) + '</div>';
+      }
+
+      // Character fields from architect
+      if (cw.protagonistRole) {
+        html += '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(cw.protagonistRole) + '</div>';
+      }
+      if (cw.coreCompetence) {
+        html += '<div class="spine-field"><span class="spine-label">Core Competence:</span> ' + escapeHtml(cw.coreCompetence) + '</div>';
+      }
+      if (cw.coreFlaw) {
+        html += '<div class="spine-field"><span class="spine-label">Core Flaw:</span> ' + escapeHtml(cw.coreFlaw) + '</div>';
+      }
+      if (cw.coreConflictLoop) {
+        html += '<div class="spine-field"><span class="spine-label">Conflict Loop:</span> ' + escapeHtml(cw.coreConflictLoop) + '</div>';
+      }
+
+      // World fields from architect
+      if (Array.isArray(cw.settingAxioms) && cw.settingAxioms.length > 0) {
+        html += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(cw.settingAxioms) + '</ul></div>';
+      }
+      if (Array.isArray(cw.constraintSet) && cw.constraintSet.length > 0) {
+        html += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(cw.constraintSet) + '</ul></div>';
+      }
+      if (Array.isArray(cw.keyInstitutions) && cw.keyInstitutions.length > 0) {
+        html += '<div class="spine-field"><span class="spine-label">Key Institutions:</span><ul>' + renderListItems(cw.keyInstitutions) + '</ul></div>';
+      }
+      if (cw.settingScale) {
+        html += '<div class="spine-field"><span class="spine-label">Setting Scale:</span> ' + escapeHtml(formatConceptLabel(cw.settingScale)) + '</div>';
+      }
+
+      html += '</div>';
+      card.innerHTML = html;
+
+      // Toggle card visual state on checkbox change
+      var checkbox = card.querySelector('.concept-selection-checkbox');
+      if (checkbox) {
+        checkbox.addEventListener('change', function () {
+          if (checkbox.checked) {
+            card.classList.remove('concept-selection-card--excluded');
+          } else {
+            card.classList.add('concept-selection-card--excluded');
+          }
+        });
+
+        checkbox.addEventListener('click', function (e) {
+          e.stopPropagation();
+        });
+      }
+
+      // Toggle checkbox on card click
+      card.addEventListener('click', function () {
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        }
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  function getSelectedConceptIndices(container) {
+    if (!container) return [];
+    var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
+    var indices = [];
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) {
+        indices.push(Number(checkboxes[i].dataset.selectionIndex));
+      }
+    }
+    return indices;
+  }
+
+  function getSelectedConceptCount(container) {
+    return getSelectedConceptIndices(container).length;
+  }
+
+  function selectAllConcepts(container) {
+    if (!container) return;
+    var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = true;
+      var card = checkboxes[i].closest('.concept-selection-card');
+      if (card) card.classList.remove('concept-selection-card--excluded');
+    }
+  }
+
+  function deselectAllConcepts(container) {
+    if (!container) return;
+    var checkboxes = container.querySelectorAll('.concept-selection-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = false;
+      var card = checkboxes[i].closest('.concept-selection-card');
+      if (card) card.classList.add('concept-selection-card--excluded');
+    }
+  }
+
+  function updateSelectionCounter(container, counterEl, continueBtn) {
+    if (!container) return;
+    var total = container.querySelectorAll('.concept-selection-checkbox').length;
+    var selected = getSelectedConceptCount(container);
+    if (counterEl) {
+      counterEl.textContent = selected + ' of ' + total + ' selected';
+    }
+    if (continueBtn) {
+      continueBtn.disabled = selected === 0;
+    }
+  }
+
   // ── Choice renderers ──────────────────────────────────────────────
 
   function renderChoiceButtons(choiceList) {
@@ -6175,6 +6329,16 @@ function createRecapModalController(initialData) {
     var lastVerifications = [];
     var lastSeeds = null;
     var selectedKernelId = '';
+    var lastIdeatedSeeds = null;
+    var lastIdeatedCharacterWorlds = null;
+
+    // Selection gate DOM references
+    var conceptSelectionSection = document.getElementById('concept-selection-section');
+    var conceptSelectionCards = document.getElementById('concept-selection-cards');
+    var selectAllConceptsBtn = document.getElementById('select-all-concepts-btn');
+    var deselectAllConceptsBtn = document.getElementById('deselect-all-concepts-btn');
+    var developConceptsBtn = document.getElementById('develop-concepts-btn');
+    var conceptSelectionCounter = document.getElementById('concept-selection-counter');
     var kernelSummaryFields = {
       thesis: kernelThesis,
       valueAtStake: kernelValue,
@@ -6330,9 +6494,9 @@ function createRecapModalController(initialData) {
       }
     }
 
-    // ── Generate concepts ──────────────────────────────────────────
+    // ── Phase 1: Ideate concepts ──────────────────────────────────
 
-    async function handleGenerate() {
+    async function handleIdeate() {
       var conceptApiKeyInput = document.getElementById('conceptApiKey');
       if (
         conceptApiKeyInput &&
@@ -6360,12 +6524,14 @@ function createRecapModalController(initialData) {
       }
 
       generateBtn.disabled = true;
+      if (conceptSelectionSection) conceptSelectionSection.style.display = 'none';
+      if (conceptResultsSection) conceptResultsSection.style.display = 'none';
       loading.style.display = 'flex';
       var progressId = createProgressId();
       loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/generate', {
+        var response = await fetch('/concepts/api/generate/ideate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -6389,22 +6555,30 @@ function createRecapModalController(initialData) {
         if (!response.ok || !data || !data.success) {
           if (data && typeof data === 'object') {
             if (data.code) {
-              console.error('Concept generation error code:', data.code, '| Retryable:', data.retryable);
+              console.error('Concept ideation error code:', data.code, '| Retryable:', data.retryable);
             }
             if (data.debug) {
-              console.error('Concept generation debug info:', data.debug);
+              console.error('Concept ideation debug info:', data.debug);
             }
           }
 
-          throw new Error(data && data.error ? data.error : 'Failed to generate concepts');
+          throw new Error(data && data.error ? data.error : 'Failed to ideate concepts');
         }
 
         setApiKey(apiKey);
-        lastGeneratedConcepts = data.evaluatedConcepts;
-        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
+        lastIdeatedSeeds = data.seeds;
+        lastIdeatedCharacterWorlds = data.characterWorlds;
         lastSeeds = seeds;
 
-        renderGeneratedConcepts(data.evaluatedConcepts, seeds);
+        // Show selection gate
+        if (conceptSelectionCards) {
+          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards);
+        }
+        if (conceptSelectionSection) {
+          conceptSelectionSection.style.display = 'block';
+          updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+          conceptSelectionSection.scrollIntoView({ behavior: 'smooth' });
+        }
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
       } finally {
@@ -6414,7 +6588,84 @@ function createRecapModalController(initialData) {
       }
     }
 
-    function renderGeneratedConcepts(evaluatedConcepts, seeds) {
+    // ── Phase 2: Develop selected concepts ──────────────────────
+
+    async function handleDevelop() {
+      if (!lastIdeatedSeeds || !lastIdeatedCharacterWorlds) {
+        showError('No ideated concepts available. Generate first.');
+        return;
+      }
+
+      var selectedIndices = getSelectedConceptIndices(conceptSelectionCards);
+      if (selectedIndices.length === 0) {
+        showError('Select at least one concept to continue.');
+        return;
+      }
+
+      var apiKey = getConceptApiKey();
+      if (apiKey.length < 10) {
+        showError('OpenRouter API key is required');
+        return;
+      }
+
+      var filteredSeeds = selectedIndices.map(function (i) { return lastIdeatedSeeds[i]; });
+      var filteredCharacterWorlds = selectedIndices.map(function (i) { return lastIdeatedCharacterWorlds[i]; });
+
+      if (developConceptsBtn) developConceptsBtn.disabled = true;
+      loading.style.display = 'flex';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var response = await fetch('/concepts/api/generate/develop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            seeds: filteredSeeds,
+            characterWorlds: filteredCharacterWorlds,
+            kernelId: selectedKernelId,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_parseError) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          if (data && typeof data === 'object') {
+            if (data.code) {
+              console.error('Concept development error code:', data.code, '| Retryable:', data.retryable);
+            }
+            if (data.debug) {
+              console.error('Concept development debug info:', data.debug);
+            }
+          }
+
+          throw new Error(data && data.error ? data.error : 'Failed to develop concepts');
+        }
+
+        setApiKey(apiKey);
+        lastGeneratedConcepts = data.evaluatedConcepts;
+        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
+
+        if (conceptSelectionSection) conceptSelectionSection.style.display = 'none';
+        renderGeneratedConcepts(data.evaluatedConcepts);
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Something went wrong');
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+        if (developConceptsBtn) developConceptsBtn.disabled = false;
+        updateGenerateButtonState();
+      }
+    }
+
+    function renderGeneratedConcepts(evaluatedConcepts) {
       if (!conceptCardsContainer || !conceptResultsSection) {
         return;
       }
@@ -6927,7 +7178,7 @@ function createRecapModalController(initialData) {
 
     generateBtn.addEventListener('click', function (event) {
       event.preventDefault();
-      handleGenerate();
+      handleIdeate();
     });
     if (apiKeyInput) {
       apiKeyInput.addEventListener('input', updateGenerateButtonState);
@@ -6935,6 +7186,32 @@ function createRecapModalController(initialData) {
     if (kernelSelector instanceof HTMLSelectElement) {
       kernelSelector.addEventListener('change', function () {
         void handleKernelSelectionChange();
+      });
+    }
+
+    // Selection gate event listeners
+    if (selectAllConceptsBtn) {
+      selectAllConceptsBtn.addEventListener('click', function () {
+        selectAllConcepts(conceptSelectionCards);
+        updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+      });
+    }
+    if (deselectAllConceptsBtn) {
+      deselectAllConceptsBtn.addEventListener('click', function () {
+        deselectAllConcepts(conceptSelectionCards);
+        updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+      });
+    }
+    if (developConceptsBtn) {
+      developConceptsBtn.addEventListener('click', function () {
+        handleDevelop();
+      });
+    }
+    if (conceptSelectionCards) {
+      conceptSelectionCards.addEventListener('change', function (event) {
+        if (event.target && event.target.classList && event.target.classList.contains('concept-selection-checkbox')) {
+          updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+        }
       });
     }
 

@@ -10,9 +10,9 @@
     "models": {
       "kernelIdeator": "qwen/qwen3.5-397b-a17b",
       "kernelEvaluator": "qwen/qwen3.5-397b-a17b",
-      "conceptSeeder": "qwen/qwen3.5-397b-a17b",
+      "conceptSeeder": "anthropic/claude-sonnet-4.6",
       "conceptEvolverSeeder": "qwen/qwen3.5-397b-a17b",
-      "conceptArchitect": "qwen/qwen3.5-397b-a17b",
+      "conceptArchitect": "anthropic/claude-sonnet-4.6",
       "conceptEngineer": "qwen/qwen3.5-397b-a17b",
       "conceptEvaluator": "qwen/qwen3.5-397b-a17b",
       "kernelEvolver": "qwen/qwen3.5-397b-a17b",

@@ -3416,3 +3416,66 @@ main {
 .genre-chip-toast--visible {
   opacity: 1;
 }
+
+/* ── Concept Selection Gate ────────────────────────────────────── */
+
+.concept-selection-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.concept-selection-counter {
+  color: var(--color-muted, #999);
+  font-size: 0.9rem;
+}
+
+.concept-selection-card {
+  display: flex;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.concept-selection-card--excluded {
+  opacity: 0.35;
+  border-color: var(--color-muted, #555);
+}
+
+.concept-selection-card--excluded:hover {
+  opacity: 0.55;
+}
+
+.concept-selection-card__toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.25rem;
+}
+
+.concept-selection-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.concept-selection-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.concept-selection-checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+  accent-color: var(--color-primary, #3498db);
+}
+
+.concept-selection-checkmark {
+  display: none;
+}

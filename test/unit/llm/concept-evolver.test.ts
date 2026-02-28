@@ -32,15 +32,17 @@ const mockGenerateEngines = generateConceptEngines as jest.MockedFunction<
   typeof generateConceptEngines
 >;
 
-function createSeeds(count: number) {
+function createSeeds(count: number): Array<ReturnType<typeof createConceptSeedFixture>> {
   return Array.from({ length: count }, (_, i) => createConceptSeedFixture(i + 1));
 }
 
-function createCharacterWorlds(count: number) {
+function createCharacterWorlds(
+  count: number,
+): Array<ReturnType<typeof createConceptCharacterWorldFixture>> {
   return Array.from({ length: count }, (_, i) => createConceptCharacterWorldFixture(i + 1));
 }
 
-function createEngines(count: number) {
+function createEngines(count: number): Array<ReturnType<typeof createConceptEngineFixture>> {
   return Array.from({ length: count }, (_, i) => createConceptEngineFixture(i + 1));
 }
 

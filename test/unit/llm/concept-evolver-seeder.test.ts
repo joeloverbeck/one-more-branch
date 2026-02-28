@@ -14,7 +14,7 @@ function createDiverseSeed(
   };
 }
 
-function createValidPayload() {
+function createValidPayload(): { concepts: ConceptSeedFields[] } {
   const genres = ['NOIR', 'SCI_FI', 'FANTASY', 'THRILLER', 'DRAMA', 'GOTHIC'];
   const axes = [
     'TRUTH_VS_STABILITY',

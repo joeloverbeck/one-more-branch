@@ -33,6 +33,16 @@
     var lastVerifications = [];
     var lastSeeds = null;
     var selectedKernelId = '';
+    var lastIdeatedSeeds = null;
+    var lastIdeatedCharacterWorlds = null;
+
+    // Selection gate DOM references
+    var conceptSelectionSection = document.getElementById('concept-selection-section');
+    var conceptSelectionCards = document.getElementById('concept-selection-cards');
+    var selectAllConceptsBtn = document.getElementById('select-all-concepts-btn');
+    var deselectAllConceptsBtn = document.getElementById('deselect-all-concepts-btn');
+    var developConceptsBtn = document.getElementById('develop-concepts-btn');
+    var conceptSelectionCounter = document.getElementById('concept-selection-counter');
     var kernelSummaryFields = {
       thesis: kernelThesis,
       valueAtStake: kernelValue,
@@ -188,9 +198,9 @@
       }
     }
 
-    // ── Generate concepts ──────────────────────────────────────────
+    // ── Phase 1: Ideate concepts ──────────────────────────────────
 
-    async function handleGenerate() {
+    async function handleIdeate() {
       var conceptApiKeyInput = document.getElementById('conceptApiKey');
       if (
         conceptApiKeyInput &&
@@ -218,12 +228,14 @@
       }
 
       generateBtn.disabled = true;
+      if (conceptSelectionSection) conceptSelectionSection.style.display = 'none';
+      if (conceptResultsSection) conceptResultsSection.style.display = 'none';
       loading.style.display = 'flex';
       var progressId = createProgressId();
       loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/generate', {
+        var response = await fetch('/concepts/api/generate/ideate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -247,22 +259,30 @@
         if (!response.ok || !data || !data.success) {
           if (data && typeof data === 'object') {
             if (data.code) {
-              console.error('Concept generation error code:', data.code, '| Retryable:', data.retryable);
+              console.error('Concept ideation error code:', data.code, '| Retryable:', data.retryable);
             }
             if (data.debug) {
-              console.error('Concept generation debug info:', data.debug);
+              console.error('Concept ideation debug info:', data.debug);
             }
           }
 
-          throw new Error(data && data.error ? data.error : 'Failed to generate concepts');
+          throw new Error(data && data.error ? data.error : 'Failed to ideate concepts');
         }
 
         setApiKey(apiKey);
-        lastGeneratedConcepts = data.evaluatedConcepts;
-        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
+        lastIdeatedSeeds = data.seeds;
+        lastIdeatedCharacterWorlds = data.characterWorlds;
         lastSeeds = seeds;
 
-        renderGeneratedConcepts(data.evaluatedConcepts, seeds);
+        // Show selection gate
+        if (conceptSelectionCards) {
+          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards);
+        }
+        if (conceptSelectionSection) {
+          conceptSelectionSection.style.display = 'block';
+          updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+          conceptSelectionSection.scrollIntoView({ behavior: 'smooth' });
+        }
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
       } finally {
@@ -272,7 +292,84 @@
       }
     }
 
-    function renderGeneratedConcepts(evaluatedConcepts, seeds) {
+    // ── Phase 2: Develop selected concepts ──────────────────────
+
+    async function handleDevelop() {
+      if (!lastIdeatedSeeds || !lastIdeatedCharacterWorlds) {
+        showError('No ideated concepts available. Generate first.');
+        return;
+      }
+
+      var selectedIndices = getSelectedConceptIndices(conceptSelectionCards);
+      if (selectedIndices.length === 0) {
+        showError('Select at least one concept to continue.');
+        return;
+      }
+
+      var apiKey = getConceptApiKey();
+      if (apiKey.length < 10) {
+        showError('OpenRouter API key is required');
+        return;
+      }
+
+      var filteredSeeds = selectedIndices.map(function (i) { return lastIdeatedSeeds[i]; });
+      var filteredCharacterWorlds = selectedIndices.map(function (i) { return lastIdeatedCharacterWorlds[i]; });
+
+      if (developConceptsBtn) developConceptsBtn.disabled = true;
+      loading.style.display = 'flex';
+      var progressId = createProgressId();
+      loadingProgress.start(progressId);
+
+      try {
+        var response = await fetch('/concepts/api/generate/develop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            seeds: filteredSeeds,
+            characterWorlds: filteredCharacterWorlds,
+            kernelId: selectedKernelId,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_parseError) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          if (data && typeof data === 'object') {
+            if (data.code) {
+              console.error('Concept development error code:', data.code, '| Retryable:', data.retryable);
+            }
+            if (data.debug) {
+              console.error('Concept development debug info:', data.debug);
+            }
+          }
+
+          throw new Error(data && data.error ? data.error : 'Failed to develop concepts');
+        }
+
+        setApiKey(apiKey);
+        lastGeneratedConcepts = data.evaluatedConcepts;
+        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
+
+        if (conceptSelectionSection) conceptSelectionSection.style.display = 'none';
+        renderGeneratedConcepts(data.evaluatedConcepts);
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Something went wrong');
+      } finally {
+        loadingProgress.stop();
+        loading.style.display = 'none';
+        if (developConceptsBtn) developConceptsBtn.disabled = false;
+        updateGenerateButtonState();
+      }
+    }
+
+    function renderGeneratedConcepts(evaluatedConcepts) {
       if (!conceptCardsContainer || !conceptResultsSection) {
         return;
       }
@@ -785,7 +882,7 @@
 
     generateBtn.addEventListener('click', function (event) {
       event.preventDefault();
-      handleGenerate();
+      handleIdeate();
     });
     if (apiKeyInput) {
       apiKeyInput.addEventListener('input', updateGenerateButtonState);
@@ -793,6 +890,32 @@
     if (kernelSelector instanceof HTMLSelectElement) {
       kernelSelector.addEventListener('change', function () {
         void handleKernelSelectionChange();
+      });
+    }
+
+    // Selection gate event listeners
+    if (selectAllConceptsBtn) {
+      selectAllConceptsBtn.addEventListener('click', function () {
+        selectAllConcepts(conceptSelectionCards);
+        updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+      });
+    }
+    if (deselectAllConceptsBtn) {
+      deselectAllConceptsBtn.addEventListener('click', function () {
+        deselectAllConcepts(conceptSelectionCards);
+        updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+      });
+    }
+    if (developConceptsBtn) {
+      developConceptsBtn.addEventListener('click', function () {
+        handleDevelop();
+      });
+    }
+    if (conceptSelectionCards) {
+      conceptSelectionCards.addEventListener('change', function (event) {
+        if (event.target && event.target.classList && event.target.classList.contains('concept-selection-checkbox')) {
+          updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
+        }
       });
     }
 
