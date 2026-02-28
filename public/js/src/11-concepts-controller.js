@@ -276,7 +276,19 @@
 
         // Show selection gate
         if (conceptSelectionCards) {
-          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards);
+          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards,
+            function (idx, source, fieldKey, newValue) {
+              if (source === 'seed' && lastIdeatedSeeds && lastIdeatedSeeds[idx]) {
+                var updated = {};
+                updated[fieldKey] = newValue;
+                lastIdeatedSeeds[idx] = Object.assign({}, lastIdeatedSeeds[idx], updated);
+              } else if (source === 'cw' && lastIdeatedCharacterWorlds && lastIdeatedCharacterWorlds[idx]) {
+                var cwUpdated = {};
+                cwUpdated[fieldKey] = newValue;
+                lastIdeatedCharacterWorlds[idx] = Object.assign({}, lastIdeatedCharacterWorlds[idx], cwUpdated);
+              }
+            }
+          );
         }
         if (conceptSelectionSection) {
           conceptSelectionSection.style.display = 'block';
@@ -461,7 +473,6 @@
       // Create new genre group
       var details = document.createElement('details');
       details.className = 'genre-group';
-      details.setAttribute('open', '');
       details.setAttribute('data-genre', genre);
 
       var summary = document.createElement('summary');

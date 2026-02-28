@@ -3479,3 +3479,109 @@ main {
 .concept-selection-checkmark {
   display: none;
 }
+
+/* ── Inline editing for selection cards ────────────────────────────── */
+
+.concept-selection-card__header {
+  cursor: pointer;
+  padding-bottom: 0.25rem;
+}
+
+.concept-selection-card__fields {
+  cursor: default;
+}
+
+.concept-field-value {
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.15s ease;
+}
+
+.concept-field-value:hover {
+  border-bottom-color: var(--color-muted, #888);
+}
+
+.concept-inline-input,
+.concept-inline-textarea {
+  width: 100%;
+  padding: 0.25rem 0.4rem;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--color-text, #eee);
+  background: var(--bg-input, #1a1a2e);
+  border: 1px solid var(--color-primary, #3498db);
+  border-radius: 4px;
+  outline: none;
+}
+
+.concept-inline-textarea {
+  resize: vertical;
+  min-height: 2.5rem;
+}
+
+.concept-inline-select {
+  padding: 0.25rem 0.4rem;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--color-text, #eee);
+  background: var(--bg-input, #1a1a2e);
+  border: 1px solid var(--color-primary, #3498db);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.concept-inline-list-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.25rem 0;
+}
+
+.concept-inline-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.concept-inline-list-item .concept-inline-input {
+  flex: 1;
+}
+
+.concept-inline-list-remove {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--color-danger, #e74c3c);
+  border: 1px solid var(--color-danger, #e74c3c);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.concept-inline-list-remove:hover {
+  background: var(--color-danger, #e74c3c);
+  color: #fff;
+}
+
+.concept-inline-list-add {
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--color-muted, #888);
+  background: transparent;
+  border: 1px dashed var(--color-muted, #555);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.concept-inline-list-add:hover {
+  color: var(--color-text, #eee);
+  border-color: var(--color-primary, #3498db);
+}

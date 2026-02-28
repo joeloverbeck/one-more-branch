@@ -118,7 +118,7 @@
         <% const groupedConcepts = typeof genreGroups !== 'undefined' && Array.isArray(genreGroups) ? genreGroups : []; %>
         <div id="saved-concepts-list">
           <% for (const group of groupedConcepts) { %>
-          <details class="genre-group" open data-genre="<%= group.genre %>">
+          <details class="genre-group" data-genre="<%= group.genre %>">
             <summary class="genre-group__header">
               <span class="genre-group__label"><%= group.displayLabel %></span>
               <span class="genre-group__count">(<%= group.concepts.length %>)</span>

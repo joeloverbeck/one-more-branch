@@ -34,6 +34,37 @@ describe('concepts page template', () => {
     expect(template).not.toMatch(/id="edit-name"[^>]*maxlength=/);
   });
 
+  it('renders genre groups collapsed by default (no open attribute)', () => {
+    const template = fs.readFileSync(conceptsPath, 'utf8');
+    const renderTemplate = renderEjs as (
+      source: string,
+      data: {
+        title: string;
+        concepts: unknown[];
+        genreFrames: string[];
+        genreGroups: { genre: string; displayLabel: string; concepts: unknown[]; conventions: string[]; obligations: string[] }[];
+      },
+      options: { filename: string }
+    ) => string;
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Concepts',
+        concepts: [{ id: '1', evaluatedConcept: { concept: { genreFrame: 'ADVENTURE', conflictAxis: 'SURVIVAL', conflictType: 'PERSON_VS_NATURE', settingScale: 'LOCAL' } } }],
+        genreFrames: ['ADVENTURE'],
+        genreGroups: [
+          { genre: 'ADVENTURE', displayLabel: 'Adventure', concepts: [{ id: '1', evaluatedConcept: { concept: { genreFrame: 'ADVENTURE', conflictAxis: 'SURVIVAL', conflictType: 'PERSON_VS_NATURE', settingScale: 'LOCAL' } } }], conventions: [], obligations: [] },
+        ],
+      },
+      { filename: conceptsPath }
+    );
+
+    expect(html).toContain('class="genre-group"');
+    expect(html).not.toMatch(/<details[^>]*class="genre-group"[^>]*open/);
+    expect(html).not.toMatch(/<details[^>]*open[^>]*class="genre-group"/);
+  });
+
   it('renders safely when genreGroups is omitted', () => {
     const template = fs.readFileSync(conceptsPath, 'utf8');
     const renderTemplate = renderEjs as (
