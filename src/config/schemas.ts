@@ -46,7 +46,7 @@ const LLMConfigSchema = z.object({
   defaultModel: z.string().min(1).default('anthropic/claude-sonnet-4.5'),
   models: LLMModelsConfigSchema.optional(),
   temperature: z.number().min(0).max(2).default(0.8),
-  maxTokens: z.number().int().min(256).max(32768).default(8192),
+  maxTokens: z.number().int().min(256).max(32768).default(16384),
   retry: RetryConfigSchema.optional().transform((val) => val ?? RetryConfigSchema.parse({})),
   promptOptions: PromptOptionsConfigSchema.optional().transform(
     (val) => val ?? PromptOptionsConfigSchema.parse({})

@@ -312,7 +312,7 @@ describe('structure-generator', () => {
     const body = getRequestBody();
     expect(body.response_format).toEqual(STRUCTURE_GENERATION_SCHEMA);
     expect(body.temperature).toBe(0.8);
-    expect(body.max_tokens).toBe(8192);
+    expect(body.max_tokens).toBe(16384);
 
     const messages = body.messages as Array<{ role: string; content: string }>;
     expect(Array.isArray(messages)).toBe(true);

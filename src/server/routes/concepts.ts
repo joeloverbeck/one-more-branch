@@ -275,6 +275,7 @@ conceptRoutes.post(
       if (rootError instanceof LLMError) {
         logger.error('LLM error during concept development', {
           code: rootError.code,
+          message: rootError.message,
           stage: rootError.context?.['stage'],
           model: rootError.context?.['model'],
           retryable: rootError.retryable,

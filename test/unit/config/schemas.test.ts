@@ -11,7 +11,7 @@ describe('config schemas', () => {
       expect(result.storage.kernelsDir).toBe('kernels');
       expect(result.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
       expect(result.llm.temperature).toBe(0.8);
-      expect(result.llm.maxTokens).toBe(8192);
+      expect(result.llm.maxTokens).toBe(16384);
       expect(result.llm.retry.maxRetries).toBe(3);
       expect(result.llm.retry.baseDelayMs).toBe(1000);
       expect(result.llm.promptOptions.choiceGuidance).toBe('strict');

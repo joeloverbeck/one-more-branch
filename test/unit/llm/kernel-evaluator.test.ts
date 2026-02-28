@@ -296,7 +296,9 @@ describe('kernel-evaluator', () => {
     const scoringRequestBody = getRequestBody(0);
     const deepRequestBody = getRequestBody(1);
     expect(scoringRequestBody['response_format']).toEqual(KERNEL_EVALUATION_SCORING_SCHEMA);
+    expect(scoringRequestBody['max_tokens']).toBe(16384);
     expect(deepRequestBody['response_format']).toEqual(KERNEL_EVALUATION_DEEP_SCHEMA);
+    expect(deepRequestBody['max_tokens']).toBe(16384);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'kernelEvaluator', expect.any(Array));
     expect(mockLogPrompt).toHaveBeenCalledTimes(2);
   });

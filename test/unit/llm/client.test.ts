@@ -304,7 +304,7 @@ describe('llm client', () => {
     expect(body.temperature).toBe(0.8);
   });
 
-  it('should use default maxTokens 8192', async () => {
+  it('should use default maxTokens 16384', async () => {
     fetchMock.mockResolvedValue(
       responseWithStructuredContent(JSON.stringify(validStructuredPayload))
     );
@@ -312,7 +312,7 @@ describe('llm client', () => {
     await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
     const body = getRequestBody();
-    expect(body.max_tokens).toBe(8192);
+    expect(body.max_tokens).toBe(16384);
   });
 
   it('should throw LLMError with retryable=true for 429', async () => {
