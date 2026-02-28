@@ -1,9 +1,10 @@
 import {
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
 } from '../../../src/llm/http-client';
-import { LLMError } from '../../../src/llm/llm-client-types';
+import { LLMError, type OpenRouterResponse } from '../../../src/llm/llm-client-types';
 
 describe('http-client', () => {
   describe('parseMessageJsonContent', () => {
@@ -172,6 +173,90 @@ describe('http-client', () => {
       expect(details.message).toBe(body);
       expect(details.rawBody).toBe(body);
       expect(details.parsedError).toBeUndefined();
+    });
+  });
+
+  describe('extractResponseContent', () => {
+    function makeResponse(
+      content: string | null,
+      finishReason = 'stop',
+      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number },
+    ): OpenRouterResponse {
+      return {
+        id: 'test-id',
+        choices: [
+          {
+            message: { content: content as unknown as string },
+            finish_reason: finishReason,
+          },
+        ],
+        usage,
+      };
+    }
+
+    it('returns content when response is valid with stop finish_reason', () => {
+      const data = makeResponse('{"ok":true}');
+      const content = extractResponseContent(data, 'test-stage', 'test-model', 16384);
+      expect(content).toBe('{"ok":true}');
+    });
+
+    it('throws EMPTY_RESPONSE when content is null', () => {
+      const data = makeResponse(null);
+      try {
+        extractResponseContent(data, 'test-stage', 'test-model', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('EMPTY_RESPONSE');
+        expect(llmError.retryable).toBe(true);
+        expect(llmError.context?.['stage']).toBe('test-stage');
+        expect(llmError.context?.['model']).toBe('test-model');
+      }
+    });
+
+    it('throws EMPTY_RESPONSE when choices array is empty', () => {
+      const data: OpenRouterResponse = {
+        id: 'test-id',
+        choices: [],
+      };
+      try {
+        extractResponseContent(data, 'test-stage', 'test-model', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('EMPTY_RESPONSE');
+        expect(llmError.retryable).toBe(true);
+      }
+    });
+
+    it('throws non-retryable OUTPUT_TRUNCATED when finish_reason is length', () => {
+      const data = makeResponse('{"partial":', 'length', {
+        prompt_tokens: 3000,
+        completion_tokens: 8192,
+        total_tokens: 11192,
+      });
+      try {
+        extractResponseContent(data, 'writer', 'test-model', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('OUTPUT_TRUNCATED');
+        expect(llmError.retryable).toBe(false);
+        expect(llmError.context?.['stage']).toBe('writer');
+        expect(llmError.context?.['model']).toBe('test-model');
+        expect(llmError.context?.['maxTokens']).toBe(16384);
+        expect(llmError.context?.['completionTokens']).toBe(8192);
+        expect(llmError.context?.['promptTokens']).toBe(3000);
+      }
+    });
+
+    it('does not throw for non-length finish_reason with valid content', () => {
+      const data = makeResponse('{"ok":true}', 'error');
+      const content = extractResponseContent(data, 'test-stage', 'test-model', 16384);
+      expect(content).toBe('{"ok":true}');
     });
   });
 });

@@ -1,7 +1,9 @@
+import { getConfig } from '../config/index.js';
 import { getStageModel } from '../config/stage-model.js';
 import { logger } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -14,15 +16,15 @@ import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 
 const DEFAULT_PROMISE_TRACKER_TEMPERATURE = 0.3;
-const DEFAULT_PROMISE_TRACKER_MAX_TOKENS = 8192;
 
 async function callPromiseTrackerStructured(
   messages: ChatMessage[],
   options: GenerationOptions
 ): Promise<PromiseTrackerResult & { rawResponse: string }> {
+  const config = getConfig().llm;
   const model = options.model ?? getStageModel('promiseTracker');
   const temperature = options.temperature ?? DEFAULT_PROMISE_TRACKER_TEMPERATURE;
-  const maxTokens = options.maxTokens ?? DEFAULT_PROMISE_TRACKER_MAX_TOKENS;
+  const maxTokens = options.maxTokens ?? config.maxTokens;
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -53,23 +55,7 @@ async function callPromiseTrackerStructured(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-
-  if (!content) {
-    const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
-    const usage = data.usage;
-    logger.warn('Promise tracker received empty content from OpenRouter', {
-      finishReason,
-      usage,
-      model,
-      choicesLength: data.choices?.length ?? 0,
-    });
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true, {
-      finishReason,
-      usage,
-      model,
-    });
-  }
+  const content = extractResponseContent(data, 'promise-tracker', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const parsed = parsedMessage.parsed;

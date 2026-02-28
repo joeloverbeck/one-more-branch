@@ -672,6 +672,14 @@
       openAllCollapsibleSections();
     }
 
+    function prefillFromVerification(verification) {
+      if (!verification) return;
+      setValueById('signatureScenario', verification.signatureScenario || '');
+      setValueById('inevitabilityStatement', verification.inevitabilityStatement || '');
+      populateDynamicList('escalatingSetpieces', verification.escalatingSetpieces || []);
+      populateDynamicList('premisePromises', verification.premisePromises || []);
+    }
+
     function buildConceptSpecFromFields() {
       var oneLineHook = getValueById('oneLineHook');
       var elevatorParagraph = getValueById('elevatorParagraph');
@@ -731,6 +739,34 @@
       };
 
       return spec;
+    }
+
+    function buildConceptVerificationFromFields() {
+      var signatureScenario = getValueById('signatureScenario');
+      var inevitabilityStatement = getValueById('inevitabilityStatement');
+      var escalatingSetpieces = collectDynamicListEntries('escalatingSetpieces');
+      var premisePromises = collectDynamicListEntries('premisePromises');
+
+      if (escalatingSetpieces.length === 0 && premisePromises.length === 0
+          && !signatureScenario && !inevitabilityStatement) {
+        return null;
+      }
+
+      var base = selectedConceptVerification || {};
+      return {
+        conceptId: base.conceptId || '',
+        signatureScenario: signatureScenario || base.signatureScenario || '',
+        loglineCompressible: base.loglineCompressible || false,
+        logline: base.logline || '',
+        premisePromises: premisePromises.length > 0 ? premisePromises : (base.premisePromises || []),
+        escalatingSetpieces: escalatingSetpieces.length > 0 ? escalatingSetpieces : (base.escalatingSetpieces || []),
+        setpieceCausalChainBroken: base.setpieceCausalChainBroken || false,
+        setpieceCausalLinks: base.setpieceCausalLinks || [],
+        inevitabilityStatement: inevitabilityStatement || base.inevitabilityStatement || '',
+        loadBearingCheck: base.loadBearingCheck || { passes: true, reasoning: '', genericCollapse: '' },
+        kernelFidelityCheck: base.kernelFidelityCheck || { passes: true, reasoning: '', kernelDrift: '' },
+        conceptIntegrityScore: base.conceptIntegrityScore || 0,
+      };
     }
 
     function collectFormData() {
@@ -912,6 +948,7 @@
             ? savedConcept.seeds.contentPreferences
             : null;
           prefillFromConceptSpec(selectedConceptSpec);
+          prefillFromVerification(selectedConceptVerification);
 
           // Auto-load linked kernel if available
           if (savedConcept.sourceKernelId && kernelSelectorStory instanceof HTMLSelectElement) {
@@ -953,8 +990,9 @@
         if (selectedKernelForStory) {
           spineBody.storyKernel = selectedKernelForStory;
         }
-        if (selectedConceptVerification) {
-          spineBody.conceptVerification = selectedConceptVerification;
+        var verificationFromFields = buildConceptVerificationFromFields();
+        if (verificationFromFields) {
+          spineBody.conceptVerification = verificationFromFields;
         }
 
         var response = await fetch('/stories/generate-spines', {
@@ -1022,8 +1060,9 @@
         if (selectedKernelForStory) {
           createBody.storyKernel = selectedKernelForStory;
         }
-        if (selectedConceptVerification) {
-          createBody.conceptVerification = selectedConceptVerification;
+        var verificationFromFields = buildConceptVerificationFromFields();
+        if (verificationFromFields) {
+          createBody.conceptVerification = verificationFromFields;
         }
 
         var response = await fetch('/stories/create-ajax', {

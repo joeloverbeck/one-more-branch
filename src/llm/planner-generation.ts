@@ -3,6 +3,7 @@ import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -110,11 +111,7 @@ async function callPlannerStructured(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-
-  if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
+  const content = extractResponseContent(data, 'planner', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const parsed = parsedMessage.parsed;

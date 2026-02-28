@@ -1,4 +1,5 @@
 import { LLMError, type OpenRouterResponse } from './llm-client-types.js';
+import { logger } from '../logging/index.js';
 
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -313,4 +314,43 @@ export async function readErrorDetails(response: Response): Promise<ErrorDetails
       rawBody,
     };
   }
+}
+
+export function extractResponseContent(
+  data: OpenRouterResponse,
+  stage: string,
+  model: string,
+  maxTokens: number,
+): unknown {
+  const choice = data.choices[0];
+  const content = choice?.message?.content;
+
+  if (!choice || !content) {
+    const finishReason = choice?.finish_reason ?? 'unknown';
+    logger.warn(`${stage} received empty content from OpenRouter`, {
+      finishReason,
+      usage: data.usage,
+      model,
+      choicesLength: data.choices?.length ?? 0,
+    });
+    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true, {
+      finishReason,
+      usage: data.usage,
+      model,
+      stage,
+    });
+  }
+
+  if (choice.finish_reason === 'length') {
+    throw new LLMError(`${stage} output truncated before completion`, 'OUTPUT_TRUNCATED', false, {
+      model,
+      finishReason: choice.finish_reason,
+      stage,
+      completionTokens: data.usage?.completion_tokens,
+      promptTokens: data.usage?.prompt_tokens,
+      maxTokens,
+    });
+  }
+
+  return content;
 }

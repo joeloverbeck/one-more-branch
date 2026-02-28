@@ -1,7 +1,9 @@
+import { getConfig } from '../config/index.js';
 import { getStageModel } from '../config/stage-model.js';
 import { logger } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -14,15 +16,15 @@ import { LLMError, type ChatMessage } from './llm-client-types.js';
 import type { LorekeeperResult } from './lorekeeper-types.js';
 
 const DEFAULT_LOREKEEPER_TEMPERATURE = 0.3;
-const DEFAULT_LOREKEEPER_MAX_TOKENS = 2048;
 
 async function callLorekeeperStructured(
   messages: ChatMessage[],
   options: GenerationOptions
 ): Promise<LorekeeperResult> {
+  const config = getConfig().llm;
   const model = options.model ?? getStageModel('lorekeeper');
   const temperature = options.temperature ?? DEFAULT_LOREKEEPER_TEMPERATURE;
-  const maxTokens = options.maxTokens ?? DEFAULT_LOREKEEPER_MAX_TOKENS;
+  const maxTokens = options.maxTokens ?? config.maxTokens;
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -53,11 +55,7 @@ async function callLorekeeperStructured(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-
-  if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
+  const content = extractResponseContent(data, 'lorekeeper', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const parsed = parsedMessage.parsed;

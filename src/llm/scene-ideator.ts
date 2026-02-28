@@ -3,6 +3,7 @@ import { getConfig } from '../config/index.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -178,10 +179,7 @@ async function fetchSceneDirections(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-  if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
+  const content = extractResponseContent(data, 'scene-ideator', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;

@@ -4,6 +4,7 @@ import { logger, logPrompt, type PromptType } from '../logging/index.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -74,22 +75,7 @@ async function fetchAndParseLlmStage<TParsed>(
   }
 
   const data = await readJsonResponse(response);
-  const choice = data.choices[0];
-  const content = choice?.message?.content;
-  if (!choice || !content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
-  if (choice.finish_reason === 'length') {
-    throw new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', false, {
-      model,
-      finishReason: choice.finish_reason,
-      stage: params.stageModel,
-      promptType: params.promptType,
-      completionTokens: data.usage?.completion_tokens,
-      promptTokens: data.usage?.prompt_tokens,
-      maxTokens,
-    });
-  }
+  const content = extractResponseContent(data, params.stageModel, model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content, {
     allowRepair: params.allowJsonRepair ?? true,

@@ -1,7 +1,9 @@
+import { getConfig } from '../config/index.js';
 import { getStageModel } from '../config/stage-model.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
+  extractResponseContent,
   parseMessageJsonContent,
   readErrorDetails,
   readJsonResponse,
@@ -16,7 +18,6 @@ import { LLMError } from './llm-client-types.js';
 import type { AgendaResolverResult } from './lorekeeper-types.js';
 
 const DEFAULT_AGENDA_RESOLVER_TEMPERATURE = 0.4;
-const DEFAULT_AGENDA_RESOLVER_MAX_TOKENS = 4096;
 
 export interface GenerateAgendaResolverOptions {
   readonly apiKey: string;
@@ -29,8 +30,9 @@ export async function generateAgendaResolver(
   storyNpcs: readonly { readonly name: string }[],
   options: GenerateAgendaResolverOptions
 ): Promise<AgendaResolverResult> {
+  const config = getConfig().llm;
   const model = options.model ?? getStageModel('agendaResolver');
-  const maxTokens = options.maxTokens ?? DEFAULT_AGENDA_RESOLVER_MAX_TOKENS;
+  const maxTokens = options.maxTokens ?? config.maxTokens;
   const messages = buildAgendaResolverPrompt(context);
 
   logPrompt(logger, 'agenda-resolver', messages);
@@ -65,23 +67,7 @@ export async function generateAgendaResolver(
   }
 
   const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-
-  if (!content) {
-    const finishReason = data.choices[0]?.finish_reason ?? 'unknown';
-    const usage = data.usage;
-    logger.warn('Agenda resolver received empty content from OpenRouter', {
-      finishReason,
-      usage,
-      model,
-      choicesLength: data.choices?.length ?? 0,
-    });
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true, {
-      finishReason,
-      usage,
-      model,
-    });
-  }
+  const content = extractResponseContent(data, 'agenda-resolver', model, maxTokens);
 
   const parsedMessage = parseMessageJsonContent(content);
   const validated = validateAgendaResolverResponse(
