@@ -30,6 +30,8 @@ interface KernelFixture {
       valueAtStake: string;
       opposingForce: string;
       directionOfChange: 'POSITIVE' | 'NEGATIVE' | 'IRONIC' | 'AMBIGUOUS';
+      conflictAxis: string;
+      dramaticStance: string;
       thematicQuestion: string;
     };
     scores: {
@@ -63,8 +65,10 @@ function createKernel(id = 'kernel-1'): KernelFixture {
         valueAtStake: 'Trust',
         opposingForce: 'Fear of chaos',
         directionOfChange: 'NEGATIVE',
+        conflictAxis: 'FREEDOM_VS_SAFETY',
+        dramaticStance: 'TRAGIC',
         thematicQuestion: 'Can protection exist without control?',
-      antithesis: 'Counter-argument challenges the thesis.',
+        antithesis: 'Counter-argument challenges the thesis.',
       },
       scores: {
         dramaticClarity: 4,

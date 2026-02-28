@@ -43,7 +43,7 @@ describe('concept-generator types', () => {
 
   it('defines complete enum arrays with spec counts', () => {
     expect(GENRE_FRAMES).toHaveLength(34);
-    expect(CONFLICT_AXES).toHaveLength(8);
+    expect(CONFLICT_AXES).toHaveLength(10);
     expect(SETTING_SCALES).toHaveLength(4);
     expect(DRIFT_RISK_MITIGATION_TYPES).toHaveLength(4);
   });

@@ -27,7 +27,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
     );
   }
 
-  return data['kernels'].map((kernel, index) => {
+  const kernels = data['kernels'].map((kernel, index) => {
     if (!isStoryKernel(kernel)) {
       throw new LLMError(
         `Kernel ideation response includes invalid kernel at index ${index}`,
@@ -38,6 +38,26 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
 
     return kernel;
   });
+
+  const conflictAxisSet = new Set(kernels.map((k) => k.conflictAxis));
+  if (conflictAxisSet.size < 5) {
+    throw new LLMError(
+      `Kernel ideation response must use at least 5 distinct conflictAxis values (found: ${conflictAxisSet.size})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const dramaticStanceSet = new Set(kernels.map((k) => k.dramaticStance));
+  if (dramaticStanceSet.size < 3) {
+    throw new LLMError(
+      `Kernel ideation response must use at least 3 distinct dramaticStance values (found: ${dramaticStanceSet.size})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  return kernels;
 }
 
 export async function generateKernels(

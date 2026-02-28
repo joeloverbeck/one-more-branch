@@ -89,6 +89,8 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
     `Value at stake: ${storyKernel.valueAtStake}`,
     `Opposing force: ${storyKernel.opposingForce}`,
     `Direction of change: ${storyKernel.directionOfChange}`,
+    `Conflict axis: ${storyKernel.conflictAxis}`,
+    `Dramatic stance: ${storyKernel.dramaticStance}`,
     `Thematic question: ${storyKernel.thematicQuestion}`,
     '',
     'CONSTRAINT: The spine\'s central dramatic question should operationalize this kernel.',

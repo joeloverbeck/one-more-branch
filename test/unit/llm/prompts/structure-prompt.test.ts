@@ -343,6 +343,8 @@ describe('buildDirectionalGuidanceSection', () => {
     valueAtStake: 'integrity',
     opposingForce: 'ambition',
     directionOfChange: direction,
+    conflictAxis: 'POWER_VS_MORALITY',
+    dramaticStance: 'TRAGIC',
     thematicQuestion: 'Can integrity survive ambition?',
   });
 
@@ -413,6 +415,8 @@ describe('buildStructurePrompt - directional guidance integration', () => {
     valueAtStake: 'integrity',
     opposingForce: 'ambition',
     directionOfChange: 'NEGATIVE',
+    conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
+    dramaticStance: 'IRONIC',
     thematicQuestion: 'Can integrity survive ambition?',
   };
 

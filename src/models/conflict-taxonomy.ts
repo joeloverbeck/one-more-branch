@@ -7,6 +7,8 @@ export const CONFLICT_AXES = [
   'POWER_VS_MORALITY',
   'LOYALTY_VS_SURVIVAL',
   'IDENTITY_VS_BELONGING',
+  'JUSTICE_VS_MERCY',
+  'PROGRESS_VS_TRADITION',
 ] as const;
 
 export type ConflictAxis = (typeof CONFLICT_AXES)[number];

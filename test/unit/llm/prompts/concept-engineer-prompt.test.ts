@@ -17,6 +17,8 @@ function createContext(seedCount = 6): ConceptEngineerContext {
       valueAtStake: 'Trust',
       opposingForce: 'Fear of uncertainty',
       directionOfChange: 'IRONIC',
+      conflictAxis: 'LOYALTY_VS_SURVIVAL',
+      dramaticStance: 'ROMANTIC',
       thematicQuestion: 'Can safety exist without control?',
       antithesis: 'Counter-argument challenges the thesis.',
     },

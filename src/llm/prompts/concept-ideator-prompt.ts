@@ -11,9 +11,8 @@ const ROLE_INTRO =
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return 6-8 concepts.
-- No two concepts may share the same pair of genreFrame + conflictAxis.
 - Use at least 3 distinct genreFrame values.
-- Use at least 3 distinct conflictAxis values.
+- All concepts MUST use the kernel's conflictAxis.
 - Each concept should feel materially different in play, not cosmetic variants.`;
 
 function normalize(value: string | undefined): string | undefined {
@@ -81,6 +80,8 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
 - valueAtStake: ${kernel.valueAtStake}
 - opposingForce: ${kernel.opposingForce}
 - directionOfChange: ${kernel.directionOfChange}
+- conflictAxis: ${kernel.conflictAxis}
+- dramaticStance: ${kernel.dramaticStance}
 - thematicQuestion: ${kernel.thematicQuestion}`,
     );
   }

@@ -142,7 +142,10 @@ src/
 │   │                         #   CharacterState, Canon, NpcAgenda, NpcRelationship types
 │   ├── story-arc.ts          # StoryStructure, StoryAct, StoryBeat,
 │   │                         #   AccumulatedStructureState
-│   ├── story-spine.ts        # StorySpine, StorySpineType, ConflictAxis, ConflictType, CharacterArcType
+│   ├── story-kernel.ts       # StoryKernel, DirectionOfChange, DramaticStance,
+│   │                         #   KernelDimensionScores, scoring weights/thresholds
+│   ├── conflict-taxonomy.ts  # ConflictAxis enum (10 values), isConflictAxis guard
+│   ├── story-spine.ts        # StorySpine, StorySpineType, ConflictType, CharacterArcType
 │   ├── protagonist-affect.ts # Emotional state snapshots per page
 │   ├── protagonist-guidance.ts # Player guidance (emotions, thoughts, speech)
 │   ├── decomposed-character.ts # Decomposed character profiles from entity decomposer
@@ -232,6 +235,9 @@ Each choice has `text`, `choiceType` (9 types: TACTICAL_APPROACH, MORAL_DILEMMA,
 
 ### ProtagonistAffect
 Per-page emotional snapshot (not accumulated): `primaryEmotion`, `primaryIntensity` (mild/moderate/strong/overwhelming), `primaryCause`, `secondaryEmotions`, `dominantMotivation`.
+
+### StoryKernel
+Abstract dramatic proposition: `dramaticThesis`, `antithesis`, `valueAtStake`, `opposingForce`, `directionOfChange` (POSITIVE, NEGATIVE, IRONIC, AMBIGUOUS), `conflictAxis` (10 values from `ConflictAxis`: INDIVIDUAL_VS_SYSTEM, TRUTH_VS_STABILITY, DUTY_VS_DESIRE, FREEDOM_VS_SAFETY, KNOWLEDGE_VS_INNOCENCE, POWER_VS_MORALITY, LOYALTY_VS_SURVIVAL, IDENTITY_VS_BELONGING, JUSTICE_VS_MERCY, PROGRESS_VS_TRADITION), `dramaticStance` (COMIC, ROMANTIC, TRAGIC, IRONIC), `thematicQuestion`. Concepts inherit `conflictAxis` from their parent kernel. Kernel pipeline: ideator (6-8 kernels) -> evaluator (scoring + deep-eval) -> evolver (6 offspring via mutation strategies).
 
 ### StoryStructure
 Multi-act story arc with beats. Each act has an objective, stakes, entry condition, and beats. Each beat has a name, description, objective, and role (setup/escalation/turning_point/resolution). `AccumulatedStructureState` tracks progression through acts/beats with `BeatProgression` records.

@@ -69,8 +69,10 @@ function createEvaluatedKernel(index = 1): EvaluatedKernel {
       valueAtStake: `Value ${index}`,
       opposingForce: `Force ${index}`,
       directionOfChange: 'POSITIVE' as const,
+      conflictAxis: 'INDIVIDUAL_VS_SYSTEM' as const,
+      dramaticStance: 'TRAGIC' as const,
       thematicQuestion: `Question ${index}?`,
-    antithesis: 'Counter-argument challenges the thesis.',
+      antithesis: 'Counter-argument challenges the thesis.',
     },
     scores: {
       dramaticClarity: 4,

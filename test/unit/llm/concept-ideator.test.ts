@@ -85,6 +85,8 @@ describe('concept-ideator', () => {
         valueAtStake: 'Trust',
         opposingForce: 'Fear of uncertainty',
         directionOfChange: 'IRONIC',
+        conflictAxis: 'POWER_VS_MORALITY',
+        dramaticStance: 'IRONIC',
         thematicQuestion: 'Can safety exist without control?',
         antithesis: 'Counter-argument challenges the thesis.',
       },

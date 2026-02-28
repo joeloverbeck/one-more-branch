@@ -53,6 +53,8 @@ export function buildConceptSpecificityPrompt(context: ConceptVerifierContext): 
 - valueAtStake: ${context.kernel.valueAtStake}
 - opposingForce: ${context.kernel.opposingForce}
 - directionOfChange: ${context.kernel.directionOfChange}
+- conflictAxis: ${context.kernel.conflictAxis}
+- dramaticStance: ${context.kernel.dramaticStance}
 - thematicQuestion: ${context.kernel.thematicQuestion}`;
 
   const userSections: string[] = [

@@ -8,7 +8,7 @@
   "llm": {
     "defaultModel": "anthropic/claude-sonnet-4.6",
     "models": {
-      "kernelIdeator": "qwen/qwen3.5-397b-a17b",
+      "kernelIdeator": "anthropic/claude-sonnet-4.6",
       "kernelEvaluator": "qwen/qwen3.5-397b-a17b",
       "conceptSeeder": "anthropic/claude-sonnet-4.6",
       "conceptEvolverSeeder": "qwen/qwen3.5-397b-a17b",

@@ -121,8 +121,10 @@ describe('Concept Route Integration', () => {
           valueAtStake: 'Trust',
           opposingForce: 'Fear of uncertainty',
           directionOfChange: 'IRONIC',
+          conflictAxis: 'IDENTITY_VS_BELONGING',
+          dramaticStance: 'ROMANTIC',
           thematicQuestion: 'Can safety exist without control?',
-        antithesis: 'Counter-argument challenges the thesis.',
+          antithesis: 'Counter-argument challenges the thesis.',
         },
         scores: {
           dramaticClarity: 4,

@@ -150,8 +150,10 @@ describe('Evolution Pipeline Integration', () => {
         valueAtStake: 'Trust',
         opposingForce: 'Fear of uncertainty',
         directionOfChange: 'IRONIC',
+        conflictAxis: 'TRUTH_VS_STABILITY',
+        dramaticStance: 'IRONIC',
         thematicQuestion: 'Can safety exist without control?',
-      antithesis: 'Counter-argument challenges the thesis.',
+        antithesis: 'Counter-argument challenges the thesis.',
       },
       apiKey: 'valid-key-12345',
       onGenerationStage: (event) => {

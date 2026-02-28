@@ -51,6 +51,8 @@ describe('concepts page renderer', () => {
               valueAtStake: 'Trust',
               opposingForce: 'Fear of uncertainty',
               directionOfChange: 'IRONIC',
+              conflictAxis: 'JUSTICE_VS_MERCY',
+              dramaticStance: 'IRONIC',
               thematicQuestion: 'Can safety exist without control?',
               antithesis: 'Counter-argument challenges the thesis.',
             },

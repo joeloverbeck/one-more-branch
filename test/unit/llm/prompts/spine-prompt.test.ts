@@ -98,6 +98,8 @@ describe('buildSpinePrompt', () => {
         valueAtStake: 'Justice',
         opposingForce: 'Retributive social pressure',
         directionOfChange: 'POSITIVE',
+        conflictAxis: 'JUSTICE_VS_MERCY',
+        dramaticStance: 'ROMANTIC',
         thematicQuestion: 'Can mercy coexist with accountability?',
       },
     });

@@ -1,4 +1,5 @@
-import { DIRECTION_OF_CHANGE_VALUES } from '../../models/story-kernel.js';
+import { CONFLICT_AXES } from '../../models/conflict-taxonomy.js';
+import { DIRECTION_OF_CHANGE_VALUES, DRAMATIC_STANCE_VALUES } from '../../models/story-kernel.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
 export const KERNEL_SCHEMA = {
@@ -10,6 +11,8 @@ export const KERNEL_SCHEMA = {
     'valueAtStake',
     'opposingForce',
     'directionOfChange',
+    'conflictAxis',
+    'dramaticStance',
     'thematicQuestion',
   ],
   properties: {
@@ -18,6 +21,8 @@ export const KERNEL_SCHEMA = {
     valueAtStake: { type: 'string' },
     opposingForce: { type: 'string' },
     directionOfChange: { type: 'string', enum: [...DIRECTION_OF_CHANGE_VALUES] },
+    conflictAxis: { type: 'string', enum: [...CONFLICT_AXES] },
+    dramaticStance: { type: 'string', enum: [...DRAMATIC_STANCE_VALUES] },
     thematicQuestion: { type: 'string' },
   },
 } as const;

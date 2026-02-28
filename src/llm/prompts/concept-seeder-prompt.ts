@@ -9,9 +9,8 @@ const ROLE_INTRO =
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return 6-8 concept seeds.
-- No two seeds may share the same pair of genreFrame + conflictAxis.
 - Use at least 3 distinct genreFrame values.
-- Use at least 3 distinct conflictAxis values.
+- The seed's conflictAxis MUST match the kernel's conflictAxis.
 - Each seed should feel materially different in play, not cosmetic variants.`;
 
 function normalize(value: string | undefined): string | undefined {
@@ -79,6 +78,8 @@ export function buildConceptSeederPrompt(context: ConceptSeederContext): ChatMes
 - valueAtStake: ${kernel.valueAtStake}
 - opposingForce: ${kernel.opposingForce}
 - directionOfChange: ${kernel.directionOfChange}
+- conflictAxis: ${kernel.conflictAxis}
+- dramaticStance: ${kernel.dramaticStance}
 - thematicQuestion: ${kernel.thematicQuestion}`,
     );
   }

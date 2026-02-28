@@ -116,6 +116,9 @@ function buildKernelSection(storyKernel?: StoryKernel): string {
   return `THEMATIC KERNEL:
 Dramatic thesis: ${storyKernel.dramaticThesis}
 Antithesis: ${storyKernel.antithesis}
+Direction of change: ${storyKernel.directionOfChange}
+Conflict axis: ${storyKernel.conflictAxis}
+Dramatic stance: ${storyKernel.dramaticStance}
 Thematic question: ${storyKernel.thematicQuestion}
 
 Use this thesis/antithesis tension to shape escalating conflicts and turning-point choices.

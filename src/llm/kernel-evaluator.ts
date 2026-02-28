@@ -148,6 +148,8 @@ function kernelIdentityKey(kernel: StoryKernel): string {
     kernel.valueAtStake,
     kernel.opposingForce,
     kernel.directionOfChange,
+    kernel.conflictAxis,
+    kernel.dramaticStance,
     kernel.thematicQuestion,
   ].join('::');
 }

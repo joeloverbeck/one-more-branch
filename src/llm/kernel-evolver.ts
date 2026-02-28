@@ -82,6 +82,24 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     );
   }
 
+  const conflictAxisSet = new Set(kernels.map((k) => k.conflictAxis));
+  if (conflictAxisSet.size < 4) {
+    throw new LLMError(
+      `Kernel evolution response must use at least 4 distinct conflictAxis values (found: ${conflictAxisSet.size})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
+  const dramaticStanceSet = new Set(kernels.map((k) => k.dramaticStance));
+  if (dramaticStanceSet.size < 3) {
+    throw new LLMError(
+      `Kernel evolution response must use at least 3 distinct dramaticStance values (found: ${dramaticStanceSet.size})`,
+      'STRUCTURE_PARSE_ERROR',
+      true,
+    );
+  }
+
   return kernels;
 }
 

@@ -74,6 +74,8 @@ ${buildEnumGuidance('conflictAxis', CONFLICT_AXES, [
   'Capability gain versus ethical limits.',
   'Commitments versus self-preservation.',
   'Self-definition versus group acceptance.',
+  'Righteous fairness versus compassionate forgiveness.',
+  'Innovation and change versus preservation and heritage.',
 ])}
 
 ${buildEnumGuidance('conflictType', CONFLICT_TYPE_VALUES, [
@@ -115,6 +117,8 @@ ${buildEnumGuidance('conflictAxis', CONFLICT_AXES, [
   'Capability gain versus ethical limits.',
   'Commitments versus self-preservation.',
   'Self-definition versus group acceptance.',
+  'Righteous fairness versus compassionate forgiveness.',
+  'Innovation and change versus preservation and heritage.',
 ])}
 
 ${buildEnumGuidance('conflictType', CONFLICT_TYPE_VALUES, [

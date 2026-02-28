@@ -57,6 +57,8 @@
     var safeOverall = Number.isFinite(overallScore) ? Math.max(0, Math.min(100, overallScore)) : 0;
     var direction = formatKernelLabel(kernel.directionOfChange || 'POSITIVE');
     var directionBadgeClass = getDirectionBadgeClass(kernel.directionOfChange || 'POSITIVE');
+    var conflictAxis = formatKernelLabel(kernel.conflictAxis || '');
+    var dramaticStance = formatKernelLabel(kernel.dramaticStance || '');
 
     var title = opts.mode === 'saved' && opts.kernelName
       ? opts.kernelName
@@ -93,6 +95,8 @@
     return (
       '<div class="spine-badges">' +
         '<span class="spine-badge ' + directionBadgeClass + '">' + escapeHtml(direction) + '</span>' +
+        (conflictAxis ? '<span class="spine-badge spine-badge-type">' + escapeHtml(conflictAxis) + '</span>' : '') +
+        (dramaticStance ? '<span class="spine-badge spine-badge-conflict">' + escapeHtml(dramaticStance) + '</span>' : '') +
         '<span class="spine-badge spine-badge-arc">Score ' + escapeHtml(Math.round(safeOverall).toString()) + '</span>' +
         passBadge +
       '</div>' +
@@ -101,6 +105,8 @@
       '<div class="spine-field"><span class="spine-label">Antithesis:</span> <em>' + escapeHtml(kernel.antithesis || '') + '</em></div>' +
       '<div class="spine-field"><span class="spine-label">Value at Stake:</span> ' + escapeHtml(kernel.valueAtStake || '') + '</div>' +
       '<div class="spine-field"><span class="spine-label">Opposing Force:</span> ' + escapeHtml(kernel.opposingForce || '') + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Conflict Axis:</span> ' + escapeHtml(conflictAxis) + '</div>' +
+      '<div class="spine-field"><span class="spine-label">Dramatic Stance:</span> ' + escapeHtml(dramaticStance) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Thematic Question:</span> <em>' + escapeHtml(kernel.thematicQuestion || '') + '</em></div>' +
       '<div class="concept-scores">' + renderKernelScoreGrid(evaluatedKernel && evaluatedKernel.scores) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(evaluatedKernel && evaluatedKernel.tradeoffSummary ? evaluatedKernel.tradeoffSummary : '') + '</div>' +

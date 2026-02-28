@@ -72,6 +72,8 @@ describe('concept-seeder-prompt', () => {
           valueAtStake: 'Trust',
           opposingForce: 'Fear of uncertainty',
           directionOfChange: 'IRONIC',
+          conflictAxis: 'FREEDOM_VS_SAFETY',
+          dramaticStance: 'IRONIC',
           thematicQuestion: 'Can safety exist without control?',
           antithesis: 'Counter-argument challenges the thesis.',
         },

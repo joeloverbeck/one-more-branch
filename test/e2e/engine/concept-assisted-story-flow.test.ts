@@ -215,8 +215,10 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           valueAtStake: 'Trust',
           opposingForce: 'Fear of uncertainty',
           directionOfChange: 'IRONIC',
+          conflictAxis: 'DUTY_VS_DESIRE',
+          dramaticStance: 'IRONIC',
           thematicQuestion: 'Can safety exist without control?',
-        antithesis: 'Counter-argument challenges the thesis.',
+          antithesis: 'Counter-argument challenges the thesis.',
         },
         scores: {
           dramaticClarity: 4,

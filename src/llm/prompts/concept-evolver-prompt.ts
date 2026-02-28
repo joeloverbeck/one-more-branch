@@ -16,9 +16,8 @@ const MUTATION_STRATEGIES = `MUTATION STRATEGIES:
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return exactly 6 concepts.
-- No two concepts may share the same pair of genreFrame + conflictAxis.
 - Use at least 3 distinct genreFrame values.
-- Use at least 3 distinct conflictAxis values.
+- All offspring MUST use the kernel's conflictAxis.
 - Avoid superficial variants. Every concept must imply a different decision texture in play.`;
 
 const KERNEL_CONSTRAINTS = `KERNEL CONSTRAINTS:
@@ -60,6 +59,8 @@ export function buildConceptEvolverPrompt(context: ConceptEvolverContext): ChatM
 - valueAtStake: ${context.kernel.valueAtStake}
 - opposingForce: ${context.kernel.opposingForce}
 - directionOfChange: ${context.kernel.directionOfChange}
+- conflictAxis: ${context.kernel.conflictAxis}
+- dramaticStance: ${context.kernel.dramaticStance}
 - thematicQuestion: ${context.kernel.thematicQuestion}`,
     `PARENT CONCEPTS INPUT:
 ${buildParentPayload(context.parentConcepts)}`,
