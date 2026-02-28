@@ -6183,6 +6183,80 @@ function createRecapModalController(initialData) {
       overallScore: kernelScore,
     };
 
+    // ── Genre chip exclusion state ──────────────────────────────────
+    var genreChipGrid = document.getElementById('genre-chip-grid');
+    var genreChipCounter = document.getElementById('genre-chip-counter');
+    var bannedGenres = {};
+    var MIN_UNBANNED = 6;
+    var genreChipToast = null;
+
+    function getTotalGenreCount() {
+      if (!genreChipGrid) return 0;
+      return genreChipGrid.querySelectorAll('.genre-chip').length;
+    }
+
+    function getBannedCount() {
+      var count = 0;
+      for (var key in bannedGenres) {
+        if (bannedGenres[key]) count++;
+      }
+      return count;
+    }
+
+    function updateGenreChipCounter() {
+      if (!genreChipCounter) return;
+      var total = getTotalGenreCount();
+      var available = total - getBannedCount();
+      genreChipCounter.textContent = '(' + available + ' of ' + total + ' available)';
+    }
+
+    function showGenreToast(message) {
+      if (!genreChipToast) {
+        genreChipToast = document.createElement('div');
+        genreChipToast.className = 'genre-chip-toast';
+        document.body.appendChild(genreChipToast);
+      }
+      genreChipToast.textContent = message;
+      genreChipToast.classList.add('genre-chip-toast--visible');
+      setTimeout(function () {
+        genreChipToast.classList.remove('genre-chip-toast--visible');
+      }, 2000);
+    }
+
+    function collectExcludedGenres() {
+      var excluded = [];
+      for (var key in bannedGenres) {
+        if (bannedGenres[key]) excluded.push(key);
+      }
+      return excluded;
+    }
+
+    if (genreChipGrid) {
+      genreChipGrid.addEventListener('click', function (event) {
+        var chip = event.target;
+        if (!(chip instanceof HTMLElement) || !chip.classList.contains('genre-chip')) return;
+        var genre = chip.dataset.genre;
+        if (!genre) return;
+
+        if (bannedGenres[genre]) {
+          // Un-ban
+          bannedGenres[genre] = false;
+          chip.classList.remove('genre-chip--banned');
+        } else {
+          // Check minimum unbanned
+          var total = getTotalGenreCount();
+          var available = total - getBannedCount();
+          if (available <= MIN_UNBANNED) {
+            showGenreToast('At least ' + MIN_UNBANNED + ' genres must remain available');
+            return;
+          }
+          bannedGenres[genre] = true;
+          chip.classList.add('genre-chip--banned');
+        }
+        updateGenreChipCounter();
+      });
+    }
+
     // Restore API key from session storage
     var storedKey = getApiKey();
     var apiKeyInput = document.getElementById('conceptApiKey');
@@ -6298,6 +6372,7 @@ function createRecapModalController(initialData) {
             genreVibes: seeds.genreVibes,
             moodKeywords: seeds.moodKeywords,
             contentPreferences: seeds.contentPreferences,
+            excludedGenres: collectExcludedGenres(),
             kernelId: selectedKernelId,
             apiKey: apiKey,
             progressId: progressId,

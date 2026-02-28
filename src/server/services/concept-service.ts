@@ -11,12 +11,14 @@ import type {
   ConceptStressTestResult,
   EvaluatedConcept,
 } from '../../models/index.js';
+import type { GenreFrame } from '../../models/concept-generator.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 
 export interface GenerateConceptsInput {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
+  readonly excludedGenres?: readonly GenreFrame[];
   readonly kernel: StoryKernel;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -167,7 +169,10 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         status: 'started',
         attempt: 1,
       });
-      const ideation = await deps.generateConceptIdeas({ ...seeds, kernel }, apiKey);
+      const ideation = await deps.generateConceptIdeas(
+        { ...seeds, excludedGenres: input.excludedGenres, kernel },
+        apiKey,
+      );
       onGenerationStage?.({
         stage: 'ENGINEERING_CONCEPTS',
         status: 'completed',

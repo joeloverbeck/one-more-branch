@@ -8,7 +8,7 @@ import { LLMError } from './llm-client-types.js';
 import { runLlmStage } from './llm-stage-runner.js';
 import { parseConceptSeed } from './concept-spec-parser.js';
 import { buildConceptEvolverSeederPrompt } from './prompts/concept-evolver-seeder-prompt.js';
-import { CONCEPT_SEEDER_SCHEMA } from './schemas/concept-seeder-schema.js';
+import { buildConceptSeederSchema } from './schemas/concept-seeder-schema.js';
 
 function buildDiversityKey(seed: ConceptSeedFields): string {
   return `${seed.genreFrame}::${seed.conflictAxis}`;
@@ -70,7 +70,7 @@ export async function generateEvolvedConceptSeeds(
     promptType: 'conceptEvolverSeeder',
     apiKey,
     options,
-    schema: CONCEPT_SEEDER_SCHEMA,
+    schema: buildConceptSeederSchema(context.excludedGenres),
     messages,
     parseResponse: parseConceptEvolverSeederResponse,
   });

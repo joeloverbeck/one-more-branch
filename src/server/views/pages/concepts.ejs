@@ -60,6 +60,16 @@
           </div>
 
           <div class="form-group">
+            <label>Genre Exclusions <span class="genre-chip-counter" id="genre-chip-counter">(<%= genreFrames.length %> of <%= genreFrames.length %> available)</span></label>
+            <p class="form-help">Click genres to exclude them from generation. At least 6 must remain.</p>
+            <div class="genre-chip-grid" id="genre-chip-grid">
+              <% genreFrames.forEach(function(genre) { %>
+              <button type="button" class="genre-chip" data-genre="<%= genre %>"><%= genre.replace(/_/g, ' ') %></button>
+              <% }); %>
+            </div>
+          </div>
+
+          <div class="form-group">
             <label for="conceptApiKey">OpenRouter API Key *</label>
             <input
               type="password"

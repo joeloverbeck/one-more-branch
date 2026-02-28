@@ -48,7 +48,7 @@ export function buildConceptEvolverSeederPrompt(
     ROLE_INTRO,
     CONTENT_POLICY,
     MUTATION_STRATEGIES,
-    buildSeederTaxonomyGuidance(),
+    buildSeederTaxonomyGuidance(context.excludedGenres),
     SEEDER_QUALITY_ANCHORS,
     DIVERSITY_CONSTRAINTS,
     KERNEL_CONSTRAINTS,

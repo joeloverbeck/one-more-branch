@@ -266,6 +266,7 @@ export {
   CONCEPT_VERIFICATION_CONSTRAINTS,
   CONCEPT_SCORING_WEIGHTS,
   CONCEPT_PASS_THRESHOLDS,
+  MIN_UNBANNED_GENRES,
   isGenreFrame,
   isConflictAxis,
   isSettingScale,
@@ -273,6 +274,7 @@ export {
   isConceptSpec,
   computeOverallScore,
   passesConceptThresholds,
+  filterGenreFrames,
 } from './concept-generator';
 export {
   GENRE_OBLIGATION_TAGS_BY_GENRE,

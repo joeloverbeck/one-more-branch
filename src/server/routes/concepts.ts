@@ -3,6 +3,8 @@ import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
 import type { ConceptSpec, ConceptVerification, EvaluatedConcept } from '../../models/index.js';
+import { GENRE_FRAMES, MIN_UNBANNED_GENRES, isGenreFrame } from '../../models/index.js';
+import type { GenreFrame } from '../../models/concept-generator.js';
 import type { ConceptSeeds, SavedConcept } from '../../models/saved-concept.js';
 import {
   conceptExists,
@@ -32,6 +34,27 @@ function hasAtLeastOneConceptSeed(body: {
   ].some((value) => value?.trim());
 }
 
+function parseExcludedGenres(input: unknown): GenreFrame[] | null {
+  if (input === undefined || input === null) {
+    return [];
+  }
+  if (!Array.isArray(input)) {
+    return null;
+  }
+  const maxExcluded = GENRE_FRAMES.length - MIN_UNBANNED_GENRES;
+  if (input.length > maxExcluded) {
+    return null;
+  }
+  const validated: GenreFrame[] = [];
+  for (const item of input) {
+    if (!isGenreFrame(item)) {
+      return null;
+    }
+    validated.push(item);
+  }
+  return validated;
+}
+
 function normalizeConceptSeeds(body: {
   genreVibes?: string;
   moodKeywords?: string;
@@ -57,6 +80,7 @@ conceptRoutes.get(
       title: 'Concepts - One More Branch',
       concepts,
       genreGroups,
+      genreFrames: GENRE_FRAMES,
     });
   })
 );
@@ -90,6 +114,7 @@ conceptRoutes.post(
       genreVibes?: string;
       moodKeywords?: string;
       contentPreferences?: string;
+      excludedGenres?: unknown;
       kernelId?: string;
       apiKey?: string;
       progressId?: unknown;
@@ -116,6 +141,14 @@ conceptRoutes.post(
       return res.status(400).json({ success: false, error: 'Selected kernel was not found' });
     }
 
+    const excludedGenres = parseExcludedGenres(body.excludedGenres);
+    if (excludedGenres === null) {
+      return res.status(400).json({
+        success: false,
+        error: `excludedGenres must be an array of valid genre values with at most ${GENRE_FRAMES.length - MIN_UNBANNED_GENRES} entries`,
+      });
+    }
+
     const progress = createRouteGenerationProgress(body.progressId, 'concept-generation');
 
     const normalizedSeeds = normalizeConceptSeeds(body);
@@ -125,6 +158,7 @@ conceptRoutes.post(
         genreVibes: body.genreVibes,
         moodKeywords: body.moodKeywords,
         contentPreferences: body.contentPreferences,
+        excludedGenres: excludedGenres.length > 0 ? excludedGenres : undefined,
         kernel: savedKernel.evaluatedKernel.kernel,
         apiKey,
         onGenerationStage: progress.onGenerationStage,

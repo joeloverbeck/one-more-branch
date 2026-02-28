@@ -46,7 +46,7 @@ export function buildConceptEvolverPrompt(context: ConceptEvolverContext): ChatM
     ROLE_INTRO,
     CONTENT_POLICY,
     MUTATION_STRATEGIES,
-    buildConceptTaxonomyGuidance(),
+    buildConceptTaxonomyGuidance(context.excludedGenres),
     CONCEPT_QUALITY_ANCHORS,
     DIVERSITY_CONSTRAINTS,
     KERNEL_CONSTRAINTS,

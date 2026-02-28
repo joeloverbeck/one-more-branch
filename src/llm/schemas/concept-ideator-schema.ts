@@ -2,10 +2,98 @@ import {
   CONFLICT_AXES,
   GENRE_FRAMES,
   SETTING_SCALES,
+  filterGenreFrames,
 } from '../../models/concept-generator.js';
+import type { GenreFrame } from '../../models/concept-generator.js';
 import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
+export function buildConceptSpecSchema(
+  excludedGenres?: readonly GenreFrame[],
+): Record<string, unknown> {
+  const allowedGenres = filterGenreFrames(excludedGenres);
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: [
+      'oneLineHook',
+      'elevatorParagraph',
+      'genreFrame',
+      'genreSubversion',
+      'protagonistRole',
+      'coreCompetence',
+      'coreFlaw',
+      'actionVerbs',
+      'coreConflictLoop',
+      'conflictAxis',
+      'conflictType',
+      'pressureSource',
+      'stakesPersonal',
+      'stakesSystemic',
+      'deadlineMechanism',
+      'settingAxioms',
+      'constraintSet',
+      'keyInstitutions',
+      'settingScale',
+      'whatIfQuestion',
+      'ironicTwist',
+      'playerFantasy',
+      'incitingDisruption',
+      'escapeValve',
+    ],
+    properties: {
+      oneLineHook: { type: 'string' },
+      elevatorParagraph: { type: 'string' },
+      genreFrame: { type: 'string', enum: [...allowedGenres] },
+      genreSubversion: { type: 'string' },
+      protagonistRole: { type: 'string' },
+      coreCompetence: { type: 'string' },
+      coreFlaw: { type: 'string' },
+      actionVerbs: { type: 'array', items: { type: 'string' } },
+      coreConflictLoop: { type: 'string' },
+      conflictAxis: { type: 'string', enum: [...CONFLICT_AXES] },
+      conflictType: { type: 'string', enum: [...CONFLICT_TYPE_VALUES] },
+      pressureSource: { type: 'string' },
+      stakesPersonal: { type: 'string' },
+      stakesSystemic: { type: 'string' },
+      deadlineMechanism: { type: 'string' },
+      settingAxioms: { type: 'array', items: { type: 'string' } },
+      constraintSet: { type: 'array', items: { type: 'string' } },
+      keyInstitutions: { type: 'array', items: { type: 'string' } },
+      settingScale: { type: 'string', enum: [...SETTING_SCALES] },
+      whatIfQuestion: { type: 'string' },
+      ironicTwist: { type: 'string' },
+      playerFantasy: { type: 'string' },
+      incitingDisruption: { type: 'string' },
+      escapeValve: { type: 'string' },
+    },
+  };
+}
+
+export function buildConceptIdeationSchema(
+  excludedGenres?: readonly GenreFrame[],
+): JsonSchema {
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: 'concept_ideation',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['concepts'],
+        properties: {
+          concepts: {
+            type: 'array',
+            items: buildConceptSpecSchema(excludedGenres),
+          },
+        },
+      },
+    },
+  };
+}
+
+/** @deprecated Use buildConceptSpecSchema() for new code */
 export const CONCEPT_SPEC_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -63,6 +151,7 @@ export const CONCEPT_SPEC_SCHEMA = {
   },
 } as const;
 
+/** @deprecated Use buildConceptIdeationSchema() for new code */
 export const CONCEPT_IDEATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
   json_schema: {

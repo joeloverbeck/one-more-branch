@@ -38,7 +38,7 @@ describe('concepts page template', () => {
     const template = fs.readFileSync(conceptsPath, 'utf8');
     const renderTemplate = renderEjs as (
       source: string,
-      data: { title: string; concepts: unknown[] },
+      data: { title: string; concepts: unknown[]; genreFrames: string[] },
       options: { filename: string }
     ) => string;
 
@@ -48,6 +48,7 @@ describe('concepts page template', () => {
         {
           title: 'Concepts - One More Branch',
           concepts: [],
+          genreFrames: ['ADVENTURE', 'HORROR', 'SCI_FI', 'ROMANCE', 'MYSTERY', 'THRILLER'],
         },
         { filename: conceptsPath }
       )
