@@ -299,6 +299,7 @@ export type {
 
 export type {
   DirectionOfChange,
+  DramaticStance,
   StoryKernel,
   KernelSeedInput,
   KernelIdeatorContext,
@@ -314,9 +315,11 @@ export type {
 } from './story-kernel';
 export {
   DIRECTION_OF_CHANGE_VALUES,
+  DRAMATIC_STANCE_VALUES,
   KERNEL_SCORING_WEIGHTS,
   KERNEL_PASS_THRESHOLDS,
   isDirectionOfChange,
+  isDramaticStance,
   isStoryKernel,
   computeKernelOverallScore,
   passesKernelThresholds,

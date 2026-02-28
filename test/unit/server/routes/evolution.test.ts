@@ -87,8 +87,10 @@ function createSavedKernel(kernelId = 'kernel-1'): SavedKernel {
         valueAtStake: 'Trust',
         opposingForce: 'Control',
         directionOfChange: 'POSITIVE',
+        conflictAxis: 'FREEDOM_VS_SAFETY',
+        dramaticStance: 'ROMANTIC',
         thematicQuestion: 'Can control coexist with intimacy?',
-      antithesis: 'Counter-argument challenges the thesis.',
+        antithesis: 'Counter-argument challenges the thesis.',
       },
       scores: {
         dramaticClarity: 4,

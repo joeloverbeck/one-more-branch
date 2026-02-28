@@ -17,6 +17,8 @@ function buildKernelBlock(kernel: ConceptArchitectContext['kernel']): string | n
 - valueAtStake: ${kernel.valueAtStake}
 - opposingForce: ${kernel.opposingForce}
 - directionOfChange: ${kernel.directionOfChange}
+- conflictAxis: ${kernel.conflictAxis}
+- dramaticStance: ${kernel.dramaticStance}
 - thematicQuestion: ${kernel.thematicQuestion}`;
 }
 

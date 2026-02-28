@@ -14,6 +14,8 @@ function createKernel(index: number): StoryKernel {
     valueAtStake: `Value ${index}`,
     opposingForce: `Force ${index}`,
     directionOfChange: 'POSITIVE',
+    conflictAxis: 'DUTY_VS_DESIRE',
+    dramaticStance: 'TRAGIC',
     thematicQuestion: `Question ${index}?`,
     antithesis: 'Counter-argument challenges the thesis.',
   };

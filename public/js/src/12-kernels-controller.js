@@ -302,6 +302,28 @@
             '<option value="AMBIGUOUS"' + (kernel.directionOfChange === 'AMBIGUOUS' ? ' selected' : '') + '>AMBIGUOUS</option>' +
           '</select>' +
         '</div>' +
+        '<div class="form-group"><label>Conflict Axis</label>' +
+          '<select class="kernel-edit-conflictAxis">' +
+            '<option value="INDIVIDUAL_VS_SYSTEM"' + (kernel.conflictAxis === 'INDIVIDUAL_VS_SYSTEM' ? ' selected' : '') + '>INDIVIDUAL VS SYSTEM</option>' +
+            '<option value="TRUTH_VS_STABILITY"' + (kernel.conflictAxis === 'TRUTH_VS_STABILITY' ? ' selected' : '') + '>TRUTH VS STABILITY</option>' +
+            '<option value="DUTY_VS_DESIRE"' + (kernel.conflictAxis === 'DUTY_VS_DESIRE' ? ' selected' : '') + '>DUTY VS DESIRE</option>' +
+            '<option value="FREEDOM_VS_SAFETY"' + (kernel.conflictAxis === 'FREEDOM_VS_SAFETY' ? ' selected' : '') + '>FREEDOM VS SAFETY</option>' +
+            '<option value="KNOWLEDGE_VS_INNOCENCE"' + (kernel.conflictAxis === 'KNOWLEDGE_VS_INNOCENCE' ? ' selected' : '') + '>KNOWLEDGE VS INNOCENCE</option>' +
+            '<option value="POWER_VS_MORALITY"' + (kernel.conflictAxis === 'POWER_VS_MORALITY' ? ' selected' : '') + '>POWER VS MORALITY</option>' +
+            '<option value="LOYALTY_VS_SURVIVAL"' + (kernel.conflictAxis === 'LOYALTY_VS_SURVIVAL' ? ' selected' : '') + '>LOYALTY VS SURVIVAL</option>' +
+            '<option value="IDENTITY_VS_BELONGING"' + (kernel.conflictAxis === 'IDENTITY_VS_BELONGING' ? ' selected' : '') + '>IDENTITY VS BELONGING</option>' +
+            '<option value="JUSTICE_VS_MERCY"' + (kernel.conflictAxis === 'JUSTICE_VS_MERCY' ? ' selected' : '') + '>JUSTICE VS MERCY</option>' +
+            '<option value="PROGRESS_VS_TRADITION"' + (kernel.conflictAxis === 'PROGRESS_VS_TRADITION' ? ' selected' : '') + '>PROGRESS VS TRADITION</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="form-group"><label>Dramatic Stance</label>' +
+          '<select class="kernel-edit-dramaticStance">' +
+            '<option value="COMIC"' + (kernel.dramaticStance === 'COMIC' ? ' selected' : '') + '>COMIC</option>' +
+            '<option value="ROMANTIC"' + (kernel.dramaticStance === 'ROMANTIC' ? ' selected' : '') + '>ROMANTIC</option>' +
+            '<option value="TRAGIC"' + (kernel.dramaticStance === 'TRAGIC' ? ' selected' : '') + '>TRAGIC</option>' +
+            '<option value="IRONIC"' + (kernel.dramaticStance === 'IRONIC' ? ' selected' : '') + '>IRONIC</option>' +
+          '</select>' +
+        '</div>' +
         '<div class="form-actions" style="margin-top: 0.5rem;">' +
           '<button type="button" class="btn btn-primary btn-small kernel-edit-save-btn" data-kernel-id="' + escapeHtml(savedKernel.id) + '">Save Changes</button>' +
           '<button type="button" class="btn btn-secondary btn-small kernel-edit-cancel-btn">Cancel</button>' +
@@ -324,6 +346,8 @@
           opposingForce: getInputValue('.kernel-edit-opposingForce'),
           thematicQuestion: getInputValue('.kernel-edit-thematicQuestion'),
           directionOfChange: getInputValue('.kernel-edit-directionOfChange'),
+          conflictAxis: getInputValue('.kernel-edit-conflictAxis'),
+          dramaticStance: getInputValue('.kernel-edit-dramaticStance'),
         },
       };
     }

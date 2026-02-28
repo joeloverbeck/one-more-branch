@@ -2,6 +2,12 @@ import type { EvaluatedKernel, KernelEvolverContext } from '../../models/index.j
 import { DIRECTION_OF_CHANGE_VALUES } from '../../models/index.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import {
+  CONFLICT_AXIS_GUIDANCE,
+  DRAMATIC_STANCE_GUIDANCE,
+  buildConflictAxisEnumList,
+  buildDramaticStanceEnumList,
+} from './kernel-prompt-shared.js';
 
 const ROLE_INTRO =
   'You are a kernel evolution architect for branching interactive fiction. You recombine proven dramatic propositions, mutate weak points, and generate novel but structurally sound story kernels.';
@@ -12,7 +18,9 @@ const MUTATION_STRATEGIES = `MUTATION STRATEGIES:
 - value-transplant: Move a working value/force dynamic into an entirely different human conflict domain.
 - direction-pivot: Keep thesis and stakes but shift directionOfChange (e.g. POSITIVE parent becomes IRONIC offspring).
 - synthesis: Merge the dramatic cores of two parents into a single kernel that honors both tensions.
-- radicalize: Push one parent's defining differentiator to its logical extreme.`;
+- radicalize: Push one parent's defining differentiator to its logical extreme.
+- axis-shift: Preserve thesis but move to a different conflict axis.
+- stance-pivot: Keep same conflict, shift dramatic stance (e.g. TRAGIC parent becomes COMIC offspring).`;
 
 const QUALITY_ANCHORS = `QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
@@ -26,6 +34,8 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - No two kernels may share the same valueAtStake.
 - No two kernels may share the same opposingForce.
 - Use at least 3 distinct directionOfChange values.
+- Use at least 4 distinct conflictAxis values.
+- Use at least 3 distinct dramaticStance values.
 - Ensure kernels represent materially different human conflict domains.`;
 
 const DIRECTION_GUIDANCE = `DIRECTION OF CHANGE TAXONOMY:
@@ -69,6 +79,10 @@ export function buildKernelEvolverPrompt(context: KernelEvolverContext): ChatMes
     DIVERSITY_CONSTRAINTS,
     DIRECTION_GUIDANCE,
     `VALID directionOfChange values:\n${buildDirectionEnumList()}`,
+    CONFLICT_AXIS_GUIDANCE,
+    `VALID conflictAxis values:\n${buildConflictAxisEnumList()}`,
+    DRAMATIC_STANCE_GUIDANCE,
+    `VALID dramaticStance values:\n${buildDramaticStanceEnumList()}`,
     PROHIBITIONS,
   ];
 

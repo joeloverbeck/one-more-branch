@@ -31,6 +31,8 @@ MUTATION STRATEGIES:
 - direction-pivot: Keep thesis and stakes but shift directionOfChange (e.g. POSITIVE parent becomes IRONIC offspring).
 - synthesis: Merge the dramatic cores of two parents into a single kernel that honors both tensions.
 - radicalize: Push one parent's defining differentiator to its logical extreme.
+- axis-shift: Preserve thesis but move to a different conflict axis.
+- stance-pivot: Keep same conflict, shift dramatic stance (e.g. TRAGIC parent becomes COMIC offspring).
 
 QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
@@ -44,6 +46,8 @@ DIVERSITY CONSTRAINTS:
 - No two kernels may share the same valueAtStake.
 - No two kernels may share the same opposingForce.
 - Use at least 3 distinct directionOfChange values.
+- Use at least 4 distinct conflictAxis values.
+- Use at least 3 distinct dramaticStance values.
 - Ensure kernels represent materially different human conflict domains.
 
 DIRECTION OF CHANGE TAXONOMY:
@@ -57,6 +61,24 @@ VALID directionOfChange values:
 - NEGATIVE
 - IRONIC
 - AMBIGUOUS
+
+CONFLICT AXIS TAXONOMY:
+- INDIVIDUAL_VS_SYSTEM: Personal agency against institutions.
+- TRUTH_VS_STABILITY: Revealing truth versus preserving order.
+- DUTY_VS_DESIRE: Obligation clashing with personal longing.
+- FREEDOM_VS_SAFETY: Autonomy versus protective constraints.
+- KNOWLEDGE_VS_INNOCENCE: Understanding versus protective ignorance.
+- POWER_VS_MORALITY: Capability gain versus ethical limits.
+- LOYALTY_VS_SURVIVAL: Commitments versus self-preservation.
+- IDENTITY_VS_BELONGING: Self-definition versus group acceptance.
+- JUSTICE_VS_MERCY: Righteous fairness versus compassionate forgiveness.
+- PROGRESS_VS_TRADITION: Innovation and change versus preservation and heritage.
+
+DRAMATIC STANCE TAXONOMY:
+- COMIC: Renewal, community triumph, social integration. Human bonds affirmed or restored.
+- ROMANTIC: Heroic transcendence, individual will triumphs over adversity.
+- TRAGIC: Cost of hubris or desire, inevitable loss. The price of greatness.
+- IRONIC: Subversive, deconstructive, anti-heroic. Questions conventional assumptions.
 
 PROHIBITIONS:
 - Do not include genre framing.
@@ -104,6 +126,8 @@ OUTPUT REQUIREMENTS:
       "valueAtStake": "{{fundamental human value}}",
       "opposingForce": "{{abstract opposing force}}",
       "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",
+      "conflictAxis": "{{CONFLICT_AXIS_VALUE}}",
+      "dramaticStance": "{{COMIC|ROMANTIC|TRAGIC|IRONIC}}",
       "thematicQuestion": "{{question form thesis}}"
     }
   ]
@@ -116,16 +140,20 @@ Schema constraints in `src/llm/schemas/kernel-evolver-schema.ts`:
 - Strict object schemas (`additionalProperties: false`)
 - All kernel fields required
 - `directionOfChange` enum-constrained
+- `conflictAxis` enum-constrained (10 values)
+- `dramaticStance` enum-constrained (4 values)
 
 ## Runtime Validation
 
 `parseKernelEvolutionResponse(...)` in `src/llm/kernel-evolver.ts` enforces:
 - Object payload with `kernels` array
 - Exactly 6 kernel count
-- Each entry passes `isStoryKernel(...)`
+- Each entry passes `isStoryKernel(...)` (includes `conflictAxis` and `dramaticStance` validation)
 - No two kernels share the same `valueAtStake` (case-insensitive)
 - No two kernels share the same `opposingForce` (case-insensitive)
 - At least 3 distinct `directionOfChange` values across the set
+- At least 4 distinct `conflictAxis` values across the set
+- At least 3 distinct `dramaticStance` values across the set
 - Malformed payloads throw retryable `LLMError` with `STRUCTURE_PARSE_ERROR`
 
 ## Context Provided

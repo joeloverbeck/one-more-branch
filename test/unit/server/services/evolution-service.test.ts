@@ -14,8 +14,10 @@ function createStoryKernel(): StoryKernel {
     valueAtStake: 'Trust',
     opposingForce: 'Fear of uncertainty',
     directionOfChange: 'IRONIC',
+    conflictAxis: 'KNOWLEDGE_VS_INNOCENCE',
+    dramaticStance: 'IRONIC',
     thematicQuestion: 'Can safety exist without control?',
-  antithesis: 'Counter-argument challenges the thesis.',
+    antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 

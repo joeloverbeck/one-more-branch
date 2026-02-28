@@ -16,9 +16,8 @@ const MUTATION_STRATEGIES = `MUTATION STRATEGIES:
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return exactly 6 concept seeds.
-- No two seeds may share the same pair of genreFrame + conflictAxis.
 - Use at least 3 distinct genreFrame values.
-- Use at least 3 distinct conflictAxis values.
+- All offspring MUST use the kernel's conflictAxis.
 - Avoid superficial variants. Every seed must imply a different decision texture in play.`;
 
 const KERNEL_CONSTRAINTS = `KERNEL CONSTRAINTS:
@@ -62,6 +61,8 @@ export function buildConceptEvolverSeederPrompt(
 - valueAtStake: ${context.kernel.valueAtStake}
 - opposingForce: ${context.kernel.opposingForce}
 - directionOfChange: ${context.kernel.directionOfChange}
+- conflictAxis: ${context.kernel.conflictAxis}
+- dramaticStance: ${context.kernel.dramaticStance}
 - thematicQuestion: ${context.kernel.thematicQuestion}`,
     `PARENT CONCEPTS INPUT:
 ${buildParentPayload(context.parentConcepts)}`,

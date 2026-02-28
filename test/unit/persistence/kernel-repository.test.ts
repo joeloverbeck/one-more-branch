@@ -25,8 +25,10 @@ function createEvaluatedKernel(): SavedKernel['evaluatedKernel'] {
       valueAtStake: 'Trust',
       opposingForce: 'Fear of loss drives the need to control.',
       directionOfChange: 'IRONIC',
+      conflictAxis: 'PROGRESS_VS_TRADITION',
+      dramaticStance: 'COMIC',
       thematicQuestion: 'Can protection exist without control?',
-    antithesis: 'Counter-argument challenges the thesis.',
+      antithesis: 'Counter-argument challenges the thesis.',
     },
     scores: {
       dramaticClarity: 4,

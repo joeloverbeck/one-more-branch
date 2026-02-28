@@ -28,14 +28,27 @@ import type {
   StoryKernel,
 } from '../../../src/models';
 
+const EVOLVER_AXES = [
+  'IDENTITY_VS_BELONGING',
+  'JUSTICE_VS_MERCY',
+  'PROGRESS_VS_TRADITION',
+  'TRUTH_VS_STABILITY',
+  'FREEDOM_VS_SAFETY',
+  'POWER_VS_MORALITY',
+] as const;
+
+const EVOLVER_STANCES = ['ROMANTIC', 'TRAGIC', 'IRONIC', 'COMIC'] as const;
+
 function createKernel(index: number, direction: DirectionOfChange = 'POSITIVE'): StoryKernel {
   return {
     dramaticThesis: `Thesis ${index}`,
     valueAtStake: `Value ${index}`,
     opposingForce: `Force ${index}`,
     directionOfChange: direction,
+    conflictAxis: EVOLVER_AXES[(index - 1) % EVOLVER_AXES.length],
+    dramaticStance: EVOLVER_STANCES[(index - 1) % EVOLVER_STANCES.length],
     thematicQuestion: `Question ${index}?`,
-  antithesis: 'Counter-argument challenges the thesis.',
+    antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 

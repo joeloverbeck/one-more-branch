@@ -35,6 +35,8 @@ DIVERSITY CONSTRAINTS:
 - No two kernels may share the same valueAtStake.
 - No two kernels may share the same opposingForce.
 - Use at least 3 distinct directionOfChange values.
+- Use at least 5 distinct conflictAxis values.
+- Use at least 3 distinct dramaticStance values.
 - Ensure kernels represent materially different human conflict domains.
 
 DIRECTION OF CHANGE TAXONOMY:
@@ -48,6 +50,27 @@ VALID directionOfChange values:
 - NEGATIVE
 - IRONIC
 - AMBIGUOUS
+
+CONFLICT AXIS TAXONOMY:
+- INDIVIDUAL_VS_SYSTEM: Personal agency against institutions.
+- TRUTH_VS_STABILITY: Revealing truth versus preserving order.
+- DUTY_VS_DESIRE: Obligation clashing with personal longing.
+- FREEDOM_VS_SAFETY: Autonomy versus protective constraints.
+- KNOWLEDGE_VS_INNOCENCE: Understanding versus protective ignorance.
+- POWER_VS_MORALITY: Capability gain versus ethical limits.
+- LOYALTY_VS_SURVIVAL: Commitments versus self-preservation.
+- IDENTITY_VS_BELONGING: Self-definition versus group acceptance.
+- JUSTICE_VS_MERCY: Righteous fairness versus compassionate forgiveness.
+- PROGRESS_VS_TRADITION: Innovation and change versus preservation and heritage.
+
+DRAMATIC STANCE TAXONOMY:
+- COMIC: Renewal, community triumph, social integration. Human bonds affirmed or restored.
+- ROMANTIC: Heroic transcendence, individual will triumphs over adversity.
+- TRAGIC: Cost of hubris or desire, inevitable loss. The price of greatness.
+- IRONIC: Subversive, deconstructive, anti-heroic. Questions conventional assumptions. NOTE: distinct from directionOfChange IRONIC (outcome trajectory); dramaticStance IRONIC describes the story's philosophical worldview.
+
+DISAMBIGUATION:
+dramaticStance IRONIC describes philosophical worldview (subversive/deconstructive), while directionOfChange IRONIC describes outcome trajectory (value gained at transformative cost). A kernel can be TRAGIC stance with IRONIC direction, or IRONIC stance with POSITIVE direction.
 
 PROHIBITIONS:
 - Do not include genre framing.
@@ -83,7 +106,7 @@ No seeds were provided. Derive kernels from universal human themes and conflicts
 
 OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
-- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
+- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, conflictAxis, dramaticStance, thematicQuestion.
 - Keep every field concise and semantically distinct across the set.
 ```
 
@@ -98,6 +121,8 @@ OUTPUT REQUIREMENTS:
       "valueAtStake": "{{fundamental human value}}",
       "opposingForce": "{{abstract opposing force}}",
       "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",
+      "conflictAxis": "{{CONFLICT_AXIS_VALUE}}",
+      "dramaticStance": "{{COMIC|ROMANTIC|TRAGIC|IRONIC}}",
       "thematicQuestion": "{{question form thesis}}"
     }
   ]
@@ -109,13 +134,17 @@ Schema constraints in `src/llm/schemas/kernel-ideator-schema.ts`:
 - Strict object schemas (`additionalProperties: false`)
 - All kernel fields required
 - `directionOfChange` enum-constrained
+- `conflictAxis` enum-constrained (10 values)
+- `dramaticStance` enum-constrained (4 values)
 
 ## Runtime Validation
 
 `parseKernelIdeationResponse(...)` in `src/llm/kernel-ideator.ts` enforces:
 - object payload with `kernels` array
 - 6-8 kernel count
-- each entry passes `isStoryKernel(...)`
+- each entry passes `isStoryKernel(...)` (includes `conflictAxis` and `dramaticStance` validation)
+- at least 5 distinct `conflictAxis` values across the set
+- at least 3 distinct `dramaticStance` values across the set
 - malformed payloads throw retryable `LLMError` with `STRUCTURE_PARSE_ERROR`
 
 ## Context Provided

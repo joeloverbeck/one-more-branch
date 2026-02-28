@@ -124,6 +124,8 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
     `Value at stake: ${storyKernel.valueAtStake}`,
     `Opposing force: ${storyKernel.opposingForce}`,
     `Direction of change: ${storyKernel.directionOfChange}`,
+    `Conflict axis: ${storyKernel.conflictAxis}`,
+    `Dramatic stance: ${storyKernel.dramaticStance}`,
     `Thematic question: ${storyKernel.thematicQuestion}`,
     '',
     'CONSTRAINT: Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question.',

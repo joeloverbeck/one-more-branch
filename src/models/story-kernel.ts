@@ -1,3 +1,5 @@
+import { type ConflictAxis, isConflictAxis } from './conflict-taxonomy.js';
+
 export const DIRECTION_OF_CHANGE_VALUES = ['POSITIVE', 'NEGATIVE', 'IRONIC', 'AMBIGUOUS'] as const;
 
 export type DirectionOfChange = (typeof DIRECTION_OF_CHANGE_VALUES)[number];
@@ -6,12 +8,22 @@ export function isDirectionOfChange(value: unknown): value is DirectionOfChange 
   return typeof value === 'string' && (DIRECTION_OF_CHANGE_VALUES as readonly string[]).includes(value);
 }
 
+export const DRAMATIC_STANCE_VALUES = ['COMIC', 'ROMANTIC', 'TRAGIC', 'IRONIC'] as const;
+
+export type DramaticStance = (typeof DRAMATIC_STANCE_VALUES)[number];
+
+export function isDramaticStance(value: unknown): value is DramaticStance {
+  return typeof value === 'string' && (DRAMATIC_STANCE_VALUES as readonly string[]).includes(value);
+}
+
 export interface StoryKernel {
   readonly dramaticThesis: string;
   readonly antithesis: string;
   readonly valueAtStake: string;
   readonly opposingForce: string;
   readonly directionOfChange: DirectionOfChange;
+  readonly conflictAxis: ConflictAxis;
+  readonly dramaticStance: DramaticStance;
   readonly thematicQuestion: string;
 }
 
@@ -111,6 +123,8 @@ export function isStoryKernel(value: unknown): value is StoryKernel {
     isNonEmptyString(kernel['valueAtStake']) &&
     isNonEmptyString(kernel['opposingForce']) &&
     isDirectionOfChange(kernel['directionOfChange']) &&
+    isConflictAxis(kernel['conflictAxis']) &&
+    isDramaticStance(kernel['dramaticStance']) &&
     isNonEmptyString(kernel['thematicQuestion'])
   );
 }

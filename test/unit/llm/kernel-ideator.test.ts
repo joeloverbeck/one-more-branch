@@ -23,6 +23,19 @@ import { buildKernelIdeatorPrompt } from '../../../src/llm/prompts/kernel-ideato
 import { KERNEL_IDEATION_SCHEMA } from '../../../src/llm/schemas/kernel-ideator-schema';
 import type { StoryKernel } from '../../../src/models';
 
+const CONFLICT_AXES = [
+  'INDIVIDUAL_VS_SYSTEM',
+  'TRUTH_VS_STABILITY',
+  'DUTY_VS_DESIRE',
+  'FREEDOM_VS_SAFETY',
+  'KNOWLEDGE_VS_INNOCENCE',
+  'POWER_VS_MORALITY',
+  'LOYALTY_VS_SURVIVAL',
+  'IDENTITY_VS_BELONGING',
+] as const;
+
+const DRAMATIC_STANCES = ['COMIC', 'ROMANTIC', 'TRAGIC', 'IRONIC'] as const;
+
 function createValidKernel(index: number): StoryKernel {
   return {
     dramaticThesis: `Kernel thesis ${index}`,
@@ -30,6 +43,8 @@ function createValidKernel(index: number): StoryKernel {
     valueAtStake: `Value ${index}`,
     opposingForce: `Opposing force ${index}`,
     directionOfChange: index % 3 === 0 ? 'NEGATIVE' : index % 2 === 0 ? 'IRONIC' : 'POSITIVE',
+    conflictAxis: CONFLICT_AXES[(index - 1) % CONFLICT_AXES.length],
+    dramaticStance: DRAMATIC_STANCES[(index - 1) % DRAMATIC_STANCES.length],
     thematicQuestion: `Question ${index}?`,
   };
 }

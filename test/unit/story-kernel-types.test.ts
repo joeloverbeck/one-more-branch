@@ -1,14 +1,17 @@
 import {
   DIRECTION_OF_CHANGE_VALUES,
+  DRAMATIC_STANCE_VALUES,
   KERNEL_PASS_THRESHOLDS,
   KERNEL_SCORING_WEIGHTS,
   computeKernelOverallScore,
   isDirectionOfChange,
+  isDramaticStance,
   isStoryKernel,
   passesKernelThresholds,
   type KernelDimensionScores,
   type StoryKernel,
 } from '../../src/models/story-kernel';
+import { CONFLICT_AXES, isConflictAxis } from '../../src/models/conflict-taxonomy';
 
 describe('story-kernel types', () => {
   const invalidValues: readonly unknown[] = ['INVALID', null, undefined, 123, {}, []];
@@ -30,6 +33,8 @@ describe('story-kernel types', () => {
       valueAtStake: 'Trust',
       opposingForce: 'Fear of loss drives the need to control.',
       directionOfChange: 'IRONIC',
+      conflictAxis: 'TRUTH_VS_STABILITY',
+      dramaticStance: 'IRONIC',
       thematicQuestion: 'Can protection exist without control?',
     };
 
@@ -38,6 +43,18 @@ describe('story-kernel types', () => {
       isStoryKernel({
         ...validKernel,
         directionOfChange: 'UNKNOWN',
+      }),
+    ).toBe(false);
+    expect(
+      isStoryKernel({
+        ...validKernel,
+        conflictAxis: 'INVALID_AXIS',
+      }),
+    ).toBe(false);
+    expect(
+      isStoryKernel({
+        ...validKernel,
+        dramaticStance: 'INVALID_STANCE',
       }),
     ).toBe(false);
     expect(
@@ -56,6 +73,26 @@ describe('story-kernel types', () => {
     ).toBe(false);
     expect(isStoryKernel(null)).toBe(false);
     expect(isStoryKernel('not-an-object')).toBe(false);
+  });
+
+  it('validates conflict axis values', () => {
+    for (const value of CONFLICT_AXES) {
+      expect(isConflictAxis(value)).toBe(true);
+    }
+
+    for (const value of invalidValues) {
+      expect(isConflictAxis(value)).toBe(false);
+    }
+  });
+
+  it('validates dramatic stance values', () => {
+    for (const value of DRAMATIC_STANCE_VALUES) {
+      expect(isDramaticStance(value)).toBe(true);
+    }
+
+    for (const value of invalidValues) {
+      expect(isDramaticStance(value)).toBe(false);
+    }
   });
 
   it('computes overall score as 100 when all dimensions are 5', () => {

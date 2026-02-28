@@ -11,6 +11,8 @@ function createContext(seedCount = 6): ConceptArchitectContext {
       valueAtStake: 'Trust',
       opposingForce: 'Fear of uncertainty',
       directionOfChange: 'IRONIC',
+      conflictAxis: 'POWER_VS_MORALITY',
+      dramaticStance: 'COMIC',
       thematicQuestion: 'Can safety exist without control?',
       antithesis: 'Counter-argument challenges the thesis.',
     },

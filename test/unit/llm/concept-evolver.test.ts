@@ -53,6 +53,8 @@ function createContext(): ConceptEvolverContext {
       valueAtStake: 'Trust',
       opposingForce: 'Fear of uncertainty',
       directionOfChange: 'IRONIC',
+      conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
+      dramaticStance: 'TRAGIC',
       thematicQuestion: 'Can safety exist without control?',
       antithesis: 'Counter-argument challenges the thesis.',
     },

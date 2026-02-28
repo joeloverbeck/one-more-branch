@@ -1,6 +1,12 @@
 import { DIRECTION_OF_CHANGE_VALUES, type KernelIdeatorContext } from '../../models/index.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import {
+  CONFLICT_AXIS_GUIDANCE,
+  DRAMATIC_STANCE_GUIDANCE,
+  buildConflictAxisEnumList,
+  buildDramaticStanceEnumList,
+} from './kernel-prompt-shared.js';
 
 const ROLE_INTRO =
   'You are a dramatic theorist who distills stories to their irreducible dramatic proposition. You generate story kernels, not concepts or plot outlines.';
@@ -18,6 +24,8 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - No two kernels may share the same valueAtStake.
 - No two kernels may share the same opposingForce.
 - Use at least 3 distinct directionOfChange values.
+- Use at least 5 distinct conflictAxis values.
+- Use at least 3 distinct dramaticStance values.
 - Ensure kernels represent materially different human conflict domains.`;
 
 const DIRECTION_GUIDANCE = `DIRECTION OF CHANGE TAXONOMY:
@@ -54,6 +62,12 @@ export function buildKernelIdeatorPrompt(context: KernelIdeatorContext): ChatMes
     DIVERSITY_CONSTRAINTS,
     DIRECTION_GUIDANCE,
     `VALID directionOfChange values:\n${buildDirectionEnumList()}`,
+    CONFLICT_AXIS_GUIDANCE,
+    `VALID conflictAxis values:\n${buildConflictAxisEnumList()}`,
+    DRAMATIC_STANCE_GUIDANCE,
+    `VALID dramaticStance values:\n${buildDramaticStanceEnumList()}`,
+    `DISAMBIGUATION:
+dramaticStance IRONIC describes philosophical worldview (subversive/deconstructive), while directionOfChange IRONIC describes outcome trajectory (value gained at transformative cost). A kernel can be TRAGIC stance with IRONIC direction, or IRONIC stance with POSITIVE direction.`,
     PROHIBITIONS,
   ].join('\n\n');
 
@@ -76,7 +90,7 @@ export function buildKernelIdeatorPrompt(context: KernelIdeatorContext): ChatMes
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
-- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, thematicQuestion.
+- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, conflictAxis, dramaticStance, thematicQuestion.
 - Keep every field concise and semantically distinct across the set.`
   );
 

@@ -96,6 +96,8 @@ OUTPUT REQUIREMENTS:
         "valueAtStake": "{{fundamental human value}}",
         "opposingForce": "{{abstract opposing force}}",
         "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",
+        "conflictAxis": "{{CONFLICT_AXIS_VALUE}}",
+        "dramaticStance": "{{COMIC|ROMANTIC|TRAGIC|IRONIC}}",
         "thematicQuestion": "{{question form thesis}}"
       },
       "scores": {
@@ -198,6 +200,8 @@ OUTPUT REQUIREMENTS:
         "valueAtStake": "{{fundamental human value}}",
         "opposingForce": "{{abstract opposing force}}",
         "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",
+        "conflictAxis": "{{CONFLICT_AXIS_VALUE}}",
+        "dramaticStance": "{{COMIC|ROMANTIC|TRAGIC|IRONIC}}",
         "thematicQuestion": "{{question form thesis}}"
       },
       "strengths": ["{{strength}}"],

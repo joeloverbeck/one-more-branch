@@ -28,14 +28,27 @@ import {
 } from '../../../src/llm/schemas/kernel-evaluator-schema';
 import { computeKernelOverallScore, type StoryKernel } from '../../../src/models';
 
+const EVALUATOR_AXES = [
+  'DUTY_VS_DESIRE',
+  'TRUTH_VS_STABILITY',
+  'FREEDOM_VS_SAFETY',
+  'POWER_VS_MORALITY',
+  'INDIVIDUAL_VS_SYSTEM',
+  'LOYALTY_VS_SURVIVAL',
+] as const;
+
+const EVALUATOR_STANCES = ['TRAGIC', 'COMIC', 'IRONIC', 'ROMANTIC'] as const;
+
 function createKernel(index: number): StoryKernel {
   return {
     dramaticThesis: `Thesis ${index}`,
     valueAtStake: `Value ${index}`,
     opposingForce: `Force ${index}`,
     directionOfChange: index % 3 === 0 ? 'NEGATIVE' : index % 2 === 0 ? 'IRONIC' : 'POSITIVE',
+    conflictAxis: EVALUATOR_AXES[(index - 1) % EVALUATOR_AXES.length],
+    dramaticStance: EVALUATOR_STANCES[(index - 1) % EVALUATOR_STANCES.length],
     thematicQuestion: `Question ${index}?`,
-  antithesis: 'Counter-argument challenges the thesis.',
+    antithesis: 'Counter-argument challenges the thesis.',
   };
 }
 

@@ -8,8 +8,10 @@ describe('saved-kernel model guards', () => {
       valueAtStake: 'Trust',
       opposingForce: 'Fear of loss drives the need to control.',
       directionOfChange: 'IRONIC',
+      conflictAxis: 'TRUTH_VS_STABILITY',
+      dramaticStance: 'IRONIC',
       thematicQuestion: 'Can protection exist without control?',
-    antithesis: 'Counter-argument challenges the thesis.',
+      antithesis: 'Counter-argument challenges the thesis.',
     },
     scores: {
       dramaticClarity: 4,
