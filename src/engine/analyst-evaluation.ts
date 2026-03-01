@@ -10,6 +10,7 @@ import type { PromiseTrackerResult } from '../llm/promise-tracker-types.js';
 import type { ProseQualityResult } from '../llm/prose-quality-types.js';
 import type { NpcIntelligenceResult } from '../llm/npc-intelligence-types.js';
 import type { StageDegradation } from '../llm/generation-pipeline-types.js';
+import { LLMError } from '../llm/llm-client-types.js';
 import { logger } from '../logging/index.js';
 import type {
   AccumulatedStructureState,
@@ -143,6 +144,13 @@ function mergeEvaluatorResults(
   } as AnalystResult;
 }
 
+function extractErrorContext(error: unknown): Record<string, unknown> {
+  if (error instanceof LLMError) {
+    return { errorCode: error.code, errorMessage: error.message, errorContext: error.context };
+  }
+  return { errorMessage: error instanceof Error ? error.message : String(error) };
+}
+
 export async function runAnalystEvaluation(
   context: AnalystEvaluationContext
 ): Promise<AnalystEvaluationResult> {
@@ -244,7 +252,7 @@ export async function runAnalystEvaluation(
   } else {
     logger.warn('Structure evaluator failed', {
       ...context.logContext,
-      error: structureSettled.reason,
+      ...extractErrorContext(structureSettled.reason),
     });
   }
 
@@ -253,7 +261,7 @@ export async function runAnalystEvaluation(
   } else {
     logger.warn('Promise tracker failed', {
       ...context.logContext,
-      error: promiseSettled.reason,
+      ...extractErrorContext(promiseSettled.reason),
     });
   }
 
@@ -262,7 +270,7 @@ export async function runAnalystEvaluation(
   } else {
     logger.warn('Prose quality evaluator failed', {
       ...context.logContext,
-      error: proseSettled.reason,
+      ...extractErrorContext(proseSettled.reason),
     });
   }
 
@@ -271,7 +279,7 @@ export async function runAnalystEvaluation(
   } else {
     logger.warn('NPC intelligence evaluator failed', {
       ...context.logContext,
-      error: npcSettled.reason,
+      ...extractErrorContext(npcSettled.reason),
     });
   }
 

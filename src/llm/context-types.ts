@@ -85,6 +85,7 @@ export interface ContinuationContext {
   accumulatedPromises: readonly TrackedPromise[];
   accumulatedDelayedConsequences?: readonly DelayedConsequence[];
   accumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
+  parentDramaticIronyOpportunities?: readonly string[];
   premisePromises: readonly string[];
   fulfilledPremisePromises: readonly string[];
   parentThreadPayoffAssessments?: readonly ThreadPayoffAssessment[];
