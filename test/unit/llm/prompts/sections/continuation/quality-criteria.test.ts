@@ -26,7 +26,7 @@ describe('continuation quality-criteria sections', () => {
 
     it('includes GOOD THREATS section', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('GOOD THREATS');
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threatsAdded');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('stateIntents.threats.add');
     });
 
     it('lists good threat examples in natural language', () => {
@@ -39,7 +39,7 @@ describe('continuation quality-criteria sections', () => {
 
     it('includes GOOD CONSTRAINTS section', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('GOOD CONSTRAINTS');
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('constraintsAdded');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('stateIntents.constraints.add');
     });
 
     it('lists good constraint examples in natural language', () => {
@@ -52,7 +52,7 @@ describe('continuation quality-criteria sections', () => {
 
     it('includes GOOD THREADS section', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('GOOD THREADS');
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('threadsAdded');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('stateIntents.threads.add');
     });
 
     it('lists good thread examples in typed object format', () => {
@@ -98,12 +98,16 @@ describe('continuation quality-criteria sections', () => {
     });
 
     it('includes inventory direction', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('inventoryAdded/inventoryRemoved');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
+        'stateIntents.inventory.add/stateIntents.inventory.removeIds'
+      );
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('✅ Use');
     });
 
     it('includes health direction', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('healthAdded/healthRemoved');
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
+        'stateIntents.health.add/stateIntents.health.removeIds'
+      );
     });
 
     it('includes hard threat/constraint dedup rules', () => {

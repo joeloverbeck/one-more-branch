@@ -63,6 +63,8 @@ const ACCOUNTANT_RULES = `Generate stateIntents only.
 - Do not assign server IDs.
 - Keep output deterministic and concise.
 - Align all state intents with the provided reduced planner output.
+- characterState.add entries MUST use this shape exactly: { "characterName": string, "states": string[] }.
+- NEVER use legacy characterState.add shape like { "character": string, "text": string }.
 - When designing state intents, consider how state changes serve the protagonist's Need vs Want conflict described in the story spine.`;
 
 function buildStateAccountantSystemPrompt(

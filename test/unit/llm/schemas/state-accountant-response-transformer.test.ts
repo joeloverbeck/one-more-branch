@@ -135,4 +135,68 @@ describe('validateStateAccountantResponse', () => {
       { characterName: 'Clay Stoneman', states: ['Remains close to Rowan in the room'] },
     ]);
   });
+
+  it('repairs legacy characterState add shape from character/text fields', () => {
+    const rawJson = createValidStatePayload();
+    (rawJson.stateIntents as { characterState: { add: Array<Record<string, unknown>> } }).characterState
+      .add = [
+      {
+        character: 'Jon Ureña',
+        text: 'Ethical self-image erodes as domestic comfort is accepted.',
+      },
+    ];
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = validateStateAccountantResponse(rawJson, '{"raw":"accountant"}');
+
+    expect(result.stateIntents.characterState.add).toEqual([
+      {
+        characterName: 'Jon Ureña',
+        states: ['Ethical self-image erodes as domestic comfort is accepted.'],
+      },
+    ]);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[accountant-shape-repair]'),
+      expect.stringContaining('character+text')
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('includes repairSummary in validation error context when repairs were attempted but output remains invalid', () => {
+    const rawJson = createValidStatePayload();
+    (
+      rawJson.stateIntents as {
+        characterState: { add: Array<Record<string, unknown>> };
+        threats: { removeIds: string[] };
+      }
+    ).characterState.add = [
+      {
+        character: 'Jon Ureña',
+      },
+    ];
+    (rawJson.stateIntents as { threats: { removeIds: string[] } }).threats.removeIds = ['cn-9'];
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      validateStateAccountantResponse(rawJson, '{"raw":"accountant"}');
+      throw new Error('Expected validateStateAccountantResponse to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LLMError);
+      const llmError = error as LLMError;
+      expect(llmError.context?.repairSummary).toMatchObject({
+        idRepairsApplied: 1,
+        shapeRepairsApplied: 1,
+        idFiltered: [
+          {
+            field: 'threats.removeIds',
+            value: 'cn-9',
+            expectedPrefix: 'th-',
+          },
+        ],
+        shapeRepairedEntries: [{ index: 0, fromFields: ['character'] }],
+      });
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
 });

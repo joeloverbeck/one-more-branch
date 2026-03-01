@@ -96,6 +96,7 @@ export function buildChoiceErrorResponse(
       httpStatus?: number;
       model?: string;
       rawError?: string;
+      repairSummary?: unknown;
     };
   } = {
     error: errorMessage,
@@ -110,6 +111,7 @@ export function buildChoiceErrorResponse(
         httpStatus: error.context?.['httpStatus'] as number | undefined,
         model: error.context?.['model'] as string | undefined,
         rawError: error.context?.['rawErrorBody'] as string | undefined,
+        repairSummary: error.context?.['repairSummary'],
       };
     }
   }

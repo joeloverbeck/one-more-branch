@@ -7,7 +7,7 @@ export const CONTINUATION_ACTIVE_STATE_QUALITY = `ACTIVE STATE QUALITY CRITERIA:
 Active state entries should track conditions that are TRUE RIGHT NOW and affect current story decisions.
 Before adding any entry, ask: "Is this currently happening? Does it affect the protagonist's immediate situation?"
 
-GOOD THREATS (threatsAdded):
+GOOD THREATS (stateIntents.threats.add):
 - { text: "Two guards patrol the corridor ahead", threatType: "HOSTILE_AGENT" }
 - { text: "Flames spread from the east wing", threatType: "ENVIRONMENTAL" }
 - { text: "Something large stalks in the darkness", threatType: "CREATURE" }
@@ -17,17 +17,17 @@ BAD THREATS (do NOT add):
 - Vague fears: "Something feels wrong" - too vague
 - Non-threats: "It's dark" - use CONSTRAINT instead
 
-GOOD CONSTRAINTS (constraintsAdded):
+GOOD CONSTRAINTS (stateIntents.constraints.add):
 - { text: "Leg wound slows movement", constraintType: "PHYSICAL" }
 - { text: "Complete darkness limits visibility", constraintType: "ENVIRONMENTAL" }
 - { text: "Must escape before dawn", constraintType: "TEMPORAL" }
 
 BAD CONSTRAINTS (do NOT add):
 - Emotions: "Protagonist is scared" - use protagonistAffect
-- Past events: "Was betrayed by ally" - use threadsAdded for unresolved hooks
+- Past events: "Was betrayed by ally" - use stateIntents.threads.add for unresolved hooks
 - Inventory limits: "Unarmed" - implied by inventory
 
-GOOD THREADS (threadsAdded):
+GOOD THREADS (stateIntents.threads.add):
 - { text: "Open relationship question: Can Mara trust Iven after the checkpoint betrayal?", threadType: "RELATIONSHIP", urgency: "HIGH" }
 - { text: "Need to learn: Who ordered the checkpoint betrayal?", threadType: "INFORMATION", urgency: "HIGH" }
 - { text: "Goal: secure the relay key; success when the key is recovered from the magistrate vault", threadType: "QUEST", urgency: "HIGH" }
@@ -43,8 +43,8 @@ BAD THREADS (do NOT add):
 HARD THREAD DEDUP/REFINEMENT RULES:
 - If an active thread already captures the same unresolved loop, do NOT add a reworded duplicate.
 - If you are refining an existing loop to a more specific successor, use replacement semantics only:
-  1. Resolve the prior thread by ID in threadsResolved (e.g., "td-3")
-  2. Add exactly one refined successor in threadsAdded
+  1. Resolve the prior thread by ID in stateIntents.threads.resolveIds (e.g., "td-3")
+  2. Add exactly one refined successor in stateIntents.threads.add
 - Never keep both the old loop and its refined version unresolved in the same output.
 
 THREAT VS DANGER (classification guardrail):
@@ -59,12 +59,12 @@ REMOVAL QUALITY (for continuation scenes):
 - Always use ONLY the server-assigned ID for removals/resolutions (e.g., "th-2", "cn-1", "td-3")
 
 When the protagonist picks up a sword, gains gold, loses a key, or breaks an item:
-✅ Use inventoryAdded/inventoryRemoved
+✅ Use stateIntents.inventory.add/stateIntents.inventory.removeIds
 ❌ Do NOT put item gains/losses in active state fields
 
 When the protagonist is wounded, poisoned, exhausted, or healed:
-✅ Use healthAdded/healthRemoved
-❌ Do NOT put physical conditions in threatsAdded or constraintsAdded
+✅ Use stateIntents.health.add/stateIntents.health.removeIds
+❌ Do NOT put physical conditions in stateIntents.threats.add or stateIntents.constraints.add
 
 HARD THREAT/CONSTRAINT DEDUP RULES:
 - Before adding a threat or constraint, scan ALL existing entries in the provided state.
