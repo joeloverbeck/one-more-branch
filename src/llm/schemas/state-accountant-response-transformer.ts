@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { StateAccountantGenerationResult } from '../accountant-types.js';
 import { LLMError } from '../llm-client-types.js';
 import { repairAccountantIdFieldMismatches } from '../validation/accountant-id-repair.js';
+import { repairAccountantLegacyShapeMismatches } from '../validation/accountant-shape-repair.js';
 import { normalizeStateIntents } from './shared-state-intent-normalizer.js';
 import { StateAccountantResultSchema } from './state-accountant-validation-schema.js';
 
@@ -84,6 +85,13 @@ function toAccountantValidationError(error: unknown, rawResponse: string): LLMEr
   });
 }
 
+interface AccountantRepairSummary {
+  readonly idRepairsApplied: number;
+  readonly shapeRepairsApplied: number;
+  readonly idFiltered: readonly { field: string; value: string; expectedPrefix: string }[];
+  readonly shapeRepairedEntries: readonly { index: number; fromFields: readonly string[] }[];
+}
+
 export function validateStateAccountantResponse(
   rawJson: unknown,
   rawResponse: string
@@ -99,7 +107,7 @@ export function validateStateAccountantResponse(
     }
   }
 
-  const { repairedJson, filteredIds } = repairAccountantIdFieldMismatches(parsed);
+  const { repairedJson: idRepairedJson, filteredIds } = repairAccountantIdFieldMismatches(parsed);
   if (filteredIds.length > 0) {
     console.warn(
       '[accountant-id-repair] Filtered mismatched IDs:',
@@ -107,11 +115,40 @@ export function validateStateAccountantResponse(
     );
   }
 
+  const { repairedJson, repairedEntries } = repairAccountantLegacyShapeMismatches(idRepairedJson);
+  if (repairedEntries.length > 0) {
+    console.warn(
+      '[accountant-shape-repair] Repaired legacy characterState.add entries:',
+      repairedEntries.map((entry) => `index ${entry.index}: ${entry.fromFields.join('+')}`).join(', ')
+    );
+  }
+
+  const repairSummary: AccountantRepairSummary = {
+    idRepairsApplied: filteredIds.length,
+    shapeRepairsApplied: repairedEntries.length,
+    idFiltered: filteredIds.map((item) => ({
+      field: item.field,
+      value: item.value,
+      expectedPrefix: item.expectedPrefix,
+    })),
+    shapeRepairedEntries: repairedEntries.map((entry) => ({
+      index: entry.index,
+      fromFields: [...entry.fromFields],
+    })),
+  };
+
   let validated: z.infer<typeof StateAccountantResultSchema>;
   try {
     validated = StateAccountantResultSchema.parse(repairedJson);
   } catch (error) {
-    throw toAccountantValidationError(error, rawResponse);
+    const validationError = toAccountantValidationError(error, rawResponse);
+    if (repairSummary.idRepairsApplied > 0 || repairSummary.shapeRepairsApplied > 0) {
+      throw new LLMError(validationError.message, validationError.code, validationError.retryable, {
+        ...(validationError.context ?? {}),
+        repairSummary,
+      });
+    }
+    throw validationError;
   }
 
   try {
@@ -120,6 +157,13 @@ export function validateStateAccountantResponse(
       rawResponse,
     };
   } catch (error) {
-    throw toAccountantValidationError(error, rawResponse);
+    const validationError = toAccountantValidationError(error, rawResponse);
+    if (repairSummary.idRepairsApplied > 0 || repairSummary.shapeRepairsApplied > 0) {
+      throw new LLMError(validationError.message, validationError.code, validationError.retryable, {
+        ...(validationError.context ?? {}),
+        repairSummary,
+      });
+    }
+    throw validationError;
   }
 }

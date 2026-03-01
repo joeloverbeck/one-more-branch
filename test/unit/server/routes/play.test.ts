@@ -1709,6 +1709,59 @@ describe('playRoutes', () => {
         process.env['NODE_ENV'] = priorNodeEnv;
       }
     });
+
+    it('includes repairSummary in debug payload for LLMError in non-production', async () => {
+      const priorNodeEnv = process.env['NODE_ENV'];
+      try {
+        process.env['NODE_ENV'] = 'test';
+        jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
+          new LLMError('Validation failed', 'VALIDATION_ERROR', false, {
+            httpStatus: 400,
+            model: 'test-model',
+            rawErrorBody: '{"error":"bad output"}',
+            repairSummary: {
+              idRepairsApplied: 1,
+              shapeRepairsApplied: 1,
+              idFiltered: [{ field: 'threats.removeIds', value: 'cn-9', expectedPrefix: 'th-' }],
+              shapeRepairedEntries: [{ index: 0, fromFields: ['character'] }],
+            },
+          })
+        );
+
+        const status = jest.fn().mockReturnThis();
+        const json = jest.fn();
+
+        void getRouteHandler('post', '/:storyId/choice')(
+          {
+            params: { storyId },
+            body: { pageId: 2, choiceIndex: 1, apiKey: 'valid-key-12345' },
+          } as Request,
+          { status, json } as unknown as Response
+        );
+        await flushPromises();
+
+        expect(status).toHaveBeenCalledWith(500);
+        expect(json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            code: 'VALIDATION_ERROR',
+            retryable: false,
+            debug: expect.objectContaining({
+              httpStatus: 400,
+              model: 'test-model',
+              rawError: '{"error":"bad output"}',
+              repairSummary: {
+                idRepairsApplied: 1,
+                shapeRepairsApplied: 1,
+                idFiltered: [{ field: 'threats.removeIds', value: 'cn-9', expectedPrefix: 'th-' }],
+                shapeRepairedEntries: [{ index: 0, fromFields: ['character'] }],
+              },
+            }),
+          })
+        );
+      } finally {
+        process.env['NODE_ENV'] = priorNodeEnv;
+      }
+    });
   });
 
   describe('POST /:storyId/ideate-scene', () => {

@@ -10,6 +10,10 @@ function getUserMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'user')?.content ?? '';
 }
 
+function getSystemMessage(messages: { role: string; content: string }[]): string {
+  return messages.find((message) => message.role === 'system')?.content ?? '';
+}
+
 describe('buildStateAccountantPrompt', () => {
   const reducedPlan: ReducedPagePlanResult = {
     sceneIntent: 'Escalate toward immediate confrontation.',
@@ -67,12 +71,19 @@ describe('buildStateAccountantPrompt', () => {
   it('includes reduced planner output and state accountant rules', () => {
     const messages = buildStateAccountantPrompt(openingContext, reducedPlan);
     const user = getUserMessage(messages);
+    const system = getSystemMessage(messages);
 
     expect(messages).toHaveLength(2);
     expect(user).toContain('=== REDUCED PLANNER OUTPUT ===');
     expect(user).toContain(reducedPlan.sceneIntent);
     expect(user).toContain('STATE ACCOUNTANT RULES:');
     expect(user).not.toContain('PLANNER RULES:');
+    expect(system).toContain(
+      'characterState.add entries MUST use this shape exactly: { "characterName": string, "states": string[] }.'
+    );
+    expect(system).toContain(
+      'NEVER use legacy characterState.add shape like { "character": string, "text": string }.'
+    );
     expect(user).toContain('Return JSON only.');
   });
 
