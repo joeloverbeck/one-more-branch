@@ -75,27 +75,37 @@
                 <div class="npc-agenda-header">
                   <span class="npc-agenda-name"><%= agenda.npcName %></span>
                 </div>
-                <div class="npc-agenda-fields">
-                  <p class="npc-agenda-field">
-                    <span class="npc-agenda-icon" aria-hidden="true">&#127919;</span>
-                    <span class="npc-agenda-label">Goal</span>
-                    <span class="npc-agenda-value"><%= agenda.currentGoal %></span>
-                  </p>
-                  <p class="npc-agenda-field">
-                    <span class="npc-agenda-icon" aria-hidden="true">&#9876;&#65039;</span>
-                    <span class="npc-agenda-label">Leverage</span>
-                    <span class="npc-agenda-value"><%= agenda.leverage %></span>
-                  </p>
-                  <p class="npc-agenda-field">
-                    <span class="npc-agenda-icon" aria-hidden="true">&#128128;</span>
-                    <span class="npc-agenda-label">Fear</span>
-                    <span class="npc-agenda-value"><%= agenda.fear %></span>
-                  </p>
-                  <p class="npc-agenda-field">
-                    <span class="npc-agenda-icon" aria-hidden="true">&#128065;&#65039;</span>
-                    <span class="npc-agenda-label">Off-screen</span>
-                    <span class="npc-agenda-value"><%= agenda.offScreenBehavior %></span>
-                  </p>
+                <div class="npc-agenda-details" style="display: none;">
+                  <div class="npc-agenda-fields">
+                    <div class="npc-agenda-field">
+                      <div class="npc-agenda-field-header">
+                        <span class="npc-agenda-icon" aria-hidden="true">&#127919;</span>
+                        <span class="npc-agenda-label">Goal</span>
+                      </div>
+                      <p class="npc-agenda-value"><%= agenda.currentGoal %></p>
+                    </div>
+                    <div class="npc-agenda-field">
+                      <div class="npc-agenda-field-header">
+                        <span class="npc-agenda-icon" aria-hidden="true">&#9876;&#65039;</span>
+                        <span class="npc-agenda-label">Leverage</span>
+                      </div>
+                      <p class="npc-agenda-value"><%= agenda.leverage %></p>
+                    </div>
+                    <div class="npc-agenda-field">
+                      <div class="npc-agenda-field-header">
+                        <span class="npc-agenda-icon" aria-hidden="true">&#128128;</span>
+                        <span class="npc-agenda-label">Fear</span>
+                      </div>
+                      <p class="npc-agenda-value"><%= agenda.fear %></p>
+                    </div>
+                    <div class="npc-agenda-field">
+                      <div class="npc-agenda-field-header">
+                        <span class="npc-agenda-icon" aria-hidden="true">&#128065;&#65039;</span>
+                        <span class="npc-agenda-label">Off-screen</span>
+                      </div>
+                      <p class="npc-agenda-value"><%= agenda.offScreenBehavior %></p>
+                    </div>
+                  </div>
                 </div>
               </div>
               <% }) %>

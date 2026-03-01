@@ -5130,30 +5130,58 @@ function createRecapModalController(initialData) {
     html += '<div class="npc-agenda-header">';
     html += '<span class="npc-agenda-name">' + escapeHtml(npcName) + '</span>';
     html += '</div>';
+    html += '<div class="npc-agenda-details" style="display: none;">';
     html += '<div class="npc-agenda-fields">';
-    html += '<p class="npc-agenda-field">';
+    html += '<div class="npc-agenda-field">';
+    html += '<div class="npc-agenda-field-header">';
     html += '<span class="npc-agenda-icon" aria-hidden="true">\uD83C\uDFAF</span>';
     html += '<span class="npc-agenda-label">Goal</span>';
-    html += '<span class="npc-agenda-value">' + escapeHtml(currentGoal) + '</span>';
-    html += '</p>';
-    html += '<p class="npc-agenda-field">';
+    html += '</div>';
+    html += '<p class="npc-agenda-value">' + escapeHtml(currentGoal) + '</p>';
+    html += '</div>';
+    html += '<div class="npc-agenda-field">';
+    html += '<div class="npc-agenda-field-header">';
     html += '<span class="npc-agenda-icon" aria-hidden="true">\u2694\uFE0F</span>';
     html += '<span class="npc-agenda-label">Leverage</span>';
-    html += '<span class="npc-agenda-value">' + escapeHtml(leverage) + '</span>';
-    html += '</p>';
-    html += '<p class="npc-agenda-field">';
+    html += '</div>';
+    html += '<p class="npc-agenda-value">' + escapeHtml(leverage) + '</p>';
+    html += '</div>';
+    html += '<div class="npc-agenda-field">';
+    html += '<div class="npc-agenda-field-header">';
     html += '<span class="npc-agenda-icon" aria-hidden="true">\uD83D\uDC80</span>';
     html += '<span class="npc-agenda-label">Fear</span>';
-    html += '<span class="npc-agenda-value">' + escapeHtml(fear) + '</span>';
-    html += '</p>';
-    html += '<p class="npc-agenda-field">';
+    html += '</div>';
+    html += '<p class="npc-agenda-value">' + escapeHtml(fear) + '</p>';
+    html += '</div>';
+    html += '<div class="npc-agenda-field">';
+    html += '<div class="npc-agenda-field-header">';
     html += '<span class="npc-agenda-icon" aria-hidden="true">\uD83D\uDC41\uFE0F</span>';
     html += '<span class="npc-agenda-label">Off-screen</span>';
-    html += '<span class="npc-agenda-value">' + escapeHtml(offScreenBehavior) + '</span>';
-    html += '</p>';
+    html += '</div>';
+    html += '<p class="npc-agenda-value">' + escapeHtml(offScreenBehavior) + '</p>';
+    html += '</div>';
+    html += '</div>';
     html += '</div>';
     html += '</div>';
     return html;
+  }
+
+  function bindNpcAgendaCardToggles(panel) {
+    if (!panel) {
+      return;
+    }
+    var cards = panel.querySelectorAll('.npc-agenda-card');
+    cards.forEach(function(card) {
+      var header = card.querySelector('.npc-agenda-header');
+      var details = card.querySelector('.npc-agenda-details');
+      if (!header || !details) {
+        return;
+      }
+      header.addEventListener('click', function() {
+        var isHidden = details.style.display === 'none';
+        details.style.display = isHidden ? 'block' : 'none';
+      });
+    });
   }
 
   function renderNpcAgendasPanel(agendas, leftSidebarContainer) {
@@ -5182,6 +5210,7 @@ function createRecapModalController(initialData) {
       if (content) {
         content.innerHTML = cardsHtml;
       }
+      bindNpcAgendaCardToggles(existingPanel);
       return;
     }
 
@@ -5204,6 +5233,8 @@ function createRecapModalController(initialData) {
     } else {
       leftSidebarContainer.appendChild(panel);
     }
+
+    bindNpcAgendaCardToggles(panel);
   }
 
   // ── State renderers ───────────────────────────────────────────────
@@ -5555,6 +5586,11 @@ function createRecapModalController(initialData) {
     var initialRelPanel = document.getElementById('npc-relationships-panel');
     if (initialRelPanel) {
       bindNpcRelationshipCardToggles(initialRelPanel);
+    }
+
+    var initialAgendaPanel = document.getElementById('npc-agendas-panel');
+    if (initialAgendaPanel) {
+      bindNpcAgendaCardToggles(initialAgendaPanel);
     }
 
     var previousActNumber = null;

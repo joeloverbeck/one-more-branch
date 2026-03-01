@@ -1249,7 +1249,8 @@ main {
 }
 
 .npc-agenda-header {
-  margin-bottom: 0.4rem;
+  cursor: pointer;
+  user-select: none;
 }
 
 .npc-agenda-name {
@@ -1262,19 +1263,26 @@ main {
   white-space: nowrap;
 }
 
+.npc-agenda-details {
+  margin-top: 0.4rem;
+}
+
 .npc-agenda-fields {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.45rem;
 }
 
 .npc-agenda-field {
-  display: grid;
-  grid-template-columns: 1.4em auto 1fr;
-  gap: 0.35rem;
-  align-items: baseline;
   margin: 0;
   font-size: 0.8rem;
   line-height: 1.4;
+}
+
+.npc-agenda-field-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.15rem;
 }
 
 .npc-agenda-icon {
@@ -1295,7 +1303,7 @@ main {
   color: var(--color-text-muted);
   word-wrap: break-word;
   overflow-wrap: break-word;
-  min-width: 0;
+  margin: 0;
 }
 
 .story-header {
