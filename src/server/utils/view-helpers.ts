@@ -1,4 +1,5 @@
 import type { Page, Story, StoryAct, StoryStructure } from '../../models/index.js';
+import type { KnowledgeAsymmetry } from '../../models/state/knowledge-state.js';
 import type { TrackedPromise } from '../../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../../models/state/npc-relationship.js';
@@ -383,6 +384,32 @@ export function getNpcAgendaPanelData(agendas: AccumulatedNpcAgendas): NpcAgenda
     offScreenBehavior: agenda.offScreenBehavior,
   }));
 
+  return { rows };
+}
+
+export interface KnowledgeStatePanelRow {
+  readonly characterName: string;
+  readonly knownFacts: readonly string[];
+  readonly falseBeliefs: readonly string[];
+  readonly secrets: readonly string[];
+}
+
+export interface KnowledgeStatePanelData {
+  readonly rows: readonly KnowledgeStatePanelRow[];
+}
+
+export function getKnowledgeStatePanelData(
+  knowledgeState: readonly KnowledgeAsymmetry[]
+): KnowledgeStatePanelData {
+  if (knowledgeState.length === 0) {
+    return { rows: [] };
+  }
+  const rows: KnowledgeStatePanelRow[] = knowledgeState.map((entry) => ({
+    characterName: entry.characterName,
+    knownFacts: entry.knownFacts,
+    falseBeliefs: entry.falseBeliefs,
+    secrets: entry.secrets,
+  }));
   return { rows };
 }
 

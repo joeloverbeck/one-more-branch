@@ -113,6 +113,64 @@
           </aside>
           <% } %>
 
+          <% if (knowledgeStateRows && knowledgeStateRows.length > 0) { %>
+          <aside class="knowledge-state-panel" id="knowledge-state-panel" aria-labelledby="knowledge-state-title">
+            <h3 class="knowledge-state-title" id="knowledge-state-title">Character Knowledge</h3>
+            <div class="knowledge-state-content" id="knowledge-state-content">
+              <% knowledgeStateRows.forEach((entry) => { %>
+              <div class="knowledge-state-card" data-character="<%= entry.characterName %>">
+                <div class="knowledge-state-header">
+                  <span class="knowledge-state-name"><%= entry.characterName %></span>
+                </div>
+                <div class="knowledge-state-details" style="display: none;">
+                  <div class="knowledge-state-fields">
+                    <% if (entry.knownFacts.length > 0) { %>
+                    <div class="knowledge-state-field">
+                      <div class="knowledge-state-field-header">
+                        <span class="knowledge-state-icon" aria-hidden="true">&#128218;</span>
+                        <span class="knowledge-state-label">Known Facts</span>
+                      </div>
+                      <ul class="knowledge-state-list">
+                        <% entry.knownFacts.forEach((fact) => { %>
+                        <li><%= fact %></li>
+                        <% }) %>
+                      </ul>
+                    </div>
+                    <% } %>
+                    <% if (entry.falseBeliefs.length > 0) { %>
+                    <div class="knowledge-state-field">
+                      <div class="knowledge-state-field-header">
+                        <span class="knowledge-state-icon" aria-hidden="true">&#10060;</span>
+                        <span class="knowledge-state-label">False Beliefs</span>
+                      </div>
+                      <ul class="knowledge-state-list">
+                        <% entry.falseBeliefs.forEach((belief) => { %>
+                        <li><%= belief %></li>
+                        <% }) %>
+                      </ul>
+                    </div>
+                    <% } %>
+                    <% if (entry.secrets.length > 0) { %>
+                    <div class="knowledge-state-field">
+                      <div class="knowledge-state-field-header">
+                        <span class="knowledge-state-icon" aria-hidden="true">&#128274;</span>
+                        <span class="knowledge-state-label">Secrets</span>
+                      </div>
+                      <ul class="knowledge-state-list">
+                        <% entry.secrets.forEach((secret) => { %>
+                        <li><%= secret %></li>
+                        <% }) %>
+                      </ul>
+                    </div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+          </aside>
+          <% } %>
+
           <% if (inventoryPanelRows && inventoryPanelRows.length > 0) { %>
           <aside class="inventory-panel" id="inventory-panel" aria-labelledby="inventory-title">
             <h3 class="inventory-title" id="inventory-title">Inventory</h3>

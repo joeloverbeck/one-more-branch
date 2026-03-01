@@ -261,6 +261,7 @@
       renderAffectPanel(data.page.protagonistAffect, leftSidebarContainer);
       renderNpcRelationshipsPanel(data.page.npcRelationships, leftSidebarContainer);
       renderNpcAgendasPanel(data.page.npcAgendas, leftSidebarContainer);
+      renderKnowledgeStatePanel(data.page.knowledgeState, leftSidebarContainer);
       renderInventoryPanel(data.page.inventory, data.page.inventoryOverflowSummary, leftSidebarContainer);
       renderHealthPanel(data.page.health, data.page.healthOverflowSummary, leftSidebarContainer);
       cleanupEmptyLeftSidebar();

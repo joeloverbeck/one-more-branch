@@ -1306,6 +1306,107 @@ main {
   margin: 0;
 }
 
+.knowledge-state-panel {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.95);
+  box-shadow: var(--shadow);
+}
+
+.knowledge-state-title {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid rgba(217, 175, 66, 0.4);
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+.knowledge-state-content {
+  padding: 0.6rem 0.75rem 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.knowledge-state-card {
+  border: 1px solid rgba(217, 175, 66, 0.18);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.55rem 0.65rem;
+  background: rgba(6, 10, 24, 0.35);
+  transition: border-color var(--transition), background-color var(--transition);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.knowledge-state-card:hover {
+  border-color: rgba(217, 175, 66, 0.35);
+  background: rgba(6, 10, 24, 0.5);
+}
+
+.knowledge-state-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.knowledge-state-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knowledge-state-details {
+  margin-top: 0.4rem;
+}
+
+.knowledge-state-fields {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.knowledge-state-field {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.knowledge-state-field-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.15rem;
+}
+
+.knowledge-state-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.knowledge-state-label {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(217, 175, 66, 0.75);
+  white-space: nowrap;
+}
+
+.knowledge-state-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--color-text-muted);
+  list-style: disc;
+}
+
+.knowledge-state-list li {
+  margin-bottom: 0.15rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
 .story-header {
   display: flex;
   align-items: center;
