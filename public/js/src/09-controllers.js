@@ -31,6 +31,11 @@
       bindNpcRelationshipCardToggles(initialRelPanel);
     }
 
+    var initialAgendaPanel = document.getElementById('npc-agendas-panel');
+    if (initialAgendaPanel) {
+      bindNpcAgendaCardToggles(initialAgendaPanel);
+    }
+
     var previousActNumber = null;
     var initialActIndicator = document.getElementById('act-indicator');
     if (initialActIndicator) {
