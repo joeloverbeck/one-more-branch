@@ -150,6 +150,7 @@ describe('playRoutes', () => {
         trackedPromisesPanelRows: [],
         trackedPromisesOverflowSummary: null,
         npcRelationshipRows: [],
+        npcAgendaRows: [],
         insightsThreadMeta: {
           'td-1': { threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
           'td-2': { threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
@@ -914,6 +915,7 @@ describe('playRoutes', () => {
             trackedPromises: [],
             trackedPromisesOverflowSummary: null,
             npcRelationships: [],
+            npcAgendas: [],
           },
           wasGenerated: true,
         })

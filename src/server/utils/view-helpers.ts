@@ -1,5 +1,6 @@
 import type { Page, Story, StoryAct, StoryStructure } from '../../models/index.js';
 import type { TrackedPromise } from '../../models/state/index.js';
+import type { AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../../models/state/npc-relationship.js';
 import {
   ConstraintType,
@@ -351,6 +352,35 @@ export function getNpcRelationshipPanelData(
     currentTension: rel.currentTension,
     leverage: rel.leverage,
     valencePercent: ((rel.valence + 5) / 10) * 100,
+  }));
+
+  return { rows };
+}
+
+export interface NpcAgendaPanelRow {
+  readonly npcName: string;
+  readonly currentGoal: string;
+  readonly leverage: string;
+  readonly fear: string;
+  readonly offScreenBehavior: string;
+}
+
+export interface NpcAgendaPanelData {
+  readonly rows: readonly NpcAgendaPanelRow[];
+}
+
+export function getNpcAgendaPanelData(agendas: AccumulatedNpcAgendas): NpcAgendaPanelData {
+  const entries = Object.values(agendas);
+  if (entries.length === 0) {
+    return { rows: [] };
+  }
+
+  const rows: NpcAgendaPanelRow[] = entries.map((agenda) => ({
+    npcName: agenda.npcName,
+    currentGoal: agenda.currentGoal,
+    leverage: agenda.leverage,
+    fear: agenda.fear,
+    offScreenBehavior: agenda.offScreenBehavior,
   }));
 
   return { rows };

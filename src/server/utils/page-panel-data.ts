@@ -2,6 +2,7 @@ import type { Page } from '../../models/index.js';
 import type {
   ConstraintPanelData,
   KeyedEntryPanelData,
+  NpcAgendaPanelData,
   NpcRelationshipPanelData,
   OpenThreadPanelData,
   ThreatPanelData,
@@ -10,6 +11,7 @@ import type {
 import {
   getConstraintPanelData,
   getKeyedEntryPanelData,
+  getNpcAgendaPanelData,
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getThreatPanelData,
@@ -24,6 +26,7 @@ export interface PagePanelData {
   readonly healthPanelData: KeyedEntryPanelData;
   readonly trackedPromisesPanelData: TrackedPromisePanelData;
   readonly npcRelationshipPanelData: NpcRelationshipPanelData;
+  readonly npcAgendaPanelData: NpcAgendaPanelData;
   readonly insightsThreadMeta: Record<string, { threadType: string; urgency: string }>;
 }
 
@@ -47,6 +50,7 @@ export function buildPagePanelData(page: Page): PagePanelData {
     healthPanelData: getKeyedEntryPanelData(page.accumulatedHealth, 10),
     trackedPromisesPanelData: getTrackedPromisesPanelData(page.accumulatedPromises),
     npcRelationshipPanelData: getNpcRelationshipPanelData(page.accumulatedNpcRelationships),
+    npcAgendaPanelData: getNpcAgendaPanelData(page.accumulatedNpcAgendas),
     insightsThreadMeta: buildInsightsThreadMeta(
       page.resolvedThreadMeta ?? {},
       page.accumulatedActiveState.openThreads
