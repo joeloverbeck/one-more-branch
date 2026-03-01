@@ -1,5 +1,4 @@
 import { AGENDA_RESOLVER_SCHEMA } from '../../../../src/llm/schemas/agenda-resolver-schema';
-import { ANALYST_SCHEMA } from '../../../../src/llm/schemas/analyst-schema';
 import {
   CONCEPT_EVALUATION_DEEP_SCHEMA,
   CONCEPT_EVALUATION_SCORING_SCHEMA,
@@ -161,7 +160,6 @@ function getIssues(schema: JsonSchema): SchemaIssue[] {
 describe('Anthropic schema compatibility', () => {
   const llmResponseSchemas: Array<{ name: string; schema: JsonSchema }> = [
     { name: 'WRITER_GENERATION_SCHEMA', schema: WRITER_GENERATION_SCHEMA },
-    { name: 'ANALYST_SCHEMA', schema: ANALYST_SCHEMA },
     { name: 'STRUCTURE_GENERATION_SCHEMA', schema: STRUCTURE_GENERATION_SCHEMA },
     { name: 'PAGE_PLANNER_GENERATION_SCHEMA', schema: PAGE_PLANNER_GENERATION_SCHEMA },
     { name: 'STATE_ACCOUNTANT_SCHEMA', schema: STATE_ACCOUNTANT_SCHEMA },
