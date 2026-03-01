@@ -1,6 +1,7 @@
 import {
   getActDisplayInfo,
   getKeyedEntryPanelData,
+  getKnowledgeStatePanelData,
   getMilestoneInfo,
   getNpcAgendaPanelData,
   getNpcRelationshipPanelData,
@@ -1367,5 +1368,74 @@ describe('getMilestoneInfo', () => {
       actName: 'Prologue',
       actNumber: 1,
     });
+  });
+});
+
+describe('getKnowledgeStatePanelData', () => {
+  it('returns empty rows for empty knowledge state', () => {
+    const result = getKnowledgeStatePanelData([]);
+
+    expect(result.rows).toHaveLength(0);
+  });
+
+  it('maps a single character with all categories populated', () => {
+    const result = getKnowledgeStatePanelData([
+      {
+        characterName: 'Mira',
+        knownFacts: ['The artifact is hidden in the temple'],
+        falseBeliefs: ['The guardian is friendly'],
+        secrets: ['She stole the map'],
+      },
+    ]);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]).toEqual({
+      characterName: 'Mira',
+      knownFacts: ['The artifact is hidden in the temple'],
+      falseBeliefs: ['The guardian is friendly'],
+      secrets: ['She stole the map'],
+    });
+  });
+
+  it('maps multiple characters preserving order', () => {
+    const result = getKnowledgeStatePanelData([
+      {
+        characterName: 'Alpha',
+        knownFacts: ['Fact A'],
+        falseBeliefs: [],
+        secrets: ['Secret A'],
+      },
+      {
+        characterName: 'Beta',
+        knownFacts: [],
+        falseBeliefs: ['Belief B'],
+        secrets: [],
+      },
+      {
+        characterName: 'Gamma',
+        knownFacts: ['Fact G1', 'Fact G2'],
+        falseBeliefs: ['Belief G'],
+        secrets: ['Secret G'],
+      },
+    ]);
+
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows.map((r) => r.characterName)).toEqual(['Alpha', 'Beta', 'Gamma']);
+  });
+
+  it('preserves empty arrays for categories with no entries', () => {
+    const result = getKnowledgeStatePanelData([
+      {
+        characterName: 'Solo',
+        knownFacts: [],
+        falseBeliefs: [],
+        secrets: ['One secret'],
+      },
+    ]);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]!.knownFacts).toEqual([]);
+    expect(result.rows[0]!.falseBeliefs).toEqual([]);
+    expect(result.rows[0]!.secrets).toEqual(['One secret']);
   });
 });
