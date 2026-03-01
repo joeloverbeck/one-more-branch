@@ -277,7 +277,8 @@ function buildPendingConsequencesSection(context: ContinuationPagePlanContext): 
 
 function buildDramaticIronyOpportunitiesSection(context: ContinuationPagePlanContext): string {
   const accumulatedKnowledgeState = context.accumulatedKnowledgeState ?? [];
-  if (accumulatedKnowledgeState.length === 0) {
+  const opportunities = context.parentDramaticIronyOpportunities ?? [];
+  if (accumulatedKnowledgeState.length === 0 && opportunities.length === 0) {
     return '';
   }
 
@@ -296,6 +297,10 @@ function buildDramaticIronyOpportunitiesSection(context: ContinuationPagePlanCon
     if (entry.knownFacts.length > 0) {
       lines.push(`  Known facts: ${entry.knownFacts.join(' | ')}`);
     }
+  }
+  if (opportunities.length > 0) {
+    lines.push('Analyst-identified opportunities from previous scene:');
+    lines.push(...opportunities.map((opp) => `- ${opp}`));
   }
   lines.push('');
   return lines.join('\n') + '\n';

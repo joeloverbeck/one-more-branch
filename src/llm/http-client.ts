@@ -327,6 +327,24 @@ export function extractResponseContent(
 
   if (!choice || !content) {
     const finishReason = choice?.finish_reason ?? 'unknown';
+    const reasoningTokens = data.usage?.completion_tokens_details?.reasoning_tokens ?? 0;
+    const isReasoningModelError = finishReason === 'error' && reasoningTokens > 0;
+
+    if (isReasoningModelError) {
+      const completionTokens = data.usage?.completion_tokens ?? 0;
+      const promptTokens = data.usage?.prompt_tokens ?? 0;
+      logger.warn(
+        `${stage} reasoning model consumed ${reasoningTokens} reasoning tokens but produced 0 output tokens`,
+        { finishReason, reasoningTokens, completionTokens, promptTokens, model, stage }
+      );
+      throw new LLMError(
+        `${stage} reasoning model error: consumed ${reasoningTokens} reasoning tokens with no output`,
+        'REASONING_MODEL_ERROR',
+        true,
+        { reasoningTokens, completionTokens, promptTokens, model, stage }
+      );
+    }
+
     logger.warn(`${stage} received empty content from OpenRouter`, {
       finishReason,
       usage: data.usage,

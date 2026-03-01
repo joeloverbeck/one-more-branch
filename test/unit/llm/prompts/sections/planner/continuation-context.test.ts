@@ -196,6 +196,114 @@ describe('planner continuation context section', () => {
     expect(result).toContain('Secrets: Voss falsified the maintenance logs.');
   });
 
+  it('includes parent dramatic irony opportunity strings in the section', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: [],
+          falseBeliefs: ['The protagonist sabotaged the lock.'],
+          secrets: [],
+        },
+      ],
+      parentDramaticIronyOpportunities: [
+        'Voss will confront the protagonist about the sabotage, not knowing it was his own lieutenant.',
+        'The protagonist can exploit Voss\'s false belief to gain access to the reactor.',
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
+    expect(result).toContain('Analyst-identified opportunities from previous scene:');
+    expect(result).toContain('Voss will confront the protagonist about the sabotage');
+    expect(result).toContain('The protagonist can exploit Voss\'s false belief');
+  });
+
+  it('renders dramatic irony section when only opportunities exist without knowledge state', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
+      parentDramaticIronyOpportunities: [
+        'The merchant does not know the artifact is a fake.',
+      ],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
+    expect(result).toContain('The merchant does not know the artifact is a fake.');
+  });
+
+  it('omits dramatic irony section when both knowledge state and opportunities are empty', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
+      parentDramaticIronyOpportunities: [],
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+    expect(result).not.toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
+  });
+
   it('omits dramatic irony section when accumulated knowledge asymmetry is empty', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',

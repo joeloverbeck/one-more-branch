@@ -410,6 +410,110 @@ describe('continuation-context-builder', () => {
     expect(result.accumulatedKnowledgeState).toEqual(parentState.accumulatedKnowledgeState);
   });
 
+  it('threads parentDramaticIronyOpportunities from parent page analystResult', () => {
+    const story = makeStory();
+    const parentPage = createPage({
+      id: parsePageId(2),
+      narrativeText: 'You pause in the corridor.',
+      sceneSummary: 'You pause in the corridor.',
+      choices: [createChoice('Proceed'), createChoice('Retreat')],
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 0,
+      analystResult: {
+        beatConcluded: false,
+        beatResolution: '',
+        sceneMomentum: 'INCREMENTAL_PROGRESS',
+        objectiveEvidenceStrength: 'NONE',
+        commitmentStrength: 'NONE',
+        structuralPositionSignal: 'WITHIN_ACTIVE_BEAT',
+        entryConditionReadiness: 'NOT_READY',
+        objectiveAnchors: [],
+        anchorEvidence: [],
+        completionGateSatisfied: false,
+        completionGateFailureReason: '',
+        deviationDetected: false,
+        deviationReason: '',
+        invalidatedBeatIds: [],
+        spineDeviationDetected: false,
+        spineDeviationReason: '',
+        spineInvalidatedElement: null,
+        alignedBeatId: null,
+        beatAlignmentConfidence: 'LOW',
+        beatAlignmentReason: '',
+        pacingIssueDetected: false,
+        pacingIssueReason: '',
+        recommendedAction: 'none',
+        pacingDirective: '',
+        narrativeSummary: '',
+        promisesDetected: [],
+        promisesResolved: [],
+        promisePayoffAssessments: [],
+        threadPayoffAssessments: [],
+        premisePromiseFulfilled: null,
+        obligatorySceneFulfilled: null,
+        delayedConsequencesTriggered: [],
+        delayedConsequencesCreated: [],
+        toneAdherent: true,
+        toneDriftDescription: '',
+        thematicCharge: 'AMBIGUOUS',
+        thematicChargeDescription: '',
+        narrativeFocus: 'BALANCED',
+        npcCoherenceAdherent: true,
+        npcCoherenceIssues: '',
+        relationshipShiftsDetected: [],
+        knowledgeAsymmetryDetected: [],
+        dramaticIronyOpportunities: [
+          'The warden does not know the protagonist overheard the purge order.',
+          'Hale believes his secret is safe, creating leverage for the protagonist.',
+        ],
+        rawResponse: '',
+      },
+    });
+
+    const parentState = makeParentState();
+
+    const result = buildContinuationContext(
+      story,
+      parentPage,
+      'Proceed',
+      parentState,
+      makeAncestorContext(),
+      null
+    );
+
+    expect(result.parentDramaticIronyOpportunities).toEqual([
+      'The warden does not know the protagonist overheard the purge order.',
+      'Hale believes his secret is safe, creating leverage for the protagonist.',
+    ]);
+  });
+
+  it('defaults parentDramaticIronyOpportunities to empty array when analystResult is null', () => {
+    const story = makeStory();
+    const parentPage = createPage({
+      id: parsePageId(2),
+      narrativeText: 'You pause in the corridor.',
+      sceneSummary: 'You pause in the corridor.',
+      choices: [createChoice('Proceed'), createChoice('Retreat')],
+      isEnding: false,
+      parentPageId: parsePageId(1),
+      parentChoiceIndex: 0,
+    });
+
+    const parentState = makeParentState();
+
+    const result = buildContinuationContext(
+      story,
+      parentPage,
+      'Proceed',
+      parentState,
+      makeAncestorContext(),
+      null
+    );
+
+    expect(result.parentDramaticIronyOpportunities).toEqual([]);
+  });
+
   describe('buildRemovableIds', () => {
     it('extracts all keyed IDs from parent state', () => {
       const parentState = makeParentState();

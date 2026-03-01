@@ -258,5 +258,86 @@ describe('http-client', () => {
       const content = extractResponseContent(data, 'test-stage', 'test-model', 16384);
       expect(content).toBe('{"ok":true}');
     });
+
+    it('throws REASONING_MODEL_ERROR when finish_reason is error with reasoning tokens and no content', () => {
+      const data: OpenRouterResponse = {
+        id: 'test-id',
+        choices: [
+          {
+            message: { content: '' as unknown as string },
+            finish_reason: 'error',
+          },
+        ],
+        usage: {
+          prompt_tokens: 5000,
+          completion_tokens: 3433,
+          total_tokens: 8433,
+          completion_tokens_details: {
+            reasoning_tokens: 3433,
+          },
+        },
+      };
+      try {
+        extractResponseContent(data, 'promise-tracker', 'qwen/qwen3.5-397b-a17b', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('REASONING_MODEL_ERROR');
+        expect(llmError.retryable).toBe(true);
+        expect(llmError.context?.['reasoningTokens']).toBe(3433);
+        expect(llmError.context?.['completionTokens']).toBe(3433);
+        expect(llmError.context?.['promptTokens']).toBe(5000);
+        expect(llmError.context?.['model']).toBe('qwen/qwen3.5-397b-a17b');
+        expect(llmError.context?.['stage']).toBe('promise-tracker');
+      }
+    });
+
+    it('throws EMPTY_RESPONSE when finish_reason is error without reasoning tokens', () => {
+      const data: OpenRouterResponse = {
+        id: 'test-id',
+        choices: [
+          {
+            message: { content: '' as unknown as string },
+            finish_reason: 'error',
+          },
+        ],
+        usage: {
+          prompt_tokens: 5000,
+          completion_tokens: 0,
+          total_tokens: 5000,
+        },
+      };
+      try {
+        extractResponseContent(data, 'test-stage', 'test-model', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('EMPTY_RESPONSE');
+      }
+    });
+
+    it('returns content normally when reasoning tokens present but content exists', () => {
+      const data: OpenRouterResponse = {
+        id: 'test-id',
+        choices: [
+          {
+            message: { content: '{"ok":true}' },
+            finish_reason: 'stop',
+          },
+        ],
+        usage: {
+          prompt_tokens: 5000,
+          completion_tokens: 3500,
+          total_tokens: 8500,
+          completion_tokens_details: {
+            reasoning_tokens: 3000,
+          },
+        },
+      };
+      const content = extractResponseContent(data, 'test-stage', 'test-model', 16384);
+      expect(content).toBe('{"ok":true}');
+    });
   });
 });
