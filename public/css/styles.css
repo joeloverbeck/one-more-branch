@@ -1210,6 +1210,94 @@ main {
   letter-spacing: 0.04em;
 }
 
+/* NPC Agendas Panel */
+.npc-agendas-panel {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(14, 24, 49, 0.95);
+  box-shadow: var(--shadow);
+}
+
+.npc-agendas-title {
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid rgba(217, 175, 66, 0.4);
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+.npc-agendas-content {
+  padding: 0.6rem 0.75rem 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.npc-agenda-card {
+  border: 1px solid rgba(217, 175, 66, 0.18);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.55rem 0.65rem;
+  background: rgba(6, 10, 24, 0.35);
+  transition: border-color var(--transition), background-color var(--transition);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.npc-agenda-card:hover {
+  border-color: rgba(217, 175, 66, 0.35);
+  background: rgba(6, 10, 24, 0.5);
+}
+
+.npc-agenda-header {
+  margin-bottom: 0.4rem;
+}
+
+.npc-agenda-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.npc-agenda-fields {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.npc-agenda-field {
+  display: grid;
+  grid-template-columns: 1.4em auto 1fr;
+  gap: 0.35rem;
+  align-items: baseline;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.npc-agenda-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.npc-agenda-label {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(217, 175, 66, 0.75);
+  white-space: nowrap;
+}
+
+.npc-agenda-value {
+  color: var(--color-text-muted);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
 .story-header {
   display: flex;
   align-items: center;

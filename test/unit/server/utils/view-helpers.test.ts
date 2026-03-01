@@ -2,6 +2,7 @@ import {
   getActDisplayInfo,
   getKeyedEntryPanelData,
   getMilestoneInfo,
+  getNpcAgendaPanelData,
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
@@ -896,6 +897,64 @@ describe('getNpcRelationshipPanelData', () => {
         history: 'Owed a debt.',
         currentTension: 'Debt is overdue.',
         leverage: 'Holds the contract.',
+      },
+    });
+
+    expect(result.rows).toHaveLength(3);
+    expect(result.rows.map((r) => r.npcName)).toEqual(['Alpha', 'Beta', 'Gamma']);
+  });
+});
+
+describe('getNpcAgendaPanelData', () => {
+  it('returns empty rows for empty agendas', () => {
+    const result = getNpcAgendaPanelData({});
+
+    expect(result.rows).toHaveLength(0);
+  });
+
+  it('maps a single NPC with all 5 fields', () => {
+    const result = getNpcAgendaPanelData({
+      Mira: {
+        npcName: 'Mira',
+        currentGoal: 'Find the artifact',
+        leverage: 'Knows the map',
+        fear: 'Being abandoned',
+        offScreenBehavior: 'Searching the archives',
+      },
+    });
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]).toEqual({
+      npcName: 'Mira',
+      currentGoal: 'Find the artifact',
+      leverage: 'Knows the map',
+      fear: 'Being abandoned',
+      offScreenBehavior: 'Searching the archives',
+    });
+  });
+
+  it('returns correct count for multiple NPCs', () => {
+    const result = getNpcAgendaPanelData({
+      Alpha: {
+        npcName: 'Alpha',
+        currentGoal: 'Goal A',
+        leverage: 'Leverage A',
+        fear: 'Fear A',
+        offScreenBehavior: 'Off A',
+      },
+      Beta: {
+        npcName: 'Beta',
+        currentGoal: 'Goal B',
+        leverage: 'Leverage B',
+        fear: 'Fear B',
+        offScreenBehavior: 'Off B',
+      },
+      Gamma: {
+        npcName: 'Gamma',
+        currentGoal: 'Goal G',
+        leverage: 'Leverage G',
+        fear: 'Fear G',
+        offScreenBehavior: 'Off G',
       },
     });
 
