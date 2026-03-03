@@ -113,7 +113,7 @@ describe('spine-rewriter', () => {
 
     fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
-      json: async () => ({
+      json: () => Promise.resolve({
         choices: [
           {
             message: {
