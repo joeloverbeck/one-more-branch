@@ -158,6 +158,7 @@ describe('playRoutes', () => {
         },
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
+        isLatestStructureVersion: false,
       });
     });
 
@@ -1828,6 +1829,135 @@ describe('playRoutes', () => {
 
       expect(status).not.toHaveBeenCalled();
       expect(redirect).toHaveBeenCalledWith(`/play/${storyId}?page=1`);
+    });
+  });
+
+  describe('POST /:storyId/rewrite-structure', () => {
+    it('returns 400 when API key is missing', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      const handler = getRouteHandler('post', '/:storyId/rewrite-structure');
+      void handler(
+        { params: { storyId }, body: { pageId: 1 } } as unknown as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, error: 'OpenRouter API key is required' })
+      );
+    });
+
+    it('returns 400 when pageId is missing', async () => {
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      const handler = getRouteHandler('post', '/:storyId/rewrite-structure');
+      void handler(
+        { params: { storyId }, body: { apiKey: 'test-key' } } as unknown as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, error: 'Missing pageId' })
+      );
+    });
+
+    it('returns 400 when page has no rewrite recommendation', async () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'Hero',
+        worldbuilding: 'World',
+        tone: 'epic',
+      });
+      const page = createPage({
+        id: 1,
+        narrativeText: 'Test.',
+        sceneSummary: 'Test.',
+        choices: [createChoice('Continue'), createChoice('Go back')],
+        isEnding: false,
+        parentPageId: null,
+        parentChoiceIndex: null,
+        analystResult: null,
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(page);
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      const handler = getRouteHandler('post', '/:storyId/rewrite-structure');
+      void handler(
+        {
+          params: { storyId },
+          body: { pageId: 1, apiKey: 'test-key' },
+        } as unknown as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'This page does not have a pacing rewrite recommendation',
+        })
+      );
+    });
+
+    it('returns 404 when story is not found', async () => {
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue(null);
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      const handler = getRouteHandler('post', '/:storyId/rewrite-structure');
+      void handler(
+        {
+          params: { storyId },
+          body: { pageId: 1, apiKey: 'test-key' },
+        } as unknown as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(404);
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, error: 'Story not found' })
+      );
+    });
+
+    it('returns 404 when page is not found', async () => {
+      const story = createStory({
+        title: 'Test',
+        characterConcept: 'Hero',
+        worldbuilding: 'World',
+        tone: 'epic',
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(null);
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      const handler = getRouteHandler('post', '/:storyId/rewrite-structure');
+      void handler(
+        {
+          params: { storyId },
+          body: { pageId: 99, apiKey: 'test-key' },
+        } as unknown as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).toHaveBeenCalledWith(404);
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, error: 'Page not found' })
+      );
     });
   });
 });

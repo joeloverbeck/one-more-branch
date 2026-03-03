@@ -77,7 +77,8 @@ export function extractCompletedBeats(
  */
 export function extractPlannedBeats(
   structure: StoryStructure,
-  structureState: AccumulatedStructureState
+  structureState: AccumulatedStructureState,
+  includeCurrentBeat = false
 ): readonly PlannedBeat[] {
   const concludedBeatIds = new Set(
     structureState.beatProgressions.filter((p) => p.status === 'concluded').map((p) => p.beatId)
@@ -97,17 +98,27 @@ export function extractPlannedBeats(
         continue;
       }
 
-      // Skip the currently active beat (where deviation occurred)
-      if (beatId === currentBeatId) {
+      // Skip the currently active beat (where deviation occurred) unless includeCurrentBeat
+      if (!includeCurrentBeat && beatId === currentBeatId) {
         continue;
       }
 
       // Only include beats that come after the current position
+      // (or at the current position when includeCurrentBeat is true)
       if (actIdx < structureState.currentActIndex) {
         continue;
       }
-      if (actIdx === structureState.currentActIndex && beatIdx <= structureState.currentBeatIndex) {
-        continue;
+      if (includeCurrentBeat) {
+        if (actIdx === structureState.currentActIndex && beatIdx < structureState.currentBeatIndex) {
+          continue;
+        }
+      } else {
+        if (
+          actIdx === structureState.currentActIndex &&
+          beatIdx <= structureState.currentBeatIndex
+        ) {
+          continue;
+        }
       }
 
       const beat = act.beats[beatIdx]!;
@@ -217,4 +228,41 @@ export function validatePreservedBeats(
   }
 
   return true;
+}
+
+/**
+ * Builds context for a pacing-triggered structure rewrite.
+ * Unlike `buildRewriteContext`, this includes the current beat in planned beats
+ * (since it hasn't deviated, just stalled) and uses the analyst's narrative summary.
+ */
+export function buildPacingRewriteContext(
+  story: Story,
+  structureVersion: VersionedStoryStructure,
+  structureState: AccumulatedStructureState,
+  pacingIssueReason: string,
+  narrativeSummary: string
+): StructureRewriteContext {
+  const structure = structureVersion.structure;
+  const completedBeats = extractCompletedBeats(structure, structureState);
+  const plannedBeats = extractPlannedBeats(structure, structureState, true);
+
+  return {
+    tone: story.tone,
+    toneFeel: story.toneFeel,
+    toneAvoid: story.toneAvoid,
+    spine: story.spine,
+    conceptSpec: story.conceptSpec,
+    decomposedCharacters: story.decomposedCharacters!,
+    decomposedWorld: story.decomposedWorld!,
+    completedBeats,
+    plannedBeats,
+    narrativeSummary,
+    currentActIndex: structureState.currentActIndex,
+    currentBeatIndex: structureState.currentBeatIndex,
+    deviationReason: `Pacing issue: ${pacingIssueReason}`,
+    originalTheme: structure.overallTheme,
+    originalOpeningImage: structure.openingImage,
+    originalClosingImage: structure.closingImage,
+    totalActCount: structure.acts.length,
+  };
 }

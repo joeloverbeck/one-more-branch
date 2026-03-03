@@ -1,5 +1,6 @@
 import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
+  buildPacingRewriteContext,
   buildRewriteContext,
   extractCompletedBeats,
   extractPlannedBeats,
@@ -707,6 +708,119 @@ describe('structure-rewrite-support', () => {
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
+    });
+  });
+
+  describe('extractPlannedBeats with includeCurrentBeat', () => {
+    it('includes the current beat when includeCurrentBeat is true', () => {
+      const structure = createStructure();
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'active' },
+        ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state, true);
+
+      // Should include current beat 1.2 and future beat 2.1
+      expect(planned).toHaveLength(2);
+      expect(planned[0]?.beatId).toBe('1.2');
+      expect(planned[1]?.beatId).toBe('2.1');
+    });
+
+    it('excludes the current beat when includeCurrentBeat defaults to false', () => {
+      const structure = createStructure();
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { beatId: '1.2', status: 'active' },
+        ],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state);
+
+      // Should only include future beat 2.1
+      expect(planned).toHaveLength(1);
+      expect(planned[0]?.beatId).toBe('2.1');
+    });
+
+    it('includes current beat at position 0,0 when includeCurrentBeat is true', () => {
+      const structure = createStructure();
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 0,
+        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        pagesInCurrentBeat: 0,
+        pacingNudge: null,
+      };
+
+      const planned = extractPlannedBeats(structure, state, true);
+
+      // Should include current beat 1.1, 1.2, and 2.1
+      expect(planned).toHaveLength(3);
+      expect(planned[0]?.beatId).toBe('1.1');
+      expect(planned[1]?.beatId).toBe('1.2');
+      expect(planned[2]?.beatId).toBe('2.1');
+    });
+  });
+
+  describe('buildPacingRewriteContext', () => {
+    it('builds context with pacing issue reason and includes current beat in planned beats', () => {
+      const structure = createStructure();
+      const structureVersion = createInitialVersionedStructure(structure);
+      const story = {
+        ...createStory({
+          title: 'Pacing Story',
+          characterConcept: 'A wanderer',
+          worldbuilding: 'An endless desert',
+          tone: 'introspective',
+        }),
+        decomposedCharacters: [buildMinimalDecomposedCharacter('A wanderer')],
+        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      };
+      const state: AccumulatedStructureState = {
+        currentActIndex: 0,
+        currentBeatIndex: 1,
+        beatProgressions: [
+          { beatId: '1.1', status: 'concluded', resolution: 'Heard the warning.' },
+          { beatId: '1.2', status: 'active' },
+        ],
+        pagesInCurrentBeat: 5,
+        pacingNudge: null,
+      };
+
+      const context = buildPacingRewriteContext(
+        story,
+        structureVersion,
+        state,
+        'Beat is stalling after 5 pages',
+        'The hero hesitates at the gate.'
+      );
+
+      expect(context.deviationReason).toBe('Pacing issue: Beat is stalling after 5 pages');
+      expect(context.narrativeSummary).toBe('The hero hesitates at the gate.');
+      expect(context.tone).toBe('introspective');
+      expect(context.currentActIndex).toBe(0);
+      expect(context.currentBeatIndex).toBe(1);
+      expect(context.totalActCount).toBe(2);
+
+      // Completed beats: only 1.1
+      expect(context.completedBeats).toHaveLength(1);
+      expect(context.completedBeats[0]?.beatId).toBe('1.1');
+
+      // Planned beats: includes current beat 1.2 and future beat 2.1
+      expect(context.plannedBeats).toHaveLength(2);
+      expect(context.plannedBeats[0]?.beatId).toBe('1.2');
+      expect(context.plannedBeats[1]?.beatId).toBe('2.1');
     });
   });
 });

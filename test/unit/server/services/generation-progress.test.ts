@@ -104,6 +104,7 @@ describe('generation-progress service', () => {
       'kernel-generation',
       'kernel-evolution',
       'scene-ideation',
+      'structure-rewrite',
     ]);
 
     const service = createGenerationProgressService();
