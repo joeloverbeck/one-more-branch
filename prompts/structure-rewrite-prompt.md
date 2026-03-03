@@ -3,6 +3,7 @@
 - Source: `src/llm/prompts/structure-rewrite-prompt.ts`
 - System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/structure-schema.ts`
+- Model selection: Per-stage via `getStageModel('structureRewrite')` / `getStageMaxTokens('structureRewrite')` from `src/config/stage-model.ts` (default: `anthropic/claude-sonnet-4.6`)
 
 ## Messages Sent To Model
 
@@ -108,11 +109,16 @@ The following beats have been completed. Their resolutions are permanent and mus
 {{completedBeats with act/beat/beatId/role/name/description/objective/resolution}}
 
 {{#if plannedBeats.length > 0}}
-## ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)
-The following beats were planned before the deviation occurred. Review each one:
-- If a beat remains narratively coherent given the deviation, preserve it (you may adjust wording slightly)
-- If a beat conflicts with the new story direction, replace it with something better suited
-- You are NOT required to keep any of these — use your narrative judgment
+## ORIGINALLY PLANNED BEATS (CONTEXT ONLY — DO NOT COPY)
+The following beats were the original plan before the deviation occurred. They represent where the story WAS going, not where it IS going.
+
+Use these ONLY to understand the original narrative intent. Then generate FRESH beats that:
+- Chart a meaningfully different path from the current narrative state
+- Respond to what actually happened in the story (not what was planned)
+- May share thematic goals with planned beats but must differ substantially in events, descriptions, and dramatic approach
+- Must NOT reuse the same beat names, descriptions, or scenarios with only cosmetic rewording
+
+If the deviation was significant enough to trigger a rewrite, the new beats must reflect that significance. A structure rewrite that reproduces the original plan with minor edits is a failed rewrite.
 
 {{plannedBeats with act/beat/beatId/role/name/description/objective}}
 {{/if}}

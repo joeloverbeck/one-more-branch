@@ -23,6 +23,8 @@ export const LLM_STAGE_KEYS = [
   'npcIntelligence',
   'agendaResolver',
   'sceneIdeator',
+  'structureRewrite',
+  'spineRewrite',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];

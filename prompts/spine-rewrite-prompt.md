@@ -4,6 +4,7 @@
 - Spine section builder source: `src/llm/prompts/sections/shared/spine-section.ts`
 - Output schema source: `src/llm/schemas/spine-rewrite-schema.ts`
 - Rewriter source: `src/engine/spine-rewriter.ts`
+- Model selection: Per-stage via `getStageModel('spineRewrite')` / `getStageMaxTokens('spineRewrite')` from `src/config/stage-model.ts` (default: `anthropic/claude-sonnet-4.6`)
 
 ## Pipeline Position
 
