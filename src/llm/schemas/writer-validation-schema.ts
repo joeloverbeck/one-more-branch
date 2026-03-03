@@ -71,17 +71,6 @@ export const WriterResultSchema = z
       });
     }
 
-    if (data.choices.length >= 2) {
-      const types = new Set(data.choices.map((c) => c.choiceType));
-      const deltas = new Set(data.choices.map((c) => c.primaryDelta));
-      if (types.size === 1 && deltas.size === 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'All choices share the same choiceType and primaryDelta - consider diversifying',
-          path: ['choices'],
-        });
-      }
-    }
   });
 
 export type ValidatedWriterResult = z.infer<typeof WriterResultSchema>;

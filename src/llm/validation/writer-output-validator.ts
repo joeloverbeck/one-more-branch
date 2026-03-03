@@ -1,4 +1,5 @@
 import { ZodError, type ZodIssue } from 'zod';
+import { logger } from '../../logging/index.js';
 import type { PageWriterResult } from '../writer-types.js';
 
 export const WRITER_OUTPUT_RULE_KEYS = {
@@ -79,10 +80,26 @@ function validateProtagonistAffect(
   }
 }
 
+function warnChoiceDiversityIfNeeded(result: PageWriterResult): void {
+  if (result.choices.length < 2) {
+    return;
+  }
+  const types = new Set(result.choices.map((c) => c.choiceType));
+  const deltas = new Set(result.choices.map((c) => c.primaryDelta));
+  if (types.size === 1 && deltas.size === 1) {
+    logger.warn('All choices share identical choiceType and primaryDelta', {
+      choiceType: result.choices[0]!.choiceType,
+      primaryDelta: result.choices[0]!.primaryDelta,
+      choiceCount: result.choices.length,
+    });
+  }
+}
+
 export function validateWriterOutput(result: PageWriterResult): WriterOutputValidationIssue[] {
   const issues: WriterOutputValidationIssue[] = [];
 
   validateProtagonistAffect(result, issues);
+  warnChoiceDiversityIfNeeded(result);
 
   return issues;
 }

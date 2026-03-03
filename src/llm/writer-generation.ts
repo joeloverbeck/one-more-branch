@@ -19,6 +19,7 @@ import {
 } from './validation/writer-output-validator.js';
 import { repairWriterRemovalIdFieldMismatches } from './validation/writer-id-repair.js';
 import { repairCorruptedChoices } from './validation/writer-choice-repair.js';
+import { repairPlaceholderSceneSummary } from './validation/writer-scene-summary-repair.js';
 import type {
   GenerationObservabilityContext,
   GenerationOptions,
@@ -116,8 +117,16 @@ async function callWriterStructured(
     });
   }
 
+  const summaryRepairResult = repairPlaceholderSceneSummary(choiceRepairResult.repairedJson);
+  if (summaryRepairResult.repaired) {
+    logger.warn('Writer placeholder sceneSummary repaired', {
+      repairDetails: summaryRepairResult.repairDetails,
+      ...buildObservabilityContext(options.observability),
+    });
+  }
+
   try {
-    const validated = validateWriterResponse(choiceRepairResult.repairedJson, rawContent);
+    const validated = validateWriterResponse(summaryRepairResult.repairedJson, rawContent);
     const validationIssues = validateWriterOutput(validated);
     if (validationIssues.length > 0) {
       throw new WriterOutputValidationError(validationIssues);
