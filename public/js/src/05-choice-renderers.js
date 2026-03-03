@@ -143,6 +143,10 @@
     if (existingEnums) {
       existingEnums.remove();
     }
+    const existingIdeation = choicesSectionEl.querySelector('.scene-ideation-wrapper');
+    if (existingIdeation) {
+      existingIdeation.remove();
+    }
     choicesEl.insertAdjacentHTML('afterend', renderProtagonistGuidanceAndCustomChoice(guidanceValues));
     bindFn();
   }

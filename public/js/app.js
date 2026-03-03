@@ -4273,6 +4273,10 @@ function createInlineListEditor(valueEl, currentItems, onCommit) {
     if (existingEnums) {
       existingEnums.remove();
     }
+    const existingIdeation = choicesSectionEl.querySelector('.scene-ideation-wrapper');
+    if (existingIdeation) {
+      existingIdeation.remove();
+    }
     choicesEl.insertAdjacentHTML('afterend', renderProtagonistGuidanceAndCustomChoice(guidanceValues));
     bindFn();
   }
@@ -5872,6 +5876,10 @@ function createRecapModalController(initialData) {
 
     async function proceedWithChoice(apiKey, choiceIndex, protagonistGuidance, selectedDirection) {
       loading.style.display = 'flex';
+      var ideationWrapper = choicesSection.querySelector('.scene-ideation-wrapper');
+      if (ideationWrapper) {
+        ideationWrapper.remove();
+      }
       var body = {
         pageId: currentPageId,
         choiceIndex: choiceIndex,
