@@ -107,6 +107,18 @@ export function validateStateAccountantResponse(
     }
   }
 
+  if (
+    typeof parsed === 'object' &&
+    parsed !== null &&
+    !('stateIntents' in (parsed as Record<string, unknown>)) &&
+    'currentLocation' in (parsed as Record<string, unknown>)
+  ) {
+    console.warn(
+      '[accountant-wrapper-repair] LLM returned flat response without stateIntents wrapper, auto-wrapping'
+    );
+    parsed = { stateIntents: parsed };
+  }
+
   const { repairedJson: idRepairedJson, filteredIds } = repairAccountantIdFieldMismatches(parsed);
   if (filteredIds.length > 0) {
     console.warn(

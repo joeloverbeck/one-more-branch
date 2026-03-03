@@ -162,6 +162,39 @@ describe('validateStateAccountantResponse', () => {
     warnSpy.mockRestore();
   });
 
+  it('auto-wraps flat response missing stateIntents wrapper', () => {
+    const flatPayload = {
+      currentLocation: 'The crumbling bell tower',
+      threats: { add: [], removeIds: [] },
+      constraints: { add: [], removeIds: [] },
+      threads: {
+        add: [{ text: 'Find a way down before the tower collapses', threadType: 'DANGER', urgency: 'HIGH' }],
+        resolveIds: [],
+      },
+      inventory: { add: [], removeIds: [] },
+      health: { add: [], removeIds: [] },
+      characterState: {
+        add: [{ characterName: 'Sister Maren', states: ['Clinging to the railing'] }],
+        removeIds: [],
+      },
+      canon: { worldAdd: [], characterAdd: [] },
+    };
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = validateStateAccountantResponse(flatPayload, '{"raw":"flat"}');
+
+    expect(result.stateIntents.currentLocation).toBe('The crumbling bell tower');
+    expect(result.stateIntents.threads.add).toHaveLength(1);
+    expect(result.stateIntents.characterState.add).toEqual([
+      { characterName: 'Sister Maren', states: ['Clinging to the railing'] },
+    ]);
+    expect(result.rawResponse).toBe('{"raw":"flat"}');
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[accountant-wrapper-repair]')
+    );
+    warnSpy.mockRestore();
+  });
+
   it('includes repairSummary in validation error context when repairs were attempted but output remains invalid', () => {
     const rawJson = createValidStatePayload();
     (
