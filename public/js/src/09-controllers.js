@@ -186,6 +186,8 @@
       bindCustomChoiceEvents();
     }
 
+    bindPacingRewriteButton(storyId, currentPageId, loading, loadingProgress, ensureApiKey);
+
     async function proceedWithChoice(apiKey, choiceIndex, protagonistGuidance, selectedDirection) {
       loading.style.display = 'flex';
       var ideationWrapper = choicesSection.querySelector('.scene-ideation-wrapper');

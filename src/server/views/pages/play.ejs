@@ -405,6 +405,18 @@
               </select>
             </div>
             <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>
+            <% if (isLatestStructureVersion && page.analystResult
+                   && page.analystResult.recommendedAction === 'rewrite') { %>
+            <aside class="pacing-rewrite-banner" id="pacing-rewrite-banner" role="status">
+              <div class="pacing-rewrite-content">
+                <h4>Pacing Issue Detected</h4>
+                <p><%= page.analystResult.pacingIssueReason %></p>
+              </div>
+              <button type="button" class="pacing-rewrite-btn" id="pacing-rewrite-btn">
+                Rewrite Structure
+              </button>
+            </aside>
+            <% } %>
           </section>
           <% } %>
         </div>

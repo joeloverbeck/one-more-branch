@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { collectAncestorContext } from '../../engine/ancestor-collector.js';
 import { collectRecapSummaries, storyEngine } from '../../engine/index.js';
+import { rewriteStructureForPacing } from '../../engine/pacing-rewrite.js';
 import { collectParentState } from '../../engine/parent-state-collector.js';
 import { generateSceneDirections } from '../../llm/scene-ideator.js';
 import type {
@@ -289,6 +290,12 @@ playRoutes.get(
       const milestoneInfo = getMilestoneInfo(story, page);
       const panels = buildPagePanelData(page);
 
+      const latestVersionId = story.structureVersions?.length
+        ? story.structureVersions[story.structureVersions.length - 1]!.id
+        : null;
+      const isLatestStructureVersion =
+        page.structureVersionId !== null && page.structureVersionId === latestVersionId;
+
       return res.render('pages/play', {
         title: `${story.title} - One More Branch`,
         story,
@@ -315,6 +322,7 @@ playRoutes.get(
         insightsThreadMeta: panels.insightsThreadMeta,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
+        isLatestStructureVersion,
       });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -411,6 +419,70 @@ playRoutes.post(
 );
 
 playRoutes.post('/:storyId/custom-choice', wrapAsyncRoute(customChoiceHandler));
+
+type RewriteStructureBody = {
+  pageId?: number;
+  apiKey?: string;
+  progressId?: unknown;
+};
+
+playRoutes.post(
+  '/:storyId/rewrite-structure',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const { storyId } = req.params;
+    const { pageId, apiKey, progressId: rawProgressId } = req.body as RewriteStructureBody;
+    const progress = createRouteGenerationProgress(rawProgressId, 'structure-rewrite');
+
+    if (typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      progress.fail('OpenRouter API key is required');
+      return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
+    }
+
+    if (pageId === undefined) {
+      progress.fail('Missing pageId');
+      return res.status(400).json({ success: false, error: 'Missing pageId' });
+    }
+
+    try {
+      const story = await storyEngine.loadStory(storyId as StoryId);
+      if (!story) {
+        progress.fail('Story not found');
+        return res.status(404).json({ success: false, error: 'Story not found' });
+      }
+
+      const page = await storyEngine.getPage(storyId as StoryId, pageId as PageId);
+      if (!page) {
+        progress.fail('Page not found');
+        return res.status(404).json({ success: false, error: 'Page not found' });
+      }
+
+      if (!page.analystResult || page.analystResult.recommendedAction !== 'rewrite') {
+        progress.fail('No rewrite recommendation for this page');
+        return res.status(400).json({
+          success: false,
+          error: 'This page does not have a pacing rewrite recommendation',
+        });
+      }
+
+      const result = await rewriteStructureForPacing(story, page, apiKey);
+      progress.complete();
+
+      return res.json({
+        success: true,
+        storyId: result.updatedStory.id,
+        newVersionId: result.newVersion.id,
+      });
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Pacing structure rewrite failed:', {
+        error: err.message,
+        stack: err.stack,
+      });
+      progress.fail(err.message);
+      return res.status(500).json({ success: false, error: 'Structure rewrite failed' });
+    }
+  })
+);
 
 playRoutes.get('/:storyId/restart', (req: Request, res: Response) => {
   const { storyId } = req.params;

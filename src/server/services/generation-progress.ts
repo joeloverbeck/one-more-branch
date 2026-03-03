@@ -9,6 +9,7 @@ export const GENERATION_FLOW_TYPES = [
   'kernel-generation',
   'kernel-evolution',
   'scene-ideation',
+  'structure-rewrite',
 ] as const;
 
 export type GenerationFlowType = (typeof GENERATION_FLOW_TYPES)[number];
