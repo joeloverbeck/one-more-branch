@@ -288,6 +288,7 @@ describe('http-client', () => {
         expect(llmError.context?.['reasoningTokens']).toBe(3433);
         expect(llmError.context?.['completionTokens']).toBe(3433);
         expect(llmError.context?.['promptTokens']).toBe(5000);
+        expect(llmError.context?.['maxTokens']).toBe(16384);
         expect(llmError.context?.['model']).toBe('qwen/qwen3.5-397b-a17b');
         expect(llmError.context?.['stage']).toBe('promise-tracker');
       }
@@ -300,6 +301,66 @@ describe('http-client', () => {
           {
             message: { content: '' as unknown as string },
             finish_reason: 'error',
+          },
+        ],
+        usage: {
+          prompt_tokens: 5000,
+          completion_tokens: 0,
+          total_tokens: 5000,
+        },
+      };
+      try {
+        extractResponseContent(data, 'test-stage', 'test-model', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('EMPTY_RESPONSE');
+      }
+    });
+
+    it('throws REASONING_MODEL_ERROR when finish_reason is length with reasoning tokens and no content', () => {
+      const data: OpenRouterResponse = {
+        id: 'test-id',
+        choices: [
+          {
+            message: { content: '' as unknown as string },
+            finish_reason: 'length',
+          },
+        ],
+        usage: {
+          prompt_tokens: 8261,
+          completion_tokens: 16384,
+          total_tokens: 24645,
+          completion_tokens_details: {
+            reasoning_tokens: 17388,
+          },
+        },
+      };
+      try {
+        extractResponseContent(data, 'agenda-resolver', 'qwen/qwen3.5-397b-a17b', 16384);
+        throw new Error('Expected extractResponseContent to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(LLMError);
+        const llmError = error as LLMError;
+        expect(llmError.code).toBe('REASONING_MODEL_ERROR');
+        expect(llmError.retryable).toBe(true);
+        expect(llmError.context?.['reasoningTokens']).toBe(17388);
+        expect(llmError.context?.['completionTokens']).toBe(16384);
+        expect(llmError.context?.['promptTokens']).toBe(8261);
+        expect(llmError.context?.['maxTokens']).toBe(16384);
+        expect(llmError.context?.['model']).toBe('qwen/qwen3.5-397b-a17b');
+        expect(llmError.context?.['stage']).toBe('agenda-resolver');
+      }
+    });
+
+    it('throws EMPTY_RESPONSE when finish_reason is length with no reasoning tokens and no content', () => {
+      const data: OpenRouterResponse = {
+        id: 'test-id',
+        choices: [
+          {
+            message: { content: '' as unknown as string },
+            finish_reason: 'length',
           },
         ],
         usage: {

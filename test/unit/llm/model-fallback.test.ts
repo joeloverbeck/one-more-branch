@@ -97,6 +97,56 @@ describe('withModelFallback', () => {
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
+  it('falls back to default model on REASONING_MODEL_ERROR when primary differs from default', async () => {
+    const warnSpy = jest.spyOn(logger, 'warn');
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(
+        new LLMError('reasoning error', 'REASONING_MODEL_ERROR', true, {
+          reasoningTokens: 2688,
+          model: 'qwen/qwen3.5-397b-a17b',
+        })
+      )
+      .mockResolvedValueOnce('fallback-result');
+
+    const result = await withModelFallback(fn, 'qwen/qwen3.5-397b-a17b', 'structureEvaluator');
+
+    expect(result).toBe('fallback-result');
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(fn).toHaveBeenNthCalledWith(1, 'qwen/qwen3.5-397b-a17b');
+    expect(fn).toHaveBeenNthCalledWith(2, 'anthropic/claude-sonnet-4.6');
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('reasoning error')
+    );
+  });
+
+  it('re-throws REASONING_MODEL_ERROR when primary model is the default model', async () => {
+    const error = new LLMError('reasoning error', 'REASONING_MODEL_ERROR', true);
+    const fn = jest.fn().mockRejectedValue(error);
+
+    await expect(
+      withModelFallback(fn, 'anthropic/claude-sonnet-4.6', 'structureEvaluator')
+    ).rejects.toThrow(error);
+
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('propagates errors from the fallback call on REASONING_MODEL_ERROR', async () => {
+    const fallbackError = new LLMError('Fallback also failed', 'HTTP_500', true);
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(
+        new LLMError('reasoning error', 'REASONING_MODEL_ERROR', true)
+      )
+      .mockRejectedValueOnce(fallbackError);
+
+    await expect(
+      withModelFallback(fn, 'qwen/qwen3.5-397b-a17b', 'structureEvaluator')
+    ).rejects.toThrow(fallbackError);
+
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
   it('logs the stage name and both models in the warning', async () => {
     const warnSpy = jest.spyOn(logger, 'warn');
     const fn = jest

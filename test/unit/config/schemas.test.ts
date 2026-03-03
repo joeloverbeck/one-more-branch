@@ -79,15 +79,15 @@ describe('config schemas', () => {
       expect(validTwo.llm.temperature).toBe(2);
     });
 
-    it('validates maxTokens range (256-32768)', () => {
+    it('validates maxTokens range (256-131072)', () => {
       expect(() => AppConfigSchema.parse({ llm: { maxTokens: 100 } })).toThrow();
-      expect(() => AppConfigSchema.parse({ llm: { maxTokens: 50000 } })).toThrow();
+      expect(() => AppConfigSchema.parse({ llm: { maxTokens: 200000 } })).toThrow();
 
       const validLow = AppConfigSchema.parse({ llm: { maxTokens: 256 } });
       expect(validLow.llm.maxTokens).toBe(256);
 
-      const validHigh = AppConfigSchema.parse({ llm: { maxTokens: 32768 } });
-      expect(validHigh.llm.maxTokens).toBe(32768);
+      const validHigh = AppConfigSchema.parse({ llm: { maxTokens: 131072 } });
+      expect(validHigh.llm.maxTokens).toBe(131072);
     });
 
     it('validates retry configuration', () => {

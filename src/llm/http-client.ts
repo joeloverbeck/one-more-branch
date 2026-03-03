@@ -328,20 +328,21 @@ export function extractResponseContent(
   if (!choice || !content) {
     const finishReason = choice?.finish_reason ?? 'unknown';
     const reasoningTokens = data.usage?.completion_tokens_details?.reasoning_tokens ?? 0;
-    const isReasoningModelError = finishReason === 'error' && reasoningTokens > 0;
+    const isReasoningModelError =
+      (finishReason === 'error' || finishReason === 'length') && reasoningTokens > 0;
 
     if (isReasoningModelError) {
       const completionTokens = data.usage?.completion_tokens ?? 0;
       const promptTokens = data.usage?.prompt_tokens ?? 0;
       logger.warn(
-        `${stage} reasoning model consumed ${reasoningTokens} reasoning tokens but produced 0 output tokens`,
-        { finishReason, reasoningTokens, completionTokens, promptTokens, model, stage }
+        `${stage} reasoning model consumed ${reasoningTokens} reasoning tokens but produced 0 output tokens (maxTokens=${maxTokens})`,
+        { finishReason, reasoningTokens, completionTokens, promptTokens, maxTokens, model, stage }
       );
       throw new LLMError(
-        `${stage} reasoning model error: consumed ${reasoningTokens} reasoning tokens with no output`,
+        `${stage} reasoning model error: consumed ${reasoningTokens} reasoning tokens with no output (maxTokens=${maxTokens})`,
         'REASONING_MODEL_ERROR',
         true,
-        { reasoningTokens, completionTokens, promptTokens, model, stage }
+        { reasoningTokens, completionTokens, promptTokens, maxTokens, model, stage }
       );
     }
 
