@@ -524,6 +524,78 @@ describe('play page choice click handler', () => {
     expect(choicePostCalled).toBe(true);
   });
 
+  it('removes scene-ideation-wrapper after full ideation-to-choice flow', async () => {
+    setupAndInit({
+      choices: [
+        { text: 'Unexplored path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
+        { text: 'Another path', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+      ],
+    });
+
+    const ideationResponse = {
+      success: true,
+      options: [
+        {
+          scenePurpose: 'RISING_COMPLICATION',
+          valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+          pacingMode: 'ACCELERATING',
+          sceneDirection: 'The hero faces a dark cave',
+          dramaticJustification: 'Builds tension',
+        },
+        {
+          scenePurpose: 'REVELATION',
+          valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+          pacingMode: 'DECELERATING',
+          sceneDirection: 'A hidden ally appears',
+          dramaticJustification: 'Provides relief',
+        },
+        {
+          scenePurpose: 'CONFRONTATION',
+          valuePolarityShift: 'IRONIC_SHIFT',
+          pacingMode: 'SUSTAINED_HIGH',
+          sceneDirection: 'A confrontation with the rival',
+          dramaticJustification: 'Heightens conflict',
+        },
+      ],
+    };
+
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (typeof url === 'string' && url.includes('ideate-scene')) {
+        return Promise.resolve(mockJsonResponse(ideationResponse));
+      }
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      if (init?.method === 'POST' && typeof url === 'string' && url.includes('/choice')) {
+        return Promise.resolve(mockJsonResponse(makeSuccessfulChoiceResponse()));
+      }
+      return Promise.resolve(mockJsonResponse({ error: 'No mock' }, 500));
+    });
+
+    // Click unexplored choice → triggers ideation fetch
+    clickChoice(0);
+    await jest.runAllTimersAsync();
+
+    // Ideation UI should be rendered with .scene-ideation-wrapper
+    expect(document.querySelector('.scene-ideation-wrapper')).not.toBeNull();
+
+    // Select a card and confirm
+    const card = document.querySelector('.scene-direction-card') as HTMLElement;
+    card.click();
+    await jest.runAllTimersAsync();
+
+    const confirmBtn = document.querySelector('.scene-ideation-confirm') as HTMLButtonElement;
+    confirmBtn.click();
+    await jest.runAllTimersAsync();
+
+    // After generation completes, .scene-ideation-wrapper should be gone
+    expect(document.querySelector('.scene-ideation-wrapper')).toBeNull();
+
+    // New choices should be rendered
+    const newButtons = document.querySelectorAll('.choice-btn');
+    expect(newButtons.length).toBeGreaterThan(0);
+  });
+
   it('choice click works after #choices has been detached and restored', async () => {
     setupAndInit({
       choices: [

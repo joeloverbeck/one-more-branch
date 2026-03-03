@@ -188,6 +188,10 @@
 
     async function proceedWithChoice(apiKey, choiceIndex, protagonistGuidance, selectedDirection) {
       loading.style.display = 'flex';
+      var ideationWrapper = choicesSection.querySelector('.scene-ideation-wrapper');
+      if (ideationWrapper) {
+        ideationWrapper.remove();
+      }
       var body = {
         pageId: currentPageId,
         choiceIndex: choiceIndex,

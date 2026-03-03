@@ -167,6 +167,38 @@ describe('rebuildChoicesSection', () => {
     expect(buttons[0].querySelector('.choice-text')?.textContent).toBe('Option A');
   });
 
+  it('removes .scene-ideation-wrapper during rebuild', async () => {
+    document.body.innerHTML = buildPlayPageHtml();
+    loadAppAndInit();
+
+    // Inject a stale scene-ideation-wrapper into #choices-section
+    const choicesSection = document.getElementById('choices-section')!;
+    const ideationWrapper = document.createElement('div');
+    ideationWrapper.className = 'scene-ideation-wrapper';
+    ideationWrapper.textContent = 'Choose a Scene Direction';
+    choicesSection.appendChild(ideationWrapper);
+
+    expect(choicesSection.querySelector('.scene-ideation-wrapper')).not.toBeNull();
+
+    const newChoices = [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
+    ];
+    mockCustomChoiceSuccess(newChoices);
+
+    const input = document.querySelector('.custom-choice-input') as HTMLInputElement;
+    input.value = 'Trigger rebuild';
+    (document.querySelector('.custom-choice-btn') as HTMLButtonElement).click();
+    await jest.runAllTimersAsync();
+
+    // After rebuild, scene-ideation-wrapper should be gone
+    expect(choicesSection.querySelector('.scene-ideation-wrapper')).toBeNull();
+    // And we should have exactly one set of UI elements
+    expect(document.querySelectorAll('.protagonist-guidance').length).toBe(1);
+    expect(document.querySelectorAll('.custom-choice-container').length).toBe(1);
+    expect(document.querySelectorAll('#choices').length).toBe(1);
+  });
+
   it('binds custom choice events after rebuild', async () => {
     document.body.innerHTML = buildPlayPageHtml();
     loadAppAndInit();
