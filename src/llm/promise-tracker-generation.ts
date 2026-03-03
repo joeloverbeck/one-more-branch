@@ -1,5 +1,4 @@
-import { getConfig } from '../config/index.js';
-import { getStageModel } from '../config/stage-model.js';
+import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
 import { logger } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
@@ -21,10 +20,9 @@ async function callPromiseTrackerStructured(
   messages: ChatMessage[],
   options: GenerationOptions
 ): Promise<PromiseTrackerResult & { rawResponse: string }> {
-  const config = getConfig().llm;
   const model = options.model ?? getStageModel('promiseTracker');
   const temperature = options.temperature ?? DEFAULT_PROMISE_TRACKER_TEMPERATURE;
-  const maxTokens = options.maxTokens ?? config.maxTokens;
+  const maxTokens = options.maxTokens ?? getStageMaxTokens('promiseTracker');
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {

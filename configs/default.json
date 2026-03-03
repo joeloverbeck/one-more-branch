@@ -33,6 +33,22 @@
       "npcIntelligence": "qwen/qwen3.5-397b-a17b",
       "agendaResolver": "qwen/qwen3.5-397b-a17b"
     },
+    "stageMaxTokens": {
+      "kernelEvaluator": 32768,
+      "conceptEngineer": 32768,
+      "conceptEvaluator": 32768,
+      "kernelEvolver": 32768,
+      "conceptStressTester": 32768,
+      "conceptSpecificity": 32768,
+      "conceptScenario": 32768,
+      "accountant": 32768,
+      "lorekeeper": 32768,
+      "structureEvaluator": 32768,
+      "promiseTracker": 32768,
+      "proseQuality": 32768,
+      "npcIntelligence": 32768,
+      "agendaResolver": 32768
+    },
     "temperature": 0.8,
     "maxTokens": 16384,
     "retry": {

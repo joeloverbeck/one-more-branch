@@ -1,5 +1,4 @@
-import { getConfig } from '../config/index.js';
-import { getStageModel } from '../config/stage-model.js';
+import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
@@ -30,9 +29,8 @@ export async function generateAgendaResolver(
   storyNpcs: readonly { readonly name: string }[],
   options: GenerateAgendaResolverOptions
 ): Promise<AgendaResolverResult> {
-  const config = getConfig().llm;
   const model = options.model ?? getStageModel('agendaResolver');
-  const maxTokens = options.maxTokens ?? config.maxTokens;
+  const maxTokens = options.maxTokens ?? getStageMaxTokens('agendaResolver');
   const messages = buildAgendaResolverPrompt(context);
 
   logPrompt(logger, 'agenda-resolver', messages);

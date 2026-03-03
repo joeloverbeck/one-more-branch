@@ -1,4 +1,4 @@
-import { getStageModel, type LlmStage } from '@/config/stage-model';
+import { getStageModel, getStageMaxTokens, type LlmStage } from '@/config/stage-model';
 import { getConfig, loadConfig, resetConfig } from '@/config/index';
 import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
 
@@ -74,6 +74,55 @@ describe('getStageModel', () => {
       const model = getStageModel(stage);
       expect(typeof model).toBe('string');
       expect(model.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('getStageMaxTokens', () => {
+  beforeEach(() => {
+    resetConfig();
+  });
+
+  afterEach(() => {
+    resetConfig();
+  });
+
+  it('returns global maxTokens when no stageMaxTokens config exists', () => {
+    process.env['CONFIG_PATH'] = '/dev/null';
+    loadConfig();
+    delete process.env['CONFIG_PATH'];
+
+    const config = getConfig();
+    const maxTokens = getStageMaxTokens('writer');
+    expect(maxTokens).toBe(config.llm.maxTokens);
+  });
+
+  it('returns stage-specific maxTokens when configured', () => {
+    loadConfig();
+
+    const config = getConfig();
+    const maxTokens = getStageMaxTokens('agendaResolver');
+    const expected = config.llm.stageMaxTokens?.['agendaResolver'] ?? config.llm.maxTokens;
+    expect(maxTokens).toBe(expected);
+    expect(maxTokens).toBe(32768);
+  });
+
+  it('returns global maxTokens for stage without per-stage override', () => {
+    loadConfig();
+
+    const config = getConfig();
+    // 'writer' is not in stageMaxTokens in default.json
+    const maxTokens = getStageMaxTokens('writer');
+    expect(maxTokens).toBe(config.llm.maxTokens);
+  });
+
+  it('resolves each LlmStage to a positive number', () => {
+    loadConfig();
+
+    for (const stage of LLM_STAGE_KEYS) {
+      const maxTokens = getStageMaxTokens(stage);
+      expect(typeof maxTokens).toBe('number');
+      expect(maxTokens).toBeGreaterThan(0);
     }
   });
 });

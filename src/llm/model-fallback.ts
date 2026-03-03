@@ -24,6 +24,17 @@ export async function withModelFallback<T>(
       return fn(defaultModel);
     }
 
+    if (
+      error instanceof LLMError &&
+      error.code === 'REASONING_MODEL_ERROR' &&
+      primaryModel !== defaultModel
+    ) {
+      logger.warn(
+        `Stage "${stage}": model ${primaryModel} reasoning error, falling back to ${defaultModel}`
+      );
+      return fn(defaultModel);
+    }
+
     throw error;
   }
 }

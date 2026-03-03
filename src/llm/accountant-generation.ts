@@ -1,4 +1,4 @@
-import { getStageModel } from '../config/stage-model.js';
+import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import { logger } from '../logging/index.js';
 import {
@@ -79,7 +79,7 @@ async function callAccountantStructured(
   const config = getConfig().llm;
   const model = options.model ?? getStageModel('accountant');
   const temperature = options.temperature ?? config.temperature;
-  const maxTokens = options.maxTokens ?? config.maxTokens;
+  const maxTokens = options.maxTokens ?? getStageMaxTokens('accountant');
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
