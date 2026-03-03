@@ -32,6 +32,7 @@ export interface PlayPageOptions {
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
   analystResult?: Record<string, unknown> | null;
+  hasPacingRewriteBtn?: boolean;
   sceneSummary?: string | null;
   recapSummaries?: Array<{ pageId: number; summary: string }>;
   resolvedThreadMeta?: Record<string, { threadType: string; urgency: string }>;
@@ -202,6 +203,19 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   `
     : '';
 
+  const hasPacingRewriteBtn = options.hasPacingRewriteBtn ?? false;
+  const pacingRewriteHtml = hasPacingRewriteBtn
+    ? `<aside class="pacing-rewrite-banner" id="pacing-rewrite-banner" role="status">
+        <div class="pacing-rewrite-content">
+          <h4>Pacing Issue Detected</h4>
+          <p>The story pacing needs adjustment.</p>
+        </div>
+        <button type="button" class="pacing-rewrite-btn" id="pacing-rewrite-btn">
+          Rewrite Structure
+        </button>
+      </aside>`
+    : '';
+
   const choicesSectionHtml = isEnding
     ? `<div class="ending-banner">
         <h3>THE END</h3>
@@ -214,6 +228,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         <h3>What do you do?</h3>
         <div class="choices" id="choices">${choiceButtonsHtml}</div>
         ${customChoiceHtml}
+        ${pacingRewriteHtml}
       </section>`;
 
   const insightsButtonHtml = analystResult

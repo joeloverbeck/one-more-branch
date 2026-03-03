@@ -6,8 +6,8 @@
       return;
     }
 
-    btn.addEventListener('click', function () {
-      var apiKey = ensureApiKeyFn();
+    btn.addEventListener('click', async function () {
+      var apiKey = await ensureApiKeyFn();
       if (!apiKey) {
         return;
       }
