@@ -1745,6 +1745,7 @@ describe('playRoutes', () => {
           expect.objectContaining({
             code: 'VALIDATION_ERROR',
             retryable: false,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             debug: expect.objectContaining({
               httpStatus: 400,
               model: 'test-model',
