@@ -511,7 +511,8 @@ describe('llm client', () => {
     await advanceRetryDelays();
 
     await expectation;
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // 3 retries × 2 fetches each (1 writer call + 1 supplementary choice repair call)
+    expect(fetchMock).toHaveBeenCalledTimes(6);
   });
 
   it('should log opening prompts before API call', async () => {
@@ -658,7 +659,8 @@ describe('llm client', () => {
     const errorContext = rejectedError instanceof LLMError ? rejectedError.context : undefined;
     expect(Array.isArray(errorContext?.validationIssues)).toBe(true);
     expect(Array.isArray(errorContext?.ruleKeys)).toBe(true);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // 3 retries × 2 fetches each (1 writer call + 1 supplementary choice repair call)
+    expect(fetchMock).toHaveBeenCalledTimes(6);
 
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const validationErrorCall = errorCalls.find(

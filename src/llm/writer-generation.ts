@@ -20,6 +20,7 @@ import {
 import { repairWriterRemovalIdFieldMismatches } from './validation/writer-id-repair.js';
 import { repairCorruptedChoices } from './validation/writer-choice-repair.js';
 import { repairPlaceholderSceneSummary } from './validation/writer-scene-summary-repair.js';
+import { repairInsufficientChoices } from './validation/writer-choice-insufficiency-repair.js';
 import type {
   GenerationObservabilityContext,
   GenerationOptions,
@@ -125,8 +126,21 @@ async function callWriterStructured(
     });
   }
 
+  const insufficiencyRepairResult = await repairInsufficientChoices(
+    summaryRepairResult.repairedJson,
+    options.apiKey,
+    options.model,
+    options.observability
+  );
+  if (insufficiencyRepairResult.repaired) {
+    logger.warn('Writer insufficient choices repaired via supplementary LLM call', {
+      repairDetails: insufficiencyRepairResult.repairDetails,
+      ...buildObservabilityContext(options.observability),
+    });
+  }
+
   try {
-    const validated = validateWriterResponse(summaryRepairResult.repairedJson, rawContent);
+    const validated = validateWriterResponse(insufficiencyRepairResult.repairedJson, rawContent);
     const validationIssues = validateWriterOutput(validated);
     if (validationIssues.length > 0) {
       throw new WriterOutputValidationError(validationIssues);

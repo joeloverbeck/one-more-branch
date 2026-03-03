@@ -6,6 +6,17 @@ import {
   isPacingMode,
 } from '../../models/scene-direction-taxonomy.js';
 
+/**
+ * Extracts a single string from a route param value that may be `string | string[]`
+ * (Express 5 ParamsDictionary). Returns the first element if array.
+ */
+export function flattenParam(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+  return value;
+}
+
 export const MAX_GUIDANCE_FIELD_LENGTH = 500;
 export const MAX_SCENE_DIRECTION_TEXT_LENGTH = 2000;
 export const MAX_CUSTOM_CHOICE_TEXT_LENGTH = 500;

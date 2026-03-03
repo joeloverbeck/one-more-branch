@@ -19,6 +19,7 @@ import {
   buildBeginErrorResponse,
   buildChoiceErrorResponse,
   buildPagePanelData,
+  flattenParam,
   parseRequestedPageId,
   normalizeProtagonistGuidance,
   normalizeSelectedSceneDirection,
@@ -46,7 +47,7 @@ export const playRoutes = Router();
 playRoutes.get(
   '/:storyId/briefing',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const { storyId } = req.params;
+    const storyId = flattenParam(req.params['storyId']);
 
     try {
       const story = await storyEngine.loadStory(storyId as StoryId);
@@ -110,7 +111,7 @@ type IdeateSceneBody = {
 playRoutes.post(
   '/:storyId/ideate-scene',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const { storyId } = req.params;
+    const storyId = flattenParam(req.params['storyId']);
     const { apiKey, mode, pageId, choiceIndex, protagonistGuidance: rawGuidance } =
       req.body as IdeateSceneBody;
 
@@ -210,7 +211,7 @@ playRoutes.post(
 playRoutes.post(
   '/:storyId/begin',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const { storyId } = req.params;
+    const storyId = flattenParam(req.params['storyId']);
     const {
       apiKey,
       progressId: rawProgressId,
@@ -255,7 +256,7 @@ playRoutes.post(
 playRoutes.get(
   '/:storyId',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const { storyId } = req.params;
+    const storyId = flattenParam(req.params['storyId']);
     const pageId = parseRequestedPageId(req.query['page']);
 
     try {
@@ -338,7 +339,7 @@ playRoutes.get(
 playRoutes.post(
   '/:storyId/choice',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const { storyId } = req.params;
+    const storyId = flattenParam(req.params['storyId']);
     const {
       pageId,
       choiceIndex,
@@ -429,7 +430,7 @@ type RewriteStructureBody = {
 playRoutes.post(
   '/:storyId/rewrite-structure',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const { storyId } = req.params;
+    const storyId = flattenParam(req.params['storyId']);
     const { pageId, apiKey, progressId: rawProgressId } = req.body as RewriteStructureBody;
     const progress = createRouteGenerationProgress(rawProgressId, 'structure-rewrite');
 
@@ -485,6 +486,6 @@ playRoutes.post(
 );
 
 playRoutes.get('/:storyId/restart', (req: Request, res: Response) => {
-  const { storyId } = req.params;
+  const storyId = flattenParam(req.params['storyId']);
   res.redirect(`/play/${storyId}?page=1`);
 });

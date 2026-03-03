@@ -29,7 +29,8 @@ export type PromptType =
   | 'spine-rewrite'
   | 'agenda-resolver'
   | 'entity-decomposer'
-  | 'sceneIdeator';
+  | 'sceneIdeator'
+  | 'writer-choice-repair';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),
