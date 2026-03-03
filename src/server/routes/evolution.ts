@@ -5,7 +5,7 @@ import type { SavedConcept } from '../../models/saved-concept.js';
 import { listConcepts, loadConcept } from '../../persistence/concept-repository.js';
 import { loadKernel } from '../../persistence/kernel-repository.js';
 import { evolutionService } from '../services/index.js';
-import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
+import { buildLlmRouteErrorResult, flattenParam, wrapAsyncRoute } from '../utils/index.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const evolutionRoutes = Router();
@@ -47,7 +47,7 @@ evolutionRoutes.get(
 evolutionRoutes.get(
   '/api/concepts-by-kernel/:kernelId',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const kernelId = req.params['kernelId']?.trim();
+    const kernelId = flattenParam(req.params['kernelId'])?.trim();
 
     if (!kernelId) {
       return res.status(400).json({ success: false, error: 'Kernel ID is required' });
