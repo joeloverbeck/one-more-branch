@@ -1,4 +1,5 @@
 import { getConfig } from '../config';
+import { getStageModel, getStageMaxTokens } from '../config/stage-model';
 import { logger, logPrompt } from '../logging';
 import {
   OPENROUTER_API_URL,
@@ -236,10 +237,9 @@ async function generateRewrittenStructure(
   messages: ChatMessage[],
   apiKey: string
 ): Promise<StructureGenerationResult> {
-  const config = getConfig().llm;
-  const model = config.defaultModel;
-  const temperature = config.temperature;
-  const maxTokens = config.maxTokens;
+  const model = getStageModel('structureRewrite');
+  const maxTokens = getStageMaxTokens('structureRewrite');
+  const temperature = getConfig().llm.temperature;
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',

@@ -31,7 +31,9 @@
       "promiseTracker": "qwen/qwen3.5-397b-a17b",
       "proseQuality": "qwen/qwen3.5-397b-a17b",
       "npcIntelligence": "qwen/qwen3.5-397b-a17b",
-      "agendaResolver": "qwen/qwen3.5-397b-a17b"
+      "agendaResolver": "qwen/qwen3.5-397b-a17b",
+      "structureRewrite": "anthropic/claude-sonnet-4.6",
+      "spineRewrite": "anthropic/claude-sonnet-4.6"
     },
     "stageMaxTokens": {
       "kernelEvaluator": 32768,

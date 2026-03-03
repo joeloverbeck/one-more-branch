@@ -1,4 +1,5 @@
 import { getConfig } from '../config/index.js';
+import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
 import { logger, logPrompt } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
@@ -153,10 +154,9 @@ export async function rewriteSpine(
   context: SpineRewriteContext,
   apiKey: string
 ): Promise<SpineRewriteResult> {
-  const config = getConfig().llm;
-  const model = config.defaultModel;
-  const temperature = config.temperature;
-  const maxTokens = config.maxTokens;
+  const model = getStageModel('spineRewrite');
+  const maxTokens = getStageMaxTokens('spineRewrite');
+  const temperature = getConfig().llm.temperature;
 
   const messages = buildSpineRewritePrompt(context);
   logPrompt(logger, 'spine-rewrite', messages);

@@ -296,7 +296,7 @@ describe('buildStructureRewritePrompt', () => {
     };
     const user = getUserMessage(buildStructureRewritePrompt(contextWithPlanned));
 
-    expect(user).toContain('ORIGINALLY PLANNED BEATS (REFERENCE - NOT BINDING)');
+    expect(user).toContain('ORIGINALLY PLANNED BEATS (CONTEXT ONLY — DO NOT COPY)');
     expect(user).toContain('Act 2, Beat 2 (2.2) [turning_point] "Betrayal Revealed"');
     expect(user).toContain('Confront the traitor and decide their fate');
     expect(user).toContain('Act 3, Beat 1 (3.1) [escalation] "Final Gambit"');
