@@ -20,7 +20,11 @@ const MUTATION_STRATEGIES = `MUTATION STRATEGIES:
 - synthesis: Merge the dramatic cores of two parents into a single kernel that honors both tensions.
 - radicalize: Push one parent's defining differentiator to its logical extreme.
 - axis-shift: Preserve thesis but move to a different conflict axis.
-- stance-pivot: Keep same conflict, shift dramatic stance (e.g. TRAGIC parent becomes COMIC offspring).`;
+- stance-pivot: Keep same conflict, shift dramatic stance (e.g. TRAGIC parent becomes COMIC offspring).
+- irony-injection: Restructure the value spectrum so that pursuing the positive value inherently creates its negation-of-negation — the thesis becomes self-defeating by design.
+- fear-transplant: Replace the implicit deepest fear driving the dramatic tension with one from a completely different human anxiety domain, keeping the same value at stake.
+- moral-inversion: Flip the moral argument so the story argues the opposite conclusion about the same value — e.g. "loyalty saves" becomes "loyalty destroys."
+- value-spectrum-deepening: Keep the same value but redesign the four-level spectrum to be more specific, visceral, and dramatically distinct at each degradation level.`;
 
 const QUALITY_ANCHORS = `QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.

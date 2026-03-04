@@ -26,6 +26,8 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
               'characterArcType',
               'toneFeel',
               'toneAvoid',
+              'wantNeedCollisionPoint',
+              'protagonistDeepestFear',
             ],
             properties: {
               centralDramaticQuestion: {
@@ -144,6 +146,16 @@ export const SPINE_GENERATION_SCHEMA: JsonSchema = {
                 description:
                   '3-5 tonal anti-patterns the story must never drift toward. These define the negative space. Example for "grim political fantasy": ["whimsical", "slapstick", "heartwarming", "campy"].',
                 items: { type: 'string' },
+              },
+              wantNeedCollisionPoint: {
+                type: 'string',
+                description:
+                  'The specific moment or condition where pursuing the want actively blocks the need. One sentence describing the collision.',
+              },
+              protagonistDeepestFear: {
+                type: 'string',
+                description:
+                  'The fear that drives the protagonist to cling to their want instead of facing their need. One sentence.',
               },
             },
           },

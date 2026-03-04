@@ -21,7 +21,7 @@ You are a concept evolution architect for branching interactive fiction. Recombi
 {{CONTENT_POLICY}}
 
 MUTATION STRATEGIES:
-- recombine, invert, escalate, transplant, hybridize, radicalize
+- recombine, invert, escalate, transplant, hybridize, radicalize, ghost-deepening, lie-escalation, irony-sharpening
 
 {{Seeder taxonomy guidance: genreFrame, conflictAxis, conflictType descriptions}}
 
@@ -37,7 +37,7 @@ MUTATION STRATEGIES:
 ```text
 Evolve the provided parents into exactly 6 offspring concept seeds.
 
-STORY KERNEL: {{kernel fields}}
+STORY KERNEL: {{kernel fields including moralArgument, valueSpectrum (positive/contrary/contradictory/negationOfNegation)}}
 
 PARENT CONCEPTS INPUT: {{JSON array of parent concepts with scores/strengths/weaknesses}}
 
@@ -62,4 +62,6 @@ Same as concept-seeder-prompt (7-field seed shape).
 - Shares the same JSON schema as Stage 1a (concept-seeder-schema.ts)
 - Produces exactly 6 seeds (vs 6-8 for ideation)
 - Enforces diversity: no duplicate genreFrame+conflictAxis pairs
+- 9 mutation strategies (6 original + ghost-deepening, lie-escalation, irony-sharpening)
 - Mutation strategies guide the LLM to improve on parent weaknesses
+- Kernel block includes moralArgument and valueSpectrum (4 levels)

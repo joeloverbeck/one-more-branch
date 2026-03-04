@@ -46,6 +46,8 @@ export interface SpineOption {
   readonly characterArcType: CharacterArcType;
   readonly toneFeel: readonly string[];
   readonly toneAvoid: readonly string[];
+  readonly wantNeedCollisionPoint: string;
+  readonly protagonistDeepestFear: string;
 }
 
 export interface SpineGenerationResult {
@@ -159,6 +161,15 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
         .filter((s) => s.length > 0)
     : [];
 
+  const wantNeedCollisionPoint =
+    typeof data['wantNeedCollisionPoint'] === 'string' && data['wantNeedCollisionPoint'].trim().length > 0
+      ? data['wantNeedCollisionPoint'].trim()
+      : '';
+  const protagonistDeepestFear =
+    typeof data['protagonistDeepestFear'] === 'string' && data['protagonistDeepestFear'].trim().length > 0
+      ? data['protagonistDeepestFear'].trim()
+      : '';
+
   return {
     centralDramaticQuestion: data['centralDramaticQuestion'],
     protagonistNeedVsWant: {
@@ -176,6 +187,8 @@ function parseSpineOption(raw: unknown, index: number): SpineOption {
     characterArcType: data['characterArcType'],
     toneFeel,
     toneAvoid,
+    wantNeedCollisionPoint,
+    protagonistDeepestFear,
   };
 }
 

@@ -8,7 +8,7 @@
 
 ## Pipeline Position
 
-The kernel evolver mutates and recombines 2+ evaluated parent kernels into 6 offspring kernels using named mutation strategies.
+The kernel evolver mutates and recombines 2+ evaluated parent kernels into 6 offspring kernels using 12 named mutation strategies (8 original + 4 new narrative-theory strategies).
 
 **Pipeline position**: Kernel Ideator -> Kernel Evaluator -> **Kernel Evolver**
 
@@ -33,6 +33,10 @@ MUTATION STRATEGIES:
 - radicalize: Push one parent's defining differentiator to its logical extreme.
 - axis-shift: Preserve thesis but move to a different conflict axis.
 - stance-pivot: Keep same conflict, shift dramatic stance (e.g. TRAGIC parent becomes COMIC offspring).
+- irony-injection: Take a parent with low ironic potential and restructure its thesis so that pursuing the value inherently threatens the value.
+- fear-transplant: Replace the parent's implicit protagonist fear with a fundamentally different fear and rebuild the thesis/antithesis around what that fear would protect.
+- moral-inversion: Flip the moral argument — make the parent's "should" into the offspring's "should not" and rebuild the dramatic tension from the inverted moral stance.
+- value-spectrum-deepening: Take a parent whose value spectrum is shallow and push the negation-of-negation to a more extreme, more specific manifestation, then rebuild the thesis to make that extreme reachable.
 
 QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
@@ -128,7 +132,14 @@ OUTPUT REQUIREMENTS:
       "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",
       "conflictAxis": "{{CONFLICT_AXIS_VALUE}}",
       "dramaticStance": "{{COMIC|ROMANTIC|TRAGIC|IRONIC}}",
-      "thematicQuestion": "{{question form thesis}}"
+      "thematicQuestion": "{{question form thesis}}",
+      "valueSpectrum": {
+        "positive": "{{value in its healthy form}}",
+        "contrary": "{{diluted, less intense version}}",
+        "contradictory": "{{direct negation of the positive value}}",
+        "negationOfNegation": "{{darkest perversion of the value}}"
+      },
+      "moralArgument": "{{A person should ___ even when ___}}"
     }
   ]
 }

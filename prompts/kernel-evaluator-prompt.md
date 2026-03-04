@@ -33,13 +33,17 @@ SCORING RUBRIC (0-5):
 - generativePotential: 0-1 locked to one story/genre; 2-3 supports a few variations; 4-5 can seed many distinct concepts across genres.
 - conflictTension: 0-1 weak opposition; 2-3 real but obvious resolution path; 4-5 irreconcilable value pressure with credible claims on both sides.
 - emotionalDepth: 0-1 abstract and detached; 2-3 emotionally present but surface-level; 4-5 visceral and deeply human.
+- ironicPotential: 0-1 thesis is straightforward with no built-in contradiction; 2-3 mild irony or subtext; 4-5 the thesis contains a deep structural irony where pursuing the value inherently threatens the value.
+- viscerality: 0-1 abstract philosophical exercise; 2-3 recognizable but intellectualized tension; 4-5 gut-punch immediacy — you can feel the dilemma in your body.
 
 DIMENSION WEIGHTS:
-- dramaticClarity: weight 20
-- thematicUniversality: weight 15
-- generativePotential: weight 25
-- conflictTension: weight 25
-- emotionalDepth: weight 15
+- dramaticClarity: weight 15
+- thematicUniversality: weight 10
+- generativePotential: weight 20
+- conflictTension: weight 20
+- emotionalDepth: weight 10
+- ironicPotential: weight 15
+- viscerality: weight 10
 
 SCORING RULES:
 - Score every candidate kernel.
@@ -105,14 +109,18 @@ OUTPUT REQUIREMENTS:
         "thematicUniversality": 0,
         "generativePotential": 0,
         "conflictTension": 0,
-        "emotionalDepth": 0
+        "emotionalDepth": 0,
+        "ironicPotential": 0,
+        "viscerality": 0
       },
       "scoreEvidence": {
         "dramaticClarity": ["{{evidence bullet}}"],
         "thematicUniversality": ["{{evidence bullet}}"],
         "generativePotential": ["{{evidence bullet}}"],
         "conflictTension": ["{{evidence bullet}}"],
-        "emotionalDepth": ["{{evidence bullet}}"]
+        "emotionalDepth": ["{{evidence bullet}}"],
+        "ironicPotential": ["{{evidence bullet}}"],
+        "viscerality": ["{{evidence bullet}}"]
       }
     }
   ]
@@ -139,13 +147,17 @@ SCORING RUBRIC (0-5):
 - generativePotential: 0-1 locked to one story/genre; 2-3 supports a few variations; 4-5 can seed many distinct concepts across genres.
 - conflictTension: 0-1 weak opposition; 2-3 real but obvious resolution path; 4-5 irreconcilable value pressure with credible claims on both sides.
 - emotionalDepth: 0-1 abstract and detached; 2-3 emotionally present but surface-level; 4-5 visceral and deeply human.
+- ironicPotential: 0-1 thesis is straightforward with no built-in contradiction; 2-3 mild irony or subtext; 4-5 the thesis contains a deep structural irony where pursuing the value inherently threatens the value.
+- viscerality: 0-1 abstract philosophical exercise; 2-3 recognizable but intellectualized tension; 4-5 gut-punch immediacy — you can feel the dilemma in your body.
 
 DIMENSION WEIGHTS:
-- dramaticClarity: weight 20
-- thematicUniversality: weight 15
-- generativePotential: weight 25
-- conflictTension: weight 25
-- emotionalDepth: weight 15
+- dramaticClarity: weight 15
+- thematicUniversality: weight 10
+- generativePotential: weight 20
+- conflictTension: weight 20
+- emotionalDepth: weight 10
+- ironicPotential: weight 15
+- viscerality: weight 10
 
 DEEP EVALUATION RULES:
 - Evaluate all provided kernels.

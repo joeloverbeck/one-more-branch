@@ -6,6 +6,8 @@
     { key: 'agencyBreadth', label: 'Agency' },
     { key: 'noveltyLeverage', label: 'Novelty' },
     { key: 'llmFeasibility', label: 'Feasibility' },
+    { key: 'ironicPremise', label: 'Irony' },
+    { key: 'sceneGenerativePower', label: 'Scenes' },
   ];
 
   var selectedConceptIndex = -1;
@@ -336,6 +338,18 @@
     }
     if (concept.deadlineMechanism) {
       html += '<div class="spine-field"><span class="spine-label">Deadline Mechanism:</span> ' + escapeHtml(concept.deadlineMechanism) + '</div>';
+    }
+    if (concept.protagonistLie) {
+      html += '<div class="spine-field"><span class="spine-label">Protagonist Lie:</span> ' + escapeHtml(concept.protagonistLie) + '</div>';
+    }
+    if (concept.protagonistTruth) {
+      html += '<div class="spine-field"><span class="spine-label">Protagonist Truth:</span> ' + escapeHtml(concept.protagonistTruth) + '</div>';
+    }
+    if (concept.protagonistGhost) {
+      html += '<div class="spine-field"><span class="spine-label">Protagonist Ghost:</span> ' + escapeHtml(concept.protagonistGhost) + '</div>';
+    }
+    if (concept.wantNeedCollisionSketch) {
+      html += '<div class="spine-field"><span class="spine-label">Want-Need Collision:</span> ' + escapeHtml(concept.wantNeedCollisionSketch) + '</div>';
     }
     if (concept.genreSubversion) {
       html += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(concept.genreSubversion) + '</div>';

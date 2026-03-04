@@ -16,6 +16,7 @@ import type { AccumulatedNpcRelationships } from '../models/state/npc-relationsh
 import type { DelayedConsequence } from '../models/state/delayed-consequence.js';
 import type { KnowledgeAsymmetry } from '../models/state/knowledge-state.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
+import type { StoryKernel } from '../models/story-kernel.js';
 import type { StorySpine } from '../models/story-spine.js';
 import type { ObjectiveEvidenceStrength, SceneMomentum } from './analyst-types.js';
 import type {
@@ -36,6 +37,7 @@ export interface OpeningContext {
   startingSituation?: string;
   structure?: StoryStructure;
   spine?: StorySpine;
+  storyKernel?: StoryKernel;
   initialNpcAgendas?: readonly NpcAgenda[];
   decomposedCharacters: readonly DecomposedCharacter[];
   decomposedWorld: DecomposedWorld;
@@ -56,6 +58,7 @@ export interface ContinuationContext {
   globalCharacterCanon: Readonly<Record<string, readonly string[]>>;
   structure?: StoryStructure;
   spine?: StorySpine;
+  storyKernel?: StoryKernel;
   accumulatedStructureState?: AccumulatedStructureState;
   previousNarrative: string;
   selectedChoice: string;

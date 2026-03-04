@@ -6,6 +6,8 @@
     { key: 'generativePotential', label: 'Potential' },
     { key: 'conflictTension', label: 'Tension' },
     { key: 'emotionalDepth', label: 'Depth' },
+    { key: 'ironicPotential', label: 'Irony' },
+    { key: 'viscerality', label: 'Visceral' },
   ];
 
   function formatKernelLabel(value) {
@@ -108,6 +110,14 @@
       '<div class="spine-field"><span class="spine-label">Conflict Axis:</span> ' + escapeHtml(conflictAxis) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Dramatic Stance:</span> ' + escapeHtml(dramaticStance) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Thematic Question:</span> <em>' + escapeHtml(kernel.thematicQuestion || '') + '</em></div>' +
+      (kernel.moralArgument ? '<div class="spine-field"><span class="spine-label">Moral Argument:</span> ' + escapeHtml(kernel.moralArgument) + '</div>' : '') +
+      (kernel.valueSpectrum ? (
+        '<div class="spine-field"><span class="spine-label">Value Spectrum (McKee):</span></div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Positive:</span> ' + escapeHtml(kernel.valueSpectrum.positive || '') + '</div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Contrary:</span> ' + escapeHtml(kernel.valueSpectrum.contrary || '') + '</div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Contradictory:</span> ' + escapeHtml(kernel.valueSpectrum.contradictory || '') + '</div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Negation of Negation:</span> ' + escapeHtml(kernel.valueSpectrum.negationOfNegation || '') + '</div>'
+      ) : '') +
       '<div class="concept-scores">' + renderKernelScoreGrid(evaluatedKernel && evaluatedKernel.scores) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(evaluatedKernel && evaluatedKernel.tradeoffSummary ? evaluatedKernel.tradeoffSummary : '') + '</div>' +
       '<div class="concept-feedback">' +

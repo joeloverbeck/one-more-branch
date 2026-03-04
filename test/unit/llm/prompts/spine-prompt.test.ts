@@ -101,6 +101,13 @@ describe('buildSpinePrompt', () => {
         conflictAxis: 'JUSTICE_VS_MERCY',
         dramaticStance: 'ROMANTIC',
         thematicQuestion: 'Can mercy coexist with accountability?',
+        moralArgument: 'Test moral argument',
+        valueSpectrum: {
+          positive: 'Love',
+          contrary: 'Indifference',
+          contradictory: 'Hate',
+          negationOfNegation: 'Self-destruction through love',
+        },
       },
     });
     const user = getUserMessage(messages);

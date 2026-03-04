@@ -294,6 +294,11 @@
         '<div class="form-group"><label>Value at Stake</label><input type="text" class="kernel-edit-valueAtStake" value="' + escapeHtml(kernel.valueAtStake || '') + '"></div>' +
         '<div class="form-group"><label>Opposing Force</label><textarea class="kernel-edit-opposingForce" rows="2">' + escapeHtml(kernel.opposingForce || '') + '</textarea></div>' +
         '<div class="form-group"><label>Thematic Question</label><input type="text" class="kernel-edit-thematicQuestion" value="' + escapeHtml(kernel.thematicQuestion || '') + '"></div>' +
+        '<div class="form-group"><label>Moral Argument</label><textarea class="kernel-edit-moralArgument" rows="2">' + escapeHtml(kernel.moralArgument || '') + '</textarea></div>' +
+        '<div class="form-group"><label>Value Spectrum — Positive</label><input type="text" class="kernel-edit-vsPositive" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.positive || '') + '"></div>' +
+        '<div class="form-group"><label>Value Spectrum — Contrary</label><input type="text" class="kernel-edit-vsContrary" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.contrary || '') + '"></div>' +
+        '<div class="form-group"><label>Value Spectrum — Contradictory</label><input type="text" class="kernel-edit-vsContradictory" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.contradictory || '') + '"></div>' +
+        '<div class="form-group"><label>Value Spectrum — Negation of Negation</label><input type="text" class="kernel-edit-vsNegation" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.negationOfNegation || '') + '"></div>' +
         '<div class="form-group"><label>Direction of Change</label>' +
           '<select class="kernel-edit-directionOfChange">' +
             '<option value="POSITIVE"' + (kernel.directionOfChange === 'POSITIVE' ? ' selected' : '') + '>POSITIVE</option>' +
@@ -348,6 +353,13 @@
           directionOfChange: getInputValue('.kernel-edit-directionOfChange'),
           conflictAxis: getInputValue('.kernel-edit-conflictAxis'),
           dramaticStance: getInputValue('.kernel-edit-dramaticStance'),
+          moralArgument: getInputValue('.kernel-edit-moralArgument'),
+          valueSpectrum: {
+            positive: getInputValue('.kernel-edit-vsPositive'),
+            contrary: getInputValue('.kernel-edit-vsContrary'),
+            contradictory: getInputValue('.kernel-edit-vsContradictory'),
+            negationOfNegation: getInputValue('.kernel-edit-vsNegation'),
+          },
         },
       };
     }

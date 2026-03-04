@@ -12,6 +12,10 @@ export const CONCEPT_ENGINE_SCHEMA = {
     'incitingDisruption',
     'escapeValve',
     'elevatorParagraph',
+    'protagonistLie',
+    'protagonistTruth',
+    'protagonistGhost',
+    'wantNeedCollisionSketch',
   ],
   properties: {
     pressureSource: { type: 'string' },
@@ -22,6 +26,10 @@ export const CONCEPT_ENGINE_SCHEMA = {
     incitingDisruption: { type: 'string' },
     escapeValve: { type: 'string' },
     elevatorParagraph: { type: 'string' },
+    protagonistLie: { type: 'string' },
+    protagonistTruth: { type: 'string' },
+    protagonistGhost: { type: 'string' },
+    wantNeedCollisionSketch: { type: 'string' },
   },
 } as const;
 

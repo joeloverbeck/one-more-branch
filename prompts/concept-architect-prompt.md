@@ -32,7 +32,16 @@ Design character and world for each of the N concept seeds below.
 
 CONCEPT SEEDS: {{JSON array of Stage 1 seeds}}
 
-{{optional STORY KERNEL}}
+{{optional STORY KERNEL block:
+- dramaticThesis, antithesis, valueAtStake, opposingForce
+- directionOfChange, conflictAxis, dramaticStance, thematicQuestion
+- moralArgument
+- valueSpectrum.positive, valueSpectrum.contrary, valueSpectrum.contradictory, valueSpectrum.negationOfNegation}}
+
+CHARACTER GROUNDING (Weiland):
+- The protagonist's coreFlaw should connect to a Lie they believe.
+- The protagonist's motivations should be driven by the Ghost (backstory wound).
+- The Lie/Truth/Ghost fields will be generated in the engineer stage; architect should design the character so these fields emerge naturally.
 
 OUTPUT REQUIREMENTS:
 - Return JSON: { "concepts": [ConceptCharacterWorld, ...] }
@@ -76,3 +85,5 @@ OUTPUT REQUIREMENTS:
 - Produces 9 fields per concept (character + world focused)
 - Receives seeds as structured JSON in user message
 - Array length must match input seed count
+- When kernel is present, includes valueSpectrum (4 levels) and moralArgument in STORY KERNEL block
+- CHARACTER GROUNDING (Weiland) guidance prepares character design for downstream Lie/Truth/Ghost generation in engineer stage

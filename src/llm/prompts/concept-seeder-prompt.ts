@@ -71,17 +71,23 @@ export function buildConceptSeederPrompt(context: ConceptSeederContext): ChatMes
     userSections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);
   }
   if (kernel) {
-    userSections.push(
-      `SELECTED STORY KERNEL:
-- dramaticThesis: ${kernel.dramaticThesis}
-- antithesis: ${kernel.antithesis}
-- valueAtStake: ${kernel.valueAtStake}
-- opposingForce: ${kernel.opposingForce}
-- directionOfChange: ${kernel.directionOfChange}
-- conflictAxis: ${kernel.conflictAxis}
-- dramaticStance: ${kernel.dramaticStance}
-- thematicQuestion: ${kernel.thematicQuestion}`,
-    );
+    const kernelLines = [
+      `SELECTED STORY KERNEL:`,
+      `- dramaticThesis: ${kernel.dramaticThesis}`,
+      `- antithesis: ${kernel.antithesis}`,
+      `- valueAtStake: ${kernel.valueAtStake}`,
+      `- opposingForce: ${kernel.opposingForce}`,
+      `- directionOfChange: ${kernel.directionOfChange}`,
+      `- conflictAxis: ${kernel.conflictAxis}`,
+      `- dramaticStance: ${kernel.dramaticStance}`,
+      `- thematicQuestion: ${kernel.thematicQuestion}`,
+      `- moralArgument: ${kernel.moralArgument}`,
+      `- valueSpectrum.positive: ${kernel.valueSpectrum.positive}`,
+      `- valueSpectrum.contrary: ${kernel.valueSpectrum.contrary}`,
+      `- valueSpectrum.contradictory: ${kernel.valueSpectrum.contradictory}`,
+      `- valueSpectrum.negationOfNegation: ${kernel.valueSpectrum.negationOfNegation}`,
+    ];
+    userSections.push(kernelLines.join('\n'));
   }
 
   userSections.push(

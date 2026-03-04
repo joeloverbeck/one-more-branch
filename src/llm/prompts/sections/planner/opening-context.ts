@@ -3,9 +3,29 @@ import {
 } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { createInitialStructureState } from '../../../../models/story-arc.js';
+import type { StoryKernel } from '../../../../models/story-kernel.js';
 import type { OpeningPagePlanContext } from '../../../context-types.js';
 import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
 import type { PlannerContextOptions } from './continuation-context.js';
+
+function buildOpeningValueSpectrumSection(storyKernel: StoryKernel | undefined): string {
+  if (!storyKernel?.valueSpectrum) {
+    return '';
+  }
+
+  const vs = storyKernel.valueSpectrum;
+  return `=== VALUE SPECTRUM (McKee) ===
+Moral argument: ${storyKernel.moralArgument}
+Value spectrum:
+- Positive: ${vs.positive}
+- Contrary: ${vs.contrary}
+- Contradictory: ${vs.contradictory}
+- Negation of negation: ${vs.negationOfNegation}
+
+The opening scene should establish the protagonist near the "positive" end of the spectrum, seeding the moral argument through action and situation — not exposition.
+
+`;
+}
 
 export function buildPlannerOpeningContextSection(
   context: OpeningPagePlanContext,
@@ -69,8 +89,10 @@ ${initialAgendas
     ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
     : '';
 
+  const valueSpectrumSection = buildOpeningValueSpectrumSection(context.storyKernel);
+
   return `=== PLANNER CONTEXT: OPENING ===
 ${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}
 
-${structureSection}${protagonistDirective}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
+${structureSection}${valueSpectrumSection}${protagonistDirective}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
 }

@@ -147,6 +147,14 @@ function parseSpineRewriteResponse(parsed: unknown): StorySpine {
     characterArcType: data['characterArcType'],
     toneFeel,
     toneAvoid,
+    wantNeedCollisionPoint:
+      typeof data['wantNeedCollisionPoint'] === 'string' && data['wantNeedCollisionPoint'].trim().length > 0
+        ? data['wantNeedCollisionPoint'].trim()
+        : '',
+    protagonistDeepestFear:
+      typeof data['protagonistDeepestFear'] === 'string' && data['protagonistDeepestFear'].trim().length > 0
+        ? data['protagonistDeepestFear'].trim()
+        : '',
   };
 }
 

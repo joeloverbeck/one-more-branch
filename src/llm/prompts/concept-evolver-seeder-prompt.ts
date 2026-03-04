@@ -12,7 +12,10 @@ const MUTATION_STRATEGIES = `MUTATION STRATEGIES:
 - escalate: preserve parent core but intensify the conflict axis or genre tension.
 - transplant: move a working conflict identity into a distinct genre frame.
 - hybridize: blend two parent identities to create a third play pattern, not a cosmetic mashup.
-- radicalize: push one parent differentiator to its logical extreme while preserving playability.`;
+- radicalize: push one parent differentiator to its logical extreme while preserving playability.
+- ghost-deepening: take a parent's implicit backstory wound and make it more specific, more painful, and more directly connected to the seed's conflict identity.
+- lie-escalation: take a parent's implicit false belief and escalate it so the belief is more deeply embedded, increasing the cost of transformation.
+- irony-sharpening: restructure a parent so the protagonist's greatest strength becomes the mechanism of their potential undoing.`;
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return exactly 6 concept seeds.
@@ -63,7 +66,12 @@ export function buildConceptEvolverSeederPrompt(
 - directionOfChange: ${context.kernel.directionOfChange}
 - conflictAxis: ${context.kernel.conflictAxis}
 - dramaticStance: ${context.kernel.dramaticStance}
-- thematicQuestion: ${context.kernel.thematicQuestion}`,
+- thematicQuestion: ${context.kernel.thematicQuestion}
+- moralArgument: ${context.kernel.moralArgument}
+- valueSpectrum.positive: ${context.kernel.valueSpectrum.positive}
+- valueSpectrum.contrary: ${context.kernel.valueSpectrum.contrary}
+- valueSpectrum.contradictory: ${context.kernel.valueSpectrum.contradictory}
+- valueSpectrum.negationOfNegation: ${context.kernel.valueSpectrum.negationOfNegation}`,
     `PARENT CONCEPTS INPUT:
 ${buildParentPayload(context.parentConcepts)}`,
     `OUTPUT REQUIREMENTS:

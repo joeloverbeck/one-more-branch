@@ -24,6 +24,8 @@ Protagonist Want: ${spine.protagonistNeedVsWant.want}
 Need–Want Dynamic: ${spine.protagonistNeedVsWant.dynamic}
 Antagonistic Force: ${spine.primaryAntagonisticForce.description}
 Pressure Mechanism: ${spine.primaryAntagonisticForce.pressureMechanism}
+Want–Need Collision Point: ${spine.wantNeedCollisionPoint}
+Protagonist Deepest Fear: ${spine.protagonistDeepestFear}
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 
 `;

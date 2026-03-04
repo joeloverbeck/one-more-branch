@@ -44,6 +44,8 @@ const mockSpine: StorySpine = {
   characterArcType: 'POSITIVE_CHANGE',
   toneFeel: ['grim', 'tense', 'political'],
   toneAvoid: ['whimsical', 'comedic'],
+  wantNeedCollisionPoint: 'Test collision point',
+  protagonistDeepestFear: 'Test deepest fear',
 };
 
 describe('storyRoutes', () => {

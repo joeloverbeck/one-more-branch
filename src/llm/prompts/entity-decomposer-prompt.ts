@@ -90,6 +90,12 @@ function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
     `Core flaw: ${conceptSpec.coreFlaw}`,
     `Action verbs: ${conceptSpec.actionVerbs.join(', ')}`,
     '',
+    'PROTAGONIST ARC (Weiland):',
+    `Protagonist Lie: ${conceptSpec.protagonistLie}`,
+    `Protagonist Truth: ${conceptSpec.protagonistTruth}`,
+    `Protagonist Ghost: ${conceptSpec.protagonistGhost}`,
+    `Want–Need Collision Sketch: ${conceptSpec.wantNeedCollisionSketch}`,
+    '',
     'CONFLICT ENGINE:',
     `Core conflict loop: ${conceptSpec.coreConflictLoop}`,
     `Thematic tension axis: ${conceptSpec.conflictAxis}`,
@@ -107,7 +113,7 @@ function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
     `Key institutions: ${conceptSpec.keyInstitutions.join('; ')}`,
     `Setting scale: ${conceptSpec.settingScale}`,
     '',
-    'CONSTRAINT: Use genre frame to calibrate character vocabulary and world fact tone. Use conflict engine to inform NPC motivations and relationships. Use inciting disruption to define protagonist\'s initial knowledge boundaries and emotional state. Use escape valve to embed alternative engagement hooks in NPCs and world facts. Use protagonist fields to shape speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms, constraints, and scale.',
+    'CONSTRAINT: Use genre frame to calibrate character vocabulary and world fact tone. Use conflict engine to inform NPC motivations and relationships. Use inciting disruption to define protagonist\'s initial knowledge boundaries and emotional state. Use escape valve to embed alternative engagement hooks in NPCs and world facts. Use protagonist fields to shape speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms, constraints, and scale. Use protagonistGhost to inform the protagonist\'s deepest speech patterns and defensive behaviors. Use protagonistLie to shape the protagonist\'s core false beliefs and decision biases.',
   ];
 
   return '\n\n' + lines.join('\n');
@@ -127,8 +133,15 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
     `Conflict axis: ${storyKernel.conflictAxis}`,
     `Dramatic stance: ${storyKernel.dramaticStance}`,
     `Thematic question: ${storyKernel.thematicQuestion}`,
+    `Moral argument: ${storyKernel.moralArgument}`,
     '',
-    'CONSTRAINT: Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question.',
+    'VALUE SPECTRUM (McKee):',
+    `Positive: ${storyKernel.valueSpectrum.positive}`,
+    `Contrary: ${storyKernel.valueSpectrum.contrary}`,
+    `Contradictory: ${storyKernel.valueSpectrum.contradictory}`,
+    `Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}`,
+    '',
+    'CONSTRAINT: Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question. Use the value spectrum to calibrate NPC moral positions — different NPCs should embody different points on the spectrum.',
   ];
 
   return '\n\n' + lines.join('\n');

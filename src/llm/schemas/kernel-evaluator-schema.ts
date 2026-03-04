@@ -10,6 +10,8 @@ const KERNEL_SCORE_SCHEMA = {
     'generativePotential',
     'conflictTension',
     'emotionalDepth',
+    'ironicPotential',
+    'viscerality',
   ],
   properties: {
     dramaticClarity: { type: 'number' },
@@ -17,6 +19,8 @@ const KERNEL_SCORE_SCHEMA = {
     generativePotential: { type: 'number' },
     conflictTension: { type: 'number' },
     emotionalDepth: { type: 'number' },
+    ironicPotential: { type: 'number' },
+    viscerality: { type: 'number' },
   },
 } as const;
 
@@ -29,6 +33,8 @@ const KERNEL_SCORE_EVIDENCE_SCHEMA = {
     'generativePotential',
     'conflictTension',
     'emotionalDepth',
+    'ironicPotential',
+    'viscerality',
   ],
   properties: {
     dramaticClarity: { type: 'array', items: { type: 'string' }, minItems: 1 },
@@ -36,6 +42,8 @@ const KERNEL_SCORE_EVIDENCE_SCHEMA = {
     generativePotential: { type: 'array', items: { type: 'string' }, minItems: 1 },
     conflictTension: { type: 'array', items: { type: 'string' }, minItems: 1 },
     emotionalDepth: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    ironicPotential: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    viscerality: { type: 'array', items: { type: 'string' }, minItems: 1 },
   },
 } as const;
 

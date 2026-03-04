@@ -22,12 +22,29 @@ You are a dramatic theorist who distills stories to their irreducible dramatic p
 CONTENT GUIDELINES:
 {{CONTENT_POLICY}}
 
+VALUE SPECTRUM GUIDANCE (McKee):
+Every kernel implies a value charge that can exist at four levels of intensity:
+- positive: The value in its healthy, functional form.
+- contrary: A less intense, diluted version — NOT the opposite.
+- contradictory: The direct negation of the positive value.
+- negationOfNegation: The most extreme, darkest perversion of the value.
+
+For each kernel, define all four levels. This spectrum becomes the story's emotional playing field — scenes move the protagonist between these levels.
+Example for "Justice": positive = fair trial → contrary = bureaucratic delay → contradictory = wrongful conviction → negationOfNegation = the justice system is itself the instrument of oppression.
+
+MORAL ARGUMENT GUIDANCE:
+Every kernel implies a moral argument — the story's thesis about how to live.
+Express it as a single sentence: "A person should ___ even when ___."
+The first blank is the value-positive behavior; the second is the hardest condition under which that behavior is tested.
+
 QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
 - antithesis must be the strongest credible counter-argument to dramaticThesis.
 - valueAtStake must name a fundamental human value, not a task or objective.
 - opposingForce must be an abstract force that can operate across settings.
 - thematicQuestion must be a meaningful question that can be answered in multiple ways.
+- valueSpectrum must define all four levels (positive, contrary, contradictory, negationOfNegation) as concrete manifestations, not abstract labels.
+- moralArgument must follow the "A person should ___ even when ___" form.
 - Keep kernels abstract and transferable across genres.
 
 DIVERSITY CONSTRAINTS:
@@ -106,7 +123,7 @@ No seeds were provided. Derive kernels from universal human themes and conflicts
 
 OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
-- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, conflictAxis, dramaticStance, thematicQuestion.
+- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, conflictAxis, dramaticStance, thematicQuestion, valueSpectrum (object with positive/contrary/contradictory/negationOfNegation), moralArgument.
 - Keep every field concise and semantically distinct across the set.
 ```
 
@@ -123,7 +140,14 @@ OUTPUT REQUIREMENTS:
       "directionOfChange": "{{POSITIVE|NEGATIVE|IRONIC|AMBIGUOUS}}",
       "conflictAxis": "{{CONFLICT_AXIS_VALUE}}",
       "dramaticStance": "{{COMIC|ROMANTIC|TRAGIC|IRONIC}}",
-      "thematicQuestion": "{{question form thesis}}"
+      "thematicQuestion": "{{question form thesis}}",
+      "valueSpectrum": {
+        "positive": "{{value in its healthy form}}",
+        "contrary": "{{diluted, less intense version}}",
+        "contradictory": "{{direct negation of the positive value}}",
+        "negationOfNegation": "{{darkest perversion of the value}}"
+      },
+      "moralArgument": "{{A person should ___ even when ___}}"
     }
   ]
 }
@@ -132,17 +156,18 @@ OUTPUT REQUIREMENTS:
 Schema constraints in `src/llm/schemas/kernel-ideator-schema.ts`:
 - `kernels` length: 6-8
 - Strict object schemas (`additionalProperties: false`)
-- All kernel fields required
+- All kernel fields required (including `valueSpectrum` object and `moralArgument`)
 - `directionOfChange` enum-constrained
 - `conflictAxis` enum-constrained (10 values)
 - `dramaticStance` enum-constrained (4 values)
+- `valueSpectrum` strict object with 4 required string fields
 
 ## Runtime Validation
 
 `parseKernelIdeationResponse(...)` in `src/llm/kernel-ideator.ts` enforces:
 - object payload with `kernels` array
 - 6-8 kernel count
-- each entry passes `isStoryKernel(...)` (includes `conflictAxis` and `dramaticStance` validation)
+- each entry passes `isStoryKernel(...)` (includes `conflictAxis`, `dramaticStance`, `valueSpectrum`, and `moralArgument` validation)
 - at least 5 distinct `conflictAxis` values across the set
 - at least 3 distinct `dramaticStance` values across the set
 - malformed payloads throw retryable `LLMError` with `STRUCTURE_PARSE_ERROR`

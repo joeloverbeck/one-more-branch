@@ -675,6 +675,10 @@
       setValueById('deadlineMechanism', conceptSpec.deadlineMechanism || '');
       setValueById('incitingDisruption', conceptSpec.incitingDisruption || '');
       setValueById('escapeValve', conceptSpec.escapeValve || '');
+      setValueById('protagonistLie', conceptSpec.protagonistLie || '');
+      setValueById('protagonistTruth', conceptSpec.protagonistTruth || '');
+      setValueById('protagonistGhost', conceptSpec.protagonistGhost || '');
+      setValueById('wantNeedCollisionSketch', conceptSpec.wantNeedCollisionSketch || '');
 
       // World
       populateDynamicList('settingAxioms', conceptSpec.settingAxioms);
@@ -718,6 +722,10 @@
       var whatIfQuestion = getValueById('whatIfQuestion');
       var ironicTwist = getValueById('ironicTwist');
       var playerFantasy = getValueById('playerFantasy');
+      var protagonistLie = getValueById('protagonistLie');
+      var protagonistTruth = getValueById('protagonistTruth');
+      var protagonistGhost = getValueById('protagonistGhost');
+      var wantNeedCollisionSketch = getValueById('wantNeedCollisionSketch');
 
       // Only build a conceptSpec if we have enough meaningful fields
       if (!oneLineHook || !coreConflictLoop || !conflictAxis) {
@@ -749,6 +757,10 @@
         whatIfQuestion: whatIfQuestion,
         ironicTwist: ironicTwist,
         playerFantasy: playerFantasy,
+        protagonistLie: protagonistLie,
+        protagonistTruth: protagonistTruth,
+        protagonistGhost: protagonistGhost,
+        wantNeedCollisionSketch: wantNeedCollisionSketch,
       };
 
       return spec;
@@ -860,6 +872,24 @@
       if (opposingEl) opposingEl.textContent = kernel.opposingForce || '';
       if (directionEl) directionEl.textContent = String(kernel.directionOfChange || '').replace(/_/g, ' ');
       if (questionEl) questionEl.textContent = kernel.thematicQuestion || '';
+
+      var moralEl = document.getElementById('kernel-disp-moral');
+      if (moralEl) moralEl.textContent = kernel.moralArgument || '';
+
+      var vsSection = document.getElementById('kernel-disp-vs-section');
+      if (kernel.valueSpectrum && vsSection) {
+        var vsPosEl = document.getElementById('kernel-disp-vs-positive');
+        var vsConEl = document.getElementById('kernel-disp-vs-contrary');
+        var vsCdEl = document.getElementById('kernel-disp-vs-contradictory');
+        var vsNegEl = document.getElementById('kernel-disp-vs-negation');
+        if (vsPosEl) vsPosEl.textContent = kernel.valueSpectrum.positive || '';
+        if (vsConEl) vsConEl.textContent = kernel.valueSpectrum.contrary || '';
+        if (vsCdEl) vsCdEl.textContent = kernel.valueSpectrum.contradictory || '';
+        if (vsNegEl) vsNegEl.textContent = kernel.valueSpectrum.negationOfNegation || '';
+        vsSection.style.display = 'block';
+      } else if (vsSection) {
+        vsSection.style.display = 'none';
+      }
 
       kernelDisplayPanel.style.display = 'block';
     }

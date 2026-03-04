@@ -42,6 +42,8 @@ function createScoredConceptPayload(index: number): {
     agencyBreadth: number;
     noveltyLeverage: number;
     llmFeasibility: number;
+    ironicPremise: number;
+    sceneGenerativePower: number;
   };
   scoreEvidence: {
     hookStrength: readonly string[];
@@ -49,6 +51,8 @@ function createScoredConceptPayload(index: number): {
     agencyBreadth: readonly string[];
     noveltyLeverage: readonly string[];
     llmFeasibility: readonly string[];
+    ironicPremise: readonly string[];
+    sceneGenerativePower: readonly string[];
   };
 } {
   return {
@@ -59,6 +63,8 @@ function createScoredConceptPayload(index: number): {
       agencyBreadth: 3,
       noveltyLeverage: 3,
       llmFeasibility: 5,
+      ironicPremise: 3,
+      sceneGenerativePower: 3,
     },
     scoreEvidence: {
       hookStrength: [`Hook evidence ${index}`],
@@ -66,6 +72,8 @@ function createScoredConceptPayload(index: number): {
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
       llmFeasibility: [`Feasibility evidence ${index}`],
+      ironicPremise: ['Irony evidence'],
+      sceneGenerativePower: ['Scene evidence'],
     },
   };
 }

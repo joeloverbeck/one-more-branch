@@ -235,6 +235,8 @@ export function serializeStory(story: Story): StoryFileData {
             characterArcType: story.spine.characterArcType,
             toneFeel: [...story.spine.toneFeel],
             toneAvoid: [...story.spine.toneAvoid],
+            wantNeedCollisionPoint: story.spine.wantNeedCollisionPoint,
+            protagonistDeepestFear: story.spine.protagonistDeepestFear,
           },
         }
       : {}),
@@ -372,6 +374,8 @@ export function deserializeStory(data: StoryFileData): Story {
             characterArcType: data.spine.characterArcType as CharacterArcType,
             toneFeel: data.spine.toneFeel ?? [],
             toneAvoid: data.spine.toneAvoid ?? [],
+            wantNeedCollisionPoint: data.spine.wantNeedCollisionPoint ?? '',
+            protagonistDeepestFear: data.spine.protagonistDeepestFear ?? '',
           } as StorySpine,
         }
       : {}),

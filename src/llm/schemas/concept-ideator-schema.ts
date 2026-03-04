@@ -40,6 +40,10 @@ export function buildConceptSpecSchema(
       'playerFantasy',
       'incitingDisruption',
       'escapeValve',
+      'protagonistLie',
+      'protagonistTruth',
+      'protagonistGhost',
+      'wantNeedCollisionSketch',
     ],
     properties: {
       oneLineHook: { type: 'string' },
@@ -66,6 +70,10 @@ export function buildConceptSpecSchema(
       playerFantasy: { type: 'string' },
       incitingDisruption: { type: 'string' },
       escapeValve: { type: 'string' },
+      protagonistLie: { type: 'string' },
+      protagonistTruth: { type: 'string' },
+      protagonistGhost: { type: 'string' },
+      wantNeedCollisionSketch: { type: 'string' },
     },
   };
 }
@@ -122,6 +130,10 @@ export const CONCEPT_SPEC_SCHEMA = {
     'playerFantasy',
     'incitingDisruption',
     'escapeValve',
+    'protagonistLie',
+    'protagonistTruth',
+    'protagonistGhost',
+    'wantNeedCollisionSketch',
   ],
   properties: {
     oneLineHook: { type: 'string' },
@@ -148,6 +160,10 @@ export const CONCEPT_SPEC_SCHEMA = {
     playerFantasy: { type: 'string' },
     incitingDisruption: { type: 'string' },
     escapeValve: { type: 'string' },
+    protagonistLie: { type: 'string' },
+    protagonistTruth: { type: 'string' },
+    protagonistGhost: { type: 'string' },
+    wantNeedCollisionSketch: { type: 'string' },
   },
 } as const;
 

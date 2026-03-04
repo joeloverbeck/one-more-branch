@@ -19,7 +19,16 @@ function buildKernelBlock(kernel: ConceptArchitectContext['kernel']): string | n
 - directionOfChange: ${kernel.directionOfChange}
 - conflictAxis: ${kernel.conflictAxis}
 - dramaticStance: ${kernel.dramaticStance}
-- thematicQuestion: ${kernel.thematicQuestion}`;
+- thematicQuestion: ${kernel.thematicQuestion}
+- valueSpectrum.positive: ${kernel.valueSpectrum.positive}
+- valueSpectrum.contrary: ${kernel.valueSpectrum.contrary}
+- valueSpectrum.contradictory: ${kernel.valueSpectrum.contradictory}
+- valueSpectrum.negationOfNegation: ${kernel.valueSpectrum.negationOfNegation}
+
+CHARACTER GROUNDING (Weiland):
+- The protagonist's coreFlaw should connect to a Lie they believe.
+- The protagonist's motivations should be driven by the Ghost (backstory wound).
+- The Lie/Truth/Ghost fields will be generated in the engineer stage; architect should design the character so these fields emerge naturally.`;
 }
 
 function serializeSeeds(seeds: readonly ConceptSeedFields[]): string {

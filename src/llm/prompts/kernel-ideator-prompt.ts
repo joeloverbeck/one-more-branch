@@ -11,12 +11,25 @@ import {
 const ROLE_INTRO =
   'You are a dramatic theorist who distills stories to their irreducible dramatic proposition. You generate story kernels, not concepts or plot outlines.';
 
+const VALUE_SPECTRUM_GUIDANCE = `VALUE SPECTRUM (McKee's value charge):
+Each kernel must include a valueSpectrum with four levels of the value at stake:
+- positive: The value fully realized (e.g., "True justice served").
+- contrary: A lesser, compromised version of the value (e.g., "Procedural fairness without moral weight").
+- contradictory: The direct negation of the value (e.g., "Injustice — the guilty go free").
+- negationOfNegation: The worst possible state — the value weaponized against itself (e.g., "The justice system itself becomes the instrument of oppression").
+The four levels must form a coherent degradation ladder. Each level must be one concise sentence.`;
+
+const MORAL_ARGUMENT_GUIDANCE = `MORAL ARGUMENT:
+Each kernel must include a moralArgument — one sentence stating the story's implicit moral claim about the value at stake. Not a lesson or moral tag, but the dramatic conclusion the story argues toward through its events. Example: "Power corrupts not through malice but through the erosion of the boundaries one swore to uphold."`;
+
 const QUALITY_ANCHORS = `QUALITY ANCHORS:
 - dramaticThesis must be a causal dramatic claim, not a topic label.
 - antithesis must be the strongest credible counter-argument to dramaticThesis.
 - valueAtStake must name a fundamental human value, not a task or objective.
 - opposingForce must be an abstract force that can operate across settings.
 - thematicQuestion must be a meaningful question that can be answered in multiple ways.
+- valueSpectrum must degrade coherently from positive through negationOfNegation.
+- moralArgument must be a dramatic conclusion, not a platitude.
 - Keep kernels abstract and transferable across genres.`;
 
 const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
@@ -58,6 +71,8 @@ export function buildKernelIdeatorPrompt(context: KernelIdeatorContext): ChatMes
   const systemMessage = [
     ROLE_INTRO,
     CONTENT_POLICY,
+    VALUE_SPECTRUM_GUIDANCE,
+    MORAL_ARGUMENT_GUIDANCE,
     QUALITY_ANCHORS,
     DIVERSITY_CONSTRAINTS,
     DIRECTION_GUIDANCE,
@@ -90,7 +105,7 @@ dramaticStance IRONIC describes philosophical worldview (subversive/deconstructi
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "kernels": [StoryKernel, ...] }.
-- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, conflictAxis, dramaticStance, thematicQuestion.
+- Each kernel must contain dramaticThesis, antithesis, valueAtStake, opposingForce, directionOfChange, conflictAxis, dramaticStance, thematicQuestion, valueSpectrum (object with positive, contrary, contradictory, negationOfNegation), moralArgument.
 - Keep every field concise and semantically distinct across the set.`
   );
 

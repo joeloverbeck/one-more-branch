@@ -175,6 +175,10 @@
             <% if (cc.playerFantasy) { %><p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em><%= cc.playerFantasy %></em></p><% } %>
             <% if (cc.incitingDisruption) { %><div class="spine-field"><span class="spine-label">Inciting Disruption:</span> <%= cc.incitingDisruption %></div><% } %>
             <% if (cc.escapeValve) { %><div class="spine-field"><span class="spine-label">Escape Valve:</span> <%= cc.escapeValve %></div><% } %>
+            <% if (cc.protagonistLie) { %><div class="spine-field"><span class="spine-label">Protagonist Lie:</span> <%= cc.protagonistLie %></div><% } %>
+            <% if (cc.protagonistTruth) { %><div class="spine-field"><span class="spine-label">Protagonist Truth:</span> <%= cc.protagonistTruth %></div><% } %>
+            <% if (cc.protagonistGhost) { %><div class="spine-field"><span class="spine-label">Protagonist Ghost:</span> <%= cc.protagonistGhost %></div><% } %>
+            <% if (cc.wantNeedCollisionSketch) { %><div class="spine-field"><span class="spine-label">Want/Need Collision:</span> <%= cc.wantNeedCollisionSketch %></div><% } %>
             <% if (Array.isArray(cc.actionVerbs) && cc.actionVerbs.length > 0) { %><div class="spine-field"><span class="spine-label">Action Verbs:</span> <%= cc.actionVerbs.join(', ') %></div><% } %>
             <% if (Array.isArray(cc.settingAxioms) && cc.settingAxioms.length > 0) { %><div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul><% cc.settingAxioms.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
             <% if (Array.isArray(cc.constraintSet) && cc.constraintSet.length > 0) { %><div class="spine-field"><span class="spine-label">Constraints:</span><ul><% cc.constraintSet.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
@@ -187,6 +191,8 @@
                 { key: 'agencyBreadth', label: 'Agency' },
                 { key: 'noveltyLeverage', label: 'Novelty' },
                 { key: 'llmFeasibility', label: 'Feasibility' },
+                { key: 'ironicPremise', label: 'Irony' },
+                { key: 'sceneGenerativePower', label: 'Scenes' },
               ];
               function getScoreColor(s) { if (s <= 2) return 'low'; if (s <= 3) return 'mid'; return 'high'; }
             %>
@@ -373,6 +379,22 @@
         <div class="form-group">
           <label for="edit-playerFantasy">Player Fantasy</label>
           <input type="text" id="edit-playerFantasy">
+        </div>
+        <div class="form-group">
+          <label for="edit-protagonistLie">Protagonist Lie</label>
+          <textarea id="edit-protagonistLie" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-protagonistTruth">Protagonist Truth</label>
+          <textarea id="edit-protagonistTruth" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-protagonistGhost">Protagonist Ghost</label>
+          <textarea id="edit-protagonistGhost" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-wantNeedCollisionSketch">Want/Need Collision Sketch</label>
+          <textarea id="edit-wantNeedCollisionSketch" rows="2"></textarea>
         </div>
         <div class="form-group">
           <label for="edit-genreSubversion">Genre Subversion</label>

@@ -91,6 +91,13 @@ function createSavedKernel(kernelId = 'kernel-1'): SavedKernel {
         dramaticStance: 'ROMANTIC',
         thematicQuestion: 'Can control coexist with intimacy?',
         antithesis: 'Counter-argument challenges the thesis.',
+        moralArgument: 'Test moral argument',
+        valueSpectrum: {
+          positive: 'Love',
+          contrary: 'Indifference',
+          contradictory: 'Hate',
+          negationOfNegation: 'Self-destruction through love',
+        },
       },
       scores: {
         dramaticClarity: 4,
@@ -98,6 +105,8 @@ function createSavedKernel(kernelId = 'kernel-1'): SavedKernel {
         generativePotential: 4,
         conflictTension: 4,
         emotionalDepth: 4,
+        ironicPotential: 3,
+        viscerality: 3,
       },
       overallScore: 82,
       passes: true,

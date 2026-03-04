@@ -18,6 +18,13 @@ function createKernel(index: number): StoryKernel {
     dramaticStance: 'TRAGIC',
     thematicQuestion: `Question ${index}?`,
     antithesis: 'Counter-argument challenges the thesis.',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 
@@ -28,6 +35,8 @@ function createScores(): KernelDimensionScores {
     generativePotential: 4,
     conflictTension: 4,
     emotionalDepth: 3,
+    ironicPotential: 3,
+    viscerality: 3,
   };
 }
 
@@ -41,6 +50,8 @@ function createScoredKernel(kernel: StoryKernel): ScoredKernel {
       generativePotential: ['Supports multiple concepts'],
       conflictTension: ['Real opposition'],
       emotionalDepth: ['Emotional stakes'],
+      ironicPotential: ['Ironic potential evidence'],
+      viscerality: ['Viscerality evidence'],
     },
     overallScore: 78,
     passes: true,

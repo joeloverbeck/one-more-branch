@@ -14,6 +14,8 @@ export const KERNEL_SCHEMA = {
     'conflictAxis',
     'dramaticStance',
     'thematicQuestion',
+    'valueSpectrum',
+    'moralArgument',
   ],
   properties: {
     dramaticThesis: { type: 'string' },
@@ -24,6 +26,18 @@ export const KERNEL_SCHEMA = {
     conflictAxis: { type: 'string', enum: [...CONFLICT_AXES] },
     dramaticStance: { type: 'string', enum: [...DRAMATIC_STANCE_VALUES] },
     thematicQuestion: { type: 'string' },
+    valueSpectrum: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['positive', 'contrary', 'contradictory', 'negationOfNegation'],
+      properties: {
+        positive: { type: 'string' },
+        contrary: { type: 'string' },
+        contradictory: { type: 'string' },
+        negationOfNegation: { type: 'string' },
+      },
+    },
+    moralArgument: { type: 'string' },
   },
 } as const;
 

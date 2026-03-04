@@ -154,10 +154,22 @@
       }
       tone.innerHTML = toneHtml;
 
+      var extraFields = document.createElement('div');
+      extraFields.className = 'spine-extra-fields';
+      var extraHtml = '';
+      if (option.wantNeedCollisionPoint) {
+        extraHtml += '<div class="spine-field"><span class="spine-label">Want/Need Collision:</span> ' + escapeHtml(option.wantNeedCollisionPoint) + '</div>';
+      }
+      if (option.protagonistDeepestFear) {
+        extraHtml += '<div class="spine-field"><span class="spine-label">Deepest Fear:</span> ' + escapeHtml(option.protagonistDeepestFear) + '</div>';
+      }
+      extraFields.innerHTML = extraHtml;
+
       card.appendChild(badges);
       card.appendChild(cdq);
       card.appendChild(needWant);
       card.appendChild(antag);
+      if (extraHtml) card.appendChild(extraFields);
       card.appendChild(tone);
 
       card.addEventListener('click', function () {

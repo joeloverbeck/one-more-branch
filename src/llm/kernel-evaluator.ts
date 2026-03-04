@@ -78,6 +78,8 @@ function parseScores(value: unknown, index: number): KernelDimensionScores {
     generativePotential: parseClampedScore(data['generativePotential'], 'generativePotential', label),
     conflictTension: parseClampedScore(data['conflictTension'], 'conflictTension', label),
     emotionalDepth: parseClampedScore(data['emotionalDepth'], 'emotionalDepth', label),
+    ironicPotential: parseClampedScore(data['ironicPotential'], 'ironicPotential', label),
+    viscerality: parseClampedScore(data['viscerality'], 'viscerality', label),
   };
 }
 
@@ -112,6 +114,16 @@ function parseScoreEvidence(value: unknown, index: number): KernelScoreEvidence 
     emotionalDepth: requireNonEmptyStringArray(
       data['emotionalDepth'],
       'emotionalDepth',
+      `${label} scoreEvidence`,
+    ),
+    ironicPotential: requireNonEmptyStringArray(
+      data['ironicPotential'],
+      'ironicPotential',
+      `${label} scoreEvidence`,
+    ),
+    viscerality: requireNonEmptyStringArray(
+      data['viscerality'],
+      'viscerality',
       `${label} scoreEvidence`,
     ),
   };

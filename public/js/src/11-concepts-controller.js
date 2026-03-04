@@ -569,6 +569,10 @@
       if (c.playerFantasy) cardHtml += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(c.playerFantasy) + '</em></p>';
       if (c.incitingDisruption) cardHtml += '<div class="spine-field"><span class="spine-label">Inciting Disruption:</span> ' + escapeHtml(c.incitingDisruption) + '</div>';
       if (c.escapeValve) cardHtml += '<div class="spine-field"><span class="spine-label">Escape Valve:</span> ' + escapeHtml(c.escapeValve) + '</div>';
+      if (c.protagonistLie) cardHtml += '<div class="spine-field"><span class="spine-label">Protagonist Lie:</span> ' + escapeHtml(c.protagonistLie) + '</div>';
+      if (c.protagonistTruth) cardHtml += '<div class="spine-field"><span class="spine-label">Protagonist Truth:</span> ' + escapeHtml(c.protagonistTruth) + '</div>';
+      if (c.protagonistGhost) cardHtml += '<div class="spine-field"><span class="spine-label">Protagonist Ghost:</span> ' + escapeHtml(c.protagonistGhost) + '</div>';
+      if (c.wantNeedCollisionSketch) cardHtml += '<div class="spine-field"><span class="spine-label">Want/Need Collision:</span> ' + escapeHtml(c.wantNeedCollisionSketch) + '</div>';
       if (Array.isArray(c.actionVerbs) && c.actionVerbs.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Action Verbs:</span> ' + escapeHtml(c.actionVerbs.join(', ')) + '</div>';
       if (Array.isArray(c.settingAxioms) && c.settingAxioms.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(c.settingAxioms) + '</ul></div>';
       if (Array.isArray(c.constraintSet) && c.constraintSet.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(c.constraintSet) + '</ul></div>';
@@ -806,6 +810,10 @@
         setEditValue('incitingDisruption', c.incitingDisruption);
         setEditValue('escapeValve', c.escapeValve);
         setEditValue('conflictType', c.conflictType);
+        setEditValue('protagonistLie', c.protagonistLie);
+        setEditValue('protagonistTruth', c.protagonistTruth);
+        setEditValue('protagonistGhost', c.protagonistGhost);
+        setEditValue('wantNeedCollisionSketch', c.wantNeedCollisionSketch);
         setEditValue('whatIfQuestion', c.whatIfQuestion);
         setEditValue('ironicTwist', c.ironicTwist);
         setEditValue('playerFantasy', c.playerFantasy);
@@ -837,6 +845,10 @@
         stakesPersonal: getEditValue('stakesPersonal'),
         stakesSystemic: getEditValue('stakesSystemic'),
         deadlineMechanism: getEditValue('deadlineMechanism'),
+        protagonistLie: getEditValue('protagonistLie'),
+        protagonistTruth: getEditValue('protagonistTruth'),
+        protagonistGhost: getEditValue('protagonistGhost'),
+        wantNeedCollisionSketch: getEditValue('wantNeedCollisionSketch'),
         incitingDisruption: getEditValue('incitingDisruption'),
         escapeValve: getEditValue('escapeValve'),
         genreSubversion: getEditValue('genreSubversion'),

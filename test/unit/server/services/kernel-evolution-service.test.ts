@@ -15,6 +15,13 @@ function createKernel(index = 1): StoryKernel {
     dramaticStance: 'ROMANTIC',
     thematicQuestion: `Question ${index}?`,
     antithesis: 'Counter-argument challenges the thesis.',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 
@@ -27,6 +34,8 @@ function createEvaluatedKernel(index = 1): EvaluatedKernel {
       generativePotential: 4,
       conflictTension: 5,
       emotionalDepth: 3,
+      ironicPotential: 3,
+      viscerality: 3,
     },
     overallScore: 78,
     passes: true,
@@ -58,6 +67,8 @@ describe('kernel-evolution-service', () => {
             generativePotential: 4,
             conflictTension: 5,
             emotionalDepth: 3,
+            ironicPotential: 3,
+            viscerality: 3,
           },
           scoreEvidence: {
             dramaticClarity: ['evidence'],
@@ -65,6 +76,8 @@ describe('kernel-evolution-service', () => {
             generativePotential: ['evidence'],
             conflictTension: ['evidence'],
             emotionalDepth: ['evidence'],
+            ironicPotential: ['Ironic potential evidence'],
+            viscerality: ['Viscerality evidence'],
           },
           overallScore: 78,
           passes: true,

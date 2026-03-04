@@ -5,6 +5,7 @@ import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-wo
 import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
 import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../../../models/story-arc.js';
+import type { StoryKernel } from '../../../../models/story-kernel.js';
 import { formatCanonForPrompt } from '../../../../engine/canon-manager.js';
 import type { ContinuationPagePlanContext } from '../../../context-types.js';
 import type {
@@ -553,6 +554,25 @@ function findPreviousBeatResolution(
   return null;
 }
 
+function buildValueSpectrumGuidanceSection(storyKernel: StoryKernel | undefined): string {
+  if (!storyKernel?.valueSpectrum) {
+    return '';
+  }
+
+  const vs = storyKernel.valueSpectrum;
+  return `=== VALUE SPECTRUM TRACKING (McKee) ===
+The story's moral argument: ${storyKernel.moralArgument}
+Value spectrum for this story:
+- Positive: ${vs.positive}
+- Contrary: ${vs.contrary}
+- Contradictory: ${vs.contradictory}
+- Negation of negation: ${vs.negationOfNegation}
+
+Plan this scene so the protagonist's situation moves along the value spectrum. Each scene should test the moral argument through action and consequence — not exposition. The dramatic question and choice intents should force the protagonist to confront different points on the spectrum.
+
+`;
+}
+
 export interface PlannerContextOptions {
   readonly includeProtagonistDirective?: boolean;
 }
@@ -688,7 +708,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
   return `=== PLANNER CONTEXT: CONTINUATION ===
 ${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
 
-${structureSection}${pacingSection}${thematicTrajectorySection}${narrativeFocusWarningSection}${escalationDirective}${premisePromiseWarningSection}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${thematicTrajectorySection}${narrativeFocusWarningSection}${escalationDirective}${premisePromiseWarningSection}${buildValueSpectrumGuidanceSection(context.storyKernel)}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):

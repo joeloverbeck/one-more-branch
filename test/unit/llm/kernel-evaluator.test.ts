@@ -49,6 +49,13 @@ function createKernel(index: number): StoryKernel {
     dramaticStance: EVALUATOR_STANCES[(index - 1) % EVALUATOR_STANCES.length],
     thematicQuestion: `Question ${index}?`,
     antithesis: 'Counter-argument challenges the thesis.',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 
@@ -60,6 +67,8 @@ function createScoredKernelPayload(index: number): {
     generativePotential: number;
     conflictTension: number;
     emotionalDepth: number;
+    ironicPotential: number;
+    viscerality: number;
   };
   scoreEvidence: {
     dramaticClarity: readonly string[];
@@ -67,6 +76,8 @@ function createScoredKernelPayload(index: number): {
     generativePotential: readonly string[];
     conflictTension: readonly string[];
     emotionalDepth: readonly string[];
+    ironicPotential: readonly string[];
+    viscerality: readonly string[];
   };
 } {
   return {
@@ -77,6 +88,8 @@ function createScoredKernelPayload(index: number): {
       generativePotential: 4,
       conflictTension: 4,
       emotionalDepth: 3,
+      ironicPotential: 3,
+      viscerality: 3,
     },
     scoreEvidence: {
       dramaticClarity: [`Clarity evidence ${index}`],
@@ -84,6 +97,8 @@ function createScoredKernelPayload(index: number): {
       generativePotential: [`Potential evidence ${index}`],
       conflictTension: [`Tension evidence ${index}`],
       emotionalDepth: [`Depth evidence ${index}`],
+      ironicPotential: ['Ironic potential evidence'],
+      viscerality: ['Viscerality evidence'],
     },
   };
 }

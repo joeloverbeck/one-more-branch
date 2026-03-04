@@ -73,17 +73,23 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
     userSections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);
   }
   if (kernel) {
-    userSections.push(
-      `SELECTED STORY KERNEL:
-- dramaticThesis: ${kernel.dramaticThesis}
-- antithesis: ${kernel.antithesis}
-- valueAtStake: ${kernel.valueAtStake}
-- opposingForce: ${kernel.opposingForce}
-- directionOfChange: ${kernel.directionOfChange}
-- conflictAxis: ${kernel.conflictAxis}
-- dramaticStance: ${kernel.dramaticStance}
-- thematicQuestion: ${kernel.thematicQuestion}`,
-    );
+    const kernelLines = [
+      `SELECTED STORY KERNEL:`,
+      `- dramaticThesis: ${kernel.dramaticThesis}`,
+      `- antithesis: ${kernel.antithesis}`,
+      `- valueAtStake: ${kernel.valueAtStake}`,
+      `- opposingForce: ${kernel.opposingForce}`,
+      `- directionOfChange: ${kernel.directionOfChange}`,
+      `- conflictAxis: ${kernel.conflictAxis}`,
+      `- dramaticStance: ${kernel.dramaticStance}`,
+      `- thematicQuestion: ${kernel.thematicQuestion}`,
+      `- moralArgument: ${kernel.moralArgument}`,
+      `- valueSpectrum.positive: ${kernel.valueSpectrum.positive}`,
+      `- valueSpectrum.contrary: ${kernel.valueSpectrum.contrary}`,
+      `- valueSpectrum.contradictory: ${kernel.valueSpectrum.contradictory}`,
+      `- valueSpectrum.negationOfNegation: ${kernel.valueSpectrum.negationOfNegation}`,
+    ];
+    userSections.push(kernelLines.join('\n'));
   }
 
   userSections.push(
@@ -94,7 +100,11 @@ export function buildConceptIdeatorPrompt(context: ConceptIdeatorContext): ChatM
 - conflictType must be structurally coherent with conflictAxis (e.g., INDIVIDUAL_VS_SYSTEM pairs naturally with PERSON_VS_SOCIETY).
 - settingAxioms must contain 2-5 enforceable rules.
 - constraintSet must contain 2-5 meaningful limits.
-- keyInstitutions must contain 2-4 pressure-producing institutions.`
+- keyInstitutions must contain 2-4 pressure-producing institutions.
+- protagonistLie: The false belief the protagonist clings to at story start (Weiland). One sentence.
+- protagonistTruth: The truth the protagonist must learn to complete their arc. One sentence.
+- protagonistGhost: The backstory wound that created the Lie. One sentence.
+- wantNeedCollisionSketch: A brief sketch of the moment where pursuing the want blocks the need. One sentence.`
   );
 
   return [
