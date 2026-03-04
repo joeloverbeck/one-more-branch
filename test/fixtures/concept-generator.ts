@@ -37,6 +37,10 @@ export function createConceptSpecFixture(index = 1): ConceptSpec {
     playerFantasy: `Player fantasy ${index}.`,
     incitingDisruption: `Inciting disruption ${index}.`,
     escapeValve: `Escape valve ${index}.`,
+    protagonistLie: `Protagonist lie ${index}`,
+    protagonistTruth: `Protagonist truth ${index}`,
+    protagonistGhost: `Protagonist ghost ${index}`,
+    wantNeedCollisionSketch: `Want/need collision ${index}`,
   };
 }
 
@@ -47,6 +51,8 @@ export function createConceptScoresFixture(): ConceptDimensionScores {
     agencyBreadth: 3,
     noveltyLeverage: 3,
     llmFeasibility: 4,
+    ironicPremise: 3,
+    sceneGenerativePower: 4,
   };
 }
 
@@ -72,6 +78,8 @@ export function createScoredConceptFixture(index = 1): ScoredConcept {
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
       llmFeasibility: [`Feasibility evidence ${index}`],
+      ironicPremise: [`Irony evidence ${index}`],
+      sceneGenerativePower: [`Scene generative evidence ${index}`],
     },
     overallScore: 80,
     passes: true,
@@ -144,6 +152,10 @@ export function createConceptEngineFixture(index = 1): ConceptEngineFields {
     incitingDisruption: `Inciting disruption ${index}.`,
     escapeValve: `Escape valve ${index}.`,
     elevatorParagraph: `Elevator paragraph ${index}`,
+    protagonistLie: `Protagonist lie ${index}`,
+    protagonistTruth: `Protagonist truth ${index}`,
+    protagonistGhost: `Protagonist ghost ${index}`,
+    wantNeedCollisionSketch: `Want/need collision ${index}`,
   };
 }
 

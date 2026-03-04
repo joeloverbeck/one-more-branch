@@ -35,6 +35,8 @@ SCORING RUBRIC (0-5):
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
 - llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
+- ironicPremise: 0-1 premise is straightforward with no built-in contradiction; 2-3 mild irony or subtext present; 4-5 the premise contains a deep structural irony where the protagonist's strength is also their undoing, or the world's rules create inherently paradoxical choices.
+- sceneGenerativePower: 0-1 premise evokes only abstract tensions; 2-3 a few specific scenes come to mind; 4-5 reading the premise immediately triggers 5+ vivid, distinct scenes you can see playing out.
 
 DIMENSION WEIGHTS:
 - hookStrength: weight {{CONCEPT_SCORING_WEIGHTS.hookStrength}}
@@ -42,6 +44,8 @@ DIMENSION WEIGHTS:
 - agencyBreadth: weight {{CONCEPT_SCORING_WEIGHTS.agencyBreadth}}
 - noveltyLeverage: weight {{CONCEPT_SCORING_WEIGHTS.noveltyLeverage}}
 - llmFeasibility: weight {{CONCEPT_SCORING_WEIGHTS.llmFeasibility}}
+- ironicPremise: weight {{CONCEPT_SCORING_WEIGHTS.ironicPremise}}
+- sceneGenerativePower: weight {{CONCEPT_SCORING_WEIGHTS.sceneGenerativePower}}
 
 SCORING RULES:
 - Score every candidate concept.
@@ -95,14 +99,18 @@ OUTPUT REQUIREMENTS:
         "conflictEngine": 0,
         "agencyBreadth": 0,
         "noveltyLeverage": 0,
-        "llmFeasibility": 0
+        "llmFeasibility": 0,
+        "ironicPremise": 0,
+        "sceneGenerativePower": 0
       },
       "scoreEvidence": {
         "hookStrength": ["..."],
         "conflictEngine": ["..."],
         "agencyBreadth": ["..."],
         "noveltyLeverage": ["..."],
-        "llmFeasibility": ["..."]
+        "llmFeasibility": ["..."],
+        "ironicPremise": ["..."],
+        "sceneGenerativePower": ["..."]
       }
     }
   ]
@@ -131,6 +139,8 @@ SCORING RUBRIC (0-5):
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
 - llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
+- ironicPremise: 0-1 premise is straightforward with no built-in contradiction; 2-3 mild irony or subtext present; 4-5 the premise contains a deep structural irony where the protagonist's strength is also their undoing, or the world's rules create inherently paradoxical choices.
+- sceneGenerativePower: 0-1 premise evokes only abstract tensions; 2-3 a few specific scenes come to mind; 4-5 reading the premise immediately triggers 5+ vivid, distinct scenes you can see playing out.
 
 DIMENSION WEIGHTS:
 - hookStrength: weight {{CONCEPT_SCORING_WEIGHTS.hookStrength}}
@@ -138,6 +148,8 @@ DIMENSION WEIGHTS:
 - agencyBreadth: weight {{CONCEPT_SCORING_WEIGHTS.agencyBreadth}}
 - noveltyLeverage: weight {{CONCEPT_SCORING_WEIGHTS.noveltyLeverage}}
 - llmFeasibility: weight {{CONCEPT_SCORING_WEIGHTS.llmFeasibility}}
+- ironicPremise: weight {{CONCEPT_SCORING_WEIGHTS.ironicPremise}}
+- sceneGenerativePower: weight {{CONCEPT_SCORING_WEIGHTS.sceneGenerativePower}}
 
 DEEP EVALUATION RULES:
 - Evaluate all provided scored concepts.

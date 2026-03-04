@@ -115,6 +115,16 @@ Constraints: {{conceptSpec.constraintSet joined by '; '}}
 Key institutions: {{conceptSpec.keyInstitutions joined by '; '}}
 Setting scale: {{conceptSpec.settingScale}}
 
+PROTAGONIST ARC GROUNDING (Weiland):
+Lie the protagonist believes: {{conceptSpec.protagonistLie}}
+Truth the protagonist must learn: {{conceptSpec.protagonistTruth}}
+Ghost (backstory wound): {{conceptSpec.protagonistGhost}}
+Want-Need collision sketch: {{conceptSpec.wantNeedCollisionSketch}}
+
+CONSTRAINT: The protagonist's NEED must address the Lie. The WANT must be driven by the Lie.
+The antagonistic force must exploit or reinforce the Lie.
+The want-need collision sketch describes the moment the want and need become incompatible — your wantNeedCollisionPoint must operationalize it.
+
 CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept's conflict loop and stakes; don't contradict them.
 {{/if}}
 
@@ -139,8 +149,17 @@ Opposing force: {{storyKernel.opposingForce}}
 Direction of change: {{storyKernel.directionOfChange}}
 Thematic question: {{storyKernel.thematicQuestion}}
 
+Moral argument: {{storyKernel.moralArgument}}
+
+VALUE SPECTRUM (McKee):
+Positive: {{storyKernel.valueSpectrum.positive}}
+Contrary: {{storyKernel.valueSpectrum.contrary}}
+Contradictory: {{storyKernel.valueSpectrum.contradictory}}
+Negation of negation: {{storyKernel.valueSpectrum.negationOfNegation}}
+
 CONSTRAINT: The spine's central dramatic question should operationalize this kernel.
 The kernel defines the thematic "why" — the spine defines the structural "how".
+The antagonistic force should push the protagonist's value charge toward the contradictory or negation-of-negation level.
 {{/if}}
 
 TONE/GENRE: {{tone}}
@@ -178,6 +197,8 @@ FIELD INSTRUCTIONS:
 - toneAvoid: 3-5 tonal anti-patterns the story must never drift toward. These define the negative space -- what the story must NOT become.
   Example for "grim political fantasy": ["whimsical", "slapstick", "heartwarming", "campy"]
   Example for "comedic heist": ["grimdark", "portentous", "plodding", "nihilistic"]
+- wantNeedCollisionPoint: The specific moment or condition where pursuing the want actively blocks the need. One sentence. This should be concrete and story-specific, not abstract.
+- protagonistDeepestFear: The fear that drives the protagonist to cling to their want instead of facing their need. One sentence. This fear is the emotional engine of the story — it explains WHY the protagonist resists transformation.
 
 OUTPUT SHAPE:
 - options: array of exactly 3 spine objects, each containing all fields above
@@ -204,7 +225,9 @@ OUTPUT SHAPE:
       "conflictType": "{{PERSON_VS_PERSON|PERSON_VS_SELF|PERSON_VS_SOCIETY|PERSON_VS_NATURE|PERSON_VS_TECHNOLOGY|PERSON_VS_SUPERNATURAL|PERSON_VS_FATE}}",
       "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}",
       "toneFeel": ["{{atmospheric adjective 1}}", "{{atmospheric adjective 2}}", "{{atmospheric adjective 3}}"],
-      "toneAvoid": ["{{tonal anti-pattern 1}}", "{{tonal anti-pattern 2}}", "{{tonal anti-pattern 3}}"]
+      "toneAvoid": ["{{tonal anti-pattern 1}}", "{{tonal anti-pattern 2}}", "{{tonal anti-pattern 3}}"],
+      "wantNeedCollisionPoint": "{{specific moment where pursuing want blocks need}}",
+      "protagonistDeepestFear": "{{fear driving protagonist to cling to want}}"
     }
   ]
 }

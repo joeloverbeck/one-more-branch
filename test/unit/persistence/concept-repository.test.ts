@@ -34,6 +34,8 @@ function createSavedConcept(id: string): SavedConcept {
         agencyBreadth: 4,
         noveltyLeverage: 3,
         llmFeasibility: 4,
+        ironicPremise: 3,
+        sceneGenerativePower: 3,
       },
       overallScore: 82,
       passes: true,

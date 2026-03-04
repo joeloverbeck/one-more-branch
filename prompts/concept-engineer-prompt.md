@@ -30,13 +30,24 @@ Engineer conflict forces and write elevator paragraphs for each of the N concept
 
 CONCEPT IDENTITY + CHARACTER + WORLD: {{JSON array of merged Stage 1 + Stage 2 fields}}
 
-{{optional STORY KERNEL}}
+{{optional STORY KERNEL block:
+- dramaticThesis, antithesis, valueAtStake, opposingForce
+- directionOfChange, conflictAxis, dramaticStance, thematicQuestion
+- moralArgument
+- valueSpectrum.positive, valueSpectrum.contrary, valueSpectrum.contradictory, valueSpectrum.negationOfNegation}}
+
+WEILAND ARC ENGINEERING:
+- protagonistGhost should be the backstory wound that makes the pressureSource personally devastating.
+- protagonistLie should be the false belief that the deadlineMechanism exploits.
+- protagonistTruth should be the realization that, if embraced, would dissolve the Lie and resolve the moral argument.
+- wantNeedCollisionSketch should describe the moment where the protagonist's conscious goal (want) directly prevents their inner transformation (need).
 
 OUTPUT REQUIREMENTS:
 - Return JSON: { "concepts": [ConceptEngine, ...] }
 - Exactly N items, one per concept in order
 - elevatorParagraph must synthesize the full concept
 - All fields must be non-empty and concept-specific
+- protagonistLie, protagonistTruth, protagonistGhost, wantNeedCollisionSketch must all be non-empty strings
 ```
 
 ## JSON Response Shape
@@ -52,7 +63,11 @@ OUTPUT REQUIREMENTS:
       "ironicTwist": "string",
       "incitingDisruption": "string",
       "escapeValve": "string",
-      "elevatorParagraph": "string"
+      "elevatorParagraph": "string",
+      "protagonistLie": "string",
+      "protagonistTruth": "string",
+      "protagonistGhost": "string",
+      "wantNeedCollisionSketch": "string"
     }
   ]
 }
@@ -69,7 +84,9 @@ OUTPUT REQUIREMENTS:
 ## Notes
 
 - Shared between ideation and evolution flows
-- Produces 8 fields per concept (conflict engine + pitch focused)
+- Produces 12 fields per concept (conflict engine + pitch + Weiland arc focused)
 - Receives full seed + character/world context as merged JSON
 - elevatorParagraph benefits from having complete concept context
 - No taxonomy enums to choose (no enum guidance needed)
+- When kernel is present, includes moralArgument and valueSpectrum (4 levels) in STORY KERNEL block
+- WEILAND ARC ENGINEERING guidance connects Ghost→pressureSource, Lie→deadlineMechanism, Truth→moralArgument resolution

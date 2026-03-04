@@ -14,7 +14,9 @@ const RUBRIC = `SCORING RUBRIC (0-5):
 - thematicUniversality: 0-1 niche concern; 2-3 broad but partial resonance; 4-5 fundamental cross-cultural human resonance.
 - generativePotential: 0-1 locked to one story/genre; 2-3 supports a few variations; 4-5 can seed many distinct concepts across genres.
 - conflictTension: 0-1 weak opposition; 2-3 real but obvious resolution path; 4-5 irreconcilable value pressure with credible claims on both sides.
-- emotionalDepth: 0-1 abstract and detached; 2-3 emotionally present but surface-level; 4-5 visceral and deeply human.`;
+- emotionalDepth: 0-1 abstract and detached; 2-3 emotionally present but surface-level; 4-5 visceral and deeply human.
+- ironicPotential: 0-1 thesis is straightforward with no built-in contradiction; 2-3 mild irony or subtext; 4-5 the thesis contains a deep structural irony where pursuing the value inherently threatens the value.
+- viscerality: 0-1 abstract philosophical exercise; 2-3 recognizable but intellectualized tension; 4-5 gut-punch immediacy — you can feel the dilemma in your body.`;
 
 function formatWeights(): string {
   return `DIMENSION WEIGHTS:
@@ -22,7 +24,9 @@ function formatWeights(): string {
 - thematicUniversality: weight ${KERNEL_SCORING_WEIGHTS.thematicUniversality}
 - generativePotential: weight ${KERNEL_SCORING_WEIGHTS.generativePotential}
 - conflictTension: weight ${KERNEL_SCORING_WEIGHTS.conflictTension}
-- emotionalDepth: weight ${KERNEL_SCORING_WEIGHTS.emotionalDepth}`;
+- emotionalDepth: weight ${KERNEL_SCORING_WEIGHTS.emotionalDepth}
+- ironicPotential: weight ${KERNEL_SCORING_WEIGHTS.ironicPotential}
+- viscerality: weight ${KERNEL_SCORING_WEIGHTS.viscerality}`;
 }
 
 function normalize(value: string | undefined): string | undefined {

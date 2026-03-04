@@ -69,6 +69,8 @@ export interface SpineFileData {
   characterArcType: string;
   toneFeel?: string[];
   toneAvoid?: string[];
+  wantNeedCollisionPoint?: string;
+  protagonistDeepestFear?: string;
 }
 
 export interface StoryStructureFileData {

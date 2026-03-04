@@ -59,7 +59,9 @@ function isKernelDimensionScores(value: unknown): boolean {
     isScore(value['thematicUniversality']) &&
     isScore(value['generativePotential']) &&
     isScore(value['conflictTension']) &&
-    isScore(value['emotionalDepth'])
+    isScore(value['emotionalDepth']) &&
+    isScore(value['ironicPotential']) &&
+    isScore(value['viscerality'])
   );
 }
 

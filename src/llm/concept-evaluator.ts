@@ -84,6 +84,8 @@ function parseScores(value: unknown, index: number): ConceptDimensionScores {
     agencyBreadth: parseClampedScore(data['agencyBreadth'], 'agencyBreadth', label),
     noveltyLeverage: parseClampedScore(data['noveltyLeverage'], 'noveltyLeverage', label),
     llmFeasibility: parseClampedScore(data['llmFeasibility'], 'llmFeasibility', label),
+    ironicPremise: parseClampedScore(data['ironicPremise'], 'ironicPremise', label),
+    sceneGenerativePower: parseClampedScore(data['sceneGenerativePower'], 'sceneGenerativePower', label),
   };
 }
 
@@ -114,6 +116,16 @@ function parseScoreEvidence(value: unknown, index: number): ConceptScoreEvidence
     llmFeasibility: requireNonEmptyStringArray(
       data['llmFeasibility'],
       'llmFeasibility',
+      `${label} scoreEvidence`,
+    ),
+    ironicPremise: requireNonEmptyStringArray(
+      data['ironicPremise'],
+      'ironicPremise',
+      `${label} scoreEvidence`,
+    ),
+    sceneGenerativePower: requireNonEmptyStringArray(
+      data['sceneGenerativePower'],
+      'sceneGenerativePower',
       `${label} scoreEvidence`,
     ),
   };

@@ -23,7 +23,18 @@ function buildKernelBlock(kernel: ConceptEngineerContext['kernel']): string | nu
 - directionOfChange: ${kernel.directionOfChange}
 - conflictAxis: ${kernel.conflictAxis}
 - dramaticStance: ${kernel.dramaticStance}
-- thematicQuestion: ${kernel.thematicQuestion}`;
+- thematicQuestion: ${kernel.thematicQuestion}
+- moralArgument: ${kernel.moralArgument}
+- valueSpectrum.positive: ${kernel.valueSpectrum.positive}
+- valueSpectrum.contrary: ${kernel.valueSpectrum.contrary}
+- valueSpectrum.contradictory: ${kernel.valueSpectrum.contradictory}
+- valueSpectrum.negationOfNegation: ${kernel.valueSpectrum.negationOfNegation}
+
+WEILAND ARC ENGINEERING:
+- protagonistGhost should be the backstory wound that makes the pressureSource personally devastating.
+- protagonistLie should be the false belief that the deadlineMechanism exploits.
+- protagonistTruth should be the realization that, if embraced, would dissolve the Lie and resolve the moral argument.
+- wantNeedCollisionSketch should describe the moment where the protagonist's conscious goal (want) directly prevents their inner transformation (need).`;
 }
 
 function serializeCombinedContext(
@@ -55,7 +66,8 @@ export function buildConceptEngineerPrompt(context: ConceptEngineerContext): Cha
 - Return JSON matching schema shape: { "concepts": [ConceptEngine, ...] }.
 - concepts array must contain exactly ${context.seeds.length} items, one per concept in order.
 - elevatorParagraph must synthesize the full concept — hook, character, world, and conflict engine — into a compelling pitch.
-- pressureSource, stakesPersonal, stakesSystemic, deadlineMechanism, ironicTwist, incitingDisruption, and escapeValve must all be non-empty and specific to the concept.`,
+- pressureSource, stakesPersonal, stakesSystemic, deadlineMechanism, ironicTwist, incitingDisruption, and escapeValve must all be non-empty and specific to the concept.
+- protagonistLie, protagonistTruth, protagonistGhost, and wantNeedCollisionSketch must all be non-empty, specific, and consistent with the concept's conflict engine.`,
   );
 
   return [

@@ -39,7 +39,7 @@ Generate 6-8 concept seeds that satisfy the taxonomy and diversity constraints.
 {{optional GENRE VIBES}}
 {{optional MOOD KEYWORDS}}
 {{optional CONTENT PREFERENCES}}
-{{optional SELECTED STORY KERNEL}}
+{{optional SELECTED STORY KERNEL including moralArgument, valueSpectrum (positive/contrary/contradictory/negationOfNegation)}}
 
 OUTPUT REQUIREMENTS:
 - Return JSON: { "concepts": [ConceptSeed, ...] }
@@ -78,3 +78,4 @@ OUTPUT REQUIREMENTS:
 - Produces 7 fields per concept (identity-focused)
 - Diversity constraints enforced: unique genre+axis pairs, min 3 distinct genres, min 3 distinct axes
 - Downstream stages (Architect, Engineer) expand these seeds into full ConceptSpec objects
+- When kernel is present, includes moralArgument and valueSpectrum (4 levels) in SELECTED STORY KERNEL block

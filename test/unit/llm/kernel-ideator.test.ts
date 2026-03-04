@@ -46,6 +46,13 @@ function createValidKernel(index: number): StoryKernel {
     conflictAxis: CONFLICT_AXES[(index - 1) % CONFLICT_AXES.length],
     dramaticStance: DRAMATIC_STANCES[(index - 1) % DRAMATIC_STANCES.length],
     thematicQuestion: `Question ${index}?`,
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 

@@ -30,6 +30,8 @@ function createScores(): ConceptDimensionScores {
     agencyBreadth: 3,
     noveltyLeverage: 3,
     llmFeasibility: 4,
+    ironicPremise: 3,
+    sceneGenerativePower: 3,
   };
 }
 
@@ -55,6 +57,13 @@ function createStoryKernel(): StoryKernel {
     dramaticStance: 'TRAGIC',
     thematicQuestion: 'Can safety exist without control?',
     antithesis: 'Counter-argument challenges the thesis.',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 
@@ -68,6 +77,8 @@ function createScoredConcept(index = 1): ScoredConcept {
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
       llmFeasibility: [`Feasibility evidence ${index}`],
+      ironicPremise: [`Irony evidence ${index}`],
+      sceneGenerativePower: [`Scene evidence ${index}`],
     },
     overallScore: 80,
     passes: true,

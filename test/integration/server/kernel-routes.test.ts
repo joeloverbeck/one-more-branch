@@ -73,6 +73,13 @@ function createEvaluatedKernel(index = 1): EvaluatedKernel {
       dramaticStance: 'TRAGIC' as const,
       thematicQuestion: `Question ${index}?`,
       antithesis: 'Counter-argument challenges the thesis.',
+      moralArgument: 'Test moral argument',
+      valueSpectrum: {
+        positive: 'Love',
+        contrary: 'Indifference',
+        contradictory: 'Hate',
+        negationOfNegation: 'Self-destruction through love',
+      },
     },
     scores: {
       dramaticClarity: 4,
@@ -80,6 +87,8 @@ function createEvaluatedKernel(index = 1): EvaluatedKernel {
       generativePotential: 4,
       conflictTension: 5,
       emotionalDepth: 3,
+      ironicPotential: 3,
+      viscerality: 3,
     },
     overallScore: 78,
     passes: true,

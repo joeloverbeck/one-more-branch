@@ -173,6 +173,10 @@ describe('buildStructurePrompt', () => {
         playerFantasy: 'Outsmarting corrupt institutions',
         incitingDisruption: 'A protected witness is murdered publicly',
         escapeValve: 'A smuggler route beneath the court archive',
+        protagonistLie: 'Test protagonist lie',
+        protagonistTruth: 'Test protagonist truth',
+        protagonistGhost: 'Test protagonist ghost',
+        wantNeedCollisionSketch: 'Test want/need collision',
       },
     });
     const lastUser = getUserMessages(messages).at(-1) ?? '';
@@ -346,6 +350,13 @@ describe('buildDirectionalGuidanceSection', () => {
     conflictAxis: 'POWER_VS_MORALITY',
     dramaticStance: 'TRAGIC',
     thematicQuestion: 'Can integrity survive ambition?',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   });
 
   it('returns generic guidance when no kernel is provided', () => {
@@ -418,6 +429,13 @@ describe('buildStructurePrompt - directional guidance integration', () => {
     conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
     dramaticStance: 'IRONIC',
     thematicQuestion: 'Can integrity survive ambition?',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 
   it('uses generic guidance when no kernel is provided', () => {

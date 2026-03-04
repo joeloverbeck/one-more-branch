@@ -71,7 +71,16 @@ function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
     `Key institutions: ${keyInstitutions}`,
     `Setting scale: ${conceptSpec.settingScale}`,
     '',
+    'PROTAGONIST ARC GROUNDING:',
+    `Protagonist's lie (false belief): ${conceptSpec.protagonistLie}`,
+    `Protagonist's truth (lesson to learn): ${conceptSpec.protagonistTruth}`,
+    `Protagonist's ghost (backstory wound): ${conceptSpec.protagonistGhost}`,
+    `Want/need collision sketch: ${conceptSpec.wantNeedCollisionSketch}`,
+    '',
     'CONSTRAINT: Your spine must be CONSISTENT with this concept analysis. The concept defines the "what" — your spine defines the "how". Build on the concept\'s conflict loop and stakes; don\'t contradict them.',
+    'The protagonistNeedVsWant must align with the lie/truth arc — the "want" should be driven by the lie, the "need" by the truth.',
+    'The wantNeedCollisionPoint must operationalize the collision sketch — the specific moment where the want blocks the need.',
+    'The protagonistDeepestFear should connect to the ghost — the wound that makes letting go of the lie terrifying.',
   ];
 
   return lines.join('\n') + '\n\n';
@@ -92,9 +101,17 @@ function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
     `Conflict axis: ${storyKernel.conflictAxis}`,
     `Dramatic stance: ${storyKernel.dramaticStance}`,
     `Thematic question: ${storyKernel.thematicQuestion}`,
+    `Moral argument: ${storyKernel.moralArgument}`,
+    '',
+    'VALUE SPECTRUM (McKee value charge ladder):',
+    `Positive: ${storyKernel.valueSpectrum.positive}`,
+    `Contrary: ${storyKernel.valueSpectrum.contrary}`,
+    `Contradictory: ${storyKernel.valueSpectrum.contradictory}`,
+    `Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}`,
     '',
     'CONSTRAINT: The spine\'s central dramatic question should operationalize this kernel.',
     'The kernel defines the thematic "why" — the spine defines the structural "how".',
+    'The antagonistic force\'s pressure mechanism should push the value toward the contradictory or negation-of-negation levels.',
   ];
 
   return lines.join('\n') + '\n\n';
@@ -196,6 +213,8 @@ FIELD INSTRUCTIONS:
 - toneAvoid: 3-5 tonal anti-patterns the story must never drift toward. These define the negative space -- what the story must NOT become.
   Example for "grim political fantasy": ["whimsical", "slapstick", "heartwarming", "campy"]
   Example for "comedic heist": ["grimdark", "portentous", "plodding", "nihilistic"]
+- wantNeedCollisionPoint: The specific moment or condition where pursuing the want actively blocks the need. One sentence. Example: "When she finally earns the tribunal's trust, she realizes the information she needs can only come from betraying it."
+- protagonistDeepestFear: The fear that drives the protagonist to cling to their want instead of facing their need. One sentence. Example: "She fears that without the tribunal's validation, her father's execution was meaningless."
 
 OUTPUT SHAPE:
 - options: array of exactly 3 spine objects, each containing all fields above`;

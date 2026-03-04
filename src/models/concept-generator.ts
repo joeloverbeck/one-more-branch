@@ -114,6 +114,10 @@ export interface ConceptSpec {
   readonly playerFantasy: string;
   readonly incitingDisruption: string;
   readonly escapeValve: string;
+  readonly protagonistLie: string;
+  readonly protagonistTruth: string;
+  readonly protagonistGhost: string;
+  readonly wantNeedCollisionSketch: string;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -171,7 +175,11 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isNonEmptyString(concept['ironicTwist']) &&
     isNonEmptyString(concept['playerFantasy']) &&
     isNonEmptyString(concept['incitingDisruption']) &&
-    isNonEmptyString(concept['escapeValve'])
+    isNonEmptyString(concept['escapeValve']) &&
+    isNonEmptyString(concept['protagonistLie']) &&
+    isNonEmptyString(concept['protagonistTruth']) &&
+    isNonEmptyString(concept['protagonistGhost']) &&
+    isNonEmptyString(concept['wantNeedCollisionSketch'])
   );
 }
 
@@ -181,6 +189,8 @@ export interface ConceptDimensionScores {
   readonly agencyBreadth: number;
   readonly noveltyLeverage: number;
   readonly llmFeasibility: number;
+  readonly ironicPremise: number;
+  readonly sceneGenerativePower: number;
 }
 
 export interface ConceptScoreEvidence {
@@ -189,6 +199,8 @@ export interface ConceptScoreEvidence {
   readonly agencyBreadth: readonly string[];
   readonly noveltyLeverage: readonly string[];
   readonly llmFeasibility: readonly string[];
+  readonly ironicPremise: readonly string[];
+  readonly sceneGenerativePower: readonly string[];
 }
 
 export interface ScoredConcept {
@@ -268,6 +280,10 @@ export type ConceptEngineFields = Pick<
   | 'incitingDisruption'
   | 'escapeValve'
   | 'elevatorParagraph'
+  | 'protagonistLie'
+  | 'protagonistTruth'
+  | 'protagonistGhost'
+  | 'wantNeedCollisionSketch'
 >;
 
 export interface ConceptSeederContext {
@@ -416,11 +432,13 @@ export interface ConceptVerificationResult {
 }
 
 export const CONCEPT_SCORING_WEIGHTS = {
-  hookStrength: 15,
-  conflictEngine: 25,
-  agencyBreadth: 20,
-  noveltyLeverage: 12,
-  llmFeasibility: 28,
+  hookStrength: 10,
+  conflictEngine: 20,
+  agencyBreadth: 15,
+  noveltyLeverage: 10,
+  llmFeasibility: 20,
+  ironicPremise: 15,
+  sceneGenerativePower: 10,
 } as const;
 
 export const CONCEPT_PASS_THRESHOLDS = {
@@ -429,6 +447,8 @@ export const CONCEPT_PASS_THRESHOLDS = {
   agencyBreadth: 3,
   noveltyLeverage: 2,
   llmFeasibility: 3,
+  ironicPremise: 3,
+  sceneGenerativePower: 3,
 } as const;
 
 export function computeOverallScore(scores: ConceptDimensionScores): number {
@@ -437,7 +457,9 @@ export function computeOverallScore(scores: ConceptDimensionScores): number {
     (scores.conflictEngine * CONCEPT_SCORING_WEIGHTS.conflictEngine) / 5 +
     (scores.agencyBreadth * CONCEPT_SCORING_WEIGHTS.agencyBreadth) / 5 +
     (scores.noveltyLeverage * CONCEPT_SCORING_WEIGHTS.noveltyLeverage) / 5 +
-    (scores.llmFeasibility * CONCEPT_SCORING_WEIGHTS.llmFeasibility) / 5
+    (scores.llmFeasibility * CONCEPT_SCORING_WEIGHTS.llmFeasibility) / 5 +
+    (scores.ironicPremise * CONCEPT_SCORING_WEIGHTS.ironicPremise) / 5 +
+    (scores.sceneGenerativePower * CONCEPT_SCORING_WEIGHTS.sceneGenerativePower) / 5
   );
 }
 
@@ -447,6 +469,8 @@ export function passesConceptThresholds(scores: ConceptDimensionScores): boolean
     scores.conflictEngine >= CONCEPT_PASS_THRESHOLDS.conflictEngine &&
     scores.agencyBreadth >= CONCEPT_PASS_THRESHOLDS.agencyBreadth &&
     scores.noveltyLeverage >= CONCEPT_PASS_THRESHOLDS.noveltyLeverage &&
-    scores.llmFeasibility >= CONCEPT_PASS_THRESHOLDS.llmFeasibility
+    scores.llmFeasibility >= CONCEPT_PASS_THRESHOLDS.llmFeasibility &&
+    scores.ironicPremise >= CONCEPT_PASS_THRESHOLDS.ironicPremise &&
+    scores.sceneGenerativePower >= CONCEPT_PASS_THRESHOLDS.sceneGenerativePower
   );
 }

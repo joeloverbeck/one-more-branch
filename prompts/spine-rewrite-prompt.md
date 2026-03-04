@@ -90,6 +90,8 @@ Protagonist Want: {{currentSpine.protagonistNeedVsWant.want}}
 Need-Want Dynamic: {{currentSpine.protagonistNeedVsWant.dynamic}}
 Antagonistic Force: {{currentSpine.primaryAntagonisticForce.description}}
 Pressure Mechanism: {{currentSpine.primaryAntagonisticForce.pressureMechanism}}
+Want–Need Collision Point: {{currentSpine.wantNeedCollisionPoint}}
+Protagonist Deepest Fear: {{currentSpine.protagonistDeepestFear}}
 Every act must advance or complicate the protagonist's relationship to the central dramatic question.
 
 INVALIDATED ELEMENT: {{Central Dramatic Question|Primary Antagonistic Force|Protagonist Need vs Want}}
@@ -120,7 +122,11 @@ The current spine is formatted by `buildSpineSection()` from `src/llm/prompts/se
   "storySpineType": "{{QUEST|SURVIVAL|ESCAPE|REVENGE|RESCUE|RIVALRY|MYSTERY|TEMPTATION|TRANSFORMATION|FORBIDDEN_LOVE|SACRIFICE|FALL_FROM_GRACE|RISE_TO_POWER|COMING_OF_AGE|REBELLION}}",
   "conflictAxis": "{{INDIVIDUAL_VS_SYSTEM|TRUTH_VS_STABILITY|DUTY_VS_DESIRE|FREEDOM_VS_SAFETY|KNOWLEDGE_VS_INNOCENCE|POWER_VS_MORALITY|LOYALTY_VS_SURVIVAL|IDENTITY_VS_BELONGING}}",
   "conflictType": "{{PERSON_VS_PERSON|PERSON_VS_SELF|PERSON_VS_SOCIETY|PERSON_VS_NATURE|PERSON_VS_TECHNOLOGY|PERSON_VS_SUPERNATURAL|PERSON_VS_FATE}}",
-  "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}"
+  "characterArcType": "{{POSITIVE_CHANGE|FLAT|DISILLUSIONMENT|FALL|CORRUPTION}}",
+  "toneFeel": ["{{atmospheric adjective}}"],
+  "toneAvoid": ["{{tonal anti-pattern}}"],
+  "wantNeedCollisionPoint": "{{specific moment where pursuing want blocks need}}",
+  "protagonistDeepestFear": "{{fear driving protagonist to cling to want}}"
 }
 ```
 

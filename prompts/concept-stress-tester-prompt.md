@@ -26,11 +26,14 @@ ADVERSARIAL DIRECTIVES:
 - Drift analysis: identify where world rules, constraints, or consequences are likely to erode across turns.
 - Player-break analysis: test extreme but plausible player behavior (refusal, exploit loops, antagonist alignment, sidequest fixation).
 - conflictType durability: does the conflictType create enough structural opposition to sustain branching? Can the antagonistic source (person/society/nature/etc.) generate sufficient variety of encounters?
+- Irony Test: does the concept contain genuine structural irony, or is the "ironic twist" merely a plot surprise? Structural irony means the protagonist's strength IS the source of their potential undoing. If the ironicTwist is just a surprise reveal, tighten it.
+- Dinner Table Test: could you explain this concept at a dinner table and have someone lean forward? If the concept sounds like a genre template ("a detective solves mysteries"), the hook needs sharpening. The concept must evoke a specific, vivid situation.
+- Scene Flash Test: reading the concept, can you immediately see 5+ distinct, vivid scenes? If not, the concept is too abstract. Tighten settingAxioms, constraintSet, and pressureSource to be more concrete and scene-evoking.
 - For every identified weakness, tighten existing concept fields with concrete and enforceable changes.
 - Keep hardenedConcept in the exact ConceptSpec shape.
 
 WEAK DIMENSION FOCUS:
-- Prioritize reinforcement for: {{dimensions below pass thresholds, comma-separated, or "none below threshold"}}
+- Prioritize reinforcement for: {{dimensions below pass thresholds (hookStrength, conflictEngine, agencyBreadth, noveltyLeverage, llmFeasibility, ironicPremise, sceneGenerativePower), comma-separated, or "none below threshold"}}
 - If no dimensions are below threshold, still harden against drift and hostile player strategies.
 ```
 

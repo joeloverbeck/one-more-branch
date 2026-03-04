@@ -120,8 +120,15 @@ Direction of change: ${storyKernel.directionOfChange}
 Conflict axis: ${storyKernel.conflictAxis}
 Dramatic stance: ${storyKernel.dramaticStance}
 Thematic question: ${storyKernel.thematicQuestion}
+Moral argument: ${storyKernel.moralArgument}
 
-Use this thesis/antithesis tension to shape escalating conflicts and turning-point choices.
+VALUE SPECTRUM (McKee — use to calibrate per-act value charge):
+Positive: ${storyKernel.valueSpectrum.positive}
+Contrary: ${storyKernel.valueSpectrum.contrary}
+Contradictory: ${storyKernel.valueSpectrum.contradictory}
+Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}
+
+Use this thesis/antithesis tension to shape escalating conflicts and turning-point choices. Design act stakes so the value charge progresses through the spectrum: early acts should operate near positive/contrary, middle acts should push toward contradictory, and the climax should risk the negation of negation.
 
 `;
 }

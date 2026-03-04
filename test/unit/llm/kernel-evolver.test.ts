@@ -49,6 +49,13 @@ function createKernel(index: number, direction: DirectionOfChange = 'POSITIVE'):
     dramaticStance: EVOLVER_STANCES[(index - 1) % EVOLVER_STANCES.length],
     thematicQuestion: `Question ${index}?`,
     antithesis: 'Counter-argument challenges the thesis.',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 
@@ -76,6 +83,8 @@ function createEvaluatedKernelFixture(index: number): EvaluatedKernel {
       generativePotential: 4,
       conflictTension: 5,
       emotionalDepth: 3,
+      ironicPotential: 3,
+      viscerality: 3,
     },
     overallScore: 78,
     passes: true,

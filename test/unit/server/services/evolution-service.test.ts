@@ -18,6 +18,13 @@ function createStoryKernel(): StoryKernel {
     dramaticStance: 'IRONIC',
     thematicQuestion: 'Can safety exist without control?',
     antithesis: 'Counter-argument challenges the thesis.',
+    moralArgument: 'Test moral argument',
+    valueSpectrum: {
+      positive: 'Love',
+      contrary: 'Indifference',
+      contradictory: 'Hate',
+      negationOfNegation: 'Self-destruction through love',
+    },
   };
 }
 

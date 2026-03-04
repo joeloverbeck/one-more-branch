@@ -2399,10 +2399,22 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       }
       tone.innerHTML = toneHtml;
 
+      var extraFields = document.createElement('div');
+      extraFields.className = 'spine-extra-fields';
+      var extraHtml = '';
+      if (option.wantNeedCollisionPoint) {
+        extraHtml += '<div class="spine-field"><span class="spine-label">Want/Need Collision:</span> ' + escapeHtml(option.wantNeedCollisionPoint) + '</div>';
+      }
+      if (option.protagonistDeepestFear) {
+        extraHtml += '<div class="spine-field"><span class="spine-label">Deepest Fear:</span> ' + escapeHtml(option.protagonistDeepestFear) + '</div>';
+      }
+      extraFields.innerHTML = extraHtml;
+
       card.appendChild(badges);
       card.appendChild(cdq);
       card.appendChild(needWant);
       card.appendChild(antag);
+      if (extraHtml) card.appendChild(extraFields);
       card.appendChild(tone);
 
       card.addEventListener('click', function () {
@@ -2484,6 +2496,8 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     { key: 'agencyBreadth', label: 'Agency' },
     { key: 'noveltyLeverage', label: 'Novelty' },
     { key: 'llmFeasibility', label: 'Feasibility' },
+    { key: 'ironicPremise', label: 'Irony' },
+    { key: 'sceneGenerativePower', label: 'Scenes' },
   ];
 
   var selectedConceptIndex = -1;
@@ -2815,6 +2829,18 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     if (concept.deadlineMechanism) {
       html += '<div class="spine-field"><span class="spine-label">Deadline Mechanism:</span> ' + escapeHtml(concept.deadlineMechanism) + '</div>';
     }
+    if (concept.protagonistLie) {
+      html += '<div class="spine-field"><span class="spine-label">Protagonist Lie:</span> ' + escapeHtml(concept.protagonistLie) + '</div>';
+    }
+    if (concept.protagonistTruth) {
+      html += '<div class="spine-field"><span class="spine-label">Protagonist Truth:</span> ' + escapeHtml(concept.protagonistTruth) + '</div>';
+    }
+    if (concept.protagonistGhost) {
+      html += '<div class="spine-field"><span class="spine-label">Protagonist Ghost:</span> ' + escapeHtml(concept.protagonistGhost) + '</div>';
+    }
+    if (concept.wantNeedCollisionSketch) {
+      html += '<div class="spine-field"><span class="spine-label">Want-Need Collision:</span> ' + escapeHtml(concept.wantNeedCollisionSketch) + '</div>';
+    }
     if (concept.genreSubversion) {
       html += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(concept.genreSubversion) + '</div>';
     }
@@ -2929,6 +2955,8 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
     { key: 'generativePotential', label: 'Potential' },
     { key: 'conflictTension', label: 'Tension' },
     { key: 'emotionalDepth', label: 'Depth' },
+    { key: 'ironicPotential', label: 'Irony' },
+    { key: 'viscerality', label: 'Visceral' },
   ];
 
   function formatKernelLabel(value) {
@@ -3031,6 +3059,14 @@ PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.la
       '<div class="spine-field"><span class="spine-label">Conflict Axis:</span> ' + escapeHtml(conflictAxis) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Dramatic Stance:</span> ' + escapeHtml(dramaticStance) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Thematic Question:</span> <em>' + escapeHtml(kernel.thematicQuestion || '') + '</em></div>' +
+      (kernel.moralArgument ? '<div class="spine-field"><span class="spine-label">Moral Argument:</span> ' + escapeHtml(kernel.moralArgument) + '</div>' : '') +
+      (kernel.valueSpectrum ? (
+        '<div class="spine-field"><span class="spine-label">Value Spectrum (McKee):</span></div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Positive:</span> ' + escapeHtml(kernel.valueSpectrum.positive || '') + '</div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Contrary:</span> ' + escapeHtml(kernel.valueSpectrum.contrary || '') + '</div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Contradictory:</span> ' + escapeHtml(kernel.valueSpectrum.contradictory || '') + '</div>' +
+        '<div class="spine-field" style="margin-left: 0.5rem;"><span class="spine-label">Negation of Negation:</span> ' + escapeHtml(kernel.valueSpectrum.negationOfNegation || '') + '</div>'
+      ) : '') +
       '<div class="concept-scores">' + renderKernelScoreGrid(evaluatedKernel && evaluatedKernel.scores) + '</div>' +
       '<div class="spine-field"><span class="spine-label">Tradeoff:</span> ' + escapeHtml(evaluatedKernel && evaluatedKernel.tradeoffSummary ? evaluatedKernel.tradeoffSummary : '') + '</div>' +
       '<div class="concept-feedback">' +
@@ -6421,6 +6457,10 @@ function createRecapModalController(initialData) {
       setValueById('deadlineMechanism', conceptSpec.deadlineMechanism || '');
       setValueById('incitingDisruption', conceptSpec.incitingDisruption || '');
       setValueById('escapeValve', conceptSpec.escapeValve || '');
+      setValueById('protagonistLie', conceptSpec.protagonistLie || '');
+      setValueById('protagonistTruth', conceptSpec.protagonistTruth || '');
+      setValueById('protagonistGhost', conceptSpec.protagonistGhost || '');
+      setValueById('wantNeedCollisionSketch', conceptSpec.wantNeedCollisionSketch || '');
 
       // World
       populateDynamicList('settingAxioms', conceptSpec.settingAxioms);
@@ -6464,6 +6504,10 @@ function createRecapModalController(initialData) {
       var whatIfQuestion = getValueById('whatIfQuestion');
       var ironicTwist = getValueById('ironicTwist');
       var playerFantasy = getValueById('playerFantasy');
+      var protagonistLie = getValueById('protagonistLie');
+      var protagonistTruth = getValueById('protagonistTruth');
+      var protagonistGhost = getValueById('protagonistGhost');
+      var wantNeedCollisionSketch = getValueById('wantNeedCollisionSketch');
 
       // Only build a conceptSpec if we have enough meaningful fields
       if (!oneLineHook || !coreConflictLoop || !conflictAxis) {
@@ -6495,6 +6539,10 @@ function createRecapModalController(initialData) {
         whatIfQuestion: whatIfQuestion,
         ironicTwist: ironicTwist,
         playerFantasy: playerFantasy,
+        protagonistLie: protagonistLie,
+        protagonistTruth: protagonistTruth,
+        protagonistGhost: protagonistGhost,
+        wantNeedCollisionSketch: wantNeedCollisionSketch,
       };
 
       return spec;
@@ -6606,6 +6654,24 @@ function createRecapModalController(initialData) {
       if (opposingEl) opposingEl.textContent = kernel.opposingForce || '';
       if (directionEl) directionEl.textContent = String(kernel.directionOfChange || '').replace(/_/g, ' ');
       if (questionEl) questionEl.textContent = kernel.thematicQuestion || '';
+
+      var moralEl = document.getElementById('kernel-disp-moral');
+      if (moralEl) moralEl.textContent = kernel.moralArgument || '';
+
+      var vsSection = document.getElementById('kernel-disp-vs-section');
+      if (kernel.valueSpectrum && vsSection) {
+        var vsPosEl = document.getElementById('kernel-disp-vs-positive');
+        var vsConEl = document.getElementById('kernel-disp-vs-contrary');
+        var vsCdEl = document.getElementById('kernel-disp-vs-contradictory');
+        var vsNegEl = document.getElementById('kernel-disp-vs-negation');
+        if (vsPosEl) vsPosEl.textContent = kernel.valueSpectrum.positive || '';
+        if (vsConEl) vsConEl.textContent = kernel.valueSpectrum.contrary || '';
+        if (vsCdEl) vsCdEl.textContent = kernel.valueSpectrum.contradictory || '';
+        if (vsNegEl) vsNegEl.textContent = kernel.valueSpectrum.negationOfNegation || '';
+        vsSection.style.display = 'block';
+      } else if (vsSection) {
+        vsSection.style.display = 'none';
+      }
 
       kernelDisplayPanel.style.display = 'block';
     }
@@ -7644,6 +7710,10 @@ function createRecapModalController(initialData) {
       if (c.playerFantasy) cardHtml += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(c.playerFantasy) + '</em></p>';
       if (c.incitingDisruption) cardHtml += '<div class="spine-field"><span class="spine-label">Inciting Disruption:</span> ' + escapeHtml(c.incitingDisruption) + '</div>';
       if (c.escapeValve) cardHtml += '<div class="spine-field"><span class="spine-label">Escape Valve:</span> ' + escapeHtml(c.escapeValve) + '</div>';
+      if (c.protagonistLie) cardHtml += '<div class="spine-field"><span class="spine-label">Protagonist Lie:</span> ' + escapeHtml(c.protagonistLie) + '</div>';
+      if (c.protagonistTruth) cardHtml += '<div class="spine-field"><span class="spine-label">Protagonist Truth:</span> ' + escapeHtml(c.protagonistTruth) + '</div>';
+      if (c.protagonistGhost) cardHtml += '<div class="spine-field"><span class="spine-label">Protagonist Ghost:</span> ' + escapeHtml(c.protagonistGhost) + '</div>';
+      if (c.wantNeedCollisionSketch) cardHtml += '<div class="spine-field"><span class="spine-label">Want/Need Collision:</span> ' + escapeHtml(c.wantNeedCollisionSketch) + '</div>';
       if (Array.isArray(c.actionVerbs) && c.actionVerbs.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Action Verbs:</span> ' + escapeHtml(c.actionVerbs.join(', ')) + '</div>';
       if (Array.isArray(c.settingAxioms) && c.settingAxioms.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(c.settingAxioms) + '</ul></div>';
       if (Array.isArray(c.constraintSet) && c.constraintSet.length > 0) cardHtml += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(c.constraintSet) + '</ul></div>';
@@ -7881,6 +7951,10 @@ function createRecapModalController(initialData) {
         setEditValue('incitingDisruption', c.incitingDisruption);
         setEditValue('escapeValve', c.escapeValve);
         setEditValue('conflictType', c.conflictType);
+        setEditValue('protagonistLie', c.protagonistLie);
+        setEditValue('protagonistTruth', c.protagonistTruth);
+        setEditValue('protagonistGhost', c.protagonistGhost);
+        setEditValue('wantNeedCollisionSketch', c.wantNeedCollisionSketch);
         setEditValue('whatIfQuestion', c.whatIfQuestion);
         setEditValue('ironicTwist', c.ironicTwist);
         setEditValue('playerFantasy', c.playerFantasy);
@@ -7912,6 +7986,10 @@ function createRecapModalController(initialData) {
         stakesPersonal: getEditValue('stakesPersonal'),
         stakesSystemic: getEditValue('stakesSystemic'),
         deadlineMechanism: getEditValue('deadlineMechanism'),
+        protagonistLie: getEditValue('protagonistLie'),
+        protagonistTruth: getEditValue('protagonistTruth'),
+        protagonistGhost: getEditValue('protagonistGhost'),
+        wantNeedCollisionSketch: getEditValue('wantNeedCollisionSketch'),
         incitingDisruption: getEditValue('incitingDisruption'),
         escapeValve: getEditValue('escapeValve'),
         genreSubversion: getEditValue('genreSubversion'),
@@ -8310,6 +8388,11 @@ function createRecapModalController(initialData) {
         '<div class="form-group"><label>Value at Stake</label><input type="text" class="kernel-edit-valueAtStake" value="' + escapeHtml(kernel.valueAtStake || '') + '"></div>' +
         '<div class="form-group"><label>Opposing Force</label><textarea class="kernel-edit-opposingForce" rows="2">' + escapeHtml(kernel.opposingForce || '') + '</textarea></div>' +
         '<div class="form-group"><label>Thematic Question</label><input type="text" class="kernel-edit-thematicQuestion" value="' + escapeHtml(kernel.thematicQuestion || '') + '"></div>' +
+        '<div class="form-group"><label>Moral Argument</label><textarea class="kernel-edit-moralArgument" rows="2">' + escapeHtml(kernel.moralArgument || '') + '</textarea></div>' +
+        '<div class="form-group"><label>Value Spectrum — Positive</label><input type="text" class="kernel-edit-vsPositive" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.positive || '') + '"></div>' +
+        '<div class="form-group"><label>Value Spectrum — Contrary</label><input type="text" class="kernel-edit-vsContrary" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.contrary || '') + '"></div>' +
+        '<div class="form-group"><label>Value Spectrum — Contradictory</label><input type="text" class="kernel-edit-vsContradictory" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.contradictory || '') + '"></div>' +
+        '<div class="form-group"><label>Value Spectrum — Negation of Negation</label><input type="text" class="kernel-edit-vsNegation" value="' + escapeHtml(kernel.valueSpectrum && kernel.valueSpectrum.negationOfNegation || '') + '"></div>' +
         '<div class="form-group"><label>Direction of Change</label>' +
           '<select class="kernel-edit-directionOfChange">' +
             '<option value="POSITIVE"' + (kernel.directionOfChange === 'POSITIVE' ? ' selected' : '') + '>POSITIVE</option>' +
@@ -8364,6 +8447,13 @@ function createRecapModalController(initialData) {
           directionOfChange: getInputValue('.kernel-edit-directionOfChange'),
           conflictAxis: getInputValue('.kernel-edit-conflictAxis'),
           dramaticStance: getInputValue('.kernel-edit-dramaticStance'),
+          moralArgument: getInputValue('.kernel-edit-moralArgument'),
+          valueSpectrum: {
+            positive: getInputValue('.kernel-edit-vsPositive'),
+            contrary: getInputValue('.kernel-edit-vsContrary'),
+            contradictory: getInputValue('.kernel-edit-vsContradictory'),
+            negationOfNegation: getInputValue('.kernel-edit-vsNegation'),
+          },
         },
       };
     }

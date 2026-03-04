@@ -118,6 +118,14 @@ export function parseConceptSpec(
       label,
     ),
     escapeValve: requireNonEmptyString(data['escapeValve'], 'escapeValve', label),
+    protagonistLie: requireNonEmptyString(data['protagonistLie'], 'protagonistLie', label),
+    protagonistTruth: requireNonEmptyString(data['protagonistTruth'], 'protagonistTruth', label),
+    protagonistGhost: requireNonEmptyString(data['protagonistGhost'], 'protagonistGhost', label),
+    wantNeedCollisionSketch: requireNonEmptyString(
+      data['wantNeedCollisionSketch'],
+      'wantNeedCollisionSketch',
+      label,
+    ),
   };
 }
 
@@ -229,6 +237,14 @@ export function parseConceptEngine(
     elevatorParagraph: requireNonEmptyString(
       data['elevatorParagraph'],
       'elevatorParagraph',
+      label,
+    ),
+    protagonistLie: requireNonEmptyString(data['protagonistLie'], 'protagonistLie', label),
+    protagonistTruth: requireNonEmptyString(data['protagonistTruth'], 'protagonistTruth', label),
+    protagonistGhost: requireNonEmptyString(data['protagonistGhost'], 'protagonistGhost', label),
+    wantNeedCollisionSketch: requireNonEmptyString(
+      data['wantNeedCollisionSketch'],
+      'wantNeedCollisionSketch',
       label,
     ),
   };

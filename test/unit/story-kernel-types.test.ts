@@ -36,6 +36,13 @@ describe('story-kernel types', () => {
       conflictAxis: 'TRUTH_VS_STABILITY',
       dramaticStance: 'IRONIC',
       thematicQuestion: 'Can protection exist without control?',
+      moralArgument: 'Test moral argument',
+      valueSpectrum: {
+        positive: 'Love',
+        contrary: 'Indifference',
+        contradictory: 'Hate',
+        negationOfNegation: 'Self-destruction through love',
+      },
     };
 
     expect(isStoryKernel(validKernel)).toBe(true);
@@ -102,6 +109,8 @@ describe('story-kernel types', () => {
       generativePotential: 5,
       conflictTension: 5,
       emotionalDepth: 5,
+      ironicPotential: 5,
+      viscerality: 5,
     };
 
     expect(computeKernelOverallScore(scores)).toBe(100);
@@ -114,6 +123,8 @@ describe('story-kernel types', () => {
       generativePotential: 0,
       conflictTension: 0,
       emotionalDepth: 0,
+      ironicPotential: 0,
+      viscerality: 0,
     };
 
     expect(computeKernelOverallScore(scores)).toBe(0);
@@ -126,6 +137,8 @@ describe('story-kernel types', () => {
       generativePotential: 3,
       conflictTension: 2,
       emotionalDepth: 1,
+      ironicPotential: 3,
+      viscerality: 3,
     };
 
     expect(computeKernelOverallScore(scores)).toBe(60);
@@ -144,6 +157,8 @@ describe('story-kernel types', () => {
       generativePotential: KERNEL_PASS_THRESHOLDS.generativePotential,
       conflictTension: KERNEL_PASS_THRESHOLDS.conflictTension,
       emotionalDepth: KERNEL_PASS_THRESHOLDS.emotionalDepth,
+      ironicPotential: KERNEL_PASS_THRESHOLDS.ironicPotential,
+      viscerality: KERNEL_PASS_THRESHOLDS.viscerality,
     };
 
     const failing: KernelDimensionScores = {

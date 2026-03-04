@@ -89,6 +89,8 @@ export interface StorySpine {
   readonly characterArcType: CharacterArcType;
   readonly toneFeel: readonly string[];
   readonly toneAvoid: readonly string[];
+  readonly wantNeedCollisionPoint: string;
+  readonly protagonistDeepestFear: string;
 }
 
 export function isStorySpineType(value: unknown): value is StorySpineType {

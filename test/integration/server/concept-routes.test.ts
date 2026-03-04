@@ -125,6 +125,13 @@ describe('Concept Route Integration', () => {
           dramaticStance: 'ROMANTIC',
           thematicQuestion: 'Can safety exist without control?',
           antithesis: 'Counter-argument challenges the thesis.',
+          moralArgument: 'Test moral argument',
+          valueSpectrum: {
+            positive: 'Love',
+            contrary: 'Indifference',
+            contradictory: 'Hate',
+            negationOfNegation: 'Self-destruction through love',
+          },
         },
         scores: {
           dramaticClarity: 4,
@@ -132,6 +139,8 @@ describe('Concept Route Integration', () => {
           generativePotential: 4,
           conflictTension: 4,
           emotionalDepth: 4,
+          ironicPotential: 3,
+          viscerality: 3,
         },
         overallScore: 80,
         passes: true,

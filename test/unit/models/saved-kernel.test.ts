@@ -12,6 +12,13 @@ describe('saved-kernel model guards', () => {
       dramaticStance: 'IRONIC',
       thematicQuestion: 'Can protection exist without control?',
       antithesis: 'Counter-argument challenges the thesis.',
+      moralArgument: 'Test moral argument',
+      valueSpectrum: {
+        positive: 'Love',
+        contrary: 'Indifference',
+        contradictory: 'Hate',
+        negationOfNegation: 'Self-destruction through love',
+      },
     },
     scores: {
       dramaticClarity: 4,
@@ -19,6 +26,8 @@ describe('saved-kernel model guards', () => {
       generativePotential: 4,
       conflictTension: 5,
       emotionalDepth: 3,
+      ironicPotential: 3,
+      viscerality: 3,
     },
     overallScore: 80,
     passes: true,
