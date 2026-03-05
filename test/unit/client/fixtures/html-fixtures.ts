@@ -456,6 +456,7 @@ export function buildConceptsPageHtml(): string {
               <span id="selected-kernel-thematic-question"></span>
               <span id="selected-kernel-overall-score"></span>
             </article>
+            <div class="form-group"><textarea id="protagonistDetails"></textarea></div>
             <div class="form-group"><input type="text" id="genreVibes"></div>
             <div class="form-group"><input type="text" id="moodKeywords"></div>
             <div class="form-group"><input type="text" id="contentPreferences"></div>

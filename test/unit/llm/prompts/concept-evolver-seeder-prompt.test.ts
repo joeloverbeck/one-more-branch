@@ -102,6 +102,33 @@ describe('concept-evolver-seeder-prompt', () => {
       expect(userMessage).toContain('"parentId": "parent_3"');
     });
 
+    it('includes mandatory protagonist block in user message when protagonistDetails is provided', () => {
+      const context: ConceptEvolverSeederContext = {
+        ...createContext(),
+        protagonistDetails: 'A disgraced former surgeon',
+      };
+      const messages = buildConceptEvolverSeederPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('MANDATORY PROTAGONIST');
+      expect(userMessage).toContain('A disgraced former surgeon');
+    });
+
+    it('includes protagonist details in mandate parts when provided', () => {
+      const context: ConceptEvolverSeederContext = {
+        ...createContext(),
+        protagonistDetails: 'A disgraced former surgeon',
+      };
+      const messages = buildConceptEvolverSeederPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('Protagonist Details: A disgraced former surgeon');
+    });
+
+    it('omits protagonist block when protagonistDetails is absent', () => {
+      const messages = buildConceptEvolverSeederPrompt(createContext());
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).not.toContain('MANDATORY PROTAGONIST');
+    });
+
     it('includes output requirements in user message', () => {
       const messages = buildConceptEvolverSeederPrompt(createContext());
       const userMessage = messages[1]?.content ?? '';

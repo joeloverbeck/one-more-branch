@@ -139,14 +139,21 @@
     }
 
     function collectSeeds() {
+      var p = document.getElementById('protagonistDetails');
       var g = document.getElementById('genreVibes');
       var m = document.getElementById('moodKeywords');
       var c = document.getElementById('contentPreferences');
       return {
+        protagonistDetails: p && typeof p.value === 'string' ? p.value.trim() : '',
         genreVibes: g && typeof g.value === 'string' ? g.value.trim() : '',
         moodKeywords: m && typeof m.value === 'string' ? m.value.trim() : '',
         contentPreferences: c && typeof c.value === 'string' ? c.value.trim() : '',
       };
+    }
+
+    function isProtagonistDetailsValid() {
+      var el = document.getElementById('protagonistDetails');
+      return el && typeof el.value === 'string' && el.value.trim().length > 0;
     }
 
     function isApiKeyValid() {
@@ -154,7 +161,7 @@
     }
 
     function updateGenerateButtonState() {
-      generateBtn.disabled = !(isApiKeyValid() && selectedKernelId);
+      generateBtn.disabled = !(isApiKeyValid() && selectedKernelId && isProtagonistDetailsValid());
     }
 
     async function loadKernelOptions() {
@@ -222,6 +229,10 @@
       }
 
       var seeds = collectSeeds();
+      if (!seeds.protagonistDetails) {
+        showError('Protagonist details are required');
+        return;
+      }
       if (!seeds.genreVibes && !seeds.moodKeywords && !seeds.contentPreferences) {
         showError('At least one concept seed field is required');
         return;
@@ -239,6 +250,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            protagonistDetails: seeds.protagonistDetails,
             genreVibes: seeds.genreVibes,
             moodKeywords: seeds.moodKeywords,
             contentPreferences: seeds.contentPreferences,
@@ -909,6 +921,10 @@
     });
     if (apiKeyInput) {
       apiKeyInput.addEventListener('input', updateGenerateButtonState);
+    }
+    var protagonistInput = document.getElementById('protagonistDetails');
+    if (protagonistInput) {
+      protagonistInput.addEventListener('input', updateGenerateButtonState);
     }
     if (kernelSelector instanceof HTMLSelectElement) {
       kernelSelector.addEventListener('change', function () {

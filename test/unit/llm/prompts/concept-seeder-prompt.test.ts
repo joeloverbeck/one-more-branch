@@ -104,6 +104,53 @@ describe('concept-seeder-prompt', () => {
       expect(userMessage).not.toContain('SELECTED STORY KERNEL');
     });
 
+    it('includes protagonist identity constraint in system message when protagonistDetails is provided', () => {
+      const messages = buildConceptSeederPrompt({
+        genreVibes: 'noir',
+        protagonistDetails: 'A disgraced former surgeon',
+      });
+      const systemMessage = messages[0]?.content ?? '';
+      expect(systemMessage).toContain('PROTAGONIST IDENTITY CONSTRAINT');
+    });
+
+    it('includes mandatory protagonist block in user message when protagonistDetails is provided', () => {
+      const messages = buildConceptSeederPrompt({
+        genreVibes: 'noir',
+        protagonistDetails: 'A disgraced former surgeon',
+      });
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('MANDATORY PROTAGONIST');
+      expect(userMessage).toContain('A disgraced former surgeon');
+    });
+
+    it('includes protagonist details in mandate parts when provided', () => {
+      const messages = buildConceptSeederPrompt({
+        genreVibes: 'noir',
+        protagonistDetails: 'A disgraced former surgeon',
+      });
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('Protagonist Details: A disgraced former surgeon');
+    });
+
+    it('omits protagonist blocks when protagonistDetails is absent', () => {
+      const messages = buildConceptSeederPrompt({ genreVibes: 'noir' });
+      const systemMessage = messages[0]?.content ?? '';
+      const userMessage = messages[1]?.content ?? '';
+      expect(systemMessage).not.toContain('PROTAGONIST IDENTITY CONSTRAINT');
+      expect(userMessage).not.toContain('MANDATORY PROTAGONIST');
+    });
+
+    it('omits protagonist blocks when protagonistDetails is whitespace', () => {
+      const messages = buildConceptSeederPrompt({
+        genreVibes: 'noir',
+        protagonistDetails: '   ',
+      });
+      const systemMessage = messages[0]?.content ?? '';
+      const userMessage = messages[1]?.content ?? '';
+      expect(systemMessage).not.toContain('PROTAGONIST IDENTITY CONSTRAINT');
+      expect(userMessage).not.toContain('MANDATORY PROTAGONIST');
+    });
+
     it('includes output requirements in user message', () => {
       const messages = buildConceptSeederPrompt({});
       const userMessage = messages[1]?.content ?? '';

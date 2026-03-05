@@ -15,6 +15,7 @@ export interface EvolveConceptsInput {
   readonly kernel: StoryKernel;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
+  readonly protagonistDetails?: string;
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
@@ -99,6 +100,7 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
         {
           parentConcepts,
           kernel,
+          protagonistDetails: input.protagonistDetails,
           genreVibes: input.genreVibes,
           moodKeywords: input.moodKeywords,
           contentPreferences: input.contentPreferences,

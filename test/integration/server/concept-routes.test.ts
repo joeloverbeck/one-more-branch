@@ -251,6 +251,7 @@ describe('Concept Route Integration', () => {
     void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
+          protagonistDetails: 'a disgraced surgeon',
           genreVibes: '  dark fantasy  ',
           moodKeywords: '  tense ',
           kernelId: 'kernel-1',
@@ -281,6 +282,7 @@ describe('Concept Route Integration', () => {
     void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
+          protagonistDetails: 'a disgraced surgeon',
           genreVibes: 'dark fantasy',
           kernelId: 'kernel-1',
           apiKey: 'valid-key-12345',
@@ -384,6 +386,7 @@ describe('Concept Route Integration', () => {
     void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
+          protagonistDetails: 'a disgraced surgeon',
           genreVibes: 'dark fantasy',
           apiKey: 'valid-key-12345',
         },
@@ -408,6 +411,7 @@ describe('Concept Route Integration', () => {
     void getRouteHandler('post', '/api/generate/ideate')(
       {
         body: {
+          protagonistDetails: 'a disgraced surgeon',
           genreVibes: 'dark fantasy',
           kernelId: 'missing-kernel',
           apiKey: 'valid-key-12345',

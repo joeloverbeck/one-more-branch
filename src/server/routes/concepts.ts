@@ -102,6 +102,7 @@ conceptRoutes.post(
   '/api/generate/ideate',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const body = req.body as {
+      protagonistDetails?: string;
       genreVibes?: string;
       moodKeywords?: string;
       contentPreferences?: string;
@@ -110,6 +111,11 @@ conceptRoutes.post(
       apiKey?: string;
       progressId?: unknown;
     };
+
+    const protagonistDetails = body.protagonistDetails?.trim();
+    if (!protagonistDetails || protagonistDetails.length === 0) {
+      return res.status(400).json({ success: false, error: 'Protagonist details are required' });
+    }
 
     const apiKey = body.apiKey?.trim();
     if (!apiKey || apiKey.length < 10) {
@@ -144,6 +150,7 @@ conceptRoutes.post(
 
     try {
       const result = await conceptService.ideateConcepts({
+        protagonistDetails,
         genreVibes: body.genreVibes,
         moodKeywords: body.moodKeywords,
         contentPreferences: body.contentPreferences,

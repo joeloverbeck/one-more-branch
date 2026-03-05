@@ -21,6 +21,7 @@ export interface ConceptDevelopmentContext {
   readonly seeds: readonly ConceptSeedFields[];
   readonly characterWorlds: readonly ConceptCharacterWorldFields[];
   readonly kernel?: StoryKernel;
+  readonly protagonistDetails?: string;
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
@@ -52,6 +53,7 @@ export async function generateConceptIdeation(
     {
       seeds: seedResult.seeds,
       kernel: context.kernel,
+      protagonistDetails: context.protagonistDetails,
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,
@@ -72,6 +74,7 @@ export async function generateConceptDevelopment(
       seeds: context.seeds,
       characterWorlds: context.characterWorlds,
       kernel: context.kernel,
+      protagonistDetails: context.protagonistDetails,
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,
@@ -94,6 +97,7 @@ export async function generateConceptIdeas(
       seeds: ideation.seeds,
       characterWorlds: ideation.characterWorlds,
       kernel: context.kernel,
+      protagonistDetails: context.protagonistDetails,
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,
