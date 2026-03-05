@@ -39,7 +39,8 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Use at least 3 distinct directionOfChange values.
 - Use at least 5 distinct conflictAxis values.
 - Use at least 3 distinct dramaticStance values.
-- Ensure kernels represent materially different human conflict domains.`;
+- Ensure kernels represent materially different human conflict domains.
+- CRITICAL: Diversity means different dramatic propositions and conflict domains. It does NOT mean distributing user seeds across kernels. Every kernel must centrally reflect ALL user-specified thematic interests, emotional core, and spark line.`;
 
 const DIRECTION_GUIDANCE = `DIRECTION OF CHANGE TAXONOMY:
 - POSITIVE: The value ultimately prevails.
@@ -88,17 +89,20 @@ dramaticStance IRONIC describes philosophical worldview (subversive/deconstructi
 
   const userSections: string[] = ['Generate 6-8 story kernels as abstract dramatic propositions.'];
 
-  if (thematicInterests) {
-    userSections.push(`THEMATIC INTERESTS:\n${thematicInterests}`);
-  }
-  if (emotionalCore) {
-    userSections.push(`EMOTIONAL CORE:\n${emotionalCore}`);
-  }
-  if (sparkLine) {
-    userSections.push(`SPARK LINE:\n${sparkLine}`);
+  const hasAnySeeds = thematicInterests ?? emotionalCore ?? sparkLine;
+
+  if (hasAnySeeds) {
+    const mandateParts: string[] = [];
+    if (thematicInterests) mandateParts.push(`Thematic Interests: ${thematicInterests}`);
+    if (emotionalCore) mandateParts.push(`Emotional Core: ${emotionalCore}`);
+    if (sparkLine) mandateParts.push(`Spark Line: ${sparkLine}`);
+
+    userSections.push(
+      `USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.`,
+    );
   }
 
-  if (!thematicInterests && !emotionalCore && !sparkLine) {
+  if (!hasAnySeeds) {
     userSections.push('No seeds were provided. Derive kernels from universal human themes and conflicts.');
   }
 

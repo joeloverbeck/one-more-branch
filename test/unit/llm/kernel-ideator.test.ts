@@ -147,7 +147,7 @@ describe('kernel-ideator', () => {
     expect(() => parseKernelIdeationResponse(payload)).toThrow('invalid kernel at index 0');
   });
 
-  it('buildKernelIdeatorPrompt includes all seed fields when provided', () => {
+  it('buildKernelIdeatorPrompt includes system sections', () => {
     const messages = buildKernelIdeatorPrompt({
       thematicInterests: 'identity and loyalty',
       emotionalCore: 'grief and resentment',
@@ -156,7 +156,6 @@ describe('kernel-ideator', () => {
 
     expect(messages).toHaveLength(2);
     const systemMessage = messages[0]?.content ?? '';
-    const userMessage = messages[1]?.content ?? '';
 
     expect(systemMessage).toContain('dramatic theorist');
     expect(systemMessage).toContain(CONTENT_POLICY);
@@ -167,13 +166,28 @@ describe('kernel-ideator', () => {
     expect(systemMessage).toContain('Do not include named characters');
     expect(systemMessage).toContain('Do not include plot beats');
     expect(systemMessage).toContain('strongest credible counter-argument');
-
-    expect(userMessage).toContain('THEMATIC INTERESTS');
-    expect(userMessage).toContain('EMOTIONAL CORE');
-    expect(userMessage).toContain('SPARK LINE');
+    expect(systemMessage).toContain(
+      'CRITICAL: Diversity means different dramatic propositions',
+    );
   });
 
-  it('buildKernelIdeatorPrompt omits empty seed fields and includes fallback instruction', () => {
+  it('buildKernelIdeatorPrompt includes USER CREATIVE MANDATE when seeds provided', () => {
+    const messages = buildKernelIdeatorPrompt({
+      thematicInterests: 'identity and loyalty',
+      emotionalCore: 'grief and resentment',
+      sparkLine: 'A protector becomes the threat',
+    });
+
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain('USER CREATIVE MANDATE');
+    expect(userMessage).toContain('Thematic Interests: identity and loyalty');
+    expect(userMessage).toContain('Emotional Core: grief and resentment');
+    expect(userMessage).toContain('Spark Line: A protector becomes the threat');
+    expect(userMessage).toContain('non-negotiable');
+  });
+
+  it('buildKernelIdeatorPrompt omits mandate block when no seeds and includes fallback', () => {
     const messages = buildKernelIdeatorPrompt({
       thematicInterests: '   ',
       emotionalCore: undefined,
@@ -181,10 +195,22 @@ describe('kernel-ideator', () => {
     });
     const userMessage = messages[1]?.content ?? '';
 
-    expect(userMessage).not.toContain('THEMATIC INTERESTS');
-    expect(userMessage).not.toContain('EMOTIONAL CORE');
-    expect(userMessage).not.toContain('SPARK LINE');
+    expect(userMessage).not.toContain('USER CREATIVE MANDATE');
     expect(userMessage).toContain('universal human themes');
+  });
+
+  it('buildKernelIdeatorPrompt includes partial seeds in mandate block', () => {
+    const messages = buildKernelIdeatorPrompt({
+      thematicInterests: 'identity',
+      emotionalCore: undefined,
+      sparkLine: '',
+    });
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain('USER CREATIVE MANDATE');
+    expect(userMessage).toContain('Thematic Interests: identity');
+    expect(userMessage).not.toContain('Emotional Core');
+    expect(userMessage).not.toContain('Spark Line');
   });
 
   it('generateKernels returns parsed ideation result', async () => {

@@ -306,6 +306,7 @@ export type {
   KernelIdeationResult,
   KernelEvaluatorContext,
   KernelEvolverContext,
+  KernelEvolverUserSeeds,
   KernelEvolutionResult,
   KernelDimensionScores,
   KernelScoreEvidence,

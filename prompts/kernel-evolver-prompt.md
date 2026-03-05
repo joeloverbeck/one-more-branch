@@ -53,6 +53,7 @@ DIVERSITY CONSTRAINTS:
 - Use at least 4 distinct conflictAxis values.
 - Use at least 3 distinct dramaticStance values.
 - Ensure kernels represent materially different human conflict domains.
+- CRITICAL: Diversity means different dramatic propositions and conflict domains. It does NOT mean distributing user seeds across kernels. Every kernel must centrally reflect ALL user-specified thematic interests, emotional core, and spark line.
 
 DIRECTION OF CHANGE TAXONOMY:
 - POSITIVE: The value ultimately prevails.
@@ -110,6 +111,14 @@ PARENT KERNELS INPUT:
     "kernel": {{StoryKernel}}
   }
 ]
+
+{{#if hasAnySeeds}}
+USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):
+{{#if thematicInterests}}Thematic Interests: {{thematicInterests}}{{/if}}
+{{#if emotionalCore}}Emotional Core: {{emotionalCore}}{{/if}}
+{{#if sparkLine}}Spark Line: {{sparkLine}}{{/if}}
+These are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.
+{{/if}}
 
 OUTPUT REQUIREMENTS:
 - Return JSON matching schema shape: { "kernels": [StoryKernel, ...] }.
@@ -172,6 +181,7 @@ Schema constraints in `src/llm/schemas/kernel-evolver-schema.ts`:
 | Context Field | Description |
 |---|---|
 | `parentKernels` | Required array of `EvaluatedKernel` parents (with scores, strengths, weaknesses, tradeoffSummary) |
+| `userSeeds` | Optional object with `thematicInterests`, `emotionalCore`, `sparkLine` — anchors evolved kernels to user intent |
 
 ## Notes
 
