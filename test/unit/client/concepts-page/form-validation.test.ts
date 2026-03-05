@@ -77,11 +77,12 @@ describe('concepts page form validation', () => {
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  it('keeps generate disabled until both API key and kernel are selected', async () => {
+  it('keeps generate disabled until API key, kernel, and protagonist details are provided', async () => {
     setupPage();
 
     const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
     const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
+    const protagonistInput = document.getElementById('protagonistDetails') as HTMLTextAreaElement;
     const generateBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
     expect(generateBtn.disabled).toBe(true);
 
@@ -93,7 +94,10 @@ describe('concepts page form validation', () => {
     kernelSelector.value = 'kernel-1';
     kernelSelector.dispatchEvent(new Event('change'));
     await flushPromises();
+    expect(generateBtn.disabled).toBe(true);
 
+    protagonistInput.value = 'A disgraced former surgeon';
+    protagonistInput.dispatchEvent(new Event('input'));
     expect(generateBtn.disabled).toBe(false);
   });
 
@@ -102,8 +106,11 @@ describe('concepts page form validation', () => {
 
     const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
     const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
+    const protagonistInput = document.getElementById('protagonistDetails') as HTMLTextAreaElement;
     apiKeyInput.value = 'sk-or-valid-test-key-12345';
     apiKeyInput.dispatchEvent(new Event('input'));
+    protagonistInput.value = 'A disgraced former surgeon';
+    protagonistInput.dispatchEvent(new Event('input'));
     await flushPromises();
     kernelSelector.value = 'kernel-1';
     kernelSelector.dispatchEvent(new Event('change'));

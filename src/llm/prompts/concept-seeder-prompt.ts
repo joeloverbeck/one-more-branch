@@ -56,13 +56,27 @@ export function buildConceptSeederPrompt(context: ConceptSeederContext): ChatMes
     systemSections.push(kernelConstraintBlock);
   }
   systemSections.push(SEEDER_QUALITY_ANCHORS);
+  const protagonistDetails = normalize(context.protagonistDetails);
+  if (protagonistDetails) {
+    systemSections.push(
+      `PROTAGONIST IDENTITY CONSTRAINT (ABSOLUTE — OVERRIDES ALL OTHER CONSIDERATIONS):
+The user has specified their protagonist. Every concept seed MUST feature a protagonist that matches the user's description. You may NOT substitute, replace, or override the user's protagonist with a different character you find more interesting. The user's protagonist IS the protagonist — period. Creativity applies to the world, conflict, and genre around them, never to replacing who they are.`,
+    );
+  }
   systemSections.push(DIVERSITY_CONSTRAINTS);
 
   const userSections: string[] = [
     'Generate 6-8 concept seeds that satisfy the taxonomy and diversity constraints.',
   ];
 
+  if (protagonistDetails) {
+    userSections.push(
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — DO NOT REPLACE OR OVERRIDE):\n${protagonistDetails}\nEvery concept seed's playerFantasy and oneLineHook MUST center this protagonist. Generating concepts about a different character is a hard failure.`,
+    );
+  }
+
   const mandateParts: string[] = [];
+  if (protagonistDetails) mandateParts.push(`Protagonist Details: ${protagonistDetails}`);
   if (genreVibes) mandateParts.push(`Genre Vibes: ${genreVibes}`);
   if (moodKeywords) mandateParts.push(`Mood Keywords: ${moodKeywords}`);
   if (contentPreferences) mandateParts.push(`Content Preferences: ${contentPreferences}`);

@@ -77,9 +77,12 @@ describe('concepts page renderer', () => {
     const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
     const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
     const genreInput = document.getElementById('genreVibes') as HTMLInputElement;
+    const protagonistInput = document.getElementById('protagonistDetails') as HTMLTextAreaElement;
 
     apiKeyInput.value = 'sk-or-valid-test-key-12345';
     apiKeyInput.dispatchEvent(new Event('input'));
+    protagonistInput.value = 'A disgraced former surgeon';
+    protagonistInput.dispatchEvent(new Event('input'));
     await flushPromises();
     kernelSelector.value = 'kernel-1';
     kernelSelector.dispatchEvent(new Event('change'));

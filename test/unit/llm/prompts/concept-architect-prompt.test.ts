@@ -85,6 +85,33 @@ describe('concept-architect-prompt', () => {
       expect(userMessage).not.toContain('STORY KERNEL');
     });
 
+    it('includes mandatory protagonist block in user message when protagonistDetails is provided', () => {
+      const context: ConceptArchitectContext = {
+        ...createContext(),
+        protagonistDetails: 'A disgraced former surgeon',
+      };
+      const messages = buildConceptArchitectPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('MANDATORY PROTAGONIST');
+      expect(userMessage).toContain('A disgraced former surgeon');
+    });
+
+    it('includes protagonist details in mandate parts when provided', () => {
+      const context: ConceptArchitectContext = {
+        ...createContext(),
+        protagonistDetails: 'A disgraced former surgeon',
+      };
+      const messages = buildConceptArchitectPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('Protagonist Details: A disgraced former surgeon');
+    });
+
+    it('omits protagonist block when protagonistDetails is absent', () => {
+      const messages = buildConceptArchitectPrompt(createContext());
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).not.toContain('MANDATORY PROTAGONIST');
+    });
+
     it('includes output requirements in user message', () => {
       const messages = buildConceptArchitectPrompt(createContext());
       const userMessage = messages[1]?.content ?? '';

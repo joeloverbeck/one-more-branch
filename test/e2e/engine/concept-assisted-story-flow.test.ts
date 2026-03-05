@@ -295,6 +295,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     void ideateHandler(
       {
         body: {
+          protagonistDetails: 'a disgraced surgeon turned cybernetic installer',
           genreVibes: 'dark fantasy',
           moodKeywords: 'tense',
           kernelId: 'kernel-1',

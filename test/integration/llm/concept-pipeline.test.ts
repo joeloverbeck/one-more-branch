@@ -171,6 +171,7 @@ describe('Concept Pipeline Integration', () => {
 
     const result = await service.generateConcepts({
       ...seeds,
+      protagonistDetails: 'a disgraced surgeon turned cybernetic installer',
       kernel: {
         dramaticThesis: 'Control destroys trust',
         valueAtStake: 'Trust',

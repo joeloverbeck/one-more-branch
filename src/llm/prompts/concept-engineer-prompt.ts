@@ -80,7 +80,15 @@ export function buildConceptEngineerPrompt(context: ConceptEngineerContext): Cha
     userSections.push(kernelBlock);
   }
 
+  const protagonistDetails = normalize(context.protagonistDetails);
+  if (protagonistDetails) {
+    userSections.push(
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — ARC MUST SERVE THIS CHARACTER):\n${protagonistDetails}\nThe pressureSource, stakes, deadlineMechanism, protagonistLie, protagonistTruth, protagonistGhost, and wantNeedCollisionSketch MUST be engineered for this specific protagonist. The conflict engine exists to pressure this character, not a substitute.`,
+    );
+  }
+
   const mandateParts: string[] = [];
+  if (protagonistDetails) mandateParts.push(`Protagonist Details: ${protagonistDetails}`);
   if (genreVibes) mandateParts.push(`Genre Vibes: ${genreVibes}`);
   if (moodKeywords) mandateParts.push(`Mood Keywords: ${moodKeywords}`);
   if (contentPreferences) mandateParts.push(`Content Preferences: ${contentPreferences}`);

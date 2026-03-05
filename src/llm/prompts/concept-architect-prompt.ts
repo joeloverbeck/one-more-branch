@@ -67,7 +67,15 @@ export function buildConceptArchitectPrompt(context: ConceptArchitectContext): C
     userSections.push(kernelBlock);
   }
 
+  const protagonistDetails = normalize(context.protagonistDetails);
+  if (protagonistDetails) {
+    userSections.push(
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — CHARACTER DESIGN MUST MATCH):\n${protagonistDetails}\nThe protagonistRole, coreCompetence, coreFlaw, and actionVerbs MUST be consistent with this protagonist. Do not redesign the protagonist into a different character. Adapt the world and constraints to serve this protagonist, not the other way around.`,
+    );
+  }
+
   const mandateParts: string[] = [];
+  if (protagonistDetails) mandateParts.push(`Protagonist Details: ${protagonistDetails}`);
   if (genreVibes) mandateParts.push(`Genre Vibes: ${genreVibes}`);
   if (moodKeywords) mandateParts.push(`Mood Keywords: ${moodKeywords}`);
   if (contentPreferences) mandateParts.push(`Content Preferences: ${contentPreferences}`);

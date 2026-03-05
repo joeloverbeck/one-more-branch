@@ -124,6 +124,7 @@ describe('concept-service', () => {
       });
 
       const input: GenerateConceptsInput = {
+        protagonistDetails: ' a disgraced surgeon ',
         genreVibes: ' noir ',
         moodKeywords: ' tense ',
         contentPreferences: ' no romance ',
@@ -136,6 +137,7 @@ describe('concept-service', () => {
       expect(callOrder).toEqual(['ideator', 'evaluator', 'verifier']);
       expect(generateConceptIdeas).toHaveBeenCalledWith(
         {
+          protagonistDetails: 'a disgraced surgeon',
           genreVibes: 'noir',
           moodKeywords: 'tense',
           contentPreferences: 'no romance',
@@ -178,6 +180,7 @@ describe('concept-service', () => {
 
       await expect(
         service.generateConcepts({
+          protagonistDetails: 'a wandering knight',
           genreVibes: '   ',
           moodKeywords: undefined,
           contentPreferences: '',
@@ -197,6 +200,7 @@ describe('concept-service', () => {
 
       await expect(
         service.generateConcepts({
+          protagonistDetails: 'a wandering knight',
           genreVibes: 'noir',
           kernel: createStoryKernel(),
           apiKey: '  short ',
@@ -215,6 +219,7 @@ describe('concept-service', () => {
 
       await expect(
         service.generateConcepts({
+          protagonistDetails: 'a wandering knight',
           genreVibes: 'dark fantasy',
           kernel: createStoryKernel(),
           apiKey: 'valid-key-12345',
@@ -237,6 +242,7 @@ describe('concept-service', () => {
 
       await service
         .generateConcepts({
+          protagonistDetails: 'a wandering knight',
           genreVibes: 'dark fantasy',
           kernel: createStoryKernel(),
           apiKey: 'valid-key-12345',
@@ -272,6 +278,7 @@ describe('concept-service', () => {
       });
 
       await service.generateConcepts({
+        protagonistDetails: 'a wandering knight',
         genreVibes: 'noir',
         kernel: createStoryKernel(),
         apiKey: 'valid-key-12345',
@@ -306,6 +313,7 @@ describe('concept-service', () => {
 
       await expect(
         service.generateConcepts({
+          protagonistDetails: 'a wandering knight',
           genreVibes: 'noir',
           kernel: undefined as unknown as StoryKernel,
           apiKey: 'valid-key-12345',

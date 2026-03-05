@@ -13,6 +13,7 @@ import {
 } from './concept-generator.js';
 
 export interface ConceptSeeds {
+  readonly protagonistDetails?: string;
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
@@ -78,6 +79,7 @@ function isConceptSeeds(value: unknown): value is ConceptSeeds {
   }
 
   const fields: readonly (keyof ConceptSeeds)[] = [
+    'protagonistDetails',
     'genreVibes',
     'moodKeywords',
     'contentPreferences',

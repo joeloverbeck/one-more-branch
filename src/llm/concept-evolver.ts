@@ -16,6 +16,7 @@ export async function evolveConceptIdeas(
     {
       seeds: seedResult.seeds,
       kernel: context.kernel,
+      protagonistDetails: context.protagonistDetails,
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,
@@ -29,6 +30,7 @@ export async function evolveConceptIdeas(
       seeds: seedResult.seeds,
       characterWorlds: architectResult.characterWorlds,
       kernel: context.kernel,
+      protagonistDetails: context.protagonistDetails,
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,

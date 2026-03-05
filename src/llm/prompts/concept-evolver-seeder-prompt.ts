@@ -94,7 +94,15 @@ export function buildConceptEvolverSeederPrompt(
 ${buildParentPayload(context.parentConcepts)}`,
   ];
 
+  const protagonistDetails = normalize(context.protagonistDetails);
+  if (protagonistDetails) {
+    userSections.push(
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — OFFSPRING MUST RETAIN THIS PROTAGONIST):\n${protagonistDetails}\nEvolution mutates genre, conflict, and mechanics — it NEVER replaces the user's protagonist. Every offspring must center this character.`,
+    );
+  }
+
   const mandateParts: string[] = [];
+  if (protagonistDetails) mandateParts.push(`Protagonist Details: ${protagonistDetails}`);
   if (genreVibes) mandateParts.push(`Genre Vibes: ${genreVibes}`);
   if (moodKeywords) mandateParts.push(`Mood Keywords: ${moodKeywords}`);
   if (contentPreferences) mandateParts.push(`Content Preferences: ${contentPreferences}`);

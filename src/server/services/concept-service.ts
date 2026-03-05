@@ -22,6 +22,7 @@ import type { GenreFrame } from '../../models/concept-generator.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 
 export interface GenerateConceptsInput {
+  readonly protagonistDetails?: string;
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
@@ -39,6 +40,7 @@ export interface GenerateConceptsResult {
 }
 
 export interface IdeateConceptsInput {
+  readonly protagonistDetails?: string;
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
@@ -122,6 +124,14 @@ function requireApiKey(apiKey: string): string {
   return trimmed;
 }
 
+function requireProtagonistDetails(input: { protagonistDetails?: string }): string {
+  const trimmed = input.protagonistDetails?.trim();
+  if (!trimmed || trimmed.length === 0) {
+    throw new Error('Protagonist details are required');
+  }
+  return trimmed;
+}
+
 function requireConceptSeeds(input: GenerateConceptsInput): {
   genreVibes?: string;
   moodKeywords?: string;
@@ -188,6 +198,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
   return {
     async generateConcepts(input: GenerateConceptsInput): Promise<GenerateConceptsResult> {
       const apiKey = requireApiKey(input.apiKey);
+      const protagonistDetails = requireProtagonistDetails(input);
       const seeds = requireConceptSeeds(input);
       const kernel = requireKernel(input.kernel);
       const onGenerationStage = input.onGenerationStage;
@@ -208,7 +219,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         attempt: 1,
       });
       const ideation = await deps.generateConceptIdeas(
-        { ...seeds, excludedGenres: input.excludedGenres, kernel },
+        { ...seeds, protagonistDetails, excludedGenres: input.excludedGenres, kernel },
         apiKey,
       );
       onGenerationStage?.({
@@ -265,6 +276,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
 
     async ideateConcepts(input: IdeateConceptsInput): Promise<IdeateConceptsResult> {
       const apiKey = requireApiKey(input.apiKey);
+      const protagonistDetails = requireProtagonistDetails(input);
       const seeds = requireConceptSeeds(input);
       const kernel = requireKernel(input.kernel);
       const onGenerationStage = input.onGenerationStage;
@@ -272,7 +284,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       onGenerationStage?.({ stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 });
       onGenerationStage?.({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
       const ideation: ConceptIdeationPhaseResult = await deps.generateConceptIdeation(
-        { ...seeds, excludedGenres: input.excludedGenres, kernel },
+        { ...seeds, protagonistDetails, excludedGenres: input.excludedGenres, kernel },
         apiKey,
       );
       onGenerationStage?.({ stage: 'ARCHITECTING_CONCEPTS', status: 'completed', attempt: 1 });
