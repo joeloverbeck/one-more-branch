@@ -138,7 +138,7 @@ OUTPUT REQUIREMENTS:
 ### Validation
 
 - `parseConceptSpecificityResponse(...)` requires exactly N analyses with conceptIds matching the input set.
-- `premisePromises` must contain 3-5 non-empty strings.
+- `premisePromises` must contain 3-5 non-empty strings (enforced at parse time, not in the JSON Schema — Anthropic rejects `minItems` > 1 and `maxItems`).
 - `logline` must contain at most 27 words.
 - All text fields must be non-empty after trimming.
 

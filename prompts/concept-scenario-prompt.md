@@ -122,8 +122,8 @@ OUTPUT REQUIREMENTS:
 ### Validation
 
 - `parseConceptScenarioResponse(...)` requires exactly N analyses with conceptIds matching the input set.
-- `escalatingSetpieces` must have exactly 6 items.
-- `setpieceCausalLinks` must have exactly 5 non-empty strings.
+- `escalatingSetpieces` must have exactly 6 items (enforced at parse time, not in the JSON Schema — Anthropic rejects `minItems` > 1 and `maxItems`).
+- `setpieceCausalLinks` must have exactly 5 non-empty strings (enforced at parse time, not in the JSON Schema).
 - `conceptIntegrityScore` is clamped to 0-100 and rounded.
 - All text fields must be non-empty after trimming.
 

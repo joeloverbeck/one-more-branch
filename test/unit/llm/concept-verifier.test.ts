@@ -695,8 +695,6 @@ describe('concept-verifier', () => {
       expect(analysisSchema.properties['logline']).toEqual({ type: 'string', minLength: 1 });
       expect(analysisSchema.properties['premisePromises']).toEqual({
         type: 'array',
-        minItems: 2,
-        maxItems: 7,
         items: { type: 'string', minLength: 1 },
       });
     });
@@ -722,8 +720,6 @@ describe('concept-verifier', () => {
       expect(analysisSchema.required).toContain('conceptIntegrityScore');
       expect(analysisSchema.properties['escalatingSetpieces']).toEqual({
         type: 'array',
-        minItems: 3,
-        maxItems: 8,
         items: { type: 'string' },
       });
       expect(analysisSchema.properties['setpieceCausalChainBroken']).toEqual({
@@ -731,8 +727,6 @@ describe('concept-verifier', () => {
       });
       expect(analysisSchema.properties['setpieceCausalLinks']).toEqual({
         type: 'array',
-        minItems: 2,
-        maxItems: 7,
         items: { type: 'string', minLength: 1 },
       });
     });
