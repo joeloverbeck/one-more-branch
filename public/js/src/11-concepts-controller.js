@@ -2,12 +2,15 @@
 
   function initConceptsPage() {
     var page = document.getElementById('concepts-page');
-    if (!page) {
-      return;
-    }
+    if (!page) return;
 
     var loading = document.getElementById('loading');
-    var generateBtn = document.getElementById('generate-concepts-btn');
+    var developBtn = document.getElementById('develop-concept-btn');
+    var seedSelector = document.getElementById('seed-selector');
+    var selectedSeedSummary = document.getElementById('selected-seed-summary');
+    var selectedSeedHook = document.getElementById('selected-seed-hook');
+    var selectedSeedBadges = document.getElementById('selected-seed-badges');
+    var selectedSeedFields = document.getElementById('selected-seed-fields');
     var conceptCardsContainer = document.getElementById('concept-cards');
     var conceptResultsSection = document.getElementById('concept-results-section');
     var savedConceptsList = document.getElementById('saved-concepts-list');
@@ -15,117 +18,16 @@
     var editCloseBtn = document.getElementById('concept-edit-close');
     var editSaveBtn = document.getElementById('concept-edit-save');
     var editCancelBtn = document.getElementById('concept-edit-cancel');
-    var kernelSelector = document.getElementById('kernel-selector');
-    var kernelSummary = document.getElementById('selected-kernel-summary');
-    var kernelThesis = document.getElementById('selected-kernel-dramatic-thesis');
-    var kernelValue = document.getElementById('selected-kernel-value-at-stake');
-    var kernelOpposingForce = document.getElementById('selected-kernel-opposing-force');
-    var kernelQuestion = document.getElementById('selected-kernel-thematic-question');
-    var kernelScore = document.getElementById('selected-kernel-overall-score');
 
-    if (!loading || !generateBtn) {
-      return;
-    }
+    if (!loading || !developBtn) return;
 
     var loadingProgress = createLoadingProgressController(loading);
     var currentEditConceptId = null;
-    var lastGeneratedConcepts = null;
-    var lastVerifications = [];
-    var lastSeeds = null;
-    var selectedKernelId = '';
-    var lastIdeatedSeeds = null;
-    var lastIdeatedCharacterWorlds = null;
+    var lastEvaluatedConcept = null;
+    var lastVerification = null;
+    var selectedSeedId = '';
 
-    // Selection gate DOM references
-    var conceptSelectionSection = document.getElementById('concept-selection-section');
-    var conceptSelectionCards = document.getElementById('concept-selection-cards');
-    var selectAllConceptsBtn = document.getElementById('select-all-concepts-btn');
-    var deselectAllConceptsBtn = document.getElementById('deselect-all-concepts-btn');
-    var developConceptsBtn = document.getElementById('develop-concepts-btn');
-    var conceptSelectionCounter = document.getElementById('concept-selection-counter');
-    var kernelSummaryFields = {
-      thesis: kernelThesis,
-      valueAtStake: kernelValue,
-      opposingForce: kernelOpposingForce,
-      thematicQuestion: kernelQuestion,
-      overallScore: kernelScore,
-    };
-
-    // ── Genre chip exclusion state ──────────────────────────────────
-    var genreChipGrid = document.getElementById('genre-chip-grid');
-    var genreChipCounter = document.getElementById('genre-chip-counter');
-    var bannedGenres = {};
-    var MIN_UNBANNED = 6;
-    var genreChipToast = null;
-
-    function getTotalGenreCount() {
-      if (!genreChipGrid) return 0;
-      return genreChipGrid.querySelectorAll('.genre-chip').length;
-    }
-
-    function getBannedCount() {
-      var count = 0;
-      for (var key in bannedGenres) {
-        if (bannedGenres[key]) count++;
-      }
-      return count;
-    }
-
-    function updateGenreChipCounter() {
-      if (!genreChipCounter) return;
-      var total = getTotalGenreCount();
-      var available = total - getBannedCount();
-      genreChipCounter.textContent = '(' + available + ' of ' + total + ' available)';
-    }
-
-    function showGenreToast(message) {
-      if (!genreChipToast) {
-        genreChipToast = document.createElement('div');
-        genreChipToast.className = 'genre-chip-toast';
-        document.body.appendChild(genreChipToast);
-      }
-      genreChipToast.textContent = message;
-      genreChipToast.classList.add('genre-chip-toast--visible');
-      setTimeout(function () {
-        genreChipToast.classList.remove('genre-chip-toast--visible');
-      }, 2000);
-    }
-
-    function collectExcludedGenres() {
-      var excluded = [];
-      for (var key in bannedGenres) {
-        if (bannedGenres[key]) excluded.push(key);
-      }
-      return excluded;
-    }
-
-    if (genreChipGrid) {
-      genreChipGrid.addEventListener('click', function (event) {
-        var chip = event.target;
-        if (!(chip instanceof HTMLElement) || !chip.classList.contains('genre-chip')) return;
-        var genre = chip.dataset.genre;
-        if (!genre) return;
-
-        if (bannedGenres[genre]) {
-          // Un-ban
-          bannedGenres[genre] = false;
-          chip.classList.remove('genre-chip--banned');
-        } else {
-          // Check minimum unbanned
-          var total = getTotalGenreCount();
-          var available = total - getBannedCount();
-          if (available <= MIN_UNBANNED) {
-            showGenreToast('At least ' + MIN_UNBANNED + ' genres must remain available');
-            return;
-          }
-          bannedGenres[genre] = true;
-          chip.classList.add('genre-chip--banned');
-        }
-        updateGenreChipCounter();
-      });
-    }
-
-    // Restore API key from session storage
+    // Restore API key
     var storedKey = getApiKey();
     var apiKeyInput = document.getElementById('conceptApiKey');
     if (apiKeyInput && storedKey && apiKeyInput.value.length === 0) {
@@ -138,63 +40,8 @@
       return val || (getApiKey() || '').trim();
     }
 
-    function collectSeeds() {
-      var p = document.getElementById('protagonistDetails');
-      var g = document.getElementById('genreVibes');
-      var m = document.getElementById('moodKeywords');
-      var c = document.getElementById('contentPreferences');
-      return {
-        protagonistDetails: p && typeof p.value === 'string' ? p.value.trim() : '',
-        genreVibes: g && typeof g.value === 'string' ? g.value.trim() : '',
-        moodKeywords: m && typeof m.value === 'string' ? m.value.trim() : '',
-        contentPreferences: c && typeof c.value === 'string' ? c.value.trim() : '',
-      };
-    }
-
-    function isProtagonistDetailsValid() {
-      var el = document.getElementById('protagonistDetails');
-      return el && typeof el.value === 'string' && el.value.trim().length > 0;
-    }
-
-    function isApiKeyValid() {
-      return getConceptApiKey().length >= 10;
-    }
-
-    function updateGenerateButtonState() {
-      generateBtn.disabled = !(isApiKeyValid() && selectedKernelId && isProtagonistDetailsValid());
-    }
-
-    async function loadKernelOptions() {
-      try {
-        await loadKernelOptionsIntoSelect(kernelSelector);
-      } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to load kernels');
-      }
-    }
-
-    async function handleKernelSelectionChange() {
-      if (!(kernelSelector instanceof HTMLSelectElement)) {
-        return;
-      }
-
-      selectedKernelId = (kernelSelector.value || '').trim();
-      if (!selectedKernelId) {
-        hideSavedKernelSummary(kernelSummary, kernelSummaryFields);
-        updateGenerateButtonState();
-        return;
-      }
-
-      try {
-        var kernel = await loadSavedKernelById(selectedKernelId);
-        renderSavedKernelSummary(kernel, kernelSummary, kernelSummaryFields);
-      } catch (error) {
-        selectedKernelId = '';
-        kernelSelector.value = '';
-        hideSavedKernelSummary(kernelSummary, kernelSummaryFields);
-        showError(error instanceof Error ? error.message : 'Failed to load selected kernel');
-      } finally {
-        updateGenerateButtonState();
-      }
+    function updateDevelopButtonState() {
+      developBtn.disabled = !(getConceptApiKey().length >= 10 && selectedSeedId);
     }
 
     function showError(message) {
@@ -205,141 +52,85 @@
       }
     }
 
-    // ── Phase 1: Ideate concepts ──────────────────────────────────
+    // ── Seed selector ───────────────────────────────────────────────
 
-    async function handleIdeate() {
-      var conceptApiKeyInput = document.getElementById('conceptApiKey');
-      if (
-        conceptApiKeyInput &&
-        typeof conceptApiKeyInput.checkValidity === 'function' &&
-        !conceptApiKeyInput.checkValidity()
-      ) {
-        conceptApiKeyInput.reportValidity();
-        return;
-      }
+    async function handleSeedSelectionChange() {
+      if (!(seedSelector instanceof HTMLSelectElement)) return;
 
-      var apiKey = getConceptApiKey();
-      if (apiKey.length < 10) {
-        showError('OpenRouter API key is required');
+      selectedSeedId = (seedSelector.value || '').trim();
+      if (!selectedSeedId) {
+        if (selectedSeedSummary) selectedSeedSummary.style.display = 'none';
+        updateDevelopButtonState();
         return;
       }
-      if (!selectedKernelId) {
-        showError('Select a story kernel before generating concepts');
-        return;
-      }
-
-      var seeds = collectSeeds();
-      if (!seeds.protagonistDetails) {
-        showError('Protagonist details are required');
-        return;
-      }
-      if (!seeds.genreVibes && !seeds.moodKeywords && !seeds.contentPreferences) {
-        showError('At least one concept seed field is required');
-        return;
-      }
-
-      generateBtn.disabled = true;
-      if (conceptSelectionSection) conceptSelectionSection.style.display = 'none';
-      if (conceptResultsSection) conceptResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/generate/ideate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            protagonistDetails: seeds.protagonistDetails,
-            genreVibes: seeds.genreVibes,
-            moodKeywords: seeds.moodKeywords,
-            contentPreferences: seeds.contentPreferences,
-            excludedGenres: collectExcludedGenres(),
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
-
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
+        var response = await fetch('/concept-seeds/api/' + encodeURIComponent(selectedSeedId));
+        var data = await response.json();
+        if (!response.ok || !data.success || !data.seed) {
+          throw new Error(data.error || 'Failed to load seed');
         }
 
-        if (!response.ok || !data || !data.success) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Concept ideation error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Concept ideation debug info:', data.debug);
-            }
-          }
-
-          throw new Error(data && data.error ? data.error : 'Failed to ideate concepts');
-        }
-
-        setApiKey(apiKey);
-        lastIdeatedSeeds = data.seeds;
-        lastIdeatedCharacterWorlds = data.characterWorlds;
-        lastSeeds = seeds;
-
-        // Show selection gate
-        if (conceptSelectionCards) {
-          renderConceptSelectionCards(data.seeds, data.characterWorlds, conceptSelectionCards,
-            function (idx, source, fieldKey, newValue) {
-              if (source === 'seed' && lastIdeatedSeeds && lastIdeatedSeeds[idx]) {
-                var updated = {};
-                updated[fieldKey] = newValue;
-                lastIdeatedSeeds[idx] = Object.assign({}, lastIdeatedSeeds[idx], updated);
-              } else if (source === 'cw' && lastIdeatedCharacterWorlds && lastIdeatedCharacterWorlds[idx]) {
-                var cwUpdated = {};
-                cwUpdated[fieldKey] = newValue;
-                lastIdeatedCharacterWorlds[idx] = Object.assign({}, lastIdeatedCharacterWorlds[idx], cwUpdated);
-              }
-            }
-          );
-        }
-        if (conceptSelectionSection) {
-          conceptSelectionSection.style.display = 'block';
-          updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
-          conceptSelectionSection.scrollIntoView({ behavior: 'smooth' });
-        }
+        renderSeedSummary(data.seed);
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Something went wrong');
+        selectedSeedId = '';
+        seedSelector.value = '';
+        if (selectedSeedSummary) selectedSeedSummary.style.display = 'none';
+        showError(error instanceof Error ? error.message : 'Failed to load selected seed');
       } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateGenerateButtonState();
+        updateDevelopButtonState();
       }
     }
 
-    // ── Phase 2: Develop selected concepts ──────────────────────
+    function renderSeedSummary(seed) {
+      if (!selectedSeedSummary) return;
+
+      if (selectedSeedHook) {
+        selectedSeedHook.textContent = seed.oneLineHook || seed.name || 'Untitled';
+      }
+
+      if (selectedSeedBadges) {
+        var badgesHtml =
+          '<span class="spine-badge spine-badge-type">' + escapeHtml((seed.genreFrame || '').replace(/_/g, ' ')) + '</span>' +
+          '<span class="spine-badge spine-badge-conflict">' + escapeHtml((seed.conflictAxis || '').replace(/_/g, ' ')) + '</span>';
+        if (seed.conflictType) {
+          badgesHtml += '<span class="spine-badge spine-badge-conflict">' + escapeHtml(seed.conflictType.replace(/_/g, ' ')) + '</span>';
+        }
+        if (seed.settingScale) {
+          badgesHtml += '<span class="spine-badge spine-badge-type">' + escapeHtml(seed.settingScale.replace(/_/g, ' ')) + '</span>';
+        }
+        selectedSeedBadges.innerHTML = badgesHtml;
+      }
+
+      if (selectedSeedFields) {
+        var fieldsHtml = '';
+        if (seed.protagonistRole) fieldsHtml += '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(seed.protagonistRole) + '</div>';
+        if (seed.coreFlaw) fieldsHtml += '<div class="spine-field"><span class="spine-label">Core Flaw:</span> ' + escapeHtml(seed.coreFlaw) + '</div>';
+        if (seed.coreConflictLoop) fieldsHtml += '<div class="spine-field"><span class="spine-label">Conflict Loop:</span> ' + escapeHtml(seed.coreConflictLoop) + '</div>';
+        if (seed.whatIfQuestion) fieldsHtml += '<p class="spine-field"><span class="spine-label">What If:</span> <em>' + escapeHtml(seed.whatIfQuestion) + '</em></p>';
+        if (seed.playerFantasy) fieldsHtml += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(seed.playerFantasy) + '</em></p>';
+        if (seed.genreSubversion) fieldsHtml += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(seed.genreSubversion) + '</div>';
+        selectedSeedFields.innerHTML = fieldsHtml;
+      }
+
+      selectedSeedSummary.style.display = 'block';
+    }
+
+    // ── Develop concept ─────────────────────────────────────────────
 
     async function handleDevelop() {
-      if (!lastIdeatedSeeds || !lastIdeatedCharacterWorlds) {
-        showError('No ideated concepts available. Generate first.');
-        return;
-      }
-
-      var selectedIndices = getSelectedConceptIndices(conceptSelectionCards);
-      if (selectedIndices.length === 0) {
-        showError('Select at least one concept to continue.');
-        return;
-      }
-
       var apiKey = getConceptApiKey();
       if (apiKey.length < 10) {
         showError('OpenRouter API key is required');
         return;
       }
+      if (!selectedSeedId) {
+        showError('Select a concept seed first');
+        return;
+      }
 
-      var filteredSeeds = selectedIndices.map(function (i) { return lastIdeatedSeeds[i]; });
-      var filteredCharacterWorlds = selectedIndices.map(function (i) { return lastIdeatedCharacterWorlds[i]; });
-
-      if (developConceptsBtn) developConceptsBtn.disabled = true;
+      developBtn.disabled = true;
+      if (conceptResultsSection) conceptResultsSection.style.display = 'none';
       loading.style.display = 'flex';
       var progressId = createProgressId();
       loadingProgress.start(progressId);
@@ -349,111 +140,83 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            seeds: filteredSeeds,
-            characterWorlds: filteredCharacterWorlds,
-            kernelId: selectedKernelId,
+            seedId: selectedSeedId,
             apiKey: apiKey,
             progressId: progressId,
           }),
         });
 
         var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
+        try { data = await response.json(); } catch (_e) { data = null; }
 
         if (!response.ok || !data || !data.success) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Concept development error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Concept development debug info:', data.debug);
-            }
-          }
-
-          throw new Error(data && data.error ? data.error : 'Failed to develop concepts');
+          throw new Error(data && data.error ? data.error : 'Failed to develop concept');
         }
 
         setApiKey(apiKey);
-        lastGeneratedConcepts = data.evaluatedConcepts;
-        lastVerifications = Array.isArray(data.verifications) ? data.verifications : [];
+        lastEvaluatedConcept = data.evaluatedConcept;
+        lastVerification = data.verification || null;
 
-        if (conceptSelectionSection) conceptSelectionSection.style.display = 'none';
-        renderGeneratedConcepts(data.evaluatedConcepts);
+        renderDevelopedConcept(data.evaluatedConcept, data.verification);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
       } finally {
         loadingProgress.stop();
         loading.style.display = 'none';
-        if (developConceptsBtn) developConceptsBtn.disabled = false;
-        updateGenerateButtonState();
+        updateDevelopButtonState();
       }
     }
 
-    function renderGeneratedConcepts(evaluatedConcepts) {
-      if (!conceptCardsContainer || !conceptResultsSection) {
-        return;
-      }
+    function renderDevelopedConcept(evaluatedConcept, verification) {
+      if (!conceptCardsContainer || !conceptResultsSection) return;
 
       conceptCardsContainer.innerHTML = '';
 
-      if (!Array.isArray(evaluatedConcepts) || evaluatedConcepts.length === 0) {
-        conceptCardsContainer.innerHTML = '<p class="spine-section-subtitle">No concepts generated. Adjust seeds and try again.</p>';
+      if (!evaluatedConcept || !evaluatedConcept.concept) {
+        conceptCardsContainer.innerHTML = '<p class="spine-section-subtitle">No concept generated. Try again.</p>';
         conceptResultsSection.style.display = 'block';
         return;
       }
 
-      evaluatedConcepts.forEach(function (entry, index) {
-        var card = document.createElement('article');
-        card.className = 'spine-card concept-card';
-        card.dataset.index = String(index);
-        var verificationForCard = lastVerifications[index] || null;
-        card.innerHTML =
-          renderConceptCardBody(entry, { includeSelectionToggle: false, index: index, verification: verificationForCard }) +
-          '<div class="form-actions" style="margin-top: 0.5rem;">' +
-            '<button type="button" class="btn btn-primary btn-small concept-save-generated-btn" data-gen-index="' + index + '">Save to Library</button>' +
-          '</div>';
+      var card = document.createElement('article');
+      card.className = 'spine-card concept-card';
 
-        conceptCardsContainer.appendChild(card);
-      });
+      card.innerHTML =
+        renderConceptCardBody(evaluatedConcept, { includeSelectionToggle: false, index: 0, verification: verification }) +
+        '<div class="form-actions" style="margin-top: 0.5rem;">' +
+          '<button type="button" class="btn btn-primary btn-small concept-save-generated-btn">Save to Library</button>' +
+        '</div>';
 
+      conceptCardsContainer.appendChild(card);
       conceptResultsSection.style.display = 'block';
       conceptResultsSection.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // ── Save generated concept ─────────────────────────────────────
+    // ── Save generated concept ──────────────────────────────────────
 
     if (conceptCardsContainer) {
       conceptCardsContainer.addEventListener('click', function (event) {
         var target = event.target;
         if (!(target instanceof HTMLElement)) return;
         var btn = target.closest('.concept-save-generated-btn');
-        if (!btn) return;
-
-        var index = Number(btn.dataset.genIndex);
-        if (!Number.isFinite(index) || !lastGeneratedConcepts || !lastGeneratedConcepts[index]) return;
+        if (!btn || !lastEvaluatedConcept) return;
 
         btn.disabled = true;
         btn.textContent = 'Saving...';
-        saveGeneratedConcept(lastGeneratedConcepts[index], lastSeeds, lastVerifications[index], btn);
+        saveGeneratedConcept(btn);
       });
     }
 
-    async function saveGeneratedConcept(evaluatedConcept, seeds, verification, btn) {
+    async function saveGeneratedConcept(btn) {
       try {
         var saveBody = {
-          evaluatedConcept: evaluatedConcept,
-          seeds: seeds || {},
+          evaluatedConcept: lastEvaluatedConcept,
+          seeds: {},
         };
-        if (selectedKernelId) {
-          saveBody.sourceKernelId = selectedKernelId;
+        if (lastVerification) {
+          saveBody.verificationResult = lastVerification;
         }
-        if (verification) {
-          saveBody.verificationResult = verification;
-        }
+
         var response = await fetch('/concepts/api/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -477,12 +240,13 @@
       }
     }
 
+    // ── Saved concepts list management ──────────────────────────────
+
     function findOrCreateGenreGroup(genre) {
       if (!savedConceptsList) return null;
       var existing = savedConceptsList.querySelector('details.genre-group[data-genre="' + genre + '"]');
       if (existing) return existing;
 
-      // Create new genre group
       var details = document.createElement('details');
       details.className = 'genre-group';
       details.setAttribute('data-genre', genre);
@@ -495,7 +259,6 @@
 
       details.appendChild(summary);
 
-      // Insert genre info panel (conventions & obligations)
       var conventions = GENRE_CONVENTIONS_GLOSSES[genre] || [];
       var obligations = GENRE_OBLIGATIONS_GLOSSES[genre] || [];
       var panelHtml = renderGenreInfoPanelHtml(conventions, obligations);
@@ -505,10 +268,8 @@
 
       var body = document.createElement('div');
       body.className = 'genre-group__body spine-options-container';
-
       details.appendChild(body);
 
-      // Insert alphabetically
       var label = formatGenreDisplayLabel(genre).toLowerCase();
       var groups = savedConceptsList.querySelectorAll('details.genre-group');
       var inserted = false;
@@ -538,7 +299,6 @@
     function appendSavedConceptCard(concept) {
       if (!savedConceptsList) return;
 
-      // Remove "no saved concepts" message if present
       var emptyMsg = savedConceptsList.closest('#saved-concepts-section');
       if (emptyMsg) {
         var emptyP = emptyMsg.querySelector('.spine-section-subtitle');
@@ -617,21 +377,18 @@
 
       card.innerHTML = cardHtml;
 
-      var genre =
-        c.genreFrame || 'UNKNOWN';
+      var genre = c.genreFrame || 'UNKNOWN';
       var genreGroup = findOrCreateGenreGroup(genre);
       if (genreGroup) {
         var body = genreGroup.querySelector('.genre-group__body');
-        if (body) {
-          body.prepend(card);
-        }
+        if (body) body.prepend(card);
         updateGenreGroupCount(genreGroup);
       } else {
         savedConceptsList.prepend(card);
       }
     }
 
-    // ── Delete concept ─────────────────────────────────────────────
+    // ── Delete concept ──────────────────────────────────────────────
 
     if (savedConceptsList) {
       savedConceptsList.addEventListener('click', function (event) {
@@ -668,20 +425,18 @@
         var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId), {
           method: 'DELETE',
         });
-
         var data = await response.json();
         if (!response.ok || !data.success) {
           throw new Error(data.error || 'Failed to delete');
         }
 
         var card = btn.closest('.saved-concept-card');
-        var parentGenreGroup = card ? card.closest('.genre-group') : null;
+        var parentGroup = card ? card.closest('.genre-group') : null;
         if (card) card.remove();
-        if (parentGenreGroup) {
-          updateGenreGroupCount(parentGenreGroup);
-          var remainingCards = parentGenreGroup.querySelectorAll('.saved-concept-card');
-          if (remainingCards.length === 0) {
-            parentGenreGroup.remove();
+        if (parentGroup) {
+          updateGenreGroupCount(parentGroup);
+          if (parentGroup.querySelectorAll('.saved-concept-card').length === 0) {
+            parentGroup.remove();
           }
         }
       } catch (error) {
@@ -690,7 +445,7 @@
       }
     }
 
-    // ── Harden concept ─────────────────────────────────────────────
+    // ── Harden concept ──────────────────────────────────────────────
 
     async function handleHarden(conceptId, btn) {
       var apiKey = getConceptApiKey();
@@ -723,7 +478,6 @@
         setApiKey(apiKey);
         btn.textContent = 'Already Hardened';
 
-        // Update the card badges to show hardened status
         var card = btn.closest('.saved-concept-card');
         if (card) {
           var badges = card.querySelector('.spine-badges');
@@ -735,7 +489,6 @@
             badges.appendChild(hardenBadge);
           }
 
-          // Render stress test results if present
           var stressResult = data.driftRisks || data.playerBreaks
             ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
             : null;
@@ -761,7 +514,7 @@
       }
     }
 
-    // ── Edit modal ─────────────────────────────────────────────────
+    // ── Edit modal ──────────────────────────────────────────────────
 
     function getEditField(id) {
       return document.getElementById('edit-' + id);
@@ -893,7 +646,6 @@
           throw new Error(data.error || 'Failed to save changes');
         }
 
-        // Update the card in the list
         var card = savedConceptsList
           ? savedConceptsList.querySelector('[data-concept-id="' + currentEditConceptId + '"]')
           : null;
@@ -913,48 +665,20 @@
       }
     }
 
-    // ── Event binding ──────────────────────────────────────────────
+    // ── Event binding ───────────────────────────────────────────────
 
-    generateBtn.addEventListener('click', function (event) {
+    developBtn.addEventListener('click', function (event) {
       event.preventDefault();
-      handleIdeate();
+      handleDevelop();
     });
+
     if (apiKeyInput) {
-      apiKeyInput.addEventListener('input', updateGenerateButtonState);
-    }
-    var protagonistInput = document.getElementById('protagonistDetails');
-    if (protagonistInput) {
-      protagonistInput.addEventListener('input', updateGenerateButtonState);
-    }
-    if (kernelSelector instanceof HTMLSelectElement) {
-      kernelSelector.addEventListener('change', function () {
-        void handleKernelSelectionChange();
-      });
+      apiKeyInput.addEventListener('input', updateDevelopButtonState);
     }
 
-    // Selection gate event listeners
-    if (selectAllConceptsBtn) {
-      selectAllConceptsBtn.addEventListener('click', function () {
-        selectAllConcepts(conceptSelectionCards);
-        updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
-      });
-    }
-    if (deselectAllConceptsBtn) {
-      deselectAllConceptsBtn.addEventListener('click', function () {
-        deselectAllConcepts(conceptSelectionCards);
-        updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
-      });
-    }
-    if (developConceptsBtn) {
-      developConceptsBtn.addEventListener('click', function () {
-        handleDevelop();
-      });
-    }
-    if (conceptSelectionCards) {
-      conceptSelectionCards.addEventListener('change', function (event) {
-        if (event.target && event.target.classList && event.target.classList.contains('concept-selection-checkbox')) {
-          updateSelectionCounter(conceptSelectionCards, conceptSelectionCounter, developConceptsBtn);
-        }
+    if (seedSelector instanceof HTMLSelectElement) {
+      seedSelector.addEventListener('change', function () {
+        void handleSeedSelectionChange();
       });
     }
 
@@ -962,7 +686,5 @@
     if (editCancelBtn) editCancelBtn.addEventListener('click', closeEditModal);
     if (editSaveBtn) editSaveBtn.addEventListener('click', handleEditSave);
 
-    hideSavedKernelSummary(kernelSummary, kernelSummaryFields);
-    updateGenerateButtonState();
-    void loadKernelOptions();
+    updateDevelopButtonState();
   }

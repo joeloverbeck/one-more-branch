@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="concept-seeds-page">
+    <section class="form-section">
+      <h1>Concept Seeds</h1>
+
+      <section id="seed-generate-section">
+        <h2>Generate New Seeds</h2>
+        <form id="seed-generate-form">
+          <div class="form-group">
+            <label for="kernel-selector">Story Kernel *</label>
+            <select id="kernel-selector" required>
+              <option value="">Select a saved kernel...</option>
+            </select>
+          </div>
+
+          <article id="selected-kernel-summary" class="spine-card" style="display: none; margin-bottom: 1rem;">
+            <h3 class="spine-cdq">Selected Kernel</h3>
+            <p class="spine-field"><span class="spine-label">Dramatic Thesis:</span> <span id="selected-kernel-dramatic-thesis"></span></p>
+            <p class="spine-field"><span class="spine-label">Value At Stake:</span> <span id="selected-kernel-value-at-stake"></span></p>
+            <p class="spine-field"><span class="spine-label">Opposing Force:</span> <span id="selected-kernel-opposing-force"></span></p>
+            <p class="spine-field"><span class="spine-label">Thematic Question:</span> <span id="selected-kernel-thematic-question"></span></p>
+            <p class="spine-field"><span class="spine-label">Overall Score:</span> <span id="selected-kernel-overall-score"></span></p>
+          </article>
+
+          <div class="form-group">
+            <label for="protagonistDetails">Protagonist Details *</label>
+            <textarea
+              id="protagonistDetails"
+              required
+              rows="3"
+              placeholder="A disgraced former surgeon who lost her medical license after a botched operation, now working as a back-alley cybernetic installer..."
+            ></textarea>
+            <p class="form-help">
+              Describe your protagonist — who they are, their background, defining traits.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="genreVibes">Genre Vibes</label>
+            <input
+              type="text"
+              id="genreVibes"
+              placeholder="dark fantasy, sci-fi noir, cosmic horror..."
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="moodKeywords">Mood Keywords</label>
+            <input
+              type="text"
+              id="moodKeywords"
+              placeholder="melancholic, tense, whimsical..."
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="contentPreferences">Content Preferences</label>
+            <input
+              type="text"
+              id="contentPreferences"
+              placeholder="include body horror, no romance..."
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Genre Exclusions <span class="genre-chip-counter" id="genre-chip-counter">(<%= genreFrames.length %> of <%= genreFrames.length %> available)</span></label>
+            <p class="form-help">Click genres to exclude them from generation. At least 6 must remain.</p>
+            <div class="genre-chip-grid" id="genre-chip-grid">
+              <% genreFrames.forEach(function(genre) { %>
+              <button type="button" class="genre-chip" data-genre="<%= genre %>"><%= genre.replace(/_/g, ' ') %></button>
+              <% }); %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="seedApiKey">OpenRouter API Key *</label>
+            <input
+              type="password"
+              id="seedApiKey"
+              required
+              placeholder="sk-or-..."
+              autocomplete="off"
+            >
+            <p class="form-help">
+              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+              Your key is never stored on the server.
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="generate-seeds-btn" class="btn btn-primary btn-large" disabled>Generate Seeds</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="seed-results-section" class="spine-section" style="display: none;">
+        <h2 class="spine-section-title">Generated Seeds</h2>
+        <p class="spine-section-subtitle">Click "Save" on any seed to add it to your library.</p>
+        <div id="seed-result-cards" class="spine-options-container"></div>
+      </section>
+
+      <section id="saved-seeds-section">
+        <h2>Saved Seeds</h2>
+        <% if (seeds.length === 0) { %>
+          <p class="spine-section-subtitle">No saved seeds yet. Generate some above!</p>
+        <% } %>
+        <% const groupedSeeds = typeof genreGroups !== 'undefined' && Array.isArray(genreGroups) ? genreGroups : []; %>
+        <div id="saved-seeds-list">
+          <% for (const group of groupedSeeds) { %>
+          <details class="genre-group" data-genre="<%= group.genre %>">
+            <summary class="genre-group__header">
+              <span class="genre-group__label"><%= group.displayLabel %></span>
+              <span class="genre-group__count">(<%= group.seeds.length %>)</span>
+            </summary>
+            <div class="genre-group__body spine-options-container">
+              <% for (const seed of group.seeds) { %>
+              <article class="spine-card saved-seed-card" data-seed-id="<%= seed.id %>">
+                <div class="spine-badges">
+                  <span class="spine-badge spine-badge-type"><%= (seed.genreFrame || '').replace(/_/g, ' ') %></span>
+                  <span class="spine-badge spine-badge-conflict"><%= (seed.conflictAxis || '').replace(/_/g, ' ') %></span>
+                  <% if (seed.conflictType) { %><span class="spine-badge spine-badge-conflict"><%= seed.conflictType.replace(/_/g, ' ') %></span><% } %>
+                  <% if (seed.settingScale) { %><span class="spine-badge spine-badge-type"><%= seed.settingScale.replace(/_/g, ' ') %></span><% } %>
+                </div>
+                <h3 class="spine-cdq"><%= seed.name %></h3>
+                <div class="spine-field"><span class="spine-label">Protagonist:</span> <%= seed.protagonistRole || '' %></div>
+                <% if (seed.coreFlaw) { %><div class="spine-field"><span class="spine-label">Core Flaw:</span> <%= seed.coreFlaw %></div><% } %>
+                <% if (seed.coreConflictLoop) { %><div class="spine-field"><span class="spine-label">Conflict Loop:</span> <%= seed.coreConflictLoop %></div><% } %>
+                <% if (seed.whatIfQuestion) { %><p class="spine-field"><span class="spine-label">What If:</span> <em><%= seed.whatIfQuestion %></em></p><% } %>
+                <% if (seed.playerFantasy) { %><p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em><%= seed.playerFantasy %></em></p><% } %>
+                <% if (seed.genreSubversion) { %><div class="spine-field"><span class="spine-label">Genre Subversion:</span> <%= seed.genreSubversion %></div><% } %>
+                <% if (Array.isArray(seed.settingAxioms) && seed.settingAxioms.length > 0) { %><div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul><% seed.settingAxioms.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+                <% if (Array.isArray(seed.constraintSet) && seed.constraintSet.length > 0) { %><div class="spine-field"><span class="spine-label">Constraints:</span><ul><% seed.constraintSet.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+                <% if (Array.isArray(seed.keyInstitutions) && seed.keyInstitutions.length > 0) { %><div class="spine-field"><span class="spine-label">Key Institutions:</span><ul><% seed.keyInstitutions.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+                <div class="spine-field">
+                  <span class="spine-label">Created:</span> <%= new Date(seed.createdAt).toLocaleDateString() %>
+                </div>
+                <div class="form-actions" style="margin-top: 0.5rem;">
+                  <button type="button" class="btn btn-secondary btn-small seed-edit-btn" data-seed-id="<%= seed.id %>">Edit Name</button>
+                  <button type="button" class="btn btn-danger btn-small seed-delete-btn" data-seed-id="<%= seed.id %>">Delete</button>
+                </div>
+              </article>
+              <% } %>
+            </div>
+          </details>
+          <% } %>
+        </div>
+      </section>
+    </section>
+
+    <div class="loading-overlay" id="loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Working...</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -20,42 +20,21 @@ describe('concepts page form validation', () => {
         : input instanceof URL
           ? input.toString()
           : input.url;
-      if (url === '/kernels/api/list') {
+      if (url.startsWith('/concept-seeds/api/seed-1')) {
         return Promise.resolve(
           mockJsonResponse({
             success: true,
-            kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
-          }),
-        );
-      }
-      if (url === '/kernels/api/kernel-1') {
-        return Promise.resolve(
-          mockJsonResponse({
-            success: true,
-            kernel: {
-              id: 'kernel-1',
-              name: 'Kernel 1',
-              evaluatedKernel: {
-                kernel: {
-                  dramaticThesis: 'Control destroys trust',
-                  valueAtStake: 'Trust',
-                  opposingForce: 'Fear of uncertainty',
-                  directionOfChange: 'IRONIC',
-                  conflictAxis: 'TRUTH_VS_STABILITY',
-                  dramaticStance: 'TRAGIC',
-                  thematicQuestion: 'Can safety exist without control?',
-                  antithesis: 'Counter-argument challenges the thesis.',
-                },
-                overallScore: 82,
-              },
+            seed: {
+              id: 'seed-1',
+              name: 'A dark mage rises',
+              oneLineHook: 'A dark mage rises',
+              genreFrame: 'FANTASY',
+              conflictAxis: 'POWER_VS_MORALITY',
+              protagonistRole: 'Dark mage',
             },
           }),
         );
       }
-      if (url === '/concepts/api/generate/ideate') {
-        return Promise.resolve(mockJsonResponse({ success: true, seeds: [], characterWorlds: [] }));
-      }
-
       return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
     });
     global.fetch = fetchMock;
@@ -77,60 +56,35 @@ describe('concepts page form validation', () => {
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  it('keeps generate disabled until API key, kernel, and protagonist details are provided', async () => {
+  it('keeps develop disabled until API key and seed are selected', async () => {
     setupPage();
 
     const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
-    const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
-    const protagonistInput = document.getElementById('protagonistDetails') as HTMLTextAreaElement;
-    const generateBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
-    expect(generateBtn.disabled).toBe(true);
+    const seedSelector = document.getElementById('seed-selector') as HTMLSelectElement;
+    const developBtn = document.getElementById('develop-concept-btn') as HTMLButtonElement;
+    expect(developBtn.disabled).toBe(true);
 
+    // API key alone is not enough
     apiKeyInput.value = 'sk-or-valid-test-key-12345';
     apiKeyInput.dispatchEvent(new Event('input'));
-    expect(generateBtn.disabled).toBe(true);
+    expect(developBtn.disabled).toBe(true);
 
+    // Selecting a seed enables the button (async fetch completes)
+    seedSelector.value = 'seed-1';
+    seedSelector.dispatchEvent(new Event('change'));
     await flushPromises();
-    kernelSelector.value = 'kernel-1';
-    kernelSelector.dispatchEvent(new Event('change'));
-    await flushPromises();
-    expect(generateBtn.disabled).toBe(true);
-
-    protagonistInput.value = 'A disgraced former surgeon';
-    protagonistInput.dispatchEvent(new Event('input'));
-    expect(generateBtn.disabled).toBe(false);
+    expect(developBtn.disabled).toBe(false);
   });
 
-  it('shows inline error when no seed fields are provided', async () => {
+  it('keeps develop disabled when only seed is selected without API key', async () => {
     setupPage();
 
-    const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
-    const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
-    const protagonistInput = document.getElementById('protagonistDetails') as HTMLTextAreaElement;
-    apiKeyInput.value = 'sk-or-valid-test-key-12345';
-    apiKeyInput.dispatchEvent(new Event('input'));
-    protagonistInput.value = 'A disgraced former surgeon';
-    protagonistInput.dispatchEvent(new Event('input'));
-    await flushPromises();
-    kernelSelector.value = 'kernel-1';
-    kernelSelector.dispatchEvent(new Event('change'));
-    await flushPromises();
+    const seedSelector = document.getElementById('seed-selector') as HTMLSelectElement;
+    const developBtn = document.getElementById('develop-concept-btn') as HTMLButtonElement;
 
-    const generateBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
-    generateBtn.click();
-
-    const hasGenerateCall = fetchMock.mock.calls.some((call: [RequestInfo | URL, ...unknown[]]) => {
-      const requestInput = call[0];
-      const url = typeof requestInput === 'string'
-        ? requestInput
-        : requestInput instanceof URL
-          ? requestInput.toString()
-          : requestInput.url;
-      return url === '/concepts/api/generate/ideate';
-    });
-    expect(hasGenerateCall).toBe(false);
-    const errorDiv = document.querySelector('.alert-error');
-    expect(errorDiv).not.toBeNull();
-    expect(errorDiv?.textContent).toBe('At least one concept seed field is required');
+    seedSelector.value = 'seed-1';
+    seedSelector.dispatchEvent(new Event('change'));
+    await flushPromises();
+    expect(developBtn.disabled).toBe(true);
   });
 });

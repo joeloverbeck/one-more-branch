@@ -148,6 +148,21 @@ export function getConceptGenerationFilePath(generationId: string): string {
   return path.join(getConceptGenerationsDir(), `${generationId}.json`);
 }
 
+export function getConceptSeedsDir(): string {
+  return path.join(getConceptsDir(), 'seeds');
+}
+
+export function ensureConceptSeedsDir(): void {
+  const seedsDir = getConceptSeedsDir();
+  if (!existsSync(seedsDir)) {
+    mkdirSync(seedsDir, { recursive: true });
+  }
+}
+
+export function getConceptSeedFilePath(seedId: string): string {
+  return path.join(getConceptSeedsDir(), `${seedId}.json`);
+}
+
 export function getKernelsDir(): string {
   return path.join(process.cwd(), getConfig().storage.kernelsDir);
 }

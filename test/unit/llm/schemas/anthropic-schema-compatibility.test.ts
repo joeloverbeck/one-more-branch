@@ -11,6 +11,13 @@ import { CONCEPT_EVOLUTION_SCHEMA } from '../../../../src/llm/schemas/concept-ev
 import { CONCEPT_IDEATION_SCHEMA } from '../../../../src/llm/schemas/concept-ideator-schema';
 import { CONCEPT_SCENARIO_SCHEMA } from '../../../../src/llm/schemas/concept-scenario-schema';
 import { CONCEPT_SEEDER_SCHEMA } from '../../../../src/llm/schemas/concept-seeder-schema';
+import { CONCEPT_SINGLE_ENGINEER_SCHEMA } from '../../../../src/llm/schemas/concept-single-engineer-schema';
+import {
+  CONCEPT_SINGLE_SCORING_SCHEMA,
+  CONCEPT_SINGLE_DEEP_EVAL_SCHEMA,
+} from '../../../../src/llm/schemas/concept-single-evaluator-schema';
+import { CONCEPT_SINGLE_SCENARIO_SCHEMA } from '../../../../src/llm/schemas/concept-single-scenario-schema';
+import { CONCEPT_SINGLE_SPECIFICITY_SCHEMA } from '../../../../src/llm/schemas/concept-single-specificity-schema';
 import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../../src/llm/schemas/concept-specificity-schema';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../../src/llm/schemas/concept-stress-tester-schema';
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/entity-decomposer-schema';
@@ -230,6 +237,11 @@ describe('Anthropic schema compatibility', () => {
     { name: 'CONCEPT_EVOLUTION_SCHEMA', schema: CONCEPT_EVOLUTION_SCHEMA },
     { name: 'CONCEPT_ARCHITECT_SCHEMA', schema: CONCEPT_ARCHITECT_SCHEMA },
     { name: 'CONCEPT_ENGINEER_SCHEMA', schema: CONCEPT_ENGINEER_SCHEMA },
+    { name: 'CONCEPT_SINGLE_ENGINEER_SCHEMA', schema: CONCEPT_SINGLE_ENGINEER_SCHEMA },
+    { name: 'CONCEPT_SINGLE_SCORING_SCHEMA', schema: CONCEPT_SINGLE_SCORING_SCHEMA },
+    { name: 'CONCEPT_SINGLE_DEEP_EVAL_SCHEMA', schema: CONCEPT_SINGLE_DEEP_EVAL_SCHEMA },
+    { name: 'CONCEPT_SINGLE_SCENARIO_SCHEMA', schema: CONCEPT_SINGLE_SCENARIO_SCHEMA },
+    { name: 'CONCEPT_SINGLE_SPECIFICITY_SCHEMA', schema: CONCEPT_SINGLE_SPECIFICITY_SCHEMA },
     { name: 'CONCEPT_SCENARIO_SCHEMA', schema: CONCEPT_SCENARIO_SCHEMA },
     { name: 'CONCEPT_SPECIFICITY_SCHEMA', schema: CONCEPT_SPECIFICITY_SCHEMA },
     { name: 'CONCEPT_SEEDER_SCHEMA', schema: CONCEPT_SEEDER_SCHEMA },

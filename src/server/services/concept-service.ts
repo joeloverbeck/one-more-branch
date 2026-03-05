@@ -5,6 +5,10 @@ import {
   generateConceptDevelopment,
 } from '../../llm/concept-ideator.js';
 import type { ConceptIdeationPhaseResult } from '../../llm/concept-ideator.js';
+import { generateSingleConceptEngine } from '../../llm/concept-single-engineer.js';
+import { evaluateSingleConcept } from '../../llm/concept-single-evaluator.js';
+import { verifySingleConcept } from '../../llm/concept-single-verifier.js';
+import { mergeConceptStages } from '../../llm/concept-ideator.js';
 import { stressTestConcept as runConceptStressTest } from '../../llm/concept-stress-tester.js';
 import { verifyConcepts as runVerifyConcepts } from '../../llm/concept-verifier.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
@@ -19,6 +23,7 @@ import type {
   EvaluatedConcept,
 } from '../../models/index.js';
 import type { GenreFrame } from '../../models/concept-generator.js';
+import type { ConceptSeed } from '../../models/concept-seed.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 
 export interface GenerateConceptsInput {
@@ -65,6 +70,19 @@ export interface DevelopConceptsInput {
 
 export type DevelopConceptsResult = GenerateConceptsResult;
 
+export interface DevelopSingleConceptInput {
+  readonly seed: ConceptSeed;
+  readonly kernel: StoryKernel;
+  readonly apiKey: string;
+  readonly onGenerationStage?: GenerationStageCallback;
+}
+
+export interface DevelopSingleConceptResult {
+  readonly concept: ConceptSpec;
+  readonly evaluatedConcept: EvaluatedConcept;
+  readonly verification: ConceptVerification;
+}
+
 export interface StressTestInput {
   readonly concept: ConceptSpec;
   readonly scores: ConceptDimensionScores;
@@ -87,6 +105,7 @@ export interface ConceptService {
   generateConcepts(input: GenerateConceptsInput): Promise<GenerateConceptsResult>;
   ideateConcepts(input: IdeateConceptsInput): Promise<IdeateConceptsResult>;
   developConcepts(input: DevelopConceptsInput): Promise<DevelopConceptsResult>;
+  developSingleConcept(input: DevelopSingleConceptInput): Promise<DevelopSingleConceptResult>;
   stressTestConcept(input: StressTestInput): Promise<ConceptStressTestResult>;
 }
 
@@ -336,6 +355,69 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
         evaluatedConcepts: evaluation.evaluatedConcepts,
         verifications: verification.verifications,
       };
+    },
+
+    async developSingleConcept(
+      input: DevelopSingleConceptInput,
+    ): Promise<DevelopSingleConceptResult> {
+      const apiKey = requireApiKey(input.apiKey);
+      const kernel = requireKernel(input.kernel);
+      const onGenerationStage = input.onGenerationStage;
+      const seed = input.seed;
+
+      const seedFields: ConceptSeedFields = {
+        oneLineHook: seed.oneLineHook,
+        genreFrame: seed.genreFrame,
+        genreSubversion: seed.genreSubversion,
+        conflictAxis: seed.conflictAxis,
+        conflictType: seed.conflictType,
+        whatIfQuestion: seed.whatIfQuestion,
+        playerFantasy: seed.playerFantasy,
+      };
+
+      const characterWorld: ConceptCharacterWorldFields = {
+        protagonistRole: seed.protagonistRole,
+        coreCompetence: seed.coreCompetence,
+        coreFlaw: seed.coreFlaw,
+        actionVerbs: [...seed.actionVerbs],
+        coreConflictLoop: seed.coreConflictLoop,
+        settingAxioms: [...seed.settingAxioms],
+        constraintSet: [...seed.constraintSet],
+        keyInstitutions: [...seed.keyInstitutions],
+        settingScale: seed.settingScale,
+      };
+
+      onGenerationStage?.({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
+      const engineResult = await generateSingleConceptEngine(
+        {
+          seed: seedFields,
+          characterWorld,
+          kernel,
+          protagonistDetails: seed.protagonistDetails,
+          genreVibes: seed.genreVibes,
+          moodKeywords: seed.moodKeywords,
+          contentPreferences: seed.contentPreferences,
+        },
+        apiKey,
+      );
+      onGenerationStage?.({ stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 });
+
+      const concepts = mergeConceptStages([seedFields], [characterWorld], [engineResult.engine]);
+      const concept = concepts[0] as ConceptSpec;
+
+      onGenerationStage?.({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
+      const { evaluatedConcept } = await evaluateSingleConcept(
+        concept,
+        { genreVibes: seed.genreVibes, moodKeywords: seed.moodKeywords, contentPreferences: seed.contentPreferences, apiKey },
+        apiKey,
+      );
+      onGenerationStage?.({ stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 });
+
+      onGenerationStage?.({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
+      const verification = await verifySingleConcept(evaluatedConcept, kernel, apiKey);
+      onGenerationStage?.({ stage: 'GENERATING_SCENARIOS', status: 'completed', attempt: 1 });
+
+      return { concept, evaluatedConcept, verification };
     },
 
     async stressTestConcept(input: StressTestInput): Promise<ConceptStressTestResult> {

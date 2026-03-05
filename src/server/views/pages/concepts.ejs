@@ -11,76 +11,34 @@
 
   <main class="container" id="concepts-page">
     <section class="form-section">
-      <h1>Story Concepts</h1>
+      <h1>Develop Concept Seeds</h1>
 
-      <section id="concept-generate-section">
-        <h2>Generate New Concepts</h2>
-        <form id="concept-generate-form">
+      <section id="concept-develop-section">
+        <h2>Develop a Saved Seed</h2>
+        <p class="spine-section-subtitle">Select a saved seed to develop into a full concept with scoring and verification.</p>
+        <form id="concept-develop-form">
           <div class="form-group">
-            <label for="kernel-selector">Story Kernel *</label>
-            <select id="kernel-selector" required>
-              <option value="">Select a saved kernel...</option>
+            <label for="seed-selector">Concept Seed *</label>
+            <select id="seed-selector" required>
+              <option value="">Select a saved seed...</option>
+              <%
+                const devSeedGroups = typeof seedGenreGroups !== 'undefined' && Array.isArray(seedGenreGroups) ? seedGenreGroups : [];
+                devSeedGroups.forEach(function(group) {
+              %>
+              <optgroup label="<%= group.displayLabel %>">
+                <% group.seeds.forEach(function(s) { %>
+                <option value="<%= s.id %>"><%= s.oneLineHook %></option>
+                <% }); %>
+              </optgroup>
+              <% }); %>
             </select>
           </div>
 
-          <article id="selected-kernel-summary" class="spine-card" style="display: none; margin-bottom: 1rem;">
-            <h3 class="spine-cdq">Selected Kernel</h3>
-            <p class="spine-field"><span class="spine-label">Dramatic Thesis:</span> <span id="selected-kernel-dramatic-thesis"></span></p>
-            <p class="spine-field"><span class="spine-label">Value At Stake:</span> <span id="selected-kernel-value-at-stake"></span></p>
-            <p class="spine-field"><span class="spine-label">Opposing Force:</span> <span id="selected-kernel-opposing-force"></span></p>
-            <p class="spine-field"><span class="spine-label">Thematic Question:</span> <span id="selected-kernel-thematic-question"></span></p>
-            <p class="spine-field"><span class="spine-label">Overall Score:</span> <span id="selected-kernel-overall-score"></span></p>
+          <article id="selected-seed-summary" class="spine-card" style="display: none; margin-bottom: 1rem;">
+            <h3 class="spine-cdq" id="selected-seed-hook"></h3>
+            <div class="spine-badges" id="selected-seed-badges"></div>
+            <div id="selected-seed-fields"></div>
           </article>
-
-          <div class="form-group">
-            <label for="protagonistDetails">Protagonist Details *</label>
-            <textarea
-              id="protagonistDetails"
-              required
-              rows="3"
-              placeholder="A disgraced former surgeon who lost her medical license after a botched operation, now working as a back-alley cybernetic installer..."
-            ></textarea>
-            <p class="form-help">
-              Describe your protagonist — who they are, their background, defining traits. This will be treated as an absolute constraint during concept generation.
-            </p>
-          </div>
-
-          <div class="form-group">
-            <label for="genreVibes">Genre Vibes</label>
-            <input
-              type="text"
-              id="genreVibes"
-              placeholder="dark fantasy, sci-fi noir, cosmic horror..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="moodKeywords">Mood Keywords</label>
-            <input
-              type="text"
-              id="moodKeywords"
-              placeholder="melancholic, tense, whimsical..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="contentPreferences">Content Preferences</label>
-            <input
-              type="text"
-              id="contentPreferences"
-              placeholder="include body horror, no romance..."
-            >
-          </div>
-
-          <div class="form-group">
-            <label>Genre Exclusions <span class="genre-chip-counter" id="genre-chip-counter">(<%= genreFrames.length %> of <%= genreFrames.length %> available)</span></label>
-            <p class="form-help">Click genres to exclude them from generation. At least 6 must remain.</p>
-            <div class="genre-chip-grid" id="genre-chip-grid">
-              <% genreFrames.forEach(function(genre) { %>
-              <button type="button" class="genre-chip" data-genre="<%= genre %>"><%= genre.replace(/_/g, ' ') %></button>
-              <% }); %>
-            </div>
-          </div>
 
           <div class="form-group">
             <label for="conceptApiKey">OpenRouter API Key *</label>
@@ -98,28 +56,14 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large" disabled>Generate Concepts</button>
+            <button type="button" id="develop-concept-btn" class="btn btn-primary btn-large" disabled>Develop Concept</button>
           </div>
         </form>
       </section>
 
-      <section id="concept-selection-section" style="display: none;">
-        <h2 class="section-title">Review & Select Concepts</h2>
-        <p class="spine-section-subtitle">Choose which concepts to develop further. Unselected concepts will be discarded.</p>
-        <div class="concept-selection-controls">
-          <button id="select-all-concepts-btn" type="button" class="btn btn-secondary btn-small">Select All</button>
-          <button id="deselect-all-concepts-btn" type="button" class="btn btn-secondary btn-small">Deselect All</button>
-          <span id="concept-selection-counter" class="concept-selection-counter"></span>
-        </div>
-        <div id="concept-selection-cards" class="spine-options-container"></div>
-        <div class="form-actions">
-          <button id="develop-concepts-btn" type="button" class="btn btn-primary" disabled>Continue with Selected</button>
-        </div>
-      </section>
-
       <section id="concept-results-section" class="spine-section" style="display: none;">
-        <h2 class="spine-section-title">Generated Concepts</h2>
-        <p class="spine-section-subtitle">Click "Save" on any concept to add it to your library.</p>
+        <h2 class="spine-section-title">Developed Concept</h2>
+        <p class="spine-section-subtitle">Click "Save" to add it to your library.</p>
         <div id="concept-cards" class="spine-options-container"></div>
       </section>
 

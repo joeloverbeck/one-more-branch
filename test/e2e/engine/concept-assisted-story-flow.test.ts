@@ -1,40 +1,51 @@
-import type { Request, Response, Router } from 'express';
+import type { NextFunction, Request, Response, Router } from 'express';
 
 jest.mock('@/llm', () => ({
   decomposeEntities: jest.fn(),
   generateStoryStructure: jest.fn(),
 }));
 
-jest.mock('@/llm/concept-ideator', () => ({
-  generateConceptIdeas: jest.fn(),
-  generateConceptIdeation: jest.fn(),
-  generateConceptDevelopment: jest.fn(),
-}));
-
-jest.mock('@/llm/concept-evaluator', () => ({
-  evaluateConcepts: jest.fn(),
-}));
-
 jest.mock('@/llm/concept-stress-tester', () => ({
   stressTestConcept: jest.fn(),
-}));
-
-jest.mock('@/llm/concept-verifier', () => ({
-  verifyConcepts: jest.fn(),
 }));
 
 jest.mock('@/persistence/concept-repository', () => ({
   listConcepts: jest.fn().mockResolvedValue([]),
   loadConcept: jest.fn(),
-  saveConceptGenerationBatch: jest.fn(),
   saveConcept: jest.fn(),
   updateConcept: jest.fn(),
   deleteConcept: jest.fn(),
   conceptExists: jest.fn(),
 }));
 
+jest.mock('@/persistence/concept-seed-repository', () => ({
+  listSeeds: jest.fn().mockResolvedValue([]),
+  loadSeed: jest.fn(),
+  saveSeed: jest.fn(),
+  seedExists: jest.fn(),
+  updateSeed: jest.fn(),
+  deleteSeed: jest.fn(),
+}));
+
 jest.mock('@/persistence/kernel-repository', () => ({
   loadKernel: jest.fn(),
+}));
+
+const mockIdeateConcepts = jest.fn();
+const mockDevelopSingleConcept = jest.fn();
+const mockServiceStressTest = jest.fn();
+
+jest.mock('@/server/services/concept-service', () => ({
+  ConceptEvaluationStageError: class extends Error { name = 'ConceptEvaluationStageError'; },
+  createConceptService: jest.fn(),
+  conceptService: {
+    ideateConcepts: mockIdeateConcepts,
+    developSingleConcept: mockDevelopSingleConcept,
+    stressTestConcept: mockServiceStressTest,
+    generateConcepts: jest.fn(),
+    developConcepts: jest.fn(),
+    verifyConcepts: jest.fn(),
+  },
 }));
 
 jest.mock('@/logging/index', () => ({
@@ -51,23 +62,16 @@ jest.mock('@/logging/index', () => ({
 
 import { storyEngine } from '@/engine';
 import { generateStoryStructure, decomposeEntities } from '@/llm';
-import { evaluateConcepts } from '@/llm/concept-evaluator';
-import {
-  generateConceptIdeas,
-  generateConceptIdeation,
-  generateConceptDevelopment,
-} from '@/llm/concept-ideator';
-import { stressTestConcept } from '@/llm/concept-stress-tester';
-import { verifyConcepts } from '@/llm/concept-verifier';
 import type { StoryId, StorySpine } from '@/models';
+import { conceptSeedRoutes } from '@/server/routes/concept-seeds';
 import { conceptRoutes } from '@/server/routes/concepts';
 import { storyRoutes } from '@/server/routes/stories';
 import {
   loadConcept,
-  saveConceptGenerationBatch,
   saveConcept,
   updateConcept,
 } from '@/persistence/concept-repository';
+import { loadSeed, saveSeed } from '@/persistence/concept-seed-repository';
 import { loadKernel } from '@/persistence/kernel-repository';
 import {
   createConceptCharacterWorldFixture,
@@ -76,14 +80,13 @@ import {
   createConceptStressTestFixture,
   createConceptVerificationFixture,
   createEvaluatedConceptFixture,
-  createScoredConceptFixture,
 } from '../../fixtures/concept-generator';
 
 type RouteLayer = {
   route?: {
     path?: string;
     methods?: Record<string, boolean>;
-    stack?: Array<{ handle: (req: Request, res: Response) => Promise<void> | void }>;
+    stack?: Array<{ handle: (req: Request, res: Response, next: NextFunction) => Promise<void> | void }>;
   };
 };
 
@@ -91,7 +94,7 @@ function getRouteHandler(
   router: Router,
   method: 'post',
   path: string,
-): (req: Request, res: Response) => Promise<void> | void {
+): (req: Request, res: Response, next: NextFunction) => Promise<void> | void {
   const layer = (router.stack as unknown as RouteLayer[]).find(
     (item) => item.route?.path === path && item.route?.methods?.[method],
   );
@@ -104,7 +107,7 @@ function getRouteHandler(
   return handler;
 }
 
-async function waitForMock(mock: jest.Mock, timeout = 1000): Promise<void> {
+async function waitForMock(mock: jest.Mock, timeout = 2000): Promise<void> {
   const start = Date.now();
   while (mock.mock.calls.length === 0) {
     if (Date.now() - start > timeout) {
@@ -134,33 +137,23 @@ const mockSpine: StorySpine = {
   toneAvoid: ['whimsical', 'comedic'],
 };
 
+const noopNext: NextFunction = jest.fn();
+
 describe('Concept Assisted Story Flow (E2E)', () => {
   const createdStoryIds = new Set<StoryId>();
 
-  const mockedGenerateConceptIdeas = generateConceptIdeas as jest.MockedFunction<
-    typeof generateConceptIdeas
-  >;
-  const mockedGenerateConceptIdeation = generateConceptIdeation as jest.MockedFunction<
-    typeof generateConceptIdeation
-  >;
-  const mockedGenerateConceptDevelopment = generateConceptDevelopment as jest.MockedFunction<
-    typeof generateConceptDevelopment
-  >;
-  const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
-  const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
-  const mockedVerifyConcepts = verifyConcepts as jest.MockedFunction<typeof verifyConcepts>;
   const mockedDecomposeEntities = decomposeEntities as jest.MockedFunction<typeof decomposeEntities>;
   const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
     typeof generateStoryStructure
   >;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
-  const mockedSaveConceptGenerationBatch =
-    saveConceptGenerationBatch as jest.MockedFunction<typeof saveConceptGenerationBatch>;
   const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
   const mockedLoadKernel = loadKernel as jest.MockedFunction<typeof loadKernel>;
+  const mockedLoadSeed = loadSeed as jest.MockedFunction<typeof loadSeed>;
 
-  const ideateHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate/ideate');
+  const generateSeedHandler = getRouteHandler(conceptSeedRoutes, 'post', '/api/generate');
+  const saveSeedHandler = getRouteHandler(conceptSeedRoutes, 'post', '/api/save');
   const developHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate/develop');
   const saveConceptHandler = getRouteHandler(conceptRoutes, 'post', '/api/save');
   const hardenHandler = getRouteHandler(conceptRoutes, 'post', '/api/:conceptId/harden');
@@ -175,33 +168,17 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       createConceptCharacterWorldFixture(index + 1),
     );
 
-    mockedGenerateConceptIdeas.mockResolvedValue({
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
-      rawResponse: 'raw-ideas',
+    mockIdeateConcepts.mockResolvedValue({ seeds, characterWorlds });
+
+    const evaluatedConcept = createEvaluatedConceptFixture(1);
+    const verification = createConceptVerificationFixture(1);
+    mockDevelopSingleConcept.mockResolvedValue({
+      concept: createConceptSpecFixture(1),
+      evaluatedConcept,
+      verification,
     });
-    mockedGenerateConceptIdeation.mockResolvedValue({ seeds, characterWorlds });
-    mockedGenerateConceptDevelopment.mockResolvedValue({
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptSpecFixture(index + 1)),
-      rawResponse: 'raw-develop',
-    });
-    mockedEvaluateConcepts.mockResolvedValue({
-      scoredConcepts: Array.from({ length: 6 }, (_, index) => createScoredConceptFixture(index + 1)),
-      evaluatedConcepts: [
-        createEvaluatedConceptFixture(1),
-        createEvaluatedConceptFixture(2),
-        createEvaluatedConceptFixture(3),
-      ],
-      rawResponse: 'raw-eval',
-    });
-    mockedStressTestConcept.mockResolvedValue(createConceptStressTestFixture());
-    mockedVerifyConcepts.mockResolvedValue({
-      verifications: [
-        createConceptVerificationFixture(1),
-        createConceptVerificationFixture(2),
-        createConceptVerificationFixture(3),
-      ],
-      rawResponse: 'raw-verify',
-    });
+
+    mockServiceStressTest.mockResolvedValue(createConceptStressTestFixture());
     mockedSaveConcept.mockResolvedValue(undefined);
     mockedLoadKernel.mockResolvedValue({
       id: 'kernel-1',
@@ -288,11 +265,11 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     createdStoryIds.clear();
   });
 
-  it('generates concepts, saves, hardens, and persists conceptSpec on story creation', async () => {
-    // Step 1a: Ideate concepts
-    const ideateStatus = jest.fn().mockReturnThis();
-    const ideateJson = jest.fn().mockReturnThis();
-    void ideateHandler(
+  it('generates seeds, saves, develops, hardens, and persists conceptSpec on story creation', async () => {
+    // Step 1: Generate seeds via concept-seeds route
+    const generateStatus = jest.fn().mockReturnThis();
+    const generateJson = jest.fn().mockReturnThis();
+    void generateSeedHandler(
       {
         body: {
           protagonistDetails: 'a disgraced surgeon turned cybernetic installer',
@@ -302,77 +279,105 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           apiKey: 'valid-key-12345',
         },
       } as Request,
-      { status: ideateStatus, json: ideateJson } as unknown as Response,
+      { status: generateStatus, json: generateJson } as unknown as Response,
+      noopNext,
     );
-    await waitForMock(ideateJson);
-    expect(ideateStatus).not.toHaveBeenCalled();
+    await waitForMock(generateJson);
+    expect(generateStatus).not.toHaveBeenCalled();
 
-    const ideatePayload = getMockCallArg(ideateJson, 0, 0) as {
+    const generatePayload = getMockCallArg(generateJson, 0, 0) as {
       success: boolean;
       seeds: unknown[];
       characterWorlds: unknown[];
+      kernelId: string;
     };
-    expect(ideatePayload.success).toBe(true);
-    expect(ideatePayload.seeds).toHaveLength(6);
-    expect(ideatePayload.characterWorlds).toHaveLength(6);
+    expect(generatePayload.success).toBe(true);
+    expect(generatePayload.seeds).toHaveLength(6);
+    expect(generatePayload.characterWorlds).toHaveLength(6);
 
-    // Step 1b: Develop concepts (select all)
+    // Step 2: Save a seed
+    const saveSeedStatus = jest.fn().mockReturnThis();
+    const saveSeedJson = jest.fn().mockReturnThis();
+    void saveSeedHandler(
+      {
+        body: {
+          seed: generatePayload.seeds[0],
+          characterWorld: generatePayload.characterWorlds[0],
+          sourceKernelId: 'kernel-1',
+          protagonistDetails: 'a disgraced surgeon turned cybernetic installer',
+          genreVibes: 'dark fantasy',
+        },
+      } as unknown as Request,
+      { status: saveSeedStatus, json: saveSeedJson } as unknown as Response,
+      noopNext,
+    );
+    await waitForMock(saveSeedJson);
+    expect(saveSeedStatus).not.toHaveBeenCalled();
+
+    const saveSeedPayload = getMockCallArg(saveSeedJson, 0, 0) as {
+      success: boolean;
+      seed: Record<string, unknown>;
+    };
+    expect(saveSeedPayload.success).toBe(true);
+    const seedId = saveSeedPayload.seed['id'] as string;
+
+    // Step 3: Develop the saved seed into a concept
+    mockedLoadSeed.mockResolvedValue(saveSeedPayload.seed as Parameters<typeof mockedLoadSeed.mockResolvedValue>[0]);
+
     const developStatus = jest.fn().mockReturnThis();
     const developJson = jest.fn().mockReturnThis();
     void developHandler(
       {
         body: {
-          seeds: ideatePayload.seeds,
-          characterWorlds: ideatePayload.characterWorlds,
-          kernelId: 'kernel-1',
+          seedId,
           apiKey: 'valid-key-12345',
         },
       } as Request,
       { status: developStatus, json: developJson } as unknown as Response,
+      noopNext,
     );
     await waitForMock(developJson);
     expect(developStatus).not.toHaveBeenCalled();
 
     const developPayload = getMockCallArg(developJson, 0, 0) as {
       success: boolean;
-      evaluatedConcepts: ReturnType<typeof createEvaluatedConceptFixture>[];
+      evaluatedConcept: ReturnType<typeof createEvaluatedConceptFixture>;
+      verification: unknown;
     };
-    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
-    const evaluatedConcepts = developPayload.evaluatedConcepts;
-    expect(evaluatedConcepts).toHaveLength(3);
+    expect(developPayload.success).toBe(true);
+    expect(developPayload.evaluatedConcept).toBeDefined();
 
-    const selected = evaluatedConcepts[0];
-    expect(selected).toBeDefined();
-
-    // Step 2: Save the concept
-    const saveStatus = jest.fn().mockReturnThis();
-    const saveJson = jest.fn().mockReturnThis();
+    // Step 4: Save the developed concept
+    const saveConceptStatus = jest.fn().mockReturnThis();
+    const saveConceptJson = jest.fn().mockReturnThis();
     void saveConceptHandler(
       {
         body: {
-          evaluatedConcept: selected,
+          evaluatedConcept: developPayload.evaluatedConcept,
           seeds: { genreVibes: 'dark fantasy', moodKeywords: 'tense' },
+          verificationResult: developPayload.verification,
         },
       } as unknown as Request,
-      { status: saveStatus, json: saveJson } as unknown as Response,
+      { status: saveConceptStatus, json: saveConceptJson } as unknown as Response,
+      noopNext,
     );
-    await waitForMock(saveJson);
+    await waitForMock(saveConceptJson);
 
-    const savePayload = getMockCallArg(saveJson, 0, 0) as {
+    const saveConceptPayload = getMockCallArg(saveConceptJson, 0, 0) as {
       success: boolean;
       concept: { id: string };
     };
-    expect(savePayload.success).toBe(true);
-    const conceptId = savePayload.concept.id;
+    expect(saveConceptPayload.success).toBe(true);
+    const conceptId = saveConceptPayload.concept.id;
 
-    // Step 3: Harden the saved concept
+    // Step 5: Harden the saved concept
     const savedConcept = {
       id: conceptId,
-      name: selected?.concept.oneLineHook ?? 'Test',
+      name: developPayload.evaluatedConcept?.concept.oneLineHook ?? 'Test',
       createdAt: '2025-01-01T00:00:00.000Z',
       updatedAt: '2025-01-01T00:00:00.000Z',
       seeds: { genreVibes: 'dark fantasy' },
-      evaluatedConcept: selected!,
+      evaluatedConcept: developPayload.evaluatedConcept!,
     };
     mockedLoadConcept.mockResolvedValue(savedConcept);
     mockedUpdateConcept.mockImplementation(
@@ -391,6 +396,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as unknown as Request,
       { status: hardenStatus, json: hardenJson } as unknown as Response,
+      noopNext,
     );
     await waitForMock(hardenJson);
 
@@ -398,7 +404,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     const hardenedConcept = hardenPayload.hardenedConcept;
     expect(hardenedConcept).toBeDefined();
 
-    // Step 4: Create story with the hardened concept
+    // Step 6: Create story with the hardened concept
     const createStatus = jest.fn().mockReturnThis();
     const createJson = jest.fn().mockReturnThis();
     void createAjaxHandler(
@@ -415,6 +421,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as Request,
       { status: createStatus, json: createJson } as unknown as Response,
+      noopNext,
     );
     await waitForMock(createJson);
 

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { conceptSeedRoutes } from './concept-seeds';
 import { conceptRoutes } from './concepts';
 import { evolutionRoutes } from './evolution';
 import { homeRoutes } from './home';
@@ -11,7 +12,13 @@ import { storyRoutes } from './stories';
 
 export const router = Router();
 
+router.use((_req, res, next) => {
+  res.locals['currentPath'] = _req.path;
+  next();
+});
+
 router.use('/', homeRoutes);
+router.use('/concept-seeds', conceptSeedRoutes);
 router.use('/concepts', conceptRoutes);
 router.use('/evolve', evolutionRoutes);
 router.use('/evolve-kernels', kernelEvolutionRoutes);

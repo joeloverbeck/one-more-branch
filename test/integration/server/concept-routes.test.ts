@@ -1,75 +1,69 @@
-import type { Request, Response } from 'express';
-
-jest.mock('@/llm/concept-ideator', () => ({
-  generateConceptIdeas: jest.fn(),
-  generateConceptIdeation: jest.fn(),
-  generateConceptDevelopment: jest.fn(),
-}));
-
-jest.mock('@/llm/concept-evaluator', () => ({
-  evaluateConcepts: jest.fn(),
-}));
-
-jest.mock('@/llm/concept-stress-tester', () => ({
-  stressTestConcept: jest.fn(),
-}));
-
-jest.mock('@/llm/concept-verifier', () => ({
-  verifyConcepts: jest.fn(),
-}));
+import type { NextFunction, Request, Response } from 'express';
 
 jest.mock('@/persistence/concept-repository', () => ({
   listConcepts: jest.fn().mockResolvedValue([]),
   loadConcept: jest.fn(),
-  saveConceptGenerationBatch: jest.fn(),
   saveConcept: jest.fn(),
   updateConcept: jest.fn(),
   deleteConcept: jest.fn(),
   conceptExists: jest.fn(),
 }));
 
+jest.mock('@/persistence/concept-seed-repository', () => ({
+  listSeeds: jest.fn().mockResolvedValue([]),
+  loadSeed: jest.fn(),
+}));
+
 jest.mock('@/persistence/kernel-repository', () => ({
   loadKernel: jest.fn(),
 }));
 
-import { LLMError } from '@/llm/llm-client-types';
-import { evaluateConcepts } from '@/llm/concept-evaluator';
-import { generateConceptIdeation, generateConceptDevelopment } from '@/llm/concept-ideator';
-import { stressTestConcept } from '@/llm/concept-stress-tester';
-import { verifyConcepts } from '@/llm/concept-verifier';
+const mockDevelopSingleConcept = jest.fn();
+const mockStressTestConcept = jest.fn();
+
+jest.mock('@/server/services/concept-service', () => ({
+  ConceptEvaluationStageError: class extends Error { name = 'ConceptEvaluationStageError'; },
+  createConceptService: jest.fn(),
+  conceptService: {
+    ideateConcepts: jest.fn(),
+    developSingleConcept: mockDevelopSingleConcept,
+    stressTestConcept: mockStressTestConcept,
+    generateConcepts: jest.fn(),
+    developConcepts: jest.fn(),
+    verifyConcepts: jest.fn(),
+  },
+}));
+
 import { conceptRoutes } from '@/server/routes/concepts';
 import { generationProgressService } from '@/server/services';
 import {
   listConcepts,
   loadConcept,
   saveConcept,
-  saveConceptGenerationBatch,
   updateConcept,
 } from '@/persistence/concept-repository';
+import { listSeeds, loadSeed } from '@/persistence/concept-seed-repository';
 import { loadKernel } from '@/persistence/kernel-repository';
 import {
-  createScoredConceptFixture,
   createConceptScoresFixture,
   createConceptSpecFixture,
   createConceptStressTestFixture,
-  createEvaluatedConceptFixture,
   createConceptVerificationFixture,
-  createConceptSeedFixture,
-  createConceptCharacterWorldFixture,
+  createEvaluatedConceptFixture,
 } from '../../fixtures/concept-generator';
 
 type RouteLayer = {
   route?: {
     path?: string;
     methods?: Record<string, boolean>;
-    stack?: Array<{ handle: (req: Request, res: Response) => Promise<void> | void }>;
+    stack?: Array<{ handle: (req: Request, res: Response, next: NextFunction) => Promise<void> | void }>;
   };
 };
 
 function getRouteHandler(
   method: 'get' | 'post' | 'put' | 'delete',
   path: string
-): (req: Request, res: Response) => Promise<void> | void {
+): (req: Request, res: Response, next: NextFunction) => Promise<void> | void {
   const layer = (conceptRoutes.stack as unknown as RouteLayer[]).find(
     (item) => item.route?.path === path && item.route?.methods?.[method],
   );
@@ -88,27 +82,20 @@ function flushPromises(): Promise<void> {
   });
 }
 
+const noopNext: NextFunction = jest.fn();
+
 describe('Concept Route Integration', () => {
-  const mockedGenerateConceptIdeation = generateConceptIdeation as jest.MockedFunction<
-    typeof generateConceptIdeation
-  >;
-  const mockedGenerateConceptDevelopment = generateConceptDevelopment as jest.MockedFunction<
-    typeof generateConceptDevelopment
-  >;
-  const mockedEvaluateConcepts = evaluateConcepts as jest.MockedFunction<typeof evaluateConcepts>;
-  const mockedStressTestConcept = stressTestConcept as jest.MockedFunction<typeof stressTestConcept>;
-  const mockedVerifyConcepts = verifyConcepts as jest.MockedFunction<typeof verifyConcepts>;
   const mockedLoadConcept = loadConcept as jest.MockedFunction<typeof loadConcept>;
   const mockedListConcepts = listConcepts as jest.MockedFunction<typeof listConcepts>;
   const mockedSaveConcept = saveConcept as jest.MockedFunction<typeof saveConcept>;
-  const mockedSaveConceptGenerationBatch = saveConceptGenerationBatch as jest.MockedFunction<
-    typeof saveConceptGenerationBatch
-  >;
   const mockedUpdateConcept = updateConcept as jest.MockedFunction<typeof updateConcept>;
+  const mockedListSeeds = listSeeds as jest.MockedFunction<typeof listSeeds>;
+  const mockedLoadSeed = loadSeed as jest.MockedFunction<typeof loadSeed>;
   const mockedLoadKernel = loadKernel as jest.MockedFunction<typeof loadKernel>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedListSeeds.mockResolvedValue([]);
     mockedLoadKernel.mockResolvedValue({
       id: 'kernel-1',
       name: 'Kernel 1',
@@ -195,7 +182,7 @@ describe('Concept Route Integration', () => {
     mockedListConcepts.mockResolvedValue(savedConcepts);
     const render = jest.fn().mockReturnThis();
 
-    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response);
+    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response, noopNext);
     await flushPromises();
 
     expect(render).toHaveBeenCalledWith(
@@ -225,7 +212,7 @@ describe('Concept Route Integration', () => {
     mockedListConcepts.mockResolvedValue([]);
     const render = jest.fn().mockReturnThis();
 
-    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response);
+    void getRouteHandler('get', '/')({} as Request, { render } as unknown as Response, noopNext);
     await flushPromises();
 
     const renderCalls = render.mock.calls as Array<[string, { genreGroups: unknown }]>;
@@ -238,193 +225,120 @@ describe('Concept Route Integration', () => {
     expect(viewModel.genreGroups).toEqual([]);
   });
 
-  it('POST /api/generate/ideate returns seeds and characterWorlds', async () => {
-    const seeds = Array.from({ length: 6 }, (_, i) => createConceptSeedFixture(i + 1));
-    const characterWorlds = Array.from({ length: 6 }, (_, i) => createConceptCharacterWorldFixture(i + 1));
-    mockedGenerateConceptIdeation.mockResolvedValue({ seeds, characterWorlds });
+  it('POST /api/generate/develop delegates through service for single concept', async () => {
+    const mockSeed = {
+      id: 'seed-1',
+      name: 'Test Seed',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
+      protagonistDetails: 'a disgraced surgeon',
+      oneLineHook: 'A surgeon turned installer',
+      genreFrame: 'CYBERPUNK',
+      genreSubversion: 'test subversion',
+      conflictAxis: 'DUTY_VS_DESIRE',
+      conflictType: 'PERSON_VS_SELF',
+      whatIfQuestion: 'What if?',
+      playerFantasy: 'test fantasy',
+      protagonistRole: 'surgeon',
+      coreCompetence: 'precision',
+      coreFlaw: 'guilt',
+      actionVerbs: ['cut', 'install'],
+      coreConflictLoop: 'test loop',
+      settingAxioms: ['axiom1'],
+      constraintSet: ['constraint1'],
+      keyInstitutions: ['institution1'],
+      settingScale: 'LOCAL',
+    };
+
+    const evaluatedConcept = createEvaluatedConceptFixture(1);
+    const verification = createConceptVerificationFixture(1);
+
+    mockedLoadSeed.mockResolvedValue(mockSeed);
+    mockDevelopSingleConcept.mockResolvedValue({
+      concept: createConceptSpecFixture(1),
+      evaluatedConcept,
+      verification,
+    });
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
     const progressStartSpy = jest.spyOn(generationProgressService, 'start');
     const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');
 
-    void getRouteHandler('post', '/api/generate/ideate')(
-      {
-        body: {
-          protagonistDetails: 'a disgraced surgeon',
-          genreVibes: '  dark fantasy  ',
-          moodKeywords: '  tense ',
-          kernelId: 'kernel-1',
-          apiKey: '  valid-key-12345 ',
-          progressId: ' route-progress-1 ',
-        },
-      } as Request,
-      { status, json } as unknown as Response,
-    );
-    await flushPromises();
-
-    expect(mockedGenerateConceptIdeation).toHaveBeenCalled();
-    expect(progressStartSpy).toHaveBeenCalledWith('route-progress-1', 'concept-generation');
-    expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-1');
-    expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith({ success: true, seeds, characterWorlds });
-  });
-
-  it('POST /api/generate/ideate maps LLM errors to structured error responses', async () => {
-    mockedGenerateConceptIdeation.mockRejectedValue(
-      new LLMError('Rate limit exceeded', 'HTTP_429', true, { httpStatus: 429 }),
-    );
-
-    const status = jest.fn().mockReturnThis();
-    const json = jest.fn().mockReturnThis();
-    const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
-
-    void getRouteHandler('post', '/api/generate/ideate')(
-      {
-        body: {
-          protagonistDetails: 'a disgraced surgeon',
-          genreVibes: 'dark fantasy',
-          kernelId: 'kernel-1',
-          apiKey: 'valid-key-12345',
-          progressId: 'route-progress-2',
-        },
-      } as Request,
-      { status, json } as unknown as Response,
-    );
-    await flushPromises();
-
-    expect(progressFailSpy).toHaveBeenCalledWith(
-      'route-progress-2',
-      'Rate limit exceeded. Please wait a moment and try again.',
-    );
-    expect(status).toHaveBeenCalledWith(500);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        success: false,
-        error: 'Rate limit exceeded. Please wait a moment and try again.',
-        code: 'HTTP_429',
-        retryable: true,
-      }),
-    );
-  });
-
-  it('POST /api/generate/develop delegates through service and returns evaluated concepts', async () => {
-    const seeds = Array.from({ length: 3 }, (_, i) => createConceptSeedFixture(i + 1));
-    const characterWorlds = Array.from({ length: 3 }, (_, i) => createConceptCharacterWorldFixture(i + 1));
-    const concepts = Array.from({ length: 3 }, (_, i) => createConceptSpecFixture(i + 1));
-    mockedGenerateConceptDevelopment.mockResolvedValue({ concepts, rawResponse: 'raw-dev' });
-    const evaluatedConcepts = [
-      createEvaluatedConceptFixture(1),
-      createEvaluatedConceptFixture(2),
-      createEvaluatedConceptFixture(3),
-    ];
-    mockedEvaluateConcepts.mockResolvedValue({
-      scoredConcepts: Array.from({ length: 3 }, (_, i) => createScoredConceptFixture(i + 1)),
-      evaluatedConcepts,
-      rawResponse: 'raw-eval',
-    });
-    const verifications = evaluatedConcepts.map((_, i) => createConceptVerificationFixture(i + 1));
-    mockedVerifyConcepts.mockResolvedValue({ verifications, rawResponse: 'raw-verify' });
-
-    const status = jest.fn().mockReturnThis();
-    const json = jest.fn().mockReturnThis();
-
     void getRouteHandler('post', '/api/generate/develop')(
       {
         body: {
-          seeds,
-          characterWorlds,
-          kernelId: 'kernel-1',
+          seedId: 'seed-1',
           apiKey: 'valid-key-12345',
           progressId: 'route-progress-3',
         },
       } as Request,
       { status, json } as unknown as Response,
+      noopNext,
     );
     await flushPromises();
 
-    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
+    expect(mockDevelopSingleConcept).toHaveBeenCalledWith(
+      expect.objectContaining({
+        seed: mockSeed,
+        apiKey: 'valid-key-12345',
+      }),
+    );
+    expect(progressStartSpy).toHaveBeenCalledWith('route-progress-3', 'concept-generation');
+    expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-3');
     expect(status).not.toHaveBeenCalled();
-    expect(json).toHaveBeenCalledWith({ success: true, evaluatedConcepts, verifications });
+    expect(json).toHaveBeenCalledWith({
+      success: true,
+      evaluatedConcept,
+      verification,
+    });
   });
 
-  it('POST /api/generate/develop persists ideated concepts when evaluation fails', async () => {
-    const seeds = Array.from({ length: 3 }, (_, i) => createConceptSeedFixture(i + 1));
-    const characterWorlds = Array.from({ length: 3 }, (_, i) => createConceptCharacterWorldFixture(i + 1));
-    const ideatedConcepts = Array.from({ length: 3 }, (_, i) => createConceptSpecFixture(i + 1));
-    mockedGenerateConceptDevelopment.mockResolvedValue({ concepts: ideatedConcepts, rawResponse: 'raw' });
-    mockedEvaluateConcepts.mockRejectedValue(
-      new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true),
+  it('POST /api/generate/develop returns 400 when seedId is missing', async () => {
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn().mockReturnThis();
+
+    void getRouteHandler('post', '/api/generate/develop')(
+      {
+        body: {
+          apiKey: 'valid-key-12345',
+        },
+      } as Request,
+      { status, json } as unknown as Response,
+      noopNext,
     );
+    await flushPromises();
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith({
+      success: false,
+      error: 'Seed selection is required',
+    });
+  });
+
+  it('POST /api/generate/develop returns 400 when seed does not exist', async () => {
+    mockedLoadSeed.mockResolvedValueOnce(null);
 
     const status = jest.fn().mockReturnThis();
     const json = jest.fn().mockReturnThis();
 
     void getRouteHandler('post', '/api/generate/develop')(
       {
-        body: { seeds, characterWorlds, kernelId: 'kernel-1', apiKey: 'valid-key-12345' },
-      } as Request,
-      { status, json } as unknown as Response,
-    );
-    await flushPromises();
-
-    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledTimes(1);
-    expect(mockedSaveConceptGenerationBatch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ideatedConcepts,
-        scoredConcepts: [],
-        selectedConcepts: [],
-      }),
-    );
-    expect(status).toHaveBeenCalledWith(500);
-  });
-
-  it('POST /api/generate/ideate returns 400 when kernelId is missing', async () => {
-    const status = jest.fn().mockReturnThis();
-    const json = jest.fn().mockReturnThis();
-
-    void getRouteHandler('post', '/api/generate/ideate')(
-      {
         body: {
-          protagonistDetails: 'a disgraced surgeon',
-          genreVibes: 'dark fantasy',
+          seedId: 'missing-seed',
           apiKey: 'valid-key-12345',
         },
       } as Request,
       { status, json } as unknown as Response,
+      noopNext,
     );
     await flushPromises();
 
     expect(status).toHaveBeenCalledWith(400);
     expect(json).toHaveBeenCalledWith({
       success: false,
-      error: 'Kernel selection is required',
-    });
-  });
-
-  it('POST /api/generate/ideate returns 400 when kernel does not exist', async () => {
-    mockedLoadKernel.mockResolvedValueOnce(null);
-
-    const status = jest.fn().mockReturnThis();
-    const json = jest.fn().mockReturnThis();
-
-    void getRouteHandler('post', '/api/generate/ideate')(
-      {
-        body: {
-          protagonistDetails: 'a disgraced surgeon',
-          genreVibes: 'dark fantasy',
-          kernelId: 'missing-kernel',
-          apiKey: 'valid-key-12345',
-        },
-      } as Request,
-      { status, json } as unknown as Response,
-    );
-    await flushPromises();
-
-    expect(status).toHaveBeenCalledWith(400);
-    expect(json).toHaveBeenCalledWith({
-      success: false,
-      error: 'Selected kernel was not found',
+      error: 'Selected seed was not found',
     });
   });
 
@@ -448,6 +362,7 @@ describe('Concept Route Integration', () => {
         },
       } as Request,
       { status, json } as unknown as Response,
+      noopNext,
     );
     await flushPromises();
 
@@ -485,7 +400,7 @@ describe('Concept Route Integration', () => {
     mockedLoadConcept.mockResolvedValue(savedConcept);
 
     const stressResult = createConceptStressTestFixture();
-    mockedStressTestConcept.mockResolvedValue(stressResult);
+    mockStressTestConcept.mockResolvedValue(stressResult);
 
     mockedUpdateConcept.mockImplementation(
       (_id: string, updater: (existing: typeof savedConcept) => typeof savedConcept) => {
@@ -504,16 +419,16 @@ describe('Concept Route Integration', () => {
         },
       } as unknown as Request,
       { status, json } as unknown as Response,
+      noopNext,
     );
     await flushPromises();
 
-    expect(mockedStressTestConcept).toHaveBeenCalledWith(
-      {
+    expect(mockStressTestConcept).toHaveBeenCalledWith(
+      expect.objectContaining({
         concept: createConceptSpecFixture(1),
         scores: createConceptScoresFixture(),
         weaknesses: ['weak urgency'],
-      },
-      'valid-key-12345',
+      }),
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith(

@@ -327,6 +327,8 @@ export {
 
 export type { ConceptSeeds, SavedConcept, GeneratedConceptBatch } from './saved-concept';
 export { isSavedConcept, isGeneratedConceptBatch } from './saved-concept';
+export type { ConceptSeed } from './concept-seed';
+export { isConceptSeed, parseConceptSeedEntity } from './concept-seed';
 
 export type { SavedKernel, GeneratedKernelBatch } from './saved-kernel';
 export { isSavedKernel, isGeneratedKernelBatch } from './saved-kernel';
