@@ -43,12 +43,11 @@ describe('concept-seeder-prompt', () => {
       });
       const userMessage = messages[1]?.content ?? '';
 
-      expect(userMessage).toContain('GENRE VIBES');
-      expect(userMessage).toContain('sci-fi noir');
-      expect(userMessage).toContain('MOOD KEYWORDS');
-      expect(userMessage).toContain('tense, paranoid');
-      expect(userMessage).toContain('CONTENT PREFERENCES');
-      expect(userMessage).toContain('No explicit violence');
+      expect(userMessage).toContain('USER CREATIVE MANDATE');
+      expect(userMessage).toContain('Genre Vibes: sci-fi noir');
+      expect(userMessage).toContain('Mood Keywords: tense, paranoid');
+      expect(userMessage).toContain('Content Preferences: No explicit violence');
+      expect(userMessage).toContain('non-negotiable');
     });
 
     it('omits empty seed fields', () => {
@@ -59,9 +58,10 @@ describe('concept-seeder-prompt', () => {
       });
       const userMessage = messages[1]?.content ?? '';
 
-      expect(userMessage).not.toContain('GENRE VIBES');
-      expect(userMessage).not.toContain('MOOD KEYWORDS');
-      expect(userMessage).not.toContain('CONTENT PREFERENCES');
+      expect(userMessage).not.toContain('USER CREATIVE MANDATE');
+      expect(userMessage).not.toContain('Genre Vibes');
+      expect(userMessage).not.toContain('Mood Keywords');
+      expect(userMessage).not.toContain('Content Preferences');
     });
 
     it('includes kernel constraints when kernel is provided', () => {

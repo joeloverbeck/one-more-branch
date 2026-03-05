@@ -15,6 +15,9 @@ export interface EvolveConceptsInput {
   readonly kernel: StoryKernel;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
 }
 
 export interface EvolveConceptsResult {
@@ -92,7 +95,16 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
         status: 'started',
         attempt: 1,
       });
-      const evolution = await deps.evolveConceptIdeas({ parentConcepts, kernel }, apiKey);
+      const evolution = await deps.evolveConceptIdeas(
+        {
+          parentConcepts,
+          kernel,
+          genreVibes: input.genreVibes,
+          moodKeywords: input.moodKeywords,
+          contentPreferences: input.contentPreferences,
+        },
+        apiKey,
+      );
       onGenerationStage?.({
         stage: 'ENGINEERING_CONCEPTS',
         status: 'completed',
@@ -107,7 +119,12 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
       const evaluation = await deps.evaluateConcepts(
         {
           concepts: evolution.concepts,
-          userSeeds: { apiKey },
+          userSeeds: {
+            genreVibes: input.genreVibes,
+            moodKeywords: input.moodKeywords,
+            contentPreferences: input.contentPreferences,
+            apiKey,
+          },
         },
         apiKey,
       );

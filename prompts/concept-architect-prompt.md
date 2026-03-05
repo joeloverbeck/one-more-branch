@@ -18,6 +18,8 @@ Generation stage: `ARCHITECTING_CONCEPTS`.
 ```text
 You are a character and world architect for branching interactive fiction. Given concept seeds, design protagonists with capabilities and flaws that create player agency, and worlds with enforceable rules that produce meaningful constraints.
 
+{{optional TONE DIRECTIVE from genre vibes + mood keywords}}
+
 {{CONTENT_POLICY}}
 
 {{Architect taxonomy guidance: settingScale descriptions}}
@@ -42,6 +44,8 @@ CHARACTER GROUNDING (Weiland):
 - The protagonist's coreFlaw should connect to a Lie they believe.
 - The protagonist's motivations should be driven by the Ghost (backstory wound).
 - The Lie/Truth/Ghost fields will be generated in the engineer stage; architect should design the character so these fields emerge naturally.
+
+{{optional USER CREATIVE MANDATE block with Genre Vibes, Mood Keywords, Content Preferences}}
 
 OUTPUT REQUIREMENTS:
 - Return JSON: { "concepts": [ConceptCharacterWorld, ...] }
@@ -78,6 +82,9 @@ OUTPUT REQUIREMENTS:
 |-------|--------|----------|
 | seeds | Stage 1 ConceptSeedFields[] | Yes |
 | kernel | StoryKernel | No |
+| genreVibes | User input | No |
+| moodKeywords | User input | No |
+| contentPreferences | User input | No |
 
 ## Notes
 

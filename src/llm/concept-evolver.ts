@@ -13,7 +13,13 @@ export async function evolveConceptIdeas(
   const seedResult = await generateEvolvedConceptSeeds(context, apiKey, options);
 
   const architectResult = await generateConceptCharacterWorlds(
-    { seeds: seedResult.seeds, kernel: context.kernel },
+    {
+      seeds: seedResult.seeds,
+      kernel: context.kernel,
+      genreVibes: context.genreVibes,
+      moodKeywords: context.moodKeywords,
+      contentPreferences: context.contentPreferences,
+    },
     apiKey,
     options,
   );
@@ -23,6 +29,9 @@ export async function evolveConceptIdeas(
       seeds: seedResult.seeds,
       characterWorlds: architectResult.characterWorlds,
       kernel: context.kernel,
+      genreVibes: context.genreVibes,
+      moodKeywords: context.moodKeywords,
+      contentPreferences: context.contentPreferences,
     },
     apiKey,
     options,

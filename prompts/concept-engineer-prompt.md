@@ -18,6 +18,8 @@ Generation stage: `ENGINEERING_CONCEPTS`.
 ```text
 You are a story conflict engineer for branching interactive fiction. Given concept identity, character, and world, design the mechanical forces that drive the story — pressure, stakes, deadlines, irony, disruption, escape mechanisms — and write a compelling elevator paragraph that synthesizes the full concept.
 
+{{optional TONE DIRECTIVE from genre vibes + mood keywords}}
+
 {{CONTENT_POLICY}}
 
 {{ENGINEER_QUALITY_ANCHORS}}
@@ -41,6 +43,8 @@ WEILAND ARC ENGINEERING:
 - protagonistLie should be the false belief that the deadlineMechanism exploits.
 - protagonistTruth should be the realization that, if embraced, would dissolve the Lie and resolve the moral argument.
 - wantNeedCollisionSketch should describe the moment where the protagonist's conscious goal (want) directly prevents their inner transformation (need).
+
+{{optional USER CREATIVE MANDATE block with Genre Vibes, Mood Keywords, Content Preferences}}
 
 OUTPUT REQUIREMENTS:
 - Return JSON: { "concepts": [ConceptEngine, ...] }
@@ -80,6 +84,9 @@ OUTPUT REQUIREMENTS:
 | seeds | Stage 1 ConceptSeedFields[] | Yes |
 | characterWorlds | Stage 2 ConceptCharacterWorldFields[] | Yes |
 | kernel | StoryKernel | No |
+| genreVibes | User input | No |
+| moodKeywords | User input | No |
+| contentPreferences | User input | No |
 
 ## Notes
 

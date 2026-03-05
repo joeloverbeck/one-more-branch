@@ -19,6 +19,8 @@ export function buildToneDirective(
     lines.push(`Anti-patterns (never drift toward): ${toneAvoid.join(', ')}`);
   }
 
-  lines.push('Every scene, description, and dialogue beat must be filtered through this tonal lens.');
+  lines.push(
+    'These qualities are mandatory creative constraints. Every concept must centrally embody all of them — not as incidental flavor, but as load-bearing identity.',
+  );
   return lines.join('\n');
 }

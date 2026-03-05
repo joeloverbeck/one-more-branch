@@ -151,7 +151,13 @@ describe('concept-ideator', () => {
       await generateConceptIdeas(context, 'test-api-key');
 
       expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
-        { seeds, kernel: context.kernel },
+        {
+          seeds,
+          kernel: context.kernel,
+          genreVibes: context.genreVibes,
+          moodKeywords: context.moodKeywords,
+          contentPreferences: context.contentPreferences,
+        },
         'test-api-key',
         undefined,
       );
@@ -169,7 +175,14 @@ describe('concept-ideator', () => {
       await generateConceptIdeas(context, 'test-api-key');
 
       expect(mockGenerateEngines).toHaveBeenCalledWith(
-        { seeds, characterWorlds, kernel: context.kernel },
+        {
+          seeds,
+          characterWorlds,
+          kernel: context.kernel,
+          genreVibes: context.genreVibes,
+          moodKeywords: context.moodKeywords,
+          contentPreferences: context.contentPreferences,
+        },
         'test-api-key',
         undefined,
       );

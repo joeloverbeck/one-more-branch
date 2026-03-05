@@ -51,7 +51,7 @@ function buildSeedSection(context: ConceptEvaluatorContext): string {
     sections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);
   }
 
-  return sections.length > 0 ? sections.join('\n\n') : 'No optional user seeds provided.';
+  return sections.length > 0 ? sections.join('\n\n') : 'No user preferences specified.';
 }
 
 function buildConceptList(concepts: readonly ConceptSpec[], conceptIds: readonly string[]): string {
@@ -96,13 +96,16 @@ export function buildConceptEvaluatorScoringPrompt(
 - Score every candidate concept.
 - Do not rank, filter, or select concepts.
 - Do not compute weighted totals.`,
+    `PREFERENCE FIDELITY:
+- When user preferences are provided, penalize any concept that fails to centrally embody ALL listed vibes/moods/preferences.
+- In scoreEvidence for hookStrength and conflictEngine, explicitly note whether each user preference is centrally present or merely incidental.`,
     `EVIDENCE REQUIREMENT:
 - For each dimension provide 1-3 concrete bullets tied to specific concept fields.`,
   ];
 
   const userSections: string[] = [
     'Score these concept candidates against the user intent and rubric.',
-    `USER SEEDS:\n${buildSeedSection(context)}`,
+    `MANDATORY USER PREFERENCES:\n${buildSeedSection(context)}`,
     `CONCEPT CANDIDATES:\n${buildConceptList(context.concepts, conceptIds)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "scoredConcepts": [ ... ] }.
@@ -130,11 +133,14 @@ export function buildConceptEvaluatorDeepEvalPrompt(
 - Evaluate all provided scored concepts.
 - Do not rescore and do not alter concepts.
 - For each concept, explain user-facing strengths, weaknesses, and tradeoffs.`,
+    `PREFERENCE ADHERENCE:
+- When evaluating strengths/weaknesses, explicitly assess whether the concept centrally embodies ALL listed user preferences.
+- Flag missing or merely incidental preferences as weaknesses.`,
   ];
 
   const userSections: string[] = [
     'Deep-evaluate all scored concepts.',
-    `USER SEEDS:\n${buildSeedSection(context)}`,
+    `MANDATORY USER PREFERENCES:\n${buildSeedSection(context)}`,
     `SCORED CONCEPTS WITH LOCKED SCORES:\n${buildScoredConceptList(scoredConcepts, conceptIds)}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "evaluatedConcepts": [ ... ] }.

@@ -1,6 +1,6 @@
 # Narrative Architecture Audit Specification
 
-**Status**: PENDING IMPLEMENTATION
+**Status**: COMPLETED — Premise engine subset extracted to `specs/premise-engine-overhaul.md`; remaining gaps deferred
 **Date**: 2026-02-27
 **Scope**: Full story generation pipeline (kernel -> concept -> spine -> entity decomposition -> structure -> page generation)
 

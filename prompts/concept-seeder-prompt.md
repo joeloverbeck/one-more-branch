@@ -28,7 +28,7 @@ You are a concept ideation specialist for branching interactive fiction. Generat
 
 {{SEEDER_QUALITY_ANCHORS}}
 
-{{DIVERSITY_CONSTRAINTS: 6-8 seeds, unique genre+axis pairs, min 3 genres, min 3 axes}}
+{{DIVERSITY_CONSTRAINTS: 6-8 seeds, unique genre+axis pairs, min 3 genres, min 3 axes, diversity = genres/textures NOT distributing vibes}}
 ```
 
 ## User Message Template
@@ -36,9 +36,7 @@ You are a concept ideation specialist for branching interactive fiction. Generat
 ```text
 Generate 6-8 concept seeds that satisfy the taxonomy and diversity constraints.
 
-{{optional GENRE VIBES}}
-{{optional MOOD KEYWORDS}}
-{{optional CONTENT PREFERENCES}}
+{{optional USER CREATIVE MANDATE block with Genre Vibes, Mood Keywords, Content Preferences as non-negotiable constraints}}
 {{optional SELECTED STORY KERNEL including moralArgument, valueSpectrum (positive/contrary/contradictory/negationOfNegation)}}
 
 OUTPUT REQUIREMENTS:
