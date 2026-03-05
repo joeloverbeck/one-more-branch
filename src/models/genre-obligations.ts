@@ -6,6 +6,32 @@ export interface GenreObligationEntry {
 }
 
 export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
+  ABSURDIST: [
+    {
+      tag: 'logic_applied_to_absurd_conclusion',
+      gloss: 'A character follows a reasonable chain of thought to a nonsensical result',
+    },
+    {
+      tag: 'bureaucratic_labyrinth_encountered',
+      gloss: 'A system of rules traps the protagonist in circular procedure',
+    },
+    {
+      tag: 'meaningful_gesture_voided',
+      gloss: 'An act of significance is rendered pointless by circumstance',
+    },
+    {
+      tag: 'existential_confrontation_without_resolution',
+      gloss: 'The protagonist faces the void and receives no answer',
+    },
+    {
+      tag: 'dialogue_at_cross_purposes',
+      gloss: 'Characters speak to each other but comprehend nothing',
+    },
+    {
+      tag: 'arbitrary_transformation_accepted',
+      gloss: 'A sudden, inexplicable change is treated as unremarkable',
+    },
+  ],
   ADVENTURE: [
     { tag: 'call_to_quest', gloss: 'An external summons or discovery launches the journey' },
     { tag: 'threshold_crossing', gloss: 'The protagonist leaves the known world behind' },
@@ -13,6 +39,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     { tag: 'ordeal_survived', gloss: 'The protagonist endures a defining physical or mental test' },
     { tag: 'treasure_with_cost', gloss: 'The prize is won but at meaningful expense' },
     { tag: 'return_transformed', gloss: 'The protagonist comes back changed by the journey' },
+  ],
+  ALTERNATE_HISTORY: [
+    {
+      tag: 'divergence_consequence_demonstrated',
+      gloss: 'A scene shows a concrete result of the historical change',
+    },
+    {
+      tag: 'historical_figure_recontextualized',
+      gloss: 'A known person appears in their altered role',
+    },
+    {
+      tag: 'parallel_to_real_history_highlighted',
+      gloss: 'An event echoes what actually happened, with meaningful difference',
+    },
+    {
+      tag: 'cultural_artifact_of_altered_timeline',
+      gloss: 'A detail of daily life reveals how different this world became',
+    },
+    {
+      tag: 'ideological_conflict_from_divergence',
+      gloss: 'The altered history produces a political or social clash',
+    },
+    {
+      tag: 'point_of_no_return_for_timeline',
+      gloss: 'Events reach a moment where the alternate history becomes permanently fixed',
+    },
   ],
   COMING_OF_AGE: [
     {
@@ -357,6 +409,58 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
       gloss: 'Returning to the old world becomes impossible or undesirable',
     },
   ],
+  KAIJU: [
+    {
+      tag: 'creature_emergence_spectacle',
+      gloss: 'The monster appears or arrives with overwhelming visual impact',
+    },
+    {
+      tag: 'infrastructure_destruction_sequence',
+      gloss: 'Buildings, vehicles, or systems are destroyed at massive scale',
+    },
+    {
+      tag: 'human_response_proves_inadequate',
+      gloss: 'Military or scientific countermeasures fail against the creature',
+    },
+    {
+      tag: 'civilian_perspective_on_catastrophe',
+      gloss: 'Ordinary people experience the devastation at ground level',
+    },
+    {
+      tag: 'creature_nature_partially_revealed',
+      gloss: "Something about the monster's origin, motivation, or biology is discovered",
+    },
+    {
+      tag: 'sacrifice_at_monster_scale',
+      gloss: 'A human choice with enormous cost addresses the creature-level threat',
+    },
+  ],
+  LITRPG: [
+    {
+      tag: 'status_screen_revealed',
+      gloss: "The protagonist's stats, skills, or level are displayed",
+    },
+    {
+      tag: 'level_up_or_skill_acquisition',
+      gloss: 'The protagonist gains measurable power through the system',
+    },
+    {
+      tag: 'system_rule_exploited',
+      gloss: 'The protagonist discovers and uses a mechanical advantage others missed',
+    },
+    {
+      tag: 'boss_encounter_with_visible_mechanics',
+      gloss: "A major combat tests the protagonist's build and strategy",
+    },
+    {
+      tag: 'loot_drop_or_reward_claimed',
+      gloss: 'A significant item or ability is obtained after a challenge',
+    },
+    {
+      tag: 'system_limitation_creates_crisis',
+      gloss: 'A rule or restriction of the game system produces a genuine threat',
+    },
+  ],
   LITERARY: [
     { tag: 'ordinary_disruption', gloss: "A small event fractures the protagonist's routine" },
     {
@@ -400,6 +504,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
       gloss: 'The ending carries gentle astonishment rather than spectacle',
     },
   ],
+  MILITARY: [
+    {
+      tag: 'combat_engagement_with_consequences',
+      gloss: 'A battle or firefight produces casualties or lasting effects',
+    },
+    {
+      tag: 'order_obeyed_against_judgment',
+      gloss: 'A character follows a command they believe is wrong',
+    },
+    {
+      tag: 'unit_bond_tested_under_fire',
+      gloss: 'Combat or crisis strains the relationship between soldiers',
+    },
+    {
+      tag: 'home_front_intrusion',
+      gloss: 'Personal life or civilian reality pierces the military bubble',
+    },
+    {
+      tag: 'tactical_dilemma_with_human_cost',
+      gloss: 'A strategic decision requires accepting harm to some for the benefit of others',
+    },
+    {
+      tag: 'psychological_toll_manifested',
+      gloss: 'The accumulated stress of combat produces visible behavioral change',
+    },
+  ],
   MYSTERY: [
     { tag: 'crime_or_puzzle_presented', gloss: 'The central question or crime is established' },
     { tag: 'red_herring_planted', gloss: 'A misleading clue or suspect diverts attention' },
@@ -438,6 +568,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
     { tag: 'false_hope_dangled_then_snatched', gloss: 'A way out appears and is taken away' },
     { tag: 'bitter_resolution', gloss: 'The ending delivers truth without comfort' },
+  ],
+  PARANORMAL: [
+    {
+      tag: 'supernatural_encounter_in_mundane_setting',
+      gloss: 'A supernatural being or event intrudes on ordinary life',
+    },
+    {
+      tag: 'hidden_world_rules_discovered',
+      gloss: 'The protagonist learns how the supernatural community operates',
+    },
+    {
+      tag: 'species_prejudice_encountered',
+      gloss: 'Tension between human and supernatural groups surfaces',
+    },
+    {
+      tag: 'power_negotiation_across_species',
+      gloss: 'Human and supernatural characters establish or contest boundaries',
+    },
+    {
+      tag: 'human_ally_or_enemy_of_supernatural',
+      gloss: 'A mortal takes a definitive side in supernatural affairs',
+    },
+    {
+      tag: 'masquerade_threatened_or_maintained',
+      gloss: 'The secret of supernatural existence is nearly exposed or deliberately protected',
+    },
   ],
   PICARESQUE: [
     {
@@ -539,6 +695,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
     { tag: 'conceptual_payoff', gloss: "The story's central idea reaches its fullest expression" },
   ],
+  SLICE_OF_LIFE: [
+    {
+      tag: 'quiet_moment_of_connection',
+      gloss: 'Two characters share an understated moment of understanding',
+    },
+    {
+      tag: 'daily_ritual_disrupted',
+      gloss: 'A small change in routine produces gentle ripple effects',
+    },
+    {
+      tag: 'seasonal_or_temporal_passage_marked',
+      gloss: 'The progression of time is noted through natural or cultural markers',
+    },
+    {
+      tag: 'minor_conflict_resolved_through_empathy',
+      gloss: 'A low-stakes disagreement is settled by understanding rather than force',
+    },
+    {
+      tag: 'beauty_in_the_ordinary_noticed',
+      gloss: 'A character pauses to appreciate something commonplace',
+    },
+    {
+      tag: 'bittersweet_acceptance_of_change',
+      gloss: 'Something familiar ends or shifts, and the character lets it go',
+    },
+  ],
   SPACE_OPERA: [
     {
       tag: 'galaxy_threatening_crisis',
@@ -565,6 +747,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
       gloss: 'Resolution affirms that individual courage matters at any scale',
     },
   ],
+  STEAMPUNK: [
+    {
+      tag: 'invention_unveiled_or_tested',
+      gloss: 'A new machine or device is demonstrated for the first time',
+    },
+    {
+      tag: 'class_boundary_crossed_or_enforced',
+      gloss: 'A character confronts the limits of their social station',
+    },
+    {
+      tag: 'mechanical_spectacle_sequence',
+      gloss: 'Complex machinery produces a visually dramatic scene',
+    },
+    {
+      tag: 'imperial_power_confronted',
+      gloss: 'The reach of empire affects the protagonist directly',
+    },
+    {
+      tag: 'technological_malfunction_with_consequence',
+      gloss: 'A machine fails in a way that drives the plot forward',
+    },
+    {
+      tag: 'artisan_vs_industrialist_tension',
+      gloss: 'Individual craft clashes with mass production or institutional control',
+    },
+  ],
   SURREAL: [
     { tag: 'reality_dislocation', gloss: 'The world shifts away from the familiar' },
     { tag: 'dream_logic_sequence', gloss: 'Events follow emotional rather than causal order' },
@@ -580,6 +788,32 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     {
       tag: 'meaning_through_image',
       gloss: "A visual or sensory moment conveys the story's deepest point",
+    },
+  ],
+  SURVIVAL: [
+    {
+      tag: 'resource_scarcity_crisis',
+      gloss: 'A critical supply runs out or becomes dangerously low',
+    },
+    {
+      tag: 'environmental_hazard_confronted',
+      gloss: 'Weather, terrain, or wildlife presents an immediate physical threat',
+    },
+    {
+      tag: 'shelter_or_tool_improvised',
+      gloss: 'The protagonist creates a solution from available materials',
+    },
+    {
+      tag: 'physical_limit_reached',
+      gloss: 'The body fails or nearly fails under the demands of survival',
+    },
+    {
+      tag: 'moral_choice_under_scarcity',
+      gloss: 'Limited resources force a decision about who benefits',
+    },
+    {
+      tag: 'rescue_or_self_rescue_turning_point',
+      gloss: 'The protagonist either finds help or commits to saving themselves',
     },
   ],
   THRILLER: [
@@ -614,6 +848,58 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     {
       tag: 'anagnorisis',
       gloss: 'The protagonist sees, too late, the truth of their situation and their role in causing it',
+    },
+  ],
+  TRANSGRESSIVE: [
+    {
+      tag: 'taboo_act_committed_without_apology',
+      gloss: 'A character crosses a social boundary and the narrative does not condemn them',
+    },
+    {
+      tag: 'conformity_mask_removed',
+      gloss: "A character's respectable surface is stripped away",
+    },
+    {
+      tag: 'subculture_ritual_entered',
+      gloss: 'The protagonist participates in an activity outside mainstream acceptance',
+    },
+    {
+      tag: 'consumption_or_excess_sequence',
+      gloss: 'A scene of indulgence or self-destruction is rendered in unflinching detail',
+    },
+    {
+      tag: 'violence_as_self_expression',
+      gloss: 'A character uses destruction to communicate what words cannot',
+    },
+    {
+      tag: 'identity_dissolution_climax',
+      gloss: "The protagonist's sense of self breaks down under accumulated transgression",
+    },
+  ],
+  UTOPIAN: [
+    {
+      tag: 'society_design_demonstrated',
+      gloss: 'A specific mechanism of the ideal society is shown functioning',
+    },
+    {
+      tag: 'newcomer_orientation_sequence',
+      gloss: 'The utopia is explained to someone encountering it for the first time',
+    },
+    {
+      tag: 'hidden_cost_surfaced',
+      gloss: 'A sacrifice or limitation required by the perfect system becomes visible',
+    },
+    {
+      tag: 'dissident_voice_raised',
+      gloss: 'Someone within or arriving from outside questions the ideal',
+    },
+    {
+      tag: 'philosophical_defense_of_order',
+      gloss: 'A character articulates why the system works and must be preserved',
+    },
+    {
+      tag: 'utopian_principle_tested_by_crisis',
+      gloss: "An emergency or edge case challenges the society's foundational rules",
     },
   ],
   WESTERN: [
