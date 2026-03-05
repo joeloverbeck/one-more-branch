@@ -1,5 +1,4 @@
 import type { JsonSchema } from '../llm-client-types.js';
-import { CONCEPT_VERIFICATION_CONSTRAINTS } from '../../models/concept-generator.js';
 
 const LOAD_BEARING_CHECK_SCHEMA = {
   type: 'object',
@@ -43,8 +42,6 @@ const CONCEPT_SPECIFICITY_ANALYSIS_SCHEMA = {
     logline: { type: 'string', minLength: 1 },
     premisePromises: {
       type: 'array',
-      minItems: CONCEPT_VERIFICATION_CONSTRAINTS.premisePromisesMin,
-      maxItems: CONCEPT_VERIFICATION_CONSTRAINTS.premisePromisesMax,
       items: { type: 'string', minLength: 1 },
     },
     inevitabilityStatement: { type: 'string' },
