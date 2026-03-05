@@ -1,22 +1,35 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { AGENDA_RESOLVER_SCHEMA } from '../../../../src/llm/schemas/agenda-resolver-schema';
+import { CONCEPT_ARCHITECT_SCHEMA } from '../../../../src/llm/schemas/concept-architect-schema';
+import { CONCEPT_ENGINEER_SCHEMA } from '../../../../src/llm/schemas/concept-engineer-schema';
 import {
   CONCEPT_EVALUATION_DEEP_SCHEMA,
   CONCEPT_EVALUATION_SCORING_SCHEMA,
 } from '../../../../src/llm/schemas/concept-evaluator-schema';
 import { CONCEPT_EVOLUTION_SCHEMA } from '../../../../src/llm/schemas/concept-evolver-schema';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../../src/llm/schemas/concept-ideator-schema';
+import { CONCEPT_SCENARIO_SCHEMA } from '../../../../src/llm/schemas/concept-scenario-schema';
+import { CONCEPT_SEEDER_SCHEMA } from '../../../../src/llm/schemas/concept-seeder-schema';
+import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../../src/llm/schemas/concept-specificity-schema';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../../src/llm/schemas/concept-stress-tester-schema';
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/entity-decomposer-schema';
 import {
   KERNEL_EVALUATION_DEEP_SCHEMA,
   KERNEL_EVALUATION_SCORING_SCHEMA,
 } from '../../../../src/llm/schemas/kernel-evaluator-schema';
+import { KERNEL_EVOLUTION_SCHEMA } from '../../../../src/llm/schemas/kernel-evolver-schema';
 import { KERNEL_IDEATION_SCHEMA } from '../../../../src/llm/schemas/kernel-ideator-schema';
 import { LOREKEEPER_SCHEMA } from '../../../../src/llm/schemas/lorekeeper-schema';
+import { NPC_INTELLIGENCE_SCHEMA } from '../../../../src/llm/schemas/npc-intelligence-schema';
 import { PAGE_PLANNER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/page-planner-schema';
+import { PROMISE_TRACKER_SCHEMA } from '../../../../src/llm/schemas/promise-tracker-schema';
+import { PROSE_QUALITY_SCHEMA } from '../../../../src/llm/schemas/prose-quality-schema';
+import { SCENE_IDEATOR_SCHEMA } from '../../../../src/llm/schemas/scene-ideator-schema';
 import { SPINE_REWRITE_SCHEMA } from '../../../../src/llm/schemas/spine-rewrite-schema';
 import { SPINE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/spine-schema';
 import { STATE_ACCOUNTANT_SCHEMA } from '../../../../src/llm/schemas/state-accountant-schema';
+import { STRUCTURE_EVALUATOR_SCHEMA } from '../../../../src/llm/schemas/structure-evaluator-schema';
 import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structure-schema';
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import type { JsonSchema } from '../../../../src/llm/llm-client-types';
@@ -110,6 +123,34 @@ function findAnthropicIntegerConstraintIssues(node: unknown, path: string, issue
   }
 }
 
+function findAnthropicStringConstraintIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
+  if (typeof node !== 'object' || node === null) {
+    return;
+  }
+
+  const record = node as Record<string, unknown>;
+  if (record['type'] === 'string') {
+    const minLength = record['minLength'];
+    if (typeof minLength === 'number' && minLength !== 0 && minLength !== 1) {
+      issues.push({
+        path,
+        message: `minLength must be 0 or 1 for Anthropic-compatible schemas (received ${minLength})`,
+      });
+    }
+
+    if ('maxLength' in record) {
+      issues.push({
+        path,
+        message: 'maxLength is not supported for Anthropic-compatible schemas',
+      });
+    }
+  }
+
+  for (const [key, value] of Object.entries(record)) {
+    findAnthropicStringConstraintIssues(value, `${path}.${key}`, issues);
+  }
+}
+
 function findEnumTypeIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
   if (typeof node !== 'object' || node === null) {
     return;
@@ -153,8 +194,19 @@ function getIssues(schema: JsonSchema): SchemaIssue[] {
   const issues: SchemaIssue[] = [];
   findAnthropicArrayConstraintIssues(schema.json_schema.schema, 'schema', issues);
   findAnthropicIntegerConstraintIssues(schema.json_schema.schema, 'schema', issues);
+  findAnthropicStringConstraintIssues(schema.json_schema.schema, 'schema', issues);
   findEnumTypeIssues(schema.json_schema.schema, 'schema', issues);
   return issues;
+}
+
+function isJsonSchemaShape(value: unknown): value is JsonSchema {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as Record<string, unknown>)['type'] === 'json_schema' &&
+    typeof (value as Record<string, unknown>)['json_schema'] === 'object' &&
+    (value as Record<string, unknown>)['json_schema'] !== null
+  );
 }
 
 describe('Anthropic schema compatibility', () => {
@@ -176,9 +228,44 @@ describe('Anthropic schema compatibility', () => {
     { name: 'CONCEPT_EVALUATION_SCORING_SCHEMA', schema: CONCEPT_EVALUATION_SCORING_SCHEMA },
     { name: 'CONCEPT_EVALUATION_DEEP_SCHEMA', schema: CONCEPT_EVALUATION_DEEP_SCHEMA },
     { name: 'CONCEPT_EVOLUTION_SCHEMA', schema: CONCEPT_EVOLUTION_SCHEMA },
+    { name: 'CONCEPT_ARCHITECT_SCHEMA', schema: CONCEPT_ARCHITECT_SCHEMA },
+    { name: 'CONCEPT_ENGINEER_SCHEMA', schema: CONCEPT_ENGINEER_SCHEMA },
+    { name: 'CONCEPT_SCENARIO_SCHEMA', schema: CONCEPT_SCENARIO_SCHEMA },
+    { name: 'CONCEPT_SPECIFICITY_SCHEMA', schema: CONCEPT_SPECIFICITY_SCHEMA },
+    { name: 'CONCEPT_SEEDER_SCHEMA', schema: CONCEPT_SEEDER_SCHEMA },
+    { name: 'KERNEL_EVOLUTION_SCHEMA', schema: KERNEL_EVOLUTION_SCHEMA },
+    { name: 'NPC_INTELLIGENCE_SCHEMA', schema: NPC_INTELLIGENCE_SCHEMA },
+    { name: 'PROMISE_TRACKER_SCHEMA', schema: PROMISE_TRACKER_SCHEMA },
+    { name: 'PROSE_QUALITY_SCHEMA', schema: PROSE_QUALITY_SCHEMA },
+    { name: 'SCENE_IDEATOR_SCHEMA', schema: SCENE_IDEATOR_SCHEMA },
+    { name: 'STRUCTURE_EVALUATOR_SCHEMA', schema: STRUCTURE_EVALUATOR_SCHEMA },
   ];
 
   it.each(llmResponseSchemas)('%s should satisfy Anthropic schema compatibility checks', ({ schema }) => {
     expect(getIssues(schema)).toEqual([]);
+  });
+
+  it('should include every static JsonSchema export from src/llm/schemas/', () => {
+    const schemasDir = path.resolve(__dirname, '../../../../src/llm/schemas');
+    const schemaFiles = fs.readdirSync(schemasDir).filter(
+      (f) => f.endsWith('-schema.ts') && !f.endsWith('-validation-schema.ts'),
+    );
+
+    const registeredNames = new Set(llmResponseSchemas.map((entry) => entry.name));
+    const missingSchemas: string[] = [];
+
+    for (const file of schemaFiles) {
+      const filePath = path.join(schemasDir, file);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require(filePath) as Record<string, unknown>;
+
+      for (const [exportName, exportValue] of Object.entries(mod)) {
+        if (isJsonSchemaShape(exportValue) && !registeredNames.has(exportName)) {
+          missingSchemas.push(`${exportName} (from ${file})`);
+        }
+      }
+    }
+
+    expect(missingSchemas).toEqual([]);
   });
 });
