@@ -6,6 +6,32 @@ export interface GenreConventionEntry {
 }
 
 export const GENRE_CONVENTIONS_BY_GENRE = {
+  ABSURDIST: [
+    {
+      tag: 'rational_frameworks_fail',
+      gloss: 'Logical reasoning produces nonsensical outcomes',
+    },
+    {
+      tag: 'meaning_sought_but_absent',
+      gloss: 'Characters search for purpose in a purposeless universe',
+    },
+    {
+      tag: 'repetition_as_existential_condition',
+      gloss: 'Cycles and loops replace linear progress',
+    },
+    {
+      tag: 'authority_is_incomprehensible',
+      gloss: 'Power structures operate by inscrutable rules',
+    },
+    {
+      tag: 'language_undermines_communication',
+      gloss: 'Words fail to convey what characters actually mean',
+    },
+    {
+      tag: 'mundane_and_catastrophic_equalized',
+      gloss: 'Trivial events and existential crises receive identical weight',
+    },
+  ],
   ADVENTURE: [
     {
       tag: 'protagonist_driven_by_external_goal',
@@ -30,6 +56,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'journey_as_transformation',
       gloss: 'Travel changes the traveler',
+    },
+  ],
+  ALTERNATE_HISTORY: [
+    {
+      tag: 'divergence_point_anchors_world',
+      gloss: 'A specific historical change is the foundation of all differences',
+    },
+    {
+      tag: 'butterfly_effects_rigorously_traced',
+      gloss: 'Consequences of the divergence propagate logically through society',
+    },
+    {
+      tag: 'historical_knowledge_creates_irony',
+      gloss: 'The reader knows what should have happened',
+    },
+    {
+      tag: 'familiar_institutions_distorted',
+      gloss: 'Recognizable organizations and nations exist in altered forms',
+    },
+    {
+      tag: 'period_authenticity_despite_divergence',
+      gloss: 'Material culture and social norms feel grounded in their era',
+    },
+    {
+      tag: 'individual_agency_against_historical_momentum',
+      gloss: 'Characters struggle to redirect or preserve the altered course of history',
     },
   ],
   COMING_OF_AGE: [
@@ -474,6 +526,58 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: "Growth comes from learning the new world's logic",
     },
   ],
+  KAIJU: [
+    {
+      tag: 'creature_as_sublime_force',
+      gloss: 'The monster evokes awe and terror simultaneously',
+    },
+    {
+      tag: 'civilization_scale_vulnerability',
+      gloss: 'Human infrastructure and institutions are fragile against the threat',
+    },
+    {
+      tag: 'allegory_encoded_in_monster',
+      gloss: 'The creature embodies a real-world fear or social force',
+    },
+    {
+      tag: 'human_drama_against_spectacle',
+      gloss: 'Personal stories ground the overwhelming destruction',
+    },
+    {
+      tag: 'military_and_scientific_response',
+      gloss: 'Institutional attempts to understand or combat the threat drive plot',
+    },
+    {
+      tag: 'scale_dislocation_atmosphere',
+      gloss: 'Normal-sized humans exist alongside impossibly vast beings',
+    },
+  ],
+  LITRPG: [
+    {
+      tag: 'visible_game_mechanics_in_prose',
+      gloss: 'Stats, levels, and skill trees appear as narrative elements',
+    },
+    {
+      tag: 'system_mastery_as_character_growth',
+      gloss: 'Understanding game rules is equivalent to personal development',
+    },
+    {
+      tag: 'numerical_progression_drives_satisfaction',
+      gloss: 'Quantified advancement provides tangible reward',
+    },
+    {
+      tag: 'exploit_discovery_as_cleverness',
+      gloss: 'Finding loopholes in the system signals protagonist intelligence',
+    },
+    {
+      tag: 'loot_and_reward_economy',
+      gloss: 'Items, skills, and abilities are earned through measurable achievement',
+    },
+    {
+      tag: 'system_interface_as_narrative_voice',
+      gloss: 'Status screens, notifications, and pop-ups convey information within the story',
+    },
+  ],
   LITERARY: [
     {
       tag: 'interiority_over_plot',
@@ -524,6 +628,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'myth_woven_into_daily_life',
       gloss: 'Folklore is everyday reality',
+    },
+  ],
+  MILITARY: [
+    {
+      tag: 'chain_of_command_as_social_structure',
+      gloss: 'Rank and orders define all interpersonal relationships',
+    },
+    {
+      tag: 'unit_cohesion_over_individual_heroism',
+      gloss: 'Survival depends on the group, not the lone warrior',
+    },
+    {
+      tag: 'violence_has_physical_and_psychological_cost',
+      gloss: 'Combat produces lasting damage to body and mind',
+    },
+    {
+      tag: 'mission_logic_vs_human_logic',
+      gloss: 'Tactical objectives conflict with emotional needs',
+    },
+    {
+      tag: 'waiting_and_boredom_punctuated_by_terror',
+      gloss: 'Long stretches of inaction contrast with sudden, intense danger',
+    },
+    {
+      tag: 'institutional_indifference_to_individual',
+      gloss: 'The military machine does not care about any single soldier',
     },
   ],
   MYSTERY: [
@@ -602,6 +732,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'information_weaponized_between_characters',
       gloss: 'Knowledge is leverage, not shared freely',
+    },
+  ],
+  PARANORMAL: [
+    {
+      tag: 'supernatural_beings_among_mundane',
+      gloss: 'Vampires, ghosts, or shapeshifters coexist with ordinary people',
+    },
+    {
+      tag: 'hidden_world_with_own_politics',
+      gloss: 'Supernatural communities have hierarchies and power struggles',
+    },
+    {
+      tag: 'morality_not_determined_by_species',
+      gloss: 'Supernatural nature does not make a being good or evil',
+    },
+    {
+      tag: 'contemporary_setting_grounds_the_strange',
+      gloss: 'Modern cities, jobs, and technology anchor the supernatural elements',
+    },
+    {
+      tag: 'human_identity_questioned_through_other',
+      gloss: 'Encountering non-human beings forces reflection on what being human means',
+    },
+    {
+      tag: 'masquerade_or_integration_tension',
+      gloss: 'Supernatural existence is either hidden from or negotiated with human society',
     },
   ],
   PICARESQUE: [
@@ -734,6 +890,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: 'Discovery is thrilling and unsettling',
     },
   ],
+  SLICE_OF_LIFE: [
+    {
+      tag: 'anti_dramatic_pacing',
+      gloss: 'Events unfold at the rhythm of everyday life, not narrative urgency',
+    },
+    {
+      tag: 'small_moments_carry_meaning',
+      gloss: 'A shared meal or quiet conversation holds as much weight as any crisis',
+    },
+    {
+      tag: 'character_over_plot',
+      gloss: 'Who people are matters more than what happens to them',
+    },
+    {
+      tag: 'routine_as_narrative_texture',
+      gloss: 'Repeated daily activities create atmosphere and grounding',
+    },
+    {
+      tag: 'gentle_emotional_shifts',
+      gloss: 'Feelings change gradually rather than through dramatic revelation',
+    },
+    {
+      tag: 'community_and_place_as_character',
+      gloss: 'The setting and its inhabitants form a collective presence',
+    },
+  ],
   SPACE_OPERA: [
     {
       tag: 'galactic_scale_civilizations',
@@ -760,6 +942,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
       gloss: 'Prophecies, chosen ones, and galactic destiny operate without specific mythology',
     },
   ],
+  STEAMPUNK: [
+    {
+      tag: 'victorian_era_aesthetic_foundation',
+      gloss: 'Fashion, architecture, and social mores draw from the 19th century',
+    },
+    {
+      tag: 'anachronistic_technology_with_period_logic',
+      gloss: 'Advanced machines operate on steam, gears, and brass rather than electronics',
+    },
+    {
+      tag: 'class_hierarchy_shapes_all_access',
+      gloss: 'Technology and opportunity are distributed by social station',
+    },
+    {
+      tag: 'invention_as_individual_craft',
+      gloss: 'Machines are built by singular brilliant minds, not assembly lines',
+    },
+    {
+      tag: 'empire_and_colonialism_as_backdrop',
+      gloss: 'Imperial power structures pervade the social and political landscape',
+    },
+    {
+      tag: 'aesthetics_of_visible_mechanism',
+      gloss: 'Gears, pipes, and moving parts are displayed rather than hidden',
+    },
+  ],
   SURREAL: [
     {
       tag: 'dream_logic_replaces_causality',
@@ -784,6 +992,32 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'meaning_emerges_from_pattern_not_explanation',
       gloss: 'Understanding comes through recurrence',
+    },
+  ],
+  SURVIVAL: [
+    {
+      tag: 'environment_as_primary_antagonist',
+      gloss: 'Nature, climate, or terrain is the central threat',
+    },
+    {
+      tag: 'resource_management_drives_decisions',
+      gloss: 'Food, water, shelter, and tools constrain every choice',
+    },
+    {
+      tag: 'body_as_vulnerable_system',
+      gloss: 'Physical condition deteriorates and must be actively maintained',
+    },
+    {
+      tag: 'knowledge_and_skill_determine_survival',
+      gloss: 'Practical competence separates the living from the dead',
+    },
+    {
+      tag: 'isolation_intensifies_psychological_pressure',
+      gloss: 'Being alone or in a small group amplifies every setback',
+    },
+    {
+      tag: 'civilization_stripped_to_essentials',
+      gloss: 'Social norms collapse when basic needs are unmet',
     },
   ],
   THRILLER: [
@@ -836,6 +1070,58 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     {
       tag: 'fate_and_free_will_entangled',
       gloss: 'The protagonist both causes and cannot escape their doom',
+    },
+  ],
+  TRANSGRESSIVE: [
+    {
+      tag: 'social_taboo_violation_as_engine',
+      gloss: 'The narrative systematically crosses boundaries society enforces',
+    },
+    {
+      tag: 'body_as_site_of_transgression',
+      gloss: 'Physical acts and bodily experience carry ideological weight',
+    },
+    {
+      tag: 'narrator_complicity_with_the_abject',
+      gloss: 'The narrative voice does not distance itself from disturbing content',
+    },
+    {
+      tag: 'consumer_culture_as_target',
+      gloss: 'Materialism, conformity, and mainstream values are exposed and attacked',
+    },
+    {
+      tag: 'shock_in_service_of_revelation',
+      gloss: 'Disturbing content exists to strip away comfortable illusions',
+    },
+    {
+      tag: 'marginal_subcultures_as_setting',
+      gloss: 'The story inhabits spaces outside mainstream social approval',
+    },
+  ],
+  UTOPIAN: [
+    {
+      tag: 'ideal_society_constructed_and_examined',
+      gloss: 'The setting presents a deliberately designed better world',
+    },
+    {
+      tag: 'perfection_contains_hidden_cost',
+      gloss: 'The ideal society requires trade-offs or sacrifices',
+    },
+    {
+      tag: 'outsider_perspective_reveals_assumptions',
+      gloss: 'A newcomer or dissident exposes what residents take for granted',
+    },
+    {
+      tag: 'philosophical_debate_as_narrative_texture',
+      gloss: 'Characters discuss and defend the principles underlying their society',
+    },
+    {
+      tag: 'individual_desire_vs_collective_design',
+      gloss: 'Personal wants test the limits of social engineering',
+    },
+    {
+      tag: 'comparison_with_imperfect_present',
+      gloss: "The utopia implicitly critiques the reader's own world",
     },
   ],
   WESTERN: [
