@@ -71,6 +71,7 @@ import {
   saveConcept,
   updateConcept,
 } from '@/persistence/concept-repository';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { loadSeed, saveSeed } from '@/persistence/concept-seed-repository';
 import { loadKernel } from '@/persistence/kernel-repository';
 import {
@@ -377,7 +378,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       createdAt: '2025-01-01T00:00:00.000Z',
       updatedAt: '2025-01-01T00:00:00.000Z',
       seeds: { genreVibes: 'dark fantasy' },
-      evaluatedConcept: developPayload.evaluatedConcept!,
+      evaluatedConcept: developPayload.evaluatedConcept,
     };
     mockedLoadConcept.mockResolvedValue(savedConcept);
     mockedUpdateConcept.mockImplementation(
