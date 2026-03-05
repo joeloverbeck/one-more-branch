@@ -175,8 +175,15 @@ export function computeKernelOverallScore(scores: KernelDimensionScores): number
   );
 }
 
+export interface KernelEvolverUserSeeds {
+  readonly thematicInterests?: string;
+  readonly emotionalCore?: string;
+  readonly sparkLine?: string;
+}
+
 export interface KernelEvolverContext {
   readonly parentKernels: readonly EvaluatedKernel[];
+  readonly userSeeds?: KernelEvolverUserSeeds;
 }
 
 export interface KernelEvolutionResult {

@@ -309,6 +309,57 @@ describe('kernel-evolver', () => {
       expect(userMessage).toContain('exactly 6');
       expect(userMessage).toContain('Do not copy any parent unchanged');
     });
+
+    it('includes USER CREATIVE MANDATE when userSeeds provided', () => {
+      const context: KernelEvolverContext = {
+        parentKernels: [createEvaluatedKernelFixture(1), createEvaluatedKernelFixture(2)],
+        userSeeds: {
+          thematicInterests: 'identity and loyalty',
+          emotionalCore: 'grief and resentment',
+          sparkLine: 'A protector becomes the threat',
+        },
+      };
+      const messages = buildKernelEvolverPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+
+      expect(userMessage).toContain('USER CREATIVE MANDATE');
+      expect(userMessage).toContain('Thematic Interests: identity and loyalty');
+      expect(userMessage).toContain('Emotional Core: grief and resentment');
+      expect(userMessage).toContain('Spark Line: A protector becomes the threat');
+      expect(userMessage).toContain('non-negotiable');
+    });
+
+    it('omits USER CREATIVE MANDATE when no userSeeds', () => {
+      const context = createContext();
+      const messages = buildKernelEvolverPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+
+      expect(userMessage).not.toContain('USER CREATIVE MANDATE');
+    });
+
+    it('omits USER CREATIVE MANDATE when userSeeds are all empty', () => {
+      const context: KernelEvolverContext = {
+        parentKernels: [createEvaluatedKernelFixture(1), createEvaluatedKernelFixture(2)],
+        userSeeds: {
+          thematicInterests: '   ',
+          emotionalCore: '',
+        },
+      };
+      const messages = buildKernelEvolverPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+
+      expect(userMessage).not.toContain('USER CREATIVE MANDATE');
+    });
+
+    it('includes CRITICAL diversity line about user seeds', () => {
+      const context = createContext();
+      const messages = buildKernelEvolverPrompt(context);
+      const systemMessage = messages[0]?.content ?? '';
+
+      expect(systemMessage).toContain(
+        'CRITICAL: Diversity means different dramatic propositions',
+      );
+    });
   });
 
   describe('evolveKernels', () => {

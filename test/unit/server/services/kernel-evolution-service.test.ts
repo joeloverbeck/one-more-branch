@@ -107,7 +107,7 @@ describe('kernel-evolution-service', () => {
 
       expect(callOrder).toEqual(['evolver', 'evaluator']);
       expect(evolveKernels).toHaveBeenCalledWith(
-        { parentKernels: createInput().parentKernels },
+        { parentKernels: createInput().parentKernels, userSeeds: undefined },
         'valid-key-12345',
       );
       expect(evaluateKernels).toHaveBeenCalledWith(
@@ -156,6 +156,42 @@ describe('kernel-evolution-service', () => {
         { stage: 'EVALUATING_KERNELS', status: 'started', attempt: 1 },
         { stage: 'EVALUATING_KERNELS', status: 'completed', attempt: 1 },
       ]);
+    });
+
+    it('threads userSeeds to evolver and evaluator', async () => {
+      const evolvedKernels = Array.from({ length: 6 }, (_, index) => createKernel(index + 1));
+      const evaluatedKernels = [createEvaluatedKernel(1)];
+      const seeds = {
+        thematicInterests: 'identity',
+        emotionalCore: 'grief',
+        sparkLine: 'A protector becomes the threat',
+      };
+
+      const evolveKernels = jest.fn().mockResolvedValue({
+        kernels: evolvedKernels,
+        rawResponse: 'raw-evolution',
+      });
+      const evaluateKernels = jest.fn().mockResolvedValue({
+        scoredKernels: [],
+        evaluatedKernels,
+        rawResponse: 'raw-evaluation',
+      });
+
+      const service = createKernelEvolutionService({ evolveKernels, evaluateKernels });
+
+      await service.evolveKernels(createInput({ userSeeds: seeds }));
+
+      expect(evolveKernels).toHaveBeenCalledWith(
+        { parentKernels: createInput().parentKernels, userSeeds: seeds },
+        'valid-key-12345',
+      );
+      expect(evaluateKernels).toHaveBeenCalledWith(
+        {
+          kernels: evolvedKernels,
+          userSeeds: { apiKey: 'valid-key-12345', ...seeds },
+        },
+        'valid-key-12345',
+      );
     });
 
     it('rejects fewer than 2 parent kernels', async () => {

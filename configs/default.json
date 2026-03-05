@@ -9,7 +9,7 @@
     "defaultModel": "anthropic/claude-sonnet-4.6",
     "models": {
       "kernelIdeator": "anthropic/claude-sonnet-4.6",
-      "kernelEvaluator": "qwen/qwen3.5-397b-a17b",
+      "kernelEvaluator": "anthropic/claude-sonnet-4.6",
       "conceptSeeder": "anthropic/claude-sonnet-4.6",
       "conceptEvolverSeeder": "anthropic/claude-sonnet-4.6",
       "conceptArchitect": "anthropic/claude-sonnet-4.6",

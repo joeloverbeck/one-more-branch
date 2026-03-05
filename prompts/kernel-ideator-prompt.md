@@ -55,6 +55,7 @@ DIVERSITY CONSTRAINTS:
 - Use at least 5 distinct conflictAxis values.
 - Use at least 3 distinct dramaticStance values.
 - Ensure kernels represent materially different human conflict domains.
+- CRITICAL: Diversity means different dramatic propositions and conflict domains. It does NOT mean distributing user seeds across kernels. Every kernel must centrally reflect ALL user-specified thematic interests, emotional core, and spark line.
 
 DIRECTION OF CHANGE TAXONOMY:
 - POSITIVE: The value ultimately prevails.
@@ -102,19 +103,12 @@ PROHIBITIONS:
 ```text
 Generate 6-8 story kernels as abstract dramatic propositions.
 
-{{#if thematicInterests}}
-THEMATIC INTERESTS:
-{{thematicInterests}}
-{{/if}}
-
-{{#if emotionalCore}}
-EMOTIONAL CORE:
-{{emotionalCore}}
-{{/if}}
-
-{{#if sparkLine}}
-SPARK LINE:
-{{sparkLine}}
+{{#if hasAnySeeds}}
+USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):
+{{#if thematicInterests}}Thematic Interests: {{thematicInterests}}{{/if}}
+{{#if emotionalCore}}Emotional Core: {{emotionalCore}}{{/if}}
+{{#if sparkLine}}Spark Line: {{sparkLine}}{{/if}}
+These are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.
 {{/if}}
 
 {{#if no seeds provided}}

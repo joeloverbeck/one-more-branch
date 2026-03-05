@@ -73,10 +73,20 @@ kernelEvolutionRoutes.post(
 
     const progress = createRouteGenerationProgress(body.progressId, 'kernel-evolution');
 
+    const referenceSeeds = kernels[0]!.seeds;
+    const userSeeds = (referenceSeeds.thematicInterests || referenceSeeds.emotionalCore || referenceSeeds.sparkLine)
+      ? {
+          thematicInterests: referenceSeeds.thematicInterests,
+          emotionalCore: referenceSeeds.emotionalCore,
+          sparkLine: referenceSeeds.sparkLine,
+        }
+      : undefined;
+
     try {
       const result = await kernelEvolutionService.evolveKernels({
         parentKernels: kernels.map((k) => k.evaluatedKernel),
         apiKey,
+        userSeeds,
         onGenerationStage: progress.onGenerationStage,
       });
 

@@ -4,6 +4,7 @@ import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   EvaluatedKernel,
   KernelEvaluationResult,
+  KernelEvolverUserSeeds,
   KernelEvolutionResult,
   ScoredKernel,
   StoryKernel,
@@ -12,6 +13,7 @@ import type {
 export interface EvolveKernelsInput {
   readonly parentKernels: readonly EvaluatedKernel[];
   readonly apiKey: string;
+  readonly userSeeds?: KernelEvolverUserSeeds;
   readonly onGenerationStage?: GenerationStageCallback;
 }
 
@@ -63,6 +65,7 @@ export function createKernelEvolutionService(
     async evolveKernels(input: EvolveKernelsInput): Promise<EvolveKernelsResult> {
       const apiKey = requireApiKey(input.apiKey);
       const parentKernels = requireParentKernels(input.parentKernels);
+      const userSeeds = input.userSeeds;
       const onGenerationStage = input.onGenerationStage;
 
       onGenerationStage?.({
@@ -71,7 +74,7 @@ export function createKernelEvolutionService(
         attempt: 1,
       });
       const evolution: KernelEvolutionResult = await deps.evolveKernels(
-        { parentKernels },
+        { parentKernels, userSeeds },
         apiKey,
       );
       onGenerationStage?.({
@@ -88,7 +91,10 @@ export function createKernelEvolutionService(
       const evaluation: KernelEvaluationResult = await deps.evaluateKernels(
         {
           kernels: evolution.kernels,
-          userSeeds: { apiKey },
+          userSeeds: {
+            apiKey,
+            ...userSeeds,
+          },
         },
         apiKey,
       );

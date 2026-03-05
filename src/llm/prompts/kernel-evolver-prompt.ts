@@ -40,7 +40,8 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Use at least 3 distinct directionOfChange values.
 - Use at least 4 distinct conflictAxis values.
 - Use at least 3 distinct dramaticStance values.
-- Ensure kernels represent materially different human conflict domains.`;
+- Ensure kernels represent materially different human conflict domains.
+- CRITICAL: Diversity means different dramatic propositions and conflict domains. It does NOT mean distributing user seeds across kernels. Every kernel must centrally reflect ALL user-specified thematic interests, emotional core, and spark line.`;
 
 const DIRECTION_GUIDANCE = `DIRECTION OF CHANGE TAXONOMY:
 - POSITIVE: The value ultimately prevails.
@@ -54,6 +55,11 @@ const PROHIBITIONS = `PROHIBITIONS:
 - Do not include named characters or character bios.
 - Do not include plot beats or scene sequencing.
 - Do not include game mechanics or system design instructions.`;
+
+function normalize(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
 
 function buildDirectionEnumList(): string {
   return DIRECTION_OF_CHANGE_VALUES.map((value) => `- ${value}`).join('\n');
@@ -90,9 +96,28 @@ export function buildKernelEvolverPrompt(context: KernelEvolverContext): ChatMes
     PROHIBITIONS,
   ];
 
+  const thematicInterests = normalize(context.userSeeds?.thematicInterests);
+  const emotionalCore = normalize(context.userSeeds?.emotionalCore);
+  const sparkLine = normalize(context.userSeeds?.sparkLine);
+
   const userSections: string[] = [
     'Evolve the provided parent kernels into exactly 6 offspring kernels.',
     `PARENT KERNELS INPUT:\n${buildParentPayload(context.parentKernels)}`,
+  ];
+
+  const hasAnySeeds = thematicInterests ?? emotionalCore ?? sparkLine;
+  if (hasAnySeeds) {
+    const mandateParts: string[] = [];
+    if (thematicInterests) mandateParts.push(`Thematic Interests: ${thematicInterests}`);
+    if (emotionalCore) mandateParts.push(`Emotional Core: ${emotionalCore}`);
+    if (sparkLine) mandateParts.push(`Spark Line: ${sparkLine}`);
+
+    userSections.push(
+      `USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.`,
+    );
+  }
+
+  userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching schema shape: { "kernels": [StoryKernel, ...] }.
 - kernels array must contain exactly 6 items.
@@ -100,7 +125,7 @@ export function buildKernelEvolverPrompt(context: KernelEvolverContext): ChatMes
 - Do not copy any parent unchanged.
 - Preserve useful parent strengths while directly addressing parent weaknesses.
 - Each offspring should employ a different mutation strategy.`,
-  ];
+  );
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },
