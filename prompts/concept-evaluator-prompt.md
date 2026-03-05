@@ -52,6 +52,10 @@ SCORING RULES:
 - Do not rank, filter, or select concepts.
 - Do not compute weighted totals.
 
+PREFERENCE FIDELITY:
+- When user preferences are provided, penalize any concept that fails to centrally embody ALL listed vibes/moods/preferences.
+- In scoreEvidence for hookStrength and conflictEngine, explicitly note whether each user preference is centrally present or merely incidental.
+
 EVIDENCE REQUIREMENT:
 - For each dimension provide 1-3 concrete bullets tied to specific concept fields.
 ```
@@ -61,7 +65,7 @@ EVIDENCE REQUIREMENT:
 ```text
 Score these concept candidates against the user intent and rubric.
 
-USER SEEDS:
+MANDATORY USER PREFERENCES:
 {{#if genreVibes}}
 GENRE VIBES:
 {{genreVibes}}
@@ -155,6 +159,10 @@ DEEP EVALUATION RULES:
 - Evaluate all provided scored concepts.
 - Do not rescore and do not alter concepts.
 - For each concept, explain user-facing strengths, weaknesses, and tradeoffs.
+
+PREFERENCE ADHERENCE:
+- When evaluating strengths/weaknesses, explicitly assess whether the concept centrally embodies ALL listed user preferences.
+- Flag missing or merely incidental preferences as weaknesses.
 ```
 
 #### 2) User Message
@@ -162,7 +170,7 @@ DEEP EVALUATION RULES:
 ```text
 Deep-evaluate all scored concepts.
 
-USER SEEDS:
+MANDATORY USER PREFERENCES:
 {{#if genreVibes}}
 GENRE VIBES:
 {{genreVibes}}
@@ -224,6 +232,7 @@ Runtime behavior:
 
 - Both passes share the same `ROLE_INTRO` and `RUBRIC` constants; pass 1 appends scoring rules while pass 2 appends deep evaluation rules.
 - Dimension weights are injected from `CONCEPT_SCORING_WEIGHTS` in `src/models/concept-generator.ts`. Pass thresholds are NOT sent to the LLM; they are applied code-side only.
-- User seed section is built identically for both passes via `buildSeedSection(context)`: each optional field is included only when non-empty after trimming, otherwise omitted entirely. If no seeds exist, "No optional user seeds provided." is emitted.
+- User preference section is built identically for both passes via `buildSeedSection(context)`: each optional field is included only when non-empty after trimming, otherwise omitted entirely. If no preferences exist, "No user preferences specified." is emitted. Label is "MANDATORY USER PREFERENCES" to signal constraint status to the LLM.
+- Scoring pass includes PREFERENCE FIDELITY section; deep-eval pass includes PREFERENCE ADHERENCE section.
 - Prompt logging uses `promptType: 'conceptEvaluator'` for both passes via `runLlmStage(...)`.
 - Model routing uses stage key `conceptEvaluator` in `getStageModel(...)`.

@@ -11,7 +11,8 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Return 6-8 concept seeds.
 - Use at least 3 distinct genreFrame values.
 - The seed's conflictAxis MUST match the kernel's conflictAxis.
-- Each seed should feel materially different in play, not cosmetic variants.`;
+- Each seed should feel materially different in play, not cosmetic variants.
+- CRITICAL: Diversity means different genres and play textures. It does NOT mean distributing user vibes across concepts. Every concept must centrally embody ALL user-specified vibes, moods, and content preferences.`;
 
 function normalize(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
@@ -61,14 +62,15 @@ export function buildConceptSeederPrompt(context: ConceptSeederContext): ChatMes
     'Generate 6-8 concept seeds that satisfy the taxonomy and diversity constraints.',
   ];
 
-  if (genreVibes) {
-    userSections.push(`GENRE VIBES:\n${genreVibes}`);
-  }
-  if (moodKeywords) {
-    userSections.push(`MOOD KEYWORDS:\n${moodKeywords}`);
-  }
-  if (contentPreferences) {
-    userSections.push(`CONTENT PREFERENCES:\n${contentPreferences}`);
+  const mandateParts: string[] = [];
+  if (genreVibes) mandateParts.push(`Genre Vibes: ${genreVibes}`);
+  if (moodKeywords) mandateParts.push(`Mood Keywords: ${moodKeywords}`);
+  if (contentPreferences) mandateParts.push(`Content Preferences: ${contentPreferences}`);
+
+  if (mandateParts.length > 0) {
+    userSections.push(
+      `USER CREATIVE MANDATE (every concept MUST embody ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Each concept must centrally express every listed quality, though HOW each manifests may differ creatively across concepts.`,
+    );
   }
   if (kernel) {
     const kernelLines = [

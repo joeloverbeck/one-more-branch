@@ -21,6 +21,9 @@ export interface ConceptDevelopmentContext {
   readonly seeds: readonly ConceptSeedFields[];
   readonly characterWorlds: readonly ConceptCharacterWorldFields[];
   readonly kernel?: StoryKernel;
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
 }
 
 export function mergeConceptStages(
@@ -46,7 +49,13 @@ export async function generateConceptIdeation(
 ): Promise<ConceptIdeationPhaseResult> {
   const seedResult = await generateConceptSeeds(context, apiKey, options);
   const architectResult = await generateConceptCharacterWorlds(
-    { seeds: seedResult.seeds, kernel: context.kernel },
+    {
+      seeds: seedResult.seeds,
+      kernel: context.kernel,
+      genreVibes: context.genreVibes,
+      moodKeywords: context.moodKeywords,
+      contentPreferences: context.contentPreferences,
+    },
     apiKey,
     options,
   );
@@ -59,7 +68,14 @@ export async function generateConceptDevelopment(
   options?: Partial<GenerationOptions>,
 ): Promise<ConceptIdeationResult> {
   const engineResult = await generateConceptEngines(
-    { seeds: context.seeds, characterWorlds: context.characterWorlds, kernel: context.kernel },
+    {
+      seeds: context.seeds,
+      characterWorlds: context.characterWorlds,
+      kernel: context.kernel,
+      genreVibes: context.genreVibes,
+      moodKeywords: context.moodKeywords,
+      contentPreferences: context.contentPreferences,
+    },
     apiKey,
     options,
   );
@@ -74,7 +90,14 @@ export async function generateConceptIdeas(
 ): Promise<ConceptIdeationResult> {
   const ideation = await generateConceptIdeation(context, apiKey, options);
   return generateConceptDevelopment(
-    { seeds: ideation.seeds, characterWorlds: ideation.characterWorlds, kernel: context.kernel },
+    {
+      seeds: ideation.seeds,
+      characterWorlds: ideation.characterWorlds,
+      kernel: context.kernel,
+      genreVibes: context.genreVibes,
+      moodKeywords: context.moodKeywords,
+      contentPreferences: context.contentPreferences,
+    },
     apiKey,
     options,
   );

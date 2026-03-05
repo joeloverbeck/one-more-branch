@@ -6,6 +6,7 @@ import type {
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { ENGINEER_QUALITY_ANCHORS } from './concept-prompt-shared.js';
+import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const ROLE_INTRO =
   'You are a story conflict engineer for branching interactive fiction. Given concept identity, character, and world, design the mechanical forces that drive the story — pressure, stakes, deadlines, irony, disruption, escape mechanisms — and write a compelling elevator paragraph that synthesizes the full concept.';
@@ -37,6 +38,11 @@ WEILAND ARC ENGINEERING:
 - wantNeedCollisionSketch should describe the moment where the protagonist's conscious goal (want) directly prevents their inner transformation (need).`;
 }
 
+function normalize(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
+
 function serializeCombinedContext(
   seeds: readonly ConceptSeedFields[],
   characterWorlds: readonly ConceptCharacterWorldFields[],
@@ -49,7 +55,20 @@ function serializeCombinedContext(
 }
 
 export function buildConceptEngineerPrompt(context: ConceptEngineerContext): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, ENGINEER_QUALITY_ANCHORS];
+  const genreVibes = normalize(context.genreVibes);
+  const moodKeywords = normalize(context.moodKeywords);
+  const contentPreferences = normalize(context.contentPreferences);
+
+  const systemSections: string[] = [ROLE_INTRO];
+
+  const toneParts: string[] = [];
+  if (genreVibes) toneParts.push(`genre vibes: ${genreVibes}`);
+  if (moodKeywords) toneParts.push(`mood keywords: ${moodKeywords}`);
+  if (toneParts.length > 0) {
+    systemSections.push(buildToneDirective(toneParts.join(' | ')));
+  }
+
+  systemSections.push(CONTENT_POLICY, ENGINEER_QUALITY_ANCHORS);
 
   const userSections: string[] = [
     `Engineer conflict forces and write elevator paragraphs for each of the ${context.seeds.length} concepts below.`,
@@ -59,6 +78,17 @@ export function buildConceptEngineerPrompt(context: ConceptEngineerContext): Cha
   const kernelBlock = buildKernelBlock(context.kernel);
   if (kernelBlock) {
     userSections.push(kernelBlock);
+  }
+
+  const mandateParts: string[] = [];
+  if (genreVibes) mandateParts.push(`Genre Vibes: ${genreVibes}`);
+  if (moodKeywords) mandateParts.push(`Mood Keywords: ${moodKeywords}`);
+  if (contentPreferences) mandateParts.push(`Content Preferences: ${contentPreferences}`);
+
+  if (mandateParts.length > 0) {
+    userSections.push(
+      `USER CREATIVE MANDATE (conflict forces, pressure, stakes, and elevator paragraph MUST embody ALL of the following):\n${mandateParts.join('\n')}\nDesign conflict engines that centrally express these qualities.`,
+    );
   }
 
   userSections.push(

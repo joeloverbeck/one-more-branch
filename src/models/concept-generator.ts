@@ -303,6 +303,9 @@ export interface ConceptEvolverSeederContext {
   readonly parentConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
   readonly excludedGenres?: readonly GenreFrame[];
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
 }
 
 export interface ConceptEvolverSeederResult {
@@ -313,6 +316,9 @@ export interface ConceptEvolverSeederResult {
 export interface ConceptArchitectContext {
   readonly seeds: readonly ConceptSeedFields[];
   readonly kernel?: StoryKernel;
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
 }
 
 export interface ConceptArchitectResult {
@@ -324,6 +330,9 @@ export interface ConceptEngineerContext {
   readonly seeds: readonly ConceptSeedFields[];
   readonly characterWorlds: readonly ConceptCharacterWorldFields[];
   readonly kernel?: StoryKernel;
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
 }
 
 export interface ConceptEngineerResult {
@@ -348,6 +357,9 @@ export interface ConceptEvolverContext {
   readonly parentConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
   readonly excludedGenres?: readonly GenreFrame[];
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
 }
 
 export interface ConceptEvolutionResult {

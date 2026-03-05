@@ -18,6 +18,8 @@ Generation stage: `SEEDING_EVOLVED_CONCEPTS`.
 ```text
 You are a concept evolution architect for branching interactive fiction. Recombine proven strengths, mutate weak points, and generate novel seed identities that improve on their parents.
 
+{{optional TONE DIRECTIVE from genre vibes + mood keywords}}
+
 {{CONTENT_POLICY}}
 
 MUTATION STRATEGIES:
@@ -41,6 +43,8 @@ STORY KERNEL: {{kernel fields including moralArgument, valueSpectrum (positive/c
 
 PARENT CONCEPTS INPUT: {{JSON array of parent concepts with scores/strengths/weaknesses}}
 
+{{optional USER CREATIVE MANDATE block with Genre Vibes, Mood Keywords, Content Preferences — mutation changes form, not tonal identity}}
+
 OUTPUT REQUIREMENTS:
 - Return JSON: { "concepts": [ConceptSeed, ...] }
 - Exactly 6 items, no parent copied unchanged
@@ -56,6 +60,9 @@ Same as concept-seeder-prompt (7-field seed shape).
 |-------|--------|----------|
 | parentConcepts | EvaluatedConcept[] with scores | Yes |
 | kernel | Selected StoryKernel | Yes |
+| genreVibes | User input | No |
+| moodKeywords | User input | No |
+| contentPreferences | User input | No |
 
 ## Notes
 
